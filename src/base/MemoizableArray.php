@@ -55,7 +55,8 @@ class MemoizableArray implements IteratorAggregate, Countable
     /**
      * Returns all items.
      *
-     * @return array<T>
+     * @return array
+     * @phpstan-return array<T>
      */
     public function all(): array
     {
@@ -72,7 +73,7 @@ class MemoizableArray implements IteratorAggregate, Countable
      * @param bool $strict whether a strict type comparison should be used when checking array element values against `$value`
      * @return self the filtered array
      */
-    public function where(string $key, $value = true, bool $strict = false): self
+    public function where(string $key, mixed $value = true, bool $strict = false): self
     {
         $memKey = $this->_memKey(__METHOD__, $key, $value, $strict);
 
@@ -90,7 +91,7 @@ class MemoizableArray implements IteratorAggregate, Countable
      * Array keys are preserved by default.
      *
      * @param string $key the column name whose result will be used to index the array
-     * @param mixed[] $values the value that `$key` should be compared with
+     * @param array $values the value that `$key` should be compared with
      * @param bool $strict whether a strict type comparison should be used when checking array element values against `$values`
      * @return self the filtered array
      */
@@ -113,7 +114,7 @@ class MemoizableArray implements IteratorAggregate, Countable
      * @param bool $strict whether a strict type comparison should be used when checking array element values against `$value`
      * @return T the first matching value, or `null` if no match is found
      */
-    public function firstWhere(string $key, $value = true, bool $strict = false)
+    public function firstWhere(string $key, mixed $value = true, bool $strict = false)
     {
         $memKey = $this->_memKey(__METHOD__, $key, $value, $strict);
 
@@ -134,7 +135,7 @@ class MemoizableArray implements IteratorAggregate, Countable
      * @param bool $strict
      * @return string
      */
-    private function _memKey(string $method, string $key, $value, bool $strict): string
+    private function _memKey(string $method, string $key, mixed $value, bool $strict): string
     {
         if (!is_scalar($value)) {
             $value = Json::encode($value);

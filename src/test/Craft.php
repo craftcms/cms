@@ -9,14 +9,14 @@ namespace craft\test;
 
 use Codeception\Lib\ModuleContainer;
 use Codeception\Module\Yii2;
-use Codeception\PHPUnit\TestCase;
+use Codeception\PHPUnit\TestCase as CodeceptionTestCase;
 use Codeception\Stub;
 use Codeception\TestInterface;
 use craft\base\ElementInterface;
 use craft\config\DbConfig;
+use craft\console\Application as ConsoleApplication;
 use craft\db\Query;
 use craft\db\Table;
-use craft\elements\db\ElementQuery;
 use craft\errors\ElementNotFoundException;
 use craft\errors\InvalidPluginException;
 use craft\helpers\App;
@@ -25,9 +25,11 @@ use craft\helpers\ProjectConfig;
 use craft\models\FieldLayout;
 use craft\queue\BaseJob;
 use craft\queue\Queue;
+use craft\web\Application as WebApplication;
 use DateTime;
 use Exception;
 use PHPUnit\Framework\ExpectationFailedException;
+use PHPUnit\Framework\MockObject\MockObject;
 use ReflectionException;
 use Throwable;
 use Yii;
@@ -47,7 +49,7 @@ use yii\base\Module;
  * There is a potential 'bug'/hampering feature with the Yii2 Codeception module.
  * DB connections initialized through the configFile param (see https://codeception.com/docs/modules/Yii2)
  * Are not captured by the Yii2Connector\ConnectionWatcher and Yii2Connector\TransactionForcer i.e. all DB interactions done through
- * Craft::$app->getDb() are not stored and roll'd back in transactions.
+ * Craft::$app->getDb() are not stored and rolled back in transactions.
  *
  * This is probably because the starting of the app (triggered by $this->client->startApp()) is done BEFORE the
  * DB event listeners are registered. Moving the order of these listeners to the top of the _before function means the connection
@@ -65,17 +67,17 @@ class Craft extends Yii2
     /**
      * @var self The current instance
      */
-    public static $instance;
+    public static self $instance;
 
     /**
      * @var TestInterface
      */
-    public static $currentTest;
+    public static TestInterface $currentTest;
 
     /**
      * @var array Application config file must be set.
      */
-    protected $addedConfig = [
+    protected array $addedConfig = [
         'migrations' => [],
         'plugins' => [],
         'dbSetup' => null,
@@ -87,12 +89,12 @@ class Craft extends Yii2
     /**
      * @var array For expecting events code
      */
-    protected $triggeredEvents = [];
+    protected array $triggeredEvents = [];
 
     /**
      * @var array For expecting events code
      */
-    protected $requiredEvents = [];
+    protected array $requiredEvents = [];
 
     /**
      * Craft constructor.
@@ -157,13 +159,15 @@ class Craft extends Yii2
      */
     public function _before(TestInterface $test): void
     {
+        /** @var TestCase $test */
         self::$currentTest = $test;
 
         parent::_before($test);
 
-        // If full mock. Create the mock app and dont perform to any further actions.
+        // If full mock, create the mock app and don't perform to any further actions
         if ($this->_getConfig('fullMock') === true) {
-            $mockApp = TestSetup::getMockApp($test);
+            /** @var ConsoleApplication|WebApplication|MockObject $mockApp */
+            $mockApp = TestSetup::getMockModule($test);
             \Craft::$app = $mockApp;
             Yii::$app = $mockApp;
 
@@ -189,13 +193,13 @@ class Craft extends Yii2
     {
         $projectConfig = $this->_getConfig('projectConfig');
 
-        // If reset is disabled and we dont have to $force we can abandon....
+        // If `reset` is disabled and we don't have to $force, we can abandon...
         if (isset($projectConfig['reset']) && $projectConfig['reset'] === false && $force === false) {
             return true;
         }
 
         // Re-apply project config
-        if ($projectConfig = TestSetup::useProjectConfig()) {
+        if (TestSetup::useProjectConfig()) {
             // Tests just beginning. Reset the project config to its original state.
             TestSetup::setupProjectConfig();
 
@@ -226,15 +230,15 @@ class Craft extends Yii2
     {
         ob_start();
         try {
-            // Prevent's a static properties bug.
+            // Prevents a static properties bug
             ProjectConfig::reset();
 
             App::maxPowerCaptain();
 
             $dbSetupConfig = $this->_getConfig('dbSetup');
 
-            // Setup the project config from the passed file.
-            if ($projectConfig = TestSetup::useProjectConfig()) {
+            // Set up the project config from the passed file.
+            if (TestSetup::useProjectConfig()) {
                 TestSetup::setupProjectConfig();
             }
 
@@ -279,7 +283,7 @@ class Craft extends Yii2
             throw $exception;
         }
 
-        // Dont output anything or we get header's already sent exception
+        // Avoid a "headers already sent" error
         ob_end_clean();
         TestSetup::tearDownCraft();
     }
@@ -293,7 +297,7 @@ class Craft extends Yii2
     public function installPlugin(array $plugin): void
     {
         if (!\Craft::$app->getPlugins()->installPlugin($plugin['handle'])) {
-            throw new InvalidConfigException('Invalid plugin handle: ' . $plugin['handle'] . '');
+            throw new InvalidConfigException('Invalid plugin handle: ' . $plugin['handle']);
         }
     }
 
@@ -306,10 +310,10 @@ class Craft extends Yii2
     }
 
     /**
-     * @param $path
+     * @param mixed $path
      * @return string|false
      */
-    public static function normalizePathSeparators($path)
+    public static function normalizePathSeparators(mixed $path): string|false
     {
         return is_string($path) ? str_replace("\\", '/', $path) : false;
     }
@@ -336,16 +340,16 @@ class Craft extends Yii2
      *
      * @param string $class
      * @param string $eventName
-     * @param $callback
+     * @param callable $callback
      * @param string $eventInstance
      * @param array $eventValues
      */
     public function expectEvent(
         string $class,
         string $eventName,
-        $callback,
+        callable $callback,
         string $eventInstance = '',
-        array $eventValues = []
+        array $eventValues = [],
     ): void {
         // Add this event.
         $eventTriggered = false;
@@ -422,7 +426,8 @@ class Craft extends Yii2
      */
     public function assertElementsExist(string $elementType, array $searchProperties = [], int $amount = 1, bool $searchAll = false): array
     {
-        /** @var ElementQuery $elementQuery */
+        /** @var string|ElementInterface $elementType */
+        /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
         $elementQuery = $elementType::find();
         if ($searchAll) {
             $elementQuery->status(null);
@@ -545,6 +550,7 @@ class Craft extends Yii2
             throw new InvalidArgumentException('Not a job');
         }
 
+        /** @var Queue $queue */
         $queue = \Craft::$app->getQueue();
         $queue->push($job);
         $queue->run();
@@ -557,6 +563,21 @@ class Craft extends Yii2
     {
         if (\Craft::$app->getQueue() instanceof Queue) {
             $this->assertTrue((new Query())
+                ->select(['id'])
+                ->where(['description' => $description])
+                ->from([Table::QUEUE])
+                ->exists()
+            );
+        }
+    }
+
+    /**
+     * @param string $description
+     */
+    public function assertNotPushedToQueue(string $description)
+    {
+        if (\Craft::$app->getQueue() instanceof Queue) {
+            $this->assertFalse((new Query())
                 ->select(['id'])
                 ->where(['description' => $description])
                 ->from([Table::QUEUE])
@@ -604,10 +625,10 @@ class Craft extends Yii2
     }
 
     /**
-     * @param $event
+     * @param Event $event
      * @param EventItem $eventRequirements
      */
-    protected function validateEventValue($event, EventItem $eventRequirements): void
+    protected function validateEventValue(Event $event, EventItem $eventRequirements): void
     {
         $eventPropItem = $event->{$eventRequirements->eventPropName};
         $desiredValue = $eventRequirements->desiredValue;
@@ -634,16 +655,16 @@ class Craft extends Yii2
         if ($eventRequirements->type === EventItem::TYPE_OTHERVALUE) {
             $this->assertSame(
                 $desiredValue,
-                $eventPropItem
+                (array)$eventPropItem
             );
         }
     }
 
     /**
-     * @param TestCase $test
+     * @param CodeceptionTestCase $test
      * @throws ReflectionException
      */
-    protected function mockModulesAndPlugins(TestCase $test): void
+    protected function mockModulesAndPlugins(CodeceptionTestCase $test): void
     {
         foreach ($this->_getConfig('plugins') as $plugin) {
             $moduleClass = $plugin['class'];
@@ -652,26 +673,28 @@ class Craft extends Yii2
         }
 
         $config = TestSetup::createConfigService();
-        foreach ($config->getConfigFromFile('app')['modules'] ?? [] as $handle => $class) {
+        foreach ($config->getConfigFromFile('app')['modules'] ?? [] as $class) {
             $this->addModule($test, $class);
         }
     }
 
     /**
-     * @param TestCase $test
+     * @param CodeceptionTestCase $test
      * @param string $moduleClass
+     * @phpstan-param class-string<Module> $moduleClass
      * @throws ReflectionException
      */
-    protected function addModule(TestCase $test, string $moduleClass): void
+    protected function addModule(CodeceptionTestCase $test, string $moduleClass): void
     {
         if (!method_exists($moduleClass, 'getComponentMap')) {
             return;
         }
 
-        $componentMap = $moduleClass::getComponentMap();
+        /** @var array $componentMap */
+        $componentMap = call_user_func([$moduleClass, 'getComponentMap']);
 
         // Set it.
-        \Craft::$app->loadedModules[$moduleClass] = TestSetup::getMockApp($test, $componentMap, $moduleClass);
+        \Craft::$app->loadedModules[$moduleClass] = TestSetup::getMockModule($test, $componentMap, $moduleClass);
     }
 
     /**

@@ -5,7 +5,6 @@ import './CraftSupportWidget.scss';
     /** global: Garnish */
     Craft.CraftSupportWidget = Garnish.Base.extend({
         widgetId: 0,
-        envInfo: null,
         loading: false,
 
         $widget: null,
@@ -13,15 +12,16 @@ import './CraftSupportWidget.scss';
         $screens: null,
         $currentScreen: null,
         $nextScreen: null,
+        $triggerElement: null,
 
         screens: null,
         currentScreen: null,
         $helpBody: null,
         $feedbackBody: null,
 
-        init: function(widgetId, envInfo) {
+        init: function(widgetId, settings) {
             this.widgetId = widgetId;
-            this.envInfo = envInfo;
+            this.setSettings(settings);
 
             Craft.CraftSupportWidget.widgets[this.widgetId] = this;
 
@@ -61,6 +61,10 @@ import './CraftSupportWidget.scss';
                 default:
                     throw 'Invalid screen: ' + screen;
             }
+        },
+
+        focusTrigger: function() {
+            this.$triggerElement.focus();
         },
 
         gotoScreen: function(screen) {
@@ -139,6 +143,7 @@ import './CraftSupportWidget.scss';
 
         handleOptionClick: function(ev) {
             var screen = $.attr(ev.currentTarget, 'data-screen');
+            this.widget.$triggerElement = $(ev.currentTarget).attr('aria-expanded', true);
             this.widget.gotoScreen(screen);
         }
     });
@@ -161,7 +166,6 @@ import './CraftSupportWidget.scss';
         $supportMessage: null,
         $supportAttachment: null,
         $supportSubmit: null,
-        $supportSpinner: null,
         $supportErrorList: null,
         $supportIframe: null,
         sendingSupportTicket: false,
@@ -185,7 +189,6 @@ import './CraftSupportWidget.scss';
             var $more = this.$supportForm.children('.cs-support-more');
             this.$supportAttachment = $more.find('.cs-support-attachment:first');
             this.$supportSubmit = this.$supportForm.children('.submit:first');
-            this.$supportSpinner = this.$supportForm.children('.spinner:first');
             this.$supportIframe = this.$screen.children('iframe');
             this.addListener(this.$supportForm, 'submit', 'handleSupportFormSubmit');
 
@@ -239,6 +242,8 @@ import './CraftSupportWidget.scss';
                 case Garnish.ESC_KEY:
                     if (this.mode === BaseSearchScreen.MODE_SEARCH) {
                         this.widget.gotoScreen(Craft.CraftSupportWidget.SCREEN_HOME);
+                        this.widget.focusTrigger();
+                        this.widget.$triggerElement.attr('aria-expanded', false);
                     } else if (!this.sendingSupportTicket) {
                         this.prepForSearch(true);
                     }
@@ -353,8 +358,7 @@ import './CraftSupportWidget.scss';
             }
 
             this.sendingSupportTicket = true;
-            this.$supportSubmit.addClass('active');
-            this.$supportSpinner.removeClass('hidden');
+            this.$supportSubmit.addClass('loading');
         },
 
         reinit: function() {
@@ -449,8 +453,7 @@ import './CraftSupportWidget.scss';
 
         parseSupportResponse: function(response) {
             this.sendingSupportTicket = false;
-            this.$supportSubmit.removeClass('active');
-            this.$supportSpinner.addClass('hidden');
+            this.$supportSubmit.removeClass('loading');
 
             if (this.$supportErrorList) {
                 this.$supportErrorList.children().remove();
@@ -530,21 +533,11 @@ import './CraftSupportWidget.scss';
         }
     });
 
-    var FeedbackScreen = BaseSearchScreen.extend({
+    const FeedbackScreen = BaseSearchScreen.extend({
         getFormParams: function(query) {
-            var body = "### Description\n\n\n\n" +
-                "### Steps to reproduce\n\n" +
-                "1.\n" +
-                "2.\n\n" +
-                "### Additional info\n";
-
-            for (var name in this.widget.envInfo) {
-                if (this.widget.envInfo.hasOwnProperty(name)) {
-                    body += "\n- " + name + ': ' + this.widget.envInfo[name];
-                }
-            }
-
-            return {title: query, body: body};
+            return Object.assign({
+                title: this.widget.settings.issueTitlePrefix + query,
+            }, this.widget.settings.issueParams);
         },
 
         getSearchUrl: function(query) {

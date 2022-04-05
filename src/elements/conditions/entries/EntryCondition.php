@@ -3,6 +3,7 @@
 namespace craft\elements\conditions\entries;
 
 use craft\elements\conditions\ElementCondition;
+use craft\elements\conditions\LevelConditionRule;
 
 /**
  * Entry query condition.
@@ -21,6 +22,7 @@ class EntryCondition extends ElementCondition
             AuthorConditionRule::class,
             AuthorGroupConditionRule::class,
             ExpiryDateConditionRule::class,
+            LevelConditionRule::class,
             PostDateConditionRule::class,
             SectionConditionRule::class,
             TypeConditionRule::class,

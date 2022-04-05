@@ -86,7 +86,7 @@ class Asset extends Mutation
         /** @var AssetResolver $resolver */
         $resolver = Craft::createObject(AssetResolver::class);
         $resolver->setResolutionData('volume', $volume);
-        static::prepareResolver($resolver, $volume->getFields());
+        static::prepareResolver($resolver, $volume->getCustomFields());
 
         $mutationArguments = array_merge($mutationArguments, $resolver->getResolutionData(ElementMutationResolver::CONTENT_FIELD_KEY));
 

@@ -1,8 +1,10 @@
+{% set hasOuterContainer = hasOuterContainer ?? false %}
 {% set id = (id ?? "time#{random()}") ~ '-time' -%}
 {% set name = name ?? null -%}
 {% set value = value ?? null -%}
 {% set outputTzParam = outputTzParam ?? true %}
 {% set isMobile = craft.app.request.isMobileBrowser %}
+{% set isDateTime = isDateTime ?? false %}
 
 {% do view.registerAssetBundle('craft\\web\\assets\\timepicker\\TimepickerAsset') -%}
 
@@ -14,21 +16,30 @@
     {%- set containerAttributes = containerAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
 {% endif %}
 
+{% if not hasOuterContainer %}<div class="datetimewrapper">{% endif %}
+
 {% tag 'div' with containerAttributes %}
     {%- include "_includes/forms/text" with {
         type: isMobile ? 'time' : 'text',
-        class: isMobile and value ? 'has-value' : false,
+        class: isMobile and not value ? 'empty-value' : false,
         name: name ? "#{name}[time]" : null,
         autocomplete: false,
         size: 10,
         placeholder: ' ',
         value: value ? value|time(isMobile ? 'H:i' : 'short') : '',
+        inputAttributes: {
+            aria: {
+                label: isDateTime ? 'Time'|t('app') : false,
+            },
+        },
     } -%}
     <div data-icon="time"></div>
     {%- if name and outputTzParam -%}
         {{- hiddenInput("#{name}[timezone]", craft.app.getTimeZone()) -}}
     {%- endif -%}
 {% endtag -%}
+
+{% if not hasOuterContainer %}</div>{% endif %}
 
 {%- if not isMobile -%}
     {% set options = {

@@ -8,15 +8,18 @@
 namespace craft\behaviors;
 
 use Craft;
+use craft\base\ElementInterface;
 use craft\base\FieldInterface;
 use craft\models\FieldLayout;
 use yii\base\Behavior;
 use yii\base\InvalidConfigException;
+use yii\base\Model;
 
 /**
  * Field Layout behavior.
  *
  * @property FieldLayout $fieldLayout
+ * @property ElementInterface|Model $owner
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
@@ -24,6 +27,7 @@ class FieldLayoutBehavior extends Behavior
 {
     /**
      * @var string|null The element type that the field layout will be associated with
+     * @phpstan-var class-string<ElementInterface>|null
      */
     public ?string $elementType = null;
 
@@ -33,7 +37,7 @@ class FieldLayoutBehavior extends Behavior
     public ?string $idAttribute = null;
 
     /**
-     * @var int|string|callable The field layout ID, or the name of a method on the owner that will return it, or a callback function that will return it
+     * @var int|string|callable|null The field layout ID, or the name of a method on the owner that will return it, or a callback function that will return it
      */
     private $_fieldLayoutId;
 
@@ -41,11 +45,6 @@ class FieldLayoutBehavior extends Behavior
      * @var FieldLayout|null The field layout associated with the owner
      */
     private ?FieldLayout $_fieldLayout = null;
-
-    /**
-     * @var FieldInterface[]|null The fields associated with the owner's field layout
-     */
-    private ?array $_fields = null;
 
     /**
      * @inheritdoc
@@ -78,9 +77,9 @@ class FieldLayoutBehavior extends Behavior
 
         if (isset($this->idAttribute)) {
             $id = $this->owner->{$this->idAttribute};
-        } else if (is_callable($this->_fieldLayoutId)) {
+        } elseif (is_callable($this->_fieldLayoutId)) {
             $id = call_user_func($this->_fieldLayoutId);
-        } else if (is_string($this->_fieldLayoutId)) {
+        } elseif (is_string($this->_fieldLayoutId)) {
             $id = $this->owner->{$this->_fieldLayoutId}();
         }
 
@@ -94,9 +93,9 @@ class FieldLayoutBehavior extends Behavior
     /**
      * Sets the owner's field layout ID.
      *
-     * @param int|string|callable $id
+     * @param callable|int|string $id
      */
-    public function setFieldLayoutId($id): void
+    public function setFieldLayoutId(callable|int|string $id): void
     {
         $this->_fieldLayoutId = $id;
     }
@@ -115,7 +114,7 @@ class FieldLayoutBehavior extends Behavior
 
         try {
             $id = $this->getFieldLayoutId();
-        } catch (InvalidConfigException $e) {
+        } catch (InvalidConfigException) {
             return $this->_fieldLayout = new FieldLayout([
                 'type' => $this->elementType,
             ]);
@@ -139,32 +138,15 @@ class FieldLayoutBehavior extends Behavior
     }
 
     /**
-     * Returns the fields associated with the owner's field layout.
+     * Returns the custom fields associated with the owner's field layout.
      *
      * @return FieldInterface[]
+     * @since 4.0.0
      */
-    public function getFields(): array
+    public function getCustomFields(): array
     {
-        if (isset($this->_fields)) {
-            return $this->_fields;
-        }
-
-        try {
-            $id = $this->getFieldLayoutId();
-        } catch (InvalidConfigException $e) {
-            return [];
-        }
-
-        return $this->_fields = Craft::$app->getFields()->getFieldsByLayoutId($id);
-    }
-
-    /**
-     * Sets the fields associated with the owner's field layout
-     *
-     * @param FieldInterface[] $fields
-     */
-    public function setFields(array $fields): void
-    {
-        $this->_fields = $fields;
+        /** @var FieldLayout|null $fieldLayout */
+        $fieldLayout = $this->owner->getFieldLayout();
+        return $fieldLayout ? $fieldLayout->getCustomFields() : [];
     }
 }

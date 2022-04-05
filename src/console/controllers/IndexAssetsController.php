@@ -10,6 +10,7 @@ namespace craft\console\controllers;
 use Craft;
 use craft\console\Controller;
 use craft\db\Table;
+use craft\elements\Asset;
 use craft\errors\AssetDisallowedExtensionException;
 use craft\errors\AssetNotIndexableException;
 use craft\errors\FsObjectNotFoundException;
@@ -81,11 +82,11 @@ class IndexAssetsController extends Controller
     }
 
     /**
-     * Re-indexes assets from the given volume handle ($startAt = 0).
+     * Re-indexes assets from the given volume handle.
      *
      * @param string $handle The handle of the volume to index.
-     * It is also possible to provide a volume sub-path to index, e.g. `./craft index-assets/one volume-handle/path/to/folder`.
-     * @param int $startAt
+     * You can optionally provide a volume sub-path, e.g. `php craft index-assets/one volume-handle/path/to/folder`.
+     * @param int $startAt Index of the asset to start with, which defaults to `0`.
      * @return int
      * @since 3.1.4
      */
@@ -93,7 +94,7 @@ class IndexAssetsController extends Controller
     {
         $path = '';
 
-        if (strpos($handle, '/') !== false) {
+        if (str_contains($handle, '/')) {
             $parts = explode('/', $handle);
             $handle = array_shift($parts);
             $path = implode('/', $parts);
@@ -149,8 +150,6 @@ class IndexAssetsController extends Controller
             $this->stdout(' ...' . PHP_EOL, Console::FG_YELLOW);
             $fileList = $assetIndexer->getIndexListOnVolume($volume, $path);
 
-            $startAt = is_numeric($startAt) ? (int)$startAt : 0;
-
             $index = 0;
             /** @var MissingAssetException[] $missingRecords */
             $missingRecords = [];
@@ -182,7 +181,7 @@ class IndexAssetsController extends Controller
                     $this->stdout('missing' . PHP_EOL, Console::FG_YELLOW);
                     $missingRecords[] = $e;
                     continue;
-                } catch (AssetDisallowedExtensionException | AssetNotIndexableException $e) {
+                } catch (AssetDisallowedExtensionException|AssetNotIndexableException $e) {
                     $this->stdout('skipped: ' . $e->getMessage() . PHP_EOL, Console::FG_YELLOW);
                     continue;
                 } catch (Throwable $e) {
@@ -269,10 +268,13 @@ class IndexAssetsController extends Controller
             $totalMissingFiles = count($remainingMissingFiles);
             $this->stdout('Deleting the' . ($totalMissingFiles > 1 ? ' ' . $totalMissingFiles : '') . ' missing asset record' . ($totalMissingFiles > 1 ? 's' : '') . ' ... ');
 
-            Craft::$app->getImageTransforms()->deleteTransformIndexDataByAssetIds($assetIds);
-            Db::delete(Table::ASSETS, [
-                'id' => $assetIds,
-            ]);
+            /** @var Asset[] $assets */
+            $assets = Asset::find()->id($assetIds)->all();
+            foreach ($assets as $asset) {
+                Craft::$app->getImageTransforms()->deleteCreatedTransformsForAsset($asset);
+                $asset->keepFileOnDelete = true;
+                Craft::$app->getElements()->deleteElement($asset);
+            }
 
             $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
         }
@@ -312,7 +314,7 @@ class IndexAssetsController extends Controller
             $this->stdout("{$e->volume->name}/{$e->indexEntry->uri}" . PHP_EOL);
         }
 
-        $selection = $this->prompt('>', [
+        $selection = (int)$this->prompt('>', [
             'validator' => function($input) use ($missingRecords) {
                 return !$input || (is_numeric($input) && isset($missingRecords[$input - 1]));
             },

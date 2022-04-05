@@ -61,7 +61,7 @@ class Plugin extends Module implements PluginInterface
      * @var Model|bool|null The model used to store the plugin’s settings
      * @see getSettings()
      */
-    private $_settingsModel;
+    private bool|null|Model $_settings = null;
 
     /**
      * @inheritdoc
@@ -165,15 +165,11 @@ class Plugin extends Module implements PluginInterface
      */
     public function getSettings(): ?Model
     {
-        if (!isset($this->_settingsModel)) {
-            $this->_settingsModel = $this->createSettingsModel() ?: false;
+        if (!isset($this->_settings)) {
+            $this->_settings = $this->createSettingsModel() ?: false;
         }
 
-        if ($this->_settingsModel !== false) {
-            return $this->_settingsModel;
-        }
-
-        return null;
+        return $this->_settings ?: null;
     }
 
     /**
@@ -192,7 +188,7 @@ class Plugin extends Module implements PluginInterface
     /**
      * @inheritdoc
      */
-    public function getSettingsResponse()
+    public function getSettingsResponse(): mixed
     {
         $view = Craft::$app->getView();
         $settingsHtml = $view->namespaceInputs(function() {
@@ -258,30 +254,15 @@ class Plugin extends Module implements PluginInterface
             throw new InvalidArgumentException('Unsupported edition: ' . $edition);
         }
 
-        switch ($operator) {
-            case '<':
-            case 'lt':
-                return $activeIndex < $otherIndex;
-            case '<=':
-            case 'le':
-                return $activeIndex <= $otherIndex;
-            case '>':
-            case 'gt':
-                return $activeIndex > $otherIndex;
-            case '>=':
-            case 'ge':
-                return $activeIndex >= $otherIndex;
-            case '==':
-            case '=':
-            case 'eq':
-                return $activeIndex == $otherIndex;
-            case '!=':
-            case '<>':
-            case 'ne':
-                return $activeIndex != $otherIndex;
-            default:
-                throw new InvalidArgumentException('Invalid edition comparison operator: ' . $operator);
-        }
+        return match ($operator) {
+            '<', 'lt' => $activeIndex < $otherIndex,
+            '<=', 'le' => $activeIndex <= $otherIndex,
+            '>', 'gt' => $activeIndex > $otherIndex,
+            '>=', 'ge' => $activeIndex >= $otherIndex,
+            '==', '=', 'eq' => $activeIndex == $otherIndex,
+            '!=', '<>', 'ne' => $activeIndex != $otherIndex,
+            default => throw new InvalidArgumentException('Invalid edition comparison operator: ' . $operator),
+        };
     }
 
     // Events
@@ -328,7 +309,7 @@ class Plugin extends Module implements PluginInterface
         require_once $path;
         $class = $migrator->migrationNamespace . '\\Install';
 
-        return new $class;
+        return new $class();
     }
 
     /**

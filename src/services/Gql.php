@@ -8,7 +8,9 @@
 namespace craft\services;
 
 use Craft;
+use craft\base\ElementInterface as BaseElementInterface;
 use craft\base\GqlInlineFragmentFieldInterface;
+use craft\behaviors\FieldLayoutBehavior;
 use craft\db\Query as DbQuery;
 use craft\db\Table;
 use craft\errors\GqlException;
@@ -26,6 +28,7 @@ use craft\gql\base\GeneratorInterface;
 use craft\gql\base\SingularTypeInterface;
 use craft\gql\directives\FormatDateTime;
 use craft\gql\directives\Markdown;
+use craft\gql\directives\Money;
 use craft\gql\directives\ParseRefs;
 use craft\gql\directives\Transform;
 use craft\gql\ElementQueryConditionBuilder;
@@ -72,6 +75,7 @@ use craft\records\GqlToken as GqlTokenRecord;
 use GraphQL\Error\DebugFlag;
 use GraphQL\Error\Error;
 use GraphQL\GraphQL;
+use GraphQL\Type\Definition\Directive as GqlDirective;
 use GraphQL\Type\Schema;
 use GraphQL\Validator\DocumentValidator;
 use GraphQL\Validator\Rules\DisableIntrospection;
@@ -99,7 +103,7 @@ class Gql extends Component
      * @event RegisterGqlTypesEvent The event that is triggered when registering GraphQL types.
      *
      * Plugins get a chance to add their own GraphQL types.
-     * See [GraphQL API](https://craftcms.com/docs/3.x/graphql.html) for documentation on adding GraphQL support.
+     * See [GraphQL API](https://craftcms.com/docs/4.x/graphql.html) for documentation on adding GraphQL support.
      *
      * ---
      * ```php
@@ -119,7 +123,7 @@ class Gql extends Component
      * @event RegisterGqlQueriesEvent The event that is triggered when registering GraphQL queries.
      *
      * Plugins get a chance to add their own GraphQL queries.
-     * See [GraphQL API](https://craftcms.com/docs/3.x/graphql.html) for documentation on adding GraphQL support.
+     * See [GraphQL API](https://craftcms.com/docs/4.x/graphql.html) for documentation on adding GraphQL support.
      *
      * ---
      * ```php
@@ -145,7 +149,7 @@ class Gql extends Component
      * @event RegisterGqlMutationsEvent The event that is triggered when registering GraphQL mutations.
      *
      * Plugins get a chance to add their own GraphQL mutations.
-     * See [GraphQL API](https://craftcms.com/docs/3.x/graphql.html) for documentation on adding GraphQL support.
+     * See [GraphQL API](https://craftcms.com/docs/4.x/graphql.html) for documentation on adding GraphQL support.
      *
      * ---
      * ```php
@@ -170,7 +174,7 @@ class Gql extends Component
      * @event RegisterGqlDirectivesEvent The event that is triggered when registering GraphQL directives.
      *
      * Plugins get a chance to add their own GraphQL directives.
-     * See [GraphQL API](https://craftcms.com/docs/3.x/graphql.html) for documentation on adding GraphQL support.
+     * See [GraphQL API](https://craftcms.com/docs/4.x/graphql.html) for documentation on adding GraphQL support.
      *
      * ---
      * ```php
@@ -370,9 +374,7 @@ class Gql extends Component
 
             foreach ($registeredTypes as $registeredType) {
                 if (method_exists($registeredType, 'getTypeGenerator')) {
-                    /** @var GeneratorInterface $typeGeneratorClass */
                     $typeGeneratorClass = $registeredType::getTypeGenerator();
-
                     if (is_subclass_of($typeGeneratorClass, GeneratorInterface::class)) {
                         foreach ($typeGeneratorClass::generateTypes() as $type) {
                             $schemaConfig['types'][] = $type;
@@ -455,7 +457,7 @@ class Gql extends Component
         string $query,
         ?array $variables = null,
         ?string $operationName = null,
-        bool $debugMode = false
+        bool $debugMode = false,
     ): array {
         $event = new ExecuteGqlQueryEvent([
             'schemaId' => $schema->id,
@@ -598,8 +600,6 @@ class Gql extends Component
         $schemas = [];
         $names = [];
 
-        $publicToken = null;
-
         foreach ($rows as $row) {
             $token = new GqlToken($row);
 
@@ -623,8 +623,7 @@ class Gql extends Component
      */
     public function getPublicSchema(): ?GqlSchema
     {
-        $token = $this->getPublicToken();
-        return $token ? $token->getSchema() : null;
+        return $this->getPublicToken()?->getSchema();
     }
 
     /**
@@ -637,6 +636,11 @@ class Gql extends Component
     {
         $queries = [];
         $mutations = [];
+
+        // Sites
+        $components = $this->_getSiteSchemaComponents();
+        $label = Craft::t('app', 'Sites');
+        $queries[$label] = $components['query'] ?? [];
 
         // Elements
         $components = $this->_getElementSchemaComponents();
@@ -859,7 +863,7 @@ class Gql extends Component
         // Public token information is stored in the project config
         if ($token->accessToken === GqlToken::PUBLIC_TOKEN) {
             $data = [
-                'expiryDate' => $token->expiryDate ? $token->expiryDate->getTimestamp() : null,
+                'expiryDate' => $token->expiryDate?->getTimestamp(),
                 'enabled' => $token->enabled,
             ];
 
@@ -893,7 +897,7 @@ class Gql extends Component
 
         try {
             $token = $this->getTokenByAccessToken(GqlToken::PUBLIC_TOKEN);
-        } catch (InvalidArgumentException $exception) {
+        } catch (InvalidArgumentException) {
             $token = new GqlToken([
                 'name' => 'Public Token',
                 'accessToken' => GqlToken::PUBLIC_TOKEN,
@@ -949,7 +953,7 @@ class Gql extends Component
 
         if ($isNewSchema && empty($schema->uid)) {
             $schema->uid = StringHelper::UUID();
-        } else if (empty($schema->uid)) {
+        } elseif (empty($schema->uid)) {
             $schema->uid = Db::uidById(Table::GQLSCHEMAS, $schema->id);
         }
 
@@ -1137,30 +1141,35 @@ class Gql extends Component
      * Return the content arguments based on an element class and contexts for it.
      *
      * @param array $contexts
-     * @param string $elementClass
+     * @param string $elementType
+     * @phpstan-param class-string<\craft\base\ElementInterface> $elementType
      * @return array
      */
-    public function getContentArguments(array $contexts, string $elementClass): array
+    public function getContentArguments(array $contexts, string $elementType): array
     {
-        if (!array_key_exists($elementClass, $this->_contentFieldCache)) {
+        /** @var FieldLayoutBehavior[] $contexts */
+        /** @var string|BaseElementInterface $elementType */
+        /** @phpstan-var class-string<BaseElementInterface>|BaseElementInterface $elementType */
+        if (!array_key_exists($elementType, $this->_contentFieldCache)) {
+            $elementQuery = Craft::$app->getElements()->createElementQuery($elementType);
             $contentArguments = [];
 
             foreach ($contexts as $context) {
-                if (!GqlHelper::isSchemaAwareOf($elementClass::gqlScopesByContext($context))) {
+                if (!GqlHelper::isSchemaAwareOf($elementType::gqlScopesByContext($context))) {
                     continue;
                 }
 
-                foreach ($context->getFields() as $contentField) {
-                    if (!$contentField instanceof GqlInlineFragmentFieldInterface) {
+                foreach ($context->getCustomFields() as $contentField) {
+                    if (!$contentField instanceof GqlInlineFragmentFieldInterface && !method_exists($elementQuery, $contentField->handle)) {
                         $contentArguments[$contentField->handle] = $contentField->getContentGqlQueryArgumentType();
                     }
                 }
             }
 
-            $this->_contentFieldCache[$elementClass] = $contentArguments;
+            $this->_contentFieldCache[$elementType] = $contentArguments;
         }
 
-        return $this->_contentFieldCache[$elementClass];
+        return $this->_contentFieldCache[$elementType];
     }
 
     /**
@@ -1186,9 +1195,14 @@ class Gql extends Component
             // If devMode enabled, substitute the original exception here.
             if ($devMode && !empty($originException->getMessage())) {
                 $error = $originException;
+            } elseif (!$originException instanceof Error) {
+                // If devMode not enabled and the error seems to be originating from Craft, display a generic message
+                $error = new Error(
+                    Craft::t('app', 'Something went wrong when processing the GraphQL query.')
+                );
             }
 
-            // Otherwise, just log it.
+            // Log it.
             Craft::$app->getErrorHandler()->logException($originException);
         }
 
@@ -1224,16 +1238,15 @@ class Gql extends Component
      * @param mixed $context
      * @param array|null $variables
      * @param string|null $operationName
-     *
      * @return string|null
      */
     private function _getCacheKey(
         GqlSchema $schema,
         string $query,
-        $rootValue,
-        $context,
+        mixed $rootValue,
+        mixed $context,
         ?array $variables = null,
-        ?string $operationName = null
+        ?string $operationName = null,
     ): ?string {
         // No cache key, if explicitly disabled
         $generalConfig = Craft::$app->getConfig()->getGeneral();
@@ -1300,8 +1313,9 @@ class Gql extends Component
         $this->trigger(self::EVENT_REGISTER_GQL_TYPES, $event);
 
         foreach ($event->types as $type) {
-            /** @var SingularTypeInterface $type */
-            TypeLoader::registerType($type::getName(), $type . '::getType');
+            /** @var string|SingularTypeInterface $type */
+            /** @phpstan-var class-string<SingularTypeInterface>|SingularTypeInterface $type */
+            TypeLoader::registerType($type::getName(), "$type::getType");
         }
 
         return $event->types;
@@ -1364,7 +1378,7 @@ class Gql extends Component
     /**
      * Get GraphQL query definitions
      *
-     * @return Directive[]
+     * @return GqlDirective[]
      */
     private function _loadGqlDirectives(): array
     {
@@ -1372,6 +1386,7 @@ class Gql extends Component
             // Directives
             FormatDateTime::class,
             Markdown::class,
+            Money::class,
             ParseRefs::class,
         ];
 
@@ -1412,6 +1427,26 @@ class Gql extends Component
     }
 
     /**
+     * Return site schema components.
+     *
+     * @return array
+     */
+    private function _getSiteSchemaComponents(): array
+    {
+        $sites = Craft::$app->getSites()->getAllSites(true);
+        $query = [];
+
+        foreach ($sites as $site) {
+            $query["sites.{$site->uid}:read"] = ['label' => Craft::t('app', 'Allow querying elements from the “{site}” site.', ['site' => $site->name])];
+        }
+
+        return [
+            'query' => $query,
+        ];
+    }
+
+
+    /**
      * Return section permissions.
      *
      * @return array
@@ -1428,7 +1463,6 @@ class Gql extends Component
         $mutationComponents = [];
 
         if (!empty($sortedEntryTypes)) {
-
             foreach (Craft::$app->getSections()->getAllSections() as $section) {
                 $query = ['label' => Craft::t('app', 'Section - {section}', ['section' => Craft::t('site', $section->name)])];
                 $mutate = ['label' => Craft::t('app', 'Section - {section}', ['section' => Craft::t('site', $section->name)])];
@@ -1710,8 +1744,8 @@ class Gql extends Component
 
         $tokenRecord->name = $token->name;
         $tokenRecord->enabled = $token->enabled;
-        $tokenRecord->expiryDate = $token->expiryDate;
-        $tokenRecord->lastUsed = $token->lastUsed;
+        $tokenRecord->expiryDate = Db::prepareDateForDb($token->expiryDate);
+        $tokenRecord->lastUsed = Db::prepareDateForDb($token->lastUsed);
         $tokenRecord->schemaId = $token->schemaId;
 
         if ($token->accessToken) {

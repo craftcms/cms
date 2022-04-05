@@ -18,39 +18,39 @@ use craft\base\Model;
 class FolderCriteria extends Model
 {
     /**
-     * @var int|null ID
+     * @var int|string|array|null ID
      */
-    public ?int $id = null;
+    public mixed $id = null;
 
     /**
-     * @var int|string|null Parent ID
+     * @var int|string|array|null Parent ID
      */
-    public $parentId;
+    public mixed $parentId = null;
 
     /**
-     * @var int|string|null Source ID
+     * @var int|string|array|null Volume ID
      */
-    public $volumeId;
+    public mixed $volumeId = null;
 
     /**
-     * @var string|string[]|null The folder name(s).
+     * @var int|string|array|null The folder name(s).
      *
      * ::: tip
      * If you’re searching for a folder name that contains a comma, pass the value through
      * [[\craft\helpers\Db::escapeParam()]] to prevent it from getting treated as multiple folder name values.
      * :::
      */
-    public $name;
+    public mixed $name = null;
 
     /**
-     * @var string|null Path
+     * @var string|array|null Path
      */
-    public ?string $path = null;
+    public mixed $path = null;
 
     /**
-     * @var string Order
+     * @var string|array Order
      */
-    public string $order = 'name asc';
+    public string|array $order = 'name asc';
 
     /**
      * @var int|null Offset
@@ -63,9 +63,9 @@ class FolderCriteria extends Model
     public ?int $limit = null;
 
     /**
-     * @var string|string[]|null
+     * @var string|array|null
      */
-    public $uid;
+    public mixed $uid = null;
 
     /**
      * @inheritdoc

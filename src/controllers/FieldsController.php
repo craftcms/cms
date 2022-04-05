@@ -73,15 +73,10 @@ class FieldsController extends Controller
         $group->name = $this->request->getRequiredBodyParam('name');
 
         if (!$fieldsService->saveGroup($group)) {
-            return $this->asJson([
-                'errors' => $group->getErrors(),
-            ]);
+            return $this->asModelFailure($group);
         }
 
-        return $this->asJson([
-            'success' => true,
-            'group' => $group->getAttributes(),
-        ]);
+        return $this->asModelSuccess($group, modelName: 'group');
     }
 
     /**
@@ -97,11 +92,9 @@ class FieldsController extends Controller
         $groupId = $this->request->getRequiredBodyParam('id');
         $success = Craft::$app->getFields()->deleteGroupById($groupId);
 
-        $this->setSuccessFlash(Craft::t('app', 'Group deleted.'));
-
-        return $this->asJson([
-            'success' => $success,
-        ]);
+        return $success ?
+            $this->asSuccess(Craft::t('app', 'Group deleted.')) :
+            $this->asFailure();
     }
 
     // Fields
@@ -126,18 +119,11 @@ class FieldsController extends Controller
         // The field
         // ---------------------------------------------------------------------
 
-        $missingFieldPlaceholder = null;
-
         if ($field === null && $fieldId !== null) {
             $field = $fieldsService->getFieldById($fieldId);
 
             if ($field === null) {
                 throw new NotFoundHttpException('Field not found');
-            }
-
-            if ($field instanceof MissingField) {
-                $missingFieldPlaceholder = $field->getPlaceholderHtml();
-                $field = $field->createFallback(PlainText::class);
             }
         }
 
@@ -169,10 +155,15 @@ class FieldsController extends Controller
 
         /** @var string[]|FieldInterface[] $compatibleFieldTypes */
         $fieldTypeOptions = [];
+        $foundCurrent = false;
+        $missingFieldPlaceholder = null;
 
         foreach ($allFieldTypes as $class) {
-            if ($class === get_class($field) || $class::isSelectable()) {
-                $compatible = in_array($class, $compatibleFieldTypes, true);
+            $isCurrent = $class === ($field instanceof MissingField ? $field->expectedType : get_class($field));
+            $foundCurrent = $foundCurrent || $isCurrent;
+
+            if ($isCurrent || $class::isSelectable()) {
+                $compatible = $isCurrent || in_array($class, $compatibleFieldTypes, true);
                 $fieldTypeOptions[] = [
                     'value' => $class,
                     'label' => $class::displayName() . ($compatible ? '' : ' ⚠️'),
@@ -182,6 +173,15 @@ class FieldsController extends Controller
 
         // Sort them by name
         ArrayHelper::multisort($fieldTypeOptions, 'label');
+
+        if ($field instanceof MissingField) {
+            if ($foundCurrent) {
+                $field = $fieldsService->createField($field->expectedType);
+            } else {
+                array_unshift($fieldTypeOptions, ['value' => $field->expectedType, 'label' => '']);
+                $missingFieldPlaceholder = $field->getPlaceholderHtml();
+            }
+        }
 
         // Groups
         // ---------------------------------------------------------------------
@@ -354,26 +354,22 @@ JS;
 
         $fieldId = $this->request->getBodyParam('fieldId') ?? $this->request->getRequiredBodyParam('id');
         $fieldsService = Craft::$app->getFields();
+        /** @var FieldInterface|Field|null $field */
         $field = $fieldsService->getFieldById($fieldId);
 
         if (!$field) {
             throw new BadRequestHttpException("Invalid field ID: $fieldId");
         }
 
-        $success = $fieldsService->deleteField($field);
-
-        if ($this->request->getAcceptsJson()) {
-            return $this->asJson(['success' => $success]);
+        if (!$fieldsService->deleteField($field)) {
+            return $this->asModelFailure($field, Craft::t('app', 'Couldn’t delete “{name}”.', [
+                'name' => $field->name,
+            ]));
         }
 
-        if (!$success) {
-            throw new ServerErrorHttpException("Unable to delete field ID $fieldId");
-        }
-
-        Craft::$app->getSession()->setNotice(Craft::t('app', '“{name}” deleted.', [
+        return $this->asModelSuccess($field, Craft::t('app', '“{name}” deleted.', [
             'name' => $field->name,
         ]));
-        return $this->redirectToPostedUrl();
     }
 
     // Field Layouts
@@ -409,6 +405,7 @@ JS;
         return $this->asJson([
             'config' => ['type' => get_class($element)] + $element->toArray(),
             'selectorHtml' => $element->selectorHtml(),
+            'hasConditions' => $element->hasConditions(),
         ]);
     }
 

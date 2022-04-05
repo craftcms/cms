@@ -9,8 +9,8 @@ namespace crafttests\unit\web\twig;
 
 use Codeception\Test\Unit;
 use Craft;
+use craft\test\TestCase;
 use craft\web\View;
-use UnitTester;
 
 /**
  * Unit tests for the Various functions in the Extension class.
@@ -19,17 +19,12 @@ use UnitTester;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.7.24
  */
-class FieldTest extends Unit
+class FieldTest extends TestCase
 {
-    /**
-     * @var UnitTester
-     */
-    protected $tester;
-
     /**
      * @var View
      */
-    protected $view;
+    protected View $view;
 
     /**
      *
@@ -56,15 +51,15 @@ TWIG;
         $this->assertStringContainsString('TEST HEADING', $html);
         $this->assertStringContainsString('<label id="label" for="foo">TEST LABEL</label>', $html);
         $this->assertStringContainsString('<div id="foo-instructions" class="instructions"><p>TEST INSTRUCTIONS</p>', $html);
-        $this->assertStringContainsString('<p id="foo-tip" class="notice"><span class="icon" aria-hidden="true"></span><span class="visually-hidden">Tip: </span>TEST TIP</p>', $html);
-        $this->assertStringContainsString('<p id="foo-warning" class="warning"><span class="icon" aria-hidden="true"></span><span class="visually-hidden">Warning: </span>TEST WARNING</p>', $html);
+        $this->assertStringContainsString('<p id="foo-tip" class="notice has-icon"><span class="icon" aria-hidden="true"></span><span class="visually-hidden">Tip: </span><span>TEST TIP</span></p>', $html);
+        $this->assertStringContainsString('<p id="foo-warning" class="warning has-icon"><span class="icon" aria-hidden="true"></span><span class="visually-hidden">Warning: </span><span>TEST WARNING</span></p>', $html);
         $this->assertStringContainsString('<input name="foo">', $html);
     }
 
     /**
      * @inheritdoc
      */
-    protected function _before()
+    protected function _before(): void
     {
         parent::_before();
         $this->view = Craft::$app->getView();

@@ -7,7 +7,6 @@
 
 namespace crafttests\unit\elements\db;
 
-use craft\elements\db\ElementRelationParamParser;
 use craft\elements\Entry;
 use craft\test\TestCase;
 use yii\base\NotSupportedException;
@@ -26,7 +25,7 @@ class ElementQueryTest extends TestCase
      * @param mixed $relatedToParam
      * @param mixed $andRelatedToParam
      */
-    public function testAndRelatedTo($expected, $relatedToParam, $andRelatedToParam)
+    public function testAndRelatedTo(array|false $expected, mixed $relatedToParam, mixed $andRelatedToParam): void
     {
         if ($expected === false) {
             self::expectException(NotSupportedException::class);

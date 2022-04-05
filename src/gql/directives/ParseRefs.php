@@ -36,7 +36,7 @@ class ParseRefs extends Directive
             'locations' => [
                 DirectiveLocation::FIELD,
             ],
-            'description' => 'Parse the element references on the field.',
+            'description' => 'Parses the element references on the field.',
             'args' => [],
         ]));
     }
@@ -52,7 +52,7 @@ class ParseRefs extends Directive
     /**
      * @inheritdoc
      */
-    public static function apply($source, $value, array $arguments, ResolveInfo $resolveInfo)
+    public static function apply(mixed $source, mixed $value, array $arguments, ResolveInfo $resolveInfo): mixed
     {
         return Craft::$app->getElements()->parseRefs((string)$value);
     }

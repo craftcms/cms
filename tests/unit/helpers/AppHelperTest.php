@@ -14,7 +14,6 @@ use craft\models\MailSettings;
 use craft\services\Entries;
 use craft\test\TestCase;
 use stdClass;
-use UnitTester;
 use yii\base\Component;
 use yii\base\InvalidArgumentException;
 
@@ -28,25 +27,104 @@ use yii\base\InvalidArgumentException;
 class AppHelperTest extends TestCase
 {
     /**
-     * @var UnitTester
+     *
      */
-    protected $tester;
+    public function testEnv(): void
+    {
+        $_SERVER['TEST_SERVER_ENV'] = 'server';
+        self::assertSame('server', App::env('TEST_SERVER_ENV'));
+        unset($_SERVER['TEST_SERVER_ENV']);
+
+        putenv('TEST_GETENV_ENV=getenv');
+        self::assertSame('getenv', App::env('TEST_GETENV_ENV'));
+        putenv('TEST_GETENV_ENV');
+
+        putenv('TEST_GETENV_TRUE_ENV=true');
+        self::assertSame(true, App::env('TEST_GETENV_TRUE_ENV'));
+        putenv('TEST_GETENV_TRUE_ENV');
+
+        putenv('TEST_GETENV_FALSE_ENV=false');
+        self::assertSame(false, App::env('TEST_GETENV_FALSE_ENV'));
+        putenv('TEST_GETENV_FALSE_ENV');
+
+        self::assertSame(CRAFT_TESTS_PATH, App::env('CRAFT_TESTS_PATH'));
+        self::assertSame(null, App::env('TEST_NONEXISTENT_ENV'));
+    }
 
     /**
      *
      */
-    public function testEditions()
+    public function testParseEnv(): void
+    {
+        self::assertSame(null, App::parseEnv(null));
+        self::assertSame(CRAFT_TESTS_PATH, App::parseEnv('$CRAFT_TESTS_PATH'));
+        self::assertSame('CRAFT_TESTS_PATH', App::parseEnv('CRAFT_TESTS_PATH'));
+        self::assertSame('$TEST_MISSING', App::parseEnv('$TEST_MISSING'));
+        self::assertSame(Craft::getAlias('@vendor/foo'), App::parseEnv('@vendor/foo'));
+    }
+
+    /**
+     * @dataProvider parseBooleanEnvDataProvider
+     * @param bool|null $expected
+     * @param mixed $value
+     */
+    public function testParseBooleanEnv(?bool $expected, mixed $value): void
+    {
+        self::assertSame($expected, App::parseBooleanEnv($value));
+    }
+
+    /**
+     *
+     */
+    public function testCliOption(): void
+    {
+        $argv = $_SERVER['argv'] ?? null;
+        $_SERVER['argv'] = [
+            'backup',
+            'some/path',
+            '--file-path=foo.sql',
+            '-f',
+            'bar.sql',
+            '--zip',
+            '--falsy=false',
+            '--empty=',
+        ];
+        $length = count($_SERVER['argv']);
+
+        self::assertSame('foo.sql', App::cliOption('--file-path'));
+        self::assertSame('bar.sql', App::cliOption('-f', true));
+        self::assertSame(true, App::cliOption('--zip'));
+        self::assertSame(false, App::cliOption('--falsy'));
+        self::assertSame('', App::cliOption('--empty'));
+        self::assertSame(null, App::cliOption('--nully'));
+
+        // `-f` and `bar.sql` should have been removed
+        self::assertSame($length - 2, count($_SERVER['argv']));
+
+        if ($argv !== null) {
+            $_SERVER['argv'] = $argv;
+        } else {
+            unset($_SERVER['argv']);
+        }
+
+        self::expectException(InvalidArgumentException::class);
+        App::cliOption('no-dash');
+    }
+
+    /**
+     *
+     */
+    public function testEditions(): void
     {
         self::assertEquals([Craft::Solo, Craft::Pro], App::editions());
     }
 
     /**
      * @dataProvider editionHandleDataProvider
-     *
      * @param string|false $expected
      * @param int $edition
      */
-    public function testEditionHandle($expected, int $edition)
+    public function testEditionHandle(string|false $expected, int $edition): void
     {
         if ($expected === false) {
             self::expectException(InvalidArgumentException::class);
@@ -58,11 +136,10 @@ class AppHelperTest extends TestCase
 
     /**
      * @dataProvider editionNameDataProvider
-     *
      * @param string|false $expected
      * @param int $edition
      */
-    public function testEditionName($expected, int $edition)
+    public function testEditionName(string|false $expected, int $edition): void
     {
         if ($expected === false) {
             self::expectException(InvalidArgumentException::class);
@@ -74,11 +151,10 @@ class AppHelperTest extends TestCase
 
     /**
      * @dataProvider editionIdByHandleDataProvider
-     *
      * @param int|false $expected
      * @param string $handle
      */
-    public function testEditionIdByHandle($expected, string $handle)
+    public function testEditionIdByHandle(int|false $expected, string $handle): void
     {
         if ($expected === false) {
             self::expectException(InvalidArgumentException::class);
@@ -90,22 +166,28 @@ class AppHelperTest extends TestCase
 
     /**
      * @dataProvider validEditionsDataProvider
-     *
      * @param bool $expected
      * @param mixed $edition
      */
-    public function testIsValidEdition(bool $expected, $edition)
+    public function testIsValidEdition(bool $expected, mixed $edition): void
     {
         self::assertSame($expected, App::isValidEdition($edition));
     }
 
     /**
+     * @dataProvider normalizeValueDataProvider
+     */
+    public function testNormalizeValue(mixed $expected, mixed $value): void
+    {
+        self::assertSame($expected, App::normalizeValue($value));
+    }
+
+    /**
      * @dataProvider normalizeVersionDataProvider
-     *
      * @param string $expected
      * @param string $version
      */
-    public function testNormalizeVersion(string $expected, string $version)
+    public function testNormalizeVersion(string $expected, string $version): void
     {
         self::assertSame($expected, App::normalizeVersion($version));
     }
@@ -113,10 +195,10 @@ class AppHelperTest extends TestCase
     /**
      *
      */
-    public function testPhpConfigValueAsBool()
+    public function testPhpConfigValueAsBool(): void
     {
         $displayErrorsValue = ini_get('display_errors');
-        @ini_set('display_errors', 1);
+        @ini_set('display_errors', '1');
         self::assertTrue(App::phpConfigValueAsBool('display_errors'));
         @ini_set('display_errors', $displayErrorsValue);
 
@@ -130,23 +212,38 @@ class AppHelperTest extends TestCase
     }
 
     /**
-     * @dataProvider phpSizeToBytesDataProvider
      *
+     */
+    public function testNormalizePhpPaths(): void
+    {
+        self::assertSame([getcwd()], App::normalizePhpPaths('.'));
+        self::assertSame([getcwd()], App::normalizePhpPaths('./'));
+        self::assertSame([getcwd() . DIRECTORY_SEPARATOR . 'foo'], App::normalizePhpPaths('./foo'));
+        self::assertSame([getcwd() . DIRECTORY_SEPARATOR . 'foo'], App::normalizePhpPaths('.\\foo'));
+
+        putenv('TEST_CONST=/foo/');
+        self::assertSame([getcwd(), DIRECTORY_SEPARATOR . 'foo'], App::normalizePhpPaths('.:${TEST_CONST}'));
+        self::assertSame([getcwd(), DIRECTORY_SEPARATOR . 'foo'], App::normalizePhpPaths(' . ; ${TEST_CONST} '));
+        putenv('TEST_CONST');
+    }
+
+    /**
+     * @dataProvider phpSizeToBytesDataProvider
      * @param int|float $expected
      * @param string $value
      */
-    public function testPhpSizeToBytes($expected, string $value)
+    public function testPhpSizeToBytes(int|float $expected, string $value): void
     {
         self::assertSame($expected, App::phpSizeToBytes($value));
     }
 
     /**
      * @dataProvider humanizeClassDataProvider
-     *
      * @param string $expected
      * @param string $class
+     * @phpstan-param class-string $class
      */
-    public function testHumanizeClass(string $expected, string $class)
+    public function testHumanizeClass(string $expected, string $class): void
     {
         self::assertSame($expected, App::humanizeClass($class));
     }
@@ -154,7 +251,7 @@ class AppHelperTest extends TestCase
     /**
      * @todo 3.1 added new functions to test.
      */
-    public function testMaxPowerCaptain()
+    public function testMaxPowerCaptain(): void
     {
         $oldMemoryLimit = ini_get('memory_limit');
         $oldMaxExecution = ini_get('max_execution_time');
@@ -179,18 +276,17 @@ class AppHelperTest extends TestCase
      * @todo More needed here to test with constant and invalid file path.
      * See coverage report for more info.
      */
-    public function testLicenseKey()
+    public function testLicenseKey(): void
     {
         self::assertSame(250, strlen(App::licenseKey()));
     }
 
     /**
      * @dataProvider configsDataProvider
-     *
-     * @param $method
-     * @param $desiredConfig
+     * @param string $method
+     * @param array $desiredConfig
      */
-    public function testConfigIndexes($method, $desiredConfig)
+    public function testConfigIndexes(string $method, array $desiredConfig): void
     {
         $config = App::$method();
 
@@ -206,7 +302,7 @@ class AppHelperTest extends TestCase
     /**
      * Mailer config now needs a mail settings
      */
-    public function testMailerConfigIndexes()
+    public function testMailerConfigIndexes(): void
     {
         $mailSettings = new MailSettings(['transportType' => Sendmail::class]);
         $result = App::mailerConfig($mailSettings);
@@ -221,13 +317,37 @@ class AppHelperTest extends TestCase
     /**
      *
      */
-    public function testViewConfigIndexes()
+    public function testViewConfigIndexes(): void
     {
         $this->setInaccessibleProperty(Craft::$app->getRequest(), '_isCpRequest', true);
         $this->testConfigIndexes('viewConfig', ['class', 'registeredAssetBundles', 'registeredJsFiles']);
 
         $this->setInaccessibleProperty(Craft::$app->getRequest(), '_isCpRequest', false);
         $this->testConfigIndexes('viewConfig', ['class']);
+    }
+
+    /**
+     * @return array
+     */
+    public function parseBooleanEnvDataProvider(): array
+    {
+        return [
+            [true, true],
+            [false, false],
+            [true, 'yes'],
+            [false, 'no'],
+            [true, 'on'],
+            [false, 'off'],
+            [true, '1'],
+            [false, '0'],
+            [true, 'true'],
+            [false, 'false'],
+            [false, ''],
+            [null, 'whatever'],
+            [true, 1],
+            [false, 0],
+            [null, 2],
+        ];
     }
 
     /**
@@ -296,9 +416,8 @@ class AppHelperTest extends TestCase
             ['assetManagerConfig', ['class', 'basePath', 'baseUrl', 'fileMode', 'dirMode', 'appendTimestamp']],
             ['dbConfig', ['class', 'dsn', 'password', 'username', 'charset', 'tablePrefix', 'schemaMap', 'commandMap', 'attributes', 'enableSchemaCache']],
             ['mutexConfig', ['class', 'fileMode', 'dirMode']],
-            ['webRequestConfig', ['class', 'enableCookieValidation', 'cookieValidationKey', 'enableCsrfValidation', 'enableCsrfCookie', 'csrfParam',]],
+            ['webRequestConfig', ['class', 'enableCookieValidation', 'cookieValidationKey', 'enableCsrfValidation', 'enableCsrfCookie', 'csrfParam', ]],
             ['cacheConfig', ['class', 'cachePath', 'fileMode', 'dirMode', 'defaultDuration']],
-            ['logConfig', ['class']],
             ['sessionConfig', ['class', 'flashParam', 'authAccessParam', 'name', 'cookieParams']],
             ['userConfig', ['class', 'identityClass', 'enableAutoLogin', 'autoRenewCookie', 'loginUrl', 'authTimeout', 'identityCookie', 'usernameCookie', 'idParam', 'authTimeoutParam', 'absoluteAuthTimeoutParam', 'returnUrlParam']],
         ];
@@ -326,7 +445,26 @@ class AppHelperTest extends TestCase
             ['entries', Entries::class],
             ['app helper test', self::class],
             ['std class', stdClass::class],
-            ['iam not a class!@#$%^&*()1234567890', 'iam not a CLASS!@#$%^&*()1234567890']
+            ['iam not a class!@#$%^&*() 1234567890', 'iam not a CLASS!@#$%^&*()1234567890'],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function normalizeValueDataProvider(): array
+    {
+        return [
+            [true, 'true'],
+            [true, 'TRUE'],
+            [false, 'false'],
+            [false, 'FALSE'],
+            [123, '123'],
+            [123, '123 '],
+            [123, ' 123'],
+            [123.4, '123.4'],
+            ['foo', 'foo'],
+            [null, null],
         ];
     }
 

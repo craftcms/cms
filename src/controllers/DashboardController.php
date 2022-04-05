@@ -19,7 +19,6 @@ use craft\models\CraftSupport;
 use craft\web\assets\dashboard\DashboardAsset;
 use craft\web\Controller;
 use craft\web\UploadedFile;
-use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\RequestOptions;
 use Symfony\Component\Yaml\Yaml;
 use Throwable;
@@ -66,7 +65,8 @@ class DashboardController extends Controller
         $widgetTypeInfo = [];
 
         foreach ($widgetTypes as $widgetType) {
-            /** @var WidgetInterface $widgetType */
+            /** @var string|WidgetInterface $widgetType */
+            /** @phpstan-var class-string<WidgetInterface>|WidgetInterface $widgetType */
             if (!$widgetType::isSelectable()) {
                 continue;
             }
@@ -133,7 +133,10 @@ class DashboardController extends Controller
 
         // Include all the JS and CSS stuff
         $view->registerAssetBundle(DashboardAsset::class);
-        $view->registerJs('window.dashboard = new Craft.Dashboard(' . Json::encode($widgetTypeInfo) . ');');
+        $view->registerJsWithVars(
+            fn($widgetTypeInfo) => "window.dashboard = new Craft.Dashboard($widgetTypeInfo)",
+            [$widgetTypeInfo]
+        );
         $view->registerJs($allWidgetJs);
 
         $variables['widgetTypes'] = $widgetTypeInfo;
@@ -219,7 +222,7 @@ class DashboardController extends Controller
         $widgetId = Json::decode($this->request->getRequiredBodyParam('id'));
         Craft::$app->getDashboard()->deleteWidgetById($widgetId);
 
-        return $this->asJson(['success' => true]);
+        return $this->asSuccess();
     }
 
     /**
@@ -237,7 +240,7 @@ class DashboardController extends Controller
 
         Craft::$app->getDashboard()->changeWidgetColspan($widgetId, $colspan);
 
-        return $this->asJson(['success' => true]);
+        return $this->asSuccess();
     }
 
     /**
@@ -253,7 +256,7 @@ class DashboardController extends Controller
         $widgetIds = Json::decode($this->request->getRequiredBodyParam('ids'));
         Craft::$app->getDashboard()->reorderWidgets($widgetIds);
 
-        return $this->asJson(['success' => true]);
+        return $this->asSuccess();
     }
 
     /**
@@ -267,7 +270,7 @@ class DashboardController extends Controller
         $url = $this->request->getRequiredBodyParam('url');
         $data = $this->request->getRequiredBodyParam('data');
         Craft::$app->getCache()->set("feed:$url", $data);
-        return $this->asJson(['success' => true]);
+        return $this->asSuccess();
     }
 
 
@@ -343,7 +346,7 @@ class DashboardController extends Controller
                 if (($composerLockPath = $composerService->getLockPath()) !== null) {
                     $zip->addFile($composerLockPath, 'composer.lock');
                 }
-            } catch (Exception $e) {
+            } catch (Exception) {
                 // that's fine
             }
 
@@ -418,7 +421,9 @@ class DashboardController extends Controller
             Craft::$app->getApi()->request('POST', 'support', [
                 RequestOptions::MULTIPART => $parts,
             ]);
-        } catch (RequestException $requestException) {
+        } catch (Throwable $requestException) {
+            Craft::error("Unable to send support request: {$requestException->getMessage()}", __METHOD__);
+            Craft::$app->getErrorHandler()->logException($requestException);
         }
 
         // Delete the zip file
@@ -431,7 +436,9 @@ class DashboardController extends Controller
                 'widgetId' => $widgetId,
                 'success' => false,
                 'errors' => [
-                    'Support' => [$requestException->getMessage()],
+                    'Support' => [
+                        Craft::t('app', 'A server error occurred.'),
+                    ],
                 ],
             ]);
         }
@@ -449,7 +456,7 @@ class DashboardController extends Controller
      * @param WidgetInterface $widget
      * @return array|false
      */
-    private function _getWidgetInfo(WidgetInterface $widget)
+    private function _getWidgetInfo(WidgetInterface $widget): array|false
     {
         $view = $this->getView();
 
@@ -508,28 +515,19 @@ class DashboardController extends Controller
     {
         $dashboardService = Craft::$app->getDashboard();
 
-        if ($dashboardService->saveWidget($widget)) {
-            $info = $this->_getWidgetInfo($widget);
-            $view = $this->getView();
-
-            return $this->asJson([
-                'success' => true,
-                'info' => $info,
-                'headHtml' => $view->getHeadHtml(),
-                'bodyHtml' => $view->getBodyHtml(),
+        if (!$dashboardService->saveWidget($widget)) {
+            return $this->asFailure(data: [
+                'errors' => $widget->getFirstErrors(),
             ]);
         }
 
-        $allErrors = [];
+        $info = $this->_getWidgetInfo($widget);
+        $view = $this->getView();
 
-        foreach ($widget->getErrors() as $attribute => $errors) {
-            foreach ($errors as $error) {
-                $allErrors[] = $error;
-            }
-        }
-
-        return $this->asJson([
-            'errors' => $allErrors,
+        return $this->asSuccess(data: [
+            'info' => $info,
+            'headHtml' => $view->getHeadHtml(),
+            'bodyHtml' => $view->getBodyHtml(),
         ]);
     }
 
@@ -558,9 +556,9 @@ class DashboardController extends Controller
                 'application/pdf',
                 'application/x-yaml',
             ], true) &&
-            strpos($mimeType, 'text/') !== 0 &&
-            strpos($mimeType, 'image/') !== 0 &&
-            strpos($mimeType, 'xml') === false
+            !str_starts_with($mimeType, 'text/') &&
+            !str_starts_with($mimeType, 'image/') &&
+            !str_contains($mimeType, 'xml')
         );
     }
 }

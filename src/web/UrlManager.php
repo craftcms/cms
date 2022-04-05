@@ -80,12 +80,12 @@ class UrlManager extends \yii\web\UrlManager
     /**
      * @var ElementInterface|false|null
      */
-    private $_matchedElement = null;
+    private null|false|ElementInterface $_matchedElement = null;
 
     /**
      * @var mixed
      */
-    private $_matchedElementRoute;
+    private mixed $_matchedElementRoute = null;
 
     /**
      * Constructor.
@@ -212,7 +212,7 @@ class UrlManager extends \yii\web\UrlManager
      *
      * @return ElementInterface|false
      */
-    public function getMatchedElement()
+    public function getMatchedElement(): ElementInterface|false
     {
         if (!Craft::$app->getIsInitialized()) {
             Craft::warning(__METHOD__ . "() was called before the application was fully initialized.\n" .
@@ -239,7 +239,7 @@ class UrlManager extends \yii\web\UrlManager
      * @param ElementInterface|false|null $element
      * @since 3.2.3
      */
-    public function setMatchedElement($element): void
+    public function setMatchedElement(ElementInterface|false|null $element): void
     {
         if ($element instanceof ElementInterface) {
             if ($route = $element->getRoute()) {
@@ -343,7 +343,7 @@ class UrlManager extends \yii\web\UrlManager
      * @param Request $request
      * @return mixed
      */
-    private function _getRequestRoute(Request $request)
+    private function _getRequestRoute(Request $request): mixed
     {
         // Is there a token in the URL?
         if (($route = $this->_getTokenRoute($request)) !== false) {
@@ -375,7 +375,7 @@ class UrlManager extends \yii\web\UrlManager
      * @param Request $request
      * @return mixed
      */
-    private function _getMatchedElementRoute(Request $request)
+    private function _getMatchedElementRoute(Request $request): mixed
     {
         if (isset($this->_matchedElementRoute)) {
             return $this->_matchedElementRoute;
@@ -401,7 +401,7 @@ class UrlManager extends \yii\web\UrlManager
 
         $this->setMatchedElement($element ?: false);
 
-        if (YII_DEBUG) {
+        if (App::devMode()) {
             Craft::debug([
                 'rule' => 'Element URI: ' . $path,
                 'match' => $this->_matchedElement instanceof ElementInterface,
@@ -418,14 +418,14 @@ class UrlManager extends \yii\web\UrlManager
      * @param Request $request
      * @return array|false
      */
-    private function _getMatchedUrlRoute(Request $request)
+    private function _getMatchedUrlRoute(Request $request): array|false
     {
         // Code adapted from \yii\web\UrlManager::parseRequest()
         /** @var YiiUrlRule $rule */
         foreach ($this->rules as $rule) {
             $route = $rule->parseRequest($this, $request);
 
-            if (YII_DEBUG) {
+            if (App::devMode()) {
                 Craft::debug([
                     'rule' => 'URL Rule: ' . (method_exists($rule, '__toString') ? $rule->__toString() : get_class($rule)),
                     'match' => $route !== false,
@@ -451,13 +451,13 @@ class UrlManager extends \yii\web\UrlManager
      * @param Request $request
      * @return array|false
      */
-    private function _getMatchedDiscoverableUrlRoute(Request $request)
+    private function _getMatchedDiscoverableUrlRoute(Request $request): array|false
     {
         $redirectUri = $request->getPathInfo() === '.well-known/change-password'
             ? Craft::$app->getConfig()->getGeneral()->getSetPasswordRequestPath(Craft::$app->getSites()->getCurrentSite()->handle)
             : null;
 
-        if (YII_DEBUG) {
+        if (App::devMode()) {
             Craft::debug([
                 'rule' => 'Discoverable change password URL',
                 'match' => $redirectUri !== null,
@@ -498,7 +498,7 @@ class UrlManager extends \yii\web\UrlManager
         }
 
         foreach (Craft::$app->getRequest()->getSegments() as $requestPathSeg) {
-            if (strpos($requestPathSeg, $trigger) === 0) {
+            if (str_starts_with($requestPathSeg, $trigger)) {
                 return false;
             }
         }
@@ -512,7 +512,7 @@ class UrlManager extends \yii\web\UrlManager
      * @param Request $request
      * @return array|false
      */
-    private function _getTemplateRoute(Request $request)
+    private function _getTemplateRoute(Request $request): array|false
     {
         if ($request->getIsSiteRequest() && Craft::$app->getConfig()->getGeneral()->headlessMode) {
             return false;
@@ -521,7 +521,7 @@ class UrlManager extends \yii\web\UrlManager
         $matches = $this->_isPublicTemplatePath($request);
         $path = $request->getPathInfo();
 
-        if (YII_DEBUG) {
+        if (App::devMode()) {
             Craft::debug([
                 'rule' => 'Template: ' . $path,
                 'match' => $matches,
@@ -542,7 +542,7 @@ class UrlManager extends \yii\web\UrlManager
      * @param Request $request
      * @return array|false
      */
-    private function _getTokenRoute(Request $request)
+    private function _getTokenRoute(Request $request): array|false
     {
         if (!$this->checkToken) {
             return false;
@@ -550,7 +550,7 @@ class UrlManager extends \yii\web\UrlManager
 
         $token = $request->getToken();
 
-        if (YII_DEBUG) {
+        if (App::devMode()) {
             Craft::debug([
                 'rule' => 'Token' . ($token !== null ? ': ' . $token : ''),
                 'match' => $token !== null,

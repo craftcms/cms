@@ -8,9 +8,9 @@
 namespace craft\web;
 
 use Craft;
-use craft\base\ElementInterface;
 use craft\events\RegisterTemplateRootsEvent;
 use craft\events\TemplateEvent;
+use craft\helpers\App;
 use craft\helpers\Cp;
 use craft\helpers\FileHelper;
 use craft\helpers\Html;
@@ -193,7 +193,7 @@ class View extends \yii\web\View
     private array $_deltaNames = [];
 
     /**
-     * @var mixed[] The initial delta input values.
+     * @var array The initial delta input values.
      * @see setInitialDeltaValue()
      */
     private array $_initialDeltaValues = [];
@@ -271,7 +271,6 @@ class View extends \yii\web\View
 
         // Register the CP hooks
         $this->hook('cp.elements.element', [$this, '_getCpElementHtml']);
-        $this->hook('cp.elements.edit', [$this, '_prepEditElementVariables']);
     }
 
     /**
@@ -304,7 +303,7 @@ class View extends \yii\web\View
             $twig->addExtension(new GlobalsExtension());
         }
 
-        if (YII_DEBUG) {
+        if (App::devMode()) {
             $twig->addExtension(new DebugExtension());
         }
 
@@ -458,14 +457,15 @@ class View extends \yii\web\View
      * @param string $template The source template string.
      * @param array $variables Any variables that should be available to the template.
      * @param string $templateMode The template mode to use.
+     * @param bool $escapeHtml Whether dynamic HTML should be escaped
      * @return string The rendered template.
      * @throws TwigLoaderError
      * @throws TwigSyntaxError
      */
-    public function renderString(string $template, array $variables = [], string $templateMode = self::TEMPLATE_MODE_SITE): string
+    public function renderString(string $template, array $variables = [], string $templateMode = self::TEMPLATE_MODE_SITE, bool $escapeHtml = false): string
     {
         // If there are no dynamic tags, just return the template
-        if (strpos($template, '{') === false) {
+        if (!str_contains($template, '{')) {
             return $template;
         }
 
@@ -473,7 +473,9 @@ class View extends \yii\web\View
         $this->setTemplateMode($templateMode);
 
         $twig = $this->getTwig();
-        $twig->setDefaultEscaperStrategy(false);
+        if (!$escapeHtml) {
+            $twig->setDefaultEscaperStrategy(false);
+        }
         $lastRenderingTemplate = $this->_renderingTemplate;
         $this->_renderingTemplate = 'string:' . $template;
 
@@ -481,7 +483,9 @@ class View extends \yii\web\View
             return $twig->createTemplate($template)->render($variables);
         } finally {
             $this->_renderingTemplate = $lastRenderingTemplate;
-            $twig->setDefaultEscaperStrategy();
+            if (!$escapeHtml) {
+                $twig->setDefaultEscaperStrategy();
+            }
             $this->setTemplateMode($oldTemplateMode);
         }
     }
@@ -505,10 +509,10 @@ class View extends \yii\web\View
      * @throws Exception in case of failure
      * @throws Throwable in case of failure
      */
-    public function renderObjectTemplate(string $template, $object, array $variables = [], string $templateMode = self::TEMPLATE_MODE_SITE): string
+    public function renderObjectTemplate(string $template, mixed $object, array $variables = [], string $templateMode = self::TEMPLATE_MODE_SITE): string
     {
         // If there are no dynamic tags, just return the template
-        if (strpos($template, '{') === false) {
+        if (!str_contains($template, '{')) {
             return $template;
         }
 
@@ -539,7 +543,7 @@ class View extends \yii\web\View
             // Get the variables to pass to the template
             if ($object instanceof Model) {
                 foreach ($object->attributes() as $name) {
-                    if (!isset($variables[$name]) && strpos($template, $name) !== false) {
+                    if (!isset($variables[$name]) && str_contains($template, $name)) {
                         $variables[$name] = $object->$name;
                     }
                 }
@@ -668,7 +672,7 @@ class View extends \yii\web\View
 
         try {
             $templateExists = ($this->resolveTemplate($name) !== false);
-        } catch (TwigLoaderError $e) {
+        } catch (TwigLoaderError) {
             // _validateTemplateName() had an issue with it
             $templateExists = false;
         }
@@ -750,7 +754,7 @@ class View extends \yii\web\View
      * @return string|false The path to the template if it exists, or `false`.
      * @throws TwigLoaderError
      */
-    public function resolveTemplate(string $name, ?string $templateMode = null)
+    public function resolveTemplate(string $name, ?string $templateMode = null): string|false
     {
         if ($templateMode === null) {
             $templateMode = $this->getTemplateMode();
@@ -773,7 +777,7 @@ class View extends \yii\web\View
      * @return string|false The path to the template if it exists, or `false`.
      * @throws TwigLoaderError
      */
-    private function _resolveTemplateInternal(string $name)
+    private function _resolveTemplateInternal(string $name): string|false
     {
         // Normalize the template name
         $name = trim(preg_replace('#/{2,}#', '/', str_replace('\\', '/', StringHelper::convertToUtf8($name))), '/');
@@ -867,6 +871,36 @@ class View extends \yii\web\View
     }
 
     /**
+     * Registers JavaScript code with the given variables, pre-JSON-encoded.
+     *
+     * @param callable $jsFn callback function that returns the JS code to be registered.
+     * @param array $vars Array of variables that will be JSON-encoded before being passed to `$jsFn`.
+     * @param int $position the position at which the JS script tag should be inserted
+     * in a page. The possible values are:
+     *
+     * - [[POS_HEAD]]: in the head section
+     * - [[POS_BEGIN]]: at the beginning of the body section
+     * - [[POS_END]]: at the end of the body section
+     * - [[POS_LOAD]]: enclosed within jQuery(window).load().
+     *   Note that by using this position, the method will automatically register the jQuery js file.
+     * - [[POS_READY]]: enclosed within jQuery(document).ready(). This is the default value.
+     *   Note that by using this position, the method will automatically register the jQuery js file.
+     *
+     * @param string|null $key the key that identifies the JS code block. If null, it will use
+     * $js as the key. If two JS code blocks are registered with the same key, the latter
+     * will overwrite the former.
+     * @since 3.7.31
+     */
+    public function registerJsWithVars(callable $jsFn, array $vars, int $position = self::POS_READY, ?string $key = null): void
+    {
+        $jsVars = array_map(function($variable) {
+            return Json::encode($variable);
+        }, $vars);
+        $js = call_user_func($jsFn, ...array_values($jsVars));
+        $this->registerJs($js, $position, $key);
+    }
+
+    /**
      * Starts a JavaScript buffer.
      *
      * JavaScript buffers work similarly to [output buffers](https://php.net/manual/en/intro.outcontrol.php) in PHP.
@@ -889,7 +923,7 @@ class View extends \yii\web\View
      * @param bool $combine Whether the individually registered code snippets should be combined, losing the positions and keys
      * @return string|array|false The JS code that was registered in the active JS buffer, or `false` if there isn’t one
      */
-    public function clearJsBuffer(bool $scriptTag = true, bool $combine = true)
+    public function clearJsBuffer(bool $scriptTag = true, bool $combine = true): string|array|false
     {
         if (empty($this->_jsBuffers)) {
             return false;
@@ -943,7 +977,7 @@ class View extends \yii\web\View
      * @return array|false The `<script>` tags that were registered in the active buffer, grouped by position, or `false` if there isn’t one
      * @since 3.7.0
      */
-    public function clearScriptBuffer()
+    public function clearScriptBuffer(): array|false
     {
         if (empty($this->_scriptBuffers)) {
             return false;
@@ -972,7 +1006,7 @@ class View extends \yii\web\View
      * @return array|false The `<style>` tags that were registered in the active buffer, grouped by position, or `false` if there isn’t one
      * @since 3.7.0
      */
-    public function clearCssBuffer()
+    public function clearCssBuffer(): array|false
     {
         if (empty($this->_cssBuffers)) {
             return false;
@@ -1223,7 +1257,7 @@ JS;
      * @see getInitialDeltaValues()
      * @since 3.4.6
      */
-    public function setInitialDeltaValue(string $inputName, $value): void
+    public function setInitialDeltaValue(string $inputName, mixed $value): void
     {
         if ($this->_registerDeltaNames) {
             $this->_initialDeltaValues[$this->namespaceInputName($inputName)] = $value;
@@ -1384,14 +1418,14 @@ JS;
      * }, 'widget-settings');
      * ```
      *
-     * @param string|callable $html The HTML code, or a callable that returns the HTML code
+     * @param callable|string $html The HTML code, or a callable that returns the HTML code
      * @param string|null $namespace The namespace. Defaults to the [[getNamespace()|active namespace]].
      * @param bool $otherAttributes Whether `id`, `for`, and other attributes should be namespaced (in addition to `name`)
      * @param bool $withClasses Whether class names should be namespaced as well (affects both `class` attributes and
      * class name CSS selectors within `<style>` tags). This will only have an effect if `$otherAttributes` is `true`.
      * @return string The HTML with namespaced attributes
      */
-    public function namespaceInputs($html, ?string $namespace = null, bool $otherAttributes = true, bool $withClasses = false): string
+    public function namespaceInputs(callable|string $html, ?string $namespace = null, bool $otherAttributes = true, bool $withClasses = false): string
     {
         if (is_callable($html)) {
             // If no namespace was passed in, just return the callable response directly.
@@ -1563,6 +1597,7 @@ JS;
             $handled = false;
             foreach ($this->_hooks[$hook] as $method) {
                 $return .= $method($context, $handled);
+                /** @var bool $handled */
                 if ($handled) {
                     break;
                 }
@@ -1626,7 +1661,7 @@ JS;
     /**
      * Performs actions before a template is rendered.
      *
-     * @param mixed $template The name of the template to render
+     * @param string $template The name of the template to render
      * @param array $variables The variables that should be available to the template
      * @param string $templateMode The template mode to use when rendering the template
      * @return bool Whether the template should be rendered
@@ -1650,7 +1685,7 @@ JS;
     /**
      * Performs actions after a template is rendered.
      *
-     * @param mixed $template The name of the template that was rendered
+     * @param string $template The name of the template that was rendered
      * @param array $variables The variables that were available to the template
      * @param string $templateMode The template mode that was used when rendering the template
      * @param string $output The template’s rendering result
@@ -1674,7 +1709,7 @@ JS;
     /**
      * Performs actions before a page template is rendered.
      *
-     * @param mixed $template The name of the template to render
+     * @param string $template The name of the template to render
      * @param array $variables The variables that should be available to the template
      * @param string $templateMode The template mode to use when rendering the template
      * @return bool Whether the template should be rendered
@@ -1698,7 +1733,7 @@ JS;
     /**
      * Performs actions after a page template is rendered.
      *
-     * @param mixed $template The name of the template that was rendered
+     * @param string $template The name of the template that was rendered
      * @param array $variables The variables that were available to the template
      * @param string $templateMode The template mode that was used when rendering the template
      * @param string $output The template’s rendering result
@@ -1917,7 +1952,7 @@ JS;
             $this->_twigOptions['autoescape'] = 'js';
         }
 
-        if (YII_DEBUG) {
+        if (App::devMode()) {
             $this->_twigOptions['debug'] = true;
             $this->_twigOptions['strict_variables'] = true;
         }
@@ -2013,21 +2048,5 @@ JS;
             true,
             $context['single'] ?? false
         );
-    }
-
-    /**
-     * Returns the HTML for an element in the control panel.
-     *
-     * @param array $context
-     */
-    private function _prepEditElementVariables(array &$context): void
-    {
-        /** @var ElementInterface $element */
-        $element = $context['element'];
-
-        [$docTitle, $title] = Cp::editElementTitles($element);
-
-        $context['docTitle'] = $docTitle;
-        $context['title'] = $title;
     }
 }

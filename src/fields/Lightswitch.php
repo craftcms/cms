@@ -19,7 +19,6 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
-use craft\helpers\Html;
 use GraphQL\Type\Definition\Type;
 use yii\db\Schema;
 
@@ -73,14 +72,6 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
         if (($onLabel = ArrayHelper::remove($config, 'label')) !== null) {
             $config['onLabel'] = $onLabel;
         }
-        foreach (['onLabel', 'offLabel'] as $name) {
-            if (($config[$name] ?? null) === '') {
-                unset($config[$name]);
-            }
-        }
-        if (array_key_exists('default', $config) && !is_bool($config['default'])) {
-            $config['default'] = (bool)$config['default'];
-        }
 
         parent::__construct($config);
     }
@@ -124,9 +115,9 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
     /**
      * @inheritdoc
      */
-    protected function inputHtml($value, ?ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
     {
-        $id = Html::id($this->handle);
+        $id = $this->getInputId();
         return Craft::$app->getView()->renderTemplate('_includes/forms/lightswitch', [
             'id' => $id,
             'labelId' => "$id-label",
@@ -141,7 +132,7 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
     /**
      * @inheritdoc
      */
-    public function getTableAttributeHtml($value, ElementInterface $element): string
+    public function getTableAttributeHtml(mixed $value, ElementInterface $element): string
     {
         if ($value) {
             return '<div class="status enabled" title="' . Craft::t('app', 'Enabled') . '"></div>';
@@ -153,7 +144,7 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
     /**
      * @inheritdoc
      */
-    public function normalizeValue($value, ?ElementInterface $element = null)
+    public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
         // If this is a new entry, look for a default option
         if ($value === null) {
@@ -166,7 +157,7 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
     /**
      * @inheritdoc
      */
-    public function getElementConditionRuleType()
+    public function getElementConditionRuleType(): array|string|null
     {
         return LightswitchFieldConditionRule::class;
     }
@@ -174,7 +165,7 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
     /**
      * @inheritdoc
      */
-    public function modifyElementsQuery(ElementQueryInterface $query, $value): void
+    public function modifyElementsQuery(ElementQueryInterface $query, mixed $value): void
     {
         /** @var ElementQuery $query */
         if ($value === null) {
@@ -188,7 +179,7 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
     /**
      * @inheritdoc
      */
-    public function getContentGqlType()
+    public function getContentGqlType(): Type|array
     {
         return Type::boolean();
     }
@@ -197,7 +188,7 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
      * @inheritdoc
      * @since 3.5.0
      */
-    public function getContentGqlMutationArgumentType()
+    public function getContentGqlMutationArgumentType(): Type|array
     {
         return [
             'name' => $this->handle,
@@ -210,7 +201,7 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
      * @inheritdoc
      * @since 3.5.0
      */
-    public function getContentGqlQueryArgumentType()
+    public function getContentGqlQueryArgumentType(): Type|array
     {
         return [
             'name' => $this->handle,

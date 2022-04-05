@@ -27,32 +27,32 @@ use yii\console\ExitCode;
 class InstallController extends Controller
 {
     /**
-     * @var string|null The default email address for the first user to create during install
+     * @var string|null The default email address for the first user to create during install.
      */
     public ?string $email = null;
 
     /**
-     * @var string|null The default username for the first user to create during install
+     * @var string|null The default username for the first user to create during install.
      */
     public ?string $username = null;
 
     /**
-     * @var string|null The default password for the first user to create during install
+     * @var string|null The default password for the first user to create during install.
      */
     public ?string $password = null;
 
     /**
-     * @var string|null The default site name for the first site to create during install
+     * @var string|null The default site name for the first site to create during install.
      */
     public ?string $siteName = null;
 
     /**
-     * @var string|null The default site url for the first site to create during install
+     * @var string|null The default site URL for the first site to create during install.
      */
     public ?string $siteUrl = null;
 
     /**
-     * @var string|null The default langcode for the first site to create during install
+     * @var string|null The default language for the first site to create during install.
      */
     public ?string $language = null;
 
@@ -161,7 +161,7 @@ class InstallController extends Controller
             try {
                 $configService->setDotEnvVar('PRIMARY_SITE_URL', $site->baseUrl);
                 $site->baseUrl = '$PRIMARY_SITE_URL';
-            } catch (Exception $e) {
+            } catch (Exception) {
                 // that's fine, we'll just store the entered URL
             }
         }

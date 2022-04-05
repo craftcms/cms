@@ -27,6 +27,9 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend({
 
         this.$configInput = this.$container.children('input[data-config-input]');
         this._config = JSON.parse(this.$configInput.val());
+        if (!this._config.tabs) {
+            this._config.tabs = [];
+        }
 
         let $workspace = this.$container.children('.fld-workspace');
         this.$tabContainer = $workspace.children('.fld-tabs');
@@ -180,6 +183,10 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend({
         $('<div/>', {class: 'fields', html: contents}).appendTo($body);
         const $footer = $('<div/>', {class: 'fld-element-settings-footer'});
         $('<div/>', {class: 'flex-grow'}).appendTo($footer);
+        const $cancelBtn = Craft.ui.createButton({
+            label: Craft.t('app', 'Close'),
+            spinner: true,
+        }).appendTo($footer);
         Craft.ui.createSubmitButton({
             class: 'secondary',
             label: Craft.t('app', 'Apply'),
@@ -202,6 +209,10 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend({
                 // Focus on the first text input
                 slideout.$container.find('.text:first').trigger('focus');
             });
+        });
+
+        $cancelBtn.on('click', () => {
+            slideout.close();
         });
 
         if (js) {
@@ -386,7 +397,11 @@ Craft.FieldLayoutDesigner.Tab = Garnish.Base.extend({
     },
 
     get config() {
-        return this.designer.config.tabs.find(c => c.uid === this.uid);
+        const config = this.designer.config.tabs.find(c => c.uid === this.uid) || {};
+        if (!config.elements) {
+            config.elements = [];
+        }
+        return config;
     },
 
     set config(config) {
@@ -579,6 +594,11 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
             this.config = response.data.config;
             this.$editBtn.detach();
             this.$container.html($(response.data.selectorHtml).html());
+            if (response.data.hasConditions) {
+                this.$container.addClass('has-conditions');
+            } else {
+                this.$container.removeClass('has-conditions');
+            }
             this.initUi();
         }).catch(e => {
             Craft.cp.displayError();
@@ -611,7 +631,7 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
     },
 
     get config() {
-        return this.tab.config.elements.find(c => c.uid === this.uid);
+        return this.tab.config.elements.find(c => c.uid === this.uid) || {};
     },
 
     set config(config) {
@@ -1035,7 +1055,7 @@ Craft.FieldLayoutDesigner.ElementDrag = Craft.FieldLayoutDesigner.BaseDrag.exten
         } else if (!this.draggingLibraryElement) {
             let $libraryElement = this.draggingField
                 ? this.designer.$fields.filter(`[data-attribute="${this.$draggee.data('attribute')}"]:first`)
-                : this.designer.$uiLibraryElements.filter(`[data-type="${this.$draggee.data('type').replace(/\\/g, '\\\\')}"]:first`);
+                : this.designer.$uiLibraryElements.filter(`[data-type="${this.$draggee.data('config').type.replace(/\\/g, '-')}"]:first`);
 
             if (this.draggingField) {
                 // show the field in the library

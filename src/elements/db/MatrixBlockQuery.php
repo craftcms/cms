@@ -18,6 +18,7 @@ use craft\fields\Matrix as MatrixField;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\models\MatrixBlockType;
+use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\db\Connection;
 
@@ -25,6 +26,7 @@ use yii\db\Connection;
  * MatrixBlockQuery represents a SELECT SQL statement for global sets in a way that is independent of DBMS.
  *
  * @property-write ElementInterface $owner The owner element the Matrix blocks must belong to
+ * @property-write ElementInterface $primaryOwner The primary owner element the Matrix blocks must belong to
  * @property-write string|string[]|MatrixBlockType|null $type The block type(s) that resulting Matrix blocks must have
  * @property-write string|string[]|MatrixField|null $field The field the Matrix blocks must belong to
  * @method MatrixBlock[]|array all($db = null)
@@ -46,23 +48,31 @@ class MatrixBlockQuery extends ElementQuery
     /**
      * @inheritdoc
      */
-    protected array $defaultOrderBy = ['matrixblocks.sortOrder' => SORT_ASC];
+    protected array $defaultOrderBy = ['matrixblocks_owners.sortOrder' => SORT_ASC];
 
     // General parameters
     // -------------------------------------------------------------------------
 
     /**
-     * @var int|int[]|string|false|null The field ID(s) that the resulting Matrix blocks must belong to.
+     * @var mixed The field ID(s) that the resulting Matrix blocks must belong to.
      * @used-by fieldId()
      */
-    public $fieldId;
+    public mixed $fieldId = null;
 
     /**
-     * @var int|int[]|null The owner element ID(s) that the resulting Matrix blocks must belong to.
+     * @var mixed The primary owner element ID(s) that the resulting Matrix blocks must belong to.
+     * @used-by primaryOwner()
+     * @used-by primaryOwnerId()
+     * @since 4.0.0
+     */
+    public mixed $primaryOwnerId = null;
+
+    /**
+     * @var mixed The owner element ID(s) that the resulting Matrix blocks must belong to.
      * @used-by owner()
      * @used-by ownerId()
      */
-    public $ownerId;
+    public mixed $ownerId = null;
 
     /**
      * @var bool|null Whether the owner elements can be drafts.
@@ -79,16 +89,16 @@ class MatrixBlockQuery extends ElementQuery
     public ?bool $allowOwnerRevisions = null;
 
     /**
-     * @var int|int[]|null The block type ID(s) that the resulting Matrix blocks must have.
+     * @var mixed The block type ID(s) that the resulting Matrix blocks must have.
      * ---
      * ```php
-     * // fetch the entry's text blocks
+     * // fetch the entry’s text blocks
      * $blocks = $entry->myMatrixField
      *     ->type('text')
      *     ->all();
      * ```
      * ```twig
-     * {# fetch the entry's text blocks #}
+     * {# fetch the entry’s text blocks #}
      * {% set blocks = entry.myMatrixField
      *   .type('text')
      *   .all() %}
@@ -96,7 +106,7 @@ class MatrixBlockQuery extends ElementQuery
      * @used-by MatrixBlockQuery::type()
      * @used-by typeId()
      */
-    public $typeId;
+    public mixed $typeId = null;
 
     /**
      * @inheritdoc
@@ -109,6 +119,9 @@ class MatrixBlockQuery extends ElementQuery
                 break;
             case 'owner':
                 $this->owner($value);
+                break;
+            case 'primaryOwner':
+                $this->primaryOwner($value);
                 break;
             case 'type':
                 $this->type($value);
@@ -153,16 +166,16 @@ class MatrixBlockQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param string|string[]|MatrixField|null $value The property value
+     * @param mixed $value The property value
      * @return self self reference
      * @uses $fieldId
      * @since 3.4.0
      */
-    public function field($value): self
+    public function field(mixed $value): self
     {
         if ($value instanceof MatrixField) {
             $this->fieldId = [$value->id];
-        } else if (is_string($value) || (is_array($value) && count($value) === 1)) {
+        } elseif (is_string($value) || (is_array($value) && count($value) === 1)) {
             if (!is_string($value)) {
                 $value = reset($value);
             }
@@ -172,7 +185,7 @@ class MatrixBlockQuery extends ElementQuery
             } else {
                 $this->fieldId = false;
             }
-        } else if ($value !== null) {
+        } elseif ($value !== null) {
             $this->fieldId = (new Query())
                 ->select(['id'])
                 ->from([Table::FIELDS])
@@ -214,13 +227,83 @@ class MatrixBlockQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param int|int[]|null $value The property value
+     * @param mixed $value The property value
      * @return self self reference
      * @uses $fieldId
      */
-    public function fieldId($value): self
+    public function fieldId(mixed $value): self
     {
         $this->fieldId = $value;
+        return $this;
+    }
+
+    /**
+     * Narrows the query results based on the primary owner element of the Matrix blocks, per the owners’ IDs.
+     *
+     * Possible values include:
+     *
+     * | Value | Fetches Matrix blocks…
+     * | - | -
+     * | `1` | created for an element with an ID of 1.
+     * | `'not 1'` | not created for an element with an ID of 1.
+     * | `[1, 2]` | created for an element with an ID of 1 or 2.
+     * | `['not', 1, 2]` | not created for an element with an ID of 1 or 2.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch Matrix blocks created for an element with an ID of 1 #}
+     * {% set {elements-var} = {twig-method}
+     *   .primaryOwnerId(1)
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch Matrix blocks created for an element with an ID of 1
+     * ${elements-var} = {php-method}
+     *     ->primaryOwnerId(1)
+     *     ->all();
+     * ```
+     *
+     * @param mixed $value The property value
+     * @return self self reference
+     * @uses $primaryOwnerId
+     * @since 4.0.0
+     */
+    public function primaryOwnerId(mixed $value): self
+    {
+        $this->primaryOwnerId = $value;
+        return $this;
+    }
+
+    /**
+     * Sets the [[primaryOwnerId()]] and [[siteId()]] parameters based on a given element.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch Matrix blocks created for this entry #}
+     * {% set {elements-var} = {twig-method}
+     *   .primaryOwner(myEntry)
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch Matrix blocks created for this entry
+     * ${elements-var} = {php-method}
+     *     ->primaryOwner($myEntry)
+     *     ->all();
+     * ```
+     *
+     * @param ElementInterface $primaryOwner The primary owner element
+     * @return self self reference
+     * @uses $primaryOwnerId
+     * @since 4.0.0
+     */
+    public function primaryOwner(ElementInterface $primaryOwner): self
+    {
+        $this->primaryOwnerId = [$primaryOwner->id];
+        $this->siteId = $primaryOwner->siteId;
         return $this;
     }
 
@@ -252,11 +335,11 @@ class MatrixBlockQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param int|int[]|null $value The property value
+     * @param mixed $value The property value
      * @return self self reference
      * @uses $ownerId
      */
-    public function ownerId($value): self
+    public function ownerId(mixed $value): self
     {
         $this->ownerId = $value;
         return $this;
@@ -363,15 +446,15 @@ class MatrixBlockQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param string|string[]|MatrixBlockType|null $value The property value
+     * @param mixed $value The property value
      * @return self self reference
      * @uses $typeId
      */
-    public function type($value): self
+    public function type(mixed $value): self
     {
         if ($value instanceof MatrixBlockType) {
             $this->typeId = $value->id;
-        } else if ($value !== null) {
+        } elseif ($value !== null) {
             $this->typeId = (new Query())
                 ->select(['id'])
                 ->from([Table::MATRIXBLOCKTYPES])
@@ -412,11 +495,11 @@ class MatrixBlockQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param int|int[]|null $value The property value
+     * @param mixed $value The property value
      * @return self self reference
      * @uses $typeId
      */
-    public function typeId($value): self
+    public function typeId(mixed $value): self
     {
         $this->typeId = $value;
         return $this;
@@ -424,37 +507,60 @@ class MatrixBlockQuery extends ElementQuery
 
     /**
      * @inheritdoc
+     * @throws InvalidConfigException
      */
     protected function beforePrepare(): bool
     {
         $this->_normalizeFieldId();
-        $this->_normalizeOwnerId();
+
+        try {
+            $this->primaryOwnerId = $this->_normalizeOwnerId($this->primaryOwnerId);
+        } catch (InvalidArgumentException) {
+            throw new InvalidConfigException('Invalid ownerId param value');
+        }
+
+        try {
+            $this->ownerId = $this->_normalizeOwnerId($this->ownerId);
+        } catch (InvalidArgumentException) {
+            throw new InvalidConfigException('Invalid ownerId param value');
+        }
 
         $this->joinElementTable('matrixblocks');
+
+        // Join in the matrixblocks_owners table
+        $ownersCondition = [
+            'and',
+            '[[matrixblocks_owners.blockId]] = [[elements.id]]',
+            $this->ownerId ? ['matrixblocks_owners.ownerId' => $this->ownerId] : '[[matrixblocks_owners.ownerId]] = [[matrixblocks.primaryOwnerId]]',
+        ];
+
+        $this->query->innerJoin(['matrixblocks_owners' => Table::MATRIXBLOCKS_OWNERS], $ownersCondition);
+        $this->subQuery->innerJoin(['matrixblocks_owners' => Table::MATRIXBLOCKS_OWNERS], $ownersCondition);
 
         // Figure out which content table to use
         $this->contentTable = null;
         if ($this->fieldId && count($this->fieldId) === 1) {
-            /** @var MatrixField $matrixField */
+            /** @var MatrixField|null $matrixField */
             $matrixField = Craft::$app->getFields()->getFieldById(reset($this->fieldId));
             if ($matrixField) {
                 $this->contentTable = $matrixField->contentTable;
             }
         }
 
-        $this->query->select([
+        $this->query->addSelect([
             'matrixblocks.fieldId',
-            'matrixblocks.ownerId',
+            'matrixblocks.primaryOwnerId',
             'matrixblocks.typeId',
-            'matrixblocks.sortOrder',
+            'matrixblocks_owners.ownerId',
+            'matrixblocks_owners.sortOrder',
         ]);
 
         if ($this->fieldId) {
             $this->subQuery->andWhere(['matrixblocks.fieldId' => $this->fieldId]);
         }
 
-        if ($this->ownerId) {
-            $this->subQuery->andWhere(['matrixblocks.ownerId' => $this->ownerId]);
+        if ($this->primaryOwnerId) {
+            $this->subQuery->andWhere(['matrixblocks.primaryOwnerId' => $this->primaryOwnerId]);
         }
 
         if (isset($this->typeId)) {
@@ -467,12 +573,15 @@ class MatrixBlockQuery extends ElementQuery
         }
 
         // Ignore revision/draft blocks by default
-        $allowOwnerDrafts = $this->allowOwnerDrafts ?? ($this->id || $this->ownerId);
-        $allowOwnerRevisions = $this->allowOwnerRevisions ?? ($this->id || $this->ownerId);
+        $allowOwnerDrafts = $this->allowOwnerDrafts ?? ($this->id || $this->primaryOwnerId || $this->ownerId);
+        $allowOwnerRevisions = $this->allowOwnerRevisions ?? ($this->id || $this->primaryOwnerId || $this->ownerId);
 
         if (!$allowOwnerDrafts || !$allowOwnerRevisions) {
             // todo: we will need to expand on this when Matrix blocks can be nested.
-            $this->subQuery->innerJoin(['owners' => Table::ELEMENTS], '[[owners.id]] = [[matrixblocks.ownerId]]');
+            $this->subQuery->innerJoin(
+                ['owners' => Table::ELEMENTS],
+                $this->ownerId ? '[[owners.id]] = [[matrixblocks_owners.ownerId]]' : '[[owners.id]] = [[matrixblocks.primaryOwnerId]]'
+            );
 
             if (!$allowOwnerDrafts) {
                 $this->subQuery->andWhere(['owners.draftId' => null]);
@@ -508,9 +617,9 @@ class MatrixBlockQuery extends ElementQuery
 
         if (empty($this->fieldId)) {
             $this->fieldId = null;
-        } else if (is_numeric($this->fieldId)) {
+        } elseif (is_numeric($this->fieldId)) {
             $this->fieldId = [$this->fieldId];
-        } else if (!is_array($this->fieldId) || !ArrayHelper::isNumeric($this->fieldId)) {
+        } elseif (!is_array($this->fieldId) || !ArrayHelper::isNumeric($this->fieldId)) {
             $this->fieldId = (new Query())
                 ->select(['id'])
                 ->from([Table::FIELDS])
@@ -521,19 +630,24 @@ class MatrixBlockQuery extends ElementQuery
     }
 
     /**
-     * Normalizes the ownerId param to an array of IDs or null
+     * Normalizes the primaryOwnerId param to an array of IDs or null
      *
-     * @throws InvalidConfigException
+     * @param mixed $value
+     * @return int[]|null
+     * @throws InvalidArgumentException
      */
-    private function _normalizeOwnerId(): void
+    private function _normalizeOwnerId(mixed $value): ?array
     {
-        if (empty($this->ownerId)) {
-            $this->ownerId = null;
-        } else if (is_numeric($this->ownerId)) {
-            $this->ownerId = [$this->ownerId];
-        } else if (!is_array($this->ownerId) || !ArrayHelper::isNumeric($this->ownerId)) {
-            throw new InvalidConfigException('Invalid ownerId param value');
+        if (empty($value)) {
+            return null;
         }
+        if (is_numeric($value)) {
+            return [$value];
+        }
+        if (!is_array($value) || !ArrayHelper::isNumeric($value)) {
+            throw new InvalidArgumentException();
+        }
+        return $value;
     }
 
     /**
@@ -563,11 +677,11 @@ class MatrixBlockQuery extends ElementQuery
     protected function cacheTags(): array
     {
         $tags = [];
-        // If both the field and owner are set, then only tag the combos
-        if ($this->fieldId && $this->ownerId) {
+        // If both the field and primary owner are set, then only tag the combos
+        if ($this->fieldId && $this->primaryOwnerId) {
             foreach ($this->fieldId as $fieldId) {
-                foreach ($this->ownerId as $ownerId) {
-                    $tags[] = "field-owner:$fieldId-$ownerId";
+                foreach ($this->primaryOwnerId as $primaryOwnerId) {
+                    $tags[] = "field-owner:$fieldId-$primaryOwnerId";
                 }
             }
         } else {
@@ -576,9 +690,9 @@ class MatrixBlockQuery extends ElementQuery
                     $tags[] = "field:$fieldId";
                 }
             }
-            if ($this->ownerId) {
-                foreach ($this->ownerId as $ownerId) {
-                    $tags[] = "owner:$ownerId";
+            if ($this->primaryOwnerId) {
+                foreach ($this->primaryOwnerId as $primaryOwnerId) {
+                    $tags[] = "owner:$primaryOwnerId";
                 }
             }
         }

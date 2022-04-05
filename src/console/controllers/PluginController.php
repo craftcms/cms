@@ -15,7 +15,7 @@ use Throwable;
 use yii\console\ExitCode;
 
 /**
- * Manage plugins.
+ * Manages plugins.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.0
@@ -59,7 +59,7 @@ class PluginController extends Controller
     }
 
     /**
-     * List all plugins.
+     * Lists all plugins.
      *
      * @return int
      * @since 3.7.31
@@ -74,6 +74,7 @@ class PluginController extends Controller
             $row = [
                 $info['name'],
                 $handle,
+                $info['packageName'],
                 $info['version'],
                 $this->_boolToString($info['isInstalled']),
                 $this->_boolToString($info['isEnabled']),
@@ -81,7 +82,7 @@ class PluginController extends Controller
 
             if ($info['isEnabled']) {
                 $color = Console::FG_GREEN;
-            } else if ($info['isInstalled']) {
+            } elseif ($info['isInstalled']) {
                 $color = Console::FG_YELLOW;
             } else {
                 $color = Console::FG_GREY;
@@ -93,7 +94,7 @@ class PluginController extends Controller
         }
 
         $this->stdout(PHP_EOL);
-        $this->table(['Name', 'Handle', 'Version', 'Installed', 'Enabled'], $tableData);
+        $this->table(['Name', 'Handle', 'Package Name', 'Version', 'Installed', 'Enabled'], $tableData);
         $this->stdout(PHP_EOL);
 
         return ExitCode::OK;
@@ -126,7 +127,7 @@ class PluginController extends Controller
 
         try {
             $success = Craft::$app->getPlugins()->installPlugin($handle);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $success = false;
         } finally {
             if (!$success) {
@@ -274,7 +275,7 @@ class PluginController extends Controller
      * @param callable|null $filterCallback
      * @return string|int
      */
-    private function _pluginPrompt(string $tableMessage, string $noPlugins, string $prompt, ?callable $filterCallback)
+    private function _pluginPrompt(string $tableMessage, string $noPlugins, string $prompt, ?callable $filterCallback): int|string
     {
         if (!$this->interactive) {
             $this->stderr('A plugin handle must be specified.' . PHP_EOL, Console::FG_RED);
@@ -306,7 +307,7 @@ class PluginController extends Controller
         return $this->prompt($prompt, [
             'validator' => function(string $input) use ($uninstalledPluginInfo) {
                 return isset($uninstalledPluginInfo[$input]);
-            }
+            },
         ]);
     }
 

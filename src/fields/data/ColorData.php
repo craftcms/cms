@@ -62,7 +62,7 @@ class ColorData extends BaseObject implements Serializable
     /**
      * @inheritdoc
      */
-    public function serialize()
+    public function serialize(): mixed
     {
         return $this->_hex;
     }

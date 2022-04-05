@@ -7,7 +7,6 @@
 
 namespace craft\test;
 
-
 use craft\base\Model;
 
 /**
@@ -25,20 +24,20 @@ class EventItem extends Model
     /**
      * @var string
      */
-    public $type;
+    public string $type;
 
     /**
      * @var mixed
      */
-    public $desiredValue;
+    public mixed $desiredValue = null;
 
     /**
      * @var string
      */
-    public $eventPropName;
+    public string $eventPropName;
 
     /**
      * @var string
      */
-    public $desiredClass;
+    public string $desiredClass;
 }

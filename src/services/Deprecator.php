@@ -48,7 +48,7 @@ class Deprecator extends Component
      *
      * @since 3.0.7
      */
-    public $logTarget = 'db';
+    public string|false $logTarget = 'db';
 
     /**
      * @var DeprecationError[] The deprecation errors that were logged in the current request
@@ -137,7 +137,7 @@ class Deprecator extends Component
                     'message' => $log->message,
                     'traces' => Json::encode($log->traces),
                 ]);
-                $log->id = $db->getLastInsertID();
+                $log->id = (int)$db->getLastInsertID();
             } catch (Exception $e) {
                 Craft::warning("Couldn't save deprecation warning: {$e->getMessage()}", __METHOD__);
                 // Craft probably isn’t installed yet
@@ -269,13 +269,13 @@ class Deprecator extends Component
         if (empty($traces[2]['class']) && isset($traces[2]['function']) && $traces[2]['function'] === 'twig_get_attribute') {
             // came through twig_get_attribute()
             $templateTrace = 3;
-        } else if ($this->_isTemplateAttributeCall($traces, 4)) {
+        } elseif ($this->_isTemplateAttributeCall($traces, 4)) {
             // came through Template::attribute()
             $templateTrace = 4;
-        } else if ($this->_isTemplateAttributeCall($traces, 2)) {
+        } elseif ($this->_isTemplateAttributeCall($traces, 2)) {
             // special case for "deprecated" date functions the Template helper pretends still exist
             $templateTrace = 2;
-        } else if (
+        } elseif (
             isset($traces[1]['class'], $traces[1]['function']) &&
             (
                 ($traces[1]['class'] === ElementQuery::class && $traces[1]['function'] === 'getIterator') ||
@@ -352,7 +352,7 @@ class Deprecator extends Component
     {
         $logTraces = [];
 
-        foreach ($traces as $i => $trace) {
+        foreach ($traces as $trace) {
             $logTraces[] = [
                 'objectClass' => !empty($trace['object']) ? get_class($trace['object']) : null,
                 'file' => !empty($trace['file']) ? $trace['file'] : null,
@@ -406,28 +406,26 @@ class Deprecator extends Component
 
         foreach ($args as $key => $value) {
             // Cap it off at 5
-            $count++;
-
-            if ($count == 5) {
+            if (++$count === 5) {
                 $strArgs[] = '...';
                 break;
             }
 
             if (is_object($value)) {
                 $strValue = get_class($value);
-            } else if (is_bool($value)) {
+            } elseif (is_bool($value)) {
                 $strValue = $value ? 'true' : 'false';
-            } else if (is_string($value)) {
+            } elseif (is_string($value)) {
                 if (strlen($value) > 64) {
                     $strValue = '"' . StringHelper::substr($value, 0, 64) . '..."';
                 } else {
                     $strValue = '"' . $value . '"';
                 }
-            } else if (is_array($value)) {
+            } elseif (is_array($value)) {
                 $strValue = '[' . $this->_argsToString($value) . ']';
-            } else if ($value === null) {
+            } elseif ($value === null) {
                 $strValue = 'null';
-            } else if (is_resource($value)) {
+            } elseif (is_resource($value)) {
                 $strValue = 'resource';
             } else {
                 $strValue = $value;
@@ -435,14 +433,10 @@ class Deprecator extends Component
 
             if (is_string($key)) {
                 $strArgs[] = '"' . $key . '" => ' . $strValue;
-            } else if ($isAssoc) {
+            } elseif ($isAssoc) {
                 $strArgs[] = $key . ' => ' . $strValue;
             } else {
                 $strArgs[] = $strValue;
-            }
-
-            if ($count == 5) {
-                break;
             }
         }
 

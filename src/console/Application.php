@@ -19,6 +19,7 @@ use IntlException;
 use Throwable;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
+use yii\base\Response as BaseResponse;
 use yii\console\controllers\CacheController;
 use yii\console\controllers\HelpController;
 use yii\console\controllers\MigrateController;
@@ -31,8 +32,8 @@ use yii\console\Response;
  *
  * @property Request $request The request component
  * @property User $user The user component
- * @method Request getRequest()      Returns the request component.
- * @method Response getResponse()     Returns the response component.
+ * @method Request getRequest() Returns the request component.
+ * @method Response getResponse() Returns the response component.
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
@@ -67,7 +68,7 @@ class Application extends \yii\console\Application
     /**
      * @inheritdoc
      */
-    public function runAction($route, $params = [])
+    public function runAction($route, $params = []): int|BaseResponse|null
     {
         if (!$this->getIsInstalled()) {
             [$firstSeg] = explode('/', $route, 2);
@@ -99,12 +100,13 @@ class Application extends \yii\console\Application
     {
         parent::setTimeZone($value);
 
-        if ($value !== 'UTC' && $this->getI18n()->getIsIntlLoaded()) {
+        if ($value !== 'UTC') {
             // Make sure that ICU supports this timezone
             try {
                 /** @noinspection PhpExpressionResultUnusedInspection */
+                /** @phpstan-ignore-next-line */
                 new IntlDateFormatter($this->language, IntlDateFormatter::NONE, IntlDateFormatter::NONE);
-            } catch (IntlException $e) {
+            } catch (IntlException) {
                 Craft::warning("Time zone “{$value}” does not appear to be supported by ICU: " . intl_get_error_message());
                 parent::setTimeZone('UTC');
             }

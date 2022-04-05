@@ -21,6 +21,8 @@ use yii\validators\Validator;
  *
  * @mixin FieldTrait
  * @mixin YiiComponent
+ * @mixin Model
+ * @mixin SavableComponentTrait
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
@@ -61,7 +63,7 @@ interface FieldInterface extends SavableComponentInterface
      * ```php
      * public static function valueType(): string
      * {
-     *      return 'int|mixed|\\craft\\elements\\db\\ElementQuery';
+     *      return 'int|string';
      * }
      * ```
      *
@@ -94,7 +96,7 @@ interface FieldInterface extends SavableComponentInterface
      * appended as well.
      * @see \yii\db\QueryBuilder::getColumnType()
      */
-    public function getContentColumnType();
+    public function getContentColumnType(): array|string;
 
     /**
      * Returns the orientation the field should use (`ltr` or `rtl`).
@@ -157,6 +159,14 @@ interface FieldInterface extends SavableComponentInterface
      * @since 3.7.0
      */
     public function getStatus(ElementInterface $element): ?array;
+
+    /**
+     * Returns the input’s ID, which the `<label>`’s `for` attribute should reference.
+     *
+     * @return string
+     * @since 3.7.32
+     */
+    public function getInputId(): string;
 
     /**
      * Returns whether the field should use a `<fieldset>` + `<legend>` instead of a `<div>` + `<label>`.
@@ -255,7 +265,7 @@ interface FieldInterface extends SavableComponentInterface
      * @param ElementInterface|null $element The element the field is associated with, if there is one
      * @return string The input HTML.
      */
-    public function getInputHtml($value, ?ElementInterface $element = null): string;
+    public function getInputHtml(mixed $value, ?ElementInterface $element = null): string;
 
     /**
      * Returns a static (non-editable) version of the field’s input HTML.
@@ -266,7 +276,7 @@ interface FieldInterface extends SavableComponentInterface
      * @param ElementInterface $element The element the field is associated with
      * @return string The static version of the field’s input HTML
      */
-    public function getStaticHtml($value, ElementInterface $element): string;
+    public function getStaticHtml(mixed $value, ElementInterface $element): string;
 
     /**
      * Returns the validation rules for an element with this field.
@@ -307,7 +317,7 @@ interface FieldInterface extends SavableComponentInterface
      * @return bool Whether the value should be considered “empty”
      * @see Validator::$isEmpty
      */
-    public function isValueEmpty($value, ElementInterface $element): bool;
+    public function isValueEmpty(mixed $value, ElementInterface $element): bool;
 
     /**
      * Returns the search keywords that should be associated with this field.
@@ -319,7 +329,7 @@ interface FieldInterface extends SavableComponentInterface
      * @param ElementInterface $element The element the field is associated with, if there is one
      * @return string A string of search keywords.
      */
-    public function getSearchKeywords($value, ElementInterface $element): string;
+    public function getSearchKeywords(mixed $value, ElementInterface $element): string;
 
     /**
      * Normalizes the field’s value for use.
@@ -344,7 +354,7 @@ interface FieldInterface extends SavableComponentInterface
      * @param ElementInterface|null $element The element the field is associated with, if there is one
      * @return mixed The prepared field value
      */
-    public function normalizeValue($value, ?ElementInterface $element = null);
+    public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed;
 
     /**
      * Prepares the field’s value to be stored somewhere, like the content table.
@@ -356,7 +366,7 @@ interface FieldInterface extends SavableComponentInterface
      * @param ElementInterface|null $element The element the field is associated with, if there is one
      * @return mixed The serialized field value
      */
-    public function serializeValue($value, ?ElementInterface $element = null);
+    public function serializeValue(mixed $value, ?ElementInterface $element = null): mixed;
 
     /**
      * Copies the field’s value from one element to another.
@@ -372,9 +382,10 @@ interface FieldInterface extends SavableComponentInterface
      *
      * The rule class must be an instance of [[\craft\fields\conditions\FieldConditionRuleInterface]].
      *
-     * @return string|array{class: string}|null
+     * @return string|array|null
+     * @phpstan-return string|array{class:string}|null
      */
-    public function getElementConditionRuleType();
+    public function getElementConditionRuleType(): array|string|null;
 
     /**
      * Modifies an element query.
@@ -389,7 +400,7 @@ interface FieldInterface extends SavableComponentInterface
      * @throws QueryAbortedException in the event that the method is sure that
      * no elements are going to be found.
      */
-    public function modifyElementsQuery(ElementQueryInterface $query, $value): void;
+    public function modifyElementsQuery(ElementQueryInterface $query, mixed $value): void;
 
     /**
      * Modifies an element index query.
@@ -431,7 +442,7 @@ interface FieldInterface extends SavableComponentInterface
      * @return Type|array
      * @since 3.3.0
      */
-    public function getContentGqlType();
+    public function getContentGqlType(): Type|array;
 
     /**
      * Returns the GraphQL type to be used as an argument in mutations for this field type.
@@ -439,7 +450,7 @@ interface FieldInterface extends SavableComponentInterface
      * @return Type|array
      * @since 3.5.0
      */
-    public function getContentGqlMutationArgumentType();
+    public function getContentGqlMutationArgumentType(): Type|array;
 
     /**
      * Returns the GraphQL type to be used as an argument in queries for this field type.
@@ -447,7 +458,7 @@ interface FieldInterface extends SavableComponentInterface
      * @return Type|array
      * @since 3.5.0
      */
-    public function getContentGqlQueryArgumentType();
+    public function getContentGqlQueryArgumentType(): Type|array;
 
     // Events
     // -------------------------------------------------------------------------

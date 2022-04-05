@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\test\fixtures\elements;
@@ -24,7 +24,7 @@ use yii\test\FileFixtureTrait;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Robuust digital | Bob Olde Hampsink <bob@robuust.digital>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since  3.6.0
+ * @since 3.6.0
  */
 abstract class BaseElementFixture extends DbFixture
 {
@@ -34,12 +34,12 @@ abstract class BaseElementFixture extends DbFixture
     /**
      * @var array
      */
-    protected $siteIds = [];
+    protected array $siteIds = [];
 
     /**
      * @var ElementInterface[] The loaded elements
      */
-    private $_elements = [];
+    private array $_elements = [];
 
     /**
      * @inheritdoc
@@ -61,14 +61,14 @@ abstract class BaseElementFixture extends DbFixture
         foreach ($this->loadData($this->dataFile) as $key => $data) {
             $element = $this->createElement();
 
-            // If they want to add a date deleted. Store it but dont set that as an element property
+            // If they want to add a dateDeleted, store it but don't set it on the element
             $dateDeleted = ArrayHelper::remove($data, 'dateDeleted');
 
             // Set the field layout
             $fieldLayoutType = ArrayHelper::remove($data, 'fieldLayoutType');
             if ($fieldLayoutType) {
                 $fieldLayout = Craft::$app->getFields()->getLayoutByType($fieldLayoutType);
-                if ($fieldLayout) {
+                if ($fieldLayout->id) {
                     $element->fieldLayoutId = $fieldLayout->id;
                 } else {
                     codecept_debug("Field layout with type: $fieldLayoutType could not be found");

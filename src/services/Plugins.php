@@ -92,12 +92,12 @@ class Plugins extends Component
     public const EVENT_AFTER_UNINSTALL_PLUGIN = 'afterUninstallPlugin';
 
     /**
-     * @event PluginEvent The event that is triggered before a plugin's settings are saved
+     * @event PluginEvent The event that is triggered before a plugin’s settings are saved
      */
     public const EVENT_BEFORE_SAVE_PLUGIN_SETTINGS = 'beforeSavePluginSettings';
 
     /**
-     * @event PluginEvent The event that is triggered after a plugin's settings are saved
+     * @event PluginEvent The event that is triggered after a plugin’s settings are saved
      */
     public const EVENT_AFTER_SAVE_PLUGIN_SETTINGS = 'afterSavePluginSettings';
 
@@ -136,7 +136,7 @@ class Plugins extends Component
     /**
      * @var string[]|string|null Any plugin handles that must be disabled per the `disablePlugins` config setting
      */
-    private $_forceDisabledPlugins;
+    private string|array|null $_forceDisabledPlugins = null;
 
     /**
      * @var string[] Cache for [[getPluginHandleByClass()]]
@@ -204,7 +204,7 @@ class Plugins extends Component
         foreach ($pluginInfo as $handle => $row) {
             try {
                 $configData = $this->_getPluginConfigData($handle);
-            } catch (InvalidPluginException $e) {
+            } catch (InvalidPluginException) {
                 continue;
             }
 
@@ -226,7 +226,7 @@ class Plugins extends Component
 
             try {
                 $plugin = $this->createPlugin($handle, $row);
-            } catch (InvalidPluginException $e) {
+            } catch (InvalidPluginException) {
                 $plugin = null;
             }
 
@@ -237,7 +237,8 @@ class Plugins extends Component
                 if (
                     $hasVersionChanged &&
                     isset($plugin->minVersionRequired) &&
-                    strpos($row['version'], 'dev-') !== 0 &&
+                    $plugin->minVersionRequired &&
+                    !str_starts_with($row['version'], 'dev-') &&
                     !StringHelper::endsWith($row['version'], '-dev') &&
                     version_compare($row['version'], $plugin->minVersionRequired, '<')
                 ) {
@@ -248,9 +249,9 @@ class Plugins extends Component
                     ]));
                 }
 
-                // If we're not updating, check if the plugin's version number changed, but not its schema version.
+                // If we're not updating, check if the plugin’s version number changed, but not its schema version.
                 if (!Craft::$app->getIsInMaintenanceMode() && $hasVersionChanged && !$this->isPluginUpdatePending($plugin)) {
-                    // Update our record of the plugin's version number
+                    // Update our record of the plugin’s version number
                     Db::update(Table::PLUGINS, [
                         'version' => $plugin->getVersion(),
                     ], [
@@ -327,6 +328,7 @@ class Plugins extends Component
      * The plugin may not actually be installed.
      *
      * @param string $class
+     * @phpstan-param class-string $class
      * @return string|null The plugin handle, or null if it can’t be determined
      */
     public function getPluginHandleByClass(string $class): ?string
@@ -338,13 +340,13 @@ class Plugins extends Component
         try {
             // Add a trailing slash so we don't get false positives
             $classPath = FileHelper::normalizePath(dirname((new ReflectionClass($class))->getFileName())) . DIRECTORY_SEPARATOR;
-        } catch (ReflectionException $e) {
+        } catch (ReflectionException) {
             return $this->_classPluginHandles[$class] = null;
         }
 
         // Find the plugin that contains this path (if any)
         foreach ($this->_composerPluginInfo as $handle => $info) {
-            if (isset($info['basePath']) && strpos($classPath, $info['basePath'] . DIRECTORY_SEPARATOR) === 0) {
+            if (isset($info['basePath']) && str_starts_with($classPath, $info['basePath'] . DIRECTORY_SEPARATOR)) {
                 return $this->_classPluginHandles[$class] = $handle;
             }
         }
@@ -679,6 +681,7 @@ class Plugins extends Component
         $info = $this->getPluginInfo($handle);
 
         /** @var string|PluginInterface $class */
+        /** @phpstan-var class-string<PluginInterface>|PluginInterface $class */
         $class = $info['class'];
 
         if (!in_array($edition, $class::editions(), true)) {
@@ -700,7 +703,7 @@ class Plugins extends Component
     }
 
     /**
-     * Saves a plugin's settings.
+     * Saves a plugin’s settings.
      *
      * @param PluginInterface $plugin The plugin
      * @param array $settings The plugin’s new settings
@@ -727,7 +730,7 @@ class Plugins extends Component
             return false;
         }
 
-        // Update the plugin's settings in the project config
+        // Update the plugin’s settings in the project config
         $pluginSettings = $plugin->getSettings();
         $pluginSettings = $pluginSettings ? ProjectConfigHelper::packAssociativeArrays($pluginSettings->toArray()) : [];
         Craft::$app->getProjectConfig()->set(ProjectConfig::PATH_PLUGINS . '.' . $plugin->handle . '.settings', $pluginSettings, "Change settings for plugin “{$plugin->handle}”");
@@ -904,6 +907,7 @@ class Plugins extends Component
         }
 
         /** @var string|PluginInterface $class */
+        /** @phpstan-var class-string<PluginInterface>|PluginInterface $class */
         $class = $config['class'];
 
         // Make sure the class exists and it implements PluginInterface
@@ -1164,7 +1168,7 @@ class Plugins extends Component
         // Validate the license key
         $normalizedLicenseKey = $this->normalizePluginLicenseKey($licenseKey);
 
-        // Set the plugin's license key in the project config
+        // Set the plugin’s license key in the project config
         Craft::$app->getProjectConfig()->set(ProjectConfig::PATH_PLUGINS . '.' . $handle . '.licenseKey', $normalizedLicenseKey, "Set license key for plugin “{$handle}”");
 
         // Update our cache of it
@@ -1173,7 +1177,7 @@ class Plugins extends Component
             $this->_storedPluginInfo[$handle]['licenseKey'] = $normalizedLicenseKey;
         }
 
-        // If we've cached the plugin's license key status, update the cache
+        // If we've cached the plugin’s license key status, update the cache
         if ($this->getPluginLicenseKeyStatus($handle) !== LicenseKeyStatus::Unknown) {
             $this->setPluginLicenseKeyStatus($handle, LicenseKeyStatus::Unknown);
         }
@@ -1194,7 +1198,7 @@ class Plugins extends Component
             return null;
         }
 
-        if (strpos($licenseKey, '$') === 0) {
+        if (str_starts_with($licenseKey, '$')) {
             return $licenseKey;
         }
 
@@ -1226,8 +1230,8 @@ class Plugins extends Component
      *
      * @param string $handle The plugin’s handle
      * @param string|null $licenseKeyStatus The plugin’s license key status
-     * @param string|null $licensedEdition The plugin's licensed edition, if the key is valid
-     * @throws InvalidPluginException if the plugin isn't installed
+     * @param string|null $licensedEdition The plugin’s licensed edition, if the key is valid
+     * @throws InvalidPluginException if the plugin isn’t installed
      */
     public function setPluginLicenseKeyStatus(string $handle, ?string $licenseKeyStatus = null, ?string $licensedEdition = null): void
     {
@@ -1332,7 +1336,6 @@ class Plugins extends Component
      *
      * @param string $handle
      * @return array
-     *
      * @throws InvalidPluginException if plugin not found
      */
     private function _getPluginConfigData(string $handle): array

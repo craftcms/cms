@@ -15,6 +15,8 @@ namespace craft\db;
  */
 abstract class Table
 {
+    /** @since 4.0.0 */
+    public const ADDRESSES = '{{%addresses}}';
     /** @since 3.7.0 */
     public const ANNOUNCEMENTS = '{{%announcements}}';
     public const ASSETINDEXDATA = '{{%assetindexdata}}';
@@ -60,6 +62,8 @@ abstract class Table
     public const GQLTOKENS = '{{%gqltokens}}';
     public const INFO = '{{%info}}';
     public const MATRIXBLOCKS = '{{%matrixblocks}}';
+    /** @since 4.0.0 */
+    public const MATRIXBLOCKS_OWNERS = '{{%matrixblocks_owners}}';
     public const MATRIXBLOCKTYPES = '{{%matrixblocktypes}}';
     public const MIGRATIONS = '{{%migrations}}';
     /** @since 3.4.0 */

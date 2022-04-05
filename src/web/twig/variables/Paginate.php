@@ -33,7 +33,8 @@ class Paginate extends BaseObject
         $pageResults = $paginator->getPageResults();
         $pageOffset = $paginator->getPageOffset();
 
-        return new self([
+        return Craft::createObject([
+            'class' => static::class,
             'first' => $pageOffset + 1,
             'last' => $pageOffset + count($pageResults),
             'total' => $paginator->getTotalResults(),
@@ -111,7 +112,7 @@ class Paginate extends BaseObject
         }
 
         $pageTrigger = Craft::$app->getConfig()->getGeneral()->getPageTrigger();
-        $useQueryParam = strpos($pageTrigger, '?') === 0;
+        $useQueryParam = str_starts_with($pageTrigger, '?');
 
         $path = $this->getBasePath();
 

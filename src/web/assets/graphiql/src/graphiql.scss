@@ -59,6 +59,9 @@ body,
 
   .topBarWrap {
     .topBar {
+      body.rtl & {
+        direction: rtl;
+      }
       padding: 14px 24px;
 
       .title {
@@ -143,7 +146,7 @@ body,
       }
 
       svg {
-        margin-left: 5px;
+        @include margin-left(5px);
       }
     }
 
@@ -159,7 +162,7 @@ body,
         max-width: unset;
 
         &:hover {
-          @include menu-option-active-styles;
+          @include disclosure-link-hover-styles;
         }
 
         &.selected-schema {
@@ -230,7 +233,12 @@ body,
     }
 
     .spinner {
-      background: none;
+      animation: none;
+      border: none;
+      display: inline-flex;
+      height: 24px;
+      width: 24px;
+      position: relative;
     }
   }
 }

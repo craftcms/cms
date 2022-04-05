@@ -21,7 +21,7 @@ class Install
      * @var array|false|null
      * @see _primarySiteConfig()
      */
-    private static $_primarySiteConfig;
+    private static array|null|false $_primarySiteConfig = null;
 
     /**
      * Returns the default site name for the installer.

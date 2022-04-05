@@ -31,6 +31,11 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend({
             $body = $('<div class="body"><div class="spinner big"></div></div>').appendTo($container),
             $footer = $('<div class="footer"/>').appendTo($container);
 
+        if (this.settings.fullscreen) {
+            $container.addClass('fullscreen');
+            this.settings.minGutter = 0;
+        }
+
         this.base($container, this.settings);
 
         this.$secondaryButtons = $('<div class="buttons left secondary-buttons"/>').appendTo($footer);
@@ -179,9 +184,9 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend({
             data.showSiteMenu = this.settings.showSiteMenu ? '1' : '0';
         }
 
-        Craft.postActionRequest('element-selector-modals/body', data, (response, textStatus) => {
-            if (textStatus === 'success') {
-                this.$body.html(response.html);
+        Craft.sendActionRequest('POST', 'element-selector-modals/body', {data})
+            .then((response) => {
+                this.$body.html(response.data.html);
 
                 if (this.$body.has('.sidebar:not(.hidden)').length) {
                     this.$body.addClass('has-sidebar');
@@ -212,11 +217,11 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend({
                         this.selectElements();
                     }
                 });
-            }
-        });
+            });
     }
 }, {
     defaults: {
+        fullscreen: false,
         resizable: true,
         storageKey: null,
         sources: null,

@@ -25,15 +25,15 @@ use yii\db\Expression;
 class PruneRevisionsController extends Controller
 {
     /**
-     * @var int The maximum number of revisions an element can have.
+     * @var int|null The maximum number of revisions an element can have.
      */
-    public int $maxRevisions;
+    public ?int $maxRevisions = null;
 
     /**
      * @var bool Whether this is a dry run.
      * @since 3.7.9
      */
-    public $dryRun = false;
+    public bool $dryRun = false;
 
     /**
      * @inheritdoc
@@ -54,7 +54,7 @@ class PruneRevisionsController extends Controller
     public function actionIndex(): int
     {
         if (!isset($this->maxRevisions)) {
-            $this->maxRevisions = $this->prompt('What is the max number of revisions an element can have?', [
+            $this->maxRevisions = (int)$this->prompt('What is the max number of revisions an element can have?', [
                 'default' => Craft::$app->getConfig()->getGeneral()->maxRevisions,
                 'validator' => function($input) {
                     return filter_var($input, FILTER_VALIDATE_INT, FILTER_NULL_ON_FAILURE) !== null && $input >= 0;

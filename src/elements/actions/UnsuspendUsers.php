@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementAction;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\User;
+use Throwable;
 
 /**
  * UnsuspendUsers represents an Unsuspend Users element action.
@@ -31,6 +32,40 @@ class UnsuspendUsers extends ElementAction
     /**
      * @inheritdoc
      */
+    public function getTriggerHtml(): ?string
+    {
+        Craft::$app->getView()->registerJsWithVars(function($type) {
+            return <<<JS
+(() => {
+    new Craft.ElementActionTrigger({
+        type: $type,
+        batch: true,
+        validateSelection: \$selectedItems => {
+            for (let i = 0; i < \$selectedItems.length; i++) {
+                const \$element = \$selectedItems.eq(i).find('.element');
+                if (
+                    !Garnish.hasAttr(\$element, 'data-can-suspend') ||
+                    !Garnish.hasAttr(\$element, 'data-suspended')
+                ) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+    });
+})();
+JS;
+        }, [
+            static::class,
+        ]);
+
+        return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function performAction(ElementQueryInterface $query): bool
     {
         // Get the users that are suspended
@@ -38,13 +73,22 @@ class UnsuspendUsers extends ElementAction
         /** @var User[] $users */
         $users = $query->all();
         $usersService = Craft::$app->getUsers();
+        $currentUser = Craft::$app->getUser()->getIdentity();
 
-        foreach ($users as $user) {
-            $usersService->unsuspendUser($user);
+        $successCount = count(array_filter($users, function(User $user) use ($usersService, $currentUser) {
+            try {
+                return $usersService->canSuspend($currentUser, $user) && $usersService->unsuspendUser($user);
+            } catch (Throwable) {
+                return false;
+            }
+        }));
+
+        if ($successCount !== count($users)) {
+            $this->setMessage(Craft::t('app', 'Couldn’t unsuspend all users.'));
+            return false;
         }
 
         $this->setMessage(Craft::t('app', 'Users unsuspended.'));
-
         return true;
     }
 }

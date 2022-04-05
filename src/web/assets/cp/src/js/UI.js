@@ -133,6 +133,58 @@ Craft.ui =
             return $container;
         },
 
+        createCopyTextBtn: function(config) {
+            let id = config.id || 'copytext' + Math.floor(Math.random() * 1000000000);
+            let value = config.value;
+
+            let $btn = $('<div/>', {
+                id,
+                'class': 'copytextbtn',
+                'role': 'button',
+                'title': Craft.t('app', 'Copy to clipboard'),
+                'aria-label': Craft.t('app', 'Copy to clipboard'),
+                'tabindex': '0',
+            });
+
+            if (config.class) {
+                $btn.addClass(config.class);
+            }
+
+            let $input = $('<input/>', {
+                value,
+                readonly: true,
+                size: value.length,
+                tabindex: '-1',
+            }).appendTo($btn);
+
+            let $icon = $('<span/>', {
+                'data-icon': 'clipboard',
+                'aria-hidden': 'true',
+            }).appendTo($btn);
+
+            const copyValue = function() {
+                $input[0].select();
+                document.execCommand('copy');
+                Craft.cp.displayNotice(Craft.t('app', 'Copied to clipboard.'));
+                $btn.trigger('copy');
+                $input[0].setSelectionRange(0, 0);
+                $btn.focus();
+            };
+
+            $btn.on('click', () => {
+                copyValue();
+            });
+
+            $btn.on('keydown', ev => {
+                if (ev.keyCode === Garnish.SPACE_KEY) {
+                    copyValue();
+                    ev.preventDefault();
+                }
+            });
+
+            return $btn;
+        },
+
         createCopyTextField: function(config) {
             if (!config.id) {
                 config.id = 'copytext' + Math.floor(Math.random() * 1000000000);
@@ -306,7 +358,7 @@ Craft.ui =
             });
 
             // Should we include a hidden input first?
-            if (config.name && (config.name.length < 3 || config.name.substr(-2) !== '[]')) {
+            if (config.name && (config.name.length < 3 || config.name.slice(-2) !== '[]')) {
                 return $([
                     $('<input/>', {
                         type: 'hidden',
@@ -535,22 +587,24 @@ Craft.ui =
         },
 
         createDateInput: function(config) {
-            var id = (config.id || 'date' + Math.floor(Math.random() * 1000000000)) + '-date';
-            var name = config.name || null;
-            var inputName = name ? name + '[date]' : null;
-            var value = config.value && typeof config.value.getMonth === 'function' ? config.value : null;
-            var formattedValue = value ? Craft.formatDate(value) : null;
-            var autofocus = config.autofocus && Garnish.isMobileBrowser(true);
-            var disabled = config.disabled || false;
+            const isMobile = Garnish.isMobileBrowser();
+            const id = (config.id || 'date' + Math.floor(Math.random() * 1000000000)) + '-date';
+            const name = config.name || null;
+            const inputName = name ? name + '[date]' : null;
+            const value = config.value && typeof config.value.getMonth === 'function' ? config.value : null;
+            const autofocus = config.autofocus && Garnish.isMobileBrowser(true);
+            const disabled = config.disabled || false;
 
-            var $container = $('<div/>', {
+            const $container = $('<div/>', {
                 'class': 'datewrapper'
             });
 
-            var $input = this.createTextInput({
+            const $input = this.createTextInput({
                 id: id,
+                type: isMobile ? 'date' : 'text',
+                class: isMobile && !value ? 'empty-value' : false,
                 name: inputName,
-                value: formattedValue,
+                value: value ? (isMobile ? value.toISOString().split('T')[0] : Craft.formatDate(value)) : '',
                 placeholder: ' ',
                 autocomplete: false,
                 autofocus: autofocus,
@@ -567,11 +621,19 @@ Craft.ui =
                 }).appendTo($container);
             }
 
-            $input.datepicker($.extend({
-                defaultDate: value || new Date()
-            }, Craft.datepickerOptions));
+            if (isMobile) {
+                $input.datetimeinput();
+            } else {
+                $input.datepicker($.extend({
+                    defaultDate: value || new Date(),
+                }, Craft.datepickerOptions));
+            }
 
-            return $container;
+            if (config.hasOuterContainer) {
+                return $container;
+            }
+
+            return $('<div class="datetimewrapper"/>').append($container).datetime();
         },
 
         createDateField: function(config) {
@@ -816,19 +878,22 @@ Craft.ui =
         },
 
         createTimeInput: function(config) {
-            var id = (config.id || 'time' + Math.floor(Math.random() * 1000000000)) + '-time';
-            var name = config.name || null;
-            var inputName = name ? name + '[time]' : null;
-            var value = config.value && typeof config.value.getMonth === 'function' ? config.value : null;
-            var autofocus = config.autofocus && Garnish.isMobileBrowser(true);
-            var disabled = config.disabled || false;
+            const isMobile = Garnish.isMobileBrowser();
+            const id = (config.id || 'time' + Math.floor(Math.random() * 1000000000)) + '-time';
+            const name = config.name || null;
+            const inputName = name ? name + '[time]' : null;
+            const value = config.value && typeof config.value.getMonth === 'function' ? config.value : null;
+            const autofocus = config.autofocus && Garnish.isMobileBrowser(true);
+            const disabled = config.disabled || false;
 
-            var $container = $('<div/>', {
+            const $container = $('<div/>', {
                 'class': 'timewrapper'
             });
 
-            var $input = this.createTextInput({
+            const $input = this.createTextInput({
                 id: id,
+                type: isMobile ? 'time' : 'text',
+                class: isMobile && !value ? 'empty-value' : false,
                 name: inputName,
                 placeholder: ' ',
                 autocomplete: false,
@@ -846,12 +911,23 @@ Craft.ui =
                 }).appendTo($container);
             }
 
-            $input.timepicker(Craft.timepickerOptions);
-            if (value) {
-                $input.timepicker('setTime', value.getHours() * 3600 + value.getMinutes() * 60 + value.getSeconds());
+            if (isMobile) {
+                if (value) {
+                    $input.val(value.toISOString().split('T')[1]);
+                }
+                $input.datetimeinput();
+            } else {
+                $input.timepicker(Craft.timepickerOptions);
+                if (value) {
+                    $input.timepicker('setTime', value.getHours() * 3600 + value.getMinutes() * 60 + value.getSeconds());
+                }
             }
 
-            return $container;
+            if (config.hasOuterContainer) {
+                return $container;
+            }
+
+            return $('<div class="datetimewrapper"/>').append($container).datetime();
         },
 
         createTimeField: function(config) {
@@ -895,8 +971,20 @@ Craft.ui =
 
             $('<div class="input"/>').append(input).appendTo($field);
 
+            if (config.tip) {
+                const $tip = $('<p class="notice has-icon"/>');
+                $('<span class="icon" aria-hidden="true"/>').appendTo($tip);
+                $('<span class="visually-hidden"/>').text(Craft.t('app', 'Tip') + ': ').appendTo($tip);
+                $('<span/>').text(config.tip).appendTo($tip);
+                $tip.appendTo($field);
+            }
+
             if (config.warning) {
-                $('<p class="warning"/>').text(config.warning).appendTo($field);
+                const $warning = $('<p class="warning has-icon"/>');
+                $('<span class="icon" aria-hidden="true"/>').appendTo($warning);
+                $('<span class="visually-hidden"/>').text(Craft.t('app', 'Warning') + ': ').appendTo($warning);
+                $('<span/>').text(config.warning).appendTo($warning);
+                $warning.appendTo($field);
             }
 
             if (config.errors) {

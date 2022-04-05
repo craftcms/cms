@@ -19,7 +19,6 @@ use craft\gql\resolvers\elements\Tag as TagResolver;
 use craft\helpers\Db;
 use craft\helpers\Gql;
 use craft\helpers\Gql as GqlHelper;
-use craft\helpers\Html;
 use craft\models\GqlSchema;
 use craft\models\TagGroup;
 use craft\services\Gql as GqlService;
@@ -76,24 +75,25 @@ class Tags extends BaseRelationField
     public bool $allowLimit = false;
 
     /**
-     * @var int|false|null
+     * @var string|false
+     * @see _getTagGroupUid()
      */
-    private $_tagGroupId;
+    private string|false $_tagGroupUid;
 
     /**
      * @inheritdoc
      */
-    protected function inputHtml($value, ?ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
     {
         if ($element !== null && $element->hasEagerLoadedElements($this->handle)) {
-            $value = $element->getEagerLoadedElements($this->handle);
+            $value = $element->getEagerLoadedElements($this->handle)->all();
         }
 
         if ($value instanceof ElementQueryInterface) {
             $value = $value
                 ->status(null)
                 ->all();
-        } else if (!is_array($value)) {
+        } elseif (!is_array($value)) {
             $value = [];
         }
 
@@ -103,12 +103,12 @@ class Tags extends BaseRelationField
             return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Tags/input',
                 [
                     'elementType' => static::elementType(),
-                    'id' => Html::id($this->handle),
+                    'id' => $this->getInputId(),
                     'name' => $this->handle,
                     'elements' => $value,
                     'tagGroupId' => $tagGroup->id,
                     'targetSiteId' => $this->targetSiteId($element),
-                    'sourceElementId' => $element !== null ? $element->id : null,
+                    'sourceElementId' => $element?->id,
                     'selectionLabel' => $this->selectionLabel ? Craft::t('site', $this->selectionLabel) : static::defaultSelectionLabel(),
                 ]);
         }
@@ -128,7 +128,7 @@ class Tags extends BaseRelationField
      * @inheritdoc
      * @since 3.3.0
      */
-    public function getContentGqlType()
+    public function getContentGqlType(): Type|array
     {
         return [
             'name' => $this->handle,
@@ -164,30 +164,25 @@ class Tags extends BaseRelationField
      */
     private function _getTagGroup(): ?TagGroup
     {
-        $tagGroupId = $this->_getTagGroupId();
-
-        if ($tagGroupId !== false) {
-            return Craft::$app->getTags()->getTagGroupByUid($tagGroupId);
-        }
-
-        return null;
+        $groupUid = $this->_getTagGroupUid();
+        return $groupUid ? Craft::$app->getTags()->getTagGroupByUid($groupUid) : null;
     }
 
     /**
      * Returns the tag group ID this field is associated with.
      *
-     * @return int|false
+     * @return string|null
      */
-    private function _getTagGroupId()
+    private function _getTagGroupUid(): ?string
     {
-        if (isset($this->_tagGroupId)) {
-            return $this->_tagGroupId;
+        if (!isset($this->_tagGroupUid)) {
+            if (preg_match('/^taggroup:([0-9a-f\-]+)$/', $this->source, $matches)) {
+                $this->_tagGroupUid = $matches[1];
+            } else {
+                $this->_tagGroupUid = false;
+            }
         }
 
-        if (!preg_match('/^taggroup:([0-9a-f\-]+)$/', $this->source, $matches)) {
-            return $this->_tagGroupId = false;
-        }
-
-        return $this->_tagGroupId = $matches[1];
+        return $this->_tagGroupUid ?: null;
     }
 }

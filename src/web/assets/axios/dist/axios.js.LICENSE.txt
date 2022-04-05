@@ -1,10 +1,20 @@
+/*! ../adapters/xhr */
+
+/*! ../cancel/Cancel */
+
 /*! ../cancel/isCancel */
 
 /*! ../core/buildFullPath */
 
 /*! ../core/createError */
 
+/*! ../core/enhanceError */
+
 /*! ../defaults */
+
+/*! ../defaults/transitional */
+
+/*! ../env/data */
 
 /*! ../helpers/buildURL */
 
@@ -12,15 +22,13 @@
 
 /*! ../helpers/isAbsoluteURL */
 
+/*! ../helpers/normalizeHeaderName */
+
 /*! ../helpers/validator */
 
 /*! ../utils */
 
-/*! ./../../package.json */
-
 /*! ./../core/settle */
-
-/*! ./../defaults */
 
 /*! ./../helpers/buildURL */
 
@@ -36,8 +44,6 @@
 
 /*! ./InterceptorManager */
 
-/*! ./adapters/xhr */
-
 /*! ./cancel/Cancel */
 
 /*! ./cancel/CancelToken */
@@ -45,8 +51,6 @@
 /*! ./cancel/isCancel */
 
 /*! ./core/Axios */
-
-/*! ./core/enhanceError */
 
 /*! ./core/mergeConfig */
 
@@ -58,11 +62,11 @@
 
 /*! ./enhanceError */
 
+/*! ./env/data */
+
 /*! ./helpers/bind */
 
 /*! ./helpers/isAxiosError */
-
-/*! ./helpers/normalizeHeaderName */
 
 /*! ./helpers/spread */
 
@@ -72,9 +76,9 @@
 
 /*! ./transformData */
 
-/*! ./utils */
+/*! ./transitional */
 
-/*! exports provided: name, version, description, main, scripts, repository, keywords, author, license, bugs, homepage, devDependencies, browser, jsdelivr, unpkg, typings, dependencies, bundlesize, default */
+/*! ./utils */
 
 /*! no static exports found */
 
@@ -90,12 +94,8 @@
   !*** ./lib/utils.js ***!
   \**********************/
 
-/*!**********************!*\
-  !*** ./package.json ***!
-  \**********************/
-
 /*!*************************!*\
-  !*** ./lib/defaults.js ***!
+  !*** ./lib/env/data.js ***!
   \*************************/
 
 /*!***************************!*\
@@ -117,6 +117,10 @@
 /*!******************************!*\
   !*** ./lib/cancel/Cancel.js ***!
   \******************************/
+
+/*!*******************************!*\
+  !*** ./lib/defaults/index.js ***!
+  \*******************************/
 
 /*!*******************************!*\
   !*** ./lib/helpers/spread.js ***!
@@ -177,6 +181,10 @@
 /*!*************************************!*\
   !*** ./lib/helpers/parseHeaders.js ***!
   \*************************************/
+
+/*!**************************************!*\
+  !*** ./lib/defaults/transitional.js ***!
+  \**************************************/
 
 /*!**************************************!*\
   !*** ./lib/helpers/isAbsoluteURL.js ***!

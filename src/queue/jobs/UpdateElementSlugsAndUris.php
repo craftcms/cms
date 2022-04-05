@@ -29,12 +29,13 @@ class UpdateElementSlugsAndUris extends BaseJob
     /**
      * @var int|int[]|null The ID(s) of the element(s) to update
      */
-    public $elementId;
+    public array|int|null $elementId = null;
 
     /**
-     * @var string|ElementInterface|null The type of elements to update.
+     * @var string The type of elements to update.
+     * @phpstan-var class-string<ElementInterface>
      */
-    public $elementType;
+    public string $elementType;
 
     /**
      * @var int|null The site ID of the elements to update.
@@ -90,6 +91,8 @@ class UpdateElementSlugsAndUris extends BaseJob
      */
     private function _createElementQuery(): ElementQueryInterface
     {
+        /** @var string|ElementInterface $class */
+        /** @phpstan-var class-string<ElementInterface>|ElementInterface $class */
         $class = $this->elementType;
 
         return $class::find()
@@ -101,10 +104,11 @@ class UpdateElementSlugsAndUris extends BaseJob
      * Updates the given elements’ slugs and URIs
      *
      * @param Queue|QueueInterface $queue
-     * @param ElementQuery|ElementQueryInterface $query
+     * @param ElementQueryInterface $query
      */
-    private function _processElements($queue, $query): void
+    private function _processElements(Queue|QueueInterface $queue, ElementQueryInterface $query): void
     {
+        /** @var ElementQueryInterface|ElementQuery $query */
         $this->_totalToProcess += $query->count();
         $elementsService = Craft::$app->getElements();
 

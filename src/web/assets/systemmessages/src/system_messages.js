@@ -60,7 +60,6 @@ import './system_messages.scss';
         $bodyInput: null,
         $saveBtn: null,
         $cancelBtn: null,
-        $spinner: null,
 
         loading: false,
 
@@ -86,14 +85,15 @@ import './system_messages.scss';
                 data[Craft.csrfTokenName] = Craft.csrfTokenValue;
             }
 
-            Craft.postActionRequest('system-messages/get-message-modal', data, (response, textStatus) => {
-                if (textStatus === 'success') {
+
+            Craft.sendActionRequest('POST', 'system-messages/get-message-modal', {data})
+                .then((response) => {
                     if (!this.$container) {
-                        var $container = $('<form class="modal fitted message-settings" accept-charset="UTF-8">' + response.body + '</form>').appendTo(Garnish.$bod);
+                        var $container = $('<form class="modal fitted message-settings" accept-charset="UTF-8">' + response.data.body + '</form>').appendTo(Garnish.$bod);
                         this.setContainer($container);
                         this.show();
                     } else {
-                        this.$container.html(response.body);
+                        this.$container.html(response.data.body);
                     }
 
                     this.$languageSelect = this.$container.find('.language:first > select');
@@ -101,7 +101,6 @@ import './system_messages.scss';
                     this.$bodyInput = this.$container.find('.message-body:first');
                     this.$saveBtn = this.$container.find('.submit:first');
                     this.$cancelBtn = this.$container.find('.cancel:first');
-                    this.$spinner = this.$container.find('.spinner:first');
 
                     this.addListener(this.$languageSelect, 'change', 'switchLanguage');
                     this.addListener(this.$container, 'submit', 'saveMessage');
@@ -110,8 +109,7 @@ import './system_messages.scss';
                     setTimeout(() => {
                         this.$subjectInput.trigger('focus');
                     }, 100);
-                }
-            });
+                });
         },
 
         switchLanguage: function() {
@@ -149,28 +147,29 @@ import './system_messages.scss';
             }
 
             this.loading = true;
-            this.$saveBtn.addClass('active');
-            this.$spinner.show();
+            this.$saveBtn.addClass('loading');
 
-            Craft.postActionRequest('system-messages/save-message', data, (response, textStatus) => {
-                this.$saveBtn.removeClass('active');
-                this.$spinner.hide();
-                this.loading = false;
+            Craft.sendActionRequest('POST', 'system-messages/save-message', {data})
+                .then((response) => {
+                    // Only update the page if we're editing the current language's message
+                    if (response.data.language === Craft.primarySiteLanguage) {
+                        this.message.updateHtmlFromModal();
+                    }
 
-                if (textStatus === 'success') {
-                    if (response.success) {
-                        // Only update the page if we're editing the current language's message
-                        if (data.language === Craft.primarySiteLanguage) {
-                            this.message.updateHtmlFromModal();
-                        }
-
-                        this.hide();
-                        Craft.cp.displayNotice(Craft.t('app', 'Message saved.'));
+                    this.hide();
+                    Craft.cp.displayNotice(Craft.t('app', 'Message saved.'));
+                })
+                .catch(({response}) => {
+                    if (response && response.data && response.data.message) {
+                        Craft.cp.displayError(response.data.message);
                     } else {
                         Craft.cp.displayError();
                     }
-                }
-            });
+                })
+                .finally(() => {
+                    this.$saveBtn.removeClass('loading');
+                    this.loading = false;
+                });
         },
 
         cancel: function() {

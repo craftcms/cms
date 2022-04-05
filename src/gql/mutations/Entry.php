@@ -105,7 +105,7 @@ class Entry extends Mutation
                         'provisional' => [
                             'name' => 'provisional',
                             'type' => Type::boolean(),
-                            'description' => 'Whether the draft should be a provisional draft or not.'
+                            'description' => 'Whether the draft should be a provisional draft or not.',
                         ],
                     ],
                     'resolve' => [$resolver, 'createDraft'],
@@ -124,7 +124,7 @@ class Entry extends Mutation
                         'provisional' => [
                             'name' => 'provisional',
                             'type' => Type::boolean(),
-                            'description' => 'Whether the draft is a provisional draft.'
+                            'description' => 'Whether the draft is a provisional draft.',
                         ],
                     ],
                     'resolve' => [$resolver, 'publishDraft'],
@@ -161,7 +161,7 @@ class Entry extends Mutation
         $resolver->setResolutionData('entryType', $entryType);
         $resolver->setResolutionData('section', $section);
 
-        static::prepareResolver($resolver, $entryType->getFields());
+        static::prepareResolver($resolver, $entryType->getCustomFields());
 
         switch ($section->type) {
             case Section::TYPE_SINGLE:
@@ -173,6 +173,7 @@ class Entry extends Mutation
                 break;
             case Section::TYPE_STRUCTURE:
                 $entryMutationArguments = array_merge($entryMutationArguments, StructureArguments::getArguments());
+            // no break
             default:
                 $description = 'Save a “' . $entryType->name . '” entry in the “' . $section->name . '” section.';
                 $draftDescription = 'Save a “' . $entryType->name . '” entry draft in the “' . $section->name . '” section.';

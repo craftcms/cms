@@ -15,6 +15,7 @@ use craft\debug\DeprecatedPanel;
 use craft\debug\Module as DebugModule;
 use craft\debug\RequestPanel;
 use craft\debug\UserPanel;
+use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
@@ -31,6 +32,7 @@ use yii\base\ExitException;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\base\InvalidRouteException;
+use yii\base\Response as BaseResponse;
 use yii\db\Exception as DbException;
 use yii\debug\panels\AssetPanel;
 use yii\debug\panels\DbPanel;
@@ -55,11 +57,11 @@ use yii\web\UnauthorizedHttpException;
  * @property Session $session The session component
  * @property UrlManager $urlManager The URL manager for this application
  * @property User $user The user component
- * @method Request getRequest()      Returns the request component.
- * @method \craft\web\Response getResponse()     Returns the response component.
- * @method Session getSession()      Returns the session component.
- * @method UrlManager getUrlManager()   Returns the URL manager for this application.
- * @method User getUser()         Returns the user component.
+ * @method Request getRequest() Returns the request component.
+ * @method \craft\web\Response getResponse() Returns the response component.
+ * @method Session getSession() Returns the session component.
+ * @method UrlManager getUrlManager() Returns the URL manager for this application.
+ * @method User getUser() Returns the user component.
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
@@ -96,7 +98,7 @@ class Application extends \yii\web\Application
 
         parent::init();
 
-        if (!defined('CRAFT_EPHEMERAL') || CRAFT_EPHEMERAL !== true) {
+        if (!App::isEphemeral()) {
             $this->ensureResourcePathExists();
         }
 
@@ -127,12 +129,13 @@ class Application extends \yii\web\Application
     {
         parent::setTimeZone($value);
 
-        if ($value !== 'UTC' && $this->getI18n()->getIsIntlLoaded()) {
+        if ($value !== 'UTC') {
             // Make sure that ICU supports this timezone
             try {
                 /** @noinspection PhpExpressionResultUnusedInspection */
+                /** @phpstan-ignore-next-line */
                 new IntlDateFormatter($this->language, IntlDateFormatter::NONE, IntlDateFormatter::NONE);
-            } catch (IntlException $e) {
+            } catch (IntlException) {
                 Craft::warning("Time zone “{$value}” does not appear to be supported by ICU: " . intl_get_error_message());
                 parent::setTimeZone('UTC');
             }
@@ -242,7 +245,7 @@ class Application extends \yii\web\Application
                 // Delete all compiled templates
                 try {
                     FileHelper::clearDirectory($this->getPath()->getCompiledTemplatesPath(false));
-                } catch (InvalidArgumentException $e) {
+                } catch (InvalidArgumentException) {
                     // the directory doesn't exist
                 } catch (ErrorException $e) {
                     Craft::error('Could not delete compiled templates: ' . $e->getMessage());
@@ -293,7 +296,7 @@ class Application extends \yii\web\Application
      * @param array $params
      * @return Response|null The result of the action, normalized into a Response object
      */
-    public function runAction($route, $params = [])
+    public function runAction($route, $params = []): ?BaseResponse
     {
         $result = parent::runAction($route, $params);
 
@@ -421,7 +424,7 @@ class Application extends \yii\web\Application
         $pref = $request->getIsCpRequest() ? 'enableDebugToolbarForCp' : 'enableDebugToolbarForSite';
         if (!(
             ($user && $user->admin && $user->getPreference($pref)) ||
-            (YII_DEBUG && $request->getHeaders()->get('X-Debug') === 'enable')
+            (App::devMode() && $request->getHeaders()->get('X-Debug') === 'enable')
         )) {
             return;
         }
@@ -483,7 +486,7 @@ class Application extends \yii\web\Application
         // Does this look like a resource request?
         $resourceBaseUri = parse_url(Craft::getAlias($this->getConfig()->getGeneral()->resourceBaseUrl), PHP_URL_PATH);
         $requestPath = $request->getFullPath();
-        if (strpos('/' . $requestPath, $resourceBaseUri . '/') !== 0) {
+        if (!str_starts_with('/' . $requestPath, $resourceBaseUri . '/')) {
             return;
         }
 
@@ -491,15 +494,22 @@ class Application extends \yii\web\Application
         $slash = strpos($resourceUri, '/');
         $hash = substr($resourceUri, 0, $slash);
 
-        try {
-            $sourcePath = (new Query())
-                ->select(['path'])
-                ->from(Table::RESOURCEPATHS)
-                ->where(['hash' => $hash])
-                ->scalar();
-        } catch (DbException $e) {
-            // Craft is either not installed or not updated to 3.0.3+ yet
-        }
+        $sourcePath = Craft::$app->getCache()->getOrSet(
+            Craft::$app->getAssetManager()->getCacheKeyForPathHash($hash),
+            function() use ($hash) {
+                try {
+                    return (new Query())
+                        ->select(['path'])
+                        ->from(Table::RESOURCEPATHS)
+                        ->where(['hash' => $hash])
+                        ->scalar();
+                } catch (DbException) {
+                    // Craft isn't installed yet
+                }
+
+                return false;
+            }
+        );
 
         if (empty($sourcePath)) {
             return;
@@ -572,7 +582,7 @@ class Application extends \yii\web\Application
             }
 
             // Redirect to the installer if Dev Mode is enabled
-            if (YII_DEBUG) {
+            if (App::devMode()) {
                 $url = UrlHelper::url('install');
                 $this->getResponse()->redirect($url);
                 $this->end();
@@ -669,7 +679,7 @@ class Application extends \yii\web\Application
             // Clear the template caches in case they've been compiled since this release was cut.
             try {
                 FileHelper::clearDirectory($this->getPath()->getCompiledTemplatesPath(false));
-            } catch (InvalidArgumentException $e) {
+            } catch (InvalidArgumentException) {
                 // the directory doesn't exist
             }
 

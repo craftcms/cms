@@ -65,6 +65,7 @@ class EntryType extends Model
 
     /**
      * @var string Title translation method
+     * @phpstan-var Field::TRANSLATION_METHOD_NONE|Field::TRANSLATION_METHOD_SITE|Field::TRANSLATION_METHOD_SITE_GROUP|Field::TRANSLATION_METHOD_LANGUAGE|Field::TRANSLATION_METHOD_CUSTOM
      * @since 3.5.0
      */
     public string $titleTranslationMethod = Field::TRANSLATION_METHOD_SITE;
@@ -88,14 +89,14 @@ class EntryType extends Model
     /**
      * @inheritdoc
      */
-    public function behaviors(): array
+    protected function defineBehaviors(): array
     {
-        $behaviors = parent::behaviors();
-        $behaviors['fieldLayout'] = [
-            'class' => FieldLayoutBehavior::class,
-            'elementType' => Entry::class,
+        return [
+            'fieldLayout' => [
+                'class' => FieldLayoutBehavior::class,
+                'elementType' => Entry::class,
+            ],
         ];
-        return $behaviors;
     }
 
     /**

@@ -46,7 +46,7 @@ class MultiOptionsFieldData extends ArrayObject
      * @param mixed $value
      * @return bool
      */
-    public function contains($value): bool
+    public function contains(mixed $value): bool
     {
         $value = (string)$value;
 

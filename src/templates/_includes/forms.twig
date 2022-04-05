@@ -148,6 +148,11 @@
 {% endmacro %}
 
 
+{% macro money(config) %}
+    {% include "_includes/forms/money" with config only %}
+{% endmacro %}
+
+
 {# Fields #}
 
 
@@ -196,7 +201,10 @@
 
 
 {% macro dateTimeField(config) %}
-    {% set config = config|merge({id: config.id ?? "datetime#{random()}"}) %}
+    {% set config = config|merge({
+        id: config.id ?? "datetime#{random()}",
+        fieldset: true,
+    }) %}
     {{ _self.field(config, 'template:_includes/forms/datetime') }}
 {% endmacro %}
 
@@ -218,7 +226,7 @@
     {% if (config.includeEnvVars ?? false) and config.tip is not defined and (config.value ?? '')[0:1] != '$' %}
         {% set config = config|merge({
             tip: (config.allowedEnvValues is not defined)
-            ? 'This can be set to an environment variable with a value of one of the selectable option values.'|t('app')
+            ? 'This can be set to an environment variable matching one of the option values.'|t('app')
             : 'This can be set to an environment variable.'|t('app'),
         }) %}
     {% endif %}
@@ -311,7 +319,7 @@
                 tip: ((config.suggestAliases ?? false)
                 ? 'This can be set to an environment variable, or begin with an alias.'|t('app')
                 : 'This can be set to an environment variable.'|t('app')) ~ ' ' ~ tag('a', {
-                    href: 'https://craftcms.com/docs/3.x/config/#environmental-configuration',
+                    href: 'https://craftcms.com/docs/4.x/config/#environmental-configuration',
                     class: 'go',
                     text: 'Learn more'|t('app'),
                 }),
@@ -344,7 +352,7 @@
     {% set config = config|merge({id: config.id ?? "fs#{random()}"}) %}
     {% if (config.includeEnvVars ?? false) and config.tip is not defined and (config.value ?? '')[0:1] != '$' %}
         {% set config = config|merge({
-            tip: 'This can be set to an environment variable with a value of a filesystem’s handle.'|t('app'),
+            tip: 'This can be set to an environment variable matching one of the option values.'|t('app'),
         }) %}
     {% endif %}
     {{ _self.field(config, 'template:_includes/forms/fs') }}
@@ -369,6 +377,12 @@
         label: 'Field Layout'|t('app'),
         errors: (config.fieldLayout ?? false) ? config.fieldLayout.getErrorSummary(true),
     }|merge(config), 'template:_includes/forms/fieldLayoutDesigner') }}
+{% endmacro %}
+
+
+{% macro moneyField(config) %}
+    {% set config = config|merge({id: config.id ?? "money#{random()}"}) %}
+    {{ _self.field(config, 'template:_includes/forms/money') }}
 {% endmacro %}
 
 

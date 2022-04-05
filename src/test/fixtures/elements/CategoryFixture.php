@@ -17,14 +17,14 @@ use craft\elements\Category;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Robuust digital | Bob Olde Hampsink <bob@robuust.digital>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since  3.2
+ * @since 3.2
  */
 abstract class CategoryFixture extends BaseElementFixture
 {
     /**
      * @var array
      */
-    protected $groupIds = [];
+    protected array $groupIds = [];
 
     /**
      * @inheritdoc

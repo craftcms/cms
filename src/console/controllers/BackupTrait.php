@@ -29,7 +29,7 @@ trait BackupTrait
     /**
      * Attempts to backup the database.
      *
-     * @param bool|null $flag The user's indication of whether they want the DB to be backed up
+     * @param bool|null $flag The user’s indication of whether they want the DB to be backed up
      * @return bool
      */
     protected function backup(?bool $flag = null): bool
@@ -61,7 +61,7 @@ trait BackupTrait
     /**
      * Returns whether the database should be backed up
      *
-     * @param bool|null $flag The user's indication of whether they want the DB to be backed up
+     * @param bool|null $flag The user’s indication of whether they want the DB to be backed up
      * @return bool
      */
     private function _shouldBackup(?bool $flag): bool

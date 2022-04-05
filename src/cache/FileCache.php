@@ -33,7 +33,7 @@ class FileCache extends YiiFileCache
             $base = $this->cachePath;
 
             for ($i = 0; $i < $this->directoryLevel; ++$i) {
-                if (($prefix = substr($originalKey, $i + $i, 2)) !== false) {
+                if (($prefix = substr($originalKey, $i + $i, 2)) !== '') {
                     $base .= DIRECTORY_SEPARATOR . $prefix;
                 }
             }

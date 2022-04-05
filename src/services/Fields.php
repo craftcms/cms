@@ -8,6 +8,7 @@
 namespace craft\services;
 
 use Craft;
+use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\FieldInterface;
 use craft\base\FieldLayoutElement;
@@ -34,6 +35,7 @@ use craft\fields\Entries as EntriesField;
 use craft\fields\Lightswitch;
 use craft\fields\Matrix as MatrixField;
 use craft\fields\MissingField;
+use craft\fields\Money;
 use craft\fields\MultiSelect;
 use craft\fields\Number;
 use craft\fields\PlainText;
@@ -83,7 +85,7 @@ class Fields extends Component
      *
      * Field types must implement [[FieldInterface]]. [[Field]] provides a base implementation.
      *
-     * See [Field Types](https://craftcms.com/docs/3.x/extend/field-types.html) for documentation on creating field types.
+     * See [Field Types](https://craftcms.com/docs/4.x/extend/field-types.html) for documentation on creating field types.
      * ---
      * ```php
      * use craft\events\RegisterComponentTypesEvent;
@@ -410,7 +412,7 @@ class Fields extends Component
      */
     public function deleteGroup(FieldGroup $group): bool
     {
-        /** @var FieldGroupRecord $groupRecord */
+        /** @var FieldGroupRecord|null $groupRecord */
         $groupRecord = FieldGroupRecord::find()
             ->where(['id' => $group->id])
             ->with('fields')
@@ -446,6 +448,7 @@ class Fields extends Component
      * Returns all available field type classes.
      *
      * @return string[] The available field type classes
+     * @phpstan-return class-string<FieldInterface>[]
      */
     public function getAllFieldTypes(): array
     {
@@ -460,6 +463,7 @@ class Fields extends Component
             EntriesField::class,
             Lightswitch::class,
             MatrixField::class,
+            Money::class,
             MultiSelect::class,
             Number::class,
             PlainText::class,
@@ -526,6 +530,7 @@ class Fields extends Component
 
         foreach ($this->getAllFieldTypes() as $class) {
             /** @var string|FieldInterface $class */
+            /** @phpstan-var class-string<FieldInterface>|FieldInterface $class */
             if ($class === get_class($field)) {
                 if ($includeCurrent) {
                     $types[] = $class;
@@ -563,10 +568,12 @@ class Fields extends Component
     /**
      * Creates a field with a given config.
      *
-     * @param mixed $config The field’s class name, or its config, with a `type` value and optionally a `settings` value
-     * @return FieldInterface The field
+     * @template T of FieldInterface
+     * @param string|array $config The field’s class name, or its config, with a `type` value and optionally a `settings` value
+     * @phpstan-param class-string<T>|array{type:class-string<T>,id?:int|string,uid?:string} $config
+     * @return T The field
      */
-    public function createField($config): FieldInterface
+    public function createField(mixed $config): FieldInterface
     {
         if (is_string($config)) {
             $config = ['type' => $config];
@@ -598,7 +605,7 @@ class Fields extends Component
      *
      * @return MemoizableArray<FieldInterface>
      */
-    private function _fields($context = null): MemoizableArray
+    private function _fields(mixed $context = null): MemoizableArray
     {
         if (!isset($this->_fields)) {
             $fields = [];
@@ -630,7 +637,7 @@ class Fields extends Component
      * Set to `false` to get all fields regardless of context.
      * @return FieldInterface[] The fields
      */
-    public function getAllFields($context = null): array
+    public function getAllFields(mixed $context = null): array
     {
         return $this->_fields($context)->all();
     }
@@ -687,7 +694,7 @@ class Fields extends Component
      * Set to `false` to get all fields regardless of context.
      * @return FieldInterface|null The field, or null if it doesn’t exist
      */
-    public function getFieldByHandle(string $handle, $context = null): ?FieldInterface
+    public function getFieldByHandle(string $handle, mixed $context = null): ?FieldInterface
     {
         return $this->_fields($context)->firstWhere('handle', $handle, true);
     }
@@ -713,33 +720,6 @@ class Fields extends Component
     public function getFieldsByGroupId(int $groupId): array
     {
         return $this->_fields(false)->where('groupId', $groupId)->all();
-    }
-
-    /**
-     * Returns all of the fields used by a given element type.
-     *
-     * @param string $elementType
-     * @return FieldInterface[] The fields
-     */
-    public function getFieldsByElementType(string $elementType): array
-    {
-        $results = $this->_createFieldQuery()
-            ->innerJoin(['flf' => Table::FIELDLAYOUTFIELDS], '[[flf.fieldId]] = [[fields.id]]')
-            ->innerJoin(['fl' => Table::FIELDLAYOUTS], '[[fl.id]] = [[flf.layoutId]]')
-            ->where([
-                'fl.type' => $elementType,
-                'fl.dateDeleted' => null,
-            ])
-            ->groupBy(['fields.id'])
-            ->all();
-
-        $fields = [];
-
-        foreach ($results as $result) {
-            $fields[] = $this->createField($result);
-        }
-
-        return $fields;
     }
 
     /**
@@ -791,6 +771,12 @@ class Fields extends Component
      */
     public function saveField(FieldInterface $field, bool $runValidation = true): bool
     {
+        if ($field instanceof MissingField) {
+            $error = $field->errorMessage ?? "Unable to find component class '$field->expectedType'.";
+            $field->addError('type', $error);
+            return false;
+        }
+
         $isNewField = $field->getIsNew();
 
         // Fire a 'beforeSaveField' event
@@ -812,13 +798,16 @@ class Fields extends Component
 
         $this->prepFieldForSave($field);
         $configData = $this->createFieldConfig($field);
+        $appliedConfig = false;
 
         // Only store field data in the project config for global context
         if ($field->context === 'global') {
             $configPath = ProjectConfig::PATH_FIELDS . '.' . $field->uid;
-            Craft::$app->getProjectConfig()->set($configPath, $configData, "Save field “{$field->handle}”");
-        } else {
-            // Otherwise just save it to the DB
+            $appliedConfig = Craft::$app->getProjectConfig()->set($configPath, $configData, "Save field “{$field->handle}”");
+        }
+
+        if (!$appliedConfig) {
+            // If it's not a global field, or there weren't any changes in the main field settings, apply the save to the DB + call afterSave()
             $this->applyFieldSave($field->uid, $configData, $field->context);
         }
 
@@ -849,7 +838,7 @@ class Fields extends Component
             if (empty($field->uid)) {
                 $field->uid = StringHelper::UUID();
             }
-        } else if (!$field->uid) {
+        } elseif (!$field->uid) {
             $field->uid = Db::uidById(Table::FIELDS, $field->id);
         }
 
@@ -1112,36 +1101,39 @@ class Fields extends Component
      * Returns a field layout by its associated element type.
      *
      * @param string $type The associated element type
+     * @phpstan-param class-string<ElementInterface> $type
      * @return FieldLayout The field layout
      */
     public function getLayoutByType(string $type): FieldLayout
     {
-        if (array_key_exists($type, $this->_layoutsByType)) {
-            return $this->_layoutsByType[$type];
+        if (!isset($this->_layoutsByType[$type])) {
+            if (Craft::$app->getIsInstalled()) {
+                $result = $this->_createLayoutQuery()
+                    ->andWhere(['type' => $type])
+                    ->one();
+            }
+
+            if (isset($result)) {
+                if (!isset($this->_layoutsById[$result['id']])) {
+                    $this->_layoutsById[$result['id']] = new FieldLayout($result);
+                }
+
+                $this->_layoutsByType[$type] = $this->_layoutsById[$result['id']];
+            } else {
+                $this->_layoutsByType[$type] = new FieldLayout([
+                    'type' => $type,
+                ]);
+            }
         }
 
-        $result = $this->_createLayoutQuery()
-            ->andWhere(['type' => $type])
-            ->one();
-
-        if (!$result) {
-            return $this->_layoutsByType[$type] = new FieldLayout([
-                'type' => $type,
-            ]);
-        }
-
-        $id = $result['id'];
-        if (!isset($this->_layoutsById[$id])) {
-            $this->_layoutsById[$id] = new FieldLayout($result);
-        }
-
-        return $this->_layoutsByType[$type] = $this->_layoutsById[$id];
+        return $this->_layoutsByType[$type];
     }
 
     /**
      * Returns all of the field layouts associated with a given element type.
      *
      * @param string $type
+     * @phpstan-param class-string<ElementInterface> $type
      * @return FieldLayout[] The field layouts
      * @since 3.5.0
      */
@@ -1220,22 +1212,6 @@ class Fields extends Component
     }
 
     /**
-     * Returns the field IDs for a given layout ID.
-     *
-     * @param int $layoutId The field layout ID
-     * @return int[]
-     * @since 3.1.24
-     */
-    public function getFieldIdsByLayoutId(int $layoutId): array
-    {
-        return (new Query())
-            ->select(['fieldId'])
-            ->from([Table::FIELDLAYOUTFIELDS])
-            ->where(['layoutId' => $layoutId])
-            ->column();
-    }
-
-    /**
      * Returns the field IDs grouped by layout IDs, for a given set of layout IDs.
      *
      * @param int[] $layoutIds The field layout IDs
@@ -1258,36 +1234,6 @@ class Fields extends Component
     }
 
     /**
-     * Returns the fields in a field layout, identified by its ID.
-     *
-     * @param int $layoutId The field layout’s ID
-     * @return FieldInterface[] The fields
-     */
-    public function getFieldsByLayoutId(int $layoutId): array
-    {
-        $fields = [];
-
-        $results = $this->_createFieldQuery()
-            ->addSelect([
-                'flf.layoutId',
-                'flf.tabId',
-                'flf.required',
-                'flf.sortOrder',
-            ])
-            ->innerJoin(['flf' => Table::FIELDLAYOUTFIELDS], '[[flf.fieldId]] = [[fields.id]]')
-            ->innerJoin(['flt' => Table::FIELDLAYOUTTABS], '[[flt.id]] = [[flf.tabId]]')
-            ->where(['flf.layoutId' => $layoutId])
-            ->orderBy(['flt.sortOrder' => SORT_ASC, 'flf.sortOrder' => SORT_ASC])
-            ->all();
-
-        foreach ($results as $result) {
-            $fields[] = $this->createField($result);
-        }
-
-        return $fields;
-    }
-
-    /**
      * Creates a field layout from the given config.
      *
      * @param array $config
@@ -1297,28 +1243,16 @@ class Fields extends Component
     public function createLayout(array $config): FieldLayout
     {
         $config['class'] = FieldLayout::class;
-        /** @var FieldLayout $fieldLayout */
-        $fieldLayout = Craft::createObject($config);
-
-        // Prep getFields()
-        $fields = [];
-        foreach ($fieldLayout->getTabs() as $tab) {
-            foreach ($tab->getElements() as $element) {
-                if ($element instanceof CustomField) {
-                    $fields[] = $element->getField();
-                }
-            }
-        }
-        $fieldLayout->setFields($fields);
-
-        return $fieldLayout;
+        return Craft::createObject($config);
     }
 
     /**
      * Creates a field layout element instance from its config.
      *
+     * @template T of FieldLayoutElement
      * @param array $config
-     * @return FieldLayoutElement
+     * @phpstan-param array{type:class-string<T>} $config
+     * @return T
      * @throws InvalidArgumentException if `$config['type']` does not implement [[FieldLayoutElement]]
      * @since 3.5.0
      */
@@ -1347,72 +1281,6 @@ class Fields extends Component
         $paramPrefix = $namespace ? rtrim($namespace, '.') . '.' : '';
         $config = Json::decode(Craft::$app->getRequest()->getBodyParam($paramPrefix . 'fieldLayout'));
         return $this->createLayout($config);
-    }
-
-    /**
-     * Assembles a field layout.
-     *
-     * @param array $postedFieldLayout The post data for the field layout
-     * @param array $requiredFields The field IDs that should be marked as required in the field layout
-     * @return FieldLayout The field layout
-     * @deprecated in 3.5.0.
-     */
-    public function assembleLayout(array $postedFieldLayout, array $requiredFields = []): FieldLayout
-    {
-        $tabs = [];
-        $fields = [];
-
-        $tabSortOrder = 0;
-
-        // Get all the fields
-        $allFieldIds = [];
-
-        foreach ($postedFieldLayout as $fieldIds) {
-            foreach ($fieldIds as $fieldId) {
-                $allFieldIds[] = $fieldId;
-            }
-        }
-
-        if (!empty($allFieldIds)) {
-            $allFieldsById = [];
-
-            $results = $this->_createFieldQuery()
-                ->where(['id' => $allFieldIds])
-                ->all();
-
-            foreach ($results as $result) {
-                $allFieldsById[$result['id']] = $this->createField($result);
-            }
-        }
-
-        foreach ($postedFieldLayout as $tabName => $fieldIds) {
-            $tabFields = [];
-
-            foreach ($fieldIds as $fieldSortOrder => $fieldId) {
-                if (!isset($allFieldsById[$fieldId])) {
-                    continue;
-                }
-
-                $field = $allFieldsById[$fieldId];
-                $field->required = in_array($fieldId, $requiredFields, false);
-                $field->sortOrder = ($fieldSortOrder + 1);
-
-                $fields[] = $field;
-                $tabFields[] = $field;
-            }
-
-            $tab = new FieldLayoutTab();
-            $tab->name = urldecode($tabName);
-            $tab->setFields($tabFields);
-
-            $tabs[] = $tab;
-        }
-
-        $layout = new FieldLayout();
-        $layout->setTabs($tabs);
-        $layout->setFields($fields);
-
-        return $layout;
     }
 
     /**
@@ -1450,6 +1318,7 @@ class Fields extends Component
 
         if (!$isNewLayout) {
             // Get the current layout
+            /** @var FieldLayoutRecord|null $layoutRecord */
             $layoutRecord = FieldLayoutRecord::findWithTrashed()
                 ->andWhere(['id' => $layout->id])
                 ->one();
@@ -1496,9 +1365,13 @@ class Fields extends Component
 
         foreach ($tabs as $tab) {
             if ($tab->id && isset($tabRecords[$tab->id])) {
+                /** @var FieldLayoutTabRecord $tabRecord */
                 $tabRecord = $tabRecords[$tab->id];
                 unset($tabRecords[$tab->id]);
             } else {
+                if (!isset($tab->uid)) {
+                    $tab->uid = StringHelper::UUID();
+                }
                 $tabRecord = new FieldLayoutTabRecord();
                 $tabRecord->layoutId = $layout->id;
                 $tabRecord->uid = $tab->uid;
@@ -1560,7 +1433,7 @@ class Fields extends Component
      * @param int|int[] $layoutId The field layout’s ID
      * @return bool Whether the field layout was deleted successfully
      */
-    public function deleteLayoutById($layoutId): bool
+    public function deleteLayoutById(array|int $layoutId): bool
     {
         if (!$layoutId) {
             return false;
@@ -1609,6 +1482,7 @@ class Fields extends Component
      * Deletes field layouts associated with a given element type.
      *
      * @param string $type The element type
+     * @phpstan-param class-string<ElementInterface> $type
      * @return bool Whether the field layouts were deleted successfully
      */
     public function deleteLayoutsByType(string $type): bool
@@ -1646,8 +1520,8 @@ class Fields extends Component
     {
         $fieldVersion = Craft::$app->getInfo()->fieldVersion;
 
-        // If it doesn't start with `2@`, then it needs to be updated
-        if ($fieldVersion === null || strpos($fieldVersion, '2@') !== 0) {
+        // If it doesn't start with `3@`, then it needs to be updated
+        if ($fieldVersion === null || !str_starts_with($fieldVersion, '3@')) {
             return null;
         }
 
@@ -1666,7 +1540,7 @@ class Fields extends Component
         class_exists(CustomFieldBehavior::class);
 
         $info = Craft::$app->getInfo();
-        $info->fieldVersion = '2@' . StringHelper::randomString(10);
+        $info->fieldVersion = '3@' . StringHelper::randomString(10);
         Craft::$app->saveInfo($info, ['fieldVersion']);
     }
 
@@ -1824,7 +1698,7 @@ class Fields extends Component
                 $db->createCommand()
                     ->alterColumn($table, $oldName, $type)
                     ->execute();
-            } catch (DbException $e) {
+            } catch (DbException) {
                 // Just rename the old column and pretend it didn’t exist
                 $transaction->rollBack();
                 $transaction = $db->beginTransaction();
@@ -1935,7 +1809,7 @@ class Fields extends Component
      */
     private function _createLayoutQuery(): Query
     {
-        return (new Query)
+        return (new Query())
             ->select([
                 'id',
                 'type',
@@ -1973,17 +1847,18 @@ class Fields extends Component
      * @param bool $withTrashed Whether to include trashed field groups in search
      * @return FieldGroupRecord
      */
-    private function _getGroupRecord($criteria, bool $withTrashed = false): FieldGroupRecord
+    private function _getGroupRecord(int|string $criteria, bool $withTrashed = false): FieldGroupRecord
     {
         $query = $withTrashed ? FieldGroupRecord::findWithTrashed() : FieldGroupRecord::find();
 
         if (is_numeric($criteria)) {
             $query->where(['id' => $criteria]);
-        } else if (is_string($criteria)) {
+        } elseif (is_string($criteria)) {
             $query->where(['uid' => $criteria]);
         }
 
         /** @noinspection PhpIncompatibleReturnTypeInspection */
+        /** @var FieldGroupRecord */
         return $query->one() ?? new FieldGroupRecord();
     }
 

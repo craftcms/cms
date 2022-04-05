@@ -95,7 +95,7 @@ class Command extends \yii\queue\cli\Command
      * @return int
      * @since 3.1.21
      */
-    public function actionRetry($job): int
+    public function actionRetry(int|string $job): int
     {
         if (strtolower($job) === 'all') {
             $total = $this->queue->getTotalFailed();

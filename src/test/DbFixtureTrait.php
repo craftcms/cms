@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\test;
@@ -14,7 +14,7 @@ use yii\test\DbFixture;
  * trait DbFixtureTrait
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.6.0
+ * @since 3.6.0
  * @mixin DbFixture
  */
 trait DbFixtureTrait
@@ -23,7 +23,7 @@ trait DbFixtureTrait
      * @var bool Whether database integrity checks should be explicitly enabled before deleting fixture data,
      * and then re-disabled afterwards.
      */
-    public $checkIntegrity = true;
+    public bool $checkIntegrity = true;
 
     /**
      * Toggles the DB integrity check.

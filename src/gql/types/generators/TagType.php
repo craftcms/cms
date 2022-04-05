@@ -15,11 +15,8 @@ use craft\gql\base\ObjectType;
 use craft\gql\base\SingleGeneratorInterface;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\elements\Tag as TagInterface;
-use craft\gql\TypeManager;
 use craft\gql\types\elements\Tag;
-use craft\helpers\Gql;
 use craft\helpers\Gql as GqlHelper;
-use craft\models\TagGroup;
 
 /**
  * Class TagType
@@ -32,7 +29,7 @@ class TagType extends Generator implements GeneratorInterface, SingleGeneratorIn
     /**
      * @inheritdoc
      */
-    public static function generateTypes($context = null): array
+    public static function generateTypes(mixed $context = null): array
     {
         $tagGroups = Craft::$app->getTags()->getAllTagGroups();
         $gqlTypes = [];
@@ -55,9 +52,8 @@ class TagType extends Generator implements GeneratorInterface, SingleGeneratorIn
     /**
      * @inheritdoc
      */
-    public static function generateType($context): ObjectType
+    public static function generateType(mixed $context): ObjectType
     {
-        /** @var TagGroup $tagGroup */
         $typeName = TagElement::gqlTypeNameByContext($context);
         $contentFieldGqlTypes = self::getContentFields($context);
         $tagGroupFields = array_merge(TagInterface::getFieldDefinitions(), $contentFieldGqlTypes);
@@ -65,7 +61,7 @@ class TagType extends Generator implements GeneratorInterface, SingleGeneratorIn
         return GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new Tag([
             'name' => $typeName,
             'fields' => function() use ($tagGroupFields, $typeName) {
-                return TypeManager::prepareFieldDefinitions($tagGroupFields, $typeName);
+                return Craft::$app->getGql()->prepareFieldDefinitions($tagGroupFields, $typeName);
             },
         ]));
     }

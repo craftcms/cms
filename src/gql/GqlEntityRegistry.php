@@ -8,7 +8,6 @@
 namespace craft\gql;
 
 use Craft;
-use craft\helpers\StringHelper;
 
 /**
  * Class GqlEntityRegistry
@@ -77,11 +76,11 @@ class GqlEntityRegistry
      * @param string $entityName
      * @return mixed
      */
-    public static function getEntity(string $entityName)
+    public static function getEntity(string $entityName): mixed
     {
         // Check if we need to apply the prefix.
         $prefix = self::getPrefix();
-        if ($prefix && !StringHelper::startsWith($entityName, $prefix)) {
+        if ($prefix && !str_starts_with($entityName, $prefix)) {
             $entityName = self::prefixTypeName($entityName);
         }
 
@@ -95,7 +94,7 @@ class GqlEntityRegistry
      * @param mixed $entity
      * @return mixed
      */
-    public static function createEntity(string $entityName, $entity)
+    public static function createEntity(string $entityName, mixed $entity): mixed
     {
         $entityName = self::prefixTypeName($entityName);
         $entity->name = self::prefixTypeName($entity->name);

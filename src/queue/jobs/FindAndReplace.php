@@ -101,7 +101,7 @@ class FindAndReplace extends BaseJob
                     $this->_textColumns[] = [$table, $column];
                 }
             }
-        } else if (Db::isTextualColumnType($columnType)) {
+        } elseif (Db::isTextualColumnType($columnType)) {
             $column = ElementHelper::fieldColumn($fieldColumnPrefix, $field->handle, $field->columnSuffix);
             $this->_textColumns[] = [$table, $column];
         }
@@ -120,7 +120,7 @@ class FindAndReplace extends BaseJob
         foreach ($blockTypes as $blockType) {
             $fieldColumnPrefix = 'field_' . $blockType->handle . '_';
 
-            foreach ($blockType->getFields() as $field) {
+            foreach ($blockType->getCustomFields() as $field) {
                 $this->_checkField($field, $matrixField->contentTable, $fieldColumnPrefix);
             }
         }

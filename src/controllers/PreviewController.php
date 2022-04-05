@@ -9,6 +9,7 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\web\Application;
 use craft\web\Controller;
 use Exception;
 use Throwable;
@@ -27,7 +28,7 @@ class PreviewController extends Controller
     /**
      * @inheritdoc
      */
-    protected $allowAnonymous = [
+    protected array|bool|int $allowAnonymous = [
         'preview' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
     ];
 
@@ -64,7 +65,7 @@ class PreviewController extends Controller
 
         if ($draftId) {
             $this->requireAuthorization('previewDraft:' . $draftId);
-        } else if ($revisionId) {
+        } elseif ($revisionId) {
             $this->requireAuthorization('previewRevision:' . $revisionId);
         } else {
             $this->requireAuthorization('previewElement:' . $canonicalId);
@@ -97,6 +98,7 @@ class PreviewController extends Controller
      * Substitutes an element for the element being previewed for the remainder of the request, and reroutes the request.
      *
      * @param string $elementType
+     * @phpstan-param class-string<ElementInterface> $elementType
      * @param int $canonicalId
      * @param int $siteId
      * @param int|null $draftId
@@ -112,7 +114,7 @@ class PreviewController extends Controller
         int $siteId,
         ?int $draftId = null,
         ?int $revisionId = null,
-        ?int $userId = null
+        ?int $userId = null,
     ): Response {
         // Make sure a token was used to get here
         $this->requireToken();
@@ -126,7 +128,7 @@ class PreviewController extends Controller
             $element = $query
                 ->draftId($draftId)
                 ->one();
-        } else if ($revisionId) {
+        } elseif ($revisionId) {
             $element = $query
                 ->revisionId($revisionId)
                 ->one();
@@ -169,10 +171,12 @@ class PreviewController extends Controller
         $this->request->checkIfActionRequest(true, false);
 
         // Re-route the request, this time ignoring the token
-        $urlManager = Craft::$app->getUrlManager();
+        /** @var Application $app */
+        $app = Craft::$app;
+        $urlManager = $app->getUrlManager();
         $urlManager->checkToken = false;
         $urlManager->setRouteParams([], false);
         $urlManager->setMatchedElement(null);
-        return Craft::$app->handleRequest($this->request, true);
+        return $app->handleRequest($this->request, true);
     }
 }

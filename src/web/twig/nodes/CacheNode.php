@@ -52,7 +52,7 @@ class CacheNode extends Node
                 ->raw(' || !(')
                 ->subcompile($conditions)
                 ->raw(')');
-        } else if ($ignoreConditions) {
+        } elseif ($ignoreConditions) {
             $compiler
                 ->raw(' || (')
                 ->subcompile($ignoreConditions)

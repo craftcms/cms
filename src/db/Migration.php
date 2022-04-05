@@ -8,7 +8,6 @@
 namespace craft\db;
 
 use craft\helpers\Db;
-use Exception;
 use Throwable;
 use yii\db\ColumnSchemaBuilder;
 
@@ -186,45 +185,33 @@ abstract class Migration extends \yii\db\Migration
     // -------------------------------------------------------------------------
 
     /**
-     * Creates and executes an `INSERT` SQL statement.
+     * @inheritdoc
      *
-     * The method will properly escape the column names, and bind the values to be inserted.
-     *
-     * @param string $table The table that new rows will be inserted into.
-     * @param array $columns The column data (name=>value) to be inserted into the table.
-     * @param bool $includeAuditColumns Whether to include the data for the audit columns
-     * (dateCreated, dateUpdated, uid).
+     * If the table contains `dateCreated`, `dateUpdated`, and/or `uid` columns, those values will be included
+     * automatically, if not already set.
      */
-    public function insert($table, $columns, bool $includeAuditColumns = true): void
+    public function insert($table, $columns): void
     {
-        $time = $this->beginCommand("insert into $table");
-        $this->db->createCommand()
-            ->insert($table, $columns, $includeAuditColumns)
-            ->execute();
-        $this->endCommand($time);
-    }
-
-    /**
-     * Creates and executes a batch `INSERT` SQL statement.
-     *
-     * The method will properly escape the column names, and bind the values to be inserted.
-     *
-     * @param string $table The table that new rows will be inserted into.
-     * @param array $columns The column names.
-     * @param array $rows The rows to be batch inserted into the table.
-     * @param bool $includeAuditColumns Whether `dateCreated`, `dateUpdated`, and `uid` values should be added to $columns.
-     */
-    public function batchInsert($table, $columns, $rows, bool $includeAuditColumns = true): void
-    {
-        $time = $this->beginCommand("batch insert into $table");
-        $this->db->createCommand()
-            ->batchInsert($table, $columns, $rows, $includeAuditColumns)
-            ->execute();
-        $this->endCommand($time);
+        parent::insert($table, $columns);
     }
 
     /**
      * @inheritdoc
+     *
+     * If the table contains `dateCreated`, `dateUpdated`, and/or `uid` columns, those values will be included
+     * automatically, if not already set.
+     */
+    public function batchInsert($table, $columns, $rows): void
+    {
+        parent::batchInsert($table, $columns, $rows);
+    }
+
+    /**
+     * @inheritdoc
+     *
+     * If the table contains `dateCreated`, `dateUpdated`, and/or `uid` columns, those values will be included
+     * for new rows automatically, if not already set.
+     *
      * @param string $table the table that new rows will be inserted into/updated in.
      * @param array|Query $insertColumns the column data (name => value) to be inserted into the table or instance
      * of [[Query]] to perform `INSERT INTO ... SELECT` SQL statement.
@@ -232,13 +219,13 @@ abstract class Migration extends \yii\db\Migration
      * If `true` is passed, the column data will be updated to match the insert column data.
      * If `false` is passed, no update will be performed if the column data already exists.
      * @param array $params the parameters to be bound to the command.
-     * @param bool $includeAuditColumns Whether `dateCreated`, `dateUpdated`, and `uid` values should be added to $columns.
+     * @param bool $updateTimestamp Whether the `dateUpdated` column should be updated for existing rows, if the table has one.
      * @since 2.0.14
      */
-    public function upsert($table, $insertColumns, $updateColumns = true, $params = [], bool $includeAuditColumns = true): void
+    public function upsert($table, $insertColumns, $updateColumns = true, $params = [], bool $updateTimestamp = true): void
     {
         $time = $this->beginCommand("upsert into $table");
-        $this->db->createCommand()->upsert($table, $insertColumns, $updateColumns, $params, $includeAuditColumns)->execute();
+        $this->db->createCommand()->upsert($table, $insertColumns, $updateColumns, $params, $updateTimestamp)->execute();
         $this->endCommand($time);
     }
 
@@ -252,13 +239,13 @@ abstract class Migration extends \yii\db\Migration
      * @param string|array $condition The condition that will be put in the WHERE part. Please
      * refer to [[Query::where()]] on how to specify condition.
      * @param array $params The parameters to be bound to the command.
-     * @param bool $includeAuditColumns Whether the `dateUpdated` value should be added to $columns.
+     * @param bool $updateTimestamp Whether the `dateUpdated` column should be updated, if the table has one.
      */
-    public function update($table, $columns, $condition = '', $params = [], bool $includeAuditColumns = true): void
+    public function update($table, $columns, $condition = '', $params = [], bool $updateTimestamp = true): void
     {
         $time = $this->beginCommand("update in $table");
         $this->db->createCommand()
-            ->update($table, $columns, $condition, $params, $includeAuditColumns)
+            ->update($table, $columns, $condition, $params, $updateTimestamp)
             ->execute();
         $this->endCommand($time);
     }
@@ -285,11 +272,11 @@ abstract class Migration extends \yii\db\Migration
      * @param string $column The column to be searched.
      * @param string $find The text to be searched for.
      * @param string $replace The replacement text.
-     * @param string|array $condition The condition that will be put in the WHERE part. Please
+     * @param array|string $condition The condition that will be put in the WHERE part. Please
      * refer to [[Query::where()]] on how to specify condition.
      * @param array $params The parameters to be bound to the command.
      */
-    public function replace(string $table, string $column, string $find, string $replace, $condition = '', array $params = []): void
+    public function replace(string $table, string $column, string $find, string $replace, array|string $condition = '', array $params = []): void
     {
         $time = $this->beginCommand("replace \"$find\" with \"$replace\" in $table.$column");
         $this->db->createCommand()
@@ -322,9 +309,9 @@ abstract class Migration extends \yii\db\Migration
      * @param string|string[] $columns The column(s) that are included in the index. If there are multiple
      * columns, separate them by commas or use an array.
      * @param bool $unique Whether the index has a UNIQUE constraint.
-     * @since 4.0.0
+     * @since 3.7.32
      */
-    public function dropIndexIfExists(string $table, $columns, bool $unique = false): void
+    public function dropIndexIfExists(string $table, array|string $columns, bool $unique = false): void
     {
         $time = $this->beginCommand("dropping index on $table if it exists");
         Db::dropIndexIfExists($table, $columns, $unique, $this->db);
@@ -339,7 +326,7 @@ abstract class Migration extends \yii\db\Migration
      * columns, separate them by commas or use an array.
      * @since 4.0.0
      */
-    public function dropForeignKeyIfExists(string $table, $columns): void
+    public function dropForeignKeyIfExists(string $table, array|string $columns): void
     {
         $time = $this->beginCommand("dropping foreign key on $table if it exists");
         Db::dropForeignKeyIfExists($table, $columns, $this->db);
@@ -394,11 +381,7 @@ abstract class Migration extends \yii\db\Migration
      */
     public function addPrimaryKey($name, $table, $columns): void
     {
-        if ($name === null) {
-            $name = $this->db->getPrimaryKeyName();
-        }
-
-        parent::addPrimaryKey($name, $table, $columns);
+        parent::addPrimaryKey($name ?? $this->db->getPrimaryKeyName(), $table, $columns);
     }
 
     /**
@@ -413,11 +396,7 @@ abstract class Migration extends \yii\db\Migration
      */
     public function addForeignKey($name, $table, $columns, $refTable, $refColumns, $delete = null, $update = null): void
     {
-        if ($name === null) {
-            $name = $this->db->getForeignKeyName();
-        }
-
-        parent::addForeignKey($name, $table, $columns, $refTable, $refColumns, $delete, $update);
+        parent::addForeignKey($name ?? $this->db->getForeignKeyName(), $table, $columns, $refTable, $refColumns, $delete, $update);
     }
 
     /**
@@ -431,23 +410,35 @@ abstract class Migration extends \yii\db\Migration
      */
     public function createIndex($name, $table, $columns, $unique = false): void
     {
-        if ($name === null) {
-            $name = $this->db->getIndexName();
-        }
+        parent::createIndex($name ?? $this->db->getIndexName(), $table, $columns, $unique);
+    }
 
-        parent::createIndex($name, $table, $columns, $unique);
+    /**
+     * Creates a new index if a similar one doesn’t already exist.
+     *
+     * @param string $table the table that the new index will be created for. The table name will be properly quoted by the method.
+     * @param array|string $columns the column(s) that should be included in the index. If there are multiple columns, please separate them
+     * by commas or use an array.
+     * @param bool $unique whether to add UNIQUE constraint on the created index.
+     * @since 3.7.32
+     */
+    public function createIndexIfMissing(string $table, array|string $columns, bool $unique = false): void
+    {
+        if (Db::findIndex($table, $columns, $unique, $this->db) === null) {
+            $this->createIndex(null, $table, $columns, $unique);
+        }
     }
 
     /**
      * Creates and executes a SQL statement for soft-deleting a row.
      *
      * @param string $table The table to be updated.
-     * @param string|array $condition The condition that will be put in the WHERE part. Please
+     * @param array|string $condition The condition that will be put in the WHERE part. Please
      * refer to [[Query::where()]] on how to specify condition.
      * @param array $params The parameters to be bound to the command.
      * @since 3.1.0
      */
-    public function softDelete(string $table, $condition = '', array $params = []): void
+    public function softDelete(string $table, array|string $condition = '', array $params = []): void
     {
         $time = $this->beginCommand("soft delete from $table");
         $this->db->createCommand()
@@ -460,12 +451,12 @@ abstract class Migration extends \yii\db\Migration
      * Creates and executes a SQL statement for restoring a soft-deleted row.
      *
      * @param string $table The table to be updated.
-     * @param string|array $condition The condition that will be put in the WHERE part. Please
+     * @param array|string $condition The condition that will be put in the WHERE part. Please
      * refer to [[Query::where()]] on how to specify condition.
      * @param array $params The parameters to be bound to the command.
      * @since 3.1.0
      */
-    public function restore(string $table, $condition = '', array $params = []): void
+    public function restore(string $table, array|string $condition = '', array $params = []): void
     {
         $time = $this->beginCommand("restore from $table");
         $this->db->createCommand()
@@ -475,9 +466,9 @@ abstract class Migration extends \yii\db\Migration
     }
 
     /**
-     * @param Throwable|Exception $e
+     * @param Throwable $e
      */
-    private function _printException($e): void
+    private function _printException(Throwable $e): void
     {
         // Copied from \yii\db\Migration::printException(), only because it’s private
         echo 'Exception: ' . $e->getMessage() . ' (' . $e->getFile() . ':' . $e->getLine() . ")\n";

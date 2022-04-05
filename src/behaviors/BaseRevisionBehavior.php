@@ -31,7 +31,7 @@ abstract class BaseRevisionBehavior extends Behavior
     /**
      * @var User|null|false The creator
      */
-    private $_creator;
+    private User|false|null $_creator = null;
 
     /**
      * Returns the draft’s creator.
@@ -45,11 +45,12 @@ abstract class BaseRevisionBehavior extends Behavior
                 return null;
             }
 
-            $this->_creator = User::find()
-                    ->id($this->creatorId)
-                    ->status(null)
-                    ->one()
-                ?? false;
+            /** @var User|null $creator */
+            $creator = User::find()
+                ->id($this->creatorId)
+                ->status(null)
+                ->one();
+            $this->_creator = $creator ?? false;
         }
 
         return $this->_creator ?: null;

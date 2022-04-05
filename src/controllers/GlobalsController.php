@@ -109,7 +109,7 @@ class GlobalsController extends Controller
         $setIds = Json::decode($this->request->getRequiredBodyParam('ids'));
         Craft::$app->getGlobals()->reorderSets($setIds);
 
-        return $this->asJson(['success' => true]);
+        return $this->asSuccess();
     }
 
     /**
@@ -127,7 +127,7 @@ class GlobalsController extends Controller
 
         Craft::$app->getGlobals()->deleteGlobalSetById($globalSetId);
 
-        return $this->asJson(['success' => true]);
+        return $this->asSuccess();
     }
 
     /**
@@ -149,6 +149,7 @@ class GlobalsController extends Controller
         // Get the global sets the user is allowed to edit, in the requested site
         $editableGlobalSets = [];
 
+        /** @var GlobalSet[] $globalSets */
         $globalSets = GlobalSet::find()
             ->siteId($site->id)
             ->all();

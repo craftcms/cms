@@ -8,7 +8,6 @@
 namespace craft\i18n;
 
 use Craft;
-use craft\helpers\FileHelper;
 use ResourceBundle;
 use yii\base\Exception;
 
@@ -20,18 +19,13 @@ use yii\base\Exception;
 class I18N extends \yii\i18n\I18N
 {
     /**
-     * @var bool Whether the [PHP intl extension](https://php.net/manual/en/book.intl.php) is loaded.
-     */
-    private bool $_intlLoaded = false;
-
-    /**
      * @var array|null All of the known locales
      * @see getAllLocales()
      */
     private ?array $_allLocaleIds = null;
 
     /**
-     * @var string[]
+     * @var bool[]
      * @see getAppLocaleIds()
      */
     private array $_appLocaleIds;
@@ -48,23 +42,14 @@ class I18N extends \yii\i18n\I18N
     private ?bool $_translationDebugOutput = null;
 
     /**
-     * @inheritdoc
-     */
-    public function init(): void
-    {
-        parent::init();
-
-        $this->_intlLoaded = extension_loaded('intl');
-    }
-
-    /**
      * Returns whether the [Intl extension](https://php.net/manual/en/book.intl.php) is loaded.
      *
      * @return bool Whether the Intl extension is loaded.
+     * @deprecated in 4.0.0. The Intl extension is now required.
      */
     public function getIsIntlLoaded(): bool
     {
-        return $this->_intlLoaded;
+        return true;
     }
 
     /**
@@ -79,11 +64,7 @@ class I18N extends \yii\i18n\I18N
     }
 
     /**
-     * Returns an array of all known locale IDs.
-     *
-     * If the [PHP intl extension](https://php.net/manual/en/book.intl.php) is loaded, then this will be based on
-     * all of the locale IDs it knows about. Otherwise, it will be based on the locale data files located in
-     * `vendor/craftcms/cms/src/config/locales/` and `config/locales/`.
+     * Returns an array of all known locale IDs, according to the Intl extension.
      *
      * @return array An array of locale IDs.
      * @link https://php.net/manual/en/resourcebundle.locales.php
@@ -91,30 +72,7 @@ class I18N extends \yii\i18n\I18N
     public function getAllLocaleIds(): array
     {
         if (!isset($this->_allLocaleIds)) {
-            if ($this->getIsIntlLoaded()) {
-                $this->_allLocaleIds = ResourceBundle::getLocales(null);
-            } else {
-                $appLocalesPath = Craft::$app->getBasePath() . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'locales';
-                $customLocalesPath = Craft::$app->getPath()->getConfigPath() . '/locales';
-
-                $localeFiles = FileHelper::findFiles($appLocalesPath, [
-                    'only' => ['*.php'],
-                    'recursive' => false,
-                ]);
-
-                if (is_dir($customLocalesPath)) {
-                    $localeFiles = array_merge($localeFiles, FileHelper::findFiles($customLocalesPath, [
-                        'only' => ['*.php'],
-                        'recursive' => false,
-                    ]));
-                }
-
-                $this->_allLocaleIds = [];
-
-                foreach ($localeFiles as $file) {
-                    $this->_allLocaleIds[] = pathinfo($file, PATHINFO_FILENAME);
-                }
-            }
+            $this->_allLocaleIds = ResourceBundle::getLocales('');
 
             // Hyphens, not underscores
             foreach ($this->_allLocaleIds as $i => $locale) {
@@ -350,16 +308,11 @@ class I18N extends \yii\i18n\I18N
         }
 
         if ($this->_shouldAddTranslationDebugOutput()) {
-            switch ($category) {
-                case 'site':
-                    $char = '$';
-                    break;
-                case 'app':
-                    $char = '@';
-                    break;
-                default:
-                    $char = '%';
-            }
+            $char = match ($category) {
+                'site' => '$',
+                'app' => '@',
+                default => '%',
+            };
 
             $translation = $char . $translation . $char;
         }

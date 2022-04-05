@@ -30,7 +30,7 @@ class UniqueValidator extends YiiUniqueValidator
      * attributes to record primary keys. Defaults to whatever the record's
      * primaryKey() method returns.
      */
-    public $pk;
+    public string|array $pk;
 
     /**
      * @var Model|null The model that is being validated

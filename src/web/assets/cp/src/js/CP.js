@@ -613,6 +613,7 @@ Craft.CP = Garnish.Base.extend({
     breadcrumbItemsWrap: function() {
         if (!this.$breadcrumbItems[0]) return;
 
+        this.$breadcrumbList.css(Craft.orientation === 'ltr' ? 'margin-right' : 'margin-left', '');
         const listWidth = this.$breadcrumbList[0].getBoundingClientRect().width;
         let totalItemWidth = 0;
         
@@ -624,7 +625,18 @@ Craft.CP = Garnish.Base.extend({
 
         this.breadcrumbListWidth = listWidth;
 
-        return totalItemWidth > listWidth;
+        if (totalItemWidth <= listWidth) {
+            return false;
+        }
+
+        // If it's less than a pixel off, it's probably just a rounding error.
+        // Give the container an extra pixel to be safe, though
+        if (totalItemWidth < listWidth + 1) {
+            this.$breadcrumbList.css(Craft.orientation === 'ltr' ? 'margin-right' : 'margin-left', '-1px');
+            return false;
+        }
+
+        return true;
     },
 
     handleBreadcrumbVisibility: function() {
@@ -819,7 +831,10 @@ Craft.CP = Garnish.Base.extend({
             path: Craft.path
         };
 
-        Craft.queueActionRequest('app/get-cp-alerts', data, this.displayAlerts.bind(this));
+        Craft.queueActionRequest(() => {
+            return Craft.sendActionRequest('POST', 'app/get-cp-alerts', {data})
+                .then(() => this.displayAlerts.bind(this))
+        });
     },
 
     displayAlerts: function(alerts) {
@@ -850,17 +865,12 @@ Craft.CP = Garnish.Base.extend({
                 var $link = $(ev.currentTarget);
 
                 var data = {
-                    message: $link.prop('className').substr(5)
+                    message: $link.prop('className').substring(5)
                 };
-
-                Craft.queueActionRequest('app/shun-cp-alert', data, (response, textStatus) => {
-                    if (textStatus === 'success') {
-                        if (response.success) {
-                            $link.parent().remove();
-                        } else {
-                            this.displayError(response.error);
-                        }
-                    }
+                Craft.queueActionRequest(() => {
+                    return Craft.sendActionRequest('POST', 'app/shun-cp-alert', {data})
+                        .then((response) => $link.parent().remove())
+                        .catch(({response}) => this.displayError(response.data.message));
                 });
             });
         }
@@ -949,13 +959,10 @@ Craft.CP = Garnish.Base.extend({
                 onlyIfCached: true,
                 includeDetails: includeDetails,
             };
-            Craft.postActionRequest('app/check-for-updates', data, function(info, textStatus) {
-                if (textStatus === 'success') {
-                    resolve(info);
-                } else {
-                    resolve({cached: false});
-                }
-            });
+
+            Craft.sendActionRequest('POST', 'app/check-for-updates', {data})
+                .then((response) => resolve(response.data))
+                .catch(({response}) => resolve({cached: false}));
         });
     },
 
@@ -972,20 +979,12 @@ Craft.CP = Garnish.Base.extend({
     },
 
     _cacheUpdates: function(updates, includeDetails) {
-        return new Promise(function(resolve, reject) {
-            Craft.postActionRequest('app/cache-updates', {
-                updates: updates,
-                includeDetails: includeDetails,
-            }, function(info, textStatus) {
-                if (textStatus === 'success') {
-                    resolve(info);
-                } else {
-                    reject();
-                }
-            }, {
-                contentType: 'json'
-            });
-        });
+        const data = {
+            updates,
+            includeDetails,
+        };
+
+        return Craft.sendActionRequest('POST', 'app/cache-updates', {data});
     },
 
     updateUtilitiesBadge: function() {
@@ -996,18 +995,21 @@ Craft.CP = Garnish.Base.extend({
             return;
         }
 
-        Craft.queueActionRequest('app/get-utilities-badge-count', response => {
-            // Get the existing utility nav badge, if any
-            var $badge = $utilitiesLink.children('.badge');
+        Craft.queueActionRequest(() => {
+            return Craft.sendActionRequest('POST', 'app/get-utilities-badge-count')
+                .then((response) => {
+                    // Get the existing utility nav badge, if any
+                    var $badge = $utilitiesLink.children('.badge');
 
-            if (response.badgeCount) {
-                if (!$badge.length) {
-                    $badge = $('<span class="badge"/>').appendTo($utilitiesLink);
-                }
-                $badge.text(response.badgeCount);
-            } else if ($badge.length) {
-                $badge.remove();
-            }
+                    if (response.data.badgeCount) {
+                        if (!$badge.length) {
+                            $badge = $('<span class="badge"/>').appendTo($utilitiesLink);
+                        }
+                        $badge.text(response.data.badgeCount);
+                    } else if ($badge.length) {
+                        $badge.remove();
+                    }
+                });
         });
     },
 
@@ -1017,10 +1019,9 @@ Craft.CP = Garnish.Base.extend({
         }
 
         if (Craft.runQueueAutomatically) {
-            Craft.queueActionRequest('queue/run', (response, textStatus) => {
-                if (textStatus === 'success') {
-                    this.trackJobProgress(false, true);
-                }
+            Craft.queueActionRequest(() => {
+                return Craft.sendActionRequest('POST', 'queue/run')
+                    .then(() => this.trackJobProgress(false, true));
             });
         } else {
             this.trackJobProgress(false, true);
@@ -1048,17 +1049,18 @@ Craft.CP = Garnish.Base.extend({
     },
 
     _trackJobProgressInternal: function() {
-        Craft.queueActionRequest('queue/get-job-info?limit=50&dontExtendSession=1', (response, textStatus) => {
-            if (textStatus === 'success') {
-                this.trackJobProgressTimeout = null;
-                this.totalJobs = response.total;
-                this.setJobInfo(response.jobs);
+        Craft.queueActionRequest(() => {
+            return Craft.sendActionRequest('POST', 'queue/get-job-info?limit=50&dontExtendSession=1')
+                .then((response) => {
+                    this.trackJobProgressTimeout = null;
+                    this.totalJobs = response.data.total;
+                    this.setJobInfo(response.data.jobs);
 
-                if (this.jobInfo.length) {
-                    // Check again after a delay
-                    this.trackJobProgress(true);
-                }
-            }
+                    if (this.jobInfo.length) {
+                        // Check again after a delay
+                        this.trackJobProgress(true);
+                    }
+                });
         });
     },
 

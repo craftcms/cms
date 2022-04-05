@@ -106,7 +106,7 @@ class Composer extends Component
     {
         try {
             return Json::decode(file_get_contents($this->getJsonPath()));
-        } catch (Throwable $e) {
+        } catch (Throwable) {
             return [];
         }
     }
@@ -290,6 +290,7 @@ class Composer extends Component
      * Adds an autoloading class to the Composer class map
      *
      * @param string $className
+     * @phpstan-param class-string $className
      */
     public function logComposerClass(string $className): void
     {
@@ -377,7 +378,7 @@ class Composer extends Component
         // Copied from \Composer\Factory::createComposer()
         $file = new JsonFile($jsonPath, null, $io);
         $file->validateSchema(JsonFile::LAX_SCHEMA);
-        $jsonParser = new JsonParser;
+        $jsonParser = new JsonParser();
         try {
             $jsonParser->parse(file_get_contents($jsonPath), JsonParser::DETECT_KEY_CONFLICTS);
         } catch (DuplicateKeyException $e) {
@@ -425,7 +426,7 @@ class Composer extends Component
      * @param array $config
      * @return int|string|false The key in `$config['repositories']` referencing composer.craftcms.com
      */
-    private function _findCraftRepo(array $config)
+    private function _findCraftRepo(array $config): int|string|false
     {
         if (!isset($config['repositories'])) {
             return false;

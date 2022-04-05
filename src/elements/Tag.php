@@ -12,13 +12,11 @@ use craft\base\Element;
 use craft\db\Table;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\conditions\tags\TagCondition;
-use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\TagQuery;
 use craft\helpers\Db;
 use craft\models\FieldLayout;
 use craft\models\TagGroup;
 use craft\records\Tag as TagRecord;
-use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\validators\InlineValidator;
 
@@ -107,7 +105,7 @@ class Tag extends Element
      * @inheritdoc
      * @return TagQuery The newly created [[TagQuery]] instance.
      */
-    public static function find(): ElementQueryInterface
+    public static function find(): TagQuery
     {
         return new TagQuery(static::class);
     }
@@ -143,7 +141,7 @@ class Tag extends Element
      * @inheritdoc
      * @since 3.3.0
      */
-    public static function gqlTypeNameByContext($context): string
+    public static function gqlTypeNameByContext(mixed $context): string
     {
         /** @var TagGroup $context */
         return $context->handle . '_Tag';
@@ -153,7 +151,7 @@ class Tag extends Element
      * @inheritdoc
      * @since 3.3.0
      */
-    public static function gqlScopesByContext($context): array
+    public static function gqlScopesByContext(mixed $context): array
     {
         /** @var TagGroup $context */
         return ['taggroups.' . $context->uid];
@@ -163,7 +161,7 @@ class Tag extends Element
      * @inheritdoc
      * @since 3.5.0
      */
-    public static function gqlMutationNameByContext($context): string
+    public static function gqlMutationNameByContext(mixed $context): string
     {
         /** @var TagGroup $context */
         return 'save_' . $context->handle . '_Tag';
@@ -217,7 +215,7 @@ class Tag extends Element
      */
     public function validateTitle(string $attribute, ?array $params, InlineValidator $validator): void
     {
-        $query = static::find()
+        $query = self::find()
             ->groupId($this->groupId)
             ->siteId($this->siteId)
             ->title(Db::escapeParam($this->title));
@@ -315,7 +313,7 @@ class Tag extends Element
 
     /**
      * @inheritdoc
-     * @throws Exception if reasons
+     * @throws InvalidConfigException
      */
     public function afterSave(bool $isNew): void
     {
@@ -325,7 +323,7 @@ class Tag extends Element
                 $record = TagRecord::findOne($this->id);
 
                 if (!$record) {
-                    throw new Exception('Invalid tag ID: ' . $this->id);
+                    throw new InvalidConfigException("Invalid tag ID: $this->id");
                 }
             } else {
                 $record = new TagRecord();

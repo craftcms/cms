@@ -482,11 +482,10 @@ $radioSize: 16px;
 
 @mixin h6-styles {
   margin: 14px 0 3px;
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1.2;
   color: $lightTextColor;
   text-transform: uppercase;
-  font-weight: bold;
 }
 
 @mixin token-styles {
@@ -539,8 +538,8 @@ $radioSize: 16px;
 }
 
 @mixin input-focused-styles {
-  border-color: hsl(var(--focus-hsl));
-  box-shadow: 0 0 0 2px hsla(var(--focus-hsl), 0.7);
+  border-color: hsl(var(--dark-focus-hsl));
+  box-shadow: 0 0 0 2px hsla(var(--dark-focus-hsl), 0.7);
 }
 
 @mixin placeholder-styles($color) {

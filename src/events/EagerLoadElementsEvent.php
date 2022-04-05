@@ -21,6 +21,7 @@ class EagerLoadElementsEvent extends Event
 {
     /**
      * @var string The source element type
+     * @phpstan-var class-string<ElementInterface>
      */
     public string $elementType;
 
