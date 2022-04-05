@@ -1206,7 +1206,7 @@ class Fields extends Component
         $tabs = Collection::make($this->getLayoutTabsById(array_keys($layouts)));
 
         Collection::make($layouts)
-            ->each(function(FieldLayout $layout) use($tabs) {
+            ->each(function(FieldLayout $layout) use ($tabs) {
                 $layout->setTabs($tabs->where('layoutId', $layout->id)->all());
             });
     }
