@@ -85,99 +85,99 @@ jobs:
 
     steps:
 
-    - name: Checkout
-      uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v3
 
-    - name: Set default test command environment variable
-      run: |
-        echo "TEST_COMMAND=./vendor/bin/codecept run unit,functional --fail-fast" >> $GITHUB_ENV
+      - name: Set default test command environment variable
+        run: |
+          echo "TEST_COMMAND=./vendor/bin/codecept run unit,functional --fail-fast" >> $GITHUB_ENV
 
-    - name: Set test command for the code coverage environment
-      run: |
-        echo "TEST_COMMAND=./vendor/bin/codecept run unit,functional --fail-fast --coverage-xml coverage.xml;" >> $GITHUB_ENV
-      if: ${{ matrix.php-versions == '7.4' && matrix.db == 'mysql' }}
+      - name: Set test command for the code coverage environment
+        run: |
+          echo "TEST_COMMAND=./vendor/bin/codecept run unit,functional --fail-fast --coverage-xml coverage.xml;" >> $GITHUB_ENV
+        if: ${{ matrix.php-versions == '7.4' && matrix.db == 'mysql' }}
 
-    - name: Setup cache environment
-      id: extcache
-      uses: shivammathur/cache-extensions@257e3c93fb0a7d302495902b976b1d0245123b59
-      with:
-        php-version: ${{ matrix.php-versions }}
-        extensions: ${{ env.PHP_EXTENSIONS }}
-        key: extension-cache-v4 # change to clear the extension cache.
+      - name: Setup cache environment
+        id: extcache
+        uses: shivammathur/cache-extensions@257e3c93fb0a7d302495902b976b1d0245123b59
+        with:
+          php-version: ${{ matrix.php-versions }}
+          extensions: ${{ env.PHP_EXTENSIONS }}
+          key: extension-cache-v4 # change to clear the extension cache.
 
-    - name: Cache extensions
-      uses: actions/cache@v3
-      with:
-        path: ${{ steps.extcache.outputs.dir }}
-        key: ${{ steps.extcache.outputs.key }}
-        restore-keys: ${{ steps.extcache.outputs.key }}
+      - name: Cache extensions
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.extcache.outputs.dir }}
+          key: ${{ steps.extcache.outputs.key }}
+          restore-keys: ${{ steps.extcache.outputs.key }}
 
-    - name: Setup PHP
-      uses: shivammathur/setup-php@verbose
-      with:
-        php-version: ${{ matrix.php-versions }}
-        extensions: ${{ env.PHP_EXTENSIONS }}
-        ini-values: post_max_size=256M, max_execution_time=180, memory_limit=512M
-        tools: composer:v2
-      env:
-        COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Setup PHP
+        uses: shivammathur/setup-php@verbose
+        with:
+          php-version: ${{ matrix.php-versions }}
+          extensions: ${{ env.PHP_EXTENSIONS }}
+          ini-values: post_max_size=256M, max_execution_time=180, memory_limit=512M
+          tools: composer:v2
+        env:
+          COMPOSER_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Print PHP version
-      run: echo ${{ steps.setup-php.outputs.php-version }}
+      - name: Print PHP version
+        run: echo ${{ steps.setup-php.outputs.php-version }}
 
-    - name: Setup problem matchers for PHP
-      run: echo "::add-matcher::${{ runner.tool_cache }}/php.json"
+      - name: Setup problem matchers for PHP
+        run: echo "::add-matcher::${{ runner.tool_cache }}/php.json"
 
-    - name: Copy tests .env
-      run: cp ./tests/.env.example.${{ matrix.db }} ./tests/.env
+      - name: Copy tests .env
+        run: cp ./tests/.env.example.${{ matrix.db }} ./tests/.env
 
-    - name: Update .env creds
-      run: sed -i 's/DB_PASSWORD=/DB_PASSWORD=mysecretpassword/' tests/.env
+      - name: Update .env creds
+        run: sed -i 's/DB_PASSWORD=/DB_PASSWORD=mysecretpassword/' tests/.env
 
-    - name: Cache Composer dependencies
-      id: composer-cache
-      run: echo "::set-output name=dir::$(composer config cache-files-dir)"
-    - uses: actions/cache@v3
-      with:
-        path: ${{ steps.composer-cache.outputs.dir }}
-        key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
-        restore-keys: ${{ runner.os }}-composer-
+      - name: Cache Composer dependencies
+        id: composer-cache
+        run: echo "::set-output name=dir::$(composer config cache-files-dir)"
+      - uses: actions/cache@v3
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
 
-    - name: Set Node
-      uses: actions/setup-node@v1
-      with:
-        node-version: 16.x
+      - name: Set Node
+        uses: actions/setup-node@v1
+        with:
+          node-version: 16.x
 
-    - name: Install Composer dependencies
-      run: composer install --no-interaction --no-ansi --no-progress
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --no-ansi --no-progress
 
-    - name: Install NPM dependencies
-      run: |
-        npm cache clean -f
-        npm install -g npm
+      - name: Install NPM dependencies
+        run: |
+          npm cache clean -f
+          npm install -g npm
 
-    - name: Run tests
-      run: ${{ env.TEST_COMMAND }}
+      - name: Run tests
+        run: ${{ env.TEST_COMMAND }}
 
-    # Only upload code coverage if PHP 7.4 and MySQL are selected
-    - name: Upload coverage to Codecov
-      if: ${{ matrix.php-versions == '7.4' && matrix.db == 'mysql' }}
-      uses: codecov/codecov-action@v2
+      # Only upload code coverage if PHP 7.4 and MySQL are selected
+      - name: Upload coverage to Codecov
+        if: ${{ matrix.php-versions == '7.4' && matrix.db == 'mysql' }}
+        uses: codecov/codecov-action@v2
 
-    - name: Slack notification failure
-      uses: ravsamhq/notify-slack-action@v1
-      # Only send Slack notification on failure if it's on develop (i.e. not a pull request)
-      if: ${{ ! success() && github.ref == 'refs/heads/develop' }}}}
-      with:
-        status: ${{ job.status }}
-        notification_title: ${{ env.SLACK_NOTIFICATION_TITLE }}
-        message_format: ${{ env.SLACK_NOTIFICATION_MESSAGE_FORMAT }}
-        footer: ${{ env.SLACK_NOTIFICATION_FOOTER }}
-        notify_when: ${{ env.SLACK_NOTIFICATION_ERROR_LEVELS }}
-        mention_groups: ${{ env.SLACK_NOTIFICATION_GROUP_ID }}
-        mention_groups_when: ${{ env.SLACK_NOTIFICATION_ERROR_LEVELS }}
-      env:
-        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      - name: Slack notification failure
+        uses: ravsamhq/notify-slack-action@v1
+        # Only send Slack notification on failure if it's on develop (i.e. not a pull request)
+        if: ${{ ! success() && github.ref == 'refs/heads/develop' }}}}
+        with:
+          status: ${{ job.status }}
+          notification_title: ${{ env.SLACK_NOTIFICATION_TITLE }}
+          message_format: ${{ env.SLACK_NOTIFICATION_MESSAGE_FORMAT }}
+          footer: ${{ env.SLACK_NOTIFICATION_FOOTER }}
+          notify_when: ${{ env.SLACK_NOTIFICATION_ERROR_LEVELS }}
+          mention_groups: ${{ env.SLACK_NOTIFICATION_GROUP_ID }}
+          mention_groups_when: ${{ env.SLACK_NOTIFICATION_ERROR_LEVELS }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
   notify:
     if: success()
