@@ -9,6 +9,7 @@
 ### Changed
 - Duplicated elements no longer have “copy” appended to the end of their titles. ([#10707](https://github.com/craftcms/cms/pull/10707))
 - User queries’ `group` and `groupId` params now support passing an array that begins with `and`, to only return users that are in all of the subsequent user groups.
+- `Craft.BaseElementSelectorModal` now has `bodyAction` and `indexSettings` settings. ([#4348](https://github.com/craftcms/cms/pull/4348))
 
 ### Fixed
 - Fixed a bug where color pickers weren’t clickbale within Table fields. ([#10775](https://github.com/craftcms/cms/issues/10775))
