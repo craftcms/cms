@@ -38,7 +38,7 @@ class MailPanel extends \yii\debug\panels\MailPanel
             return;
         }
 
-        Event::on(BaseMailer::class, BaseMailer::EVENT_AFTER_SEND, function ($event) {
+        Event::on(BaseMailer::class, BaseMailer::EVENT_AFTER_SEND, function($event) {
             /* @var $event MailEvent */
             $message = $event->message;
             /* @var $message MessageInterface */
@@ -60,7 +60,6 @@ class MailPanel extends \yii\debug\panels\MailPanel
 
             $this->_messages[] = $messageData;
         });
-
     }
 
     /**

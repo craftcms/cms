@@ -10,7 +10,6 @@ namespace craft\debug;
 use Craft;
 use craft\base\FsInterface;
 use craft\web\View;
-use yii\base\Application;
 
 /**
  * The Yii Debug Module provides the debug toolbar and debugger
