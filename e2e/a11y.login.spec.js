@@ -6,12 +6,5 @@ test('Login accessibility test', async ({ page }) => {
   await page.goto(`${baseUrl}/login`);
   await injectAxe(page);
 
-  await checkA11y(page, null, {
-    axeOptions: {
-      runOnly: {
-        type: 'tag',
-        values: ['wcag21a', 'wcag21aa'],
-      },
-    },
-  });
+  await checkA11y(page);
 });
