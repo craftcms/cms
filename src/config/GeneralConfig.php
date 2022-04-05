@@ -1601,7 +1601,7 @@ class GeneralConfig extends BaseObject
 
     /**
      * @var bool|string Determines what protocol/schema Craft will use when generating tokenized URLs. If set to `'auto'`, Craft will check the
-     * current site’s base URL and the protocol of the current request and if either of them are https will use `https` in the tokenized URL. If not,
+     * current site’s base URL and the protocol of the current request and if either of them are HTTPS will use `https` in the tokenized URL. If not,
      * will use `http`.
      *
      * If set to `false`, Craft will always use `http`. If set to `true`, then, Craft will always use `https`.
