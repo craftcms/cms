@@ -1509,7 +1509,7 @@ class Users extends Component
             return UrlHelper::siteUrl($fePath, $params, $scheme);
         }
 
-        // Only use cpUrl() if this is a CP request, or the base CP URL has been explicitly set,
+        // Only use cpUrl() if this is a control panel request, or the base control panel URL has been explicitly set,
         // so UrlHelper won't use HTTP_HOST
         if ($generalConfig->baseCpUrl || Craft::$app->getRequest()->getIsCpRequest()) {
             return UrlHelper::cpUrl($cpPath, $params, $scheme);

@@ -340,6 +340,16 @@ class GeneralConfig extends BaseObject
     public ?string $brokenImagePath = null;
 
     /**
+     * @var string|null A unique ID representing the current build of the codebase.
+     *
+     * This should be set to something unique to the deployment, e.g. a Git SHA or a deployment timestamp.
+     *
+     * @since 4.0.0
+     * @group Environment
+     */
+    public ?string $buildId = null;
+
+    /**
      * @var mixed The default length of time Craft will store data, RSS feed, and template caches.
      *
      * If set to `0`, data and RSS feed caches will be stored indefinitely; template caches will be stored for one year.
@@ -608,7 +618,7 @@ class GeneralConfig extends BaseObject
     public bool $enableCsrfCookie = true;
 
     /**
-     * @var bool Whether GraphQL introspection queries are allowed. Defaults to `true` and is always allowed in the CP.
+     * @var bool Whether GraphQL introspection queries are allowed. Defaults to `true` and is always allowed in the control panel.
      * @since 3.6.0
      * @group GraphQL
      */
@@ -1591,7 +1601,7 @@ class GeneralConfig extends BaseObject
 
     /**
      * @var bool|string Determines what protocol/schema Craft will use when generating tokenized URLs. If set to `'auto'`, Craft will check the
-     * current site’s base URL and the protocol of the current request and if either of them are https will use `https` in the tokenized URL. If not,
+     * current site’s base URL and the protocol of the current request and if either of them are HTTPS will use `https` in the tokenized URL. If not,
      * will use `http`.
      *
      * If set to `false`, Craft will always use `http`. If set to `true`, then, Craft will always use `https`.
@@ -1738,7 +1748,7 @@ class GeneralConfig extends BaseObject
         // Normalize size settings
         $this->maxUploadFileSize = ConfigHelper::sizeInBytes($this->maxUploadFileSize);
 
-        // Normalize the default CP language
+        // Normalize the default control panel language
         if (isset($this->defaultCpLanguage)) {
             try {
                 $this->defaultCpLanguage = Localization::normalizeLanguage($this->defaultCpLanguage);

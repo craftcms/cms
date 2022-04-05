@@ -615,6 +615,7 @@ class ElementsController extends Controller
                 'element' => $element,
                 'showDrafts' => $showDrafts,
                 'supportedSiteIds' => $propSiteIds,
+                'showSiteLabel' => $isMultiSiteElement,
             ], View::TEMPLATE_MODE_CP);
         }
 

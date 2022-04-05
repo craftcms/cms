@@ -161,7 +161,7 @@ class UrlManager extends \yii\web\UrlManager
         $route = trim($params[0], '/');
         unset($params[0]);
 
-        // Create the action URL manually here, so it doesn't get treated as a CP request
+        // Create the action URL manually here, so it doesn't get treated as a control panel request
         $path = Craft::$app->getConfig()->getGeneral()->actionTrigger . '/' . $route;
 
         return UrlHelper::siteUrl($path, $params, $scheme);

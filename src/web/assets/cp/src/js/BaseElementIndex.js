@@ -1544,35 +1544,16 @@ Craft.BaseElementIndex = Garnish.Base.extend({
     _setSite: function(siteId) {
         let firstSite = this.siteId === null;
         this.siteId = siteId;
-        this.$visibleSources = $();
 
-        // Hide any sources that aren't available for this site
-        var $firstVisibleSource;
-        var $source;
-        // Select a new source automatically if a site is already selected, but we don't have a selected source
-        // (or if the currently selected source ends up not supporting the new site)
-        var selectNewSource = !firstSite && (!this.$source || !this.$source.length);
+        this.updateSourceVisibility();
 
-        for (var i = 0; i < this.$sources.length; i++) {
-            $source = this.$sources.eq(i);
-            if (typeof $source.data('sites') === 'undefined' || $source.data('sites').toString().split(',').indexOf(siteId.toString()) !== -1) {
-                $source.parent().removeClass('hidden');
-                this.$visibleSources = this.$visibleSources.add($source);
-                if (!$firstVisibleSource) {
-                    $firstVisibleSource = $source;
-                }
-            } else {
-                $source.parent().addClass('hidden');
-
-                // Is this the currently selected source?
-                if (this.$source && this.$source.get(0) == $source.get(0)) {
-                    selectNewSource = true;
-                }
-            }
-        }
-
-        if (this.initialized && selectNewSource) {
-            this.selectSource($firstVisibleSource);
+        if (
+            this.initialized &&
+            !firstSite &&
+            (!this.$source || !this.$source.length) &&
+            this.$visibleSources.length
+        ) {
+            this.selectSource(this.$visibleSources[0]);
         }
 
         // Hide any empty-nester headings
@@ -1596,6 +1577,30 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 
             // Update the elements
             this.updateElements();
+        }
+    },
+
+    updateSourceVisibility: function() {
+        this.$visibleSources = $();
+
+        for (let i = 0; i < this.$sources.length; i++) {
+            const $source = this.$sources.eq(i);
+
+            if (
+                !Garnish.hasAttr($source, 'data-disabled') &&
+                (typeof $source.data('sites') === 'undefined' || $source.data('sites').toString().split(',').indexOf(this.siteId.toString()) !== -1)
+            ) {
+                $source.parent().removeClass('hidden');
+                this.$visibleSources = this.$visibleSources.add($source);
+            } else {
+                $source.parent().addClass('hidden');
+
+                // Is this the currently selected source?
+                if (this.$source && this.$source.get(0) === $source.get(0)) {
+                    this.$source = null;
+                    this.sourceKey = null;
+                }
+            }
         }
     },
 
