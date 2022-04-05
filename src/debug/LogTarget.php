@@ -102,7 +102,7 @@ class LogTarget extends \yii\debug\LogTarget
         }
 
         Collection::make($this->module->fs->getFileList($this->module->dataPath, false))
-            ->reject(function (FsListing $listing) use($manifest) {
+            ->reject(function(FsListing $listing) use ($manifest) {
                 $basename = $listing->getBasename();
                 $tag = pathinfo($basename, PATHINFO_FILENAME);
 
@@ -126,7 +126,7 @@ class LogTarget extends \yii\debug\LogTarget
     {
         try {
             $manifest = Closure\unserialize($this->module->fs->read($indexFile));
-        } catch(FsException $e) {
+        } catch (FsException $e) {
             $manifest = [];
         }
 

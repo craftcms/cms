@@ -1,4 +1,5 @@
 <?php
+
 namespace craft\debug\controllers;
 
 use craft\debug\Module;
@@ -15,7 +16,6 @@ use yii\web\NotFoundHttpException;
  */
 class DefaultController extends \yii\debug\controllers\DefaultController
 {
-
     /**
      * @var Module
      */
@@ -40,7 +40,7 @@ class DefaultController extends \yii\debug\controllers\DefaultController
                 clearstatcache();
             }
 
-            $content =  $this->module->fs->read("{$this->module->dataPath}/index.data");
+            $content = $this->module->fs->read("{$this->module->dataPath}/index.data");
 
             if ($content !== '') {
                 $this->_manifest = array_reverse(Closure\unserialize($content), true);

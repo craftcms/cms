@@ -20,7 +20,6 @@ use yii\base\Application;
  */
 class Module extends \yii\debug\Module
 {
-
     public $controllerNamespace = 'craft\debug\controllers';
     public ?FsInterface $fs = null;
 
