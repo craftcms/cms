@@ -210,7 +210,7 @@ class ProjectConfig extends Component
      * use yii\base\Event;
      *
      * Event::on(ProjectConfig::class, ProjectConfig::EVENT_REBUILD, function(RebuildConfigEvent $e) {
-     *     // Add plugin's project config data...
+     *     // Add plugin’s project config data...
      *    $e->config['myPlugin']['key'] = $value;
      * });
      * ```
@@ -963,7 +963,7 @@ class ProjectConfig extends Component
      *
      * @param string $path The config path pattern. Can contain `{uri}` tokens, which will be passed to the handler.
      * @param callable $handler The handler method.
-     * @param mixed|null $data The data to be passed to the event handler when the event is triggered.
+     * @param mixed $data The data to be passed to the event handler when the event is triggered.
      * When the event handler is invoked, this data can be accessed via [[ConfigEvent::data]].
      * @return static self reference
      */
@@ -995,7 +995,7 @@ class ProjectConfig extends Component
      *
      * @param string $path The config path pattern. Can contain `{uri}` tokens, which will be passed to the handler.
      * @param callable $handler The handler method.
-     * @param mixed|null $data The data to be passed to the event handler when the event is triggered.
+     * @param mixed $data The data to be passed to the event handler when the event is triggered.
      * When the event handler is invoked, this data can be accessed via [[ConfigEvent::data]].
      * @return static self reference
      */
@@ -1026,7 +1026,7 @@ class ProjectConfig extends Component
      *
      * @param string $path The config path pattern. Can contain `{uri}` tokens, which will be passed to the handler.
      * @param callable $handler The handler method.
-     * @param mixed|null $data The data to be passed to the event handler when the event is triggered.
+     * @param mixed $data The data to be passed to the event handler when the event is triggered.
      * When the event handler is invoked, this data can be accessed via [[ConfigEvent::data]].
      * @return static self reference
      */
@@ -1055,7 +1055,7 @@ class ProjectConfig extends Component
      * @param string $event The event name
      * @param string $path The config path pattern. Can contain `{uid}` tokens, which will be passed to the handler.
      * @param callable $handler The handler method.
-     * @param mixed|null $data The data to be passed to the event handler when the event is triggered.
+     * @param mixed $data The data to be passed to the event handler when the event is triggered.
      * When the event handler is invoked, this data can be accessed via [[ConfigEvent::data]].
      */
     public function registerChangeEventHandler(string $event, string $path, callable $handler, mixed $data = null): void
@@ -1717,11 +1717,11 @@ class ProjectConfig extends Component
             return Craft::createObject(ReadOnlyProjectConfigData::class);
         }
 
-        if (Craft::$app->getIsInstalled() && version_compare(Craft::$app->getInfo()->schemaVersion, '3.1.1', '<')) {
+        if (version_compare(Craft::$app->getInfo()->schemaVersion, '3.1.1', '<')) {
             return Craft::createObject(ReadOnlyProjectConfigData::class);
         }
 
-        if (Craft::$app->getIsInstalled() && version_compare(Craft::$app->getInfo()->schemaVersion, '3.4.4', '<')) {
+        if (version_compare(Craft::$app->getInfo()->schemaVersion, '3.4.4', '<')) {
             $config = (new Query())
                 ->select(['config'])
                 ->from([Table::INFO])
@@ -1755,6 +1755,7 @@ class ProjectConfig extends Component
                     if (!is_array($current)) {
                         $current = [];
                     }
+                    /** @phpstan-ignore-next-line */
                     if (!array_key_exists($segment, $current)) {
                         $current[$segment] = [];
                     }

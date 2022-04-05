@@ -10,6 +10,7 @@ namespace craft\web;
 use Craft;
 use craft\events\RegisterTemplateRootsEvent;
 use craft\events\TemplateEvent;
+use craft\helpers\App;
 use craft\helpers\Cp;
 use craft\helpers\FileHelper;
 use craft\helpers\Html;
@@ -302,7 +303,7 @@ class View extends \yii\web\View
             $twig->addExtension(new GlobalsExtension());
         }
 
-        if (YII_DEBUG) {
+        if (App::devMode()) {
             $twig->addExtension(new DebugExtension());
         }
 
@@ -1596,6 +1597,7 @@ JS;
             $handled = false;
             foreach ($this->_hooks[$hook] as $method) {
                 $return .= $method($context, $handled);
+                /** @var bool $handled */
                 if ($handled) {
                     break;
                 }
@@ -1659,7 +1661,7 @@ JS;
     /**
      * Performs actions before a template is rendered.
      *
-     * @param mixed $template The name of the template to render
+     * @param string $template The name of the template to render
      * @param array $variables The variables that should be available to the template
      * @param string $templateMode The template mode to use when rendering the template
      * @return bool Whether the template should be rendered
@@ -1683,7 +1685,7 @@ JS;
     /**
      * Performs actions after a template is rendered.
      *
-     * @param mixed $template The name of the template that was rendered
+     * @param string $template The name of the template that was rendered
      * @param array $variables The variables that were available to the template
      * @param string $templateMode The template mode that was used when rendering the template
      * @param string $output The template’s rendering result
@@ -1707,7 +1709,7 @@ JS;
     /**
      * Performs actions before a page template is rendered.
      *
-     * @param mixed $template The name of the template to render
+     * @param string $template The name of the template to render
      * @param array $variables The variables that should be available to the template
      * @param string $templateMode The template mode to use when rendering the template
      * @return bool Whether the template should be rendered
@@ -1731,7 +1733,7 @@ JS;
     /**
      * Performs actions after a page template is rendered.
      *
-     * @param mixed $template The name of the template that was rendered
+     * @param string $template The name of the template that was rendered
      * @param array $variables The variables that were available to the template
      * @param string $templateMode The template mode that was used when rendering the template
      * @param string $output The template’s rendering result
@@ -1950,7 +1952,7 @@ JS;
             $this->_twigOptions['autoescape'] = 'js';
         }
 
-        if (YII_DEBUG) {
+        if (App::devMode()) {
             $this->_twigOptions['debug'] = true;
             $this->_twigOptions['strict_variables'] = true;
         }

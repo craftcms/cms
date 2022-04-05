@@ -43,7 +43,7 @@
                           (
                             item.lineItem.purchasable.type === 'plugin-edition' &&
                             (
-                              item.lineItem.options.licenseKey.substr(0, 4) === 'new:' ||
+                              item.lineItem.options.licenseKey.substring(0, 4) === 'new:' ||
                               (
                                 pluginLicenseInfo(item.plugin.handle) &&
                                 pluginLicenseInfo(item.plugin.handle).isTrial

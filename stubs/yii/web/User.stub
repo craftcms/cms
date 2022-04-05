@@ -1,0 +1,16 @@
+<?php
+
+namespace yii\web;
+
+class User
+{
+    /**
+     * @var int|null
+     */
+    public $authTimeout;
+
+    /**
+     * @var int|null
+     */
+    public $absoluteAuthTimeout;
+}

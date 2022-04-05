@@ -18,20 +18,24 @@ use yii\base\Exception;
 class InvalidTypeException extends Exception
 {
     /**
-     * @var class-string The invalid class name
+     * @var string The invalid class name
+     * @phpstan-var class-string
      */
     public string $class;
 
     /**
-     * @var class-string The base class or interface that [[$class]] was supposed to be
+     * @var string The base class or interface that [[$class]] was supposed to be
+     * @phpstan-var class-string
      */
     public string $requiredType;
 
     /**
      * Constructor.
      *
-     * @param class-string $class The class that doesn’t exist or doesn’t extend/implement $requiredType
-     * @param class-string $requiredType The base class or interface that $class was supposed to be
+     * @param string $class The class that doesn’t exist or doesn’t extend/implement $requiredType
+     * @phpstan-param class-string $class
+     * @param string $requiredType The base class or interface that $class was supposed to be
+     * @phpstan-param class-string $requiredType
      * @param string|null $message The error message
      * @param int $code The error code
      */

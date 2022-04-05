@@ -399,7 +399,6 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
             if (file_exists($event->path)) {
                 FileHelper::unlink($event->path);
             }
-
         } catch (FsException $e) {
             Craft::$app->getErrorHandler()->logException($e);
         }
@@ -557,7 +556,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
 
         if (isset($this->eagerLoadedTransformIndexes[$fingerprint])) {
             $result = $this->eagerLoadedTransformIndexes[$fingerprint];
-            return new ImageTransformIndex($result);
+            return new ImageTransformIndex((array)$result);
         }
 
         // Check if an entry exists already

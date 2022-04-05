@@ -40,9 +40,9 @@ abstract class BaseCondition extends Component implements ConditionInterface
     public string $mainTag = 'form';
 
     /**
-     * @var string The ID of the condition builder
+     * @var string|null The ID of the condition builder
      */
-    public string $id;
+    public ?string $id = null;
 
     /**
      * @var string The root input name of the condition builder
@@ -60,9 +60,9 @@ abstract class BaseCondition extends Component implements ConditionInterface
     public bool $forProjectConfig = false;
 
     /**
-     * @var string The “Add a rule” button label.
+     * @var string|null The “Add a rule” button label.
      */
-    public string $addRuleLabel;
+    public ?string $addRuleLabel = null;
 
     /**
      * @var Collection
@@ -72,7 +72,8 @@ abstract class BaseCondition extends Component implements ConditionInterface
     private Collection $_conditionRules;
 
     /**
-     * @var string[]|array{class: string}[]|array{type: string}[] The available rule types for this condition.
+     * @var string[]|array[] The available rule types for this condition.
+     * @phpstan-var string[]|array{class:string}[]|array{type:string}[]
      * @see getConditionRuleTypes()
      */
     private array $_conditionRuleTypes;
@@ -125,7 +126,8 @@ abstract class BaseCondition extends Component implements ConditionInterface
      *
      * Rule types should be defined as either the class name or an array with a `class` key set to the class name.
      *
-     * @return string[]|array{class: string}[]
+     * @return string[]|array[]
+     * @phpstan-return string[]|array{class:string}[]
      */
     abstract protected function conditionRuleTypes(): array;
 

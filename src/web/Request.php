@@ -130,12 +130,6 @@ class Request extends \yii\web\Request
      * @var bool
      * @see checkIfActionRequest()
      */
-    private bool $_isSingleActionRequest = false;
-
-    /**
-     * @var bool
-     * @see checkIfActionRequest()
-     */
     private bool $_isLoginRequest = false;
 
     /**
@@ -738,7 +732,9 @@ class Request extends \yii\web\Request
      */
     public function getMimeType(): ?string
     {
-        if (($contentType = parent::getContentType()) === null) {
+        $contentType = parent::getContentType();
+
+        if (!$contentType) {
             return null;
         }
 
@@ -1037,7 +1033,7 @@ class Request extends \yii\web\Request
      * If the parameter does not exist, the second parameter to this method will be returned.
      *
      * @param string $name The parameter name.
-     * @param mixed|null $defaultValue The default parameter value if the parameter does not exist.
+     * @param mixed $defaultValue The default parameter value if the parameter does not exist.
      * @return mixed The parameter value.
      * @see getQueryParam()
      * @see getBodyParam()
@@ -1251,7 +1247,11 @@ class Request extends \yii\web\Request
         if (!isset($this->_craftCsrfToken) || $regenerate) {
             $token = $this->loadCsrfToken();
 
-            if ($regenerate || $token === null || ($this->_craftCsrfToken = $token) === null || !$this->csrfTokenValidForCurrentUser($token)) {
+            if (
+                $regenerate ||
+                $token === null ||
+                !$this->csrfTokenValidForCurrentUser($token)
+            ) {
                 $token = $this->generateCsrfToken();
             }
 
@@ -1454,10 +1454,10 @@ class Request extends \yii\web\Request
             ?? false;
         if ($siteId) {
             $siteId = Craft::$app->getSecurity()->validateData($siteId);
-            if ($siteId === false) {
+            if (!is_numeric($siteId)) {
                 throw new BadRequestHttpException('Invalid site token');
             }
-            $site = $this->sites->getSiteById($siteId, true);
+            $site = $this->sites->getSiteById((int)$siteId, true);
             if (!$site) {
                 throw new BadRequestHttpException('Invalid site ID: ' . $siteId);
             }
@@ -1598,7 +1598,6 @@ class Request extends \yii\web\Request
             // Reset
             $this->_isActionRequest = false;
             $this->_actionSegments = null;
-            $this->_isSingleActionRequest = false;
             $this->_isLoginRequest = false;
         }
 
@@ -1625,7 +1624,6 @@ class Request extends \yii\web\Request
             }
 
             $this->_actionSegments = array_values(array_filter(explode('/', $actionParam)));
-            $this->_isSingleActionRequest = empty($this->_path);
             return true;
         }
 
@@ -1635,7 +1633,6 @@ class Request extends \yii\web\Request
             count($this->getSegments()) > 1
         ) {
             $this->_actionSegments = array_slice($this->getSegments(), 1);
-            $this->_isSingleActionRequest = true;
             return true;
         }
 
@@ -1673,7 +1670,6 @@ class Request extends \yii\web\Request
             foreach ($specialPaths as [$path, $actionSegments]) {
                 if ($path === $this->_path) {
                     $this->_actionSegments = $actionSegments();
-                    $this->_isSingleActionRequest = true;
                     return true;
                 }
             }

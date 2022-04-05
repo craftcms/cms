@@ -5,26 +5,28 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craftunit\gql\mutations;
+namespace crafttests\unit\gql\mutations;
 
+use Craft;
 use craft\gql\resolvers\mutations\Asset;
 use craft\models\VolumeFolder;
 use craft\records\Volume;
 use craft\services\Assets;
 use craft\test\TestCase;
 use GraphQL\Type\Definition\ResolveInfo;
+use Throwable;
 
 class AssetMutationResolverTest extends TestCase
 {
     /**
      * Test whether various argument combos set the correct scenario on the element.
      *
-     * @param $arguments
-     * @param $scenario
-     * @throws \Throwable
+     * @param array $arguments
+     * @param string $exception
+     * @throws Throwable
      * @dataProvider testVariousExceptionsProvider
      */
-    public function testVariousExceptions($arguments, $exception)
+    public function testVariousExceptions(array $arguments, string $exception): void
     {
         $resolver = $this->make(Asset::class, [
             'requireSchemaAction' => null,
@@ -34,20 +36,17 @@ class AssetMutationResolverTest extends TestCase
         $resolver->setResolutionData('volume', new Volume(['id' => 1]));
 
         $folder = new VolumeFolder(['id' => 1, 'volumeId' => 1]);
-        \Craft::$app->set('assets', $this->make(Assets::class, [
+        Craft::$app->set('assets', $this->make(Assets::class, [
             'getRootFolderByVolumeId' => $folder,
             'getFolderById' => $folder,
         ]));
 
 
-        if ($exception) {
-            $this->expectExceptionMessage($exception);
-        }
-
+        $this->expectExceptionMessage($exception);
         $resolver->saveAsset(null, $arguments, null, $this->make(ResolveInfo::class));
     }
 
-    public function testVariousExceptionsProvider()
+    public function testVariousExceptionsProvider(): array
     {
         return [
             [['filename' => 'fake.jpg'], 'Impossible to create an asset without providing a file'],

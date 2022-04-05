@@ -31,6 +31,7 @@ class Tip extends BaseUiElement
 
     /**
      * @var string The tip style (`tip` or `warning`)
+     * @phpstan-var self::STYLE_TIP|self::STYLE_WARNING
      */
     public string $style = self::STYLE_TIP;
 

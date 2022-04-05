@@ -9,6 +9,7 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\elements\conditions\ElementConditionInterface;
 use craft\helpers\ArrayHelper;
 use craft\models\UserGroup;
 use craft\services\ElementSources;
@@ -47,6 +48,7 @@ class ElementIndexSettingsController extends BaseElementsController
     public function actionGetCustomizeSourcesModalData(): Response
     {
         /** @var string|ElementInterface $elementType */
+        /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
         $elementType = $this->elementType();
         $conditionsService = Craft::$app->getConditions();
         $view = Craft::$app->getView();
@@ -73,6 +75,7 @@ class ElementIndexSettingsController extends BaseElementsController
 
             if ($source['type'] === ElementSources::TYPE_CUSTOM) {
                 if (isset($source['condition'])) {
+                    /** @var ElementConditionInterface $condition */
                     $condition = $conditionsService->createCondition(ArrayHelper::remove($source, 'condition'));
                     $condition->mainTag = 'div';
                     $condition->name = "sources[{$source['key']}][condition]";

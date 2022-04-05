@@ -62,8 +62,8 @@ use yii\web\Response;
  * @property int $typeId the entry type’s ID
  * @property int|null $authorId the entry author’s ID
  * @property EntryType $type the entry type
- * @property Section $section the entry's section
- * @property User|null $author the entry's author
+ * @property Section $section the entry’s section
+ * @property User|null $author the entry’s author
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
@@ -75,7 +75,6 @@ class Entry extends Element
 
     /**
      * @event DefineEntryTypesEvent The event that is triggered when defining the available entry types for the entry
-     *
      * @see getAvailableEntryTypes()
      * @since 3.6.0
      */
@@ -186,7 +185,7 @@ class Entry extends Element
      * @inheritdoc
      * @return EntryQuery The newly created [[EntryQuery]] instance.
      */
-    public static function find(): ElementQueryInterface
+    public static function find(): EntryQuery
     {
         return new EntryQuery(static::class);
     }
@@ -617,10 +616,12 @@ class Entry extends Element
     public static function eagerLoadingMap(array $sourceElements, string $handle): array|null|false
     {
         if ($handle === 'author') {
+            /** @phpstan-ignore-next-line */
             $sourceElementsWithAuthors = array_filter($sourceElements, function(self $entry) {
                 return $entry->getAuthorId() !== null;
             });
 
+            /** @phpstan-ignore-next-line */
             $map = array_map(function(self $entry) {
                 return [
                     'source' => $entry->id,
@@ -858,7 +859,7 @@ class Entry extends Element
             $section->propagationMethod === Section::PROPAGATION_METHOD_CUSTOM
         ) {
             if ($this->id) {
-                $currentSites = static::find()
+                $currentSites = self::find()
                     ->status(null)
                     ->id($this->id)
                     ->site('*')
@@ -873,7 +874,7 @@ class Entry extends Element
 
             // If this is being duplicated from another element (e.g. a draft), include any sites the source element is saved to as well
             if (!empty($this->duplicateOf->id)) {
-                array_push($currentSites, ...static::find()
+                array_push($currentSites, ...self::find()
                     ->status(null)
                     ->id($this->duplicateOf->id)
                     ->site('*')
@@ -950,7 +951,7 @@ class Entry extends Element
 
     /**
      * @inheritdoc
-     * @throws InvalidConfigException if [[siteId]] is not set to a site ID that the entry's section is enabled for
+     * @throws InvalidConfigException if [[siteId]] is not set to a site ID that the entry’s section is enabled for
      */
     public function getUriFormat(): ?string
     {
@@ -1067,7 +1068,7 @@ class Entry extends Element
     }
 
     /**
-     * Returns the entry's section.
+     * Returns the entry’s section.
      *
      * ---
      * ```php
@@ -1215,7 +1216,7 @@ class Entry extends Element
     }
 
     /**
-     * Returns the entry's author.
+     * Returns the entry’s author.
      *
      * ---
      * ```php
@@ -1245,7 +1246,7 @@ class Entry extends Element
     }
 
     /**
-     * Sets the entry's author.
+     * Sets the entry’s author.
      *
      * @param User|null $author
      */
@@ -1284,7 +1285,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public function createAnother(): ?ElementInterface
+    public function createAnother(): ?self
     {
         $section = $this->getSection();
 
@@ -1562,26 +1563,30 @@ class Entry extends Element
 
             case 'revisionNotes':
                 /** @var Entry|null $revision */
+                $revision = $this->getCurrentRevision();
+                if (!$revision) {
+                    return '';
+                }
                 /** @var RevisionBehavior|null $behavior */
-                if (
-                    ($revision = $this->getCurrentRevision()) === null ||
-                    ($behavior = $revision->getBehavior('revision')) === null
-                ) {
+                $behavior = $revision->getBehavior('revision');
+                if (!$behavior) {
                     return '';
                 }
                 return Html::encode($behavior->revisionNotes);
 
             case 'revisionCreator':
                 /** @var Entry|null $revision */
-                /** @var RevisionBehavior|null $behavior */
-                if (
-                    ($revision = $this->getCurrentRevision()) === null ||
-                    ($behavior = $revision->getBehavior('revision')) === null ||
-                    ($creator = $behavior->getCreator()) === null
-                ) {
+                $revision = $this->getCurrentRevision();
+                if (!$revision) {
                     return '';
                 }
-                return Cp::elementHtml($creator);
+                /** @var RevisionBehavior|null $behavior */
+                $behavior = $revision->getBehavior('revision');
+                if (!$behavior) {
+                    return '';
+                }
+                $creator = $behavior->getCreator();
+                return $creator ? Cp::elementHtml($creator) : '';
 
             case 'drafts':
                 if (!$this->hasEagerLoadedElements('drafts')) {
@@ -1668,7 +1673,8 @@ EOD;
                     ]);
                 } else {
                     // If the entry already has structure data, use it. Otherwise, use its canonical entry
-                    $parent = static::find()
+                    /** @var self|null $parent */
+                    $parent = self::find()
                         ->siteId($this->siteId)
                         ->ancestorOf($this->lft ? $this : ($this->getIsCanonical() ? $this->id : $this->getCanonical(true)))
                         ->ancestorDist(1)
@@ -1783,7 +1789,7 @@ EOD;
     }
 
     /**
-     * Updates the entry's title, if its entry type has a dynamic title format.
+     * Updates the entry’s title, if its entry type has a dynamic title format.
      *
      * @since 3.0.3
      */
@@ -1793,7 +1799,7 @@ EOD;
         if (!$entryType->hasTitleField) {
             // Make sure that the locale has been loaded in case the title format has any Date/Time fields
             Craft::$app->getLocale();
-            // Set Craft to the entry's site's language, in case the title format has any static translations
+            // Set Craft to the entry’s site’s language, in case the title format has any static translations
             $language = Craft::$app->language;
             Craft::$app->language = $this->getSite()->language;
             $title = Craft::$app->getView()->renderObjectTemplate($entryType->titleFormat, $this);
@@ -1852,6 +1858,7 @@ EOD;
                 ->status(null)
                 ->exists();
             if (!$hasRevisions) {
+                /** @var self|null $currentEntry */
                 $currentEntry = self::find()
                     ->id($this->id)
                     ->site('*')
@@ -1925,8 +1932,8 @@ EOD;
             $record->sectionId = (int)$this->sectionId;
             $record->typeId = $this->getTypeId();
             $record->authorId = $this->getAuthorId();
-            $record->postDate = $this->postDate;
-            $record->expiryDate = $this->expiryDate;
+            $record->postDate = Db::prepareDateForDb($this->postDate);
+            $record->expiryDate = Db::prepareDateForDb($this->expiryDate);
 
             // Capture the dirty attributes from the record
             $dirtyAttributes = array_keys($record->getDirtyAttributes());
@@ -1939,7 +1946,7 @@ EOD;
                     $this->_placeInStructure($isNew, $section);
                 }
 
-                // Update the entry's descendants, who may be using this entry's URI in their own URIs
+                // Update the entry’s descendants, who may be using this entry’s URI in their own URIs
                 if (!$isNew) {
                     Craft::$app->getElements()->updateDescendantSlugsAndUris($this, true, true);
                 }
@@ -2041,6 +2048,7 @@ EOD;
         $section = $this->getSection();
         if ($section->type === Section::TYPE_STRUCTURE) {
             // Add the entry back into its structure
+            /** @var self|null $parent */
             $parent = self::find()
                 ->structureId($section->structureId)
                 ->innerJoin(['j' => Table::ENTRIES], '[[j.parentId]] = [[elements.id]]')
@@ -2070,7 +2078,8 @@ EOD;
 
             // If this is the canonical entry, update its drafts
             if ($this->getIsCanonical()) {
-                $drafts = static::find()
+                /** @var self[] $drafts */
+                $drafts = self::find()
                     ->draftOf($this)
                     ->status(null)
                     ->site('*')

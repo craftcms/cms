@@ -9,7 +9,7 @@ namespace crafttests\unit\i18n;
 
 use Codeception\Test\Unit;
 use Craft;
-use UnitTester;
+use craft\test\TestCase;
 
 /**
  * Unit tests for the Formatter class.
@@ -17,20 +17,15 @@ use UnitTester;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class FormatterTest extends Unit
+class FormatterTest extends TestCase
 {
-    /**
-     * @var UnitTester
-     */
-    protected $tester;
-
     /**
      * @param string $expected
      * @param mixed $value
      * @param int|null $decimals
      * @dataProvider asPercentDataProvider
      */
-    public function testAsPercent(string $expected, $value, ?int $decimals = null): void
+    public function testAsPercent(string $expected, mixed $value, ?int $decimals = null): void
     {
         self::assertSame($expected, Craft::$app->getFormatter()->asPercent($value, $decimals));
     }

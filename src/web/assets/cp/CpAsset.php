@@ -334,6 +334,7 @@ JS;
         $elementTypeNames = [];
         foreach (Craft::$app->getElements()->getAllElementTypes() as $elementType) {
             /** @var string|ElementInterface $elementType */
+            /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
             $elementTypeNames[$elementType] = [
                 $elementType::displayName(),
                 $elementType::pluralDisplayName(),
@@ -458,7 +459,7 @@ JS;
     }
 
     /**
-     * @param $generalConfig GeneralConfig
+     * @param GeneralConfig $generalConfig
      * @return array|null
      */
     private function _httpProxy(GeneralConfig $generalConfig): ?array

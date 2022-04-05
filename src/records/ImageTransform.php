@@ -9,7 +9,6 @@ namespace craft\records;
 
 use craft\db\ActiveRecord;
 use craft\db\Table;
-use DateTime;
 
 /**
  * Class ImageTransform record.
@@ -24,7 +23,7 @@ use DateTime;
  * @property string $format Format
  * @property string $interlace Interlace
  * @property int $quality Quality
- * @property DateTime $parameterChangeTime Critical parameter change time
+ * @property string|null $parameterChangeTime Critical parameter change time
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */

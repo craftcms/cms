@@ -25,7 +25,7 @@ class I18N extends \yii\i18n\I18N
     private ?array $_allLocaleIds = null;
 
     /**
-     * @var string[]
+     * @var bool[]
      * @see getAppLocaleIds()
      */
     private array $_appLocaleIds;

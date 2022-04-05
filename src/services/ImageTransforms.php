@@ -262,7 +262,7 @@ class ImageTransforms extends Component
             $interlaceChanged = $transformRecord->interlace !== $data['interlace'];
 
             if ($heightChanged || $modeChanged || $qualityChanged || $interlaceChanged) {
-                $transformRecord->parameterChangeTime = new DateTime('@' . time());
+                $transformRecord->parameterChangeTime = Db::prepareDateForDb(new DateTime());
                 $deleteTransformIndexes = true;
             }
 
@@ -439,7 +439,7 @@ class ImageTransforms extends Component
                 }
 
                 // Only set the height if the reference transform has a height set on it
-                if ($refTransform && $refTransform->height) {
+                if ($refTransform->height) {
                     if ($sizeUnit === 'w') {
                         $transform['height'] = (int)ceil($refTransform->height * $transform['width'] / $refTransform->width);
                     } else {
@@ -466,28 +466,9 @@ class ImageTransforms extends Component
     }
 
     /**
-     * Get all image transformer types.
-     *
-     * @return array
-     */
-    public function getAllImageTransformerTypes(): array
-    {
-        $transformerTypes = [
-            ImageTransformer::class,
-        ];
-
-        $event = new RegisterComponentTypesEvent([
-            'types' => $transformerTypes,
-        ]);
-
-        $this->trigger(self::EVENT_REGISTER_IMAGE_TRANSFORMERS, $event);
-
-        return $event->types;
-    }
-
-    /**
-     * @template T
-     * @param class-string<T> $type
+     * @template T of ImageTransformerInterface
+     * @param string $type
+     * @phpstan-param class-string<T> $type
      * @param array $config
      * @return T
      * @throws InvalidConfigException
@@ -576,7 +557,8 @@ class ImageTransforms extends Component
     /**
      * Return all available image transformers.
      *
-     * @return array
+     * @return string[]
+     * @phpstan-return class-string<ImageTransformerInterface>[]
      */
     public function getAllImageTransformers(): array
     {

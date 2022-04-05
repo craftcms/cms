@@ -52,7 +52,7 @@ class InstallController extends Controller
     public ?string $siteUrl = null;
 
     /**
-     * @var string|null The default langcode for the first site to create during install.
+     * @var string|null The default language for the first site to create during install.
      */
     public ?string $language = null;
 

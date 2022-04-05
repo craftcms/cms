@@ -93,7 +93,7 @@ class RecentEntries extends Widget
     public function getTitle(): ?string
     {
         if (is_numeric($this->section)) {
-            $section = Craft::$app->getSections()->getSectionById($this->section);
+            $section = Craft::$app->getSections()->getSectionById((int)$this->section);
 
             if ($section) {
                 $title = Craft::t('app', 'Recent {section} Entries', [
@@ -110,7 +110,7 @@ class RecentEntries extends Widget
         // See if they are pulling entries from a different site
         $targetSiteId = $this->_getTargetSiteId();
 
-        if ($targetSiteId !== false && $targetSiteId != Craft::$app->getSites()->getCurrentSite()->id) {
+        if ($targetSiteId !== null && $targetSiteId != Craft::$app->getSites()->getCurrentSite()->id) {
             $site = Craft::$app->getSites()->getSiteById($targetSiteId);
 
             if ($site) {
@@ -152,13 +152,13 @@ class RecentEntries extends Widget
     /**
      * Returns the recent entries, based on the widget settings and user permissions.
      *
-     * @return array
+     * @return Entry[]
      */
     private function _getEntries(): array
     {
         $targetSiteId = $this->_getTargetSiteId();
 
-        if ($targetSiteId === false) {
+        if ($targetSiteId === null) {
             // Hopeless
             return [];
         }
@@ -175,16 +175,16 @@ class RecentEntries extends Widget
             return [];
         }
 
-        $query = Entry::find();
-        $query->status(null);
-        $query->siteId($targetSiteId);
-        $query->sectionId($targetSectionId);
-        $query->editable(true);
-        $query->limit($this->limit ?: 100);
-        $query->with(['author']);
-        $query->orderBy('elements.dateCreated desc');
-
-        return $query->all();
+        /** @var Entry[] */
+        return Entry::find()
+            ->sectionId($targetSectionId)
+            ->editable(true)
+            ->status(null)
+            ->siteId($targetSiteId)
+            ->limit($this->limit ?: 100)
+            ->with(['author'])
+            ->orderBy('elements.dateCreated desc')
+            ->all();
     }
 
     /**
@@ -208,9 +208,9 @@ class RecentEntries extends Widget
     /**
      * Returns the target site ID for the widget.
      *
-     * @return string|false
+     * @return int|null
      */
-    private function _getTargetSiteId(): string|false
+    private function _getTargetSiteId(): int|null
     {
         if (!Craft::$app->getIsMultiSite()) {
             return $this->siteId;
@@ -224,7 +224,7 @@ class RecentEntries extends Widget
 
         // If they aren't allowed to edit *any* sites, return false
         if (empty($editableSiteIds)) {
-            return false;
+            return null;
         }
 
         // Figure out which site was selected in the settings

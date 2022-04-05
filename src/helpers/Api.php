@@ -126,7 +126,7 @@ abstract class Api
     /**
      * Processes an API response’s headers.
      *
-     * @param string[][]|string[] The response headers
+     * @param string[][]|string[] $headers The response headers
      */
     public static function processResponseHeaders(array $headers): void
     {

@@ -9,8 +9,6 @@ namespace craft\assetpreviews;
 
 use Craft;
 use craft\base\AssetPreviewHandler;
-use craft\helpers\Assets as AssetsHelper;
-use craft\models\ImageTransform;
 
 /**
  * Provides functionality to preview images.

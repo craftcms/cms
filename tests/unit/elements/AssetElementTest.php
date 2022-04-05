@@ -28,12 +28,12 @@ class AssetElementTest extends TestCase
     /**
      * @var UnitTester
      */
-    public $tester;
+    protected UnitTester $tester;
 
     /**
      *
      */
-    public function testTransformWithOverrideParameters()
+    public function testTransformWithOverrideParameters(): void
     {
 
         // Set up asset to have an URL and a mock transform

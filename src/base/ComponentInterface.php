@@ -16,7 +16,7 @@ namespace craft\base;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-interface ComponentInterface
+interface ComponentInterface extends ModelInterface
 {
     /**
      * Returns the display name of this class.

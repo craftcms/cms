@@ -8,6 +8,7 @@
 namespace crafttests\unit\web;
 
 use Codeception\Test\Unit;
+use craft\test\TestCase;
 use craft\web\UrlRule;
 
 /**
@@ -17,12 +18,12 @@ use craft\web\UrlRule;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class UrlRuleTest extends Unit
+class UrlRuleTest extends TestCase
 {
     /**
      *
      */
-    public function testUrlRule()
+    public function testUrlRule(): void
     {
         $rule = new UrlRule(['template' => 'templates/index', 'pattern' => '{handle}', 'variables' => ['2', '22']]);
         self::assertSame('templates/render', $rule->route);

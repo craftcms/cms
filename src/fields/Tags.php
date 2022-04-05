@@ -165,12 +165,7 @@ class Tags extends BaseRelationField
     private function _getTagGroup(): ?TagGroup
     {
         $groupUid = $this->_getTagGroupUid();
-
-        if ($groupUid !== false) {
-            return Craft::$app->getTags()->getTagGroupByUid($groupUid);
-        }
-
-        return null;
+        return $groupUid ? Craft::$app->getTags()->getTagGroupByUid($groupUid) : null;
     }
 
     /**

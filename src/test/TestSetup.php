@@ -1,14 +1,15 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\test;
 
 use Codeception\PHPUnit\TestCase as CodeceptionTestCase;
 use Craft;
+use craft\console\Application as ConsoleApplication;
 use craft\db\Connection;
 use craft\db\Migration;
 use craft\db\MigrationManager;
@@ -60,7 +61,7 @@ use craft\services\Utilities;
 use craft\services\Volumes;
 use craft\test\console\ConsoleTest;
 use craft\test\Craft as CraftTest;
-use craft\web\Application;
+use craft\web\Application as WebApplication;
 use craft\web\ErrorHandler;
 use craft\web\Request;
 use craft\web\Response;
@@ -72,6 +73,7 @@ use yii\base\ErrorException;
 use yii\base\Event;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
+use yii\base\Module;
 use yii\db\Exception;
 use yii\mutex\Mutex;
 
@@ -84,7 +86,7 @@ use yii\mutex\Mutex;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since  3.2
+ * @since 3.2
  */
 class TestSetup
 {
@@ -170,10 +172,10 @@ class TestSetup
     }
 
     /**
-     * @param class-string<Migration> $class
+     * @param string $class
+     * @phpstan-param class-string<Migration> $class
      * @param array $params
      * @param bool $ignorePreviousMigrations
-     *
      * @return bool
      * @throws InvalidConfigException
      * @throws MigrationException
@@ -299,6 +301,7 @@ class TestSetup
     /**
      * @param string $preDefinedAppType
      * @return string
+     * @phpstan-return class-string<ConsoleApplication|WebApplication>
      */
     public static function appClass(string $preDefinedAppType = ''): string
     {
@@ -306,8 +309,7 @@ class TestSetup
             $preDefinedAppType = self::appType();
         }
 
-        return $preDefinedAppType === 'console' ? \craft\console\Application::class
-            : Application::class;
+        return $preDefinedAppType === 'console' ? ConsoleApplication::class : WebApplication::class;
     }
 
     /**
@@ -327,11 +329,11 @@ class TestSetup
         $translationsPath = realpath(CRAFT_TRANSLATIONS_PATH);
 
         // Log errors to craft/storage/logs/phperrors.log
-        ini_set('log_errors', 1);
+        ini_set('log_errors', '1');
         ini_set('error_log', $storagePath . '/logs/phperrors.log');
 
         error_reporting(E_ALL);
-        ini_set('display_errors', 1);
+        ini_set('display_errors', '1');
         defined('YII_DEBUG') || define('YII_DEBUG', true);
         defined('CRAFT_ENVIRONMENT') || define('CRAFT_ENVIRONMENT', '');
 
@@ -496,18 +498,20 @@ class TestSetup
     }
 
     /**
+     * @template T of Module
      * @param CodeceptionTestCase $test
      * @param array $serviceMap
-     * @param class-string<\yii\base\Application> $appClass
-     * @return MockObject
+     * @param string|null $moduleClass
+     * @phpstan-param class-string<T>|null $moduleClass
+     * @return T
      * @credit https://github.com/nerds-and-company/schematic/blob/master/tests/_support/Helper/Unit.php
      */
-    public static function getMockApp(CodeceptionTestCase $test, array $serviceMap = [], string $appClass = ''): MockObject
+    public static function getMockModule(CodeceptionTestCase $test, array $serviceMap = [], ?string $moduleClass = null): Module
     {
-        $appClass = $appClass ?: self::appClass();
+        $moduleClass = $moduleClass ?? self::appClass();
         $serviceMap = $serviceMap ?: self::getCraftServiceMap();
 
-        $mockApp = self::getMock($test, $appClass);
+        $mockApp = self::getMock($test, $moduleClass);
 
         $mockMapForMagicGet = [];
 
@@ -541,12 +545,14 @@ class TestSetup
     }
 
     /**
+     * @template T
      * @param CodeceptionTestCase $test
-     * @param class-string $class
-     * @return MockObject
+     * @param string $class
+     * @phpstan-param class-string<T> $class
+     * @return T|MockObject
      * @credit https://github.com/nerds-and-company/schematic/blob/master/tests/_support/Helper/Unit.php
      */
-    public static function getMock(CodeceptionTestCase $test, string $class): MockObject
+    public static function getMock(CodeceptionTestCase $test, string $class)
     {
         return $test->getMockBuilder($class)
             ->disableOriginalConstructor()

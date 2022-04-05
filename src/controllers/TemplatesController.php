@@ -13,6 +13,7 @@ use craft\helpers\App;
 use craft\helpers\Db;
 use craft\helpers\Path;
 use craft\helpers\Template;
+use craft\web\Application;
 use craft\web\Controller;
 use craft\web\View;
 use ErrorException;
@@ -97,7 +98,9 @@ class TemplatesController extends Controller
         }
 
         // Merge any additional route params
-        $routeParams = Craft::$app->getUrlManager()->getRouteParams();
+        /** @var Application $app */
+        $app = Craft::$app;
+        $routeParams = $app->getUrlManager()->getRouteParams();
         unset($routeParams['template'], $routeParams['template']);
         $variables = array_merge($variables, $routeParams);
 

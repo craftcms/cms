@@ -12,8 +12,7 @@ namespace crafttests\unit\services;
 
 use Codeception\Test\Unit;
 use Craft;
-use craft\services\Tokens;
-use UnitTester;
+use craft\test\TestCase;
 
 /**
  * Unit tests for the config service
@@ -22,19 +21,9 @@ use UnitTester;
  * @author Oliver Stark <os@fortrabbit.com>
  * @since 4.0
  */
-class ConfigTest extends Unit
+class ConfigTest extends TestCase
 {
-    /**
-     * @var UnitTester
-     */
-    protected $tester;
-
-    /**
-     * @var Tokens
-     */
-    protected $token;
-
-    public function testDotEnvPathIsNotABooleanString()
+    public function testDotEnvPathIsNotABooleanString(): void
     {
         Craft::setAlias('@root', CRAFT_TESTS_PATH);
 

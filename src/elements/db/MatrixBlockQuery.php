@@ -54,13 +54,13 @@ class MatrixBlockQuery extends ElementQuery
     // -------------------------------------------------------------------------
 
     /**
-     * @var int|int[]|string|false|null The field ID(s) that the resulting Matrix blocks must belong to.
+     * @var mixed The field ID(s) that the resulting Matrix blocks must belong to.
      * @used-by fieldId()
      */
     public mixed $fieldId = null;
 
     /**
-     * @var int|int[]|null The primary owner element ID(s) that the resulting Matrix blocks must belong to.
+     * @var mixed The primary owner element ID(s) that the resulting Matrix blocks must belong to.
      * @used-by primaryOwner()
      * @used-by primaryOwnerId()
      * @since 4.0.0
@@ -68,7 +68,7 @@ class MatrixBlockQuery extends ElementQuery
     public mixed $primaryOwnerId = null;
 
     /**
-     * @var int|int[]|null The owner element ID(s) that the resulting Matrix blocks must belong to.
+     * @var mixed The owner element ID(s) that the resulting Matrix blocks must belong to.
      * @used-by owner()
      * @used-by ownerId()
      */
@@ -89,16 +89,16 @@ class MatrixBlockQuery extends ElementQuery
     public ?bool $allowOwnerRevisions = null;
 
     /**
-     * @var int|int[]|null The block type ID(s) that the resulting Matrix blocks must have.
+     * @var mixed The block type ID(s) that the resulting Matrix blocks must have.
      * ---
      * ```php
-     * // fetch the entry's text blocks
+     * // fetch the entry’s text blocks
      * $blocks = $entry->myMatrixField
      *     ->type('text')
      *     ->all();
      * ```
      * ```twig
-     * {# fetch the entry's text blocks #}
+     * {# fetch the entry’s text blocks #}
      * {% set blocks = entry.myMatrixField
      *   .type('text')
      *   .all() %}
@@ -166,7 +166,7 @@ class MatrixBlockQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param string|string[]|MatrixField|null $value The property value
+     * @param mixed $value The property value
      * @return self self reference
      * @uses $fieldId
      * @since 3.4.0
@@ -227,7 +227,7 @@ class MatrixBlockQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param int|int[]|null $value The property value
+     * @param mixed $value The property value
      * @return self self reference
      * @uses $fieldId
      */
@@ -265,7 +265,7 @@ class MatrixBlockQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param int|int[]|null $value The property value
+     * @param mixed $value The property value
      * @return self self reference
      * @uses $primaryOwnerId
      * @since 4.0.0
@@ -335,7 +335,7 @@ class MatrixBlockQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param int|int[]|null $value The property value
+     * @param mixed $value The property value
      * @return self self reference
      * @uses $ownerId
      */
@@ -446,7 +446,7 @@ class MatrixBlockQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param string|string[]|MatrixBlockType|null $value The property value
+     * @param mixed $value The property value
      * @return self self reference
      * @uses $typeId
      */
@@ -495,7 +495,7 @@ class MatrixBlockQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param int|int[]|null $value The property value
+     * @param mixed $value The property value
      * @return self self reference
      * @uses $typeId
      */
@@ -540,7 +540,7 @@ class MatrixBlockQuery extends ElementQuery
         // Figure out which content table to use
         $this->contentTable = null;
         if ($this->fieldId && count($this->fieldId) === 1) {
-            /** @var MatrixField $matrixField */
+            /** @var MatrixField|null $matrixField */
             $matrixField = Craft::$app->getFields()->getFieldById(reset($this->fieldId));
             if ($matrixField) {
                 $this->contentTable = $matrixField->contentTable;

@@ -10,7 +10,6 @@ namespace craft\records;
 use craft\db\ActiveQuery;
 use craft\db\ActiveRecord;
 use craft\db\Table;
-use DateTime;
 use yii\db\ActiveQueryInterface;
 
 /**
@@ -23,24 +22,24 @@ use yii\db\ActiveQueryInterface;
  * @property bool $locked Locked
  * @property bool $suspended Suspended
  * @property bool $admin Admin
- * @property string $username Username
+ * @property string|null $username Username
  * @property string|null $fullName
  * @property string|null $firstName First name
  * @property string|null $lastName Last name
- * @property string $email Email
- * @property string $password Password
- * @property DateTime $lastLoginDate Last login date
- * @property string $lastLoginAttemptIp Last login attempt IP
- * @property DateTime $invalidLoginWindowStart Invalid login window start
- * @property int $invalidLoginCount Invalid login count
- * @property DateTime $lastInvalidLoginDate Last invalid login date
- * @property DateTime $lockoutDate Lockout date
+ * @property string|null $email Email
+ * @property string|null $password Password
+ * @property string|null $lastLoginDate Last login date
+ * @property string|null $lastLoginAttemptIp Last login attempt IP
+ * @property string|null $invalidLoginWindowStart Invalid login window start
+ * @property int|null $invalidLoginCount Invalid login count
+ * @property string|null $lastInvalidLoginDate Last invalid login date
+ * @property string|null $lockoutDate Lockout date
  * @property bool $hasDashboard Whether the user has a dashboard
- * @property string $verificationCode Verification code
- * @property DateTime $verificationCodeIssuedDate Verification code issued date
- * @property string $unverifiedEmail Unverified email
+ * @property string|null $verificationCode Verification code
+ * @property string|null $verificationCodeIssuedDate Verification code issued date
+ * @property string|null $unverifiedEmail Unverified email
  * @property bool $passwordResetRequired Password reset required
- * @property DateTime $lastPasswordChangeDate Last password change date
+ * @property string|null $lastPasswordChangeDate Last password change date
  * @property Element $element Element
  * @property Session[] $sessions Sessions
  * @property UserGroup[] $groups User groups

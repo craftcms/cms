@@ -9,7 +9,6 @@ namespace craft\elements;
 
 use Craft;
 use craft\base\Element;
-use craft\base\ElementInterface;
 use craft\behaviors\DraftBehavior;
 use craft\controllers\ElementIndexesController;
 use craft\db\Query;
@@ -25,7 +24,6 @@ use craft\elements\conditions\categories\CategoryCondition;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\CategoryQuery;
 use craft\elements\db\ElementQuery;
-use craft\elements\db\ElementQueryInterface;
 use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\UrlHelper;
@@ -132,7 +130,7 @@ class Category extends Element
      * @inheritdoc
      * @return CategoryQuery The newly created [[CategoryQuery]] instance.
      */
-    public static function find(): ElementQueryInterface
+    public static function find(): CategoryQuery
     {
         return new CategoryQuery(static::class);
     }
@@ -470,7 +468,7 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    public function createAnother(): ?ElementInterface
+    public function createAnother(): ?self
     {
         $group = $this->getGroup();
 
@@ -658,7 +656,8 @@ class Category extends Element
                 ]);
             } else {
                 // If the category already has structure data, use it. Otherwise, use its canonical category
-                $parent = static::find()
+                /** @var self|null $parent */
+                $parent = self::find()
                     ->siteId($this->siteId)
                     ->ancestorOf($this->lft ? $this : ($this->getIsCanonical() ? $this->id : $this->getCanonical(true)))
                     ->ancestorDist(1)
@@ -915,6 +914,7 @@ class Category extends Element
         $structureId = $this->getGroup()->structureId;
 
         // Add the category back into its structure
+        /** @var self|null $parent */
         $parent = self::find()
             ->structureId($structureId)
             ->innerJoin(['j' => Table::CATEGORIES], '[[j.parentId]] = [[elements.id]]')

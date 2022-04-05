@@ -10,8 +10,8 @@ namespace crafttests\unit\test;
 use Codeception\Test\Unit;
 use Craft;
 use craft\db\Query;
+use craft\test\TestCase;
 use crafttests\fixtures\EntryWithFieldsFixture;
-use UnitTester;
 use yii\base\NotSupportedException;
 
 /**
@@ -21,13 +21,8 @@ use yii\base\NotSupportedException;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class FieldLayoutTest extends Unit
+class FieldLayoutTest extends TestCase
 {
-    /**
-     * @var UnitTester
-     */
-    protected $tester;
-
     public function _fixtures(): array
     {
         return [
@@ -40,7 +35,7 @@ class FieldLayoutTest extends Unit
     /**
      * @throws NotSupportedException
      */
-    public function testFieldLayoutMatrix()
+    public function testFieldLayoutMatrix(): void
     {
         $tableNames = Craft::$app->getDb()->getSchema()->tableNames;
         $matrixTableName = Craft::$app->getDb()->tablePrefix . 'matrixcontent_matrixfirst';

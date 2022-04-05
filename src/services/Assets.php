@@ -304,6 +304,7 @@ class Assets extends Component
             }
         }
 
+        /** @var Asset[] $assets */
         $assets = Asset::find()->folderId($folderIds)->all();
 
         $elementService = Craft::$app->getElements();
@@ -427,7 +428,7 @@ class Assets extends Component
     /**
      * Finds folders that match a given criteria.
      *
-     * @param mixed|null $criteria
+     * @param mixed $criteria
      * @return VolumeFolder[]
      */
     public function findFolders(mixed $criteria = null): array
@@ -500,7 +501,7 @@ class Assets extends Component
     /**
      * Finds the first folder that matches a given criteria.
      *
-     * @param mixed|null $criteria
+     * @param mixed $criteria
      * @return VolumeFolder|null
      */
     public function findFolder(mixed $criteria = null): ?VolumeFolder
@@ -827,7 +828,7 @@ class Assets extends Component
     }
 
     /**
-     * Returns the given user's temporary upload folder.
+     * Returns the given user’s temporary upload folder.
      *
      * If no user is provided, the currently-logged in user will be used (if there is one), or a folder named after
      * the current session ID.

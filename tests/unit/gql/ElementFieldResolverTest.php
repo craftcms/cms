@@ -5,9 +5,8 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craftunit\gql;
+namespace crafttests\unit\gql;
 
-use Codeception\Test\Unit;
 use Craft;
 use craft\base\Fs;
 use craft\elements\Asset;
@@ -18,6 +17,7 @@ use craft\elements\GlobalSet as GlobalSetElement;
 use craft\elements\MatrixBlock as MatrixBlockElement;
 use craft\elements\User as UserElement;
 use craft\errors\GqlException;
+use craft\gql\base\ObjectType;
 use craft\gql\types\elements\Asset as AssetGqlType;
 use craft\gql\types\elements\Category as CategoryGqlType;
 use craft\gql\types\elements\Entry as EntryGqlType;
@@ -38,16 +38,19 @@ use craft\models\UserGroup;
 use craft\models\Volume;
 use craft\services\Assets;
 use craft\services\ImageTransforms;
+use craft\test\TestCase;
+use DateTime;
 use GraphQL\Type\Definition\ResolveInfo;
+use UnitTester;
 
-class ElementFieldResolverTest extends Unit
+class ElementFieldResolverTest extends TestCase
 {
     /**
-     * @var \UnitTester
+     * @var UnitTester
      */
-    protected $tester;
+    protected UnitTester $tester;
 
-    protected function _before()
+    protected function _before(): void
     {
         // Mock the GQL schema for the volumes below
         $this->tester->mockMethods(
@@ -64,7 +67,7 @@ class ElementFieldResolverTest extends Unit
         );
     }
 
-    protected function _after()
+    protected function _after(): void
     {
     }
 
@@ -72,19 +75,19 @@ class ElementFieldResolverTest extends Unit
      * Test resolving fields on entries.
      *
      * @dataProvider entryFieldTestDataProvider
-     *
-     * @param class-string $gqlTypeClass The Gql type class
+     * @param string $gqlTypeClass The Gql type class
+     * @phpstan-param class-string $gqlTypeClass
      * @param string $propertyName The property being tested
      * @param mixed $result True for exact match, false for non-existing or a callback for fetching the data
      */
-    public function testEntryFieldResolving(string $gqlTypeClass, string $propertyName, $result)
+    public function testEntryFieldResolving(string $gqlTypeClass, string $propertyName, mixed $result): void
     {
         $sectionHandle = StringHelper::UUID();
         $typeHandle = StringHelper::UUID();
 
         $mockElement = $this->make(
             EntryElement::class, [
-                'postDate' => new \DateTime(),
+                'postDate' => new DateTime(),
                 '__get' => function($property) {
                     // Assume fields 'plainTextField' and 'typeface'
                     return in_array($property, ['plainTextField', 'typeface'], false) ? 'ok' : $this->$property;
@@ -105,12 +108,12 @@ class ElementFieldResolverTest extends Unit
      * Test resolving fields on assets.
      *
      * @dataProvider assetFieldTestDataProvider
-     *
-     * @param class-string $gqlTypeClass The Gql type class
+     * @param string $gqlTypeClass The Gql type class
+     * @phpstan-param class-string $gqlTypeClass
      * @param string $propertyName The property being tested
      * @param mixed $result True for exact match, false for non-existing or a callback for fetching the data
      */
-    public function testAssetFieldResolving(string $gqlTypeClass, string $propertyName, $result)
+    public function testAssetFieldResolving(string $gqlTypeClass, string $propertyName, mixed $result): void
     {
         $mockElement = $this->make(
             AssetElement::class, [
@@ -128,12 +131,12 @@ class ElementFieldResolverTest extends Unit
      * Test resolving fields on global sets.
      *
      * @dataProvider globalSetFieldTestDataProvider
-     *
-     * @param class-string $gqlTypeClass The Gql type class
+     * @param string $gqlTypeClass The Gql type class
+     * @phpstan-param class-string $gqlTypeClass
      * @param string $propertyName The property being tested
      * @param mixed $result True for exact match, false for non-existing or a callback for fetching the data
      */
-    public function testGlobalSetFieldResolving(string $gqlTypeClass, string $propertyName, $result)
+    public function testGlobalSetFieldResolving(string $gqlTypeClass, string $propertyName, mixed $result): void
     {
         $mockElement = $this->make(
             GlobalSetElement::class, [
@@ -152,12 +155,12 @@ class ElementFieldResolverTest extends Unit
      * Test resolving fields on categories
      *
      * @dataProvider categoryFieldTestDataProvider
-     *
-     * @param class-string $gqlTypeClass The Gql type class
+     * @param string $gqlTypeClass The Gql type class
+     * @phpstan-param class-string $gqlTypeClass
      * @param string $propertyName The property being tested
      * @param mixed $result True for exact match, false for non-existing or a callback for fetching the data
      */
-    public function testCategoryFieldResolving(string $gqlTypeClass, string $propertyName, $result)
+    public function testCategoryFieldResolving(string $gqlTypeClass, string $propertyName, mixed $result): void
     {
         $groupHandle = StringHelper::UUID();
 
@@ -180,12 +183,12 @@ class ElementFieldResolverTest extends Unit
      * Test resolving fields on tags
      *
      * @dataProvider tagFieldTestDataProvider
-     *
-     * @param class-string $gqlTypeClass The Gql type class
+     * @param string $gqlTypeClass The Gql type class
+     * @phpstan-param class-string $gqlTypeClass
      * @param string $propertyName The property being tested
      * @param mixed $result True for exact match, false for non-existing or a callback for fetching the data
      */
-    public function testTagFieldResolving(string $gqlTypeClass, string $propertyName, $result)
+    public function testTagFieldResolving(string $gqlTypeClass, string $propertyName, mixed $result): void
     {
         $groupHandle = StringHelper::UUID();
 
@@ -208,12 +211,12 @@ class ElementFieldResolverTest extends Unit
      * Test resolving fields on matrix blocks.
      *
      * @dataProvider matrixBlockFieldTestDataProvider
-     *
-     * @param class-string $gqlTypeClass The Gql type class
+     * @param string $gqlTypeClass The Gql type class
+     * @phpstan-param class-string $gqlTypeClass
      * @param string $propertyName The property being tested
      * @param mixed $result True for exact match, false for non-existing or a callback for fetching the data
      */
-    public function testMatrixBlockFieldResolving(string $gqlTypeClass, string $propertyName, $result)
+    public function testMatrixBlockFieldResolving(string $gqlTypeClass, string $propertyName, mixed $result): void
     {
         $typeHandle = StringHelper::UUID();
 
@@ -239,12 +242,12 @@ class ElementFieldResolverTest extends Unit
      * Test resolving fields on users.
      *
      * @dataProvider userFieldTestDataProvider
-     *
-     * @param class-string $gqlTypeClass The Gql type class
+     * @param string $gqlTypeClass The Gql type class
+     * @phpstan-param class-string $gqlTypeClass
      * @param string $propertyName The property being tested
      * @param mixed $result True for exact match, false for non-existing or a callback for fetching the data
      */
-    public function testUserFieldResolving(string $gqlTypeClass, string $propertyName, $result)
+    public function testUserFieldResolving(string $gqlTypeClass, string $propertyName, mixed $result): void
     {
         $mockElement = $this->make(
             UserElement::class, [
@@ -277,11 +280,9 @@ class ElementFieldResolverTest extends Unit
      *
      * @param array $fieldArguments
      * @param mixed $expectedArguments
-     * @param bool $generateNow
-     *
      * @dataProvider assetTransformDataProvider
      */
-    public function testAssetUrlTransform($fieldArguments, $expectedArguments)
+    public function testAssetUrlTransform(array $fieldArguments, mixed $expectedArguments): void
     {
         $imageTransformService = $this->make(ImageTransforms::class, [
             'getImageTransformer' => $this->make(ImageTransformer::class, [
@@ -290,7 +291,7 @@ class ElementFieldResolverTest extends Unit
                     return 'ok';
                 },
             ]),
-            'getTransformByHandle' => function($handle): ?ImageTransform {
+            'getTransformByHandle' => function($handle): ImageTransform {
                 return new ImageTransform(['handle' => $handle]);
             },
         ]);
@@ -318,15 +319,19 @@ class ElementFieldResolverTest extends Unit
     /**
      * Run the test on an element for a type class with the property name.
      *
-     * @param class-string $gqlTypeClass The Gql type class
+     * @param mixed $element
+     * @param string $gqlTypeClass The Gql type class
+     * @phpstan-param class-string<ObjectType> $gqlTypeClass
      * @param string $propertyName The property being tested
      * @param mixed $result True for exact match, false for non-existing or a callback for fetching the data
      */
-    public function _runTest($element, string $gqlTypeClass, string $propertyName, $result)
+    public function _runTest(mixed $element, string $gqlTypeClass, string $propertyName, mixed $result)
     {
         $resolveInfo = $this->make(ResolveInfo::class, ['fieldName' => $propertyName]);
         $resolve = function() use ($gqlTypeClass, $element, $resolveInfo) {
-            return $this->make($gqlTypeClass)->resolveWithDirectives($element, [], null, $resolveInfo);
+            /** @var ObjectType $type */
+            $type = $this->make($gqlTypeClass);
+            return $type->resolveWithDirectives($element, [], null, $resolveInfo);
         };
 
         if (is_callable($result)) {
@@ -436,7 +441,7 @@ class ElementFieldResolverTest extends Unit
         ];
     }
 
-    public function assetTransformDataProvider()
+    public function assetTransformDataProvider(): array
     {
         return [
             [['width' => 200, 'height' => 200], ['width' => 200, 'height' => 200]],
@@ -444,7 +449,6 @@ class ElementFieldResolverTest extends Unit
             [['width' => 200, 'height' => 500], ['width' => 200, 'height' => 500]],
             [['width' => 200, 'height' => 200, 'handle' => 'testHandle'], ['handle' => 'testHandle']],
             [['width' => 200, 'height' => 200, 'transform' => 'testHandle2'], ['handle' => 'testHandle2']],
-
         ];
     }
 }

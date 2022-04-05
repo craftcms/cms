@@ -3,19 +3,37 @@
 ## Unreleased
 
 ### Added
+- GraphQL schemas now include settings that determine which sites elements can be queried from. ([#10610](https://github.com/craftcms/cms/issues/10610))
+- Garbage collector now removes all empty temporary upload folders. ([#10746](https://github.com/craftcms/cms/issues/10746))
 - Added `craft\base\FsInterface::read()`.
 - Added `craft\base\FsInterface::write()`.
+- Added `craft\base\ModelInterface`.
+- Added `craft\helpers\App::devMode()`.
 - Added `craft\services\Assets::getImagePreviewUrl()`.
 - Added `craft\web\CpScreenResponseBehavior::selectedSubnavItem()`. ([#10784](https://github.com/craftcms/cms/discussions/10784))
-- Garbage collector now removes all empty temporary upload folders. ([#10746](https://github.com/craftcms/cms/issues/10746))
+- Added the `Craft.getQueryParam()` JavaScript method.
+- Added the `Craft.getQueryParams()` JavaScript method.
+- Added the `Craft.setPath()` JavaScript method.
+- Added the `Craft.setQueryParam()` JavaScript method.
+- Added the `Craft.setUrl()` JavaScript method.
 
 ### Changed
+- Element index pages’ status and sort menu option selections are now coded into the page URL via `status` and `sort` query string params. ([#10669](https://github.com/craftcms/cms/discussions/10669))
 - Sites’ Language settings now use Selectize inputs. ([#10810](https://github.com/craftcms/cms/discussions/10810))
 - Image thumbnails now use registered image transformers when available.
-- `craft\elements\Asset::getUrl()` now has an `$immediately` argement.
+- Craft’s bootstrap script now attempts to create its configured system paths automatically. ([#10562](https://github.com/craftcms/cms/pull/10562))
+- Field layout components’ settings slideouts now have a “Close” button. ([#10587](https://github.com/craftcms/cms/issues/10587))
+- The default `subLeft` and `subRight` search query term options are now only applied to terms that don’t include an asterisk at the beginning/end, e.g. `hello*`. ([#10613](https://github.com/craftcms/cms/discussions/10613))
+- Control panel resource locations are now cached, so resource requests can be resolved when Craft isn’t installed yet, or a database connection can’t be established. ([#10642](https://github.com/craftcms/cms/pull/10642))
+- `craft\elements\Asset::getUrl()` now has an `$immediately` argument.
+- `craft\gql\base\ElementResolver::prepareQuery()` now expects its third argument to have a `string|null` type declaration.
+- `craft\test\TestSetup::getMockApp()` has been renamed to `getMockModule()`, and its `$appClass` argument has been renamed to `$moduleClass`.
 
 ### Removed
 - Removed `craft\base\ElementInterface::getCrumbs()`. ([#10784](https://github.com/craftcms/cms/discussions/10784))
+- Removed `craft\services\ImageTransforms::getAllImageTransformerTypes()`.
+- Removed `craft\services\Volumes::getPublicVolumes()`.
+- Removed `craft\services\Volumes::getPublicVolumeIds()`.
 
 ### Fixed
 - Fixed a bug where Categories fields were showing spinners indefinitely. ([#10801](https://github.com/craftcms/cms/issues/10801))
@@ -29,6 +47,7 @@
 - Fixed a bug where Matrix block sort order changes weren’t persisting when applying drafts. ([#10803](https://github.com/craftcms/cms/issues/10803))
 - Fixed an error that occurred if any event handlers were registered for `craft\services\ImageTransforms::EVENT_BEFORE_DELETE_IMAGE_TRANSFORM`, `EVENT_AFTER_SAVE_IMAGE_TRANSFORM`, `EVENT_BEFORE_APPLY_TRANSFORM_DELETE`, `EVENT_AFTER_DELETE_IMAGE_TRANSFORM`, or `EVENT_BEFORE_SAVE_IMAGE_TRANSFORM`. ([#10826](https://github.com/craftcms/cms/issues/10826))
 - Fixed a JavaScript error that could occur when interacting with condition rules. ([#10779](https://github.com/craftcms/cms/issues/10779))
+- Fixed a bug where it wasn’t possible to add, remove, or reorder rows within Table fields. ([#10835](https://github.com/craftcms/cms/issues/10835))
 
 ## 4.0.0-beta.3 - 2022-03-22
 

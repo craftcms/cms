@@ -56,7 +56,7 @@ class Money extends Field implements PreviewableFieldInterface, SortableFieldInt
     }
 
     /**
-     * @var string The default currency
+     * @var non-empty-string The default currency
      */
     public string $currency = 'USD';
 
@@ -138,7 +138,8 @@ class Money extends Field implements PreviewableFieldInterface, SortableFieldInt
     {
         foreach (['defaultValue', 'min', 'max'] as $attr) {
             if ($this->$attr !== null) {
-                $this->$attr = MoneyHelper::toDecimal(new MoneyLibrary($this->$attr, new Currency($this->currency)));
+                $value = MoneyHelper::toDecimal(new MoneyLibrary($this->$attr, new Currency($this->currency)));
+                $this->$attr = $value !== false ? (float)$value : null;
             }
         }
 
@@ -224,7 +225,8 @@ class Money extends Field implements PreviewableFieldInterface, SortableFieldInt
             }
 
             $value['currency'] = $this->currency;
-            return MoneyHelper::toMoney($value)?->getAmount();
+            $money = MoneyHelper::toMoney($value);
+            return $money ? $money->getAmount() : null;
         }
 
         $money = new MoneyLibrary($value, new Currency($this->currency));

@@ -865,7 +865,7 @@ Craft.CP = Garnish.Base.extend({
                 var $link = $(ev.currentTarget);
 
                 var data = {
-                    message: $link.prop('className').substr(5)
+                    message: $link.prop('className').substring(5)
                 };
                 Craft.queueActionRequest(() => {
                     return Craft.sendActionRequest('POST', 'app/shun-cp-alert', {data})

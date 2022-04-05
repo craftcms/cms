@@ -10,7 +10,6 @@ namespace craft\elements;
 use Craft;
 use craft\base\Element;
 use craft\behaviors\FieldLayoutBehavior;
-use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\GlobalSetQuery;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
@@ -127,7 +126,7 @@ class GlobalSet extends Element
      * @inheritdoc
      * @return GlobalSetQuery The newly created [[GlobalSetQuery]] instance.
      */
-    public static function find(): ElementQueryInterface
+    public static function find(): GlobalSetQuery
     {
         return new GlobalSetQuery(static::class);
     }

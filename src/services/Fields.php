@@ -411,7 +411,7 @@ class Fields extends Component
      */
     public function deleteGroup(FieldGroup $group): bool
     {
-        /** @var FieldGroupRecord $groupRecord */
+        /** @var FieldGroupRecord|null $groupRecord */
         $groupRecord = FieldGroupRecord::find()
             ->where(['id' => $group->id])
             ->with('fields')
@@ -447,6 +447,7 @@ class Fields extends Component
      * Returns all available field type classes.
      *
      * @return string[] The available field type classes
+     * @phpstan-return class-string<FieldInterface>[]
      */
     public function getAllFieldTypes(): array
     {
@@ -528,6 +529,7 @@ class Fields extends Component
 
         foreach ($this->getAllFieldTypes() as $class) {
             /** @var string|FieldInterface $class */
+            /** @phpstan-var class-string<FieldInterface>|FieldInterface $class */
             if ($class === get_class($field)) {
                 if ($includeCurrent) {
                     $types[] = $class;
@@ -565,8 +567,10 @@ class Fields extends Component
     /**
      * Creates a field with a given config.
      *
-     * @param mixed $config The field’s class name, or its config, with a `type` value and optionally a `settings` value
-     * @return FieldInterface The field
+     * @template T of FieldInterface
+     * @param string|array $config The field’s class name, or its config, with a `type` value and optionally a `settings` value
+     * @phpstan-param class-string<T>|array{type:class-string<T>,id?:int|string,uid?:string} $config
+     * @return T The field
      */
     public function createField(mixed $config): FieldInterface
     {
@@ -1095,7 +1099,8 @@ class Fields extends Component
     /**
      * Returns a field layout by its associated element type.
      *
-     * @param class-string<ElementInterface> $type The associated element type
+     * @param string $type The associated element type
+     * @phpstan-param class-string<ElementInterface> $type
      * @return FieldLayout The field layout
      */
     public function getLayoutByType(string $type): FieldLayout
@@ -1126,7 +1131,8 @@ class Fields extends Component
     /**
      * Returns all of the field layouts associated with a given element type.
      *
-     * @param class-string<ElementInterface> $type
+     * @param string $type
+     * @phpstan-param class-string<ElementInterface> $type
      * @return FieldLayout[] The field layouts
      * @since 3.5.0
      */
@@ -1250,8 +1256,10 @@ class Fields extends Component
     /**
      * Creates a field layout element instance from its config.
      *
+     * @template T of FieldLayoutElement
      * @param array $config
-     * @return FieldLayoutElement
+     * @phpstan-param array{type:class-string<T>} $config
+     * @return T
      * @throws InvalidArgumentException if `$config['type']` does not implement [[FieldLayoutElement]]
      * @since 3.5.0
      */
@@ -1317,6 +1325,7 @@ class Fields extends Component
 
         if (!$isNewLayout) {
             // Get the current layout
+            /** @var FieldLayoutRecord|null $layoutRecord */
             $layoutRecord = FieldLayoutRecord::findWithTrashed()
                 ->andWhere(['id' => $layout->id])
                 ->one();
@@ -1363,6 +1372,7 @@ class Fields extends Component
 
         foreach ($tabs as $tab) {
             if ($tab->id && isset($tabRecords[$tab->id])) {
+                /** @var FieldLayoutTabRecord $tabRecord */
                 $tabRecord = $tabRecords[$tab->id];
                 unset($tabRecords[$tab->id]);
             } else {
@@ -1478,7 +1488,8 @@ class Fields extends Component
     /**
      * Deletes field layouts associated with a given element type.
      *
-     * @param class-string<ElementInterface> $type The element type
+     * @param string $type The element type
+     * @phpstan-param class-string<ElementInterface> $type
      * @return bool Whether the field layouts were deleted successfully
      */
     public function deleteLayoutsByType(string $type): bool
@@ -1854,6 +1865,7 @@ class Fields extends Component
         }
 
         /** @noinspection PhpIncompatibleReturnTypeInspection */
+        /** @var FieldGroupRecord */
         return $query->one() ?? new FieldGroupRecord();
     }
 

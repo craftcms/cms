@@ -42,7 +42,7 @@ class PlainText extends Field implements PreviewableFieldInterface, SortableFiel
     }
 
     /**
-     * @var string The UI mode of the field.
+     * @var 'normal'|'enlarged' The UI mode of the field.
      * @since 3.5.0
      */
     public string $uiMode = 'normal';

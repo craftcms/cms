@@ -53,10 +53,10 @@ trait StructureMutationTrait
     /**
      * Get the related element.
      *
-     * @param $elementId
+     * @param int $elementId
      * @return ElementInterface
      */
-    protected function getRelatedElement($elementId): ElementInterface
+    protected function getRelatedElement(int $elementId): ElementInterface
     {
         $relatedElement = Craft::$app->getElements()->getElementById($elementId);
 
