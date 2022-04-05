@@ -13,6 +13,6 @@ jobs:
   call-workflow:
     uses: craftcms/.github/.github/workflows/ci.yml@main
     with:
-      run_ecs: true
+      run_ecs: false
       run_phpstan: true
       run_tests: true
