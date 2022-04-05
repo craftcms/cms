@@ -21,6 +21,7 @@ use craft\elements\GlobalSet;
 use craft\elements\MatrixBlock;
 use craft\elements\Tag;
 use craft\elements\User;
+use craft\errors\FsException;
 use craft\fs\Temp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
@@ -28,6 +29,8 @@ use craft\records\Volume;
 use craft\records\VolumeFolder;
 use DateTime;
 use yii\base\Component;
+use yii\base\Exception;
+use yii\base\InvalidConfigException;
 use yii\di\Instance;
 
 /**
@@ -300,9 +303,10 @@ SQL;
     /**
      * Find all temp upload folders with no assets in them and remove them.
      *
-     * @throws \craft\errors\FsException
-     * @throws \yii\base\Exception
-     * @throws \yii\base\InvalidConfigException
+     * @throws FsException
+     * @throws Exception
+     * @throws InvalidConfigException
+     * @since 4.0.0
      */
     public function removeEmptyTempFolders(): void
     {
@@ -310,7 +314,10 @@ SQL;
             ->from(['folders' => Table::VOLUMEFOLDERS])
             ->select(['folders.id', 'folders.path'])
             ->leftJoin(['assets' => Table::ASSETS], '[[assets.folderId]] = [[folders.id]]')
-            ->where(['folders.volumeId' => null, 'assets.id' => null])
+            ->where([
+                'folders.volumeId' => null,
+                'assets.id' => null,
+            ])
             ->andWhere(['not', ['folders.parentId' => null]])
             ->pairs();
 
