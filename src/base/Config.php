@@ -81,7 +81,12 @@ abstract class Config extends BaseObject
                     return [$type->getName()];
                 }
 
-                return Collection::make($type->getTypes())->map(fn($type) => $type->getName());
+                /**
+                 * Ignoring PHPStan errors, as we've already filtered on `getTypes`.
+                 */
+                $types = $type->getTypes(); // @phpstan-ignore-line
+
+                return Collection::make($types)->map(fn($type) => $type->getName());
             });
     }
 }
