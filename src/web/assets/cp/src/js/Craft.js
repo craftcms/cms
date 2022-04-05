@@ -1513,7 +1513,7 @@ $.extend(Craft,
                     existingCss.push(Craft.escapeRegex(href));
                 }
 
-                var regexp = new RegExp('<link\\s[^>]*href="(?:' + existingCss.join('|') + ')".*?></script>', 'g');
+                const regexp = new RegExp('<link\\s[^>]*href="(?:' + existingCss.join('|') + ')".*?></link>', 'g');
 
                 html = html.replace(regexp, '');
             }
