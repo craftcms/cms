@@ -454,6 +454,7 @@
 - Element types’ `sources()` methods’ `$context` arguments should no longer accept `null`.
 - Element types’ `tableAttributes()` and `defineTableAttributes()` methods should no longer return a generic attribute for defining the header column heading at the beginning of the returned array. The header column heading is now set to the element type’s display name, per its `displayName()` method.
 - Block element types’ `getOwner()` methods can now return `null`.
+- Control panel resource locations are now cached, so resource requests can be resolved when Craft isn’t installed yet, or a database connection can’t be established. ([#10642](https://github.com/craftcms/cms/pull/10642))
 - `craft\base\AssetPreviewHandlerInterface::getPreviewHtml()` now accepts an optional array of variable to pass on to the template.
 - `craft\base\Element::__get()` now clones custom field values before returning them. ([#8781](https://github.com/craftcms/cms/discussions/8781))
 - `craft\base\Element::fieldLayoutFields()` now has a `visibleOnly` argument.
