@@ -2400,7 +2400,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function mergeCanonicalChanges(): void
     {
-        if (($canonical = $this->getCanonical()) === null) {
+        if (($canonical = $this->getCanonical()) === $this) {
             return;
         }
 

@@ -635,7 +635,7 @@ class AppController extends Controller
 
         $statusCode = $this->response->getStatusCode();
         return $this->response
-            ->sendFile($imagePath, ['inline' => true])
+            ->sendFile($imagePath, null, ['inline' => true])
             ->setStatusCode($statusCode);
     }
 }
