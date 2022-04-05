@@ -86,7 +86,6 @@ class Entry extends Query
 
             // Unless we already have the type
             if (!($sectionQueryType = GqlEntityRegistry::getEntity($typeName))) {
-                $entryTypeQueries = [];
                 $entryTypesInSection = [];
 
                 // Loop through the entry types and create further queries

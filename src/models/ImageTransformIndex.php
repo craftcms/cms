@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace craft\models;
 
+use craft\base\imagetransforms\ImageTransformerInterface;
 use craft\base\Model;
 use craft\helpers\ImageTransforms;
 use craft\validators\DateTimeValidator;
@@ -36,6 +37,7 @@ class ImageTransformIndex extends Model
 
     /**
      * @var string The image transformer
+     * @phpstan-var class-string<ImageTransformerInterface>
      */
     public string $transformer = ImageTransform::DEFAULT_TRANSFORMER;
 

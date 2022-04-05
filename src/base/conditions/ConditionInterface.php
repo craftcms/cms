@@ -42,7 +42,8 @@ interface ConditionInterface
      *
      * Rule types should be defined as either the class name or an array with a `class` key set to the class name.
      *
-     * @return string[]|array{class: string}[]
+     * @return string[]|array[]
+     * @phpstan-return string[]|array{class:string}[]
      */
     public function getConditionRuleTypes(): array;
 

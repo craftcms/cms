@@ -10,6 +10,7 @@ namespace craft\controllers;
 use Craft;
 use craft\errors\GqlException;
 use craft\errors\MissingComponentException;
+use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Gql as GqlHelper;
@@ -173,13 +174,13 @@ class GraphqlController extends Controller
                 if (empty($query)) {
                     throw new InvalidValueException('No GraphQL query was supplied');
                 }
-                $result[$key] = $gqlService->executeQuery($schema, $query, $variables, $operationName, YII_DEBUG);
+                $result[$key] = $gqlService->executeQuery($schema, $query, $variables, $operationName, App::devMode());
             } catch (Throwable $e) {
                 Craft::$app->getErrorHandler()->logException($e);
                 $result[$key] = [
                     'errors' => [
                         [
-                            'message' => YII_DEBUG || $e instanceof InvalidValueException
+                            'message' => App::devMode() || $e instanceof InvalidValueException
                                 ? $e->getMessage()
                                 : Craft::t('app', 'Something went wrong when processing the GraphQL query.'),
                         ],
@@ -229,7 +230,7 @@ class GraphqlController extends Controller
                 if (preg_match('/^Bearer\s+(.+)$/i', $authValue, $matches)) {
                     try {
                         $token = $gqlService->getTokenByAccessToken($matches[1]);
-                    } catch (InvalidArgumentException $e) {
+                    } catch (InvalidArgumentException) {
                     }
 
                     if (!isset($token) || !$token->getIsValid()) {
@@ -249,7 +250,7 @@ class GraphqlController extends Controller
             if (!$token) {
                 try {
                     return $gqlService->getActiveSchema();
-                } catch (GqlException $exception) {
+                } catch (GqlException) {
                     throw new BadRequestHttpException('Missing Authorization header');
                 }
             }
@@ -301,7 +302,7 @@ class GraphqlController extends Controller
         if ($schemaUid && $schemaUid !== '*') {
             try {
                 $selectedSchema = $gqlService->getSchemaByUid($schemaUid);
-            } catch (InvalidArgumentException $e) {
+            } catch (InvalidArgumentException) {
                 throw new BadRequestHttpException('Invalid token UID.');
             }
             Craft::$app->getSession()->authorize("graphql-schema:$schemaUid");
@@ -559,11 +560,6 @@ class GraphqlController extends Controller
         }
 
         $token = $gqlService->getTokenByAccessToken(GqlToken::PUBLIC_TOKEN);
-
-        if (!$token) {
-            throw new NotFoundHttpException('Public schema not found');
-        }
-
         $title = Craft::t('app', 'Edit the public GraphQL schema');
 
         return $this->renderTemplate('graphql/schemas/_edit', compact(
@@ -696,7 +692,7 @@ class GraphqlController extends Controller
 
         try {
             $schema = Craft::$app->getGql()->getTokenByUid($tokenUid);
-        } catch (InvalidArgumentException $e) {
+        } catch (InvalidArgumentException) {
             throw new BadRequestHttpException('Invalid schema UID.');
         }
 

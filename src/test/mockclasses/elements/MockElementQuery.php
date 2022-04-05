@@ -1,23 +1,23 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\test\mockclasses\elements;
 
 use Craft;
+use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\elements\db\ElementQuery;
 use craft\helpers\StringHelper;
-use yii\base\Model;
 
 /**
  * MockElementQuery is used to mimic element queries and mock their results
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.5
+ * @since 3.5
  */
 class MockElementQuery extends ElementQuery
 {
@@ -42,16 +42,17 @@ class MockElementQuery extends ElementQuery
      */
     public function __construct()
     {
-        parent::__construct('MockElement', []);
+        parent::__construct(ExampleElement::class, []);
     }
 
     /**
      * Generate a more specific query class for the provided element type class.
      *
-     * @param $elementClass
+     * @param string $elementClass
+     * @phpstan-param class-string<ElementInterface> $elementClass
      * @return ElementQuery
      */
-    public static function generateSpecificQueryClass($elementClass): ElementQuery
+    public static function generateSpecificQueryClass(string $elementClass): ElementQuery
     {
         $parts = explode('\\', $elementClass);
 
@@ -90,8 +91,8 @@ class MockElementQuery extends ElementQuery
     /**
      * Setter for mock query arguments.
      *
-     * @param $name
-     * @param $value
+     * @param string $name
+     * @param mixed $value
      */
     public function __set($name, $value)
     {
@@ -101,7 +102,7 @@ class MockElementQuery extends ElementQuery
     /**
      * Check if a property has been set already.
      *
-     * @param $name
+     * @param string $name
      * @return bool
      */
     public function __isset($name): bool
@@ -112,8 +113,8 @@ class MockElementQuery extends ElementQuery
     /**
      * Getter for mock query arguments.
      *
-     * @param $name
-     * @return mixed|null
+     * @param string $name
+     * @return mixed
      */
     public function __get($name)
     {
@@ -123,8 +124,8 @@ class MockElementQuery extends ElementQuery
     /**
      * Mock setting query arguments via a method call.
      *
-     * @param $name
-     * @param $params
+     * @param string $name
+     * @param array $params
      * @return self
      */
     public function __call($name, $params): self
@@ -136,7 +137,7 @@ class MockElementQuery extends ElementQuery
     /**
      * Return all the return values.
      *
-     * @param mixed|null $db
+     * @param mixed $db
      * @return array
      */
     public function all($db = null): array
@@ -145,11 +146,9 @@ class MockElementQuery extends ElementQuery
     }
 
     /**
-     * Return a return value.
-     *
-     * @return array|ElementInterface|null
+     * @inheritdoc
      */
-    public function one($db = null): Model|array|null
+    public function one($db = null): mixed
     {
         return !empty($this->returnValues) ? reset($this->returnValues) : null;
     }

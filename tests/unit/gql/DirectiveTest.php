@@ -5,12 +5,12 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craftunit\gql;
+namespace crafttests\unit\gql;
 
-use Codeception\Test\Unit;
 use Craft;
 use craft\config\GeneralConfig;
 use craft\elements\Asset;
+use craft\gql\base\Directive;
 use craft\gql\directives\FormatDateTime;
 use craft\gql\directives\Markdown;
 use craft\gql\directives\Money;
@@ -23,21 +23,18 @@ use craft\helpers\StringHelper;
 use craft\services\Config;
 use craft\test\mockclasses\elements\ExampleElement;
 use craft\test\mockclasses\gql\MockDirective;
+use craft\test\TestCase;
 use DateTime;
+use DateTimeZone;
 use GraphQL\Type\Definition\ResolveInfo;
 
-class DirectiveTest extends Unit
+class DirectiveTest extends TestCase
 {
-    /**
-     * @var \UnitTester
-     */
-    protected $tester;
-
-    protected function _before()
+    protected function _before(): void
     {
     }
 
-    protected function _after()
+    protected function _after(): void
     {
     }
 
@@ -45,12 +42,12 @@ class DirectiveTest extends Unit
      * Test directives
      *
      * @dataProvider directiveDataProvider
-     *
-     * @param string $in input string
+     * @param mixed $in input
+     * @param mixed $directiveClass
      * @param array $directives an array of directive data as expected by GQL
      * @param string $result expected result
      */
-    public function testDirectivesBeingApplied($in, $directiveClass, array $directives, $result)
+    public function testDirectivesBeingApplied(mixed $in, mixed $directiveClass, array $directives, string $result): void
     {
         $this->_registerDirective($directiveClass);
 
@@ -68,11 +65,11 @@ class DirectiveTest extends Unit
 
         self::assertEquals($result, $type->resolveWithDirectives($element, [], null, $resolveInfo));
     }
-    
+
     /**
      * Test if transform is only correctly applied to URL.
      */
-    public function testTransformOnlyUrl()
+    public function testTransformOnlyUrl(): void
     {
         /** @var Asset $asset */
         $asset = $this->make(Asset::class, ['filename' => StringHelper::randomString() . '.jpg']);
@@ -90,7 +87,7 @@ class DirectiveTest extends Unit
         self::assertEquals($asset->getFilename(), $type->resolveWithDirectives($asset, [], null, $resolveInfo));
     }
 
-    public function directiveDataProvider()
+    public function directiveDataProvider(): array
     {
         $mockDirective = MockDirective::class;
         $formatDateTime = FormatDateTime::class;
@@ -122,14 +119,14 @@ class DirectiveTest extends Unit
             ['TestString', $mockDirective, [$this->_buildDirective($mockDirective, ['prefix' => 'Bar']), $this->_buildDirective($mockDirective, ['prefix' => 'Foo'])], 'FooBarTestString'],
 
             // format date time (not as handy as for transform parameters, but still better than duplicating formats.
-            [$dateTime, $formatDateTime, [$this->_buildDirective($formatDateTime, $dateTimeParameters[0])], $dateTime->setTimezone(new \DateTimeZone($dateTimeParameters[0]['timezone']))->format($dateTimeParameters[0]['format'])],
-            [$dateTime, $formatDateTime, [$this->_buildDirective($formatDateTime, $dateTimeParameters[1])], $dateTime->setTimezone(new \DateTimeZone($dateTimeParameters[1]['timezone']))->format($dateTimeParameters[1]['format'])],
-            [$dateTime, $formatDateTime, [$this->_buildDirective($formatDateTime, $dateTimeParameters[2])], $dateTime->setTimezone(new \DateTimeZone($dateTimeParameters[2]['timezone']))->format($dateTimeParameters[2]['format'])],
-            [$dateTime, $formatDateTime, [$this->_buildDirective($formatDateTime, $dateTimeParameters[3])], $dateTime->setTimezone(new \DateTimeZone($dateTimeParameters[3]['timezone']))->format($dateTimeParameters[3]['format'])],
+            [$dateTime, $formatDateTime, [$this->_buildDirective($formatDateTime, $dateTimeParameters[0])], $dateTime->setTimezone(new DateTimeZone($dateTimeParameters[0]['timezone']))->format($dateTimeParameters[0]['format'])],
+            [$dateTime, $formatDateTime, [$this->_buildDirective($formatDateTime, $dateTimeParameters[1])], $dateTime->setTimezone(new DateTimeZone($dateTimeParameters[1]['timezone']))->format($dateTimeParameters[1]['format'])],
+            [$dateTime, $formatDateTime, [$this->_buildDirective($formatDateTime, $dateTimeParameters[2])], $dateTime->setTimezone(new DateTimeZone($dateTimeParameters[2]['timezone']))->format($dateTimeParameters[2]['format'])],
+            [$dateTime, $formatDateTime, [$this->_buildDirective($formatDateTime, $dateTimeParameters[3])], $dateTime->setTimezone(new DateTimeZone($dateTimeParameters[3]['timezone']))->format($dateTimeParameters[3]['format'])],
             ['what time is it?', $formatDateTime, [$this->_buildDirective($formatDateTime, $dateTimeParameters[2])], 'what time is it?'],
 
             // Markdown
-            ["Some *string*", $markDownDirective, [$this->_buildDirective($markDownDirective, [])], "<p>Some <em>string</em></p>\n"],
+            ['Some *string*', $markDownDirective, [$this->_buildDirective($markDownDirective, [])], "<p>Some <em>string</em></p>\n"],
 
             // Money
             'money-number' => [$money, $moneyDirective, [$this->_buildDirective($moneyDirective, $moneyParameters[0])], '1,234.56'],
@@ -140,7 +137,7 @@ class DirectiveTest extends Unit
         ];
     }
 
-    public function assetTransformDirectiveDataProvider()
+    public function assetTransformDirectiveDataProvider(): array
     {
         $assetTransform = Transform::class;
 
@@ -164,10 +161,11 @@ class DirectiveTest extends Unit
      * Build the JSON string to be used as a directive object
      *
      * @param string $className
+     * @phpstan-param class-string<Directive> $className
      * @param array $arguments
      * @return string
      */
-    private function _buildDirective(string $className, array $arguments = [])
+    private function _buildDirective(string $className, array $arguments = []): string
     {
         $directiveTemplate = '{"name": {"value": "%s"}, "arguments": [%s]}';
         $argumentTemplate = '{"name": {"value":"%s"}, "value": {"value": "%s"}}';
@@ -177,17 +175,20 @@ class DirectiveTest extends Unit
             $argumentList[] = sprintf($argumentTemplate, $key, addslashes($value));
         }
 
+        /** @var string|Directive $className */
         return sprintf($directiveTemplate, $className::name(), implode(', ', $argumentList));
     }
 
     /**
      * Register a directive by class name.
      *
-     * @param $className
+     * @param string $className
+     * @phpstan-param class-string<Directive> $className
      */
-    private function _registerDirective($className)
+    private function _registerDirective(string $className)
     {
         // Make sure the mock directive is available in the entity registry
+        /** @var string|Directive $className */
         $directiveName = $className::name();
 
         Craft::$app->set('config', $this->make(Config::class, [

@@ -46,7 +46,7 @@ class GeneratePendingTransforms extends BaseJob
                     if ($asset) {
                         $transformer->getTransformUrl($asset, $index->getTransform(), true);
                     }
-                } catch (Throwable $e) {
+                } catch (Throwable) {
                 }
             }
         }

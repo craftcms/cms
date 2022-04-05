@@ -132,15 +132,14 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend({
         // Update the URL if we're on the Categories index
         // ---------------------------------------------------------------------
 
-        if (this.settings.context === 'index' && typeof history !== 'undefined') {
+        if (this.settings.context === 'index') {
             let uri = 'categories';
 
             if (selectedSourceHandle) {
                 uri += '/' + selectedSourceHandle;
             }
 
-            const url = Craft.getUrl(uri, document.location.search + document.location.hash);
-            history.replaceState({}, '', url);
+            Craft.setPath(uri);
         }
     },
 
@@ -167,7 +166,7 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend({
             },
         }).then(ev => {
             if (this.settings.context === 'index') {
-                document.location.href = ev.data.cpEditUrl;
+                document.location.href = Craft.getUrl(ev.data.cpEditUrl, {fresh: 1});
             } else {
                 const slideout = Craft.createElementEditor(this.elementType, {
                     siteId: this.siteId,

@@ -22,6 +22,7 @@ class PruneRevisions extends BaseJob
 {
     /**
      * @var string The type of elements to update.
+     * @phpstan-var class-string<ElementInterface>
      */
     public string $elementType;
 
@@ -56,6 +57,7 @@ class PruneRevisions extends BaseJob
         }
 
         /** @var string|ElementInterface $class */
+        /** @phpstan-var class-string<ElementInterface>|ElementInterface $class */
         $class = $this->elementType;
         $extraRevisions = $class::find()
             ->revisionOf($this->canonicalId)

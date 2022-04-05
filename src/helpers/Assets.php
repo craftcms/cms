@@ -18,7 +18,6 @@ use craft\errors\FsException;
 use craft\events\RegisterAssetFileKindsEvent;
 use craft\events\SetAssetFilenameEvent;
 use craft\helpers\ImageTransforms as TransformHelper;
-use craft\models\Volume;
 use craft\models\VolumeFolder;
 use DateTime;
 use yii\base\Event;
@@ -617,7 +616,7 @@ class Assets
             ];
 
             // Merge with the extraFileKinds setting
-            static::$_fileKinds = ArrayHelper::merge(static::$_fileKinds, Craft::$app->getConfig()->getGeneral()->extraFileKinds);
+            self::$_fileKinds = ArrayHelper::merge(self::$_fileKinds, Craft::$app->getConfig()->getGeneral()->extraFileKinds);
 
             // Allow plugins to modify file kinds
             $event = new RegisterAssetFileKindsEvent([
@@ -628,7 +627,7 @@ class Assets
             self::$_fileKinds = $event->fileKinds;
 
             // Sort by label
-            ArrayHelper::multisort(static::$_fileKinds, 'label');
+            ArrayHelper::multisort(self::$_fileKinds, 'label');
         }
     }
 

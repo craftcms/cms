@@ -152,7 +152,12 @@ class Local extends Fs implements LocalFsInterface
     public function getFileList(string $directory = '', bool $recursive = true): Generator
     {
         $targetDir = $this->prefixPath($directory);
-        $iterator = $recursive ? $this->getRecursiveIterator($targetDir) : new DirectoryIterator($targetDir);
+        try {
+            $iterator = $recursive ? $this->getRecursiveIterator($targetDir) : new DirectoryIterator($targetDir);
+        } catch (\UnexpectedValueException $e) {
+            Craft::$app->getErrorHandler()->logException($e);
+            return;
+        }
 
         /** @var DirectoryIterator $listing */
         foreach ($iterator as $listing) {
@@ -225,6 +230,30 @@ class Local extends Fs implements LocalFsInterface
         if ($visibility) {
             @chmod($fullPath, $visibility);
         }
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function read(string $path): string
+    {
+        $stream = $this->getFileStream($path);
+        $contents = stream_get_contents($stream);
+        fclose($stream);
+
+        return $contents;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function write(string $path, string $contents, array $config = []): void
+    {
+        $stream = tmpfile();
+        fwrite($stream, $contents);
+        rewind($stream);
+
+        $this->writeFileFromStream($path, $stream, $config);
     }
 
     /**

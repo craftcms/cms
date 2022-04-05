@@ -2,14 +2,101 @@
 
 ## Unreleased
 
+### Added
+- It’s now possible to disable native element sources from the Customize Sources modal. ([#10676](https://github.com/craftcms/cms/discussions/10676))
+- GraphQL schemas now include settings that determine which sites elements can be queried from. ([#10610](https://github.com/craftcms/cms/issues/10610))
+- Added the `buildId` general config. ([#10705](https://github.com/craftcms/cms/pull/10705))
+- Added `craft\base\FieldInterface::isRequirable()`.
+- Added `craft\base\FsInterface::read()`.
+- Added `craft\base\FsInterface::write()`.
+- Added `craft\base\ModelInterface`.
+- Added `craft\helpers\App::devMode()`.
+- Added `craft\services\Assets::getImagePreviewUrl()`.
+- Added `craft\web\CpScreenResponseBehavior::selectedSubnavItem()`. ([#10784](https://github.com/craftcms/cms/discussions/10784))
+- Added the `Craft.getQueryParam()` JavaScript method.
+- Added the `Craft.getQueryParams()` JavaScript method.
+- Added the `Craft.setPath()` JavaScript method.
+- Added the `Craft.setQueryParam()` JavaScript method.
+- Added the `Craft.setUrl()` JavaScript method.
+
+### Changed
+- Element index pages’ status and sort menu option selections are now coded into the page URL via `status` and `sort` query string params. ([#10669](https://github.com/craftcms/cms/discussions/10669))
+- Sites’ Language settings now use Selectize inputs. ([#10810](https://github.com/craftcms/cms/discussions/10810))
+- Image thumbnails now use registered image transformers when available.
+- Lightswitch fields can no longer be marked as required within field layouts. ([#10773](https://github.com/craftcms/cms/issues/10773))
+- Craft’s bootstrap script now attempts to create its configured system paths automatically. ([#10562](https://github.com/craftcms/cms/pull/10562))
+- Field layout components’ settings slideouts now have a “Close” button. ([#10587](https://github.com/craftcms/cms/issues/10587))
+- The default `subLeft` and `subRight` search query term options are now only applied to terms that don’t include an asterisk at the beginning/end, e.g. `hello*`. ([#10613](https://github.com/craftcms/cms/discussions/10613))
+- Control panel resource locations are now cached, so resource requests can be resolved when Craft isn’t installed yet, or a database connection can’t be established. ([#10642](https://github.com/craftcms/cms/pull/10642))
+- Control panel resources are now served with cache headers, if the `buildId` config setting is set. ([#10705](https://github.com/craftcms/cms/pull/10705))
+- `craft\elements\Asset::getUrl()` now has an `$immediately` argument.
+- `craft\gql\base\ElementResolver::prepareQuery()` now expects its third argument to have a `string|null` type declaration.
+- `craft\test\TestSetup::getMockApp()` has been renamed to `getMockModule()`, and its `$appClass` argument has been renamed to `$moduleClass`.
+
+### Removed
+- Removed `craft\base\ElementInterface::getCrumbs()`. ([#10784](https://github.com/craftcms/cms/discussions/10784))
+- Removed `craft\services\ImageTransforms::getAllImageTransformerTypes()`.
+- Removed `craft\services\Volumes::getPublicVolumes()`.
+- Removed `craft\services\Volumes::getPublicVolumeIds()`.
+
+### Fixed
+- Fixed a bug where Categories fields were showing spinners indefinitely. ([#10801](https://github.com/craftcms/cms/issues/10801))
+- Fixed a bug where the Image Editor was loading transformed preview images, even if the original image was small enough to be loaded in its original size. ([#10802](https://github.com/craftcms/cms/issues/10802))
+- Fixed a bug where plugin-registered image transformers were being ignored.
+- Fixed an error that could occur when previewing an asset. ([#10809](https://github.com/craftcms/cms/issues/10809))
+- Fixed a bug where it wasn’t possible to change a category’s parent from category forms. ([#10819](https://github.com/craftcms/cms/issues/10819))
+- Fixed an error that occurred when editing an element with a Tags field. ([#10808](https://github.com/craftcms/cms/issues/10808), [#10814](https://github.com/craftcms/cms/issues/10814))
+- Fixed a bug where the incorrect transform path was getting set for `craft\imagetransforms\ImageTransformer::EVENT_TRANSFORM_IMAGE` events.
+- Fixed a bug where the built-int transformer would try to use an incorrect path when generating transformed images.
+- Fixed a bug where Matrix block sort order changes weren’t persisting when applying drafts. ([#10803](https://github.com/craftcms/cms/issues/10803))
+- Fixed an error that occurred if any event handlers were registered for `craft\services\ImageTransforms::EVENT_BEFORE_DELETE_IMAGE_TRANSFORM`, `EVENT_AFTER_SAVE_IMAGE_TRANSFORM`, `EVENT_BEFORE_APPLY_TRANSFORM_DELETE`, `EVENT_AFTER_DELETE_IMAGE_TRANSFORM`, or `EVENT_BEFORE_SAVE_IMAGE_TRANSFORM`. ([#10826](https://github.com/craftcms/cms/issues/10826))
+- Fixed a JavaScript error that could occur when interacting with condition rules. ([#10779](https://github.com/craftcms/cms/issues/10779))
+- Fixed a bug where it wasn’t possible to add, remove, or reorder rows within Table fields. ([#10835](https://github.com/craftcms/cms/issues/10835))
+
+## 4.0.0-beta.3 - 2022-03-22
+
+### Added
+- Added `craft\base\ElementInterface::prepareEditScreen()`. ([#10784](https://github.com/craftcms/cms/discussions/10784))
+- Added `craft\elements\conditions\TitleConditionRule`. ([#10785](https://github.com/craftcms/cms/issues/10785))
+
+### Changed
+- When an image is saved as a new asset from the Image Editor via an Assets field, the Assets field will now automatically replace the selected asset with the new one. ([#8974](https://github.com/craftcms/cms/discussions/8974))
+
+### Deprecated
+- Deprecated `craft\base\ApplicationTrait::getInstalledSchemaVersion()`.
+
+### Fixed
+- Fixed a PHP error that occurred when using GD for image transforms.
+- Fixed a JavaScript error on the Settings → Plugins page.
+- Fixed “Related To” and “File Size” element condition rules. ([#10769](https://github.com/craftcms/cms/issues/10769))
+- Fixed the section’s breadcrumb link on Edit Entry pages. ([#10770](https://github.com/craftcms/cms/issues/10770))
+- Fixed a bug where control panel pages could reload when editing the same element in a slideout twice. ([#10771](https://github.com/craftcms/cms/issues/10771))
+- Fixed a 404 error that occurred when attempting to preview unpublished category drafts. ([#10788](https://github.com/craftcms/cms/issues/10788))
+- Fixed a JavaScript error that occurred when bulk-deleting users from the Users index page. ([#10793](https://github.com/craftcms/cms/issues/10793))
+- Fixed a PHP error that could occur if an unexpected value was passed to `craft\services\Security::redactIfSensitive()`. ([#10792](https://github.com/craftcms/cms/issues/10792))
+- Fixed a bug where entry post dates weren’t being set automatically when entries were saved programmatically with the `default` validation scenario. ([#10796](https://github.com/craftcms/cms/issues/10796))
+- Fixed a PHP error that occurred when saving an entry with an Email field. ([#10799](https://github.com/craftcms/cms/issues/10799))
+- Fixed a PHP error that occurred when saving an image transform without a Width or Height value. ([#10783](https://github.com/craftcms/cms/issues/10783))
+
+## 4.0.0-beta.2 - 2022-03-16
+
 > {warning} Due to a data corruption bug, projects that were updated to Craft 4 from Craft 3 are advised to re-update from a Craft 3 database backup.
 
 ### Added
+- Volumes now have a “Transform Subpath” setting.
+- Added the `|address` Twig filter.
+- Added the `craft.addresses()` address query factory function for Twig.
+- Added the `users/delete-address` action.
+- Added the `users/save-address` action.
 - Added `craft\base\Element::notesFieldHtml()`.
 - Added `craft\base\Element::statusFieldHtml()`.
 - Added `craft\events\DefineAssetThumbUrlEvent`, which replaces `GetAssetThumbUrlEvent` (previously removed).
+- Added `craft\events\ImageTransformerOperationEvent`.
 - Added `craft\fieldlayoutelements\Html`. ([#10714](https://github.com/craftcms/cms/discussions/10714))
+- Added `craft\imagetransforms\ImageTransformer::EVENT_DELETE_TRANSFORMED_IMAGE`.
+- Added `craft\imagetransforms\ImageTransformer::EVENT_TRANSFORM_IMAGE`.
 - Added `craft\services\Assets::EVENT_DEFINE_THUMB_URL`, which replaces `craft\services\Assets::EVENT_GET_ASSET_THUMB_URL` (previously removed).
+- Added `craft\web\twig\Extension::addressFilter()`.
 
 ### Changed
 - Field grids within slideouts can now only have up to two columns. ([#10726](https://github.com/craftcms/cms/issues/10726))
@@ -37,7 +124,11 @@
 - Fixed a bug where entry and volume field layouts with multiple tabs were getting corrupted when updating to Craft 4.
 - Fixed a bug where the View button/menu on Edit Entry pages wasn’t working.
 - Fixed a bug where the View button/menu was getting hidden by the Adblock Plus browser extension. ([#10747](https://github.com/craftcms/cms/issues/10747))
-- Fixed a bug where sometimes the Asset sources would not be displayed correctly.
+- Fixed a bug that prevented asset sources from displaying correctly.
+- Fixed a bug where non-admin users weren’t permitted to edit assets, categories, or entries on single-site installs. ([#10757](https://github.com/craftcms/cms/issues/10757))
+- Fixed a bug where image transforms weren’t getting invalidated when an asset’s focal point was updated from its preview modal. ([#10743](https://github.com/craftcms/cms/issues/10743))
+- Fixed an error that could occur when indexing an empty volume. ([#10744](https://github.com/craftcms/cms/issues/10744))
+- Fixed a bug where `craft\services\Config::getDotEnvPath()` was returning `'1'`. ([#10761](https://github.com/craftcms/cms/pull/10761))
 
 ## 4.0.0-beta.1 - 2022-03-09
 
@@ -417,7 +508,6 @@
 - Filtering users by `active`, `pending`, and `locked` statuses no longer excludes suspended users.
 - `credentialed` and `inactive` are now reserved user group handles.
 - Assets fields that are restricted to a single location can now be configured to allow selection within subfolders of that location. ([#9070](https://github.com/craftcms/cms/discussions/9070))
-- When an image is saved as a new asset from the Image Editor via an Assets field, the Assets field will now automatically replace the selected asset with the new one. ([#8974](https://github.com/craftcms/cms/discussions/8974))
 - `alt` is now a reserved field handle for volume field layouts.
 - Volumes no longer have “types”, and their file operations are now delegated to a filesystem selected by an “Asset Filesystem” setting on the volume.
 - Volumes now have a “Transform Filesystem” setting, which can be used to choose which filesystem image transforms should be stored in. (The volume’s Asset Filesystem will be used by default.)
@@ -685,6 +775,7 @@
 - Removed `craft\events\GenerateTransformEvent::$image`.
 - Removed `craft\events\GenerateTransformEvent::$tempPath`.
 - Removed `craft\events\GetAssetThumbUrlEvent`.
+- Removed `craft\events\GetAssetThumbEvent`.
 - Removed `craft\events\GlobalSetContentEvent`.
 - Removed `craft\events\RegisterGqlPermissionsEvent`.
 - Removed `craft\events\SearchEvent::getElementIds()`.

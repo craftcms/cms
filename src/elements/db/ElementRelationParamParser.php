@@ -237,7 +237,6 @@ class ElementRelationParamParser extends BaseObject
         $glue = 'or';
 
         $elementParams = ['element', 'sourceElement', 'targetElement'];
-        $elementParam = null;
 
         foreach ($elementParams as $elementParam) {
             if (isset($relCriteria[$elementParam])) {

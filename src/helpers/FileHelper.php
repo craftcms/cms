@@ -106,7 +106,7 @@ class FileHelper extends \yii\helpers\FileHelper
 
             try {
                 $fs->remove($dir);
-            } catch (IOException $e2) {
+            } catch (IOException) {
                 // throw the original exception instead
                 throw $e;
             }
@@ -434,7 +434,7 @@ class FileHelper extends \yii\helpers\FileHelper
         // BaseFileHelper::unlink() doesn't seem to catch all possible exceptions
         try {
             return parent::unlink($path);
-        } catch (Throwable $e) {
+        } catch (Throwable) {
             return false;
         }
     }
@@ -708,12 +708,12 @@ class FileHelper extends \yii\helpers\FileHelper
     /**
      * Return a file extension for the given MIME type.
      *
-     * @param $mimeType
+     * @param string $mimeType
      * @return string
      * @throws InvalidArgumentException if no known extensions exist for the given MIME type.
      * @since 3.5.15
      */
-    public static function getExtensionByMimeType($mimeType): string
+    public static function getExtensionByMimeType(string $mimeType): string
     {
         $extensions = FileHelper::getExtensionsByMimeType($mimeType);
 

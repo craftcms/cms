@@ -42,9 +42,9 @@ class Craft extends Yii
 
     /**
      * @inheritdoc
-     *
      * @template T
-     * @param class-string<T>|array{class: class-string<T>}|callable(): T $type
+     * @param string|array|callable $type
+     * @phpstan-param class-string<T>|array{class:class-string<T>}|callable():T $type
      * @param array $params
      * @return T
      */
@@ -173,6 +173,7 @@ class Craft extends Yii
      * Class autoloader.
      *
      * @param string $className
+     * @phpstan-param class-string $className
      */
     public static function autoload($className): void
     {
@@ -186,6 +187,11 @@ class Craft extends Yii
      */
     private static function _autoloadCustomFieldBehavior(): void
     {
+        if (!isset(static::$app)) {
+            // Nothing we can do about it yet
+            return;
+        }
+
         if (!static::$app->getIsInstalled()) {
             // Just load an empty CustomFieldBehavior into memory
             self::_generateCustomFieldBehavior([], null, false, true);
@@ -248,7 +254,7 @@ class Craft extends Yii
         if (!$fieldVersionExists) {
             try {
                 $fieldsService->updateFieldVersion();
-            } catch (Throwable $e) {
+            } catch (Throwable) {
                 // Craft probably isn't installed yet.
             }
         }
@@ -286,8 +292,9 @@ EOD;
         }
 
         // Load the template
-        $fileContents = file_get_contents(static::$app->getBasePath() . DIRECTORY_SEPARATOR . 'behaviors' .
-            DIRECTORY_SEPARATOR . 'CustomFieldBehavior.php.template');
+        $templatePath = static::$app->getBasePath() . DIRECTORY_SEPARATOR . 'behaviors' . DIRECTORY_SEPARATOR . 'CustomFieldBehavior.php.template';
+        FileHelper::invalidate($templatePath);
+        $fileContents = file_get_contents($templatePath);
 
         // Replace placeholders with generated code
         $fileContents = str_replace(

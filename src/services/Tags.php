@@ -246,7 +246,7 @@ class Tags extends Component
                 $layout->id = $tagGroupRecord->fieldLayoutId;
                 $layout->type = Tag::class;
                 $layout->uid = key($data['fieldLayouts']);
-                Craft::$app->getFields()->saveLayout($layout);
+                Craft::$app->getFields()->saveLayout($layout, false);
                 $tagGroupRecord->fieldLayoutId = $layout->id;
             } elseif ($tagGroupRecord->fieldLayoutId) {
                 // Delete the field layout
@@ -272,6 +272,7 @@ class Tags extends Component
 
         if ($wasTrashed) {
             // Restore the tags that were deleted with the group
+            /** @var Tag[] $tags */
             $tags = Tag::find()
                 ->groupId($tagGroupRecord->id)
                 ->trashed()
@@ -324,10 +325,6 @@ class Tags extends Component
      */
     public function deleteTagGroup(TagGroup $tagGroup): bool
     {
-        if (!$tagGroup) {
-            return false;
-        }
-
         // Fire a 'beforeDeleteGroup' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_GROUP)) {
             $this->trigger(self::EVENT_BEFORE_DELETE_GROUP, new TagGroupEvent([
@@ -366,9 +363,10 @@ class Tags extends Component
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             // Delete the tags
+            /** @var Tag[] $tags */
             $tags = Tag::find()
-                ->status(null)
                 ->groupId($tagGroupRecord->id)
+                ->status(null)
                 ->all();
             $elementsService = Craft::$app->getElements();
 
@@ -459,7 +457,6 @@ class Tags extends Component
      */
     public function getTagById(int $tagId, ?int $siteId = null): ?Tag
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return Craft::$app->getElements()->getElementById($tagId, Tag::class, $siteId);
     }
 
@@ -475,6 +472,7 @@ class Tags extends Component
         $query = $withTrashed ? TagGroupRecord::findWithTrashed() : TagGroupRecord::find();
         $query->andWhere(['uid' => $uid]);
         /** @noinspection PhpIncompatibleReturnTypeInspection */
+        /** @var TagGroupRecord */
         return $query->one() ?? new TagGroupRecord();
     }
 }

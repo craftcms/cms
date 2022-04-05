@@ -9,6 +9,8 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\Element;
+use craft\base\NameTrait;
+use craft\elements\Address;
 use craft\elements\Asset;
 use craft\elements\Entry;
 use craft\elements\User;
@@ -30,6 +32,7 @@ use craft\helpers\User as UserHelper;
 use craft\i18n\Locale;
 use craft\models\UserGroup;
 use craft\services\Users;
+use craft\web\Application;
 use craft\web\assets\edituser\EditUserAsset;
 use craft\web\Controller;
 use craft\web\Request;
@@ -378,6 +381,10 @@ class UsersController extends Controller
             return $this->asFailure($message);
         }
 
+        if (!$success) {
+            return $this->asFailure();
+        }
+
         return $this->asSuccess();
     }
 
@@ -401,7 +408,7 @@ class UsersController extends Controller
             );
         }
 
-        // Redirect to the login page if this is a CP request
+        // Redirect to the login page if this is a control panel request
         if ($this->request->getIsCpRequest()) {
             return $this->redirect(Request::CP_PATH_LOGIN);
         }
@@ -502,7 +509,7 @@ class UsersController extends Controller
     }
 
     /**
-     * Sets a user's password once they've verified they have access to their email.
+     * Sets a user’s password once they’ve verified they have access to their email.
      *
      * @return Response
      */
@@ -580,9 +587,9 @@ class UsersController extends Controller
             return $this->asSuccess(data: $return);
         }
 
-        // Can they access the CP?
+        // Can they access the control panel?
         if ($user->can('accessCp')) {
-            // Send them to the CP login page
+            // Send them to the control panel login page
             $url = UrlHelper::cpUrl(Request::CP_PATH_LOGIN);
         } else {
             // Send them to the 'setPasswordSuccessPath'.
@@ -685,6 +692,7 @@ class UsersController extends Controller
         if ($user === null) {
             // Are we editing a specific user account?
             if ($userId !== null) {
+                /** @var User|null $user */
                 $user = User::find()
                     ->addSelect(['users.password', 'users.passwordResetRequired'])
                     ->id($userId === 'current' ? $currentUser->id : $userId)
@@ -1090,6 +1098,7 @@ JS,
 
         // Are we editing an existing user?
         if ($userId) {
+            /** @var User|null $user */
             $user = User::find()
                 ->id($userId)
                 ->status(null)
@@ -1136,7 +1145,7 @@ JS,
         // Handle secure properties (email and password)
         // ---------------------------------------------------------------------
 
-        $sendVerificationEmail = false;
+        $sendActivationEmail = false;
 
         // Are they allowed to set the email address?
         if ($isNewUser || $isCurrentUser || $canAdministrateUsers) {
@@ -1150,23 +1159,23 @@ JS,
             if ($newEmail) {
                 // Should we be sending a verification email now?
                 // Even if verification isn't required, send one out on account creation if we don't have a password yet
-                $sendVerificationEmail = (!$isPublicRegistration || !$deactivateByDefault) && (
+                $sendActivationEmail = (!$isPublicRegistration || !$deactivateByDefault) && (
                         (
                             $requireEmailVerification && (
                                 $isPublicRegistration ||
                                 ($isCurrentUser && !$canAdministrateUsers) ||
-                                $this->request->getBodyParam('sendVerificationEmail')
+                                ($this->request->getBodyParam('sendActivationEmail') ?? $this->request->getBodyParam('sendVerificationEmail'))
                             )
                         ) ||
                         (
                             !$requireEmailVerification && $isNewUser && (
                                 ($isPublicRegistration && $generalConfig->deferPublicRegistrationPassword) ||
-                                $this->request->getBodyParam('sendVerificationEmail')
+                                ($this->request->getBodyParam('sendActivationEmail') ?? $this->request->getBodyParam('sendVerificationEmail'))
                             )
                         )
                     );
 
-                if ($sendVerificationEmail) {
+                if ($sendActivationEmail) {
                     $user->unverifiedEmail = $newEmail;
 
                     // Mark them as pending
@@ -1179,7 +1188,7 @@ JS,
                     $user->unverifiedEmail = null;
                 }
 
-                if (!$sendVerificationEmail || $isNewUser) {
+                if (!$sendActivationEmail || $isNewUser) {
                     $user->email = $newEmail;
                 }
             }
@@ -1194,12 +1203,12 @@ JS,
             if ($isCurrentUser) {
                 // If there was a newPassword input but it was empty, pretend it didn't exist
                 $user->newPassword = $this->request->getBodyParam('newPassword') ?: null;
-                $returnCsrfToken = $returnCsrfToken || $user->newPassword !== null;
+                $returnCsrfToken = $user->newPassword !== null;
             }
         }
 
         // If editing an existing user and either of these properties are being changed,
-        // require the user's current password for additional security
+        // require the user’s current password for additional security
         if (
             !$isNewUser &&
             (!empty($newEmail) || $user->newPassword !== null) &&
@@ -1219,21 +1228,7 @@ JS,
             $user->username = $this->request->getBodyParam('username', ($user->username ?: $user->email));
         }
 
-        $fullName = $this->request->getBodyParam('fullName');
-
-        if ($fullName !== null) {
-            $user->fullName = $fullName;
-        } else {
-            // Still check for firstName/lastName in case a front-end form is still posting them
-            $firstName = $this->request->getBodyParam('firstName');
-            $lastName = $this->request->getBodyParam('lastName');
-
-            if ($firstName !== null || $lastName !== null) {
-                $user->fullName = null;
-                $user->firstName = $firstName ?? $user->firstName;
-                $user->lastName = $lastName ?? $user->lastName;
-            }
-        }
+        $this->populateNameAttributes($user);
 
         // New users should always be initially saved in a pending state,
         // even if an admin is doing this and opted to not send the verification email
@@ -1340,7 +1335,7 @@ JS,
             $userSession->sendUsernameCookie($user);
         }
 
-        // Save the user's photo, if it was submitted
+        // Save the user’s photo, if it was submitted
         $this->_processUserPhoto($user);
 
         if (Craft::$app->getEdition() === Craft::Pro) {
@@ -1370,7 +1365,7 @@ JS,
         }
 
         // Do we need to send a verification email out?
-        if ($sendVerificationEmail) {
+        if ($sendActivationEmail) {
             // Temporarily set the unverified email on the User so the verification email goes to the
             // right place
             $originalEmail = $user->email;
@@ -1517,6 +1512,7 @@ JS,
 
         $userId = $this->request->getRequiredBodyParam('userId');
 
+        /** @var User|null $user */
         $user = User::find()
             ->id($userId)
             ->status(null)
@@ -1713,7 +1709,7 @@ JS,
             }
         }
 
-        // Are we transferring the user's content to a different user?
+        // Are we transferring the user’s content to a different user?
         $transferContentToId = $this->request->getBodyParam('transferContentTo');
 
         if (is_array($transferContentToId) && isset($transferContentToId[0])) {
@@ -1771,6 +1767,98 @@ JS,
 
         $this->setSuccessFlash(Craft::t('app', 'User unsuspended.'));
         return $this->redirectToPostedUrl();
+    }
+
+    /**
+     * Saves a user’s address.
+     *
+     * @return Response|null
+     * @throws BadRequestHttpException
+     * @throws ForbiddenHttpException
+     * @since 4.0.0
+     */
+    public function actionSaveAddress(): ?Response
+    {
+        $user = Craft::$app->getUser()->getIdentity();
+        $userId = (int)($this->request->getBodyParam('userId') ?? $user->id);
+        $addressId = $this->request->getBodyParam('addressId');
+
+        if ($addressId) {
+            $address = Address::findOne($addressId);
+
+            if (!$address) {
+                throw new BadRequestHttpException("Invalid address ID: $addressId");
+            }
+
+            if ($address->ownerId !== $userId) {
+                throw new BadRequestHttpException("Address $addressId is not owned by user $userId");
+            }
+        } else {
+            $address = new Address([
+                'ownerId' => $userId,
+            ]);
+        }
+
+        if (!$address->canSave($user)) {
+            throw new ForbiddenHttpException('User is not permitted to edit this address.');
+        }
+
+        // Name attributes
+        $this->populateNameAttributes($address);
+
+        // All safe attributes
+        foreach ($address->safeAttributes() as $name) {
+            $value = $this->request->getBodyParam($name);
+            if ($value !== null) {
+                $address->$name = $value;
+            }
+        }
+
+        // Custom fields
+        $fieldsLocation = $this->request->getParam('fieldsLocation') ?? 'fields';
+        $address->setFieldValuesFromRequest($fieldsLocation);
+
+        if (!Craft::$app->getElements()->saveElement($address)) {
+            return $this->asModelFailure($address, Craft::t('app', 'Couldn’t save {type}.', [
+                'type' => Address::lowerDisplayName(),
+            ]), 'address');
+        }
+
+        return $this->asModelSuccess($address, Craft::t('app', '{type} saved.', [
+            'type' => Address::displayName(),
+        ]));
+    }
+
+    /**
+     * Deletes a user’s address.
+     *
+     * @return Response|null
+     * @since 4.0.0
+     */
+    public function actionDeleteAddress(): ?Response
+    {
+        $user = Craft::$app->getUser()->getIdentity();
+        $addressId = $this->request->getRequiredBodyParam('addressId');
+
+        $address = Address::findOne($addressId);
+
+        if (!$address) {
+            throw new BadRequestHttpException("Invalid address ID: $addressId");
+        }
+
+        if (!$address->canDelete($user)) {
+            throw new ForbiddenHttpException('User is not permitted to delete this address.');
+        }
+
+        if (!Craft::$app->getElements()->deleteElement($address)) {
+            return $this->asModelFailure($address, Craft::t('app', 'Couldn’t delete {type}.', [
+                'type' => Address::lowerDisplayName(),
+            ]), 'address');
+        }
+
+        return $this->asModelSuccess($address, Craft::t('app', '{type} deleted.', [
+            'type' => Address::displayName(),
+        ]));
     }
 
     /**
@@ -1910,13 +1998,15 @@ JS,
                     $this->request->setIsActionRequest(false);
                 }
 
-                return Craft::$app->handleRequest($this->request, true);
-            } catch (NotFoundHttpException $e) {
-                // Just go with the CP template
+                /** @var Application $app */
+                $app = Craft::$app;
+                return $app->handleRequest($this->request, true);
+            } catch (NotFoundHttpException) {
+                // Just go with the control panel template
             }
         }
 
-        // Otherwise go with the CP's template
+        // Otherwise go with the control panel’s template
         return $this->renderTemplate('setpassword', $variables, View::TEMPLATE_MODE_CP);
     }
 
@@ -1941,7 +2031,7 @@ JS,
     }
 
     /**
-     * Verifies that the current user's password was submitted with the request.
+     * Verifies that the current user’s password was submitted with the request.
      *
      * @return bool
      */
@@ -1962,7 +2052,7 @@ JS,
 
         try {
             return Craft::$app->getSecurity()->validatePassword($currentPassword, $currentHashedPassword);
-        } catch (InvalidArgumentException $e) {
+        } catch (InvalidArgumentException) {
             return false;
         }
     }
@@ -2003,7 +2093,7 @@ JS,
                 if (!$extension && !empty($matches['type'])) {
                     try {
                         $extension = FileHelper::getExtensionByMimeType($matches['type']);
-                    } catch (InvalidArgumentException $e) {
+                    } catch (InvalidArgumentException) {
                     }
                 }
 
@@ -2251,7 +2341,7 @@ JS,
      */
     private function _redirectUserToCp(User $user): ?Response
     {
-        // Can they access the CP?
+        // Can they access the control panel?
         if ($user->can('accessCp')) {
             $postCpLoginRedirect = Craft::$app->getConfig()->getGeneral()->getPostCpLoginRedirect();
             $url = UrlHelper::cpUrl($postCpLoginRedirect);
@@ -2337,5 +2427,25 @@ JS,
         $ids = $this->request->getRequiredBodyParam('ids');
         Craft::$app->getAnnouncements()->markAsRead($ids);
         return $this->asSuccess();
+    }
+
+    private function populateNameAttributes(object $model): void
+    {
+        /** @var object|NameTrait $model */
+        $fullName = $this->request->getBodyParam('fullName');
+
+        if ($fullName !== null) {
+            $model->fullName = $fullName;
+        } else {
+            // Still check for firstName/lastName in case a front-end form is still posting them
+            $firstName = $this->request->getBodyParam('firstName');
+            $lastName = $this->request->getBodyParam('lastName');
+
+            if ($firstName !== null || $lastName !== null) {
+                $model->fullName = null;
+                $model->firstName = $firstName ?? $model->firstName;
+                $model->lastName = $lastName ?? $model->lastName;
+            }
+        }
     }
 }

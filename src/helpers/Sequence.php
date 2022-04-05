@@ -102,7 +102,7 @@ class Sequence
     private static function _format(int $num, ?int $length = null): int|string
     {
         if ($length !== null) {
-            return str_pad($num, $length, '0', STR_PAD_LEFT);
+            return str_pad((string)$num, $length, '0', STR_PAD_LEFT);
         }
         return $num;
     }

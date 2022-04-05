@@ -491,7 +491,8 @@ class Cp extends Component
      *
      * @param bool $includeAliases Whether aliases should be included in the list
      * (only enable this if the setting defines a URL or file path)
-     * @return string[]
+     * @return array[]
+     * @phpstan-return array{label:string,data:array}[]
      * @since 3.1.0
      */
     public function getEnvSuggestions(bool $includeAliases = false): array
@@ -732,7 +733,8 @@ class Cp extends Component
     /**
      * Returns the available template path suggestions for template inputs.
      *
-     * @return string[]
+     * @return array[]
+     * @phpstan-return array{label:string,data:array}[]
      * @since 3.1.0
      */
     public function getTemplateSuggestions(): array

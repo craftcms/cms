@@ -92,7 +92,7 @@ class GlobalSetQuery extends ElementQuery
      *     ->one();
      * ```
      *
-     * @param string|string[]|null $value The property value
+     * @param mixed $value The property value
      * @return self self reference
      * @uses $handle
      */
@@ -112,13 +112,9 @@ class GlobalSetQuery extends ElementQuery
         $this->query->select([
             'globalsets.name',
             'globalsets.handle',
+            'globalsets.sortOrder',
             'globalsets.uid',
         ]);
-
-        // todo: remove this condition after the next breakpoint
-        if (version_compare(Craft::$app->getInstalledSchemaVersion(), '3.7.6', '>=')) {
-            $this->query->addSelect('globalsets.sortOrder');
-        }
 
         if ($this->handle) {
             $this->subQuery->andWhere(Db::parseParam('globalsets.handle', $this->handle));

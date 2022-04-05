@@ -98,10 +98,10 @@ class Matrix extends InputObjectType
     /**
      * Normalize Matrix GraphQL input data to what Craft expects.
      *
-     * @param $value
+     * @param mixed $value
      * @return mixed
      */
-    public static function normalizeValue($value): mixed
+    public static function normalizeValue(mixed $value): mixed
     {
         $preparedBlocks = [];
         $blockCounter = 1;

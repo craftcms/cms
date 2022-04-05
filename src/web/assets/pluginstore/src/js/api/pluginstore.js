@@ -168,7 +168,12 @@ export default {
    */
   getPluginDetailsByHandle(pluginHandle) {
     return new Promise((resolve, reject) => {
-      api.sendApiRequest('GET', 'plugin-store/plugin/' + pluginHandle)
+      api.sendApiRequest('GET', 'plugin-store/plugin/' + pluginHandle, {
+          params: {
+            withInstallHistory: true,
+            withIssueStats: true,
+          }
+        })
         .then((responseData) => {
           resolve(responseData)
         })

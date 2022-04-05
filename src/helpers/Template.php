@@ -202,7 +202,7 @@ class Template
             return self::$_shouldProfile;
         }
 
-        if (YII_DEBUG) {
+        if (App::devMode()) {
             return self::$_shouldProfile = true;
         }
 

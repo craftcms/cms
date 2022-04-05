@@ -5,7 +5,6 @@ import './CraftSupportWidget.scss';
     /** global: Garnish */
     Craft.CraftSupportWidget = Garnish.Base.extend({
         widgetId: 0,
-        envInfo: null,
         loading: false,
 
         $widget: null,
@@ -20,9 +19,9 @@ import './CraftSupportWidget.scss';
         $helpBody: null,
         $feedbackBody: null,
 
-        init: function(widgetId, envInfo) {
+        init: function(widgetId, settings) {
             this.widgetId = widgetId;
-            this.envInfo = envInfo;
+            this.setSettings(settings);
 
             Craft.CraftSupportWidget.widgets[this.widgetId] = this;
 
@@ -534,21 +533,11 @@ import './CraftSupportWidget.scss';
         }
     });
 
-    var FeedbackScreen = BaseSearchScreen.extend({
+    const FeedbackScreen = BaseSearchScreen.extend({
         getFormParams: function(query) {
-            var body = "### Description\n\n\n\n" +
-                "### Steps to reproduce\n\n" +
-                "1.\n" +
-                "2.\n\n" +
-                "### Additional info\n";
-
-            for (var name in this.widget.envInfo) {
-                if (this.widget.envInfo.hasOwnProperty(name)) {
-                    body += "\n- " + name + ': ' + this.widget.envInfo[name];
-                }
-            }
-
-            return {title: query, body: body};
+            return Object.assign({
+                title: this.widget.settings.issueTitlePrefix + query,
+            }, this.widget.settings.issueParams);
         },
 
         getSearchUrl: function(query) {

@@ -40,7 +40,7 @@ class Json extends \yii\helpers\Json
     {
         try {
             return static::decode($str, $asArray);
-        } catch (InvalidArgumentException $e) {
+        } catch (InvalidArgumentException) {
             // Wasn't JSON
             return $str;
         }

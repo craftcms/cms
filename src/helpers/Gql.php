@@ -16,6 +16,7 @@ use craft\gql\ElementQueryConditionBuilder;
 use craft\gql\GqlEntityRegistry;
 use craft\models\EntryType as EntryTypeModel;
 use craft\models\GqlSchema;
+use craft\models\Site;
 use craft\services\Gql as GqlService;
 use GraphQL\Language\AST\ListValueNode;
 use GraphQL\Language\AST\VariableNode;
@@ -42,8 +43,8 @@ class Gql
     public static function isSchemaAwareOf(array|string $components, ?GqlSchema $schema = null): bool
     {
         try {
-            $schema = static::_schema($schema);
-        } catch (GqlException $e) {
+            $schema = self::_schema($schema);
+        } catch (GqlException) {
             return false;
         }
 
@@ -72,8 +73,8 @@ class Gql
     public static function extractAllowedEntitiesFromSchema(string $action = 'read', ?GqlSchema $schema = null): array
     {
         try {
-            $schema = static::_schema($schema);
-        } catch (GqlException $e) {
+            $schema = self::_schema($schema);
+        } catch (GqlException) {
             return [];
         }
 
@@ -92,8 +93,8 @@ class Gql
     public static function canSchema(string $component, string $action = 'read', ?GqlSchema $schema = null): bool
     {
         try {
-            $schema = static::_schema($schema);
-        } catch (GqlException $e) {
+            $schema = self::_schema($schema);
+        } catch (GqlException) {
             return false;
         }
 
@@ -110,8 +111,8 @@ class Gql
     public static function extractEntityAllowedActions(string $entity, ?GqlSchema $schema = null): array
     {
         try {
-            $schema = static::_schema($schema);
-        } catch (GqlException $e) {
+            $schema = self::_schema($schema);
+        } catch (GqlException) {
             return [];
         }
 
@@ -296,10 +297,10 @@ class Gql
     /**
      * Wrap a GQL object type in a NonNull type.
      *
-     * @param $type
+     * @param mixed $type
      * @return mixed
      */
-    public static function wrapInNonNull($type): mixed
+    public static function wrapInNonNull(mixed $type): mixed
     {
         if ($type instanceof NonNull) {
             return $type;
@@ -350,23 +351,24 @@ class Gql
     /**
      * Apply directives (if any) to a resolved value according to source and resolve info.
      *
-     * @param $source
+     * @param mixed $source
      * @param ResolveInfo $resolveInfo
-     * @param $value
+     * @param mixed $value
      * @return mixed
      */
-    public static function applyDirectives($source, ResolveInfo $resolveInfo, $value): mixed
+    public static function applyDirectives(mixed $source, ResolveInfo $resolveInfo, mixed $value): mixed
     {
         if (isset($resolveInfo->fieldNodes[0]->directives)) {
             foreach ($resolveInfo->fieldNodes[0]->directives as $directive) {
-                /** @var Directive $directiveEntity */
+                /** @var Directive|false $directiveEntity */
                 $directiveEntity = GqlEntityRegistry::getEntity($directive->name->value);
-                $arguments = [];
 
                 // This can happen for built-in GraphQL directives in which case they will have been handled already, anyway
                 if (!$directiveEntity) {
                     continue;
                 }
+
+                $arguments = [];
 
                 if (isset($directive->arguments[0])) {
                     foreach ($directive->arguments as $argument) {
@@ -442,6 +444,25 @@ class Gql
     }
 
     /**
+     * Get a list of all allowed sites by Schema\
+     *
+     * @param GqlSchema|null $schema
+     * @return Site[]
+     * @since 4.0.0
+     */
+    public static function getAllowedSites(?GqlSchema $schema = null): array
+    {
+        $allowedEntities = self::extractAllowedEntitiesFromSchema('read', $schema);
+        $allowedSiteUids = $allowedEntities['sites'] ?? [];
+
+        $sites = Craft::$app->getSites()->getAllSites(true);
+
+        return array_filter($sites, static function(Site $site) use ($allowedSiteUids) {
+            return in_array($site->uid, $allowedSiteUids, true);
+        });
+    }
+
+    /**
      * @param mixed $value
      * @param array $variableValues
      * @return mixed
@@ -465,16 +486,16 @@ class Gql
      * Looking at the resolve information and the source queried, return the field name or it's alias, if used.
      *
      * @param ResolveInfo $resolveInfo
-     * @param $source
-     * @param $context
+     * @param mixed $source
+     * @param array|null $context
      * @return string
      */
-    public static function getFieldNameWithAlias(ResolveInfo $resolveInfo, $source, $context): string
+    public static function getFieldNameWithAlias(ResolveInfo $resolveInfo, mixed $source, ?array $context): string
     {
         $fieldName = is_array($resolveInfo->path) ? array_slice($resolveInfo->path, -1)[0] : $resolveInfo->fieldName;
         $isAlias = $fieldName !== $resolveInfo->fieldName;
 
-        /** @var ElementQueryConditionBuilder $conditionBuilder */
+        /** @var ElementQueryConditionBuilder|null $conditionBuilder */
         $conditionBuilder = $context['conditionBuilder'] ?? null;
 
         if ($isAlias) {
@@ -519,7 +540,6 @@ class Gql
      * Shorthand for returning the complexity function for a field that will add a single query to execution.
      *
      * @param int $baseComplexity The base complexity to use. Defaults to a single query.
-     *
      * @return callable
      * @since 3.6.7
      */

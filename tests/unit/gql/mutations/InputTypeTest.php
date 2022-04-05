@@ -5,9 +5,8 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craftunit\gql\mutations;
+namespace crafttests\unit\gql\mutations;
 
-use Codeception\Test\Unit;
 use craft\base\Field;
 use craft\fieldlayoutelements\CustomField;
 use craft\fields\Checkboxes;
@@ -22,13 +21,14 @@ use craft\gql\types\input\Matrix;
 use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
 use craft\models\MatrixBlockType;
+use craft\test\TestCase;
 use GraphQL\Type\Definition\InputType;
 use GraphQL\Type\Definition\ListOfType;
 use GraphQL\Type\Definition\NonNull;
 
-class InputTypeTest extends Unit
+class InputTypeTest extends TestCase
 {
-    public function testFileInput()
+    public function testFileInput(): void
     {
         self::assertInstanceOf(InputType::class, File::getType());
     }
@@ -40,7 +40,7 @@ class InputTypeTest extends Unit
      * @param bool $isMulti
      * @dataProvider multipleOptionsDataProvider
      */
-    public function testMultipleOptions(Field $field, bool $isMulti)
+    public function testMultipleOptions(Field $field, bool $isMulti): void
     {
         $type = $field->getContentGqlMutationArgumentType();
 
@@ -61,13 +61,13 @@ class InputTypeTest extends Unit
 
     /**
      * @dataProvider testMatrixInputDataProvider
-     * @param $matrixField
-     * @param $blockTypes
+     * @param MatrixField $matrixField
+     * @param MatrixBlockType[] $blockTypes
      */
-    public function testMatrixInput($matrixField, $blockTypes)
+    public function testMatrixInput(MatrixField $matrixField, array $blockTypes): void
     {
         // Trigger addition to the registry
-        $inputType = Matrix::getType($matrixField);
+        Matrix::getType($matrixField);
 
         $fieldTypeName = $matrixField->handle . '_MatrixInput';
         self::assertNotFalse(GqlEntityRegistry::getEntity($fieldTypeName));
@@ -83,10 +83,10 @@ class InputTypeTest extends Unit
      * Test Matrix input type normalizing values
      *
      * @dataProvider matrixInputValueNormalizerDataProvider
-     * @param $input
-     * @param $normalized
+     * @param array $input
+     * @param array $normalized
      */
-    public function testMatrixInputValueNormalization($input, $normalized)
+    public function testMatrixInputValueNormalization(array $input, array $normalized): void
     {
         self::assertEquals($normalized, Matrix::normalizeValue($input));
     }

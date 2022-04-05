@@ -5,9 +5,8 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craftunit\gql;
+namespace crafttests\unit\gql;
 
-use Codeception\Test\Unit;
 use Craft;
 use craft\elements\Asset;
 use craft\elements\Category;
@@ -25,22 +24,24 @@ use craft\gql\handlers\RelatedTags;
 use craft\gql\handlers\RelatedUsers;
 use craft\models\GqlSchema;
 use craft\services\Gql;
+use craft\test\TestCase;
+use Exception;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
 use yii\base\Event;
+use yii\base\InvalidConfigException;
 
-class ArgumentHandlerTest extends Unit
+class ArgumentHandlerTest extends TestCase
 {
     /**
      * Test whether it's possible to modify fields
      *
      * @dataProvider integrationTestDataProvider
-     *
      * @param string $argumentString
      * @param array $expectedResult
-     * @throws \Exception
+     * @throws Exception
      */
-    public function testArgumentHandlerIntegration(string $argumentString, array $expectedResult)
+    public function testArgumentHandlerIntegration(string $argumentString, array $expectedResult): void
     {
         $gql = Craft::$app->getGql();
         $gql->flushCaches();
@@ -91,13 +92,12 @@ class ArgumentHandlerTest extends Unit
      * Test whether relation argument handlers return the right element query and format the `relatedTo` argument correctly.
      *
      * @dataProvider relationArgumentHandlerProvider
-     *
      * @param array $handlers
-     * @param $arguments
-     * @param $expectedRelatedTo
-     * @throws \yii\base\InvalidConfigException
+     * @param array $arguments
+     * @param array $expectedRelatedTo
+     * @throws InvalidConfigException
      */
-    public function testRelationArgumentHandlers(array $handlers, $arguments, $expectedRelatedTo): void
+    public function testRelationArgumentHandlers(array $handlers, array $arguments, array $expectedRelatedTo): void
     {
         $argumentManager = new ArgumentManager();
 

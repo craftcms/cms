@@ -50,6 +50,7 @@ class Volume extends Model
 
     /**
      * @var string Title translation method
+     * @phpstan-var Field::TRANSLATION_METHOD_NONE|Field::TRANSLATION_METHOD_SITE|Field::TRANSLATION_METHOD_SITE_GROUP|Field::TRANSLATION_METHOD_LANGUAGE|Field::TRANSLATION_METHOD_CUSTOM
      */
     public string $titleTranslationMethod = Field::TRANSLATION_METHOD_SITE;
 
@@ -74,6 +75,11 @@ class Volume extends Model
     public ?string $uid = null;
 
     /**
+     * @var string The subpath to use in the transform filesystem
+     */
+    public string $transformSubpath = '';
+
+    /**
      * @var FsInterface
      * @see getFs()
      * @see setFs()
@@ -88,7 +94,7 @@ class Volume extends Model
     private ?string $_fsHandle = null;
 
     /**
-     * @var FsInterface
+     * @var FsInterface|null
      * @see getTransformFs()
      * @see setTransformFs()
      */
@@ -327,6 +333,7 @@ class Volume extends Model
             'handle' => $this->handle,
             'fs' => $this->_fsHandle,
             'transformFs' => $this->_transformFsHandle,
+            'transformSubpath' => $this->transformSubpath,
             'titleTranslationMethod' => $this->titleTranslationMethod,
             'titleTranslationKeyFormat' => $this->titleTranslationKeyFormat ?: null,
             'sortOrder' => $this->sortOrder,

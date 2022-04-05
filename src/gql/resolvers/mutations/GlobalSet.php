@@ -24,14 +24,14 @@ class GlobalSet extends ElementMutationResolver
     /**
      * Save the global set identified by resolver data.
      *
-     * @param $source
+     * @param mixed $source
      * @param array $arguments
-     * @param $context
+     * @param mixed $context
      * @param ResolveInfo $resolveInfo
      * @return GlobalSetElement
      * @throws Throwable if reasons.
      */
-    public function saveGlobalSet($source, array $arguments, $context, ResolveInfo $resolveInfo): GlobalSetElement
+    public function saveGlobalSet(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): GlobalSetElement
     {
         $globalSet = $this->getResolutionData('globalSet');
 

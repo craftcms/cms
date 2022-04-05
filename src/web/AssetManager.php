@@ -13,6 +13,8 @@ use craft\errors\DbConnectException;
 use craft\helpers\App;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
+use craft\helpers\UrlHelper;
+use yii\caching\TagDependency;
 use yii\db\Exception as DbException;
 
 /**
@@ -22,6 +24,8 @@ use yii\db\Exception as DbException;
  */
 class AssetManager extends \yii\web\AssetManager
 {
+    private const CACHE_TAG = 'assetmanager';
+
     /**
      * @inheritdoc
      */
@@ -60,6 +64,8 @@ class AssetManager extends \yii\web\AssetManager
                     $url .= '?v=' . $timestamp;
                 }
             }
+
+            $url = $this->_addBuildIdParam($url);
         }
 
         return $url;
@@ -84,11 +90,28 @@ class AssetManager extends \yii\web\AssetManager
                 'hash' => $hash,
                 'path' => $alias,
             ]);
-        } catch (DbException|DbConnectException $e) {
+        } catch (DbException|DbConnectException) {
             // Craft is either not installed or not updated to 3.0.3+ yet
         }
 
+        Craft::$app->getCache()->set(
+            $this->getCacheKeyForPathHash($hash),
+            $alias,
+            dependency: new TagDependency(['tags' => [self::CACHE_TAG]]),
+        );
+
         return $hash;
+    }
+
+    /**
+     * Get the cache key for a given asset hash
+     *
+     * @param string $hash
+     * @return string
+     */
+    public function getCacheKeyForPathHash(string $hash): string
+    {
+        return implode(':', [self::CACHE_TAG, $hash]);
     }
 
     /**
@@ -118,6 +141,24 @@ class AssetManager extends \yii\web\AssetManager
             $url .= '?v=' . $timestamp;
         }
 
-        return [$file, $url];
+        return [$file, $this->_addBuildIdParam($url)];
+    }
+
+    public function getAssetUrl($bundle, $asset, $appendTimestamp = null): string
+    {
+        return $this->_addBuildIdParam(
+            parent::getAssetUrl($bundle, $asset, $appendTimestamp),
+        );
+    }
+
+    private function _addBuildIdParam($url): string
+    {
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        if ($generalConfig->buildId) {
+            return UrlHelper::urlWithParams($url, [
+                'buildId' => $generalConfig->buildId,
+            ]);
+        }
+        return $url;
     }
 }

@@ -77,7 +77,7 @@ class ColorValidator extends RegularExpressionValidator
             // update the model with the normalized value
             try {
                 $model->$attribute = $value;
-            } catch (UnknownPropertyException $e) {
+            } catch (UnknownPropertyException) {
                 // fine, validate the original value
                 parent::validateAttribute($model, $attribute);
             }

@@ -51,12 +51,12 @@ abstract class BaseUpdaterController extends Controller
 
     /**
      * @inheritdoc
-     * @throws NotFoundHttpException if it's not a control panel request
-     * @throws BadRequestHttpException if there's invalid data in the request
+     * @throws NotFoundHttpException if it’s not a control panel request
+     * @throws BadRequestHttpException if there’s invalid data in the request
      */
     public function beforeAction($action): bool
     {
-        // This controller is only available to the CP
+        // This controller is only available to the control panel
         if (!$this->request->getIsCpRequest()) {
             throw new NotFoundHttpException();
         }
@@ -317,7 +317,7 @@ abstract class BaseUpdaterController extends Controller
         try {
             Craft::$app->getComposer()->getJsonPath();
             return true;
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             return false;
         }
     }

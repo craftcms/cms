@@ -113,10 +113,10 @@ class Addresses extends Component
     }
 
     /**
-     * @param $type
+     * @param string $type
      * @return string
      */
-    public function getLocalityTypeLabel($type): string
+    public function getLocalityTypeLabel(string $type): string
     {
         return match ($type) {
             LocalityType::SUBURB => Craft::t('app', 'Suburb'),
@@ -127,10 +127,10 @@ class Addresses extends Component
     }
 
     /**
-     * @param $type
+     * @param string $type
      * @return string
      */
-    public function getDependentLocalityTypeLabel($type): string
+    public function getDependentLocalityTypeLabel(string $type): string
     {
         return match ($type) {
             DependentLocalityType::DISTRICT => Craft::t('app', 'District'),
@@ -142,10 +142,10 @@ class Addresses extends Component
     }
 
     /**
-     * @param $type
+     * @param string $type
      * @return string
      */
-    public function getPostalCodeTypeLabel($type): string
+    public function getPostalCodeTypeLabel(string $type): string
     {
         return match ($type) {
             PostalCodeType::EIR => Craft::t('app', 'Eircode'),
@@ -156,10 +156,10 @@ class Addresses extends Component
     }
 
     /**
-     * @param $type
+     * @param string $type
      * @return string
      */
-    public function getAdministrativeAreaTypeLabel($type): string
+    public function getAdministrativeAreaTypeLabel(string $type): string
     {
         return match ($type) {
             AdministrativeAreaType::AREA => Craft::t('app', 'Area'),

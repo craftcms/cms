@@ -52,7 +52,7 @@ class ClearCacheAction extends Action
         if (is_string($this->action)) {
             try {
                 FileHelper::clearDirectory($this->action);
-            } catch (InvalidArgumentException $e) {
+            } catch (InvalidArgumentException) {
                 // the directory doesn't exist
             } catch (Throwable $e) {
                 $error = "Could not clear the directory $this->label: " . $e->getMessage();

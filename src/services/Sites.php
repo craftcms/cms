@@ -383,7 +383,7 @@ class Sites extends Component
             return false;
         }
 
-        /** @var SiteGroupRecord $groupRecord */
+        /** @var SiteGroupRecord|null $groupRecord */
         $groupRecord = SiteGroupRecord::find()
             ->where(['id' => $group->id])
             ->one();
@@ -719,7 +719,7 @@ class Sites extends Component
 
         try {
             $oldPrimarySiteId = $this->getPrimarySite()->id;
-        } catch (SiteNotFoundException $e) {
+        } catch (SiteNotFoundException) {
             $oldPrimarySiteId = null;
         }
 
@@ -824,7 +824,7 @@ class Sites extends Component
     /**
      * Reorders sites.
      *
-     * @param string[] $siteIds The site IDs in their new order
+     * @param int[] $siteIds The site IDs in their new order
      * @return bool Whether the sites were reordered successfully
      * @throws Throwable if reasons
      */
@@ -1169,9 +1169,7 @@ class Sites extends Component
 
         // Check for results because during installation, the transaction hasn't been committed yet.
         if (!empty($results)) {
-            $generalConfig = Craft::$app->getConfig()->getGeneral();
-
-            foreach ($results as $i => $result) {
+            foreach ($results as $result) {
                 $site = new Site($result);
                 $this->_allSitesById[$site->id] = $site;
                 if ($site->enabled) {
@@ -1220,6 +1218,7 @@ class Sites extends Component
         }
 
         /** @noinspection PhpIncompatibleReturnTypeInspection */
+        /** @var SiteGroupRecord */
         return $query->one() ?? new SiteGroupRecord();
     }
 
@@ -1259,6 +1258,7 @@ class Sites extends Component
         }
 
         /** @noinspection PhpIncompatibleReturnTypeInspection */
+        /** @var SiteRecord */
         return $query->one() ?? new SiteRecord();
     }
 

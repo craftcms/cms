@@ -11,7 +11,6 @@ use Craft;
 use craft\base\Component;
 use craft\base\EagerLoadingFieldInterface;
 use craft\base\Element;
-use craft\base\Field;
 use craft\base\FieldInterface;
 use craft\base\GqlInlineFragmentFieldInterface;
 use craft\elements\db\EagerLoadPlan;
@@ -145,9 +144,9 @@ class ElementQueryConditionBuilder extends Component
      */
     public function extractQueryConditions(?FieldInterface $startingParentField = null): array
     {
-        $startingNode = $this->_resolveInfo->fieldNodes[0];
+        $startingNode = reset($this->_resolveInfo->fieldNodes);
 
-        if ($startingNode === null) {
+        if (!$startingNode) {
             return [];
         }
 
@@ -224,6 +223,7 @@ class ElementQueryConditionBuilder extends Component
             }
         }
 
+        /** @phpstan-ignore-next-line */
         $value = $argumentNode->value ?? null;
         return $argumentNode->kind === 'IntValue' ? (int)$value : $value;
     }
@@ -232,11 +232,10 @@ class ElementQueryConditionBuilder extends Component
      * Figure out whether a node in the parentfield is a special eager-loadable field.
      *
      * @param string $nodeName
-     * @param $parentField
-     *
+     * @param mixed $parentField
      * @return bool
      */
-    private function _isAdditionalEagerLoadableNode(string $nodeName, $parentField): bool
+    private function _isAdditionalEagerLoadableNode(string $nodeName, mixed $parentField): bool
     {
         $nodeList = $this->_getKnownSpecialEagerLoadNodes();
 
@@ -327,7 +326,11 @@ class ElementQueryConditionBuilder extends Component
     private function _extractTransformDirectiveArguments(Node $node): array
     {
         $arguments = [];
-        $directives = $node->directives ?? [];
+        if (isset($node->directives)) {
+            $directives = $node->directives;
+        } else {
+            $directives = [];
+        }
 
         foreach ($directives as $directive) {
             if ($directive->name->value === 'transform') {
@@ -341,10 +344,10 @@ class ElementQueryConditionBuilder extends Component
     /**
      * Prepare a list of transform arguments for return.
      *
-     * @param $arguments
+     * @param array $arguments
      * @return array
      */
-    private function _prepareTransformArguments($arguments): array
+    private function _prepareTransformArguments(array $arguments): array
     {
         if (empty($arguments)) {
             return [];
@@ -405,7 +408,7 @@ class ElementQueryConditionBuilder extends Component
 
             // If that's a GraphQL field
             if ($subNode instanceof FieldNode) {
-                /** @var Field $craftContentField */
+                /** @var FieldInterface|null $craftContentField */
                 $craftContentField = $this->_eagerLoadableFieldsByContext[$context][$nodeName] ?? null;
 
                 $transformableAssetProperty = ($rootOfAssetQuery || $parentField instanceof AssetField) && in_array($nodeName, $this->_transformableAssetProperties, true);
@@ -421,7 +424,7 @@ class ElementQueryConditionBuilder extends Component
                     $plan = new EagerLoadPlan();
 
                     // Any arguments?
-                    $arguments = $this->_extractArguments($subNode->arguments ?? []);
+                    $arguments = $this->_extractArguments($subNode->arguments);
 
                     $transformEagerLoadArguments = [];
 
@@ -450,7 +453,7 @@ class ElementQueryConditionBuilder extends Component
 
                     // If this a custom Craft content field
                     if ($craftContentField) {
-                        /** @var EagerLoadingFieldInterface $craftContentField */
+                        /** @var FieldInterface|EagerLoadingFieldInterface $craftContentField */
                         $additionalArguments = $craftContentField->getEagerLoadingGqlConditions();
 
                         // Load additional requirements enforced by schema, enforcing permissions to see content
@@ -506,7 +509,7 @@ class ElementQueryConditionBuilder extends Component
 
                     // Add this to the eager loading list.
                     if (!$transformableAssetProperty) {
-                        /** @var InlineFragmentNode|FragmentDefinitionNode $wrappingFragment */
+                        /** @var InlineFragmentNode|FragmentDefinitionNode|null $wrappingFragment */
                         if ($wrappingFragment) {
                             $plan->when = function(Element $element) use ($wrappingFragment) {
                                 return $element->getGqlTypeName() === $wrappingFragment->typeCondition->name->value;
@@ -561,7 +564,7 @@ class ElementQueryConditionBuilder extends Component
                             $nestedPlan->handle = $newHandle;
                         }
                         // This is to be expected, depending on whether the fragment is targeted towards the field itself instead of its subtypes.
-                    } catch (InvalidArgumentException $exception) {
+                    } catch (InvalidArgumentException) {
                         $plan->nested = $this->_traversAndBuildPlans($subNode, $plan, $parentField, $wrappingFragment, $context);
                     }
                     // If we are not, just expand the fragment and traverse it as if on the same level in the query tree

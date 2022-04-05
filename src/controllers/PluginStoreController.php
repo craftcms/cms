@@ -86,7 +86,6 @@ class PluginStoreController extends Controller
      * Connect to id.craftcms.com.
      *
      * @param string|null $redirectUrl
-     *
      * @return Response
      */
     public function actionConnect(?string $redirectUrl = null): Response

@@ -9,7 +9,7 @@ namespace crafttests\unit\helpers;
 
 use Codeception\Test\Unit;
 use craft\helpers\AdminTable;
-use UnitTester;
+use craft\test\TestCase;
 
 /**
  * Unit tests for the Admin Table Helper class.
@@ -17,22 +17,16 @@ use UnitTester;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.6.0
  */
-class AdminTableHelperTest extends Unit
+class AdminTableHelperTest extends TestCase
 {
     /**
-     * @var UnitTester
-     */
-    protected $tester;
-
-    /**
      * @dataProvider paginationLinksDataProvider
-     *
      * @param array $expected
      * @param int $page
      * @param int $total
      * @param int $limit
      */
-    public function testPaginationLinks(array $expected, int $page, int $total, int $limit)
+    public function testPaginationLinks(array $expected, int $page, int $total, int $limit): void
     {
         self::assertSame($expected, AdminTable::paginationLinks($page, $total, $limit));
     }

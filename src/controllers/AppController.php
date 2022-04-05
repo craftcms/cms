@@ -193,7 +193,7 @@ class AppController extends Controller
             foreach ($updates->plugins as $pluginHandle => $pluginUpdate) {
                 try {
                     $pluginInfo = $pluginsService->getPluginInfo($pluginHandle);
-                } catch (InvalidPluginException $e) {
+                } catch (InvalidPluginException) {
                     continue;
                 }
                 $res['updates']['plugins'][] = $this->_transformUpdate($allowUpdates, $pluginUpdate, $pluginHandle, $pluginInfo['name']);
@@ -251,6 +251,7 @@ class AppController extends Controller
                 $backupPath = $db->backup();
             } catch (Throwable $e) {
                 Craft::$app->disableMaintenanceMode();
+                /** @phpstan-ignore-next-line */
                 throw new ServerErrorHttpException('Error backing up the database.', 0, $e);
             }
         }
@@ -302,6 +303,7 @@ class AppController extends Controller
             }
 
             Craft::$app->disableMaintenanceMode();
+            /** @phpstan-ignore-next-line */
             throw new ServerErrorHttpException($error, 0, $e);
         }
 
@@ -443,7 +445,7 @@ class AppController extends Controller
     }
 
     /**
-     * Updates a plugin's license key.
+     * Updates a plugin’s license key.
      *
      * @return Response
      */
@@ -628,7 +630,7 @@ class AppController extends Controller
 
         $statusCode = $this->response->getStatusCode();
         return $this->response
-            ->sendFile($imagePath, ['inline' => true])
+            ->sendFile($imagePath, null, ['inline' => true])
             ->setStatusCode($statusCode);
     }
 }

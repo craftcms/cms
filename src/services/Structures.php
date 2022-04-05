@@ -199,6 +199,7 @@ class Structures extends Component
     public function saveStructure(Structure $structure): bool
     {
         if ($structure->id) {
+            /** @var StructureRecord|null $structureRecord */
             $structureRecord = StructureRecord::findWithTrashed()
                 ->andWhere(['id' => $structure->id])
                 ->one();
@@ -259,7 +260,7 @@ class Structures extends Component
     public function getElementLevelDelta(int $structureId, ElementInterface $element): int
     {
         $elementRecord = $this->_getElementRecord($structureId, $element);
-        /** @var StructureElement $deepestDescendant */
+        /** @var StructureElement|null $deepestDescendant */
         $deepestDescendant = $elementRecord
             ->children()
             ->orderBy(['level' => SORT_DESC])
@@ -329,11 +330,6 @@ class Structures extends Component
     public function prependToRoot(int $structureId, ElementInterface $element, string $mode = self::MODE_AUTO): bool
     {
         $parentElementRecord = $this->_getRootElementRecord($structureId);
-
-        if ($parentElementRecord === null) {
-            throw new Exception('There was a problem getting the parent element.');
-        }
-
         return $this->_doIt($structureId, $element, $parentElementRecord, 'prependTo', $mode);
     }
 
@@ -349,11 +345,6 @@ class Structures extends Component
     public function appendToRoot(int $structureId, ElementInterface $element, string $mode = self::MODE_AUTO): bool
     {
         $parentElementRecord = $this->_getRootElementRecord($structureId);
-
-        if ($parentElementRecord === null) {
-            throw new Exception('There was a problem getting the parent element.');
-        }
-
         return $this->_doIt($structureId, $element, $parentElementRecord, 'appendTo', $mode);
     }
 
@@ -454,6 +445,7 @@ class Structures extends Component
     private function _getRootElementRecord(int $structureId): StructureElement
     {
         if (!isset($this->_rootElementRecordsByStructureId[$structureId])) {
+            /** @var StructureElement|null $elementRecord */
             $elementRecord = StructureElement::find()
                 ->where(['structureId' => $structureId])
                 ->roots()

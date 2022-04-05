@@ -82,11 +82,6 @@ class Volumes extends Component
     private ?MemoizableArray $_volumes = null;
 
     /**
-     * @var array|null Volume setting overrides
-     */
-    private ?array $_overrides = null;
-
-    /**
      * Serializer
      *
      * @since 3.5.14
@@ -136,26 +131,6 @@ class Volumes extends Component
         return ArrayHelper::where($this->getAllVolumes(), function(Volume $volume) use ($userSession) {
             return $userSession->checkPermission("viewAssets:$volume->uid");
         }, true, true, false);
-    }
-
-    /**
-     * Returns all volume IDs that have public URLs.
-     *
-     * @return int[]
-     */
-    public function getPublicVolumeIds(): array
-    {
-        return ArrayHelper::getColumn($this->getPublicVolumes(), 'id', false);
-    }
-
-    /**
-     * Returns all volumes that have public URLs.
-     *
-     * @return Volume[]
-     */
-    public function getPublicVolumes(): array
-    {
-        return $this->_volumes()->where('hasUrls')->all();
     }
 
     /**
@@ -350,6 +325,7 @@ class Volumes extends Component
             $volumeRecord->handle = $data['handle'];
             $volumeRecord->fs = $data['fs'] ?? null;
             $volumeRecord->transformFs = $data['transformFs'] ?? null;
+            $volumeRecord->transformSubpath = $data['transformSubpath'] ?? null;
             $volumeRecord->sortOrder = $data['sortOrder'];
             $volumeRecord->titleTranslationMethod = $data['titleTranslationMethod'] ?? Field::TRANSLATION_METHOD_SITE;
             $volumeRecord->titleTranslationKeyFormat = $data['titleTranslationKeyFormat'] ?? null;
@@ -361,7 +337,7 @@ class Volumes extends Component
                 $layout->id = $volumeRecord->fieldLayoutId;
                 $layout->type = Asset::class;
                 $layout->uid = key($data['fieldLayouts']);
-                Craft::$app->getFields()->saveLayout($layout);
+                Craft::$app->getFields()->saveLayout($layout, false);
                 $volumeRecord->fieldLayoutId = $layout->id;
             } elseif ($volumeRecord->fieldLayoutId) {
                 // Delete the field layout
@@ -405,10 +381,9 @@ class Volumes extends Component
         // Clear caches
         $this->_volumes = null;
 
-        $volume = $this->getVolumeById($volumeRecord->id);
-
         if ($wasTrashed) {
             // Restore the assets that were deleted with the volume
+            /** @var Asset[] $assets */
             $assets = Asset::find()
                 ->volumeId($volumeRecord->id)
                 ->trashed()
@@ -544,9 +519,10 @@ class Volumes extends Component
 
         try {
             // Delete the assets
+            /** @var Asset[] $assets */
             $assets = Asset::find()
-                ->status(null)
                 ->volumeId($volumeRecord->id)
+                ->status(null)
                 ->all();
             $elementsService = Craft::$app->getElements();
 
@@ -640,6 +616,7 @@ class Volumes extends Component
                 'handle',
                 'fs',
                 'transformFs',
+                'transformSubpath',
                 'titleTranslationMethod',
                 'titleTranslationKeyFormat',
                 'sortOrder',
@@ -663,6 +640,7 @@ class Volumes extends Component
         $query = $withTrashed ? AssetVolumeRecord::findWithTrashed() : AssetVolumeRecord::find();
         $query->andWhere(['uid' => $uid]);
         /** @noinspection PhpIncompatibleReturnTypeInspection */
+        /** @var AssetVolumeRecord */
         return $query->one() ?? new AssetVolumeRecord();
     }
 }

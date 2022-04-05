@@ -75,7 +75,8 @@ abstract class BaseMultiSelectConditionRule extends BaseConditionRule
      *
      * Options can be expressed as value/label pairs, or as arrays with `value` and `label` keys.
      *
-     * @return string[]
+     * @return string[]|array[]
+     * @phpstan-return string[]|array{value:string,label:string}[]
      */
     abstract protected function options(): array;
 
@@ -126,7 +127,7 @@ JS;
     /**
      * Returns the rule’s value, prepped for [[Db::parseParam()]] based on the selected operator.
      *
-     * @param callable|null Method for normalizing a given selected value.
+     * @param callable|null $normalizeValue Method for normalizing a given selected value.
      * @return array|null
      */
     protected function paramValue(?callable $normalizeValue = null): ?array

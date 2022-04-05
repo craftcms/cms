@@ -34,7 +34,7 @@ class UserPasswordValidator extends StringValidator
     public bool $forceDifferent = false;
 
     /**
-     * @var string|null The user's current (hashed) password.
+     * @var string|null The user’s current (hashed) password.
      */
     public ?string $currentPassword = null;
 

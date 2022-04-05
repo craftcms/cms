@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\test\fixtures;
@@ -10,7 +10,7 @@ namespace craft\test\fixtures;
 use Craft;
 use craft\base\Field;
 use craft\base\FieldInterface;
-use craft\base\Model;
+use craft\base\ModelInterface;
 use craft\fieldlayoutelements\CustomField;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Component;
@@ -29,7 +29,7 @@ use yii\test\FileFixtureTrait;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since  3.2
+ * @since 3.2
  */
 abstract class FieldLayoutFixture extends DbFixture
 {
@@ -156,10 +156,10 @@ abstract class FieldLayoutFixture extends DbFixture
     }
 
     /**
-     * @param Model $model
+     * @param ModelInterface $model
      * @throws InvalidArgumentException
      */
-    protected function throwModelError(Model $model): void
+    protected function throwModelError(ModelInterface $model): void
     {
         throw new InvalidArgumentException(
             implode(

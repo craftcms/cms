@@ -104,7 +104,7 @@ class Images extends Component
         $version = App::extensionVersion('imagick');
         try {
             $version .= ' (ImageMagick ' . $this->getImageMagickApiVersion() . ')';
-        } catch (Throwable $e) {
+        } catch (Throwable) {
         }
         return $version;
     }

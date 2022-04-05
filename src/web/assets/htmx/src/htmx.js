@@ -51,8 +51,12 @@ htmx.defineExtension('craft-condition', {
     },
 
     configureRequest: function(evt) {
-        const config = $(evt.detail.target).children('.condition-main').data('condition-config');
-        if (config.name) {
+        let $conditionContainer = $(evt.detail.target).children('.condition-main');
+        if (!$conditionContainer.length) {
+            $conditionContainer = $(evt.detail.target).closest('.condition-main');
+        }
+        const config = $conditionContainer.data('condition-config');
+        if (config && config.name) {
             const vals = evt.detail.elt.getAttribute('hx-vals') || evt.detail.elt.getAttribute('data-hx-vals');
             const valNames = vals ? Object.keys(JSON.parse(vals)) : [];
             evt.detail.parameters = Object.fromEntries(

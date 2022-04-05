@@ -108,7 +108,7 @@ class PluginStore extends Component
             $oauthTokenRecord = new OauthTokenRecord();
             $oauthTokenRecord->userId = $oauthToken->userId;
             $oauthTokenRecord->accessToken = $oauthToken->accessToken;
-            $oauthTokenRecord->expiryDate = $oauthToken->expiryDate;
+            $oauthTokenRecord->expiryDate = Db::prepareDateForDb($oauthToken->expiryDate);
             $oauthTokenRecord->save();
         }
     }
@@ -140,7 +140,7 @@ class PluginStore extends Component
 
         $token = new CraftIdToken($oauthTokenRecord->getAttributes());
 
-        if (!$token || ($token && $token->hasExpired())) {
+        if ($token->hasExpired()) {
             return null;
         }
 
@@ -188,10 +188,10 @@ class PluginStore extends Component
     /**
      * Returns the token by user ID.
      *
-     * @param $userId
+     * @param int $userId
      * @return CraftIdToken|null
      */
-    public function getTokenByUserId($userId): ?CraftIdToken
+    public function getTokenByUserId(int $userId): ?CraftIdToken
     {
         $record = OauthTokenRecord::findOne(['userId' => $userId, 'provider' => 'craftid']);
 

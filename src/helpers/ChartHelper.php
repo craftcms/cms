@@ -175,7 +175,7 @@ class ChartHelper
         ];
 
         foreach ($shortDateFormats as $unit => $format) {
-            foreach ($yiiToD3Formats as $_unit => $_formats) {
+            foreach ($yiiToD3Formats as $_formats) {
                 foreach ($_formats as $yiiFormat => $d3Format) {
                     $pattern = "/($yiiFormat)/i";
 

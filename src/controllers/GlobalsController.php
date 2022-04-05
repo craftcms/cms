@@ -149,6 +149,7 @@ class GlobalsController extends Controller
         // Get the global sets the user is allowed to edit, in the requested site
         $editableGlobalSets = [];
 
+        /** @var GlobalSet[] $globalSets */
         $globalSets = GlobalSet::find()
             ->siteId($site->id)
             ->all();

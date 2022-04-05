@@ -245,7 +245,7 @@ class DbConfig extends BaseConfig
         }
 
         $this->server = strtolower($this->server ?? '');
-        if (!isset($this->port) || $this->port === '') {
+        if (!$this->port) {
             switch ($this->driver) {
                 case Connection::DRIVER_MYSQL:
                     $this->port = 3306;

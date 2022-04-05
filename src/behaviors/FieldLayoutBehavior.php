@@ -8,15 +8,18 @@
 namespace craft\behaviors;
 
 use Craft;
+use craft\base\ElementInterface;
 use craft\base\FieldInterface;
 use craft\models\FieldLayout;
 use yii\base\Behavior;
 use yii\base\InvalidConfigException;
+use yii\base\Model;
 
 /**
  * Field Layout behavior.
  *
  * @property FieldLayout $fieldLayout
+ * @property ElementInterface|Model $owner
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
@@ -24,6 +27,7 @@ class FieldLayoutBehavior extends Behavior
 {
     /**
      * @var string|null The element type that the field layout will be associated with
+     * @phpstan-var class-string<ElementInterface>|null
      */
     public ?string $elementType = null;
 
@@ -33,7 +37,7 @@ class FieldLayoutBehavior extends Behavior
     public ?string $idAttribute = null;
 
     /**
-     * @var int|string|callable The field layout ID, or the name of a method on the owner that will return it, or a callback function that will return it
+     * @var int|string|callable|null The field layout ID, or the name of a method on the owner that will return it, or a callback function that will return it
      */
     private $_fieldLayoutId;
 
@@ -110,7 +114,7 @@ class FieldLayoutBehavior extends Behavior
 
         try {
             $id = $this->getFieldLayoutId();
-        } catch (InvalidConfigException $e) {
+        } catch (InvalidConfigException) {
             return $this->_fieldLayout = new FieldLayout([
                 'type' => $this->elementType,
             ]);

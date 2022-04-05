@@ -106,7 +106,7 @@ class Composer extends Component
     {
         try {
             return Json::decode(file_get_contents($this->getJsonPath()));
-        } catch (Throwable $e) {
+        } catch (Throwable) {
             return [];
         }
     }
@@ -290,6 +290,7 @@ class Composer extends Component
      * Adds an autoloading class to the Composer class map
      *
      * @param string $className
+     * @phpstan-param class-string $className
      */
     public function logComposerClass(string $className): void
     {

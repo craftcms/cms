@@ -169,7 +169,7 @@ class AssetIndexer extends Component
         foreach ($volumeList as $volume) {
             try {
                 $fileList = $volume->getFs()->getFileList();
-            } catch (FsException $e) {
+            } catch (FsException) {
                 Craft::warning('Unable to list files in ' . $volume->handle . '.');
                 continue;
             }
@@ -320,7 +320,7 @@ class AssetIndexer extends Component
             }
 
             $this->updateIndexEntry($indexEntry->id, ['completed' => true, 'inProgress' => false, 'recordId' => $recordId]);
-        } catch (AssetDisallowedExtensionException|AssetNotIndexableException $exception) {
+        } catch (AssetDisallowedExtensionException|AssetNotIndexableException) {
             $this->updateIndexEntry($indexEntry->id, ['completed' => true, 'inProgress' => false, 'isSkipped' => true]);
         } catch (Throwable $exception) {
             Craft::$app->getErrorHandler()->logException($exception);
@@ -628,7 +628,7 @@ class AssetIndexer extends Component
 
         $folderId = $folder->id;
 
-        /** @var Asset $asset */
+        /** @var Asset|null $asset */
         $asset = Asset::find()
             ->filename(Db::escapeParam($filename))
             ->folderId($folderId)

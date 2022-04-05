@@ -7,7 +7,7 @@ import './plugins.scss';
         init: function() {
             this.getPluginLicenseInfo()
                 .then(response => {
-                    for (var handle in response) {
+                    for (let handle in response) {
                         if (response.hasOwnProperty(handle)) {
                             if (!response[handle].isComposerInstalled) {
                                 this.addUninstalledPluginRow(handle, response[handle]);
@@ -26,15 +26,15 @@ import './plugins.scss';
                             include: 'plugins',
                         },
                     })
-                    .then(function(response) {
+                    .then(response => {
                         let data = {
-                            pluginLicenses: response.data.license.pluginLicenses || [],
+                            pluginLicenses: response.license.pluginLicenses || [],
                         };
                         Craft.sendActionRequest('POST', 'app/get-plugin-license-info', {data})
-                            .then((response) => {
+                            .then(response => {
                                 resolve(response.data);
                             })
-                            .catch(({response}) => {
+                            .catch(() => {
                                 reject();
                             });
                     })
@@ -43,7 +43,7 @@ import './plugins.scss';
         },
 
         addUninstalledPluginRow: function(handle, info) {
-            var $table = $('#plugins');
+            const $table = $('#plugins');
             if (!$table.length) {
                 $table = $('<table/>', {
                     id: 'plugins',
@@ -53,7 +53,7 @@ import './plugins.scss';
                 $('#no-plugins').replaceWith($table);
             }
 
-            var $row = $('<tr/>', {
+            const $row = $('<tr/>', {
                     data: {
                         handle: handle,
                     }
@@ -226,11 +226,11 @@ import './plugins.scss';
             if (key[0] === '$') {
                 return key;
             }
-            return key.replace(/.{4}/g, '$&-').substr(0, 29).toUpperCase();
+            return key.replace(/.{4}/g, '$&-').substring(0, 29).toUpperCase();
         }
     });
 
-    var Plugin = Garnish.Base.extend({
+    const Plugin = Garnish.Base.extend({
         manager: null,
         $row: null,
         $details: null,
@@ -266,10 +266,10 @@ import './plugins.scss';
             if (this.updateTimeout) {
                 clearTimeout(this.updateTimeout);
             }
-            var key = this.getKey();
+            const key = this.getKey();
             if (key.length === 0 || key.length === 24 || (key.length > 1 && key[0] === '$')) {
                 // normalize
-                var userKey = Craft.PluginManager.normalizeUserKey(key);
+                const userKey = Craft.PluginManager.normalizeUserKey(key);
                 this.$keyInput.val(userKey);
                 this.updateTimeout = setTimeout(this.updateLicenseStatus.bind(this), 100);
             }
@@ -280,20 +280,20 @@ import './plugins.scss';
 
             let data = {handle: this.handle, key: this.getKey()};
             Craft.sendActionRequest('POST', 'app/update-plugin-license', {data})
-                .then((response) => {
+                .then(() => {
                     this.manager.getPluginLicenseInfo()
-                        .then((response) => {
+                        .then(response => {
                             this.$spinner.addClass('hidden');
-                            this.update(response.data[this.handle]);
+                            this.update(response[this.handle]);
                         });
                 });
         },
 
         update: function(info) {
             // update the status icon
-            var $oldIcon = this.$row.find('.license-key-status');
+            const $oldIcon = this.$row.find('.license-key-status');
             if (info.licenseKeyStatus == 'valid' || info.licenseIssues.length) {
-                var $newIcon = $('<span/>', {'class': 'license-key-status ' + (info.licenseIssues.length === 0 ? 'valid' : '')});
+                const $newIcon = $('<span/>', {'class': 'license-key-status ' + (info.licenseIssues.length === 0 ? 'valid' : '')});
                 if ($oldIcon.length) {
                     $oldIcon.replaceWith($newIcon);
                 } else {
@@ -304,9 +304,9 @@ import './plugins.scss';
             }
 
             // add the edition/trial badge
-            var $oldEdition = this.$row.find('.edition');
+            const $oldEdition = this.$row.find('.edition');
             if (info.hasMultipleEditions || info.isTrial) {
-                var $newEdition = info.upgradeAvailable
+                const $newEdition = info.upgradeAvailable
                     ? $('<a/>', {href: Craft.getUrl('plugin-store/' + this.handle), 'class': 'edition'})
                     : $('<div/>', {'class': 'edition'});
                 if (info.hasMultipleEditions) {
@@ -325,7 +325,7 @@ import './plugins.scss';
             }
 
             // show the license key?
-            var showLicenseKey = info.licenseKey || info.licenseKeyStatus !== 'unknown';
+            const showLicenseKey = info.licenseKey || info.licenseKeyStatus !== 'unknown';
             if (showLicenseKey) {
                 this.$keyContainer.removeClass('hidden');
                 if (info.licenseKey && !this.$keyInput.val().match(/^\$/)) {
@@ -345,9 +345,9 @@ import './plugins.scss';
             // add the error message
             this.$row.find('p.error').remove();
             if (info.licenseIssues.length) {
-                var $issues = $();
-                var $p, $form, message;
-                for (var i = 0; i < info.licenseIssues.length; i++) {
+                let $issues = $();
+                for (let i = 0; i < info.licenseIssues.length; i++) {
+                    let message;
                     switch (info.licenseIssues[i]) {
                         case 'no_trials':
                             message = Craft.t('app', 'Plugin trials are not allowed on this domain.');
@@ -375,9 +375,9 @@ import './plugins.scss';
                             message = Craft.t('app', 'Your license key is invalid.');
                     }
 
-                    $p = $('<p/>', {'class': 'error', html: message});
+                    const $p = $('<p/>', {'class': 'error', html: message});
                     if (info.licenseIssues[i] === 'wrong_edition') {
-                        $form = $('<form/>', {
+                        const $form = $('<form/>', {
                             method: 'post',
                             'accept-charset': 'UTF-8',
                         })

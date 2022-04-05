@@ -21,13 +21,9 @@ class TemplateValidator extends Validator
 {
     /**
      * @var string The template mode to use when looking for the template
+     * @phpstan-var View::TEMPLATE_MODE_SITE|View::TEMPLATE_MODE_CP
      */
     public string $templateMode = View::TEMPLATE_MODE_SITE;
-
-    /**
-     * @var string user-defined error message used when the value is not a string.
-     */
-    public $message;
 
     /**
      * @inheritdoc

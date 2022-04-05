@@ -103,7 +103,7 @@ class SystemSettingsController extends Controller
         if ($adapter === null) {
             try {
                 $adapter = MailerHelper::createTransportAdapter($settings->transportType, $settings->transportSettings);
-            } catch (MissingComponentException $e) {
+            } catch (MissingComponentException) {
                 $adapter = new Sendmail();
                 $adapter->addError('type', Craft::t('app', 'The transport type “{type}” could not be found.', [
                     'type' => $settings->transportType,
@@ -124,6 +124,7 @@ class SystemSettingsController extends Controller
 
         foreach ($allTransportAdapterTypes as $transportAdapterType) {
             /** @var string|TransportAdapterInterface $transportAdapterType */
+            /** @phpstan-var class-string<TransportAdapterInterface>|TransportAdapterInterface $transportAdapterType */
             if ($transportAdapterType === get_class($adapter) || $transportAdapterType::isSelectable()) {
                 $allTransportAdapters[] = MailerHelper::createTransportAdapter($transportAdapterType);
                 $transportTypeOptions[] = [

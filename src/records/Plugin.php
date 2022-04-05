@@ -10,7 +10,6 @@ namespace craft\records;
 use craft\db\ActiveRecord;
 use craft\db\Table;
 use craft\validators\DateTimeValidator;
-use DateTime;
 
 /**
  * Class Plugin record.
@@ -19,7 +18,7 @@ use DateTime;
  * @property string $class Class
  * @property string $version Version
  * @property bool $enabled Enabled
- * @property DateTime $installDate Install date
+ * @property string $installDate Install date
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */

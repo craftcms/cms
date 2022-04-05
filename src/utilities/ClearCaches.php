@@ -140,7 +140,7 @@ class ClearCaches extends Utility
                     foreach ($dirs as $dir) {
                         try {
                             FileHelper::clearDirectory($dir);
-                        } catch (InvalidArgumentException $e) {
+                        } catch (InvalidArgumentException) {
                             // the directory doesn't exist
                         }
                     }

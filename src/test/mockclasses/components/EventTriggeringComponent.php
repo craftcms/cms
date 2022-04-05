@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\test\mockclasses\components;
@@ -16,7 +16,7 @@ use yii\base\Event;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since  3.2
+ * @since 3.2
  */
 class EventTriggeringComponent extends Component
 {
@@ -26,7 +26,7 @@ class EventTriggeringComponent extends Component
     public function triggerEvent(): void
     {
         $event = new Event();
-        $event->sender = ['22' => '44', '33' => '55'];
+        $event->sender = (object)['22' => '44', '33' => '55'];
 
         $this->trigger('event', $event);
     }

@@ -7,7 +7,6 @@
 
 namespace craft\test\console;
 
-use Closure;
 use Codeception\Stub;
 use Craft;
 use craft\console\Controller;
@@ -66,7 +65,7 @@ class CommandTest
     protected CommandTestItem|array $eventChain = [];
 
     /**
-     * @var integer
+     * @var int
      */
     protected int $currentIndex;
 
@@ -123,10 +122,10 @@ class CommandTest
     }
 
     /**
-     * @param $value
+     * @param int $value
      * @return CommandTest
      */
-    public function exitCode($value): CommandTest
+    public function exitCode(int $value): CommandTest
     {
         $this->desiredExitCode = $value;
         return $this;
@@ -172,11 +171,11 @@ class CommandTest
 
     /**
      * @param string $prompt
-     * @param $returnValue
+     * @param mixed $returnValue
      * @param array $options
      * @return CommandTest
      */
-    public function prompt(string $prompt, $returnValue, array $options = []): CommandTest
+    public function prompt(string $prompt, mixed $returnValue, array $options = []): CommandTest
     {
         return $this->addEventChainItem([
             'type' => self::PROMPT,
@@ -188,11 +187,11 @@ class CommandTest
 
     /**
      * @param string $message
-     * @param $returnValue
+     * @param mixed $returnValue
      * @param bool $default
      * @return CommandTest
      */
-    public function confirm(string $message, $returnValue, bool $default = false): CommandTest
+    public function confirm(string $message, mixed $returnValue, bool $default = false): CommandTest
     {
         return $this->addEventChainItem([
             'type' => self::CONFIRM,
@@ -204,11 +203,11 @@ class CommandTest
 
     /**
      * @param string $prompt
-     * @param $returnValue
+     * @param mixed $returnValue
      * @param array $options
      * @return CommandTest
      */
-    public function select(string $prompt, $returnValue, array $options = []): CommandTest
+    public function select(string $prompt, mixed $returnValue, array $options = []): CommandTest
     {
         return $this->addEventChainItem([
             'type' => self::SELECT,
@@ -251,9 +250,9 @@ class CommandTest
     }
 
     /**
-     * @return Closure
+     * @return callable
      */
-    protected function outputCommandHandler(): Closure
+    protected function outputCommandHandler(): callable
     {
         return function($out, $withScriptName = true) {
             $nextItem = $this->runHandlerCheck($out, self::OUTPUT_COMMAND);
@@ -267,9 +266,9 @@ class CommandTest
     }
 
     /**
-     * @return Closure
+     * @return callable
      */
-    protected function stdoutHandler(): Closure
+    protected function stdoutHandler(): callable
     {
         return function($out) {
             if (!$this->ignoreStdout) {
@@ -284,9 +283,9 @@ class CommandTest
     }
 
     /**
-     * @return Closure
+     * @return callable
      */
-    protected function stderrHandler(): Closure
+    protected function stderrHandler(): callable
     {
         return function($out) {
             $nextItem = $this->runHandlerCheck($out, self::STD_ERR);
@@ -299,9 +298,9 @@ class CommandTest
     }
 
     /**
-     * @return Closure
+     * @return callable
      */
-    protected function promptHandler(): Closure
+    protected function promptHandler(): callable
     {
         return function($text, $options = []) {
             $nextItem = $this->runHandlerCheck('A prompt with value: ' . $text, self::PROMPT);
@@ -312,9 +311,9 @@ class CommandTest
     }
 
     /**
-     * @return Closure
+     * @return callable
      */
-    protected function confirmHandler(): Closure
+    protected function confirmHandler(): callable
     {
         return function($message, $default = false) {
             $nextItem = $this->runHandlerCheck('A confirm with value: ' . $message, self::CONFIRM);
@@ -325,9 +324,9 @@ class CommandTest
     }
 
     /**
-     * @return Closure
+     * @return callable
      */
-    protected function selectHandler(): Closure
+    protected function selectHandler(): callable
     {
         return function($prompt, $options = []) {
             $nextItem = $this->runHandlerCheck('A select with value: ' . $prompt, self::SELECT);
@@ -338,11 +337,11 @@ class CommandTest
     }
 
     /**
-     * @param $out
-     * @param $type
+     * @param string $out
+     * @param string $type
      * @return CommandTestItem
      */
-    protected function runHandlerCheck($out, $type): CommandTestItem
+    protected function runHandlerCheck(string $out, string $type): CommandTestItem
     {
         $nextItem = $this->getNextItem();
         if (!$nextItem) {
@@ -375,7 +374,6 @@ class CommandTest
 
     /**
      * @param array $config
-     *
      * @return CommandTest
      */
     protected function addEventChainItem(array $config): CommandTest

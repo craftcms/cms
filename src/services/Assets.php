@@ -102,7 +102,6 @@ class Assets extends Component
      */
     public function getAssetById(int $assetId, ?int $siteId = null): ?Asset
     {
-        /* @noinspection PhpIncompatibleReturnTypeInspection */
         return Craft::$app->getElements()->getElementById($assetId, Asset::class, $siteId);
     }
 
@@ -305,6 +304,7 @@ class Assets extends Component
             }
         }
 
+        /** @var Asset[] $assets */
         $assets = Asset::find()->folderId($folderIds)->all();
 
         $elementService = Craft::$app->getElements();
@@ -428,7 +428,7 @@ class Assets extends Component
     /**
      * Finds folders that match a given criteria.
      *
-     * @param mixed|null $criteria
+     * @param mixed $criteria
      * @return VolumeFolder[]
      */
     public function findFolders(mixed $criteria = null): array
@@ -501,7 +501,7 @@ class Assets extends Component
     /**
      * Finds the first folder that matches a given criteria.
      *
-     * @param mixed|null $criteria
+     * @param mixed $criteria
      * @return VolumeFolder|null
      */
     public function findFolder(mixed $criteria = null): ?VolumeFolder
@@ -602,7 +602,7 @@ class Assets extends Component
 
         // If it's not an image, return a generic file extension icon
         $extension = $asset->getExtension();
-        if (!Image::canManipulateAsImage($extension)) {
+        if (!Image::canManipulateAsImage($extension) || !$asset->getVolume()->getTransformFs()->hasUrls) {
             return AssetsHelper::iconUrl($extension);
         }
 
@@ -612,11 +612,43 @@ class Assets extends Component
             'mode' => 'crop',
         ]);
 
-        $transformUrl = $transform->getImageTransformer()->getTransformUrl($asset, $transform, false);
+        $transformUrl = $asset->getUrl($transform, false);
 
         return UrlHelper::urlWithParams($transformUrl, [
             'v' => $asset->dateModified->getTimestamp(),
         ]);
+    }
+
+    /**
+     * Returns an image asset’s URL, scaled to fit within a max width and height.
+     *
+     * @param Asset $asset
+     * @param int $maxWidth
+     * @param int $maxHeight
+     * @return string
+     * @since 4.0.0
+     */
+    public function getImagePreviewUrl(Asset $asset, int $maxWidth, int $maxHeight): string
+    {
+        $originalWidth = (int)$asset->getWidth();
+        $originalHeight = (int)$asset->getHeight();
+        [$width, $height] = AssetsHelper::scaledDimensions((int)$asset->getWidth(), (int)$asset->getHeight(), $maxWidth, $maxHeight);
+
+        if (
+            !$asset->getVolume()->getFs()->hasUrls ||
+            $originalWidth > $width ||
+            $originalHeight > $height
+        ) {
+            $transform = new ImageTransform([
+                'width' => $width,
+                'height' => $height,
+                'mode' => 'crop',
+            ]);
+        } else {
+            $transform = null;
+        }
+
+        return $asset->getUrl($transform, true);
     }
 
     /**
@@ -796,7 +828,7 @@ class Assets extends Component
     }
 
     /**
-     * Returns the given user's temporary upload folder.
+     * Returns the given user’s temporary upload folder.
      *
      * If no user is provided, the currently-logged in user will be used (if there is one), or a folder named after
      * the current session ID.
@@ -862,7 +894,7 @@ class Assets extends Component
 
         try {
             FileHelper::createDirectory(Craft::$app->getPath()->getTempAssetUploadsPath() . DIRECTORY_SEPARATOR . $folderName);
-        } catch (Exception $exception) {
+        } catch (Exception) {
             throw new VolumeException('Unable to create directory for temporary volume.');
         }
 

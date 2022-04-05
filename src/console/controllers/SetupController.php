@@ -269,6 +269,7 @@ EOD;
             }
         }
 
+        /** @phpstan-ignore-next-line */
         if ($badUserCredentials) {
             $badUserCredentials = false;
             goto test;
@@ -310,7 +311,7 @@ EOD;
         if (!isset($dbConfig)) {
             try {
                 $dbConfig = Craft::$app->getConfig()->getDb();
-            } catch (InvalidConfigException $e) {
+            } catch (InvalidConfigException) {
                 $dbConfig = new DbConfig();
             }
         }
@@ -391,15 +392,15 @@ EOD;
             } elseif ($this->schema === null) {
                 // Make sure that the DB is actually configured to use the provided schema by default
                 $searchPath = $db->createCommand('SHOW search_path')->queryScalar();
-                $defaultSchemas = array_map('trim', explode(',', $searchPath)) ?: ['public'];
+                $defaultSchemas = ArrayHelper::filterEmptyStringsFromArray(array_map('trim', explode(',', $searchPath))) ?: ['public'];
 
                 // Get the available schemas (h/t https://dba.stackexchange.com/a/40051/205387)
                 try {
                     $allSchemas = $db->createCommand('SELECT schema_name FROM information_schema.schemata')->queryColumn();
-                } catch (DbException $e) {
+                } catch (DbException) {
                     try {
                         $allSchemas = $db->createCommand('SELECT nspname FROM pg_catalog.pg_namespace')->queryColumn();
-                    } catch (DbException $e) {
+                    } catch (DbException) {
                         $allSchemas = null;
                     }
                 }
@@ -544,11 +545,11 @@ EOD;
     /**
      * Sets an environment variable value in the project’s `.env` file.
      *
-     * @param $name
-     * @param $value
+     * @param string $name
+     * @param mixed $value
      * @return bool
      */
-    private function _setEnvVar($name, $value): bool
+    private function _setEnvVar(string $name, mixed $value): bool
     {
         $configService = Craft::$app->getConfig();
         $path = $configService->getDotEnvPath();

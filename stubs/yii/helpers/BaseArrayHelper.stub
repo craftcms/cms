@@ -1,0 +1,13 @@
+<?php
+
+namespace yii\helpers;
+
+class BaseArrayHelper
+{
+    /**
+     * @param mixed[] $array
+     * @param mixed $value
+     * @return mixed[]
+     */
+    public static function removeValue(&$array, $value) {}
+}

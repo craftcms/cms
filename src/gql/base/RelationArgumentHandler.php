@@ -8,6 +8,7 @@
 namespace craft\gql\base;
 
 use Craft;
+use craft\base\ElementInterface;
 use craft\elements\db\ElementQuery;
 use craft\helpers\ArrayHelper;
 use craft\helpers\StringHelper;
@@ -27,8 +28,9 @@ abstract class RelationArgumentHandler extends ArgumentHandler
      * Get the IDs of elements returned by configuring the provided element query with given criteria.
      *
      * @param string $elementType
+     * @phpstan-param class-string<ElementInterface> $elementType
      * @param array $criteriaList
-     * @return int[]
+     * @return int[][]
      */
     protected function getIds(string $elementType, array $criteriaList = []): array
     {

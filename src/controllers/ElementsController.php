@@ -336,14 +336,14 @@ class ElementsController extends Controller
         if ($canEditMultipleSites) {
             if ($element->enabled && $element->id) {
                 $siteStatusesQuery = $element::find()
-                    ->select(['elements_sites.siteId', 'elements_sites.enabled'])
                     ->drafts($isDraft)
                     ->provisionalDrafts($element->isProvisionalDraft)
                     ->revisions($isRevision)
                     ->id($element->id)
                     ->siteId($propEditableSiteIds)
                     ->status(null)
-                    ->asArray();
+                    ->asArray()
+                    ->select(['elements_sites.siteId', 'elements_sites.enabled']);
                 $siteStatuses = array_map(fn($enabled) => (bool)$enabled, $siteStatusesQuery->pairs());
             } else {
                 // If the element isn't saved yet, assume other sites will share its current status
@@ -362,7 +362,6 @@ class ElementsController extends Controller
             ->editUrl($element->getCpEditUrl())
             ->docTitle($docTitle)
             ->title($title)
-            ->crumbs(fn() => $element->getCrumbs())
             ->contextMenu(fn() => $this->_contextMenu(
                 $element,
                 $isMultiSiteElement,
@@ -403,7 +402,7 @@ class ElementsController extends Controller
                         'enablePreview' => $enablePreview,
                         'enabledForSite' => $element->enabled && $enabledForSite,
                         'hashedCpEditUrl' => $security->hashData('{cpEditUrl}'),
-                        'isLive' => $isCurrent && !$element->isProvisionalDraft && $element->enabled && $enabledForSite && $hasRoute,
+                        'isLive' => $isCurrent && !$element->getIsDraft() && $element->enabled && $enabledForSite && $hasRoute,
                         'isProvisionalDraft' => $element->isProvisionalDraft,
                         'isUnpublishedDraft' => $isUnpublishedDraft,
                         'previewTargets' => $previewTargets,
@@ -678,8 +677,8 @@ class ElementsController extends Controller
             $components[] = Html::beginForm() .
                 Html::actionInput('elements/revert') .
                 Html::redirectInput('{cpEditUrl}') .
-                Html::hiddenInput('elementId', $canonical->id) .
-                Html::hiddenInput('revisionId', $element->revisionId) .
+                Html::hiddenInput('elementId', (string)$canonical->id) .
+                Html::hiddenInput('revisionId', (string)$element->revisionId) .
                 Html::beginTag('div', ['class' => 'secondary-buttons']) .
                 Html::button(Craft::t('app', 'Revert content from this revision'), [
                     'class' => ['btn', 'secondary', 'formsubmit'],
@@ -718,6 +717,9 @@ class ElementsController extends Controller
 new Craft.ElementEditor($('#$containerId'), $settingsJs);
 JS;
         $this->view->registerJs($js);
+
+        // Give the element a chance to do things here too
+        $element->prepareEditScreen($response, $containerId);
     }
 
     private function _editorContent(
@@ -734,15 +736,15 @@ JS;
 
         if ($canSave) {
             if ($element->id) {
-                $components[] = Html::hiddenInput('elementId', $element->getCanonicalId());
+                $components[] = Html::hiddenInput('elementId', (string)$element->getCanonicalId());
             }
 
             if ($element->siteId) {
-                $components[] = Html::hiddenInput('siteId', $element->siteId);
+                $components[] = Html::hiddenInput('siteId', (string)$element->siteId);
             }
 
             if ($element->fieldLayoutId) {
-                $components[] = Html::hiddenInput('fieldLayoutId', $element->fieldLayoutId);
+                $components[] = Html::hiddenInput('fieldLayoutId', (string)$element->fieldLayoutId);
             }
 
             if ($isUnpublishedDraft && $this->_fresh) {
@@ -771,7 +773,6 @@ JS;
 
         /** @var ElementInterface|DraftBehavior|RevisionBehavior $element */
         $components[] = $element->getSidebarHtml(!$canSave);
-        ;
 
         if ($this->id) {
             $components[] = Cp::metadataHtml($element->getMetadata());
@@ -939,6 +940,7 @@ JS;
                 'type' => $element::lowerDisplayName(),
             ]));
         } catch (Throwable $e) {
+            /** @phpstan-ignore-next-line */
             throw new ServerErrorHttpException('An error occurred when duplicating the element.', 0, $e);
         }
 
@@ -1060,7 +1062,7 @@ JS;
     {
         $this->requirePostRequest();
 
-        /** @var Element|DraftBehavior $element */
+        /** @var Element|DraftBehavior|null $element */
         $element = $this->_element();
 
         if (!$element || $element->getIsRevision()) {
@@ -1243,7 +1245,7 @@ JS;
 
         try {
             $canonical = Craft::$app->getDrafts()->applyDraft($element);
-        } catch (InvalidElementException $e) {
+        } catch (InvalidElementException) {
             return $this->_asAppyDraftFailure($element);
         } finally {
             if (!$isUnpublishedDraft) {
@@ -1427,7 +1429,7 @@ JS;
             if (!$site) {
                 throw new BadRequestHttpException("Invalid side ID: $this->_siteId");
             }
-            if (!$user->can("editSite:$site->uid")) {
+            if (Craft::$app->getIsMultiSite() && !$user->can("editSite:$site->uid")) {
                 throw new ForbiddenHttpException('User not authorized to edit content for this site.');
             }
         } else {
@@ -1448,6 +1450,7 @@ JS;
         }
 
         /** @var string|ElementInterface $elementType */
+        /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
         $this->_validateElementType($elementType);
 
         if ($strictSite) {
@@ -1529,6 +1532,7 @@ JS;
      * Ensures the given element type is valid.
      *
      * @param string $elementType
+     * @phpstan-param class-string<ElementInterface> $elementType
      * @throws BadRequestHttpException
      */
     private function _validateElementType(string $elementType): void

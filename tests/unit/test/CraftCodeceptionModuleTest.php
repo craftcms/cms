@@ -7,13 +7,13 @@
 
 namespace crafttests\unit\test;
 
-use Codeception\Test\Unit;
 use Craft;
 use craft\elements\User;
 use craft\errors\ElementNotFoundException;
 use craft\errors\InvalidElementException;
 use craft\helpers\ArrayHelper;
 use craft\test\mockclasses\components\EventTriggeringComponent;
+use craft\test\TestCase;
 use DateInterval;
 use DateTime;
 use DateTimeZone;
@@ -30,17 +30,17 @@ use yii\base\Event;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class CraftCodeceptionModuleTest extends Unit
+class CraftCodeceptionModuleTest extends TestCase
 {
     /**
      * @var UnitTester $tester
      */
-    protected $tester;
+    protected UnitTester $tester;
 
     /**
      *
      */
-    public function testEventHandler()
+    public function testEventHandler(): void
     {
         $component = new EventTriggeringComponent();
         $this->tester->expectEvent(
@@ -66,7 +66,7 @@ class CraftCodeceptionModuleTest extends Unit
     /**
      *
      */
-    public function testEventHandlerWithStdClass()
+    public function testEventHandlerWithStdClass(): void
     {
         $component = new EventTriggeringComponent();
         $this->tester->expectEvent(
@@ -94,7 +94,7 @@ class CraftCodeceptionModuleTest extends Unit
      * @throws ElementNotFoundException
      * @throws \yii\base\Exception
      */
-    public function testAssertElementsExist()
+    public function testAssertElementsExist(): void
     {
         $configArray = [
             'active' => true,
@@ -116,7 +116,7 @@ class CraftCodeceptionModuleTest extends Unit
      * @throws ElementNotFoundException
      * @throws \yii\base\Exception
      */
-    public function testAssertElementFails()
+    public function testAssertElementFails(): void
     {
         $configArray = [
             'active' => true,
@@ -141,7 +141,7 @@ class CraftCodeceptionModuleTest extends Unit
      * @throws InvalidElementException
      * @throws \yii\base\Exception
      */
-    public function testAssertElementExistsWorksWithMultiple()
+    public function testAssertElementExistsWorksWithMultiple(): void
     {
         $configArray = [
             'active' => true,
@@ -168,7 +168,7 @@ class CraftCodeceptionModuleTest extends Unit
     /**
      * @throws Exception
      */
-    public function testDateTimeCompare()
+    public function testDateTimeCompare(): void
     {
         $dateTime = new DateTime('now', new DateTimeZone('UTC'));
 

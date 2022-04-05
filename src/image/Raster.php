@@ -19,13 +19,13 @@ use Imagine\Exception\RuntimeException;
 use Imagine\Gd\Imagine as GdImagine;
 use Imagine\Image\AbstractFont as Font;
 use Imagine\Image\AbstractImage;
+use Imagine\Image\AbstractImagine;
 use Imagine\Image\Box;
 use Imagine\Image\BoxInterface;
 use Imagine\Image\ImageInterface;
 use Imagine\Image\Metadata\ExifMetadataReader;
 use Imagine\Image\Palette\RGB;
 use Imagine\Image\Point;
-use Imagine\Imagick\Imagine;
 use Imagine\Imagick\Imagine as ImagickImagine;
 use Throwable;
 use yii\base\ErrorException;
@@ -64,9 +64,9 @@ class Raster extends Image
     private ?AbstractImage $_image = null;
 
     /**
-     * @var Imagine|null
+     * @var AbstractImagine|null
      */
-    private ?Imagine $_instance = null;
+    private ?AbstractImagine $_instance = null;
 
     /**
      * @var RGB|null
@@ -502,7 +502,7 @@ class Raster extends Image
     {
         try {
             $this->_image = $this->_instance->load($svgContent);
-        } catch (RuntimeException $e) {
+        } catch (RuntimeException) {
             try {
                 // Invalid SVG. Maybe it's missing its DTD?
                 $svgContent = '<?xml version="1.0" encoding="UTF-8" standalone="no"?>' . $svgContent;

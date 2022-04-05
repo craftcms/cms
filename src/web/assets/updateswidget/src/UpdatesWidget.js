@@ -71,7 +71,7 @@
                 this.initBtn();
             }
 
-            // Update the CP header badge
+            // Update the control panel header badge
             Craft.cp.updateUtilitiesBadge();
         }
     });

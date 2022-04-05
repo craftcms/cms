@@ -59,6 +59,17 @@ class App
     private static array $_basePaths;
 
     /**
+     * Returns whether Dev Mode is enabled.
+     *
+     * @return bool
+     * @since 4.0.0
+     */
+    public static function devMode(): bool
+    {
+        return YII_DEBUG;
+    }
+
+    /**
      * Returns an environment variable, falling back to a PHP constant of the same name.
      *
      * @param string $name The environment variable name
@@ -460,7 +471,7 @@ class App
                     }
                     return $env;
                 }, $path);
-            } catch (InvalidValueException $e) {
+            } catch (InvalidValueException) {
                 // References an env var that doesn’t exist
                 continue;
             }
@@ -524,6 +535,7 @@ class App
         }
 
         $testValue = sprintf('%sM', ceil($testBytes / (1024 * 1024)));
+        /** @phpstan-ignore-next-line */
         set_error_handler(function() {
         });
         $result = ini_set('memory_limit', $testValue);
@@ -572,6 +584,7 @@ class App
      * Returns a humanized class name.
      *
      * @param string $class
+     * @phpstan-param class-string $class
      * @return string
      */
     public static function humanizeClass(string $class): string
@@ -647,7 +660,9 @@ class App
                 '#' . $i . ' ' .
                 ($frame['class'] ?? '') .
                 ($frame['type'] ?? '') .
+                /** @phpstan-ignore-next-line */
                 ($frame['function'] ?? '') . '()' .
+                /** @phpstan-ignore-next-line */
                 (isset($frame['file']) ? ' called at [' . ($frame['file'] ?? '') . ':' . ($frame['line'] ?? '') . ']' : '');
         }
 
@@ -762,7 +777,7 @@ class App
                 $driver => Command::class,
             ],
             'attributes' => $dbConfig->attributes,
-            'enableSchemaCache' => !YII_DEBUG,
+            'enableSchemaCache' => !static::devMode(),
         ];
 
         if ($driver === Connection::DRIVER_PGSQL && $dbConfig->setSchemaOnConnect && $dbConfig->schema) {
@@ -792,7 +807,8 @@ class App
      * Returns the `mailer` component config.
      *
      * @param MailSettings|null $settings The system mail settings
-     * @return array{class: class-string<Mailer>}
+     * @return array
+     * @phpstan-return array{class:class-string<Mailer>}
      * @since 3.0.18
      */
     public static function mailerConfig(?MailSettings $settings = null): array
@@ -803,7 +819,7 @@ class App
 
         try {
             $adapter = MailerHelper::createTransportAdapter($settings->transportType, $settings->transportSettings);
-        } catch (MissingComponentException $e) {
+        } catch (MissingComponentException) {
             // Fallback to the PHP mailer
             $adapter = new Sendmail();
         }

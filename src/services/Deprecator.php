@@ -137,7 +137,7 @@ class Deprecator extends Component
                     'message' => $log->message,
                     'traces' => Json::encode($log->traces),
                 ]);
-                $log->id = $db->getLastInsertID();
+                $log->id = (int)$db->getLastInsertID();
             } catch (Exception $e) {
                 Craft::warning("Couldn't save deprecation warning: {$e->getMessage()}", __METHOD__);
                 // Craft probably isn’t installed yet
@@ -352,7 +352,7 @@ class Deprecator extends Component
     {
         $logTraces = [];
 
-        foreach ($traces as $i => $trace) {
+        foreach ($traces as $trace) {
             $logTraces[] = [
                 'objectClass' => !empty($trace['object']) ? get_class($trace['object']) : null,
                 'file' => !empty($trace['file']) ? $trace['file'] : null,
@@ -406,9 +406,7 @@ class Deprecator extends Component
 
         foreach ($args as $key => $value) {
             // Cap it off at 5
-            $count++;
-
-            if ($count == 5) {
+            if (++$count === 5) {
                 $strArgs[] = '...';
                 break;
             }
@@ -439,10 +437,6 @@ class Deprecator extends Component
                 $strArgs[] = $key . ' => ' . $strValue;
             } else {
                 $strArgs[] = $strValue;
-            }
-
-            if ($count == 5) {
-                break;
             }
         }
 

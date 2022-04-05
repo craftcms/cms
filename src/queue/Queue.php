@@ -591,6 +591,7 @@ EOD;
             $this->_moveExpired();
 
             // Reserve one message
+            /** @var array|null $payload */
             $payload = $this->db->usePrimary(function() {
                 return $this->_createJobQuery()
                     ->andWhere(['fail' => false, 'timeUpdated' => null])
