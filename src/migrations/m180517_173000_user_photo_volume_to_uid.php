@@ -48,7 +48,7 @@ class m180517_173000_user_photo_volume_to_uid extends Migration
                 $this->update('{{%systemsettings}}', [
                     'settings' => Json::encode($settings),
                 ], [
-                    'category' => 'users'
+                    'category' => 'users',
                 ], [], false);
             }
         }

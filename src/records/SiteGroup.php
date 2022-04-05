@@ -19,17 +19,11 @@ use yii\db\ActiveQueryInterface;
  * @property string $name Name
  * @property Site[] $sites Sites
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class SiteGroup extends ActiveRecord
 {
-    // Traits
-    // =========================================================================
-
     use SoftDeleteTrait;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -47,6 +41,6 @@ class SiteGroup extends ActiveRecord
      */
     public function getSites(): ActiveQueryInterface
     {
-        return $this->hasMany(Site::class, ['siteId' => 'id']);
+        return $this->hasMany(Site::class, ['groupId' => 'id']);
     }
 }

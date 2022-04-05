@@ -33,7 +33,7 @@ class m190121_120000_rich_text_config_setting extends Migration
             }
             $settings['redactorConfig'] = ArrayHelper::remove($settings, 'configFile');
             $this->update(Table::FIELDS, [
-                'settings' => Json::encode($settings)
+                'settings' => Json::encode($settings),
             ], ['id' => $field['id']], [], false);
         }
 

@@ -10,8 +10,11 @@ namespace craft\models;
 use Craft;
 use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
+use craft\db\Table;
 use craft\elements\Category;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Db;
+use craft\helpers\StringHelper;
 use craft\records\CategoryGroup as CategoryGroupRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
@@ -22,12 +25,14 @@ use craft\validators\UniqueValidator;
  * @property CategoryGroup_SiteSettings[] $siteSettings Site-specific settings
  * @mixin FieldLayoutBehavior
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class CategoryGroup extends Model
 {
-    // Properties
-    // =========================================================================
+    /** @since 3.7.0 */
+    const DEFAULT_PLACEMENT_BEGINNING = 'beginning';
+    /** @since 3.7.0 */
+    const DEFAULT_PLACEMENT_END = 'end';
 
     /**
      * @var int|null ID
@@ -60,6 +65,12 @@ class CategoryGroup extends Model
     public $maxLevels;
 
     /**
+     * @var string Default placement
+     * @since 3.7.0
+     */
+    public $defaultPlacement = self::DEFAULT_PLACEMENT_END;
+
+    /**
      * @var string|null UID
      */
     public $uid;
@@ -69,20 +80,17 @@ class CategoryGroup extends Model
      */
     private $_siteSettings;
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
     public function behaviors()
     {
-        return [
-            'fieldLayout' => [
-                'class' => FieldLayoutBehavior::class,
-                'elementType' => Category::class
-            ],
+        $behaviors = parent::behaviors();
+        $behaviors['fieldLayout'] = [
+            'class' => FieldLayoutBehavior::class,
+            'elementType' => Category::class,
         ];
+        return $behaviors;
     }
 
     /**
@@ -99,16 +107,36 @@ class CategoryGroup extends Model
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['id', 'structureId', 'fieldLayoutId', 'maxLevels'], 'number', 'integerOnly' => true];
         $rules[] = [['handle'], HandleValidator::class, 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']];
         $rules[] = [['name', 'handle'], UniqueValidator::class, 'targetClass' => CategoryGroupRecord::class];
         $rules[] = [['name', 'handle', 'siteSettings'], 'required'];
         $rules[] = [['name', 'handle'], 'string', 'max' => 255];
+        $rules[] = [['defaultPlacement'], 'in', 'range' => [self::DEFAULT_PLACEMENT_BEGINNING, self::DEFAULT_PLACEMENT_END]];
+        $rules[] = [['fieldLayout'], 'validateFieldLayout'];
         $rules[] = [['siteSettings'], 'validateSiteSettings'];
         return $rules;
+    }
+
+    /**
+     * Validates the field layout.
+     *
+     * @return void
+     * @since 3.7.0
+     */
+    public function validateFieldLayout(): void
+    {
+        $fieldLayout = $this->getFieldLayout();
+        $fieldLayout->reservedFieldHandles = [
+            'group',
+        ];
+
+        if (!$fieldLayout->validate()) {
+            $this->addModelErrors($fieldLayout, 'fieldLayout');
+        }
     }
 
     /**
@@ -166,5 +194,47 @@ class CategoryGroup extends Model
         foreach ($this->_siteSettings as $settings) {
             $settings->setGroup($this);
         }
+    }
+
+    /**
+     * Returns the category group’s config.
+     *
+     * @return array
+     * @since 3.5.0
+     */
+    public function getConfig(): array
+    {
+        $config = [
+            'name' => $this->name,
+            'handle' => $this->handle,
+            'structure' => [
+                'uid' => $this->structureId ? Db::uidById(Table::STRUCTURES, $this->structureId) : StringHelper::UUID(),
+                'maxLevels' => (int)$this->maxLevels ?: null,
+            ],
+            'siteSettings' => [],
+            'defaultPlacement' => $this->defaultPlacement ?? self::DEFAULT_PLACEMENT_END,
+        ];
+
+        $fieldLayout = $this->getFieldLayout();
+
+        if ($fieldLayoutConfig = $fieldLayout->getConfig()) {
+            if (!$fieldLayout->uid) {
+                $fieldLayout->uid = $fieldLayout->id ? Db::uidById(Table::FIELDLAYOUTS, $fieldLayout->id) : StringHelper::UUID();
+            }
+            $config['fieldLayouts'] = [
+                $fieldLayout->uid => $fieldLayoutConfig,
+            ];
+        }
+
+        foreach ($this->getSiteSettings() as $siteId => $settings) {
+            $siteUid = Db::uidById(Table::SITES, $siteId);
+            $config['siteSettings'][$siteUid] = [
+                'hasUrls' => (bool)$settings['hasUrls'],
+                'uriFormat' => $settings['uriFormat'] ?: null,
+                'template' => $settings['template'] ?: null,
+            ];
+        }
+
+        return $config;
     }
 }

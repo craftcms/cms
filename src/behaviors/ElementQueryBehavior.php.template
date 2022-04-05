@@ -7,6 +7,8 @@
 
 namespace craft\behaviors;
 
+use yii\base\Behavior;
+
 /**
  * Element Query behavior
  *
@@ -14,11 +16,8 @@ namespace craft\behaviors;
  *
 {METHOD_DOCS}
  */
-class ElementQueryBehavior extends ContentBehavior
+class ElementQueryBehavior extends Behavior
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

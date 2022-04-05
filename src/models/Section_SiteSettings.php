@@ -18,13 +18,10 @@ use yii\base\InvalidConfigException;
  * Section_SiteSettings model class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Section_SiteSettings extends Model
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var int|null ID
      */
@@ -65,8 +62,21 @@ class Section_SiteSettings extends Model
      */
     private $_section;
 
-    // Public Methods
-    // =========================================================================
+    /**
+     * @inheritdoc
+     * @since 3.5.0
+     */
+    public function init()
+    {
+        // Typecast DB values
+        $this->id = (int)$this->id ?: null;
+        $this->sectionId = (int)$this->sectionId ?: null;
+        $this->siteId = (int)$this->siteId ?: null;
+        $this->enabledByDefault = (bool)$this->enabledByDefault;
+        $this->hasUrls = (bool)$this->hasUrls;
+
+        parent::init();
+    }
 
     /**
      * Returns the section.
@@ -141,11 +151,12 @@ class Section_SiteSettings extends Model
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['id', 'sectionId', 'siteId'], 'number', 'integerOnly' => true];
         $rules[] = [['siteId'], SiteIdValidator::class];
+        $rules[] = [['uriFormat', 'template'], 'trim'];
         $rules[] = [['template'], 'string', 'max' => 500];
 
         if ($this->getSection()->type == Section::TYPE_SINGLE) {
@@ -154,7 +165,7 @@ class Section_SiteSettings extends Model
             $rules[] = ['uriFormat', UriFormatValidator::class];
         }
 
-        if ($this->hasUrls || $this->getSection()->type == Section::TYPE_SINGLE) {
+        if ($this->hasUrls) {
             $rules[] = [['uriFormat'], 'required'];
         }
 

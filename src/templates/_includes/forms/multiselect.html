@@ -1,24 +1,34 @@
-{%- set class = [
-    'multiselect',
-    (class is defined ? class : null)
-]|filter|join(' ') %}
-
-{%- set options = (options is defined ? options : []) %}
-{%- set values = (values is defined ? values : []) -%}
+{%- set class = (class ?? [])|explodeClass|push('multiselect') %}
+{%- set options = options ?? [] %}
+{%- set values = values ?? [] -%}
 {%- set hasOptgroups = false -%}
 
-{% if name is defined and name %}
-    <input type="hidden" name="{{ name }}" value="">
+{% set containerAttributes = {
+  class: (class ?? [])|explodeClass,
+}|merge(containerAttributes ?? [], recursive=true) %}
+
+{%- if block('attr') is defined %}
+    {%- set containerAttributes = containerAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
+{% endif %}
+
+{% if name ?? false %}
+    {{ hiddenInput(name, '') }}
 {% endif -%}
 
-<div class="{{ class }}"
-        {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
-    <select multiple
-            {%- if id is defined %} id="{{ id }}"{% endif %}
-            {%- if name is defined and name %} name="{{ name }}[]"{% endif %}
-            {%- if autofocus is defined and autofocus and not craft.app.request.isMobileBrowser(true) %} autofocus{% endif %}
-            {%- if disabled is defined and disabled %} disabled{% endif %}
-            {%- if size is defined %} size="{{ size }}"{% endif %}>
+{% set inputAttributes = {
+    multiple: true,
+    id: id ?? false,
+    name: (name ?? false) ? "#{name}[]" : false,
+    autofocus: (autofocus ?? false) and not craft.app.request.isMobileBrowser(true),
+    disabled: disabled ?? false,
+    size: size ?? false,
+    aria: {
+        describedby: describedBy ?? false,
+    },
+}|merge(inputAttributes ?? [], recursive=true) %}
+
+{% tag 'div' with containerAttributes %}
+    {% tag 'select' with inputAttributes %}
         {%- for key, option in options %}
             {% if option.optgroup is defined %}
                 {% if hasOptgroups %}
@@ -34,5 +44,8 @@
                 <option value="{{ optionValue }}"{% if optionValue in values %} selected{% endif %}{% if optionDisabled %} disabled{% endif %}>{{ optionLabel }}</option>
             {% endif %}
         {%- endfor %}
-    </select>
-</div>
+        {% if hasOptgroups %}
+            </optgroup>
+        {% endif %}
+    {% endtag %}
+{% endtag %}

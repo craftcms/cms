@@ -1,38 +1,31 @@
 <template>
-    <div :class="'c-btn block large outline license-status ' + status">
-        <icon icon="check"></icon>
+    <btn icon="check" :disabled="true" :class="'license-status ' + status" block large outline>
         {{ description }}
-    </div>
+    </btn>
 </template>
 
 <script>
     export default {
-
         props: ['status', 'description']
-
     }
 </script>
 
 <style lang="scss" scoped>
-    @import "../../../../../../../lib/craftcms-sass/mixins";
+    @import "../../../../../../../packages/craftcms-sass/mixins";
 
-    .license-status {
-        &:hover {
-            cursor: default;
-        }
+    .c-btn {
+        &.license-status {
+            &:hover {
+                cursor: default;
+            }
 
-        &.installed {
-            color: $successColor;
-
-            &:before {
+            &.installed {
+                color: $successColor;
                 border-color: $successColor;
             }
-        }
 
-        &.licensed {
-            color: $noticeColor;
-
-            &:before {
+            &.licensed {
+                color: $noticeColor;
                 border-color: $noticeColor;
             }
         }

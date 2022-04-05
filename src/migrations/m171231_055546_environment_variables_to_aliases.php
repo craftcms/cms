@@ -30,7 +30,7 @@ class m171231_055546_environment_variables_to_aliases extends Migration
         foreach ($sites as $site) {
             if ($this->_parseEnvString($site['baseUrl'])) {
                 $this->update(Table::SITES, [
-                    'baseUrl' => $site['baseUrl']
+                    'baseUrl' => $site['baseUrl'],
                 ], ['id' => $site['id']], [], false);
             }
         }
@@ -54,7 +54,7 @@ class m171231_055546_environment_variables_to_aliases extends Migration
 
             if ($changed) {
                 $this->update(Table::VOLUMES, [
-                    'settings' => Json::encode($settings)
+                    'settings' => Json::encode($settings),
                 ], ['id' => $volume['id']], [], false);
             }
         }

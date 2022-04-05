@@ -42,9 +42,6 @@ class m181029_130000_add_transforms_routes_to_config extends Migration
         return false;
     }
 
-    // Private methods
-    // =========================================================================
-
     /**
      * Migrate transforms to project config
      */
@@ -69,6 +66,9 @@ class m181029_130000_add_transforms_routes_to_config extends Migration
 
         foreach ($transformRows as &$row) {
             unset($row['uid']);
+            $row['width'] = (int)$row['width'] ?: null;
+            $row['height'] = (int)$row['height'] ?: null;
+            $row['quality'] = (int)$row['quality'] ?: null;
         }
 
         Craft::$app->getProjectConfig()->set('imageTransforms', $transformRows);
@@ -96,6 +96,7 @@ class m181029_130000_add_transforms_routes_to_config extends Migration
             $route['siteUid'] = $route['siteId'] ? Db::uidById(Table::SITES, $route['siteId']) : null;
             $route['uriParts'] = Json::decodeIfJson($route['uriParts']);
             unset($route['uid'], $route['siteId']);
+            $route['sortOrder'] = (int)$route['sortOrder'];
         }
 
         Craft::$app->getProjectConfig()->set('routes', $routes);

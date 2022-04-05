@@ -1,0 +1,10 @@
+{
+  "packages": ["packages/*"],
+  "npmClient": "npm",
+  "version": "independent",
+  "command": {
+    "version": {
+      "allowBranch": ["main", "develop"]
+    }
+  }
+}

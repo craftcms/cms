@@ -14,18 +14,20 @@ use craft\db\Table;
  * Element record class.
  *
  * @property int $id ID
- * @property int $fieldLayoutId ID
+ * @property int|null $canonicalId Canonical element ID
+ * @property int|null $draftId Draft ID
+ * @property int|null $revisionId Revision ID
+ * @property int|null $fieldLayoutId Field layout ID
  * @property string $type Type
  * @property bool $enabled Enabled
  * @property bool $archived Archived
+ * @property string|null $dateLastMerged The date that the canonical element was last merged into this one
+ * @property string|null $dateDeleted Date deleted
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Element extends ActiveRecord
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      * @return string

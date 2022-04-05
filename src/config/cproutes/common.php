@@ -3,26 +3,24 @@
 use craft\helpers\StringHelper;
 
 return [
+    'assets/edit/<assetId:\d+><filename:(?:-[^\/]*)?>' => 'assets/edit-asset',
+    'assets/<defaultSource:{handle}(\/.*)?>' => ['template' => 'assets'],
     'categories' => 'categories/category-index',
     'categories/<groupHandle:{handle}>' => 'categories/category-index',
     'categories/<groupHandle:{handle}>/new' => 'categories/edit-category',
     'categories/<groupHandle:{handle}>/<categoryId:\d+><slug:(?:-[^\/]*)?>' => 'categories/edit-category',
-    'categories/<groupHandle:{handle}>/<categoryId:\d+><slug:(?:-[^\/]*)?>/<siteHandle:{handle}>' => 'categories/edit-category',
-    'categories/<groupHandle:{handle}>/new/<siteHandle:{handle}>' => 'categories/edit-category',
     'dashboard' => 'dashboard/index',
+    'edit/<id:\d+>' => 'edit/by-id',
+    'edit/<uid:' . StringHelper::UUID_PATTERN . '>' => 'edit/by-uid',
     'entries/<sectionHandle:{handle}>' => ['template' => 'entries'],
-    'entries/<sectionHandle:{handle}>/new' => 'entries/edit-entry',
-    'entries/<sectionHandle:{handle}>/new/<siteHandle:{handle}>' => 'entries/edit-entry',
-    'entries/<sectionHandle:{handle}>/<entryId:\d+><slug:(?:-[^\/]*)?>' => 'entries/edit-entry',
-    'entries/<sectionHandle:{handle}>/<entryId:\d+><slug:(?:-[^\/]*)?>/<siteHandle:{handle}>' => 'entries/edit-entry',
-    'entries/<sectionHandle:{handle}>/<entryId:\d+><slug:(?:-[^\/]*?)?>/drafts/<draftId:\d+>' => 'entries/edit-entry',
-    'entries/<sectionHandle:{handle}>/<entryId:\d+><slug:(?:-[^\/]*)?>/versions/<versionId:\d+>' => 'entries/edit-entry',
+    'entries/<section:{handle}>/new' => 'entry-revisions/create-draft',
+    'entries/<section:{handle}>/<entryId:\d+><slug:(?:-[^\/]*)?>' => 'entries/edit-entry',
     'globals' => 'globals',
     'globals/<globalSetHandle:{handle}>' => 'globals/edit-content',
     'globals/<siteHandle:{handle}>/<globalSetHandle:{handle}>' => 'globals/edit-content',
     'myaccount' => [
         'route' => 'users/edit-user',
-        'defaults' => ['userId' => 'current']
+        'defaults' => ['userId' => 'current'],
     ],
     'update' => 'updater',
     'settings/assets' => 'volumes/volume-index',
@@ -55,8 +53,8 @@ return [
                 'slug' => '[^\/]+',
                 'tag' => '[^\/]+',
                 '*' => '[^\/]+',
-            ]
-        ]
+            ],
+        ],
     ],
     'settings/sections' => 'sections/index',
     'settings/sections/new' => 'sections/edit-section',
@@ -72,7 +70,7 @@ return [
     'settings/tags/<tagGroupId:\d+>' => 'tags/edit-tag-group',
     'settings/users' => ['template' => 'settings/users/fields'],
     'utilities' => 'utilities',
-    'utilities/<id:[\w\-]+>' => 'utilities/show-utility',
+    'utilities/<id:[\w\-]+><extra:(\/.*)?>' => 'utilities/show-utility',
     'plugin-store' => 'plugin-store',
     'plugin-store/callback' => 'plugin-store/callback',
     'plugin-store/<url:(.*)>' => 'plugin-store',

@@ -1,0 +1,6 @@
+/*!
+ * element-resize-detector 1.2.4
+ * Copyright (c) 2016 Lucas Wiener
+ * https://github.com/wnr/element-resize-detector
+ * Licensed under MIT
+ */

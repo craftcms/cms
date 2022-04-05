@@ -11,20 +11,19 @@ use Craft;
 use craft\helpers\ArrayHelper;
 use craft\models\UserGroup;
 
-Craft::$app->requireEdition(Craft::Pro);
+if (class_exists(Craft::class, false) && isset(Craft::$app)) {
+    Craft::$app->requireEdition(Craft::Pro);
+}
 
 /**
  * User group functions.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
- * @deprecated in 3.0
+ * @since 3.0.0
+ * @deprecated in 3.0.0
  */
 class UserGroups
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Returns all user groups.
      *
@@ -33,7 +32,7 @@ class UserGroups
      */
     public function getAllGroups(string $indexBy = null): array
     {
-        Craft::$app->getDeprecator()->log('craft.userGroups.getAllGroups()', 'craft.userGroups.getAllGroups() has been deprecated. Use craft.app.userGroups.allGroups instead.');
+        Craft::$app->getDeprecator()->log('craft.userGroups.getAllGroups()', '`craft.userGroups.getAllGroups()` has been deprecated. Use `craft.app.userGroups.allGroups` instead.');
 
         $userGroups = Craft::$app->getUserGroups()->getAllGroups();
 
@@ -48,7 +47,7 @@ class UserGroups
      */
     public function getGroupById(int $groupId)
     {
-        Craft::$app->getDeprecator()->log('craft.userGroups.getGroupById()', 'craft.userGroups.getGroupById() has been deprecated. Use craft.app.userGroups.getGroupById() instead.');
+        Craft::$app->getDeprecator()->log('craft.userGroups.getGroupById()', '`craft.userGroups.getGroupById()` has been deprecated. Use `craft.app.userGroups.getGroupById()` instead.');
 
         return Craft::$app->getUserGroups()->getGroupById($groupId);
     }
@@ -61,7 +60,7 @@ class UserGroups
      */
     public function getGroupByHandle(string $groupHandle)
     {
-        Craft::$app->getDeprecator()->log('craft.userGroups.getGroupByHandle()', 'craft.userGroups.getGroupByHandle() has been deprecated. Use craft.app.userGroups.getGroupByHandle() instead.');
+        Craft::$app->getDeprecator()->log('craft.userGroups.getGroupByHandle()', '`craft.userGroups.getGroupByHandle()` has been deprecated. Use `craft.app.userGroups.getGroupByHandle()` instead.');
 
         return Craft::$app->getUserGroups()->getGroupByHandle($groupHandle);
     }

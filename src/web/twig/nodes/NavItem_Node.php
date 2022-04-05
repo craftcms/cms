@@ -17,13 +17,10 @@ use Twig\Template;
  * Internal node used by the nav node.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class NavItem_Node extends Node
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * NavItem_Node constructor.
      *
@@ -34,13 +31,13 @@ class NavItem_Node extends Node
      * @param $lineno
      * @param $tag
      */
-    public function __construct(AssignNameExpression $valueTarget, Node $indent = null, Node $outdent = null, Node $lowerBody = null, $lineno, $tag = null)
+    public function __construct(AssignNameExpression $valueTarget, ?Node $indent, ?Node $outdent, ?Node $lowerBody, $lineno, $tag = null)
     {
         parent::__construct([
             'value_target' => $valueTarget,
             'indent' => $indent,
             'outdent' => $outdent,
-            'lower_body' => $lowerBody
+            'lower_body' => $lowerBody,
         ], [], $lineno, $tag);
     }
 

@@ -16,20 +16,14 @@ use yii\i18n\MissingTranslationEvent;
  * Class Localization
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Localization
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var
      */
     private static $_translations;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Normalizes a language into the correct format (e.g. `en-US`).
@@ -63,13 +57,15 @@ class Localization
      * @param string|null $localeId The locale ID that the number is set in
      * @return mixed The normalized number.
      */
-    public static function normalizeNumber($number, string $localeId = null)
+    public static function normalizeNumber($number, ?string $localeId = null)
     {
         if (is_string($number)) {
-            if ($localeId !== null && $localeId !== Craft::$app->language) {
-                $locale = Craft::$app->getI18n()->getLocaleById($localeId);
-            } else {
+            if ($localeId === null) {
+                $locale = Craft::$app->getFormattingLocale();
+            } elseif ($localeId === Craft::$app->language) {
                 $locale = Craft::$app->getLocale();
+            } else {
+                $locale = Craft::$app->getI18n()->getLocaleById($localeId);
             }
 
             $decimalSymbol = $locale->getNumberSymbol(Locale::SYMBOL_DECIMAL_SEPARATOR);

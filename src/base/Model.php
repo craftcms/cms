@@ -9,25 +9,21 @@ namespace craft\base;
 
 use Craft;
 use craft\events\DefineBehaviorsEvent;
+use craft\events\DefineFieldsEvent;
 use craft\events\DefineRulesEvent;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\StringHelper;
+use yii\validators\Validator;
 
 /**
  * Model base class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 abstract class Model extends \yii\base\Model
 {
-    // Traits
-    // =========================================================================
-
     use ClonefixTrait;
-
-    // Constants
-    // =========================================================================
 
     /**
      * @event \yii\base\Event The event that is triggered after the model's init cycle
@@ -43,12 +39,24 @@ abstract class Model extends \yii\base\Model
 
     /**
      * @event DefineRulesEvent The event that is triggered when defining the model rules
-     * @see behaviors()
+     * @see rules()
+     * @since 3.1.0
      */
     const EVENT_DEFINE_RULES = 'defineRules';
 
-    // Public Methods
-    // =========================================================================
+    /**
+     * @event DefineFieldsEvent The event that is triggered when defining the arrayable fields
+     * @see fields()
+     * @since 3.5.0
+     */
+    const EVENT_DEFINE_FIELDS = 'defineFields';
+
+    /**
+     * @event DefineFieldsEvent The event that is triggered when defining the extra arrayable fields
+     * @see extraFields()
+     * @since 3.5.0
+     */
+    const EVENT_DEFINE_EXTRA_FIELDS = 'defineExtraFields';
 
     /**
      * @inheritdoc
@@ -85,10 +93,51 @@ abstract class Model extends \yii\base\Model
      */
     public function rules()
     {
-        // Fire a 'defineRules' event
-        $event = new DefineRulesEvent();
+        $rules = $this->defineRules();
+
+        // Give plugins a chance to modify them
+        $event = new DefineRulesEvent([
+            'rules' => $rules,
+        ]);
         $this->trigger(self::EVENT_DEFINE_RULES, $event);
+
+        foreach ($event->rules as &$rule) {
+            $this->_normalizeRule($rule);
+        }
+
         return $event->rules;
+    }
+
+    /**
+     * Normalizes a validation rule.
+     *
+     * @param Validator|array $rule
+     */
+    private function _normalizeRule(&$rule)
+    {
+        if (is_array($rule) && isset($rule[1]) && $rule[1] instanceof \Closure) {
+            // Wrap the closure in another one, so InlineValidator doesn’t bind it to the model
+            $method = $rule[1];
+            $rule[1] = function($attribute, $params, $validator, $current) use ($method) {
+                $method($attribute, $params, $validator, $current);
+            };
+        }
+    }
+
+    /**
+     * Returns the validation rules for attributes.
+     *
+     * See [[rules()]] for details about what should be returned.
+     *
+     * Models should override this method instead of [[rules()]] so [[EVENT_DEFINE_RULES]] handlers can modify the
+     * class-defined rules.
+     *
+     * @return array
+     * @since 3.4.0
+     */
+    protected function defineRules(): array
+    {
+        return [];
     }
 
     /**
@@ -108,6 +157,10 @@ abstract class Model extends \yii\base\Model
 
         if (property_exists($this, 'dateUpdated')) {
             $attributes[] = 'dateUpdated';
+        }
+
+        if (property_exists($this, 'dateDeleted')) {
+            $attributes[] = 'dateDeleted';
         }
 
         return $attributes;
@@ -131,7 +184,24 @@ abstract class Model extends \yii\base\Model
             };
         }
 
-        return $fields;
+        $event = new DefineFieldsEvent([
+            'fields' => $fields,
+        ]);
+        $this->trigger(self::EVENT_DEFINE_FIELDS, $event);
+        return $event->fields;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function extraFields()
+    {
+        $fields = parent::extraFields();
+        $event = new DefineFieldsEvent([
+            'fields' => $fields,
+        ]);
+        $this->trigger(self::EVENT_DEFINE_EXTRA_FIELDS, $event);
+        return $event->fields;
     }
 
     /**
@@ -190,11 +260,11 @@ abstract class Model extends \yii\base\Model
      *
      * @param string $attribute The attribute name.
      * @return string|null The error message, or null if there are no errors.
-     * @deprecated in 3.0. Use [[getFirstError()]] instead.
+     * @deprecated in 3.0.0. Use [[getFirstError()]] instead.
      */
     public function getError(string $attribute)
     {
-        Craft::$app->getDeprecator()->log('Model::getError()', 'getError() has been deprecated. Use getFirstError() instead.');
+        Craft::$app->getDeprecator()->log('Model::getError()', '`getError()` has been deprecated. Use `getFirstError()` instead.');
 
         return $this->getFirstError($attribute);
     }

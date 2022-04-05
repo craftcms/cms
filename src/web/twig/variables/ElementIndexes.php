@@ -13,14 +13,11 @@ use Craft;
  * Class ElementIndexes variable.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
- * @deprecated in 3.0
+ * @since 3.0.0
+ * @deprecated in 3.0.0
  */
 class ElementIndexes
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Returns the element index sources in the custom groupings/order.
      *
@@ -30,7 +27,7 @@ class ElementIndexes
      */
     public function getSources(string $elementTypeClass, string $context = 'index'): array
     {
-        Craft::$app->getDeprecator()->log('craft.elementIndexes.getSources()', 'craft.elementIndexes.getSources() has been deprecated. Use craft.app.elementIndexes.sources instead.');
+        Craft::$app->getDeprecator()->log('craft.elementIndexes.getSources()', '`craft.elementIndexes.getSources()` has been deprecated. Use `craft.app.elementIndexes.sources` instead.');
 
         return Craft::$app->getElementIndexes()->getSources($elementTypeClass, $context);
     }

@@ -7,6 +7,7 @@
 
 namespace craft\behaviors;
 
+use Craft;
 use craft\web\Session;
 use craft\web\View;
 use yii\base\Behavior;
@@ -18,13 +19,10 @@ use yii\web\AssetBundle;
  *
  * @property Session $owner
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class SessionBehavior extends Behavior
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null The session variable name used to store the authorization keys for the current session.
      * @see authorize()
@@ -43,9 +41,6 @@ class SessionBehavior extends Behavior
      */
     public $jsFlashKey = '__js';
 
-    // Public Methods
-    // =========================================================================
-
     // Flash Data
     // -------------------------------------------------------------------------
 
@@ -60,7 +55,11 @@ class SessionBehavior extends Behavior
      */
     public function setNotice(string $message)
     {
-        $this->owner->setFlash('notice', $message);
+        if (Craft::$app->getRequest()->getIsCpRequest()) {
+            $this->owner->setFlash('cp-notice', $message);
+        } else {
+            $this->owner->setFlash('notice', $message);
+        }
     }
 
     /**
@@ -74,7 +73,11 @@ class SessionBehavior extends Behavior
      */
     public function setError(string $message)
     {
-        $this->owner->setFlash('error', $message);
+        if (Craft::$app->getRequest()->getIsCpRequest()) {
+            $this->owner->setFlash('cp-error', $message);
+        } else {
+            $this->owner->setFlash('error', $message);
+        }
     }
 
     /**

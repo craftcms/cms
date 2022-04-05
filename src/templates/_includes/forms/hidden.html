@@ -1,5 +1,12 @@
-<input type="hidden"
-    {%- if id is defined %} id="{{ id }}"{% endif %}
-    {%- if name is defined %} name="{{ name }}"{% endif %}
-    {%- if value is defined %} value="{{ value }}"{% endif %}
-    {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
+{% set inputAttributes = {
+    type: 'hidden',
+    id: id ?? false,
+    name: name ?? false,
+    value: value ?? false,
+}|merge(inputAttributes ?? [], recursive=true) %}
+
+{%- if block('attr') is defined %}
+    {%- set inputAttributes = inputAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
+{% endif %}
+
+{{ tag('input', inputAttributes) }}

@@ -20,7 +20,7 @@ class m170206_142126_system_name extends Migration
             return true;
         }
 
-        $systemName = Craft::$app->getSites()->getPrimarySite()->name;
+        $systemName = Craft::$app->getSites()->getPrimarySite()->getName();
 
         $this->addColumn(Table::INFO, 'name', $this->string()->after('timezone'));
         $this->update(Table::INFO, ['name' => $systemName]);

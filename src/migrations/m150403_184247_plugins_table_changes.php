@@ -13,9 +13,6 @@ use yii\helpers\Inflector;
  */
 class m150403_184247_plugins_table_changes extends Migration
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */

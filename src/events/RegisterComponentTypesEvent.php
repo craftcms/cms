@@ -13,13 +13,10 @@ use yii\base\Event;
  * RegisterComponentTypesEvent class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class RegisterComponentTypesEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string[] List of registered component types classes.
      */

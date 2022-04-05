@@ -8,18 +8,26 @@
 namespace craft\validators;
 
 use Craft;
+use yii\base\Model;
 use yii\validators\StringValidator;
 
 /**
  * Class UserPasswordValidator.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class UserPasswordValidator extends StringValidator
 {
-    // Properties
-    // =========================================================================
+    /**
+     * @since 3.5.18
+     */
+    const MIN_PASSWORD_LENGTH = 6;
+
+    /**
+     * @since 3.5.18
+     */
+    const MAX_PASSWORD_LENGTH = 160;
 
     /**
      * @var bool Whether the password must be different from the existing password.
@@ -36,9 +44,6 @@ class UserPasswordValidator extends StringValidator
      */
     public $sameAsCurrent;
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -46,12 +51,12 @@ class UserPasswordValidator extends StringValidator
     {
         // Default min
         if (!isset($config['min'])) {
-            $config['min'] = 6;
+            $config['min'] = self::MIN_PASSWORD_LENGTH;
         }
 
         // Default max
         if (!isset($config['max'])) {
-            $config['max'] = 160;
+            $config['max'] = self::MAX_PASSWORD_LENGTH;
         }
 
         parent::__construct($config);
@@ -74,6 +79,7 @@ class UserPasswordValidator extends StringValidator
      */
     public function validateAttribute($model, $attribute)
     {
+        /** @var Model $model */
         parent::validateAttribute($model, $attribute);
 
         if ($model->hasErrors($attribute)) {
@@ -82,12 +88,12 @@ class UserPasswordValidator extends StringValidator
 
         if ($this->forceDifferent && $this->currentPassword) {
             $newPassword = $model->$attribute;
-
             if (Craft::$app->getSecurity()->validatePassword($newPassword, $this->currentPassword)) {
                 $this->addError($model, $attribute, $this->sameAsCurrent);
             }
         }
     }
+
 
     /**
      * @inheritdoc

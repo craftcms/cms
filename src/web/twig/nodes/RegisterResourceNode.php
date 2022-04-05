@@ -17,13 +17,10 @@ use yii\base\NotSupportedException;
  * Class RegisterResourceNode
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class RegisterResourceNode extends Node implements NodeCaptureInterface
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -31,6 +28,8 @@ class RegisterResourceNode extends Node implements NodeCaptureInterface
     {
         $method = $this->getAttribute('method');
         $position = $this->getAttribute('position');
+        $defaultPosition = $this->getAttribute('defaultPosition');
+        $allowOptions = $this->getAttribute('allowOptions');
         $value = $this->getNode('value');
         $options = $this->hasNode('options') ? $this->getNode('options') : null;
 
@@ -40,10 +39,10 @@ class RegisterResourceNode extends Node implements NodeCaptureInterface
             $compiler
                 ->write("ob_start();\n")
                 ->subcompile($value)
-                ->write("Craft::\$app->getView()->{$method}(ob_get_clean()");
+                ->write("$method(ob_get_clean()");
         } else {
             $compiler
-                ->write("Craft::\$app->getView()->{$method}(")
+                ->write("$method(")
                 ->subcompile($value);
         }
 
@@ -56,6 +55,8 @@ class RegisterResourceNode extends Node implements NodeCaptureInterface
                 $position = 'endBody';
             }
         }
+
+        $positionPhp = null;
 
         if ($position !== null) {
             // Figure out what the position's PHP value is
@@ -85,29 +86,34 @@ class RegisterResourceNode extends Node implements NodeCaptureInterface
             }
         }
 
-        if ($this->getAttribute('allowOptions')) {
-            if ($position !== null || $options !== null) {
+        // Does the method have a dedicated `$position` argument?
+        $positionArgument = ($position !== null && !$allowOptions) || $defaultPosition !== null;
+        if ($positionArgument) {
+            $compiler->raw(', ' . $positionPhp ?? $defaultPosition);
+        }
+
+        if ($allowOptions) {
+            $positionOption = $position !== null && !$positionArgument;
+
+            if ($positionOption || $options !== null) {
                 $compiler->raw(', ');
 
-                // Do we have to merge the position with other options?
-                if ($position !== null && $options !== null) {
-                    /** @noinspection PhpUndefinedVariableInspection */
-                    $compiler
-                        ->raw('array_merge(')
-                        ->subcompile($options)
-                        ->raw(", ['position' => $positionPhp])");
-                } else if ($position !== null) {
-                    /** @noinspection PhpUndefinedVariableInspection */
-                    $compiler
-                        ->raw("['position' => $positionPhp]");
+                if ($positionOption) {
+                    // Do we have to merge the position with other options?
+                    if ($options !== null) {
+                        $compiler
+                            ->raw('array_merge(')
+                            ->subcompile($options)
+                            ->raw(", ['position' => $positionPhp])");
+                    } else {
+                        $compiler
+                            ->raw("['position' => $positionPhp]");
+                    }
                 } else {
                     $compiler
                         ->subcompile($options);
                 }
             }
-        } else if ($position !== null) {
-            /** @noinspection PhpUndefinedVariableInspection */
-            $compiler->raw(", $positionPhp");
         }
 
         $compiler->raw(");\n");

@@ -21,7 +21,7 @@ class ColumnSchema extends \yii\db\mysql\ColumnSchema
             in_array($this->type, [
                 Schema::TYPE_TINYTEXT,
                 Schema::TYPE_MEDIUMTEXT,
-                Schema::TYPE_LONGTEXT
+                Schema::TYPE_LONGTEXT,
             ], true)
         ) {
             return '';

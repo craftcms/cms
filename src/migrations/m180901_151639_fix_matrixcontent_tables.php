@@ -109,6 +109,9 @@ class m180901_151639_fix_matrixcontent_tables extends Migration
             // Re-enable FK checks
             $this->execute($queryBuilder->checkIntegrity(true));
         }
+
+        // Force the fields service to refetch the fields.
+        Craft::$app->getFields()->refreshFields();
     }
 
     /**
@@ -127,15 +130,15 @@ class m180901_151639_fix_matrixcontent_tables extends Migration
             'not in', 'elementId', (new Query())
                 ->select(['id'])
                 ->from([Table::MATRIXBLOCKS])
-                ->where(['fieldId' => $fieldId])
+                ->where(['fieldId' => $fieldId]),
         ]);
 
         // get all of the columns this field needs
         $subFields = (new Query())
             ->select(['f.handle', 'mbt.handle as blockTypeHandle'])
-            ->from(['{{%fields}} f'])
-            ->innerJoin('{{%fieldlayoutfields}} flf', '[[flf.fieldId]] = [[f.id]]')
-            ->innerJoin('{{%matrixblocktypes}} mbt', '[[mbt.fieldLayoutId]] = [[flf.layoutId]]')
+            ->from(['f' => Table::FIELDS])
+            ->innerJoin(['flf' => Table::FIELDLAYOUTFIELDS], '[[flf.fieldId]] = [[f.id]]')
+            ->innerJoin(['mbt' => Table::MATRIXBLOCKTYPES], '[[mbt.fieldLayoutId]] = [[flf.layoutId]]')
             ->where(['mbt.fieldId' => $fieldId])
             ->all();
 

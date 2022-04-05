@@ -15,20 +15,14 @@ use craft\helpers\Json;
  * Edit represents an Edit element action.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Edit extends ElementAction
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null The trigger label
      */
     public $label;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -55,10 +49,9 @@ class Edit extends ElementAction
     {
         $type = Json::encode(static::class);
 
-        $js = <<<EOD
-(function()
-{
-    var trigger = new Craft.ElementActionTrigger({
+        $js = <<<JS
+(() => {
+    new Craft.ElementActionTrigger({
         type: {$type},
         batch: false,
         validateSelection: function(\$selectedItems)
@@ -86,8 +79,9 @@ class Edit extends ElementAction
         }
     });
 })();
-EOD;
+JS;
 
         Craft::$app->getView()->registerJs($js);
+        return null;
     }
 }

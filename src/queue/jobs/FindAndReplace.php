@@ -8,10 +8,11 @@
 namespace craft\queue\jobs;
 
 use Craft;
-use craft\base\Field;
 use craft\base\FieldInterface;
 use craft\db\Table;
 use craft\fields\Matrix;
+use craft\helpers\Db;
+use craft\helpers\ElementHelper;
 use craft\queue\BaseJob;
 use yii\base\Exception;
 
@@ -19,13 +20,10 @@ use yii\base\Exception;
  * FindAndReplace job
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class FindAndReplace extends BaseJob
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null The search text
      */
@@ -40,9 +38,6 @@ class FindAndReplace extends BaseJob
      * @var
      */
     private $_textColumns;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -65,17 +60,12 @@ class FindAndReplace extends BaseJob
 
         // Now loop through them and perform the find/replace
         $totalTextColumns = count($this->_textColumns);
-        foreach ($this->_textColumns as $i => list($table, $column)) {
+        foreach ($this->_textColumns as $i => [$table, $column]) {
             $this->setProgress($queue, $i / $totalTextColumns);
 
-            Craft::$app->getDb()->createCommand()
-                ->replace($table, $column, $this->find, $this->replace)
-                ->execute();
+            Db::replace($table, $column, $this->find, $this->replace);
         }
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -84,12 +74,9 @@ class FindAndReplace extends BaseJob
     {
         return Craft::t('app', 'Replacing “{find}” with “{replace}”', [
             'find' => $this->find,
-            'replace' => $this->replace
+            'replace' => $this->replace,
         ]);
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Checks whether the given field is saving data into a textual column, and saves it accordingly.
@@ -100,29 +87,22 @@ class FindAndReplace extends BaseJob
      */
     private function _checkField(FieldInterface $field, string $table, string $fieldColumnPrefix)
     {
-        /** @var Field $field */
         if (!$field::hasContentColumn()) {
             return;
         }
 
         $columnType = $field->getContentColumnType();
 
-        if (!preg_match('/^\w+/', $columnType, $matches)) {
-            return;
-        }
-
-        $columnType = strtolower($matches[0]);
-
-        if (in_array($columnType, [
-            'tinytext',
-            'mediumtext',
-            'longtext',
-            'text',
-            'varchar',
-            'string',
-            'char'
-        ], true)) {
-            $this->_textColumns[] = [$table, $fieldColumnPrefix . $field->handle];
+        if (is_array($columnType)) {
+            foreach (array_keys($columnType) as $i => $key) {
+                if (Db::isTextualColumnType($columnType[$key])) {
+                    $column = ElementHelper::fieldColumn($fieldColumnPrefix, $field->handle, $field->columnSuffix, $i !== 0 ? $key : null);
+                    $this->_textColumns[] = [$table, $column];
+                }
+            }
+        } elseif (Db::isTextualColumnType($columnType)) {
+            $column = ElementHelper::fieldColumn($fieldColumnPrefix, $field->handle, $field->columnSuffix);
+            $this->_textColumns[] = [$table, $column];
         }
     }
 

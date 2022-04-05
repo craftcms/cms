@@ -10,18 +10,29 @@ namespace craft\web;
 use Craft;
 use craft\db\Table;
 use craft\errors\DbConnectException;
+use craft\helpers\App;
+use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use yii\db\Exception as DbException;
 
 /**
  * @inheritdoc
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class AssetManager extends \yii\web\AssetManager
 {
-    // Public Methods
-    // =========================================================================
+    /**
+     * @inheritdoc
+     */
+    public function publish($path, $options = []): array
+    {
+        if (App::isEphemeral()) {
+            return [$path, $this->getPublishedUrl($path)];
+        }
+
+        return parent::publish($path, $options);
+    }
 
     /**
      * Returns the published path of a file/directory path.
@@ -29,12 +40,12 @@ class AssetManager extends \yii\web\AssetManager
      * @param string $sourcePath directory or file path being published
      * @param bool $publish whether the directory or file should be published, if not already
      * @return string|false the published file or directory path, or false if $publish is false and the file or directory does not exist
+     * @todo remove this in Craft 4 (nothing is using $publish anymore)
      */
     public function getPublishedPath($sourcePath, bool $publish = false)
     {
         if ($publish === true) {
-            list($path) = $this->publish($sourcePath);
-
+            [$path] = $this->publish($sourcePath);
             return $path;
         }
 
@@ -51,8 +62,8 @@ class AssetManager extends \yii\web\AssetManager
      */
     public function getPublishedUrl($sourcePath, bool $publish = false, $filePath = null)
     {
-        if ($publish === true) {
-            list(, $url) = $this->publish($sourcePath);
+        if ($publish === true && !App::isEphemeral()) {
+            [, $url] = $this->publish($sourcePath);
         } else {
             $url = parent::getPublishedUrl($sourcePath);
         }
@@ -72,9 +83,6 @@ class AssetManager extends \yii\web\AssetManager
         return $url;
     }
 
-    // Protected Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -90,16 +98,12 @@ class AssetManager extends \yii\web\AssetManager
 
         // Store the hash for later
         try {
-            Craft::$app->getDb()->createCommand()
-                ->upsert(Table::RESOURCEPATHS, [
-                    'hash' => $hash,
-                ], [
-                    'path' => $alias,
-                ], [], false)
-                ->execute();
-        } catch (DbException $e) {
-            // Craft is either not installed or not updated to 3.0.3+ yet
-        } catch (DbConnectException $e) {
+            Db::upsert(Table::RESOURCEPATHS, [
+                'hash' => $hash,
+            ], [
+                'path' => $alias,
+            ], [], false);
+        } catch (DbException | DbConnectException $e) {
             // Craft is either not installed or not updated to 3.0.3+ yet
         }
 
@@ -111,7 +115,7 @@ class AssetManager extends \yii\web\AssetManager
      */
     protected function publishDirectory($src, $options): array
     {
-        list($dir, $url) = parent::publishDirectory($src, $options);
+        [$dir, $url] = parent::publishDirectory($src, $options);
 
         // A backslash can cause issues on Windows here.
         $url = str_replace('\\', '/', $url);
@@ -124,7 +128,7 @@ class AssetManager extends \yii\web\AssetManager
      */
     protected function publishFile($src)
     {
-        list($file, $url) = parent::publishFile($src);
+        [$file, $url] = parent::publishFile($src);
 
         // A backslash can cause issues on Windows here.
         $url = str_replace('\\', '/', $url);

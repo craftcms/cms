@@ -20,17 +20,11 @@ use yii\db\ActiveQueryInterface;
  * @property FieldLayoutTab[] $tabs Tabs
  * @property FieldLayoutField[] $fields Fields
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class FieldLayout extends ActiveRecord
 {
-    // Traits
-    // =========================================================================
-
     use SoftDeleteTrait;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

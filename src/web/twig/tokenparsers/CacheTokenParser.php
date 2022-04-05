@@ -16,13 +16,10 @@ use Twig\TokenParser\AbstractTokenParser;
  * Class CacheTokenParser
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class CacheTokenParser extends AbstractTokenParser
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @return string
      */
@@ -86,9 +83,9 @@ class CacheTokenParser extends AbstractTokenParser
                     'year',
                     'years',
                     'week',
-                    'weeks'
+                    'weeks',
                 ])->getValue();
-        } else if ($stream->test(Token::NAME_TYPE, 'until')) {
+        } elseif ($stream->test(Token::NAME_TYPE, 'until')) {
             $stream->next();
             $nodes['expiration'] = $parser->getExpressionParser()->parseExpression();
         }
@@ -96,7 +93,7 @@ class CacheTokenParser extends AbstractTokenParser
         if ($stream->test(Token::NAME_TYPE, 'if')) {
             $stream->next();
             $nodes['conditions'] = $parser->getExpressionParser()->parseExpression();
-        } else if ($stream->test(Token::NAME_TYPE, 'unless')) {
+        } elseif ($stream->test(Token::NAME_TYPE, 'unless')) {
             $stream->next();
             $nodes['ignoreConditions'] = $parser->getExpressionParser()->parseExpression();
         }
@@ -104,7 +101,7 @@ class CacheTokenParser extends AbstractTokenParser
         $stream->expect(Token::BLOCK_END_TYPE);
         $nodes['body'] = $parser->subparse([
             $this,
-            'decideCacheEnd'
+            'decideCacheEnd',
         ], true);
         $stream->expect(Token::BLOCK_END_TYPE);
 

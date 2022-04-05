@@ -3,7 +3,7 @@
 {% set dbConfig = craft.app.config.db %}
 
 <div id="db" class="screen hidden" data-inputs="driver,server,port,user,password,database,schema,tablePrefix">
-    <div class="icon">{{ dbIcon|raw }}</div>
+    <div class="icon" aria-hidden="true">{{ svg(dbIcon, sanitize=false) }}</div>
     <h1>{{ "Connect the database"|t('app') }}</h1>
 
     <form accept-charset="UTF-8">
@@ -28,8 +28,8 @@
                 {{ forms.textField({
                     label: "Server"|t('app'),
                     id: 'db-server',
-                    value: dbConfig.server != 'localhost' ? dbConfig.server,
-                    placeholder: 'localhost'
+                    value: dbConfig.server != '127.0.0.1' ? dbConfig.server,
+                    placeholder: '127.0.0.1',
                 }) }}
             </div>
             <div>
@@ -48,14 +48,14 @@
                     label: "Username"|t('app'),
                     id: 'db-user',
                     value: dbConfig.user != 'root' ? dbConfig.user,
-                    placeholder: 'root'
+                    placeholder: 'root',
                 }) }}
             </div>
             <div class="flex-grow">
                 {{ forms.passwordField({
                     label: "Password"|t('app'),
                     id: 'db-password',
-                    value: dbConfig.password
+                    value: dbConfig.password,
                 }) }}
             </div>
         </div>
@@ -66,14 +66,6 @@
                     label: "Database Name"|t('app'),
                     id: 'db-database',
                     value: dbConfig.database
-                }) }}
-            </div>
-            <div class="flex-grow db-pgsql{% if dbConfig.driver != 'pgsql' %} hidden{% endif %}">
-                {{ forms.textField({
-                    label: "Schema Name"|t('app'),
-                    id: 'db-schema',
-                    value: dbConfig.schema != 'public' ? dbConfig.schema,
-                    placeholder: 'public'
                 }) }}
             </div>
             <div>
@@ -88,9 +80,7 @@
         </div>
 
         <div class="buttons">
-            <div class="btn big submit">{{ "Next"|t('app') }}
-                <input type="submit" tabindex="-1">
-            </div>
+            <button type="submit" class="btn big submit">{{ "Next"|t('app') }}</button>
         </div>
     </form>
 </div>

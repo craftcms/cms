@@ -8,8 +8,10 @@
 namespace craft\elements\db;
 
 use craft\db\Query;
+use craft\db\QueryAbortedException;
 use craft\db\Table;
 use craft\elements\Tag;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\models\TagGroup;
 use yii\db\Connection;
@@ -17,12 +19,13 @@ use yii\db\Connection;
 /**
  * TagQuery represents a SELECT SQL statement for tags in a way that is independent of DBMS.
  *
- * @property string|string[]|TagGroup $group The handle(s) of the tag group(s) that resulting tags must belong to.
+ * @property-write string|string[]|TagGroup|null $group The tag group(s) that resulting tags must belong to
  * @method Tag[]|array all($db = null)
  * @method Tag|array|null one($db = null)
  * @method Tag|array|null nth(int $n, Connection $db = null)
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
+ * @doc-path tags.md
  * @supports-site-params
  * @supports-title-param
  * @supports-uri-param
@@ -34,9 +37,6 @@ use yii\db\Connection;
  */
 class TagQuery extends ElementQuery
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -46,7 +46,7 @@ class TagQuery extends ElementQuery
     // -------------------------------------------------------------------------
 
     /**
-     * @var int|int[]|null The tag group ID(s) that the resulting tags must be in.
+     * @var int|int[]|null|false The tag group ID(s) that the resulting tags must be in.
      * ---
      * ```php
      * // fetch tags in the Topics group
@@ -57,16 +57,13 @@ class TagQuery extends ElementQuery
      * ```twig
      * {# fetch tags in the Topics group #}
      * {% set tags = craft.tags()
-     *     .group('topics')
-     *     .all() %}
+     *   .group('topics')
+     *   .all() %}
      * ```
      * @used-by group()
      * @used-by groupId()
      */
     public $groupId;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -85,7 +82,7 @@ class TagQuery extends ElementQuery
      *
      * Possible values include:
      *
-     * | Value | Fetches {elements}…
+     * | Value | Fetches tags…
      * | - | -
      * | `'foo'` | in a group with a handle of `foo`.
      * | `'not foo'` | not in a group with a handle of `foo`.
@@ -96,14 +93,14 @@ class TagQuery extends ElementQuery
      * ---
      *
      * ```twig
-     * {# Fetch {elements} in the Foo group #}
+     * {# Fetch tags in the Foo group #}
      * {% set {elements-var} = {twig-method}
-     *     .group('foo')
-     *     .all() %}
+     *   .group('foo')
+     *   .all() %}
      * ```
      *
      * ```php
-     * // Fetch {elements} in the Foo group
+     * // Fetch tags in the Foo group
      * ${elements-var} = {php-method}
      *     ->group('foo')
      *     ->all();
@@ -116,13 +113,13 @@ class TagQuery extends ElementQuery
     public function group($value)
     {
         if ($value instanceof TagGroup) {
-            $this->groupId = $value->id;
-        } else if ($value !== null) {
+            $this->groupId = [$value->id];
+        } elseif ($value !== null) {
             $this->groupId = (new Query())
                 ->select(['id'])
                 ->from([Table::TAGGROUPS])
                 ->where(Db::parseParam('handle', $value))
-                ->column();
+                ->column() ?: false;
         } else {
             $this->groupId = null;
         }
@@ -135,7 +132,7 @@ class TagQuery extends ElementQuery
      *
      * Possible values include:
      *
-     * | Value | Fetches {elements}…
+     * | Value | Fetches tags…
      * | - | -
      * | `1` | in a group with an ID of 1.
      * | `'not 1'` | not in a group with an ID of 1.
@@ -145,14 +142,14 @@ class TagQuery extends ElementQuery
      * ---
      *
      * ```twig
-     * {# Fetch {elements} in the group with an ID of 1 #}
+     * {# Fetch tags in the group with an ID of 1 #}
      * {% set {elements-var} = {twig-method}
-     *     .groupId(1)
-     *     .all() %}
+     *   .groupId(1)
+     *   .all() %}
      * ```
      *
      * ```php
-     * // Fetch {elements} in the group with an ID of 1
+     * // Fetch tags in the group with an ID of 1
      * ${elements-var} = {php-method}
      *     ->groupId(1)
      *     ->all();
@@ -168,18 +165,12 @@ class TagQuery extends ElementQuery
         return $this;
     }
 
-    // Protected Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
     protected function beforePrepare(): bool
     {
-        // See if 'group' was set to an invalid handle
-        if ($this->groupId === []) {
-            return false;
-        }
+        $this->_normalizeGroupId();
 
         $this->joinElementTable('tags');
 
@@ -188,9 +179,48 @@ class TagQuery extends ElementQuery
         ]);
 
         if ($this->groupId) {
-            $this->subQuery->andWhere(Db::parseParam('tags.groupId', $this->groupId));
+            $this->subQuery->andWhere(['tags.groupId' => $this->groupId]);
         }
 
         return parent::beforePrepare();
+    }
+
+    /**
+     * Normalizes the groupId param to an array of IDs or null
+     *
+     * @throws QueryAbortedException
+     */
+    private function _normalizeGroupId()
+    {
+        if ($this->groupId === false) {
+            throw new QueryAbortedException();
+        }
+
+        if (empty($this->groupId)) {
+            $this->groupId = null;
+        } elseif (is_numeric($this->groupId)) {
+            $this->groupId = [$this->groupId];
+        } elseif (!is_array($this->groupId) || !ArrayHelper::isNumeric($this->groupId)) {
+            $this->groupId = (new Query())
+                ->select(['id'])
+                ->from([Table::TAGGROUPS])
+                ->where(Db::parseParam('id', $this->groupId))
+                ->column();
+        }
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.5.0
+     */
+    protected function cacheTags(): array
+    {
+        $tags = [];
+        if ($this->groupId) {
+            foreach ($this->groupId as $groupId) {
+                $tags[] = "group:$groupId";
+            }
+        }
+        return $tags;
     }
 }

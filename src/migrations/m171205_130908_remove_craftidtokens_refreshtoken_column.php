@@ -17,7 +17,7 @@ class m171205_130908_remove_craftidtokens_refreshtoken_column extends Migration
     {
         if (!$this->db->columnExists(Table::CRAFTIDTOKENS, 'refreshToken')) {
             // Migration has already run
-            return true;
+            return;
         }
 
         $this->dropColumn(Table::CRAFTIDTOKENS, 'refreshToken');

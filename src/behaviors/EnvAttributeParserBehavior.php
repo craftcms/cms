@@ -8,6 +8,7 @@
 namespace craft\behaviors;
 
 use Craft;
+use craft\helpers\App;
 use craft\helpers\StringHelper;
 use yii\base\Behavior;
 use yii\base\Model;
@@ -15,7 +16,7 @@ use yii\validators\UrlValidator;
 
 /**
  * EnvAttributeParserBehavior can be applied to models with attributes that can be
- * set to either environment variables (`$VARIABLE_NAME`) or aliases (`@aliasName`)`.
+ * set to either environment variables (`$VARIABLE_NAME`) or aliases (`@aliasName`).
  *
  * ---
  *
@@ -32,7 +33,7 @@ use yii\validators\UrlValidator;
  * ```
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.1
+ * @since 3.1.0
  */
 class EnvAttributeParserBehavior extends Behavior
 {
@@ -42,8 +43,21 @@ class EnvAttributeParserBehavior extends Behavior
     public $owner;
 
     /**
-     * @var string[] The attributes names that can be set to environment
+     * @var string[]|callable[] The attributes names that can be set to environment
      * variables (`$VARIABLE_NAME`) and/or aliases (`@aliasName`).
+     *
+     * If the raw (unparsed) attribute value can’t be obtained from the attribute directly (`$model->foo`),
+     * then the attribute name should be specified as an array key instead, and the value should be set to the
+     * raw value, or a callable that returns the raw value. For example:
+     *
+     * ```php
+     * 'attributes' => [
+     *     'foo' => '$FOO',
+     *     'bar' => function() {
+     *         return $this->_bar;
+     *     },
+     * ],
+     * ```
      */
     public $attributes = [];
 
@@ -69,10 +83,21 @@ class EnvAttributeParserBehavior extends Behavior
     public function beforeValidate()
     {
         $this->_values = [];
+        $securityService = Craft::$app->getSecurity();
 
-        foreach ($this->attributes as $attribute) {
-            $value = $this->owner->$attribute;
-            if (($parsed = Craft::parseEnv($value)) !== $value) {
+        foreach ($this->attributes as $i => $attribute) {
+            if (is_string($i)) {
+                if (is_callable($attribute)) {
+                    $value = $attribute();
+                } else {
+                    $value = $attribute;
+                }
+                $attribute = $i;
+            } else {
+                $value = $this->owner->$attribute;
+            }
+
+            if (($parsed = App::parseEnv($value)) !== $value) {
                 $this->_values[$attribute] = $value;
                 $this->owner->$attribute = $parsed;
 
@@ -81,7 +106,7 @@ class EnvAttributeParserBehavior extends Behavior
                         $validator->defaultScheme = null;
                     }
 
-                    if (is_string($validator->message)) {
+                    if (is_string($validator->message) && !$securityService->isSensitive($value)) {
                         $validator->message = StringHelper::ensureRight($validator->message, ' ({value})');
                     }
                 }
@@ -97,5 +122,16 @@ class EnvAttributeParserBehavior extends Behavior
         foreach ($this->_values as $attribute => $value) {
             $this->owner->$attribute = $value;
         }
+    }
+
+    /**
+     * Returns the original value of an attribute, or `null` if it wasn’t set to an environment variable or alias.
+     *
+     * @param string $attribute
+     * @return string|null
+     */
+    public function getUnparsedAttribute(string $attribute): ?string
+    {
+        return $this->_values[$attribute] ?? null;
     }
 }

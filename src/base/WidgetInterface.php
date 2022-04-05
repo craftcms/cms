@@ -11,20 +11,19 @@ namespace craft\base;
  * WidgetInterface defines the common interface to be implemented by dashboard widget classes.
  * A class implementing this interface should also use [[SavableComponentTrait]] and [[WidgetTrait]].
  *
+ * @mixin WidgetTrait
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 interface WidgetInterface extends SavableComponentInterface
 {
-    // Static
-    // =========================================================================
-
     /**
-     * Returns the path to the widget’s SVG icon.
+     * Returns the path to the widget’s SVG icon, or the actual SVG contents.
      *
-     * @return string|null The path to the widget’s SVG icon
+     * @return string|null
+     * @since 3.2.0
      */
-    public static function iconPath();
+    public static function icon();
 
     /**
      * Returns the widget’s maximum colspan.
@@ -33,15 +32,21 @@ interface WidgetInterface extends SavableComponentInterface
      */
     public static function maxColspan();
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * Returns the widget’s title.
      *
      * @return string The widget’s title.
+     * @todo allow this to return null in Craft 4
      */
     public function getTitle(): string;
+
+    /**
+     * Returns the widget’s subtitle.
+     *
+     * @return string|null The widget’s subtitle
+     * @since 3.4.0
+     */
+    public function getSubtitle();
 
     /**
      * Returns the widget's body HTML.

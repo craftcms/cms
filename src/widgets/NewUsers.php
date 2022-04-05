@@ -16,13 +16,10 @@ use craft\web\assets\newusers\NewUsersAsset;
  * NewUsers represents a New Users dashboard widget.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class NewUsers extends Widget
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -43,13 +40,10 @@ class NewUsers extends Widget
     /**
      * @inheritdoc
      */
-    public static function iconPath()
+    public static function icon()
     {
-        return Craft::getAlias('@app/icons/users.svg');
+        return Craft::getAlias('@appicons/users.svg');
     }
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var int|null The ID of the user group
@@ -61,9 +55,6 @@ class NewUsers extends Widget
      */
     public $dateRange;
 
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -107,7 +98,7 @@ class NewUsers extends Widget
     {
         return Craft::$app->getView()->renderTemplate('_components/widgets/NewUsers/settings',
             [
-                'widget' => $this
+                'widget' => $this,
             ]);
     }
 }

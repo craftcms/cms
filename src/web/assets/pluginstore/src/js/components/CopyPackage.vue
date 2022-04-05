@@ -1,6 +1,6 @@
 <template>
     <div class="copy-package">
-        <input ref="input" type="text" class="text w-full" :value="plugin.packageName" @focus="select" readonly="readonly" />
+        <textbox ref="input" class="w-full" :value="plugin.packageName" readonly="readonly" @focus="select" />
         <btn @click="copy"><icon icon="copy" /></btn>
     </div>
 </template>
@@ -11,7 +11,7 @@
 
         methods: {
             select() {
-                this.$refs.input.select()
+                this.$refs.input.$refs.input.select()
             },
 
             copy() {
@@ -27,14 +27,27 @@
     .copy-package {
         @apply .flex;
 
-        input {
-            @apply .font-mono;
-            border-top-right-radius: 0 !important;
-            border-bottom-right-radius: 0 !important;
+        .c-textbox {
+            @apply .flex;
+
+            &.c-field {
+                @apply .mb-0;
+            }
+
+            .wrapper {
+                @apply .flex .flex-1;
+
+                input {
+                    @apply .rounded-r-none .font-mono;
+                }
+            }
         }
 
-        button {
-            @apply .text-black .border .rounded-l-none .border-l-0;
+        button.c-btn {
+            @apply .text-black .border .border-solid .border-grey .rounded-l-none .border-l-0;
+
+            -webkit-box-shadow: none !important;
+            box-shadow: none !important;
         }
     }
 </style>

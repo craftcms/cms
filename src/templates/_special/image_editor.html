@@ -6,37 +6,39 @@
 </div>
 <div class="views">
     <div class="rotate hidden" data-view="rotate" data-rotate="true">
-        <div class="rotate-buttons buttons">
-            <div class="rotate-left btn icon leftalign">{{ 'Rotate Left'|t('app') }}</div>
-            <div class="rotate-right btn icon leftalign">{{ 'Rotate Right'|t('app') }}</div>
+        <div class="rotate-buttons btngroup">
+            <button type="button" class="rotate-left btn icon leftalign">{{ 'Rotate Left'|t('app') }}</button>
+            <button type="button" class="rotate-right btn icon leftalign">{{ 'Rotate Right'|t('app') }}</button>
         </div>
-        <div class="flip-buttons buttons">
-            <div class="flip-vertical btn icon leftalign">{{ 'Flip Vertical'|t('app') }}</div>
-            <div class="flip-horizontal btn icon leftalign">{{ 'Flip Horizontal'|t('app') }}</div>
+        <div class="flip-buttons btngroup">
+            <button type="button" class="flip-vertical btn icon leftalign">{{ 'Flip Vertical'|t('app') }}</button>
+            <button type="button" class="flip-horizontal btn icon leftalign">{{ 'Flip Horizontal'|t('app') }}</button>
         </div>
-        <div class="buttons">
-            <div class="focal-point btn icon leftalign">{{ 'Focal Point'|t('app') }}</div>
+        <div class="btngroup">
+            <button type="button" class="focal-point btn icon leftalign">{{ 'Focal Point'|t('app') }}</button>
         </div>
     </div>
     <div class="crop hidden" data-view="crop" data-crop="true">
-        <div class="buttons">
-            <div class="focal-point btn icon leftalign">{{ 'Focal Point'|t('app') }}</div>
-            <div class="constraint btn icon menubtn no-outline">{{ 'Unconstrained'|t('app') }}</div>
-            <div class="menu dark">
-                <ul>
-                    <li><a class="" data-constraint="none">{{ 'Unconstrained'|t('app') }}</a></li>
-                    <li><a class="" data-constraint="original">{{ 'Original'|t('app') }}</a></li>
-                    <li><a class="" data-constraint="1">{{ 'Square'|t('app') }}</a></li>
-                    <li><a class="" data-constraint="1.78">16:9</a></li>
-                    <li><a class="" data-constraint="0.8">8:10</a></li>
-                    <li><a class="" data-constraint="0.71">5:7</a></li>
-                    <li><a class="" data-constraint="1.3">4:3</a></li>
-                    <li><a class="" data-constraint="0.6">3:5</a></li>
-                    <li><a class="" data-constraint="1.5">3:2</a></li>
-                </ul>
-           </div>
+        <div class="btngroup">
+            <button type="button" class="focal-point btn icon leftalign">{{ 'Focal Point'|t('app') }}</button>
         </div>
 
+        <div class="constraint-buttons-container">
+            <div class="btngroup constraint-buttons">
+                {% for label, ratio in craft.app.config.general.imageEditorRatios %}
+                    <div class="constraint {{ ratio matches '/^[0-9]*\\.[0-9]+$/' ? 'flip' : '' }}" data-constraint="{{ ratio }}">{{ label|t('app') }}</div>
+                {% endfor %}
+                <div class="constraint custom" data-constraint="custom">
+                    <span class="custom-label">{{ 'Custom'|t}}</span>
+                    <span class="custom-input hidden"><input type="text" class="custom-constraint-w" size="3" value="1"/> x <input type="text" class="custom-constraint-h" size="3" value="1"/></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="orientation">
+            <input type="radio" name="orientation" value="landscape" checked/>
+            <input type="radio" name="orientation" value="portrait"/>
+        </div>
     </div>
 </div>
 <div class="image-container">

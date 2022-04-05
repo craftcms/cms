@@ -14,23 +14,17 @@ use yii\web\IdentityInterface;
 
 /**
  * The User component provides APIs for managing the user authentication status.
- * An instance of the User component is globally accessible in Craft via [[\craft\base\ApplicationTrait::getUser()|`Craft::$app->user`]].
+ * An instance of the User component is globally accessible in Craft via [[\craft\console\Application::getUser()|`Craft::$app->user`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class User extends Component
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var UserElement|IdentityInterface|false
      */
     private $_identity = false;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Returns whether the current user is an admin.
@@ -78,7 +72,7 @@ class User extends Component
     {
         if ($identity instanceof IdentityInterface) {
             $this->_identity = $identity;
-        } else if ($identity === null) {
+        } elseif ($identity === null) {
             $this->_identity = null;
         } else {
             throw new InvalidValueException('The identity object must implement IdentityInterface.');

@@ -27,32 +27,26 @@ use yii\base\Module;
  * @property string $handle The plugin’s handle (alias of [[id]])
  * @property MigrationManager $migrator The plugin’s migration manager
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Plugin extends Module implements PluginInterface
 {
-    // Traits
-    // =========================================================================
-
     use PluginTrait;
-
-    // Constants
-    // =========================================================================
 
     /**
      * @event ModelEvent The event that is triggered before the plugin’s settings are saved.
      *
-     * You may set [[ModelEvent::isValid]] to `false` to prevent the plugin’s settings from saving.
+     * You may set [[\yii\base\ModelEvent::$isValid]] to `false` to prevent the plugin’s settings from saving.
+     *
+     * @since 3.0.16
      */
     const EVENT_BEFORE_SAVE_SETTINGS = 'beforeSaveSettings';
 
     /**
-     * @event \yii\base\Event The event that is triggered after the plugin’s settings are saved
+     * @event \yii\base\Event The event that is triggered after the plugin’s settings are saved.
+     * @since 3.0.16
      */
     const EVENT_AFTER_SAVE_SETTINGS = 'afterSaveSettings';
-
-    // Static
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -64,17 +58,11 @@ class Plugin extends Module implements PluginInterface
         ];
     }
 
-    // Properties
-    // =========================================================================
-
     /**
      * @var Model|bool|null The model used to store the plugin’s settings
-     * @see getSettingsModel()
+     * @see getSettings()
      */
-    private $_settingsModel;
-
-    // Public Methods
-    // =========================================================================
+    private $_settings;
 
     /**
      * @inheritdoc
@@ -194,15 +182,11 @@ class Plugin extends Module implements PluginInterface
      */
     public function getSettings()
     {
-        if ($this->_settingsModel === null) {
-            $this->_settingsModel = $this->createSettingsModel() ?: false;
+        if ($this->_settings === null) {
+            $this->_settings = $this->createSettingsModel() ?: false;
         }
 
-        if ($this->_settingsModel !== false) {
-            return $this->_settingsModel;
-        }
-
-        return null;
+        return $this->_settings ?: null;
     }
 
     /**
@@ -210,7 +194,12 @@ class Plugin extends Module implements PluginInterface
      */
     public function setSettings(array $settings)
     {
-        $this->getSettings()->setAttributes($settings, false);
+        if (($model = $this->getSettings()) === null) {
+            Craft::warning('Attempting to set settings on a plugin that doesn\'t have settings: ' . $this->id);
+            return;
+        }
+
+        $model->setAttributes($settings, false);
     }
 
     /**
@@ -219,17 +208,16 @@ class Plugin extends Module implements PluginInterface
     public function getSettingsResponse()
     {
         $view = Craft::$app->getView();
-        $namespace = $view->getNamespace();
-        $view->setNamespace('settings');
-        $settingsHtml = $this->settingsHtml();
-        $view->setNamespace($namespace);
+        $settingsHtml = $view->namespaceInputs(function() {
+            return (string)$this->settingsHtml();
+        }, 'settings');
 
         /** @var Controller $controller */
         $controller = Craft::$app->controller;
 
         return $controller->renderTemplate('settings/plugins/_settings', [
             'plugin' => $this,
-            'settingsHtml' => $settingsHtml
+            'settingsHtml' => $settingsHtml,
         ]);
     }
 
@@ -272,6 +260,7 @@ class Plugin extends Module implements PluginInterface
      * @return bool
      * @throws InvalidArgumentException if `$edition` is an unsupported edition,
      * or if `$operator` is an invalid operator.
+     * @since 3.1.0
      */
     public function is(string $edition, string $operator = '='): bool
     {
@@ -335,9 +324,6 @@ class Plugin extends Module implements PluginInterface
         }
     }
 
-    // Protected Methods
-    // =========================================================================
-
     /**
      * Instantiates and returns the plugin’s installation migration, if it has one.
      *
@@ -356,7 +342,7 @@ class Plugin extends Module implements PluginInterface
         require_once $path;
         $class = $migrator->migrationNamespace . '\\Install';
 
-        return new $class;
+        return new $class();
     }
 
     /**
@@ -377,9 +363,9 @@ class Plugin extends Module implements PluginInterface
     }
 
     /**
-     * Performs actions before the plugin is installed.
+     * Performs actions before the plugin is uninstalled.
      *
-     * @return bool Whether the plugin should be installed
+     * @return bool Whether the plugin should be uninstalled
      */
     protected function beforeUninstall(): bool
     {
@@ -387,7 +373,7 @@ class Plugin extends Module implements PluginInterface
     }
 
     /**
-     * Performs actions after the plugin is installed.
+     * Performs actions after the plugin is uninstalled.
      */
     protected function afterUninstall()
     {
@@ -414,7 +400,7 @@ class Plugin extends Module implements PluginInterface
     }
 
     /**
-     * Returns the path to the SVG icon that should be used in the plugin’s CP nav item.
+     * Returns the path to the SVG icon that should be used in the plugin’s nav item in the control panel.
      *
      * @return string|null
      * @see getCpNavItem()

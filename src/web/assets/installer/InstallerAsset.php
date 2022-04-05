@@ -7,6 +7,7 @@
 
 namespace craft\web\assets\installer;
 
+use craft\helpers\Json;
 use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
 
@@ -18,22 +19,37 @@ class InstallerAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public function init()
+    public $sourcePath = __DIR__ . '/dist';
+
+    /**
+     * @inheritdoc
+     */
+    public $depends = [
+        CpAsset::class,
+    ];
+
+    /**
+     * @inheritdoc
+     */
+    public $css = [
+        'css/install.css',
+    ];
+
+    /**
+     * @inheritdoc
+     */
+    public $js = [
+        'install.js',
+    ];
+
+    /**
+     * @inheritdoc
+     */
+    public function registerAssetFiles($view)
     {
-        $this->sourcePath = __DIR__ . '/dist';
+        parent::registerAssetFiles($view);
 
-        $this->depends = [
-            CpAsset::class,
-        ];
-
-        $this->css = [
-            'install.css',
-        ];
-
-        $this->js = [
-            'install' . $this->dotJs(),
-        ];
-
-        parent::init();
+        $redirect = Json::encode(\Craft::$app->getConfig()->getGeneral()->postCpLoginRedirect);
+        $view->registerJs("window.postCpLoginRedirect = $redirect;");
     }
 }

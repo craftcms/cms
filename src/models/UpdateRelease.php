@@ -8,18 +8,17 @@
 namespace craft\models;
 
 use craft\base\Model;
+use craft\helpers\DateTimeHelper;
+use DateTimeZone;
 
 /**
  * Stores the info for an update release.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class UpdateRelease extends Model
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string Version
      */
@@ -40,9 +39,6 @@ class UpdateRelease extends Model
      */
     public $notes;
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -51,5 +47,23 @@ class UpdateRelease extends Model
         $attributes = parent::datetimeAttributes();
         $attributes[] = 'date';
         return $attributes;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function fields()
+    {
+        $fields = parent::fields();
+
+        // Don't include time zone in the date
+        $fields['date'] = function(): ?string {
+            if ($this->date !== null) {
+                return DateTimeHelper::toDateTime($this->date)->setTimezone(new DateTimeZone('UTC'))->format('Y-m-d\TH:i:s');
+            }
+            return null;
+        };
+
+        return $fields;
     }
 }

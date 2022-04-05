@@ -45,7 +45,6 @@
     import EditionBadge from '../EditionBadge'
 
     export default {
-
         props: ['edition'],
 
         components: {
@@ -56,9 +55,9 @@
         },
 
         computed: {
-
             ...mapGetters({
                 getCmsEditionFeatures: 'craft/getCmsEditionFeatures',
+                getCmsEditionIndex: 'craft/getCmsEditionIndex',
             }),
 
             editionDescription() {
@@ -72,22 +71,14 @@
                 }
             },
 
+            editionIndex() {
+                return this.getCmsEditionIndex(this.edition.handle)
+            },
+
             features() {
                 return this.getCmsEditionFeatures(this.edition.handle)
             },
-
-            editionIndex() {
-                switch (this.edition.handle) {
-                    case 'solo':
-                        return this.$store.state.craft.CraftSolo
-                    case 'pro':
-                        return this.$store.state.craft.CraftPro
-                    default:
-                        return null
-                }
-            }
         },
-
     }
 </script>
 
@@ -119,22 +110,17 @@
                     &:first-child {
                         @apply .border-t;
                     }
-
-                    svg[data-icon="info-circle"] {
-                        path {
-                            fill: #ccc;
-                        }
-                    }
                 }
             }
         }
 
         .cms-edition-actions {
             position: relative;
-            .spinner {
+            .c-spinner {
                 position: absolute;
-                bottom: -32px;
+                bottom: -30px;
                 left: 50%;
+                margin-left: -11px;
             }
 
             .c-btn {

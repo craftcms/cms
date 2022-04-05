@@ -9,7 +9,6 @@ namespace craft\utilities;
 
 use Craft;
 use craft\base\Utility;
-use craft\base\Volume;
 use craft\helpers\Html;
 use craft\web\assets\assetindexes\AssetIndexesAsset;
 
@@ -17,13 +16,10 @@ use craft\web\assets\assetindexes\AssetIndexesAsset;
  * AssetIndexes represents a AssetIndexes dashboard widget.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class AssetIndexes extends Utility
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -45,7 +41,7 @@ class AssetIndexes extends Utility
      */
     public static function iconPath()
     {
-        return Craft::getAlias('@app/icons/photo.svg');
+        return Craft::getAlias('@appicons/photo.svg');
     }
 
     /**
@@ -53,19 +49,19 @@ class AssetIndexes extends Utility
      */
     public static function contentHtml(): string
     {
-        /** @var Volume[] $volumes */
         $volumes = Craft::$app->getVolumes()->getAllVolumes();
         $volumeOptions = [];
 
         foreach ($volumes as $volume) {
             $volumeOptions[] = [
                 'label' => Html::encode($volume->name),
-                'value' => $volume->id
+                'value' => $volume->id,
             ];
         }
 
         $view = Craft::$app->getView();
         $checkboxSelectHtml = $view->renderTemplate('_includes/forms/checkboxSelect', [
+            'class' => 'first',
             'name' => 'volumes',
             'options' => $volumeOptions,
             'showAllOption' => true,

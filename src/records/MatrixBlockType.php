@@ -24,22 +24,15 @@ use yii\db\ActiveQueryInterface;
  * @property Field $field Field
  * @property FieldLayout $fieldLayout Field layout
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class MatrixBlockType extends ActiveRecord
 {
-    // Properties
-    // =========================================================================
-
     /**
-     * Whether the Name and Handle attributes should validated to ensure they’re unique.
-     *
-     * @var bool
+     * @var bool Whether the Name and Handle attributes should validated to ensure they’re unique.
+     * @deprecated in 3.7.11
      */
     public $validateUniques = true;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -59,9 +52,10 @@ class MatrixBlockType extends ActiveRecord
                     'dateCreated',
                     'dateUpdated',
                     'uid',
-                    'title'
-                ]
+                    'title',
+                ],
             ],
+            [['handle'], 'string', 'max' => 47],
         ];
     }
 

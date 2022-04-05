@@ -15,58 +15,40 @@ use craft\events\ModelEvent;
  * @property bool $isNew Whether the component is new (unsaved)
  * @property array $settings The component’s settings
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
-abstract class SavableComponent extends Component implements SavableComponentInterface
+abstract class SavableComponent extends ConfigurableComponent implements SavableComponentInterface
 {
-    // Traits
-    // =========================================================================
-
     use SavableComponentTrait;
 
-    // Constants
-    // =========================================================================
-
     /**
-     * @event ModelEvent The event that is triggered before the component is saved
-     * You may set [[ModelEvent::isValid]] to `false` to prevent the component from getting saved.
+     * @event ModelEvent The event that is triggered before the component is saved.
+     *
+     * You may set [[\yii\base\ModelEvent::$isValid]] to `false` to prevent the component from getting saved.
      */
     const EVENT_BEFORE_SAVE = 'beforeSave';
 
     /**
-     * @event ModelEvent The event that is triggered after the component is saved
+     * @event ModelEvent The event that is triggered after the component is saved.
      */
     const EVENT_AFTER_SAVE = 'afterSave';
 
     /**
-     * @event ModelEvent The event that is triggered before the component is deleted
-     * You may set [[ModelEvent::isValid]] to `false` to prevent the component from getting deleted.
+     * @event ModelEvent The event that is triggered before the component is deleted.
+     *
+     * You may set [[\yii\base\ModelEvent::$isValid]] to `false` to prevent the component from getting deleted.
      */
     const EVENT_BEFORE_DELETE = 'beforeDelete';
 
     /**
-     * @event ModelEvent The event that is triggered before the delete is applied to the database
+     * @event ModelEvent The event that is triggered before the delete is applied to the database.
      */
     const EVENT_BEFORE_APPLY_DELETE = 'beforeApplyDelete';
 
     /**
-     * @event \yii\base\Event The event that is triggered after the component is deleted
+     * @event \yii\base\Event The event that is triggered after the component is deleted.
      */
     const EVENT_AFTER_DELETE = 'afterDelete';
-
-    // Static
-    // =========================================================================
-
-    /**
-     * @inheritdoc
-     */
-    public static function isSelectable(): bool
-    {
-        return true;
-    }
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -74,46 +56,6 @@ abstract class SavableComponent extends Component implements SavableComponentInt
     public function getIsNew(): bool
     {
         return (!$this->id || strpos($this->id, 'new') === 0);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getSettings(): array
-    {
-        $settings = [];
-
-        foreach ($this->settingsAttributes() as $attribute) {
-            $settings[$attribute] = $this->$attribute;
-        }
-
-        return $settings;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getSettingsHtml()
-    {
-        return null;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function settingsAttributes(): array
-    {
-        // By default, include all public, non-static properties that were not defined in an abstract class
-        $class = new \ReflectionClass($this);
-        $names = [];
-
-        foreach ($class->getProperties(\ReflectionProperty::IS_PUBLIC) as $property) {
-            if (!$property->isStatic() && !$property->getDeclaringClass()->isAbstract()) {
-                $names[] = $property->getName();
-            }
-        }
-
-        return $names;
     }
 
     // Events

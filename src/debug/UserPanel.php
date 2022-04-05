@@ -13,7 +13,7 @@ use Craft;
  * Debugger panel that collects and displays user info..
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class UserPanel extends \yii\debug\panels\UserPanel
 {

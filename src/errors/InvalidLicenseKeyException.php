@@ -13,7 +13,7 @@ use yii\base\Exception;
  * InvalidLicenseKeyException represents an exception caused by setting an invalid license key on a plugin.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class InvalidLicenseKeyException extends Exception
 {

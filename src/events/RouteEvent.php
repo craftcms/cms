@@ -13,13 +13,10 @@ use yii\base\Event;
  * RouteEvent class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class RouteEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var array|null The URI as defined by the user. This is an array where each element is either a
      * string or an array containing the name of a subpattern and the subpattern.

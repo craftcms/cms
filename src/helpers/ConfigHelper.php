@@ -14,7 +14,7 @@ use yii\base\InvalidConfigException;
  * Config helper
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class ConfigHelper
 {
@@ -46,7 +46,7 @@ class ConfigHelper
         }
 
         if (!$value instanceof \DateInterval) {
-            throw new InvalidConfigException("Unable to convert {$value} to seconds.");
+            throw new InvalidConfigException("Unable to convert to seconds.");
         }
 
         return DateTimeHelper::intervalToSeconds($value);
@@ -57,7 +57,7 @@ class ConfigHelper
      *
      * Accepted formats;
      * - integer (the size in bytes)
-     * - string (a [shorthand byte value](http://php.net/manual/en/faq.using.php#faq.using.shorthandbytes) ending in `K` (Kilobytes), `M` (Megabytes), or `G` (Gigabytes))
+     * - string (a [shorthand byte value](https://php.net/manual/en/faq.using.php#faq.using.shorthandbytes) ending in `K` (Kilobytes), `M` (Megabytes), or `G` (Gigabytes))
      *
      * @param int|string $value The size
      * @return int|float The size in bytes
@@ -81,7 +81,6 @@ class ConfigHelper
             // no break
             case 'k':
                 $value *= 1024;
-            // no break
         }
 
         return $value;
@@ -99,7 +98,7 @@ class ConfigHelper
      * @param string|null $siteHandle The site handle the value should be defined for. Defaults to the current site.
      * @return mixed
      */
-    public static function localizedValue($value, string $siteHandle = null)
+    public static function localizedValue($value, ?string $siteHandle = null)
     {
         if (is_scalar($value)) {
             return $value;

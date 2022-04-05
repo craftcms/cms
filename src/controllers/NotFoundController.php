@@ -12,16 +12,10 @@ use yii\web\NotFoundHttpException;
 
 class NotFoundController extends Controller
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
     protected $allowAnonymous = true;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Just return a 404 error.

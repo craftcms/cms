@@ -14,13 +14,10 @@ use yii\base\Event;
  * Field layout Event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class FieldLayoutEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var FieldLayout|null The field layout associated with this event.
      */

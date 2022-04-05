@@ -1,0 +1,17 @@
+# Codeception Test Suite Configuration
+#
+# Suite for functional (integration) tests
+# Emulate web requests and make application process them
+# Include one of framework modules (Symfony2, Yii2, Laravel5) to use it
+
+class_name: FunctionalTester
+modules:
+    enabled:
+        - Asserts
+        - \craft\test\Craft:
+              edition: 1
+        - \Helper\Gql
+        - REST:
+            url: 'http://testing.craft.local/'
+            depends: PhpBrowser
+            part: Json

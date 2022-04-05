@@ -18,13 +18,10 @@ use Twig\TokenStream;
  * Class RegisterResourceTokenParser
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class RegisterResourceTokenParser extends AbstractTokenParser
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string The tag name
      */
@@ -56,13 +53,16 @@ class RegisterResourceTokenParser extends AbstractTokenParser
     public $allowOptions = false;
 
     /**
+     * @var int|null The default `$position` value that should be possed to the [[method]], if it has a `$position` argument.
+     * @since 3.6.11
+     */
+    public $defaultPosition;
+
+    /**
      * @var string|null The new template code that should be used if this tag is deprecated
      * @todo Remove this in Craft 4
      */
     public $newCode;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @param string $tag the tag name
@@ -86,7 +86,7 @@ class RegisterResourceTokenParser extends AbstractTokenParser
     {
         // Is this the deprecated version?
         if ($this->newCode !== null) {
-            \Craft::$app->getDeprecator()->log($this->tag, "{% {$this->tag} %} is now deprecated. Use {$this->newCode} instead.");
+            \Craft::$app->getDeprecator()->log($this->tag, "`{% {$this->tag}` %} is now deprecated. Use `{$this->newCode}` instead.");
         }
 
         $lineno = $token->getLine();
@@ -125,7 +125,7 @@ class RegisterResourceTokenParser extends AbstractTokenParser
                 'POS_END',
             ]);
             $position = $nameToken->getValue();
-        } else if ($this->allowRuntimePosition && $stream->test(Token::NAME_TYPE, 'on')) {
+        } elseif ($this->allowRuntimePosition && $stream->test(Token::NAME_TYPE, 'on')) {
             $stream->next();
             $nameToken = $stream->expect(Token::NAME_TYPE, [
                 'ready',
@@ -160,9 +160,10 @@ class RegisterResourceTokenParser extends AbstractTokenParser
             'method' => $this->method,
             'allowOptions' => $this->allowOptions,
             'allowPosition' => $this->allowPosition,
+            'defaultPosition' => $this->defaultPosition,
             'capture' => $capture,
             'position' => $position,
-            'first' => $first
+            'first' => $first,
         ];
 
         return new RegisterResourceNode($nodes, $attributes, $lineno, $this->getTag());
@@ -184,9 +185,6 @@ class RegisterResourceTokenParser extends AbstractTokenParser
     {
         return $token->test('end' . strtolower($this->tag));
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns whether the next token in the stream is a position param.

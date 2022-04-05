@@ -11,10 +11,13 @@ use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\elements\Category;
-use craft\elements\Entry;
 use craft\errors\InvalidTypeException;
+use craft\fieldlayoutelements\BaseField;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Cp;
+use craft\helpers\DateTimeHelper;
 use craft\helpers\ElementHelper;
+use craft\helpers\Html;
 use craft\helpers\StringHelper;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
@@ -27,12 +30,23 @@ use yii\web\Response;
  * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class ElementsController extends BaseElementsController
 {
-    // Public Methods
-    // =========================================================================
+    /**
+     * @inheritdoc
+     */
+    public function beforeAction($action)
+    {
+        if (!parent::beforeAction($action)) {
+            return false;
+        }
+
+        $this->requireAcceptsJson();
+
+        return true;
+    }
 
     /**
      * Renders and returns the body of an ElementSelectorModal.
@@ -41,35 +55,62 @@ class ElementsController extends BaseElementsController
      */
     public function actionGetModalBody(): Response
     {
-        $sourceKeys = Craft::$app->getRequest()->getParam('sources');
+        $sourceKeys = $this->request->getParam('sources');
         $elementType = $this->elementType();
         $context = $this->context();
 
-        $showSiteMenu = Craft::$app->getRequest()->getParam('showSiteMenu', 'auto');
+        $showSiteMenu = $this->request->getParam('showSiteMenu', 'auto');
 
         if ($showSiteMenu !== 'auto') {
             $showSiteMenu = (bool)$showSiteMenu;
         }
 
         if (is_array($sourceKeys)) {
+            $sourceKeys = array_flip($sourceKeys);
+            $allSources = Craft::$app->getElementIndexes()->getSources($elementType);
             $sources = [];
+            $nextHeading = null;
 
-            foreach ($sourceKeys as $key) {
-                $source = ElementHelper::findSource($elementType, $key, $context);
+            foreach ($allSources as $source) {
+                if (isset($source['heading'])) {
+                    // Queue the heading up to be included only if one of the following sources were requested
+                    $nextHeading = $source;
+                } elseif (isset($sourceKeys[$source['key']])) {
+                    if ($nextHeading !== null) {
+                        $sources[] = $nextHeading;
+                        $nextHeading = null;
+                    }
+                    $sources[] = $source;
+                    unset($sourceKeys[$source['key']]);
+                }
+            }
 
-                if ($source !== null) {
-                    $sources[$key] = $source;
+            // Did we miss any source keys? (This could happen if some are nested)
+            if (!empty($sourceKeys)) {
+                foreach (array_keys($sourceKeys) as $key) {
+                    $source = ElementHelper::findSource($elementType, $key, $context);
+                    if ($source !== null) {
+                        $sources[$key] = $source;
+                    }
                 }
             }
         } else {
             $sources = Craft::$app->getElementIndexes()->getSources($elementType);
         }
 
-        if (!empty($sources) && count($sources) === 1) {
-            $firstSource = reset($sources);
-            $showSidebar = !empty($firstSource['nested']);
-        } else {
-            $showSidebar = !empty($sources);
+        // Figure out if we should be showing the sidebar
+        $foundSource = false;
+        $showSidebar = false;
+        foreach ($sources as $source) {
+            // Make sure it's not a heading
+            if (!isset($source['heading'])) {
+                // If this is the second non-heading source we've come across, or it has nested sources, then we've seen enough
+                if ($foundSource || !empty($source['nested'])) {
+                    $showSidebar = true;
+                    break;
+                }
+                $foundSource = true;
+            }
         }
 
         return $this->asJson([
@@ -79,7 +120,7 @@ class ElementsController extends BaseElementsController
                 'sources' => $sources,
                 'showSidebar' => $showSidebar,
                 'showSiteMenu' => $showSiteMenu,
-            ])
+            ]),
         ]);
     }
 
@@ -93,7 +134,7 @@ class ElementsController extends BaseElementsController
     public function actionGetEditorHtml(): Response
     {
         $element = $this->_getEditorElement();
-        $includeSites = (bool)Craft::$app->getRequest()->getBodyParam('includeSites', false);
+        $includeSites = (bool)$this->request->getBodyParam('includeSites', false);
 
         return $this->_getEditorHtmlResponse($element, $includeSites);
     }
@@ -107,58 +148,56 @@ class ElementsController extends BaseElementsController
      */
     public function actionSaveElement(): Response
     {
-        /** @var Element $element */
         $element = $this->_getEditorElement();
 
-        // Figure out where the data will be in POST
-        $namespace = Craft::$app->getRequest()->getRequiredBodyParam('namespace');
+        // Get the params
+        $namespace = $this->request->getRequiredBodyParam('namespace');
+        $params = $this->request->getBodyParam($namespace, []);
+        ArrayHelper::remove($params, 'fields');
+
+        // Normalize the DateTime attributes
+        foreach ($element->datetimeAttributes() as $attribute) {
+            if (isset($params[$attribute])) {
+                $params[$attribute] = DateTimeHelper::toDateTime($params[$attribute]);
+            }
+        }
 
         // Configure the element
-        $params = Craft::$app->getRequest()->getBodyParam($namespace, []);
-        ArrayHelper::remove($params, 'fields');
         Craft::configure($element, $params);
-
-        // Set the custom field values
         $element->setFieldValuesFromRequest($namespace . '.fields');
 
         // Now save it
-        if ($element->enabled && $element->enabledForSite) {
+        if ($element->enabled && $element->getEnabledForSite()) {
             $element->setScenario(Element::SCENARIO_LIVE);
         }
 
-        if (Craft::$app->getElements()->saveElement($element)) {
-            // todo: super hacky. Adjust when we add revision support to all element types
-            // If this is an entry, should we save a new version?
-            if (($element instanceof Entry) && $element->getSection()->enableVersioning) {
-                Craft::$app->getEntryRevisions()->saveVersion($element);
-            }
-
-            $response = [
-                'success' => true,
-                'id' => $element->id,
-                'siteId' => $element->siteId,
-                'newTitle' => (string)$element,
-                'cpEditUrl' => $element->getCpEditUrl(),
-            ];
-
-            // Should we be including table attributes too?
-            $sourceKey = Craft::$app->getRequest()->getBodyParam('includeTableAttributesForSource');
-
-            if ($sourceKey) {
-                $attributes = Craft::$app->getElementIndexes()->getTableAttributes(get_class($element), $sourceKey);
-
-                // Drop the first one
-                array_shift($attributes);
-
-                foreach ($attributes as $attribute) {
-                    $response['tableAttributes'][$attribute[0]] = $element->getTableAttributeHtml($attribute[0]);
-                }
-            }
-
-            return $this->asJson($response);
+        if (!Craft::$app->getElements()->saveElement($element)) {
+            return $this->_getEditorHtmlResponse($element, false);
         }
 
-        return $this->_getEditorHtmlResponse($element, false);
+        $response = [
+            'success' => true,
+            'id' => $element->id,
+            'siteId' => $element->siteId,
+            'newTitle' => (string)$element,
+            'cpEditUrl' => $element->getCpEditUrl(),
+        ];
+
+        // Should we be including table attributes too?
+        $sourceKey = $this->request->getBodyParam('includeTableAttributesForSource');
+
+        if ($sourceKey) {
+            $attributes = Craft::$app->getElementIndexes()->getTableAttributes(get_class($element), $sourceKey);
+
+            // Drop the first one
+            array_shift($attributes);
+
+            foreach ($attributes as $attribute) {
+                $response['tableAttributes'][$attribute[0]] = $element->getTableAttributeHtml($attribute[0]);
+            }
+        }
+
+        return $this->asJson($response);
     }
 
     /**
@@ -168,8 +207,7 @@ class ElementsController extends BaseElementsController
      */
     public function actionGetCategoriesInputHtml(): Response
     {
-        $request = Craft::$app->getRequest();
-        $categoryIds = $request->getParam('categoryIds', []);
+        $categoryIds = $this->request->getParam('categoryIds', []);
 
         /** @var Category[] $categories */
         $categories = [];
@@ -177,26 +215,26 @@ class ElementsController extends BaseElementsController
         if (!empty($categoryIds)) {
             $categories = Category::find()
                 ->id($categoryIds)
-                ->siteId($request->getParam('siteId'))
+                ->siteId($this->request->getParam('siteId'))
                 ->anyStatus()
                 ->all();
 
             // Fill in the gaps
-            $categoriesService = Craft::$app->getCategories();
-            $categoriesService->fillGapsInCategories($categories);
+            $structuresService = Craft::$app->getStructures();
+            $structuresService->fillGapsInElements($categories);
 
             // Enforce the branch limit
-            if ($branchLimit = $request->getParam('branchLimit')) {
-                $categoriesService->applyBranchLimitToCategories($categories, $branchLimit);
+            if ($branchLimit = $this->request->getParam('branchLimit')) {
+                $structuresService->applyBranchLimitToElements($categories, $branchLimit);
             }
         }
 
         $html = $this->getView()->renderTemplate('_components/fieldtypes/Categories/input',
             [
                 'elements' => $categories,
-                'id' => $request->getParam('id'),
-                'name' => $request->getParam('name'),
-                'selectionLabel' => $request->getParam('selectionLabel'),
+                'id' => $this->request->getParam('id'),
+                'name' => $this->request->getParam('name'),
+                'selectionLabel' => $this->request->getParam('selectionLabel'),
             ]);
 
         return $this->asJson([
@@ -208,24 +246,31 @@ class ElementsController extends BaseElementsController
      * Returns the HTML for a single element
      *
      * @return Response
+     * @throws BadRequestHttpException
      */
     public function actionGetElementHtml(): Response
     {
-        $elementId = Craft::$app->getRequest()->getRequiredBodyParam('elementId');
-        $siteId = Craft::$app->getRequest()->getBodyParam('siteId', null);
-        $size = Craft::$app->getRequest()->getBodyParam('size', null);
-        $viewMode = Craft::$app->getRequest()->getBodyParam('viewMode', null);
+        $elementId = $this->request->getRequiredBodyParam('elementId');
+        $siteId = $this->request->getBodyParam('siteId');
         $element = Craft::$app->getElements()->getElementById($elementId, null, $siteId);
 
-        $view = $this->getView();
-        $html = $view->renderTemplate('_elements/element', compact('element', 'size', 'viewMode'));
-        $headHtml = $view->getHeadHtml();
+        if (!$element) {
+            throw new BadRequestHttpException('Invalid element ID or site ID');
+        }
 
-        return $this->asJson(['html' => $html, 'headHtml' => $headHtml]);
+        $context = $this->request->getBodyParam('context', 'field');
+        $size = $this->request->getBodyParam('size');
+
+        if ($size === null || !in_array($size, [Cp::ELEMENT_SIZE_SMALL, Cp::ELEMENT_SIZE_LARGE], true)) {
+            $viewMode = $this->request->getBodyParam('viewMode');
+            $size = $viewMode === 'thumbs' ? Cp::ELEMENT_SIZE_LARGE : Cp::ELEMENT_SIZE_SMALL;
+        }
+
+        $html = Cp::elementHtml($element, $context, $size);
+        $headHtml = $this->getView()->getHeadHtml();
+
+        return $this->asJson(compact('html', 'headHtml'));
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns the element that is currently being edited.
@@ -236,15 +281,14 @@ class ElementsController extends BaseElementsController
      */
     private function _getEditorElement(): ElementInterface
     {
-        $request = Craft::$app->getRequest();
         $elementsService = Craft::$app->getElements();
 
-        $elementId = $request->getBodyParam('elementId');
+        $elementId = $this->request->getBodyParam('elementId');
         /** @noinspection PhpUnhandledExceptionInspection */
-        $siteId = $request->getBodyParam('siteId') ?: Craft::$app->getSites()->getCurrentSite()->id;
+        $siteId = $this->request->getBodyParam('siteId') ?: Craft::$app->getSites()->getCurrentSite()->id;
 
         // Determine the element type
-        $elementType = $request->getBodyParam('elementType');
+        $elementType = $this->request->getBodyParam('elementType');
 
         if ($elementType === null && $elementId !== null) {
             $elementType = $elementsService->getElementTypeById($elementId);
@@ -265,13 +309,11 @@ class ElementsController extends BaseElementsController
         }
 
         // Instantiate the element
-        /** @var Element $element */
-        $attributes = $request->getBodyParam('attributes', []);
+        $attributes = $this->request->getBodyParam('attributes', []);
         $element = $this->_getEditorElementInternal($elementId, $elementType, $siteId, $attributes);
 
         $site = Craft::$app->getSites()->getSiteById($siteId);
 
-        /** @var Element $element */
         // Make sure the user is allowed to edit this site
         $userSession = Craft::$app->getUser();
         if (Craft::$app->getIsMultiSite() && $elementType::isLocalized() && !$userSession->checkPermission('editSite:' . $site->uid)) {
@@ -311,6 +353,12 @@ class ElementsController extends BaseElementsController
             throw new ForbiddenHttpException('The user doesn’t have permission to edit this element');
         }
 
+        // Prevalidate?
+        if ($this->request->getBodyParam('prevalidate') && $element->enabled && $element->getEnabledForSite()) {
+            $element->setScenario(Element::SCENARIO_LIVE);
+            $element->validate();
+        }
+
         return $element;
     }
 
@@ -324,9 +372,8 @@ class ElementsController extends BaseElementsController
      * @return ElementInterface
      * @throws BadRequestHttpException
      */
-    private function _getEditorElementInternal(int $elementId = null, string $elementType, int $siteId, array $attributes): ElementInterface
+    private function _getEditorElementInternal(?int $elementId, string $elementType, int $siteId, array $attributes): ElementInterface
     {
-        /** @var Element $element */
         if ($elementId !== null) {
             $element = Craft::$app->getElements()->getElementById($elementId, $elementType, $siteId);
 
@@ -354,54 +401,104 @@ class ElementsController extends BaseElementsController
      */
     private function _getEditorHtmlResponse(ElementInterface $element, bool $includeSites): Response
     {
-        /** @var Element $element */
         $siteIds = ElementHelper::editableSiteIdsForElement($element);
 
         if (empty($siteIds)) {
             throw new ForbiddenHttpException('User not permitted to edit content in any of the sites supported by this element');
         }
 
-        $response = [];
+        $view = $this->getView();
+        $namespace = 'editor_' . StringHelper::randomString(10);
 
-        if ($includeSites) {
-            if (count($siteIds) > 1) {
-                $response['siteIds'] = [];
+        $editorHtml = $view->namespaceInputs(function() use ($element) {
+            return $element->getEditorHtml();
+        }, $namespace);
+        $fieldLayout = $element->getFieldLayout();
 
-                foreach ($siteIds as $siteId) {
-                    $site = Craft::$app->getSites()->getSiteById($siteId);
+        if ($fieldLayout) {
+            // If only the placeholder was returned, wa can safely pull in the full field layout form render
+            if ($editorHtml === '<!-- FIELD LAYOUT -->') {
+                $form = $fieldLayout->createForm($element, false, [
+                    'namespace' => $namespace,
+                    'tabIdPrefix' => "$namespace-tab",
+                    'registerDeltas' => true,
+                ]);
+                $editorHtml = $form->render();
 
-                    $response['sites'][] = [
-                        'id' => $siteId,
-                        'name' => Craft::t('site', $site->name),
-                    ];
+                if (count($form->tabs) !== 1) {
+                    $tabHtml = Craft::$app->getView()->renderTemplate('_includes/tabs', [
+                        'tabs' => $form->getTabMenu(),
+                    ]);
                 }
             } else {
-                $response['sites'] = null;
+                $isDeltaRegistrationActive = $view->getIsDeltaRegistrationActive();
+                $view->setIsDeltaRegistrationActive(true);
+                $editorHtml = preg_replace_callback('/<!-- FIELD LAYOUT -->/', function() use ($element, $view, $namespace) {
+                    return $view->namespaceInputs(function() use ($element) {
+                        $fieldLayout = $element->getFieldLayout();
+                        if (!$fieldLayout) {
+                            return '';
+                        }
+
+                        $fields = [];
+
+                        foreach ($fieldLayout->getTabs() as $tab) {
+                            foreach ($tab->elements as $layoutElement) {
+                                if ($layoutElement instanceof BaseField) {
+                                    $fields[] = $layoutElement->formHtml($element);
+                                }
+                            }
+                        }
+
+                        return implode("\n", $fields);
+                    }, $namespace);
+                }, $editorHtml, 1);
+                $view->setIsDeltaRegistrationActive($isDeltaRegistrationActive);
             }
+        } else {
+            $editorHtml = preg_replace('<!-- FIELD LAYOUT -->', '', $editorHtml, 1);
         }
 
-        $response['siteId'] = $element->siteId;
-
-        $namespace = 'editor_' . StringHelper::randomString(10);
-        $this->getView()->setNamespace($namespace);
-
-        $response['html'] = '<input type="hidden" name="namespace" value="' . $namespace . '">';
-
+        $fieldHtml = [];
+        if ($editorHtml !== '') {
+            $fieldHtml[] = $editorHtml;
+        }
+        $fieldHtml[] = Html::hiddenInput('namespace', $namespace);
         if ($element->id !== null) {
-            $response['html'] .= '<input type="hidden" name="elementId" value="' . $element->id . '">';
+            $fieldHtml[] = Html::hiddenInput('elementId', $element->id);
         }
-
         if ($element->siteId !== null) {
-            $response['html'] .= '<input type="hidden" name="siteId" value="' . $element->siteId . '">';
+            $fieldHtml[] = Html::hiddenInput('siteId', $element->siteId);
+        }
+        if ($element->fieldLayoutId !== null) {
+            $fieldHtml[] = Html::hiddenInput('fieldLayoutId', $element->fieldLayoutId);
         }
 
-        $response['html'] .= '<div class="meta">' .
-            $this->getView()->namespaceInputs((string)$element->getEditorHtml()) .
-            '</div>';
+        $sidebarHtml = $view->namespaceInputs(function() use ($element) {
+            return $element->getSidebarHtml();
+        }, $namespace);
 
-        $view = $this->getView();
-        $response['headHtml'] = $view->getHeadHtml();
-        $response['footHtml'] = $view->getBodyHtml();
+        $response = [
+            'siteId' => $element->siteId,
+            'tabHtml' => $tabHtml ?? null,
+            'fieldHtml' => implode("\n", $fieldHtml),
+            'sidebarHtml' => $sidebarHtml,
+            'headHtml' => $view->getHeadHtml(),
+            'footHtml' => $view->getBodyHtml(),
+            'deltaNames' => $view->getDeltaNames(),
+            'initialDeltaValues' => $view->getInitialDeltaValues(),
+            'editUrl' => $element->getCpEditUrl(),
+        ];
+
+        if ($includeSites) {
+            $sitesService = Craft::$app->getSites();
+            $response['sites'] = array_map(function(int $siteId) use ($sitesService) {
+                return [
+                    'id' => $siteId,
+                    'name' => Craft::t('site', $sitesService->getSiteById($siteId)->getName()),
+                ];
+            }, $siteIds);
+        }
 
         return $this->asJson($response);
     }

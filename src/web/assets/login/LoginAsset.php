@@ -7,8 +7,11 @@
 
 namespace craft\web\assets\login;
 
+use Craft;
+use craft\validators\UserPasswordValidator;
 use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
+use craft\web\View;
 
 /**
  * Asset bundle for the Login page
@@ -18,22 +21,56 @@ class LoginAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public function init()
+    public $sourcePath = __DIR__ . '/dist';
+
+    /**
+     * @inheritdoc
+     */
+    public $depends = [
+        CpAsset::class,
+    ];
+
+    /**
+     * @inheritdoc
+     */
+    public $css = [
+        'css/login.css',
+    ];
+
+    /**
+     * @inheritdoc
+     */
+    public $js = [
+        'login.js',
+    ];
+
+    /**
+     * @inheritdoc
+     */
+    public function registerAssetFiles($view)
     {
-        $this->sourcePath = __DIR__ . '/dist';
+        parent::registerAssetFiles($view);
 
-        $this->depends = [
-            CpAsset::class,
-        ];
+        if ($view instanceof View) {
+            $view->registerTranslations('app', [
+                'Check your email for instructions to reset your password.',
+                'Invalid email.',
+                'Invalid username or email.',
+                'Login',
+                'Password',
+                'Reset Password',
+            ]);
 
-        $this->css = [
-            'login.css',
-        ];
+            $view->registerTranslations('yii', [
+                '{attribute} should contain at least {min, number} {min, plural, one{character} other{characters}}.',
+                '{attribute} should contain at most {max, number} {max, plural, one{character} other{characters}}.',
+            ]);
 
-        $this->js = [
-            'login' . $this->dotJs(),
-        ];
-
-        parent::init();
+            $view->registerJs(
+                'window.useEmailAsUsername = ' . (Craft::$app->getConfig()->getGeneral()->useEmailAsUsername ? 'true' : 'false') . ";\n" .
+                'window.minPasswordLength = ' . UserPasswordValidator::MIN_PASSWORD_LENGTH . ";\n" .
+                'window.maxPasswordLength = ' . UserPasswordValidator::MAX_PASSWORD_LENGTH
+            );
+        }
     }
 }

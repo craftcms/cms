@@ -14,13 +14,10 @@ use yii\base\Event;
  * Element content event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class ElementContentEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var ElementInterface|null The element model associated with the event.
      */

@@ -9,13 +9,15 @@ namespace craft\web;
 
 use Craft;
 use craft\base\ApplicationTrait;
-use craft\base\Plugin;
 use craft\db\Query;
 use craft\db\Table;
 use craft\debug\DeprecatedPanel;
+use craft\debug\Module as DebugModule;
 use craft\debug\RequestPanel;
 use craft\debug\UserPanel;
+use craft\helpers\App;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Path;
 use craft\helpers\UrlHelper;
@@ -26,7 +28,6 @@ use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\base\InvalidRouteException;
 use yii\db\Exception as DbException;
-use yii\debug\Module as DebugModule;
 use yii\debug\panels\AssetPanel;
 use yii\debug\panels\DbPanel;
 use yii\debug\panels\LogPanel;
@@ -38,6 +39,7 @@ use yii\web\ForbiddenHttpException;
 use yii\web\HttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
+use yii\web\UnauthorizedHttpException;
 
 /**
  * Craft Web Application class
@@ -49,23 +51,17 @@ use yii\web\Response;
  * @property Session $session The session component
  * @property UrlManager $urlManager The URL manager for this application
  * @property User $user The user component
- * @method Request getRequest()      Returns the request component.
- * @method \craft\web\Response getResponse()     Returns the response component.
- * @method Session getSession()      Returns the session component.
- * @method UrlManager getUrlManager()   Returns the URL manager for this application.
- * @method User getUser()         Returns the user component.
+ * @method Request getRequest() Returns the request component.
+ * @method \craft\web\Response getResponse() Returns the response component.
+ * @method Session getSession() Returns the session component.
+ * @method UrlManager getUrlManager() Returns the URL manager for this application.
+ * @method User getUser() Returns the user component.
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Application extends \yii\web\Application
 {
-    // Traits
-    // =========================================================================
-
     use ApplicationTrait;
-
-    // Constants
-    // =========================================================================
 
     /**
      * @event \yii\base\Event The event that is triggered after the application has been fully initialized
@@ -86,20 +82,6 @@ class Application extends \yii\web\Application
      */
     const EVENT_AFTER_EDITION_CHANGE = 'afterEditionChange';
 
-    // Public Methods
-    // =========================================================================
-
-    /**
-     * Constructor.
-     *
-     * @param array $config
-     */
-    public function __construct(array $config = [])
-    {
-        Craft::$app = $this;
-        parent::__construct($config);
-    }
-
     /**
      * Initializes the application.
      */
@@ -107,9 +89,15 @@ class Application extends \yii\web\Application
     {
         $this->state = self::STATE_INIT;
         $this->_preInit();
+
         parent::init();
-        $this->ensureResourcePathExists();
+
+        if (!App::isEphemeral()) {
+            $this->ensureResourcePathExists();
+        }
+
         $this->_postInit();
+        $this->authenticate();
         $this->debugBootstrap();
     }
 
@@ -150,128 +138,131 @@ class Application extends \yii\web\Application
      * Handles the specified request.
      *
      * @param Request $request the request to be handled
+     * @param bool $skipSpecialHandling Whether to skip the special case request handling stuff and go straight to
+     * the normal routing logic
      * @return Response the resulting response
-     * @throws HttpException
-     * @throws ServiceUnavailableHttpException
-     * @throws \craft\errors\DbConnectException
-     * @throws ForbiddenHttpException
-     * @throws \yii\web\NotFoundHttpException
+     * @throws \Throwable if reasons
      */
-    public function handleRequest($request): Response
+    public function handleRequest($request, bool $skipSpecialHandling = false): Response
     {
-        // Process resource requests before anything else
-        $this->_processResourceRequest($request);
+        if (!$skipSpecialHandling) {
+            // Process resource requests before anything else
+            $this->_processResourceRequest($request);
 
-        $headers = $this->getResponse()->getHeaders();
+            // Disable read/write splitting for POST requests
+            if (
+                $request->getIsPost() &&
+                !in_array($request->getActionSegments(), [
+                    ['element-indexes', 'count-elements'],
+                    ['element-indexes', 'data'],
+                    ['element-indexes', 'export'],
+                    ['element-indexes', 'get-elements'],
+                    ['element-indexes', 'get-more-elements'],
+                    ['element-indexes', 'get-source-tree-html'],
+                ])
+            ) {
+                $this->getDb()->enableReplicas = false;
+            }
 
-        if ($request->getIsCpRequest()) {
-            // Prevent robots from indexing/following the page
-            // (see https://developers.google.com/webmasters/control-crawl-index/docs/robots_meta_tag)
-            $headers->set('X-Robots-Tag', 'none');
+            $headers = $this->getResponse()->getHeaders();
+            $generalConfig = $this->getConfig()->getGeneral();
+
+            if ($generalConfig->permissionsPolicyHeader) {
+                $headers->set('Permissions-Policy', $generalConfig->permissionsPolicyHeader);
+            }
+
+            // Tell bots not to index/follow CP and tokenized pages
+            if (
+                $generalConfig->disallowRobots ||
+                $request->getIsCpRequest() ||
+                $request->getToken() !== null ||
+                ($request->getIsActionRequest() && !($request->getIsLoginRequest() && $request->getIsGet()))
+            ) {
+                $headers->set('X-Robots-Tag', 'none');
+            }
 
             // Prevent some possible XSS attack vectors
-            $headers->set('X-Frame-Options', 'SAMEORIGIN');
-            $headers->set('X-Content-Type-Options', 'nosniff');
-        }
-
-        // Send the X-Powered-By header?
-        if ($this->getConfig()->getGeneral()->sendPoweredByHeader) {
-            $original = $headers->get('X-Powered-By');
-            $headers->set('X-Powered-By', $original . ($original ? ',' : '') . $this->name);
-        } else {
-            // In case PHP is already setting one
-            header_remove('X-Powered-By');
-        }
-
-        // Process install requests
-        if (($response = $this->_processInstallRequest($request)) !== null) {
-            return $response;
-        }
-
-        // Check if the app path has changed.  If so, run the requirements check again.
-        if (($response = $this->_processRequirementsCheck($request)) !== null) {
-            $this->_unregisterDebugModule();
-
-            return $response;
-        }
-
-        // Makes sure that the uploaded files are compatible with the current database schema
-        if (!$this->getUpdates()->getIsCraftSchemaVersionCompatible()) {
-            $this->_unregisterDebugModule();
-
             if ($request->getIsCpRequest()) {
-                $version = $this->getInfo()->version;
-
-                throw new HttpException(200, Craft::t('app', 'Craft CMS does not support backtracking to this version. Please update to Craft CMS {version} or later.', [
-                    'version' => $version,
-                ]));
+                $headers->add('Content-Security-Policy', "frame-ancestors 'self'");
+                $headers->set('X-Frame-Options', 'SAMEORIGIN');
+                $headers->set('X-Content-Type-Options', 'nosniff');
             }
 
-            throw new ServiceUnavailableHttpException();
-        }
-
-        $projectConfig = $this->getProjectConfig();
-
-        // Make sure schema required by config files aligns with what we have.
-        if ($projectConfig->areChangesPending() && !$projectConfig->getAreConfigSchemaVersionsCompatible()) {
-            return $this->_handleIncompatibleConfig($request);
-        }
-
-        // getIsCraftDbMigrationNeeded will return true if we're in the middle of a manual or auto-update for Craft itself.
-        // If we're in maintenance mode and it's not a site request, show the manual update template.
-        if ($this->getUpdates()->getIsCraftDbMigrationNeeded()) {
-            return $this->_processUpdateLogic($request) ?: $this->getResponse();
-        }
-
-        // If there's a new version, but the schema hasn't changed, just update the info table
-        if ($this->getUpdates()->getHasCraftVersionChanged()) {
-            $this->getUpdates()->updateCraftVersionInfo();
-
-            // Delete all compiled templates
-            try {
-                FileHelper::clearDirectory($this->getPath()->getCompiledTemplatesPath(false));
-            } catch (InvalidArgumentException $e) {
-                // the directory doesn't exist
-            } catch (ErrorException $e) {
-                Craft::error('Could not delete compiled templates: ' . $e->getMessage());
-                Craft::$app->getErrorHandler()->logException($e);
-            }
-        }
-
-        // Check if a plugin needs to update the database.
-        if ($this->getUpdates()->getIsPluginDbUpdateNeeded()) {
-            return $this->_processUpdateLogic($request) ?: $this->getResponse();
-        }
-
-        // Check if there are any pending changes in project.yaml
-        if ($projectConfig->areChangesPending()) {
-            return $this->_processConfigSyncLogic($request) ?: $this->getResponse();
-        }
-
-        // If the system is offline, make sure they have permission to be here
-        $this->_enforceSystemStatusPermissions($request);
-
-        // If this is a non-login, non-validate, non-setPassword CP request, make sure the user has access to the CP
-        if ($request->getIsCpRequest() && !($request->getIsActionRequest() && $this->_isSpecialCaseActionRequest($request))) {
-            $user = $this->getUser();
-
-            // Make sure the user has access to the CP
-            if ($user->getIsGuest()) {
-                return $user->loginRequired();
+            // Send the X-Powered-By header?
+            if ($generalConfig->sendPoweredByHeader) {
+                $original = $headers->get('X-Powered-By');
+                $headers->set('X-Powered-By', $original . ($original ? ',' : '') . $this->name);
+            } else {
+                // In case PHP is already setting one
+                header_remove('X-Powered-By');
             }
 
-            if (!$user->checkPermission('accessCp')) {
-                throw new ForbiddenHttpException();
+            // Process install requests
+            if (($response = $this->_processInstallRequest($request)) !== null) {
+                return $response;
             }
 
-            // If they're accessing a plugin's section, make sure that they have permission to do so
-            $firstSeg = $request->getSegment(1);
+            // Check if the app path has changed.  If so, run the requirements check again.
+            if (($response = $this->_processRequirementsCheck($request)) !== null) {
+                $this->_unregisterDebugModule();
 
-            if ($firstSeg !== null) {
-                /** @var Plugin|null $plugin */
-                $plugin = $this->getPlugins()->getPlugin($firstSeg);
+                return $response;
+            }
 
-                if ($plugin && !$user->checkPermission('accessPlugin-' . $plugin->id)) {
+            // Makes sure that the uploaded files are compatible with the current database schema
+            if (!$this->getUpdates()->getIsCraftSchemaVersionCompatible()) {
+                $this->_unregisterDebugModule();
+
+                if ($request->getIsCpRequest()) {
+                    $version = $this->getInfo()->version;
+
+                    throw new HttpException(200, Craft::t('app', 'Craft CMS does not support backtracking to this version. Please update to Craft CMS {version} or later.', [
+                        'version' => $version,
+                    ]));
+                }
+
+                throw new ServiceUnavailableHttpException();
+            }
+
+            // getIsCraftDbMigrationNeeded will return true if we're in the middle of a manual or auto-update for Craft itself.
+            // If we're in maintenance mode and it's not a site request, show the manual update template.
+            if ($this->getUpdates()->getIsCraftDbMigrationNeeded()) {
+                return $this->_processUpdateLogic($request) ?: $this->getResponse();
+            }
+
+            // If there's a new version, but the schema hasn't changed, just update the info table
+            if ($this->getUpdates()->getHasCraftVersionChanged()) {
+                $this->getUpdates()->updateCraftVersionInfo();
+
+                // Delete all compiled templates
+                try {
+                    FileHelper::clearDirectory($this->getPath()->getCompiledTemplatesPath(false));
+                } catch (InvalidArgumentException $e) {
+                    // the directory doesn't exist
+                } catch (ErrorException $e) {
+                    Craft::error('Could not delete compiled templates: ' . $e->getMessage());
+                    Craft::$app->getErrorHandler()->logException($e);
+                }
+            }
+
+            // Check if a plugin needs to update the database.
+            if ($this->getUpdates()->getIsPluginDbUpdateNeeded()) {
+                return $this->_processUpdateLogic($request) ?: $this->getResponse();
+            }
+
+            // If this is a plugin template request, make sure the user has access to the plugin
+            // If this is a non-login, non-validate, non-setPassword CP request, make sure the user has access to the CP
+            if (
+                $request->getIsCpRequest() &&
+                !$request->getIsActionRequest() &&
+                ($firstSeg = $request->getSegment(1)) !== null &&
+                ($plugin = $this->getPlugins()->getPlugin($firstSeg)) !== null
+            ) {
+                $user = $this->getUser();
+                if ($user->getIsGuest()) {
+                    return $user->loginRequired();
+                }
+                if (!$user->checkPermission('accessPlugin-' . $plugin->id)) {
                     throw new ForbiddenHttpException();
                 }
             }
@@ -283,7 +274,12 @@ class Application extends \yii\web\Application
         }
 
         // If we're still here, finally let Yii do it's thing.
-        return parent::handleRequest($request);
+        try {
+            return parent::handleRequest($request);
+        } catch (\Throwable $e) {
+            $this->_unregisterDebugModule();
+            throw $e;
+        }
     }
 
     /**
@@ -329,12 +325,11 @@ class Application extends \yii\web\Application
         }
 
         // Override where Yii should find its asset deps
-        $libPath = Craft::getAlias('@lib');
-        Craft::setAlias('@bower/bootstrap/dist', $libPath . '/bootstrap');
-        Craft::setAlias('@bower/jquery/dist', $libPath . '/jquery');
-        Craft::setAlias('@bower/inputmask/dist', $libPath . '/inputmask');
-        Craft::setAlias('@bower/punycode', $libPath . '/punycode');
-        Craft::setAlias('@bower/yii2-pjax', $libPath . '/yii2-pjax');
+        $assetsPath = Craft::getAlias('@craft') . '/web/assets';
+        Craft::setAlias('@bower/jquery/dist', $assetsPath . '/jquery/dist');
+        Craft::setAlias('@bower/inputmask/dist', $assetsPath . '/inputmask/dist');
+        Craft::setAlias('@bower/punycode', $assetsPath . '/punycode/dist');
+        Craft::setAlias('@bower/yii2-pjax', $assetsPath . '/yii2pjax/dist');
     }
 
     /**
@@ -354,17 +349,22 @@ class Application extends \yii\web\Application
         return $component;
     }
 
-    // Protected Methods
-    // =========================================================================
-
     /**
      * Ensures that the resources folder exists and is writable.
      *
+     * @throws ErrorException
      * @throws InvalidConfigException
+     * @throws \yii\base\Exception
      */
     protected function ensureResourcePathExists()
     {
-        $resourceBasePath = Craft::getAlias($this->getConfig()->getGeneral()->resourceBasePath);
+        $generalConfig = $this->getConfig()->getGeneral();
+
+        if ($generalConfig->resourceBasePath === false) {
+            return;
+        }
+
+        $resourceBasePath = Craft::getAlias($generalConfig->resourceBasePath);
         @FileHelper::createDirectory($resourceBasePath);
 
         if (!is_dir($resourceBasePath) || !FileHelper::isWritable($resourceBasePath)) {
@@ -373,29 +373,64 @@ class Application extends \yii\web\Application
     }
 
     /**
+     * Authenticates the request.
+     *
+     * @throws UnauthorizedHttpException
+     * @since 3.5.0
+     */
+    protected function authenticate()
+    {
+        if (!Craft::$app->getConfig()->getGeneral()->enableBasicHttpAuth) {
+            return;
+        }
+
+        // Did the request include user credentials?
+        [$username, $password] = $this->getRequest()->getAuthCredentials();
+
+        if (!$username || !$password) {
+            return;
+        }
+
+        $user = Craft::$app->getUsers()->getUserByUsernameOrEmail(Db::escapeParam($username));
+
+        if (!$user) {
+            throw new UnauthorizedHttpException('Your request was made with invalid credentials.');
+        }
+
+        if (!$user->authenticate($password)) {
+            throw new UnauthorizedHttpException('Your request was made with invalid credentials.');
+        }
+
+        $this->getUser()->setIdentity($user);
+    }
+
+    /**
      * Bootstraps the Debug Toolbar if necessary.
      */
     protected function debugBootstrap()
     {
-        $session = $this->getSession();
-        if (!$session->getHasSessionId() && !$session->getIsActive()) {
-            return;
-        }
-
         $request = $this->getRequest();
-        if (
-            $request->getIsLivePreview() ||
-            ($request->getIsCpRequest() && !$session->get('enableDebugToolbarForCp')) ||
-            (!$request->getIsCpRequest() && !$session->get('enableDebugToolbarForSite'))
-        ) {
+
+        if ($request->getIsLivePreview() || $request->getIsPreview()) {
             return;
         }
 
-        $svg = rawurlencode(file_get_contents(dirname(__DIR__) . '/icons/c.svg'));
+        // Only load the debug toolbar if it's enabled for the user, or Dev Mode is enabled and the request wants it
+        $user = $this->getUser()->getIdentity();
+        $pref = $request->getIsCpRequest() ? 'enableDebugToolbarForCp' : 'enableDebugToolbarForSite';
+        if (!(
+            ($user && $user->admin && $user->getPreference($pref)) ||
+            (YII_DEBUG && $request->getHeaders()->get('X-Debug') === 'enable')
+        )) {
+            return;
+        }
+
+        $svg = rawurlencode(file_get_contents(dirname(__DIR__) . '/icons/c-debug.svg'));
         DebugModule::setYiiLogo("data:image/svg+xml;charset=utf-8,{$svg}");
 
         $this->setModule('debug', [
             'class' => DebugModule::class,
+            'basePath' => '@vendor/yiisoft/yii2-debug/src',
             'allowedIPs' => ['*'],
             'panels' => [
                 'config' => false,
@@ -407,7 +442,7 @@ class Application extends \yii\web\Application
                         UrlManager::class . '::_getMatchedUrlRoute',
                         UrlManager::class . '::_getTemplateRoute',
                         UrlManager::class . '::_getTokenRoute',
-                    ]
+                    ],
                 ],
                 'request' => RequestPanel::class,
                 'log' => LogPanel::class,
@@ -422,9 +457,6 @@ class Application extends \yii\web\Application
         $module = $this->getModule('debug');
         $module->bootstrap($this);
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Unregisters the Debug module's end body event.
@@ -444,17 +476,18 @@ class Application extends \yii\web\Application
      *
      * @param Request $request
      * @throws BadRequestHttpException
+     * @throws NotFoundHttpException
      */
     private function _processResourceRequest(Request $request)
     {
         // Does this look like a resource request?
         $resourceBaseUri = parse_url(Craft::getAlias($this->getConfig()->getGeneral()->resourceBaseUrl), PHP_URL_PATH);
-        $pathInfo = $request->getPathInfo();
-        if (strpos('/' . $pathInfo, $resourceBaseUri . '/') !== 0) {
+        $requestPath = $request->getFullPath();
+        if (strpos('/' . $requestPath, $resourceBaseUri . '/') !== 0) {
             return;
         }
 
-        $resourceUri = substr($pathInfo, strlen($resourceBaseUri));
+        $resourceUri = substr($requestPath, strlen($resourceBaseUri));
         $slash = strpos($resourceUri, '/');
         $hash = substr($resourceUri, 0, $slash);
 
@@ -472,12 +505,21 @@ class Application extends \yii\web\Application
             return;
         }
 
-        // Publish the directory
         $filePath = substr($resourceUri, strlen($hash) + 1);
         if (!Path::ensurePathIsContained($filePath)) {
             throw new BadRequestHttpException('Invalid resource path: ' . $filePath);
         }
-        $publishedPath = $this->getAssetManager()->getPublishedPath(Craft::getAlias($sourcePath), true) . DIRECTORY_SEPARATOR . $filePath;
+
+        // Publish the directory
+        [$publishedDir] = $this->getAssetManager()->publish(Craft::getAlias($sourcePath));
+
+        $publishedPath = $publishedDir . DIRECTORY_SEPARATOR . $filePath;
+        if (!file_exists($publishedPath)) {
+            throw new NotFoundHttpException("$filePath does not exist.");
+        }
+
+        // Don't send cache headers here, in case we're in the middle of deploying an update across multiple
+        // servers and this one hasn't been updated yet (https://github.com/craftcms/cms/issues/9140#issuecomment-877521916)
         $this->getResponse()
             ->sendFile($publishedPath, null, ['inline' => true]);
         $this->end();
@@ -516,7 +558,7 @@ class Application extends \yii\web\Application
         }
 
         // Is this an installer action request?
-        if ($isCpRequest && $request->getIsActionRequest() && ($request->getSegment(1) !== 'login')) {
+        if ($isCpRequest && $request->getIsActionRequest() && ($request->getSegment(1) !== Request::CP_PATH_LOGIN)) {
             $actionSegs = $request->getActionSegments();
             if (isset($actionSegs[0]) && $actionSegs[0] === 'install') {
                 return $this->_processActionRequest($request);
@@ -530,7 +572,7 @@ class Application extends \yii\web\Application
             }
 
             // Redirect to the installer if Dev Mode is enabled
-            if (Craft::$app->getConfig()->getGeneral()->devMode) {
+            if (YII_DEBUG) {
                 $url = UrlHelper::url('install');
                 $this->getResponse()->redirect($url);
                 $this->end();
@@ -547,7 +589,7 @@ class Application extends \yii\web\Application
      *
      * @param Request $request
      * @return Response|null
-     * @throws NotFoundHttpException if the requested action route is invalid
+     * @throws \Throwable if reasons
      */
     private function _processActionRequest(Request $request)
     {
@@ -557,53 +599,17 @@ class Application extends \yii\web\Application
             try {
                 Craft::debug("Route requested: '$route'", __METHOD__);
                 $this->requestedRoute = $route;
-
                 return $this->runAction($route, $_GET);
-            } catch (InvalidRouteException $e) {
-                throw new NotFoundHttpException(Craft::t('yii', 'Page not found.'), $e->getCode(), $e);
+            } catch (\Throwable $e) {
+                $this->_unregisterDebugModule();
+                if ($e instanceof InvalidRouteException) {
+                    throw new NotFoundHttpException(Craft::t('yii', 'Page not found.'), $e->getCode(), $e);
+                }
+                throw $e;
             }
         }
 
         return null;
-    }
-
-    /**
-     * Returns whether this is a special case request (something dealing with user sessions or updating)
-     * where system status / CP permissions shouldn't be taken into effect.
-     *
-     * @param Request $request
-     * @return bool
-     */
-    private function _isSpecialCaseActionRequest(Request $request): bool
-    {
-        $actionSegs = $request->getActionSegments();
-
-        if (empty($actionSegs)) {
-            return false;
-        }
-
-        return (
-            $actionSegs === ['app', 'migrate'] ||
-            $actionSegs === ['users', 'login'] ||
-            $actionSegs === ['users', 'forgot-password'] ||
-            $actionSegs === ['users', 'send-password-reset-email'] ||
-            $actionSegs === ['users', 'get-remaining-session-time'] ||
-            (
-                $request->getIsSingleActionRequest() &&
-                (
-                    $actionSegs === ['users', 'logout'] ||
-                    $actionSegs === ['users', 'set-password'] ||
-                    $actionSegs === ['users', 'verify-email']
-                )
-            ) ||
-            (
-                $request->getIsCpRequest() &&
-                (
-                    $actionSegs[0] === 'update' ||
-                    $actionSegs[0] === 'manualupdate'
-                )
-            )
-        );
     }
 
     /**
@@ -677,6 +683,7 @@ class Application extends \yii\web\Application
             $actionSegments = $request->getActionSegments();
             if (
                 ArrayHelper::firstValue($actionSegments) === 'updater' ||
+                $actionSegments === ['app', 'health-check'] ||
                 $actionSegments === ['app', 'migrate'] ||
                 $actionSegments === ['pluginstore', 'install', 'migrate']
             ) {
@@ -687,115 +694,5 @@ class Application extends \yii\web\Application
         // If an exception gets throw during the rendering of the 503 template, let
         // TemplatesController->actionRenderError() take care of it.
         throw new ServiceUnavailableHttpException();
-    }
-
-    /**
-     * @param Request $request
-     * @return Response|null
-     * @throws HttpException
-     * @throws ServiceUnavailableHttpException
-     * @throws \yii\base\ExitException
-     */
-    private function _processConfigSyncLogic(Request $request)
-    {
-        $this->_unregisterDebugModule();
-
-        // Let all non-action CP requests through.
-        if (
-            $request->getIsCpRequest() &&
-            (!$request->getIsActionRequest() || $request->getActionSegments() == ['users', 'login'])
-        ) {
-            // Show the config sync kickoff template
-            return $this->runAction('templates/config-sync-kickoff');
-        }
-
-        // We'll also let update actions go through
-        if ($request->getIsActionRequest()) {
-            $actionSegments = $request->getActionSegments();
-            $firstSegment = ArrayHelper::firstValue($actionSegments);
-            if (
-                $firstSegment === 'updater' ||
-                $firstSegment === 'config-sync' ||
-                $actionSegments === ['app', 'migrate'] ||
-                $actionSegments === ['pluginstore', 'install', 'migrate']
-            ) {
-                return $this->runAction(implode('/', $actionSegments));
-            }
-        }
-
-        // If an exception gets throw during the rendering of the 503 template, let
-        // TemplatesController->actionRenderError() take care of it.
-        throw new ServiceUnavailableHttpException();
-    }
-
-    /**
-     * @param Request $request
-     * @return Response
-     * @throws HttpException
-     * @throws ServiceUnavailableHttpException
-     * @throws \yii\base\ExitException
-     */
-    private function _handleIncompatibleConfig(Request $request): Response
-    {
-        $this->_unregisterDebugModule();
-
-        // Let all non-action CP requests through.
-        if (
-            $request->getIsCpRequest() &&
-            (!$request->getIsActionRequest() || $request->getActionSegments() == ['users', 'login'])
-        ) {
-            // Show the manual update notification template
-            return $this->runAction('templates/incompatible-config-alert');
-        }
-
-        // If an exception gets throw during the rendering of the 503 template, let
-        // TemplatesController->actionRenderError() take care of it.
-        throw new ServiceUnavailableHttpException();
-    }
-
-    /**
-     * Checks if the system is off, and if it is, enforces the "Access the site/CP when the system is off" permissions.
-     *
-     * @param Request $request
-     * @throws ServiceUnavailableHttpException
-     */
-    private function _enforceSystemStatusPermissions(Request $request)
-    {
-        if (!$this->_checkSystemStatusPermissions($request)) {
-            $error = null;
-
-            if (!$this->getUser()->getIsGuest()) {
-                if ($request->getIsCpRequest()) {
-                    $error = Craft::t('app', 'Your account doesn’t have permission to access the Control Panel when the system is offline.');
-                } else {
-                    $error = Craft::t('app', 'Your account doesn’t have permission to access the site when the system is offline.');
-                }
-            } else {
-                // If this is a CP request, redirect to the Login page
-                if ($this->getRequest()->getIsCpRequest()) {
-                    $this->getUser()->loginRequired();
-                    $this->end();
-                }
-            }
-
-            $this->_unregisterDebugModule();
-            throw new ServiceUnavailableHttpException($error);
-        }
-    }
-
-    /**
-     * Returns whether the user has permission to be accessing the site/CP while it's offline, if it is.
-     *
-     * @param Request $request
-     * @return bool
-     */
-    private function _checkSystemStatusPermissions(Request $request): bool
-    {
-        if ($this->getIsLive() || $this->_isSpecialCaseActionRequest($request)) {
-            return true;
-        }
-
-        $permission = $request->getIsCpRequest() ? 'accessCpWhenSystemIsOff' : 'accessSiteWhenSystemIsOff';
-        return $this->getUser()->checkPermission($permission);
     }
 }

@@ -18,23 +18,19 @@ class EditEntryAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public function init()
-    {
-        $this->sourcePath = __DIR__ . '/dist';
+    public $sourcePath = __DIR__ . '/dist';
 
-        $this->depends = [
-            CpAsset::class,
-        ];
+    /**
+     * @inheritdoc
+     */
+    public $depends = [
+        CpAsset::class,
+    ];
 
-        $this->css = [
-            'entry.css',
-        ];
-
-        $this->js = [
-            'EntryDraftEditor' . $this->dotJs(),
-            'EntryTypeSwitcher' . $this->dotJs(),
-        ];
-
-        parent::init();
-    }
+    /**
+     * @inheritdoc
+     */
+    public $js = [
+        'EntryTypeSwitcher.js',
+    ];
 }

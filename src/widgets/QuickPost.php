@@ -18,13 +18,10 @@ use craft\web\assets\quickpost\QuickPostAsset;
  * QuickPost represents a Quick Post dashboard widget.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class QuickPost extends Widget
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -36,13 +33,15 @@ class QuickPost extends Widget
     /**
      * @inheritdoc
      */
-    public static function iconPath()
+    public static function icon()
     {
-        return Craft::getAlias('@app/icons/newspaper.svg');
+        return Craft::getAlias('@appicons/newspaper.svg');
     }
 
-    // Properties
-    // =========================================================================
+    /**
+     * @var string The site ID that the widget should pull entries from
+     */
+    public $siteId;
 
     /**
      * @var int|null The ID of the section that the widget should post to
@@ -63,9 +62,6 @@ class QuickPost extends Widget
      * @var
      */
     private $_section;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -90,9 +86,9 @@ class QuickPost extends Widget
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['section'], 'required'];
         $rules[] = [['section', 'entryType'], 'integer'];
         return $rules;
@@ -114,10 +110,18 @@ class QuickPost extends Widget
             }
         }
 
+        $fieldsByEntryTypeId = [];
+        foreach ($sections as $section) {
+            foreach ($section->getEntryTypes() as $entryType) {
+                $fieldsByEntryTypeId[$entryType->id] = $entryType->getFieldLayout()->getCustomFieldElements();
+            }
+        }
+
         return Craft::$app->getView()->renderTemplate('_components/widgets/QuickPost/settings',
             [
                 'sections' => $sections,
-                'widget' => $this
+                'fieldsByEntryTypeId' => $fieldsByEntryTypeId,
+                'widget' => $this,
             ]);
     }
 
@@ -164,6 +168,7 @@ class QuickPost extends Widget
         $entryType = $entryTypes[$entryTypeId];
 
         $params = [
+            'siteId' => $this->siteId ?? Craft::$app->getSites()->getPrimarySite()->id,
             'sectionId' => $section->id,
             'typeId' => $entryTypeId,
         ];
@@ -174,22 +179,21 @@ class QuickPost extends Widget
             [
                 'section' => $section,
                 'entryType' => $entryType,
-                'widget' => $this
+                'widget' => $this,
             ]);
 
         $fieldJs = $view->clearJsBuffer(false);
-
-        $view->registerJs('new Craft.QuickPostWidget(' .
-            $this->id . ', ' .
-            Json::encode($params) . ', ' .
-            "function() {\n" . $fieldJs .
-            "\n});");
+        $jsParams = Json::encode($params);
+        $jsHtml = Json::encode($html);
+        $js = <<<JS
+new Craft.QuickPostWidget($this->id, $jsParams, () => {
+  $fieldJs
+}, $jsHtml);
+JS;
+        $view->registerJs($js);
 
         return $html;
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns the widget's section.

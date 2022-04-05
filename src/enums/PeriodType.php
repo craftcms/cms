@@ -12,13 +12,10 @@ namespace craft\enums;
  * This class is a poor man's version of an enum, since PHP does not have support for native enumerations.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 2.0
+ * @since 2.0.0
  */
 abstract class PeriodType
 {
-    // Constants
-    // =========================================================================
-
     const Seconds = 'seconds';
     const Minutes = 'minutes';
     const Hours = 'hours';

@@ -8,7 +8,6 @@
 namespace craft\elements\actions;
 
 use Craft;
-use craft\base\Element;
 use craft\base\ElementAction;
 use craft\base\ElementInterface;
 use craft\elements\db\ElementQueryInterface;
@@ -21,9 +20,6 @@ use craft\elements\db\ElementQueryInterface;
  */
 class Duplicate extends ElementAction
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var bool Whether to also duplicate the selected elements’ descendants
      */
@@ -33,9 +29,6 @@ class Duplicate extends ElementAction
      * @var string|null The message that should be shown after the elements get deleted
      */
     public $successMessage;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -47,9 +40,6 @@ class Duplicate extends ElementAction
             : Craft::t('app', 'Duplicate');
     }
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -59,12 +49,11 @@ class Duplicate extends ElementAction
             $query->orderBy(['structureelements.lft' => SORT_ASC]);
         }
 
-        /** @var Element[] $elements */
         $elements = $query->all();
         $successCount = 0;
         $failCount = 0;
 
-        $this->_duplicateElements($elements, $successCount, $failCount);
+        $this->_duplicateElements($query, $elements, $successCount, $failCount);
 
         // Did all of them fail?
         if ($successCount === 0) {
@@ -82,13 +71,14 @@ class Duplicate extends ElementAction
     }
 
     /**
-     * @param Element[] $elements
+     * @param ElementQueryInterface $query
+     * @param ElementInterface[] $elements
      * @param int[] $duplicatedElementIds
      * @param int $successCount
      * @param int $failCount
      * @param ElementInterface|null $newParent
      */
-    private function _duplicateElements(array $elements, int &$successCount, int &$failCount, array &$duplicatedElementIds = [], ElementInterface $newParent = null)
+    private function _duplicateElements(ElementQueryInterface $query, array $elements, int &$successCount, int &$failCount, array &$duplicatedElementIds = [], ElementInterface $newParent = null)
     {
         $elementsService = Craft::$app->getElements();
         $structuresService = Craft::$app->getStructures();
@@ -101,13 +91,8 @@ class Duplicate extends ElementAction
                 continue;
             }
 
-            $newAttributes = [];
-            if ($element::hasTitles()) {
-                $newAttributes['title'] = Craft::t('app', '{title} copy', ['title' => $element->title]);
-            }
-
             try {
-                $duplicate = $elementsService->duplicateElement($element, $newAttributes);
+                $duplicate = $elementsService->duplicateElement($element);
             } catch (\Throwable $e) {
                 // Validation error
                 $failCount++;
@@ -120,14 +105,21 @@ class Duplicate extends ElementAction
             if ($newParent) {
                 // Append it to the duplicate of $element's parent
                 $structuresService->append($element->structureId, $duplicate, $newParent);
-            } else if ($element->structureId) {
+            } elseif ($element->structureId) {
                 // Place it right next to the original element
                 $structuresService->moveAfter($element->structureId, $duplicate, $element);
             }
 
             if ($this->deep) {
-                $children = $element->getChildren()->anyStatus()->all();
-                $this->_duplicateElements($children, $successCount, $failCount, $duplicatedElementIds, $duplicate);
+                // Don't use $element->children() here in case its lft/rgt values have changed
+                $children = $element::find()
+                    ->siteId($element->siteId)
+                    ->descendantOf($element->id)
+                    ->descendantDist(1)
+                    ->anyStatus()
+                    ->all();
+
+                $this->_duplicateElements($query, $children, $successCount, $failCount, $duplicatedElementIds, $duplicate);
             }
         }
     }

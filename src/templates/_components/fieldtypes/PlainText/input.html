@@ -2,18 +2,22 @@
 
 {%- set class = [
     'nicetext',
-    (field.code ? 'code' : null)
-]|filter|join(' ') %}
+    field.code ? 'code',
+    field.uiMode == 'enlarged' ? 'readable',
+]|filter %}
 
 {% set config = {
-    id: name,
+    id: id,
+    describedBy: field.describedBy,
     name: name,
     value: value,
     class: class,
     maxlength: field.charLimit,
     showCharsLeft: true,
-    placeholder: field.placeholder|t('site'),
-    rows: field.initialRows
+    placeholder: field.placeholder ? field.placeholder|t('site'),
+    required: field.required,
+    rows: field.initialRows,
+    orientation: orientation ?? null,
 } %}
 
 {% if field.multiline %}

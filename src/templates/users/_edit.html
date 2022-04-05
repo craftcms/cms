@@ -2,19 +2,17 @@
 
 {% if CraftEdition == CraftPro and currentUser.can('editUsers') %}
     {% set crumbs = [
-    { label: "Users"|t('app'), url: url('users') }
+        { label: "Users"|t('app'), url: url('users') },
     ] %}
 {% endif %}
 
 {% import "_includes/forms" as forms %}
 
-{% do view.registerTranslations('app', [
-    "Are you sure you want to delete this photo?",
-]) %}
-
 {% do view.registerAssetBundle("craft\\web\\assets\\fileupload\\FileUploadAsset") %}
+{% do view.setIsDeltaRegistrationActive(true) %}
 
-{% set requireEmailVerification = craft.app.projectConfig.get('users.requireEmailVerification') %}
+{% set requireEmailVerification = craft.app.projectConfig.get('users.requireEmailVerification') ?? true %}
+{% set canAdministrateUsers = currentUser.can('administrateUsers') %}
 
 {% if craft.app.request.isPost %}
     {% set currentGroupIds = craft.app.request.getBodyParam('groups') ?: [] %}
@@ -25,7 +23,7 @@
 {% set hiddenInputs %}
     {{ csrfInput() }}
     {% if not isNewUser -%}
-        <input type="hidden" name="userId" value="{{ user.id }}">
+        {{ hiddenInput('userId', user.id) }}
     {%- endif %}
 {% endset %}
 
@@ -33,11 +31,11 @@
 
 {% block actionButton %}
     {% if not currentUser.can('registerUsers') or CraftEdition != CraftPro %}
-        <div class="btn submit formsubmit" data-form="userform">{{ 'Save'|t('app') }}</div>
+        <button type="button" class="btn submit formsubmit" data-form="userform">{{ 'Save'|t('app') }}</button>
     {% else %}
         <div class="btngroup">
-            <div class="btn submit formsubmit" data-form="userform">{{ 'Save'|t('app') }}</div>
-            <div class="btn submit menubtn" data-form="userform"></div>
+            <button type="button" class="btn submit formsubmit" data-form="userform">{{ 'Save'|t('app') }}</button>
+            <button type="button" class="btn submit menubtn" data-form="userform"></button>
             <div class="menu">
                 <ul>
                     <li>
@@ -54,65 +52,85 @@
 {% endblock %}
 
 {% block content %}
-    <form id="userform" method="post" accept-charset="UTF-8" data-saveshortcut data-saveshortcut-redirect="{{ (user.getIsCurrent() ? 'myaccount' : (CraftEdition == CraftPro and currentUser.can('editUsers') ? 'users/{id}' : 'dashboard'))|hash }}" data-confirm-unload>
-        <input type="hidden" name="action" value="users/save-user">
+    {% set formAttributes = {
+        id: 'userform',
+        method: 'post',
+        'accept-charset': 'UTF-8',
+        data: {
+            saveshortcut: true,
+            'saveshortcut-redirect':  (user.getIsCurrent() ? 'myaccount' : (CraftEdition == CraftPro and currentUser.can('editUsers') ? 'users/{id}' : 'dashboard'))|hash,
+            'saveshortcut-scroll': true,
+            'confirm-unload': true,
+            delta: true,
+        },
+    } %}
+    <form {{ attr(formAttributes) }}>
+        {{ actionInput('users/save-user') }}
         {{ redirectInput(CraftEdition == CraftPro and currentUser.can('editUsers') ? 'users' : 'dashboard') }}
         {{ hiddenInputs }}
 
-        <div id="account">
+        <div id="account" class="flex-fields">
             {% include "users/_accountfields" %}
 
-            {% if not isNewUser %}
+            {% if not isNewUser and showPhotoField %}
                 {{ forms.field({
                     label: "Photo"|t('app'),
                     id: 'photo'
                 }, include('users/_photo', {user: user}, with_context = false)) }}
             {% endif %}
 
-            <hr>
-
             {% if isNewUser %}
+                <hr>
 
                 {{ forms.textField({
                     label: "Email"|t('app'),
-                    instructions: (requireEmailVerification and not currentUser.admin ? 'A verification email will be sent automatically.'|t('app')),
                     id: 'email',
                     name: 'email',
                     value: user.email,
                     required: true,
                     type: 'email',
-                    errors: user.getErrors('email')|merge(user.getErrors('unverifiedEmail'))
+                    errors: user.getErrors('email')|merge(user.getErrors('unverifiedEmail')),
+                    inputAttributes: {
+                        data: {lpignore: 'true'},
+                    },
                 }) }}
 
-                {% if requireEmailVerification and currentUser.admin %}
-                    {{ forms.checkboxField({
-                        label: "Send an activation email now?"|t('app'),
-                        name: 'sendVerificationEmail',
-                        checked: true
-                    }) }}
-                {% endif %}
+                {{ forms.checkboxField({
+                    label: 'Send an activation email now'|t('app'),
+                    name: 'sendActivationEmail',
+                    checked: true
+                }) }}
 
-            {% elseif user.getIsCurrent() or currentUser.admin or currentUser.can('administrateUsers') %}
+            {% elseif user.getIsCurrent() or canAdministrateUsers %}
+                <hr>
 
                 {{ forms.textField({
                     label: "Email"|t('app'),
-                    instructions: (requireEmailVerification and not currentUser.admin ? 'New email addresses must be verified before taking effect.'|t('app')),
+                    warning: requireEmailVerification and not canAdministrateUsers
+                        ? 'New email addresses must be verified before taking effect.'|t('app'),
                     id: 'email',
                     name: 'email',
                     value: user.email,
                     required: true,
                     type: 'email',
-                    errors: user.getErrors('email')|merge(user.getErrors('unverifiedEmail'))
+                    errors: user.getErrors('email')|merge(user.getErrors('unverifiedEmail')),
+                    inputAttributes: {
+                        data: {lpignore: 'true'},
+                    },
                 }) }}
 
                 {% if user.getIsCurrent() %}
-                    {{ forms.textField({
+                    {{ forms.passwordField({
                         label: "New Password"|t('app'),
                         id: 'newPassword',
                         name: 'newPassword',
-                        type: 'password',
                         autocomplete: 'new-password',
-                        errors: user.getErrors('newPassword')
+                        errors: user.getErrors('newPassword'),
+                        inputAttributes: {
+                            data: {
+                                lpignore: user.getIsCurrent() ? false : 'true',
+                            }|filter,
+                        },
                     }) }}
 
                     {% js %}
@@ -120,7 +138,7 @@
                     {% endjs %}
                 {% endif %}
 
-                {% if currentUser.admin %}
+                {% if canAdministrateUsers %}
                     {{ forms.checkboxField({
                         label: "Require a password reset on next login"|t('app'),
                         name: 'passwordResetRequired',
@@ -131,50 +149,40 @@
             {% endif %}
         </div>
 
-        {% for tab in user.getFieldLayout().getTabs() %}
-            <div id="profile-{{ tab.getHtmlId() }}" class="hidden">
-                {% include "_includes/fields" with {
-                    fields:  tab.getFields(),
-                    element: user
-                } only %}
-            </div>
-        {% endfor %}
+        {{ fieldsHtml|raw }}
 
         {% if CraftEdition == CraftPro and (currentUser.can('assignUserGroups') or currentUser.can('assignUserPermissions')) %}
-            <div id="perms" class="hidden">
+            <div id="perms" class="flex-fields hidden">
 
                 {% if CraftEdition == CraftPro and currentUser.can('assignUserGroups') %}
-                    <h2>{{ "User Groups"|t('app') }}</h2>
+                    <fieldset>
+                        <h2>{{ "User Groups"|t('app') }}</h2>
 
-                    {% set assignableGroups = craft.app.userGroups.getAssignableGroups(user) %}
+                        {% do view.registerDeltaName('groups') %}
+                        {% set assignableGroups = craft.app.userGroups.getAssignableGroups(user) %}
 
-                    {% set userGroupsInput %}
-                        <input type="hidden" name="groups" value="">
-
-                        {% if assignableGroups %}
-                            <ul>
-                                {% for group in assignableGroups %}
-                                    <li>
-                                        {{ forms.checkbox({
-                                            label: group.name|t('site')|e,
+                        {% embed '_includes/forms/field' with {
+                            fieldId: 'user-groups',
+                        } %}
+                            {% block input %}
+                                {% from '_includes/forms' import checkboxField %}
+                                {{ hiddenInput('groups', '') }}
+                                {% if assignableGroups %}
+                                    {% for group in assignableGroups %}
+                                        {{ checkboxField({
+                                            label: group.name|t('site'),
+                                            instructions: group.description ? group.description|t('site')|e,
                                             name: 'groups[]',
                                             value: group.id,
                                             checked: (group.id in currentGroupIds)
                                         }) }}
-                                    </li>
-                                {% endfor %}
-                            </ul>
-
-                        {% else %}
-                            <p>{{ "No user groups exist yet."|t('app') }}</p>
-                        {% endif %}
-                    {% endset %}
-
-                    {{ forms.field({
-                        fieldId: 'user-groups'
-                    }, userGroupsInput) }}
-
-                    <hr>
+                                    {% endfor %}
+                                {% else %}
+                                    <p>{{ "No user groups exist yet."|t('app') }}</p>
+                                {% endif %}
+                            {% endblock %}
+                        {% endembed %}
+                    </fieldset>
                 {% endif %}
 
                 {% if currentUser.can('assignUserPermissions') %}
@@ -182,7 +190,7 @@
 
                     {% if currentUser.admin and CraftEdition == CraftPro %}
                         {{ forms.checkboxField({
-                            label: '<strong>' ~ "Admin"|t('app') ~ '</strong>',
+                            label: raw("<b>#{'Admin'|t('app')}</b>"),
                             name: 'admin',
                             id: 'admin',
                             checked: user.admin,
@@ -190,7 +198,8 @@
                         }) }}
                     {% endif %}
 
-                    <input type="hidden" name="permissions" value="">
+                    {% do view.registerDeltaName('permissions') %}
+                    {{ hiddenInput('permissions', '') }}
 
                     <div id="permissions" class="field{% if user.admin %} hidden{% endif %}">
                         {% include "_includes/permissions" with {
@@ -204,31 +213,24 @@
         {% endif %}
 
         {% if user.getIsCurrent() %}
-            <div id="prefs" class="hidden">
-                {% set languageInput %}
-                    <div class="select">
-                        <select id="language" name="preferredLanguage">
-                            {% set allAppLocales = craft.app.i18n.getAppLocales()|multisort('displayName')|index('id') %}
-                            {% set userLanguage = user.getPreferredLanguage() ?: craft.app.language %}
+            <div id="prefs" class="flex-fields hidden">
+                {{ forms.selectField({
+                    id: 'preferredLanguage',
+                    name: 'preferredLanguage',
+                    label: "Language"|t('app'),
+                    instructions: 'The language that the control panel should use.'|t('app'),
+                    options: localeOptions,
+                    value: userLanguage,
+                }) }}
 
-                            {% if allAppLocales[userLanguage] is not defined %}
-                                {% set userLanguage = userLanguage|replace('/-.*/', '') %}
-                                {% if allAppLocales[userLanguage] is not defined %}
-                                    {% set userLanguage = 'en' %}
-                                {% endif %}
-                            {% endif %}
-
-                            {% for locale in allAppLocales %}
-                                <option value="{{ locale.id }}" {% if locale.id == userLanguage %}selected{% endif %}>{{ locale.getDisplayName() }}</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                {% endset %}
-
-                {{ forms.field({
-                    id: 'language',
-                    label: "Language"|t('app')
-                }, languageInput) }}
+                {{ forms.selectField({
+                    id: 'preferredLocale',
+                    name: 'preferredLocale',
+                    label: "Formatting Locale"|t('app'),
+                    instructions: 'The locale that should be used for date and number formatting.'|t('app'),
+                    options: localeOptions|unshift({label: 'Same as language'|t('app'), value: ''}),
+                    value: userLocale,
+                }) }}
 
                 {{ forms.selectField({
                     label: "Week Start Day"|t('app'),
@@ -238,23 +240,80 @@
                     value: user.getPreference('weekStartDay', craft.app.config.general.defaultWeekStartDay)
                 }) }}
 
+                <hr>
+
+                <fieldset>
+                    {% embed '_includes/forms/field' with {
+                        label: 'Accessibility'|t('app'),
+                    } %}
+                        {% set a11yDefaults = craft.app.config.general.accessibilityDefaults %}
+                        {% block input %}
+                            {% from '_includes/forms' import checkboxField %}
+                            {{ checkboxField({
+                                label: 'Always show focus rings'|t('app'),
+                                name: 'alwaysShowFocusRings',
+                                id: 'alwaysShowFocusRings',
+                                checked: user.getPreference('alwaysShowFocusRings') ?? a11yDefaults['alwaysShowFocusRings'] ?? false,
+                            }) }}
+                            {{ checkboxField({
+                                label: 'Use shapes to represent statuses'|t('app'),
+                                name: 'useShapes',
+                                id: 'useShapes',
+                                checked: user.getPreference('useShapes') ?? a11yDefaults['useShapes'] ?? false,
+                            }) }}
+                            {{ checkboxField({
+                                label: 'Underline links'|t('app'),
+                                name: 'underlineLinks',
+                                id: 'underlineLinks',
+                                checked: user.getPreference('underlineLinks') ?? a11yDefaults['underlineLinks'] ?? false,
+                            }) }}
+                        {% endblock %}
+                    {% endembed %}
+                </fieldset>
+
                 {% if user.admin %}
-                    <hr>
-
-                    {{ forms.checkboxField({
-                        label: "Show the debug toolbar on the front end"|t('app'),
-                        name: 'enableDebugToolbarForSite',
-                        id: 'enableDebugToolbarForSite',
-                        checked: user.getPreference('enableDebugToolbarForSite')
-                    }) }}
-
-                    {{ forms.checkboxField({
-                        label: "Show the debug toolbar on the Control Panel"|t('app'),
-                        name: 'enableDebugToolbarForCp',
-                        id: 'enableDebugToolbarForCp',
-                        checked: user.getPreference('enableDebugToolbarForCp')
-                    }) }}
+                    <fieldset>
+                        {% embed '_includes/forms/field' with {
+                            label: 'Development'|t('app'),
+                        } %}
+                            {% block input %}
+                                {% from '_includes/forms' import checkboxField %}
+                                {{ checkboxField({
+                                    label: 'Show field handles in edit forms'|t('app'),
+                                    name: 'showFieldHandles',
+                                    id: 'showFieldHandles',
+                                    checked: user.getPreference('showFieldHandles')
+                                }) }}
+                                {{ checkboxField({
+                                    label: "Show the debug toolbar on the front end"|t('app'),
+                                    name: 'enableDebugToolbarForSite',
+                                    id: 'enableDebugToolbarForSite',
+                                    checked: user.getPreference('enableDebugToolbarForSite')
+                                }) }}
+                                {{ checkboxField({
+                                    label: "Show the debug toolbar in the control panel"|t('app'),
+                                    name: 'enableDebugToolbarForCp',
+                                    id: 'enableDebugToolbarForCp',
+                                    checked: user.getPreference('enableDebugToolbarForCp')
+                                }) }}
+                                {{ checkboxField({
+                                    label: 'Profile Twig templates when Dev Mode is disabled'|t('app'),
+                                    name: 'profileTemplates',
+                                    id: 'profileTemplates',
+                                    checked: user.getPreference('profileTemplates')
+                                }) }}
+                                {{ checkboxField({
+                                    label: 'Show full exception views when Dev Mode is disabled'|t('app'),
+                                    name: 'showExceptionView',
+                                    id: 'showExceptionView',
+                                    checked: user.getPreference('showExceptionView')
+                                }) }}
+                            {% endblock %}
+                        {% endembed %}
+                    </fieldset>
                 {% endif %}
+
+                {% hook 'cp.users.edit.prefs' %}
             </div>
         {% endif %}
 
@@ -277,7 +336,7 @@
 
                         {% if actions|length %}
                             <div>
-                                <div id="action-menubtn" class="btn menubtn" data-icon="settings" title="{{ 'Actions'|t('app') }}"></div>
+                                <button type="button" id="action-menubtn" class="btn menubtn" data-icon="settings" title="{{ 'Actions'|t('app') }}" aria-label="{{ 'Actions'|t('app') }}"></button>
                                 <div class="menu">
                                     {% for actionList in actions %}
                                         {% if not loop.first %}<hr>{% endif %}
@@ -298,7 +357,7 @@
                     </div>
                 </div>
 
-                {% if user.getStatus() == 'locked' and craft.app.config.general.cooldownDuration and user.remainingCooldownTime %}
+                {% if user.locked and craft.app.config.general.cooldownDuration and user.remainingCooldownTime %}
                     <div class="data">
                         <h5 class="heading">{{ "Cooldown Time Remaining"|t('app') }}</h5>
                         <p class="value">{{ user.remainingCooldownTime|duration }}</p>

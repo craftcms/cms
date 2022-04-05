@@ -4,7 +4,6 @@
  * File Manager.
  */
 Craft.PromptHandler = Garnish.Base.extend({
-
     modal: null,
     $modalContainerDiv: null,
     $prompt: null,
@@ -12,7 +11,6 @@ Craft.PromptHandler = Garnish.Base.extend({
     $promptApplyToRemainingCheckbox: null,
     $promptApplyToRemainingLabel: null,
     $pomptChoices: null,
-
 
     _prompts: [],
     _promptBatchCallback: $.noop,
@@ -46,7 +44,7 @@ Craft.PromptHandler = Garnish.Base.extend({
         var prompt = this._prompts[this._promptBatchNum].prompt,
             remainingInBatch = this._prompts.length - (this._promptBatchNum + 1);
 
-        this._showPrompt(prompt.message, prompt.choices, $.proxy(this, '_handleBatchPromptSelection'), remainingInBatch);
+        this._showPrompt(prompt.message, prompt.choices, this._handleBatchPromptSelection.bind(this), remainingInBatch);
     },
 
     /**
@@ -61,7 +59,7 @@ Craft.PromptHandler = Garnish.Base.extend({
             remainingInBatch = this._prompts.length - (this._promptBatchNum + 1);
 
         // Record this choice
-        var choiceData = $.extend(prompt, {choice: choice});
+        var choiceData = $.extend(prompt, {choice});
         this._promptBatchReturnData.push(choiceData);
 
         // Are there any remaining items in the batch?
@@ -72,13 +70,11 @@ Craft.PromptHandler = Garnish.Base.extend({
             // Apply the same choice to the remaining items?
             if (applyToRemaining) {
                 this._handleBatchPromptSelection(choice, true);
-            }
-            else {
+            } else {
                 // Show the next prompt
                 this._showNextPromptInBatch();
             }
-        }
-        else {
+        } else {
             // All done! Call the callback
             if (typeof this._promptBatchCallback === 'function') {
                 this._promptBatchCallback(this._promptBatchReturnData);
@@ -121,8 +117,16 @@ Craft.PromptHandler = Garnish.Base.extend({
 
         this.$promptMessage.html(message);
 
-        var $cancelButton = $('<div class="btn">' + Craft.t('app', 'Cancel') + '</div>').appendTo(this.$promptButtons),
-            $submitBtn = $('<input type="submit" class="btn submit disabled" value="' + Craft.t('app', 'OK') + '" />').appendTo(this.$promptButtons);
+        let $cancelBtn = $('<button/>', {
+            type: 'button',
+            class: 'btn',
+            text: Craft.t('app', 'Cancel'),
+        }).appendTo(this.$promptButtons);
+        let $submitBtn = $('<button/>', {
+            type: 'submit',
+            class: 'btn submit disabled',
+            text: Craft.t('app', 'OK'),
+        }).appendTo(this.$promptButtons);
 
         for (var i = 0; i < choices.length; i++) {
             var $radioButtonHtml = $('<div><label><input type="radio" name="promptAction" value="' + choices[i].value + '"/> ' + choices[i].title + '</label></div>').appendTo(this.$promptChoices),
@@ -140,7 +144,7 @@ Craft.PromptHandler = Garnish.Base.extend({
             this._selectPromptChoice(choice, applyToRemaining);
         });
 
-        this.addListener($cancelButton, 'activate', function() {
+        this.addListener($cancelBtn, 'activate', function() {
             var choice = 'cancel',
                 applyToRemaining = this.$promptApplyToRemainingCheckbox.prop('checked');
 
@@ -155,7 +159,6 @@ Craft.PromptHandler = Garnish.Base.extend({
         this.modal.show();
         this.modal.removeListener(Garnish.Modal.$shade, 'click');
         this.addListener(Garnish.Modal.$shade, 'click', '_cancelPrompt');
-
     },
 
     /**
@@ -166,10 +169,10 @@ Craft.PromptHandler = Garnish.Base.extend({
      * @private
      */
     _selectPromptChoice: function(choice, applyToRemaining) {
-        this.$prompt.fadeOut('fast', $.proxy(function() {
+        this.$prompt.fadeOut('fast', () => {
             this.modal.hide();
             this._promptCallback(choice, applyToRemaining);
-        }, this));
+        });
     },
 
     /**

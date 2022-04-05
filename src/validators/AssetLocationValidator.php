@@ -19,13 +19,10 @@ use yii\validators\Validator;
  * Class AssetLocationValidator.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class AssetLocationValidator extends Validator
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string The folder ID attribute on the model
      */
@@ -52,7 +49,7 @@ class AssetLocationValidator extends Validator
     public $errorCodeAttribute = 'locationError';
 
     /**
-     * @var string[]|null Allowed file extensions
+     * @var string[]|string|null Allowed file extensions. Set to `'*'` to allow all extensions.
      */
     public $allowedExtensions;
 
@@ -70,9 +67,6 @@ class AssetLocationValidator extends Validator
      * @var bool Whether Asset should avoid filename conflicts when saved.
      */
     public $avoidFilenameConflicts;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -100,7 +94,7 @@ class AssetLocationValidator extends Validator
     public function validateAttribute($model, $attribute)
     {
         /** @var Asset $model */
-        list($folderId, $filename) = Assets::parseFileLocation($model->$attribute);
+        [$folderId, $filename] = Assets::parseFileLocation($model->$attribute);
 
         // Figure out which of them has changed
         $hasNewFolderId = $folderId != $model->{$this->folderIdAttribute};
@@ -121,9 +115,8 @@ class AssetLocationValidator extends Validator
         // Make sure the new filename has a valid extension
         $extension = strtolower(pathinfo($filename, PATHINFO_EXTENSION));
 
-        if (!in_array($extension, $this->allowedExtensions, true)) {
+        if (is_array($this->allowedExtensions) && !in_array($extension, $this->allowedExtensions, true)) {
             $this->addLocationError($model, $attribute, Asset::ERROR_DISALLOWED_EXTENSION, $this->disallowedExtension, ['extension' => $extension]);
-
             return;
         }
 
@@ -133,9 +126,9 @@ class AssetLocationValidator extends Validator
 
         if ($suggestedFilename !== $filename) {
             $model->{$this->conflictingFilenameAttribute} = $filename;
+            $model->{$this->suggestedFilenameAttribute} = $suggestedFilename;
 
             if (!$this->avoidFilenameConflicts) {
-                $model->{$this->suggestedFilenameAttribute} = $suggestedFilename;
                 $this->addLocationError($model, $attribute, Asset::ERROR_FILENAME_CONFLICT, $this->filenameConflict, ['filename' => $filename]);
 
                 return;

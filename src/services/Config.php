@@ -10,6 +10,7 @@ namespace craft\services;
 use Craft;
 use craft\config\DbConfig;
 use craft\config\GeneralConfig;
+use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
@@ -23,23 +24,18 @@ use yii\base\InvalidConfigException;
 /**
  * The Config service provides APIs for retrieving the values of Craft’s [config settings](http://craftcms.com/docs/config-settings),
  * as well as the values of any plugins’ config settings.
- * An instance of the Config service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getConfig()|`Craft::$app->config`]].
+ *
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getConfig()|`Craft::$app->config`]].
  *
  * @property DbConfig $db the DB config settings
  * @property GeneralConfig $general the general config settings
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Config extends Component
 {
-    // Constants
-    // =========================================================================
-
     const CATEGORY_DB = 'db';
     const CATEGORY_GENERAL = 'general';
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var string|null The environment ID Craft is currently running in.
@@ -50,7 +46,7 @@ class Config extends Component
      * ```
      * ```twig
      * {% if craft.app.config.env == 'production' %}
-     *     {% include "_includes/ga" %}
+     *   {% include "_includes/ga" %}
      * {% endif %}
      * ```
      */
@@ -75,9 +71,6 @@ class Config extends Component
      * @var bool|null
      */
     private $_dotEnvPath;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Returns all of the config settings for a given category.
@@ -124,10 +117,12 @@ class Config extends Component
                     }
                     $config->securityKey = $key;
                 }
-                Craft::$app->getDeprecator()->log('validation.key', "The auto-generated validation key stored at {$keyPath} has been deprecated. Copy its value to the “securityKey” config setting in config/general.php.");
+                Craft::$app->getDeprecator()->log('validation.key', "The auto-generated validation key stored at `{$keyPath}` has been deprecated. Copy its value to the `securityKey` config setting in `config/general.php`.");
             }
             if ($config->siteUrl === null && defined('CRAFT_SITE_URL')) {
-                Craft::$app->getDeprecator()->log('CRAFT_SITE_URL', 'The CRAFT_SITE_URL constant has been deprecated. Set the “siteUrl” config setting in config/general.php instead.');
+                Craft::$app->getDeprecator()->log('CRAFT_SITE_URL', 'The `CRAFT_SITE_URL` constant has been deprecated. ' .
+                    'You can set your sites’ Base URL settings on a per-environment basis using aliases or environment variables. ' .
+                    'See [Environmental Configuration](https://craftcms.com/docs/3.x/config/#environmental-configuration) for more info.');
                 $config->siteUrl = CRAFT_SITE_URL;
             }
         }
@@ -164,7 +159,7 @@ class Config extends Component
      * ```
      * ```twig
      * <a href="{{ url(craft.app.config.general.logoutPath) }}">
-     *     Logout
+     *   Logout
      * </a>
      * ```
      *
@@ -260,17 +255,60 @@ class Config extends Component
         $contents = file_get_contents($path);
         $qName = preg_quote($name, '/');
         $slashedValue = addslashes($value);
-        $qValue = str_replace('$', '\\$', $slashedValue);
-        $contents = preg_replace("/^(\s*){$qName}=.*/m", "\$1{$name}=\"{$qValue}\"", $contents, -1, $count);
 
-        if ($count === 0) {
+        // Only surround with quotes if the value contains a space
+        if (strpos($slashedValue, ' ') !== false || strpos($slashedValue, '#') !== false) {
+            $slashedValue = "\"$slashedValue\"";
+        }
+
+        $def = "$name=$slashedValue";
+        $token = StringHelper::randomString();
+        $contents = preg_replace("/^(\s*){$qName}=.*/m", $token, $contents, -1, $count);
+
+        if ($count !== 0) {
+            $contents = str_replace($token, $def, $contents);
+        } else {
             $contents = rtrim($contents);
-            $contents = ($contents ? $contents . PHP_EOL . PHP_EOL : '') . "{$name}=\"{$slashedValue}\"" . PHP_EOL;
+            $contents = ($contents ? $contents . PHP_EOL . PHP_EOL : '') . $def . PHP_EOL;
         }
 
         FileHelper::writeToFile($path, $contents);
 
         // Now actually set the environment variable
         putenv("{$name}={$value}");
+    }
+
+    /**
+     * Sets a boolean environment variable value in the project's .env file.
+     *
+     * If the environment variable is already set to a boolean-esque value, its counterpart will be used.
+     * For example, if `true` is passed and the current value is `no`, the variable will be set to `yes`.
+     *
+     * @param string $name The environment variable name
+     * @param bool $value The environment variable value
+     * @throws Exception if the .env file doesn't exist
+     * @since 3.7.24
+     */
+    public function setBooleanDotEnvVar(string $name, bool $value): void
+    {
+        switch (strtolower((string)App::env($name))) {
+            case 'yes':
+            case 'no':
+                $value = $value ? 'yes' : 'no';
+                break;
+            case 'on':
+            case 'off':
+                $value = $value ? 'on' : 'off';
+                break;
+            case '1':
+            case '0':
+                $value = $value ? '1' : '0';
+                break;
+            default:
+                $value = $value ? 'true' : 'false';
+                break;
+        }
+
+        $this->setDotEnvVar($name, $value);
     }
 }

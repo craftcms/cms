@@ -8,24 +8,28 @@
 namespace craft\elements\db;
 
 use Craft;
-use craft\base\Volume;
+use craft\base\VolumeInterface;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Asset;
+use craft\elements\User;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Assets;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
+use yii\base\InvalidArgumentException;
 use yii\db\Connection;
 
 /**
  * AssetQuery represents a SELECT SQL statement for assets in a way that is independent of DBMS.
  *
- * @property string|string[]|Volume $volume The handle(s) of the volume(s) that resulting assets must belong to.
+ * @property-write string|string[]|VolumeInterface|null $volume The volume(s) that resulting assets must belong to
  * @method Asset[]|array all($db = null)
  * @method Asset|array|null one($db = null)
  * @method Asset|array|null nth(int $n, Connection $db = null)
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
+ * @doc-path assets.md
  * @supports-site-params
  * @supports-title-param
  * @replace {element} asset
@@ -36,14 +40,33 @@ use yii\db\Connection;
  */
 class AssetQuery extends ElementQuery
 {
-    // Properties
-    // =========================================================================
+    /**
+     * @var bool
+     * @see _supportsUploaderParam()
+     */
+    private static $_supportsUploaderParam;
+
+    /**
+     * Returns whether the `uploader` param is supported yet.
+     *
+     * @return bool
+     * @todo remove after next beakpoint
+     */
+    private static function _supportsUploaderParam(): bool
+    {
+        if (self::$_supportsUploaderParam !== null) {
+            return self::$_supportsUploaderParam;
+        }
+
+        $schemaVersion = Craft::$app->getInstalledSchemaVersion();
+        return self::$_supportsUploaderParam = version_compare($schemaVersion, '3.4.5', '>=');
+    }
 
     // General parameters
     // -------------------------------------------------------------------------
 
     /**
-     * @var int|int[]|null The volume ID(s) that the resulting assets must be in.
+     * @var int|int[]|string|null The volume ID(s) that the resulting assets must be in.
      * ---
      * ```php
      * // fetch assets in the Logos volume
@@ -54,8 +77,8 @@ class AssetQuery extends ElementQuery
      * ```twig
      * {# fetch assets in the Logos volume #}
      * {% set logos = craft.assets()
-     *     .volume('logos')
-     *     .all() %}
+     *   .volume('logos')
+     *   .all() %}
      * ```
      * @used-by volume()
      * @used-by volumeId()
@@ -67,6 +90,13 @@ class AssetQuery extends ElementQuery
      * @used-by folderId()
      */
     public $folderId;
+
+    /**
+     * @var int|null The user ID that the resulting assets must have been uploaded by.
+     * @used-by uploader()
+     * @since 3.4.0
+     */
+    public $uploaderId;
 
     /**
      * @var string|string[]|null The filename(s) that the resulting assets must have.
@@ -109,8 +139,8 @@ class AssetQuery extends ElementQuery
      * ```twig
      * {# fetch only images #}
      * {% set logos = craft.assets()
-     *     .kind('image')
-     *     .all() %}
+     *   .kind('image')
+     *   .all() %}
      * ```
      * @used-by kind()
      */
@@ -129,9 +159,9 @@ class AssetQuery extends ElementQuery
      * ```twig{4}
      * {# fetch images that are at least 500 pixes wide #}
      * {% set logos = craft.assets()
-     *     .kind('image')
-     *     .width('>= 500')
-     *     .all() %}
+     *   .kind('image')
+     *   .width('>= 500')
+     *   .all() %}
      * ```
      * @used-by width()
      */
@@ -150,9 +180,9 @@ class AssetQuery extends ElementQuery
      * ```twig{4}
      * {# fetch images that are at least 500 pixes high #}
      * {% set logos = craft.assets()
-     *     .kind('image')
-     *     .height('>= 500')
-     *     .all() %}
+     *   .kind('image')
+     *   .height('>= 500')
+     *   .all() %}
      * ```
      * @used-by height()
      */
@@ -189,16 +219,13 @@ class AssetQuery extends ElementQuery
      * ```twig{4}
      * {# fetch images with their 'thumb' transforms preloaded #}
      * {% set logos = craft.assets()
-     *     .kind('image')
-     *     .withTransforms(['thumb'])
-     *     .all() %}
+     *   .kind('image')
+     *   .withTransforms(['thumb'])
+     *   .all() %}
      * ```
      * @used-by withTransforms()
      */
     public $withTransforms;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -217,39 +244,39 @@ class AssetQuery extends ElementQuery
      *
      * Possible values include:
      *
-     * | Value | Fetches categories…
+     * | Value | Fetches assets…
      * | - | -
      * | `'foo'` | in a volume with a handle of `foo`.
      * | `'not foo'` | not in a volume with a handle of `foo`.
      * | `['foo', 'bar']` | in a volume with a handle of `foo` or `bar`.
      * | `['not', 'foo', 'bar']` | not in a volume with a handle of `foo` or `bar`.
-     * | a [[Volume|Volume]] object | in a volume represented by the object.
+     * | a [[VolumeInterface|volume]] object | in a volume represented by the object.
      *
      * ---
      *
      * ```twig
-     * {# Fetch {elements} in the Foo volume #}
+     * {# Fetch assets in the Foo volume #}
      * {% set {elements-var} = {twig-method}
-     *     .volume('foo')
-     *     .all() %}
+     *   .volume('foo')
+     *   .all() %}
      * ```
      *
      * ```php
-     * // Fetch {elements} in the Foo group
+     * // Fetch assets in the Foo group
      * ${elements-var} = {php-method}
      *     ->volume('foo')
      *     ->all();
      * ```
      *
-     * @param string|string[]|Volume|null $value The property value
+     * @param string|string[]|VolumeInterface|null $value The property value
      * @return static self reference
      * @uses $volumeId
      */
     public function volume($value)
     {
-        if ($value instanceof Volume) {
-            $this->volumeId = $value->id;
-        } else if ($value !== null) {
+        if ($value instanceof VolumeInterface) {
+            $this->volumeId = [$value->id];
+        } elseif ($value !== null) {
             $this->volumeId = (new Query())
                 ->select(['id'])
                 ->from([Table::VOLUMES])
@@ -266,13 +293,13 @@ class AssetQuery extends ElementQuery
     /**
      * Narrows the query results based on the volume the assets belong to.
      *
-     * @param string|string[]|Volume $value The property value
+     * @param string|string[]|VolumeInterface $value The property value
      * @return static self reference
-     * @deprecated since Craft 3.0. Use [[volume()]] instead.
+     * @deprecated in 3.0.0. Use [[volume()]] instead.
      */
     public function source($value)
     {
-        Craft::$app->getDeprecator()->log('AssetQuery::source()', 'The “source” asset query param has been deprecated. Use “volume” instead.');
+        Craft::$app->getDeprecator()->log('AssetQuery::source()', 'The `source` asset query param has been deprecated. Use `volume` instead.');
 
         return $this->volume($value);
     }
@@ -282,30 +309,31 @@ class AssetQuery extends ElementQuery
      *
      * Possible values include:
      *
-     * | Value | Fetches categories…
+     * | Value | Fetches assets…
      * | - | -
      * | `1` | in a volume with an ID of 1.
      * | `'not 1'` | not in a volume with an ID of 1.
      * | `[1, 2]` | in a volume with an ID of 1 or 2.
      * | `['not', 1, 2]` | not in a volume with an ID of 1 or 2.
+     * | `':empty:'` | that haven’t been stored in a volume yet
      *
      * ---
      *
      * ```twig
-     * {# Fetch {elements} in the volume with an ID of 1 #}
+     * {# Fetch assets in the volume with an ID of 1 #}
      * {% set {elements-var} = {twig-method}
-     *     .volumeId(1)
-     *     .all() %}
+     *   .volumeId(1)
+     *   .all() %}
      * ```
      *
      * ```php
-     * // Fetch categories in the volume with an ID of 1
+     * // Fetch assets in the volume with an ID of 1
      * ${elements-var} = {php-method}
      *     ->volumeId(1)
      *     ->all();
      * ```
      *
-     * @param int|int[]|null $value The property value
+     * @param int|int[]|string|null $value The property value
      * @return static self reference
      * @uses $volumeId
      */
@@ -320,11 +348,11 @@ class AssetQuery extends ElementQuery
      *
      * @param int|int[] $value The property value
      * @return static self reference
-     * @deprecated since Craft 3.0. Use [[volumeId()]] instead.
+     * @deprecated in Craft 3.0.0. Use [[volumeId()]] instead.
      */
     public function sourceId($value)
     {
-        Craft::$app->getDeprecator()->log('AssetQuery::sourceId()', 'The “sourceId” asset query param has been deprecated. Use “volumeId” instead.');
+        Craft::$app->getDeprecator()->log('AssetQuery::sourceId()', 'The `sourceId` asset query param has been deprecated. Use `volumeId` instead.');
 
         return $this->volumeId($value);
     }
@@ -334,7 +362,7 @@ class AssetQuery extends ElementQuery
      *
      * Possible values include:
      *
-     * | Value | Fetches categories…
+     * | Value | Fetches assets…
      * | - | -
      * | `1` | in a folder with an ID of 1.
      * | `'not 1'` | not in a folder with an ID of 1.
@@ -344,14 +372,14 @@ class AssetQuery extends ElementQuery
      * ---
      *
      * ```twig
-     * {# Fetch {elements} in the folder with an ID of 1 #}
+     * {# Fetch assets in the folder with an ID of 1 #}
      * {% set {elements-var} = {twig-method}
-     *     .folderId(1)
-     *     .all() %}
+     *   .folderId(1)
+     *   .all() %}
      * ```
      *
      * ```php
-     * // Fetch categories in the folder with an ID of 1
+     * // Fetch assets in the folder with an ID of 1
      * ${elements-var} = {php-method}
      *     ->folderId(1)
      *     ->all();
@@ -374,18 +402,61 @@ class AssetQuery extends ElementQuery
     }
 
     /**
+     * Narrows the query results based on the user the assets were uploaded by, per the user’s IDs.
+     *
+     * Possible values include:
+     *
+     * | Value | Fetches assets…
+     * | - | -
+     * | `1` | uploaded by the user with an ID of 1.
+     * | a [[User]] object | uploaded by the user represented by the object.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch assets uploaded by the user with an ID of 1 #}
+     * {% set {elements-var} = {twig-method}
+     *   .uploader(1)
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch assets uploaded by the user with an ID of 1
+     * ${elements-var} = {php-method}
+     *     ->uploader(1)
+     *     ->all();
+     * ```
+     *
+     * @param int|User|null $value The property value
+     * @return static self reference
+     * @uses $uploaderId
+     * @since 3.4.0
+     */
+    public function uploader($value)
+    {
+        if ($value instanceof User) {
+            $this->uploaderId = $value->id;
+        } elseif (is_numeric($value)) {
+            $this->uploaderId = $value;
+        } else {
+            throw new InvalidArgumentException('Invalid uploader value');
+        }
+        return $this;
+    }
+
+    /**
      * Narrows the query results based on the assets’ filenames.
      *
      * Possible values include:
      *
-     * | Value | Fetches {elements}…
+     * | Value | Fetches assets…
      * | - | -
      * | `'foo.jpg'` | with a filename of `foo.jpg`.
      * | `'foo*'` | with a filename that begins with `foo`.
      * | `'*.jpg'` | with a filename that ends with `.jpg`.
      * | `'*foo*'` | with a filename that contains `foo`.
      * | `'not *foo*'` | with a filename that doesn’t contain `foo`.
-     * | `['*foo*', '*bar*'` | with a filename that contains `foo` or `bar`.
+     * | `['*foo*', '*bar*']` | with a filename that contains `foo` or `bar`.
      * | `['not', '*foo*', '*bar*']` | with a filename that doesn’t contain `foo` or `bar`.
      *
      * ---
@@ -393,8 +464,8 @@ class AssetQuery extends ElementQuery
      * ```twig
      * {# Fetch all the hi-res images #}
      * {% set {elements-var} = {twig-method}
-     *     .filename('*@2x*')
-     *     .all() %}
+     *   .filename('*@2x*')
+     *   .all() %}
      * ```
      *
      * ```php
@@ -440,7 +511,7 @@ class AssetQuery extends ElementQuery
      *
      * Possible values include:
      *
-     * | Value | Fetches {elements}…
+     * | Value | Fetches assets…
      * | - | -
      * | `'image'` | with a file kind of `image`.
      * | `'not image'` | not with a file kind of `image`..
@@ -452,8 +523,8 @@ class AssetQuery extends ElementQuery
      * ```twig
      * {# Fetch all the images #}
      * {% set {elements-var} = {twig-method}
-     *     .kind('image')
-     *     .all() %}
+     *   .kind('image')
+     *   .all() %}
      * ```
      *
      * ```php
@@ -478,7 +549,7 @@ class AssetQuery extends ElementQuery
      *
      * Possible values include:
      *
-     * | Value | Fetches {elements}…
+     * | Value | Fetches assets…
      * | - | -
      * | `100` | with a width of 100.
      * | `'>= 100'` | with a width of at least 100.
@@ -489,9 +560,9 @@ class AssetQuery extends ElementQuery
      * ```twig
      * {# Fetch XL images #}
      * {% set {elements-var} = {twig-method}
-     *     .kind('image')
-     *     .width('>= 1000')
-     *     .all() %}
+     *   .kind('image')
+     *   .width('>= 1000')
+     *   .all() %}
      * ```
      *
      * ```php
@@ -517,7 +588,7 @@ class AssetQuery extends ElementQuery
      *
      * Possible values include:
      *
-     * | Value | Fetches {elements}…
+     * | Value | Fetches assets…
      * | - | -
      * | `100` | with a height of 100.
      * | `'>= 100'` | with a height of at least 100.
@@ -528,9 +599,9 @@ class AssetQuery extends ElementQuery
      * ```twig
      * {# Fetch XL images #}
      * {% set {elements-var} = {twig-method}
-     *     .kind('image')
-     *     .height('>= 1000')
-     *     .all() %}
+     *   .kind('image')
+     *   .height('>= 1000')
+     *   .all() %}
      * ```
      *
      * ```php
@@ -556,7 +627,7 @@ class AssetQuery extends ElementQuery
      *
      * Possible values include:
      *
-     * | Value | Fetches {elements}…
+     * | Value | Fetches assets…
      * | - | -
      * | `1000` | with a size of 1,000 bytes (1KB).
      * | `'< 1000000'` | with a size of less than 1,000,000 bytes (1MB).
@@ -567,8 +638,8 @@ class AssetQuery extends ElementQuery
      * ```twig
      * {# Fetch assets that are smaller than 1KB #}
      * {% set {elements-var} = {twig-method}
-     *     .size('< 1000')
-     *     .all() %}
+     *   .size('< 1000')
+     *   .all() %}
      * ```
      *
      * ```php
@@ -593,7 +664,7 @@ class AssetQuery extends ElementQuery
      *
      * Possible values include:
      *
-     * | Value | Fetches {elements}…
+     * | Value | Fetches assets…
      * | - | -
      * | `'>= 2018-04-01'` | that were modified on or after 2018-04-01.
      * | `'< 2018-05-01'` | that were modified before 2018-05-01
@@ -602,16 +673,16 @@ class AssetQuery extends ElementQuery
      * ---
      *
      * ```twig
-     * {# Fetch {elements} modified in the last month #}
+     * {# Fetch assets modified in the last month #}
      * {% set start = date('30 days ago')|atom %}
      *
      * {% set {elements-var} = {twig-method}
-     *     .dateModified(">= #{start}")
-     *     .all() %}
+     *   .dateModified(">= #{start}")
+     *   .all() %}
      * ```
      *
      * ```php
-     * // Fetch {elements} modified in the last month
+     * // Fetch assets modified in the last month
      * $start = (new \DateTime('30 days ago'))->format(\DateTime::ATOM);
      *
      * ${elements-var} = {php-method}
@@ -635,15 +706,15 @@ class AssetQuery extends ElementQuery
      * ---
      *
      * ```twig
-     * {# Fetch {elements} in the folder with an ID of 1 (including its subfolders) #}
+     * {# Fetch assets in the folder with an ID of 1 (including its subfolders) #}
      * {% set {elements-var} = {twig-method}
-     *     .folderId(1)
-     *     .includeSubfolders()
-     *     .all() %}
+     *   .folderId(1)
+     *   .includeSubfolders()
+     *   .all() %}
      * ```
      *
      * ```php
-     * // Fetch categories in the folder with an ID of 1 (including its subfolders)
+     * // Fetch assets in the folder with an ID of 1 (including its subfolders)
      * ${elements-var} = {php-method}
      *     ->folderId(1)
      *     ->includeSubfolders()
@@ -667,23 +738,42 @@ class AssetQuery extends ElementQuery
     }
 
     /**
-     * Causes the query to return matching {elements} eager-loaded with image transform indexes.
+     * Causes the query to return matching assets eager-loaded with image transform indexes.
      *
      * This can improve performance when displaying several image transforms at once, if the transforms
      * have already been generated.
      *
-     * ---
+     * Transforms can be specified as their handle or an object that contains `width` and/or `height` properties.
+     *
+     * You can include `srcset`-style sizes (e.g. `100w` or `2x`) following a normal transform definition, for example:
+     *
+     * ::: code
      *
      * ```twig
-     * {# Fetch {elements} with the 'thumbnail' and 'hiResThumbnail' transform data preloaded #}
-     * {% set {elements-var} = {twig-method}
-     *     .kind('image')
-     *     .withTransforms(['thumbnail', 'hiResThumbnail'])
-     *     .all() %}
+     * [{width: 1000, height: 600}, '1.5x', '2x', '3x']
      * ```
      *
      * ```php
-     * // Fetch {elements} with the 'thumbnail' and 'hiResThumbnail' transform data preloaded
+     * [['width' => 1000, 'height' => 600], '1.5x', '2x', '3x']
+     * ```
+     *
+     * :::
+     *
+     * When a `srcset`-style size is encountered, the preceding normal transform definition will be used as a
+     * reference when determining the resulting transform dimensions.
+     *
+     * ---
+     *
+     * ```twig
+     * {# Fetch assets with the 'thumbnail' and 'hiResThumbnail' transform data preloaded #}
+     * {% set {elements-var} = {twig-method}
+     *   .kind('image')
+     *   .withTransforms(['thumbnail', 'hiResThumbnail'])
+     *   .all() %}
+     * ```
+     *
+     * ```php
+     * // Fetch assets with the 'thumbnail' and 'hiResThumbnail' transform data preloaded
      * ${elements-var} = {php-method}
      *     ->kind('image')
      *     ->withTransforms(['thumbnail', 'hiResThumbnail'])
@@ -703,12 +793,12 @@ class AssetQuery extends ElementQuery
     /**
      * @inheritdoc
      */
-    public function populate($rows)
+    public function afterPopulate(array $elements): array
     {
-        $elements = parent::populate($rows);
+        $elements = parent::afterPopulate($elements);
 
         // Eager-load transforms?
-        if ($this->asArray === false && $this->withTransforms) {
+        if ($this->withTransforms && !$this->asArray) {
             $transforms = $this->withTransforms;
             if (!is_array($transforms)) {
                 $transforms = is_string($transforms) ? StringHelper::split($transforms) : [$transforms];
@@ -720,21 +810,21 @@ class AssetQuery extends ElementQuery
         return $elements;
     }
 
-    // Protected Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
     protected function beforePrepare(): bool
     {
-        // See if 'source' was set to an invalid handle
+        $this->_normalizeVolumeId();
+
+        // See if 'volume' was set to an invalid handle
         if ($this->volumeId === []) {
             return false;
         }
 
         $this->joinElementTable('assets');
-        $this->query->innerJoin('{{%volumefolders}} volumeFolders', '[[assets.folderId]] = [[volumeFolders.id]]');
+        $this->subQuery->innerJoin(['volumeFolders' => Table::VOLUMEFOLDERS], '[[volumeFolders.id]] = [[assets.folderId]]');
+        $this->query->innerJoin(['volumeFolders' => Table::VOLUMEFOLDERS], '[[volumeFolders.id]] = [[assets.folderId]]');
 
         $this->query->select([
             'assets.volumeId',
@@ -747,11 +837,19 @@ class AssetQuery extends ElementQuery
             'assets.focalPoint',
             'assets.keptFile',
             'assets.dateModified',
-            'volumeFolders.path AS folderPath'
+            'volumeFolders.path AS folderPath',
         ]);
 
+        if (self::_supportsUploaderParam()) {
+            $this->query->addSelect('assets.uploaderId');
+        }
+
         if ($this->volumeId) {
-            $this->subQuery->andWhere(Db::parseParam('assets.volumeId', $this->volumeId));
+            if ($this->volumeId === ':empty:') {
+                $this->subQuery->andWhere(['assets.volumeId' => null]);
+            } else {
+                $this->subQuery->andWhere(['assets.volumeId' => $this->volumeId]);
+            }
         }
 
         if ($this->folderId) {
@@ -762,6 +860,10 @@ class AssetQuery extends ElementQuery
                 $folderCondition = ['or', $folderCondition, ['in', 'assets.folderId', array_keys($descendants)]];
             }
             $this->subQuery->andWhere($folderCondition);
+        }
+
+        if (self::_supportsUploaderParam() && $this->uploaderId) {
+            $this->subQuery->andWhere(['uploaderId' => $this->uploaderId]);
         }
 
         if ($this->filename) {
@@ -798,5 +900,42 @@ class AssetQuery extends ElementQuery
         }
 
         return parent::beforePrepare();
+    }
+
+    /**
+     * Normalizes the volumeId param to an array of IDs or null
+     */
+    private function _normalizeVolumeId()
+    {
+        if ($this->volumeId === ':empty:') {
+            return;
+        }
+
+        if (empty($this->volumeId)) {
+            $this->volumeId = is_array($this->volumeId) ? [] : null;
+        } elseif (is_numeric($this->volumeId)) {
+            $this->volumeId = [$this->volumeId];
+        } elseif (!is_array($this->volumeId) || !ArrayHelper::isNumeric($this->volumeId)) {
+            $this->volumeId = (new Query())
+                ->select(['id'])
+                ->from([Table::VOLUMES])
+                ->where(Db::parseParam('id', $this->volumeId))
+                ->column();
+        }
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.5.0
+     */
+    protected function cacheTags(): array
+    {
+        $tags = [];
+        if ($this->volumeId && $this->volumeId !== ':empty:') {
+            foreach ($this->volumeId as $volumeId) {
+                $tags[] = "volume:$volumeId";
+            }
+        }
+        return $tags;
     }
 }

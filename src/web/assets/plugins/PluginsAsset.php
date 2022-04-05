@@ -19,24 +19,28 @@ class PluginsAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public function init()
-    {
-        $this->sourcePath = __DIR__ . '/dist';
+    public $sourcePath = __DIR__ . '/dist';
 
-        $this->depends = [
-            CpAsset::class,
-        ];
+    /**
+     * @inheritdoc
+     */
+    public $depends = [
+        CpAsset::class,
+    ];
 
-        $this->css = [
-            'plugins.css',
-        ];
+    /**
+     * @inheritdoc
+     */
+    public $css = [
+        'css/PluginManager.css',
+    ];
 
-        $this->js = [
-            'PluginManager.js',
-        ];
-
-        parent::init();
-    }
+    /**
+     * @inheritdoc
+     */
+    public $js = [
+        'PluginManager.js',
+    ];
 
     /**
      * @inheritdoc
@@ -47,15 +51,17 @@ class PluginsAsset extends AssetBundle
 
         if ($view instanceof View) {
             $view->registerTranslations('app', [
+                '<a>Renew now</a> for another year of updates.',
                 'A license key is required.',
                 'Action',
                 'Documentation',
                 'Install',
                 'Missing',
+                'Plugin trials are not allowed on this domain.',
                 'Status',
                 'Switch',
                 'This license is for the {name} edition.',
-                'This license is tied to another Craft install. Visit {url} to resolve.',
+                'This license is tied to another Craft install. Visit {accountLink} to detach it, or <a href="{buyUrl}">buy a new license</a>',
                 'This license isn’t allowed to run version {version}.',
                 'Trial',
                 'Your license key is invalid.',

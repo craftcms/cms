@@ -15,13 +15,10 @@ use Twig\Node\Node;
  * Class RequireLoginNode
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class RequireLoginNode extends Node
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Compiles a RequireLoginNode into PHP.
      *

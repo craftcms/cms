@@ -5,13 +5,16 @@
  * @license https://craftcms.github.io/license/
  */
 
-use craft\behaviors\ContentBehavior;
-use craft\behaviors\ElementQueryBehavior;
+use craft\base\FieldInterface;
+use craft\behaviors\CustomFieldBehavior;
 use craft\db\Query;
 use craft\db\Table;
+use craft\helpers\App;
+use craft\helpers\ArrayHelper;
+use craft\helpers\Component;
 use craft\helpers\FileHelper;
+use craft\helpers\StringHelper;
 use GuzzleHttp\Client;
-use GuzzleHttp\Cookie\FileCookieJar;
 use yii\base\ExitException;
 use yii\db\Expression;
 use yii\helpers\VarDumper;
@@ -21,14 +24,12 @@ use yii\web\Request;
  * Craft is helper class serving common Craft and Yii framework functionality.
  * It encapsulates [[Yii]] and ultimately [[yii\BaseYii]], which provides the actual implementation.
  *
+ * @mixin CraftTrait
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Craft extends Yii
 {
-    // Constants
-    // =========================================================================
-
     // Edition constants
     const Solo = 0;
     const Pro = 1;
@@ -42,21 +43,23 @@ class Craft extends Yii
      */
     const Client = 1;
 
-    // Properties
-    // =========================================================================
-
-    /**
-     * @var \craft\web\Application|\craft\console\Application The application instance.
-     */
-    public static $app;
-
     /**
      * @var array The default cookie configuration.
      */
     private static $_baseCookieConfig;
 
-    // Public Methods
-    // =========================================================================
+    /**
+     * @inheritdoc
+     *
+     * @template T
+     * @param class-string<T>|array{class: class-string<T>}|callable(): T $type
+     * @param array $params
+     * @return T
+     */
+    public static function createObject($type, array $params = [])
+    {
+        return parent::createObject($type, $params);
+    }
 
     /**
      * Checks if a string references an environment variable (`$VARIABLE_NAME`)
@@ -75,27 +78,32 @@ class Craft extends Yii
      * @param string|null $str
      * @return string|bool|null The parsed value, or the original value if it didn’t
      * reference an environment variable and/or alias.
+     * @since 3.1.0
+     * @deprecated in 3.7.29. [[App::parseEnv()]] should be used instead.
      */
     public static function parseEnv(string $str = null)
     {
-        if ($str === null) {
-            return null;
-        }
+        return App::parseEnv($str);
+    }
 
-        if (preg_match('/^\$(\w+)$/', $str, $matches)) {
-            $value = getenv($matches[1]);
-            if ($value !== false) {
-                switch (strtolower($value)) {
-                    case 'true':
-                        return true;
-                    case 'false':
-                        return false;
-                }
-                $str = $value;
-            }
-        }
-
-        return static::getAlias($str, false) ?: $str;
+    /**
+     * Checks if a string references an environment variable (`$VARIABLE_NAME`) and returns the referenced
+     * boolean value, or `null` if a boolean value can’t be determined.
+     *
+     * ---
+     *
+     * ```php
+     * $status = Craft::parseBooleanEnv('$SYSTEM_STATUS') ?? false;
+     * ```
+     *
+     * @param mixed $value
+     * @return bool|null
+     * @since 3.7.22
+     * @deprecated in 3.7.29. [[App::parseBooleanEnv()]] should be used instead.
+     */
+    public static function parseBooleanEnv($value): ?bool
+    {
+        return App::parseBooleanEnv($value);
     }
 
     /**
@@ -115,11 +123,25 @@ class Craft extends Yii
      *
      * @param mixed $var The variable to be dumped.
      * @param int $depth The maximum depth that the dumper should go into the variable. Defaults to 10.
-     * @param bool $highlight Whether the result should be syntax-highlighted. Defaults to true.
+     * @param bool|null $highlight Whether the result should be syntax-highlighted.
+     * Defaults to `true` for web requests and `false` for console requests.
      * @throws ExitException if the application is in testing mode
      */
-    public static function dd($var, int $depth = 10, bool $highlight = true)
+    public static function dd($var, int $depth = 10, bool $highlight = null)
     {
+        // Turn off output buffering and discard OB contents
+        while (ob_get_length() !== false) {
+            // If ob_start() didn't have the PHP_OUTPUT_HANDLER_CLEANABLE flag, ob_get_clean() will cause a PHP notice
+            // and return false.
+            if (@ob_get_clean() === false) {
+                break;
+            }
+        }
+
+        if ($highlight === null) {
+            $highlight = !static::$app->getRequest()->getIsConsoleRequest();
+        }
+
         VarDumper::dump($var, $depth, $highlight);
         exit();
     }
@@ -136,21 +158,19 @@ class Craft extends Yii
         if (self::$_baseCookieConfig === null) {
             $generalConfig = static::$app->getConfig()->getGeneral();
 
-            $defaultCookieDomain = $generalConfig->defaultCookieDomain;
-            $useSecureCookies = $generalConfig->useSecureCookies;
-
-            if ($useSecureCookies === 'auto') {
+            if ($generalConfig->useSecureCookies === 'auto') {
                 if ($request === null) {
                     $request = static::$app->getRequest();
                 }
 
-                $useSecureCookies = $request->getIsSecureConnection();
+                $generalConfig->useSecureCookies = $request->getIsSecureConnection();
             }
 
             self::$_baseCookieConfig = [
-                'domain' => $defaultCookieDomain,
-                'secure' => $useSecureCookies,
-                'httpOnly' => true
+                'domain' => $generalConfig->defaultCookieDomain,
+                'secure' => $generalConfig->useSecureCookies,
+                'httpOnly' => true,
+                'sameSite' => $generalConfig->sameSiteCookieValue,
             ];
         }
 
@@ -164,87 +184,180 @@ class Craft extends Yii
      */
     public static function autoload($className)
     {
-        // FileCookieJar is not supported
-        if ($className === FileCookieJar::class) {
-            require dirname(__DIR__) . '/lib/guzzle/FileCookieJar.php';
+        if ($className === CustomFieldBehavior::class) {
+            self::_autoloadCustomFieldBehavior();
+        }
+    }
+
+    /**
+     * Autoloads (and possibly generates) `CustomFieldBehavior.php`
+     */
+    private static function _autoloadCustomFieldBehavior()
+    {
+        if (!static::$app->getIsInstalled()) {
+            // Just load an empty CustomFieldBehavior into memory
+            self::_generateCustomFieldBehavior([], null, false, true);
             return;
         }
 
-        if ($className !== ContentBehavior::class && $className !== ElementQueryBehavior::class) {
-            return;
-        }
-
-        $storedFieldVersion = static::$app->getInfo()->fieldVersion;
+        $fieldsService = Craft::$app->getFields();
+        $storedFieldVersion = $fieldsService->getFieldVersion();
         $compiledClassesPath = static::$app->getPath()->getCompiledClassesPath();
+        $fieldVersionExists = $storedFieldVersion !== null;
 
-        $contentBehaviorFile = $compiledClassesPath . DIRECTORY_SEPARATOR . 'ContentBehavior.php';
-        $elementQueryBehaviorFile = $compiledClassesPath . DIRECTORY_SEPARATOR . 'ElementQueryBehavior.php';
+        if (!$fieldVersionExists) {
+            // Just make up a temporary one
+            $storedFieldVersion = StringHelper::randomString(12);
+        }
 
-        $isContentBehaviorFileValid = self::_loadFieldAttributesFile($contentBehaviorFile, $storedFieldVersion);
-        $isElementQueryBehaviorFileValid = self::_loadFieldAttributesFile($elementQueryBehaviorFile, $storedFieldVersion);
+        $filePath = $compiledClassesPath . DIRECTORY_SEPARATOR . "CustomFieldBehavior_$storedFieldVersion.php";
 
-        if ($isContentBehaviorFileValid && $isElementQueryBehaviorFileValid) {
+        if ($fieldVersionExists && file_exists($filePath)) {
+            include $filePath;
             return;
         }
 
-        if (self::$app->getIsInstalled()) {
-            // Properties are case-sensitive, so get all the binary-unique field handles
-            if (self::$app->getDb()->getIsMysql()) {
-                $column = new Expression('binary [[handle]] as [[handle]]');
-            } else {
-                $column = 'handle';
-            }
+        $fields = self::_fields();
 
-            $fieldHandles = (new Query())
-                ->distinct(true)
-                ->from([Table::FIELDS])
-                ->select([$column])
-                ->column();
+        if (empty($fields)) {
+            // Write and load it simultaneously since there are no custom fields to worry about
+            self::_generateCustomFieldBehavior([], $filePath, true, true);
         } else {
+            // First generate a basic version without real field value types, and load it into memory
             $fieldHandles = [];
+            foreach ($fields as $field) {
+                $fieldHandles[$field['handle']]['mixed'] = true;
+            }
+            self::_generateCustomFieldBehavior($fieldHandles, $filePath, false, true);
+
+            // Now generate it again, this time with the correct field value types
+            $fieldHandles = [];
+            foreach ($fields as $field) {
+                /** @var FieldInterface|string $fieldClass */
+                $fieldClass = $field['type'];
+                if (Component::validateComponentClass($fieldClass, FieldInterface::class)) {
+                    $types = explode('|', $fieldClass::valueType());
+                } else {
+                    $types = ['mixed'];
+                }
+                foreach ($types as $type) {
+                    $type = trim($type, ' \\');
+                    // Add a leading `\` if it's not a variable, self-reference, or primitive type
+                    if (!preg_match('/^(\$.*|(self|static|bool|boolean|int|integer|float|double|string|array|object|callable|callback|iterable|resource|null|mixed|number|void)(\[\])?)$/i', $type)) {
+                        $type = '\\' . $type;
+                    }
+                    $fieldHandles[$field['handle']][$type] = true;
+                }
+            }
+            self::_generateCustomFieldBehavior($fieldHandles, $filePath, true, false);
         }
 
-        if (!$isContentBehaviorFileValid) {
-            $handles = [];
-            $properties = [];
+        // Generate a new field version if we need one
+        if (!$fieldVersionExists) {
+            try {
+                $fieldsService->updateFieldVersion();
+            } catch (\Throwable $e) {
+                // Craft probably isn't installed yet.
+            }
+        }
+    }
 
-            foreach ($fieldHandles as $handle) {
-                $handles[] = <<<EOD
+    /**
+     * @param array $fieldHandles
+     * @param string|null $filePath
+     * @param bool $write
+     * @param bool $load
+     * @throws \yii\base\ErrorException
+     */
+    private static function _generateCustomFieldBehavior(array $fieldHandles, ?string $filePath, bool $write, bool $load)
+    {
+        $methods = [];
+        $handles = [];
+        $properties = [];
+
+        foreach ($fieldHandles as $handle => $types) {
+            $methods[] = <<<EOD
+ * @method \$this {$handle}(mixed \$value) Sets the [[{$handle}]] property
+EOD;
+
+            $handles[] = <<<EOD
         '{$handle}' => true,
 EOD;
 
-                $properties[] = <<<EOD
+            $phpDocTypes = implode('|', array_keys($types));
+            $properties[] = <<<EOD
     /**
-     * @var mixed Value for field with the handle “{$handle}”.
+     * @var {$phpDocTypes} Value for field with the handle “{$handle}”.
      */
     public \${$handle};
 EOD;
-            }
-
-            self::_writeFieldAttributesFile(
-                static::$app->getBasePath() . DIRECTORY_SEPARATOR . 'behaviors' . DIRECTORY_SEPARATOR . 'ContentBehavior.php.template',
-                ['{VERSION}', '/* HANDLES */', '/* PROPERTIES */'],
-                [$storedFieldVersion, implode("\n", $handles), implode("\n\n", $properties)],
-                $contentBehaviorFile
-            );
         }
 
-        if (!$isElementQueryBehaviorFileValid) {
-            $methods = [];
+        // Load the template
+        $templatePath = static::$app->getBasePath() . DIRECTORY_SEPARATOR . 'behaviors' . DIRECTORY_SEPARATOR . 'CustomFieldBehavior.php.template';
+        FileHelper::invalidate($templatePath);
+        $fileContents = file_get_contents($templatePath);
 
-            foreach ($fieldHandles as $handle) {
-                $methods[] = <<<EOD
- * @method self {$handle}(mixed \$value) Sets the [[{$handle}]] property
-EOD;
+        // Replace placeholders with generated code
+        $fileContents = str_replace(
+            [
+                '{METHOD_DOCS}',
+                '/* HANDLES */',
+                '/* PROPERTIES */',
+            ],
+            [
+                implode("\n", $methods),
+                implode("\n", $handles),
+                implode("\n\n", $properties),
+            ],
+            $fileContents);
+
+        if ($write) {
+            $dir = dirname($filePath);
+            $tmpFile = $dir . DIRECTORY_SEPARATOR . uniqid(pathinfo($filePath, PATHINFO_FILENAME), true) . '.php';
+            FileHelper::writeToFile($tmpFile, $fileContents);
+            rename($tmpFile, $filePath);
+            FileHelper::invalidate($filePath);
+            if ($load) {
+                include $filePath;
             }
 
-            self::_writeFieldAttributesFile(
-                static::$app->getBasePath() . DIRECTORY_SEPARATOR . 'behaviors' . DIRECTORY_SEPARATOR . 'ElementQueryBehavior.php.template',
-                ['{VERSION}', '{METHOD_DOCS}'],
-                [$storedFieldVersion, implode("\n", $methods)],
-                $elementQueryBehaviorFile
-            );
+            // Delete any CustomFieldBehavior files that are over 10 seconds old
+            $basename = basename($filePath);
+            $time = time() - 10;
+            FileHelper::clearDirectory($dir, [
+                'filter' => function(string $path) use ($basename, $time): bool {
+                    $b = basename($path);
+                    return (
+                        $b !== $basename &&
+                        strpos($b, 'CustomFieldBehavior') === 0 &&
+                        filemtime($path) < $time
+                    );
+                },
+            ]);
+        } elseif ($load) {
+            // Just evaluate the code
+            eval(preg_replace('/^<\?php\s*/', '', $fileContents));
         }
+    }
+
+    /**
+     * @return array
+     */
+    private static function _fields(): array
+    {
+        // Properties are case-sensitive, so get all the binary-unique field handles
+        if (static::$app->getDb()->getIsMysql()) {
+            $handleColumn = new Expression('binary [[handle]] as [[handle]]');
+        } else {
+            $handleColumn = 'handle';
+        }
+
+        // Create an array of field handles and their types
+        return (new Query())
+            ->from([Table::FIELDS])
+            ->select([$handleColumn, 'type'])
+            ->all();
     }
 
     /**
@@ -258,62 +371,23 @@ EOD;
         // Set the Craft header by default.
         $defaultConfig = [
             'headers' => [
-                'User-Agent' => 'Craft/' . self::$app->getVersion() . ' ' . \GuzzleHttp\default_user_agent()
+                'User-Agent' => 'Craft/' . static::$app->getVersion() . ' ' . \GuzzleHttp\default_user_agent(),
             ],
         ];
 
         // Grab the config from config/guzzle.php that is used on every Guzzle request.
-        $guzzleConfig = self::$app->getConfig()->getConfigFromFile('guzzle');
+        $configService = static::$app->getConfig();
+        $guzzleConfig = $configService->getConfigFromFile('guzzle');
+        $generalConfig = $configService->getGeneral();
 
-        // Merge default into guzzle config.
-        $guzzleConfig = array_replace_recursive($guzzleConfig, $defaultConfig);
+        // Merge everything together
+        $guzzleConfig = ArrayHelper::merge($defaultConfig, $guzzleConfig, $config);
 
-        // Maybe they want to set some config options specifically for this request.
-        $guzzleConfig = array_replace_recursive($guzzleConfig, $config);
+        if ($generalConfig->httpProxy) {
+            $guzzleConfig['proxy'] = $generalConfig->httpProxy;
+        }
 
         return new Client($guzzleConfig);
-    }
-
-    /**
-     * Loads a field attribute file, if it’s valid.
-     *
-     * @param string $path
-     * @param string $storedFieldVersion
-     * @return bool
-     */
-    private static function _loadFieldAttributesFile(string $path, string $storedFieldVersion): bool
-    {
-        if (!file_exists($path)) {
-            return false;
-        }
-
-        // Make sure it's up-to-date
-        $f = fopen($path, 'rb');
-        $line = fgets($f);
-        fclose($f);
-
-        if (strpos($line, "// v{$storedFieldVersion}") === false) {
-            return false;
-        }
-
-        include $path;
-        return true;
-    }
-
-    /**
-     * Writes a field attributes file.
-     *
-     * @param string $templatePath
-     * @param string[] $search
-     * @param string[] $replace
-     * @param string $destinationPath
-     */
-    private static function _writeFieldAttributesFile(string $templatePath, array $search, array $replace, string $destinationPath)
-    {
-        $fileContents = file_get_contents($templatePath);
-        $fileContents = str_replace($search, $replace, $fileContents);
-        FileHelper::writeToFile($destinationPath, $fileContents);
-        include $destinationPath;
     }
 }
 

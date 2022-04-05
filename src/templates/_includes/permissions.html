@@ -31,10 +31,11 @@
 
             <li>
                 {{ checkbox({
-                    label: props.label|e,
+                    label: props.label,
                     name: 'permissions[]',
                     value: permissionName,
                     checked: checked,
+                    class: isInGroupPermissions ? 'group-permission',
                     disabled: disabled or isInGroupPermissions,
                 }) }}
 

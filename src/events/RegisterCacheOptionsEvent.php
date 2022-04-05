@@ -13,15 +13,12 @@ use yii\base\Event;
  * RegisterCacheOptionsEvent class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class RegisterCacheOptionsEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
-     * @var array List of registered cache options for the Clear Caches tool. Each option should contain 'key', 'action', and 'label' keys.
+     * @var array List of registered cache options for the Clear Caches tool.
      */
     public $options = [];
 }

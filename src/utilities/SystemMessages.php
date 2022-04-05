@@ -15,13 +15,10 @@ use craft\web\assets\systemmessages\SystemMessagesAsset;
  * SystemMessages represents a System Messages utility.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.1
+ * @since 3.1.0
  */
 class SystemMessages extends Utility
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -43,7 +40,7 @@ class SystemMessages extends Utility
      */
     public static function iconPath()
     {
-        return Craft::getAlias('@app/icons/envelope.svg');
+        return Craft::getAlias('@appicons/envelope.svg');
     }
 
     /**

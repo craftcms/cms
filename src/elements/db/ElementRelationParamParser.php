@@ -9,32 +9,47 @@ namespace craft\elements\db;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\base\Field;
 use craft\base\FieldInterface;
 use craft\db\Query;
 use craft\db\Table;
 use craft\fields\BaseRelationField;
 use craft\fields\Matrix;
+use craft\helpers\ArrayHelper;
 use craft\helpers\StringHelper;
 use craft\models\Site;
 use yii\base\BaseObject;
+use yii\base\InvalidArgumentException;
 
 /**
  * Parses a relatedTo param on an ElementQuery.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class ElementRelationParamParser extends BaseObject
 {
-    // Constants
-    // =========================================================================
-
     const DIR_FORWARD = 0;
     const DIR_REVERSE = 1;
 
-    // Properties
-    // =========================================================================
+    /**
+     * @var int
+     */
+    private static $_relateSourceMatrixBlocksCount = 0;
+
+    /**
+     * @var int
+     */
+    private static $_relateTargetMatrixBlocksCount = 0;
+
+    /**
+     * @var int
+     */
+    private static $_relateSourcesCount = 0;
+
+    /**
+     * @var int
+     */
+    private static $_relateTargetsCount = 0;
 
     /**
      * @var FieldInterface[]|null The custom fields that are game for the query.
@@ -42,27 +57,129 @@ class ElementRelationParamParser extends BaseObject
     public $fields;
 
     /**
-     * @var int
+     * Normalizes a `relatedTo` param for [[parse()]].
+     *
+     * @param array|string|int|ElementInterface $relatedToParam
+     * @return array
+     * @throws InvalidArgumentException if any of the relation criteria contain an invalid site handle
+     * @since 3.6.11
      */
-    private $_relateSourceMatrixBlocksCount = 0;
+    public static function normalizeRelatedToParam($relatedToParam): array
+    {
+        // Ensure it's an array
+        if (!is_array($relatedToParam)) {
+            $relatedToParam = is_string($relatedToParam) ? StringHelper::split($relatedToParam) : [$relatedToParam];
+        }
+
+        if (isset($relatedToParam[0]) && in_array($relatedToParam[0], ['and', 'or'])) {
+            $glue = array_shift($relatedToParam);
+            if ($glue === 'and' && count($relatedToParam) < 2) {
+                $glue = 'or';
+            }
+        } else {
+            $glue = 'or';
+        }
+
+        if (isset($relatedToParam['element']) || isset($relatedToParam['sourceElement']) || isset($relatedToParam['targetElement'])) {
+            $relatedToParam = [$relatedToParam];
+        }
+
+        $relatedToParam = array_map([static::class, 'normalizeRelatedToCriteria'], $relatedToParam);
+
+        if ($glue === 'or') {
+            // Group all of the OR elements, so we avoid adding massive JOINs to the query
+            $orElements = [];
+
+            foreach ($relatedToParam as $i => $relCriteria) {
+                if (
+                    isset($relCriteria['element']) &&
+                    $relCriteria['element'][0] === 'or'
+                    && $relCriteria['field'] === null &&
+                    $relCriteria['sourceSite'] === null
+                ) {
+                    ArrayHelper::append($orElements, ...array_slice($relCriteria['element'], 1));
+                    unset($relatedToParam[$i]);
+                }
+            }
+
+            if (!empty($orElements)) {
+                $relatedToParam[] = static::normalizeRelatedToCriteria($orElements);
+            }
+        }
+
+        array_unshift($relatedToParam, $glue);
+        return $relatedToParam;
+    }
 
     /**
-     * @var int
+     * Normalizes an individual `relatedTo` criteria.
+     *
+     * @param mixed $relCriteria
+     * @return array
+     * @throws InvalidArgumentException if the criteria contains an invalid site handle
+     * @since 3.6.11
      */
-    private $_relateTargetMatrixBlocksCount = 0;
+    public static function normalizeRelatedToCriteria($relCriteria): array
+    {
+        if (
+            !is_array($relCriteria) ||
+            (!isset($relCriteria['element']) && !isset($relCriteria['sourceElement']) && !isset($relCriteria['targetElement']))
+        ) {
+            $relCriteria = ['element' => $relCriteria];
+        }
 
-    /**
-     * @var int
-     */
-    private $_relateSourcesCount = 0;
+        // Merge in default criteria params
+        $relCriteria += [
+            'field' => null,
+            'sourceSite' => null,
+        ];
 
-    /**
-     * @var int
-     */
-    private $_relateTargetsCount = 0;
+        // Check for now-deprecated sourceLocale param
+        if (isset($relCriteria['sourceLocale'])) {
+            Craft::$app->getDeprecator()->log('relatedTo:sourceLocale', 'The `sourceLocale` criteria in `relatedTo` element query params has been deprecated. Use `sourceSite` instead.');
+            $relCriteria['sourceSite'] = $relCriteria['sourceLocale'];
+            unset($relCriteria['sourceLocale']);
+        }
 
-    // Public Methods
-    // =========================================================================
+        // Normalize the sourceSite param (should be an ID)
+        if ($relCriteria['sourceSite'] && !is_numeric($relCriteria['sourceSite'])) {
+            if ($relCriteria['sourceSite'] instanceof Site) {
+                $relCriteria['sourceSite'] = $relCriteria['sourceSite']->id;
+            } else {
+                $site = Craft::$app->getSites()->getSiteByHandle($relCriteria['sourceSite']);
+                if (!$site) {
+                    // Invalid handle
+                    throw new InvalidArgumentException("Invalid site: {$relCriteria['sourceSite']}");
+                }
+                $relCriteria['sourceSite'] = $site->id;
+            }
+        }
+
+        // Normalize the elements
+        foreach (['element', 'sourceElement', 'targetElement'] as $elementParam) {
+            if (isset($relCriteria[$elementParam])) {
+                $elements = &$relCriteria[$elementParam];
+
+                if (!is_array($elements)) {
+                    $elements = is_string($elements) ? StringHelper::split($elements) : [$elements];
+                }
+
+                if (isset($elements[0]) && in_array($elements[0], ['and', 'or'])) {
+                    $glue = array_shift($elements);
+                    if ($glue === 'and' && count($elements) < 2) {
+                        $glue = 'or';
+                    }
+                } else {
+                    $glue = 'or';
+                }
+
+                array_unshift($elements, $glue);
+                break;
+            }
+        }
+
+        return $relCriteria;
+    }
 
     /**
      * Parses a `relatedTo` element query param and returns the condition that should
@@ -73,49 +190,21 @@ class ElementRelationParamParser extends BaseObject
      */
     public function parse($relatedToParam)
     {
-        // Ensure the criteria is an array
-        if (!is_array($relatedToParam)) {
-            $relatedToParam = is_string($relatedToParam) ? StringHelper::split($relatedToParam) : [$relatedToParam];
-        }
+        $relatedToParam = static::normalizeRelatedToParam($relatedToParam);
+        $glue = array_shift($relatedToParam);
 
-        if (isset($relatedToParam['element']) || isset($relatedToParam['sourceElement']) || isset($relatedToParam['targetElement'])) {
-            $relatedToParam = [$relatedToParam];
-        }
-
-        if (!isset($relatedToParam[0])) {
+        if (empty($relatedToParam)) {
             return false;
         }
 
         $conditions = [];
-
-        if ($relatedToParam[0] === 'and' || $relatedToParam[0] === 'or') {
-            $glue = array_shift($relatedToParam);
-        } else {
-            $glue = 'or';
-        }
-
-        if ($glue === 'or') {
-            // Group all of the unspecified elements, so we avoid adding massive JOINs to the query
-            $unspecifiedElements = [];
-
-            foreach ($relatedToParam as $i => $relCriteria) {
-                if (!is_array($relCriteria)) {
-                    $unspecifiedElements[] = $relCriteria;
-                    unset($relatedToParam[$i]);
-                }
-            }
-
-            if (!empty($unspecifiedElements)) {
-                $relatedToParam[] = ['element' => $unspecifiedElements];
-            }
-        }
 
         foreach ($relatedToParam as $relCriteria) {
             $condition = $this->_subparse($relCriteria);
 
             if ($condition) {
                 $conditions[] = $condition;
-            } else if ($glue === 'or') {
+            } elseif ($glue === 'or') {
                 continue;
             } else {
                 return false;
@@ -135,9 +224,6 @@ class ElementRelationParamParser extends BaseObject
         return $conditions;
     }
 
-    // Private Methods
-    // =========================================================================
-
     /**
      * Parses a part of a relatedTo element query param and returns the condition or `false` if there's an issue.
      *
@@ -146,39 +232,9 @@ class ElementRelationParamParser extends BaseObject
      */
     private function _subparse($relCriteria)
     {
-        // Merge in default criteria params
-        $relCriteria = array_merge([
-            'field' => null,
-            'sourceSite' => null,
-        ], $relCriteria);
-
-        // Check for now-deprecated sourceLocale param
-        if (isset($relCriteria['sourceLocale'])) {
-            Craft::$app->getDeprecator()->log('relatedTo:sourceLocale', 'The sourceLocale criteria in relatedTo element query params has been deprecated. Use sourceSite instead.');
-            $relCriteria['sourceSite'] = $relCriteria['sourceLocale'];
-            unset($relCriteria['sourceLocale']);
-        }
-
-        // Normalize the sourceSite param (should be an ID)
-        if ($relCriteria['sourceSite'] && !is_numeric($relCriteria['sourceSite'])) {
-            if ($relCriteria['sourceSite'] instanceof Site) {
-                $relCriteria['sourceSite'] = $relCriteria['sourceSite']->id;
-            } else {
-                $site = Craft::$app->getSites()->getSiteByHandle($relCriteria['sourceSite']);
-                if (!$site) {
-                    // Invalid handle
-                    return false;
-                }
-                $relCriteria['sourceSite'] = $site->id;
-            }
-        }
-
-        if (!is_array($relCriteria)) {
-            $relCriteria = ['element' => $relCriteria];
-        }
-
         // Get the element IDs, wherever they are
         $relElementIds = [];
+        $relSourceElementIds = [];
         $glue = 'or';
 
         $elementParams = ['element', 'sourceElement', 'targetElement'];
@@ -187,22 +243,28 @@ class ElementRelationParamParser extends BaseObject
         foreach ($elementParams as $elementParam) {
             if (isset($relCriteria[$elementParam])) {
                 $elements = $relCriteria[$elementParam];
-                if (!is_array($elements)) {
-                    $elements = is_string($elements) ? StringHelper::split($elements) : [$elements];
-                }
-
-                if (isset($elements[0]) && ($elements[0] === 'and' || $elements[0] === 'or')) {
-                    $glue = array_shift($elements);
-                }
+                $glue = array_shift($elements);
 
                 foreach ($elements as $element) {
                     if (is_numeric($element)) {
                         $relElementIds[] = $element;
-                    } else if ($element instanceof ElementInterface) {
-                        $relElementIds[] = $element->id;
-                    } else if ($element instanceof ElementQueryInterface) {
-                        foreach ($element->ids() as $id) {
-                            $relElementIds[] = $id;
+                        if ($elementParam === 'element') {
+                            $relSourceElementIds[] = $element;
+                        }
+                    } elseif ($element instanceof ElementInterface) {
+                        if ($elementParam === 'targetElement') {
+                            $relElementIds[] = $element->getCanonicalId();
+                        } else {
+                            $relElementIds[] = $element->id;
+                            if ($elementParam === 'element') {
+                                $relSourceElementIds[] = $element->getCanonicalId();
+                            }
+                        }
+                    } elseif ($element instanceof ElementQueryInterface) {
+                        $ids = $element->ids();
+                        ArrayHelper::append($relElementIds, ...$ids);
+                        if ($elementParam === 'element') {
+                            ArrayHelper::append($relSourceElementIds, ...$ids);
                         }
                     }
                 }
@@ -216,24 +278,24 @@ class ElementRelationParamParser extends BaseObject
         }
 
         // Going both ways?
-        if (isset($relCriteria['element'])) {
+        if ($elementParam === 'element') {
             array_unshift($relElementIds, $glue);
 
             return $this->parse([
                 'or',
                 [
                     'sourceElement' => $relElementIds,
-                    'field' => $relCriteria['field']
+                    'field' => $relCriteria['field'],
                 ],
                 [
-                    'targetElement' => $relElementIds,
-                    'field' => $relCriteria['field']
-                ]
+                    'targetElement' => $relSourceElementIds,
+                    'field' => $relCriteria['field'],
+                ],
             ]);
         }
 
         // Figure out which direction we’re going
-        if (isset($relCriteria['sourceElement'])) {
+        if ($elementParam === 'sourceElement') {
             $dir = self::DIR_FORWARD;
         } else {
             $dir = self::DIR_REVERSE;
@@ -269,11 +331,10 @@ class ElementRelationParamParser extends BaseObject
                     return false;
                 }
 
-                /** @var Field $fieldModel */
                 if ($fieldModel instanceof BaseRelationField) {
                     // We'll deal with normal relation fields all together
                     $relationFieldIds[] = $fieldModel->id;
-                } else if ($fieldModel instanceof Matrix) {
+                } elseif ($fieldModel instanceof Matrix) {
                     $blockTypeFieldIds = [];
 
                     // Searching by a specific block type field?
@@ -284,7 +345,6 @@ class ElementRelationParamParser extends BaseObject
 
                         foreach ($blockTypes as $blockType) {
                             foreach ($blockType->getFields() as $blockTypeField) {
-                                /** @var Field $blockTypeField */
                                 if ($blockTypeField->handle == $fieldHandleParts[1]) {
                                     $blockTypeFieldIds[] = $blockTypeField->id;
                                     break;
@@ -298,62 +358,64 @@ class ElementRelationParamParser extends BaseObject
                     }
 
                     if ($dir === self::DIR_FORWARD) {
-                        $this->_relateSourcesCount++;
-                        $this->_relateTargetMatrixBlocksCount++;
+                        self::$_relateSourcesCount++;
+                        self::$_relateTargetMatrixBlocksCount++;
 
-                        $sourcesAlias = 'sources' . $this->_relateSourcesCount;
-                        $targetMatrixBlocksAlias = 'target_matrixblocks' . $this->_relateTargetMatrixBlocksCount;
-                        $targetMatrixElementsAlias = 'target_matrixelements' . $this->_relateTargetMatrixBlocksCount;
+                        $sourcesAlias = 'sources' . self::$_relateSourcesCount;
+                        $targetMatrixBlocksAlias = 'target_matrixblocks' . self::$_relateTargetMatrixBlocksCount;
+                        $targetMatrixElementsAlias = 'target_matrixelements' . self::$_relateTargetMatrixBlocksCount;
 
                         $subQuery = (new Query())
-                            ->select([$sourcesAlias . '.targetId'])
+                            ->select(["$sourcesAlias.targetId"])
                             ->from([$sourcesAlias => Table::RELATIONS])
-                            ->innerJoin(Table::MATRIXBLOCKS . ' ' . $targetMatrixBlocksAlias, "[[{$targetMatrixBlocksAlias}.id]] = [[{$sourcesAlias}.sourceId]]")
-                            ->innerJoin(Table::ELEMENTS . ' ' . $targetMatrixElementsAlias, "[[{$targetMatrixElementsAlias}.id]] = [[{$targetMatrixBlocksAlias}.id]]")
+                            ->innerJoin([$targetMatrixBlocksAlias => Table::MATRIXBLOCKS], "[[{$targetMatrixBlocksAlias}.id]] = [[{$sourcesAlias}.sourceId]]")
+                            ->innerJoin([$targetMatrixElementsAlias => Table::ELEMENTS], "[[{$targetMatrixElementsAlias}.id]] = [[{$targetMatrixBlocksAlias}.id]]")
                             ->where([
-                                $targetMatrixBlocksAlias . '.ownerId' => $relElementIds,
-                                $targetMatrixBlocksAlias . '.fieldId' => $fieldModel->id,
-                                $targetMatrixElementsAlias . '.dateDeleted' => null,
+                                "$targetMatrixBlocksAlias.ownerId" => $relElementIds,
+                                "$targetMatrixBlocksAlias.fieldId" => $fieldModel->id,
+                                "$targetMatrixElementsAlias.enabled" => true,
+                                "$targetMatrixElementsAlias.dateDeleted" => null,
                             ]);
 
                         if ($relCriteria['sourceSite']) {
                             $subQuery->andWhere([
                                 'or',
-                                [$sourcesAlias . '.sourceSiteId' => null],
-                                [$sourcesAlias . '.sourceSiteId' => $relCriteria['sourceSite']]
+                                ["$sourcesAlias.sourceSiteId" => null],
+                                ["$sourcesAlias.sourceSiteId" => $relCriteria['sourceSite']],
                             ]);
                         }
 
                         if (!empty($blockTypeFieldIds)) {
-                            $subQuery->andWhere([$sourcesAlias . '.fieldId' => $blockTypeFieldIds]);
+                            $subQuery->andWhere(["$sourcesAlias.fieldId" => $blockTypeFieldIds]);
                         }
                     } else {
-                        $this->_relateSourceMatrixBlocksCount++;
-                        $sourceMatrixBlocksAlias = 'source_matrixblocks' . $this->_relateSourceMatrixBlocksCount;
-                        $sourceMatrixElementsAlias = 'source_matrixelements' . $this->_relateSourceMatrixBlocksCount;
-                        $matrixBlockTargetsAlias = 'matrixblock_targets' . $this->_relateSourceMatrixBlocksCount;
+                        self::$_relateSourceMatrixBlocksCount++;
+                        $sourceMatrixBlocksAlias = 'source_matrixblocks' . self::$_relateSourceMatrixBlocksCount;
+                        $sourceMatrixElementsAlias = 'source_matrixelements' . self::$_relateSourceMatrixBlocksCount;
+                        $matrixBlockTargetsAlias = 'matrixblock_targets' . self::$_relateSourceMatrixBlocksCount;
 
                         $subQuery = (new Query())
-                            ->select([$sourceMatrixBlocksAlias . '.ownerId'])
+                            ->select(["$sourceMatrixBlocksAlias.ownerId"])
                             ->from([$sourceMatrixBlocksAlias => Table::MATRIXBLOCKS])
-                            ->innerJoin(Table::ELEMENTS . ' ' . $sourceMatrixElementsAlias, "[[{$sourceMatrixElementsAlias}.id]] = [[{$sourceMatrixBlocksAlias}.id]]")
-                            ->innerJoin(Table::RELATIONS . ' ' . $matrixBlockTargetsAlias, "[[{$matrixBlockTargetsAlias}.sourceId]] = [[{$sourceMatrixBlocksAlias}.id]]")
+                            ->innerJoin([$sourceMatrixElementsAlias => Table::ELEMENTS], "[[{$sourceMatrixElementsAlias}.id]] = [[{$sourceMatrixBlocksAlias}.id]]")
+                            ->innerJoin([$matrixBlockTargetsAlias => Table::RELATIONS], "[[{$matrixBlockTargetsAlias}.sourceId]] = [[{$sourceMatrixBlocksAlias}.id]]")
                             ->where([
-                                $sourceMatrixElementsAlias . '.dateDeleted' => null,
-                                $matrixBlockTargetsAlias . '.targetId' => $relElementIds,
-                                $sourceMatrixBlocksAlias . '.fieldId' => $fieldModel->id
+                                "$sourceMatrixElementsAlias.enabled" => true,
+                                "$sourceMatrixElementsAlias.dateDeleted" => null,
+                                "$matrixBlockTargetsAlias.targetId" => $relElementIds,
+                                "$sourceMatrixBlocksAlias.fieldId" => $fieldModel->id,
                             ]);
 
                         if ($relCriteria['sourceSite']) {
                             $subQuery->andWhere([
                                 'or',
-                                [$matrixBlockTargetsAlias . '.sourceSiteId' => null],
-                                [$matrixBlockTargetsAlias . '.sourceSiteId' => $relCriteria['sourceSite']]
+                                ["$matrixBlockTargetsAlias.sourceSiteId" => null],
+                                ["$matrixBlockTargetsAlias.sourceSiteId" => $relCriteria['sourceSite']],
                             ]);
                         }
 
                         if (!empty($blockTypeFieldIds)) {
-                            $subQuery->andWhere([$matrixBlockTargetsAlias . '.fieldId' => $blockTypeFieldIds]);
+                            $subQuery->andWhere(["$matrixBlockTargetsAlias.fieldId" => $blockTypeFieldIds]);
                         }
                     }
 
@@ -371,32 +433,32 @@ class ElementRelationParamParser extends BaseObject
         // run this code if the rel criteria wasn't exclusively for Matrix.)
         if (empty($relCriteria['field']) || !empty($relationFieldIds)) {
             if ($dir === self::DIR_FORWARD) {
-                $this->_relateSourcesCount++;
-                $relTableAlias = 'sources' . $this->_relateSourcesCount;
+                self::$_relateSourcesCount++;
+                $relTableAlias = 'sources' . self::$_relateSourcesCount;
                 $relConditionColumn = 'sourceId';
                 $relElementColumn = 'targetId';
             } else {
-                $this->_relateTargetsCount++;
-                $relTableAlias = 'targets' . $this->_relateTargetsCount;
+                self::$_relateTargetsCount++;
+                $relTableAlias = 'targets' . self::$_relateTargetsCount;
                 $relConditionColumn = 'targetId';
                 $relElementColumn = 'sourceId';
             }
 
             $subQuery = (new Query())
-                ->select([$relTableAlias . '.' . $relElementColumn])
+                ->select(["$relTableAlias.$relElementColumn"])
                 ->from([$relTableAlias => Table::RELATIONS])
-                ->where([$relTableAlias . '.' . $relConditionColumn => $relElementIds]);
+                ->where(["$relTableAlias.$relConditionColumn" => $relElementIds]);
 
             if ($relCriteria['sourceSite']) {
                 $subQuery->andWhere([
                     'or',
-                    [$relTableAlias . '.sourceSiteId' => null],
-                    [$relTableAlias . '.sourceSiteId' => $relCriteria['sourceSite']]
+                    ["$relTableAlias.sourceSiteId" => null],
+                    ["$relTableAlias.sourceSiteId" => $relCriteria['sourceSite']],
                 ]);
             }
 
             if (!empty($relationFieldIds)) {
-                $subQuery->andWhere([$relTableAlias . '.fieldId' => $relationFieldIds]);
+                $subQuery->andWhere(["$relTableAlias.fieldId" => $relationFieldIds]);
             }
 
             $conditions[] = ['elements.id' => $subQuery];

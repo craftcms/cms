@@ -1,0 +1,227 @@
+{% import "_includes/forms" as forms %}
+
+{% if yamlExists %}
+    <form method="post" action="" accept-charset="UTF-8">
+        {% if invert %}
+            <h2>{{ 'Update YAML Files'|t('app') }}</h2>
+            <p>{{ 'Update your project config YAML files to reflect the latest changes in the loaded project config.'|t('app') }}</p>
+        {% else %}
+            <h2>{{ 'Apply YAML Changes'|t('app') }}</h2>
+            <p>{{ 'Apply changes in your project config YAML files to the loaded project config.'|t('app') }}</p>
+        {% endif %}
+        {{ csrfInput() }}
+        {% if areChangesPending %}
+            <div id="diff" class="pane loading" tabindex="0"></div>
+            <div class="readable">
+                <blockquote class="note $noteClass">
+                    <p>
+                        {{ invert
+                            ? 'Make sure you’re not overwriting changes in the YAML files that were made on another environment.'|t('app')
+                            : 'Make sure you’ve followed the <a href="{url}" target="_blank">Environment Setup</a> instructions before applying project config YAML changes.'|t('app', {
+                                url: 'https://craftcms.com/docs/3.x/project-config.html#environment-setup',
+                            })|raw
+                        }}
+                    </p>
+                </blockquote>
+            </div>
+            <div class="buttons">
+                {% if invert %}
+                    {{ tag('button', {
+                        type: 'button',
+                        class: ['btn', 'formsubmit', 'secondary'],
+                        text: 'Update YAML files'|t('app'),
+                        data: {
+                            action: 'project-config/discard',
+                            confirm: 'Are you sure you want to discard the pending project config YAML changes?'|t('app'),
+                        },
+                    }) }}
+                    {{ tag('button', {
+                        type: 'button',
+                        class: ['btn', 'formsubmit'],
+                        text: 'Apply YAML changes'|t('app'),
+                        data: {
+                            action: 'config-sync',
+                            params: {
+                                return: 'utilities/project-config',
+                            },
+                        },
+                    }) }}
+                {% else %}
+                    {{ tag('button', {
+                        type: 'button',
+                        class: ['btn', 'formsubmit', 'secondary'],
+                        text: 'Apply changes only'|t('app'),
+                        data: {
+                            action: 'config-sync',
+                            params: {
+                                return: 'utilities/project-config',
+                            },
+                        },
+                    }) }}
+                    {{ tag('button', {
+                        type: 'button',
+                        class: ['btn', 'formsubmit'],
+                        text: 'Reapply everything'|t('app'),
+                        data: {
+                            action: 'config-sync',
+                            params: {
+                                return: 'utilities/project-config',
+                                force: 1,
+                            },
+                        },
+                    }) }}
+                    {% if not readOnly %}
+                        {{ tag('button', {
+                            type: 'button',
+                            class: ['btn', 'formsubmit'],
+                            text: 'Discard changes'|t('app'),
+                            data: {
+                                action: 'project-config/discard',
+                                confirm: 'Are you sure you want to discard the pending project config YAML changes?'|t('app'),
+                            },
+                        }) }}
+                    {% endif %}
+                {% endif %}
+            </div>
+        {% else %}
+            <div class="pane">
+                <p>
+                    <span class="checkmark-icon"></span>
+                    {{ 'There aren’t any pending project config changes to apply.'|t('app') }}
+                </p>
+            </div>
+            <div class="buttons">
+                {{ tag('button', {
+                    type: 'button',
+                    class: ['btn', 'formsubmit'],
+                    text: 'Reapply everything'|t('app'),
+                    data: {
+                        action: 'config-sync',
+                        params: {
+                            return: 'utilities/project-config',
+                            force: 1,
+                        },
+                    },
+                }) }}
+            </div>
+        {% endif %}
+    </form>
+{% else %}
+    <form method="post" action="" accept-charset="UTF-8">
+        <h2>{{ 'Generate YAML Files'|t('app') }}</h2>
+        <p>
+            {{ 'Save the loaded project config data to YAML files in your <code>{folder}</code> folder.'|t('app', {
+                folder: 'config/project/',
+            })|raw }}
+        </p>
+        {{ actionInput('project-config/discard') }}
+        {{ csrfInput() }}
+        <div class="buttons">
+            <button type="submit" class="btn secondary">{{ 'Generate'|t('app') }}</button>
+        </div>
+    </form>
+{% endif %}
+
+{% if not readOnly %}
+    <hr>
+
+    <form method="post" action="" accept-charset="UTF-8">
+        <h2>{{ 'Rebuild the Config'|t('app') }}</h2>
+        <p>{{ 'Rebuild the project config based on the data stored throughout the database.'|t('app') }}</p>
+        {{ actionInput('project-config/rebuild') }}
+        {{ csrfInput() }}
+        <div class="buttons">
+            <button type="submit" class="btn secondary">{{ 'Rebuild'|t('app') }}</button>
+        </div>
+    </form>
+{% endif %}
+
+<hr>
+
+<h2>{{ 'Loaded Project Config Data'|t('app') }}</h2>
+<div class="pane" tabindex="0">
+    <pre><code>{{ entireConfig }}</code></pre>
+</div>
+<div class="buttons">
+    <button type="button" id="download" class="btn" data-icon="download">{{ 'Download'|t('app') }}</button>
+    <div id="download-spinner" class="spinner hidden"></div>
+</div>
+
+{% css %}
+    .pane {
+        max-height: 500px;
+        overflow: auto;
+    }
+    .pane pre {
+        margin: 0;
+        padding: 0;
+        background-color: transparent;
+    }
+{% endcss %}
+
+{% if areChangesPending %}
+    {% js %}
+        let cancelToken = axios.CancelToken.source();
+        Craft.sendActionRequest('GET', Craft.getActionUrl('project-config/diff', {
+            invert: {{ invert|json_encode }},
+        }), {
+            cancelToken: cancelToken.token,
+        }).then(response => {
+            cancelToken = null;
+            let maxLines = 20;
+            let lines = response.data.split(/\n/);
+            let $diffPane = $('#diff')
+                .removeClass('loading')
+                .addClass('highlight');
+            let $pre = $('<pre/>', {
+                class: 'language-diff',
+            }).appendTo($diffPane);
+            let $code = $('<code/>', {
+                class: 'language-diff diff-highlight',
+                html: Prism.highlight(lines.slice(0, maxLines).join("\n"), Prism.languages.diff, 'diff'),
+            }).appendTo($pre);
+
+            if (lines.length > maxLines) {
+                let $p = $('<p/>', {
+                    class: 'centeralign',
+                }).appendTo($diffPane);
+                let $a = $('<a/>', {
+                    class: 'largetext',
+                    text: Craft.t('app', 'Show all changes'),
+                }).appendTo($p);
+                $a.on('click', () => {
+                    $code.html(Prism.highlight(response.data, Prism.languages.diff, 'diff'));
+                    $p.remove();
+                });
+            }
+        });
+        Garnish.$win.on('beforeunload', () => {
+            if (cancelToken) {
+                cancelToken.cancel();
+            }
+        });
+    {% endjs %}
+    {% css %}
+        #diff.loading {
+            height: 200px;
+        }
+    {% endcss %}
+{% endif %}
+
+{% js %}
+    $('#download').on('click', () => {
+        $('#download-spinner').removeClass('hidden');
+        let params = {};
+        if (Craft.csrfTokenName) {
+            params[Craft.csrfTokenName] = Craft.csrfTokenValue;
+        }
+        Craft.downloadFromUrl("GET", "{{ actionUrl('project-config/download') }}", params)
+            .then(() => {
+                $('#download-spinner').addClass('hidden');
+            })
+            .catch(e => {
+                $('#download-spinner').addClass('hidden');
+                throw e;
+            });
+    });
+{% endjs %}

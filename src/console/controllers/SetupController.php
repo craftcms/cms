@@ -10,28 +10,30 @@ namespace craft\console\controllers;
 use Composer\Util\Platform;
 use Craft;
 use craft\config\DbConfig;
+use craft\console\Controller;
 use craft\db\Connection;
+use craft\db\Table;
 use craft\errors\DbConnectException;
 use craft\helpers\App;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Console;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
+use craft\migrations\CreateDbCacheTable;
+use craft\migrations\CreatePhpSessionTable;
 use Seld\CliPrompt\CliPrompt;
 use yii\base\InvalidConfigException;
-use yii\console\Controller;
 use yii\console\ExitCode;
+use yii\db\Exception as DbException;
 
 /**
  * Craft CMS setup installer.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class SetupController extends Controller
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null The database driver to use. Either 'mysql' for MySQL or 'pgsql' for PostgreSQL.
      */
@@ -43,7 +45,7 @@ class SetupController extends Controller
     /**
      * @var int|null The database server port. Defaults to 3306 for MySQL and 5432 for PostgreSQL.
      */
-    public $port = 0;
+    public $port;
     /**
      * @var string|null The database username to connect with.
      */
@@ -57,7 +59,7 @@ class SetupController extends Controller
      */
     public $database;
     /**
-     * @var string|null The database schema to use (PostgreSQL only).
+     * @var string|null The schema that Postgres is configured to use by default (PostgreSQL only).
      * @see https://www.postgresql.org/docs/8.2/static/ddl-schemas.html
      */
     public $schema;
@@ -67,8 +69,11 @@ class SetupController extends Controller
      */
     public $tablePrefix;
 
-    // Public Methods
-    // =========================================================================
+    /**
+     * @var bool Whether existing environment variables should be used as the default values by the `db-creds` command.
+     * @see _env()
+     */
+    private $_useEnvDefaults = true;
 
     /**
      * @inheritdoc
@@ -98,6 +103,11 @@ class SetupController extends Controller
      */
     public function actionIndex(): int
     {
+        if (Craft::$app->id === 'CraftCMS' && !App::env('APP_ID')) {
+            $this->run('app-id');
+            $this->stdout(PHP_EOL);
+        }
+
         if (!Craft::$app->getConfig()->getGeneral()->securityKey) {
             $this->run('security-key');
             $this->stdout(PHP_EOL);
@@ -109,7 +119,7 @@ class SetupController extends Controller
 
         $this->run('db-creds');
 
-        if (Craft::$app->getIsInstalled()) {
+        if (Craft::$app->getIsInstalled(true)) {
             $this->stdout("It looks like Craft is already installed, so we're done here." . PHP_EOL, Console::FG_YELLOW);
             return ExitCode::OK;
         }
@@ -121,11 +131,11 @@ class SetupController extends Controller
         }
 
         $this->stdout(PHP_EOL);
-        return $this->module->runAction('install');
+        return $this->run('install/craft');
     }
 
     /**
-     * Called from the post-create-project-cmd Composer hook.
+     * Called from the `post-create-project-cmd` Composer hook.
      *
      * @return int
      */
@@ -154,20 +164,44 @@ EOD;
         $this->stdout(str_replace("\n", PHP_EOL, $craft), Console::FG_YELLOW);
 
         // Can't do anything interactive here (https://github.com/composer/composer/issues/3299)
+        $this->run('app-id');
         $this->run('security-key');
-        $this->stdout(PHP_EOL . 'Welcome to Craft CMS! Run the following command if you want to setup Craft from your terminal:' . PHP_EOL);
-        $this->_outputCommand('setup');
+        $this->stdout(PHP_EOL . 'Welcome to Craft CMS!' . PHP_EOL . PHP_EOL);
+
+        if (!$this->interactive || !$this->confirm('Are you ready to begin the setup?')) {
+            $this->stdout('Run the following command if you want to setup Craft from your terminal:' . PHP_EOL);
+            $this->_outputCommand('setup');
+            return ExitCode::OK;
+        }
+
+        return $this->run('index');
+    }
+
+    /**
+     * Generates a new application ID and saves it in the `.env` file.
+     *
+     * @return int
+     * @since 3.4.25
+     */
+    public function actionAppId(): int
+    {
+        $this->stdout('Generating an application ID ... ', Console::FG_YELLOW);
+        $key = 'CraftCMS--' . StringHelper::UUID();
+        if (!$this->_setEnvVar('APP_ID', $key)) {
+            return ExitCode::UNSPECIFIED_ERROR;
+        }
+        $this->stdout("done ({$key})" . PHP_EOL, Console::FG_YELLOW);
         return ExitCode::OK;
     }
 
     /**
-     * Generates a new security key and saves it in the .env file.
+     * Generates a new security key and saves it in the `.env` file.
      *
      * @return int
      */
     public function actionSecurityKey(): int
     {
-        $this->stdout(PHP_EOL . 'Generating a security key ... ', Console::FG_YELLOW);
+        $this->stdout('Generating a security key ... ', Console::FG_YELLOW);
         $key = Craft::$app->getSecurity()->generateRandomString();
         if (!$this->_setEnvVar('SECURITY_KEY', $key)) {
             return ExitCode::UNSPECIFIED_ERROR;
@@ -179,83 +213,58 @@ EOD;
     }
 
     /**
-     * Stores new DB connection settings to the .env file.
+     * Stores new DB connection settings to the `.env` file.
      *
      * @return int
      */
     public function actionDbCreds(): int
     {
-        try {
-            $dbConfig = Craft::$app->getConfig()->getDb();
-        } catch (InvalidConfigException $e) {
-            $dbConfig = new DbConfig();
-        }
-
-        $firstTime = true;
         $badUserCredentials = false;
 
         top:
 
         // driver
-        if ($this->driver) {
-            if (!in_array($this->driver, [DbConfig::DRIVER_MYSQL, DbConfig::DRIVER_PGSQL], true)) {
-                $this->stderr('--driver must be either "' . DbConfig::DRIVER_MYSQL . '" or "' . DbConfig::DRIVER_PGSQL . '".' . PHP_EOL, Console::FG_RED);
-                return ExitCode::USAGE;
-            }
-            $dbConfig->driver = $this->driver;
-        } else if ($this->interactive) {
-            $dbConfig->driver = $this->select('Which database driver are you using?', [
-                DbConfig::DRIVER_MYSQL => 'MySQL',
-                DbConfig::DRIVER_PGSQL => 'PostgreSQL',
-            ]);
-        }
+        $envDriver = App::env('DB_DRIVER');
+        $this->driver = $this->prompt('Which database driver are you using? (mysql or pgsql)', [
+            'required' => true,
+            'default' => $this->driver ?? $envDriver ?: 'mysql',
+            'validator' => function(string $input) {
+                return in_array($input, [Connection::DRIVER_MYSQL, Connection::DRIVER_PGSQL]);
+            },
+        ]);
+        $this->_useEnvDefaults = !$envDriver || $envDriver === $this->driver;
 
         // server
-        if ($this->server) {
-            $server = $this->server;
-        } else {
-            $server = $this->prompt('Database server name or IP address:', [
-                'required' => true,
-                'default' => $dbConfig->server ?: '127.0.0.1',
-            ]);
-        }
-        $dbConfig->server = strtolower($server);
+        $this->server = $this->prompt('Database server name or IP address:', [
+            'required' => true,
+            'default' => $this->server ?? $this->_envDefault('DB_SERVER') ?? '127.0.0.1',
+        ]);
+        $this->server = strtolower($this->server);
 
         // port
-        if ($this->port) {
-            $dbConfig->port = (int)$this->port;
-        } else {
-            if ($firstTime) {
-                $defaultPort = $dbConfig->driver === DbConfig::DRIVER_MYSQL ? 3306 : 5432;
-            } else {
-                $defaultPort = $dbConfig->port;
-            }
-            $dbConfig->port = (int)$this->prompt('Database port:', [
-                'required' => true,
-                'default' => $defaultPort,
-                'validator' => function(string $input): bool {
-                    return is_numeric($input);
-                }
-            ]);
-        }
+        $this->port = (int)$this->prompt('Database port:', [
+            'required' => true,
+            'default' => $this->port ?? $this->_envDefault('DB_PORT') ?? ($this->driver === Connection::DRIVER_MYSQL ? 3306 : 5432),
+            'validator' => function(string $input): bool {
+                return is_numeric($input);
+            },
+        ]);
 
         userCredentials:
 
-        // user
-        if ($this->user) {
-            $dbConfig->user = $this->user;
-        } else {
-            $dbConfig->user = $this->prompt('Database username:', [
-                'default' => $dbConfig->user ?: null,
-            ]);
-        }
+        // user & password
+        $this->user = $this->prompt('Database username:', [
+            'default' => $this->user ?? $this->_envDefault('DB_USER') ?? 'root',
+        ]);
 
-        // password
-        if ($this->password) {
-            $dbConfig->password = $this->password;
-        } else if ($this->interactive) {
-            $this->stdout('Database password: ');
-            $dbConfig->password = CliPrompt::hiddenPrompt(true);
+        if (!$this->password && $this->interactive) {
+            $envPassword = App::env('DB_PASSWORD');
+            if ($envPassword && $this->confirm('Use the password provided by $DB_PASSWORD?', true)) {
+                $this->password = $envPassword;
+            } else {
+                $this->stdout('Database password: ');
+                $this->password = CliPrompt::hiddenPrompt(true);
+            }
         }
 
         if ($badUserCredentials) {
@@ -264,62 +273,57 @@ EOD;
         }
 
         // database
-        if ($this->database) {
-            $dbConfig->database = $this->database;
-        } else if ($this->interactive || $dbConfig->database) {
-            $dbConfig->database = $this->prompt('Database name:', [
-                'required' => true,
-                'default' => $dbConfig->database ?: null,
-            ]);
-        } else {
+        if (!$this->interactive && !$this->database) {
             $this->stderr('The --database option must be set.' . PHP_EOL, Console::FG_RED);
             return ExitCode::USAGE;
         }
-
-        // schema
-        if ($dbConfig->driver === DbConfig::DRIVER_PGSQL) {
-            if ($this->schema) {
-                $dbConfig->schema = $this->schema;
-            } else {
-                $dbConfig->schema = $this->prompt('Database schema:', [
-                    'required' => true,
-                    'default' => $dbConfig->schema ?: 'public',
-                ]);
-            }
-        }
+        $this->database = $this->prompt('Database name:', [
+            'required' => true,
+            'default' => $this->database ?? $this->_envDefault('DB_DATABASE') ?? null,
+        ]);
 
         // tablePrefix
-        if ($this->tablePrefix) {
-            $tablePrefix = $this->tablePrefix;
-        } else {
-            $tablePrefix = $this->prompt('Database table prefix' . ($dbConfig->tablePrefix ? ' (type "none" for none)' : '') . ':', [
-                'default' => $dbConfig->tablePrefix ?: null,
-                'validator' => function(string $input): bool {
-                    if (strlen(StringHelper::ensureRight($input, '_')) > 6) {
-                        Console::stderr($this->ansiFormat('The table prefix must be 5 or less characters long.' . PHP_EOL, Console::FG_RED));
-                        return false;
-                    }
-                    return true;
+        $this->tablePrefix = $this->prompt('Database table prefix' . ($this->tablePrefix ? ' (type "none" for none)' : '') . ':', [
+            'default' => $this->tablePrefix ?? $this->_envDefault('DB_TABLE_PREFIX') ?? null,
+            'validator' => function(string $input): bool {
+                if (strlen(StringHelper::ensureRight($input, '_')) > 6) {
+                    $this->stderr('The table prefix must be 5 or less characters long.' . PHP_EOL, Console::FG_RED);
+                    return false;
                 }
-            ]);
-        }
-        if ($tablePrefix && $tablePrefix !== 'none') {
-            $dbConfig->tablePrefix = StringHelper::ensureRight($tablePrefix, '_');
+                return true;
+            },
+        ]);
+        if ($this->tablePrefix && $this->tablePrefix !== 'none') {
+            $this->tablePrefix = StringHelper::ensureRight($this->tablePrefix, '_');
         } else {
-            $tablePrefix = $dbConfig->tablePrefix = '';
+            $this->tablePrefix = '';
         }
 
         // Test the DB connection
         $this->stdout('Testing database credentials ... ', Console::FG_YELLOW);
 
-        $originalServer = $dbConfig->server;
-        $originalPort = $dbConfig->port;
-
         test:
 
-        $dbConfig->updateDsn();
-        /** @var Connection $db */
-        $db = Craft::createObject(App::dbConfig($dbConfig));
+        if (!isset($dbConfig)) {
+            try {
+                $dbConfig = Craft::$app->getConfig()->getDb();
+            } catch (InvalidConfigException $e) {
+                $dbConfig = new DbConfig();
+            }
+        }
+
+        $dbConfig->driver = $this->driver;
+        $dbConfig->server = $this->server;
+        $dbConfig->port = $this->port;
+        $dbConfig->database = $this->database;
+        $dbConfig->dsn = "{$this->driver}:host={$this->server};port={$this->port};dbname={$this->database};";
+        $dbConfig->user = $this->user;
+        $dbConfig->password = $this->password;
+        $dbConfig->tablePrefix = $this->tablePrefix;
+
+        $db = Craft::$app->getDb();
+        $db->close();
+        Craft::configure($db, ArrayHelper::without(App::dbConfig($dbConfig), 'class'));
 
         try {
             $db->open();
@@ -339,18 +343,18 @@ EOD;
             // Test some common issues
             $message = $pdoException->getMessage();
 
-            if ($dbConfig->server === 'localhost' && $message === 'SQLSTATE[HY000] [2002] No such file or directory') {
+            if ($this->server === 'localhost' && $message === 'SQLSTATE[HY000] [2002] No such file or directory') {
                 // means the Unix socket doesn't exist - https://stackoverflow.com/a/22927341/1688568
                 // try 127.0.0.1 instead...
                 $this->stdout('Trying with 127.0.0.1 instead of localhost ... ', Console::FG_YELLOW);
-                $dbConfig->server = '127.0.0.1';
+                $this->server = '127.0.0.1';
                 goto test;
             }
 
-            if ($dbConfig->port === 3306 && $message === 'SQLSTATE[HY000] [2002] Connection refused') {
+            if ($this->port === 3306 && $message === 'SQLSTATE[HY000] [2002] Connection refused') {
                 // try 8889 instead (default MAMP port)...
                 $this->stdout('Trying with port 8889 instead of 3306 ... ', Console::FG_YELLOW);
-                $dbConfig->port = 8889;
+                $this->port = 8889;
                 goto test;
             }
 
@@ -368,29 +372,91 @@ EOD;
                 return ExitCode::UNSPECIFIED_ERROR;
             }
 
-            // Restore the original server/port values
-            $dbConfig->server = $originalServer;
-            $dbConfig->port = $originalPort;
-
-            $firstTime = false;
             goto top;
         }
 
-        Craft::$app->set('db', $db);
+        $this->stdout('success!' . PHP_EOL, Console::FG_GREEN);
+
+        // Determine the default schema if Postgres
+        if ($this->driver === Connection::DRIVER_PGSQL) {
+            if ($dbConfig->setSchemaOnConnect) {
+                $this->schema = $this->prompt('Database schema:', [
+                    'required' => true,
+                    'default' => $this->schema ?? App::env('DB_SCHEMA') ?: 'public',
+                ]);
+                $db->createCommand("SET search_path TO $this->schema;")->execute();
+            } elseif ($this->schema === null) {
+                // Make sure that the DB is actually configured to use the provided schema by default
+                $searchPath = $db->createCommand('SHOW search_path')->queryScalar();
+                $defaultSchemas = array_map('trim', explode(',', $searchPath)) ?: ['public'];
+
+                // Get the available schemas (h/t https://dba.stackexchange.com/a/40051/205387)
+                try {
+                    $allSchemas = $db->createCommand('SELECT schema_name FROM information_schema.schemata')->queryColumn();
+                } catch (DbException $e) {
+                    try {
+                        $allSchemas = $db->createCommand('SELECT nspname FROM pg_catalog.pg_namespace')->queryColumn();
+                    } catch (DbException $e) {
+                        $allSchemas = null;
+                    }
+                }
+
+                if ($allSchemas !== null) {
+                    // Use the first default schema that actually exists
+                    foreach ($defaultSchemas as $schema) {
+                        // "$user" => username
+                        if ($schema === '"$user"') {
+                            $schema = $this->user;
+                        }
+
+                        if (in_array($schema, $allSchemas)) {
+                            $this->schema = $schema;
+                            break;
+                        }
+                    }
+                } else {
+                    // Use the first non-user schema
+                    foreach ($defaultSchemas as $schema) {
+                        if ($schema !== '"$user"') {
+                            $this->schema = $schema;
+                            break;
+                        }
+                    }
+                }
+
+                if ($this->schema === null) {
+                    // Assume 'public'
+                    $this->schema = 'public';
+                }
+
+                $this->stdout('Using default schema "' . $this->schema . '".' . PHP_EOL, Console::FG_YELLOW);
+            }
+        }
+
+        $db->getSchema()->defaultSchema = $this->schema;
         Craft::$app->setIsInstalled(null);
 
-        $this->stdout('success!' . PHP_EOL, Console::FG_GREEN);
         $this->stdout('Saving database credentials to your .env file ... ', Console::FG_YELLOW);
 
+        // If there's a DB_DSN environment variable, go with that
+        if (App::env('DB_DSN') !== false) {
+            if (!$this->_setEnvVar('DB_DSN', $dbConfig->dsn)) {
+                return ExitCode::UNSPECIFIED_ERROR;
+            }
+        } elseif (
+            !$this->_setEnvVar('DB_DRIVER', $this->driver) ||
+            !$this->_setEnvVar('DB_SERVER', $this->server) ||
+            !$this->_setEnvVar('DB_PORT', $this->port) ||
+            !$this->_setEnvVar('DB_DATABASE', $this->database)
+        ) {
+            return ExitCode::UNSPECIFIED_ERROR;
+        }
+
         if (
-            !$this->_setEnvVar('DB_DRIVER', $dbConfig->driver) ||
-            !$this->_setEnvVar('DB_SERVER', $dbConfig->server) ||
-            !$this->_setEnvVar('DB_PORT', $dbConfig->port) ||
-            !$this->_setEnvVar('DB_USER', $dbConfig->user) ||
-            !$this->_setEnvVar('DB_PASSWORD', $dbConfig->password) ||
-            !$this->_setEnvVar('DB_DATABASE', $dbConfig->database) ||
-            !$this->_setEnvVar('DB_SCHEMA', $dbConfig->schema) ||
-            !$this->_setEnvVar('DB_TABLE_PREFIX', $tablePrefix)
+            !$this->_setEnvVar('DB_USER', $this->user) ||
+            !$this->_setEnvVar('DB_PASSWORD', $this->password) ||
+            !$this->_setEnvVar('DB_SCHEMA', $this->schema) ||
+            !$this->_setEnvVar('DB_TABLE_PREFIX', $this->tablePrefix)
         ) {
             return ExitCode::UNSPECIFIED_ERROR;
         }
@@ -409,8 +475,51 @@ EOD;
         return $this->actionDbCreds();
     }
 
-    // Private Methods
-    // =========================================================================
+    /**
+     * Creates a database table for storing PHP session information.
+     *
+     * @return int
+     * @since 3.4.0
+     */
+    public function actionPhpSessionTable(): int
+    {
+        if (Craft::$app->getDb()->tableExists(Table::PHPSESSIONS)) {
+            $this->stdout('The `phpsessions` table already exists.' . PHP_EOL . PHP_EOL, Console::FG_YELLOW);
+            return ExitCode::OK;
+        }
+
+        $migration = new CreatePhpSessionTable();
+        if ($migration->up() === false) {
+            $this->stderr('An error occurred while creating the `phpsessions` table.' . PHP_EOL . PHP_EOL, Console::FG_RED);
+            return ExitCode::UNSPECIFIED_ERROR;
+        }
+
+        $this->stdout('The `phpsessions` table was created successfully.' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
+        return ExitCode::OK;
+    }
+
+    /**
+     * Creates a database table for storing DB caches.
+     *
+     * @return int
+     * @since 3.4.14
+     */
+    public function actionDbCacheTable(): int
+    {
+        if (Craft::$app->getDb()->tableExists(Table::CACHE)) {
+            $this->stdout('The `cache` table already exists.' . PHP_EOL . PHP_EOL, Console::FG_YELLOW);
+            return ExitCode::OK;
+        }
+
+        $migration = new CreateDbCacheTable();
+        if ($migration->up() === false) {
+            $this->stderr('An error occurred while creating the `cache` table.' . PHP_EOL . PHP_EOL, Console::FG_RED);
+            return ExitCode::UNSPECIFIED_ERROR;
+        }
+
+        $this->stdout('The `cache` table was created successfully.' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
+        return ExitCode::OK;
+    }
 
     /**
      * Outputs a terminal command.
@@ -419,18 +528,18 @@ EOD;
      */
     private function _outputCommand(string $command)
     {
-        $script = FileHelper::normalizePath(Craft::$app->getRequest()->getScriptFile());
-        if (!Platform::isWindows() && ($home = getenv('HOME')) !== false) {
+        $script = FileHelper::normalizePath($this->request->getScriptFile());
+        if (!Platform::isWindows() && ($home = App::env('HOME')) !== false) {
             $home = FileHelper::normalizePath($home);
             if (strpos($script, $home . DIRECTORY_SEPARATOR) === 0) {
                 $script = '~' . substr($script, strlen($home));
             }
         }
-        $this->stdout(PHP_EOL . '    ' . $script . ' ' . $command . PHP_EOL . PHP_EOL);
+        $this->stdout(PHP_EOL . '    php ' . $script . ' ' . $command . PHP_EOL . PHP_EOL);
     }
 
     /**
-     * Sets an environment variable value in the project's .env file.
+     * Sets an environment variable value in the project’s `.env` file.
      *
      * @param $name
      * @param $value
@@ -465,5 +574,16 @@ EOD;
         }
 
         return true;
+    }
+
+    /**
+     * Returns an environment variable value, if we are using them for defaults.
+     *
+     * @param string $name
+     * @return string|null
+     */
+    private function _envDefault(string $name): ?string
+    {
+        return $this->_useEnvDefaults ? (App::env($name) ?: null) : null;
     }
 }

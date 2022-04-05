@@ -22,13 +22,10 @@ use yii\db\ActiveQueryInterface;
  * @property array $settings Settings
  * @property User $user User
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Widget extends ActiveRecord
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      * @return string

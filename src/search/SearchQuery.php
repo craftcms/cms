@@ -13,13 +13,10 @@ use craft\helpers\StringHelper;
  * Search Query class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class SearchQuery
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string
      */
@@ -34,9 +31,6 @@ class SearchQuery
      * @var SearchQueryTerm[]|SearchQueryTermGroup
      */
     private $_tokens;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Constructor
@@ -71,9 +65,6 @@ class SearchQuery
     {
         return $this->_query;
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Parses the query into an array of tokens.
@@ -116,7 +107,7 @@ class SearchQuery
 
             // Is this an attribute-specific term?
             if (preg_match('/^(\w+)(::?)(.+)$/', $token, $match)) {
-                list(, $term->attribute, $colons, $token) = $match;
+                [, $term->attribute, $colons, $token] = $match;
                 if ($colons === '::') {
                     $term->exact = true;
                     $term->subLeft = false;

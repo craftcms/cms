@@ -14,13 +14,10 @@ use yii\base\Event;
  * Asset transform event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class AssetTransformEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var AssetTransform|null The asset transform model associated with the event.
      */

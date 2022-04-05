@@ -1,0 +1,185 @@
+@charset "UTF-8";
+@import "@craftcms/sass/mixins";
+
+/* widgets */
+.widget {
+  position: relative;
+  perspective: 1000px;
+  transition: opacity linear 200ms, transform linear 200ms;
+  margin-bottom: 14px;
+
+  &.scaleout {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+
+  & > .front,
+  & > .back {
+    backface-visibility: hidden;
+    transition: 600ms;
+  }
+
+  &:not(.flipped) {
+    & > .front {
+      transform: rotateY(0deg);
+
+      & > .pane > .icon.settings:hover {
+        opacity: 1 !important;
+      }
+    }
+    & > .back {
+      transform: rotateY(-180deg);
+    }
+
+    &:hover > .front > .pane > .icon.settings {
+      opacity: 0.3;
+    }
+  }
+
+  &.flipped {
+    & > .front {
+      transform: rotateY(180deg);
+    }
+    & > .back {
+      transform: rotateY(0deg);
+    }
+  }
+
+  &:not(.flipped) > .back,
+  &.flipped > .front {
+    opacity: 0;
+  }
+
+  & > .front {
+    & > .pane {
+      & > .icon.settings {
+        display: block;
+        opacity: 0;
+        cursor: pointer;
+        @include right(24px);
+        top: 24px;
+        transition: opacity linear 200ms;
+        position: absolute;
+      }
+
+      & > .spinner.body-loading {
+        display: none;
+      }
+    }
+  }
+
+  & > .back {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+
+    & > .pane {
+      background: $grey050;
+
+      & > .errors {
+        margin-top: 24px;
+      }
+    }
+  }
+
+  &.loading {
+    & > .front {
+      & > .pane {
+        & > .spinner.body-loading {
+          display: block;
+          @include floatright;
+          @include margin-left(10px);
+        }
+      }
+    }
+  }
+
+  &.loading-new.new {
+    & > .front {
+      & > .pane {
+        height: 252px;
+
+        & > .spinner.body-loading {
+          display: block;
+          position: absolute;
+          top: calc(50% - 15px);
+          left: calc(50% - 12px);
+        }
+      }
+    }
+  }
+
+  .widget-heading {
+    margin-bottom: 15px;
+
+    h2 {
+      margin-bottom: 3px;
+    }
+    h5 {
+      margin-top: 0;
+    }
+  }
+
+  form + .errors {
+    margin-top: 15px;
+  }
+}
+
+/* Recent Entries widget */
+.craft\\widgets\\recententries .body .table  {
+  table-layout: fixed;
+}
+
+/* New Users Widget */
+.craft\\widgets\\newusers .chart {
+  height: 200px;
+  margin: 0;
+}
+
+/* New Widget Menu */
+.newwidgetmenu ul li a {
+  position: relative;
+  @include padding-left(40px);
+
+  .icon {
+    position: absolute;
+    top: 11px;
+    @include left(14px);
+    width: 16px;
+  }
+}
+
+.newwidgetmenu ul li a .icon svg,
+.widgetmanagerhud-icon svg {
+  width: 16px;
+  height: 16px;
+  @include svg-mask(var(--ui-control-color));
+}
+
+/* New Widget Menu */
+.widgetmanagerhud {
+  max-width: 400px;
+
+  .body {
+    min-width: 400px;
+  }
+}
+
+@media only screen and (max-width: 673px) {
+  .widgetmanagerhud {
+    max-width: 300px;
+
+    .body {
+      min-width: 300px;
+
+      .widgetmanagerhud-col-colspan-picker {
+        display: none;
+      }
+
+      .widgetmanagerhud-col-move {
+        display: none;
+      }
+    }
+  }
+}

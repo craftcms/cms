@@ -7,13 +7,24 @@
 
 
 {% if settings is not defined %}
-    {% set settings = craft.app.projectConfig.get('users') %}
+    {% set settings = craft.app.projectConfig.get('users') ?? [] %}
 {% endif %}
+
+{# set defaults #}
+{% set settings = {
+    photoVolumeUid: null,
+    photoSubpath: null,
+    requireEmailVerification: true,
+    allowPublicRegistration: false,
+    validateOnPublicRegistration: false,
+    suspendByDefault: false,
+    defaultGroup: null,
+}|merge(settings) %}
 
 {% set allVolumes = craft.app.volumes.getAllVolumes() %}
 {% set volumeList = [] %}
 {% for volume in allVolumes %}
-    {% set volumeList = volumeList|merge([{'value': volume.uid, 'label': volume.name}]) %}
+    {% set volumeList = volumeList|push({label: volume.name, value: volume.uid}) %}
 {% endfor %}
 
 {% macro assetLocationInput(volumeOptions, volumeUid, subpath) %}
@@ -43,7 +54,7 @@
 
 {% block content %}
     <form id="settings-form" method="post" class="centered" accept-charset="UTF-8" data-saveshortcut>
-        <input type="hidden" name="action" value="user-settings/save-user-settings">
+        {{ actionInput('user-settings/save-user-settings') }}
         {{ csrfInput() }}
 
         {% if volumeList %}
@@ -51,7 +62,7 @@
                 first: true,
                 label: "User Photo Location"|t('app'),
                 instructions: "Where do you want to store user photos? Note that the subfolder path can contain variables like <code>{username}</code>."|t('app')
-            }, assetLocationInput(volumeList, settings.photoVolumeUid ?? null, settings.photoSubpath ?? null)) }}
+            }, assetLocationInput(volumeList, settings.photoVolumeUid, settings.photoSubpath)) }}
         {% else %}
             {{ forms.field({
                 first: true,
@@ -61,23 +72,37 @@
 
         {% if CraftEdition == CraftPro %}
             {{ forms.checkboxField({
-                label: "Verify email addresses?"|t('app'),
+                label: 'Verify email addresses'|t('app'),
                 instructions: "Should new email addresses be verified before getting saved to user accounts? (This also affects new user registration.)"|t('app'),
                 name: 'requireEmailVerification',
                 checked: settings.requireEmailVerification,
             }) }}
 
             {{ forms.checkboxField({
-                label: "Allow public registration?"|t('app'),
+                label: 'Allow public registration'|t('app'),
                 name: 'allowPublicRegistration',
                 checked: settings.allowPublicRegistration,
                 toggle: 'publicRegistrationSettings'
             }) }}
 
             <div id="publicRegistrationSettings" class="nested-fields{% if not settings.allowPublicRegistration %} hidden{% endif %}">
+                {{ forms.checkboxField({
+                    label: 'Validate custom fields on public registration'|t('app'),
+                    instructions: 'Whether custom fields should be validated during public registration.'|t('app'),
+                    name: 'validateOnPublicRegistration',
+                    checked: settings.validateOnPublicRegistration,
+                }) }}
+
+                {{ forms.checkboxField({
+                    label: 'Suspend users by default'|t('app'),
+                    instructions: 'Should users who register their own accounts be suspended by default? This will prevent them from receiving an activation email.'|t('app'),
+                    name: 'suspendByDefault',
+                    checked: settings.suspendByDefault,
+                }) }}
+
                 {% set groups = [{ label: "None"|t('app'), value: '' }] %}
                 {% for group in craft.app.userGroups.getAllGroups() %}
-                    {% set groups = groups|merge([{ label: group.name, value: group.id }]) %}
+                    {% set groups = groups|merge([{ label: group.name, value: group.uid }]) %}
                 {% endfor %}
 
                 {{ forms.selectField({
@@ -91,7 +116,7 @@
         {% endif %}
 
         <div class="buttons">
-            <input type="submit" class="btn submit" value="{{ 'Save'|t('app') }}">
+            <button type="submit" class="btn submit">{{ 'Save'|t('app') }}</button>
         </div>
     </form>
 {% endblock %}

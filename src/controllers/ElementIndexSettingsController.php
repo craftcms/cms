@@ -15,12 +15,23 @@ use yii\web\Response;
  * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class ElementIndexSettingsController extends BaseElementsController
 {
-    // Public Methods
-    // =========================================================================
+    /**
+     * @inheritdoc
+     */
+    public function beforeAction($action)
+    {
+        if (!parent::beforeAction($action)) {
+            return false;
+        }
+
+        $this->requireAcceptsJson();
+
+        return true;
+    }
 
     /**
      * Returns all the info needed by the Customize Sources modal.
@@ -29,7 +40,7 @@ class ElementIndexSettingsController extends BaseElementsController
      */
     public function actionGetCustomizeSourcesModalData(): Response
     {
-        $this->requireAdmin(false);
+        $this->requirePermission('customizeSources');
 
         $elementType = $this->elementType();
 
@@ -42,14 +53,33 @@ class ElementIndexSettingsController extends BaseElementsController
                 continue;
             }
 
+            // Available custom field attributes
+            $source['availableTableAttributes'] = [];
+            foreach ($elementIndexesService->getSourceTableAttributes($elementType, $source['key']) as $key => $labelInfo) {
+                $source['availableTableAttributes'][] = [$key, $labelInfo['label']];
+            }
+
+            // Selected table attributes
             $tableAttributes = $elementIndexesService->getTableAttributes($elementType, $source['key']);
             $source['tableAttributes'] = [];
 
             foreach ($tableAttributes as $attribute) {
                 $source['tableAttributes'][] = [
                     $attribute[0],
-                    $attribute[1]['label']
+                    $attribute[1]['label'],
                 ];
+            }
+
+            // Header column info
+            if ($firstAttribute = reset($tableAttributes)) {
+                [, $attributeInfo] = $firstAttribute;
+                // Is there a custom header col heading?
+                if (isset($attributeInfo['defaultLabel'])) {
+                    $source['headerColHeading'] = $attributeInfo['label'];
+                    $source['defaultHeaderColHeading'] = $attributeInfo['defaultLabel'];
+                } else {
+                    $source['defaultHeaderColHeading'] = $attributeInfo['label'];
+                }
             }
         }
         unset($source);
@@ -58,10 +88,7 @@ class ElementIndexSettingsController extends BaseElementsController
         $availableTableAttributes = [];
 
         foreach ($elementIndexesService->getAvailableTableAttributes($elementType) as $key => $labelInfo) {
-            $availableTableAttributes[] = [
-                $key,
-                Craft::t('site', $labelInfo['label'])
-            ];
+            $availableTableAttributes[] = [$key, $labelInfo['label']];
         }
 
         return $this->asJson([
@@ -77,13 +104,12 @@ class ElementIndexSettingsController extends BaseElementsController
      */
     public function actionSaveCustomizeSourcesModalSettings(): Response
     {
-        $this->requireAdmin(false);
+        $this->requirePermission('customizeSources');
 
         $elementType = $this->elementType();
 
-        $request = Craft::$app->getRequest();
-        $sourceOrder = $request->getBodyParam('sourceOrder', []);
-        $sources = $request->getBodyParam('sources', []);
+        $sourceOrder = $this->request->getBodyParam('sourceOrder', []);
+        $sources = $this->request->getBodyParam('sources', []);
 
         // Normalize to the way it's stored in the DB
         foreach ($sourceOrder as $i => $source) {
@@ -109,6 +135,6 @@ class ElementIndexSettingsController extends BaseElementsController
             return $this->asJson(['success' => true]);
         }
 
-        return $this->asErrorJson(Craft::t('app', 'An unknown error occurred.'));
+        return $this->asErrorJson(Craft::t('app', 'A server error occurred.'));
     }
 }

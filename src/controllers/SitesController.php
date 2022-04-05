@@ -8,12 +8,15 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\helpers\Cp;
 use craft\helpers\Json;
+use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\models\Site;
 use craft\models\SiteGroup;
 use craft\web\assets\sites\SitesAsset;
 use craft\web\Controller;
+use yii\web\BadRequestHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 use yii\web\ServerErrorHttpException;
@@ -24,20 +27,19 @@ use yii\web\ServerErrorHttpException;
  * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class SitesController extends Controller
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
-    public function init()
+    public function beforeAction($action)
     {
         // All actions require an admin account
         $this->requireAdmin();
+
+        return parent::beforeAction($action);
     }
 
     /**
@@ -92,34 +94,71 @@ class SitesController extends Controller
     // -------------------------------------------------------------------------
 
     /**
+     * Returns the HTML and JS for a rename-site-group modal.
+     *
+     * @return Response
+     * @since 3.7.0
+     */
+    public function actionRenameGroupField(): Response
+    {
+        $this->requirePostRequest();
+        $this->requireAcceptsJson();
+
+        $view = Craft::$app->getView();
+        $view->startJsBuffer();
+        $html = $view->namespaceInputs(function() {
+            return Cp::autosuggestFieldHtml([
+                'label' => Craft::t('app', 'Group Name'),
+                'instructions' => Craft::t('app', 'What this group will be called in the control panel.'),
+                'id' => 'name',
+                'name' => 'name',
+                'value' => $this->request->getBodyParam('name') ?? '',
+                'suggestEnvVars' => true,
+                'required' => true,
+            ]);
+        }, 'name' . StringHelper::randomString(10));
+        $js = $view->clearJsBuffer();
+
+        return $this->asJson(compact('html', 'js'));
+    }
+
+    /**
      * Saves a site group.
      *
      * @return Response
+     * @throws BadRequestHttpException
      */
     public function actionSaveGroup(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        $group = new SiteGroup();
-        $group->id = Craft::$app->getRequest()->getBodyParam('id');
-        $group->name = Craft::$app->getRequest()->getRequiredBodyParam('name');
+        $sitesService = Craft::$app->getSites();
+        $groupId = $this->request->getBodyParam('id');
 
-        $isNewGroup = empty($group->id);
-
-        if (Craft::$app->getSites()->saveGroup($group)) {
-            if ($isNewGroup) {
-                Craft::$app->getSession()->setNotice(Craft::t('app', 'Group added.'));
+        if ($groupId) {
+            $group = $sitesService->getGroupById($groupId);
+            if (!$group) {
+                throw new BadRequestHttpException("Invalid site group ID: $groupId");
             }
+        } else {
+            $group = new SiteGroup();
+        }
 
+        $group->setName($this->request->getRequiredBodyParam('name'));
+
+        if (!Craft::$app->getSites()->saveGroup($group)) {
             return $this->asJson([
-                'success' => true,
-                'group' => $group->getAttributes(),
+                'errors' => $group->getErrors(),
             ]);
         }
 
+        $attr = $group->getAttributes();
+        $attr['name'] = Craft::t('site', $attr['name']);
+
         return $this->asJson([
-            'errors' => $group->getErrors(),
+            'success' => true,
+            'group' => $attr,
         ]);
     }
 
@@ -133,10 +172,10 @@ class SitesController extends Controller
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        $groupId = Craft::$app->getRequest()->getRequiredBodyParam('id');
+        $groupId = $this->request->getRequiredBodyParam('id');
         $success = Craft::$app->getSites()->deleteGroupById($groupId);
 
-        Craft::$app->getSession()->setNotice(Craft::t('app', 'Group deleted.'));
+        $this->setSuccessFlash(Craft::t('app', 'Group deleted.'));
 
         return $this->asJson([
             'success' => $success,
@@ -171,7 +210,7 @@ class SitesController extends Controller
                 }
             }
 
-            $title = trim($site->name) ?: Craft::t('app', 'Edit Site');
+            $title = trim($site->getName()) ?: Craft::t('app', 'Edit Site');
         } else {
             if ($site === null) {
                 $site = new Site();
@@ -206,7 +245,7 @@ class SitesController extends Controller
         foreach ($allGroups as $group) {
             $groupOptions[] = [
                 'value' => $group->id,
-                'label' => $group->name
+                'label' => Craft::t('site', $group->getName()),
             ];
         }
 
@@ -217,12 +256,12 @@ class SitesController extends Controller
         $crumbs = [
             [
                 'label' => Craft::t('app', 'Settings'),
-                'url' => UrlHelper::url('settings')
+                'url' => UrlHelper::url('settings'),
             ],
             [
                 'label' => Craft::t('app', 'Sites'),
-                'url' => UrlHelper::url('settings/sites')
-            ]
+                'url' => UrlHelper::url('settings/sites'),
+            ],
         ];
 
         $languageOptions = [];
@@ -232,8 +271,8 @@ class SitesController extends Controller
                 'value' => $locale->id,
                 'label' => Craft::t('app', '{id} – {name}', [
                     'name' => $locale->getDisplayName(Craft::$app->language),
-                    'id' => $locale->id
-                ])
+                    'id' => $locale->id,
+                ]),
             ];
         }
 
@@ -252,36 +291,47 @@ class SitesController extends Controller
      * Saves a site.
      *
      * @return Response|null
+     * @throws BadRequestHttpException
      */
     public function actionSaveSite()
     {
         $this->requirePostRequest();
-        $request = Craft::$app->getRequest();
 
-        $site = new Site();
-        $site->id = $request->getBodyParam('siteId');
-        $site->groupId = $request->getBodyParam('group');
-        $site->name = $request->getBodyParam('name');
-        $site->handle = $request->getBodyParam('handle');
-        $site->language = $request->getBodyParam('language');
-        $site->primary = (bool)$request->getBodyParam('primary');
-        $site->hasUrls = (bool)$request->getBodyParam('hasUrls');
-        $site->baseUrl = $site->hasUrls ? $request->getBodyParam('baseUrl') : null;
+        $sitesService = Craft::$app->getSites();
+        $siteId = $this->request->getBodyParam('siteId');
+
+        if ($siteId) {
+            $site = $sitesService->getSiteById($siteId);
+            if (!$site) {
+                throw new BadRequestHttpException("Invalid site ID: $siteId");
+            }
+        } else {
+            $site = new Site();
+            $site->id = $this->request->getBodyParam('siteId');
+        }
+
+        $site->groupId = $this->request->getBodyParam('group');
+        $site->setName($this->request->getBodyParam('name'));
+        $site->handle = $this->request->getBodyParam('handle');
+        $site->language = $this->request->getBodyParam('language');
+        $site->primary = (bool)$this->request->getBodyParam('primary');
+        $site->enabled = $site->primary || (bool)$this->request->getBodyParam('enabled');
+        $site->hasUrls = (bool)$this->request->getBodyParam('hasUrls');
+        $site->setBaseUrl($site->hasUrls ? $this->request->getBodyParam('baseUrl') : null);
 
         // Save it
-        if (!Craft::$app->getSites()->saveSite($site)) {
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save the site.'));
+        if (!$sitesService->saveSite($site)) {
+            $this->setFailFlash(Craft::t('app', 'Couldn’t save the site.'));
 
             // Send the site back to the template
             Craft::$app->getUrlManager()->setRouteParams([
-                'site' => $site
+                'site' => $site,
             ]);
 
             return null;
         }
 
-        Craft::$app->getSession()->setNotice(Craft::t('app', 'Site saved.'));
-
+        $this->setSuccessFlash(Craft::t('app', 'Site saved.'));
         return $this->redirectToPostedUrl($site);
     }
 
@@ -295,7 +345,7 @@ class SitesController extends Controller
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        $siteIds = Json::decode(Craft::$app->getRequest()->getRequiredBodyParam('ids'));
+        $siteIds = Json::decode($this->request->getRequiredBodyParam('ids'));
         Craft::$app->getSites()->reorderSites($siteIds);
 
         return $this->asJson(['success' => true]);
@@ -311,9 +361,8 @@ class SitesController extends Controller
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        $request = Craft::$app->getRequest();
-        $siteId = $request->getRequiredBodyParam('id');
-        $transferContentTo = $request->getBodyParam('transferContentTo');
+        $siteId = $this->request->getRequiredBodyParam('id');
+        $transferContentTo = $this->request->getBodyParam('transferContentTo');
 
         Craft::$app->getSites()->deleteSiteById($siteId, $transferContentTo);
 

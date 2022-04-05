@@ -18,15 +18,12 @@ use craft\elements\User as UserElement;
  */
 class User
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @param string|null $authError
      * @param UserElement|null $user
      * @return string
      */
-    public static function getLoginFailureMessage(string $authError = null, UserElement $user = null): string
+    public static function getLoginFailureMessage(?string $authError = null, ?UserElement $user = null): string
     {
         switch ($authError) {
             case UserElement::AUTH_PENDING_VERIFICATION:
@@ -59,10 +56,10 @@ class User
                 $message = Craft::t('app', 'Account suspended.');
                 break;
             case UserElement::AUTH_NO_CP_ACCESS:
-                $message = Craft::t('app', 'You cannot access the CP with that account.');
+                $message = Craft::t('app', 'You cannot access the control panel with that account.');
                 break;
             case UserElement::AUTH_NO_CP_OFFLINE_ACCESS:
-                $message = Craft::t('app', 'You cannot access the CP while the system is offline with that account.');
+                $message = Craft::t('app', 'You cannot access the control panel while the system is offline with that account.');
                 break;
             case UserElement::AUTH_NO_SITE_OFFLINE_ACCESS:
                 $message = Craft::t('app', 'You cannot access the site while the system is offline with that account.');

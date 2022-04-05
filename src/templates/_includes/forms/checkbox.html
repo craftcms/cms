@@ -1,29 +1,42 @@
 {%- spaceless %}
 
-{% set class = [
-    (class is defined ? class : null),
-    ((toggle is defined and toggle is not empty) or (reverseToggle is defined and reverseToggle is not empty) ? 'fieldtoggle' : null),
-    'checkbox'
-]|filter|join(' ') %}
+{% set id = id ?? "checkbox#{random()}" %}
+{% set label = checkboxLabel ?? label ?? null %}
 
-{% set value = (value is defined ? value : 1) %}
-{% set id = (id is defined and id ? id : 'checkbox'~random()) %}
-{% set label = (label is defined ? label) %}
+{% set inputAttributes = {
+    id: id,
+    class: (class ?? [])|explodeClass|merge([
+        (toggle ?? reverseToggle ?? false) ? 'fieldtoggle' : null,
+        'checkbox'
+    ]|filter),
+    checked: (checked ?? false) and checked,
+    autofocus: (autofocus ?? false) and not craft.app.request.isMobileBrowser(true),
+    disabled: (disabled ?? false) ? true : false,
+    aria: {
+        labelledby: labelledBy ?? false,
+        describedby: describedBy ?? false,
+    },
+    data: {
+        target: toggle ?? false,
+        'reverse-target': reverseToggle ?? false,
+    }
+}|merge(inputAttributes ?? [], recursive=true) %}
 
-{% if name is defined and (name|length < 3 or name|slice(-2) != '[]') %}
-    <input type="hidden" name="{{ name }}" value="">
+{% if block('attr') is defined %}
+    {%- set inputAttributes = inputAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
 {% endif %}
 
-<input type="checkbox" value="{{ value }}" class="{{ class }}"
-    {%- if id %} id="{{ id }}"{% endif %}
-    {%- if name is defined %} name="{{ name }}"{% endif %}
-    {%- if checked is defined and checked %} checked{% endif %}
-    {%- if autofocus is defined and autofocus and not craft.app.request.isMobileBrowser(true) %} autofocus{% endif %}
-    {%- if disabled is defined and disabled %} disabled{% endif %}
-    {%- if toggle is defined %} data-target="{{ toggle }}"{% endif %}
-    {%- if reverseToggle is defined %} data-reverse-target="{{ reverseToggle }}"{% endif %}
-    {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
+{% if name is defined and (name|length < 3 or name|slice(-2) != '[]') %}
+    {{ hiddenInput(name, '') }}
+{% endif %}
 
-<label for="{{ id }}">{{ label|raw }}</label>
+{{ input('checkbox', name ?? null, value ?? 1, inputAttributes) }}
+
+<label for="{{ id }}">
+    {{ label }}
+    {% if info ?? null %}
+        <span class="info">{{ info|md|raw }}</span>
+    {% endif %}
+</label>
 
 {% endspaceless -%}

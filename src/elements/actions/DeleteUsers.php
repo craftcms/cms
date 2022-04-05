@@ -18,26 +18,46 @@ use yii\base\Exception;
  * DeleteUsers represents a Delete Users element action.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
-class DeleteUsers extends ElementAction
+class DeleteUsers extends ElementAction implements DeleteActionInterface
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var int|null The user ID that the deleted user’s content should be transferred to
      */
     public $transferContentTo;
 
-    // Public Methods
-    // =========================================================================
+    /**
+     * @var bool Whether to permanently delete the elements.
+     * @since 3.6.5
+     */
+    public $hard = false;
+
+    /**
+     * @inheritdoc
+     */
+    public function canHardDelete(): bool
+    {
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setHardDelete(): void
+    {
+        $this->hard = true;
+    }
 
     /**
      * @inheritdoc
      */
     public function getTriggerLabel(): string
     {
+        if ($this->hard) {
+            return Craft::t('app', 'Delete permanently');
+        }
+
         return Craft::t('app', 'Delete…');
     }
 
@@ -54,14 +74,17 @@ class DeleteUsers extends ElementAction
      */
     public function getTriggerHtml()
     {
+        if ($this->hard) {
+            return '<div class="btn formsubmit">' . $this->getTriggerLabel() . '</div>';
+        }
+
         $type = Json::encode(static::class);
         $undeletableIds = Json::encode($this->_getUndeletableUserIds());
         $redirect = Json::encode(Craft::$app->getSecurity()->hashData(Craft::$app->getEdition() === Craft::Pro ? 'users' : 'dashboard'));
 
         $js = <<<JS
-(function()
-{
-    var trigger = new Craft.ElementActionTrigger({
+(() => {
+    new Craft.ElementActionTrigger({
         type: {$type},
         batch: true,
         validateSelection: function(\$selectedItems)
@@ -102,6 +125,21 @@ class DeleteUsers extends ElementAction
 JS;
 
         Craft::$app->getView()->registerJs($js);
+        return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getConfirmationMessage()
+    {
+        if ($this->hard) {
+            return Craft::t('app', 'Are you sure you want to permanently delete the selected {type}?', [
+                'type' => User::pluralLowerDisplayName(),
+            ]);
+        }
+
+        return null;
     }
 
     /**
@@ -133,7 +171,7 @@ JS;
         foreach ($users as $user) {
             if (!in_array($user->id, $undeletableIds, false)) {
                 $user->inheritorOnDelete = $transferContentTo;
-                $elementsService->deleteElement($user);
+                $elementsService->deleteElement($user, $this->hard);
             }
         }
 
@@ -141,9 +179,6 @@ JS;
 
         return true;
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns a list of the user IDs that can't be deleted.

@@ -8,34 +8,29 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\base\Element;
-use craft\base\ElementInterface;
-use craft\base\Field;
 use craft\base\UtilityInterface;
-use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Asset;
 use craft\errors\MigrationException;
+use craft\helpers\Db;
 use craft\helpers\FileHelper;
-use craft\helpers\Path;
+use craft\helpers\Queue;
+use craft\helpers\Session;
 use craft\queue\jobs\FindAndReplace;
 use craft\utilities\ClearCaches;
 use craft\utilities\Updates;
 use craft\web\assets\utilities\UtilitiesAsset;
 use craft\web\Controller;
-use yii\base\ErrorException;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
+use yii\caching\TagDependency;
+use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
-use ZipArchive;
 
 class UtilitiesController extends Controller
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Index
      *
@@ -89,6 +84,8 @@ class UtilitiesController extends Controller
             'id' => $id,
             'displayName' => $class::displayName(),
             'contentHtml' => $class::contentHtml(),
+            'toolbarHtml' => $class::toolbarHtml(),
+            'footerHtml' => $class::footerHtml(),
             'utilities' => $this->_utilityInfo(),
         ]);
     }
@@ -107,11 +104,11 @@ class UtilitiesController extends Controller
 
         $logId = Craft::$app->request->getRequiredParam('logId');
         $html = $this->getView()->renderTemplate('_components/utilities/DeprecationErrors/traces_modal', [
-            'log' => Craft::$app->deprecator->getLogById($logId)
+            'log' => Craft::$app->deprecator->getLogById($logId),
         ]);
 
         return $this->asJson([
-            'html' => $html
+            'html' => $html,
         ]);
     }
 
@@ -130,7 +127,7 @@ class UtilitiesController extends Controller
         Craft::$app->deprecator->deleteAllLogs();
 
         return $this->asJson([
-            'success' => true
+            'success' => true,
         ]);
     }
 
@@ -146,11 +143,11 @@ class UtilitiesController extends Controller
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        $logId = Craft::$app->getRequest()->getRequiredBodyParam('logId');
+        $logId = $this->request->getRequiredBodyParam('logId');
         Craft::$app->deprecator->deleteLogById($logId);
 
         return $this->asJson([
-            'success' => true
+            'success' => true,
         ]);
     }
 
@@ -164,16 +161,17 @@ class UtilitiesController extends Controller
     {
         $this->requirePermission('utility:asset-indexes');
 
-        $params = Craft::$app->getRequest()->getRequiredBodyParam('params');
+        $params = $this->request->getRequiredBodyParam('params');
 
         // Initial request
-        if (!empty($params['start'])) {
+        $assetIndexerService = Craft::$app->getAssetIndexer();
 
-            $sessionId = Craft::$app->getAssetIndexer()->getIndexingSessionId();
+        if (!empty($params['start'])) {
+            $sessionId = $assetIndexerService->getIndexingSessionId();
 
             $response = [
                 'volumes' => [],
-                'sessionId' => $sessionId
+                'sessionId' => $sessionId,
             ];
 
             // Selection of volumes or all volumes?
@@ -185,11 +183,10 @@ class UtilitiesController extends Controller
 
             $missingFolders = [];
             $skippedFiles = [];
-            $grandTotal = 0;
 
             foreach ($volumeIds as $volumeId) {
                 // Get the indexing list
-                $indexList = Craft::$app->getAssetIndexer()->prepareIndexList($sessionId, $volumeId);
+                $indexList = $assetIndexerService->prepareIndexList($sessionId, $volumeId);
 
                 if (!empty($indexList['error'])) {
                     return $this->asJson($indexList);
@@ -209,9 +206,9 @@ class UtilitiesController extends Controller
                 ];
             }
 
-            Craft::$app->getSession()->set('assetsVolumesBeingIndexed', $volumeIds);
-            Craft::$app->getSession()->set('assetsMissingFolders', $missingFolders);
-            Craft::$app->getSession()->set('assetsSkippedFiles', $skippedFiles);
+            Session::set('assetsVolumesBeingIndexed', $volumeIds);
+            Session::set('assetsMissingFolders', $missingFolders);
+            Session::set('assetsSkippedFiles', $skippedFiles);
 
             return $this->asJson([
                 'indexingData' => $response,
@@ -220,50 +217,31 @@ class UtilitiesController extends Controller
 
         if (!empty($params['process'])) {
             // Index the file
-            Craft::$app->getAssetIndexer()->processIndexForVolume($params['sessionId'], $params['volumeId'], $params['cacheImages']);
+            $assetIndexerService->processIndexForVolume($params['sessionId'], $params['volumeId'], $params['cacheImages']);
 
             return $this->asJson([
-                'success' => true
+                'success' => true,
             ]);
         }
 
         if (!empty($params['overview'])) {
-            $missingFiles = Craft::$app->getAssetIndexer()->getMissingFiles($params['sessionId']);
-            $missingFolders = Craft::$app->getSession()->get('assetsMissingFolders', []);
-            $skippedFiles = Craft::$app->getSession()->get('assetsSkippedFiles', []);
-
-            $responseArray = [];
+            $missingFiles = $assetIndexerService->getMissingFiles($params['sessionId']);
+            $missingFolders = Session::get('assetsMissingFolders') ?? [];
+            $skippedFiles = Session::get('assetsSkippedFiles') ?? [];
 
             if (!empty($missingFiles) || !empty($missingFolders) || !empty($skippedFiles)) {
                 return $this->asJson([
                     'confirm' => $this->getView()->renderTemplate('assets/_missing_items', compact('missingFiles', 'missingFolders', 'skippedFiles')),
+                    'showDelete' => !empty($missingFiles) || !empty($missingFolders),
                 ]);
             }
 
-            // Clean up stale indexing data (all sessions that have all recordIds set)
-            $sessionsInProgress = (new Query())
-                ->select(['sessionId'])
-                ->from([Table::ASSETINDEXDATA])
-                ->where(['recordId' => null])
-                ->groupBy(['sessionId'])
-                ->scalar();
-
-            if (empty($sessionsInProgress)) {
-                Craft::$app->getDb()->createCommand()
-                    ->delete(Table::ASSETINDEXDATA)
-                    ->execute();
-            } else {
-                Craft::$app->getDb()->createCommand()
-                    ->delete(
-                        Table::ASSETINDEXDATA,
-                        ['not', ['sessionId' => $sessionsInProgress]])
-                    ->execute();
-            }
-        } else if (!empty($params['finish'])) {
+            $assetIndexerService->deleteStaleIndexingData();
+        } elseif (!empty($params['finish'])) {
             if (!empty($params['deleteAsset']) && is_array($params['deleteAsset'])) {
-                Craft::$app->getDb()->createCommand()
-                    ->delete(Table::ASSETTRANSFORMINDEX, ['assetId' => $params['deleteAsset']])
-                    ->execute();
+                Db::delete(Table::ASSETTRANSFORMINDEX, [
+                    'assetId' => $params['deleteAsset'],
+                ]);
 
                 /** @var Asset[] $assets */
                 $assets = Asset::find()
@@ -283,7 +261,7 @@ class UtilitiesController extends Controller
         }
 
         return $this->asJson([
-            'finished' => 1
+            'finished' => 1,
         ]);
     }
 
@@ -292,18 +270,13 @@ class UtilitiesController extends Controller
      *
      * @return Response
      * @throws ForbiddenHttpException if the user doesn't have access to the Clear Caches utility
+     * @throws BadRequestHttpException
      */
     public function actionClearCachesPerformAction(): Response
     {
         $this->requirePermission('utility:clear-caches');
 
-        $caches = Craft::$app->getRequest()->getRequiredBodyParam('caches');
-
-        if (!isset($caches)) {
-            return $this->asJson([
-                'success' => true
-            ]);
-        }
+        $caches = $this->request->getRequiredBodyParam('caches');
 
         foreach (ClearCaches::cacheOptions() as $cacheOption) {
             if (is_array($caches) && !in_array($cacheOption['key'], $caches, true)) {
@@ -320,7 +293,7 @@ class UtilitiesController extends Controller
                 } catch (\Throwable $e) {
                     Craft::warning("Could not clear the directory {$action}: " . $e->getMessage(), __METHOD__);
                 }
-            } else if (isset($cacheOption['params'])) {
+            } elseif (isset($cacheOption['params'])) {
                 call_user_func_array($action, $cacheOption['params']);
             } else {
                 $action();
@@ -328,7 +301,31 @@ class UtilitiesController extends Controller
         }
 
         return $this->asJson([
-            'success' => true
+            'success' => true,
+        ]);
+    }
+
+    /**
+     * Performs an Invalidate Data Caches action.
+     *
+     * @return Response
+     * @throws ForbiddenHttpException if the user doesn't have access to the Clear Caches utility
+     * @throws BadRequestHttpException
+     * @since 3.5.0
+     */
+    public function actionInvalidateTags(): Response
+    {
+        $this->requirePermission('utility:clear-caches');
+
+        $tags = $this->request->getRequiredBodyParam('tags');
+        $cache = Craft::$app->getCache();
+
+        foreach ($tags as $tag) {
+            TagDependency::invalidate($cache, $tag);
+        }
+
+        return $this->asJson([
+            'success' => true,
         ]);
     }
 
@@ -343,8 +340,6 @@ class UtilitiesController extends Controller
     {
         $this->requirePermission('utility:db-backup');
 
-        $params = Craft::$app->getRequest()->getRequiredBodyParam('params');
-
         try {
             $backupPath = Craft::$app->getDb()->backup();
         } catch (\Throwable $e) {
@@ -355,56 +350,17 @@ class UtilitiesController extends Controller
             throw new Exception("Could not create backup: the backup file doesn't exist.");
         }
 
-        if (empty($params['downloadBackup'])) {
+        // Zip it up and delete the SQL file
+        $zipPath = FileHelper::zip($backupPath);
+        unlink($backupPath);
+
+        if (!$this->request->getBodyParam('downloadBackup')) {
             return $this->asJson(['success' => true]);
         }
 
-        $zipPath = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . pathinfo($backupPath, PATHINFO_FILENAME) . '.zip';
-
-        if (is_file($zipPath)) {
-            try {
-                FileHelper::unlink($zipPath);
-            } catch (ErrorException $e) {
-                Craft::warning("Unable to delete the file \"{$zipPath}\": " . $e->getMessage(), __METHOD__);
-            }
-        }
-
-        $zip = new ZipArchive();
-
-        if ($zip->open($zipPath, ZipArchive::CREATE) !== true) {
-            throw new Exception('Cannot create zip at ' . $zipPath);
-        }
-
-        $filename = pathinfo($backupPath, PATHINFO_BASENAME);
-        $zip->addFile($backupPath, $filename);
-        $zip->close();
-
-        return $this->asJson([
-            'backupFile' => pathinfo($filename, PATHINFO_FILENAME)
+        return $this->response->sendFile($zipPath, null, [
+            'mimeType' => 'application/zip',
         ]);
-    }
-
-    /**
-     * Returns a database backup zip file to the browser.
-     *
-     * @return Response
-     * @throws ForbiddenHttpException if the user doesn't have access to the DB Backup utility
-     * @throws NotFoundHttpException if the requested backup cannot be found
-     */
-    public function actionDownloadBackupFile(): Response
-    {
-        $this->requirePermission('utility:db-backup');
-
-        $filename = Craft::$app->getRequest()->getRequiredQueryParam('filename');
-        $filePath = Craft::$app->getPath()->getTempPath() . DIRECTORY_SEPARATOR . $filename . '.zip';
-
-        if (!is_file($filePath) || !Path::ensurePathIsContained($filePath)) {
-            throw new NotFoundHttpException(Craft::t('app', 'Invalid backup name: {filename}', [
-                'filename' => $filename
-            ]));
-        }
-
-        return Craft::$app->getResponse()->sendFile($filePath);
     }
 
     /**
@@ -417,99 +373,17 @@ class UtilitiesController extends Controller
     {
         $this->requirePermission('utility:find-replace');
 
-        $params = Craft::$app->getRequest()->getRequiredBodyParam('params');
+        $params = $this->request->getRequiredBodyParam('params');
 
         if (!empty($params['find']) && !empty($params['replace'])) {
-            Craft::$app->getQueue()->push(new FindAndReplace([
+            Queue::push(new FindAndReplace([
                 'find' => $params['find'],
                 'replace' => $params['replace'],
             ]));
         }
 
         return $this->asJson([
-            'success' => true
-        ]);
-    }
-
-    /**
-     * Performs a Search Index action
-     *
-     * @return Response
-     * @throws ForbiddenHttpException if the user doesn't have access to the Search Indexes utility
-     */
-    public function actionSearchIndexPerformAction(): Response
-    {
-        $this->requirePermission('utility:search-indexes');
-
-        $params = Craft::$app->getRequest()->getRequiredBodyParam('params');
-
-        if (!empty($params['start'])) {
-            // Truncate the searchindex table
-            Craft::$app->getDb()->createCommand()
-                ->truncateTable(Table::SEARCHINDEX)
-                ->execute();
-
-            // Get all the element IDs ever
-            $elements = (new Query())
-                ->select(['id', 'type'])
-                ->from([Table::ELEMENTS])
-                ->where(['dateDeleted' => null])
-                ->all();
-
-            $batch = [];
-
-            foreach ($elements as $element) {
-                $batch[] = ['params' => $element];
-            }
-
-            return $this->asJson([
-                'batches' => [$batch]
-            ]);
-        }
-
-        /** @var ElementInterface $class */
-        $class = $params['type'];
-
-        if ($class::isLocalized()) {
-            $siteIds = Craft::$app->getSites()->getAllSiteIds();
-        } else {
-            $siteIds = [Craft::$app->getSites()->getPrimarySite()->id];
-        }
-
-        $query = $class::find()
-            ->id($params['id'])
-            ->anyStatus();
-
-        $searchService = Craft::$app->getSearch();
-
-        foreach ($siteIds as $siteId) {
-            $query->siteId($siteId);
-            $element = $query->one();
-
-            if ($element) {
-                /** @var Element $element */
-                $searchService->indexElementAttributes($element);
-
-                if ($class::hasContent() && ($fieldLayout = $element->getFieldLayout()) !== null) {
-                    $keywords = [];
-
-                    foreach ($fieldLayout->getFields() as $field) {
-                        /** @var Field $field */
-                        if ($field->searchable) {
-                            // Set the keywords for the content's site
-                            $fieldValue = $element->getFieldValue($field->handle);
-                            $fieldSearchKeywords = $field->getSearchKeywords($fieldValue, $element);
-                            $keywords[$field->id] = $fieldSearchKeywords;
-                        }
-                    }
-
-                    $searchService->indexElementFields($element->id, $siteId, $keywords);
-                }
-            }
-        }
-
-        return $this->asJson([
-            'success' => true
+            'success' => true,
         ]);
     }
 
@@ -527,16 +401,13 @@ class UtilitiesController extends Controller
 
         try {
             $migrator->up();
-            Craft::$app->getSession()->setNotice(Craft::t('app', 'Applied new migrations successfully.'));
+            $this->setSuccessFlash(Craft::t('app', 'Applied new migrations successfully.'));
         } catch (MigrationException $e) {
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t apply new migrations.'));
+            $this->setFailFlash(Craft::t('app', 'Couldn’t apply new migrations.'));
         }
 
         return $this->redirect('utilities/migrations');
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns info about all of the utilities.
@@ -598,7 +469,7 @@ class UtilitiesController extends Controller
     {
         /** @var UtilityInterface $class */
         return $this->getView()->renderTemplate('_includes/defaulticon.svg', [
-            'label' => $class::displayName()
+            'label' => $class::displayName(),
         ]);
     }
 }

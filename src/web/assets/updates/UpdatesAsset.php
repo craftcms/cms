@@ -19,24 +19,28 @@ class UpdatesAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public function init()
-    {
-        $this->sourcePath = __DIR__ . '/dist';
+    public $sourcePath = __DIR__ . '/dist';
 
-        $this->depends = [
-            CpAsset::class,
-        ];
+    /**
+     * @inheritdoc
+     */
+    public $depends = [
+        CpAsset::class,
+    ];
 
-        $this->css = [
-            'updates.css',
-        ];
+    /**
+     * @inheritdoc
+     */
+    public $css = [
+        'css/UpdatesUtility.css',
+    ];
 
-        $this->js = [
-            'UpdatesUtility' . $this->dotJs(),
-        ];
-
-        parent::init();
-    }
+    /**
+     * @inheritdoc
+     */
+    public $js = [
+        'UpdatesUtility.js',
+    ];
 
     /**
      * @inheritdoc
@@ -47,7 +51,7 @@ class UpdatesAsset extends AssetBundle
 
         if ($view instanceof View) {
             $view->registerTranslations('app', [
-                'You’re all up-to-date!',
+                'You’re all up to date!',
                 'Critical',
                 'Update all',
             ]);

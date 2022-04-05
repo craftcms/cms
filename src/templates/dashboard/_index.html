@@ -2,15 +2,15 @@
 {% set title = "Dashboard"|t('app') %}
 
 {% block actionButton %}
-    <div class="buttons secondary-buttons">
+    <div class="buttons">
         <div class="newwidget btngroup">
-            <div id="newwidgetmenubtn" class="btn submit menubtn add icon">{{ 'New widget'|t('app') }}</div>
+            <button type="button" id="newwidgetmenubtn" class="btn menubtn add icon">{{ 'New widget'|t('app') }}</button>
             <div class="menu newwidgetmenu">
                 <ul>
                     {% for type, info in widgetTypes if info.selectable %}
                         <li>
                             <a data-type="{{ type }}" data-name="{{ info.name }}">
-                                <span class="icon">{{ info.iconSvg|raw }}</span>
+                                <span class="icon" aria-hidden="true">{{ svg(info.iconSvg, sanitize=false) }}</span>
                                 {{ info.name }}
                             </a>
                         </li>
@@ -19,12 +19,12 @@
             </div>
         </div>
 
-        <div id="widgetManagerBtn" class="btn settings icon submit" title="{{ 'Settings'|t('app') }}"></div>
+        <button type="button" id="widgetManagerBtn" class="btn settings icon" title="{{ 'Settings'|t('app') }}" aria-label="{{ 'Settings'|t('app') }}"></button>
     </div>
 {% endblock %}
 
 
-{% block content %}
+{% block main %}
     <div id="dashboard-grid" class="grid">
         {% for widget in widgets %}
             <div class="item" data-colspan="{{ widget.colspan }}">
@@ -32,22 +32,31 @@
                     <div class="front">
                         <div class="pane">
                             <div class="spinner body-loading"></div>
-                            <div class="settings icon hidden"></div>
-                            <h2>{{ widget.title }}</h2>
+                            {% if widget.title or widget.subtitle %}
+                                <div class="widget-heading">
+                                    {% if widget.title %}
+                                        <h2>{{ widget.title }}</h2>
+                                    {% endif %}
+                                    {% if widget.subtitle %}
+                                        <h5>{{ widget.subtitle }}</h5>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
                             <div class="body">
                                 {{ widget.bodyHtml|raw }}
                             </div>
+                            <div class="settings icon hidden"></div>
                         </div>
                     </div>
-                    <div class="back">
+                    <div class="back hidden">
                         <form class="pane">
-                            <input type="hidden" name="widgetId" value="{{ widget.id }}">
-                            <h2>{{ "{type} Settings"|t('app', { type: widget.name }) }}</h2>
+                            {{ hiddenInput('widgetId', widget.id) }}
+                            <h2 class="first">{{ "{type} Settings"|t('app', { type: widget.name }) }}</h2>
                             <div class="settings"></div>
                             <hr>
                             <div class="buttons clearafter">
-                                <input type="submit" class="btn submit" value="{{ 'Save'|t('app') }}">
-                                <div class="btn" role="button">{{ 'Cancel'|t('app') }}</div>
+                                <button type="submit" class="btn submit">{{ 'Save'|t('app') }}</button>
+                                <button type="button" class="btn">{{ 'Cancel'|t('app') }}</button>
                                 <div class="spinner hidden"></div>
                             </div>
                         </form>

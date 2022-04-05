@@ -1,7 +1,7 @@
 {% import "_includes/forms" as forms %}
 
 <div id="site" class="screen hidden" data-inputs="name,baseUrl,language">
-    <div class="icon">{{ worldIcon|raw }}</div>
+    <div class="icon" aria-hidden="true">{{ svg(worldIcon, sanitize=false) }}</div>
     <h1>{{ "Setup your site"|t('app') }}</h1>
 
     <form accept-charset="UTF-8">
@@ -19,7 +19,9 @@
             label: "Base URL"|t('app'),
             id: 'site-baseUrl',
             class: 'ltr',
-            suggestions: craft.cp.getEnvSuggestions(true),
+            suggestEnvVars: true,
+            suggestAliases: true,
+            tip: null,
             value: defaultSiteUrl
         }) }}
 
@@ -38,9 +40,7 @@
         }, languageInput) }}
 
         <div class="buttons">
-            <div class="btn big submit">{{ "Finish up"|t('app') }}
-                <input type="submit" tabindex="-1">
-            </div>
+            <button type="submit" class="btn big submit">{{ "Finish up"|t('app') }}</button>
         </div>
     </form>
 </div>

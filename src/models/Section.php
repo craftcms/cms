@@ -11,7 +11,11 @@ use Craft;
 use craft\base\Model;
 use craft\db\Query;
 use craft\db\Table;
+use craft\elements\Entry;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Db;
+use craft\helpers\ProjectConfig as ProjectConfigHelper;
+use craft\helpers\StringHelper;
 use craft\records\Section as SectionRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
@@ -20,22 +24,28 @@ use craft\validators\UniqueValidator;
  * Section model class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  * @property Section_SiteSettings[] $siteSettings Site-specific settings
  * @property EntryType[] $entryTypes Entry types
  * @property bool $hasMultiSiteEntries Whether entries in this section support multiple sites
  */
 class Section extends Model
 {
-    // Constants
-    // =========================================================================
-
     const TYPE_SINGLE = 'single';
     const TYPE_CHANNEL = 'channel';
     const TYPE_STRUCTURE = 'structure';
 
-    // Properties
-    // =========================================================================
+    const PROPAGATION_METHOD_NONE = 'none';
+    const PROPAGATION_METHOD_SITE_GROUP = 'siteGroup';
+    const PROPAGATION_METHOD_LANGUAGE = 'language';
+    const PROPAGATION_METHOD_ALL = 'all';
+    /** @since 3.5.0 */
+    const PROPAGATION_METHOD_CUSTOM = 'custom';
+
+    /** @since 3.7.0 */
+    const DEFAULT_PLACEMENT_BEGINNING = 'beginning';
+    /** @since 3.7.0 */
+    const DEFAULT_PLACEMENT_END = 'end';
 
     /**
      * @var int|null ID
@@ -73,9 +83,35 @@ class Section extends Model
     public $enableVersioning = true;
 
     /**
+     * @var string Propagation method
+     *
+     * This will be set to one of the following:
+     *
+     * - `none` – Only save entries in the site they were created in
+     * - `siteGroup` – Save entries to other sites in the same site group
+     * - `language` – Save entries to other sites with the same language
+     * - `all` – Save entries to all sites enabled for this section
+     *
+     * @since 3.2.0
+     */
+    public $propagationMethod = self::PROPAGATION_METHOD_ALL;
+
+    /**
      * @var bool Propagate entries
+     * @deprecated in 3.2.0. Use [[$propagationMethod]] instead
      */
     public $propagateEntries = true;
+
+    /**
+     * @var string Default placement
+     * @since 3.7.0
+     */
+    public $defaultPlacement = self::DEFAULT_PLACEMENT_END;
+
+    /**
+     * @var array Preview targets
+     */
+    public $previewTargets = null;
 
     /**
      * @var string|null Section's UID
@@ -92,8 +128,28 @@ class Section extends Model
      */
     private $_entryTypes;
 
-    // Public Methods
-    // =========================================================================
+    /**
+     * @inheritdoc
+     */
+    public function init()
+    {
+        if ($this->previewTargets === null) {
+            $this->previewTargets = [
+                [
+                    'label' => Craft::t('app', 'Primary {type} page', [
+                        'type' => StringHelper::toLowerCase(Entry::displayName()),
+                    ]),
+                    'urlFormat' => '{url}',
+                ],
+            ];
+        }
+
+        // todo: remove this in 4.0
+        // Set propagateEntries in case anything is still checking it
+        $this->propagateEntries = $this->propagationMethod !== self::PROPAGATION_METHOD_NONE;
+
+        parent::init();
+    }
 
     /**
      * @inheritdoc
@@ -110,16 +166,33 @@ class Section extends Model
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['id', 'structureId', 'maxLevels'], 'number', 'integerOnly' => true];
         $rules[] = [['handle'], HandleValidator::class, 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']];
-        $rules[] = [['type'], 'in', 'range' => ['single', 'channel', 'structure']];
+        $rules[] = [
+            ['type'], 'in', 'range' => [
+                self::TYPE_SINGLE,
+                self::TYPE_CHANNEL,
+                self::TYPE_STRUCTURE,
+            ],
+        ];
+        $rules[] = [
+            ['propagationMethod'], 'in', 'range' => [
+                self::PROPAGATION_METHOD_NONE,
+                self::PROPAGATION_METHOD_SITE_GROUP,
+                self::PROPAGATION_METHOD_LANGUAGE,
+                self::PROPAGATION_METHOD_ALL,
+                self::PROPAGATION_METHOD_CUSTOM,
+            ],
+        ];
         $rules[] = [['name', 'handle'], UniqueValidator::class, 'targetClass' => SectionRecord::class];
-        $rules[] = [['name', 'handle', 'type', 'siteSettings'], 'required'];
+        $rules[] = [['name', 'handle', 'type', 'propagationMethod', 'siteSettings'], 'required'];
         $rules[] = [['name', 'handle'], 'string', 'max' => 255];
         $rules[] = [['siteSettings'], 'validateSiteSettings'];
+        $rules[] = [['defaultPlacement'], 'in', 'range' => [self::DEFAULT_PLACEMENT_BEGINNING, self::DEFAULT_PLACEMENT_END]];
+        $rules[] = [['previewTargets'], 'validatePreviewTargets'];
         return $rules;
     }
 
@@ -146,6 +219,29 @@ class Section extends Model
             if (!$siteSettings->validate()) {
                 $this->addModelErrors($siteSettings, "siteSettings[{$i}]");
             }
+        }
+    }
+
+    /**
+     * Validates the preview targets.
+     */
+    public function validatePreviewTargets()
+    {
+        $hasErrors = false;
+
+        foreach ($this->previewTargets as &$target) {
+            $target['label'] = trim($target['label']);
+            $target['urlFormat'] = trim($target['urlFormat']);
+
+            if ($target['label'] === '') {
+                $target['label'] = ['value' => $target['label'], 'hasErrors' => true];
+                $hasErrors = true;
+            }
+        }
+        unset($target);
+
+        if ($hasErrors) {
+            $this->addError('previewTargets', Craft::t('app', 'All targets must have a label.'));
         }
     }
 
@@ -244,6 +340,7 @@ class Section extends Model
      * Sets the section's entry types.
      *
      * @param EntryType[] $entryTypes
+     * @since 3.1.0
      */
     public function setEntryTypes(array $entryTypes)
     {
@@ -254,13 +351,56 @@ class Section extends Model
      * Returns whether entries in this section support multiple sites.
      *
      * @return bool
+     * @since 3.0.35
      */
     public function getHasMultiSiteEntries(): bool
     {
         return (
             Craft::$app->getIsMultiSite() &&
             count($this->getSiteSettings()) > 1 &&
-            $this->propagateEntries
+            $this->propagationMethod !== self::PROPAGATION_METHOD_NONE
         );
+    }
+
+    /**
+     * Returns the section’s config.
+     *
+     * @return array
+     * @since 3.5.0
+     */
+    public function getConfig(): array
+    {
+        $config = [
+            'name' => $this->name,
+            'handle' => $this->handle,
+            'type' => $this->type,
+            'enableVersioning' => (bool)$this->enableVersioning,
+            'propagationMethod' => $this->propagationMethod,
+            'siteSettings' => [],
+            'defaultPlacement' => $this->defaultPlacement ?? self::DEFAULT_PLACEMENT_END,
+        ];
+
+        if (!empty($this->previewTargets)) {
+            $config['previewTargets'] = ProjectConfigHelper::packAssociativeArray($this->previewTargets);
+        }
+
+        if ($this->type === self::TYPE_STRUCTURE) {
+            $config['structure'] = [
+                'uid' => $this->structureId ? Db::uidById(Table::STRUCTURES, $this->structureId) : StringHelper::UUID(),
+                'maxLevels' => (int)$this->maxLevels ?: null,
+            ];
+        }
+
+        foreach ($this->getSiteSettings() as $siteId => $siteSettings) {
+            $siteUid = Db::uidById(Table::SITES, $siteId);
+            $config['siteSettings'][$siteUid] = [
+                'enabledByDefault' => (bool)$siteSettings['enabledByDefault'],
+                'hasUrls' => (bool)$siteSettings['hasUrls'],
+                'uriFormat' => $siteSettings['uriFormat'] ?: null,
+                'template' => $siteSettings['template'] ?: null,
+            ];
+        }
+
+        return $config;
     }
 }

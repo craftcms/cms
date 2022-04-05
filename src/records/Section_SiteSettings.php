@@ -24,13 +24,10 @@ use yii\db\ActiveQueryInterface;
  * @property Section $section Section
  * @property Site $site Site
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Section_SiteSettings extends ActiveRecord
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      * @return string

@@ -51,3 +51,9 @@
         }) }}
     </div>
 {% endif %}
+
+{% for colId, column in field.columns %}
+    {% if column.type == 'select' %}
+        {{ hiddenInput("columns[#{colId}][options]", column.options|json_encode) }}
+    {% endif %}
+{% endfor %}

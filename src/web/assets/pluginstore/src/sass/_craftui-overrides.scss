@@ -1,0 +1,47 @@
+@import "~@pixelandtonic/craftui/src/sass/mixins";
+
+.c-btn,
+a.c-btn,
+button.c-btn {
+  &.primary:not(.outline) {
+    @apply .bg-red .border-red .text-white;
+
+    &:not([disabled]) {
+      &:hover {
+        @apply .bg-red-dark .border-red-dark;
+      }
+
+      &:active {
+        @apply .bg-red-darker .border-red-darker;
+      }
+    }
+  }
+
+  &.outline {
+    &.primary {
+      @apply .text-red .border-red;
+
+      &:not([disabled]) {
+        &:hover {
+          @apply .text-white .bg-red;
+        }
+
+        &:active {
+          @apply .text-white .bg-red-darker;
+        }
+      }
+    }
+  }
+
+  &.loading {
+    &.outline {
+      &.primary .c-spinner > .animation {
+        @apply .border-red;
+      }
+
+      &.danger .c-spinner > .animation {
+        @apply .border-red;
+      }
+    }
+  }
+}

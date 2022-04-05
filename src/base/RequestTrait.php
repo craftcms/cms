@@ -15,13 +15,10 @@ use yii\base\InvalidConfigException;
  *
  * @property string $scriptFilename The requested script name being used to access Craft (e.g. “index.php”).
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 trait RequestTrait
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var bool
      */
@@ -32,9 +29,6 @@ trait RequestTrait
      */
     public $isWebAliasSetDynamically = false;
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * Returns the requested script name being used to access Craft (e.g. “index.php”).
      *
@@ -43,7 +37,7 @@ trait RequestTrait
      */
     public function getScriptFilename(): string
     {
-        /** @var $this \craft\web\Request|\craft\console\Request */
+        /** @var \craft\web\Request|\craft\console\Request $this */
         return basename($this->getScriptFile());
     }
 }

@@ -2,7 +2,6 @@
 
 namespace craft\migrations;
 
-use Craft;
 use craft\db\Migration;
 use craft\db\Query;
 use craft\db\Table;
@@ -10,17 +9,15 @@ use craft\elements\Asset;
 use craft\elements\Category;
 use craft\elements\Entry;
 use craft\elements\User;
-use craft\fields\Assets;
+use craft\helpers\Db;
 use craft\helpers\Json;
-use craft\services\Fields;
-use craft\services\Matrix;
 
 /**
  * m190218_143000_element_index_settings_uid migration.
  */
 class m190218_143000_element_index_settings_uid extends Migration
 {
-   /**
+    /**
      * @var array List of elements to search for.
      */
     private $_elements = [Entry::class => 'section', Asset::class => 'folder', User::class => 'group', Category::class => 'group'];
@@ -83,12 +80,13 @@ class m190218_143000_element_index_settings_uid extends Migration
 
                 $data = Json::encode($data);
 
-                Craft::$app->getDb()->createCommand()
-                    ->update(Table::ELEMENTINDEXSETTINGS, ['settings' => $data], ['id' => $row['id']], [], false)
-                    ->execute();
+                Db::update(Table::ELEMENTINDEXSETTINGS, [
+                    'settings' => $data,
+                ], [
+                    'id' => $row['id'],
+                ], [], false, $this->db);
             }
         }
-
     }
 
     /**

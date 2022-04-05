@@ -14,13 +14,10 @@ use craft\base\Utility;
  * PhpInfo represents a PhpInfo dashboard widget.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class PhpInfo extends Utility
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -42,7 +39,7 @@ class PhpInfo extends Utility
      */
     public static function iconPath()
     {
-        return Craft::getAlias('@app/icons/info-circle.svg');
+        return Craft::getAlias('@appicons/info-circle.svg');
     }
 
     /**
@@ -62,9 +59,39 @@ class PhpInfo extends Utility
      */
     private static function _phpInfo(): array
     {
+        // Remove any arrays from $_ENV and $_SERVER to get around an "Array to string conversion" error
+        $envVals = [];
+        $serverVals = [];
+
+        if (isset($_ENV)) {
+            foreach ($_ENV as $key => $value) {
+                if (is_array($value)) {
+                    $envVals[$key] = $value;
+                    $_ENV[$key] = 'Array';
+                }
+            }
+        }
+
+        if (isset($_SERVER)) {
+            foreach ($_SERVER as $key => $value) {
+                if (is_array($value)) {
+                    $serverVals[$key] = $value;
+                    $_SERVER[$key] = 'Array';
+                }
+            }
+        }
+
         ob_start();
         phpinfo(INFO_ALL);
         $phpInfoStr = ob_get_clean();
+
+        // Put the original $_ENV and $_SERVER values back
+        foreach ($envVals as $key => $value) {
+            $_ENV[$key] = $value;
+        }
+        foreach ($serverVals as $key => $value) {
+            $_SERVER[$key] = $value;
+        }
 
         $replacePairs = [
             '#^.*<body>(.*)</body>.*$#ms' => '$1',

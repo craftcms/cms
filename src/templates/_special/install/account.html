@@ -3,7 +3,7 @@
 {% set useEmailAsUsername = craft.app.config.general.useEmailAsUsername %}
 
 <div id="account" class="screen hidden" data-inputs="username,email,password">
-    <div class="icon">{{ userIcon|raw }}</div>
+    <div class="icon" aria-hidden="true">{{ svg(userIcon, sanitize=false) }}</div>
     <h1>{{ "Create your account"|t('app') }}</h1>
 
     <form accept-charset="UTF-8">
@@ -14,7 +14,7 @@
                 first: true,
                 label: "Username"|t('app'),
                 id: 'account-username',
-                maxlength: 255
+                maxlength: 255,
             }) }}
         {% endif %}
 
@@ -22,18 +22,18 @@
             first: useEmailAsUsername,
             label: "Email"|t('app'),
             id: 'account-email',
-            maxlength: 255
+            maxlength: 255,
+            autocomplete: 'email',
         }) }}
 
         {{ forms.passwordField({
             label: "Password"|t('app'),
-            id: 'account-password'
+            id: 'account-password',
+            autocomplete: 'new-password',
         }) }}
 
         <div class="buttons">
-            <div class="btn big submit">{{ "Next"|t('app') }}
-                <input type="submit" tabindex="-1">
-            </div>
+            <button type="submit" class="btn big submit">{{ "Next"|t('app') }}</button>
         </div>
     </form>
 </div>

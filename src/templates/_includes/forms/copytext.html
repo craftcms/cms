@@ -1,0 +1,33 @@
+{% set id = id ?? "copytext#{random()}" %}
+{% set buttonId = buttonId ?? "#{id}-btn" -%}
+
+<div class="copytext">
+    {%- include '_includes/forms/text' with {
+        readonly: true,
+    } %}
+    {{- tag('button', {
+        type: 'button',
+        id: buttonId,
+        class: (buttonClass ?? [])|explodeClass|push('btn'),
+        title: 'Copy to clipboard'|t('app'),
+        aria: {
+            label: 'Copy to clipboard'|t('app'),
+            describedby: describedBy ?? false,
+        },
+        data: {
+            icon: 'clipboard',
+        },
+    }) -}}
+</div>
+
+{% js %}
+    {% block js %}
+        $('#{{ buttonId|namespaceInputId|e('js') }}').on('click', function() {
+            document.getElementById('{{ id|namespaceInputId|e('js') }}').select();
+            document.execCommand('copy');
+            Craft.cp.displayNotice("{{ 'Copied to clipboard.'|t('app')|e('js') }}");
+            $(this).parent().trigger('copy');
+            document.getElementById('{{ id|namespaceInputId|e('js') }}').setSelectionRange(0, 0);
+        });
+    {% endblock %}
+{% endjs %}

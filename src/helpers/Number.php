@@ -13,13 +13,10 @@ use Craft;
  * Class Number
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Number
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Returns the "word" version of a number
      *
@@ -37,7 +34,7 @@ class Number
             6 => Craft::t('app', 'six'),
             7 => Craft::t('app', 'seven'),
             8 => Craft::t('app', 'eight'),
-            9 => Craft::t('app', 'nine')
+            9 => Craft::t('app', 'nine'),
         ];
 
         if (isset($numberWordMap[$num])) {
@@ -105,7 +102,7 @@ class Number
             'IX' => 9,
             'V' => 5,
             'IV' => 4,
-            'I' => 1
+            'I' => 1,
         ];
 
         foreach ($map as $k => $v) {

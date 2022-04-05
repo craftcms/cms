@@ -9,7 +9,7 @@
                 <th class="light topalign" style="width: 14px;">{{ loop.revindex }}</th>
                 <td>
                     {% if loop.first %}
-                        <strong>Deprecation error:</strong> {{ log.message }}
+                        <strong>Deprecation error:</strong> {{ log.message|md(inlineOnly=true)|raw }}
                     {% else %}
                         <span class="code">{{ trace.objectClass or trace.class ? ((trace.objectClass ?: trace.class)|e|replace('\\', '\\<wbr>')~'::<wbr>')|raw }}{{ trace.method }}({{ trace.args }})</span>
                     {% endif %}

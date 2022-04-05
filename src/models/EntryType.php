@@ -8,9 +8,13 @@
 namespace craft\models;
 
 use Craft;
+use craft\base\Field;
 use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
+use craft\db\Table;
 use craft\elements\Entry;
+use craft\helpers\Db;
+use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\records\EntryType as EntryTypeRecord;
 use craft\validators\HandleValidator;
@@ -22,13 +26,10 @@ use yii\base\InvalidConfigException;
  *
  * @mixin FieldLayoutBehavior
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class EntryType extends Model
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var int|null ID
      */
@@ -55,14 +56,27 @@ class EntryType extends Model
     public $handle;
 
     /**
+     * @var int|null Sort order
+     * @since 3.5.0
+     */
+    public $sortOrder;
+
+    /**
      * @var bool Has title field
      */
     public $hasTitleField = true;
 
     /**
-     * @var string Title label
+     * @var string Title translation method
+     * @since 3.5.0
      */
-    public $titleLabel = 'Title';
+    public $titleTranslationMethod = Field::TRANSLATION_METHOD_SITE;
+
+    /**
+     * @var string|null Title translation key format
+     * @since 3.5.0
+     */
+    public $titleTranslationKeyFormat;
 
     /**
      * @var string|null Title format
@@ -74,20 +88,17 @@ class EntryType extends Model
      */
     public $uid;
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
     public function behaviors()
     {
-        return [
-            'fieldLayout' => [
-                'class' => FieldLayoutBehavior::class,
-                'elementType' => Entry::class
-            ],
+        $behaviors = parent::behaviors();
+        $behaviors['fieldLayout'] = [
+            'class' => FieldLayoutBehavior::class,
+            'elementType' => Entry::class,
         ];
+        return $behaviors;
     }
 
     /**
@@ -99,23 +110,22 @@ class EntryType extends Model
             'handle' => Craft::t('app', 'Handle'),
             'name' => Craft::t('app', 'Name'),
             'titleFormat' => Craft::t('app', 'Title Format'),
-            'titleLabel' => Craft::t('app', 'Title Field Label'),
         ];
     }
 
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['id', 'sectionId', 'fieldLayoutId'], 'number', 'integerOnly' => true];
         $rules[] = [['name', 'handle'], 'required'];
         $rules[] = [['name', 'handle'], 'string', 'max' => 255];
         $rules[] = [
             ['handle'],
             HandleValidator::class,
-            'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']
+            'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title'],
         ];
         $rules[] = [
             ['name'],
@@ -131,14 +141,33 @@ class EntryType extends Model
             'targetAttribute' => ['handle', 'sectionId'],
             'comboNotUnique' => Craft::t('yii', '{attribute} "{value}" has already been taken.'),
         ];
+        $rules[] = [['fieldLayout'], 'validateFieldLayout'];
 
-        if ($this->hasTitleField) {
-            $rules[] = [['titleLabel'], 'required'];
-        } else {
+        if (!$this->hasTitleField) {
             $rules[] = [['titleFormat'], 'required'];
         }
 
         return $rules;
+    }
+
+    /**
+     * Validates the field layout.
+     *
+     * @return void
+     * @since 3.7.0
+     */
+    public function validateFieldLayout(): void
+    {
+        $fieldLayout = $this->getFieldLayout();
+        $fieldLayout->reservedFieldHandles = [
+            'author',
+            'section',
+            'type',
+        ];
+
+        if (!$fieldLayout->validate()) {
+            $this->addModelErrors($fieldLayout, 'fieldLayout');
+        }
     }
 
     /**
@@ -152,7 +181,7 @@ class EntryType extends Model
     }
 
     /**
-     * Returns the entry’s CP edit URL.
+     * Returns the entry’s edit URL in the control panel.
      *
      * @return string
      */
@@ -178,5 +207,38 @@ class EntryType extends Model
         }
 
         return $section;
+    }
+
+    /**
+     * Returns the entry type’s config.
+     *
+     * @return array
+     * @since 3.5.0
+     */
+    public function getConfig(): array
+    {
+        $config = [
+            'name' => $this->name,
+            'handle' => $this->handle,
+            'hasTitleField' => (bool)$this->hasTitleField,
+            'titleTranslationMethod' => $this->titleTranslationMethod,
+            'titleTranslationKeyFormat' => $this->titleTranslationKeyFormat ?: null,
+            'titleFormat' => $this->titleFormat ?: null,
+            'sortOrder' => (int)$this->sortOrder,
+            'section' => $this->getSection()->uid,
+        ];
+
+        $fieldLayout = $this->getFieldLayout();
+
+        if ($fieldLayoutConfig = $fieldLayout->getConfig()) {
+            if (!$fieldLayout->uid) {
+                $fieldLayout->uid = $fieldLayout->id ? Db::uidById(Table::FIELDLAYOUTS, $fieldLayout->id) : StringHelper::UUID();
+            }
+            $config['fieldLayouts'] = [
+                $fieldLayout->uid => $fieldLayoutConfig,
+            ];
+        }
+
+        return $config;
     }
 }

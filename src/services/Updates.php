@@ -8,9 +8,8 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\Plugin;
 use craft\base\PluginInterface;
-use craft\db\Table;
+use craft\errors\InvalidPluginException;
 use craft\errors\MigrateException;
 use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
@@ -21,7 +20,8 @@ use yii\base\InvalidArgumentException;
 
 /**
  * Updates service.
- * An instance of the Updates service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getUpdates()|`Craft::$app->updates`]].
+ *
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getUpdates()|`Craft::$app->updates`]].
  *
  * @property bool $isCraftDbMigrationNeeded Whether Craft needs to run any database migrations
  * @property bool $isCraftSchemaVersionCompatible Whether the uploaded DB schema is equal to or greater than the installed schema
@@ -30,13 +30,11 @@ use yii\base\InvalidArgumentException;
  * @property bool $isUpdateInfoCached Whether the update info is cached
  * @property bool $wasCraftBreakpointSkipped Whether the build stored in craft_info is less than the minimum required build on the file system
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
+ * @internal
  */
 class Updates extends Component
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string
      */
@@ -51,9 +49,6 @@ class Updates extends Component
      * @var bool|null
      */
     private $_isCraftDbMigrationNeeded;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * Returns whether the update info is cached.
@@ -109,15 +104,27 @@ class Updates extends Component
 
         try {
             $updateData = Craft::$app->getApi()->getUpdates();
-            $cacheDuration = 86400; // 24 hours
         } catch (\Throwable $e) {
             Craft::warning("Couldn't get updates: {$e->getMessage()}", __METHOD__);
             $updateData = [];
-            $cacheDuration = 300; // 5 minutes
         }
 
+        return $this->cacheUpdates($updateData);
+    }
+
+    /**
+     * Caches new update info.
+     *
+     * @param array $updateData
+     * @return UpdatesModel
+     * @since 3.3.16
+     */
+    public function cacheUpdates(array $updateData): UpdatesModel
+    {
         // Instantiate the Updates model first so we don't chance caching bad data
         $updates = new UpdatesModel($updateData);
+        // Cache for 5 minutes or 24 hours depending on whether we actually have results
+        $cacheDuration = empty($updateData) ? 300 : 86400;
         Craft::$app->getCache()->set($this->cacheKey, $updateData, $cacheDuration);
         return $this->_updates = $updates;
     }
@@ -125,29 +132,49 @@ class Updates extends Component
     /**
      * @param PluginInterface $plugin
      * @return bool
+     * @deprecated in 3.7.13. Use [[\craft\services\Plugins::updatePluginVersionInfo()]] instead.
      */
     public function setNewPluginInfo(PluginInterface $plugin): bool
     {
-        /** @var Plugin $plugin */
-        $affectedRows = Craft::$app->getDb()->createCommand()
-            ->update(
-                Table::PLUGINS,
-                [
-                    'version' => $plugin->getVersion(),
-                    'schemaVersion' => $plugin->schemaVersion
-                ],
-                ['handle' => $plugin->id])
-            ->execute();
-
-        // Only update the schema version if it's changed from what's in the file,
-        // so we don't accidentally overwrite other pending changes
-        $projectConfig = Craft::$app->getProjectConfig();
-        $key = Plugins::CONFIG_PLUGINS_KEY . '.' . $plugin->handle . '.schemaVersion';
-        if ($projectConfig->get($key, true) !== $plugin->schemaVersion) {
-            Craft::$app->getProjectConfig()->set($key, $plugin->schemaVersion);
+        try {
+            Craft::$app->getPlugins()->updatePluginVersionInfo($plugin);
+        } catch (InvalidPluginException $e) {
+            Craft::warning("Couldn’t update plugin version info: {$e->getMessage()}", __METHOD__);
+            Craft::$app->getErrorHandler()->logException($e);
+            return false;
         }
 
-        return (bool)$affectedRows;
+        return true;
+    }
+
+    /**
+     * Returns whether there are any pending migrations.
+     *
+     * @param bool $includeContent Whether pending content migrations should be considered
+     * @return bool
+     * @since 3.5.15
+     */
+    public function getAreMigrationsPending(bool $includeContent = false): bool
+    {
+        if ($this->getIsCraftDbMigrationNeeded()) {
+            return true;
+        }
+
+        $pluginsService = Craft::$app->getPlugins();
+        foreach ($pluginsService->getAllPlugins() as $plugin) {
+            if ($pluginsService->doesPluginRequireDatabaseUpdate($plugin)) {
+                return true;
+            }
+        }
+
+        if ($includeContent) {
+            $contentMigrator = Craft::$app->getContentMigrator();
+            if (!empty($contentMigrator->getNewMigrations())) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -159,7 +186,7 @@ class Updates extends Component
      * @return string[]
      * @see runMigrations()
      */
-    public function getPendingMigrationHandles($includeContent = false): array
+    public function getPendingMigrationHandles(bool $includeContent = false): array
     {
         $handles = [];
 
@@ -169,7 +196,6 @@ class Updates extends Component
 
         $pluginsService = Craft::$app->getPlugins();
         foreach ($pluginsService->getAllPlugins() as $plugin) {
-            /** @var Plugin $plugin */
             if ($pluginsService->doesPluginRequireDatabaseUpdate($plugin)) {
                 $handles[] = $plugin->id;
             }
@@ -216,14 +242,13 @@ class Updates extends Component
                 if ($handle === 'craft') {
                     Craft::$app->getMigrator()->up();
                     Craft::$app->getUpdates()->updateCraftVersionInfo();
-                } else if ($handle === 'content') {
+                } elseif ($handle === 'content') {
                     Craft::$app->getContentMigrator()->up();
                 } else {
-                    /** @var Plugin $plugin */
                     $plugin = Craft::$app->getPlugins()->getPlugin($handle);
                     $name = $plugin->name;
                     $plugin->getMigrator()->up();
-                    Craft::$app->getUpdates()->setNewPluginInfo($plugin);
+                    Craft::$app->getPlugins()->updatePluginVersionInfo($plugin);
                 }
             }
 
@@ -245,9 +270,21 @@ class Updates extends Component
     }
 
     /**
+     * Returns whether any Craft or plugin updates are pending.
+     *
+     * @return bool
+     * @since 3.6.15
+     */
+    public function getIsUpdatePending(): bool
+    {
+        return $this->getIsCraftDbMigrationNeeded() || $this->getIsPluginDbUpdateNeeded();
+    }
+
+    /**
      * Returns whether a plugin needs to run a database update.
      *
      * @return bool
+     * @todo rename to getIsPluginUpdatePending() in v4
      */
     public function getIsPluginDbUpdateNeeded(): bool
     {
@@ -273,7 +310,7 @@ class Updates extends Component
     }
 
     /**
-     * Returns true if the version stored in craft_info is less than the minimum required version on the file system. This
+     * Returns true if the version stored in craft_info is less than the minimum required version on the file system.
      * This effectively makes sure that a user cannot manually update past a manual breakpoint.
      *
      * @return bool
@@ -299,6 +336,7 @@ class Updates extends Component
      * Returns whether Craft needs to run any database migrations.
      *
      * @return bool
+     * @todo rename to getIsCraftUpdatePending() in v4
      */
     public function getIsCraftDbMigrationNeeded(): bool
     {
@@ -327,8 +365,10 @@ class Updates extends Component
         // so we don't accidentally overwrite other pending changes
         $projectConfig = Craft::$app->getProjectConfig();
         if ($projectConfig->get(ProjectConfig::CONFIG_SCHEMA_VERSION_KEY, true) !== $info->schemaVersion) {
-            Craft::$app->getProjectConfig()->set(ProjectConfig::CONFIG_SCHEMA_VERSION_KEY, $info->schemaVersion);
+            Craft::$app->getProjectConfig()->set(ProjectConfig::CONFIG_SCHEMA_VERSION_KEY, $info->schemaVersion, 'Update Craft schema version');
         }
+
+        $this->_isCraftDbMigrationNeeded = null;
 
         return true;
     }

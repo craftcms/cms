@@ -8,37 +8,25 @@
 namespace craft\errors;
 
 use craft\base\ElementInterface;
-use yii\base\Exception;
 
 /**
  * InvalidElementException represents an exception caused by setting an invalid element.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
-class InvalidElementException extends Exception
+class InvalidElementException extends ElementException
 {
     /**
-     * @var ElementInterface The element
-     */
-    public $element;
-
-    /**
-     * Constructor.
-     *
-     * @param ElementInterface $element The element
-     * @param string|null $message The error message
-     * @param int $code The error code
+     * @inheritdoc
      */
     public function __construct(ElementInterface $element, string $message = null, int $code = 0)
     {
-        $this->element = $element;
-
         if ($message === null) {
             $message = "The element “{$element}” is invalid.";
         }
 
-        parent::__construct($message, $code);
+        parent::__construct($element, $message, $code);
     }
 
     /**

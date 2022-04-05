@@ -35,8 +35,8 @@ class m190114_143000_more_asset_field_setting_changes extends Migration
 
         $this->_volumesByFolderUids = (new Query())
             ->select(['folders.uid folderUid', 'volumes.uid volumeUid'])
-            ->from(['{{%volumes}} volumes'])
-            ->innerJoin(['{{%volumefolders}} folders'], '[[volumes.id]] = [[folders.volumeId]]')
+            ->from(['volumes' => Table::VOLUMES])
+            ->innerJoin(['folders' => Table::VOLUMEFOLDERS], '[[folders.volumeId]] = [[volumes.id]]')
             ->pairs();
 
         $projectConfig = Craft::$app->getProjectConfig();
@@ -69,7 +69,7 @@ class m190114_143000_more_asset_field_setting_changes extends Migration
 
         foreach ($matrixBlockTypes as $matrixBlockTypeUid => $matrixBlockType) {
             $fields = &$matrixBlockType['fields'];
-            
+
             if (!is_array($fields)) {
                 continue;
             }
@@ -85,13 +85,13 @@ class m190114_143000_more_asset_field_setting_changes extends Migration
                         unset($source);
                     }
                 }
+
+                if (!empty($fieldData['settings'])) {
+                    $this->update(Table::FIELDS, ['settings' => Json::encode($fieldData['settings'])], ['uid' => $fieldUid]);
+                }
             }
 
             $projectConfig->set(Matrix::CONFIG_BLOCKTYPE_KEY . '.' . $matrixBlockTypeUid, $matrixBlockType);
-
-            if (!empty($fieldData['settings'])) {
-                $this->update(Table::FIELDS, ['settings' => Json::encode($fieldData['settings'])], ['uid' => $fieldUid]);
-            }
         }
 
         $projectConfig->muteEvents = false;

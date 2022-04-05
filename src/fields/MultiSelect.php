@@ -9,18 +9,17 @@ namespace craft\fields;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\fields\data\MultiOptionsFieldData;
+use craft\helpers\ArrayHelper;
 
 /**
  * MultiSelect represents a Multi-select field.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class MultiSelect extends BaseOptionsField
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -29,32 +28,42 @@ class MultiSelect extends BaseOptionsField
         return Craft::t('app', 'Multi-select');
     }
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
-    public function init()
+    public static function valueType(): string
     {
-        parent::init();
-        $this->multi = true;
+        return MultiOptionsFieldData::class;
     }
 
     /**
      * @inheritdoc
      */
-    public function getInputHtml($value, ElementInterface $element = null): string
+    public $multi = true;
+
+    /**
+     * @inheritdoc
+     */
+    public $optgroups = true;
+
+    /**
+     * @inheritdoc
+     */
+    protected function inputHtml($value, ElementInterface $element = null): string
     {
+        /** @var MultiOptionsFieldData $value */
+        if (ArrayHelper::contains($value, 'valid', false, true)) {
+            Craft::$app->getView()->setInitialDeltaValue($this->handle, null);
+        }
+
         return Craft::$app->getView()->renderTemplate('_includes/forms/multiselect', [
+            'id' => $this->getInputId(),
+            'describedBy' => $this->describedBy,
             'name' => $this->handle,
             'values' => $value,
             'options' => $this->translatedOptions(),
         ]);
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

@@ -15,7 +15,9 @@ use craft\fields\PlainText;
 use craft\helpers\ArrayHelper;
 use craft\helpers\UrlHelper;
 use craft\models\FieldGroup;
+use craft\web\assets\fieldsettings\FieldSettingsAsset;
 use craft\web\Controller;
+use yii\web\BadRequestHttpException;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 use yii\web\ServerErrorHttpException;
@@ -26,20 +28,19 @@ use yii\web\ServerErrorHttpException;
  * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class FieldsController extends Controller
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
-    public function init()
+    public function beforeAction($action)
     {
         // All field actions require an admin
         $this->requireAdmin();
+
+        return parent::beforeAction($action);
     }
 
     // Groups
@@ -49,31 +50,36 @@ class FieldsController extends Controller
      * Saves a field group.
      *
      * @return Response
+     * @throws BadRequestHttpException
      */
     public function actionSaveGroup(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        $group = new FieldGroup();
-        $group->id = Craft::$app->getRequest()->getBodyParam('id');
-        $group->name = Craft::$app->getRequest()->getRequiredBodyParam('name');
+        $fieldsService = Craft::$app->getFields();
+        $groupId = $this->request->getBodyParam('id');
 
-        $isNewGroup = empty($group->id);
-
-        if (Craft::$app->getFields()->saveGroup($group)) {
-            if ($isNewGroup) {
-                Craft::$app->getSession()->setNotice(Craft::t('app', 'Group added.'));
+        if ($groupId) {
+            $group = $fieldsService->getGroupById($groupId);
+            if (!$group) {
+                throw new BadRequestHttpException("Invalid field group ID: $groupId");
             }
+        } else {
+            $group = new FieldGroup();
+        }
 
+        $group->name = $this->request->getRequiredBodyParam('name');
+
+        if (!$fieldsService->saveGroup($group)) {
             return $this->asJson([
-                'success' => true,
-                'group' => $group->getAttributes(),
+                'errors' => $group->getErrors(),
             ]);
         }
 
         return $this->asJson([
-            'errors' => $group->getErrors(),
+            'success' => true,
+            'group' => $group->getAttributes(),
         ]);
     }
 
@@ -87,10 +93,10 @@ class FieldsController extends Controller
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        $groupId = Craft::$app->getRequest()->getRequiredBodyParam('id');
+        $groupId = $this->request->getRequiredBodyParam('id');
         $success = Craft::$app->getFields()->deleteGroupById($groupId);
 
-        Craft::$app->getSession()->setNotice(Craft::t('app', 'Group deleted.'));
+        $this->setSuccessFlash(Craft::t('app', 'Group deleted.'));
 
         return $this->asJson([
             'success' => $success,
@@ -119,19 +125,11 @@ class FieldsController extends Controller
         // The field
         // ---------------------------------------------------------------------
 
-        $missingFieldPlaceholder = null;
-
-        /** @var Field $field */
         if ($field === null && $fieldId !== null) {
             $field = $fieldsService->getFieldById($fieldId);
 
             if ($field === null) {
                 throw new NotFoundHttpException('Field not found');
-            }
-
-            if ($field instanceof MissingField) {
-                $missingFieldPlaceholder = $field->getPlaceholderHtml();
-                $field = $field->createFallback(PlainText::class);
             }
         }
 
@@ -163,10 +161,15 @@ class FieldsController extends Controller
 
         /** @var string[]|FieldInterface[] $compatibleFieldTypes */
         $fieldTypeOptions = [];
+        $foundCurrent = false;
+        $missingFieldPlaceholder = null;
 
         foreach ($allFieldTypes as $class) {
-            if ($class === get_class($field) || $class::isSelectable()) {
-                $compatible = in_array($class, $compatibleFieldTypes, true);
+            $isCurrent = $class === ($field instanceof MissingField ? $field->expectedType : get_class($field));
+            $foundCurrent = $foundCurrent || $isCurrent;
+
+            if ($isCurrent || $class::isSelectable()) {
+                $compatible = $isCurrent || in_array($class, $compatibleFieldTypes, true);
                 $fieldTypeOptions[] = [
                     'value' => $class,
                     'label' => $class::displayName() . ($compatible ? '' : ' ⚠️'),
@@ -176,6 +179,15 @@ class FieldsController extends Controller
 
         // Sort them by name
         ArrayHelper::multisort($fieldTypeOptions, 'label');
+
+        if ($field instanceof MissingField) {
+            if ($foundCurrent) {
+                $field = $fieldsService->createField($field->expectedType);
+            } else {
+                array_unshift($fieldTypeOptions, ['value' => $field->expectedType, 'label' => '']);
+                $missingFieldPlaceholder = $field->getPlaceholderHtml();
+            }
+        }
 
         // Groups
         // ---------------------------------------------------------------------
@@ -201,7 +213,7 @@ class FieldsController extends Controller
         foreach ($allGroups as $group) {
             $groupOptions[] = [
                 'value' => $group->id,
-                'label' => $group->name
+                'label' => $group->name,
             ];
         }
 
@@ -211,15 +223,15 @@ class FieldsController extends Controller
         $crumbs = [
             [
                 'label' => Craft::t('app', 'Settings'),
-                'url' => UrlHelper::url('settings')
+                'url' => UrlHelper::url('settings'),
             ],
             [
                 'label' => Craft::t('app', 'Fields'),
-                'url' => UrlHelper::url('settings/fields')
+                'url' => UrlHelper::url('settings/fields'),
             ],
             [
                 'label' => Craft::t('site', $fieldGroup->name),
-                'url' => UrlHelper::url('settings/fields/' . $groupId)
+                'url' => UrlHelper::url('settings/fields/' . $groupId),
             ],
         ];
 
@@ -228,6 +240,16 @@ class FieldsController extends Controller
         } else {
             $title = Craft::t('app', 'Create a new field');
         }
+
+        $js = <<<JS
+new Craft.FieldSettingsToggle('#type', '#settings', 'types[__TYPE__]', {
+    wrapWithTypeClassDiv: true
+});
+JS;
+
+        $view = Craft::$app->getView();
+        $view->registerAssetBundle(FieldSettingsAsset::class);
+        $view->registerJs($js);
 
         return $this->renderTemplate('settings/fields/_edit', compact(
             'fieldId',
@@ -245,44 +267,83 @@ class FieldsController extends Controller
     }
 
     /**
+     * Renders a field's settings.
+     *
+     * @return Response
+     * @since 3.4.22
+     */
+    public function actionRenderSettings(): Response
+    {
+        $this->requirePostRequest();
+        $this->requireAcceptsJson();
+
+        $type = $this->request->getRequiredBodyParam('type');
+        $field = Craft::$app->getFields()->createField($type);
+
+        $view = Craft::$app->getView();
+        $html = $view->renderTemplate('settings/fields/_type-settings', [
+            'field' => $field,
+            'namespace' => $this->request->getBodyParam('namespace'),
+        ]);
+
+        return $this->asJson([
+            'settingsHtml' => $html,
+            'headHtml' => $view->getHeadHtml(),
+            'footHtml' => $view->getBodyHtml(),
+        ]);
+    }
+
+    /**
      * Saves a field.
      *
      * @return Response|null
+     * @throws BadRequestHttpException
      */
     public function actionSaveField()
     {
         $this->requirePostRequest();
 
         $fieldsService = Craft::$app->getFields();
-        $request = Craft::$app->getRequest();
-        $type = $request->getRequiredBodyParam('type');
+        $type = $this->request->getRequiredBodyParam('type');
+        $fieldId = $this->request->getBodyParam('fieldId') ?: null;
+
+        if ($fieldId) {
+            $oldField = clone Craft::$app->getFields()->getFieldById($fieldId);
+            if (!$oldField) {
+                throw new BadRequestHttpException("Invalid field ID: $fieldId");
+            }
+            $fieldUid = $oldField->uid;
+        } else {
+            $fieldUid = null;
+        }
 
         $field = $fieldsService->createField([
             'type' => $type,
-            'id' => $request->getBodyParam('fieldId'),
-            'groupId' => $request->getRequiredBodyParam('group'),
-            'name' => $request->getBodyParam('name'),
-            'handle' => $request->getBodyParam('handle'),
-            'instructions' => $request->getBodyParam('instructions'),
-            'searchable' => (bool)$request->getBodyParam('searchable', true),
-            'translationMethod' => $request->getBodyParam('translationMethod', Field::TRANSLATION_METHOD_NONE),
-            'translationKeyFormat' => $request->getBodyParam('translationKeyFormat'),
-            'settings' => $request->getBodyParam('types.' . $type),
+            'id' => $fieldId,
+            'uid' => $fieldUid,
+            'groupId' => $this->request->getRequiredBodyParam('group'),
+            'name' => $this->request->getBodyParam('name'),
+            'handle' => $this->request->getBodyParam('handle'),
+            'columnSuffix' => $oldField->columnSuffix ?? null,
+            'instructions' => $this->request->getBodyParam('instructions'),
+            'searchable' => (bool)$this->request->getBodyParam('searchable', true),
+            'translationMethod' => $this->request->getBodyParam('translationMethod', Field::TRANSLATION_METHOD_NONE),
+            'translationKeyFormat' => $this->request->getBodyParam('translationKeyFormat'),
+            'settings' => $this->request->getBodyParam('types.' . $type),
         ]);
 
         if (!$fieldsService->saveField($field)) {
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save field.'));
+            $this->setFailFlash(Craft::t('app', 'Couldn’t save field.'));
 
             // Send the field back to the template
             Craft::$app->getUrlManager()->setRouteParams([
-                'field' => $field
+                'field' => $field,
             ]);
 
             return null;
         }
 
-        Craft::$app->getSession()->setNotice(Craft::t('app', 'Field saved.'));
-
+        $this->setSuccessFlash(Craft::t('app', 'Field saved.'));
         return $this->redirectToPostedUrl($field);
     }
 
@@ -290,15 +351,54 @@ class FieldsController extends Controller
      * Deletes a field.
      *
      * @return Response
+     * @throws BadRequestHttpException
+     * @throws ServerErrorHttpException
      */
     public function actionDeleteField(): Response
     {
         $this->requirePostRequest();
-        $this->requireAcceptsJson();
 
-        $fieldId = Craft::$app->getRequest()->getRequiredBodyParam('id');
-        $success = Craft::$app->getFields()->deleteFieldById($fieldId);
+        $fieldId = $this->request->getBodyParam('fieldId') ?? $this->request->getRequiredBodyParam('id');
+        $fieldsService = Craft::$app->getFields();
+        $field = $fieldsService->getFieldById($fieldId);
 
-        return $this->asJson(['success' => $success]);
+        if (!$field) {
+            throw new BadRequestHttpException("Invalid field ID: $fieldId");
+        }
+
+        $success = $fieldsService->deleteField($field);
+
+        if ($this->request->getAcceptsJson()) {
+            return $this->asJson(['success' => $success]);
+        }
+
+        if (!$success) {
+            throw new ServerErrorHttpException("Unable to delete field ID $fieldId");
+        }
+
+        Craft::$app->getSession()->setNotice(Craft::t('app', '“{name}” deleted.', [
+            'name' => $field->name,
+        ]));
+        return $this->redirectToPostedUrl();
+    }
+
+    // Field Layouts
+    // -------------------------------------------------------------------------
+
+    /**
+     * Renders a field layout element’s selector HTML.
+     *
+     * @return Response
+     * @throws BadRequestHttpException
+     * @since 3.5.0
+     */
+    public function actionRenderLayoutElementSelector(): Response
+    {
+        $config = $this->request->getRequiredBodyParam('config');
+        $element = Craft::$app->getFields()->createLayoutElement($config);
+
+        return $this->asJson([
+            'html' => $element->selectorHtml(),
+        ]);
     }
 }

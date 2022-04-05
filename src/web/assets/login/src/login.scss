@@ -1,0 +1,179 @@
+@charset "UTF-8";
+@import "@craftcms/sass/mixins";
+
+html, body {
+  height: 100%;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+#login {
+  width: 300px;
+}
+
+#login h1 {
+  text-align: center;
+  font-size: 3em;
+  word-wrap: break-word;
+}
+
+#login-logo {
+  width: 100%;
+  height: auto;
+}
+
+#login-form-top {
+  padding: 1px;
+}
+
+#login-form .field {
+  margin: 0;
+}
+
+#login-form .btn {
+  display: block;
+}
+
+#loginName {
+  margin: 0 -1px;
+  width: calc(100% + 2px);
+  padding: 14px 16px;
+  border-radius: $largeBorderRadius;
+}
+
+#loginName-field {
+  z-index: 1;
+}
+
+#remember-password {
+  display: none;
+}
+
+#login-form.remember-me:not(.reset-password) #login-form-bottom {
+  justify-content: space-between;
+}
+
+#login-form:not(.reset-password) {
+  #loginName {
+    margin: -1px -1px 0;
+    border-radius: $largeBorderRadius $largeBorderRadius 0 0;
+    border-bottom-width: 0;
+
+    &:focus {
+      border-bottom-width: 1px;
+      margin-bottom: -1px;
+    }
+  }
+}
+
+#login-form.reset-password {
+
+  #password-field,
+  #rememberMe-field,
+  #forgot-password {
+    display: none;
+  }
+
+  #remember-password {
+    display: block;
+  }
+}
+
+.passwordwrapper {
+  margin: 0 -1px -1px;
+  border-radius: 0 0 $largeBorderRadius $largeBorderRadius;
+
+  &.focus {
+    z-index: 1;
+  }
+
+  #password {
+    @include padding(14px, 4rem, 14px, 16px);
+    border-radius: inherit;
+  }
+
+  .password-toggle {
+    @include right(14px);
+  }
+}
+
+#login-form-bottom {
+  margin-top: 24px;
+  display: flex;
+  justify-content: center;
+}
+
+#rememberMe-field {
+  @include margin-right(14px);
+}
+
+#forgot-password,
+#remember-password {
+  font-size: 11px;
+  color: $mediumTextColor;
+}
+
+#forgot-password:hover,
+#forgot-password:focus,
+#remember-password:hover,
+#remember-password:focus {
+  color: $linkColor;
+}
+
+#login-form .submit {
+  display: block;
+  padding: 14px 16px;
+  height: auto;
+  width: 100%;
+}
+
+#spinner {
+  position: absolute;
+  top: 58px;
+  left: 50%;
+  margin-left: -12px;
+}
+
+#login-errors {
+  text-align: center;
+  color: $errorColor;
+  margin-top: 1em;
+}
+
+#poweredby {
+  display: block;
+  text-align: center;
+  margin-top: 70px;
+  margin-bottom: 48px;
+  opacity: .8;
+}
+
+#poweredby:hover,
+#poweredby:focus,
+#poweredby:active {
+  opacity: 1;
+}
+
+.modal.email-sent {
+  width: 300px;
+}
+
+.modal.email-sent .body {
+  @include padding-left(68px);
+}
+
+.modal.email-sent .body:before {
+  @include icon;
+  display: block;
+  position: absolute;
+  top: 24px;
+  @include left(24px);
+  content: 'mail';
+  font-size: 30px;
+  color: $linkColor;
+}

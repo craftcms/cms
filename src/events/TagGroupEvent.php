@@ -14,13 +14,10 @@ use yii\base\Event;
  * Tag group event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class TagGroupEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var TagGroup|null The tag group model associated with the event.
      */

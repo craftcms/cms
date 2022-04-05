@@ -1,45 +1,36 @@
-{%- set labelId = (labelId is defined ? labelId : (id is defined ? id~'-label' : null)) %}
-{%- set fieldId = (fieldId is defined ? fieldId : (id is defined ? id~'-field' : null)) %}
-{%- set label = (label is defined and label != '__blank__' ? label : null) %}
-{%- set siteId = ((craft.app.getIsMultiSite() and siteId is defined) ? siteId : null) %}
-{%- set site = (siteId ? craft.app.sites.getSiteById(siteId) : null) %}
-{%- set instructions = (instructions is defined ? instructions : null) %}
-{%- set tip = (tip is defined ? tip : null) %}
-{%- set warning = (warning is defined ? warning : null) %}
-{%- set orientation = (site ? craft.app.i18n.getLocaleById(site.language) : craft.app.locale).getOrientation() %}
-{%- set translatable = translatable ?? (site is not same as(null)) %}
-{%- set errors = (errors is defined ? errors : null) -%}
-{%- set fieldClass = [
-    'field',
-    (first is defined and first ? 'first' : null),
-    (errors ? 'has-errors' : null),
-    (fieldClass is defined and fieldClass ? fieldClass : null)
-]|filter|join(' ') %}
+{%- set id = id ?? "field#{random()}" %}
+{%- set instructionsId = instructionsId ?? "#{id}-instructions" %}
+{%- set tipId = tipId ?? "#{id}-tip" %}
+{%- set warningId = warningId ?? "#{id}-warning" %}
+{%- set errorsId = errorsId ?? "#{id}-errors" %}
 
-<div class="{{ fieldClass }}"
-        {%- if fieldId %} id="{{ fieldId }}"{% endif %}
-        {%- if block('attr') is defined %} {{ block('attr') }}{% endif %}>
-    {% if label or instructions %}
-        <div class="heading">
-            {% if label %}
-                <label {% if labelId %} id="{{ labelId }}"{% endif %}{% if required is defined and required %} class="required"{% endif %}{% if id is defined and id %} for="{{ id }}"{% endif %}>
-                    {{- label|raw -}}
-                    {%- if translatable %} <span class="extralight" data-icon="language" title="{{ translationDescription ?? 'This field is translatable.'|t('app') }}"></span>{% endif -%}
-                </label>
-            {% endif %}
-            {% if instructions %}
-                <div class="instructions">{{ instructions|md('gfm-comment')|replace('/&amp;(\\w+);/', '&$1;')|raw }}</div>
-            {% endif %}
-        </div>
-    {% endif %}
-    <div class="input {{ orientation }}{% if errors %} errors{% endif %}">
-        {{ input|raw }}
-    </div>
-    {% if tip %}
-        <p class="notice">{{ tip|md(inlineOnly=true)|replace('/&amp;(\\w+);/', '&$1;')|raw }}</p>
-    {% endif %}
-    {% if warning %}
-        <p class="warning">{{ warning|md(inlineOnly=true)|replace('/&amp;(\\w+);/', '&$1;')|raw }}</p>
-    {% endif %}
-    {% include "_includes/forms/errorList" with { errors: errors } %}
-</div>
+{%- set fieldLabel = fieldLabel ?? label ?? block('label') ?? null %}
+{%- set instructions = instructions ?? block('instructions') ?? null %}
+{%- set tip = tip ?? block('tip') ?? null %}
+{%- set warning = warning ?? block('warning') ?? null %}
+{%- set errors = errors ?? null %}
+
+{%- set describedBy = describedBy ?? [
+    errors ? errorsId : null,
+    instructions ? instructionsId : null,
+    tip ? tipId : null,
+    warning ? warningId : null,
+]|filter|join(' ') ?: null %}
+
+{%- if block('heading') is defined %}
+    {#- Extract whatever HTML comes before and after parent() #}
+    {%- set heading %}{% block heading %}<!-- HEADING -->{% endblock %}{% endset %}
+    {%- set headingParts = heading|split('<!-- HEADING -->', 2) %}
+    {%- set headingPrefix = headingParts[0] ?? null %}
+    {%- set headingSuffix = headingParts[1] ?? null %}
+{%- endif %}
+
+{%- if block('attr') is defined %}
+    {%- set fieldAttributes = (fieldAttributes ?? {})|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
+{%- endif %}
+
+{%- if block('input') is defined %}
+    {%- set input %}{% block input %}{{ input|raw }}{% endblock %}{% endset %}
+{%- endif %}
+
+{{ craft.cp.field(input, _context)|raw }}

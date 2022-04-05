@@ -7,366 +7,221 @@
 
 namespace craft\web\assets\pluginstore;
 
-use Craft;
-use craft\helpers\Json;
-use craft\helpers\UrlHelper;
 use craft\web\AssetBundle;
 use craft\web\assets\cp\CpAsset;
 use craft\web\assets\vue\VueAsset;
-use yii\caching\TagDependency;
-use yii\web\NotFoundHttpException;
+use craft\web\View;
 
 /**
  * Asset bundle for the Plugin Store page
  */
 class PluginStoreAsset extends AssetBundle
 {
-    // Constants
-    // =========================================================================
-
-    const CACHE_KEY = 'pluginstore';
-    const CACHE_TAG = 'pluginstore';
-
-    const DEVMODE_CACHE_DURATION = 1;
-
-    // Properties
-    // =========================================================================
-
-    /**
-     * @var array
-     */
-    private $files;
-
-    /**
-     * @var bool
-     */
-    private $isHot = false;
-
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
     public function init()
     {
-        $this->sourcePath = __DIR__ . '/dist/';
+        $this->sourcePath = __DIR__ . '/dist';
+
+        $this->css = [
+            'css/app.css',
+        ];
+
+        $this->js = [
+            'js/app.js',
+        ];
 
         $this->depends = [
             CpAsset::class,
             VueAsset::class,
         ];
 
-        $pluginStoreService = Craft::$app->getPluginStore();
-
-        $config = [
-            'devServer' => [
-                'manifestPath' => $pluginStoreService->devServerManifestPath,
-                'publicPath' => $pluginStoreService->devServerPublicPath,
-            ],
-            'server' => [
-                'manifestPath' => __DIR__ . '/dist/',
-                'publicPath' => '',
-            ],
-            'manifest' => [
-                'legacy' => 'manifest.json',
-                'modern' => 'manifest.json',
-            ]
-        ];
-
-        $this->css = [
-            $this->getModule($config, 'chunk-vendors.css'),
-            $this->getModule($config, 'app.css'),
-        ];
-
-        $this->js = [
-            $this->getModule($config, 'chunk-vendors.js'),
-            $this->getModule($config, 'app.js'),
-        ];
-
         parent::init();
     }
 
     /**
-     * Return the URI to a module
-     *
-     * @param array $config
-     * @param string $moduleName
-     * @param string $type
-     * @param bool $soft
-     *
-     * @return null|string
-     * @throws NotFoundHttpException
-     * @throws \yii\base\Exception
+     * @inheritdoc
      */
-    private function getModule(array $config, string $moduleName, string $type = 'modern', bool $soft = true)
+    public function registerAssetFiles($view)
     {
-        // Get the module entry
-        $module = $this->getModuleEntry($config, $moduleName, $type, $soft);
-        if ($module !== null) {
-            $prefix = $this->isHot
-                ? $config['devServer']['publicPath']
-                : $config['server']['publicPath'];
-            // If the module isn't a full URL, prefix it
-            if (!UrlHelper::isAbsoluteUrl($module)) {
-                $module = $this->combinePaths($prefix, $module);
-                $module = strpos($module, '/') === 0 ? substr($module, 1) : $module;
-            }
+        parent::registerAssetFiles($view);
+
+        if ($view instanceof View) {
+            $view->registerTranslations('app', [
+                'Abandoned',
+                'Active Trials',
+                'Active installs',
+                'Active trials added to the cart.',
+                'Add all to cart',
+                'Add to cart',
+                'Added to cart',
+                'Address Line 1',
+                'Address Line 2',
+                'Already in your cart',
+                'Ascending',
+                'Back',
+                'Billing',
+                'Business Name',
+                'Business Tax ID',
+                'Buy later',
+                'Buy now for {price}',
+                'Buy now',
+                'CVC',
+                'Card number',
+                'Cart',
+                'Categories',
+                'Changelog',
+                'Checkout',
+                'City',
+                'Cloud Storage Integration',
+                'Community Support (Slack, Stack Exchange)',
+                'Compatibility',
+                'Connect to your Craft ID',
+                'Contact',
+                'Content Modeling',
+                'Continue as guest',
+                'Continue',
+                'Copy the package’s name for this plugin.',
+                'Couldn’t add all items to the cart.',
+                'Couldn’t load CMS editions.',
+                'Couldn’t load active trials.',
+                'Coupon Code',
+                'Critical',
+                'Descending',
+                'Description',
+                'Developer Support',
+                'Documentation',
+                'Features',
+                'First Name',
+                'For when you’re building a website for yourself or a friend.',
+                'For when you’re building something professionally for a client or team.',
+                'Free',
+                'Go to Dashboard',
+                'Information',
+                'Install',
+                'Installed as a trial',
+                'Installed',
+                'Item',
+                'Items in your cart',
+                'Last Name',
+                'Last Update',
+                'Last update',
+                'Less',
+                'License',
+                'Licensed',
+                'Loading Plugin Store…',
+                'MM / YY',
+                'Manage plugins',
+                'More',
+                'Multi-site Multi-lingual',
+                'Name',
+                'No results.',
+                'Only up to {version} is compatible with your version of Craft.',
+                'Package Name',
+                'Page not found.',
+                'Pay',
+                'Payment Method',
+                'Payment',
+                'Plugin Store',
+                'Popularity',
+                'Price includes 1 year of updates.',
+                'Pro Rate Discount',
+                'Reactivate',
+                'Remove',
+                'Renewal price',
+                'Report an issue',
+                'Save as my new credit card',
+                'Screenshots',
+                'Search plugins',
+                'Security & Bug Fixes',
+                'See all',
+                'Showing results for “{searchQuery}”',
+                'Staff Picks',
+                'Subtotal',
+                'Support',
+                'System Branding',
+                'Thank You!',
+                'The Plugin Store is not available, please try again later.',
+                'The developer recommends using <a href="{url}">{name}</a> instead.',
+                'There was a problem processing your credit card.',
+                'This license is tied to another Craft install. Purchase a license for this install.',
+                'This license is tied to another Craft install. Visit {accountLink} to detach it, or buy a new license.',
+                'This plugin is no longer maintained.',
+                'This plugin isn’t compatible with your version of Craft.',
+                'This plugin requires PHP {v1}, but your composer.json file is currently set to {v2}.',
+                'This plugin requires PHP {v1}, but your environment is currently running {v2}.',
+                'Total Price',
+                'Total',
+                'Try for free',
+                'Try',
+                'Try',
+                'Updates until {date} ({sign}{price})',
+                'Updates until {date}',
+                'Updates',
+                'Upgrade Craft CMS',
+                'Use a new credit card',
+                'Use card {cardDetails}',
+                'Use your Craft ID',
+                'User Accounts',
+                'Version {version}',
+                'Version',
+                'Website',
+                'Your are currently using the {currentEdition} edition, and your licensed edition is {licensedEdition}.',
+                'Your license key is invalid.',
+                'Your order has been processed successfully.',
+                'Zip Code',
+                'stripe_error_approve_with_id',
+                'stripe_error_authentication_required',
+                'stripe_error_call_issuer',
+                'stripe_error_card_not_supported',
+                'stripe_error_card_velocity_exceeded',
+                'stripe_error_currency_not_supported',
+                'stripe_error_do_not_honor',
+                'stripe_error_do_not_try_again',
+                'stripe_error_duplicate_transaction',
+                'stripe_error_expired_card',
+                'stripe_error_fraudulent',
+                'stripe_error_generic_decline',
+                'stripe_error_incorrect_cvc',
+                'stripe_error_incorrect_number',
+                'stripe_error_incorrect_pin',
+                'stripe_error_incorrect_zip',
+                'stripe_error_insufficient_funds',
+                'stripe_error_invalid_account',
+                'stripe_error_invalid_amount',
+                'stripe_error_invalid_cvc',
+                'stripe_error_invalid_expiry_month',
+                'stripe_error_invalid_expiry_year',
+                'stripe_error_invalid_number',
+                'stripe_error_invalid_pin',
+                'stripe_error_issuer_not_available',
+                'stripe_error_lost_card',
+                'stripe_error_merchant_blacklist',
+                'stripe_error_new_account_information_available',
+                'stripe_error_no_action_taken',
+                'stripe_error_not_permitted',
+                'stripe_error_offline_pin_required',
+                'stripe_error_online_or_offline_pin_required',
+                'stripe_error_pickup_card',
+                'stripe_error_pin_try_exceeded',
+                'stripe_error_processing_error',
+                'stripe_error_reenter_transaction',
+                'stripe_error_restricted_card',
+                'stripe_error_revocation_of_all_authorizations',
+                'stripe_error_revocation_of_authorization',
+                'stripe_error_security_violation',
+                'stripe_error_service_not_allowed',
+                'stripe_error_stolen_card',
+                'stripe_error_stop_payment_order',
+                'stripe_error_testmode_decline',
+                'stripe_error_transaction_not_allowed',
+                'stripe_error_try_again_later',
+                'stripe_error_withdrawal_count_limit_exceeded',
+                '{price} plus {renewalPrice}/year for updates',
+                '{price}/year',
+                '{renewalPrice}/year per site for updates after that.',
+            ]);
         }
-
-        return $module;
-    }
-
-    /**
-     * Return a module's raw entry from the manifest
-     *
-     * @param array $config
-     * @param string $moduleName
-     * @param string $type
-     * @param bool $soft
-     *
-     * @return null|string
-     * @throws NotFoundHttpException
-     * @throws \yii\base\Exception
-     */
-    private function getModuleEntry(array $config, string $moduleName, string $type = 'modern', bool $soft = false)
-    {
-        $module = null;
-        // Get the manifest file
-        $manifest = $this->getManifestFile($config, $type);
-        if ($manifest !== null) {
-            // Make sure it exists in the manifest
-            if (empty($manifest[$moduleName])) {
-                $this->reportError(Craft::t(
-                    'app',
-                    'Module does not exist in the manifest: {moduleName}',
-                    ['moduleName' => $moduleName]
-                ), $soft);
-
-                return null;
-            }
-            $module = $manifest[$moduleName];
-        }
-
-        return $module;
-    }
-
-    /**
-     * Return a JSON-decoded manifest file
-     *
-     * @param array $config
-     * @param string $type
-     *
-     * @return null|array
-     * @throws \yii\base\Exception
-     */
-    private function getManifestFile($config, $type = 'modern')
-    {
-        $pluginStoreService = Craft::$app->getPluginStore();
-        $useDevServer = $pluginStoreService->useDevServer;
-
-        $devMode = Craft::$app->getConfig()->getGeneral()->devMode;
-        $this->isHot = ($devMode && $useDevServer);
-        $manifest = null;
-
-        while ($manifest === null) {
-            $manifestPath = $this->isHot
-                ? $config['devServer']['manifestPath']
-                : $config['server']['manifestPath'];
-
-            $path = $this->combinePaths($manifestPath, $config['manifest'][$type]);
-            $manifest = $this->getJsonFile($path);
-
-            // If the manifest isn't found, and it was hot, fall back on non-hot
-            if ($manifest === null) {
-                if ($this->isHot) {
-                    // Try again, but not with home module replacement
-                    $this->isHot = false;
-                } else {
-                    // Give up and return null
-                    return null;
-                }
-            }
-        }
-
-        return $manifest;
-    }
-
-    /**
-     * Return the contents of a JSON file from a URI path
-     *
-     * @param string $path
-     *
-     * @return null|array
-     * @throws \yii\base\Exception
-     */
-    private function getJsonFile(string $path)
-    {
-        return $this->getFileFromUri($path, [$this, 'jsonFileDecode']);
-    }
-
-    /**
-     * Return the contents of a file from a URI path
-     *
-     * @param string $path
-     * @param callable|null $callback
-     * @param bool $pathOnly
-     *
-     * @return null|mixed
-     * @throws \yii\base\Exception
-     */
-    private function getFileFromUri(string $path, callable $callback = null, bool $pathOnly = false)
-    {
-        // Resolve any aliases
-        $alias = Craft::getAlias($path, false);
-        if ($alias) {
-            $path = $alias;
-        }
-        // If we only want the file via path, make sure it exists
-        if ($pathOnly && !is_file($path)) {
-            Craft::warning(Craft::t(
-                'app',
-                'File does not exist: {path}',
-                ['path' => $path]
-            ), __METHOD__);
-
-            return '';
-        }
-        // Make sure it's a full URL
-        if (!UrlHelper::isAbsoluteUrl($path) && !is_file($path)) {
-            try {
-                $path = UrlHelper::siteUrl($path);
-            } catch (\Throwable $e) {
-                Craft::error($e->getMessage(), __METHOD__);
-            }
-        }
-
-        return $this->getFileContents($path, $callback);
-    }
-
-    /**
-     * Return the contents of a file from the passed in path
-     *
-     * @param string   $path
-     * @param callable $callback
-     *
-     * @return null|mixed
-     */
-    private function getFileContents(string $path, callable $callback = null)
-    {
-        // Return the memoized manifest if it exists
-        if (!empty($this->files[$path])) {
-            return $this->files[$path];
-        }
-        // Create the dependency tags
-        $dependency = new TagDependency([
-            'tags' => [
-                self::CACHE_TAG,
-                self::CACHE_TAG.$path,
-            ],
-        ]);
-        // Set the cache duration based on devMode
-        $cacheDuration = Craft::$app->getConfig()->getGeneral()->devMode
-            ? self::DEVMODE_CACHE_DURATION
-            : null;
-        // Get the result from the cache, or parse the file
-        $cache = Craft::$app->getCache();
-        $file = $cache->getOrSet(
-            self::CACHE_KEY.$path,
-            function () use ($path, $callback) {
-                $result = null;
-                if (UrlHelper::isAbsoluteUrl($path)) {
-                    /**
-                     * Silly work-around for what appears to be a file_get_contents bug with https
-                     * http://stackoverflow.com/questions/10524748/why-im-getting-500-error-when-using-file-get-contents-but-works-in-a-browser
-                     */
-                    $opts = [
-                        'ssl' => [
-                            'verify_peer' => false,
-                            'verify_peer_name' => false,
-                        ],
-                        'http' => [
-                            'ignore_errors' => true,
-                            'header' => "User-Agent:Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.13) Gecko/20080311 Firefox/2.0.0.13\r\n",
-                        ],
-                    ];
-                    $context = stream_context_create($opts);
-                    $contents = @file_get_contents($path, false, $context);
-                } else {
-                    $contents = @file_get_contents($path);
-                }
-                if ($contents) {
-                    $result = $contents;
-                    if ($callback) {
-                        $result = $callback($result);
-                    }
-                }
-
-                return $result;
-            },
-            $cacheDuration,
-            $dependency
-        );
-        $this->files[$path] = $file;
-
-        return $file;
-    }
-
-    /**
-     * Combined the passed in paths, whether file system or URL
-     *
-     * @param string ...$paths
-     *
-     * @return string
-     */
-    private static function combinePaths(string ...$paths): string
-    {
-        $last_key = \count($paths) - 1;
-        array_walk($paths, function (&$val, $key) use ($last_key) {
-            switch ($key) {
-                case 0:
-                    $val = rtrim($val, '/ ');
-                    break;
-                case $last_key:
-                    $val = ltrim($val, '/ ');
-                    break;
-                default:
-                    $val = trim($val, '/ ');
-                    break;
-            }
-        });
-
-        $first = array_shift($paths);
-        $last = array_pop($paths);
-        $paths = array_filter($paths);
-        array_unshift($paths, $first);
-        $paths[] = $last;
-
-        return implode('/', $paths);
-    }
-
-    /**
-     * @param string $error
-     * @param bool   $soft
-     *
-     * @throws NotFoundHttpException
-     */
-    private function reportError(string $error, $soft = false)
-    {
-        $devMode = Craft::$app->getConfig()->getGeneral()->devMode;
-        if ($devMode && !$soft) {
-            throw new NotFoundHttpException($error);
-        }
-        Craft::error($error, __METHOD__);
-    }
-
-    /**
-     * @param $string
-     *
-     * @return mixed
-     */
-    private function jsonFileDecode($string)
-    {
-        return Json::decodeIfJson($string);
     }
 }

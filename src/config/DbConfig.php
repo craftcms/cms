@@ -7,6 +7,9 @@
 
 namespace craft\config;
 
+use Craft;
+use craft\db\Connection;
+use craft\helpers\Db;
 use craft\helpers\StringHelper;
 use yii\base\BaseObject;
 use yii\base\InvalidConfigException;
@@ -15,26 +18,26 @@ use yii\base\InvalidConfigException;
  * DB config class
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class DbConfig extends BaseObject
 {
-    // Constants
-    // =========================================================================
-
+    /**
+     * @deprecated in 3.4.0. Use [[Connection::DRIVER_MYSQL]] instead.
+     */
     const DRIVER_MYSQL = 'mysql';
-    const DRIVER_PGSQL = 'pgsql';
 
-    // Properties
-    // =========================================================================
+    /**
+     * @deprecated in 3.4.0. Use [[Connection::DRIVER_PGSQL]] instead.
+     */
+    const DRIVER_PGSQL = 'pgsql';
 
     /**
      * @var array An array of key => value pairs of PDO attributes to pass into the PDO constructor.
      *
-     * For example, when using the MySQL PDO driver (http://php.net/manual/en/ref.pdo-mysql.php),
-     * if you wanted to enable a SSL database connection (assuming SSL is enabled in MySQL
-     * (https://dev.mysql.com/doc/refman/5.5/en/using-secure-connections.html) and `'user'`
-     * can connect via SSL, you'd set these:
+     * For example, when using the [MySQL PDO driver](https://php.net/manual/en/ref.pdo-mysql.php), if you wanted to enable a SSL database connection
+     * (assuming [SSL is enabled in MySQL](https://dev.mysql.com/doc/mysql-secure-deployment-guide/5.7/en/secure-deployment-secure-connections.html) and `'user'` can connect via SSL,
+     * you’d set these:
      *
      * ```php
      * [
@@ -45,149 +48,147 @@ class DbConfig extends BaseObject
      * ```
      */
     public $attributes = [];
+
     /**
      * @var string The charset to use when creating tables.
+     *
+     * ::: tip
+     * You can change the character set and collation across all existing database tables using this terminal command:
+     *
+     * ```bash
+     * > php craft db/convert-charset
+     * ```
+     * :::
      */
     public $charset = 'utf8';
+
     /**
-     * @var string The name of the database to select.
-     */
-    public $database = '';
-    /**
-     * @var string The database driver to use. Either 'mysql' for MySQL or 'pgsql' for PostgreSQL.
-     */
-    public $driver = self::DRIVER_MYSQL;
-    /**
-     * @var string If you want to manually specify your PDO DSN connection string you can do so here.
+     * @var string|null The collation to use when creating tables.
      *
-     * - MySQL: http://php.net/manual/en/ref.pdo-mysql.connection.php
-     * - PostgreSQL: http://php.net/manual/en/ref.pdo-pgsql.connection.php
-     * If you set this, then the [[server]], [[port]], [[user]], [[password]], [[database]],
-     * [[driver]] and [[unixSocket]] config settings will be ignored.
+     * This is only used by MySQL. If null, the [[$charset|charset’s]] default collation will be used.
+     *
+     * | Charset   | Default collation    |
+     * | --------- | -------------------- |
+     * | `utf8`    | `utf8_general_ci`    |
+     * | `utf8mb4` | `utf8mb4_0900_ai_ci` |
+     *
+     * ::: tip
+     * You can change the character set and collation across all existing database tables using this terminal command:
+     *
+     * ```bash
+     * > php craft db/convert-charset
+     * ```
+     * :::
+     *
+     * @since 3.6.4
+     */
+    public $collation;
+
+    /**
+     * @var string|null The Data Source Name (“DSN”) that tells Craft how to connect to the database.
+     *
+     * DSNs should begin with a driver prefix (`mysql:` or `pgsql:`), followed by driver-specific parameters.
+     * For example, `mysql:host=127.0.0.1;port=3306;dbname=acme_corp`.
+     *
+     * - MySQL parameters: <https://php.net/manual/en/ref.pdo-mysql.connection.php>
+     * - PostgreSQL parameters: <https://php.net/manual/en/ref.pdo-pgsql.connection.php>
      */
     public $dsn;
+
     /**
      * @var string The database password to connect with.
      */
     public $password = '';
+
     /**
-     * @var int The database server port. Defaults to 3306 for MySQL and 5432 for PostgreSQL.
-     */
-    public $port;
-    /**
-     * @var string The database schema to use (PostgreSQL only).
+     * @var string The schema that Postgres is configured to use by default (PostgreSQL only).
+     *
+     * ::: tip
+     * To force Craft to use the specified schema regardless of PostgreSQL’s `search_path` setting, you must enable
+     * the [[setSchemaOnConnect]] setting.
+     * :::
+     *
      * @see https://www.postgresql.org/docs/8.2/static/ddl-schemas.html
      */
     public $schema = 'public';
+
     /**
-     * @var string The database server name or IP address. Usually 'localhost' or '127.0.0.1'.
+     * @var bool Whether the [[schema]] should be explicitly used for database queries (PostgreSQL only).
+     *
+     * ::: warning
+     * This will cause an extra `SET search_path` SQL query to be executed per database connection. Ideally,
+     * PostgreSQL’s `search_path` setting should be configured to prioritize the desired schema.
+     * :::
+     *
+     * @since 3.7.27
      */
-    public $server = 'localhost';
+    public $setSchemaOnConnect = false;
+
     /**
-     * @var string If you're sharing Craft installs in a single database (MySQL) or a single
-     * database and using a shared schema (PostgreSQL), then you can set a table
-     * prefix here to avoid table naming conflicts per install. This can be no more than 5
-     * characters, and must be all lowercase.
+     * @var string If you’re sharing Craft installs in a single database (MySQL) or a single database and using a shared schema (PostgreSQL),
+     * you can set a table prefix here to avoid per-install table naming conflicts. This can be no more than 5 characters, and must be all lowercase.
      */
     public $tablePrefix = '';
-    /**
-     * @var string|null MySQL only. If this is set, then the CLI connection string (used for yiic) will
-     * connect to the Unix socket, instead of the server and port. If this is
-     * specified, then 'server' and 'port' settings are ignored.
-     */
-    public $unixSocket;
-    /**
-     * @var string|null The database connection URL, if one was provided by your hosting environment.
-     *
-     * If this is set, the values for [[driver]], [[user]], [[database]], [[server]], [[port]], and [[database]]
-     * will be extracted from it.
-     */
-    public $url;
+
     /**
      * @var string The database username to connect with.
      */
     public $user = 'root';
 
-    // Public Methods
-    // =========================================================================
+    /**
+     * @var bool Whether batched queries should be executed on a separate, unbuffered database connection.
+     *
+     * This setting only applies to MySQL. It can be enabled when working with high volume content, to prevent
+     * PHP from running out of memory when querying too much data at once. (See
+     * <https://www.yiiframework.com/doc/guide/2.0/en/db-query-builder#batch-query-mysql> for an explanation
+     * of MySQL’s batch query limitations.)
+     *
+     * @since 3.7.0
+     */
+    public $useUnbufferedConnections = false;
+
+    /**
+     * @var string|null The database connection URL, if one was provided by your hosting environment.
+     *
+     * If this is set, the values for [[driver]], [[user]], [[database]], [[server]], [[port]], and [[database]] will be extracted from it.
+     */
+    public $url;
+
+    /**
+     * @var string|null The database driver to use. Either `mysql` for MySQL or `pgsql` for PostgreSQL.
+     */
+    public $driver;
+
+    /**
+     * @var string|null The database server name or IP address. Usually `localhost` or `127.0.0.1`.
+     */
+    public $server;
+
+    /**
+     * @var int|null The database server port. Defaults to 3306 for MySQL and 5432 for PostgreSQL.
+     */
+    public $port;
+
+    /**
+     * @var string|null MySQL only. If this is set, the CLI connection string (used for yiic) will connect to the Unix socket instead of
+     * the server and port. If this is specified, then `server` and `port` settings are ignored.
+     */
+    public $unixSocket;
+
+    /**
+     * @var string|null The name of the database to select.
+     */
+    public $database;
 
     /**
      * @inheritdoc
+     * @throws InvalidConfigException
      */
     public function init()
     {
-        // If the DSN is already set, parse it
-        if ($this->dsn) {
-            if (($pos = strpos($this->dsn, ':')) === false) {
-                throw new InvalidConfigException('Invalid DSN: ' . $this->dsn);
-            }
-            $this->driver = substr($this->dsn, 0, $pos);
-            $params = substr($this->dsn, $pos + 1);
-            foreach (explode(';', $params) as $param) {
-                if (($pos = strpos($param, '=')) === false) {
-                    throw new InvalidConfigException('Invalid DSN param: ' . $param);
-                }
-                $paramName = substr($param, 0, $pos);
-                $paramValue = substr($params, $pos + 1);
-                switch ($paramName) {
-                    case 'host':
-                        $this->server = $paramValue;
-                        break;
-                    case 'port':
-                        $this->port = $paramValue;
-                        break;
-                    case 'dbname':
-                        $this->database = $paramValue;
-                        break;
-                    case 'unix_socket':
-                        $this->unixSocket = $paramValue;
-                        break;
-                    case 'charset':
-                        $this->charset = $paramValue;
-                        break;
-                    case 'user': // PG only
-                        $this->user = $paramValue;
-                        break;
-                    case 'password': // PG only
-                        $this->password = $paramValue;
-                        break;
-                    default:
-                        throw new InvalidConfigException('Unsupported DSN param: ' . $paramName);
-                }
-            }
-        }
-
         // If $url was set, parse it to set other properties
         if ($this->url) {
-            $url = parse_url($this->url);
-            if (isset($url['scheme'])) {
-                $scheme = strtolower($url['scheme']);
-                if (in_array($scheme, [self::DRIVER_PGSQL, 'postgres', 'postgresql'], true)) {
-                    $this->driver = self::DRIVER_PGSQL;
-                } else {
-                    $this->driver = self::DRIVER_MYSQL;
-                }
-            }
-            if (isset($url['user'])) {
-                $this->user = $url['user'];
-            }
-            if (isset($url['pass'])) {
-                $this->password = $url['pass'];
-            }
-            if (isset($url['host'])) {
-                $this->server = $url['host'];
-            }
-            if (isset($url['port'])) {
-                $this->port = $url['port'];
-            }
-            if (isset($url['path'])) {
-                $this->database = trim($url['path'], '/');
-            }
-        }
-
-        // Validate driver
-        if (!in_array($this->driver, [self::DRIVER_MYSQL, self::DRIVER_PGSQL], true)) {
-            throw new InvalidConfigException('Unsupported DB driver value: ' . $this->driver);
+            Craft::configure($this, Db::url2config($this->url));
         }
 
         // Validate tablePrefix
@@ -198,41 +199,55 @@ class DbConfig extends BaseObject
             }
         }
 
-        // Lowercase server & unixSocket
-        $this->server = strtolower($this->server);
-        if ($this->unixSocket !== null) {
-            $this->unixSocket = strtolower($this->unixSocket);
+        // If we don't have a DSN yet, create one from the deprecated settings
+        if ($this->dsn === null) {
+            $this->_updateDsn();
         }
-
-        // Set the port
-        if ($this->port === null || $this->port === '') {
-            switch ($this->driver) {
-                case self::DRIVER_MYSQL:
-                    $this->port = 3306;
-                    break;
-                case self::DRIVER_PGSQL:
-                    $this->port = 5432;
-                    break;
-            }
-        } else {
-            $this->port = (int)$this->port;
-        }
-
-        // Set the DSN
-        $this->updateDsn();
     }
 
     /**
      * Updates the DSN string based on the config setting values.
+     *
+     * @throws InvalidConfigException if [[driver]] isn’t set to `mysql` or `pgsql`.
+     * @deprecated in 3.4.0.
      */
     public function updateDsn()
     {
-        if (!$this->database) {
-            $this->dsn = null;
-        } else if ($this->driver === self::DRIVER_MYSQL && $this->unixSocket) {
-            $this->dsn = "{$this->driver}:unix_socket={$this->unixSocket};dbname={$this->database};";
-        } else {
-            $this->dsn = "{$this->driver}:host={$this->server};dbname={$this->database};port={$this->port};";
+        $this->_updateDsn();
+    }
+
+    /**
+     * Updates the DSN string based on the config setting values.
+     *
+     * @throws InvalidConfigException
+     */
+    private function _updateDsn()
+    {
+        if (!$this->driver) {
+            $this->driver = Connection::DRIVER_MYSQL;
         }
+
+        if (!in_array($this->driver, [Connection::DRIVER_MYSQL, Connection::DRIVER_PGSQL], true)) {
+            throw new InvalidConfigException('Unsupported DB driver value: ' . $this->driver);
+        }
+
+        if ($this->driver === Connection::DRIVER_MYSQL && $this->unixSocket) {
+            $this->unixSocket = strtolower($this->unixSocket);
+            $this->dsn = "{$this->driver}:unix_socket={$this->unixSocket};dbname={$this->database}";
+            return;
+        }
+
+        $this->server = strtolower($this->server ?? '');
+        if ($this->port === null || $this->port === '') {
+            switch ($this->driver) {
+                case Connection::DRIVER_MYSQL:
+                    $this->port = 3306;
+                    break;
+                case Connection::DRIVER_PGSQL:
+                    $this->port = 5432;
+                    break;
+            }
+        }
+        $this->dsn = "{$this->driver}:host={$this->server};dbname={$this->database};port={$this->port}";
     }
 }

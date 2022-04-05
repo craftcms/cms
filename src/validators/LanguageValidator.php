@@ -17,25 +17,19 @@ use yii\validators\Validator;
  * Will validate that the given attribute is a valid site language.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class LanguageValidator extends Validator
 {
-    // Properties
-    // =========================================================================
-
     /**
-     * @param bool Whether to limit the value to the sites' languages
+     * @var bool Whether to limit the value to the sites' languages
      */
     public $onlySiteLanguages = true;
 
     /**
-     * @param string The error message to use if the value isn't allowed.
+     * @var string The error message to use if the value isn't allowed
      */
     public $notAllowed;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -53,9 +47,6 @@ class LanguageValidator extends Validator
         parent::init();
     }
 
-    // Protected Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -72,7 +63,7 @@ class LanguageValidator extends Validator
         $result = $this->validateValue($value);
         if (!empty($result)) {
             $this->addError($model, $attribute, $result[0], $result[1]);
-        } else if ($value !== $original) {
+        } elseif ($value !== $original) {
             // update the model with the normalized value
             try {
                 $model->$attribute = $value;

@@ -9,7 +9,7 @@ namespace craft\db;
 
 use Craft;
 use craft\helpers\Db;
-use yii\db\ActiveQuery;
+use yii\db\ActiveQuery as YiiActiveQuery;
 use yii2tech\ar\softdelete\SoftDeleteBehavior;
 
 /**
@@ -67,43 +67,48 @@ use yii2tech\ar\softdelete\SoftDeleteBehavior;
  * }
  * ```
  *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.1
- *
  * @property ActiveRecord $this
  * @property string|null $dateDeleted Date deleted
  * @mixin SoftDeleteBehavior
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 3.1.0
  */
 trait SoftDeleteTrait
 {
     /**
-     * @return ActiveQuery
+     * @return YiiActiveQuery
      */
     public static function find()
     {
         $query = parent::find();
 
         // todo: remove schema version condition after next beakpoint
-        $schemaVersion = Craft::$app->getProjectConfig()->get('system.schemaVersion');
+        $schemaVersion = Craft::$app->getInstalledSchemaVersion();
         if (version_compare($schemaVersion, '3.1.19', '>=')) {
-            $query->where(['dateDeleted' => null]);
+            if ($query instanceof ActiveQuery) {
+                $alias = $query->getAlias();
+                $column = "$alias.dateDeleted";
+            } else {
+                $column = 'dateDeleted';
+            }
+            $query->where([$column => null]);
         }
 
         return $query;
     }
 
     /**
-     * @return ActiveQuery
+     * @return YiiActiveQuery
      */
-    public static function findWithTrashed(): ActiveQuery
+    public static function findWithTrashed(): YiiActiveQuery
     {
         return static::find()->where([]);
     }
 
     /**
-     * @return ActiveQuery
+     * @return YiiActiveQuery
      */
-    public static function findTrashed(): ActiveQuery
+    public static function findTrashed(): YiiActiveQuery
     {
         return static::find()->where(['not', ['dateDeleted' => null]]);
     }
@@ -113,18 +118,17 @@ trait SoftDeleteTrait
      */
     public function behaviors()
     {
-        return [
-            'softDelete' => [
-                'class' => SoftDeleteBehavior::class,
-                'softDeleteAttributeValues' => [
-                    'dateDeleted' => function() {
-                        return Db::prepareDateForDb(new \DateTime());
-                    }
-                ],
-            ]
+        $behaviors = parent::behaviors();
+        $behaviors['softDelete'] = [
+            'class' => SoftDeleteBehavior::class,
+            'softDeleteAttributeValues' => [
+                'dateDeleted' => function() {
+                    return Db::prepareDateForDb(new \DateTime());
+                },
+            ],
         ];
+        return $behaviors;
     }
-
 
     /**
      * This method is called at the beginning of restoring a record.

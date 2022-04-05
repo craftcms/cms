@@ -22,7 +22,6 @@ const actions = {}
  * Mutations
  */
 const mutations = {
-
     updateSearchQuery(state, searchQuery) {
         state.searchQuery = searchQuery
     },
@@ -38,7 +37,6 @@ const mutations = {
     updateScreenshotModalImageKey(state, key) {
         state.screenshotModalImageKey = key
     },
-
 }
 
 export default {

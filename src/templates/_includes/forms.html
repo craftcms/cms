@@ -17,7 +17,12 @@
 
 
 {% macro password(config) %}
-    {% include "_includes/forms/text" with config|merge({ type: 'password' }) only %}
+    {% include "_includes/forms/password" with config only %}
+{% endmacro %}
+
+
+{% macro copytext(config) %}
+    {% include "_includes/forms/copytext" with config only %}
 {% endmacro %}
 
 
@@ -43,6 +48,11 @@
 
 {% macro select(config) %}
     {% include "_includes/forms/select" with config only %}
+{% endmacro %}
+
+
+{% macro selectize(config) %}
+    {% include "_includes/forms/selectize" with config only %}
 {% endmacro %}
 
 
@@ -101,153 +111,178 @@
 {% endmacro %}
 
 
+{% macro timeZone(config) %}
+    {% include "_includes/forms/timeZone" with config only %}
+{% endmacro %}
+
+
+{% macro booleanMenu(config) %}
+    {% include "_includes/forms/booleanMenu" with config only %}
+{% endmacro %}
+
+
+{% macro fieldLayoutDesigner(config) %}
+    {% include "_includes/forms/fieldLayoutDesigner" with config only %}
+{% endmacro %}
+
+
 {# Fields #}
 
 
 {% macro field(config, input) %}
-    {% include "_includes/forms/field" with config|merge({ input: input }) only %}
+    {{ craft.cp.field(input ?? '', config)|raw }}
 {% endmacro %}
 
 
 {% macro textField(config) %}
-    {% import _self as forms %}
-    {% if config.unit is defined %}
-        {% set input %}
-            <div class="flex">
-                <div class="textwrapper">{{ forms.text(config) }}</div>
-                <div class="label light">{{ config.unit }}</div>
-            </div>
-        {% endset %}
-    {% else %}
-        {% set input = forms.text(config) %}
-    {% endif %}
-    {{ forms.field(config, input) }}
+    {% set config = config|merge({id: config.id ?? "text#{random()}"}) %}
+    {{ _self.field(config, 'template:_includes/forms/text') }}
+{% endmacro %}
+
+
+{% macro copytextField(config) %}
+    {% set config = config|merge({id: config.id ?? "copytext#{random()}"}) %}
+    {{ _self.field(config, 'template:_includes/forms/copytext') }}
 {% endmacro %}
 
 
 {% macro passwordField(config) %}
-    {% import _self as forms %}
-    {{ forms.field(config, forms.password(config)) }}
+    {% set config = config|merge({id: config.id ?? "password#{random()}"}) %}
+    {{ _self.field(config, 'template:_includes/forms/password') }}
 {% endmacro %}
 
 
 {% macro dateField(config) %}
-    {% import _self as forms %}
-    {{ forms.field(config, forms.date(config)) }}
+    {% set config = config|merge({id: config.id ?? "date#{random()}"}) %}
+    {{ _self.field(config, 'template:_includes/forms/date') }}
 {% endmacro %}
 
 
 {% macro timeField(config) %}
-    {% import _self as forms %}
-    {{ forms.field(config, forms.time(config)) }}
+    {% set config = config|merge({id: config.id ?? "time#{random()}"}) %}
+    {{ _self.field(config, 'template:_includes/forms/time') }}
 {% endmacro %}
 
 
 {% macro colorField(config) %}
-    {% import _self as forms %}
-    {{ forms.field(config, forms.color(config)) }}
+    {% set config = config|merge({
+        fieldset: true,
+        id: config.id ?? "color#{random()}"
+    }) %}
+    {{ _self.field(config, 'template:_includes/forms/color') }}
 {% endmacro %}
 
 
 {% macro dateTimeField(config) %}
-    {% import _self as forms %}
-    {% set input %}
-        <div class="datetimewrapper">
-            {{ forms.date(config) }}
-            {{ forms.time(config) }}
-        </div>
-    {% endset %}
-    {{ forms.field(config, input) }}
+    {% set config = config|merge({
+        id: config.id ?? "datetime#{random()}",
+        fieldset: true,
+    }) %}
+    {{ _self.field(config, 'template:_includes/forms/datetime') }}
 {% endmacro %}
 
 
 {% macro textareaField(config) %}
-    {% import _self as forms %}
-    {{ forms.field(config, forms.textarea(config)) }}
+    {% set config = config|merge({id: config.id ?? "textarea#{random()}"}) %}
+    {{ _self.field(config, 'template:_includes/forms/textarea') }}
 {% endmacro %}
 
 
 {% macro selectField(config) %}
-    {% import _self as forms %}
-    {{ forms.field(config, forms.select(config)) }}
+    {% set config = config|merge({id: config.id ?? "select#{random()}"}) %}
+    {{ _self.field(config, 'template:_includes/forms/select') }}
+{% endmacro %}
+
+
+{% macro selectizeField(config) %}
+    {% set config = config|merge({id: config.id ?? "selectize#{random()}"}) %}
+    {% if (config.includeEnvVars ?? false) and config.tip is not defined and (config.value ?? '')[0:1] != '$' %}
+        {% set config = config|merge({
+            tip: (config.allowedEnvValues is not defined)
+            ? 'This can be set to an environment variable with a value of one of the selectable option values.'|t('app')
+            : 'This can be set to an environment variable.'|t('app'),
+        }) %}
+    {% endif %}
+    {{ _self.field(config, 'template:_includes/forms/selectize') }}
 {% endmacro %}
 
 
 {% macro multiselectField(config) %}
-    {% import _self as forms %}
-    {{ forms.field(config, forms.multiselect(config)) }}
+    {% set config = config|merge({id: config.id ?? "multiselect#{random()}"}) %}
+    {{ _self.field(config, 'template:_includes/forms/multiselect') }}
 {% endmacro %}
 
 
 {% macro checkboxField(config) %}
-    {% import _self as forms %}
-    {% if config.fieldLabel is defined %}
-        {{ forms.field(config|merge({label: config.fieldLabel}), forms.checkbox(config)) }}
-    {% else %}
-        {% set instructions = config.instructions ?? null -%}
-        {% set warning = config.warning ?? null -%}
-        <div class="field checkboxfield{% if config.first is defined and config.first %} first{% endif %}{% if instructions %} has-instructions{% endif %}"{% if config.id is defined and config.id %} id="{{ config.id }}-field"{% endif %}>
-            {{ forms.checkbox(config) }}
-            {% if instructions %}
-                <div class="instructions">{{ instructions|md }}</div>
-            {% endif %}
-            {% if warning %}
-                <p class="warning">{{ warning }}</p>
-            {% endif %}
-        </div>
-    {% endif %}
+    {# label --> checkboxLabel #}
+    {% set config = config|merge({
+        fieldset: config.fieldLabel is defined,
+        fieldClass: (config.fieldClass ?? [])|explodeClass|push('checkboxfield'),
+        id: config.id ?? "checkbox#{random()}",
+        checkboxLabel: config.label ?? null,
+        instructionsPosition: config.instructionsPosition ?? 'after',
+    })|withoutKey('label') %}
+    {{ _self.field(config, 'template:_includes/forms/checkbox') }}
 {% endmacro %}
 
 
 {% macro checkboxGroupField(config) %}
-    {% import _self as forms %}
-    {{ forms.field(config, forms.checkboxGroup(config)) }}
+    {% set config = config|merge({
+        fieldset: true,
+        id: config.id ?? "checkboxgroup#{random()}",
+    }) %}
+    {{ _self.field(config, 'template:_includes/forms/checkboxGroup') }}
 {% endmacro %}
 
 
 {% macro checkboxSelectField(config) %}
-    {% import _self as forms %}
-    {{ forms.field(config, forms.checkboxSelect(config)) }}
+    {% set config = config|merge({
+        fieldset: true,
+        id: config.id ?? "checkboxselect#{random()}",
+    }) %}
+    {{ _self.field(config, 'template:_includes/forms/checkboxSelect') }}
 {% endmacro %}
 
 
 {% macro radioGroupField(config) %}
-    {% import _self as forms %}
-    {{ forms.field(config, forms.radioGroup(config)) }}
+    {% set config = config|merge({
+        fieldset: true,
+        id: config.id ?? "radiogroup#{random()}",
+    }) %}
+    {{ _self.field(config, 'template:_includes/forms/radioGroup') }}
 {% endmacro %}
 
 
 {% macro fileField(config) %}
-    {% import _self as forms %}
-    {{ forms.field(config, forms.file(config)) }}
+    {% set config = config|merge({id: config.id ?? "file#{random()}"}) %}
+    {{ _self.field(config, 'template:_includes/forms/file') }}
 {% endmacro %}
 
 
 {% macro lightswitchField(config) %}
-    {% import _self as forms %}
-    {% if config.labelId is not defined or not config.labelId %}
-        {% set config = config|merge({ labelId: 'label'~random() }) %}
-    {% endif %}
-    {% set config = config|merge({ fieldClass: 'lightswitch-field ' ~ (config.fieldClass ?? '') }) %}
-    {{ forms.field(config, forms.lightswitch(config)) }}
+    {% set config = config|merge({
+        id: config.id ?? "lightswitch#{random()}",
+        fieldClass: (config.fieldClass ?? [])|explodeClass|push('lightswitch-field'),
+        fieldLabel: config.fieldLabel ?? config.label ?? null,
+    })|withoutKey('label') %}
+    {{ _self.field(config, 'template:_includes/forms/lightswitch') }}
 {% endmacro %}
 
 
 {% macro editableTableField(config) %}
-    {% import _self as forms %}
-    {% set input %}{% include "_includes/forms/editableTable" with config only %}{% endset %}
-    {{ forms.field(config, input) }}
+    {% set config = config|merge({id: config.id ?? "editabletable#{random()}"}) %}
+    {{ _self.field(config, 'template:_includes/forms/editableTable') }}
 {% endmacro %}
 
 
 {% macro elementSelectField(config) %}
-    {% import _self as forms %}
-    {{ forms.field(config, forms.elementSelect(config)) }}
+    {% set config = config|merge({id: config.id ?? "elementselect#{random()}"}) %}
+    {{ _self.field(config, 'template:_includes/forms/elementSelect') }}
 {% endmacro %}
 
 
 {% macro autosuggestField(config) %}
-    {% import _self as forms %}
+    {% set config = config|merge({id: config.id ?? "autosuggest#{random()}"}) %}
 
     {# Suggest an environment variable / alias? #}
     {% if (config.suggestEnvVars ?? false) %}
@@ -255,9 +290,12 @@
         {% if config.tip is not defined and value[0:1] not in ['$', '@'] %}
             {% set config = config|merge({
                 tip: ((config.suggestAliases ?? false)
-                    ? 'This can be set to an environment variable, or begin with an alias.'|t('app')
-                    : 'This can be set to an environment variable.'|t('app'))
-                    ~ ' <a href="https://docs.craftcms.com/v3/config/environments.html" class="go">' ~ 'Learn more'|t('app') ~ '</a>'
+                ? 'This can be set to an environment variable, or begin with an alias.'|t('app')
+                : 'This can be set to an environment variable.'|t('app')) ~ ' ' ~ tag('a', {
+                    href: 'https://craftcms.com/docs/3.x/config/#environmental-configuration',
+                    class: 'go',
+                    text: 'Learn more'|t('app'),
+                }),
             }) %}
         {% elseif config.warning is not defined and (value == '@web' or value[0:5] == '@web/') and craft.app.request.isWebAliasSetDynamically %}
             {% set config = config|merge({
@@ -266,20 +304,56 @@
         {% endif %}
     {% endif %}
 
-    {{ forms.field(config, forms.autosuggest(config)) }}
+    {{ _self.field(config, 'template:_includes/forms/autosuggest') }}
+{% endmacro %}
+
+
+{% macro timeZoneField(config) %}
+    {% set config = config|merge({id: config.id ?? "timezone#{random()}"}) %}
+    {% if (config.includeEnvVars ?? false) and config.tip is not defined and (config.value ?? '')[0:1] != '$' %}
+        {% set config = config|merge({
+            tip: 'This can be set to an environment variable with a value of a [supported time zone]({url}).'|t('app', {
+                url: 'https://www.php.net/manual/en/timezones.php',
+            }),
+        }) %}
+    {% endif %}
+    {{ _self.field(config, 'template:_includes/forms/timeZone') }}
+{% endmacro %}
+
+
+{% macro booleanMenuField(config) %}
+    {% set config = config|merge({id: config.id ?? "booleanmenu#{random()}"}) %}
+    {% if (config.includeEnvVars ?? false) and config.tip is not defined and (config.value ?? '')[0:1] != '$' %}
+        {% set config = config|merge({
+            tip: 'This can be set to an environment variable with a boolean value ({examples}).'|t('app', {
+                examples: '`yes`/`no`/`true`/`false`/`on`/`off`/`0`/`1`',
+            }),
+        }) %}
+    {% endif %}
+    {{ _self.field(config, 'template:_includes/forms/booleanMenu') }}
+{% endmacro %}
+
+
+{% macro fieldLayoutDesignerField(config) %}
+    {{ _self.field({
+        label: 'Field Layout'|t('app'),
+        errors: (config.fieldLayout ?? false) ? config.fieldLayout.getErrorSummary(true),
+    }|merge(config), 'template:_includes/forms/fieldLayoutDesigner') }}
 {% endmacro %}
 
 
 {# Other #}
 
 
-{% macro optionShortcutLabel(key, shift, alt) %}
-    {%- spaceless %}
-        {% switch craft.app.request.getClientOs() %}
-            {% case 'Mac' %}
-                <span class="shortcut">{{ (alt ? '⌥') ~ (shift ? '⇧') ~ '⌘' ~ key }}</span>
-            {% default %}
-                <span class="shortcut">{{ 'Ctrl+' ~ (alt ? 'Alt+') ~ (shift ? 'Shift+') ~ key }}</span>
-        {% endswitch %}
-    {% endspaceless -%}
-{% endmacro %}
+{% macro optionShortcutLabel(key, shift, alt) -%}
+    <span class="shortcut">{{ _self.shortcutText(key, shift, alt) }}</span>
+{%- endmacro %}
+
+{% macro shortcutText(key, shift, alt) %}
+    {%- switch craft.app.request.getClientOs() %}
+    {%- case 'Mac' %}
+        {{- (alt ? '⌥') ~ (shift ? '⇧') ~ '⌘' ~ key }}
+    {%- default %}
+        {{- 'Ctrl+' ~ (alt ? 'Alt+') ~ (shift ? 'Shift+') ~ key }}
+    {%- endswitch %}
+{%- endmacro %}

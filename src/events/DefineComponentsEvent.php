@@ -13,13 +13,11 @@ use yii\base\Event;
  * Define components event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
+ * @deprecated in 3.2.0
  */
 class DefineComponentsEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var array The component definitions
      */

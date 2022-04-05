@@ -17,13 +17,10 @@ use yii\base\InvalidConfigException;
  *
  * @property AssetTransform $transform
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class AssetTransformIndex extends Model
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var int|null ID
      */
@@ -65,6 +62,11 @@ class AssetTransformIndex extends Model
     public $inProgress = false;
 
     /**
+     * @var bool Transform generation failed
+     */
+    public $error = false;
+
+    /**
      * @var \DateTime|null Date indexed
      */
     public $dateIndexed;
@@ -89,9 +91,6 @@ class AssetTransformIndex extends Model
      */
     private $_transform;
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -105,9 +104,9 @@ class AssetTransformIndex extends Model
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['id', 'assetId', 'volumeId'], 'number', 'integerOnly' => true];
         $rules[] = [['dateIndexed', 'dateUpdated', 'dateCreated'], DateTimeValidator::class];
         return $rules;

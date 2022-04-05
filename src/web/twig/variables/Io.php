@@ -13,13 +13,10 @@ use craft\helpers\Assets;
  * Io variable.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Io
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Return max upload size in bytes.
      *

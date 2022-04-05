@@ -8,6 +8,7 @@
 namespace craft\web\twig\nodes;
 
 use Craft;
+use craft\helpers\Html;
 use Twig\Compiler;
 use Twig\Node\Node;
 
@@ -15,13 +16,10 @@ use Twig\Node\Node;
  * Class NamespaceNode
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class NamespaceNode extends Node
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -47,7 +45,9 @@ class NamespaceNode extends Node
             ->write("throw \$e;\n")
             ->outdent()
             ->write("}\n")
-            ->write('echo ' . Craft::class . "::\$app->getView()->namespaceInputs(ob_get_clean(), \$_namespace);\n")
+            ->write('echo ' . Html::class . '::namespaceHtml(ob_get_clean(), $_namespace, ')
+            ->raw($this->hasAttribute('withClasses') ? 'true' : 'false')
+            ->raw(");\n")
             ->write(Craft::class . "::\$app->getView()->setNamespace(\$_originalNamespace);\n")
             ->outdent()
             ->write("} else {\n")

@@ -15,13 +15,10 @@ use craft\web\assets\deprecationerrors\DeprecationErrorsAsset;
  * DeprecationErrors represents a DeprecationErrors dashboard widget.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class DeprecationErrors extends Utility
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -43,7 +40,7 @@ class DeprecationErrors extends Utility
      */
     public static function iconPath()
     {
-        return Craft::getAlias('@app/icons/bug.svg');
+        return Craft::getAlias('@appicons/bug.svg');
     }
 
     /**
@@ -64,7 +61,7 @@ class DeprecationErrors extends Utility
         $view->registerAssetBundle(DeprecationErrorsAsset::class);
 
         return $view->renderTemplate('_components/utilities/DeprecationErrors', [
-            'logs' => Craft::$app->getDeprecator()->getLogs()
+            'logs' => Craft::$app->getDeprecator()->getLogs(),
         ]);
     }
 }

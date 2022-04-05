@@ -15,13 +15,10 @@ use craft\base\Model;
  * @property bool $hasCritical Whether any of the updates have a critical release available
  * @property int $total The total number of available updates
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Updates extends Model
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var Update CMS update info
      */
@@ -31,9 +28,6 @@ class Updates extends Model
      * @var Update[] Plugin update info
      */
     public $plugins = [];
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

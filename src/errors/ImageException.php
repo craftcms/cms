@@ -13,7 +13,7 @@ use yii\base\UserException;
  * Class ImageException
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class ImageException extends UserException
 {
@@ -24,5 +24,4 @@ class ImageException extends UserException
     {
         return 'Image Exception';
     }
-
 }

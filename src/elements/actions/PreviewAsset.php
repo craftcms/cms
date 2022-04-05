@@ -15,20 +15,14 @@ use craft\helpers\Json;
  * View represents a View element action.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class PreviewAsset extends ElementAction
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null The trigger label
      */
     public $label;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -55,17 +49,14 @@ class PreviewAsset extends ElementAction
     {
         $type = Json::encode(static::class);
 
-        $js = <<<EOD
-(function()
-{
-    var trigger = new Craft.ElementActionTrigger({
+        $js = <<<JS
+(() => {
+    new Craft.ElementActionTrigger({
         type: {$type},
         batch: false,
         validateSelection: function(\$selectedItems)
         {
-            var \$element = \$selectedItems.find('.element');
-
-            return \$element.length === 1;
+            return \$selectedItems.length === 1;
         },
         activate: function(\$selectedItems)
         {
@@ -74,12 +65,13 @@ class PreviewAsset extends ElementAction
                 settings.startingWidth = \$selectedItems.find('.element').data('image-width');
                 settings.startingHeight = \$selectedItems.find('.element').data('image-height');
             }
-            var modal = new Craft.PreviewFileModal(\$selectedItems.find('.element').data('id'), \$selectedItems, settings);
+            var modal = new Craft.PreviewFileModal(\$selectedItems.find('.element').data('id'), Craft.elementIndex.view.elementSelect, settings);
         }
     });
 })();
-EOD;
+JS;
 
         Craft::$app->getView()->registerJs($js);
+        return null;
     }
 }

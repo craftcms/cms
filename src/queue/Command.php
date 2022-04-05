@@ -7,18 +7,19 @@
 
 namespace craft\queue;
 
+use craft\helpers\Console;
+use yii\console\ExitCode;
+use yii\db\Exception as YiiDbException;
+
 /**
- * Manages application db-queue.
+ * Manages the queue.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Roman Zhuravlev <zhuravljov@gmail.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Command extends \yii\queue\cli\Command
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var Queue
      */
@@ -36,22 +37,16 @@ class Command extends \yii\queue\cli\Command
         'class' => VerboseBehavior::class,
     ];
 
-    // Protected Methods
-    // =========================================================================
-
     /**
-     *
+     * @inheritdoc
      */
     protected function isWorkerAction($actionID)
     {
         return in_array($actionID, ['run', 'listen'], true);
     }
 
-    // Public Methods
-    // =========================================================================
-
     /**
-     *
+     * @inheritdoc
      */
     public function beforeAction($action)
     {
@@ -63,7 +58,7 @@ class Command extends \yii\queue\cli\Command
     }
 
     /**
-     *
+     * @inheritdoc
      */
     public function actions()
     {
@@ -73,24 +68,79 @@ class Command extends \yii\queue\cli\Command
     }
 
     /**
-     * Runs all jobs from db-queue.
+     * Runs all jobs in the queue.
      *
-     * It can be used as cron job.
+     * @return int
      */
-    public function actionRun()
+    public function actionRun(): int
     {
-        $this->queue->run();
+        return $this->queue->run() ?? ExitCode::OK;
     }
 
     /**
-     * Listens db-queue and runs new jobs.
+     * Listens for new jobs added to the queue and runs them.
      *
-     * It can be used as demon process.
-     *
-     * @param integer $delay Number of seconds for waiting new job.
+     * @param int $timeout The number of seconds to wait between cycles.
+     * @return int
      */
-    public function actionListen($delay = 3)
+    public function actionListen(int $timeout = 3): int
     {
-        $this->queue->listen($delay);
+        return $this->queue->run(true, $timeout) ?? ExitCode::OK;
+    }
+
+    /**
+     * Re-adds a failed job(s) to the queue.
+     *
+     * @param int|string $job The job ID that should be retried, or `all` to retry all failed jobs.
+     * @return int
+     * @since 3.1.21
+     */
+    public function actionRetry($job): int
+    {
+        if (strtolower($job) === 'all') {
+            $total = $this->queue->getTotalFailed();
+            if ($total === 0) {
+                $this->stdout('No failed jobs in the queue.' . PHP_EOL);
+                return ExitCode::OK;
+            }
+            $this->stdout("Re-adding {$total} failed " . ($total === 1 ? 'job' : 'jobs') . ' back into the queue ... ');
+            $this->queue->retryAll();
+        } else {
+            $this->stdout('Re-adding 1 failed job back into the queue ... ');
+            $this->queue->retry($job);
+        }
+
+        $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
+        return ExitCode::OK;
+    }
+
+    /**
+     * Releases job(s) from the queue.
+     *
+     * Example:
+     *
+     * ```
+     * php craft queue/release all
+     * ```
+     *
+     * @param string $job The job ID to release. Pass `all` to release all jobs.
+     * @return int
+     * @throws YiiDbException
+     * @since 3.4.0
+     */
+    public function actionRelease($job): int
+    {
+        if (strtolower($job) === 'all') {
+            $this->stdout('Releasing all queue jobs ... ');
+            $this->queue->releaseAll();
+        } else {
+            $this->stdout('Releasing job ');
+            $this->stdout($job, Console::FG_YELLOW);
+            $this->stdout(' ... ');
+            $this->queue->release($job);
+        }
+
+        $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
+        return ExitCode::OK;
     }
 }

@@ -9,9 +9,14 @@ namespace craft\controllers;
 
 use Craft;
 use craft\helpers\App;
+use craft\helpers\Json;
+use craft\queue\Queue;
 use craft\queue\QueueInterface;
 use craft\web\Controller;
+use yii\base\InvalidArgumentException;
+use yii\db\Exception as YiiDbException;
 use yii\web\BadRequestHttpException;
+use yii\web\ForbiddenHttpException;
 use yii\web\Response;
 use yii\web\ServerErrorHttpException;
 
@@ -21,20 +26,14 @@ use yii\web\ServerErrorHttpException;
  * The QueueController class is a controller that handles various queue-related operations.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class QueueController extends Controller
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
     protected $allowAnonymous = ['run'];
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -62,30 +61,29 @@ class QueueController extends Controller
     public function actionRun(): Response
     {
         // Prep the response
-        $response = Craft::$app->getResponse();
-        $response->content = '1';
+        $this->response->content = '1';
 
         // Make sure Craft is configured to run queues over the web
         if (!Craft::$app->getConfig()->getGeneral()->runQueueAutomatically) {
-            return $response;
+            return $this->response;
         }
 
         // Make sure the queue isn't already running, and there are waiting jobs
         $queue = Craft::$app->getQueue();
         if ($queue->getHasReservedJobs() || !$queue->getHasWaitingJobs()) {
-            return $response;
+            return $this->response;
         }
 
         // Attempt to close the connection if this is an Ajax request
-        if (Craft::$app->getRequest()->getIsAjax()) {
-            $response->sendAndClose();
+        if ($this->request->getIsAjax()) {
+            $this->response->sendAndClose();
         }
 
         // Run the queue
         App::maxPowerCaptain();
         $queue->run();
 
-        return $response;
+        return $this->response;
     }
 
     /**
@@ -93,14 +91,15 @@ class QueueController extends Controller
      *
      * @return Response
      * @throws BadRequestHttpException
+     * @since 3.1.21
      */
     public function actionRetry(): Response
     {
         $this->requireAcceptsJson();
         $this->requirePostRequest();
-        $this->requirePermission('accessCp');
+        $this->requirePermission('utility:queue-manager');
 
-        $id = Craft::$app->getRequest()->getRequiredBodyParam('id');
+        $id = $this->request->getRequiredBodyParam('id');
         Craft::$app->getQueue()->retry($id);
 
         return $this->actionRun();
@@ -116,14 +115,55 @@ class QueueController extends Controller
     {
         $this->requireAcceptsJson();
         $this->requirePostRequest();
-        $this->requirePermission('accessCp');
+        $this->requirePermission('utility:queue-manager');
 
-        $id = Craft::$app->getRequest()->getRequiredBodyParam('id');
+        $id = $this->request->getRequiredBodyParam('id');
         Craft::$app->getQueue()->release($id);
 
         return $this->asJson([
-            'success' => true
+            'success' => true,
         ]);
+    }
+
+    /**
+     * Releases ALL jobs
+     *
+     * @return Response
+     * @throws BadRequestHttpException
+     * @throws YiiDbException
+     * @throws ForbiddenHttpException
+     * @since 3.4.0
+     */
+    public function actionReleaseAll(): Response
+    {
+        $this->requireAcceptsJson();
+        $this->requirePostRequest();
+        $this->requirePermission('utility:queue-manager');
+
+        Craft::$app->getQueue()->releaseAll();
+
+        return $this->asJson([
+            'success' => true,
+        ]);
+    }
+
+    /**
+     * Retries ALL jobs
+     *
+     * @return Response
+     * @throws BadRequestHttpException
+     * @throws ForbiddenHttpException
+     * @since 3.4.0
+     */
+    public function actionRetryAll(): Response
+    {
+        $this->requireAcceptsJson();
+        $this->requirePostRequest();
+        $this->requirePermission('utility:queue-manager');
+
+        Craft::$app->getQueue()->retryAll();
+
+        return $this->actionRun();
     }
 
     /**
@@ -136,8 +176,50 @@ class QueueController extends Controller
         $this->requireAcceptsJson();
         $this->requirePermission('accessCp');
 
-        $limit = Craft::$app->getRequest()->getBodyParam('limit');
+        $limit = $this->request->getParam('limit');
+        $queue = Craft::$app->getQueue();
 
-        return $this->asJson(Craft::$app->getQueue()->getJobInfo($limit));
+        return $this->asJson([
+            'total' => $queue->getTotalJobs(),
+            'jobs' => $queue->getJobInfo($limit),
+        ]);
+    }
+
+    /**
+     * Returns the details for a particular job. This includes the `job` column containing a lot of raw data.
+     *
+     * @return Response
+     * @throws BadRequestHttpException
+     * @throws ForbiddenHttpException
+     * @since 3.4.0
+     */
+    public function actionGetJobDetails(): Response
+    {
+        $this->requireAcceptsJson();
+        $this->requirePermission('utility:queue-manager');
+
+        $jobId = $this->request->getRequiredParam('id');
+        $details = [
+            'id' => $jobId,
+        ];
+
+        try {
+            $details += Craft::$app->getQueue()->getJobDetails($jobId);
+        } catch (InvalidArgumentException $e) {
+            $details += [
+                'description' => Craft::t('app', 'Completed job'),
+                'status' => Queue::STATUS_DONE,
+            ];
+        }
+
+        if (isset($details['job'])) {
+            try {
+                $details['job'] = Json::encode($details['job'], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+            } catch (InvalidArgumentException $e) {
+                // Just leave the message alone
+            }
+        }
+
+        return $this->asJson($details);
     }
 }

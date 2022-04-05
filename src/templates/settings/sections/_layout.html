@@ -1,0 +1,30 @@
+{% extends "_layouts/cp" %}
+
+{% set crumbs = [
+    {
+        label: 'Settings'|t('app'),
+        url: url('settings'),
+    },
+    {
+        label: 'Sections'|t('app'),
+        url: url('settings/sections'),
+    },
+] %}
+
+{% if section.id %}
+    {% set crumbs = crumbs|push({
+        label: section.name|t('site'),
+        url: url("settings/sections/#{section.id}"),
+    }) %}
+
+    {% set tabs = {
+        settings: {
+            label: 'Settings'|t('app'),
+            url: url("settings/sections/#{section.id}"),
+        },
+        entryTypes: {
+            label: 'Entry Types'|t('app'),
+            url: url("settings/sections/#{section.id}/entrytypes"),
+        },
+    } %}
+{% endif %}

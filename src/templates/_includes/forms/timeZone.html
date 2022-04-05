@@ -1,0 +1,5 @@
+{% set id = id ?? "timezone#{random()}" %}
+
+{% include '_includes/forms/selectize' with {
+    options: craft.cp.getTimeZoneOptions(),
+}%}

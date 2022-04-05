@@ -16,17 +16,11 @@ use yii\base\NotSupportedException;
  * MissingVolume represents a volume with an invalid class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class MissingVolume extends Volume implements MissingComponentInterface
 {
-    // Traits
-    // =========================================================================
-
     use MissingComponentTrait;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -138,6 +132,46 @@ class MissingVolume extends Volume implements MissingComponentInterface
     public function deleteDir(string $path)
     {
         throw new NotSupportedException('deleteDir() is not implemented.');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getFileSize(string $uri): ?int
+    {
+        throw new NotSupportedException('getFileSize() is not implemented.');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function renameDirectory(string $path, string $newName)
+    {
+        throw new NotSupportedException('renameDirectory() is not implemented.');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getDateModified(string $uri): ?int
+    {
+        throw new NotSupportedException('getDateModified() is not implemented.');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function createDirectory(string $path)
+    {
+        throw new NotSupportedException('createDirectory() is not implemented.');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function deleteDirectory(string $path)
+    {
+        throw new NotSupportedException('deleteDirectory() is not implemented.');
     }
 
     /**

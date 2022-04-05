@@ -4,8 +4,9 @@ import Index from '../pages/index'
 import CategoriesId from '../pages/categories/_id'
 import UpgradeCraft from '../pages/upgrade-craft'
 import DeveloperId from '../pages/developer/_id'
-import FeaturedId from '../pages/featured/_id'
-import BuyHandle from '../pages/buy/_handle'
+import FeaturedHandle from '../pages/featured/_handle'
+import BuyPlugin from '../pages/buy/_plugin'
+import BuyAllTrials from '../pages/buy-all-trials'
 import Tests from '../pages/tests'
 import NotFound from '../pages/_not-found'
 import Search from '../pages/search'
@@ -15,10 +16,13 @@ Vue.use(VueRouter)
 
 export default new VueRouter({
     base: window.pluginStoreAppBaseUrl,
+
     mode: 'history',
-    scrollBehavior () {
-        return { x: 0, y: 0 }
+
+    scrollBehavior() {
+        return {x: 0, y: 0}
     },
+
     routes: [
         {
             path: '/',
@@ -41,14 +45,24 @@ export default new VueRouter({
             component: DeveloperId,
         },
         {
-            path: '/featured/:id',
-            name: 'FeaturedId',
-            component: FeaturedId,
+            path: '/featured/:handle',
+            name: 'FeaturedHandle',
+            component: FeaturedHandle,
         },
         {
-            path: '/buy/:handle',
-            name: 'BuyHandle',
-            component: BuyHandle,
+            path: '/buy/:plugin',
+            name: 'BuyPlugin',
+            component: BuyPlugin,
+        },
+        {
+            path: '/buy/:plugin/:edition',
+            name: 'BuyPlugin',
+            component: BuyPlugin,
+        },
+        {
+            path: '/buy-all-trials',
+            name: 'BuyAllTrials',
+            component: BuyAllTrials,
         },
         {
             path: '/search',

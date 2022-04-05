@@ -1,0 +1,10 @@
+{% extends "_layouts/basecp" %}
+{% set title = "Explore the GraphQL API"|t %}
+{% set selectedSubnavItem = 'explore' %}
+{% set showHeader = false %}
+
+{% block body %}
+    <div dir="ltr" endpoint="{{ url }}" id="graphiql" schemas="{{ schemas|json_encode}}" selectedSchema="{{ {name: selectedSchema.name, schema: selectedSchema.uid, }|json_encode }}">
+        <div class="spinner big"></div>
+    </div>
+{% endblock %}

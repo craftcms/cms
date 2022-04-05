@@ -1,5 +1,4 @@
-Contributing to Craft CMS
-=========================
+# Contributing to Craft CMS
 
 Thanks for taking the time to contribute! We really appreciate it.
 
@@ -8,8 +7,6 @@ The following is a set of guidelines for contributing to Craft CMS and its first
 #### Table of Contents
 
 - [What to Know Before You Contribute](#what-to-know-before-you-contribute)
-- [Craft isn’t FOSS](#craft-isnt-foss)
-- [Code of Conduct](#code-of-conduct)
 - [Security Disclosures](#security-disclosures)
 - [Bug Reports & Feature Requests](#bug-reports--feature-requests)
 - [Documentation Edits](#documentation-edits)
@@ -30,11 +27,11 @@ That comes with some limitations on what you can do with the code:
 
 ### Code of Conduct
 
-Please take a couple minutes to read through Craft’s [code of conduct](https://docs.craftcms.com/v3/coc.html). By participating here, you are expected to uphold this code. Please report unacceptable behavior to [support@craftcms.com][support].
+Please take a couple minutes to read through Craft’s [code of conduct](https://craftcms.com/docs/3.x/coc.html). By participating here, you are expected to uphold this code. Please report unacceptable behavior to us from [craftcms.com/contact](https://craftcms.com/contact).
 
 ## Security Disclosures
 
-If you discover a security vulnerability, please review our [Security Policy](https://github.com/craftcms/cms/wiki/Security-Policy), then report the issue directly to [support@craftcms.com][support]. We will review and respond privately via email.
+If you discover a security vulnerability, please review our [Security Policy](https://github.com/craftcms/.github/blob/master/SECURITY.md), then report the issue directly to us from [craftcms.com/contact](https://craftcms.com/contact). We will review and respond privately via email.
 
 ## Bug Reports & Feature Requests
 
@@ -46,15 +43,29 @@ If no one has filed the issue yet, [submit a new one](https://github.com/craftcm
 
 ## Documentation Edits
 
-Craft’s documentation has its own repo, [craftcms/docs](https://github.com/craftcms/docs). Improvements or corrections to them can be submitted as a pull request.
+Craft’s documentation lives in the [https://github.com/craftcms/docs](https://github.com/craftcms/docs) repository. Improvements or corrections to them can be submitted as a pull request.
+
+The documentation is powered by [VuePress](https://vuepress.vuejs.org/). To preview documentation changes before committing them, clone the docs repo and from your terminal, run these commands:
+
+```bash
+# Install npm dependencies
+npm install
+
+# Build + run the VuePress dev server
+npm run docs:dev
+```
+
+Once the VuePress dev server is up and running, you’ll be able to view the docs at `http://localhost:8000/`. Changes you make to the `.md` files will automatically trigger a live reload of the pages in the browser.
 
 ## Control Panel Translations
 
-Craft’s Control Panel translations are located at [src/translations/](https://github.com/craftcms/cms/tree/develop/src/translations) in the repo. You can make translation improvements directly to those files.
+We manage Craft’s Control Panel translations with [Crowdin](https://crowdin.com/project/craft-cms).
+
+If you want to help improve Craft’s translations, [sign up to be a translator](https://crwd.in/craft-cms), or you can submit a pull request directly to the [src/translations/](https://github.com/craftcms/cms/tree/develop/src/translations) folder if you prefer. 
 
 ## Core Enhancements
 
-If you would like to work on a new core feature or improvement, first create a [Github issue](https://github.com/craftcms/cms/issues) for it if there’s not one already. As much as we appreciate community contributions, we are pretty selective about which sorts of features should make it into Craft itself rather than a plugin, so don’t take it the wrong way if we advise you to pursue the idea as a plugin instead.
+If you would like to work on a new core feature or improvement, first create a [GitHub issue](https://github.com/craftcms/cms/issues) for it if there’s not one already. As much as we appreciate community contributions, we are pretty selective about which sorts of features should make it into Craft itself rather than a plugin, so don’t take it the wrong way if we advise you to pursue the idea as a plugin instead.
 
 ## Pull Requests
 
@@ -65,4 +76,3 @@ Thanks for being awesome.
 
 :cocktail:
 
-[support]: mailto:support@craftcms.com

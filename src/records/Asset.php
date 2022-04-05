@@ -18,6 +18,7 @@ use yii\db\ActiveQueryInterface;
  * @property int $id ID
  * @property int $volumeId Volume ID
  * @property int $folderId Folder ID
+ * @property int|null $uploaderId Uploader ID
  * @property string $filename Filename
  * @property string $kind Kind
  * @property int $width Width
@@ -29,13 +30,10 @@ use yii\db\ActiveQueryInterface;
  * @property Volume $volume Volume
  * @property VolumeFolder $folder Folder
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Asset extends ActiveRecord
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      * @return string
@@ -73,5 +71,16 @@ class Asset extends ActiveRecord
     public function getFolder(): ActiveQueryInterface
     {
         return $this->hasOne(VolumeFolder::class, ['id' => 'folderId']);
+    }
+
+    /**
+     * Returns the asset's uploader, if known.
+     *
+     * @return ActiveQueryInterface The relational query object.
+     * @since 3.4.0
+     */
+    public function getUploader(): ActiveQueryInterface
+    {
+        return $this->hasOne(User::class, ['id' => 'uploaderId']);
     }
 }

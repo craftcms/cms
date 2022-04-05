@@ -15,13 +15,10 @@ use yii\validators\RegularExpressionValidator;
  * Color hex validator
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class ColorValidator extends RegularExpressionValidator
 {
-    // Static
-    // =========================================================================
-
     /**
      * Normalizes a color value.
      *
@@ -45,9 +42,6 @@ class ColorValidator extends RegularExpressionValidator
 
         return $color;
     }
-
-    // Properties
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -79,7 +73,7 @@ class ColorValidator extends RegularExpressionValidator
         $result = $this->validateValue($value);
         if (!empty($result)) {
             $this->addError($model, $attribute, $result[0], $result[1]);
-        } else if ($value !== $original) {
+        } elseif ($value !== $original) {
             // update the model with the normalized value
             try {
                 $model->$attribute = $value;

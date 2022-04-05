@@ -1,6 +1,6 @@
 <template>
     <div class="cms-editions">
-        <cms-edition v-for="(edition, key) in editions" :edition="edition" :key="key"></cms-edition>
+        <cms-edition v-for="(edition, key) in cmsEditions" :edition="edition" :key="key"></cms-edition>
     </div>
 </template>
 
@@ -9,22 +9,27 @@
     import CmsEdition from './CmsEdition'
 
     export default {
-
         components: {
             CmsEdition,
         },
 
-        computed: {
-
-            ...mapState({
-                editions: state => state.craft.editions,
-            }),
-
+        data() {
+            return {
+                loading: false,
+            }
         },
 
+        computed: {
+            ...mapState({
+                cmsEditions: state => state.pluginStore.cmsEditions,
+            }),
+        },
+
+        beforeDestroy() {
+            this.$store.dispatch('pluginStore/cancelRequests')
+        }
     }
 </script>
-
 
 <style lang="scss">
     .cms-editions {

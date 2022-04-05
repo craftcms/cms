@@ -18,13 +18,10 @@ use craft\web\assets\recententries\RecentEntriesAsset;
  * RecentEntries represents a Recent Entries dashboard widget.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class RecentEntries extends Widget
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -36,13 +33,15 @@ class RecentEntries extends Widget
     /**
      * @inheritdoc
      */
-    public static function iconPath()
+    public static function icon()
     {
-        return Craft::getAlias('@app/icons/clock.svg');
+        return Craft::getAlias('@appicons/clock.svg');
     }
 
-    // Properties
-    // =========================================================================
+    /**
+     * @var int|null The site ID that the widget should pull entries from
+     */
+    public $siteId;
 
     /**
      * @var string|int[] The section IDs that the widget should pull entries from
@@ -50,17 +49,9 @@ class RecentEntries extends Widget
     public $section = '*';
 
     /**
-     * string The site ID that the widget should pull entries from
-     */
-    public $siteId;
-
-    /**
-     * int The total number of entries that the widget should show
+     * @var int The total number of entries that the widget should show
      */
     public $limit = 10;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -77,9 +68,9 @@ class RecentEntries extends Widget
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['siteId', 'limit'], 'number', 'integerOnly' => true];
         return $rules;
     }
@@ -91,7 +82,7 @@ class RecentEntries extends Widget
     {
         return Craft::$app->getView()->renderTemplate('_components/widgets/RecentEntries/settings',
             [
-                'widget' => $this
+                'widget' => $this,
             ]);
     }
 
@@ -105,7 +96,7 @@ class RecentEntries extends Widget
 
             if ($section) {
                 $title = Craft::t('app', 'Recent {section} Entries', [
-                    'section' => Craft::t('site', $section->name)
+                    'section' => Craft::t('site', $section->name),
                 ]);
             }
         }
@@ -124,7 +115,7 @@ class RecentEntries extends Widget
             if ($site) {
                 $title = Craft::t('app', '{title} ({site})', [
                     'title' => $title,
-                    'site' => Craft::t('site', $site->name),
+                    'site' => Craft::t('site', $site->getName()),
                 ]);
             }
         }
@@ -153,12 +144,9 @@ class RecentEntries extends Widget
 
         return $view->renderTemplate('_components/widgets/RecentEntries/body',
             [
-                'entries' => $entries
+                'entries' => $entries,
             ]);
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Returns the recent entries, based on the widget settings and user permissions.
@@ -192,6 +180,7 @@ class RecentEntries extends Widget
         $query->sectionId($targetSectionId);
         $query->editable(true);
         $query->limit($this->limit ?: 100);
+        $query->with(['author']);
         $query->orderBy('elements.dateCreated desc');
 
         return $query->all();

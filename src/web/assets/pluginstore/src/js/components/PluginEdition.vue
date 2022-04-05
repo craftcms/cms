@@ -4,8 +4,7 @@
             <edition-badge v-if="plugin.editions.length > 1" :name="edition.name" block big></edition-badge>
             <div class="price">
                 <template v-if="!isPluginEditionFree(edition)">
-
-                    <template v-if="licensedEdition && licensedEdition.handle !== edition.handle && licensedEdition.price > 0">
+                    <template v-if="licensedEdition && licensedEdition.handle !== edition.handle && licensedEdition.price > 0 && licenseValidOrAstray">
                         <del>{{edition.price|currency}}</del>
                         {{(edition.price - licensedEdition.price)|currency}}
                     </template>
@@ -43,8 +42,10 @@
     import PluginActions from './PluginActions'
     import InfoHud from './InfoHud'
     import EditionBadge from './EditionBadge'
+    import licensesMixin from '../mixins/licenses'
 
     export default {
+        mixins: [licensesMixin],
 
         props: ['plugin', 'edition'],
 
@@ -55,7 +56,6 @@
         },
 
         computed: {
-
             ...mapState({
                 cart: state => state.cart.cart,
             }),
@@ -76,11 +76,13 @@
             },
 
             licensedEdition() {
-                return this.getPluginEdition(this.plugin.handle, this.pluginLicenseInfo ? this.pluginLicenseInfo.licensedEdition : null)
+                if (!this.pluginLicenseInfo) {
+                    return null
+                }
+                
+                return this.getPluginEdition(this.plugin, this.pluginLicenseInfo.licensedEdition)
             }
-
         },
-
     }
 </script>
 
@@ -107,12 +109,6 @@
 
                     &:first-child {
                         @apply .border-t;
-                    }
-
-                    svg[data-icon="info-circle"] {
-                        path {
-                            fill: #ccc;
-                        }
                     }
                 }
             }

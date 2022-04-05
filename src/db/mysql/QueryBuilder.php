@@ -15,7 +15,7 @@ use yii\base\NotSupportedException;
  * @inheritdoc
  * @property Connection $db Connection the DB connection that this command is associated with.
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class QueryBuilder extends \yii\db\mysql\QueryBuilder
 {
@@ -40,13 +40,17 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
     public function createTable($table, $columns, $options = null): string
     {
         // Default to InnoDb
-        if ($options === null || strpos($options, 'ENGINE=') === false) {
-            $options = ($options !== null ? $options . ' ' : '') . 'ENGINE=InnoDb';
+        if ($options === null || !preg_match('/\bENGINE\b/i', $options)) {
+            $options = ($options !== null ? $options . ' ' : '') . 'ENGINE = InnoDb';
         }
 
-        // Use the default charset
-        if (strpos($options, 'DEFAULT CHARSET=') === false) {
-            $options .= ' DEFAULT CHARSET=' . Craft::$app->getConfig()->getDb()->charset;
+        // Use the default charset and collation
+        $dbConfig = Craft::$app->getConfig()->getDb();
+        if (!preg_match('/\bCHARACTER +SET\b/i', $options)) {
+            $options .= " DEFAULT CHARACTER SET = $dbConfig->charset";
+        }
+        if ($dbConfig->collation !== null && !preg_match('/\bCOLLATE\b/i', $options)) {
+            $options .= " DEFAULT COLLATE = $dbConfig->collation";
         }
 
         return parent::createTable($table, $columns, $options);
@@ -119,6 +123,34 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
             $sql .= ',' . $this->db->quoteValue($value);
         }
         $sql .= ')';
+
+        return $sql;
+    }
+
+    /**
+     * Builds the SQL expression used to delete duplicate rows from a table.
+     *
+     * @param string $table The table to be updated.
+     * @param string[] $columns The column names that contain duplicate data
+     * @param string $pk The primary key column name
+     * @return string The SQL expression
+     * @since 3.5.2
+     */
+    public function deleteDuplicates(string $table, array $columns, string $pk = 'id'): string
+    {
+        $table = $this->db->quoteTableName($table);
+        $pk = $this->db->quoteColumnName($pk);
+        $a = $this->db->quoteColumnName('a');
+        $b = $this->db->quoteColumnName('b');
+
+        $sql = "DELETE $a FROM $table $a" .
+            " INNER JOIN $table $b" .
+            " WHERE $a.$pk > $b.$pk";
+
+        foreach ($columns as $column) {
+            $column = $this->db->quoteColumnName($column);
+            $sql .= " AND $a.$column = $b.$column";
+        }
 
         return $sql;
     }

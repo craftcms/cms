@@ -15,13 +15,10 @@ use craft\web\assets\findreplace\FindReplaceAsset;
  * FindAndReplace represents a FindAndReplace dashboard widget.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class FindAndReplace extends Utility
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -43,7 +40,7 @@ class FindAndReplace extends Utility
      */
     public static function iconPath()
     {
-        return Craft::getAlias('@app/icons/wand.svg');
+        return Craft::getAlias('@appicons/wand.svg');
     }
 
     /**

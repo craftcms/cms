@@ -15,13 +15,10 @@ use yii\base\InvalidConfigException;
  * UploadedFile represents the information for an uploaded file.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class UploadedFile extends \yii\web\UploadedFile
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Returns an instance of the specified uploaded file. The name can be a plain string or a string like an array
      * element (e.g. 'Post[imageFile]', or 'Post[0][imageFile]').
@@ -72,12 +69,9 @@ class UploadedFile extends \yii\web\UploadedFile
         }
 
         if ($ensureTempFilesExist) {
-            array_filter($instances, function(UploadedFile $instance): bool {
+            $instances = array_values(array_filter($instances, function(UploadedFile $instance): bool {
                 return is_uploaded_file($instance->tempName);
-            });
-
-            // Reset the keys
-            $instances = array_values($instances);
+            }));
         }
 
         return $instances;
@@ -141,9 +135,6 @@ class UploadedFile extends \yii\web\UploadedFile
 
         return $mimeType;
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Swaps dot notation for the normal format.

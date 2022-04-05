@@ -17,17 +17,11 @@ use yii\db\Connection as YiiConnection;
  * Class Query
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Query extends \yii\db\Query
 {
-    // Traits
-    // =========================================================================
-
     use ClonefixTrait;
-
-    // Constants
-    // =========================================================================
 
     /**
      * @event \yii\base\Event The event that is triggered after the query's init cycle
@@ -40,9 +34,6 @@ class Query extends \yii\db\Query
      * @see behaviors()
      */
     const EVENT_DEFINE_BEHAVIORS = 'defineBehaviors';
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -166,8 +157,7 @@ class Query extends \yii\db\Query
 
     /**
      * @inheritdoc
-     * @return array|null the first row (in terms of an array) of the query result. Null is returned if the query
-     * results in nothing.
+     * @return mixed|null first row of the query result array, or `null` if there are no query results.
      */
     public function one($db = null)
     {

@@ -13,7 +13,7 @@ use yii\base\Exception;
  * MissingComponentException represents an exception caused by creating a component with a missing class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class MissingComponentException extends Exception
 {

@@ -13,7 +13,7 @@ use HTMLPurifier_Config;
  * HtmlPurifier provides an ability to clean up HTML from any harmful code.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class HtmlPurifier extends \yii\helpers\HtmlPurifier
 {

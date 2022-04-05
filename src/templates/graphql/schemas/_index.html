@@ -1,0 +1,39 @@
+{% extends "_layouts/cp" %}
+{% set title = "GraphQL Schemas"|t('app') %}
+
+{% requireEdition CraftPro %}
+
+{% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
+
+{% set selectedSubnavItem = 'schemas' %}
+
+{% block actionButton %}
+    <a class="btn submit add icon" href="{{ url('graphql/schemas/new') }}">{{ "New schema"|t('app') }}</a>
+{% endblock %}
+
+{% block content %}
+    <div id="schemas-vue-admin-table"></div>
+{% endblock %}
+
+{% set tableData = [] %}
+{% for schema in craft.app.gql.schemas %}
+	{% set tableData = tableData|merge([{
+        id: schema.id,
+        title: schema.isPublic ? 'Public Schema'|t('app') : schema.name|t('site'),
+        url: schema.isPublic ? url('graphql/schemas/public') : url("graphql/schemas/#{schema.id}"),
+        _showDelete: not schema.isPublic
+    }]) %}
+{% endfor %}
+
+{% js %}
+var columns = [
+    { name: '__slot:title', title: Craft.t('app', 'Name') },
+];
+
+new Craft.VueAdminTable({
+    columns: columns,
+    container: '#schemas-vue-admin-table',
+    deleteAction: 'graphql/delete-schema',
+    tableData: {{ tableData|json_encode|raw }}
+});
+{% endjs %}

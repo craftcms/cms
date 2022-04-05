@@ -13,15 +13,12 @@ use yii\base\Event;
  * SetElementRouteEvent class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class SetElementRouteEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
-     * @var mixed The route that should be used for the element, or false if no special action should be taken
+     * @var mixed The route that should be used for the element, or `null` if no special action should be taken
      */
     public $route;
 }

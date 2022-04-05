@@ -1,0 +1,135 @@
+{% extends "_layouts/cp" %}
+
+{% requireEdition CraftPro %}
+
+{% set selectedSubnavItem = 'schemas' %}
+
+{% set fullPageForm = true %}
+
+{% set crumbs = [
+    { label: "GraphQL Schemas"|t('app'), url: url('graphql/schemas') }
+] %}
+
+{% import "_includes/forms" as forms %}
+
+{% macro permissionList(schema, permissions, id, disabled) %}
+
+    {% from "_includes/forms" import checkbox %}
+    {% from _self import permissionList %}
+
+    <ul{% if id %} id="{{ id|replace(':', '-') }}"{% endif %}>
+
+        {% for permissionName, props in permissions %}
+            {% if schema.has(permissionName) %}
+                {% set checked = true %}
+            {% else %}
+                {% set checked = false %}
+            {% endif %}
+
+            <li>
+                {{ checkbox({
+                    label: props.label,
+                    name: 'permissions[]',
+                    value: permissionName,
+                    checked: checked,
+                    disabled: disabled
+                }) }}
+
+                {% if props.info ?? false %}
+                    <div class="info">{{ props.info }}</div>
+                {% endif %}
+
+                {% if props.warning ?? false %}
+                    <div class="info warning">{{ props.warning }}</div>
+                {% endif %}
+
+                {% if props.nested ?? false %}
+                    {{ permissionList(schema, props.nested, permissionName~'-nested', not checked) }}
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+{% endmacro %}
+
+{% from _self import permissionList %}
+
+{% do view.registerTranslations('app', [
+    "Select All",
+    "Deselect All",
+]) %}
+
+{% do view.registerAssetBundle("craft\\web\\assets\\userpermissions\\UserPermissionsAsset") %}
+
+{% block content %}
+    {{ actionInput(schema.isPublic ? 'graphql/save-public-schema' : 'graphql/save-schema') }}
+    {{ redirectInput('graphql/schemas') }}
+    {% if schema.id %}{{ hiddenInput('schemaId', schema.id) }}{% endif %}
+
+    {% if not schema.isPublic %}
+        {{ forms.textField({
+            first: true,
+            label: "Name"|t('app'),
+            instructions: "What this schema will be called in the control panel."|t('app'),
+            id: 'name',
+            name: 'name',
+            value: schema.name,
+            errors: schema.getErrors('name'),
+            autofocus: true,
+            required: true
+        }) }}
+
+        <hr>
+    {% endif %}
+
+    <h2>{{ 'Choose the available content for querying with this schema:'|t('app') }}</h2>
+
+    {% set schemaComponents = craft.app.gql.getAllSchemaComponents %}
+
+    {% for category, catPermissions in schemaComponents.queries %}
+        <div class="user-permissions">
+            <h3>{{ category }}</h3>
+            <div class="select-all"></div>
+
+            {{ permissionList(schema, catPermissions) }}
+        </div>
+    {% endfor %}
+
+    <hr/>
+    <h2>{{ 'Choose the available mutations for this schema:'|t('app') }}</h2>
+
+    {% for category, catPermissions in schemaComponents.mutations %}
+        <div class="user-permissions">
+            <h3>{{ category }}</h3>
+            <div class="select-all"></div>
+
+            {{ permissionList(schema, catPermissions) }}
+        </div>
+    {% endfor %}
+
+
+{% endblock %}
+
+{% block details %}
+    {% if schema.isPublic %}
+        <div class="meta">
+            {{ forms.lightswitchField({
+                label: 'Enabled'|t('app'),
+                id: 'enabled',
+                name: 'enabled',
+                on: token.enabled,
+            }) }}
+
+            {{ forms.dateTimeField({
+                label: "Expiry Date"|t('app'),
+                id: 'expiryDate',
+                name: 'expiryDate',
+                value: (token.expiryDate ? token.expiryDate : null),
+                errors: token.getErrors('expiryDate')
+            }) }}
+        </div>
+    {% endif %}
+{% endblock %}
+
+{% js %}
+    new Craft.ElevatedSessionForm('#main-form');
+{% endjs %}

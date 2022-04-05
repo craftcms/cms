@@ -1,0 +1,41 @@
+{% set id = id ?? "booleanmenu#{random()}" %}
+{% if value is defined and value is empty and value is not same as(null) %}
+    {% set value = '0' %}
+{% endif %}
+
+{% set inputAttributes = {
+    data: {
+        'boolean-menu': true,
+        target: toggle ?? false,
+        'reverse-target': reverseToggle ?? false,
+    },
+}|merge(inputAttributes ?? [], recursive=true) %}
+
+{% set options = [
+    {
+        label: yesLabel ?? 'Yes'|t('app'),
+        value: '1',
+        data: {
+            data: {
+                status: 'green',
+            },
+        },
+    },
+    {
+        label: noLabel ?? 'No'|t('app'),
+        value: '0',
+        data: {
+            data: {
+                status: 'white',
+            },
+        },
+    },
+] %}
+
+{% if includeEnvVars ?? false %}
+    {% set options = options|merge(craft.cp.getBooleanEnvOptions()) %}
+{% endif %}
+
+{% include '_includes/forms/selectize' with {
+    includeEnvVars: false,
+}%}

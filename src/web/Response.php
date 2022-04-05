@@ -8,25 +8,33 @@
 namespace craft\web;
 
 use Craft;
+use craft\helpers\UrlHelper;
+use yii\web\Cookie;
+use yii\web\CookieCollection;
 use yii\web\HttpException;
 
 /**
  * @inheritdoc
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Response extends \yii\web\Response
 {
-    // Properties
-    // =========================================================================
+    /**
+     * @since 3.4.0
+     */
+    const FORMAT_CSV = 'csv';
 
     /**
      * @var bool whether the response has been prepared.
      */
     private $_isPrepared = false;
 
-    // Public Methods
-    // =========================================================================
+    /**
+     * @var CookieCollection Collection of raw cookies
+     * @see getRawCookies()
+     */
+    private $_rawCookies;
 
     /**
      * Returns the Content-Type header (sans `charset=X`) that the response will most likely include.
@@ -46,6 +54,8 @@ class Response extends \yii\web\Response
                     return 'application/json';
                 case self::FORMAT_JSONP:
                     return 'application/javascript';
+                case self::FORMAT_CSV:
+                    return 'text/csv';
             }
         }
 
@@ -73,7 +83,21 @@ class Response extends \yii\web\Response
             ->set('Expires', gmdate('D, d M Y H:i:s', time() + $cacheTime) . ' GMT')
             ->set('Pragma', 'cache')
             ->set('Cache-Control', 'max-age=' . $cacheTime);
+        return $this;
+    }
 
+    /**
+     * Sets headers that will instruct the client to not cache this response.
+     *
+     * @return static self reference
+     * @since 3.5.0
+     */
+    public function setNoCacheHeaders()
+    {
+        $this->getHeaders()
+            ->set('Expires', '0')
+            ->set('Pragma', 'no-cache')
+            ->set('Cache-Control', 'no-cache, no-store, must-revalidate');
         return $this;
     }
 
@@ -92,6 +116,68 @@ class Response extends \yii\web\Response
         }
 
         return $this;
+    }
+
+    /**
+     * Returns the “raw” cookie collection.
+     *
+     * Works similar to [[getCookies()]], but these cookies won’t go through validation, and their values won’t
+     * be hashed.
+     *
+     * @return CookieCollection the cookie collection.
+     * @since 3.5.0
+     */
+    public function getRawCookies()
+    {
+        if ($this->_rawCookies === null) {
+            $this->_rawCookies = new CookieCollection();
+        }
+        return $this->_rawCookies;
+    }
+
+    /**
+     * @inheritdoc
+     * @since 3.5.0
+     */
+    protected function sendCookies()
+    {
+        parent::sendCookies();
+
+        if ($this->_rawCookies === null) {
+            return;
+        }
+        foreach ($this->getRawCookies() as $cookie) {
+            /** @var Cookie $cookie */
+            if (PHP_VERSION_ID >= 70300) {
+                setcookie($cookie->name, $cookie->value, [
+                    'expires' => $cookie->expire,
+                    'path' => $cookie->path,
+                    'domain' => $cookie->domain,
+                    'secure' => $cookie->secure,
+                    'httpOnly' => $cookie->httpOnly,
+                    'sameSite' => !empty($cookie->sameSite) ? $cookie->sameSite : null,
+                ]);
+            } else {
+                // Work around for setting sameSite cookie prior PHP 7.3
+                // https://stackoverflow.com/questions/39750906/php-setcookie-samesite-strict/46971326#46971326
+                if (!is_null($cookie->sameSite)) {
+                    $cookie->path .= '; samesite=' . $cookie->sameSite;
+                }
+                setcookie($cookie->name, $cookie->value, $cookie->expire, $cookie->path, $cookie->domain, $cookie->secure, $cookie->httpOnly);
+            }
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function redirect($url, $statusCode = 302, $checkAjax = true)
+    {
+        if (is_string($url)) {
+            $url = UrlHelper::url($url);
+        }
+
+        return parent::redirect($url, $statusCode, $checkAjax);
     }
 
     /**
@@ -128,7 +214,7 @@ class Response extends \yii\web\Response
     /**
      * Attempts to closes the connection with the HTTP client, without ending PHP script execution.
      *
-     * This method relies on [flush()](http://php.net/manual/en/function.flush.php), which may not actually work if
+     * This method relies on [flush()](https://php.net/manual/en/function.flush.php), which may not actually work if
      * mod_deflate or mod_gzip is installed, or if this is a Win32 server.
      *
      * @see http://stackoverflow.com/a/141026
@@ -140,6 +226,9 @@ class Response extends \yii\web\Response
         if (headers_sent()) {
             return;
         }
+
+        // Get the active user before headers are sent
+        Craft::$app->getUser()->getIdentity();
 
         // Prevent the script from ending when the browser closes the connection
         ignore_user_abort(true);
@@ -176,42 +265,16 @@ class Response extends \yii\web\Response
 
     /**
      * @inheritdoc
-     * @internal this is an exact copy of yii\web\Response::sendContent(), except for the `@` before `set_time_limit(0)`
-     * @todo remove this if Yii ever merges https://github.com/yiisoft/yii2/pull/15679 or similar
+     * @since 3.4.0
      */
-    protected function sendContent()
+    protected function defaultFormatters()
     {
-        if ($this->stream === null) {
-            echo $this->content;
-
-            return;
-        }
-
-        @set_time_limit(0); // Reset time limit for big files
-        $chunkSize = 8 * 1024 * 1024; // 8MB per chunk
-
-        if (is_array($this->stream)) {
-            list($handle, $begin, $end) = $this->stream;
-            fseek($handle, $begin);
-            while (!feof($handle) && ($pos = ftell($handle)) <= $end) {
-                if ($pos + $chunkSize > $end) {
-                    $chunkSize = $end - $pos + 1;
-                }
-                echo fread($handle, $chunkSize);
-                flush(); // Free up memory. Otherwise large files will trigger PHP's memory limit.
-            }
-            fclose($handle);
-        } else {
-            while (!feof($this->stream)) {
-                echo fread($this->stream, $chunkSize);
-                flush();
-            }
-            fclose($this->stream);
-        }
+        $formatters = parent::defaultFormatters();
+        $formatters[self::FORMAT_CSV] = [
+            'class' => CsvResponseFormatter::class,
+        ];
+        return $formatters;
     }
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -223,9 +286,6 @@ class Response extends \yii\web\Response
 
         return $return;
     }
-
-    // Private Methods
-    // =========================================================================
 
     /**
      * Clear the output buffer to prevent corrupt downloads.

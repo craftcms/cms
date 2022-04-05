@@ -14,13 +14,10 @@ use craft\helpers\StringHelper;
  * Class StringValidator.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class StringValidator extends \yii\validators\StringValidator
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var bool whether the string should be checked for 4+ byte characters (like emoji)
      */
@@ -34,12 +31,10 @@ class StringValidator extends \yii\validators\StringValidator
 
     /**
      * @var bool whether the string should be trimmed of whitespace
+     * @since 3.0.18
      * @deprecated in 3.0.32. Use Yii’s `'trim'` validator instead.
      */
     public $trim = false;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -50,10 +45,6 @@ class StringValidator extends \yii\validators\StringValidator
 
         if ($this->containsMb4 === null) {
             $this->containsMb4 = Craft::t('app', '{attribute} cannot contain emoji.');
-        }
-
-        if ($this->trim) {
-            Craft::$app->getDeprecator()->log(__CLASS__ . '::trim', __CLASS__ . '::trim has been deprecated. Use Yii’s \'trim\' validator instead.');
         }
     }
 

@@ -1,13 +1,35 @@
 {% import "_includes/forms" as forms %}
 
 {% if sections %}
+
+    {% if craft.app.getIsMultiSite() %}
+        {% set editableSites = craft.app.sites.getEditableSites() %}
+
+        {% if editableSites|length > 1 %}
+            {% set siteInput %}
+                <div class="select">
+                    <select id="site-id" name="siteId">
+                        {% for site in editableSites %}
+                            <option value="{{ site.id }}"{% if site.id == widget.siteId %} selected{% endif %}>{{ site.name|t('site') }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            {% endset %}
+
+            {{ forms.field({
+                id: 'site-id',
+                label: "Site"|t('app'),
+            }, siteInput) }}
+        {% endif %}
+    {% endif %}
+
     {% set sectionOptions = [] %}
     {% for section in sections %}
         {% set sectionOptions = sectionOptions|merge([{ label: section.name|t('site'), value: section.id }]) %}
     {% endfor %}
     {{ forms.selectField({
         label: "Section"|t('app'),
-        instructions: "Which section do you want to publish entries to?"|t('app'),
+        instructions: 'Which section do you want to save entries to?'|t('app'),
         id: 'section',
         name: 'section',
         options: sectionOptions,
@@ -28,11 +50,11 @@
             {% endfor %}
 
             {% if entryTypeOptions|length == 1 %}
-                <input type="hidden" name="sections[{{ section.id }}][entryType]" value="{{ widget.entryType }}" />
+                {{ hiddenInput("sections[#{section.id}][entryType]", widget.entryType) }}
             {% else %}
                 {{ forms.selectField({
                     label: "Entry Type"|t('app'),
-                    instructions: "Which type of entries do you want to publish?"|t('app'),
+                    instructions: "Which type of entries do you want to create?"|t('app'),
                     id: 'entryType',
                     name: 'sections['~section.id~'][entryType]',
                     options: entryTypeOptions,
@@ -47,14 +69,15 @@
                 {% for entryType in entryTypes %}
                     {% set showEntryType = (((not showSection or not widget.entryType) and loop.first) or widget.entryType == entryType.id or entryTypes|length == 1) %}
                     <div id="section{{ section.id }}-type{{ entryType.id }}"{% if not showEntryType %} class="hidden"{% endif %}>
-                        {% for field in entryType.getFieldLayout().getFields() %}
+                        {% for layoutElement in fieldsByEntryTypeId[entryType.id] ?? [] %}
+                            {% set field = layoutElement.getField() %}
                             <div>
                                 {{ forms.checkbox({
-                                    label: field.name|e~(field.required ? ' <span class="required"></span>' : ''),
+                                    label: raw(field.name|e ~ (layoutElement.required ? '<span class="required"></span>')),
                                     name: 'sections['~section.id~'][fields][]',
                                     value: field.id,
-                                    checked: (field.required or field.id in widget.fields),
-                                    disabled: field.required
+                                    checked: (layoutElement.required or field.id in widget.fields),
+                                    disabled: layoutElement.required
                                 }) }}
                             </div>
                         {% endfor %}

@@ -17,20 +17,14 @@ use yii\base\Exception;
  * CopyReferenceTag represents a Copy Reference Tag element action.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class CopyReferenceTag extends ElementAction
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null The element type associated with this action
      */
     public $elementType;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -46,7 +40,6 @@ class CopyReferenceTag extends ElementAction
     public function getTriggerHtml()
     {
         $type = Json::encode(static::class);
-        $prompt = Json::encode(Craft::t('app', '{ctrl}C to copy.'));
         /** @var string|ElementInterface $elementType */
         $elementType = $this->elementType;
 
@@ -56,24 +49,23 @@ class CopyReferenceTag extends ElementAction
 
         $refHandleJs = Json::encode($refHandle);
 
-        $js = <<<EOD
-(function()
-{
-    var trigger = new Craft.ElementActionTrigger({
+        $js = <<<JS
+(() => {
+    new Craft.ElementActionTrigger({
         type: {$type},
         batch: false,
         activate: function(\$selectedItems)
         {
-            var message = Craft.t('app', {$prompt}, {
-                ctrl: (navigator.appVersion.indexOf('Mac') !== -1 ? '⌘' : 'Ctrl-')
+            Craft.ui.createCopyTextPrompt({
+                label: Craft.t('app', 'Copy the reference tag'),
+                value: '{'+{$refHandleJs}+':'+\$selectedItems.find('.element').data('id')+'}',
             });
-
-            prompt(message, '{'+{$refHandleJs}+':'+\$selectedItems.find('.element').data('id')+'}');
         }
     });
 })();
-EOD;
+JS;
 
         Craft::$app->getView()->registerJs($js);
+        return null;
     }
 }

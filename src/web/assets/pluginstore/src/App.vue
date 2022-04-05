@@ -4,10 +4,10 @@
             <screenshot-modal v-if="showingScreenshotModal"></screenshot-modal>
         </transition>
 
-        <template v-if="$root.pluginStoreDataLoaded && !$root.pluginStoreDataError">
+        <template v-if="$root.pluginStoreDataLoaded">
             <sidebar></sidebar>
 
-            <div class="ps-main">
+            <div class="ps-main" @scroll.passive="onViewScroll">
                 <router-view :key="$route.fullPath"></router-view>
             </div>
         </template>
@@ -31,7 +31,6 @@
     import ScreenshotModal from './js/components/ScreenshotModal'
 
     export default {
-
         components: {
             Sidebar,
             Modal,
@@ -40,13 +39,25 @@
         },
 
         computed: {
-
             ...mapState({
                 showingScreenshotModal: state => state.app.showingScreenshotModal,
             }),
+        },
 
+        methods: {
+            onViewScroll($event) {
+                this.$root.$emit('viewScroll', $event)
+            }
+        },
+
+        mounted() {
+            window.addEventListener('resize', $event => {
+                this.$root.$emit('windowResize', $event)
+            });
+            window.addEventListener('scroll', $event => {
+                this.$root.$emit('windowScroll', $event)
+            });
         }
-
     }
 </script>
 

@@ -16,13 +16,10 @@ use Twig\TokenParser\AbstractTokenParser;
  * Class NamespaceTokenParser
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class NamespaceTokenParser extends AbstractTokenParser
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -44,11 +41,16 @@ class NamespaceTokenParser extends AbstractTokenParser
         $nodes = [
             'namespace' => $parser->getExpressionParser()->parseExpression(),
         ];
+        $attributes = [];
+        if ($stream->test('withClasses')) {
+            $attributes['withClasses'] = true;
+            $stream->next();
+        }
         $stream->expect(Token::BLOCK_END_TYPE);
         $nodes['body'] = $parser->subparse([$this, 'decideNamespaceEnd'], true);
         $stream->expect(Token::BLOCK_END_TYPE);
 
-        return new NamespaceNode($nodes, [], $lineno, $this->getTag());
+        return new NamespaceNode($nodes, $attributes, $lineno, $this->getTag());
     }
 
 

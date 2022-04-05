@@ -7,10 +7,18 @@
     { label: "Settings"|t('app'), url: url('settings') }
 ] %}
 
+{# set defaults #}
+{% set system = {
+    name: null,
+    live: false,
+    retryDuration: null,
+    timeZone: 'UTC',
+}|merge(system) %}
+
 
 {% macro configWarning(setting, file) -%}
     {{ "This is being overridden by the {setting} config setting."|t('app', {
-        setting: '<a href="https://docs.craftcms.com/api/v3/craft-config-generalconfig.html#property-'~setting|lower~'" rel="noopener" target="_blank">'~setting~'</a>'
+        setting: '<a href="https://craftcms.com/docs/3.x/config/config-settings.html#-'~setting|lower~'" rel="noopener" target="_blank">'~setting~'</a>'
     })|raw }}
 {%- endmacro %}
 
@@ -18,7 +26,7 @@
 
 
 {% block content %}
-    <input type="hidden" name="action" value="system-settings/save-general-settings">
+    {{ actionInput('system-settings/save-general-settings') }}
     {{ redirectInput('settings') }}
 
     {{ forms.autosuggestField({
@@ -30,22 +38,34 @@
         value: system.name
     }) }}
 
-    {{ forms.lightswitchField({
-        first: true,
+    {{ forms.booleanMenuField({
         label: "System Status"|t('app'),
         warning: (craft.app.config.general.isSystemLive is same as(true) or craft.app.config.general.isSystemLive is same as(false) ? configWarning('isSystemLive')),
         id: 'live',
         name: 'live',
-        on: system.live
+        yesLabel: 'Online'|t('app'),
+        noLabel: 'Offline'|t('app'),
+        includeEnvVars: true,
+        value: system.live
     }) }}
 
-    {{ forms.selectField({
+    {{ forms.textField({
+        label: 'Retry Duration'|t('app'),
+        instructions: 'The number of seconds that the `Retry-After` HTTP header should be set to for 503 responses when the system is offline.'|t('app'),
+        id: 'retry-duration',
+        name: 'retryDuration',
+        value: system.retryDuration,
+        inputmode: 'numeric',
+        size: 4,
+    }) }}
+
+    {{ forms.timeZoneField({
         label: "Time Zone"|t('app'),
         warning: (craft.app.config.general.timezone ? configWarning('timezone')),
         id: 'time-zone',
         name: 'timeZone',
         value: system.timeZone,
-        options: timezoneOptions
+        includeEnvVars: true,
     }) }}
 
     {% if CraftEdition == CraftPro %}

@@ -1,5 +1,4 @@
-<input type="hidden" name="{{ name }}" value="">
-
+{{ hiddenInput(name, '') }}
 <div id="{{ id }}" class="categoriesfield">
     <ul class="elements structure">
         {% nav category in elements %}
@@ -18,7 +17,9 @@
         {% endnav %}
     </ul>
 
-    <div class="btn add icon dashed">{{ selectionLabel }}</div>
+    <div class="flex">
+        <button type="button" class="btn add icon dashed" aria-label="{{ selectionLabel }}">{{ selectionLabel }}</button>
+    </div>
 </div>
 
 {% if jsClass is defined %}
@@ -30,7 +31,9 @@
             sources: {{ sources|json_encode|raw }},
             criteria: {{ criteria|json_encode|raw }},
             sourceElementId: {{ sourceElementId ?: 'null' }},
+            prevalidate: {{ (prevalidate ?? false) ? 'true' : 'false' }},
             branchLimit: {{ branchLimit ?: 'null' }},
+            showSiteMenu: {{ (showSiteMenu ?? false)|json_encode|raw }},
             modalStorageKey: "{{ storageKey|e('js') }}",
             selectionLabel: "{{ selectionLabel|e('js') }}"
         });

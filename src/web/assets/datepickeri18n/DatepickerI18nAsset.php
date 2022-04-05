@@ -36,7 +36,7 @@ class DatepickerI18nAsset extends AssetBundle
 
         /** @noinspection UnSafeIsSetOverArrayInspection */
         if (isset($datepickerLanguage)) {
-            $this->sourcePath = '@lib/datepicker-i18n';
+            $this->sourcePath = __DIR__ . '/dist';
 
             $this->depends = [
                 JqueryUiAsset::class,

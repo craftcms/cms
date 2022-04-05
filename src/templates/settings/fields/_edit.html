@@ -1,14 +1,30 @@
 {% extends "_layouts/cp" %}
 {% set fullPageForm = true %}
+{% set formActions = [
+    {
+        label: 'Save and continue editing'|t('app'),
+        redirect: 'settings/fields/edit/{id}'|hash,
+        shortcut: true,
+        retainScroll: true,
+    },
+    fieldId ?? false ? {
+        label: 'Delete'|t('app'),
+        action: 'fields/delete-field',
+        redirect: 'settings/fields'|hash,
+        destructive: true,
+        confirm: 'Are you sure you want to delete “{name}”?'|t('app', {
+            name: field.name,
+        }),
+    },
+]|filter %}
 
 {% import "_includes/forms" as forms %}
 
-
 {% block content %}
-    <input type="hidden" name="action" value="fields/save-field">
+    {{ actionInput('fields/save-field') }}
     {{ redirectInput('settings/fields/{groupId}') }}
     {% if fieldId is defined and fieldId %}
-        <input type="hidden" name="fieldId" value="{{ fieldId }}">
+        {{ hiddenInput('fieldId', fieldId) }}
     {% endif %}
 
     {{ forms.selectField({
@@ -23,7 +39,7 @@
 
     {{ forms.textField({
         label: "Name"|t('app'),
-        instructions: "What this field will be called in the CP."|t('app'),
+        instructions: "What this field will be called in the control panel."|t('app'),
         id: 'name',
         name: 'name',
         value: field.name,
@@ -47,7 +63,7 @@
     }) }}
 
     {{ forms.textareaField({
-        label: "Instructions"|t('app'),
+        label: "Default Instructions"|t('app'),
         instructions: "Helper text to guide the author."|t('app'),
         id: 'instructions',
         class: 'nicetext',
@@ -57,7 +73,7 @@
     }) }}
 
     {{ forms.checkboxField({
-        label: "Use this field’s values as search keywords?"|t('app'),
+        label: 'Use this field’s values as search keywords'|t('app'),
         id: 'searchable',
         name: 'searchable',
         checked: field.searchable
@@ -70,8 +86,8 @@
         id: 'type',
         name: 'type',
         options: fieldTypeOptions,
-        value: className(field),
-        toggle: true
+        value: field is missing ? field.expectedType : className(field),
+        errors: field.getErrors('type'),
     }) }}
 
     {{ missingFieldPlaceholder|raw }}
@@ -98,16 +114,20 @@
                 }) }}
 
                 {% if 'custom' in translationMethods %}
-                    <div id="translation-method-custom" {% if field.translationMethod != 'custom' %}class="hidden"{% endif %}>
+                    {% tag 'div' with {
+                        id: 'translation-method-custom',
+                        class: field.translationMethod != 'custom' ? 'hidden' : null,
+                    } %}
                         {{ forms.textField({
                             label: "Translation Key Format"|t('app'),
                             instructions: "Template that defines the field’s custom “translation key” format. Field values will be copied to all sites that produce the same key. For example, to make the field translatable based on the first two characters of the site handle, you could enter `{site.handle[:2]}`.",
                             id: 'translation-key-format',
+                            class: 'code',
                             name: 'translationKeyFormat',
                             value: field.translationKeyFormat,
                             errors: field.getErrors('translationKeyFormat')
                         }) }}
-                    </div>
+                    {% endtag %}
                 {% endif %}
             </div>
         {% endif %}
@@ -115,15 +135,13 @@
 
     <hr>
 
-    {% for type in allFieldTypes %}
-        {% set isCurrent = (type == className(field)) %}
-        <div id="{{ type|id }}"{% if not isCurrent %} class="hidden"{% endif %}>
-            {% namespace 'types['~type~']' %}
-                {% set _field = isCurrent ? field : craft.app.fields.createField(type) %}
-                {{ _field.getSettingsHtml()|raw }}
-            {% endnamespace %}
+    <div id="settings">
+        <div id="{{ className(field)|id }}">
+            {% include 'settings/fields/_type-settings' with {
+                namespace: 'types['~className(field)~']'
+            } %}
         </div>
-    {% endfor %}
+    </div>
 {% endblock %}
 
 
@@ -146,7 +164,7 @@
             $container.find('select').html(
                 ($.inArray('none', Craft.supportedTranslationMethods[type]) != -1 ? '<option value="none">{{ "Not translatable"|t('app')|e('js') }}</option>' : '') +
                 ($.inArray('site', Craft.supportedTranslationMethods[type]) != -1 ? '<option value="site">{{ "Translate for each site"|t('app')|e('js') }}</option>' : '') +
-                ($.inArray('siteGroup', Craft.supportedTranslationMethods[type]) != -1 ? '<option value="site">{{ "Translate for each site group"|t('app')|e('js') }}</option>' : '') +
+                ($.inArray('siteGroup', Craft.supportedTranslationMethods[type]) != -1 ? '<option value="siteGroup">{{ "Translate for each site group"|t('app')|e('js') }}</option>' : '') +
                 ($.inArray('language', Craft.supportedTranslationMethods[type]) != -1 ? '<option value="language">{{ "Translate for each language"|t('app')|e('js') }}</option>' : '') +
                 ($.inArray('custom', Craft.supportedTranslationMethods[type]) != -1 ? '<option value="custom">{{ "Custom…"|t('app')|e('js') }}</option>' : '')
             );

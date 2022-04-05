@@ -1,5 +1,5 @@
 <?php
-/** @var $panel craft\debug\DeprecatedPanel */
+/** @var craft\debug\DeprecatedPanel $panel */
 $count = count($panel->data);
 ?>
 <div class="yii-debug-toolbar__block">

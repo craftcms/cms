@@ -11,20 +11,20 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
+use craft\helpers\App;
+use craft\helpers\Cp;
 use craft\helpers\Html;
+use craft\helpers\StringHelper;
 use yii\db\Schema;
 
 /**
  * Email represents an Email field.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Email extends Field implements PreviewableFieldInterface
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -33,16 +33,18 @@ class Email extends Field implements PreviewableFieldInterface
         return Craft::t('app', 'Email');
     }
 
-    // Properties
-    // =========================================================================
+    /**
+     * @inheritdoc
+     */
+    public static function valueType(): string
+    {
+        return 'string|null';
+    }
 
     /**
      * @var string|null The input’s placeholder text
      */
     public $placeholder;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -57,27 +59,43 @@ class Email extends Field implements PreviewableFieldInterface
      */
     public function getSettingsHtml()
     {
-        return Craft::$app->getView()->renderTemplateMacro('_includes/forms', 'textField', [
-            [
-                'label' => Craft::t('app', 'Placeholder Text'),
-                'instructions' => Craft::t('app', 'The text that will be shown if the field doesn’t have a value.'),
-                'id' => 'placeholder',
-                'name' => 'placeholder',
-                'value' => $this->placeholder,
-                'errors' => $this->getErrors('placeholder'),
-            ]
+        return Cp::textFieldHtml([
+            'label' => Craft::t('app', 'Placeholder Text'),
+            'instructions' => Craft::t('app', 'The text that will be shown if the field doesn’t have a value.'),
+            'id' => 'placeholder',
+            'name' => 'placeholder',
+            'value' => $this->placeholder,
+            'errors' => $this->getErrors('placeholder'),
         ]);
     }
 
     /**
      * @inheritdoc
      */
-    public function getInputHtml($value, ElementInterface $element = null): string
+    public function normalizeValue($value, ElementInterface $element = null)
+    {
+        return $value !== '' ? $value : null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function serializeValue($value, ElementInterface $element = null)
+    {
+        return $value !== null ? StringHelper::idnToUtf8Email($value) : null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function inputHtml($value, ElementInterface $element = null): string
     {
         return Craft::$app->getView()->renderTemplate('_includes/forms/text', [
             'type' => 'email',
-            'id' => $this->handle,
+            'id' => $this->getInputId(),
+            'describedBy' => $this->describedBy,
             'name' => $this->handle,
+            'inputmode' => 'email',
             'placeholder' => Craft::t('site', $this->placeholder),
             'value' => $value,
         ]);
@@ -89,7 +107,8 @@ class Email extends Field implements PreviewableFieldInterface
     public function getElementValidationRules(): array
     {
         return [
-            ['email'],
+            ['trim'],
+            ['email', 'enableIDN' => App::supportsIdn(), 'enableLocalIDN' => false],
         ];
     }
 

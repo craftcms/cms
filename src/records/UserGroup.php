@@ -17,15 +17,13 @@ use yii\db\ActiveQueryInterface;
  * @property int $id ID
  * @property string $name Name
  * @property string $handle Handle
+ * @property string|null $description
  * @property User[] $users Users
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class UserGroup extends ActiveRecord
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      * @return string

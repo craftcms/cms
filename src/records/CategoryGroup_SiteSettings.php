@@ -23,13 +23,10 @@ use yii\db\ActiveQueryInterface;
  * @property CategoryGroup $group Group
  * @property Site $site Site
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class CategoryGroup_SiteSettings extends ActiveRecord
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      * @return string

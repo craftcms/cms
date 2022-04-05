@@ -21,23 +21,18 @@ use yii\db\ActiveQueryInterface;
  * @property string $name Name
  * @property string $handle Handle
  * @property bool $hasTitleField Has title field
- * @property string $titleLabel Title label
- * @property string $titleFormat Title format
+ * @property string $titleTranslationMethod Title translation method
+ * @property string|null $titleTranslationKeyFormat Title translation key format
+ * @property string|null $titleFormat Title format
  * @property int $sortOrder Sort order
  * @property Section $section Section
  * @property FieldLayout $fieldLayout Field layout
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class EntryType extends ActiveRecord
 {
-    // Traits
-    // =========================================================================
-
     use SoftDeleteTrait;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc

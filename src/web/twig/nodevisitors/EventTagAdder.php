@@ -8,30 +8,31 @@
 namespace craft\web\twig\nodevisitors;
 
 use Craft;
+use craft\helpers\Html;
 use Twig\Environment;
 use Twig\Node\DoNode;
 use Twig\Node\Expression\FunctionExpression;
 use Twig\Node\Node;
 use Twig\Node\TextNode;
+use yii\base\InvalidArgumentException;
 
 /**
  * EventTagAdder adds missing `head()`, `beginBody()`, and `endBody()` event tags to templates as they’re being compiled.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class EventTagAdder extends BaseEventTagVisitor
 {
-    // Properties
-    // =========================================================================
+    /**
+     * @var string|null As much of the <body> tag as we’ve found so far
+     */
+    private $_bodyTag;
 
     /**
-     * @var bool Whether we're in the middle of finding the `beginBody()` tag
+     * @var int|null The end position of the last <body> tag we successfully parsed in $_bodyTag
      */
-    private $_findingBeginBody = false;
-
-    // Public Methods
-    // =========================================================================
+    private $_bodyAttrOffset;
 
     /**
      * @inheritdoc
@@ -68,9 +69,6 @@ class EventTagAdder extends BaseEventTagVisitor
         return 1;
     }
 
-    // Private Methods
-    // =========================================================================
-
     /**
      * Processes a text node.
      *
@@ -91,30 +89,8 @@ class EventTagAdder extends BaseEventTagVisitor
 
         // Are we looking for `<body>`?
         if (static::$foundBeginBody === false) {
-            // We haven't found any part of `<body>` yet, right?
-            if ($this->_findingBeginBody === false) {
-                // Did we just find `<body(>)`?
-                if (preg_match('/(<body\b[^>]*)(>)?/', $data, $matches, PREG_OFFSET_CAPTURE) === 1) {
-                    // Did it include the `>`?
-                    if (!empty($matches[2][0])) {
-                        static::$foundBeginBody = true;
-                        $beginBodyPos = $matches[0][1] + strlen($matches[0][0]);
-
-                        return $this->_insertEventNode($node, $beginBodyPos, 'beginBody');
-                    }
-
-// Will have to wait for the next text node
-                    $this->_findingBeginBody = true;
-                }
-            } else {
-                // Did we just find the `>`?
-                if (preg_match('/^[^>]*>/', $data, $matches)) {
-                    $this->_findingBeginBody = false;
-                    static::$foundBeginBody = true;
-                    $beginBodyPos = strlen($matches[0]);
-
-                    return $this->_insertEventNode($node, $beginBodyPos, 'beginBody');
-                }
+            if (($newNode = $this->_findBeginBody($node)) !== null) {
+                return $newNode;
             }
         }
 
@@ -126,6 +102,53 @@ class EventTagAdder extends BaseEventTagVisitor
         }
 
         return $node;
+    }
+
+    /**
+     * Searches the text node for the beginning of the `<body>` tag.
+     *
+     * @param TextNode $node
+     * @return Node|null
+     */
+    private function _findBeginBody(TextNode $node): ?Node
+    {
+        $data = $node->getAttribute('data');
+
+        // Does it start here?
+        if ($this->_bodyTag === null) {
+            if (!preg_match('/<body\b/i', $data, $matches, PREG_OFFSET_CAPTURE)) {
+                return null;
+            }
+
+            $offsetOffset = $matches[0][1];
+            $this->_bodyTag = substr($data, $matches[0][1]);
+            $this->_bodyAttrOffset = 5;
+        } else {
+            // Append this text node to $_bodyTag
+            $offsetOffset = -strlen($this->_bodyTag);
+            $this->_bodyTag .= $data;
+        }
+
+        do {
+            try {
+                $attribute = Html::parseTagAttribute($this->_bodyTag, $this->_bodyAttrOffset, $start, $end);
+            } catch (InvalidArgumentException $e) {
+                // The tag is probably split between a couple text nodes. Keep trying on the next text node
+                break;
+            }
+
+            // No more attributes?
+            if ($attribute === null) {
+                static::$foundBeginBody = true;
+                $beginBodyPos = $offsetOffset + strpos($this->_bodyTag, '>', $this->_bodyAttrOffset) + 1;
+                return $this->_insertEventNode($node, $beginBodyPos, 'beginBody');
+            }
+
+            // Try again where this one ended
+            $this->_bodyAttrOffset = $end;
+        } while (true);
+
+        return null;
     }
 
     /**

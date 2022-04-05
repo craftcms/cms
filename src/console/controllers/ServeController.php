@@ -7,12 +7,13 @@
 
 namespace craft\console\controllers;
 
+use craft\console\ControllerTrait;
 use yii\console\controllers\ServeController as BaseServeController;
 
 /**
- * Runs PHP built-in web server.
+ * Runs the built-in PHP web server.
  *
- * In order to access server from remote machines use 0.0.0.0:8000. That is especially useful when running server in
+ * Use 0.0.0.0:8000 to access the server from remote machines, which is especially useful when running the server in
  * a virtual machine.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -20,8 +21,32 @@ use yii\console\controllers\ServeController as BaseServeController;
  */
 class ServeController extends BaseServeController
 {
+    use ControllerTrait;
+
     /**
-     * @var string path or [path alias](guide:concept-aliases) to directory to serve
+     * @var string path or [path alias](https://craftcms.com/docs/3.x/config/#aliases) of the directory to serve.
      */
     public $docroot = '@webroot';
+
+    /**
+     * @inheritdoc
+     */
+    public function init()
+    {
+        parent::init();
+        $this->checkTty();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeAction($action)
+    {
+        // Make sure this isn’t a root user
+        if (!$this->checkRootUser()) {
+            return false;
+        }
+
+        return parent::beforeAction($action);
+    }
 }

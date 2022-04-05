@@ -15,14 +15,11 @@ use craft\models\Section;
  * Class Sections variable.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
- * @deprecated in 3.0
+ * @since 3.0.0
+ * @deprecated in 3.0.0
  */
 class Sections
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * Returns all sections.
      *
@@ -31,7 +28,7 @@ class Sections
      */
     public function getAllSections(string $indexBy = null): array
     {
-        Craft::$app->getDeprecator()->log('craft.sections.getAllSections()', 'craft.sections.getAllSections() has been deprecated. Use craft.app.sections.allSections instead.');
+        Craft::$app->getDeprecator()->log('craft.sections.getAllSections()', '`craft.sections.getAllSections()` has been deprecated. Use `craft.app.sections.allSections` instead.');
 
         $sections = Craft::$app->getSections()->getAllSections();
 
@@ -46,7 +43,7 @@ class Sections
      */
     public function getEditableSections(string $indexBy = null): array
     {
-        Craft::$app->getDeprecator()->log('craft.sections.getEditableSections()', 'craft.sections.getEditableSections() has been deprecated. Use craft.app.sections.editableSections instead.');
+        Craft::$app->getDeprecator()->log('craft.sections.getEditableSections()', '`craft.sections.getEditableSections()` has been deprecated. Use `craft.app.sections.editableSections` instead.');
 
         $sections = Craft::$app->getSections()->getEditableSections();
 
@@ -60,7 +57,7 @@ class Sections
      */
     public function getTotalSections(): int
     {
-        Craft::$app->getDeprecator()->log('craft.sections.getTotalSections()', 'craft.sections.getTotalSections() has been deprecated. Use craft.app.sections.totalSections instead.');
+        Craft::$app->getDeprecator()->log('craft.sections.getTotalSections()', '`craft.sections.getTotalSections()` has been deprecated. Use `craft.app.sections.totalSections` instead.');
 
         return Craft::$app->getSections()->getTotalSections();
     }
@@ -72,7 +69,7 @@ class Sections
      */
     public function getTotalEditableSections(): int
     {
-        Craft::$app->getDeprecator()->log('craft.sections.getTotalEditableSections()', 'craft.sections.getTotalEditableSections() has been deprecated. Use craft.app.sections.totalEditableSections instead.');
+        Craft::$app->getDeprecator()->log('craft.sections.getTotalEditableSections()', '`craft.sections.getTotalEditableSections()` has been deprecated. Use `craft.app.sections.totalEditableSections` instead.');
 
         return Craft::$app->getSections()->getTotalEditableSections();
     }
@@ -85,7 +82,7 @@ class Sections
      */
     public function getSectionById(int $sectionId)
     {
-        Craft::$app->getDeprecator()->log('craft.sections.getSectionById()', 'craft.sections.getSectionById() has been deprecated. Use craft.app.sections.getSectionById() instead.');
+        Craft::$app->getDeprecator()->log('craft.sections.getSectionById()', '`craft.sections.getSectionById()` has been deprecated. Use `craft.app.sections.getSectionById()` instead.');
 
         return Craft::$app->getSections()->getSectionById($sectionId);
     }
@@ -98,7 +95,7 @@ class Sections
      */
     public function getSectionByHandle(string $handle)
     {
-        Craft::$app->getDeprecator()->log('craft.sections.getSectionByHandle()', 'craft.sections.getSectionByHandle() has been deprecated. Use craft.app.sections.getSectionByHandle() instead.');
+        Craft::$app->getDeprecator()->log('craft.sections.getSectionByHandle()', '`craft.sections.getSectionByHandle()` has been deprecated. Use `craft.app.sections.getSectionByHandle()` instead.');
 
         return Craft::$app->getSections()->getSectionByHandle($handle);
     }

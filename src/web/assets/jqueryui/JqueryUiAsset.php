@@ -18,18 +18,19 @@ class JqueryUiAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public function init()
-    {
-        $this->sourcePath = '@lib/jquery-ui';
+    public $sourcePath = __DIR__ . '/dist';
 
-        $this->depends = [
-            JqueryAsset::class,
-        ];
+    /**
+     * @inheritdoc
+     */
+    public $depends = [
+        JqueryAsset::class,
+    ];
 
-        $this->js = [
-            'jquery-ui' . $this->dotJs(),
-        ];
-
-        parent::init();
-    }
+    /**
+     * @inheritdoc
+     */
+    public $js = [
+        'jquery-ui.js',
+    ];
 }

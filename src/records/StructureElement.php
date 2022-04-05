@@ -28,13 +28,10 @@ use yii\db\ActiveQueryInterface;
  * @property Element $element Element
  * @mixin NestedSetsBehavior
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class StructureElement extends ActiveRecord
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -62,10 +59,7 @@ class StructureElement extends ActiveRecord
      */
     public static function find(): StructuredElementQuery
     {
-        /** @var StructuredElementQuery $query */
-        $query = Craft::createObject(StructuredElementQuery::class, [static::class]);
-
-        return $query;
+        return Craft::createObject(StructuredElementQuery::class, [static::class]);
     }
 
     /**
@@ -94,15 +88,15 @@ class StructureElement extends ActiveRecord
      */
     public function behaviors()
     {
-        return [
-            'tree' => [
-                'class' => NestedSetsBehavior::class,
-                'treeAttribute' => 'root',
-                'leftAttribute' => 'lft',
-                'rightAttribute' => 'rgt',
-                'depthAttribute' => 'level',
-            ],
+        $behaviors = parent::behaviors();
+        $behaviors['tree'] = [
+            'class' => NestedSetsBehavior::class,
+            'treeAttribute' => 'root',
+            'leftAttribute' => 'lft',
+            'rightAttribute' => 'rgt',
+            'depthAttribute' => 'level',
         ];
+        return $behaviors;
     }
 
     /**

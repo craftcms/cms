@@ -13,15 +13,12 @@ use yii\base\Event;
  * RegisterEmailMessagesEvent class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class RegisterEmailMessagesEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
-     * @var array List of registered email messages. Each message should contain 'key', 'category', and 'sourceLanguage' keys.
+     * @var array List of registered email messages. Each message should contain 'key' and optionally 'heading', 'subject', and 'body' keys.
      */
     public $messages = [];
 }

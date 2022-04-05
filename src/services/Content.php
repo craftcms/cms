@@ -7,30 +7,27 @@
 
 namespace craft\services;
 
-use Craft;
-use craft\base\Element;
 use craft\base\ElementInterface;
-use craft\base\Field;
+use craft\db\Connection;
 use craft\db\Query;
 use craft\db\Table;
 use craft\events\ElementContentEvent;
 use craft\helpers\Db;
-use craft\models\FieldLayout;
+use craft\helpers\ElementHelper;
 use yii\base\Component;
 use yii\base\Exception;
+use yii\di\Instance;
 
 /**
  * Content service.
- * An instance of the Content service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getContent()|`Craft::$app->content`]].
+ *
+ * An instance of the service is available via [[\craft\base\ApplicationTrait::getContent()|`Craft::$app->content`]].
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Content extends Component
 {
-    // Constants
-    // =========================================================================
-
     /**
      * @event ElementContentEvent The event that is triggered before an element's content is saved.
      */
@@ -41,8 +38,11 @@ class Content extends Component
      */
     const EVENT_AFTER_SAVE_CONTENT = 'afterSaveContent';
 
-    // Properties
-    // =========================================================================
+    /**
+     * @var Connection|array|string The database connection to use
+     * @since 3.5.6
+     */
+    public $db = 'db';
 
     /**
      * @var string
@@ -59,18 +59,24 @@ class Content extends Component
      */
     public $fieldContext = 'global';
 
-    // Public Methods
-    // =========================================================================
+    /**
+     * @inheritdoc
+     */
+    public function init()
+    {
+        parent::init();
+        $this->db = Instance::ensure($this->db, Connection::class);
+    }
 
     /**
      * Returns the content row for a given element, with field column prefixes removed from the keys.
      *
      * @param ElementInterface $element The element whose content we're looking for.
      * @return array|null The element's content row values, or null if the row could not be found
+     * @deprecated in 3.7.0
      */
     public function getContentRow(ElementInterface $element)
     {
-        /** @var Element $element */
         if (!$element->id || !$element->siteId) {
             return null;
         }
@@ -87,7 +93,7 @@ class Content extends Component
             ->from([$this->contentTable])
             ->where([
                 'elementId' => $element->id,
-                'siteId' => $element->siteId
+                'siteId' => $element->siteId,
             ])
             ->one();
 
@@ -106,10 +112,10 @@ class Content extends Component
      * Populates a given element with its custom field values.
      *
      * @param ElementInterface $element The element for which we should create a new content model.
+     * @deprecated in 3.7.0
      */
     public function populateElementContent(ElementInterface $element)
     {
-        /** @var Element $element */
         // Make sure the element has content
         if (!$element->hasContent()) {
             return;
@@ -126,9 +132,19 @@ class Content extends Component
 
             if ($fieldLayout) {
                 foreach ($fieldLayout->getFields() as $field) {
-                    /** @var Field $field */
                     if ($field::hasContentColumn()) {
-                        $element->setFieldValue($field->handle, $row[$field->handle]);
+                        $type = $field->getContentColumnType();
+                        if (is_array($type)) {
+                            $value = [];
+                            foreach (array_keys($type) as $i => $key) {
+                                $column = ElementHelper::fieldColumn('', $field->handle, $field->columnSuffix, $i !== 0 ? $key : null);
+                                $value[$key] = $row[$column];
+                            }
+                            $element->setFieldValue($field->handle, $value);
+                        } else {
+                            $column = ElementHelper::fieldColumn('', $field->handle, $field->columnSuffix);
+                            $element->setFieldValue($field->handle, $row[$column]);
+                        }
                     }
                 }
             }
@@ -145,9 +161,25 @@ class Content extends Component
      */
     public function saveContent(ElementInterface $element): bool
     {
-        /** @var Element $element */
         if (!$element->id) {
             throw new Exception('Cannot save the content of an unsaved element.');
+        }
+
+        // Serialize the values before we start futzing with the content table & col prefix
+        $serializedFieldValues = [];
+        $fields = [];
+        $fieldLayout = $element->getFieldLayout();
+
+        if ($fieldLayout) {
+            foreach ($fieldLayout->getFields() as $field) {
+                if (
+                    (!$element->contentId || $element->isFieldDirty($field->handle)) &&
+                    $field::hasContentColumn()
+                ) {
+                    $serializedFieldValues[$field->uid] = $field->serializeValue($element->getFieldValue($field->handle), $element);
+                    $fields[$field->uid] = $field;
+                }
+            }
         }
 
         $originalContentTable = $this->contentTable;
@@ -161,51 +193,62 @@ class Content extends Component
         // Fire a 'beforeSaveContent' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_SAVE_CONTENT)) {
             $this->trigger(self::EVENT_BEFORE_SAVE_CONTENT, new ElementContentEvent([
-                'element' => $element
+                'element' => $element,
             ]));
         }
 
         // Prepare the data to be saved
         $values = [
             'elementId' => $element->id,
-            'siteId' => $element->siteId
+            'siteId' => $element->siteId,
         ];
         if ($element->hasTitles() && ($title = (string)$element->title) !== '') {
             $values['title'] = $title;
         }
-        $fieldLayout = $element->getFieldLayout();
-        if ($fieldLayout) {
-            foreach ($fieldLayout->getFields() as $field) {
-                /** @var Field $field */
-                if ($field::hasContentColumn()) {
-                    $column = $this->fieldColumnPrefix . $field->handle;
-                    $values[$column] = Db::prepareValueForDb($field->serializeValue($element->getFieldValue($field->handle), $element));
+
+        foreach ($serializedFieldValues as $fieldUid => $value) {
+            $field = $fields[$fieldUid];
+            $type = $field->getContentColumnType();
+
+            if (is_array($type)) {
+                foreach (array_keys($type) as $i => $key) {
+                    $column = ElementHelper::fieldColumnFromField($field, $i !== 0 ? $key : null);
+                    $values[$column] = Db::prepareValueForDb($value[$key] ?? null);
                 }
+            } else {
+                $column = ElementHelper::fieldColumnFromField($field);
+                $values[$column] = Db::prepareValueForDb($value);
             }
+        }
+
+        if (!$element->contentId) {
+            // It could be a draft that's getting published
+            $element->contentId = (new Query())
+                ->select(['id'])
+                ->from([$this->contentTable])
+                ->where([
+                    'elementId' => $element->id,
+                    'siteId' => $element->siteId,
+                ])
+                ->scalar();
         }
 
         // Insert/update the DB row
         if ($element->contentId) {
             // Update the existing row
-            Craft::$app->getDb()->createCommand()
-                ->update($this->contentTable, $values, ['id' => $element->contentId])
-                ->execute();
+            Db::update($this->contentTable, $values, [
+                'id' => $element->contentId,
+            ], [], true, $this->db);
         } else {
             // Insert a new row and store its ID on the element
-            Craft::$app->getDb()->createCommand()
-                ->insert($this->contentTable, $values)
-                ->execute();
-            $element->contentId = Craft::$app->getDb()->getLastInsertID($this->contentTable);
-        }
-
-        if ($fieldLayout) {
-            $this->_updateSearchIndexes($element, $fieldLayout);
+            Db::insert($this->contentTable, $values, true, $this->db);
+            $element->contentId = $this->db->getLastInsertID($this->contentTable);
         }
 
         // Fire an 'afterSaveContent' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_CONTENT)) {
             $this->trigger(self::EVENT_AFTER_SAVE_CONTENT, new ElementContentEvent([
-                'element' => $element
+                'element' => $element,
             ]));
         }
 
@@ -214,35 +257,6 @@ class Content extends Component
         $this->fieldContext = $originalFieldContext;
 
         return true;
-    }
-
-    // Private Methods
-    // =========================================================================
-
-    /**
-     * Updates the search indexes based on the new content values.
-     *
-     * @param ElementInterface $element
-     * @param FieldLayout $fieldLayout
-     */
-    private function _updateSearchIndexes(ElementInterface $element, FieldLayout $fieldLayout)
-    {
-        /** @var Element $element */
-        $searchKeywordsBySiteId = [];
-
-        foreach ($fieldLayout->getFields() as $field) {
-            /** @var Field $field */
-            if ($field->searchable) {
-                // Set the keywords for the content's site
-                $fieldValue = $element->getFieldValue($field->handle);
-                $fieldSearchKeywords = $field->getSearchKeywords($fieldValue, $element);
-                $searchKeywordsBySiteId[$element->siteId][$field->id] = $fieldSearchKeywords;
-            }
-        }
-
-        foreach ($searchKeywordsBySiteId as $siteId => $keywords) {
-            Craft::$app->getSearch()->indexElementFields($element->id, $siteId, $keywords);
-        }
     }
 
     /**
@@ -258,7 +272,7 @@ class Content extends Component
                 $fieldHandle = substr($column, strlen($this->fieldColumnPrefix));
                 $row[$fieldHandle] = $value;
                 unset($row[$column]);
-            } else if (!in_array($column, ['id', 'elementId', 'title', 'dateCreated', 'dateUpdated', 'uid', 'siteId'], true)) {
+            } elseif (!in_array($column, ['id', 'elementId', 'title', 'dateCreated', 'dateUpdated', 'uid', 'siteId'], true)) {
                 unset($row[$column]);
             }
         }

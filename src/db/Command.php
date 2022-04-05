@@ -15,13 +15,10 @@ use craft\helpers\StringHelper;
  * @inheritdoc
  * @property Connection $db Connection the DB connection that this command is associated with.
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Command extends \yii\db\Command
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      * @param string $table The table that new rows will be inserted into.
@@ -102,7 +99,7 @@ class Command extends \yii\db\Command
         if (is_bool($params)) {
             $includeAuditColumns = $params;
             $params = [];
-            Craft::$app->getDeprecator()->log('craft\\db\\Command::upsert($includeAuditColumns)', 'The $includeAuditColumns argument on craft\\db\\Command::upsert() has been moved to the 5th position');
+            Craft::$app->getDeprecator()->log('craft\\db\\Command::upsert($includeAuditColumns)', 'The `$includeAuditColumns` argument on `craft\\db\\Command::upsert()` has been moved to the 5th position');
         }
 
         if ($includeAuditColumns && $updateColumns !== false) {
@@ -117,7 +114,9 @@ class Command extends \yii\db\Command
 
         // todo: hack for BC with our old upsert() method. Remove in Craft 4
         // Merge any updateColumn data into insertColumns
-        $insertColumns = array_merge($updateColumns, $insertColumns);
+        if (is_array($updateColumns)) {
+            $insertColumns = array_merge($updateColumns, $insertColumns);
+        }
 
         parent::upsert($table, $insertColumns, $updateColumns, $params);
         return $this;
@@ -135,13 +134,38 @@ class Command extends \yii\db\Command
      */
     public function update($table, $columns, $condition = '', $params = [], $includeAuditColumns = true)
     {
-        if ($includeAuditColumns) {
+        if ($includeAuditColumns && !isset($columns['dateUpdated'])) {
             $columns['dateUpdated'] = Db::prepareDateForDb(new \DateTime());
         }
 
         parent::update($table, $columns, $condition, $params);
 
         return $this;
+    }
+
+    /**
+     * Creates a DELETE command that will only delete duplicate rows from a table.
+     *
+     * For example,
+     *
+     * ```php
+     * $connection->createCommand()->deleteDuplicates('user', ['email'])->execute();
+     * ```
+     *
+     * The method will properly escape the table and column names.
+     *
+     * Note that the created command is not executed until [[execute()]] is called.
+     *
+     * @param string $table The table where the data will be deleted from
+     * @param string[] $columns The column names that contain duplicate data
+     * @param string $pk The primary key column name
+     * @return $this the command object itself
+     * @since 3.5.2
+     */
+    public function deleteDuplicates(string $table, array $columns, string $pk = 'id'): self
+    {
+        $sql = $this->db->getQueryBuilder()->deleteDuplicates($table, $columns, $pk);
+        return $this->setSql($sql);
     }
 
     /**
@@ -198,6 +222,7 @@ class Command extends \yii\db\Command
      * refer to [[Query::where()]] on how to specify condition.
      * @param array $params The parameters to be bound to the command.
      * @return static The command object itself.
+     * @since 3.1.0
      */
     public function softDelete(string $table, $condition = '', array $params = []): Command
     {
@@ -214,6 +239,7 @@ class Command extends \yii\db\Command
      * refer to [[Query::where()]] on how to specify condition.
      * @param array $params The parameters to be bound to the command.
      * @return static The command object itself.
+     * @since 3.1.0
      */
     public function restore(string $table, $condition = '', array $params = []): Command
     {

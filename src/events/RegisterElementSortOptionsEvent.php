@@ -13,13 +13,10 @@ use yii\base\Event;
  * RegisterElementSortOptionsEvent class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class RegisterElementSortOptionsEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var array List of registered sort options for the element type.
      */

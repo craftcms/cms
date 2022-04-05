@@ -16,24 +16,19 @@ use yii\db\ActiveQueryInterface;
  *
  * @property int $id ID
  * @property int $ownerId Owner ID
- * @property int $ownerSiteId Owner site ID
  * @property int $fieldId Field ID
  * @property int $typeId Type ID
  * @property int $sortOrder Sort order
  * @property Element $element Element
  * @property Element $owner Owner
- * @property Site $ownerSite Owner's site
  * @property Field $field Field
  * @property MatrixBlockType $type Type
  * @property Site $site Site
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class MatrixBlock extends ActiveRecord
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      * @return string
@@ -61,16 +56,6 @@ class MatrixBlock extends ActiveRecord
     public function getOwner(): ActiveQueryInterface
     {
         return $this->hasOne(Element::class, ['id' => 'ownerId']);
-    }
-
-    /**
-     * Returns the matrix block’s owner's site.
-     *
-     * @return ActiveQueryInterface The relational query object.
-     */
-    public function getOwnerSite(): ActiveQueryInterface
-    {
-        return $this->hasOne(Site::class, ['id' => 'ownerSiteId']);
     }
 
     /**

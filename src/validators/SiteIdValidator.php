@@ -14,12 +14,15 @@ use yii\validators\Validator;
  * Will validate that the given attribute is a valid site ID.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class SiteIdValidator extends Validator
 {
-    // Protected Methods
-    // =========================================================================
+    /**
+     * @var bool|null $allowDisabled Whether to allow disabled sites.
+     * @since 3.7.32
+     */
+    public $allowDisabled;
 
     /**
      * @inheritdoc
@@ -28,7 +31,7 @@ class SiteIdValidator extends Validator
     {
         $siteId = $model->$attribute;
 
-        if ($siteId && !in_array($siteId, Craft::$app->getSites()->getAllSiteIds(), false)) {
+        if ($siteId && !in_array($siteId, Craft::$app->getSites()->getAllSiteIds($this->allowDisabled), false)) {
             $message = Craft::t('app', 'Your system isn’t set up to save content for the site “{site}”.', ['site' => $siteId]);
             $this->addError($model, $attribute, $message);
         }

@@ -2,9 +2,9 @@
 
 namespace craft\migrations;
 
-use Craft;
 use craft\db\Migration;
 use craft\elements\Tag;
+use craft\helpers\Queue;
 use craft\queue\jobs\ResaveElements;
 
 /**
@@ -17,7 +17,7 @@ class m180128_235202_set_tag_slugs extends Migration
      */
     public function safeUp()
     {
-        Craft::$app->getQueue()->push(new ResaveElements([
+        Queue::push(new ResaveElements([
             'elementType' => Tag::class,
             'criteria' => [
                 'slug' => ':empty:',

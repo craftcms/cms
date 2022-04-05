@@ -9,18 +9,16 @@ namespace craft\mail\transportadapters;
 
 use Craft;
 use craft\behaviors\EnvAttributeParserBehavior;
+use craft\helpers\App;
 
 /**
  * Smtp implements a Gmail transport adapter into Craft’s mailer.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class Gmail extends BaseTransportAdapter
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -28,9 +26,6 @@ class Gmail extends BaseTransportAdapter
     {
         return 'Gmail';
     }
-
-    // Properties
-    // =========================================================================
 
     /**
      * @var string|null The username that should be used
@@ -47,23 +42,20 @@ class Gmail extends BaseTransportAdapter
      */
     public $timeout = 10;
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
     public function behaviors()
     {
-        return [
-            'parser' => [
-                'class' => EnvAttributeParserBehavior::class,
-                'attributes' => [
-                    'username',
-                    'password',
-                ],
-            ]
+        $behaviors = parent::behaviors();
+        $behaviors['parser'] = [
+            'class' => EnvAttributeParserBehavior::class,
+            'attributes' => [
+                'username',
+                'password',
+            ],
         ];
+        return $behaviors;
     }
 
     /**
@@ -81,9 +73,9 @@ class Gmail extends BaseTransportAdapter
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['username', 'password'], 'trim'];
         $rules[] = [['username', 'password', 'timeout'], 'required'];
         $rules[] = [['timeout'], 'number', 'integerOnly' => true];
@@ -96,7 +88,7 @@ class Gmail extends BaseTransportAdapter
     public function getSettingsHtml()
     {
         return Craft::$app->getView()->renderTemplate('_components/mailertransportadapters/Gmail/settings', [
-            'adapter' => $this
+            'adapter' => $this,
         ]);
     }
 
@@ -110,8 +102,8 @@ class Gmail extends BaseTransportAdapter
             'host' => 'smtp.gmail.com',
             'port' => 465,
             'encryption' => 'ssl',
-            'username' => Craft::parseEnv($this->username),
-            'password' => Craft::parseEnv($this->password),
+            'username' => App::parseEnv($this->username),
+            'password' => App::parseEnv($this->password),
             'timeout' => $this->timeout,
         ];
     }

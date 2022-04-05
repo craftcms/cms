@@ -1,0 +1,6 @@
+class_name: FunctionalTester
+modules:
+  enabled:
+    - \craft\test\Craft
+    - \Helper\Functional
+

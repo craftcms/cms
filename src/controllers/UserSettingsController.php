@@ -10,7 +10,7 @@ namespace craft\controllers;
 use Craft;
 use craft\models\UserGroup;
 use craft\web\Controller;
-use yii\web\NotFoundHttpException;
+use yii\web\BadRequestHttpException;
 use yii\web\Response;
 
 /**
@@ -19,13 +19,10 @@ use yii\web\Response;
  * Note that all actions in this controller require administrator access in order to execute.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class UserSettingsController extends Controller
 {
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -45,42 +42,41 @@ class UserSettingsController extends Controller
      * Saves a user group.
      *
      * @return Response|null
-     * @throws NotFoundHttpException if the requested user group cannot be found
+     * @throws BadRequestHttpException
      */
     public function actionSaveGroup()
     {
         $this->requirePostRequest();
 
-        $request = Craft::$app->getRequest();
-        $groupId = $request->getBodyParam('groupId');
+        $groupId = $this->request->getBodyParam('groupId');
 
         if ($groupId) {
             $group = Craft::$app->getUserGroups()->getGroupById($groupId);
-
             if (!$group) {
-                throw new NotFoundHttpException('User group not found');
+                throw new BadRequestHttpException('User group not found');
             }
         } else {
             $group = new UserGroup();
         }
 
-        $group->name = $request->getBodyParam('name');
-        $group->handle = $request->getBodyParam('handle');
+        $group->name = $this->request->getBodyParam('name');
+        $group->handle = $this->request->getBodyParam('handle');
+        $group->description = $this->request->getBodyParam('description');
 
         // Did it save?
         if (!Craft::$app->getUserGroups()->saveGroup($group)) {
-            Craft::$app->getSession()->setError(Craft::t('app', 'Couldn’t save group.'));
+            $this->setFailFlash(Craft::t('app', 'Couldn’t save group.'));
 
             // Send the group back to the template
             Craft::$app->getUrlManager()->setRouteParams([
-                'group' => $group
+                'group' => $group,
             ]);
 
             return null;
         }
 
         // Save the new permissions
-        $permissions = $request->getBodyParam('permissions', []);
+        $permissions = $this->request->getBodyParam('permissions', []);
 
         // See if there are any new permissions in here
         if ($groupId && is_array($permissions)) {
@@ -94,9 +90,9 @@ class UserSettingsController extends Controller
         }
 
         Craft::$app->getUserPermissions()->saveGroupPermissions($group->id, $permissions);
-        Craft::$app->getSession()->setNotice(Craft::t('app', 'Group saved.'));
 
-        return $this->redirectToPostedUrl();
+        $this->setSuccessFlash(Craft::t('app', 'Group saved.'));
+        return $this->redirectToPostedUrl($group);
     }
 
     /**
@@ -109,7 +105,7 @@ class UserSettingsController extends Controller
         $this->requirePostRequest();
         $this->requireAcceptsJson();
 
-        $groupId = Craft::$app->getRequest()->getRequiredBodyParam('id');
+        $groupId = $this->request->getRequiredBodyParam('id');
 
         Craft::$app->getUserGroups()->deleteGroupById($groupId);
 
@@ -127,18 +123,20 @@ class UserSettingsController extends Controller
         $projectConfig = Craft::$app->getProjectConfig();
         $settings = $projectConfig->get('users') ?? [];
 
-        $settings['photoVolumeUid'] = Craft::$app->getRequest()->getBodyParam('photoVolumeUid');
-        $settings['photoSubpath'] = Craft::$app->getRequest()->getBodyParam('photoSubpath');
+        $settings['photoVolumeUid'] = $this->request->getBodyParam('photoVolumeUid') ?: null;
+        $settings['photoSubpath'] = $this->request->getBodyParam('photoSubpath') ?: null;
 
         if (Craft::$app->getEdition() === Craft::Pro) {
-            $settings['requireEmailVerification'] = (bool)Craft::$app->getRequest()->getBodyParam('requireEmailVerification');
-            $settings['allowPublicRegistration'] = (bool)Craft::$app->getRequest()->getBodyParam('allowPublicRegistration');
-            $settings['defaultGroup'] = Craft::$app->getRequest()->getBodyParam('defaultGroup');
+            $settings['requireEmailVerification'] = (bool)$this->request->getBodyParam('requireEmailVerification');
+            $settings['validateOnPublicRegistration'] = (bool)$this->request->getBodyParam('validateOnPublicRegistration');
+            $settings['allowPublicRegistration'] = (bool)$this->request->getBodyParam('allowPublicRegistration');
+            $settings['suspendByDefault'] = (bool)$this->request->getBodyParam('suspendByDefault');
+            $settings['defaultGroup'] = $this->request->getBodyParam('defaultGroup');
         }
 
-        $projectConfig->set('users', $settings);
+        $projectConfig->set('users', $settings, 'Update user settings');
 
-        Craft::$app->getSession()->setNotice(Craft::t('app', 'User settings saved.'));
+        $this->setSuccessFlash(Craft::t('app', 'User settings saved.'));
         return $this->redirectToPostedUrl();
     }
 }

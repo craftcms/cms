@@ -13,13 +13,10 @@ use yii\base\Event;
  * Config event class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.1
+ * @since 3.1.0
  */
 class ConfigEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null The config path being processed
      */

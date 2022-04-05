@@ -1,0 +1,239 @@
+@charset "UTF-8";
+@import "@craftcms/sass/mixins";
+
+body,
+#graphiql {
+  width: 100vw;
+  height: 100vh;
+}
+
+#graphiql {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  line-height: 20px;
+  color: $textColor;
+  -webkit-font-smoothing: subpixel-antialiased;
+
+  .graphiql-container .topBar,
+  .graphiql-container .docExplorerShow,
+  .graphiql-container .historyShow,
+  .graphiql-container .docExplorerWrap,
+  .graphiql-container .historyPaneWrap,
+  .graphiql-container .variable-editor-title,
+  .graphiql-container .footer,
+  .result-window .CodeMirror,
+  .graphiql-container .resultWrap,
+  .graphiql-container .result-window .CodeMirror-gutters,
+  .graphiql-container .toolbar-button,
+  .graphiql-container .toolbar-button:active,
+  .graphiql-container .execute-button,
+  .graphiql-container .execute-button:active,
+  .graphiql-container .toolbar-menu-items,
+  .graphiql-container .toolbar-select-options,
+  .graphiql-container .toolbar-menu-items > li.hover,
+  .graphiql-container .toolbar-menu-items > li:active,
+  .graphiql-container .toolbar-menu-items > li:hover,
+  .graphiql-container .toolbar-select-options > li.hover,
+  .graphiql-container .toolbar-select-options > li:active,
+  .graphiql-container .toolbar-select-options > li:hover,
+  .CodeMirror-gutters{
+    background: none;
+    border: none;
+  }
+
+  .graphiql-container .history-contents > p:hover,
+  .graphiql-container .history-contents > p:active {
+    color: $textColor;
+    background-color: $grey050;
+
+    span:not(.history-label) {
+      font-size: 14px;
+    }
+  }
+  .graphiql-container,
+  .graphiql-container .editorWrap {
+    overflow: visible;
+  }
+
+  .topBarWrap {
+    .topBar {
+      body.rtl & {
+        direction: rtl;
+      }
+      padding: 14px 24px;
+
+      .title {
+        @include sans-serif-font;
+        font-size: 18px;
+        font-weight: bold;
+        line-height: 1.2;
+        color: $textColor;
+      }
+    }
+
+    .docExplorerShow {
+      padding: 14px 24px;
+    }
+  }
+
+  .doc-explorer-title-bar,
+  .history-title-bar {
+    background: $white;
+  }
+
+  .queryWrap,
+  .docExplorerWrap,
+  .historyPaneWrap, {
+    @include pane;
+    overflow: hidden;
+  }
+
+  .docExplorerWrap {
+    z-index: 8 !important;
+  }
+
+  .queryWrap {
+    margin: 0 0 24px 24px;
+    border-radius: $largeBorderRadius;
+
+    .CodeMirror-gutters {
+      background: $grey050;
+      box-shadow: inset -1px 0 0 $hairlineColor;
+    }
+
+    .CodeMirror-linenumber {
+      color: $lightTextColor;
+    }
+
+    .variable-editor {
+      height: 28px;
+
+      .variable-editor-title {
+        background: $grey050;
+        box-shadow: 0 -1px 0 $hairlineColor, 0 1px 0 $hairlineColor;
+        z-index: 4;
+        color: $lightTextColor;
+      }
+    }
+  }
+
+  .graphiql-container {
+    .toolbar {
+      margin-left: 16px;
+    }
+    .toolbar-button {
+      display: inline-block;
+      background-color: $grey200;
+      border-radius: $largeBorderRadius;
+      padding: 7px 14px;
+      border: none;
+      text-align: center;
+      white-space: nowrap;
+      user-select: none;
+      cursor: pointer;
+      box-sizing: border-box;
+      appearance: none;
+      color: $textColor;
+      height: 34px;
+      max-width: 100%;
+      box-shadow: none;
+
+      &:focus,
+      &:hover {
+        background-color: darken($grey200, 5%);
+      }
+
+      svg {
+        @include margin-left(5px);
+      }
+    }
+
+    .execute-options, .toolbar-menu-items {
+      min-width: 100%;
+      margin-top: 0;
+      @include menu-styles;
+
+      li {
+        @include menu-option-styles;
+        text-align: left;
+        padding-left: 24px;
+        max-width: unset;
+
+        &:hover {
+          @include disclosure-link-hover-styles;
+        }
+
+        &.selected-schema {
+          cursor: default;
+          background: none;
+
+          &:before {
+            @include icon;
+            content: 'check';
+            @include floatleft;
+            @include margin(3px, 0, 0, -17px);
+            font-size: 14px;
+            color: $lightTextColor;
+          }
+
+          &:hover {
+            background-color: $white;
+          }
+        }
+      }
+    }
+
+    .execute-options li {
+      padding-left: 14px;
+    }
+
+    .execute-button {
+      background: linear-gradient(#fdfdfd, #CFD6DC);
+      border: 1px solid #CFD6DC;
+    }
+
+    .graphiql-explorer-root {
+      padding: 0 !important;
+
+      & > div:first-child {
+        padding: 7px 14px;
+      }
+
+      .graphiql-explorer-actions {
+        margin: 0 !important;
+        padding: 14px !important;
+        box-sizing: border-box;
+        @include sans-serif-font;
+        font-weight: normal;
+        font-variant-caps: normal;
+        text-transform: none;
+        letter-spacing: normal;
+
+        & > span {
+          margin-right: 7px;
+        }
+
+        .toolbar-button {
+          margin: 0 !important;
+          padding: 0 4px;
+
+          &:before {
+            @include icon;
+            content: 'plus';
+            font-size: 14.4px;
+          }
+
+          span {
+            display: none;
+          }
+        }
+      }
+    }
+
+    .spinner {
+      background: none;
+    }
+  }
+}

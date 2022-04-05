@@ -16,11 +16,12 @@ class m160925_113941_route_uri_parts extends Migration
     public function safeUp()
     {
         MigrationHelper::dropIndexIfExists('{{%routes}}', 'urlPattern', true, $this);
+        MigrationHelper::dropIndexIfExists('{{%routes}}', 'urlPattern', false, $this);
 
         $this->renameColumn('{{%routes}}', 'urlParts', 'uriParts');
         $this->renameColumn('{{%routes}}', 'urlPattern', 'uriPattern');
 
-        $this->createIndex(null, '{{%routes}}', ['uriPattern'], true);
+        $this->createIndex(null, '{{%routes}}', ['uriPattern']);
     }
 
     /**

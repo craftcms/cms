@@ -14,11 +14,6 @@ use craft\services\Sites;
 class m190110_150000_prune_nonexisting_sites extends Migration
 {
     /**
-     * @var array List of volume UIDs keyed by folder UIds.
-     */
-    private $_volumesByFolderUids = [];
-
-    /**
      * @inheritdoc
      */
     public function safeUp()

@@ -14,20 +14,14 @@ use yii\base\Exception;
  * Class PhpMessageSource
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class PhpMessageSource extends \yii\i18n\PhpMessageSource
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var bool Whether the messages can be overridden by translations in the site’s translations folder
      */
     public $allowOverrides = false;
-
-    // Protected Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -59,18 +53,15 @@ class PhpMessageSource extends \yii\i18n\PhpMessageSource
         return $messages;
     }
 
-    // Private Methods
-    // =========================================================================
-
     /**
      * Returns the override methods defined in the site’s translations folder.
      *
      * @param string $category
      * @param string $language
-     * @return array|null
+     * @return array
      * @throws Exception
      */
-    private function _loadOverrideMessages(string $category, string $language)
+    private function _loadOverrideMessages(string $category, string $language): array
     {
         // Save the current base path to restore later.
         $oldBasePath = $this->basePath;
@@ -93,7 +84,7 @@ class PhpMessageSource extends \yii\i18n\PhpMessageSource
 
             if (empty($messages)) {
                 $messages = $fallbackMessages;
-            } else if (!empty($fallbackMessages)) {
+            } elseif (!empty($fallbackMessages)) {
                 foreach ($fallbackMessages as $key => $value) {
                     if (!empty($value) && empty($messages[$key])) {
                         $messages[$key] = $fallbackMessages[$key];

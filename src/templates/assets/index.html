@@ -4,3 +4,9 @@
 
 {% do view.registerAssetBundle("craft\\web\\assets\\fileupload\\FileUploadAsset") %}
 {% do view.registerAssetBundle("craft\\web\\assets\\prismjs\\PrismJsAsset") %}
+
+{% if defaultSource is defined %}
+    {% js %}
+        window.defaultSource = "{{ defaultSource|e('js') }}";
+    {% endjs %}
+{% endif %}

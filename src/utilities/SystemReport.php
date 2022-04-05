@@ -7,28 +7,24 @@
 
 namespace craft\utilities;
 
+use Composer\InstalledVersions;
 use Craft;
 use craft\base\PluginInterface;
 use craft\base\Utility;
+use craft\db\Connection;
 use craft\helpers\App;
-use GuzzleHttp\Client;
-use Imagine\Gd\Imagine;
+use craft\helpers\Db;
 use RequirementsChecker;
-use Twig\Environment;
-use Yii;
 use yii\base\Module;
 
 /**
  * SystemReport represents a SystemReport dashboard widget.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class SystemReport extends Utility
 {
-    // Static
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
@@ -50,7 +46,7 @@ class SystemReport extends Utility
      */
     public static function iconPath()
     {
-        return Craft::getAlias('@app/icons/check.svg');
+        return Craft::getAlias('@appicons/check.svg');
     }
 
     /**
@@ -65,19 +61,32 @@ class SystemReport extends Utility
             }
             if ($module instanceof Module) {
                 $modules[$id] = get_class($module);
-            } else if (is_string($module)) {
+            } elseif (is_string($module)) {
                 $modules[$id] = $module;
-            } else if (is_array($module) && isset($module['class'])) {
+            } elseif (is_array($module) && isset($module['class'])) {
                 $modules[$id] = $module['class'];
             } else {
                 $modules[$id] = Craft::t('app', 'Unknown type');
             }
         }
 
+        $aliases = [];
+        foreach (Craft::$aliases as $alias => $value) {
+            if (is_array($value)) {
+                foreach ($value as $a => $v) {
+                    $aliases[$a] = $v;
+                }
+            } else {
+                $aliases[$alias] = $value;
+            }
+        }
+        ksort($aliases);
+
         return Craft::$app->getView()->renderTemplate('_components/utilities/SystemReport', [
             'appInfo' => self::_appInfo(),
             'plugins' => Craft::$app->getPlugins()->getAllPlugins(),
             'modules' => $modules,
+            'aliases' => $aliases,
             'requirements' => self::_requirementResults(),
         ]);
     }
@@ -89,17 +98,46 @@ class SystemReport extends Utility
      */
     private static function _appInfo(): array
     {
-        return [
+        $info = [
             'PHP version' => App::phpVersion(),
             'OS version' => PHP_OS . ' ' . php_uname('r'),
             'Database driver & version' => self::_dbDriver(),
             'Image driver & version' => self::_imageDriver(),
             'Craft edition & version' => 'Craft ' . App::editionName(Craft::$app->getEdition()) . ' ' . Craft::$app->getVersion(),
-            'Yii version' => Yii::getVersion(),
-            'Twig version' => Environment::VERSION,
-            'Guzzle version' => Client::VERSION,
-            'Imagine version' => Imagine::VERSION,
         ];
+
+        if (!class_exists(InstalledVersions::class, false)) {
+            $path = Craft::$app->getPath()->getVendorPath() . DIRECTORY_SEPARATOR . 'composer' . DIRECTORY_SEPARATOR . 'InstalledVersions.php';
+            if (file_exists($path)) {
+                require $path;
+            }
+        }
+
+        if (class_exists(InstalledVersions::class, false)) {
+            self::_addVersion($info, 'Yii version', 'yiisoft/yii2');
+            self::_addVersion($info, 'Twig version', 'twig/twig');
+            self::_addVersion($info, 'Guzzle version', 'guzzlehttp/guzzle');
+        }
+
+        return $info;
+    }
+
+    /**
+     * @param array $info
+     * @param string $label
+     * @param string $packageName
+     */
+    private static function _addVersion(array &$info, string $label, string $packageName): void
+    {
+        try {
+            $version = InstalledVersions::getPrettyVersion($packageName) ?? InstalledVersions::getVersion($packageName);
+        } catch (\OutOfBoundsException $e) {
+            return;
+        }
+
+        if ($version !== null) {
+            $info[$label] = $version;
+        }
     }
 
     /**
@@ -117,7 +155,7 @@ class SystemReport extends Utility
             $driverName = 'PostgreSQL';
         }
 
-        return $driverName . ' ' . $db->getVersion();
+        return $driverName . ' ' . App::normalizeVersion($db->getSchema()->getServerVersion());
     }
 
     /**
@@ -146,6 +184,11 @@ class SystemReport extends Utility
     private static function _requirementResults(): array
     {
         $reqCheck = new RequirementsChecker();
+        $dbConfig = Craft::$app->getConfig()->getDb();
+        $reqCheck->dsn = $dbConfig->dsn;
+        $reqCheck->dbDriver = $dbConfig->dsn ? Db::parseDsn($dbConfig->dsn, 'driver') : Connection::DRIVER_MYSQL;
+        $reqCheck->dbUser = $dbConfig->user;
+        $reqCheck->dbPassword = $dbConfig->password;
         $reqCheck->checkCraft();
 
         return $reqCheck->getResult()['requirements'];

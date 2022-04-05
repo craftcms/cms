@@ -6,11 +6,9 @@
 
 <script>
     export default {
-
         props: ['name', 'block', 'big'],
 
         computed: {
-
             cssClass() {
                 const cssClasses = {}
 
@@ -24,13 +22,12 @@
 
                 return cssClasses
             }
-
         }
     }
 </script>
 
 <style lang="scss" scoped>
-    @import "../../../../../../../lib/craftcms-sass/mixins";
+    @import "../../../../../../../packages/craftcms-sass/mixins";
 
     .edition-badge {
         @apply .inline-block;

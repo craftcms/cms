@@ -16,14 +16,12 @@ use yii\base\InvalidConfigException;
 /**
  * Field Layout behavior.
  *
+ * @property FieldLayout $fieldLayout
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class FieldLayoutBehavior extends Behavior
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var string|null The element type that the field layout will be associated with
      */
@@ -48,9 +46,6 @@ class FieldLayoutBehavior extends Behavior
      * @var FieldInterface[]|null The fields associated with the owner's field layout
      */
     private $_fields;
-
-    // Public Methods
-    // =========================================================================
 
     /**
      * @inheritdoc
@@ -83,9 +78,9 @@ class FieldLayoutBehavior extends Behavior
 
         if ($this->idAttribute !== null) {
             $id = $this->owner->{$this->idAttribute};
-        } else if (is_callable($this->_fieldLayoutId)) {
+        } elseif (is_callable($this->_fieldLayoutId)) {
             $id = call_user_func($this->_fieldLayoutId);
-        } else if (is_string($this->_fieldLayoutId)) {
+        } elseif (is_string($this->_fieldLayoutId)) {
             $id = $this->owner->{$this->_fieldLayoutId}();
         }
 

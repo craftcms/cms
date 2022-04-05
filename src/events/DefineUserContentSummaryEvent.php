@@ -13,13 +13,10 @@ use yii\base\Event;
  * DefineUserContentSummaryEvent class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class DefineUserContentSummaryEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var int|int[] The user ID(s) associated with the event
      */

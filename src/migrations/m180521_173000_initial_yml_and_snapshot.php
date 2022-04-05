@@ -10,7 +10,6 @@ use craft\elements\User;
 use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Json;
-use craft\helpers\StringHelper;
 use craft\services\ProjectConfig;
 
 /**
@@ -23,22 +22,20 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
      */
     public function safeUp()
     {
-        $this->addColumn(Table::INFO, 'config', $this->mediumText()->null()->after('maintenance'));
-        $this->addColumn(Table::INFO, 'configMap', $this->mediumText()->null()->after('config'));
+        $this->addColumn(Table::INFO, 'configMap', $this->mediumText()->null()->after('maintenance'));
 
         $projectConfig = Craft::$app->getProjectConfig();
 
-        if (Craft::$app->getConfig()->getGeneral()->useProjectConfigFile) {
-            $configFile = Craft::$app->getPath()->getProjectConfigFilePath();
-            if (file_exists($configFile)) {
-                // Make a backup of the old config
-                $backupFile = pathinfo(ProjectConfig::CONFIG_FILENAME, PATHINFO_FILENAME) . date('-Ymh-His') . '.yaml';
-                echo "    > renaming project.yaml to {$backupFile} and moving to config backup folder ... ";
-                rename($configFile, Craft::$app->getPath()->getConfigBackupPath() . '/' . $backupFile);
+        $configFile = Craft::$app->getPath()->getProjectConfigFilePath();
 
-                // Forget everything we knew about the old config
-                $projectConfig->reset();
-            }
+        if (file_exists($configFile)) {
+            // Make a backup of the old config
+            $backupFile = pathinfo(ProjectConfig::CONFIG_FILENAME, PATHINFO_FILENAME) . date('-Ymh-His') . '.yaml';
+            echo "    > renaming project.yaml to $backupFile and moving to config backup folder ... ";
+            rename($configFile, Craft::$app->getPath()->getConfigBackupPath() . '/' . $backupFile);
+
+            // Forget everything we knew about the old config
+            $projectConfig->reset();
         }
 
         $configData = $this->_getProjectConfigData();
@@ -136,13 +133,18 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
                 'sites.primary',
                 'siteGroups.uid AS siteGroup',
             ])
-            ->from(['{{%sites}} sites'])
-            ->innerJoin('{{%sitegroups}} siteGroups', '[[sites.groupId]] = [[siteGroups.id]]')
+            ->from(['sites' => Table::SITES])
+            ->innerJoin(['siteGroups' => Table::SITEGROUPS], '[[siteGroups.id]] = [[sites.groupId]]')
             ->all();
 
         foreach ($sites as $site) {
             $uid = $site['uid'];
             unset($site['uid'], $site['groupId']);
+
+            $site['sortOrder'] = (int)$site['sortOrder'];
+            $site['hasUrls'] = (bool)$site['hasUrls'];
+            $site['primary'] = (bool)$site['primary'];
+
             $data[$uid] = $site;
         }
 
@@ -168,8 +170,8 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
                 'structures.uid AS structure',
                 'structures.maxLevels AS structureMaxLevels',
             ])
-            ->from(['{{%sections}} sections'])
-            ->leftJoin('{{%structures}} structures', '[[structures.id]] = [[sections.structureId]]')
+            ->from(['sections' => Table::SECTIONS])
+            ->leftJoin(['structures' => Table::STRUCTURES], '[[structures.id]] = [[sections.structureId]]')
             ->all();
 
         $sectionData = [];
@@ -178,7 +180,7 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
             if (!empty($section['structure'])) {
                 $section['structure'] = [
                     'uid' => $section['structure'],
-                    'maxLevels' => $section['structureMaxLevels']
+                    'maxLevels' => (int)$section['structureMaxLevels'] ?: null,
                 ];
             } else {
                 unset($section['structure']);
@@ -186,6 +188,9 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
 
             $uid = $section['uid'];
             unset($section['id'], $section['structureMaxLevels'], $section['uid']);
+
+            $section['enableVersioning'] = (bool)$section['enableVersioning'];
+            $section['propagateEntries'] = (bool)$section['propagateEntries'];
 
             $sectionData[$uid] = $section;
             $sectionData[$uid]['entryTypes'] = [];
@@ -201,15 +206,19 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
                 'sites.uid AS siteUid',
                 'sections.uid AS sectionUid',
             ])
-            ->from(['{{%sections_sites}} sections_sites'])
-            ->innerJoin('{{%sites}} sites', '[[sites.id]] = [[sections_sites.siteId]]')
-            ->innerJoin('{{%sections}} sections', '[[sections.id]] = [[sections_sites.sectionId]]')
+            ->from(['sections_sites' => Table::SECTIONS_SITES])
+            ->innerJoin(['sites' => Table::SITES], '[[sites.id]] = [[sections_sites.siteId]]')
+            ->innerJoin(['sections' => Table::SECTIONS], '[[sections.id]] = [[sections_sites.sectionId]]')
             ->all();
 
         foreach ($sectionSiteRows as $sectionSiteRow) {
             $sectionUid = $sectionSiteRow['sectionUid'];
             $siteUid = $sectionSiteRow['siteUid'];
             unset($sectionSiteRow['sectionUid'], $sectionSiteRow['siteUid']);
+
+            $sectionSiteRow['hasUrls'] = (bool)$sectionSiteRow['hasUrls'];
+            $sectionSiteRow['enabledByDefault'] = (bool)$sectionSiteRow['enabledByDefault'];
+
             $sectionData[$sectionUid]['siteSettings'][$siteUid] = $sectionSiteRow;
         }
 
@@ -225,23 +234,27 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
                 'entrytypes.uid',
                 'sections.uid AS sectionUid',
             ])
-            ->from(['{{%entrytypes}} as entrytypes'])
-            ->innerJoin('{{%sections}} sections', '[[sections.id]] = [[entrytypes.sectionId]]')
+            ->from(['entrytypes' => Table::ENTRYTYPES])
+            ->innerJoin(['sections' => Table::SECTIONS], '[[sections.id]] = [[entrytypes.sectionId]]')
             ->all();
 
-        $layoutIds = ArrayHelper::getColumn($entryTypeRows, 'fieldLayoutId');
+        $layoutIds = array_filter(ArrayHelper::getColumn($entryTypeRows, 'fieldLayoutId'));
         $fieldLayouts = $this->_generateFieldLayoutArray($layoutIds);
 
         foreach ($entryTypeRows as $entryType) {
-            $layout = $fieldLayouts[$entryType['fieldLayoutId']];
+            $uid = ArrayHelper::remove($entryType, 'uid');
+            $sectionUid = ArrayHelper::remove($entryType, 'sectionUid');
+            $fieldLayoutId = ArrayHelper::remove($entryType, 'fieldLayoutId');
 
-            $layoutUid = $layout['uid'];
-            $sectionUid = $entryType['sectionUid'];
-            $uid = $entryType['uid'];
+            $entryType['hasTitleField'] = (bool)$entryType['hasTitleField'];
+            $entryType['sortOrder'] = (int)$entryType['sortOrder'];
 
-            unset($entryType['fieldLayoutId'], $entryType['sectionUid'], $entryType['uid'], $layout['uid']);
+            if ($fieldLayoutId) {
+                $layout = array_merge($fieldLayouts[$fieldLayoutId]);
+                $layoutUid = ArrayHelper::remove($layout, 'uid');
+                $entryType['fieldLayouts'] = [$layoutUid => $layout];
+            }
 
-            $entryType['fieldLayouts'] = [$layoutUid => $layout];
             $sectionData[$sectionUid]['entryTypes'][$uid] = $entryType;
         }
 
@@ -296,8 +309,8 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
                 'fields.uid',
                 'fieldGroups.uid AS fieldGroup',
             ])
-            ->from(['{{%fields}} fields'])
-            ->leftJoin('{{%fieldgroups}} fieldGroups', '[[fields.groupId]] = [[fieldGroups.id]]')
+            ->from(['fields' => Table::FIELDS])
+            ->leftJoin(['fieldGroups' => Table::FIELDGROUPS], '[[fieldGroups.id]] = [[fields.groupId]]')
             ->all();
 
         $fields = [];
@@ -308,6 +321,9 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
             $fieldRow['settings'] = Json::decodeIfJson($fieldRow['settings']);
             $fieldInstance = $fieldService->getFieldById($fieldRow['id']);
             $fieldRow['contentColumnType'] = $fieldInstance->getContentColumnType();
+
+            $fieldRow['searchable'] = (bool)$fieldRow['searchable'];
+
             $fields[$fieldRow['uid']] = $fieldRow;
         }
 
@@ -339,8 +355,8 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
                 'bt.uid',
                 'f.uid AS field',
             ])
-            ->from(['{{%matrixblocktypes}} bt'])
-            ->innerJoin('{{%fields}} f', '[[bt.fieldId]] = [[f.id]]')
+            ->from(['bt' => Table::MATRIXBLOCKTYPES])
+            ->innerJoin(['f' => Table::FIELDS], '[[f.id]] = [[bt.fieldId]]')
             ->all();
 
         $layoutIds = [];
@@ -351,6 +367,9 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
             unset($matrixBlockType['fieldId']);
 
             $layoutIds[] = $matrixBlockType['fieldLayoutId'];
+
+            $matrixBlockType['sortOrder'] = (int)$matrixBlockType['sortOrder'];
+
             $blockTypeData[$fieldId][$matrixBlockType['uid']] = $matrixBlockType;
         }
 
@@ -388,7 +407,7 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
                 'volumes.sortOrder',
                 'volumes.uid',
             ])
-            ->from(['{{%volumes}} volumes'])
+            ->from(['volumes' => Table::VOLUMES])
             ->all();
 
         $layoutIds = [];
@@ -409,9 +428,12 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
             }
 
             $volume['settings'] = Json::decodeIfJson($volume['settings']);
-
             $uid = $volume['uid'];
             unset($volume['fieldLayoutId'], $volume['uid']);
+
+            $volume['hasUrls'] = (bool)$volume['hasUrls'];
+            $volume['sortOrder'] = (int)$volume['sortOrder'];
+
             $data[$uid] = $volume;
         }
 
@@ -466,7 +488,7 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
             $data['groups'][$group['uid']] = [
                 'name' => $group['name'],
                 'handle' => $group['handle'],
-                'permissions' => $permissionList[$group['id']] ?? []
+                'permissions' => $permissionList[$group['id']] ?? [],
             ];
         }
 
@@ -513,8 +535,8 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
                 'structures.uid AS structure',
                 'structures.maxLevels AS structureMaxLevels',
             ])
-            ->from(['{{%categorygroups}} groups'])
-            ->leftJoin('{{%structures}} structures', '[[structures.id]] = [[groups.structureId]]')
+            ->from(['groups' => Table::CATEGORYGROUPS])
+            ->leftJoin(['structures' => Table::STRUCTURES], '[[structures.id]] = [[groups.structureId]]')
             ->all();
 
         $groupData = [];
@@ -531,7 +553,7 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
             if (!empty($group['structure'])) {
                 $group['structure'] = [
                     'uid' => $group['structure'],
-                    'maxLevels' => $group['structureMaxLevels']
+                    'maxLevels' => (int)$group['structureMaxLevels'] ?: null,
                 ];
             } else {
                 unset($group['structure']);
@@ -558,15 +580,18 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
                 'sites.uid AS siteUid',
                 'groups.uid AS groupUid',
             ])
-            ->from(['{{%categorygroups_sites}} groups_sites'])
-            ->innerJoin('{{%sites}} sites', '[[sites.id]] = [[groups_sites.siteId]]')
-            ->innerJoin('{{%categorygroups}} groups', '[[groups.id]] = [[groups_sites.groupId]]')
+            ->from(['groups_sites' => Table::CATEGORYGROUPS_SITES])
+            ->innerJoin(['sites' => Table::SITES], '[[sites.id]] = [[groups_sites.siteId]]')
+            ->innerJoin(['groups' => Table::CATEGORYGROUPS], '[[groups.id]] = [[groups_sites.groupId]]')
             ->all();
 
         foreach ($groupSiteRows as $groupSiteRow) {
             $groupUid = $groupSiteRow['groupUid'];
             $siteUid = $groupSiteRow['siteUid'];
             unset($groupSiteRow['siteUid'], $groupSiteRow['groupUid']);
+
+            $groupSiteRow['hasUrls'] = (bool)$groupSiteRow['hasUrls'];
+
             $groupData[$groupUid]['siteSettings'][$siteUid] = $groupSiteRow;
         }
 
@@ -587,7 +612,7 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
                 'groups.uid',
                 'groups.fieldLayoutId',
             ])
-            ->from(['{{%taggroups}} groups'])
+            ->from(['groups' => Table::TAGGROUPS])
             ->all();
 
         $groupData = [];
@@ -629,7 +654,7 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
                 'sets.uid',
                 'sets.fieldLayoutId',
             ])
-            ->from(['{{%globalsets}} sets'])
+            ->from(['sets' => Table::GLOBALSETS])
             ->all();
 
         $setData = [];
@@ -727,10 +752,10 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
                 'tabs.uid AS tabUid',
                 'layouts.id AS layoutId',
             ])
-            ->from(['{{%fieldlayoutfields}} AS layoutFields'])
-            ->innerJoin('{{%fieldlayouttabs}} AS tabs', '[[layoutFields.tabId]] = [[tabs.id]]')
-            ->innerJoin('{{%fieldlayouts}} AS layouts', '[[layoutFields.layoutId]] = [[layouts.id]]')
-            ->innerJoin('{{%fields}} AS fields', '[[layoutFields.fieldId]] = [[fields.id]]')
+            ->from(['layoutFields' => Table::FIELDLAYOUTFIELDS])
+            ->innerJoin(['tabs' => Table::FIELDLAYOUTTABS], '[[tabs.id]] = [[layoutFields.tabId]]')
+            ->innerJoin(['layouts' => Table::FIELDLAYOUTS], '[[layouts.id]] = [[layoutFields.layoutId]]')
+            ->innerJoin(['fields' => Table::FIELDS], '[[fields.id]] = [[layoutFields.fieldId]]')
             ->where(['layouts.id' => $layoutIds])
             ->orderBy(['tabs.sortOrder' => SORT_ASC, 'layoutFields.sortOrder' => SORT_ASC])
             ->all();
@@ -742,14 +767,14 @@ class m180521_173000_initial_yml_and_snapshot extends Migration
                 $layout['tabs'][$fieldRow['tabUid']] =
                     [
                         'name' => $fieldRow['tabName'],
-                        'sortOrder' => $fieldRow['tabOrder'],
+                        'sortOrder' => (int)$fieldRow['tabOrder'],
                     ];
             }
 
             $tab = &$layout['tabs'][$fieldRow['tabUid']];
 
-            $field['required'] = $fieldRow['required'];
-            $field['sortOrder'] = $fieldRow['fieldOrder'];
+            $field['required'] = (bool)$fieldRow['required'];
+            $field['sortOrder'] = (int)$fieldRow['fieldOrder'];
 
             $tab['fields'][$fieldRow['fieldUid']] = $field;
         }

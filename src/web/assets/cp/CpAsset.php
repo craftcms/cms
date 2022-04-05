@@ -8,6 +8,7 @@
 namespace craft\web\assets\cp;
 
 use Craft;
+use craft\base\ElementInterface;
 use craft\config\GeneralConfig;
 use craft\elements\User;
 use craft\helpers\Assets;
@@ -18,12 +19,15 @@ use craft\i18n\Locale;
 use craft\models\Section;
 use craft\services\Sites;
 use craft\web\AssetBundle;
+use craft\web\assets\axios\AxiosAsset;
 use craft\web\assets\d3\D3Asset;
 use craft\web\assets\datepickeri18n\DatepickerI18nAsset;
 use craft\web\assets\elementresizedetector\ElementResizeDetectorAsset;
 use craft\web\assets\fabric\FabricAsset;
 use craft\web\assets\fileupload\FileUploadAsset;
+use craft\web\assets\focusvisible\FocusVisibleAsset;
 use craft\web\assets\garnish\GarnishAsset;
+use craft\web\assets\iframeresizer\IframeResizerAsset;
 use craft\web\assets\jquerypayment\JqueryPaymentAsset;
 use craft\web\assets\jquerytouchevents\JqueryTouchEventsAsset;
 use craft\web\assets\jqueryui\JqueryUiAsset;
@@ -35,46 +39,51 @@ use craft\web\View;
 use yii\web\JqueryAsset;
 
 /**
- * Asset bundle for the Control Panel
+ * Asset bundle for the control panel
  */
 class CpAsset extends AssetBundle
 {
-    // Public Methods
-    // =========================================================================
+    /**
+     * @inheritdoc
+     */
+    public $sourcePath = __DIR__ . '/dist';
 
     /**
      * @inheritdoc
      */
-    public function init()
-    {
-        $this->sourcePath = __DIR__ . '/dist';
+    public $depends = [
+        AxiosAsset::class,
+        D3Asset::class,
+        ElementResizeDetectorAsset::class,
+        FocusVisibleAsset::class,
+        GarnishAsset::class,
+        JqueryAsset::class,
+        JqueryTouchEventsAsset::class,
+        JqueryUiAsset::class,
+        JqueryPaymentAsset::class,
+        DatepickerI18nAsset::class,
+        PicturefillAsset::class,
+        SelectizeAsset::class,
+        VelocityAsset::class,
+        FileUploadAsset::class,
+        XregexpAsset::class,
+        FabricAsset::class,
+        IframeResizerAsset::class,
+    ];
 
-        $this->depends = [
-            D3Asset::class,
-            ElementResizeDetectorAsset::class,
-            GarnishAsset::class,
-            JqueryAsset::class,
-            JqueryTouchEventsAsset::class,
-            JqueryUiAsset::class,
-            JqueryPaymentAsset::class,
-            DatepickerI18nAsset::class,
-            PicturefillAsset::class,
-            SelectizeAsset::class,
-            VelocityAsset::class,
-            FileUploadAsset::class,
-            XregexpAsset::class,
-            FabricAsset::class,
-        ];
+    /**
+     * @inheritdoc
+     */
+    public $css = [
+        'css/cp.css',
+    ];
 
-        $this->css = [
-            'css/craft.css',
-            'css/charts.css',
-        ];
-
-        $this->js[] = 'js/Craft' . $this->dotJs();
-
-        parent::init();
-    }
+    /**
+     * @inheritdoc
+     */
+    public $js = [
+        'cp.js',
+    ];
 
     /**
      * @inheritdoc
@@ -95,69 +104,98 @@ JS;
         $view->registerJs($js, View::POS_HEAD);
     }
 
-    // Private Methods
-    // =========================================================================
-
     private function _registerTranslations(View $view)
     {
         $view->registerTranslations('app', [
             '(blank)',
-            '1 Available Update',
+            '<span class="visually-hidden">Characters left:</span> {chars, number}',
+            'A server error occurred.',
             'Actions',
             'All',
-            'An unknown error occurred.',
             'Any changes will be lost if you leave this page.',
             'Apply this to the {number} remaining conflicts?',
+            'Apply',
+            'Are you sure you want to close the editor? Any changes will be lost.',
             'Are you sure you want to delete this image?',
             'Are you sure you want to delete “{name}”?',
+            'Are you sure you want to discard your changes?',
             'Are you sure you want to transfer your license to this domain?',
             'Buy {name}',
             'Cancel',
             'Choose a user',
             'Choose which table columns should be visible for this source, and in which order.',
-            'Close Live Preview',
+            'Clear',
+            'Close Preview',
             'Close',
+            'Color hex value',
+            'Color picker',
             'Continue',
-            'Could not create a Live Preview token.',
+            'Copied to clipboard.',
+            'Copy the URL',
+            'Copy the reference tag',
+            'Copy to clipboard',
             'Couldn’t delete “{name}”.',
             'Couldn’t save new order.',
             'Create',
-            'day',
-            'days',
             'Delete folder',
             'Delete heading',
-            'Delete it',
-            'Delete user',
-            'Delete users',
+            'Delete their content',
+            'Delete them',
+            'Delete {num, plural, =1{user} other{users}} and content',
+            'Delete {num, plural, =1{user} other{users}}',
             'Delete',
+            'Desktop',
+            'Device type',
+            'Discard changes',
             'Display as thumbnails',
             'Display in a table',
             'Done',
+            'Draft Name',
+            'Edit draft settings',
             'Edit',
+            'Edited',
+            'Element',
+            'Elements',
+            'Enabled for {site}',
+            'Enabled',
             'Enter the name of the folder',
             'Enter your password to continue.',
             'Enter your password to log back in.',
+            'Error',
+            'Export Type',
+            'Export',
+            'Export…',
             'Failed',
+            'Format',
+            'From {date}',
+            'From',
             'Give your tab a name.',
             'Handle',
+            'Header Column Heading',
             'Heading',
+            'Hide nested sources',
             'Hide sidebar',
             'Hide',
-            'hour',
-            'hours',
             'Incorrect password.',
+            'Information',
             'Instructions',
             'Keep both',
             'Keep me logged in',
+            'Keep them',
             'License transferred.',
+            'Limit',
+            'Loading',
             'Log out now',
             'Login',
             'Make not required',
             'Make required',
+            'Matrix block could not be added. Maximum number of blocks reached.',
             'Merge the folder (any conflicting files will be replaced)',
-            'minute',
-            'minutes',
             'More',
+            'Move down',
+            'Move to the left',
+            'Move to the right',
+            'Move up',
             'Move',
             'Name',
             'New category',
@@ -169,87 +207,166 @@ JS;
             'New subfolder',
             'New {group} category',
             'New {section} entry',
+            'Next Page',
+            'No limit',
+            'Notes',
+            'Notice',
             'OK',
+            'Open the full edit page in a new tab',
             'Options',
             'Password',
+            'Past year',
+            'Past {num} days',
             'Pay {price}',
             'Pending',
+            'Phone',
+            'Previous Page',
             'Really delete folder “{folder}”?',
+            'Refresh',
             'Remove',
             'Rename folder',
             'Rename',
             'Reorder',
             'Replace it',
             'Replace the folder (all existing files will be deleted)',
+            'Rotate',
             'Save as a new asset',
             'Save',
+            'Saved {timestamp} by {creator}',
+            'Saved {timestamp}',
+            'Saving',
             'Score',
             'Search in subfolders',
-            'second',
-            'seconds',
+            'Select all',
             'Select transform',
             'Select',
             'Settings',
             'Show nav',
+            'Show nested sources',
             'Show sidebar',
             'Show',
             'Show/hide children',
+            'Showing your unsaved changes.',
             'Sort by {attribute}',
             'Source settings saved',
             'Structure',
             'Submit',
+            'Switching sites will lose unsaved changes. Are you sure you want to switch sites?',
             'Table Columns',
+            'Tablet',
+            'The draft could not be saved.',
+            'The draft has been saved.',
             'This can be left blank if you just want an unlabeled separator.',
+            'This field has been modified.',
+            'This month',
+            'This week',
+            'This year',
+            'Tip',
+            'To {date}',
+            'To',
+            'Today',
             'Transfer it to:',
             'Try again',
+            'Update {type}',
+            'Upload a file',
             'Upload failed for {filename}',
             'Upload files',
-            'week',
-            'weeks',
+            'View',
+            'Warning',
             'What do you want to do with their content?',
             'What do you want to do?',
+            'Your changes could not be stored.',
+            'Your changes have been stored.',
             'Your session has ended.',
             'Your session will expire in {time}.',
+            'by {creator}',
+            'day',
+            'days',
+            'hour',
+            'hours',
+            'minute',
+            'minutes',
+            'second',
+            'seconds',
+            'week',
+            'weeks',
             '{ctrl}C to copy.',
-            '{num} Available Updates',
+            '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}',
+            '{first}-{last} of {total}',
+            '{num, number} {num, plural, =1{Available Update} other{Available Updates}}',
+            '{total, number} {total, plural, =1{{item}} other{{items}}}',
+            '{type} saved.',
             '“{name}” deleted.',
         ]);
     }
 
     private function _craftData(): array
     {
-        $upToDate = Craft::$app->getIsInstalled() && !Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded();
+        $upToDate = Craft::$app->getIsInstalled() && !Craft::$app->getUpdates()->getAreMigrationsPending();
         $request = Craft::$app->getRequest();
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         $sitesService = Craft::$app->getSites();
+        $formattingLocale = Craft::$app->getFormattingLocale();
         $locale = Craft::$app->getLocale();
         $orientation = $locale->getOrientation();
         $userSession = Craft::$app->getUser();
         $currentUser = $userSession->getIdentity();
         $primarySite = $upToDate ? $sitesService->getPrimarySite() : null;
+        $view = Craft::$app->getView();
+
+        $elementTypeNames = [];
+        foreach (Craft::$app->getElements()->getAllElementTypes() as $elementType) {
+            /** @var string|ElementInterface $elementType */
+            $elementTypeNames[$elementType] = [
+                $elementType::displayName(),
+                $elementType::pluralDisplayName(),
+                $elementType::lowerDisplayName(),
+                $elementType::pluralLowerDisplayName(),
+            ];
+        }
 
         $data = [
             'actionTrigger' => $generalConfig->actionTrigger,
             'actionUrl' => UrlHelper::actionUrl(),
+            'allowAdminChanges' => $generalConfig->allowAdminChanges,
+            'allowUpdates' => $generalConfig->allowUpdates,
+            'allowUppercaseInSlug' => (bool)$generalConfig->allowUppercaseInSlug,
+            'announcements' => $upToDate ? $this->_announcements() : [],
+            'apiParams' => Craft::$app->apiParams,
             'asciiCharMap' => StringHelper::asciiCharMap(true, Craft::$app->language),
+            'autosaveDrafts' => (bool)$generalConfig->autosaveDrafts,
+            'baseApiUrl' => Craft::$app->baseApiUrl,
             'baseCpUrl' => UrlHelper::cpUrl(),
             'baseSiteUrl' => UrlHelper::siteUrl(),
             'baseUrl' => UrlHelper::url(),
-            'datepickerOptions' => $this->_datepickerOptions($locale, $currentUser, $generalConfig),
-            'defaultIndexCriteria' => ['enabledForSite' => null],
+            'canAccessQueueManager' => $userSession->checkPermission('utility:queue-manager'),
+            'clientOs' => $request->getClientOs(),
+            'cpTrigger' => $generalConfig->cpTrigger,
+            'datepickerOptions' => $this->_datepickerOptions($formattingLocale, $locale, $currentUser, $generalConfig),
+            'defaultCookieOptions' => $this->_defaultCookieOptions(),
+            'defaultIndexCriteria' => [],
+            'deltaNames' => $view->getDeltaNames(),
             'editableCategoryGroups' => $upToDate ? $this->_editableCategoryGroups() : [],
             'edition' => Craft::$app->getEdition(),
+            'elementTypeNames' => $elementTypeNames,
             'fileKinds' => Assets::getFileKinds(),
-            'forceConfirmUnload' => Craft::$app->getSession()->hasFlash('error'),
+            'handleCasing' => $generalConfig->handleCasing,
+            'httpProxy' => $this->_httpProxy($generalConfig),
+            'initialDeltaValues' => $view->getInitialDeltaValues(),
             'isImagick' => Craft::$app->getImages()->getIsImagick(),
             'isMultiSite' => Craft::$app->getIsMultiSite(),
             'language' => Craft::$app->language,
             'left' => $orientation === 'ltr' ? 'left' : 'right',
             'limitAutoSlugsToAscii' => (bool)$generalConfig->limitAutoSlugsToAscii,
             'maxUploadSize' => Assets::getMaxUploadSize(),
+            'modifiedDeltaNames' => $request->getBodyParam('modifiedDeltaNames', []),
             'omitScriptNameInUrls' => (bool)$generalConfig->omitScriptNameInUrls,
             'orientation' => $orientation,
+            'pageNum' => $request->getPageNum(),
+            'pageTrigger' => $generalConfig->getPageTrigger(),
             'path' => $request->getPathInfo(),
+            'pathParam' => $generalConfig->pathParam,
+            'previewIframeResizerOptions' => $this->_previewIframeResizerOptions($generalConfig),
             'primarySiteId' => $primarySite ? (int)$primarySite->id : null,
             'primarySiteLanguage' => $primarySite->language ?? null,
             'Pro' => Craft::Pro,
@@ -259,13 +376,14 @@ JS;
             'remainingSessionTime' => !in_array($request->getSegment(1), ['updates', 'manualupdate'], true) ? $userSession->getRemainingSessionTime() : 0,
             'right' => $orientation === 'ltr' ? 'right' : 'left',
             'runQueueAutomatically' => (bool)$generalConfig->runQueueAutomatically,
-            'scriptName' => $request->getScriptFile(),
+            'scriptName' => basename($request->getScriptFile()),
             'siteId' => $upToDate ? (int)$sitesService->currentSite->id : null,
             'sites' => $this->_sites($sitesService),
+            'siteToken' => $generalConfig->siteToken,
             'slugWordSeparator' => $generalConfig->slugWordSeparator,
             'Solo' => Craft::Solo,
             'systemUid' => Craft::$app->getSystemUid(),
-            'timepickerOptions' => $this->_timepickerOptions($locale, $orientation),
+            'timepickerOptions' => $this->_timepickerOptions($formattingLocale, $orientation),
             'timezone' => Craft::$app->getTimeZone(),
             'tokenParam' => $generalConfig->tokenParam,
             'translations' => ['' => ''], // force encode as JS object
@@ -275,26 +393,42 @@ JS;
         ];
 
         if ($generalConfig->enableCsrfProtection) {
+            $data['csrfTokenName'] = $request->csrfParam;
             $data['csrfTokenValue'] = $request->getCsrfToken();
-            $data['csrfTokenName'] = $generalConfig->csrfTokenName;
         }
 
         return $data;
     }
 
-    private function _datepickerOptions(Locale $locale, User $currentUser = null, GeneralConfig $generalConfig): array
+    private function _announcements(): array
+    {
+        return Craft::$app->getAnnouncements()->get();
+    }
+
+    private function _datepickerOptions(Locale $formattingLocale, Locale $locale, ?User $currentUser, GeneralConfig $generalConfig): array
     {
         return [
             'constrainInput' => false,
-            'dateFormat' => $locale->getDateFormat(Locale::LENGTH_SHORT, Locale::FORMAT_JUI),
+            'dateFormat' => $formattingLocale->getDateFormat(Locale::LENGTH_SHORT, Locale::FORMAT_JUI),
             'dayNames' => $locale->getWeekDayNames(Locale::LENGTH_FULL),
             'dayNamesMin' => $locale->getWeekDayNames(Locale::LENGTH_ABBREVIATED),
             'dayNamesShort' => $locale->getWeekDayNames(Locale::LENGTH_SHORT),
-            'firstDay' => ($currentUser ? $currentUser->getPreference('weekStartDay') : null) ?: $generalConfig->defaultWeekStartDay,
+            'firstDay' => (int)(($currentUser ? $currentUser->getPreference('weekStartDay') : null) ?? $generalConfig->defaultWeekStartDay),
             'monthNames' => $locale->getMonthNames(Locale::LENGTH_FULL),
             'monthNamesShort' => $locale->getMonthNames(Locale::LENGTH_ABBREVIATED),
             'nextText' => Craft::t('app', 'Next'),
             'prevText' => Craft::t('app', 'Prev'),
+        ];
+    }
+
+    private function _defaultCookieOptions(): array
+    {
+        $config = Craft::cookieConfig();
+        return [
+            'path' => $config['path'] ?? '/',
+            'domain' => $config['domain'] ?? null,
+            'secure' => $config['secure'] ?? false,
+            'sameSite' => $config['sameSite'] ?? 'strict',
         ];
     }
 
@@ -314,12 +448,53 @@ JS;
         return $groups;
     }
 
+    /**
+     * @param $generalConfig GeneralConfig
+     * @return array|null
+     */
+    private function _httpProxy(GeneralConfig $generalConfig): ?array
+    {
+        if (!$generalConfig->httpProxy) {
+            return null;
+        }
+
+        $parsed = parse_url($generalConfig->httpProxy);
+
+        return array_filter([
+            'host' => $parsed['host'],
+            'port' => $parsed['port'] ?? strtolower($parsed['scheme']) === 'http' ? 80 : 443,
+            'auth' => array_filter([
+                'username' => $parsed['user'] ?? null,
+                'password' => $parsed['pass'] ?? null,
+            ]),
+            'protocol' => $parsed['scheme'],
+        ]);
+    }
+
+    /**
+     * @param GeneralConfig $generalConfig
+     * @return array|false|null
+     */
+    private function _previewIframeResizerOptions(GeneralConfig $generalConfig)
+    {
+        if (!$generalConfig->useIframeResizer) {
+            return false;
+        }
+
+        // Treat false as [] as well now that useIframeResizer exists
+        if (empty($generalConfig->previewIframeResizerOptions)) {
+            return null;
+        }
+
+        return $generalConfig->previewIframeResizerOptions;
+    }
+
     private function _publishableSections(User $currentUser): array
     {
         $sections = [];
 
         foreach (Craft::$app->getSections()->getEditableSections() as $section) {
-            if ($section->type !== Section::TYPE_SINGLE && $currentUser->can('createEntries:' . $section->uid)) {
+            if ($section->type !== Section::TYPE_SINGLE && $currentUser->can("createEntries:$section->uid")) {
                 $sections[] = [
                     'entryTypes' => $this->_entryTypes($section),
                     'handle' => $section->handle,
@@ -328,6 +503,7 @@ JS;
                     'sites' => $section->getSiteIds(),
                     'type' => $section->type,
                     'uid' => $section->uid,
+                    'canPublish' => $currentUser->can("publishEntries:$section->uid"),
                 ];
             }
         }
@@ -359,25 +535,25 @@ JS;
                 'handle' => $site->handle,
                 'id' => (int)$site->id,
                 'uid' => (string)$site->uid,
-                'name' => Craft::t('site', $site->name),
+                'name' => Craft::t('site', $site->getName()),
             ];
         }
 
         return $sites;
     }
 
-    private function _timepickerOptions(Locale $locale, string $orientation): array
+    private function _timepickerOptions(Locale $formattingLocale, string $orientation): array
     {
         return [
             'closeOnWindowScroll' => false,
             'lang' => [
-                'AM' => $locale->getAMName(),
-                'am' => mb_strtolower($locale->getAMName()),
-                'PM' => $locale->getPMName(),
-                'pm' => mb_strtolower($locale->getPMName()),
+                'AM' => $formattingLocale->getAMName(),
+                'am' => mb_strtolower($formattingLocale->getAMName()),
+                'PM' => $formattingLocale->getPMName(),
+                'pm' => mb_strtolower($formattingLocale->getPMName()),
             ],
             'orientation' => $orientation[0],
-            'timeFormat' => $locale->getTimeFormat(Locale::LENGTH_SHORT, Locale::FORMAT_PHP),
+            'timeFormat' => $formattingLocale->getTimeFormat(Locale::LENGTH_SHORT, Locale::FORMAT_PHP),
         ];
     }
 }

@@ -18,7 +18,6 @@ class m170306_150500_asset_temporary_uploads extends Migration
      */
     public function safeUp()
     {
-
         $folderId = Craft::$app->getDb()->quoteColumnName('assets.folderId');
         $volumeFoldersId = Craft::$app->getDb()->quoteColumnName('volumeFolders.id');
 
@@ -27,8 +26,8 @@ class m170306_150500_asset_temporary_uploads extends Migration
         // Get indexed temporary uploads
         $assets = (new Query())
             ->select(['assets.id', 'assets.filename', 'assets.folderId', 'volumeFolders.path'])
-            ->from('{{%assets}} assets')
-            ->innerJoin('{{%volumefolders}} volumeFolders', $folderId . ' = ' . $volumeFoldersId)
+            ->from(['assets' => Table::ASSETS])
+            ->innerJoin(['volumeFolders' => Table::VOLUMEFOLDERS], $folderId . ' = ' . $volumeFoldersId)
             ->where(['assets.volumeId' => null])
             ->all($this->db);
 
@@ -63,7 +62,7 @@ class m170306_150500_asset_temporary_uploads extends Migration
 
             // Track what needs to be changed
             $updatedProperties = [
-                'folderId' => $topFolderId
+                'folderId' => $topFolderId,
             ];
 
             // If the file doesn't even exist, delete the record of it.

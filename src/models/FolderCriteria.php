@@ -13,13 +13,10 @@ use craft\base\Model;
  * Folders parameters.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class FolderCriteria extends Model
 {
-    // Properties
-    // =========================================================================
-
     /**
      * @var int|null ID
      */
@@ -36,7 +33,12 @@ class FolderCriteria extends Model
     public $volumeId;
 
     /**
-     * @var string|null Name
+     * @var string|string[]|null The folder name(s).
+     *
+     * ::: tip
+     * If you’re searching for a folder name that contains a comma, pass the value through
+     * [[\craft\helpers\Db::escapeParam()]] to prevent it from getting treated as multiple folder name values.
+     * :::
      */
     public $name;
 
@@ -65,15 +67,12 @@ class FolderCriteria extends Model
      */
     public $uid;
 
-    // Public Methods
-    // =========================================================================
-
     /**
      * @inheritdoc
      */
-    public function rules()
+    protected function defineRules(): array
     {
-        $rules = parent::rules();
+        $rules = parent::defineRules();
         $rules[] = [['id', 'parentId', 'sourceId', 'offset', 'limit'], 'number', 'integerOnly' => true];
         return $rules;
     }

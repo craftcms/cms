@@ -13,15 +13,12 @@ use yii\base\Event;
  * RegisterCpNavItemsEvent class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 3.0
+ * @since 3.0.0
  */
 class RegisterCpNavItemsEvent extends Event
 {
-    // Properties
-    // =========================================================================
-
     /**
-     * @var array The registered CP nav items
+     * @var array The registered control panel nav items
      */
     public $navItems = [];
 }

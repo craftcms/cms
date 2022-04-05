@@ -7,19 +7,19 @@
     value: widget.dateRange,
     options: [
     {
-        label: 'Last 7 days',
+        label: 'Last {num, number} {num, plural, =1{day} other{days}}'|t('app', {num: 7}),
         value: 'd7'
     },
     {
-        label: 'Last 30 days',
+        label: 'Last {num, number} {num, plural, =1{day} other{days}}'|t('app', {num: 30}),
         value: 'd30'
     },
     {
-        label: 'Last Week',
+        label: 'Last Week'|t('app'),
         value: 'lastweek',
     },
     {
-        label: 'Last Month',
+        label: 'Last Month'|t('app'),
         value: 'lastmonth',
     },
     ],
