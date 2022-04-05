@@ -6,7 +6,9 @@
 
 
 <div class="readable">
-    <p id="nologs"{% if logs %} class="hidden"{% endif %}>{{ "No deprecation errors to report!"|t('app') }}</p>
+    <p id="nologs" class="zilch{% if logs %} hidden{% endif %}">
+        {{ "No deprecation errors to report!"|t('app') }}
+    </p>
 
     {% if logs %}
         <table id="deprecationerrors" class="data fullwidth fixed-layout">
