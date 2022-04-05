@@ -68,9 +68,10 @@ class ElementSources extends Component
      * @param string $elementType The element type class
      * @phpstan-param class-string<ElementInterface> $elementType
      * @param string $context The context
+     * @param bool $withDisabled Whether disabled sources should be included
      * @return array[]
      */
-    public function getSources(string $elementType, string $context = self::CONTEXT_INDEX): array
+    public function getSources(string $elementType, string $context = self::CONTEXT_INDEX, bool $withDisabled = false): array
     {
         $nativeSources = $this->_nativeSources($elementType, $context);
         $sourceConfigs = $this->_sourceConfigs($elementType);
@@ -83,8 +84,12 @@ class ElementSources extends Component
             foreach ($sourceConfigs as $source) {
                 if ($source['type'] === self::TYPE_NATIVE) {
                     if (isset($indexedNativeSources[$source['key']])) {
-                        $sources[] = $source + $indexedNativeSources[$source['key']];
-                        $nativeSourceKeys[$source['key']] = true;
+                        if ($withDisabled || !($source['disabled'] ?? false)) {
+                            $sources[] = $source + $indexedNativeSources[$source['key']];
+                            $nativeSourceKeys[$source['key']] = true;
+                        } else {
+                            unset($indexedNativeSources[$source['key']]);
+                        }
                     }
                 } else {
                     if ($source['type'] === self::TYPE_CUSTOM && !$this->_showCustomSource($source)) {
@@ -95,7 +100,12 @@ class ElementSources extends Component
             }
 
             // Make sure all native sources are accounted for
-            $missingSources = array_filter($nativeSources, fn($s) => $s['type'] === self::TYPE_NATIVE && !isset($nativeSourceKeys[$s['key']]));
+            $missingSources = array_filter($nativeSources, fn($s) => (
+                $s['type'] === self::TYPE_NATIVE &&
+                isset($indexedNativeSources[$s['key']]) &&
+                !isset($nativeSourceKeys[$s['key']])
+            ));
+
             if (!empty($missingSources)) {
                 if (!empty($sources)) {
                     $sources[] = [

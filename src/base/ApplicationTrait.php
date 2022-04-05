@@ -330,7 +330,7 @@ trait ApplicationTrait
                 return $language;
             }
 
-            // Fall back on the default CP language, if there is one, otherwise the browser language
+            // Fall back on the default control panel language, if there is one, otherwise the browser language
             return Craft::$app->getConfig()->getGeneral()->defaultCpLanguage ?? $this->_getFallbackLanguage();
         }
 
@@ -1510,15 +1510,15 @@ trait ApplicationTrait
     }
 
     /**
-     * Tries to find a language match with the browser's preferred language(s).
+     * Tries to find a language match with the browser’s preferred language(s).
      *
-     * If not uses the app's sourceLanguage.
+     * If not uses the app’s sourceLanguage.
      *
      * @return string
      */
     private function _getFallbackLanguage(): string
     {
-        // See if we have the CP translated in one of the user’s browsers preferred language(s)
+        // See if we have the control panel translated in one of the user’s browsers preferred language(s)
         if ($this instanceof WebApplication) {
             $languages = $this->getI18n()->getAppLocaleIds();
             return $this->getRequest()->getPreferredLanguage($languages);

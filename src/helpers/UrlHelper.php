@@ -486,7 +486,7 @@ class UrlHelper
      */
     public static function baseCpUrl(): string
     {
-        // Is a custom base CP URL being defined in the config?
+        // Is a custom base control panel URL being defined in the config?
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         if ($generalConfig->baseCpUrl) {
             return rtrim($generalConfig->baseCpUrl, '/') . '/';
@@ -557,7 +557,7 @@ class UrlHelper
     }
 
     /**
-     * Prepends the CP trigger onto the given path.
+     * Prepends the control panel trigger onto the given path.
      *
      * @param string $path
      * @return string
@@ -614,7 +614,7 @@ class UrlHelper
         }
 
         // If we must show the script name, then just start with the script URL,
-        // regardless of whether this is a CP or site request, as we can't assume
+        // regardless of whether this is a control panel or site request, as we can't assume
         // that index.php lives within the base URL anymore.
         if ($showScriptName) {
             if ($request->getIsConsoleRequest()) {

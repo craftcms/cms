@@ -436,7 +436,7 @@ Craft.CP = Garnish.Base.extend({
 
     enableGlobalSidebarLinks: function() {
         const focusableItems = this.$globalSidebar.find(':focusable');
-        
+
         $(focusableItems).each(function() {
             $(this).attr('tabindex', '0');
         });
@@ -444,7 +444,7 @@ Craft.CP = Garnish.Base.extend({
 
     disableGlobalSidebarLinks: function() {
         const focusableItems = this.$globalSidebar.find(':focusable');
-        
+
         $(focusableItems).each(function() {
             $(this).attr('tabindex', '-1');
         });
@@ -616,7 +616,7 @@ Craft.CP = Garnish.Base.extend({
         this.$breadcrumbList.css(Craft.orientation === 'ltr' ? 'margin-right' : 'margin-left', '');
         const listWidth = this.$breadcrumbList[0].getBoundingClientRect().width;
         let totalItemWidth = 0;
-        
+
         // Iterate through all list items (inclusive of more button)
         const $items = this.$breadcrumbList.find('li');
         for (let i = 0; i < $items.length; i++) {
@@ -667,12 +667,12 @@ Craft.CP = Garnish.Base.extend({
         // Separate breadcrums that should remain visible vs. hidden
         const shownItems = this.$breadcrumbItems.slice(0, finalIndex + 1);
         const hiddenItems = this.$breadcrumbItems.slice(finalIndex + 1);
-        
+
         // Empty list DOM and add shown items and trigger item
         this.$breadcrumbList.html('');
         this.$breadcrumbList.append(shownItems);
         this.$breadcrumbList.append(this.breadcrumbDisclosureItem);
-        
+
         // Add hidden items to disclosure menu and initialize
         this.$breadcrumbList.find('[data-disclosure-menu] ul').append(hiddenItems);
         this.$breadcrumbList.find('[data-disclosure-trigger]').disclosureMenu();
@@ -1097,7 +1097,7 @@ Craft.CP = Garnish.Base.extend({
     },
 
     /**
-     * Returns info for the job that should be displayed in the CP sidebar
+     * Returns info for the job that should be displayed in the control panel sidebar
      */
     getDisplayedJobInfo: function() {
         if (!this.enableQueue) {

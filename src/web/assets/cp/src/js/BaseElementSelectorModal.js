@@ -184,7 +184,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend({
             data.showSiteMenu = this.settings.showSiteMenu ? '1' : '0';
         }
 
-        Craft.sendActionRequest('POST', 'element-selector-modals/body', {data})
+        Craft.sendActionRequest('POST', this.settings.bodyAction, {data})
             .then((response) => {
                 this.$body.html(response.data.html);
 
@@ -193,7 +193,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend({
                 }
 
                 // Initialize the element index
-                this.elementIndex = Craft.createElementIndex(this.elementType, this.$body, {
+                this.elementIndex = Craft.createElementIndex(this.elementType, this.$body, Object.assign({
                     context: 'modal',
                     modal: this,
                     storageKey: this.settings.storageKey,
@@ -207,7 +207,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend({
                     hideSidebar: this.settings.hideSidebar,
                     defaultSiteId: this.settings.defaultSiteId,
                     defaultSource: this.settings.defaultSource
-                });
+                }, this.settings.indexSettings));
 
                 // Double-clicking or double-tapping should select the elements
                 this.addListener(this.elementIndex.$elements, 'doubletap', function(ev, touchData) {
@@ -237,6 +237,8 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend({
         onSelect: $.noop,
         hideSidebar: false,
         defaultSiteId: null,
-        defaultSource: null
-    }
+        defaultSource: null,
+        bodyAction: 'element-selector-modals/body',
+        indexSettings: {},
+    },
 });
