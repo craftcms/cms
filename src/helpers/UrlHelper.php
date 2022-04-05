@@ -636,8 +636,8 @@ class UrlHelper
         $request = Craft::$app->getRequest();
 
         // If this is a site URL and there was a (site) token on the request, pass it along
-        if (!$cpUrl && $addToken) {
-            if (!isset($params[$generalConfig->tokenParam]) && ($token = $request->getToken()) !== null) {
+        if (!$cpUrl) {
+            if ($addToken && !isset($params[$generalConfig->tokenParam]) && ($token = $request->getToken()) !== null) {
                 $params[$generalConfig->tokenParam] = $token;
             }
             if (!isset($params[$generalConfig->siteToken]) && ($siteToken = $request->getSiteToken()) !== null) {

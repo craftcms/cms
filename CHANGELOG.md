@@ -19,6 +19,7 @@
 - Fixed a bug where the selected volume subfolder would get included in folder drag-and-drop operations. ([#10745](https://github.com/craftcms/cms/issues/10745))
 - Fixed a bug where slideouts weren’t closing when clicked out of, after being opened for the second time. ([#10586](https://github.com/craftcms/cms/issues/10586))
 - Fixed a bug where `Craft.appendHeadHtml()` wasn’t pruning out `<link>` tags that were already present in the DOM.
+- Fixed a bug where image transforms weren’t always getting generated for disabled sites. ([#10498](https://github.com/craftcms/cms/issues/10498))
 
 ## 3.7.37 - 2022-03-16
 
