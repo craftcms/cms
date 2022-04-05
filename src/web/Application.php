@@ -483,8 +483,10 @@ class Application extends \yii\web\Application
      */
     private function _processResourceRequest(Request $request): void
     {
+        $generalConfig = $this->getConfig()->getGeneral();
+
         // Does this look like a resource request?
-        $resourceBaseUri = parse_url(Craft::getAlias($this->getConfig()->getGeneral()->resourceBaseUrl), PHP_URL_PATH);
+        $resourceBaseUri = parse_url(Craft::getAlias($generalConfig->resourceBaseUrl), PHP_URL_PATH);
         $requestPath = $request->getFullPath();
         if (!str_starts_with('/' . $requestPath, $resourceBaseUri . '/')) {
             return;
@@ -528,10 +530,17 @@ class Application extends \yii\web\Application
             throw new NotFoundHttpException("$filePath does not exist.");
         }
 
-        // Don't send cache headers here, in case we're in the middle of deploying an update across multiple
-        // servers and this one hasn't been updated yet (https://github.com/craftcms/cms/issues/9140#issuecomment-877521916)
-        $this->getResponse()
-            ->sendFile($publishedPath, null, ['inline' => true]);
+        $response = $this->getResponse();
+
+        // Only set cache headers if GeneralConfig::buildId matches the requested URI.
+        // This is to prevent caching a stale asset during a rolling deployment (https://github.com/craftcms/cms/issues/9140#issuecomment-877521916)
+        if ($generalConfig->buildId && $generalConfig->buildId === $request->getQueryParam('buildId')) {
+            $response->setCacheHeaders();
+        }
+
+        $response->sendFile($publishedPath, null, [
+            'inline' => true,
+        ]);
         $this->end();
     }
 

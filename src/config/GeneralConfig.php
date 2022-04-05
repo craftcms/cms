@@ -340,6 +340,16 @@ class GeneralConfig extends BaseObject
     public ?string $brokenImagePath = null;
 
     /**
+     * @var string|null A unique ID representing the current build of the codebase.
+     *
+     * This should be set to something unique to the deployment, e.g. a Git SHA or a deployment timestamp.
+     *
+     * @since 4.0.0
+     * @group Environment
+     */
+    public ?string $buildId = null;
+
+    /**
      * @var mixed The default length of time Craft will store data, RSS feed, and template caches.
      *
      * If set to `0`, data and RSS feed caches will be stored indefinitely; template caches will be stored for one year.
