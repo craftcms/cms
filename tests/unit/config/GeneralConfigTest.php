@@ -9,10 +9,6 @@ namespace crafttests\unit\base;
 
 use Codeception\Test\Unit;
 use Craft;
-use craft\test\mockclasses\models\ExampleModel;
-use DateTime;
-use DateTimeZone;
-use Exception;
 
 /**
  * Unit tests for ConfigTest
@@ -22,7 +18,6 @@ use Exception;
  */
 class GeneralConfigTest extends Unit
 {
-
     /**
      * Test config for renamed settings
      *
