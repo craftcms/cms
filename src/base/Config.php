@@ -37,7 +37,8 @@ abstract class Config extends BaseObject
         Craft::configure($this, $this->_getNormalizedProperties());
     }
 
-    private function _getNormalizedProperties(): array {
+    private function _getNormalizedProperties(): array
+    {
         $reflect = new ReflectionClass($this);
 
         return Collection::make($reflect->getProperties(ReflectionProperty::IS_PUBLIC))
