@@ -37,6 +37,9 @@
 - `craft\test\TestSetup::getMockApp()` has been renamed to `getMockModule()`, and its `$appClass` argument has been renamed to `$moduleClass`.
 
 ### Removed
+- Removed the `locale` element property. `siteId` should be used instead.
+- Removed the `ownerLocale` Matrix block query param. `site` or `siteId` should be used instead.
+- Removed support for `sourceLocale` in `relatedTo` element query params. `sourceSite` should be used instead.
 - Removed `craft\base\ElementInterface::getCrumbs()`. ([#10784](https://github.com/craftcms/cms/discussions/10784))
 - Removed `craft\services\ImageTransforms::getAllImageTransformerTypes()`.
 - Removed `craft\services\Volumes::getPublicVolumes()`.
