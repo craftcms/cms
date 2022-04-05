@@ -483,15 +483,15 @@ class Application extends \yii\web\Application
      */
     private function _processResourceRequest(Request $request): void
     {
+        $generalConfig = $this->getConfig()->getGeneral();
+
         // Does this look like a resource request?
-        $resourceBaseUri = parse_url(Craft::getAlias($this->getConfig()->getGeneral()->resourceBaseUrl), PHP_URL_PATH);
+        $resourceBaseUri = parse_url(Craft::getAlias($generalConfig->resourceBaseUrl), PHP_URL_PATH);
         $requestPath = $request->getFullPath();
         if (!str_starts_with('/' . $requestPath, $resourceBaseUri . '/')) {
             return;
         }
 
-        $buildId = Craft::$app->getConfig()->getGeneral()->buildId;
-        $buildIdFromRequest = $request->getQueryParam('buildId');
         $resourceUri = substr($requestPath, strlen($resourceBaseUri));
         $slash = strpos($resourceUri, '/');
         $hash = substr($resourceUri, 0, $slash);
@@ -534,12 +534,13 @@ class Application extends \yii\web\Application
 
         // Only set cache headers if GeneralConfig::buildId matches the requested URI.
         // This is to prevent caching a stale asset during a rolling deployment (https://github.com/craftcms/cms/issues/9140#issuecomment-877521916)
-        if ($buildId && $buildId === $buildIdFromRequest) {
+        if ($generalConfig->buildId && $generalConfig->buildId === $request->getQueryParam('buildId')) {
             $response->setCacheHeaders();
         }
 
-        $this->getResponse()
-            ->sendFile($publishedPath, null, ['inline' => true]);
+        $response->sendFile($publishedPath, null, [
+            'inline' => true,
+        ]);
         $this->end();
     }
 
