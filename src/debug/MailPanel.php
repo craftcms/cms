@@ -21,10 +21,18 @@ use yii\mail\MessageInterface;
 class MailPanel extends \yii\debug\panels\MailPanel
 {
     public $mailPath = null;
+    private array $_messages = [];
+
+    /**
+     * @var Module
+     */
+    public $module;
+
     public function init(): void
     {
-        $this->mailPath = $this->mailPath ?? "{$this->module->dataPath}/mail";
-        parent::init();
+        if (!$this->mailPath) {
+            $this->mailPath = "{$this->module->dataPath}/mail";
+        }
 
         if (!$this->module->fs) {
             return;
@@ -47,11 +55,45 @@ class MailPanel extends \yii\debug\panels\MailPanel
 
             // store message as file
             $fileName = $event->sender->generateMessageFileName();
-            $this->module->fs->write("$mailPath/$fileName", $message->toString())
+            $this->module->fs->write("$this->mailPath/$fileName", $message->toString());
             $messageData['file'] = $fileName;
 
             $this->_messages[] = $messageData;
         });
 
+    }
+
+    /**
+     * @param mixed $attr
+     * @return string
+     */
+    private function convertParams(mixed $attr): string
+    {
+        if (is_array($attr)) {
+            $attr = implode(', ', array_keys($attr));
+        }
+
+        return $attr;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function save(): array
+    {
+        return $this->_messages;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function getMessagesFileName(): array
+    {
+        $names = [];
+        foreach ($this->_messages as $message) {
+            $names[] = $message['file'];
+        }
+
+        return $names;
     }
 }

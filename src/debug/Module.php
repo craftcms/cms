@@ -24,8 +24,7 @@ class Module extends \yii\debug\Module
     public ?FsInterface $fs = null;
 
     /**
-     * @param $app Application
-     * @return void
+     * @inheritDoc
      */
     public function bootstrap($app): void
     {

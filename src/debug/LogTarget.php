@@ -77,8 +77,10 @@ class LogTarget extends \yii\debug\LogTarget
                 $this->module->fs->deleteFile("{$this->module->dataPath}/$tag");
                 if (isset($manifest[$tag]['mailFiles'])) {
                     foreach ($manifest[$tag]['mailFiles'] as $mailFile) {
+                        /** @var MailPanel $mailPanel */
+                        $mailPanel = $this->module->panels['mail'];
                         $this->module->fs->deleteFile(
-                            "{$this->module->panels['mail']->mailPath}/$mailFile"
+                            "{$mailPanel->mailPath}/$mailFile"
                         );
                     }
                 }
