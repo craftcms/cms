@@ -9,8 +9,9 @@
         <template v-slot:header>
           <div
             v-if="developer"
-            class="developer-card tw-flex tw-pb-2 tw-items-center">
-            <div class="avatar tw-w-24 tw-h-24 tw-inline-block tw-overflow-hidden tw-rounded-full tw-bg-grey tw-mr-6 tw-no-line-height">
+            class="developer-card tw-flex tw-pb-6 tw-items-center"
+          >
+            <div class="avatar tw-w-28 tw-h-28 tw-inline-block tw-overflow-hidden tw-rounded-full tw-bg-grey tw-mr-8 tw-no-line-height">
               <img
                 :src="developer.photoUrl"
                 class="tw-w-full tw-h-full"
@@ -18,21 +19,68 @@
             </div>
 
             <div class="tw-flex-1">
-              <h1 class="tw-text-lg tw-font-bold tw-mb-2">
+              <h1 class="tw-text-lg tw-font-bold">
                 {{ developer.developerName }}</h1>
 
-              <p
-                class="tw-mb-1"
-                v-if="developer.location">{{ developer.location }}</p>
+              <div
+                v-if="developer.location"
+                class="tw-mt-1"
+              >{{ developer.location }}</div>
 
-              <ul v-if="developer.developerUrl">
-                <li class="tw-mr-4 tw-inline-block">
-                  <c-btn
-                    :href="developer.developerUrl"
-                    block>{{ "Website"|t('app') }}
-                  </c-btn>
-                </li>
-              </ul>
+              <!-- Partner badges -->
+              <template v-if="(
+                developer.partner &&
+                (
+                  developer.partner.craftVerified ||
+                  developer.partner.commerceVerified ||
+                  developer.partner.enterpriseVerified
+                )
+              )">
+                <div class="tw-mt-4">
+                  <ul class="xl:tw-flex tw-space-y-2 xl:tw-space-y-0 xl:tw-space-x-6 tw-text-gray-600">
+                    <template v-if="(developer.partner && developer.partner.craftVerified)">
+                      <li class="tw-flex tw-items-center">
+                        <partner-badge kind="craft" class="tw-shrink-0 tw-mr-2" />
+                        Craft Verified
+                      </li>
+                    </template>
+                    <template v-if="(developer.partner && developer.partner.commerceVerified)">
+                      <li class="tw-flex tw-items-center">
+                        <partner-badge kind="commerce" class="tw-shrink-0 tw-mr-2" />
+                        Craft Commerce Verified
+                      </li>
+                    </template>
+                    <template v-if="(developer.partner && developer.partner.enterpriseVerified)">
+                      <li class="tw-flex tw-items-center">
+                        <partner-badge kind="enterprise" class="tw-shrink-0 tw-mr-2" />
+                        Enterprise Verified
+                      </li>
+                    </template>
+                  </ul>
+                </div>
+              </template>
+
+              <!-- Partner profile URL and developer URL -->
+              <template v-if="developer.partnerUrl || developer.developerUrl">
+                <ul class="developer-buttons tw-mt-4 tw-space-y-2">
+                  <template v-if="developer.partnerUrl">
+                    <li>
+                      <c-btn
+                        :href="developer.partnerUrl"
+                      >{{ "Partner Profile"|t('app') }}
+                      </c-btn>
+                    </li>
+                  </template>
+                  <template v-if="developer.developerUrl">
+                    <li>
+                      <c-btn
+                        :href="developer.developerUrl"
+                      >{{ "Website"|t('app') }}
+                      </c-btn>
+                    </li>
+                  </template>
+                </ul>
+              </template>
             </div>
           </div>
         </template>
@@ -47,6 +95,7 @@
 <script>
 import {mapState} from 'vuex'
 import PluginIndex from '../../components/PluginIndex'
+import PartnerBadge from '../../components/partner/PartnerBadge';
 
 export default {
   data() {
@@ -56,6 +105,7 @@ export default {
   },
 
   components: {
+    PartnerBadge,
     PluginIndex,
   },
 

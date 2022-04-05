@@ -15,6 +15,7 @@ use craft\mutex\Mutex;
 use craft\mutex\NullMutex;
 use craft\services\ProjectConfig;
 use craft\test\TestCase;
+use Exception;
 use UnitTester;
 use yii\base\NotSupportedException;
 use yii\mutex\Mutex as YiiMutex;
@@ -30,31 +31,31 @@ class ProjectConfigTest extends TestCase
     /**
      * @var UnitTester
      */
-    protected $tester;
+    protected UnitTester $tester;
 
-    protected $internal = [
+    protected array $internal = [
         'a' => 'b',
         'b' => [
-            'c' => 'd'
+            'c' => 'd',
         ],
         'e' => [1, 2, 3],
         'f' => 'g',
         'randomString' => 'Entirely random',
-        'dateModified' => 1609452000
+        'dateModified' => 1609452000,
     ];
 
-    protected $external = [
+    protected array $external = [
         'aa' => 'bb',
         'bb' => [
-            'vc' => 'dd'
+            'vc' => 'dd',
         ],
         'ee' => [11, 22, 33],
-        'f' => 'g'
+        'f' => 'g',
     ];
 
     private YiiMutex $_originalMutex;
 
-    protected function _before()
+    protected function _before(): void
     {
         parent::_before();
         $this->_originalMutex = Craft::$app->getMutex();
@@ -63,17 +64,20 @@ class ProjectConfigTest extends TestCase
         ]));
     }
 
-    protected function _after()
+    protected function _after(): void
     {
         parent::_after();
         Craft::$app->set('mutex', $this->_originalMutex);
     }
 
     /**
-     * @return ProjectConfig|mixed|\PHPUnit\Framework\MockObject\MockObject
-     * @throws \Exception
+     * @param array|null $internal
+     * @param array|null $external
+     * @param array $additionalConfig
+     * @return ProjectConfig
+     * @throws Exception
      */
-    protected function getProjectConfig(array $internal = null, array $external = null, array $additionalConfig = [])
+    protected function getProjectConfig(?array $internal = null, ?array $external = null, array $additionalConfig = []): ProjectConfig
     {
         $internal = $internal ?? $this->internal;
         $external = $external ?? $this->external;
@@ -96,7 +100,7 @@ class ProjectConfigTest extends TestCase
     /**
      * Test if rebuilding project config ignores the `readOnly` flag.
      */
-    public function testRebuildIgnoresReadOnly()
+    public function testRebuildIgnoresReadOnly(): void
     {
         $projectConfig = Craft::$app->getProjectConfig();
         $readOnly = $projectConfig->readOnly;
@@ -116,24 +120,24 @@ class ProjectConfigTest extends TestCase
     }
 
     /**
-     * @param $path
-     * @param $useExternal
-     * @param $expectedValue
+     * @param string|null $path
+     * @param bool $useExternal
+     * @param mixed $expectedValue
+     * @throws Exception
      * @dataProvider getValueDataProvider
      */
-    public function testGettingValue($path, $useExternal, $expectedValue)
+    public function testGettingValue(?string $path, bool $useExternal, mixed $expectedValue): void
     {
         $actualValue = $this->getProjectConfig()->get($path, $useExternal);
         self::assertSame($expectedValue, $actualValue);
     }
 
     /**
-     * @param $path
-     * @param $value
-     * @param $useExternal
+     * @param string $path
+     * @param mixed $value
      * @dataProvider setValueDataProvider
      */
-    public function testSettingValue($path, $value)
+    public function testSettingValue(string $path, mixed $value): void
     {
         $projectConfig = $this->getProjectConfig();
         $projectConfig->set($path, $value);
@@ -142,7 +146,7 @@ class ProjectConfigTest extends TestCase
         self::assertSame($value, $actual);
     }
 
-    public function testSettingNewValueModifiesTimestamp()
+    public function testSettingNewValueModifiesTimestamp(): void
     {
         $projectConfig = $this->getProjectConfig();
         $path = 'randomString';
@@ -156,19 +160,19 @@ class ProjectConfigTest extends TestCase
         self::assertNotSame($initialTimestamp, $projectConfig->get('dateModified'));
     }
 
-    public function testSettingValueIgnoresExternalValue()
+    public function testSettingValueIgnoresExternalValue(): void
     {
         $internal = [
             'common' => [
                 'foo' => 'bar',
-                'bar' => 'baz'
-            ]
+                'bar' => 'baz',
+            ],
         ];
 
         $external = [
             'common' => [
                 'box' => 'bax',
-            ]
+            ],
         ];
         $pc = $this->getProjectConfig($internal, $external);
 
@@ -183,7 +187,7 @@ class ProjectConfigTest extends TestCase
         self::assertSame(null, $pc->get('common.fizz', true));
     }
 
-    public function testPreventChangesIfReadOnly()
+    public function testPreventChangesIfReadOnly(): void
     {
         $pc = $this->getProjectConfig();
         $pc->readOnly = true;
@@ -191,7 +195,7 @@ class ProjectConfigTest extends TestCase
         $pc->set('path', 'value');
     }
 
-    public function testSettingValueChangesTimestamp()
+    public function testSettingValueChangesTimestamp(): void
     {
         $pc = $this->getProjectConfig();
         $timestamp = $pc->get('dateModified');
@@ -199,7 +203,7 @@ class ProjectConfigTest extends TestCase
         self::assertNotSame($timestamp, $pc->get('dateModified'));
     }
 
-    public function testEventsFiredAndDeltaStored()
+    public function testEventsFiredAndDeltaStored(): void
     {
         $pc = $this->getProjectConfig(null, null, [
             'trigger' => Expected::atLeastOnce(),
@@ -214,7 +218,7 @@ class ProjectConfigTest extends TestCase
         $pc->saveModifiedConfigData();
     }
 
-    public function getConfigProvider()
+    public function getConfigProvider(): array
     {
         return [
             [
@@ -226,7 +230,7 @@ class ProjectConfigTest extends TestCase
                     'a' => null,
                     'b' => 'c',
                     'c' => null,
-                ]
+                ],
             ],
             [
                 ['a' => 'b'],
@@ -237,7 +241,7 @@ class ProjectConfigTest extends TestCase
                     'a' => 'b',
                     'b' => null,
                     'c' => null,
-                ]
+                ],
             ],
             [
                 ['a' => 'b'],
@@ -248,26 +252,26 @@ class ProjectConfigTest extends TestCase
                     'a' => null,
                     'b' => null,
                     'c' => 'a',
-                ]
+                ],
             ],
         ];
     }
 
-    public function setConfigProvider()
+    public function setConfigProvider(): array
     {
         return [
             [
                 'a.b.c',
-                ['foo' => 'bar']
+                ['foo' => 'bar'],
             ],
             [
                 'a.b',
-                ['foo' => 'bar', 'bar' => ['baz']]
-            ]
+                ['foo' => 'bar', 'bar' => ['baz']],
+            ],
         ];
     }
 
-    public function getValueDataProvider()
+    public function getValueDataProvider(): array
     {
         return [
             ['a', false, 'b'],
@@ -281,7 +285,7 @@ class ProjectConfigTest extends TestCase
         ];
     }
 
-    public function setValueDataProvider()
+    public function setValueDataProvider(): array
     {
         return [
             ['a', 'bar'],

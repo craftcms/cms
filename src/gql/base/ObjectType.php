@@ -38,7 +38,6 @@ abstract class ObjectType extends GqlObjectType
      * @param array $arguments arguments for resolving this field.
      * @param mixed $context The context shared between all resolvers
      * @param ResolveInfo $resolveInfo The resolve information
-     *
      * @return mixed $result
      * @throws GqlException if an error occurs
      */
@@ -71,7 +70,7 @@ abstract class ObjectType extends GqlObjectType
 
         if (is_object($source)) {
             $result = $source->$fieldName;
-        } else if (is_array($source)) {
+        } elseif (is_array($source)) {
             $result = $source[$fieldName] ?? null;
         }
 

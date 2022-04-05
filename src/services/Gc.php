@@ -9,6 +9,7 @@ namespace craft\services;
 
 use Craft;
 use craft\base\BlockElementInterface;
+use craft\base\ElementInterface;
 use craft\config\GeneralConfig;
 use craft\db\Connection;
 use craft\db\Query;
@@ -212,7 +213,7 @@ class Gc extends Component
                 [
                     'e.type' => $blockElementTypes,
                     'r.id' => null,
-                ]
+                ],
             ], $params);
 
             if ($this->db->getIsMysql()) {
@@ -261,6 +262,7 @@ SQL;
      * Deletes elements that are missing data in the given element extension table.
      *
      * @param string $elementType The element type
+     * @phpstan-param class-string<ElementInterface> $elementType
      * @param string $table The extension table name
      * @param string $fk The column name that contains the foreign key to `elements.id`
      * @since 3.6.6

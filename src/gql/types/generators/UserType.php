@@ -15,7 +15,6 @@ use craft\gql\base\ObjectType;
 use craft\gql\base\SingleGeneratorInterface;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\elements\User as UserInterface;
-use craft\gql\TypeManager;
 use craft\gql\types\elements\User;
 
 /**
@@ -51,7 +50,7 @@ class UserType extends Generator implements GeneratorInterface, SingleGeneratorI
         return GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new User([
             'name' => $typeName,
             'fields' => function() use ($userFields, $typeName) {
-                return TypeManager::prepareFieldDefinitions($userFields, $typeName);
+                return Craft::$app->getGql()->prepareFieldDefinitions($userFields, $typeName);
             },
         ]));
     }

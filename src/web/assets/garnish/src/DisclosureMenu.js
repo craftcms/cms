@@ -40,7 +40,10 @@ export default Base.extend(
       if (!this.$container) return; /* Exit if no disclosure container is found */
 
       var wrapper = this.$container.closest('[data-wrapper]');
-      if (!wrapper) return; /* Exit if no positioning wrapper is found */
+      if (!wrapper.length) {
+        // Exit if no positioning wrapper is found
+        return;
+      }
       this.$wrapper = wrapper;
 
       // Is this already a disclosure button?

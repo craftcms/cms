@@ -262,7 +262,7 @@ class UserGroups extends Component
 
         if ($isNewGroup) {
             $group->uid = StringHelper::UUID();
-        } else if (!$group->uid) {
+        } elseif (!$group->uid) {
             $group->uid = Db::uidById(Table::USERGROUPS, $group->id);
         }
 
@@ -376,10 +376,6 @@ class UserGroups extends Component
     public function deleteGroup(UserGroup $group): bool
     {
         Craft::$app->requireEdition(Craft::Pro);
-
-        if (!$group) {
-            return false;
-        }
 
         // Fire a 'beforeDeleteUserGroup' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_USER_GROUP)) {

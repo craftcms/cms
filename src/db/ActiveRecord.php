@@ -114,7 +114,7 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord
                     unset($this->$key);
                 }
             }
-        } else if (
+        } elseif (
             !empty($this->getDirtyAttributes()) &&
             $this->hasAttribute('dateUpdated')
         ) {

@@ -57,10 +57,8 @@ class Feed extends Widget
     public function __construct($config = [])
     {
         // Config normalization
-        foreach (['url', 'title', 'limit'] as $name) {
-            if (($config[$name] ?? null) === '') {
-                unset($config[$name]);
-            }
+        if (($config['limit'] ?? null) === '') {
+            unset($config['limit']);
         }
 
         parent::__construct($config);

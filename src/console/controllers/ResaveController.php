@@ -29,7 +29,7 @@ use yii\helpers\Console;
 
 /**
  * Allows you to bulk-save elements.
- * 
+ *
  * See [Bulk-Resaving Elements](https://craftcms.com/knowledge-base/bulk-resaving-elements) for examples.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -59,12 +59,12 @@ class ResaveController extends Controller
      * @var bool Whether to resave element revisions.
      * @since 3.7.35
      */
-    public $revisions = false;
+    public bool $revisions = false;
 
     /**
-     * @var int|string The ID(s) of the elements to resave.
+     * @var int|string|null The ID(s) of the elements to resave.
      */
-    public string|int $elementId;
+    public string|int|null $elementId = null;
 
     /**
      * @var string|null The UUID(s) of the elements to resave.
@@ -310,6 +310,7 @@ class ResaveController extends Controller
 
     /**
      * @param string $elementType The element type that should be resaved
+     * @phpstan-param class-string<ElementInterface> $elementType
      * @param array $criteria The element criteria that determines which elements should be resaved
      * @return int
      * @since 3.7.0
@@ -317,6 +318,7 @@ class ResaveController extends Controller
     public function resaveElements(string $elementType, array $criteria = []): int
     {
         /** @var string|ElementInterface $elementType */
+        /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
         $criteria += $this->_baseCriteria();
 
         if ($this->queue) {
@@ -385,7 +387,7 @@ class ResaveController extends Controller
 
         if ($this->status === 'any') {
             $criteria['status'] = null;
-        } else if ($this->status) {
+        } elseif ($this->status) {
             $criteria['status'] = explode(',', $this->status);
         }
 
@@ -444,7 +446,7 @@ class ResaveController extends Controller
                 if ($e->exception) {
                     $this->stderr('error: ' . $e->exception->getMessage() . PHP_EOL, Console::FG_RED);
                     $fail = true;
-                } else if ($element->hasErrors()) {
+                } elseif ($element->hasErrors()) {
                     $this->stderr('failed: ' . implode(', ', $element->getErrorSummary(true)) . PHP_EOL, Console::FG_RED);
                     $fail = true;
                 } else {

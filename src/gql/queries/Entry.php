@@ -86,7 +86,6 @@ class Entry extends Query
 
             // Unless we already have the type
             if (!($sectionQueryType = GqlEntityRegistry::getEntity($typeName))) {
-                $entryTypeQueries = [];
                 $entryTypesInSection = [];
 
                 // Loop through the entry types and create further queries
@@ -109,7 +108,7 @@ class Entry extends Query
                     'resolve' => function($source, array $arguments, $context, ResolveInfo $resolveInfo) use ($sectionHandle) {
                         $arguments['section'] = $sectionHandle;
                         return EntryResolver::resolve(null, $arguments, $context, $resolveInfo);
-                    }
+                    },
                 ];
             }
 

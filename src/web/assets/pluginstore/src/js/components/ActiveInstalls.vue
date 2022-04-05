@@ -9,16 +9,18 @@
       </template>
     </template>
     <template #content>
-      <div class="flex">
-        <div class="w-1/3">
+      <div class="tw-flex">
+        <div class="tw-w-1/3">
           {{ activeInstalls | formatNumber }}
         </div>
 
-        <active-installs-chart
-          class="flex-1"
-          :plugin="plugin"
-          @updateCurrentDataPoint="updateActiveInstallsDataPoint"
-        />
+        <template v-if="plugin.installHistory">
+          <active-installs-chart
+            class="tw-flex-1"
+            :plugin="plugin"
+            @updateCurrentDataPoint="updateActiveInstallsDataPoint"
+          />
+        </template>
       </div>
     </template>
   </meta-stat>

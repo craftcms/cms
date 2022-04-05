@@ -162,28 +162,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
             activeDropTargetClass: 'sel',
             helperOpacity: 0.75,
 
-            filter: () => {
-                // Return each of the selected <a>'s parent <li>s, except for top level drag attempts.
-                var $selected = this.sourceSelect.getSelectedItems(),
-                    draggees = [];
-
-                for (var i = 0; i < $selected.length; i++) {
-                    var $source = $selected.eq(i);
-
-                    if (!this._getVolumeOrFolderUidFromSourceKey($source.data('key'))) {
-                        continue;
-                    }
-
-                    if ($source.hasClass('sel') && this._getSourceLevel($source) > 1) {
-                        draggees.push($source.parent()[0]);
-                    }
-                }
-
-                return $(draggees);
-            },
-
             helper: $draggeeHelper => {
-                var $helperSidebar = $('<div class="sidebar" style="padding-top: 0; padding-bottom: 0;"/>'),
+                var $helperSidebar = $('<div class="sidebar drag-helper"/>'),
                     $helperNav = $('<nav/>').appendTo($helperSidebar),
                     $helperUl = $('<ul/>').appendTo($helperNav);
 
@@ -767,10 +747,6 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
     },
 
     _updateUrl: function($source) {
-        if (typeof history === 'undefined') {
-            return;
-        }
-
         // Find all the subfolder sources. At the end, $thisSource will be the root volume source
         let nestedSources = [];
         let $thisSource = $source;
@@ -788,8 +764,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
             });
         }
 
-        const url = Craft.getUrl(uri, document.location.search + document.location.hash);
-        history.replaceState({}, '', url);
+        Craft.setPath(uri);
     },
 
     _getVolumeOrFolderUidFromSourceKey: function(sourceKey) {
@@ -1298,6 +1273,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 
             Craft.sendActionRequest('POST', 'assets/create-folder', {data})
                 .then((response) => {
+                    const data = response.data;
                     this.setIndexAvailable();
                     this._prepareParentForChildren($parentFolder);
                     var $subfolder = $(

@@ -117,8 +117,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend({
         this.removeListener(this.$shade, 'click');
 
         this.maxImageSize = this.getMaxImageSize();
-        Craft.sendActionRequest('POST', 'assets/image-editor', {data: assetId})
-            .then((response) => this.loadEditor.bind(this));
+        Craft.sendActionRequest('POST', 'assets/image-editor', {data: {assetId}})
+            .then((response) => this.loadEditor(response.data));
     },
 
     /**

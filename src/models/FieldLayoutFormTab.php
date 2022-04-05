@@ -106,7 +106,7 @@ class FieldLayoutFormTab extends Model
             /** @var string|bool $elementHtml */
             if (is_string($elementHtml) && $elementHtml) {
                 $components[] = $elementHtml;
-            } else if ($isConditional) {
+            } elseif ($isConditional) {
                 $components[] = Html::tag('div', '', [
                     'class' => 'hidden',
                     'data' => [

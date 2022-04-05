@@ -72,9 +72,9 @@ class Config extends Component
     private array $_configSettings = [];
 
     /**
-     * @var bool|null
+     * @var string|null
      */
-    private ?bool $_dotEnvPath = null;
+    private ?string $_dotEnvPath = null;
 
     /**
      * Returns all of the config settings for a given category.

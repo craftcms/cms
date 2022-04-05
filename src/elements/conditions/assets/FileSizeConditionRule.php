@@ -21,13 +21,14 @@ use yii\base\InvalidValueException;
  */
 class FileSizeConditionRule extends BaseNumberConditionRule implements ElementConditionRuleInterface
 {
-    const UNIT_B = 'B';
-    const UNIT_KB = 'KB';
-    const UNIT_MB = 'MB';
-    const UNIT_GB = 'GB';
+    public const UNIT_B = 'B';
+    public const UNIT_KB = 'KB';
+    public const UNIT_MB = 'MB';
+    public const UNIT_GB = 'GB';
 
     /**
      * @var string The size unit
+     * @phpstan-var self::UNIT_B|self::UNIT_KB|self::UNIT_MB|self::UNIT_GB
      */
     public string $unit = self::UNIT_B;
 
@@ -45,7 +46,7 @@ class FileSizeConditionRule extends BaseNumberConditionRule implements ElementCo
     protected function inputHtml(): string
     {
         return Html::tag('div',
-            parent::getHtml() .
+            parent::inputHtml() .
             Cp::selectHtml([
                 'name' => 'unit',
                 'options' => [
@@ -154,7 +155,7 @@ class FileSizeConditionRule extends BaseNumberConditionRule implements ElementCo
                 self::UNIT_KB,
                 self::UNIT_MB,
                 self::UNIT_GB,
-            ]
+            ],
         ];
         return $rules;
     }
@@ -162,12 +163,13 @@ class FileSizeConditionRule extends BaseNumberConditionRule implements ElementCo
     /**
      * Returns the min and max bytes that [[value]] should actually represent, when the actual value is rounded to [[unit]].
      *
-     * @return array<int, int>
+     * @return array
+     * @phpstan-return array<int,int>
      */
     private function _byteRange(): array
     {
         if ($this->unit === self::UNIT_B) {
-            return [$this->value, $this->value];
+            return [(int)$this->value, (int)$this->value];
         }
 
         $multiplier = 1;
@@ -188,8 +190,8 @@ class FileSizeConditionRule extends BaseNumberConditionRule implements ElementCo
 
         // 1 KB == 500 - 1,499 B
         $maxDiff = $multiplier / 2;
-        $minBytes = $this->value * $multiplier - $maxDiff;
-        $maxBytes = $this->value * $multiplier + $maxDiff - 1;
+        $minBytes = (int)$this->value * $multiplier - $maxDiff;
+        $maxBytes = (int)$this->value * $multiplier + $maxDiff - 1;
 
         return [$minBytes, $maxBytes];
     }

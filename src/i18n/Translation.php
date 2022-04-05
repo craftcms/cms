@@ -37,7 +37,7 @@ abstract class Translation
     /**
      * Lazy-translates a source translation that was prepared by [[prep()]].
      *
-     * @param string The prepared source translation.
+     * @param string $translation The prepared source translation.
      * @return string The translated message.
      */
     public static function translate(string $translation): string
@@ -48,7 +48,7 @@ abstract class Translation
 
         try {
             $args = Json::decode(substr($translation, 4));
-        } catch (InvalidArgumentException $e) {
+        } catch (InvalidArgumentException) {
             return $translation;
         }
 

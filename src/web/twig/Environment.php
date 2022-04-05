@@ -42,7 +42,7 @@ class Environment extends TwigEnvironment
     }
 
     /**
-     * @param mixed|null $strategy The escaper strategy to set. If null, it will be determined based on the template name.
+     * @param mixed $strategy The escaper strategy to set. If null, it will be determined based on the template name.
      */
     public function setDefaultEscaperStrategy(mixed $strategy = null): void
     {

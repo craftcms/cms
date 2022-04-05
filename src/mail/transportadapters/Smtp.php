@@ -41,7 +41,7 @@ class Smtp extends BaseTransportAdapter
     /**
      * @var bool|string|null Whether to use authentication
      */
-    public ?bool $useAuthentication = null;
+    public bool|string|null $useAuthentication = null;
 
     /**
      * @var string|null The username that should be used
@@ -59,7 +59,7 @@ class Smtp extends BaseTransportAdapter
     public ?string $encryptionMethod = null;
 
     /**
-     * @var string The timeout duration (in seconds)
+     * @var string|int The timeout duration (in seconds)
      */
     public string|int $timeout = 10;
 
@@ -69,10 +69,8 @@ class Smtp extends BaseTransportAdapter
     public function __construct($config = [])
     {
         // Config normalization
-        foreach (['host', 'port', 'useAuthentication', 'username', 'password', 'encryptionMethod'] as $name) {
-            if (($config[$name] ?? null) === '') {
-                unset($config[$name]);
-            }
+        if (($config['useAuthentication'] ?? null) === '') {
+            unset($config['useAuthentication']);
         }
 
         parent::__construct($config);
@@ -81,21 +79,21 @@ class Smtp extends BaseTransportAdapter
     /**
      * @inheritdoc
      */
-    public function behaviors(): array
+    protected function defineBehaviors(): array
     {
-        $behaviors = parent::behaviors();
-        $behaviors['parser'] = [
-            'class' => EnvAttributeParserBehavior::class,
-            'attributes' => [
-                'host',
-                'port',
-                'useAuthentication',
-                'username',
-                'password',
-                'encryptionMethod',
+        return [
+            'parser' => [
+                'class' => EnvAttributeParserBehavior::class,
+                'attributes' => [
+                    'host',
+                    'port',
+                    'useAuthentication',
+                    'username',
+                    'password',
+                    'encryptionMethod',
+                ],
             ],
         ];
-        return $behaviors;
     }
 
     /**

@@ -75,6 +75,7 @@ use craft\records\GqlToken as GqlTokenRecord;
 use GraphQL\Error\DebugFlag;
 use GraphQL\Error\Error;
 use GraphQL\GraphQL;
+use GraphQL\Type\Definition\Directive as GqlDirective;
 use GraphQL\Type\Schema;
 use GraphQL\Validator\DocumentValidator;
 use GraphQL\Validator\Rules\DisableIntrospection;
@@ -373,9 +374,7 @@ class Gql extends Component
 
             foreach ($registeredTypes as $registeredType) {
                 if (method_exists($registeredType, 'getTypeGenerator')) {
-                    /** @var GeneratorInterface $typeGeneratorClass */
                     $typeGeneratorClass = $registeredType::getTypeGenerator();
-
                     if (is_subclass_of($typeGeneratorClass, GeneratorInterface::class)) {
                         foreach ($typeGeneratorClass::generateTypes() as $type) {
                             $schemaConfig['types'][] = $type;
@@ -458,7 +457,7 @@ class Gql extends Component
         string $query,
         ?array $variables = null,
         ?string $operationName = null,
-        bool $debugMode = false
+        bool $debugMode = false,
     ): array {
         $event = new ExecuteGqlQueryEvent([
             'schemaId' => $schema->id,
@@ -601,8 +600,6 @@ class Gql extends Component
         $schemas = [];
         $names = [];
 
-        $publicToken = null;
-
         foreach ($rows as $row) {
             $token = new GqlToken($row);
 
@@ -639,6 +636,11 @@ class Gql extends Component
     {
         $queries = [];
         $mutations = [];
+
+        // Sites
+        $components = $this->_getSiteSchemaComponents();
+        $label = Craft::t('app', 'Sites');
+        $queries[$label] = $components['query'] ?? [];
 
         // Elements
         $components = $this->_getElementSchemaComponents();
@@ -895,7 +897,7 @@ class Gql extends Component
 
         try {
             $token = $this->getTokenByAccessToken(GqlToken::PUBLIC_TOKEN);
-        } catch (InvalidArgumentException $exception) {
+        } catch (InvalidArgumentException) {
             $token = new GqlToken([
                 'name' => 'Public Token',
                 'accessToken' => GqlToken::PUBLIC_TOKEN,
@@ -951,7 +953,7 @@ class Gql extends Component
 
         if ($isNewSchema && empty($schema->uid)) {
             $schema->uid = StringHelper::UUID();
-        } else if (empty($schema->uid)) {
+        } elseif (empty($schema->uid)) {
             $schema->uid = Db::uidById(Table::GQLSCHEMAS, $schema->id);
         }
 
@@ -1140,12 +1142,14 @@ class Gql extends Component
      *
      * @param array $contexts
      * @param string $elementType
+     * @phpstan-param class-string<\craft\base\ElementInterface> $elementType
      * @return array
      */
     public function getContentArguments(array $contexts, string $elementType): array
     {
         /** @var FieldLayoutBehavior[] $contexts */
         /** @var string|BaseElementInterface $elementType */
+        /** @phpstan-var class-string<BaseElementInterface>|BaseElementInterface $elementType */
         if (!array_key_exists($elementType, $this->_contentFieldCache)) {
             $elementQuery = Craft::$app->getElements()->createElementQuery($elementType);
             $contentArguments = [];
@@ -1191,7 +1195,7 @@ class Gql extends Component
             // If devMode enabled, substitute the original exception here.
             if ($devMode && !empty($originException->getMessage())) {
                 $error = $originException;
-            } else if (!$originException instanceof Error) {
+            } elseif (!$originException instanceof Error) {
                 // If devMode not enabled and the error seems to be originating from Craft, display a generic message
                 $error = new Error(
                     Craft::t('app', 'Something went wrong when processing the GraphQL query.')
@@ -1234,7 +1238,6 @@ class Gql extends Component
      * @param mixed $context
      * @param array|null $variables
      * @param string|null $operationName
-     *
      * @return string|null
      */
     private function _getCacheKey(
@@ -1243,7 +1246,7 @@ class Gql extends Component
         mixed $rootValue,
         mixed $context,
         ?array $variables = null,
-        ?string $operationName = null
+        ?string $operationName = null,
     ): ?string {
         // No cache key, if explicitly disabled
         $generalConfig = Craft::$app->getConfig()->getGeneral();
@@ -1310,8 +1313,9 @@ class Gql extends Component
         $this->trigger(self::EVENT_REGISTER_GQL_TYPES, $event);
 
         foreach ($event->types as $type) {
-            /** @var SingularTypeInterface $type */
-            TypeLoader::registerType($type::getName(), $type . '::getType');
+            /** @var string|SingularTypeInterface $type */
+            /** @phpstan-var class-string<SingularTypeInterface>|SingularTypeInterface $type */
+            TypeLoader::registerType($type::getName(), "$type::getType");
         }
 
         return $event->types;
@@ -1374,7 +1378,7 @@ class Gql extends Component
     /**
      * Get GraphQL query definitions
      *
-     * @return Directive[]
+     * @return GqlDirective[]
      */
     private function _loadGqlDirectives(): array
     {
@@ -1423,6 +1427,26 @@ class Gql extends Component
     }
 
     /**
+     * Return site schema components.
+     *
+     * @return array
+     */
+    private function _getSiteSchemaComponents(): array
+    {
+        $sites = Craft::$app->getSites()->getAllSites(true);
+        $query = [];
+
+        foreach ($sites as $site) {
+            $query["sites.{$site->uid}:read"] = ['label' => Craft::t('app', 'Allow querying elements from the “{site}” site.', ['site' => $site->name])];
+        }
+
+        return [
+            'query' => $query,
+        ];
+    }
+
+
+    /**
      * Return section permissions.
      *
      * @return array
@@ -1439,7 +1463,6 @@ class Gql extends Component
         $mutationComponents = [];
 
         if (!empty($sortedEntryTypes)) {
-
             foreach (Craft::$app->getSections()->getAllSections() as $section) {
                 $query = ['label' => Craft::t('app', 'Section - {section}', ['section' => Craft::t('site', $section->name)])];
                 $mutate = ['label' => Craft::t('app', 'Section - {section}', ['section' => Craft::t('site', $section->name)])];
@@ -1721,8 +1744,8 @@ class Gql extends Component
 
         $tokenRecord->name = $token->name;
         $tokenRecord->enabled = $token->enabled;
-        $tokenRecord->expiryDate = $token->expiryDate;
-        $tokenRecord->lastUsed = $token->lastUsed;
+        $tokenRecord->expiryDate = Db::prepareDateForDb($token->expiryDate);
+        $tokenRecord->lastUsed = Db::prepareDateForDb($token->lastUsed);
         $tokenRecord->schemaId = $token->schemaId;
 
         if ($token->accessToken) {

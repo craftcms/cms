@@ -16,7 +16,6 @@ use craft\fields\conditions\NumberFieldConditionRule;
 use craft\gql\types\Number as NumberType;
 use craft\helpers\Db;
 use craft\helpers\Localization;
-use craft\helpers\Number as NumberHelper;
 use craft\i18n\Locale;
 use GraphQL\Type\Definition\Type;
 use Throwable;
@@ -96,6 +95,7 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
 
     /**
      * @var string How the number should be formatted in element index views.
+     * @phpstan-var self::FORMAT_DECIMAL|self::FORMAT_CURRENCY|self::FORMAT_NONE
      * @since 3.5.11
      */
     public string $previewFormat = self::FORMAT_DECIMAL;
@@ -116,19 +116,6 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
         foreach (['defaultValue', 'min', 'max'] as $name) {
             if (isset($config[$name])) {
                 $config[$name] = $this->_normalizeNumber($config[$name]);
-            }
-        }
-        foreach (['defaultValue', 'max', 'decimals', 'size', 'prefix', 'suffix', 'previewCurrency'] as $name) {
-            if (($config[$name] ?? null) === '') {
-                unset($config[$name]);
-            }
-        }
-        if (($config['min'] ?? null) === '') {
-            $config['min'] = null; // default is 0
-        }
-        foreach (['min', 'max', 'defaultValue'] as $name) {
-            if (isset($config[$name])) {
-                $config[$name] = NumberHelper::toIntOrFloat($config[$name]);
             }
         }
 
@@ -238,14 +225,14 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
             if ($this->previewFormat !== self::FORMAT_NONE) {
                 try {
                     $value = Craft::$app->getFormatter()->asDecimal($value, $this->decimals);
-                } catch (InvalidArgumentException $e) {
+                } catch (InvalidArgumentException) {
                 }
-            } else if ($this->decimals) {
+            } elseif ($this->decimals) {
                 // Just make sure we're using the right decimal symbol
                 $decimalSeparator = Craft::$app->getFormattingLocale()->getNumberSymbol(Locale::SYMBOL_DECIMAL_SEPARATOR);
                 try {
                     $value = number_format($value, $this->decimals, $decimalSeparator, '');
-                } catch (Throwable $e) {
+                } catch (Throwable) {
                     // NaN
                 }
             }

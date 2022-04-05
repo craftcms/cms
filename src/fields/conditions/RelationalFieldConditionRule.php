@@ -21,7 +21,7 @@ class RelationalFieldConditionRule extends BaseElementSelectConditionRule implem
 {
     use FieldConditionRuleTrait;
 
-    const OPERATOR_RELATED_TO = 'relatedTo';
+    public const OPERATOR_RELATED_TO = 'relatedTo';
 
     /**
      * @inheritdoc
@@ -135,7 +135,7 @@ class RelationalFieldConditionRule extends BaseElementSelectConditionRule implem
     {
         /** @var ElementQueryInterface|Collection $value */
         if ($this->operator === self::OPERATOR_RELATED_TO) {
-            $elementIds = $value->collect()->map(fn(ElementInterface $element) => $element->id);
+            $elementIds = $value->collect()->map(fn(ElementInterface $element) => $element->id)->all();
             return $this->matchValue($elementIds);
         }
 

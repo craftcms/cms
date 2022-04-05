@@ -96,7 +96,7 @@ class Cp
                 // Invalid license?
                 if ($licenseKeyStatus === LicenseKeyStatus::Invalid) {
                     $alerts[] = Craft::t('app', 'Your Craft license key is invalid.');
-                } else if (Craft::$app->getHasWrongEdition()) {
+                } elseif (Craft::$app->getHasWrongEdition()) {
                     $message = Craft::t('app', 'You’re running Craft {edition} with a Craft {licensedEdition} license.', [
                             'edition' => Craft::$app->getEditionName(),
                             'licensedEdition' => Craft::$app->getLicensedEditionName(),
@@ -258,7 +258,7 @@ class Cp
         bool $showThumb = true,
         bool $showLabel = true,
         bool $showDraftName = true,
-        bool $single = false
+        bool $single = false,
     ): string {
         $isDraft = $element->getIsDraft();
         $isRevision = !$isDraft && $element->getIsRevision();
@@ -351,7 +351,7 @@ class Cp
         $innerHtml = '';
 
         if ($context === 'field' && $inputName !== null) {
-            $innerHtml .= Html::hiddenInput($inputName . ($single ? '' : '[]'), $element->id) .
+            $innerHtml .= Html::hiddenInput($inputName . ($single ? '' : '[]'), (string)$element->id) .
                 Html::tag('button', '', [
                     'class' => ['delete', 'icon'],
                     'title' => Craft::t('app', 'Remove'),
@@ -437,7 +437,7 @@ class Cp
         bool $showStatus = true,
         bool $showThumb = true,
         bool $showLabel = true,
-        bool $showDraftName = true
+        bool $showDraftName = true,
     ): string {
         if (empty($elements)) {
             return '';
@@ -601,6 +601,7 @@ class Cp
                     ($label
                         ? Html::tag($fieldset ? 'legend' : 'label', $labelHtml, ArrayHelper::merge([
                             'id' => $labelId,
+                            'class' => $config['labelClass'] ?? null,
                             'for' => !$fieldset ? $id : null,
                             'aria' => [
                                 'hidden' => $fieldset ? 'true' : null,
@@ -624,7 +625,7 @@ class Cp
                             'class' => ['flex-grow'],
                         ]) . static::renderTemplate('_includes/forms/copytextbtn', [
                             'id' => "$id-attribute",
-                            'class' => ['code', 'small', 'light', 'copytextbtn-expand-l'],
+                            'class' => ['code', 'small', 'light'],
                             'value' => $config['attribute'],
                         ])
                         : '') .
@@ -1044,7 +1045,7 @@ class Cp
                     Html::a(Craft::t('app', 'Learn more'), 'https://craftcms.com/docs/4.x/config/#environmental-configuration', [
                         'class' => 'go',
                     ]);
-            } else if (
+            } elseif (
                 !isset($config['warning']) &&
                 ($value === '@web' || str_starts_with($value, '@web/')) &&
                 Craft::$app->getRequest()->isWebAliasSetDynamically
@@ -1081,7 +1082,7 @@ JS, [
             [
                 'ownerId' => $config['ownerId'],
                 'maxAddresses' => $config['maxAddresses'],
-            ]
+            ],
         ]);
 
         return
@@ -1130,7 +1131,7 @@ JS, [
                     'draftId' => $address->draftId,
                 ],
             ]) .
-            ($config['name'] ? Html::hiddenInput("{$config['name']}[]", $address->id) : '') .
+            ($config['name'] ? Html::hiddenInput("{$config['name']}[]", (string)$address->id) : '') .
             Html::beginTag('div', ['class' => 'address-card-header']) .
             Html::tag('div', $address->title, [
                 'class' => array_filter([
@@ -1186,6 +1187,161 @@ JS, [
                 'class' => 'address-card-body',
             ]) .
             Html::endTag('div'); // .address-card
+    }
+
+    /**
+     * Returns address fields’ HTML (sans country) for a given address.
+     *
+     * @param Address $address
+     * @return string
+     * @since 4.0.0
+     */
+    public static function addressFieldsHtml(Address $address): string
+    {
+        $formatRepo = Craft::$app->getAddresses()->getAddressFormatRepository()->get($address->countryCode);
+
+        $requiredFields = array_flip($formatRepo->getRequiredFields());
+        $visibleFields = array_flip(array_merge(
+                $formatRepo->getUsedFields(),
+                $formatRepo->getUsedSubdivisionFields(),
+            )) + $requiredFields;
+
+        return
+            static::textFieldHtml([
+                'label' => $address->getAttributeLabel('addressLine1'),
+                'id' => 'addressLine1',
+                'name' => 'addressLine1',
+                'value' => $address->addressLine1,
+                'required' => isset($requiredFields['addressLine1']),
+                'errors' => $address->getErrors('addressLine1'),
+            ]) .
+            static::textFieldHtml([
+                'label' => $address->getAttributeLabel('addressLine2'),
+                'id' => 'addressLine2',
+                'name' => 'addressLine2',
+                'value' => $address->addressLine2,
+                'required' => isset($requiredFields['addressLine2']),
+                'errors' => $address->getErrors('addressLine2'),
+            ]) .
+            self::_subdivisionField(
+                $address,
+                'administrativeArea',
+                isset($visibleFields['administrativeArea']),
+                isset($requiredFields['administrativeArea']),
+                [$address->countryCode],
+                true,
+            ) .
+            self::_subdivisionField(
+                $address,
+                'locality',
+                isset($visibleFields['locality']),
+                isset($requiredFields['locality']),
+                [$address->countryCode, $address->administrativeArea],
+                true,
+            ) .
+            self::_subdivisionField(
+                $address,
+                'dependentLocality',
+                isset($visibleFields['dependentLocality']),
+                isset($requiredFields['dependentLocality']),
+                [$address->countryCode, $address->administrativeArea, $address->locality],
+                false,
+            ) .
+            Html::beginTag('div', ['class' => 'flex-fields']) .
+            static::textFieldHtml([
+                'fieldClass' => array_filter([
+                    'width-50',
+                    !isset($visibleFields['postalCode']) ? 'hidden' : null,
+                ]),
+                'label' => $address->getAttributeLabel('postalCode'),
+                'id' => 'postalCode',
+                'name' => 'postalCode',
+                'value' => $address->postalCode,
+                'required' => isset($requiredFields['postalCode']),
+                'errors' => $address->getErrors('postalCode'),
+            ]) .
+            static::textFieldHtml([
+                'fieldClass' => array_filter([
+                    'width-50',
+                    !isset($visibleFields['sortingCode']) ? 'hidden' : null,
+                ]),
+                'label' => $address->getAttributeLabel('sortingCode'),
+                'id' => 'sortingCode',
+                'name' => 'sortingCode',
+                'value' => $address->sortingCode,
+                'required' => isset($requiredFields['sortingCode']),
+                'errors' => $address->getErrors('sortingCode'),
+            ]) .
+            Html::endTag('div'); // .flex-fields
+    }
+
+    private static function _subdivisionField(
+        Address $address,
+        string $name,
+        bool $visible,
+        bool $required,
+        ?array $parents,
+        bool $spinner,
+    ): string {
+        $value = $address->$name;
+        $options = Craft::$app->getAddresses()->getSubdivisionRepository()->getList($parents, Craft::$app->language);
+
+        if ($options) {
+            // Persist invalid values in the UI
+            if ($value && !isset($options[$value])) {
+                $options[$value] = $value;
+            }
+
+            if ($spinner) {
+                $errors = $address->getErrors($name);
+                $input =
+                    Html::beginTag('div', [
+                        'class' => ['flex', 'flex-nowrap'],
+                    ]) .
+                    static::selectizeHtml([
+                        'id' => $name,
+                        'name' => $name,
+                        'value' => $value,
+                        'options' => $options,
+                        'errors' => $errors,
+                    ]) .
+                    Html::tag('div', '', [
+                        'id' => "$name-spinner",
+                        'class' => ['spinner', 'hidden'],
+                    ]) .
+                    Html::endTag('div');
+
+                return static::fieldHtml($input, [
+                    'fieldClass' => !$visible ? 'hidden' : null,
+                    'label' => $address->getAttributeLabel($name),
+                    'id' => $name,
+                    'required' => $required,
+                    'errors' => $errors,
+                ]);
+            }
+
+            return static::selectizeFieldHtml([
+                'fieldClass' => !$visible ? 'hidden' : null,
+                'label' => $address->getAttributeLabel($name),
+                'id' => $name,
+                'name' => $name,
+                'value' => $value,
+                'options' => $options,
+                'required' => $required,
+                'errors' => $address->getErrors($name),
+            ]);
+        }
+
+        // No preconfigured subdivisions for the given parents, so just output a text input
+        return static::textFieldHtml([
+            'fieldClass' => !$visible ? 'hidden' : null,
+            'label' => $address->getAttributeLabel($name),
+            'id' => $name,
+            'name' => $name,
+            'value' => $value,
+            'required' => $required,
+            'errors' => $address->getErrors($name),
+        ]);
     }
 
     /**
@@ -1378,11 +1534,11 @@ JS;
                     'tab',
                     'sel',
                     $customizable ? 'draggable' : null,
-                ])
+                ]),
             ]) .
             Html::tag('span', $tab->name) .
             ($customizable
-                ? Html::a(null, null, [
+                ? Html::a('', null, [
                     'role' => 'button',
                     'class' => ['settings', 'icon'],
                     'title' => Craft::t('app', 'Edit'),
@@ -1453,7 +1609,7 @@ JS;
                 'settings-namespace' => $settingsNamespace,
                 'settings-html' => $settingsHtml ?: false,
                 'settings-js' => $settingsJs ?: false,
-            ]
+            ],
         ]);
 
         return Html::modifyTagAttributes($element->selectorHtml(), $attr);

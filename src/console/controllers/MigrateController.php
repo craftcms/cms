@@ -184,7 +184,7 @@ class MigrateController extends BaseMigrateController
         if ($action->id !== 'all') {
             if ($this->plugin) {
                 $this->track = "plugin:$this->plugin";
-            } else if ($this->track && preg_match('/^plugin:([\w\-]+)$/', $this->track, $match)) {
+            } elseif ($this->track && preg_match('/^plugin:([\w\-]+)$/', $this->track, $match)) {
                 $this->plugin = $match[1];
             }
 
@@ -197,7 +197,7 @@ class MigrateController extends BaseMigrateController
                 }
                 try {
                     $this->plugin = $this->_plugin($this->plugin);
-                } catch (InvalidPluginException $e) {
+                } catch (InvalidPluginException) {
                     $this->stderr("Invalid plugin handle: $this->plugin" . PHP_EOL, Console::FG_RED);
                     return false;
                 }
@@ -369,7 +369,7 @@ class MigrateController extends BaseMigrateController
             // Update version info
             if ($track === MigrationManager::TRACK_CRAFT) {
                 Craft::$app->getUpdates()->updateCraftVersionInfo();
-            } else if ($track !== MigrationManager::TRACK_CONTENT) {
+            } elseif ($track !== MigrationManager::TRACK_CONTENT) {
                 Craft::$app->getPlugins()->updatePluginVersionInfo($plugins[substr($track, 7)]);
             }
         }
@@ -410,13 +410,13 @@ class MigrateController extends BaseMigrateController
                 }
         }
 
-        $res = parent::actionUp($limit) ?? ExitCode::OK;
+        $res = parent::actionUp($limit);
 
         if ($res === ExitCode::OK && empty($this->getNewMigrations())) {
             // Update any schema versions.
             if ($this->track === MigrationManager::TRACK_CRAFT) {
                 Craft::$app->getUpdates()->updateCraftVersionInfo();
-            } else if ($this->plugin) {
+            } elseif ($this->plugin) {
                 Craft::$app->getPlugins()->updatePluginVersionInfo($this->plugin);
             }
 
@@ -449,7 +449,7 @@ class MigrateController extends BaseMigrateController
     {
         try {
             FileHelper::clearDirectory(Craft::$app->getPath()->getCompiledTemplatesPath(false));
-        } catch (InvalidArgumentException $e) {
+        } catch (InvalidArgumentException) {
             // the directory doesn't exist
         } catch (ErrorException $e) {
             Craft::error('Could not delete compiled templates: ' . $e->getMessage());

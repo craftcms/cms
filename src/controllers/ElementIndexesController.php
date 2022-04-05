@@ -14,7 +14,6 @@ use craft\base\ElementExporterInterface;
 use craft\base\ElementInterface;
 use craft\elements\actions\DeleteActionInterface;
 use craft\elements\actions\Restore;
-use craft\elements\conditions\ElementCondition;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
@@ -39,6 +38,7 @@ class ElementIndexesController extends BaseElementsController
 {
     /**
      * @var string
+     * @phpstan-var class-string<ElementInterface>
      */
     protected string $elementType;
 
@@ -218,7 +218,7 @@ class ElementIndexesController extends BaseElementsController
         $actionCriteria = (clone $this->elementQuery)
             ->offset(0)
             ->limit(null)
-            ->orderBy(null)
+            ->orderBy([])
             ->positionedAfter(null)
             ->positionedBefore(null)
             ->id($elementIds);
@@ -261,6 +261,7 @@ class ElementIndexesController extends BaseElementsController
 
         // Send updated badge counts
         /** @var string|ElementInterface $elementType */
+        /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
         $elementType = $this->elementType;
         $formatter = Craft::$app->getFormatter();
         foreach (Craft::$app->getElementSources()->getSources($elementType, $this->context) as $source) {
@@ -335,11 +336,12 @@ class ElementIndexesController extends BaseElementsController
                 case Response::FORMAT_XML:
                     Craft::$app->language = 'en-US';
                     /** @var string|ElementInterface $elementType */
+                    /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
                     $elementType = $this->elementType;
                     $this->response->formatters[Response::FORMAT_XML]['rootTag'] = $elementType::pluralLowerDisplayName();
                     break;
             }
-        } else if (
+        } elseif (
             is_callable($export) ||
             is_resource($export) ||
             (is_array($export) && isset($export[0]) && is_resource($export[0]))
@@ -390,9 +392,9 @@ class ElementIndexesController extends BaseElementsController
     public function actionFilterHud(): Response
     {
         /** @var string|ElementInterface $elementType */
+        /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
         $elementType = $this->elementType();
         $id = $this->request->getRequiredBodyParam('id');
-        /** @var ElementCondition $condition */
         $condition = $elementType::createCondition();
         $condition->mainTag = 'div';
         $condition->id = $id;
@@ -407,7 +409,8 @@ class ElementIndexesController extends BaseElementsController
             $condition->queryParams = [];
             foreach ($sourceCondition->getConditionRules() as $rule) {
                 /** @var ElementConditionRuleInterface $rule */
-                foreach ($rule->getExclusiveQueryParams() as $param) {
+                $params = $rule->getExclusiveQueryParams();
+                foreach ($params as $param) {
                     $condition->queryParams[] = $param;
                 }
             }
@@ -416,7 +419,8 @@ class ElementIndexesController extends BaseElementsController
         if ($this->condition) {
             foreach ($this->condition->getConditionRules() as $rule) {
                 /** @var ElementConditionRuleInterface $rule */
-                foreach ($rule->getExclusiveQueryParams() as $param) {
+                $params = $rule->getExclusiveQueryParams();
+                foreach ($params as $param) {
                     $condition->queryParams[] = $param;
                 }
             }
@@ -471,14 +475,19 @@ class ElementIndexesController extends BaseElementsController
      * Returns the condition that should be applied to the element query.
      *
      * @return ElementConditionInterface|null
-     * @return 4.0.0
+     * @since 4.0.0
      */
     protected function condition(): ?ElementConditionInterface
     {
-        if ($conditionConfig = $this->request->getBodyParam('condition')) {
-            return Craft::$app->getConditions()->createCondition($conditionConfig);
+        /** @var array|null $conditionConfig */
+        /** @phpstan-var array{class:class-string<ElementConditionInterface>}|null $conditionConfig */
+        $conditionConfig = $this->request->getBodyParam('condition');
+
+        if (!$conditionConfig) {
+            return null;
         }
-        return null;
+
+        return Craft::$app->getConditions()->createCondition($conditionConfig);
     }
 
     /**
@@ -505,6 +514,7 @@ class ElementIndexesController extends BaseElementsController
     protected function elementQuery(): ElementQueryInterface
     {
         /** @var string|ElementInterface $elementType */
+        /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
         $elementType = $this->elementType;
         $query = $elementType::find();
         $conditionsService = Craft::$app->getConditions();
@@ -549,7 +559,7 @@ class ElementIndexesController extends BaseElementsController
         $filterConditionStr = $this->request->getBodyParam('filters');
         if ($filterConditionStr) {
             parse_str($filterConditionStr, $filterConditionConfig);
-            /** @var ElementConditionInterface $condition */
+            /** @var ElementConditionInterface $filterCondition */
             $filterCondition = $conditionsService->createCondition($filterConditionConfig['condition']);
             $filterCondition->modifyQuery($query);
         }
@@ -561,7 +571,7 @@ class ElementIndexesController extends BaseElementsController
             $descendantQuery = (clone $query)
                 ->offset(null)
                 ->limit(null)
-                ->orderBy(null)
+                ->orderBy([])
                 ->positionedAfter(null)
                 ->positionedBefore(null)
                 ->status(null);
@@ -607,6 +617,7 @@ class ElementIndexesController extends BaseElementsController
     protected function elementResponseData(bool $includeContainer, bool $includeActions): array
     {
         /** @var string|ElementInterface $elementType */
+        /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
         $elementType = $this->elementType;
         $responseData = [];
         $view = $this->getView();
@@ -654,6 +665,7 @@ class ElementIndexesController extends BaseElementsController
         }
 
         /** @var string|ElementInterface $elementType */
+        /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
         $elementType = $this->elementType;
         $actions = $elementType::actions($this->sourceKey);
 
@@ -665,21 +677,19 @@ class ElementIndexesController extends BaseElementsController
                 if (is_string($action)) {
                     $action = ['type' => $action];
                 }
+                /** @var array $action */
+                /** @phpstan-var array{type:class-string<ElementActionInterface>} $action */
                 $action['elementType'] = $elementType;
                 $actions[$i] = $action = Craft::$app->getElements()->createAction($action);
-
-                if ($actions[$i] === null) {
-                    unset($actions[$i]);
-                }
             }
 
             if ($this->elementQuery->trashed) {
                 if ($action instanceof DeleteActionInterface && $action->canHardDelete()) {
-                    $action->hard = true;
-                } else if (!$action instanceof Restore) {
+                    $action->setHardDelete();
+                } elseif (!$action instanceof Restore) {
                     unset($actions[$i]);
                 }
-            } else if ($action instanceof Restore) {
+            } elseif ($action instanceof Restore) {
                 unset($actions[$i]);
             }
         }
@@ -713,6 +723,7 @@ class ElementIndexesController extends BaseElementsController
         }
 
         /** @var string|ElementInterface $elementType */
+        /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
         $elementType = $this->elementType;
         $exporters = $elementType::exporters($this->sourceKey);
 
@@ -725,11 +736,7 @@ class ElementIndexesController extends BaseElementsController
                     $exporter = ['type' => $exporter];
                 }
                 $exporter['elementType'] = $elementType;
-                $exporters[$i] = $exporter = Craft::$app->getElements()->createExporter($exporter);
-
-                if ($exporters[$i] === null) {
-                    unset($exporters[$i]);
-                }
+                $exporters[$i] = Craft::$app->getElements()->createExporter($exporter);
             }
         }
 

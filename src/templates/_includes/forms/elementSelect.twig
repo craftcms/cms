@@ -41,10 +41,17 @@
         {% endfor %}
     </div>
 
-    <div class="flex{% if limit and elements|length >= limit %} hidden{% endif %}">
+    <div class="flex flex-nowrap">
         {{ tag('button', {
             type: 'button',
-            class: ['btn', 'add', 'icon', 'dashed', disabled ? 'disabled']|filter,
+            class: [
+                'btn',
+                'add',
+                'icon',
+                'dashed',
+                disabled ? 'disabled',
+                limit and elements|length >= limit ? 'hidden',
+            ]|filter,
             text: selectionLabel ?? 'Choose'|t('app'),
             disabled: disabled,
             aria: {
@@ -52,6 +59,7 @@
                 describedby: describedBy ?? false,
             }
         }) }}
+        <div class="spinner hidden"></div>
     </div>
 {% endtag %}
 

@@ -1,5 +1,6 @@
 <?php
-declare(strict_types = 1);
+
+declare(strict_types=1);
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -35,6 +36,8 @@ use craft\errors\FsException;
 use craft\errors\ImageTransformException;
 use craft\errors\VolumeException;
 use craft\events\AssetEvent;
+use craft\events\DefineAssetUrlEvent;
+use craft\events\GenerateTransformEvent;
 use craft\fieldlayoutelements\assets\AltField;
 use craft\fs\Temp;
 use craft\helpers\ArrayHelper;
@@ -58,6 +61,7 @@ use craft\services\ElementSources;
 use craft\validators\AssetLocationValidator;
 use craft\validators\DateTimeValidator;
 use craft\validators\StringValidator;
+use craft\web\CpScreenResponseBehavior;
 use DateTime;
 use Throwable;
 use Twig\Markup;
@@ -69,12 +73,13 @@ use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
 use yii\base\UnknownPropertyException;
 use yii\validators\RequiredValidator;
+use yii\web\Response;
 
 /**
  * Asset represents an asset element.
  *
- * @property int|float|null $height the image height
- * @property int|float|null $width the image width
+ * @property int|null $height the image height
+ * @property int|null $width the image width
  * @property int|null $volumeId the volume ID
  * @property string $filename the filename (with extension)
  * @property string|array|null $focalPoint the focal point represented as an array with `x` and `y` keys, or null if it's not an image
@@ -116,6 +121,25 @@ class Asset extends Element
      * @event AssetEvent The event that is triggered before an asset is uploaded to volume.
      */
     public const EVENT_BEFORE_HANDLE_FILE = 'beforeHandleFile';
+
+    /**
+     * @event GenerateTransformEvent The event that is triggered before a transform is generated for an asset.
+     * @since 4.0.0
+     */
+    public const EVENT_BEFORE_GENERATE_TRANSFORM = 'beforeGenerateTransform';
+
+    /**
+     * @event GenerateTransformEvent The event that is triggered after a transform is generated for an asset.
+     * @since 4.0.0
+     */
+    public const EVENT_AFTER_GENERATE_TRANSFORM = 'afterGenerateTransform';
+
+    /**
+     * @event DefineAssetUrlEvent The event that is triggered when a transform is being generated for an asset.
+     * @see getUrl()
+     * @since 4.0.0
+     */
+    public const EVENT_DEFINE_URL = 'defineUrl';
 
     // Location error codes
     // -------------------------------------------------------------------------
@@ -232,7 +256,7 @@ class Asset extends Element
      * @inheritdoc
      * @return AssetQuery The newly created [[AssetQuery]] instance.
      */
-    public static function find(): ElementQueryInterface
+    public static function find(): AssetQuery
     {
         return new AssetQuery(static::class);
     }
@@ -278,6 +302,7 @@ class Asset extends Element
     public function setEagerLoadedElements(string $handle, array $elements): void
     {
         if ($handle === 'uploader') {
+            /** @var User|null $uploader */
             $uploader = $elements[0] ?? null;
             $this->setUploader($uploader);
         } else {
@@ -350,7 +375,7 @@ class Asset extends Element
      * @inheritdoc
      * @since 3.5.0
      */
-    public static function defineFieldLayouts(string $source): array
+    protected static function defineFieldLayouts(string $source): array
     {
         $fieldLayouts = [];
         if (
@@ -375,7 +400,7 @@ class Asset extends Element
             preg_match('/^volume:([a-z0-9\-]+)/', $source, $matches) &&
             $volume = Craft::$app->getVolumes()->getVolumeByUid($matches[1])
         ) {
-            $isTemp = $volume instanceof Temp;
+            $isTemp = $volume->getFs() instanceof Temp;
 
             $actions[] = [
                 'type' => PreviewAsset::class,
@@ -548,9 +573,9 @@ class Asset extends Element
     {
         $volume = $folder->getVolume();
 
-        if ($volume instanceof Temp) {
+        if ($volume->getFs() instanceof Temp) {
             $volumeHandle = 'temp';
-        } else if (!$folder->parentId) {
+        } elseif (!$folder->parentId) {
             $volumeHandle = $volume->handle ?? false;
         } else {
             $volumeHandle = false;
@@ -697,14 +722,14 @@ class Asset extends Element
     private string $_filename;
 
     /**
-     * @var int|float|null Width
+     * @var int|null Width
      */
-    private int|float|null $_width = null;
+    private int|null $_width = null;
 
     /**
-     * @var int|float|null Height
+     * @var int|null Height
      */
-    private int|float|null $_height = null;
+    private int|null $_height = null;
 
     /**
      * @var array|null Focal point
@@ -837,16 +862,6 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public function datetimeAttributes(): array
-    {
-        $attributes = parent::datetimeAttributes();
-        $attributes[] = 'dateModified';
-        return $attributes;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function afterValidate(): void
     {
         $scenario = $this->getScenario();
@@ -971,7 +986,7 @@ class Asset extends Element
 
         $volume = $this->getVolume();
 
-        if ($volume instanceof Temp) {
+        if ($volume->getFs() instanceof Temp) {
             return true;
         }
 
@@ -998,7 +1013,7 @@ class Asset extends Element
     protected function cpEditUrl(): ?string
     {
         $volume = $this->getVolume();
-        if ($volume instanceof Temp) {
+        if ($volume->getFs() instanceof Temp) {
             return null;
         }
 
@@ -1015,8 +1030,8 @@ class Asset extends Element
     {
         $volume = $this->getVolume();
         $uri = "assets/$volume->handle";
-        $subfolders = ArrayHelper::filterEmptyStringsFromArray(explode('/', $this->folderPath));
-        if ($subfolders) {
+        if ($this->folderPath !== null) {
+            $subfolders = ArrayHelper::filterEmptyStringsFromArray(explode('/', $this->folderPath));
             $uri .= sprintf('/%s', implode('/', $subfolders));
         }
         return UrlHelper::cpUrl($uri);
@@ -1025,7 +1040,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public function getCrumbs(): array
+    public function prepareEditScreen(Response $response, string $containerId): void
     {
         $volume = $this->getVolume();
         $uri = "assets/$volume->handle";
@@ -1041,22 +1056,25 @@ class Asset extends Element
             ],
         ];
 
-        $subfolders = ArrayHelper::filterEmptyStringsFromArray(explode('/', $this->folderPath));
-        foreach ($subfolders as $subfolder) {
-            $uri .= "/$subfolder";
-            $crumbs[] = [
-                'label' => $subfolder,
-                'url' => UrlHelper::cpUrl($uri),
-            ];
+        if ($this->folderPath !== null) {
+            $subfolders = ArrayHelper::filterEmptyStringsFromArray(explode('/', $this->folderPath));
+            foreach ($subfolders as $subfolder) {
+                $uri .= "/$subfolder";
+                $crumbs[] = [
+                    'label' => $subfolder,
+                    'url' => UrlHelper::cpUrl($uri),
+                ];
+            }
         }
 
-        return $crumbs;
+        /** @var Response|CpScreenResponseBehavior $response */
+        $response->crumbs($crumbs);
     }
 
     /**
      * @inheritdoc
      */
-    public function getAddlButtons(): string
+    public function getAdditionalButtons(): string
     {
         $volume = $this->getVolume();
         $user = Craft::$app->getUser()->getIdentity();
@@ -1162,7 +1180,7 @@ JS;
             $view->registerJs($js);
         }
 
-        return $html . parent::getAddlButtons();
+        return $html . parent::getAdditionalButtons();
     }
 
     /**
@@ -1472,14 +1490,37 @@ JS;
      * @param ImageTransform|string|array|null $transform A transform handle or configuration that should be applied to the
      * image If an array is passed, it can optionally include a `transform` key that defines a base transform
      * which the rest of the settings should be applied to.
+     * @param bool|null $immediately Whether the image should be transformed immediately
      * @return string|null
      * @throws InvalidConfigException
      */
-    public function getUrl(mixed $transform = null): ?string
+    public function getUrl(mixed $transform = null, ?bool $immediately = null): ?string
     {
+        // Maybe a plugin wants to do something here
+        $event = new DefineAssetUrlEvent([
+            'transform' => $transform,
+            'asset' => $this,
+        ]);
+        $this->trigger(self::EVENT_DEFINE_URL, $event);
+
+        // If a plugin set the url, we'll just use that.
+        if ($event->url !== null) {
+            return $event->url;
+        }
+
         $volume = $this->getVolume();
 
-        if (!$volume->getFs()->hasUrls || !$this->folderId) {
+        $transform = $transform ?? $this->_transform;
+
+        if ($transform === null || !Image::canManipulateAsImage(pathinfo($this->getFilename(), PATHINFO_EXTENSION))) {
+            return Assets::generateUrl($volume->getFs(), $this);
+        }
+
+        $fsNoUrls = !$transform && !$volume->getFs()->hasUrls;
+        $noFolder = !$this->folderId;
+        $transformNoUrl = $transform && !$volume->getTransformFs()->hasUrls;
+
+        if ($fsNoUrls || $noFolder || $transformNoUrl) {
             return null;
         }
 
@@ -1490,12 +1531,8 @@ JS;
             ($mimeType === 'image/gif' && !$generalConfig->transformGifs) ||
             ($mimeType === 'image/svg+xml' && !$generalConfig->transformSvgs)
         ) {
-            return Assets::generateUrl($volume, $this);
+            return Assets::generateUrl($volume->getFs(), $this);
         }
-
-        // Normalize empty transform values
-        $transform = $transform ?? $this->_transform;
-
 
         if ($transform) {
             if (is_array($transform)) {
@@ -1507,12 +1544,41 @@ JS;
                 }
             }
 
-            $immediately = Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad;
             $transform = ImageTransforms::normalizeTransform($transform);
-            $imageTransformer = $transform->getImageTransformer();
+
+            if ($immediately === null) {
+                $immediately = Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad;
+            }
 
             try {
-                return $imageTransformer->getTransformUrl($this, $transform, $immediately);
+                if ($this->hasEventHandlers(self::EVENT_BEFORE_GENERATE_TRANSFORM)) {
+                    $event = new GenerateTransformEvent([
+                        'asset' => $this,
+                        'transform' => $transform,
+                    ]);
+
+                    $this->trigger(self::EVENT_BEFORE_GENERATE_TRANSFORM, $event);
+
+                    // If a plugin set the url, we'll just use that.
+                    if ($event->url !== null) {
+                        return $event->url;
+                    }
+                }
+
+                $imageTransformer = $transform->getImageTransformer();
+                $url = $imageTransformer->getTransformUrl($this, $transform, $immediately);
+
+                if ($this->hasEventHandlers(self::EVENT_AFTER_GENERATE_TRANSFORM)) {
+                    $event = new GenerateTransformEvent([
+                        'asset' => $this,
+                        'transform' => $transform,
+                        'url' => $url,
+                    ]);
+
+                    $this->trigger(self::EVENT_AFTER_GENERATE_TRANSFORM, $event);
+                }
+
+                return $url;
             } catch (ImageTransformException $e) {
                 Craft::warning("Couldn’t get image transform URL: {$e->getMessage()}", __METHOD__);
                 Craft::$app->getErrorHandler()->logException($e);
@@ -1520,7 +1586,7 @@ JS;
             }
         }
 
-        return Assets::generateUrl($volume, $this);
+        return Assets::generateUrl($volume->getFs(), $this);
     }
 
     /**
@@ -1534,7 +1600,7 @@ JS;
             $width = $height = $size;
         }
 
-        return Craft::$app->getAssets()->getThumbUrl($this, $width, $height, false);
+        return Craft::$app->getAssets()->getThumbUrl($this, $width, $height);
     }
 
     /**
@@ -1559,21 +1625,21 @@ JS;
      * @param int $desiredWidth
      * @param int $desiredHeight
      * @return string
-     * @throws NotSupportedException if the asset can't have a thumbnail, and $fallbackToIcon is `false`
      * @since 3.4.0
      */
     public function getPreviewThumbImg(int $desiredWidth, int $desiredHeight): string
     {
-        $assetsService = Craft::$app->getAssets();
         $srcsets = [];
         [$width, $height] = Assets::scaledDimensions((int)$this->getWidth(), (int)$this->getHeight(), $desiredWidth, $desiredHeight);
         $thumbSizes = [
             [$width, $height],
             [$width * 2, $height * 2],
         ];
+        $assetsService = Craft::$app->getAssets();
+
         foreach ($thumbSizes as [$width, $height]) {
-            $thumbUrl = $assetsService->getThumbUrl($this, $width, $height, false);
-            $srcsets[] = $thumbUrl . ' ' . $width . 'w';
+            $url = $assetsService->getThumbUrl($this, $width, $height);
+            $srcsets[] = sprintf('%s %sw', $url, $width);
         }
 
         return Html::tag('img', '', [
@@ -1648,10 +1714,10 @@ JS;
      * Returns the image height.
      *
      * @param ImageTransform|string|array|null $transform A transform handle or configuration that should be applied to the image
-     * @return int|float|null
+     * @return int|null
      */
 
-    public function getHeight(mixed $transform = null): float|int|null
+    public function getHeight(mixed $transform = null): ?int
     {
         return $this->_dimensions($transform)[1];
     }
@@ -1659,9 +1725,9 @@ JS;
     /**
      * Sets the image height.
      *
-     * @param float|int|null $height the image height
+     * @param int|null $height the image height
      */
-    public function setHeight(float|int|null $height): void
+    public function setHeight(?int $height): void
     {
         $this->_height = $height;
     }
@@ -1670,9 +1736,9 @@ JS;
      * Returns the image width.
      *
      * @param array|string|ImageTransform|null $transform A transform handle or configuration that should be applied to the image
-     * @return int|float|null
+     * @return int|null
      */
-    public function getWidth(array|string|ImageTransform $transform = null): float|int|null
+    public function getWidth(array|string|ImageTransform $transform = null): ?int
     {
         return $this->_dimensions($transform)[0];
     }
@@ -1680,9 +1746,9 @@ JS;
     /**
      * Sets the image width.
      *
-     * @param float|int|null $width the image width
+     * @param int|null $width the image width
      */
-    public function setWidth(float|int|null $width): void
+    public function setWidth(?int $width): void
     {
         $this->_width = $width;
     }
@@ -1880,7 +1946,7 @@ JS;
                 'x' => (float)$value['x'],
                 'y' => (float)$value['y'],
             ];
-        } else if ($value !== null) {
+        } elseif ($value !== null) {
             $focal = explode(';', $value);
             if (count($focal) !== 2) {
                 throw new \InvalidArgumentException('$value should be a string or array with \'x\' and \'y\' keys.');
@@ -2009,10 +2075,20 @@ JS;
                     $js = <<<JS
 $('#$editBtnId').on('click', () => {
     new Craft.AssetImageEditor($this->id, {
-        onSave: () => {
+        allowDegreeFractions: Craft.isImagick,
+        onSave: data => {
+            if (data.newAssetId) {
+                // If this is within an Assets field’s editor slideout, replace the selected asset 
+                const slideout = $('#$editBtnId').closest('[data-slideout]').data('slideout');
+                if (slideout && slideout.settings.elementSelectInput) {
+                    slideout.settings.elementSelectInput.replaceElement(slideout.\$element.data('id'), data.newAssetId)
+                        .catch(() => {});
+                }
+                return;
+            }
+
             $updatePreviewThumbJs
         },
-        allowDegreeFractions: Craft.isImagick,
     });
 });
 JS;
@@ -2023,7 +2099,7 @@ JS;
             }
 
             $html .= Html::endTag('div'); // .preview-thumb-container
-        } catch (NotSupportedException $e) {
+        } catch (NotSupportedException) {
             // NBD
         }
 
@@ -2071,7 +2147,7 @@ JS;
      */
     protected function metaFieldsHtml(bool $static): string
     {
-        return implode('', [
+        return implode("\n", [
             Cp::textFieldHtml([
                 'label' => Craft::t('app', 'Filename'),
                 'id' => 'new-filename',
@@ -2236,7 +2312,7 @@ JS;
         // Set the field layout
         $volume = Craft::$app->getAssets()->getFolderById($folderId)->getVolume();
 
-        if (!$volume instanceof Temp) {
+        if (!$volume->getFs() instanceof Temp) {
             $this->fieldLayoutId = $volume->fieldLayoutId;
         }
 
@@ -2287,7 +2363,7 @@ JS;
             $record->size = (int)$this->size ?: null;
             $record->width = (int)$this->_width ?: null;
             $record->height = (int)$this->_height ?: null;
-            $record->dateModified = $this->dateModified;
+            $record->dateModified = Db::prepareDateForDb($this->dateModified);
 
             if ($this->getHasFocalPoint()) {
                 $focal = $this->getFocalPoint();
@@ -2364,7 +2440,7 @@ JS;
         $userSession = Craft::$app->getUser();
         $imageEditable = $context === ElementSources::CONTEXT_INDEX && $this->getSupportsImageEditor();
 
-        if ($volume instanceof Temp || $userSession->getId() == $this->uploaderId) {
+        if ($volume->getFs() instanceof Temp || $userSession->getId() == $this->uploaderId) {
             $attributes['data']['own-file'] = true;
             $movable = $replaceable = true;
         } else {
@@ -2520,8 +2596,6 @@ JS;
                 $oldVolume->getFs()->deleteFile($oldPath);
             }
 
-            $exception = null;
-
             // Upload the file to the new location
             try {
                 $newVolume->getFs()->writeFileFromStream($newPath, $stream, [
@@ -2529,16 +2603,12 @@ JS;
                 ]);
             } catch (VolumeException $exception) {
                 Craft::$app->getErrorHandler()->logException($exception);
+                throw $exception;
             } finally {
                 // If the volume has not already disconnected the stream, clean it up.
                 if (is_resource($stream)) {
                     fclose($stream);
                 }
-            }
-
-            // Re-throw it, after we've made sure that the stream is disconnected.
-            if ($exception !== null) {
-                throw $exception;
             }
         }
 

@@ -1,5 +1,6 @@
 <?php
-declare(strict_types = 1);
+
+declare(strict_types=1);
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -46,14 +47,14 @@ class ProjectConfigData extends ReadOnlyProjectConfigData
     /**
      * Commit changes by firing the appropriate events and updating the appropriate storages.
      *
-     * @param $oldValue
-     * @param $newValue
+     * @param mixed $oldValue
+     * @param mixed $newValue
      * @param string $path
      * @param bool $triggerUpdate
      * @param string|null $message
      * @param bool $force
      */
-    public function commitChanges($oldValue, $newValue, string $path, bool $triggerUpdate = false, ?string $message = null, bool $force = false): void
+    public function commitChanges(mixed $oldValue, mixed $newValue, string $path, bool $triggerUpdate = false, ?string $message = null, bool $force = false): void
     {
         if (!$force && !empty($this->parsedChanges[$path])) {
             return;
@@ -66,7 +67,7 @@ class ProjectConfigData extends ReadOnlyProjectConfigData
 
         if ($newValue === null && is_array($oldValue)) {
             $this->removeContainedProjectConfigNames(pathinfo($path, PATHINFO_EXTENSION), $oldValue);
-        } else if (is_array($newValue)) {
+        } elseif (is_array($newValue)) {
             $this->setContainedProjectConfigNames(pathinfo($path, PATHINFO_EXTENSION), $newValue);
         }
 
@@ -75,7 +76,7 @@ class ProjectConfigData extends ReadOnlyProjectConfigData
             if ($newValue === null && $oldValue !== null) {
                 // Fire a 'removeItem' event
                 $projectConfig->trigger(ProjectConfigService::EVENT_REMOVE_ITEM, $event);
-            } else if ($oldValue === null && $newValue !== null) {
+            } elseif ($oldValue === null && $newValue !== null) {
                 // Fire an 'addItem' event
                 $projectConfig->trigger(ProjectConfigService::EVENT_ADD_ITEM, $event);
             } else {
@@ -108,27 +109,29 @@ class ProjectConfigData extends ReadOnlyProjectConfigData
     /**
      * Update the internal data storage.
      *
-     * @param $path
-     * @param $value
+     * @param string|string[] $path
+     * @param mixed $value
      */
-    protected function setInternal($path, $value): void
+    protected function setInternal(string|array $path, mixed $value): void
     {
         if ($value === null) {
             $this->delete($path);
         }
 
-        $this->traverseDataArray($this->data, $path, $value);
+        ProjectConfigHelper::traverseDataArray($this->data, $path, $value);
     }
 
     /**
      * Delete a path from the internal data storage.
      *
-     * @param $path
-     * @return mixed|null
+     * @param string|string[] $path
+     * @return mixed
      */
-    protected function delete($path): mixed
+    protected function delete(string|array $path): mixed
     {
-        return $this->traverseDataArray($this->data, $path, null, true);
+        ProjectConfigHelper::traverseDataArray($this->data, $path, null, true);
+
+        return null;
     }
 
     /**

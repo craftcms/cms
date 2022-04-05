@@ -133,9 +133,9 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
                     if ($this->handleMessage($payload['id'], $payload['job'], $payload['ttr'], $payload['attempt'])) {
                         $this->release($payload['id']);
                     }
-                } else if (!$repeat) {
+                } elseif (!$repeat) {
                     break;
-                } else if ($timeout) {
+                } elseif ($timeout) {
                     sleep($timeout);
                 }
             }
@@ -591,6 +591,7 @@ EOD;
             $this->_moveExpired();
 
             // Reserve one message
+            /** @var array|null $payload */
             $payload = $this->db->usePrimary(function() {
                 return $this->_createJobQuery()
                     ->andWhere(['fail' => false, 'timeUpdated' => null])

@@ -79,20 +79,15 @@ class TemplateLoader implements LoaderInterface
      */
     public function isFresh(string $name, int $time): bool
     {
-        // If this is a CP request and a DB update is needed, force a recompile.
+        // If this is a control panel request and a DB update is needed, force a recompile.
         $request = Craft::$app->getRequest();
 
         if ($request->getIsCpRequest() && Craft::$app->getUpdates()->getIsCraftUpdatePending()) {
             return false;
         }
 
-        if (is_string($name)) {
-            $sourceModifiedTime = filemtime($this->_resolveTemplate($name));
-
-            return $sourceModifiedTime <= $time;
-        }
-
-        return false;
+        $sourceModifiedTime = filemtime($this->_resolveTemplate($name));
+        return $sourceModifiedTime <= $time;
     }
 
     /**

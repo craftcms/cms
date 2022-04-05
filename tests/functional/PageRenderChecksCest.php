@@ -25,12 +25,12 @@ class PageRenderChecksCest
     /**
      * @var string
      */
-    public $cpTrigger;
+    public string $cpTrigger;
 
     /**
-     * @var
+     * @var User|null
      */
-    public $currentUser;
+    public ?User $currentUser;
 
     /**
      * @param FunctionalTester $I
@@ -88,12 +88,12 @@ class PageRenderChecksCest
                 ['rendered' => 'Time Zone'],
                 ['rendered' => 'Login Page Logo'],
                 ['rendered' => 'Site Icon'],
-            ]
+            ],
             ],
             [
                 'url' => '/settings/sections', 'title' => 'Sections', 'extraContent' => [
-                ['rendered' => 'New section']
-            ]
+                ['rendered' => 'New section'],
+            ],
             ],
             [
                 'url' => '/settings/users', 'title' => 'User Settings', 'extraContent' => [
@@ -101,19 +101,19 @@ class PageRenderChecksCest
                 ['rendered' => 'Fields'],
                 ['rendered' => 'Settings'],
                 ['rendered' => 'New user group'],
-            ]
+            ],
             ],
             [
                 'url' => '/settings/users/settings', 'title' => 'User Settings', 'extraContent' => [
                 ['rendered' => 'User Photo Volume'],
                 ['rendered' => 'Verify email addresses'],
-                ['rendered' => 'Allow public registration']
-            ]
+                ['rendered' => 'Allow public registration'],
+            ],
             ],
             [
                 'url' => '/settings/users/fields', 'title' => 'User Settings', 'extraContent' => [
-                ['rendered' => 'Field Layout']
-            ]
+                ['rendered' => 'Field Layout'],
+            ],
             ],
 
             [
@@ -122,48 +122,48 @@ class PageRenderChecksCest
                 ['rendered' => 'This can be set to an environment variable. Learn more'],
                 ['rendered' => 'Sender Name'],
                 ['rendered' => 'HTML Email Template'],
-                ['rendered' => 'Transport Type']
-            ]
+                ['rendered' => 'Transport Type'],
+            ],
             ],
             [
-                'url' => '/settings/plugins', 'title' => 'Plugins'
+                'url' => '/settings/plugins', 'title' => 'Plugins',
             ],
             [
-                'url' => '/settings/sites', 'title' => 'Sites'
+                'url' => '/settings/sites', 'title' => 'Sites',
             ],
             [
                 'url' => '/settings/routes', 'title' => 'Routes', 'extraContent' => [
-                ['rendered' => 'No routes exist yet.']
-            ]
+                ['rendered' => 'No routes exist yet.'],
+            ],
             ],
             [
                 'url' => '/settings/fields', 'title' => 'Fields', 'extraContent' => [
-                ['rendered' => 'New field']
-            ]
+                ['rendered' => 'New field'],
+            ],
             ],
             [
                 'url' => '/settings/fields/1', 'title' => 'Fields', 'extraContent' => [
-                ['rendered' => 'New field']
-            ]
+                ['rendered' => 'New field'],
+            ],
             ],
 
             [
                 'url' => '/settings/assets', 'title' => 'Volumes - Asset Settings', 'extraContent' => [
                 ['rendered' => 'New volume'],
                 ['rendered' => 'Image Transforms'],
-                ['rendered' => 'Settings']
-            ]
+                ['rendered' => 'Settings'],
+            ],
             ],
             [
                 'url' => '/settings/assets/transforms', 'title' => 'Image Transforms - Asset Settings', 'extraContent' => [
-                ['rendered' => 'New image transform']
-            ]
+                ['rendered' => 'New image transform'],
+            ],
             ],
             [
                 'url' => '/settings/assets/settings', 'title' => 'Settings - Asset Settings', 'extraContent' => [
                 ['rendered' => 'Temp Uploads Location'],
-                ['rendered' => 'Where do you want to store temporary asset uploads?']
-            ]
+                ['rendered' => 'Where do you want to store temporary asset uploads?'],
+            ],
             ],
 
             // Utility pages
@@ -172,21 +172,21 @@ class PageRenderChecksCest
                 ['rendered' => 'Application Info'],
                 ['rendered' => 'Yii version'],
                 ['rendered' => 'Plugins'],
-                ['rendered' => 'Requirements']
-            ]
+                ['rendered' => 'Requirements'],
+            ],
             ],
             [
-                'url' => '/utilities/updates', 'title' => 'Updates'
+                'url' => '/utilities/updates', 'title' => 'Updates',
             ],
             [
                 'url' => '/utilities/project-config', 'title' => 'Project Config', 'extraContent' => [
                 ['rendered' => 'Apply YAML Changes'],
                 ['rendered' => 'Rebuild the Config'],
-                ['rendered' => 'Loaded Project Config Data']
-            ]
+                ['rendered' => 'Loaded Project Config Data'],
+            ],
             ],
             [
-                'url' => '/utilities/php-info', 'title' => 'PHP Info'
+                'url' => '/utilities/php-info', 'title' => 'PHP Info',
             ],
             [
                 'url' => '/utilities/system-messages', 'title' => 'System Messages', 'extraContent' => [
@@ -194,39 +194,39 @@ class PageRenderChecksCest
                 ['rendered' => 'When someone changes their email address:'],
                 ['rendered' => 'When someone forgets their password:'],
                 ['rendered' => 'When you are testing your email settings:'],
-            ]
+            ],
             ],
             [
                 'url' => '/utilities/queue-manager', 'title' => 'Queue Manager', 'extraContent' => [
-                ['rendered' => 'No pending jobs.']
-            ]
+                ['rendered' => 'No pending jobs.'],
+            ],
             ],
             [
                 'url' => '/utilities/deprecation-errors', 'title' => 'Deprecation Warnings', 'extraContent' => [
-                ['rendered' => 'No deprecation errors to report!']
-            ]
+                ['rendered' => 'No deprecation errors to report!'],
+            ],
             ],
             [
                 'url' => '/utilities/find-replace', 'title' => 'Find and Replace', 'extraContent' => [
                 ['rendered' => 'Find Text'],
-                ['rendered' => 'Replace Text']
-            ]
+                ['rendered' => 'Replace Text'],
+            ],
             ],
             [
                 'url' => '/utilities/migrations', 'title' => 'Migrations', 'extraContent' => [
-                ['rendered' => 'No content migrations.']
-            ]
+                ['rendered' => 'No content migrations.'],
+            ],
             ],
             [
                 'url' => '/utilities/clear-caches', 'title' => 'Caches', 'extraContent' => [
                 ['rendered' => 'Clear Caches'],
-                ['rendered' => 'Invalidate Data Caches']
-            ]
+                ['rendered' => 'Invalidate Data Caches'],
+            ],
             ],
             [
                 'url' => '/utilities/db-backup', 'title' => 'Database Backup', 'extraContent' => [
-                ['rendered' => 'Download backup']
-            ]
+                ['rendered' => 'Download backup'],
+            ],
             ],
         ];
     }

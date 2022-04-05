@@ -8,7 +8,6 @@
 namespace craft\events;
 
 use craft\base\ElementInterface;
-use craft\behaviors\DraftBehavior;
 use yii\base\Event;
 
 /**
@@ -45,7 +44,7 @@ class DraftEvent extends Event
     public ?string $draftNotes = null;
 
     /**
-     * @var ElementInterface|DraftBehavior|null The draft associated with the event (if it exists yet)
+     * @var ElementInterface|null The draft associated with the event (if it exists yet)
      */
-    public ElementInterface|null $draft = null;
+    public ?ElementInterface $draft = null;
 }

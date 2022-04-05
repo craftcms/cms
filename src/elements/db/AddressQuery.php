@@ -22,6 +22,7 @@ use yii\db\Connection;
  * @method Address|array|null nth(int $n, ?Connection $db = null)
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
+ * @doc-path addresses.md
  * @replace {element} address
  * @replace {elements} addresses
  * @replace {myElement} myAddress
@@ -30,14 +31,14 @@ use yii\db\Connection;
 class AddressQuery extends ElementQuery
 {
     /**
-     * @var int|int[]|null The owner element ID(s) that the resulting addresses must belong to.
+     * @var mixed The owner element ID(s) that the resulting addresses must belong to.
      * @used-by owner()
      * @used-by ownerId()
      */
     public mixed $ownerId = null;
 
     /**
-     * @var string[]|string|null The address countryCode(s) that the resulting address must be in.
+     * @var mixed The address countryCode(s) that the resulting address must be in.
      * ---
      * ```php
      * // fetch addresses that are located in AU
@@ -57,7 +58,7 @@ class AddressQuery extends ElementQuery
     public mixed $countryCode = null;
 
     /**
-     * @var string[]|string|null The address administrativeArea(s) that the resulting address must be in.
+     * @var mixed The address administrativeArea(s) that the resulting address must be in.
      * ---
      * ```php
      * // fetch addresses that are located in AU

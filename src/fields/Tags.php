@@ -75,9 +75,10 @@ class Tags extends BaseRelationField
     public bool $allowLimit = false;
 
     /**
-     * @var int|false|null
+     * @var string|false
+     * @see _getTagGroupUid()
      */
-    private int|null|false $_tagGroupId = null;
+    private string|false $_tagGroupUid;
 
     /**
      * @inheritdoc
@@ -92,7 +93,7 @@ class Tags extends BaseRelationField
             $value = $value
                 ->status(null)
                 ->all();
-        } else if (!is_array($value)) {
+        } elseif (!is_array($value)) {
             $value = [];
         }
 
@@ -163,30 +164,25 @@ class Tags extends BaseRelationField
      */
     private function _getTagGroup(): ?TagGroup
     {
-        $tagGroupId = $this->_getTagGroupId();
-
-        if ($tagGroupId !== false) {
-            return Craft::$app->getTags()->getTagGroupByUid($tagGroupId);
-        }
-
-        return null;
+        $groupUid = $this->_getTagGroupUid();
+        return $groupUid ? Craft::$app->getTags()->getTagGroupByUid($groupUid) : null;
     }
 
     /**
      * Returns the tag group ID this field is associated with.
      *
-     * @return int|false
+     * @return string|null
      */
-    private function _getTagGroupId(): int|false
+    private function _getTagGroupUid(): ?string
     {
-        if (isset($this->_tagGroupId)) {
-            return $this->_tagGroupId;
+        if (!isset($this->_tagGroupUid)) {
+            if (preg_match('/^taggroup:([0-9a-f\-]+)$/', $this->source, $matches)) {
+                $this->_tagGroupUid = $matches[1];
+            } else {
+                $this->_tagGroupUid = false;
+            }
         }
 
-        if (!preg_match('/^taggroup:([0-9a-f\-]+)$/', $this->source, $matches)) {
-            return $this->_tagGroupId = false;
-        }
-
-        return $this->_tagGroupId = $matches[1];
+        return $this->_tagGroupUid ?: null;
     }
 }

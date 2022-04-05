@@ -146,7 +146,7 @@ class Search extends Component
             }
         }
 
-        // Clear the element's current search keywords
+        // Clear the element’s current search keywords
         $deleteCondition = [
             'elementId' => $element->id,
             'siteId' => $element->siteId,
@@ -192,7 +192,7 @@ class Search extends Component
         $searchQuery = $elementQuery->search;
         if (is_string($searchQuery)) {
             $searchQuery = new SearchQuery($searchQuery, Craft::$app->getConfig()->getGeneral()->defaultSearchTermOptions);
-        } else if (is_array($searchQuery)) {
+        } elseif (is_array($searchQuery)) {
             $options = array_merge($searchQuery);
             $searchQuery = ArrayHelper::remove($options, 'query');
             $options = array_merge(Craft::$app->getConfig()->getGeneral()->defaultSearchTermOptions, $options);
@@ -436,7 +436,7 @@ SQL;
             if (trim($keywords) === trim($haystack)) {
                 $mod = 100;
             } // Don't scale up for substring matches
-            else if ($term->subLeft || $term->subRight) {
+            elseif ($term->subLeft || $term->subRight) {
                 $mod = 10;
             } else {
                 $mod = 50;
@@ -520,7 +520,7 @@ SQL;
             if ($sql) {
                 $where[] = $sql;
             } // No SQL but keywords, save them for later
-            else if ($keywords !== null && $keywords !== '') {
+            elseif ($keywords !== null && $keywords !== '') {
                 if ($inclusive && $db->getIsMysql()) {
                     $keywords = '+' . $keywords;
                 }
@@ -576,7 +576,7 @@ SQL;
 
             if (!empty($fieldId)) {
                 $attr = 'fieldId';
-                $val = $fieldId;
+                $val = (string)$fieldId;
             } else {
                 $attr = 'attribute';
                 $val = strtolower($term->attribute);
@@ -849,7 +849,7 @@ SQL;
 
         // Give ourselves a little wiggle room.
         /** @noinspection CallableParameterUseCaseInTypeContextInspection */
-        $maxSize = ceil($maxSize * 0.95);
+        $maxSize = (int)ceil($maxSize * 0.95);
 
         if ($cleanKeywordsLength > $maxSize) {
             // Time to truncate.

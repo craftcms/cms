@@ -11,8 +11,8 @@ use craft\helpers\ArrayHelper;
 use yii\base\BaseObject;
 use yii\base\InvalidConfigException;
 use yii\db\Connection as YiiConnection;
-use yii\db\QueryInterface;
 use yii\db\Query as YiiQuery;
+use yii\db\QueryInterface;
 use yii\di\Instance;
 
 /**
@@ -47,10 +47,11 @@ use yii\di\Instance;
 class Paginator extends BaseObject
 {
     /**
-     * @var YiiConnection|null The DB connection to be used with the query.
+     * @var YiiConnection|array|string|null The DB connection to be used with the query.
      * If null, the query will choose the connection to use.
+     * @phpstan-var YiiConnection|array{class:class-string<YiiConnection>}|class-string<YiiConnection>|null
      */
-    public ?YiiConnection $db = null;
+    public YiiConnection|array|string|null $db = null;
 
     /**
      * @var int The number of results to include for each page
@@ -227,7 +228,7 @@ class Paginator extends BaseObject
     /**
      * Sets the results for the current page.
      *
-     * @param array
+     * @param array $pageResults
      * @since 3.1.22
      */
     public function setPageResults(array $pageResults): void

@@ -42,7 +42,7 @@ class PlainText extends Field implements PreviewableFieldInterface, SortableFiel
     }
 
     /**
-     * @var string The UI mode of the field.
+     * @var 'normal'|'enlarged' The UI mode of the field.
      * @since 3.5.0
      */
     public string $uiMode = 'normal';
@@ -96,12 +96,6 @@ class PlainText extends Field implements PreviewableFieldInterface, SortableFiel
                 $config['byteLimit'] = (int)$config['fieldLimit'] ?: null;
             }
             unset($config['limitUnit'], $config['fieldLimit']);
-        }
-
-        foreach (['charLimit', 'byteLimit', 'placeholder', 'columnType'] as $name) {
-            if (($config[$name] ?? null) === '') {
-                unset($config[$name]);
-            }
         }
 
         if (($config['columnType'] ?? null) === 'auto') {
@@ -189,7 +183,7 @@ class PlainText extends Field implements PreviewableFieldInterface, SortableFiel
 
         if ($this->byteLimit) {
             $bytes = $this->byteLimit;
-        } else if ($this->charLimit) {
+        } elseif ($this->charLimit) {
             $bytes = $this->charLimit * 4;
         } else {
             return Schema::TYPE_TEXT;

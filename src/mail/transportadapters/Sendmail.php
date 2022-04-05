@@ -34,31 +34,18 @@ class Sendmail extends BaseTransportAdapter
 
     /**
      * @inheritdoc
-     */
-    public function __construct($config = [])
-    {
-        // Config normalization
-        if (($config['command'] ?? null) === '') {
-            unset($config['command']);
-        }
-
-        parent::__construct($config);
-    }
-
-    /**
-     * @inheritdoc
      * @since 3.4.0
      */
-    public function behaviors(): array
+    protected function defineBehaviors(): array
     {
-        $behaviors = parent::behaviors();
-        $behaviors['parser'] = [
-            'class' => EnvAttributeParserBehavior::class,
-            'attributes' => [
-                'command',
+        return [
+            'parser' => [
+                'class' => EnvAttributeParserBehavior::class,
+                'attributes' => [
+                    'command',
+                ],
             ],
         ];
-        return $behaviors;
     }
 
     /**
@@ -130,8 +117,12 @@ class Sendmail extends BaseTransportAdapter
      */
     public function defineTransport(): array|AbstractTransport
     {
+        // Replace any spaces with `%20` according to https://symfony.com/doc/current/mailer.html#other-options
+        $command = (App::parseEnv($this->command) ?: self::DEFAULT_COMMAND);
+        $command = str_replace(' ', '%20', $command);
+
         return [
-            'dsn' => 'sendmail://default?command=' . $this->command ? App::parseEnv($this->command) : self::DEFAULT_COMMAND,
+            'dsn' => 'sendmail://default?command=' . $command,
         ];
     }
 

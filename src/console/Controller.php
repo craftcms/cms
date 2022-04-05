@@ -410,7 +410,7 @@ class Controller extends YiiController
 
         if ($options['confirm']) {
             $this->stdout('Confirm: ');
-            if (!($matched = ($input === CliPrompt::hiddenPrompt(true)))) {
+            if ($input !== CliPrompt::hiddenPrompt(true)) {
                 $this->stdout('Passwords didn\'t match, try again.' . PHP_EOL, Console::FG_RED);
                 goto top;
             }

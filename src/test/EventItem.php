@@ -7,7 +7,6 @@
 
 namespace craft\test;
 
-
 use craft\base\Model;
 
 /**

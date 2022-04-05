@@ -394,7 +394,7 @@ class UpdaterController extends BaseUpdaterController
             $pluginInfo = null;
             try {
                 $pluginInfo = Craft::$app->getPlugins()->getPluginInfo($handle);
-            } catch (InvalidPluginException $e) {
+            } catch (InvalidPluginException) {
             }
 
             if ($pluginInfo === null || !$pluginInfo['isInstalled']) {

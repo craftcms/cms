@@ -28,7 +28,7 @@ class FocalPointAsset extends AssetBundle
     ];
 
     public $css = [
-        'css/FocalPoint.css'
+        'css/FocalPoint.css',
     ];
 
     /**

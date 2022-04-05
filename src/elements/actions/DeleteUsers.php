@@ -23,9 +23,9 @@ use yii\base\Exception;
 class DeleteUsers extends ElementAction implements DeleteActionInterface
 {
     /**
-     * @var int|null The user ID that the deleted user’s content should be transferred to
+     * @var int|int[]|null The user ID that the deleted user’s content should be transferred to
      */
-    public ?int $transferContentTo = null;
+    public int|array|null $transferContentTo = null;
 
     /**
      * @var bool Whether to permanently delete the elements.
@@ -103,11 +103,11 @@ class DeleteUsers extends ElementAction implements DeleteActionInterface
         {
             Craft.elementIndex.setIndexBusy();
             const ids = Craft.elementIndex.getSelectedElementIds();
-            const data = {userId: id}; 
+            const data = {userId: ids};
             Craft.sendActionRequest('POST', 'users/user-content-summary', {data})
                 .then((response) => {
                     Craft.elementIndex.setIndexAvailable();
-                    var modal = new Craft.DeleteUserModal(ids, {
+                    const modal = new Craft.DeleteUserModal(ids, {
                         contentSummary: response.data,
                         onSubmit: function()
                         {
@@ -154,12 +154,12 @@ JS;
         $users = $query->all();
         $undeletableIds = $this->_getUndeletableUserIds();
 
-        // Are we transferring the user's content to a different user?
-        if (is_array($this->transferContentTo) && isset($this->transferContentTo[0])) {
-            $this->transferContentTo = $this->transferContentTo[0];
+        // Are we transferring the user’s content to a different user?
+        if (is_array($this->transferContentTo)) {
+            $this->transferContentTo = reset($this->transferContentTo) ?: null;
         }
 
-        if (!empty($this->transferContentTo)) {
+        if ($this->transferContentTo) {
             $transferContentTo = Craft::$app->getUsers()->getUserById($this->transferContentTo);
 
             if (!$transferContentTo) {

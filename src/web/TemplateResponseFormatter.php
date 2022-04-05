@@ -25,7 +25,7 @@ use yii\web\ResponseFormatterInterface;
  */
 class TemplateResponseFormatter extends Component implements ResponseFormatterInterface
 {
-    const FORMAT = 'template';
+    public const FORMAT = 'template';
 
     /**
      * @inheritdoc
@@ -33,7 +33,7 @@ class TemplateResponseFormatter extends Component implements ResponseFormatterIn
      */
     public function format($response)
     {
-        /** @var TemplateResponseBehavior $behavior */
+        /** @var TemplateResponseBehavior|null $behavior */
         $behavior = $response->getBehavior(TemplateResponseBehavior::NAME);
 
         if (!$behavior) {
@@ -62,7 +62,7 @@ class TemplateResponseFormatter extends Component implements ResponseFormatterIn
         $headers = $response->getHeaders();
 
         if (Craft::$app->getConfig()->getGeneral()->sendContentLengthHeader) {
-            $headers->setDefault('content-length', strlen($response->content));
+            $headers->setDefault('content-length', (string)strlen($response->content));
         }
 
         // Set the MIME type for the request based on the matched template's file extension (unless the

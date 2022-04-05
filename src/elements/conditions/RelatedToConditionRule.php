@@ -23,6 +23,7 @@ class RelatedToConditionRule extends BaseElementSelectConditionRule implements E
 {
     /**
      * @var string
+     * @phpstan-var class-string<ElementInterface>
      */
     public string $elementType = Entry::class;
 
@@ -77,7 +78,7 @@ class RelatedToConditionRule extends BaseElementSelectConditionRule implements E
                     ],
                 ],
             ]) .
-            parent::getHtml(),
+            parent::inputHtml(),
             [
                 'class' => ['flex', 'flex-nowrap'],
             ]
@@ -92,6 +93,7 @@ class RelatedToConditionRule extends BaseElementSelectConditionRule implements E
         $options = [];
         foreach (Craft::$app->getElements()->getAllElementTypes() as $elementType) {
             /** @var string|ElementInterface $elementType */
+            /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
             if (!is_subclass_of($elementType, BlockElementInterface::class)) {
                 $options[] = [
                     'value' => $elementType,

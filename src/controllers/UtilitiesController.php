@@ -48,6 +48,7 @@ class UtilitiesController extends Controller
         }
 
         /** @var string|UtilityInterface $firstUtility */
+        /** @phpstan-var class-string<UtilityInterface>|UtilityInterface $firstUtility */
         $firstUtility = reset($utilities);
 
         return $this->redirect('utilities/' . $firstUtility::id());
@@ -71,6 +72,7 @@ class UtilitiesController extends Controller
         }
 
         /** @var string|UtilityInterface $class */
+        /** @phpstan-var class-string<UtilityInterface>|UtilityInterface $class */
         if ($utilitiesService->checkAuthorization($class) === false) {
             throw new ForbiddenHttpException('User not permitted to access the "' . $class::displayName() . '".');
         }
@@ -167,12 +169,12 @@ class UtilitiesController extends Controller
             if (is_string($action)) {
                 try {
                     FileHelper::clearDirectory($action);
-                } catch (InvalidArgumentException $e) {
+                } catch (InvalidArgumentException) {
                     // the directory doesn't exist
                 } catch (Throwable $e) {
                     Craft::warning("Could not clear the directory $action: " . $e->getMessage(), __METHOD__);
                 }
-            } else if (isset($cacheOption['params'])) {
+            } elseif (isset($cacheOption['params'])) {
                 call_user_func_array($action, $cacheOption['params']);
             } else {
                 $action();
@@ -275,7 +277,7 @@ class UtilitiesController extends Controller
         try {
             $migrator->up();
             $this->setSuccessFlash(Craft::t('app', 'Applied new migrations successfully.'));
-        } catch (MigrationException $e) {
+        } catch (MigrationException) {
             $this->setFailFlash(Craft::t('app', 'Couldn’t apply new migrations.'));
         }
 
@@ -293,6 +295,7 @@ class UtilitiesController extends Controller
 
         foreach (Craft::$app->getUtilities()->getAuthorizedUtilityTypes() as $class) {
             /** @var string|UtilityInterface $class */
+            /** @phpstan-var class-string<UtilityInterface>|UtilityInterface $class */
             $info[] = [
                 'id' => $class::id(),
                 'iconSvg' => $this->_getUtilityIconSvg($class),
@@ -309,6 +312,7 @@ class UtilitiesController extends Controller
      * Returns a utility type’s SVG icon.
      *
      * @param string $class
+     * @phpstan-param class-string<UtilityInterface> $class
      * @return string
      */
     private function _getUtilityIconSvg(string $class): string
@@ -337,11 +341,13 @@ class UtilitiesController extends Controller
      * Returns the default icon SVG for a given utility type.
      *
      * @param string $class
+     * @phpstan-param class-string<UtilityInterface> $class
      * @return string
      */
     private function _getDefaultUtilityIconSvg(string $class): string
     {
-        /** @var UtilityInterface $class */
+        /** @var string|UtilityInterface $class */
+        /** @phpstan-var class-string<UtilityInterface>|UtilityInterface $class */
         return $this->getView()->renderTemplate('_includes/defaulticon.svg.twig', [
             'label' => $class::displayName(),
         ]);

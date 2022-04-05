@@ -68,7 +68,7 @@ class RegisterResourceNode extends Node implements NodeCaptureInterface
         // Does the method have a dedicated `$position` argument?
         $positionArgument = ($position !== null && !$allowOptions) || $defaultPosition !== null;
         if ($positionArgument) {
-            $compiler->raw(', ' . $positionPhp ?? $defaultPosition);
+            $compiler->raw(', ' . ($positionPhp ?? $defaultPosition));
         }
 
         if ($allowOptions) {

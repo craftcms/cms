@@ -1,5 +1,6 @@
 <?php
-declare(strict_types = 1);
+
+declare(strict_types=1);
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -209,7 +210,7 @@ class ProjectConfig extends Component
      * use yii\base\Event;
      *
      * Event::on(ProjectConfig::class, ProjectConfig::EVENT_REBUILD, function(RebuildConfigEvent $e) {
-     *     // Add plugin's project config data...
+     *     // Add plugin’s project config data...
      *    $e->config['myPlugin']['key'] = $value;
      * });
      * ```
@@ -780,13 +781,13 @@ class ProjectConfig extends Component
                                 // Ensure types
                                 if (is_bool($value)) {
                                     $changeSet['removed'][$key] = (bool)$changeSet['removed'][$key];
-                                } else if (is_int($value)) {
+                                } elseif (is_int($value)) {
                                     $changeSet['removed'][$key] = (int)$changeSet['removed'][$key];
                                 }
 
                                 if ($changeSet['removed'][$key] === $value) {
                                     unset($changeSet['removed'][$key], $changeSet['added'][$key]);
-                                } else if (array_key_exists($key, $changeSet['removed'])) {
+                                } elseif (array_key_exists($key, $changeSet['removed'])) {
                                     $changeSet['changed'][$key] = [
                                         'from' => $changeSet['removed'][$key],
                                         'to' => $changeSet['added'][$key],
@@ -962,7 +963,7 @@ class ProjectConfig extends Component
      *
      * @param string $path The config path pattern. Can contain `{uri}` tokens, which will be passed to the handler.
      * @param callable $handler The handler method.
-     * @param mixed|null $data The data to be passed to the event handler when the event is triggered.
+     * @param mixed $data The data to be passed to the event handler when the event is triggered.
      * When the event handler is invoked, this data can be accessed via [[ConfigEvent::data]].
      * @return static self reference
      */
@@ -994,7 +995,7 @@ class ProjectConfig extends Component
      *
      * @param string $path The config path pattern. Can contain `{uri}` tokens, which will be passed to the handler.
      * @param callable $handler The handler method.
-     * @param mixed|null $data The data to be passed to the event handler when the event is triggered.
+     * @param mixed $data The data to be passed to the event handler when the event is triggered.
      * When the event handler is invoked, this data can be accessed via [[ConfigEvent::data]].
      * @return static self reference
      */
@@ -1025,7 +1026,7 @@ class ProjectConfig extends Component
      *
      * @param string $path The config path pattern. Can contain `{uri}` tokens, which will be passed to the handler.
      * @param callable $handler The handler method.
-     * @param mixed|null $data The data to be passed to the event handler when the event is triggered.
+     * @param mixed $data The data to be passed to the event handler when the event is triggered.
      * When the event handler is invoked, this data can be accessed via [[ConfigEvent::data]].
      * @return static self reference
      */
@@ -1054,7 +1055,7 @@ class ProjectConfig extends Component
      * @param string $event The event name
      * @param string $path The config path pattern. Can contain `{uid}` tokens, which will be passed to the handler.
      * @param callable $handler The handler method.
-     * @param mixed|null $data The data to be passed to the event handler when the event is triggered.
+     * @param mixed $data The data to be passed to the event handler when the event is triggered.
      * When the event handler is invoked, this data can be accessed via [[ConfigEvent::data]].
      */
     public function registerChangeEventHandler(string $event, string $path, callable $handler, mixed $data = null): void
@@ -1090,7 +1091,19 @@ class ProjectConfig extends Component
                 if (isset($matches['extra'])) {
                     $path = $matches['path'];
                     $incomingConfig = $this->getIsApplyingExternalChanges() ? $this->getExternalConfig() : $this->getCurrentWorkingConfig();
-                    $this->getCurrentWorkingConfig()->commitChanges($this->getInternalConfig()->get($path), $incomingConfig->get($path), $path);
+
+                    $oldValue = $this->getInternalConfig()->get($path);
+
+                    // For containing paths we need to do the following things:
+                    // 1) get the previous value at the containing path, which will be stale
+                    // 2) get the extra path component from matches array
+                    // 3) grab the actual new data from the event and merge it over the stale data
+                    $newValue = $incomingConfig->get($path) ?? [];
+                    $extraPath = StringHelper::removeLeft($matches['extra'], '.');
+                    $newNestedValue = $event->newValue;
+                    ProjectConfigHelper::traverseDataArray($newValue, $extraPath, $newNestedValue);
+
+                    $this->getCurrentWorkingConfig()->commitChanges($oldValue, $newValue, $path);
                     continue;
                 }
 
@@ -1371,7 +1384,7 @@ class ProjectConfig extends Component
                     return true;
                 }
                 $newItems[] = $immediateParent;
-            } else if ($this->forceUpdate || $flatCurrent[$key] !== $value) {
+            } elseif ($this->forceUpdate || $flatCurrent[$key] !== $value) {
                 if ($existsOnly) {
                     return true;
                 }
@@ -1704,11 +1717,11 @@ class ProjectConfig extends Component
             return Craft::createObject(ReadOnlyProjectConfigData::class);
         }
 
-        if (Craft::$app->getIsInstalled() && version_compare(Craft::$app->getInfo()->schemaVersion, '3.1.1', '<')) {
+        if (version_compare(Craft::$app->getInfo()->schemaVersion, '3.1.1', '<')) {
             return Craft::createObject(ReadOnlyProjectConfigData::class);
         }
 
-        if (Craft::$app->getIsInstalled() && version_compare(Craft::$app->getInfo()->schemaVersion, '3.4.4', '<')) {
+        if (version_compare(Craft::$app->getInfo()->schemaVersion, '3.4.4', '<')) {
             $config = (new Query())
                 ->select(['config'])
                 ->from([Table::INFO])
@@ -1742,6 +1755,7 @@ class ProjectConfig extends Component
                     if (!is_array($current)) {
                         $current = [];
                     }
+                    /** @phpstan-ignore-next-line */
                     if (!array_key_exists($segment, $current)) {
                         $current[$segment] = [];
                     }
@@ -2105,10 +2119,14 @@ class ProjectConfig extends Component
         }
 
         if (Craft::$app->getIsInstalled()) {
-            $storedConfigVersion = (new Query())
-                ->select(['configVersion'])
-                ->from([Table::INFO])
-                ->scalar();
+            try {
+                $storedConfigVersion = (new Query())
+                    ->select(['configVersion'])
+                    ->from([Table::INFO])
+                    ->scalar();
+            } catch (Throwable) {
+                $storedConfigVersion = null;
+            }
 
             if ($storedConfigVersion && $storedConfigVersion !== Craft::$app->getInfo()->configVersion) {
                 // Another request must have updated the project config after this request began

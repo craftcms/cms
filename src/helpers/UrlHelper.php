@@ -486,7 +486,7 @@ class UrlHelper
      */
     public static function baseCpUrl(): string
     {
-        // Is a custom base CP URL being defined in the config?
+        // Is a custom base control panel URL being defined in the config?
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         if ($generalConfig->baseCpUrl) {
             return rtrim($generalConfig->baseCpUrl, '/') . '/';
@@ -557,7 +557,7 @@ class UrlHelper
     }
 
     /**
-     * Prepends the CP trigger onto the given path.
+     * Prepends the control panel trigger onto the given path.
      *
      * @param string $path
      * @return string
@@ -596,13 +596,10 @@ class UrlHelper
 
         if ($cpUrl) {
             // site param
-            if (!isset($params['site']) && Craft::$app->getIsMultiSite() && ($site = Cp::requestedSite()) !== null) {
-                if ($params === null) {
-                    $params = [];
-                }
+            if (!isset($params['site']) && Craft::$app->getIsMultiSite() && Cp::requestedSite() !== null) {
                 $params['site'] = Cp::requestedSite()->handle;
             }
-        } else if ($addToken !== false) {
+        } elseif ($addToken !== false) {
             // token/siteToken params
             if (!isset($params[$generalConfig->tokenParam]) && ($token = $request->getToken()) !== null) {
                 $params[$generalConfig->tokenParam] = $token;
@@ -617,7 +614,7 @@ class UrlHelper
         }
 
         // If we must show the script name, then just start with the script URL,
-        // regardless of whether this is a CP or site request, as we can't assume
+        // regardless of whether this is a control panel or site request, as we can't assume
         // that index.php lives within the base URL anymore.
         if ($showScriptName) {
             if ($request->getIsConsoleRequest()) {
@@ -626,7 +623,7 @@ class UrlHelper
             } else {
                 $baseUrl = static::host() . $request->getScriptUrl();
             }
-        } else if ($cpUrl) {
+        } elseif ($cpUrl) {
             $baseUrl = static::baseCpUrl();
         } else {
             $baseUrl = static::baseSiteUrl();

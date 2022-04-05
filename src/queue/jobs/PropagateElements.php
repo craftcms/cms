@@ -26,6 +26,7 @@ class PropagateElements extends BaseJob
 {
     /**
      * @var string The element type that should be propagated
+     * @phpstan-var class-string<ElementInterface>
      */
     public string $elementType;
 
@@ -88,6 +89,7 @@ class PropagateElements extends BaseJob
     private function _query(): ElementQueryInterface
     {
         /** @var string|ElementInterface $elementType */
+        /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
         $elementType = $this->elementType;
         $query = $elementType::find();
 
@@ -98,7 +100,7 @@ class PropagateElements extends BaseJob
         $query
             ->offset(null)
             ->limit(null)
-            ->orderBy(null);
+            ->orderBy([]);
 
         return $query;
     }

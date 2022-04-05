@@ -48,9 +48,9 @@ abstract class MutationResolver extends Component
      * Set a piece of data to be used by the resolver when resolving.
      *
      * @param string $key
-     * @param $value
+     * @param mixed $value
      */
-    public function setResolutionData(string $key, $value): void
+    public function setResolutionData(string $key, mixed $value): void
     {
         $this->_resolutionData[$key] = $value;
     }

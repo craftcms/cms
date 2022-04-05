@@ -61,9 +61,9 @@ abstract class Api
         // Craft license
         if ($licenseKey = App::licenseKey()) {
             $headers['X-Craft-License'] = $licenseKey;
-        } else if (defined('CRAFT_LICENSE_KEY')) {
+        } elseif (defined('CRAFT_LICENSE_KEY')) {
             $headers['X-Craft-License'] = '__INVALID__';
-        } else if ($user) {
+        } elseif ($user) {
             $headers['X-Craft-License'] = '__REQUEST__';
         }
 
@@ -75,7 +75,7 @@ abstract class Api
                 $headers['X-Craft-System'] .= ",plugin-$pluginHandle:{$pluginInfo['version']};{$pluginInfo['edition']}";
                 try {
                     $licenseKey = $pluginsService->getPluginLicenseKey($pluginHandle);
-                } catch (InvalidLicenseKeyException $e) {
+                } catch (InvalidLicenseKeyException) {
                     $licenseKey = '__INVALID__';
                 }
                 $pluginLicenses[] = "$pluginHandle:" . ($licenseKey ?? '__REQUEST__');
@@ -126,7 +126,7 @@ abstract class Api
     /**
      * Processes an API response’s headers.
      *
-     * @param string[][]|string[] The response headers
+     * @param string[][]|string[] $headers The response headers
      */
     public static function processResponseHeaders(array $headers): void
     {
@@ -197,7 +197,7 @@ abstract class Api
             $pluginLicenseEdition = $pluginLicenseEditions[$pluginHandle] ?? null;
             try {
                 $pluginsService->setPluginLicenseKeyStatus($pluginHandle, $pluginLicenseStatus, $pluginLicenseEdition);
-            } catch (InvalidPluginException $pluginException) {
+            } catch (InvalidPluginException) {
             }
         }
 

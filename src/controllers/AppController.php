@@ -193,7 +193,7 @@ class AppController extends Controller
             foreach ($updates->plugins as $pluginHandle => $pluginUpdate) {
                 try {
                     $pluginInfo = $pluginsService->getPluginInfo($pluginHandle);
-                } catch (InvalidPluginException $e) {
+                } catch (InvalidPluginException) {
                     continue;
                 }
                 $res['updates']['plugins'][] = $this->_transformUpdate($allowUpdates, $pluginUpdate, $pluginHandle, $pluginInfo['name']);
@@ -251,6 +251,7 @@ class AppController extends Controller
                 $backupPath = $db->backup();
             } catch (Throwable $e) {
                 Craft::$app->disableMaintenanceMode();
+                /** @phpstan-ignore-next-line */
                 throw new ServerErrorHttpException('Error backing up the database.', 0, $e);
             }
         }
@@ -295,13 +296,14 @@ class AppController extends Controller
             $error = 'An error occurred running new migrations.';
             if ($restored) {
                 $error .= ' The database has been restored to its previous state.';
-            } else if (isset($restoreException)) {
+            } elseif (isset($restoreException)) {
                 $error .= ' The database could not be restored due to a separate error: ' . $restoreException->getMessage();
             } else {
                 $error .= ' The database has not been restored.';
             }
 
             Craft::$app->disableMaintenanceMode();
+            /** @phpstan-ignore-next-line */
             throw new ServerErrorHttpException($error, 0, $e);
         }
 
@@ -443,7 +445,7 @@ class AppController extends Controller
     }
 
     /**
-     * Updates a plugin's license key.
+     * Updates a plugin’s license key.
      *
      * @return Response
      */
@@ -496,7 +498,7 @@ class AppController extends Controller
                         'name' => $update->replacementName,
                     ]);
             }
-        } else if ($update->status === Update::STATUS_EXPIRED) {
+        } elseif ($update->status === Update::STATUS_EXPIRED) {
             $arr['statusText'] = Craft::t('app', '<strong>Your license has expired!</strong> Renew your {name} license for another year of amazing updates.', [
                 'name' => $name,
             ]);
@@ -628,7 +630,7 @@ class AppController extends Controller
 
         $statusCode = $this->response->getStatusCode();
         return $this->response
-            ->sendFile($imagePath, ['inline' => true])
+            ->sendFile($imagePath, null, ['inline' => true])
             ->setStatusCode($statusCode);
     }
 }

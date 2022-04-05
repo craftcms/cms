@@ -22,7 +22,7 @@
 
     <div>
       <div class="plugin-details-header">
-        <div class="plugin-name">
+        <div class="plugin-name tw-flex tw-items-center">
           <strong>{{ plugin.name }}</strong>
           <edition-badge
             v-if="trialMode && activeTrialPluginEdition && plugin.editions.length > 1"

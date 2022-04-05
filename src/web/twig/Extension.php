@@ -7,10 +7,12 @@
 
 namespace craft\web\twig;
 
+use CommerceGuys\Addressing\Formatter\FormatterInterface;
 use Countable;
 use Craft;
 use craft\base\MissingComponentInterface;
 use craft\base\PluginInterface;
+use craft\elements\Address;
 use craft\elements\Asset;
 use craft\errors\AssetException;
 use craft\helpers\App;
@@ -173,6 +175,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
         $security = Craft::$app->getSecurity();
 
         return [
+            new TwigFilter('address', [$this, 'addressFilter'], ['is_safe' => ['html']]),
             new TwigFilter('append', [$this, 'appendFilter'], ['is_safe' => ['html']]),
             new TwigFilter('ascii', [StringHelper::class, 'toAscii']),
             new TwigFilter('atom', [$this, 'atomFilter'], ['needs_environment' => true]),
@@ -294,6 +297,22 @@ class Extension extends AbstractExtension implements GlobalsInterface
     }
 
     /**
+     * @param Address|null $address
+     * @param array $options
+     * @param FormatterInterface|null $formatter
+     * @return string
+     * @since 4.0.0
+     */
+    public function addressFilter(?Address $address, array $options = [], FormatterInterface $formatter = null): string
+    {
+        if ($address === null) {
+            return '';
+        }
+
+        return Craft::$app->getAddresses()->formatAddress($address, $options, $formatter);
+    }
+
+    /**
      * Outputs a value from a Money object.
      *
      * @param Money|null $money
@@ -329,7 +348,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             /** @noinspection CallableParameterUseCaseInTypeContextInspection */
             $params = $category;
             $category = 'site';
-        } else if ($category === null) {
+        } elseif ($category === null) {
             $category = 'site';
         }
 
@@ -339,7 +358,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
 
         try {
             return Craft::t($category, (string)$message, $params, $language);
-        } catch (InvalidConfigException $e) {
+        } catch (InvalidConfigException) {
             return $message;
         }
     }
@@ -385,7 +404,8 @@ class Extension extends AbstractExtension implements GlobalsInterface
     public function ucwordsFilter(TwigEnvironment $env, string $string): string
     {
         Craft::$app->getDeprecator()->log('ucwords', 'The `|ucwords` filter has been deprecated. Use `|title` instead.');
-        if (($charset = $env->getCharset()) !== null) {
+        $charset = $env->getCharset();
+        if ($charset) {
             return mb_convert_case($string, MB_CASE_TITLE, $charset);
         }
         return ucwords(strtolower($string));
@@ -468,7 +488,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
 
         try {
             return Craft::$app->getFormatter()->asCurrency($value, $currency, $options, $textOptions, $stripZeros);
-        } catch (InvalidArgumentException $e) {
+        } catch (InvalidArgumentException) {
             return $value;
         }
     }
@@ -491,7 +511,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
 
         try {
             return Craft::$app->getFormatter()->asShortSize($value, $decimals, $options, $textOptions);
-        } catch (InvalidArgumentException $e) {
+        } catch (InvalidArgumentException) {
             return $value;
         }
     }
@@ -499,14 +519,14 @@ class Extension extends AbstractExtension implements GlobalsInterface
     /**
      * Formats the value as a decimal number.
      *
-     * @param $value
+     * @param mixed $value
      * @param int|null $decimals
      * @param array $options
      * @param array $textOptions
      * @return string
      * @since 3.6.0
      */
-    public function numberFilter($value, ?int $decimals = null, array $options = [], array $textOptions = []): string
+    public function numberFilter(mixed $value, ?int $decimals = null, array $options = [], array $textOptions = []): string
     {
         if ($value === null || $value === '') {
             return '';
@@ -514,7 +534,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
 
         try {
             return Craft::$app->getFormatter()->asDecimal($value, $decimals, $options, $textOptions);
-        } catch (InvalidArgumentException $e) {
+        } catch (InvalidArgumentException) {
             return $value;
         }
     }
@@ -522,14 +542,14 @@ class Extension extends AbstractExtension implements GlobalsInterface
     /**
      * Formats the value as a percent number with "%" sign.
      *
-     * @param $value
+     * @param mixed $value
      * @param int|null $decimals
      * @param array $options
      * @param array $textOptions
      * @return string
      * @since 3.6.0
      */
-    public function percentageFilter($value, ?int $decimals = null, array $options = [], array $textOptions = []): string
+    public function percentageFilter(mixed $value, ?int $decimals = null, array $options = [], array $textOptions = []): string
     {
         if ($value === null || $value === '') {
             return '';
@@ -537,7 +557,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
 
         try {
             return Craft::$app->getFormatter()->asPercent($value, $decimals, $options, $textOptions);
-        } catch (InvalidArgumentException $e) {
+        } catch (InvalidArgumentException) {
             return $value;
         }
     }
@@ -559,7 +579,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
 
         try {
             return Craft::$app->getFormatter()->asTimestamp($value, $format, $withPreposition);
-        } catch (InvalidArgumentException $e) {
+        } catch (InvalidArgumentException) {
             return $value;
         }
     }
@@ -719,7 +739,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             } else {
                 try {
                     $config = Json::decode(file_get_contents($path));
-                } catch (InvalidArgumentException $e) {
+                } catch (InvalidArgumentException) {
                     Craft::warning("Invalid HTML Purifier config at $path.");
                 }
             }
@@ -791,7 +811,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      *
      * @param mixed $str
      * @param mixed $search
-     * @param mixed|null $replace
+     * @param mixed $replace
      * @return mixed
      */
     public function replaceFilter(mixed $str, mixed $search, mixed $replace = null): mixed
@@ -839,7 +859,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
         $formatter = $locale ? (new Locale($locale))->getFormatter() : Craft::$app->getFormatter();
         $fmtTimeZone = $formatter->timeZone;
         $formatter->timeZone = $timezone !== null ? $date->getTimezone()->getName() : $formatter->timeZone;
-        $formatted = $formatter->asDate($date, $format);
+        $formatted = $formatter->asDate(DateTime::createFromInterface($date), $format);
         $formatter->timeZone = $fmtTimeZone;
         return $formatted;
     }
@@ -934,7 +954,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
         $formatter = $locale ? (new Locale($locale))->getFormatter() : Craft::$app->getFormatter();
         $fmtTimeZone = $formatter->timeZone;
         $formatter->timeZone = $timezone !== null ? $date->getTimezone()->getName() : $formatter->timeZone;
-        $formatted = $formatter->asTime($date, $format);
+        $formatted = $formatter->asTime(DateTime::createFromInterface($date), $format);
         $formatter->timeZone = $fmtTimeZone;
         return $formatted;
     }
@@ -964,7 +984,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
         $formatter = $locale ? (new Locale($locale))->getFormatter() : Craft::$app->getFormatter();
         $fmtTimeZone = $formatter->timeZone;
         $formatter->timeZone = $timezone !== null ? $date->getTimezone()->getName() : $formatter->timeZone;
-        $formatted = $formatter->asDatetime($date, $format);
+        $formatted = $formatter->asDatetime(DateTime::createFromInterface($date), $format);
         $formatter->timeZone = $fmtTimeZone;
         return $formatted;
     }
@@ -998,14 +1018,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             return array_filter($arr);
         }
 
-        // todo: remove this version check when we drop support for Twig < 2.13.1
-        if (version_compare(TwigEnvironment::VERSION, '2.13.1', '<')) {
-            /** @noinspection PhpParamsInspection */
-            /** @phpstan-ignore-next-line */
-            $filtered = twig_array_filter($arr, $arrow);
-        } else {
-            $filtered = twig_array_filter($env, $arr, $arrow);
-        }
+        $filtered = twig_array_filter($env, $arr, $arrow);
 
         if (is_array($filtered)) {
             return $filtered;
@@ -1070,9 +1083,9 @@ class Extension extends AbstractExtension implements GlobalsInterface
     {
         if (is_string($haystack)) {
             $index = strpos($haystack, $needle);
-        } else if (is_array($haystack)) {
+        } elseif (is_array($haystack)) {
             $index = array_search($needle, $haystack, false);
-        } else if (is_object($haystack) && $haystack instanceof IteratorAggregate) {
+        } elseif (is_object($haystack) && $haystack instanceof IteratorAggregate) {
             $index = false;
 
             foreach ($haystack as $i => $item) {
@@ -1403,7 +1416,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
                 Craft::$app->getErrorHandler()->logException($e);
                 return '';
             }
-        } else if (stripos($svg, '<svg') === false) {
+        } elseif (stripos($svg, '<svg') === false) {
             // No <svg> tag, so it's probably a file path
             try {
                 $svg = Craft::getAlias($svg);
@@ -1483,7 +1496,6 @@ class Extension extends AbstractExtension implements GlobalsInterface
     public function getGlobals(): array
     {
         $isInstalled = Craft::$app->getIsInstalled();
-        $request = Craft::$app->getRequest();
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         $setPasswordRequestPath = $generalConfig->getSetPasswordRequestPath();
 
@@ -1508,7 +1520,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             'systemName' => $systemName,
             'view' => $this->view,
 
-            'devMode' => YII_DEBUG,
+            'devMode' => App::devMode(),
             'SORT_ASC' => SORT_ASC,
             'SORT_DESC' => SORT_DESC,
             'SORT_REGULAR' => SORT_REGULAR,

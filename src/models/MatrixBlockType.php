@@ -68,14 +68,14 @@ class MatrixBlockType extends Model implements GqlInlineFragmentInterface
     /**
      * @inheritdoc
      */
-    public function behaviors(): array
+    protected function defineBehaviors(): array
     {
-        $behaviors = parent::behaviors();
-        $behaviors['fieldLayout'] = [
-            'class' => FieldLayoutBehavior::class,
-            'elementType' => MatrixBlock::class,
+        return [
+            'fieldLayout' => [
+                'class' => FieldLayoutBehavior::class,
+                'elementType' => MatrixBlock::class,
+            ],
         ];
-        return $behaviors;
     }
 
     /**
@@ -121,11 +121,11 @@ class MatrixBlockType extends Model implements GqlInlineFragmentInterface
             throw new InvalidConfigException('Block type missing its field ID');
         }
 
-        /** @var Matrix $field */
         if (($field = Craft::$app->getFields()->getFieldById($this->fieldId)) === null) {
             throw new InvalidConfigException('Invalid field ID: ' . $this->fieldId);
         }
 
+        /** @var Matrix $field */
         return $field;
     }
 
@@ -165,10 +165,10 @@ class MatrixBlockType extends Model implements GqlInlineFragmentInterface
             'fields' => [],
         ];
 
-        if (
-            ($fieldLayout = $this->getFieldLayout()) &&
-            ($fieldLayoutConfig = $fieldLayout->getConfig())
-        ) {
+        $fieldLayout = $this->getFieldLayout();
+        $fieldLayoutConfig = $fieldLayout->getConfig();
+
+        if ($fieldLayoutConfig) {
             $config['fieldLayouts'][$fieldLayout->uid] = $fieldLayoutConfig;
         }
 

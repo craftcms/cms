@@ -5,38 +5,32 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craftunit\helpers;
+namespace crafttests\unit\helpers;
 
-use Codeception\Test\Unit;
 use Craft;
 use craft\errors\GqlException;
 use craft\helpers\Gql as GqlHelper;
 use craft\models\GqlSchema;
+use craft\test\TestCase;
 use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Definition\UnionType;
+use yii\base\Exception;
 
-class GqlHelperTest extends Unit
+class GqlHelperTest extends TestCase
 {
-    /**
-     * @var \UnitTester
-     */
-    protected $tester;
-
     /**
      * Test Schema helper methods.
      *
      * @dataProvider schemaPermissionDataProvider
-     *
      * @param array $permissionSet list of permissions the active schema should have
      * @param string $permission A single permission to check
      * @param string $scope Permission check against this scope must return true
      * @param string $failingScope Permission check against this scope must return false
      * @param bool $failAll Whether all tests should fail.
-     *
      * @throws GqlException
-     * @throws \yii\base\Exception
+     * @throws Exception
      */
-    public function testSchemaHelper($permissionSet, $permission, $scope, $failingScope, $failAll = false)
+    public function testSchemaHelper(array $permissionSet, string $permission, string $scope, string $failingScope, bool $failAll = false): void
     {
         $this->_setSchemaWithPermissions($permissionSet);
 
@@ -56,10 +50,10 @@ class GqlHelperTest extends Unit
      * Test permission extraction from schema.
      *
      * @dataProvider schemaPermissionDataProviderForExtraction
-     *
-     * @param array $permissionSet list of permissions the schems should have
+     * @param array $permissionSet list of permissions the schemas should have
+     * @param array $expectedPairs
      */
-    public function testSchemaPermissionExtraction($permissionSet, $expectedPairs)
+    public function testSchemaPermissionExtraction(array $permissionSet, array $expectedPairs): void
     {
         $this->_setSchemaWithPermissions($permissionSet);
         self::assertEquals($expectedPairs, GqlHelper::extractAllowedEntitiesFromSchema());
@@ -68,7 +62,7 @@ class GqlHelperTest extends Unit
     /**
      * Test various helper methods handling errors nicely if no schema set.
      */
-    public function testVariousErrors()
+    public function testVariousErrors(): void
     {
         // Null the schema
         Craft::$app->getGql()->setActiveSchema(null);
@@ -84,15 +78,15 @@ class GqlHelperTest extends Unit
     /**
      * Test whether `canQuery*` functions work correctly
      *
-     * @throws \yii\base\Exception
+     * @throws Exception
      */
-    public function testSchemaQueryAbility()
+    public function testSchemaQueryAbility(): void
     {
         $permissionSet = [
             'usergroups.allUsers:read',
             'globalsets.someSet:read',
             'entrytypes.someEntry:read',
-            'sections.someSection:read'
+            'sections.someSection:read',
         ];
 
         $this->_setSchemaWithPermissions($permissionSet);
@@ -108,7 +102,7 @@ class GqlHelperTest extends Unit
     /**
      * Test if a union type is successfully created
      */
-    public function testUnionTypes()
+    public function testUnionTypes(): void
     {
         $unionType = GqlHelper::getUnionType('someUnion', ['one', 'two'], function() {
             return 'one';
@@ -119,7 +113,7 @@ class GqlHelperTest extends Unit
     /**
      * Test if a full access schema is created correctly.
      */
-    public function testFullAccessSchema()
+    public function testFullAccessSchema(): void
     {
         $schema = GqlHelper::createFullAccessSchema();
 
@@ -131,8 +125,11 @@ class GqlHelperTest extends Unit
      * Test if entity actions are extracted correctly
      *
      * @dataProvider actionExtractionDataProvider
+     * @param array $scope
+     * @param string $entity
+     * @param array $result
      */
-    public function testEntityActionExtraction($scope, $entity, $result)
+    public function testEntityActionExtraction(array $scope, string $entity, array $result): void
     {
         $this->_setSchemaWithPermissions($scope);
 
@@ -142,27 +139,27 @@ class GqlHelperTest extends Unit
     /**
      * Test GQL types correctly wrapped in NonNull type.
      *
-     * @param $input
-     * @param $expected
+     * @param mixed $input
+     * @param mixed $expected
      * @dataProvider wrapInNonNullProvider
      */
-    public function testWrapInNonNull($input, $expected)
+    public function testWrapInNonNull(mixed $input, mixed $expected): void
     {
         self::assertEquals($expected, GqlHelper::wrapInNonNull($input));
     }
 
-    public function wrapInNonNullProvider()
+    public function wrapInNonNullProvider(): array
     {
         $typeDef = [
             'name' => 'mock',
             'type' => Type::listOf(Type::string()),
-            'args' => []
+            'args' => [],
         ];
 
         $nonNulledTypeDef = [
             'name' => 'mock',
             'type' => Type::nonNull(Type::listOf(Type::string())),
-            'args' => []
+            'args' => [],
         ];
 
         return [
@@ -175,7 +172,7 @@ class GqlHelperTest extends Unit
     }
 
 
-    public function actionExtractionDataProvider()
+    public function actionExtractionDataProvider(): array
     {
         return [
             [
@@ -220,7 +217,7 @@ class GqlHelperTest extends Unit
         ];
     }
 
-    public function schemaPermissionDataProvider()
+    public function schemaPermissionDataProvider(): array
     {
         return [
             [
@@ -229,11 +226,11 @@ class GqlHelperTest extends Unit
                     'volumes.someVolume:read',
                     'globalsets.someSet:read',
                     'entrytypes.someEntry:read',
-                    'sections.someSection:read'
+                    'sections.someSection:read',
                 ],
                 'volumes.someVolume',
                 'read',
-                'write'
+                'write',
             ],
             [
                 [
@@ -242,23 +239,23 @@ class GqlHelperTest extends Unit
                     'volumes.someVolume:write',
                     'globalsets.someSet:write',
                     'entrytypes.someEntry:write',
-                    'sections.someSection:write'
+                    'sections.someSection:write',
                 ],
                 'volumes.someVolume',
                 'write',
-                'delete'
+                'delete',
             ],
             [
                 [],
                 'volumes.someVolume',
                 'write',
                 'delete',
-                true
+                true,
             ],
         ];
     }
 
-    public function schemaPermissionDataProviderForExtraction()
+    public function schemaPermissionDataProviderForExtraction(): array
     {
         return [
             [
@@ -267,7 +264,7 @@ class GqlHelperTest extends Unit
                     'volumes.someVolume:read',
                     'globalsets.someSet:read',
                     'entrytypes.someEntry:read',
-                    'sections.someSection:read'
+                    'sections.someSection:read',
                 ],
                 [
                     'usergroups' => ['allUsers'],
@@ -275,7 +272,7 @@ class GqlHelperTest extends Unit
                     'globalsets' => ['someSet'],
                     'entrytypes' => ['someEntry'],
                     'sections' => ['someSection'],
-                ]
+                ],
             ],
             [
                 [
@@ -284,7 +281,7 @@ class GqlHelperTest extends Unit
                 ],
                 [
                     'usergroups' => ['allUsers', 'otherGroup'],
-                ]
+                ],
             ], [
                 [
                     'usergroups.allUsers:read',
@@ -292,7 +289,7 @@ class GqlHelperTest extends Unit
                 ],
                 [
                     'usergroups' => ['allUsers'],
-                ]
+                ],
             ],
             [
                 [
@@ -300,9 +297,9 @@ class GqlHelperTest extends Unit
                     'volumes.someVolume:write',
                     'globalsets.someSet:write',
                     'entrytypes.someEntry:write',
-                    'sections.someSection:write'
+                    'sections.someSection:write',
                 ],
-                []
+                [],
             ],
             [
                 [
@@ -310,23 +307,25 @@ class GqlHelperTest extends Unit
                     'volumes.someVolume:write',
                     'globalsets.someSet:write',
                     'entrytypes.someEntry:read',
-                    'sections.someSection:write'
+                    'sections.someSection:write',
                 ],
                 [
                     'entrytypes' => ['someEntry'],
-                ]
+                ],
             ],
             [
                 [],
-                []
+                [],
             ],
         ];
     }
 
     /**
-     * Set a schema with permission set
+     * Set a schema with permission set.
+     *
+     * @param array $scopeSet
      */
-    public function _setSchemaWithPermissions($scopeSet)
+    public function _setSchemaWithPermissions(array $scopeSet)
     {
         $gqlService = Craft::$app->getGql();
         $schema = new GqlSchema(['id' => random_int(1, 1000), 'name' => 'Something', 'scope' => $scopeSet]);

@@ -14,6 +14,7 @@ use craft\helpers\App;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\UrlHelper;
+use yii\caching\TagDependency;
 use yii\db\Exception as DbException;
 
 /**
@@ -23,6 +24,8 @@ use yii\db\Exception as DbException;
  */
 class AssetManager extends \yii\web\AssetManager
 {
+    private const CACHE_TAG = 'assetmanager';
+
     /**
      * @inheritdoc
      */
@@ -87,11 +90,28 @@ class AssetManager extends \yii\web\AssetManager
                 'hash' => $hash,
                 'path' => $alias,
             ]);
-        } catch (DbException|DbConnectException $e) {
+        } catch (DbException|DbConnectException) {
             // Craft is either not installed or not updated to 3.0.3+ yet
         }
 
+        Craft::$app->getCache()->set(
+            $this->getCacheKeyForPathHash($hash),
+            $alias,
+            dependency: new TagDependency(['tags' => [self::CACHE_TAG]]),
+        );
+
         return $hash;
+    }
+
+    /**
+     * Get the cache key for a given asset hash
+     *
+     * @param string $hash
+     * @return string
+     */
+    public function getCacheKeyForPathHash(string $hash): string
+    {
+        return implode(':', [self::CACHE_TAG, $hash]);
     }
 
     /**

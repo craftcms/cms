@@ -7,9 +7,9 @@
 
 namespace craft\gql\interfaces\elements;
 
+use Craft;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\Element;
-use craft\gql\TypeManager;
 use craft\gql\types\generators\TagType;
 use craft\helpers\Gql;
 use GraphQL\Type\Definition\InterfaceType;
@@ -65,8 +65,7 @@ class Tag extends Element
      */
     public static function getFieldDefinitions(): array
     {
-        // @TODO Remove the `uri` field for Assets.
-        return TypeManager::prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), [
+        return Craft::$app->getGql()->prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), [
             'groupId' => [
                 'name' => 'groupId',
                 'type' => Type::nonNull(Type::int()),

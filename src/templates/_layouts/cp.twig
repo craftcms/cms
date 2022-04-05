@@ -41,7 +41,7 @@
 
 {% extends "_layouts/basecp" %}
 
-{# The CP only supports queue components that implement QueueInterface #}
+{# The control panel only supports queue components that implement QueueInterface #}
 {% set queue = craft.app.queue %}
 {% js %}
     {% if queue is instance of("craft\\queue\\QueueInterface") %}
@@ -69,7 +69,7 @@
 {% set contextMenu = (contextMenu ?? block('contextMenu') ?? '')|trim %}
 {% set toolbar = (toolbar ?? block('toolbar') ?? '')|trim %}
 {% set actionButton = (block('actionButton') ?? '')|trim %}
-{% set addlButtons = addlButtons ?? null %}
+{% set additionalButtons = additionalButtons ?? null %}
 {% set details = (details ?? block('details') ?? '')|trim %}
 {% set footer = (footer ?? block('footer') ?? '')|trim %}
 {% set crumbs = crumbs ?? null %}
@@ -146,11 +146,11 @@
 
                     {# New account dropdown #}
                     <div class="account-toggle-wrapper" data-wrapper>
-                        <button 
+                        <button
                             id="user-info"
-                            aria-controls="account-menu" 
-                            class="btn menu-toggle" 
-                            aria-label="{{ 'My Account'|t('app') }}" 
+                            aria-controls="account-menu"
+                            class="btn menu-toggle"
+                            aria-label="{{ 'My Account'|t('app') }}"
                             title="{{ 'My Account'|t('app') }}"
                             data-disclosure-trigger>
                             {{ userPhoto }}
@@ -205,9 +205,9 @@
                                             {{ toolbar|raw }}
                                         </div>
                                     {% endif %}
-                                    {% if actionButton or addlButtons %}
+                                    {% if actionButton or additionalButtons %}
                                         <div id="action-buttons" class="flex">
-                                            {{ addlButtons|raw }}
+                                            {{ additionalButtons|raw }}
                                             {{ actionButton|raw }}
                                         </div>
                                     {% endif %}

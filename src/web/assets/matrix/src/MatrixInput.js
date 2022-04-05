@@ -460,7 +460,7 @@
             this.$container.data('block', this);
 
             this.id = this.$container.data('id');
-            this.isNew = (!this.id || (typeof this.id === 'string' && this.id.substr(0, 3) === 'new'));
+            this.isNew = (!this.id || (typeof this.id === 'string' && this.id.substring(0, 3) === 'new'));
 
             const $actionMenuBtn = this.$container.find('> .actions [data-disclosure-trigger]'),
                 actionDisclosure = new Garnish.DisclosureMenu($actionMenuBtn);
@@ -575,11 +575,11 @@
 
             if (animate) {
                 this.$fieldsContainer.velocity('fadeOut', {duration: 'fast'});
-                this.$container.velocity({height: 16}, 'fast');
+                this.$container.velocity({height: 32}, 'fast');
             } else {
                 this.$previewContainer.show();
                 this.$fieldsContainer.hide();
-                this.$container.css({height: 16});
+                this.$container.css({height: 32});
             }
 
             setTimeout(() => {

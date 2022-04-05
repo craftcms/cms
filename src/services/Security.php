@@ -175,15 +175,15 @@ class Security extends \yii\base\Security
      *
      * @param string $key
      * @param mixed $value
-     * @return string|array The possibly-redacted value
+     * @return mixed The possibly-redacted value
      */
-    public function redactIfSensitive(string $key, mixed $value): array|string
+    public function redactIfSensitive(string $key, mixed $value): mixed
     {
         if (is_array($value)) {
             foreach ($value as $n => &$v) {
                 $v = $this->redactIfSensitive($n, $v);
             }
-        } else if (is_string($value) && $this->isSensitive($key)) {
+        } elseif (is_string($value) && $this->isSensitive($key)) {
             $value = str_repeat('•', strlen($value));
         }
 

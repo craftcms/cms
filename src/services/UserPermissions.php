@@ -205,7 +205,7 @@ class UserPermissions extends Component
     }
 
     /**
-     * Returns all of a given user's permissions.
+     * Returns all of a given user’s permissions.
      *
      * @param int $userId
      * @return array
@@ -296,8 +296,6 @@ class UserPermissions extends Component
         ProjectConfigHelper::ensureAllUserGroupsProcessed();
         $uid = $event->tokenMatches[0];
         $permissions = $event->newValue;
-
-        /** @var UserGroup $userGroup */
         $userGroup = Craft::$app->getUserGroups()->getGroupByUid($uid);
 
         // No group - no permissions to change.
@@ -353,7 +351,7 @@ class UserPermissions extends Component
                         'performUpdates' => [
                             'label' => Craft::t('app', 'Perform Craft CMS and plugin updates'),
                         ],
-                    ], $pluginPermissions)
+                    ], $pluginPermissions),
                 ],
             ],
         ];
@@ -402,7 +400,7 @@ class UserPermissions extends Component
                             ],
                         ],
                         $assignGroupPermissions
-                    )
+                    ),
                 ],
                 'deleteUsers' => [
                     'label' => Craft::t('app', 'Delete users'),
@@ -722,7 +720,7 @@ class UserPermissions extends Component
      *
      * @param array $postedPermissions The posted permissions.
      * @param array $groupPermissions Permissions the user is already assigned
-     * to via their group, if we're saving a user's permissions.
+     * to via their group, if we’re saving a user’s permissions.
      * @return array The permissions we'll actually let them save.
      */
     private function _filterOrphanedPermissions(array $postedPermissions, array $groupPermissions = []): array

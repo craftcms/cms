@@ -100,7 +100,6 @@ use craft\services\Webpack;
 use craft\web\Application as WebApplication;
 use craft\web\AssetManager;
 use craft\web\Request as WebRequest;
-use craft\web\Response as WebResponse;
 use craft\web\View;
 use Yii;
 use yii\base\Application;
@@ -278,7 +277,7 @@ trait ApplicationTrait
     /**
      * Sets the target application language.
      *
-     * @param bool|null $useUserLanguage Whether the user's preferred language should be used.
+     * @param bool|null $useUserLanguage Whether the user’s preferred language should be used.
      * If null, the user’s preferred language will be used if this is a control panel request or a console request.
      */
     public function updateTargetLanguage(?bool $useUserLanguage = null): void
@@ -305,7 +304,7 @@ trait ApplicationTrait
     /**
      * Returns the target app language.
      *
-     * @param bool $useUserLanguage Whether the user's preferred language should be used.
+     * @param bool $useUserLanguage Whether the user’s preferred language should be used.
      * @return string
      */
     public function getTargetLanguage(bool $useUserLanguage = true): string
@@ -331,7 +330,7 @@ trait ApplicationTrait
                 return $language;
             }
 
-            // Fall back on the default CP language, if there is one, otherwise the browser language
+            // Fall back on the default control panel language, if there is one, otherwise the browser language
             return Craft::$app->getConfig()->getGeneral()->defaultCpLanguage ?? $this->_getFallbackLanguage();
         }
 
@@ -350,7 +349,7 @@ trait ApplicationTrait
         if ($strict) {
             $this->_isInstalled = null;
             $this->_info = null;
-        } else if (isset($this->_isInstalled)) {
+        } elseif (isset($this->_isInstalled)) {
             return $this->_isInstalled;
         }
 
@@ -401,6 +400,7 @@ trait ApplicationTrait
      *
      * @return string
      * @since 3.2.0
+     * @deprecated in 4.0.0
      */
     public function getInstalledSchemaVersion(): string
     {
@@ -436,7 +436,7 @@ trait ApplicationTrait
             // (https://stackoverflow.com/a/14916838/1688568)
             return $this->_isMultiSiteWithTrashed = (new Query())
                     ->from([
-                        'x' => (new Query)
+                        'x' => (new Query())
                             ->select([new Expression('1')])
                             ->from([Table::SITES])
                             ->limit(2),
@@ -594,14 +594,13 @@ trait ApplicationTrait
      */
     public function getCanTestEditions(): bool
     {
-        $request = $this->getRequest();
-        if ($request instanceof ConsoleRequest) {
+        if (!$this instanceof WebApplication) {
             return false;
         }
 
         /** @var Cache $cache */
         $cache = $this->getCache();
-        return $cache->get('editionTestableDomain@' . $request->getHostName());
+        return $cache->get(sprintf('editionTestableDomain@%s', $this->getRequest()->getHostName()));
     }
 
     /**
@@ -626,7 +625,7 @@ trait ApplicationTrait
             return $live;
         }
 
-        return (bool)App::parseBooleanEnv($this->getProjectConfig()->get('system.live')) ?? false;
+        return App::parseBooleanEnv($this->getProjectConfig()->get('system.live')) ?? false;
     }
 
     /**
@@ -746,7 +745,6 @@ trait ApplicationTrait
      */
     public function saveInfo(Info $info, ?array $attributeNames = null): bool
     {
-
         if ($attributeNames === null) {
             $attributeNames = ['version', 'schemaVersion', 'maintenance', 'configVersion', 'fieldVersion'];
         }
@@ -794,7 +792,7 @@ trait ApplicationTrait
 
         try {
             $name = $this->getSites()->getPrimarySite()->getName();
-        } catch (SiteNotFoundException $e) {
+        } catch (SiteNotFoundException) {
             $name = null;
         }
 
@@ -1440,7 +1438,7 @@ trait ApplicationTrait
 
         // Load the request before anything else, so everything else can safely check Craft::$app->has('request', true)
         // to avoid possible recursive fatal errors in the request initialization
-        $request = $this->getRequest();
+        $this->getRequest();
         $this->getLog();
 
         // Set the timezone
@@ -1450,9 +1448,8 @@ trait ApplicationTrait
         $this->updateTargetLanguage();
 
         // Prevent browser caching if this is a control panel request
-        $response = $this->getResponse();
-        if ($response instanceof WebResponse) {
-            $response->setNoCacheHeaders();
+        if ($this instanceof WebApplication) {
+            $this->getResponse()->setNoCacheHeaders();
         }
     }
 
@@ -1513,15 +1510,15 @@ trait ApplicationTrait
     }
 
     /**
-     * Tries to find a language match with the browser's preferred language(s).
+     * Tries to find a language match with the browser’s preferred language(s).
      *
-     * If not uses the app's sourceLanguage.
+     * If not uses the app’s sourceLanguage.
      *
      * @return string
      */
     private function _getFallbackLanguage(): string
     {
-        // See if we have the CP translated in one of the user's browsers preferred language(s)
+        // See if we have the control panel translated in one of the user’s browsers preferred language(s)
         if ($this instanceof WebApplication) {
             $languages = $this->getI18n()->getAppLocaleIds();
             return $this->getRequest()->getPreferredLanguage($languages);

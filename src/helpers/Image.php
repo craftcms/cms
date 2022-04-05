@@ -106,7 +106,7 @@ class Image
 
         $info = unpack(
             'A8sig/Nchunksize/A4chunktype/Nwidth/Nheight/Cbit-depth/Ccolor/Ccompression/Cfilter/Cinterface',
-            file_get_contents($file, 0, null, 0, 29)
+            file_get_contents($file, false, null, 0, 29)
         );
 
         if (empty($info)) {
@@ -195,7 +195,7 @@ class Image
 
             $image = Craft::$app->getImages()->loadImage($filePath);
             return [$image->getWidth(), $image->getHeight()];
-        } catch (Throwable $exception) {
+        } catch (Throwable) {
             return [0, 0];
         }
     }
@@ -322,7 +322,7 @@ class Image
             $height = floor(
                 $matchedHeight * self::_getSizeUnitMultiplier($heightMatch[3])
             );
-        } else if (preg_match(Svg::SVG_VIEWBOX_RE, $svg, $viewboxMatch)) {
+        } elseif (preg_match(Svg::SVG_VIEWBOX_RE, $svg, $viewboxMatch)) {
             $width = floor($viewboxMatch[3]);
             $height = floor($viewboxMatch[4]);
         } else {

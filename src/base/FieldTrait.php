@@ -50,7 +50,7 @@ trait FieldTrait
      * @see FieldInterface::getInputHtml()
      * @since 3.7.24
      */
-    public $describedBy;
+    public ?string $describedBy = null;
 
     /**
      * @var string The field’s translation method

@@ -27,7 +27,7 @@ class RestoreController extends Controller
     /**
      * DEPRECATED. Use `db/restore` instead.
      *
-     * @param string|null The path to the database backup file.
+     * @param string|null $path The path to the database backup file.
      * @return int
      */
     public function actionDb(?string $path = null): int

@@ -35,46 +35,42 @@ class UserPermissionsTest extends TestCase
     /**
      * @var UnitTester
      */
-    protected $tester;
+    protected UnitTester $tester;
 
     /**
      * @var UserPermissions
      */
-    protected $userPermissions;
-
-    /**
-     * @var User
-     */
-    protected $activeUser;
+    protected UserPermissions $userPermissions;
 
     public function _fixtures(): array
     {
         return [
             'user-groups' => [
-                'class' => UserGroupsFixture::class
+                'class' => UserGroupsFixture::class,
             ],
             'users' => [
-                'class' => UserFixture::class
+                'class' => UserFixture::class,
             ],
             'sites' => [
-                'class' => SitesFixture::class
+                'class' => SitesFixture::class,
             ],
             'sections' => [
-                'class' => SectionsFixture::class
+                'class' => SectionsFixture::class,
             ],
             'globals' => [
                 'class' => GlobalSetFixture::class,
             ],
             'volumes' => [
-                'class' => VolumesFixture::class
-            ]
+                'class' => VolumesFixture::class,
+            ],
         ];
     }
+
 
     /**
      *
      */
-    public function testGetAllPermissions()
+    public function testGetAllPermissions(): void
     {
         $permissions = [];
 
@@ -96,33 +92,31 @@ class UserPermissionsTest extends TestCase
     /**
      * @throws WrongEditionException
      */
-    public function testDoesGroupHavePermission()
+    public function testDoesGroupHavePermission(): void
     {
-        Craft::$app->setEdition(Craft::Pro);
-
         self::assertFalse(
-            $this->userPermissions->doesGroupHavePermission('1000', 'accessCp')
+            $this->userPermissions->doesGroupHavePermission(1000, 'accessCp')
         );
 
-        $this->userPermissions->saveGroupPermissions('1000', ['accessCp']);
+        $this->userPermissions->saveGroupPermissions(1000, ['accessCp']);
 
         self::assertTrue(
-            $this->userPermissions->doesGroupHavePermission('1000', 'accessCp')
+            $this->userPermissions->doesGroupHavePermission(1000, 'accessCp')
         );
 
         self::assertFalse(
-            $this->userPermissions->doesGroupHavePermission('1000', 'registerUsers')
+            $this->userPermissions->doesGroupHavePermission(1000, 'registerUsers')
         );
         self::assertFalse(
-            $this->userPermissions->doesGroupHavePermission('1000', 'invalidPermission')
+            $this->userPermissions->doesGroupHavePermission(1000, 'invalidPermission')
         );
 
-        $this->userPermissions->saveGroupPermissions('1000', ['assignUserPermissions', 'accessCp']);
+        $this->userPermissions->saveGroupPermissions(1000, ['assignUserPermissions', 'accessCp']);
         self::assertFalse(
-            $this->userPermissions->doesGroupHavePermission('1000', 'assignUserPermissions')
+            $this->userPermissions->doesGroupHavePermission(1000, 'assignUserPermissions')
         );
         self::assertTrue(
-            $this->userPermissions->doesGroupHavePermission('1000', 'accessCp')
+            $this->userPermissions->doesGroupHavePermission(1000, 'accessCp')
         );
     }
 
@@ -131,15 +125,16 @@ class UserPermissionsTest extends TestCase
      * @throws WrongEditionException
      * @todo Tests for _filterOrphanedPermissions - use codecov.io for this.
      */
-    public function testDoesUserHavePermission()
+    public function testDoesUserHavePermission(): void
     {
-        Craft::$app->setEdition(Craft::Pro);
-        $this->userPermissions->saveGroupPermissions('1000', ['accessCp']);
+        $this->userPermissions->saveGroupPermissions(1000, ['accessCp']);
 
+        /** @var User $user */
         $user = User::find()
             ->admin(false)
             ->one();
-        Craft::$app->getUsers()->assignUserToGroups($user->id, ['1000']);
+        self::assertNotNull($user);
+        Craft::$app->getUsers()->assignUserToGroups($user->id, [1000]);
 
         self::assertTrue(
             $this->userPermissions->doesUserHavePermission($user->id, 'accessCp')
@@ -161,18 +156,20 @@ class UserPermissionsTest extends TestCase
     /**
      * @throws WrongEditionException
      */
-    public function testPermissionGet()
+    public function testPermissionGet(): void
     {
         // Setup user and craft
-        Craft::$app->setEdition(Craft::Pro);
-        $this->userPermissions->saveGroupPermissions('1001', ['utility:php-info']);
-        $this->userPermissions->saveGroupPermissions('1000', ['accessCp', 'utility:updates']);
+        $this->userPermissions->saveGroupPermissions(1001, ['utility:php-info']);
+        $this->userPermissions->saveGroupPermissions(1000, ['accessCp', 'utility:updates']);
 
+        /** @var User $user */
         $user = User::find()
             ->admin(false)
             ->one();
 
-        Craft::$app->getUsers()->assignUserToGroups($user->id, ['1000', '1001']);
+        self::assertNotNull($user);
+
+        Craft::$app->getUsers()->assignUserToGroups($user->id, [1000, 1001]);
 
         self::assertCount(3, $this->userPermissions->getPermissionsByUserId($user->id));
         self::assertCount(
@@ -182,29 +179,32 @@ class UserPermissionsTest extends TestCase
 
         self::assertCount(
             2,
-            $this->userPermissions->getPermissionsByGroupId('1000')
+            $this->userPermissions->getPermissionsByGroupId(1000)
         );
     }
 
     /**
      * @throws WrongEditionException
      */
-    public function testChangedGroupPermissions()
+    public function testChangedGroupPermissions(): void
     {
         // Setup user and craft
-        Craft::$app->setEdition(Craft::Pro);
-        $this->userPermissions->saveGroupPermissions('1000', ['accessCp']);
+        $this->userPermissions->saveGroupPermissions(1000, ['accessCp']);
 
+        /** @var User $user */
         $user = User::find()
             ->admin(false)
             ->one();
-        Craft::$app->getUsers()->assignUserToGroups($user->id, ['1000']);
+
+        self::assertNotNull($user);
+
+        Craft::$app->getUsers()->assignUserToGroups($user->id, [1000]);
 
         self::assertTrue($this->userPermissions->doesUserHavePermission($user->id, 'accessCp'));
         self::assertFalse($this->userPermissions->doesUserHavePermission($user->id, 'utility:updates'));
 
         // Add a permission and check again.
-        $this->userPermissions->saveGroupPermissions('1000', ['accessCp', 'utility:updates']);
+        $this->userPermissions->saveGroupPermissions(1000, ['accessCp', 'utility:updates']);
         self::assertTrue($this->userPermissions->doesUserHavePermission($user->id, 'accessCp'));
         self::assertFalse($this->userPermissions->doesUserHavePermission($user->id, 'utility:updates'));
     }
@@ -213,8 +213,10 @@ class UserPermissionsTest extends TestCase
     /**
      * @inheritdoc
      */
-    protected function _before()
+    protected function _before(): void
     {
+        Craft::$app->setEdition(Craft::Pro);
+        Craft::$app->getProjectConfig()->rebuild();
         parent::_before();
 
         $this->userPermissions = Craft::$app->getUserPermissions();

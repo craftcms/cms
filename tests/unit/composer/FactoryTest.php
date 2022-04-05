@@ -14,7 +14,6 @@ use Composer\Util\Loop;
 use Composer\Util\ProcessExecutor;
 use craft\composer\Factory;
 use craft\test\TestCase;
-use UnitTester;
 
 /**
  * Unit tests for craft\composer\Factory
@@ -28,17 +27,12 @@ class FactoryTest extends TestCase
     /**
      * @var Factory
      */
-    protected $factory;
-
-    /**
-     * @var UnitTester
-     */
-    protected $tester;
+    protected Factory $factory;
 
     /**
      * @inheritdoc
      */
-    protected function _before()
+    protected function _before(): void
     {
         $this->factory = new Factory();
     }
@@ -46,7 +40,7 @@ class FactoryTest extends TestCase
     /**
      * Test creating an archive manager which doesnt have zip and phar archivers. .
      */
-    public function testCreateArchiveManager()
+    public function testCreateArchiveManager(): void
     {
         $config = new Config();
         $io = new NullIO();

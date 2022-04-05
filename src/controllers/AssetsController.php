@@ -21,11 +21,9 @@ use craft\fields\Assets as AssetsField;
 use craft\helpers\App;
 use craft\helpers\Assets;
 use craft\helpers\Db;
-use craft\helpers\Image;
 use craft\helpers\ImageTransforms;
 use craft\helpers\StringHelper;
 use craft\i18n\Formatter;
-use craft\image\Raster;
 use craft\imagetransforms\ImageTransformer;
 use craft\models\VolumeFolder;
 use craft\web\Controller;
@@ -315,7 +313,7 @@ class AssetsController extends Controller
                 $tempPath = $this->_getUploadedFileTempPath($uploadedFile);
                 $filename = Assets::prepareAssetName($uploadedFile->name);
                 $assets->replaceAssetFile($assetToReplace, $tempPath, $filename);
-            } else if ($sourceAsset !== null) {
+            } elseif ($sourceAsset !== null) {
                 // Or replace using an existing Asset
 
                 // See if we can find an Asset to replace.
@@ -325,6 +323,7 @@ class AssetsController extends Controller
                         throw new Exception($targetFilename . ' doesn\'t have the original file extension.');
                     }
 
+                    /** @var Asset|null $assetToReplace */
                     $assetToReplace = Asset::find()
                         ->select(['elements.id'])
                         ->folderId($sourceAsset->folderId)
@@ -568,6 +567,7 @@ class AssetsController extends Controller
 
         if ($this->request->getBodyParam('force')) {
             // Check for a conflicting Asset
+            /** @var Asset|null $conflictingAsset */
             $conflictingAsset = Asset::find()
                 ->select(['elements.id'])
                 ->folderId($folderId)
@@ -667,6 +667,7 @@ class AssetsController extends Controller
             // Get the file transfer list.
             $allSourceFolderIds = array_keys($sourceTree);
             $allSourceFolderIds[] = $folderBeingMovedId;
+            /** @var Asset[] $foundAssets */
             $foundAssets = Asset::find()
                 ->folderId($allSourceFolderIds)
                 ->all();
@@ -694,7 +695,7 @@ class AssetsController extends Controller
                             $targetPrefixLength)] = $existingFolder->id;
                     }
                 }
-            } else if ($force) {
+            } elseif ($force) {
                 // An un-indexed folder is conflicting. If we're forcing things, just remove it.
                 $targetVolume->getFs()->deleteDirectory(rtrim($destinationFolder->path, '/') . '/' . $folderToMove->name);
             }
@@ -705,6 +706,7 @@ class AssetsController extends Controller
             // Get file transfer list for the progress bar
             $allSourceFolderIds = array_keys($sourceTree);
             $allSourceFolderIds[] = $folderBeingMovedId;
+            /** @var Asset[] $foundAssets */
             $foundAssets = Asset::find()
                 ->folderId($allSourceFolderIds)
                 ->all();
@@ -760,13 +762,13 @@ class AssetsController extends Controller
         $assetId = (int)$this->request->getRequiredQueryParam('assetId');
         $size = (int)$this->request->getRequiredQueryParam('size');
 
-        $filePath = Assets::getImageEditorSource($assetId, $size);
-
-        if (!$filePath) {
+        $asset = Asset::findOne($assetId);
+        if (!$asset) {
             throw new BadRequestHttpException('The Asset cannot be found');
         }
 
-        return $this->response->sendFile($filePath, null, ['inline' => true]);
+        $url = Craft::$app->getAssets()->getImagePreviewUrl($asset, $size, $size);
+        return $this->response->redirect($url);
     }
 
     /**
@@ -800,10 +802,6 @@ class AssetsController extends Controller
 
             $folder = $asset->getFolder();
 
-            if ($folder === null) {
-                throw new BadRequestHttpException('The folder cannot be found');
-            }
-
             // Do what you want with your own photo.
             if ($asset->id != Craft::$app->getUser()->getIdentity()->photoId) {
                 $this->requireVolumePermissionByAsset('editImages', $asset);
@@ -822,36 +820,21 @@ class AssetsController extends Controller
                 throw new BadRequestHttpException('Invalid cropping parameters passed');
             }
 
+            // TODO Fire an event for any other image editing takers.
+            $transformer = new ImageTransformer();
+
+            $originalImageWidth = $asset->width;
+            $originalImageHeight = $asset->height;
+
+            $transformer->startImageEditing($asset);
+
             $imageCropped = ($cropData['width'] !== $imageDimensions['width'] || $cropData['height'] !== $imageDimensions['height']);
             $imageRotated = $viewportRotation !== 0 || $imageRotation !== 0.0;
             $imageFlipped = !empty($flipData['x']) || !empty($flipData['y']);
             $imageChanged = $imageCropped || $imageRotated || $imageFlipped;
 
-            $imageCopy = $asset->getCopyOfFile();
-
-            $imageSize = Image::imageSize($imageCopy);
-
-            /** @var Raster $image */
-            $image = Craft::$app->getImages()->loadImage($imageCopy, true, max($imageSize));
-
-            // TODO Is this hacky? It seems hacky.
-            // We're rasterizing SVG, we have to make sure that the filename change does not get lost
-            if (strtolower($asset->getExtension()) === 'svg') {
-                unlink($imageCopy);
-                $imageCopy = preg_replace('/(svg)$/i', 'png', $imageCopy);
-                $asset->setFilename(preg_replace('/(svg)$/i', 'png', $asset->getFilename()));
-            }
-
-            [$originalImageWidth, $originalImageHeight] = $imageSize;
-
             if ($imageFlipped) {
-                if (!empty($flipData['x'])) {
-                    $image->flipHorizontally();
-                }
-
-                if (!empty($flipData['y'])) {
-                    $image->flipVertically();
-                }
+                $transformer->flipImage(!empty($flipData['x']), !empty($flipData['y']));
             }
 
             $generalConfig = Craft::$app->getConfig()->getGeneral();
@@ -859,17 +842,17 @@ class AssetsController extends Controller
             $generalConfig->upscaleImages = true;
 
             if ($zoom !== 1.0) {
-                $image->scaleToFit($originalImageWidth * $zoom, $originalImageHeight * $zoom);
+                $transformer->scaleImage((int)($originalImageWidth * $zoom), (int)($originalImageHeight * $zoom));
             }
 
             $generalConfig->upscaleImages = $upscale;
 
             if ($imageRotated) {
-                $image->rotate($imageRotation + $viewportRotation);
+                $transformer->rotateImage($imageRotation + $viewportRotation);
             }
 
-            $imageCenterX = $image->getWidth() / 2;
-            $imageCenterY = $image->getHeight() / 2;
+            $imageCenterX = $transformer->getEditedImageWidth() / 2;
+            $imageCenterY = $transformer->getEditedImageHeight() / 2;
 
             $adjustmentRatio = min($originalImageWidth / $imageDimensions['width'], $originalImageHeight / $imageDimensions['height']);
             $width = $cropData['width'] * $zoom * $adjustmentRatio;
@@ -891,11 +874,13 @@ class AssetsController extends Controller
             }
 
             if ($imageCropped) {
-                $image->crop($x, $x + $width, $y, $y + $height);
+                $transformer->crop((int)$x, (int)$y, (int)$width, (int)$height);
             }
 
             if ($imageChanged) {
-                $image->saveAs($imageCopy);
+                $finalImage = $transformer->finishImageEditing();
+            } else {
+                $finalImage = $transformer->cancelImageEditing();
             }
 
             $output = [];
@@ -912,8 +897,8 @@ class AssetsController extends Controller
 
                 // Only replace file if it changed, otherwise just save changed focal points
                 if ($imageChanged) {
-                    $assets->replaceAssetFile($asset, $imageCopy, $asset->getFilename());
-                } else if ($focalChanged) {
+                    $assets->replaceAssetFile($asset, $finalImage, $asset->getFilename());
+                } elseif ($focalChanged) {
                     Craft::$app->getElements()->saveElement($asset);
                 }
             } else {
@@ -921,7 +906,7 @@ class AssetsController extends Controller
                 $newAsset->avoidFilenameConflicts = true;
                 $newAsset->setScenario(Asset::SCENARIO_CREATE);
 
-                $newAsset->tempFilePath = $imageCopy;
+                $newAsset->tempFilePath = $finalImage;
                 $newAsset->setFilename($asset->getFilename());
                 $newAsset->newFolderId = $folder->id;
                 $newAsset->setVolumeId($folder->volumeId);
@@ -930,7 +915,7 @@ class AssetsController extends Controller
                 // Don't validate required custom fields
                 Craft::$app->getElements()->saveElement($newAsset);
 
-                $output['elementId'] = $newAsset->id;
+                $output['newAssetId'] = $newAsset->id;
             }
         } catch (Throwable $exception) {
             return $this->asFailure($exception->getMessage());
@@ -956,6 +941,7 @@ class AssetsController extends Controller
         $this->requirePostRequest();
 
         $assetIds = $this->request->getRequiredBodyParam('assetId');
+        /** @var Asset[] $assets */
         $assets = Asset::find()
             ->id($assetIds)
             ->all();
@@ -1001,34 +987,19 @@ class AssetsController extends Controller
     }
 
     /**
-     * Returns an asset’s thumbnail.
+     * Returns a file icon with an extension.
      *
-     * @param string $uid The asset's UID
-     * @param int $width The thumbnail width
-     * @param int $height The thumbnail height
+     * @param string $extension The asset’s UID
      * @return Response
-     * @since 3.0.13
+     * @since 4.0.0
      */
-    public function actionThumb(string $uid, int $width, int $height): Response
+    public function actionIcon(string $extension): Response
     {
-        $asset = Asset::find()->uid($uid)->one();
-
-        if (!$asset) {
-            $e = new NotFoundHttpException('Invalid asset UID: ' . $uid);
-            Craft::$app->getErrorHandler()->logException($e);
-            return $this->asBrokenImage($e);
-        }
-
-        try {
-            $path = Craft::$app->getAssets()->getThumbPath($asset, $width, $height, true);
-        } catch (Throwable $e) {
-            Craft::$app->getErrorHandler()->logException($e);
-            return $this->asBrokenImage($e);
-        }
+        $path = Assets::iconPath($extension);
 
         return $this->response
             ->setCacheHeaders()
-            ->sendFile($path, $asset->getFilename(), [
+            ->sendFile($path, "$extension.svg", [
                 'inline' => true,
             ]);
     }
@@ -1045,8 +1016,6 @@ class AssetsController extends Controller
     {
         try {
             // If transform Id was not passed in, see if file id and handle were.
-            $transformIndexModel = null;
-
             if ($transformId) {
                 $transformer = Craft::createObject(ImageTransformer::class);
                 $transformIndexModel = $transformer->getTransformIndexModelById($transformId);
@@ -1092,6 +1061,7 @@ class AssetsController extends Controller
         $assetId = $this->request->getRequiredParam('assetId');
         $requestId = $this->request->getRequiredParam('requestId');
 
+        /** @var Asset|null $asset */
         $asset = Asset::find()->id($assetId)->one();
 
         if (!$asset) {
@@ -1110,7 +1080,7 @@ class AssetsController extends Controller
                 try {
                     $this->requireVolumePermissionByAsset('editImages', $asset);
                     $this->requirePeerVolumePermissionByAsset('editPeerImages', $asset);
-                } catch (ForbiddenHttpException $exception) {
+                } catch (ForbiddenHttpException) {
                     $variables['editFocal'] = false;
                 }
             }
@@ -1119,7 +1089,7 @@ class AssetsController extends Controller
         if ($previewHandler) {
             try {
                 $previewHtml = $previewHandler->getPreviewHtml($variables);
-            } catch (NotSupportedException $e) {
+            } catch (NotSupportedException) {
                 // No big deal
             }
         }
@@ -1151,6 +1121,7 @@ class AssetsController extends Controller
         $assetUid = Craft::$app->getRequest()->getRequiredBodyParam('assetUid');
         $focalData = Craft::$app->getRequest()->getRequiredBodyParam('focal');
 
+        /** @var Asset|null $asset */
         $asset = Asset::find()->uid($assetUid)->one();
 
         if (!$asset) {
@@ -1162,6 +1133,7 @@ class AssetsController extends Controller
 
         $asset->setFocalPoint($focalData);
         Craft::$app->getElements()->saveElement($asset);
+        Craft::$app->getImageTransforms()->deleteCreatedTransformsForAsset($asset);
 
         return $this->asSuccess();
     }
@@ -1199,7 +1171,7 @@ class AssetsController extends Controller
         if (!$asset->getVolumeId()) {
             $userTemporaryFolder = Craft::$app->getAssets()->getUserTemporaryUploadFolder();
 
-            // Skip permission check only if it's the user's temporary folder
+            // Skip permission check only if it’s the user’s temporary folder
             if ($userTemporaryFolder->id == $asset->folderId) {
                 return;
             }
@@ -1242,7 +1214,7 @@ class AssetsController extends Controller
         if (!$folder->volumeId) {
             $userTemporaryFolder = Craft::$app->getAssets()->getUserTemporaryUploadFolder();
 
-            // Skip permission check only if it's the user's temporary folder
+            // Skip permission check only if it’s the user’s temporary folder
             if ($userTemporaryFolder->id == $folder->id) {
                 return;
             }

@@ -22,6 +22,7 @@ class UpdateSearchIndex extends BaseJob
 {
     /**
      * @var string The type of elements to update.
+     * @phpstan-var class-string<ElementInterface>
      */
     public string $elementType;
 
@@ -47,6 +48,7 @@ class UpdateSearchIndex extends BaseJob
     public function execute($queue): void
     {
         /** @var string|ElementInterface $class */
+        /** @phpstan-var class-string<ElementInterface>|ElementInterface $class */
         $class = $this->elementType;
         $elements = $class::find()
             ->drafts(null)

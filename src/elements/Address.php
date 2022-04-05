@@ -35,6 +35,38 @@ class Address extends Element implements AddressInterface, BlockElementInterface
     /**
      * @inheritdoc
      */
+    public static function displayName(): string
+    {
+        return Craft::t('app', 'Address');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function lowerDisplayName(): string
+    {
+        return Craft::t('app', 'address');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function pluralDisplayName(): string
+    {
+        return Craft::t('app', 'Addresses');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function pluralLowerDisplayName(): string
+    {
+        return Craft::t('app', 'addresses');
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function hasContent(): bool
     {
         return true;
@@ -117,7 +149,7 @@ class Address extends Element implements AddressInterface, BlockElementInterface
             'locality',
             'dependentLocality',
             'postalCode',
-        ])) {
+        ], true)) {
             $formatRepo = Craft::$app->getAddresses()->getAddressFormatRepository()->get($countryCode);
             return match ($attribute) {
                 'administrativeArea' => Craft::$app->getAddresses()->getAdministrativeAreaTypeLabel($formatRepo->getAdministrativeAreaType()),
@@ -273,7 +305,10 @@ class Address extends Element implements AddressInterface, BlockElementInterface
      */
     public function canView(User $user): bool
     {
-        return parent::canView($user) || $this->getOwner()?->getCanonical(true)->canView($user) ?? false;
+        return (
+            parent::canView($user) ||
+            ($this->getOwner()?->getCanonical(true)->canView($user) ?? false)
+        );
     }
 
     /**
@@ -281,7 +316,10 @@ class Address extends Element implements AddressInterface, BlockElementInterface
      */
     public function canSave(User $user): bool
     {
-        return parent::canSave($user) || $this->getOwner()?->getcanonical(true)->canSave($user) ?? false;
+        return (
+            parent::canSave($user) ||
+            ($this->getOwner()?->getcanonical(true)->canSave($user) ?? false)
+        );
     }
 
     /**
@@ -289,7 +327,10 @@ class Address extends Element implements AddressInterface, BlockElementInterface
      */
     public function canDelete(User $user): bool
     {
-        return parent::canDelete($user) || $this->getOwner()?->getCanonical(true)->canSave($user) ?? false;
+        return (
+            parent::canDelete($user) ||
+            ($this->getOwner()?->getCanonical(true)->canSave($user) ?? false)
+        );
     }
 
     /**
@@ -407,7 +448,7 @@ class Address extends Element implements AddressInterface, BlockElementInterface
     /**
      * @inheritdoc
      */
-    public function beforeValidate()
+    public function beforeValidate(): bool
     {
         $formatter = Craft::$app->getAddresses()->getAddressFormatRepository()->get($this->countryCode);
         $usedFields = array_unique([

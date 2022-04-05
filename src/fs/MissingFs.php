@@ -1,6 +1,7 @@
 <?php
+
 /** @noinspection PhpInconsistentReturnPointsInspection */
-declare(strict_types = 1);
+declare(strict_types=1);
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -10,6 +11,7 @@ declare(strict_types = 1);
 namespace craft\fs;
 
 use craft\base\Fs;
+use craft\base\FsInterface;
 use craft\base\MissingComponentInterface;
 use craft\base\MissingComponentTrait;
 use Generator;
@@ -18,6 +20,7 @@ use yii\base\NotSupportedException;
 /**
  * MissingFs represents a filesystem with an invalid class.
  *
+ * @property class-string<FsInterface> $expectedType
  * @property-read false $rootUrl
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
@@ -88,6 +91,22 @@ class MissingFs extends Fs implements MissingComponentInterface
     public function getFileStream(string $uriPath)
     {
         throw new NotSupportedException('getFileStream() is not implemented.');
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function read(string $path): string
+    {
+        throw new NotSupportedException('read() is not implemented.');
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function write(string $path, string $contents, array $config = []): void
+    {
+        throw new NotSupportedException('write() is not implemented.');
     }
 
     /**

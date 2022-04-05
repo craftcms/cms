@@ -111,7 +111,7 @@ trait FieldConditionRuleTrait
     {
         try {
             $value = $element->getFieldValue($this->field()->handle);
-        } catch (InvalidFieldException $e) {
+        } catch (InvalidFieldException) {
             return false;
         }
 

@@ -12,7 +12,6 @@ use craft\base\ElementInterface;
 use craft\elements\Address;
 use craft\fieldlayoutelements\BaseField;
 use craft\helpers\Cp;
-use craft\helpers\Html;
 use yii\base\InvalidArgumentException;
 
 /**
@@ -72,138 +71,86 @@ class AddressField extends BaseField
             throw new InvalidArgumentException('AddressField can only be used in address field layouts.');
         }
 
-        $addressesService = Craft::$app->getAddresses();
-
-        $formatRepo = $addressesService->getAddressFormatRepository()->get($element->countryCode);
-        $requiredFields = array_flip($formatRepo->getRequiredFields());
-        $visibleFields = array_flip(array_merge(
-                $formatRepo->getUsedFields(),
-                $formatRepo->getUsedSubdivisionFields(),
-            )) + $requiredFields;
-
         $view = Craft::$app->getView();
 
         $view->registerJsWithVars(fn($namespace) => <<<JS
 (() => {
-    const \$countryCode = $('#' + Craft.namespaceId('country-code', $namespace));
-    const \$spinner = $('#' + Craft.namespaceId('country-code-spinner', $namespace));
-    \$countryCode.on('change', () => {
-        if (!\$countryCode.val()) {
-            return;
-        }
-        \$spinner.removeClass('hidden');
-        Craft.sendActionRequest('POST', 'addresses/field-info', {
-            params: {
-                countryCode: \$countryCode.val(),
-            },
-        }).then(response => {
-            for (const [id, info] of Object.entries(response.data.fields)) {
-                const \$field = $('#' + Craft.namespaceId(id ,$namespace) + '-field');
-                if (info.visible) {
-                    \$field.removeClass('hidden');
-                    const \$label = \$field.find('> .heading > label').empty().text(info.label);
-                    
-                    if (info.required) {
-                        $('<span/>', {
-                            class: 'visually-hidden',
-                            text: Craft.t('app', 'Required'),
-                        }).appendTo(\$label);
-                        $('<span/>', {
-                            class: 'required',
-                            'aria-hidden': 'true',
-                        }).appendTo(\$label);
-                    }
+    const container = $('#' + Craft.namespaceId('address-field', $namespace)).find('> .input');
 
-                    if (id === 'administrativeArea') {
-                        const \$select = \$field.find('select');
-                        const selectize = \$select.data('selectize');
-                        selectize.clear(true);
-                        selectize.clearOptions(true);
-                        selectize.addOption(response.data.administrativeAreaOptions);
-                    }
-                } else {
-                    \$field.addClass('hidden');
-                }
+    const initFields = (values) => {
+        const fields = {};
+        const fieldNames = [
+            'countryCode',
+            'addressLine1',
+            'addressLine2',
+            'administrativeArea',
+            'locality',
+            'dependentLocality',
+            'postalCode',
+            'sortingCode',
+        ];
+        const hotFieldNames = [
+            'countryCode',
+            'administrativeArea',
+            'locality',
+        ];
+        for (let name of fieldNames) {
+            fields[name] = $('#' + Craft.namespaceId(name, $namespace));
+            if (values) {
+                fields[name].val(values[name]);
             }
-        }).finally(() => {
-            \$spinner.addClass('hidden');
-        });
-    });
+        }
+        for (let name of hotFieldNames) {
+            const field = fields[name];
+            if (field.prop('nodeName') !== 'SELECT') {
+                break;
+            }
+            const spinner = $('#' + Craft.namespaceId(name + '-spinner', $namespace));
+            field.off().on('change', () => {
+                if (!field.val()) {
+                    return;
+                }
+                spinner.removeClass('hidden');
+                const hotValues = {};
+                for (let hotName of hotFieldNames) {
+                    hotValues[hotName] = fields[hotName].val();
+                    if (hotName === name) {
+                        break;
+                    }
+                }
+                Craft.sendActionRequest('POST', 'addresses/fields', {
+                    params: Object.assign({}, hotValues, {
+                        namespace: $namespace,
+                    }),
+                }).then(response => {
+                    const values = Object.assign(
+                        Object.fromEntries(fieldNames.map(name => [name, fields[name].val()])),
+                        Object.fromEntries(hotFieldNames.map(name => [name, hotValues[name] || null]))
+                    );
+                    const activeElementId = document.activeElement ? document.activeElement.id : null;
+                    container.html(response.data.fieldsHtml);
+                    initFields(values);
+                    Craft.appendHeadHtml(response.data.headHtml);
+                    Craft.appendBodyHtml(response.data.bodyHtml);
+                    if (activeElementId) {
+                        $('#' + activeElementId).focus();                        
+                    }
+                }).catch(e => {
+                    Craft.cp.displayError();
+                    throw e;
+                }).finally(() => {
+                    spinner.addClass('hidden');
+                });
+            })
+        }
+    };
+
+    initFields();
 })();
 JS, [
             $view->getNamespace(),
         ]);
 
-        return
-            Cp::textFieldHtml([
-                'label' => $element->getAttributeLabel('addressLine1'),
-                'id' => 'addressLine1',
-                'name' => 'addressLine1',
-                'value' => $element->addressLine1,
-                'required' => isset($requiredFields['addressLine1']),
-                'errors' => $element->getErrors('addressLine1'),
-            ]) .
-            Cp::textFieldHtml([
-                'label' => $element->getAttributeLabel('addressLine2'),
-                'id' => 'addressLine2',
-                'name' => 'addressLine2',
-                'value' => $element->addressLine2,
-                'required' => isset($requiredFields['addressLine2']),
-                'errors' => $element->getErrors('addressLine2'),
-            ]) .
-            Cp::textFieldHtml([
-                'fieldClass' => !isset($visibleFields['locality']) ? 'hidden' : null,
-                'label' => $element->getAttributeLabel('locality'),
-                'id' => 'locality',
-                'name' => 'locality',
-                'value' => $element->locality,
-                'required' => isset($requiredFields['locality']),
-                'errors' => $element->getErrors('locality'),
-            ]) .
-            Cp::textFieldHtml([
-                'fieldClass' => !isset($visibleFields['dependentLocality']) ? 'hidden' : null,
-                'label' => $element->getAttributeLabel('dependentLocality'),
-                'id' => 'dependentLocality',
-                'name' => 'dependentLocality',
-                'value' => $element->dependentLocality,
-                'required' => isset($requiredFields['dependentLocality']),
-                'errors' => $element->getErrors('dependentLocality'),
-            ]) .
-            Cp::selectizeFieldHtml([
-                'fieldClass' => !isset($visibleFields['administrativeArea']) ? 'hidden' : null,
-                'label' => $element->getAttributeLabel('administrativeArea'),
-                'id' => 'administrativeArea',
-                'name' => 'administrativeArea',
-                'value' => $element->administrativeArea,
-                'options' => $addressesService->getSubdivisionRepository()->getList([$element->countryCode], Craft::$app->language),
-                'required' => isset($requiredFields['administrativeArea']),
-                'errors' => $element->getErrors('administrativeArea'),
-            ]) .
-            Html::beginTag('div', ['class' => 'flex-fields']) .
-            Cp::textFieldHtml([
-                'fieldClass' => array_filter([
-                    'width-50',
-                    !isset($visibleFields['postalCode']) ? 'hidden' : null,
-                ]),
-                'label' => $element->getAttributeLabel('postalCode'),
-                'id' => 'postalCode',
-                'name' => 'postalCode',
-                'value' => $element->postalCode,
-                'required' => isset($requiredFields['postalCode']),
-                'errors' => $element->getErrors('postalCode'),
-            ]) .
-            Cp::textFieldHtml([
-                'fieldClass' => array_filter([
-                    'width-50',
-                    !isset($visibleFields['sortingCode']) ? 'hidden' : null,
-                ]),
-                'label' => $element->getAttributeLabel('sortingCode'),
-                'id' => 'sortingCode',
-                'name' => 'sortingCode',
-                'value' => $element->sortingCode,
-                'required' => isset($requiredFields['sortingCode']),
-                'errors' => $element->getErrors('sortingCode'),
-            ]) .
-            Html::endTag('div'); // .flex-fields
+        return Cp::addressFieldsHtml($element);
     }
 }

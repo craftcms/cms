@@ -146,7 +146,7 @@ class MigrationHelper
             /** @var TableSchema $otherTable */
             $counter = 0;
 
-            foreach ($otherTable->foreignKeys as $fkName => $fk) {
+            foreach ($otherTable->foreignKeys as $fk) {
                 if ($fk[0] === $tableName && in_array($column, $fk, true) !== false) {
                     $fk['updateType'] = $otherTable->getExtendedForeignKeys()[$counter]['updateType'];
                     $fk['deleteType'] = $otherTable->getExtendedForeignKeys()[$counter]['deleteType'];
@@ -196,7 +196,7 @@ class MigrationHelper
         $table = $schema->getTableSchema($rawTableName);
         $foreignKeys = [];
 
-        foreach ($table->foreignKeys as $num => $fk) {
+        foreach ($table->foreignKeys as $fk) {
             $columns = [];
 
             foreach ($fk as $key => $value) {

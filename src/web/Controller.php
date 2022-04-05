@@ -8,6 +8,7 @@
 namespace craft\web;
 
 use Craft;
+use craft\base\ModelInterface;
 use yii\base\Action;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
@@ -64,7 +65,7 @@ abstract class Controller extends \yii\web\Controller
         // Normalize $allowAnonymous
         if (is_bool($this->allowAnonymous)) {
             $this->allowAnonymous = (int)$this->allowAnonymous;
-        } else if (is_array($this->allowAnonymous)) {
+        } elseif (is_array($this->allowAnonymous)) {
             $normalized = [];
             foreach ($this->allowAnonymous as $k => $v) {
                 if (
@@ -80,7 +81,7 @@ abstract class Controller extends \yii\web\Controller
                 }
             }
             $this->allowAnonymous = $normalized;
-        } else if (!is_int($this->allowAnonymous)) {
+        } elseif (!is_int($this->allowAnonymous)) {
             throw new InvalidConfigException('Invalid $allowAnonymous value');
         }
 
@@ -143,11 +144,11 @@ abstract class Controller extends \yii\web\Controller
         }
 
         if (!($test & $allowAnonymous)) {
-            // If this is a CP request, make sure they have access to the CP
+            // If this is a control panel request, make sure they have access to the control panel
             if ($this->request->getIsCpRequest()) {
                 $this->requireLogin();
                 $this->requirePermission('accessCp');
-            } else if (Craft::$app->getUser()->getIsGuest()) {
+            } elseif (Craft::$app->getUser()->getIsGuest()) {
                 if ($isLive) {
                     throw new ForbiddenHttpException();
                 } else {
@@ -159,7 +160,7 @@ abstract class Controller extends \yii\web\Controller
                 }
             }
 
-            // If the system is offline, make sure they have permission to access the CP/site
+            // If the system is offline, make sure they have permission to access the control panel/site
             if (!$isLive) {
                 $permission = $this->request->getIsCpRequest() ? 'accessCpWhenSystemIsOff' : 'accessSiteWhenSystemIsOff';
                 if (!Craft::$app->getUser()->checkPermission($permission)) {
@@ -180,7 +181,7 @@ abstract class Controller extends \yii\web\Controller
      * @param string $template The name of the template to load
      * @param array $variables The variables that should be available to the template
      * @param string|null $templateMode The template mode to use
-     * @return YiiResponse|TemplateResponseBehavior
+     * @return YiiResponse
      * @throws InvalidArgumentException if the view file does not exist.
      */
     public function renderTemplate(string $template, array $variables = [], ?string $templateMode = null): YiiResponse
@@ -199,7 +200,7 @@ abstract class Controller extends \yii\web\Controller
     /**
      * Sends a control panel screen response.
      *
-     * @return Response|CpScreenResponseBehavior
+     * @return Response
      * @since 4.0.0
      */
     public function asCpScreen(): Response
@@ -214,7 +215,6 @@ abstract class Controller extends \yii\web\Controller
      * Sends a failure response.
      *
      * @param string|null $message
-     * @param array|null $errors
      * @param array $data Additional data to include in the JSON response
      * @param array $routeParams The route params to send back to the template
      * @return YiiResponse|null
@@ -253,7 +253,7 @@ abstract class Controller extends \yii\web\Controller
     public function asSuccess(
         ?string $message = null,
         array $data = [],
-        ?string $redirect = null
+        ?string $redirect = null,
     ): ?YiiResponse {
         if ($this->request->getAcceptsJson()) {
             return $this->asJson($data + array_filter([
@@ -274,7 +274,7 @@ abstract class Controller extends \yii\web\Controller
     /**
      * Sends a failure response for a model.
      *
-     * @param Model $model The model that was being operated on
+     * @param Model|ModelInterface $model The model that was being operated on
      * @param string|null $message
      * @param string|null $modelName The route param name that the model should be set to
      * @param array $data Additional data to include in the JSON response
@@ -283,7 +283,7 @@ abstract class Controller extends \yii\web\Controller
      * @since 4.0.0
      */
     public function asModelFailure(
-        Model $model,
+        Model|ModelInterface $model,
         ?string $message = null,
         ?string $modelName = null,
         array $data = [],
@@ -307,7 +307,7 @@ abstract class Controller extends \yii\web\Controller
     /**
      * Sends a success response for a model.
      *
-     * @param Model $model The model that was being operated on
+     * @param Model|ModelInterface $model The model that was being operated on
      * @param string|null $message
      * @param string|null $modelName The route param name that the model should be set to
      * @param array $data Additional data to include in the JSON response
@@ -316,11 +316,11 @@ abstract class Controller extends \yii\web\Controller
      * @since 4.0.0
      */
     public function asModelSuccess(
-        Model $model,
+        Model|ModelInterface $model,
         ?string $message = null,
         ?string $modelName = null,
         array $data = [],
-        ?string $redirect = null
+        ?string $redirect = null,
     ): YiiResponse {
         $data += array_filter([
             'modelName' => $modelName,
@@ -608,6 +608,8 @@ abstract class Controller extends \yii\web\Controller
 
     /**
      * @inheritdoc
+     * @param string|array|null $url
+     * @param int $statusCode
      * @return YiiResponse
      */
     public function redirect($url, $statusCode = 302): YiiResponse

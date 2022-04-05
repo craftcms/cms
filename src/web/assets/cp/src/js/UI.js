@@ -162,12 +162,24 @@ Craft.ui =
                 'aria-hidden': 'true',
             }).appendTo($btn);
 
-            $btn.on('click', () => {
+            const copyValue = function() {
                 $input[0].select();
                 document.execCommand('copy');
                 Craft.cp.displayNotice(Craft.t('app', 'Copied to clipboard.'));
                 $btn.trigger('copy');
                 $input[0].setSelectionRange(0, 0);
+                $btn.focus();
+            };
+
+            $btn.on('click', () => {
+                copyValue();
+            });
+
+            $btn.on('keydown', ev => {
+                if (ev.keyCode === Garnish.SPACE_KEY) {
+                    copyValue();
+                    ev.preventDefault();
+                }
             });
 
             return $btn;
@@ -346,7 +358,7 @@ Craft.ui =
             });
 
             // Should we include a hidden input first?
-            if (config.name && (config.name.length < 3 || config.name.substr(-2) !== '[]')) {
+            if (config.name && (config.name.length < 3 || config.name.slice(-2) !== '[]')) {
                 return $([
                     $('<input/>', {
                         type: 'hidden',

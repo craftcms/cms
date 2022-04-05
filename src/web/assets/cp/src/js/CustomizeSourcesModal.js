@@ -21,7 +21,6 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
     sourceSort: null,
     sources: null,
     selectedSource: null,
-    updateSourcesOnSave: false,
 
     elementTypeName: null,
     availableTableAttributes: null,
@@ -59,7 +58,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
             spinner: true,
         }).appendTo(this.$footerBtnContainer);
 
-        this.$loadingSpinner = $('<div class="spinner"/>').appendTo($container);
+        this.$loadingSpinner = $('<div class="spinner"/>').appendTo(this.$sourceSettingsContainer);
 
         this.setContainer($container);
         this.show();
@@ -98,9 +97,6 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
         this.sourceSort = new Garnish.DragSort({
             handle: '.move',
             axis: 'y',
-            onSortChange: () => {
-                this.updateSourcesOnSave = true;
-            },
         });
 
         // Create the sources
@@ -133,7 +129,6 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
             const source = this.addSource(sourceData);
             Garnish.scrollContainerToElement(this.$sidebar, source.$item);
             source.select();
-            this.updateSourcesOnSave = true;
             this.addSourceMenu.hide();
         };
 
@@ -197,7 +192,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
             source.updateItemLabel(sourceData.label);
 
             // Select this by default?
-            if ((this.elementIndex.sourceKey + '/').substr(0, sourceData.key.length + 1) === sourceData.key + '/') {
+            if ((this.elementIndex.sourceKey + '/').substring(0, sourceData.key.length + 1) === sourceData.key + '/') {
                 source.select();
             }
         }
@@ -219,55 +214,80 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
 
         Craft.sendActionRequest('POST', 'element-index-settings/save-customize-sources-modal-settings', {
             data: this.$container.serialize() + '&elementType=' + this.elementIndex.elementType,
-        }).then(() => {
-            // Have any changes been made to the source list?
-            if (this.updateSourcesOnSave) {
-                if (this.$elementIndexSourcesContainer.length) {
-                    let $lastSourceItem = null,
-                      $pendingHeading;
+        }).then(({data}) => {
+            if (this.$elementIndexSourcesContainer.length) {
+                let $lastSourceItem = null,
+                    $pendingHeading;
 
-                    for (let i = 0; i < this.sourceSort.$items.length; i++) {
-                        const $item = this.sourceSort.$items.eq(i),
-                          source = $item.data('source'),
-                          $indexSourceItem = source.getIndexSourceItem();
+                for (let i = 0; i < this.sourceSort.$items.length; i++) {
+                    const $item = this.sourceSort.$items.eq(i),
+                        source = $item.data('source'),
+                        $indexSourceItem = source.getIndexSourceItem();
 
-                        if (!$indexSourceItem) {
-                            continue;
-                        }
-
-                        if (source.isHeading()) {
-                            $pendingHeading = $indexSourceItem;
-                            continue;
-                        }
-
-                        if ($pendingHeading) {
-                            this.appendIndexSourceItem($pendingHeading, $lastSourceItem);
-                            $lastSourceItem = $pendingHeading;
-                            $pendingHeading = null;
-                        }
-
-                        const isNew = !$indexSourceItem.parent().length;
-                        this.appendIndexSourceItem($indexSourceItem, $lastSourceItem);
-                        if (isNew) {
-                            this.elementIndex.initSource($indexSourceItem.children('a'));
-                        }
-                        $lastSourceItem = $indexSourceItem;
+                    if (!$indexSourceItem) {
+                        continue;
                     }
 
-                    // Remove any additional sources (most likely just old headings)
-                    if ($lastSourceItem) {
-                        const $extraSources = $lastSourceItem.nextAll();
-                        this.elementIndex.sourceSelect.removeItems($extraSources);
-                        $extraSources.remove();
+                    if (source.isHeading()) {
+                        $pendingHeading = $indexSourceItem;
+                        continue;
                     }
+
+                    const $a = $indexSourceItem.children('a');
+                    let visible = true;
+
+                    if (source.isNative()) {
+                        const key = $a.data('key');
+                        visible = !key || !data.disabledSourceKeys.includes(key);
+                        if (visible) {
+                            $a.removeAttr('data-disabled');
+                        } else {
+                            $a.attr('data-disabled', '');
+                        }
+                    }
+
+                    if (visible && $pendingHeading) {
+                        this.appendIndexSourceItem($pendingHeading, $lastSourceItem);
+                        $lastSourceItem = $pendingHeading;
+                        $pendingHeading = null;
+                    }
+
+                    const isNew = !$indexSourceItem.parent().length;
+                    this.appendIndexSourceItem($indexSourceItem, $lastSourceItem);
+                    if (isNew) {
+                        this.elementIndex.initSource($a);
+                    }
+                    $lastSourceItem = $indexSourceItem;
+                }
+
+                // Remove any additional sources (most likely just old headings)
+                if ($lastSourceItem) {
+                    const $extraSources = $lastSourceItem.nextAll();
+                    this.elementIndex.sourceSelect.removeItems($extraSources);
+                    $extraSources.remove();
                 }
             }
 
-            // If a source is selected, have the element index select that one by default on the next request
-            if (this.selectedSource && this.selectedSource.sourceData.key) {
-                this.elementIndex.selectSourceByKey(this.selectedSource.sourceData.key);
-                this.elementIndex.updateElements();
+            // Update source visibility based on updated data-disabled attributes
+            this.elementIndex.updateSourceVisibility();
+
+            // Figure out which source to select
+            let sourceKey = null;
+            if (
+                this.selectedSource &&
+                this.selectedSource.sourceData.key &&
+                !data.disabledSourceKeys.includes(this.selectedSource.sourceData.key)
+            ) {
+                sourceKey = this.selectedSource.sourceData.key;
+            } else if (!this.elementIndex.sourceKey) {
+                sourceKey = this.elementIndex.$visibleSources.first().data('key');
             }
+
+            if (sourceKey) {
+                this.elementIndex.selectSourceByKey(sourceKey);
+            }
+
+            this.elementIndex.updateElements();
 
             Craft.cp.displayNotice(Craft.t('app', 'Source settings saved'));
             this.hide();
@@ -327,6 +347,10 @@ Craft.CustomizeSourcesModal.BaseSource = Garnish.Base.extend({
         return false;
     },
 
+    isNative: function() {
+        return false;
+    },
+
     isSelected: function() {
         return (this.modal.selectedSource === this);
     },
@@ -376,7 +400,6 @@ Craft.CustomizeSourcesModal.BaseSource = Garnish.Base.extend({
     destroy: function() {
         this.modal.sourceSort.removeItems(this.$item);
         this.modal.sources.splice($.inArray(this, this.modal.sources), 1);
-        this.modal.updateSourcesOnSave = true;
 
         if (this.isSelected()) {
             this.deselect();
@@ -398,7 +421,16 @@ Craft.CustomizeSourcesModal.BaseSource = Garnish.Base.extend({
 });
 
 Craft.CustomizeSourcesModal.Source = Craft.CustomizeSourcesModal.BaseSource.extend({
+    isNative: function() {
+        return true;
+    },
+
     createSettings: function($container) {
+        Craft.ui.createLightswitchField({
+            label: Craft.t('app', 'Enabled'),
+            name: `sources[${this.sourceData.key}][enabled]`,
+            on: !this.sourceData.disabled,
+        }).appendTo($container);
         this.createTableAttributesField($container);
     },
 
@@ -522,7 +554,6 @@ Craft.CustomizeSourcesModal.CustomSource = Craft.CustomizeSourcesModal.Source.ex
 
     handleLabelInputChange: function() {
         this.updateItemLabel(this.$labelInput.val());
-        this.modal.updateSourcesOnSave = true;
     },
 
     getIndexSourceItem: function() {
@@ -578,7 +609,6 @@ Craft.CustomizeSourcesModal.Heading = Craft.CustomizeSourcesModal.BaseSource.ext
 
     handleLabelInputChange: function() {
         this.updateItemLabel(this.$labelInput.val());
-        this.modal.updateSourcesOnSave = true;
     },
 
     updateItemLabel: function(val) {

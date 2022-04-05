@@ -16,9 +16,7 @@ use craft\gql\base\ObjectType;
 use craft\gql\base\SingleGeneratorInterface;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\elements\MatrixBlock as MatrixBlockInterface;
-use craft\gql\TypeManager;
 use craft\gql\types\elements\MatrixBlock;
-use craft\models\MatrixBlockType as MatrixBlockTypeModel;
 
 /**
  * Class MatrixBlockType
@@ -56,7 +54,6 @@ class MatrixBlockType extends Generator implements GeneratorInterface, SingleGen
      */
     public static function generateType(mixed $context): ObjectType
     {
-        /** @var MatrixBlockTypeModel $matrixBlockType */
         $typeName = MatrixBlockElement::gqlTypeNameByContext($context);
 
         if (!($entity = GqlEntityRegistry::getEntity($typeName))) {
@@ -70,7 +67,7 @@ class MatrixBlockType extends Generator implements GeneratorInterface, SingleGen
                 $entity = new MatrixBlock([
                     'name' => $typeName,
                     'fields' => function() use ($blockTypeFields, $typeName) {
-                        return TypeManager::prepareFieldDefinitions($blockTypeFields, $typeName);
+                        return Craft::$app->getGql()->prepareFieldDefinitions($blockTypeFields, $typeName);
                     },
                 ]);
 
