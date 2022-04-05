@@ -74,7 +74,7 @@ class Local extends Fs implements LocalFsInterface
     {
         // Config normalization
         if (isset($config['path'])) {
-            $config['path'] = trim(str_replace('\\', '/', $config['path']), '/');
+            $config['path'] = rtrim(str_replace('\\', '/', $config['path']), '/');
             if ($config['path'] === '') {
                 unset($config['path']);
             }
