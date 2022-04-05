@@ -5,27 +5,10 @@ on:
     branches:
       - develop
       - '4.0'
-      - feature/ghaction2
+      - ghaction2
   pull_request:
-
-env:
-  SLACK_NOTIFICATION_TITLE: '<{run_url}|build> has {status_message}'
-  SLACK_NOTIFICATION_MESSAGE_FORMAT: '{emoji} <{commit_url}|{commit_sha}> {status_message} in <{repo_url}|{repo}> on {branch}'
-  SLACK_NOTIFICATION_FOOTER: '<{repo_url}|{repo}>'
-  SLACK_NOTIFICATION_ERROR_LEVELS: 'failure,warnings'
-  SLACK_NOTIFICATION_GROUP_ID: 'SGFL9NKNZ'
 
 jobs:
 
-  custom_action_test:
-    runs-on: ubuntu-latest
-    name: A job to say hello
-    steps:
-      - name: Hello world action step
-        id: hello
-        uses: actions/hello-world-docker-action@v1
-        with:
-          who-to-greet: 'Mona the Octocat'
-      # Use the output from the `hello` step
-      - name: Get the output time
-        run: echo "The time was ${{ steps.hello.outputs.time }}"
+  call-workflow:
+    uses: craftcms/.github/workflows/ci.yml@v1
