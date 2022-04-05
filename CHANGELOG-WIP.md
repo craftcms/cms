@@ -325,6 +325,7 @@
 - Added `craft\services\Fields::createLayout()`.
 - Added `craft\services\Fs`.
 - Added `craft\services\Gc::hardDeleteElements()`.
+- Added `craft\services\Gc::removeEmptyTempFolders()`.
 - Added `craft\services\Gql::prepareFieldDefinitions()`.
 - Added `craft\services\ImageTransforms`.
 - Added `craft\services\Matrix::createRevisionBlocks()`.

@@ -13,6 +13,7 @@
 - Added `craft\db\Migration::archiveTableIfExists()`. ([#10827](https://github.com/craftcms/cms/discussions/10827))
 - Added `craft\helpers\App::devMode()`.
 - Added `craft\services\Assets::getImagePreviewUrl()`.
+- Added `craft\services\Gc::removeEmptyTempFolders()`.
 - Added `craft\web\CpScreenResponseBehavior::selectedSubnavItem()`. ([#10784](https://github.com/craftcms/cms/discussions/10784))
 - Added the `Craft.getQueryParam()` JavaScript method.
 - Added the `Craft.getQueryParams()` JavaScript method.
