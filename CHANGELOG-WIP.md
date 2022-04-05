@@ -118,6 +118,7 @@
 - Added `craft\controllers\ElementIndexesController::$condition`.
 - Added `craft\controllers\FsController`.
 - Added `craft\controllers\ImageTransformsController`.
+- Added `craft\db\Migration::archiveTableIfExists()`. ([#10827](https://github.com/craftcms/cms/discussions/10827))
 - Added `craft\db\Migration::dropAllForeignKeysToTable()`.
 - Added `craft\db\Migration::dropForeignKeyIfExists()`.
 - Added `craft\db\Migration::renameTable()`.

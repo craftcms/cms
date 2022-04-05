@@ -10,6 +10,7 @@
 - Added `craft\base\FsInterface::read()`.
 - Added `craft\base\FsInterface::write()`.
 - Added `craft\base\ModelInterface`.
+- Added `craft\db\Migration::archiveTableIfExists()`. ([#10827](https://github.com/craftcms/cms/discussions/10827))
 - Added `craft\helpers\App::devMode()`.
 - Added `craft\services\Assets::getImagePreviewUrl()`.
 - Added `craft\web\CpScreenResponseBehavior::selectedSubnavItem()`. ([#10784](https://github.com/craftcms/cms/discussions/10784))
