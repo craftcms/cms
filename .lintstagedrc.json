@@ -1,7 +1,6 @@
 {
   "**/*.php": [
     "./vendor/bin/ecs check --ansi --fix",
-    "./vendor/bin/phpstan analyse --fix"
+    "./vendor/bin/phpstan analyse"
   ]
 }
-
