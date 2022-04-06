@@ -12,6 +12,8 @@
 - Added `craft\base\FsInterface::write()`.
 - Added `craft\base\ModelInterface`.
 - Added `craft\db\Migration::archiveTableIfExists()`. ([#10827](https://github.com/craftcms/cms/discussions/10827))
+- Added `craft\debug\LogTarget`.
+- Added `craft\debug\MailPanel`.
 - Added `craft\helpers\App::devMode()`.
 - Added `craft\services\Assets::getImagePreviewUrl()`.
 - Added `craft\services\Gc::removeEmptyTempFolders()`.
@@ -34,6 +36,7 @@
 - Control panel resources are now served with cache headers, if the `buildId` config setting is set. ([#10705](https://github.com/craftcms/cms/pull/10705))
 - Empty subfolders within the temporary upload volume are now removed during garbage collection. ([#10746](https://github.com/craftcms/cms/issues/10746))
 - Most config settings can now be set via environment variables directly, without needing to pull them in from `config/general.php` or `config/db.php`. ([#10573](https://github.com/craftcms/cms/pull/10573))
+- It’s now possible to configure the Debug Toolbar to store its data files on a filesystem, rather than within `storage/runtime/debug/`. ([#10825](https://github.com/craftcms/cms/pull/10825))
 - `install/*`, `setup/*`, `db/*`, and `help` actions no longer output a warning if Craft can’t connect to the database. ([#10851](https://github.com/craftcms/cms/pull/10851))
 - `craft\elements\Asset::getUrl()` now has an `$immediately` argument.
 - `craft\gql\base\ElementResolver::prepareQuery()` now expects its third argument to have a `string|null` type declaration.
