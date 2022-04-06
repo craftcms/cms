@@ -129,6 +129,8 @@
 - Added `craft\db\Table::IMAGETRANSFORMINDEX`.
 - Added `craft\db\Table::IMAGETRANSFORMS`.
 - Added `craft\db\Table::MATRIXBLOCKS_OWNERS`.
+- Added `craft\debug\LogTarget`.
+- Added `craft\debug\MailPanel`.
 - Added `craft\elements\Address`.
 - Added `craft\elements\Asset::$alt`.
 - Added `craft\elements\Asset::EVENT_AFTER_GENERATE_TRANSFORM`.
@@ -466,6 +468,7 @@
 - Control panel resources are now served with cache headers, if the `buildId` config setting is set. ([#10705](https://github.com/craftcms/cms/pull/10705))
 - Empty subfolders within the temporary upload volume are now removed during garbage collection. ([#10746](https://github.com/craftcms/cms/issues/10746))
 - Most config settings can now be set via environment variables directly, without needing to pull them in from `config/general.php` or `config/db.php`. ([#10573](https://github.com/craftcms/cms/pull/10573))
+- It’s now possible to configure the Debug Toolbar to store its data files on a filesystem, rather than within `storage/runtime/debug/`. ([#10825](https://github.com/craftcms/cms/pull/10825))
 - `craft\base\AssetPreviewHandlerInterface::getPreviewHtml()` now accepts an optional array of variable to pass on to the template.
 - `craft\base\Element::__get()` now clones custom field values before returning them. ([#8781](https://github.com/craftcms/cms/discussions/8781))
 - `craft\base\Element::fieldLayoutFields()` now has a `visibleOnly` argument.
