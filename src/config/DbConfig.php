@@ -202,8 +202,10 @@ class DbConfig extends BaseConfig
      * @inheritdoc
      * @throws InvalidConfigException
      */
-    public function init(): void
+    public function normalize(): void
     {
+        parent::normalize();
+
         // If $url was set, parse it to set other properties
         if ($this->url) {
             Craft::configure($this, Db::url2config($this->url));

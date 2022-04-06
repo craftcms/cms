@@ -15,6 +15,11 @@ use ReflectionNamedType;
 use ReflectionProperty;
 use yii\base\BaseObject;
 
+/**
+ * Config defines the base class for config files which should support being set via environment variables.
+ *
+ * @since 4.0.0
+ */
 abstract class Config extends BaseObject
 {
     public const ENV_PREFIX = null;
@@ -24,10 +29,13 @@ abstract class Config extends BaseObject
      */
     public function init(): void
     {
-        $this->_setNormalizedProperties();
+        $this->normalize();
     }
 
-    private function _setNormalizedProperties(): void
+    /**
+     * Normalizes the config settings.
+     */
+    public function normalize(): void
     {
         $properties = (new ReflectionClass($this))->getProperties(ReflectionProperty::IS_PUBLIC);
 
