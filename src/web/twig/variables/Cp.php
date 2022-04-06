@@ -502,10 +502,10 @@ class Cp extends Component
 
         $envSuggestions = [];
         foreach (array_keys($_SERVER) as $var) {
-            if (is_string($var) && is_string($env = App::env($var))) {
+            if (is_string($var) && is_scalar($env = App::env($var))) {
                 $envSuggestions[] = [
                     'name' => '$' . $var,
-                    'hint' => $security->redactIfSensitive($var, Craft::getAlias($env, false)),
+                    'hint' => $security->redactIfSensitive($var, Craft::getAlias((string)$env, false)),
                 ];
             }
         }

@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where autosuggest inputs weren’t including numeric and boolean environment variables in their suggestions. ([#10873](https://github.com/craftcms/cms/issues/10873))
+
 ## 4.0.0-beta.4 - 2022-04-06
 
 ### Added
