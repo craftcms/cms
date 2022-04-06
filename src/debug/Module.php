@@ -9,7 +9,9 @@ namespace craft\debug;
 
 use Craft;
 use craft\base\FsInterface;
+use craft\helpers\App;
 use craft\web\View;
+use yii\base\InvalidConfigException;
 
 /**
  * The Yii Debug Module provides the debug toolbar and debugger
@@ -20,6 +22,11 @@ use craft\web\View;
 class Module extends \yii\debug\Module
 {
     public $controllerNamespace = 'craft\debug\controllers';
+
+    /**
+     * @var FsInterface|null The filesystem that debug cache files should be stored in.
+     * @since 4.0.0
+     */
     public ?FsInterface $fs = null;
 
     /**

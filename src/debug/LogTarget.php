@@ -71,17 +71,15 @@ class LogTarget extends \yii\debug\LogTarget
             return;
         }
 
+        $mailPanel = $this->module->panels['mail'] ?? null;
+
         if (count($manifest) > $this->module->historySize + 10) {
             $n = count($manifest) - $this->module->historySize;
             foreach (array_keys($manifest) as $tag) {
                 $this->module->fs->deleteFile("{$this->module->dataPath}/$tag");
-                if (isset($manifest[$tag]['mailFiles'])) {
+                if (isset($manifest[$tag]['mailFiles']) && $mailPanel instanceof MailPanel) {
                     foreach ($manifest[$tag]['mailFiles'] as $mailFile) {
-                        /** @var MailPanel $mailPanel */
-                        $mailPanel = $this->module->panels['mail'];
-                        $this->module->fs->deleteFile(
-                            "{$mailPanel->mailPath}/$mailFile"
-                        );
+                        $this->module->fs->deleteFile("$mailPanel->mailPath/$mailFile");
                     }
                 }
                 unset($manifest[$tag]);
