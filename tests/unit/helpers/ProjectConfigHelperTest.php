@@ -5,23 +5,23 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craftunit\helpers;
+namespace crafttests\unit\helpers;
 
-use Codeception\Test\Unit;
 use Craft;
 use craft\helpers\FileHelper;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
 use craft\services\ProjectConfig;
+use craft\test\TestCase;
 
-class ProjectConfigHelperTest extends Unit
+class ProjectConfigHelperTest extends TestCase
 {
     /**
      * @dataProvider packedUnpackedDataProvider
      * @param array $unpackedData
      * @param array $packedData
      */
-    public function testAssociativeArrayConfigTransforms(array $unpackedData, array $packedData)
+    public function testAssociativeArrayConfigTransforms(array $unpackedData, array $packedData): void
     {
         self::assertSame($packedData, ProjectConfigHelper::packAssociativeArrays($unpackedData));
         self::assertSame($unpackedData, ProjectConfigHelper::unpackAssociativeArrays($packedData));
@@ -32,7 +32,7 @@ class ProjectConfigHelperTest extends Unit
      * @param array $inputData
      * @param array $expectedResult
      */
-    public function testCleanupConfig(array $inputData, array $expectedResult)
+    public function testCleanupConfig(array $inputData, array $expectedResult): void
     {
         self::assertSame($expectedResult, ProjectConfigHelper::cleanupConfig($inputData));
     }
@@ -42,7 +42,7 @@ class ProjectConfigHelperTest extends Unit
      * @param array $inputData
      * @param array $expectedResult
      */
-    public function testSplitIntoComponents(array $inputData, array $expectedResult)
+    public function testSplitIntoComponents(array $inputData, array $expectedResult): void
     {
         self::assertSame($expectedResult, ProjectConfigHelper::splitConfigIntoComponents($inputData));
     }
@@ -52,7 +52,7 @@ class ProjectConfigHelperTest extends Unit
      * @param string $input
      * @param string $expected
      */
-    public function testTouch(string $input, string $expected)
+    public function testTouch(string $input, string $expected): void
     {
         // Make sure they both end in a newline
         $input = StringHelper::ensureRight($input, "\n");
@@ -68,7 +68,7 @@ class ProjectConfigHelperTest extends Unit
 
         // Test
         $timestamp = time();
-        $expected = str_replace('__TIMESTAMP__', $timestamp, $expected);
+        $expected = str_replace('__TIMESTAMP__', (string)$timestamp, $expected);
         ProjectConfigHelper::touch($timestamp);
         self::assertSame($expected, file_get_contents($path));
 
@@ -82,7 +82,7 @@ class ProjectConfigHelperTest extends Unit
      * @param string $expectedResult
      * @dataProvider encodeTestDataProvider
      */
-    public function testEncodeData(mixed $incomingData, string $expectedResult)
+    public function testEncodeData(mixed $incomingData, string $expectedResult): void
     {
         self::assertSame($expectedResult, ProjectConfigHelper::encodeValueAsString($incomingData));
     }

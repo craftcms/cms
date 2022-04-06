@@ -7,12 +7,12 @@
 
 namespace crafttests\unit\services;
 
-use Codeception\Test\Unit;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\ImageTransforms;
 use craft\models\ImageTransform;
+use craft\test\TestCase;
 
-class ImageTransformsTest extends Unit
+class ImageTransformsTest extends TestCase
 {
     /**
      * Makes sure that extending transform correctly updates it.
@@ -22,7 +22,7 @@ class ImageTransformsTest extends Unit
      * @param array $parameters
      * @param array $resultCheck
      */
-    public function testExtendTransform(ImageTransform $transform, array $parameters, array $resultCheck)
+    public function testExtendTransform(ImageTransform $transform, array $parameters, array $resultCheck): void
     {
         $extendedTransform = ImageTransforms::extendTransform($transform, $parameters);
 
@@ -31,7 +31,7 @@ class ImageTransformsTest extends Unit
         }
     }
 
-    public function testExtendingTransformReturnsNewObject()
+    public function testExtendingTransformReturnsNewObject(): void
     {
         $transform = new ImageTransform(['width' => 200, 'height' => 200]);
         $extendedTransform = ImageTransforms::extendTransform($transform, ['height' => 300]);

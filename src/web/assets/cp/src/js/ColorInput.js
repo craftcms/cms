@@ -65,7 +65,7 @@ Craft.ColorInput = Garnish.Base.extend({
 
         // Chop off the #
         if (val.length && val[0] === '#') {
-            val = val.substr(1);
+            val = val.substring(1);
             this.$input.val(val);
         }
 

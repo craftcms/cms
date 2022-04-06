@@ -1,5 +1,5 @@
 parameters:
-    level: 4
+    level: 5
     paths:
         - src
         - tests
@@ -24,14 +24,19 @@ parameters:
     bootstrapFiles:
         - tests/_bootstrap.php
     stubFiles:
+        - stubs/_generated.stub
         - stubs/GraphQL/Type/Definition/FieldDefinition.stub
         - stubs/GraphQL/Type/Definition/ResolveInfo.stub
         - stubs/samdark/log/PsrTarget.stub
         - stubs/yii/base/Component.stub
+        - stubs/yii/base/ErrorHandler.stub
         - stubs/yii/base/Event.stub
+        - stubs/yii/base/Module.stub
         - stubs/yii/BaseYii.stub
+        - stubs/yii/db/BaseActiveRecord.stub
         - stubs/yii/db/Migration.stub
         - stubs/yii/db/Query.stub
+        - stubs/yii/helpers/BaseArrayHelper.stub
         - stubs/yii/validators/UniqueValidator.stub
         - stubs/yii/validators/UrlValidator.stub
         - stubs/yii/validators/Validator.stub
@@ -52,3 +57,4 @@ parameters:
         - '#PHPDoc tag @mixin contains invalid type craft\\base\\+[a-zA-Z0-9]#'
         - '#^Dead catch#'
         - '#^PHPDoc tag @mixin contains invalid type CraftTrait\.$#'
+        - '#^Parameter \#2 \$callback of function usort expects#'

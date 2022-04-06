@@ -56,7 +56,7 @@ class Money extends Field implements PreviewableFieldInterface, SortableFieldInt
     }
 
     /**
-     * @var string The default currency
+     * @var non-empty-string The default currency
      */
     public string $currency = 'USD';
 

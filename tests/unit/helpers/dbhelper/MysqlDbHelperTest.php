@@ -12,6 +12,7 @@ use Craft;
 use craft\db\mysql\Schema as MysqlSchema;
 use craft\db\pgsql\Schema as PgsqlSchema;
 use craft\helpers\Db;
+use craft\test\TestCase;
 use yii\base\Exception;
 use yii\base\NotSupportedException;
 
@@ -22,7 +23,7 @@ use yii\base\NotSupportedException;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class MysqlDbHelperTest extends Unit
+class MysqlDbHelperTest extends TestCase
 {
     /**
      * @dataProvider sqlTypesDataProvider
@@ -30,7 +31,7 @@ class MysqlDbHelperTest extends Unit
      * @param bool $supported
      * @throws NotSupportedException
      */
-    public function testTypeSupport(string $type, bool $supported)
+    public function testTypeSupport(string $type, bool $supported): void
     {
         $isSupported = Db::isTypeSupported($type);
         self::assertSame($supported, Db::isTypeSupported($type));
@@ -42,7 +43,7 @@ class MysqlDbHelperTest extends Unit
      * @param int|null|false $expected
      * @param string $columnType
      */
-    public function testGetTextualColumnStorageCapacity(int|null|false $expected, string $columnType)
+    public function testGetTextualColumnStorageCapacity(int|null|false $expected, string $columnType): void
     {
         self::assertSame($expected, Db::getTextualColumnStorageCapacity($columnType));
     }
@@ -65,7 +66,7 @@ class MysqlDbHelperTest extends Unit
      * @param string $defaultOperator
      * @param bool $caseInsensitive
      */
-    public function testParseParam(mixed $expected, string $column, mixed $value, string $defaultOperator = '=', bool $caseInsensitive = false)
+    public function testParseParam(mixed $expected, string $column, mixed $value, string $defaultOperator = '=', bool $caseInsensitive = false): void
     {
         self::assertSame($expected, Db::parseParam($column, $value, $defaultOperator, $caseInsensitive));
     }
@@ -76,7 +77,7 @@ class MysqlDbHelperTest extends Unit
      * @param int $contentLength
      * @throws Exception
      */
-    public function testGetTextualColumnTypeByContentLength(string $expected, int $contentLength)
+    public function testGetTextualColumnTypeByContentLength(string $expected, int $contentLength): void
     {
         self::assertSame($expected, Db::getTextualColumnTypeByContentLength($contentLength));
     }
@@ -165,7 +166,7 @@ class MysqlDbHelperTest extends Unit
     /**
      * @inheritdoc
      */
-    protected function _before()
+    protected function _before(): void
     {
         if (!Craft::$app->getDb()->getIsMysql()) {
             $this->markTestSkipped();

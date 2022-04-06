@@ -81,7 +81,7 @@ class CraftConnector extends Yii2
      * @param Application $app
      * @throws InvalidPluginException
      */
-    public function resetRequest(Application $app): void
+    protected function resetRequest(Application $app): void
     {
         parent::resetRequest($app);
         $app->getRequest()->setIsConsoleRequest(false);
@@ -108,6 +108,7 @@ class CraftConnector extends Yii2
             }
 
             /** @var string|Module $moduleClass */
+            /** @phpstan-var class-string<Module>|Module $moduleClass */
             $moduleClass::setInstance(
                 $module
             );

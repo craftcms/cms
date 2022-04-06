@@ -556,7 +556,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
 
         if (isset($this->eagerLoadedTransformIndexes[$fingerprint])) {
             $result = $this->eagerLoadedTransformIndexes[$fingerprint];
-            return new ImageTransformIndex($result);
+            return new ImageTransformIndex((array)$result);
         }
 
         // Check if an entry exists already
@@ -625,13 +625,13 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
             return true;
         }
 
-        // If the asset has been modified since the time the index was created, it's no longer valid
+        // If the asset has been modified since the time the index was created, it’s no longer valid
         $dateModified = ArrayHelper::getValue($asset, 'dateModified');
         if ($result['dateIndexed'] < Db::prepareDateForDb($dateModified)) {
             return false;
         }
 
-        // If it's not a named transform, consider it valid
+        // If it’s not a named transform, consider it valid
         if (!$transform->getIsNamedTransform()) {
             return true;
         }

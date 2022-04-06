@@ -25,7 +25,8 @@ use craft\services\Elements;
 class ResaveElements extends BaseJob
 {
     /**
-     * @var class-string<ElementInterface> The element type that should be resaved
+     * @var string The element type that should be resaved
+     * @phpstan-var class-string<ElementInterface>
      */
     public string $elementType;
 
@@ -89,6 +90,7 @@ class ResaveElements extends BaseJob
     private function _query(): ElementQueryInterface
     {
         /** @var string|ElementInterface $elementType */
+        /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
         $elementType = $this->elementType;
         $query = $elementType::find();
 

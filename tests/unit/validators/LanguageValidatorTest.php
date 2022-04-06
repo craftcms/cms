@@ -7,9 +7,9 @@
 
 namespace crafttests\unit\validators;
 
-use Codeception\Test\Unit;
 use craft\helpers\ArrayHelper;
 use craft\test\mockclasses\models\ExampleModel;
+use craft\test\TestCase;
 use craft\validators\LanguageValidator;
 use UnitTester;
 use yii\base\NotSupportedException;
@@ -21,7 +21,7 @@ use yii\base\NotSupportedException;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class LanguageValidatorTest extends Unit
+class LanguageValidatorTest extends TestCase
 {
     /**
      * @var UnitTester
@@ -40,7 +40,7 @@ class LanguageValidatorTest extends Unit
      * @param bool $onlySiteLangs
      * @throws NotSupportedException
      */
-    public function testValidateValue(?array $expected, string $value, bool $onlySiteLangs = true)
+    public function testValidateValue(?array $expected, string $value, bool $onlySiteLangs = true): void
     {
         $this->tester->mockCraftMethods('i18n', ['getSiteLocaleIds' => ['nl', 'en-US']]);
         $this->languageValidator->onlySiteLanguages = $onlySiteLangs;
@@ -54,7 +54,7 @@ class LanguageValidatorTest extends Unit
      * @param string $input
      * @param bool $onlySiteLocalIds
      */
-    public function testValidateAttribute(bool $mustValidate, string $input, bool $onlySiteLocalIds = true)
+    public function testValidateAttribute(bool $mustValidate, string $input, bool $onlySiteLocalIds = true): void
     {
         $this->tester->mockCraftMethods('i18n', ['getSiteLocaleIds' => ['nl', 'en-US']]);
 
@@ -121,7 +121,7 @@ class LanguageValidatorTest extends Unit
     /**
      *
      */
-    protected function _before()
+    protected function _before(): void
     {
         parent::_before();
         $this->languageValidator = new LanguageValidator();

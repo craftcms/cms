@@ -54,7 +54,7 @@ class UserElementTest extends TestCase
     /**
      *
      */
-    public function testValidateUnverifiedEmail()
+    public function testValidateUnverifiedEmail(): void
     {
         $validator = new InlineValidator();
 
@@ -84,7 +84,7 @@ class UserElementTest extends TestCase
     /**
      * @throws Exception
      */
-    public function testGetAuthKey()
+    public function testGetAuthKey(): void
     {
         Session::reset();
 
@@ -114,7 +114,7 @@ class UserElementTest extends TestCase
     /**
      *
      */
-    public function testGetAuthKeyException()
+    public function testGetAuthKeyException(): void
     {
         $this->tester->mockCraftMethods('session', [
             'get' => null,
@@ -128,7 +128,7 @@ class UserElementTest extends TestCase
     /**
      * @throws \yii\db\Exception
      */
-    public function testValidateAuthKey()
+    public function testValidateAuthKey(): void
     {
         $validUserAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36';
         Craft::$app->getDb()->createCommand()
@@ -166,7 +166,7 @@ class UserElementTest extends TestCase
     /**
      * @throws \yii\db\Exception
      */
-    public function testValidateAuthKeyWithConfigDisabled()
+    public function testValidateAuthKeyWithConfigDisabled(): void
     {
         $validUserAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36';
 
@@ -191,7 +191,7 @@ class UserElementTest extends TestCase
     /**
      * @throws \Exception
      */
-    public function testGetCooldownEndTime()
+    public function testGetCooldownEndTime(): void
     {
         $this->activeUser->locked = false;
         self::assertNull($this->activeUser->getCooldownEndTime());
@@ -220,7 +220,7 @@ class UserElementTest extends TestCase
     /**
      * @throws \Exception
      */
-    public function testGetRemainingCooldownTime()
+    public function testGetRemainingCooldownTime(): void
     {
         self::assertNull($this->activeUser->getRemainingCooldownTime());
 
@@ -238,7 +238,7 @@ class UserElementTest extends TestCase
     /**
      *
      */
-    public function testChangePasswordNukesSessions()
+    public function testChangePasswordNukesSessions(): void
     {
         Craft::$app->getDb()->createCommand()
             ->batchInsert(Table::SESSIONS, [
@@ -264,7 +264,7 @@ class UserElementTest extends TestCase
     /**
      *
      */
-    public function testNotAllowedToSwitchStatusValues()
+    public function testNotAllowedToSwitchStatusValues(): void
     {
         // Change locked
         $this->activeUser->locked = true;
@@ -291,7 +291,7 @@ class UserElementTest extends TestCase
     /**
      *
      */
-    public function testAuthenticate()
+    public function testAuthenticate(): void
     {
         $this->assertTrue($this->activeUser->authenticate('password'));
         $this->assertFalse($this->inactiveUser->authenticate('password'));
@@ -302,7 +302,7 @@ class UserElementTest extends TestCase
     /**
      *
      */
-    public function testIsCredentialed()
+    public function testIsCredentialed(): void
     {
         $this->assertTrue($this->activeUser->getIsCredentialed());
         $this->assertFalse($this->inactiveUser->getIsCredentialed());
@@ -311,7 +311,7 @@ class UserElementTest extends TestCase
     /**
      * @inheritdoc
      */
-    protected function _before()
+    protected function _before(): void
     {
         parent::_before();
 
@@ -345,7 +345,7 @@ class UserElementTest extends TestCase
     /**
      * @inheritdoc
      */
-    protected function _after()
+    protected function _after(): void
     {
         parent::_after();
 

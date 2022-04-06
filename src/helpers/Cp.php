@@ -351,7 +351,7 @@ class Cp
         $innerHtml = '';
 
         if ($context === 'field' && $inputName !== null) {
-            $innerHtml .= Html::hiddenInput($inputName . ($single ? '' : '[]'), $element->id) .
+            $innerHtml .= Html::hiddenInput($inputName . ($single ? '' : '[]'), (string)$element->id) .
                 Html::tag('button', '', [
                     'class' => ['delete', 'icon'],
                     'title' => Craft::t('app', 'Remove'),
@@ -1131,7 +1131,7 @@ JS, [
                     'draftId' => $address->draftId,
                 ],
             ]) .
-            ($config['name'] ? Html::hiddenInput("{$config['name']}[]", $address->id) : '') .
+            ($config['name'] ? Html::hiddenInput("{$config['name']}[]", (string)$address->id) : '') .
             Html::beginTag('div', ['class' => 'address-card-header']) .
             Html::tag('div', $address->title, [
                 'class' => array_filter([
@@ -1538,7 +1538,7 @@ JS;
             ]) .
             Html::tag('span', $tab->name) .
             ($customizable
-                ? Html::a(null, null, [
+                ? Html::a('', null, [
                     'role' => 'button',
                     'class' => ['settings', 'icon'],
                     'title' => Craft::t('app', 'Edit'),

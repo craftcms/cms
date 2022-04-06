@@ -30,7 +30,7 @@ class Event
     public static function hasHandlers($class, $name) {}
 
     /**
-     * @param class-string<Component>|Component $class
+     * @param class-string|object $class
      * @param string $name
      * @param Event $event
      * @return void

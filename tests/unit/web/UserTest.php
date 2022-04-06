@@ -49,7 +49,7 @@ class UserTest extends TestCase
     /**
      *
      */
-    public function testSendUsernameCookie()
+    public function testSendUsernameCookie(): void
     {
         // Send the cookie with a hardcoded time value
         $this->config->getGeneral()->rememberUsernameDuration = 20;
@@ -65,7 +65,7 @@ class UserTest extends TestCase
     /**
      *
      */
-    public function testSendUsernameCookieDeletes()
+    public function testSendUsernameCookieDeletes(): void
     {
         // Ensure something is set
         $this->user->sendUsernameCookie($this->userElement);
@@ -83,7 +83,7 @@ class UserTest extends TestCase
     /**
      *
      */
-    public function testGetRemainingSessionTime()
+    public function testGetRemainingSessionTime(): void
     {
         // No identity. Remaining should be null.
         $this->user->setIdentity(null);
@@ -99,7 +99,7 @@ class UserTest extends TestCase
      * Test that the current time() is subtracted from the session expiration value.
      * We use a stub to ensure Craft::$app->getSession()->get() always returns 50 PHP sessions are difficult(ish) in testing.
      */
-    public function testGetRemainingSessionTimeMath()
+    public function testGetRemainingSessionTimeMath(): void
     {
         $this->user->setIdentity($this->userElement);
 
@@ -116,7 +116,7 @@ class UserTest extends TestCase
      * Test if not logged in getElevated returns 0 or false depending on conditions
      * Important to test this because of PHP's typing system
      */
-    public function testGetHasElevatedSession()
+    public function testGetHasElevatedSession(): void
     {
         $this->user->setIdentity(null);
         self::assertSame(0, $this->user->getElevatedSessionTimeout());
@@ -129,7 +129,7 @@ class UserTest extends TestCase
     /**
      * Test that if a user is logged in and no expires session has been set null is returned.
      */
-    public function testGetHasElevatedSessionVoid()
+    public function testGetHasElevatedSessionVoid(): void
     {
         $this->user->setIdentity($this->userElement);
         // Session must return null
@@ -147,7 +147,7 @@ class UserTest extends TestCase
     /**
      * Test that if a user is logged in and no expires session has been set null is returned.
      */
-    public function testGetHasElevatedSessionMath()
+    public function testGetHasElevatedSessionMath(): void
     {
         $this->user->setIdentity($this->userElement);
 
@@ -164,7 +164,7 @@ class UserTest extends TestCase
     /**
      * @throws UserLockedException
      */
-    public function testGetElevatedSession()
+    public function testGetElevatedSession(): void
     {
         // Setup a password and a mismatching hash to work with.
         $passwordHash = Craft::$app->getSecurity()->hashPassword('this is not the correct password');
@@ -192,7 +192,7 @@ class UserTest extends TestCase
      * @throws UserLockedException
      * @throws ReflectionException
      */
-    public function testStartElevatedSessionSetting()
+    public function testStartElevatedSessionSetting(): void
     {
         $passwordHash = Craft::$app->getSecurity()->hashPassword('this is not the correct password');
         $this->user->setIdentity($this->userElement);
@@ -216,7 +216,7 @@ class UserTest extends TestCase
     /**
      * @inheritdoc
      */
-    protected function _before()
+    protected function _before(): void
     {
         parent::_before();
         $this->userElement = $this->_getUser();
@@ -227,9 +227,9 @@ class UserTest extends TestCase
     /**
      * Sets the Craft::$app->getSession(); to a stub where the get() method returns what you want.
      *
-     * @param int $returnValue
+     * @param bool $returnValue
      */
-    private function _passwordValidationStub(int $returnValue)
+    private function _passwordValidationStub(bool $returnValue)
     {
         $this->tester->mockCraftMethods('security', ['validatePassword' => $returnValue]);
     }
@@ -272,7 +272,7 @@ class UserTest extends TestCase
      */
     private function _getUser(): ?UserElement
     {
-        return Craft::$app->getUsers()->getUserById('1');
+        return Craft::$app->getUsers()->getUserById(1);
     }
 
     /**

@@ -67,7 +67,7 @@ class SlugValidator extends Validator
         }
 
         if (($slug === '' || $isTemp) && isset($this->sourceAttribute)) {
-            // Create a new slug for them, based on the element's title.
+            // Create a new slug for them, based on the element’s title.
             $slug = ElementHelper::generateSlug((string)$model->{$this->sourceAttribute}, $this->limitAutoSlugsToAscii, $this->language);
         } else {
             // Apply normal slug rules

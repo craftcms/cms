@@ -289,7 +289,8 @@ class Composer extends Component
     /**
      * Adds an autoloading class to the Composer class map
      *
-     * @param class-string $className
+     * @param string $className
+     * @phpstan-param class-string $className
      */
     public function logComposerClass(string $className): void
     {
@@ -387,7 +388,7 @@ class Composer extends Component
         $config = $file->read();
 
         if ($prepForUpdate) {
-            // Add composer.craftcms.com if it's not already in there
+            // Add composer.craftcms.com if it’s not already in there
             $craftRepoKey = $this->_findCraftRepo($config);
             if ($craftRepoKey === false) {
                 $config['repositories'][] = [
@@ -396,7 +397,7 @@ class Composer extends Component
                     'canonical' => false,
                 ];
             } else {
-                // Make sure it's not canonical
+                // Make sure it’s not canonical
                 $config['repositories'][$craftRepoKey]['canonical'] = false;
             }
 
@@ -406,7 +407,7 @@ class Composer extends Component
                 !isset($config['config']['cafile']) &&
                 CaBundle::getSystemCaRootBundlePath() === $bundledCaPath
             ) {
-                // Make a copy of it in case it's about to get updated
+                // Make a copy of it in case it’s about to get updated
                 $dir = Craft::$app->getPath()->getRuntimePath() . DIRECTORY_SEPARATOR . 'composer';
                 FileHelper::createDirectory($dir);
                 $dest = $dir . DIRECTORY_SEPARATOR . basename($bundledCaPath);

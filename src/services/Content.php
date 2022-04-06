@@ -29,12 +29,12 @@ use yii\di\Instance;
 class Content extends Component
 {
     /**
-     * @event ElementContentEvent The event that is triggered before an element's content is saved.
+     * @event ElementContentEvent The event that is triggered before an element’s content is saved.
      */
     public const EVENT_BEFORE_SAVE_CONTENT = 'beforeSaveContent';
 
     /**
-     * @event ElementContentEvent The event that is triggered after an element's content is saved.
+     * @event ElementContentEvent The event that is triggered after an element’s content is saved.
      */
     public const EVENT_AFTER_SAVE_CONTENT = 'afterSaveContent';
 
@@ -69,10 +69,10 @@ class Content extends Component
     }
 
     /**
-     * Saves an element's content.
+     * Saves an element’s content.
      *
-     * @param ElementInterface $element The element whose content we're saving.
-     * @return bool Whether the content was saved successfully. If it wasn't, any validation errors will be saved on the
+     * @param ElementInterface $element The element whose content we’re saving.
+     * @return bool Whether the content was saved successfully. If it wasn’t, any validation errors will be saved on the
      * element and its content model.
      * @throws Exception if $element has not been saved yet
      */

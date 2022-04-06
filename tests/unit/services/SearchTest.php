@@ -14,6 +14,7 @@ use craft\db\Table;
 use craft\elements\User;
 use craft\helpers\ArrayHelper;
 use craft\services\Search;
+use craft\test\TestCase;
 use crafttests\fixtures\UserFixture;
 
 /**
@@ -28,7 +29,7 @@ use crafttests\fixtures\UserFixture;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class SearchTest extends Unit
+class SearchTest extends TestCase
 {
     /**
      * @var Search
@@ -50,7 +51,7 @@ class SearchTest extends Unit
      * @param array $usernameOrEmailsForQuery
      * @param string $searchQuery
      */
-    public function testSearchElements(array $usernameOrEmailsForResult, array $usernameOrEmailsForQuery, string $searchQuery)
+    public function testSearchElements(array $usernameOrEmailsForResult, array $usernameOrEmailsForQuery, string $searchQuery): void
     {
         // Repackage the dataProvider data into something that can be used by the filter function
         $result = $this->_usernameEmailArrayToIdList($usernameOrEmailsForResult);
@@ -73,7 +74,7 @@ class SearchTest extends Unit
      *
      * @todo test with fields and multisite using entries
      */
-    public function testIndexElementAttributes()
+    public function testIndexElementAttributes(): void
     {
         // Create a user
         $user = new User();
@@ -124,7 +125,7 @@ class SearchTest extends Unit
     /**
      * @inheritdoc
      */
-    protected function _before()
+    protected function _before(): void
     {
         parent::_before();
 
@@ -134,7 +135,7 @@ class SearchTest extends Unit
     /**
      * @inheritDoc
      */
-    protected function _after()
+    protected function _after(): void
     {
         parent::_after();
 

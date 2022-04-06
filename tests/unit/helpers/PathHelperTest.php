@@ -7,8 +7,8 @@
 
 namespace crafttests\unit\helpers;
 
-use Codeception\Test\Unit;
 use craft\helpers\Path;
+use craft\test\TestCase;
 
 /**
  * Class PathHelperTest.
@@ -17,14 +17,14 @@ use craft\helpers\Path;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class PathHelperTest extends Unit
+class PathHelperTest extends TestCase
 {
     /**
      * @dataProvider ensurePathIsContainedDataProvider
      * @param bool $expected
      * @param string $path
      */
-    public function testEnsurePathIsContained(bool $expected, string $path)
+    public function testEnsurePathIsContained(bool $expected, string $path): void
     {
         self::assertSame($expected, Path::ensurePathIsContained($path));
     }

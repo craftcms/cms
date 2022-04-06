@@ -11,6 +11,7 @@ use Codeception\Test\Unit;
 use Craft;
 use craft\db\pgsql\Schema;
 use craft\helpers\Db;
+use craft\test\TestCase;
 use yii\base\Exception;
 use yii\base\NotSupportedException;
 
@@ -21,7 +22,7 @@ use yii\base\NotSupportedException;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class PgsqlDbHelperTest extends Unit
+class PgsqlDbHelperTest extends TestCase
 {
     /**
      * @dataProvider sqlTypesDataProvider
@@ -29,7 +30,7 @@ class PgsqlDbHelperTest extends Unit
      * @param bool $supported
      * @throws NotSupportedException
      */
-    public function testTypeSupport(string $type, bool $supported)
+    public function testTypeSupport(string $type, bool $supported): void
     {
         $isSupported = Db::isTypeSupported($type);
         self::assertSame($supported, Db::isTypeSupported($type));
@@ -41,7 +42,7 @@ class PgsqlDbHelperTest extends Unit
      * @param int|null|false $expected
      * @param string $columnType
      */
-    public function testGetTextualColumnStorageCapacity(int|null|false $expected, string $columnType)
+    public function testGetTextualColumnStorageCapacity(int|null|false $expected, string $columnType): void
     {
         self::assertSame($expected, Db::getTextualColumnStorageCapacity($columnType));
     }
@@ -54,7 +55,7 @@ class PgsqlDbHelperTest extends Unit
      * @param string $defaultOperator
      * @param bool $caseInsensitive
      */
-    public function testParseParam(string|array $expected, string $column, mixed $value, string $defaultOperator = '=', bool $caseInsensitive = false)
+    public function testParseParam(string|array $expected, string $column, mixed $value, string $defaultOperator = '=', bool $caseInsensitive = false): void
     {
         self::assertSame($expected, Db::parseParam($column, $value, $defaultOperator, $caseInsensitive));
     }
@@ -65,7 +66,7 @@ class PgsqlDbHelperTest extends Unit
      * @param int $contentLength
      * @throws Exception
      */
-    public function testGetTextualColumnTypeByContentLength(string $expected, int $contentLength)
+    public function testGetTextualColumnTypeByContentLength(string $expected, int $contentLength): void
     {
         self::assertSame($expected, Db::getTextualColumnTypeByContentLength($contentLength));
     }
@@ -152,7 +153,7 @@ class PgsqlDbHelperTest extends Unit
     /**
      * @inheritdoc
      */
-    protected function _before()
+    protected function _before(): void
     {
         if (!Craft::$app->getDb()->getIsPgsql()) {
             $this->markTestSkipped();

@@ -5,7 +5,7 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craftunit\gql\mutations;
+namespace crafttests\unit\gql\mutations;
 
 use Codeception\Stub\Expected;
 use craft\elements\Category;
@@ -20,11 +20,11 @@ class StructureOperationMutationTest extends TestCase
      */
     protected UnitTester $tester;
 
-    protected function _before()
+    protected function _before(): void
     {
     }
 
-    protected function _after()
+    protected function _after(): void
     {
     }
 
@@ -37,7 +37,7 @@ class StructureOperationMutationTest extends TestCase
      * @param string|null $requiredMethod
      * @param string|null $exception
      */
-    public function testStructureOperations(array $elementProperties, array $arguments, ?string $requiredMethod = null, ?string $exception = null)
+    public function testStructureOperations(array $elementProperties, array $arguments, ?string $requiredMethod = null, ?string $exception = null): void
     {
         $element = $this->make(Category::class, $elementProperties);
 

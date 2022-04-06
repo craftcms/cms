@@ -210,7 +210,7 @@ class ProjectConfig extends Component
      * use yii\base\Event;
      *
      * Event::on(ProjectConfig::class, ProjectConfig::EVENT_REBUILD, function(RebuildConfigEvent $e) {
-     *     // Add plugin's project config data...
+     *     // Add plugin’s project config data...
      *    $e->config['myPlugin']['key'] = $value;
      * });
      * ```

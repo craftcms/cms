@@ -48,7 +48,7 @@ class EditUserCest
     /**
      * @param FunctionalTester $I
      */
-    public function testMyAccountPage(FunctionalTester $I)
+    public function testMyAccountPage(FunctionalTester $I): void
     {
         $I->amOnPage('/' . $this->cpTrigger . '/myaccount');
 
@@ -61,12 +61,15 @@ class EditUserCest
         $I->see('User saved');
         $I->seeInTitle('Users');
 
+        /** @var User $user */
+        $user = User::find()
+            ->id($this->currentUser->id)
+            ->one();
+
         // Check that the Db was updated.
         $I->assertSame(
             'IM A CHANGED FULLNAME',
-            User::find()
-                ->id($this->currentUser->id)
-                ->one()->fullName
+            $user->fullName
         );
     }
 }

@@ -170,8 +170,8 @@ class Mailer extends \yii\symfonymailer\Mailer
         $testToEmailAddress = $generalConfig->getTestToEmailAddress();
         if (!empty($testToEmailAddress)) {
             $message->setTo($testToEmailAddress);
-            $message->setCc(null);
-            $message->setBcc(null);
+            $message->setCc([]);
+            $message->setBcc([]);
         }
 
         try {

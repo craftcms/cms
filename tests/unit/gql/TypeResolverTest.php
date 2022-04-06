@@ -5,9 +5,8 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craftunit\gql;
+namespace crafttests\unit\gql;
 
-use Codeception\Test\Unit;
 use Craft;
 use craft\base\ElementInterface;
 use craft\elements\Asset;
@@ -23,23 +22,25 @@ use craft\gql\resolvers\elements\MatrixBlock as MatrixBlockResolver;
 use craft\gql\resolvers\elements\User as UserResolver;
 use craft\helpers\StringHelper;
 use craft\test\mockclasses\elements\ExampleElement;
+use craft\test\TestCase;
 use crafttests\fixtures\AssetFixture;
 use crafttests\fixtures\EntryFixture;
 use crafttests\fixtures\GlobalSetFixture;
 use crafttests\fixtures\GqlSchemasFixture;
 use crafttests\fixtures\UserFixture;
+use Exception;
 use GraphQL\Type\Definition\ResolveInfo;
 
-class TypeResolverTest extends Unit
+class TypeResolverTest extends TestCase
 {
-    protected function _before()
+    protected function _before(): void
     {
         $gqlService = Craft::$app->getGql();
         $schema = $gqlService->getSchemaById(1000);
         $gqlService->setActiveSchema($schema);
     }
 
-    protected function _after()
+    protected function _after(): void
     {
         Craft::$app->getGql()->flushCaches();
     }
@@ -68,7 +69,7 @@ class TypeResolverTest extends Unit
     /**
      * Test resolving a related element.
      **/
-    public function testRunGqlResolveTest()
+    public function testRunGqlResolveTest(): void
     {
         // Not using a data provider for this because of fixture load/unload on *every* iteration.
         $data = [
@@ -107,11 +108,13 @@ class TypeResolverTest extends Unit
     /**
      * Run the test.
      *
-     * @param class-string<ElementInterface> $elementType The element class providing the elements
+     * @param string $elementType The element class providing the elements
+     * @phpstan-param class-string<ElementInterface> $elementType
      * @param array $params Querying parameters to use
-     * @param class-string<Resolver> $resolverClass The resolver class being tested
-     * @param boolean $mustNotBeSame Whether the results should differ instead
-     * @throws \Exception
+     * @param string $resolverClass The resolver class being tested
+     * @phpstan-param class-string<Resolver> $resolverClass
+     * @param bool $mustNotBeSame Whether the results should differ instead
+     * @throws Exception
      */
     public function _runResolverTest(string $elementType, array $params, string $resolverClass, bool $mustNotBeSame = false)
     {

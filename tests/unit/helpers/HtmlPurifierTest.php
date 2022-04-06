@@ -7,8 +7,8 @@
 
 namespace crafttests\unit\helpers;
 
-use Codeception\Test\Unit;
 use craft\helpers\HtmlPurifier;
+use craft\test\TestCase;
 use HTMLPurifier_Config;
 
 /**
@@ -19,14 +19,14 @@ use HTMLPurifier_Config;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class HtmlPurifierTest extends Unit
+class HtmlPurifierTest extends TestCase
 {
     /**
      * @dataProvider cleanUtf8DataProvider
      * @param string $expected
      * @param string $string
      */
-    public function testCleanUtf8(string $expected, string $string)
+    public function testCleanUtf8(string $expected, string $string): void
     {
         self::assertSame($expected, HtmlPurifier::cleanUtf8($string));
     }
@@ -34,7 +34,7 @@ class HtmlPurifierTest extends Unit
     /**
      *
      */
-    public function testConfigure()
+    public function testConfigure(): void
     {
         $config = HTMLPurifier_Config::createDefault();
         HtmlPurifier::configure($config);

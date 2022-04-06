@@ -442,9 +442,9 @@ class Categories extends Component
                         foreach ($categoryIds as $categoryId) {
                             App::maxPowerCaptain();
 
-                            // Loop through each of the changed sites and update all of the categories’ slugs and
-                            // URIs
+                            // Loop through each of the changed sites and update all of the categories’ slugs and URIs
                             foreach ($sitesWithNewUriFormats as $siteId) {
+                                /** @var Category|null $category */
                                 $category = Category::find()
                                     ->id($categoryId)
                                     ->siteId($siteId)
@@ -471,6 +471,7 @@ class Categories extends Component
 
         if ($wasTrashed) {
             // Restore the categories that were deleted with the group
+            /** @var Category[] $categories */
             $categories = Category::find()
                 ->groupId($groupRecord->id)
                 ->trashed()
@@ -579,6 +580,7 @@ class Categories extends Component
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             // Delete the categories
+            /** @var Category[] $categories */
             $categories = Category::find()
                 ->groupId($categoryGroupRecord->id)
                 ->status(null)

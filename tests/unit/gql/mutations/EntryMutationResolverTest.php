@@ -5,9 +5,10 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craftunit\gql\mutations;
+namespace crafttests\unit\gql\mutations;
 
 use Codeception\Stub\Expected;
+use Craft;
 use craft\base\Element;
 use craft\elements\db\EntryQuery;
 use craft\elements\Entry;
@@ -27,7 +28,7 @@ class EntryMutationResolverTest extends TestCase
      * @throws Throwable
      * @dataProvider saveEntryDataProvider
      */
-    public function testSavingDraftOrEntrySetsRelevantScenario(array $arguments, string $scenario)
+    public function testSavingDraftOrEntrySetsRelevantScenario(array $arguments, string $scenario): void
     {
         $entry = new Entry();
 
@@ -39,7 +40,7 @@ class EntryMutationResolverTest extends TestCase
             'recursivelyNormalizeArgumentValues' => $arguments,
         ]);
 
-        \Craft::$app->set('elements', $this->make(Elements::class, [
+        Craft::$app->set('elements', $this->make(Elements::class, [
             'saveElement' => true,
         ]));
 
@@ -55,7 +56,7 @@ class EntryMutationResolverTest extends TestCase
      * @throws Throwable
      * @dataProvider saveNewEntryDataProvider
      */
-    public function testSavingNewEntryDoesNotSearchForIt(array $arguments, bool $identifyCalled)
+    public function testSavingNewEntryDoesNotSearchForIt(array $arguments, bool $identifyCalled): void
     {
         $entry = new Entry();
         $query = $this->make(EntryQuery::class, [
@@ -68,7 +69,7 @@ class EntryMutationResolverTest extends TestCase
             'identifyEntry' => $identifyCalled ? Expected::atLeastOnce($query) : Expected::never($query),
         ]);
 
-        \Craft::$app->set('elements', $this->make(Elements::class, [
+        Craft::$app->set('elements', $this->make(Elements::class, [
             'saveElement' => true,
             'createElementQuery' => $query,
         ]));

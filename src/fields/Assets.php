@@ -162,6 +162,7 @@ class Assets extends BaseRelationField
 
     /**
      * @var string How related assets should be presented within element index views.
+     * @phpstan-var self::PREVIEW_MODE_FULL|self::PREVIEW_MODE_THUMBS
      * @since 3.5.11
      */
     public string $previewMode = self::PREVIEW_MODE_FULL;
@@ -567,9 +568,10 @@ class Assets extends BaseRelationField
                 });
             } else {
                 // Find the files with temp sources and just move those.
+                /** @var Asset[] $assetsToMove */
                 $assetsToMove = Asset::find()
-                    ->id(ArrayHelper::getColumn($assets, 'id'))
                     ->volumeId(':empty:')
+                    ->id(ArrayHelper::getColumn($assets, 'id'))
                     ->all();
             }
 
@@ -661,7 +663,7 @@ class Assets extends BaseRelationField
         if (!$this->showUnpermittedVolumes && !empty($sources)) {
             $userService = Craft::$app->getUser();
             return ArrayHelper::where($sources, function(string $source) use ($assetsService, $userService) {
-                // If it's not a volume folder, let it through
+                // If it’s not a volume folder, let it through
                 if (!str_starts_with($source, 'folder:')) {
                     return true;
                 }
@@ -937,7 +939,7 @@ class Assets extends BaseRelationField
             }
 
             // If this is a new/disabled element, the subpath probably just contained a token that returned null, like {id}
-            // so use the user's upload folder instead
+            // so use the user’s upload folder instead
             if ($element === null || !$element->id || !$element->enabled || !$createDynamicFolders) {
                 $userFolder = $assets->getUserTemporaryUploadFolder();
             } else {

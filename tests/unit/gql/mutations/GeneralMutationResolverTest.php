@@ -5,7 +5,7 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craftunit\gql\mutations;
+namespace crafttests\unit\gql\mutations;
 
 use Codeception\Stub\Expected;
 use Craft;
@@ -27,7 +27,9 @@ use GraphQL\Error\UserError;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
+use ReflectionException;
 use UnitTester;
+use yii\base\InvalidConfigException;
 
 class GeneralMutationResolverTest extends TestCase
 {
@@ -41,19 +43,19 @@ class GeneralMutationResolverTest extends TestCase
      */
     protected MutationResolver $resolver;
 
-    protected function _before()
+    protected function _before(): void
     {
         $this->resolver = new EntryMutationResolver();
     }
 
-    protected function _after()
+    protected function _after(): void
     {
     }
 
     /**
      * Test whether data and value normalizes is stored on the resolver correctly.
      */
-    public function testStoringResolverData()
+    public function testStoringResolverData(): void
     {
         $testKey = 'someKey';
         $testString = StringHelper::randomString();
@@ -100,7 +102,7 @@ class GeneralMutationResolverTest extends TestCase
     /**
      * Test whether schemas are enforced correctly
      */
-    public function testSchemaActionRequirements()
+    public function testSchemaActionRequirements(): void
     {
         $this->resolver = new EntryMutationResolver();
 
@@ -121,10 +123,10 @@ class GeneralMutationResolverTest extends TestCase
      *
      * @param array $contentFields
      * @param array $arguments
-     * @throws \ReflectionException
+     * @throws ReflectionException
      * @dataProvider populatingElementWithDataProvider
      */
-    public function testPopulatingElementWithData(array $contentFields, array $arguments)
+    public function testPopulatingElementWithData(array $contentFields, array $arguments): void
     {
         $entry = $this->make(Entry::class, [
             'setFieldValue' => Expected::exactly(count($contentFields)),
@@ -144,9 +146,9 @@ class GeneralMutationResolverTest extends TestCase
     /**
      * Tests whether immutable attributes are immutable indeed.
      *
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
-    public function testImmutableAttributes()
+    public function testImmutableAttributes(): void
     {
         $testId = random_int(1, 9999);
         $testUid = StringHelper::UUID();
@@ -202,10 +204,10 @@ class GeneralMutationResolverTest extends TestCase
     /**
      * Test whether saving an element with validation errors throws the right exception.
      *
-     * @throws \ReflectionException
-     * @throws \yii\base\InvalidConfigException
+     * @throws ReflectionException
+     * @throws InvalidConfigException
      */
-    public function testSavingElementWithValidationError()
+    public function testSavingElementWithValidationError(): void
     {
         $elementService = $this->make(Elements::class, [
             'saveElement' => Expected::once(false),
@@ -228,10 +230,10 @@ class GeneralMutationResolverTest extends TestCase
     /**
      * Test whether saving an element that is enabled correctly changes the scenario before saving.
      *
-     * @throws \ReflectionException
-     * @throws \yii\base\InvalidConfigException
+     * @throws ReflectionException
+     * @throws InvalidConfigException
      */
-    public function testSavingElementWithoutValidationError()
+    public function testSavingElementWithoutValidationError(): void
     {
         $elementService = $this->make(Elements::class, [
             'saveElement' => false,
@@ -256,7 +258,7 @@ class GeneralMutationResolverTest extends TestCase
         self::assertNotSame($scenario, $entry->getScenario());
     }
 
-    public function testNestedNormalizers()
+    public function testNestedNormalizers(): void
     {
         $values = [];
 
@@ -300,7 +302,7 @@ class GeneralMutationResolverTest extends TestCase
             'one' => $entry,
         ]);
 
-        \Craft::$app->set('elements', $this->make(Elements::class, [
+        Craft::$app->set('elements', $this->make(Elements::class, [
             'saveElement' => true,
             'createElementQuery' => $query,
         ]));

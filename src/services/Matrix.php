@@ -378,6 +378,7 @@ class Matrix extends Component
 
             // First delete the blocks of this type
             foreach (Craft::$app->getSites()->getAllSiteIds() as $siteId) {
+                /** @var MatrixBlock[] $blocks */
                 $blocks = MatrixBlock::find()
                     ->typeId($blockType->id)
                     ->siteId($siteId)
@@ -809,7 +810,7 @@ class Matrix extends Component
      * @param MatrixField $field The Matrix field to duplicate blocks for
      * @param ElementInterface $source The source element blocks should be duplicated from
      * @param ElementInterface $target The target element blocks should be duplicated to
-     * @param bool $checkOtherSites Whether to duplicate blocks for the source element's other supported sites
+     * @param bool $checkOtherSites Whether to duplicate blocks for the source element’s other supported sites
      * @param bool $deleteOtherBlocks Whether to delete any blocks that belong to the element, which weren’t included in the duplication
      * @throws Throwable if reasons
      * @since 3.2.0
@@ -965,6 +966,7 @@ SQL
      */
     public function createRevisionBlocks(MatrixField $field, ElementInterface $canonical, ElementInterface $revision): void
     {
+        /** @var MatrixBlock[] $blocks */
         $blocks = MatrixBlock::find()
             ->ownerId($canonical->id)
             ->fieldId($field->id)
@@ -1026,6 +1028,7 @@ SQL
             }
 
             // Get all the canonical owner’s blocks, including soft-deleted ones
+            /** @var MatrixBlock[] $canonicalBlocks */
             $canonicalBlocks = MatrixBlock::find()
                 ->fieldId($field->id)
                 ->primaryOwnerId($canonicalOwner->id)
@@ -1036,6 +1039,7 @@ SQL
                 ->all();
 
             // Get all the derivative owner’s blocks, so we can compare
+            /** @var MatrixBlock[] $derivativeBlocks */
             $derivativeBlocks = MatrixBlock::find()
                 ->fieldId($field->id)
                 ->primaryOwnerId($owner->id)
@@ -1217,6 +1221,7 @@ SQL
      */
     private function _deleteOtherBlocks(MatrixField $field, ElementInterface $owner, array $except): void
     {
+        /** @var MatrixBlock[] $blocks */
         $blocks = MatrixBlock::find()
             ->ownerId($owner->id)
             ->fieldId($field->id)

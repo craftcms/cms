@@ -5,26 +5,26 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craftunit\gql;
+namespace crafttests\unit\gql;
 
-use Codeception\Test\Unit;
 use Craft;
 use craft\elements\Asset;
 use craft\elements\db\AssetQuery;
 use craft\gql\resolvers\elements\Asset as AssetResolver;
 use craft\helpers\StringHelper;
 use craft\models\GqlSchema;
+use craft\test\TestCase;
 use GraphQL\Type\Definition\ResolveInfo;
 use UnitTester;
 
-class ElementResolverTest extends Unit
+class ElementResolverTest extends TestCase
 {
     /**
      * @var UnitTester
      */
     protected UnitTester $tester;
 
-    protected function _before()
+    protected function _before(): void
     {
         // Mock the GQL schema for the volumes below
         $this->tester->mockMethods(
@@ -40,14 +40,14 @@ class ElementResolverTest extends Unit
         );
     }
 
-    protected function _after()
+    protected function _after(): void
     {
     }
 
     /**
      * Test different query resolvers
      */
-    public function testResolveOneAndCount()
+    public function testResolveOneAndCount(): void
     {
         $testUid = StringHelper::UUID();
         $testCount = random_int(1, 1000);

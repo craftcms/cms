@@ -215,7 +215,7 @@ class Tag extends Element
      */
     public function validateTitle(string $attribute, ?array $params, InlineValidator $validator): void
     {
-        $query = static::find()
+        $query = self::find()
             ->groupId($this->groupId)
             ->siteId($this->siteId)
             ->title(Db::escapeParam($this->title));

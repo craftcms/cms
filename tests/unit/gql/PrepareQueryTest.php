@@ -5,9 +5,8 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craftunit\gql;
+namespace crafttests\unit\gql;
 
-use Codeception\Test\Unit;
 use Craft;
 use craft\gql\resolvers\elements\Asset as AssetResolver;
 use craft\gql\resolvers\elements\Category as CategoryResolver;
@@ -27,9 +26,10 @@ use craft\records\Structure;
 use craft\records\TagGroup;
 use craft\records\UserGroup;
 use craft\records\Volume;
+use craft\test\TestCase;
 use UnitTester;
 
-class PrepareQueryTest extends Unit
+class PrepareQueryTest extends TestCase
 {
     /**
      * @var UnitTester
@@ -50,7 +50,7 @@ class PrepareQueryTest extends Unit
     /**
      * @inheritdoc
      */
-    protected function _before()
+    protected function _before(): void
     {
         // Mock the GQL token
         $this->tester->mockMethods(
@@ -82,7 +82,7 @@ class PrepareQueryTest extends Unit
     /**
      * @inheritdoc
      */
-    protected function _after()
+    protected function _after(): void
     {
         $this->_volume->delete();
         $this->_structure->delete();
@@ -106,13 +106,14 @@ class PrepareQueryTest extends Unit
     /**
      * Test relational field query preparation
      *
-     * @param class-string $resolverClass The resolver class to test
+     * @param string $resolverClass The resolver class to test
+     * @phpstan-param class-string $resolverClass
      * @param array $preparationArguments The arguments to pass to the `prepareQuery` method
      * @param callable $testFunction The test function to determine the result.
      * @param callable|null $testLoader The callable that will set up the test conditions
      * @dataProvider relationalFieldQueryPreparationProvider
      */
-    public function testRelationalFieldQueryPreparation(string $resolverClass, array $preparationArguments, callable $testFunction, callable $testLoader = null)
+    public function testRelationalFieldQueryPreparation(string $resolverClass, array $preparationArguments, callable $testFunction, callable $testLoader = null): void
     {
         // Set up the test
         if ($testLoader) {

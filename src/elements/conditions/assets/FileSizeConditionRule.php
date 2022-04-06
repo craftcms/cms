@@ -28,6 +28,7 @@ class FileSizeConditionRule extends BaseNumberConditionRule implements ElementCo
 
     /**
      * @var string The size unit
+     * @phpstan-var self::UNIT_B|self::UNIT_KB|self::UNIT_MB|self::UNIT_GB
      */
     public string $unit = self::UNIT_B;
 
@@ -162,7 +163,8 @@ class FileSizeConditionRule extends BaseNumberConditionRule implements ElementCo
     /**
      * Returns the min and max bytes that [[value]] should actually represent, when the actual value is rounded to [[unit]].
      *
-     * @return array<int, int>
+     * @return array
+     * @phpstan-return array<int,int>
      */
     private function _byteRange(): array
     {

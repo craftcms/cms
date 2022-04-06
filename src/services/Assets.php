@@ -304,6 +304,7 @@ class Assets extends Component
             }
         }
 
+        /** @var Asset[] $assets */
         $assets = Asset::find()->folderId($folderIds)->all();
 
         $elementService = Craft::$app->getElements();
@@ -599,7 +600,7 @@ class Assets extends Component
             }
         }
 
-        // If it's not an image, return a generic file extension icon
+        // If it’s not an image, return a generic file extension icon
         $extension = $asset->getExtension();
         if (!Image::canManipulateAsImage($extension) || !$asset->getVolume()->getTransformFs()->hasUrls) {
             return AssetsHelper::iconUrl($extension);
@@ -827,7 +828,7 @@ class Assets extends Component
     }
 
     /**
-     * Returns the given user's temporary upload folder.
+     * Returns the given user’s temporary upload folder.
      *
      * If no user is provided, the currently-logged in user will be used (if there is one), or a folder named after
      * the current session ID.

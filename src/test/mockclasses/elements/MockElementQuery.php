@@ -42,13 +42,14 @@ class MockElementQuery extends ElementQuery
      */
     public function __construct()
     {
-        parent::__construct('MockElement', []);
+        parent::__construct(ExampleElement::class, []);
     }
 
     /**
      * Generate a more specific query class for the provided element type class.
      *
-     * @param class-string<ElementInterface> $elementClass
+     * @param string $elementClass
+     * @phpstan-param class-string<ElementInterface> $elementClass
      * @return ElementQuery
      */
     public static function generateSpecificQueryClass(string $elementClass): ElementQuery

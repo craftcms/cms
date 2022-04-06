@@ -86,6 +86,7 @@ class Table extends Field
 
     /**
      * @var string The type of database column the field should have in the content table
+     * @phpstan-var 'auto'|Schema::TYPE_STRING|Schema::TYPE_TEXT|'mediumtext'
      */
     public string $columnType = Schema::TYPE_TEXT;
 

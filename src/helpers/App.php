@@ -535,6 +535,7 @@ class App
         }
 
         $testValue = sprintf('%sM', ceil($testBytes / (1024 * 1024)));
+        /** @phpstan-ignore-next-line */
         set_error_handler(function() {
         });
         $result = ini_set('memory_limit', $testValue);
@@ -582,7 +583,8 @@ class App
     /**
      * Returns a humanized class name.
      *
-     * @param class-string $class
+     * @param string $class
+     * @phpstan-param class-string $class
      * @return string
      */
     public static function humanizeClass(string $class): string
@@ -805,7 +807,8 @@ class App
      * Returns the `mailer` component config.
      *
      * @param MailSettings|null $settings The system mail settings
-     * @return array{class: class-string<Mailer>}
+     * @return array
+     * @phpstan-return array{class:class-string<Mailer>}
      * @since 3.0.18
      */
     public static function mailerConfig(?MailSettings $settings = null): array

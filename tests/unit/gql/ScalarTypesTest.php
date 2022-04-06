@@ -5,9 +5,8 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craftunit\gql;
+namespace crafttests\unit\gql;
 
-use Codeception\Test\Unit;
 use Craft as Craft;
 use craft\elements\Entry;
 use craft\errors\GqlException;
@@ -18,6 +17,8 @@ use craft\gql\types\DateTime;
 use craft\gql\types\Money;
 use craft\gql\types\Number;
 use craft\gql\types\QueryArgument;
+use craft\test\TestCase;
+use DateTimeZone;
 use Exception;
 use GraphQL\Error\Error;
 use GraphQL\Language\AST\BooleanValueNode;
@@ -29,7 +30,7 @@ use GraphQL\Language\AST\ValueNode;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\ScalarType;
 
-class ScalarTypesTest extends Unit
+class ScalarTypesTest extends TestCase
 {
     /**
      * Test the serialization of scalar data types
@@ -55,7 +56,7 @@ class ScalarTypesTest extends Unit
      * @param string|null $exceptionThrown
      * @throws Error
      */
-    public function testParsingValue(ScalarType $type, mixed $testValue, mixed $match, ?string $exceptionThrown = null)
+    public function testParsingValue(ScalarType $type, mixed $testValue, mixed $match, ?string $exceptionThrown = null): void
     {
         if ($exceptionThrown) {
             $this->expectException($exceptionThrown);
@@ -70,9 +71,9 @@ class ScalarTypesTest extends Unit
      *
      * @throws Error
      */
-    public function testDateTimeParseValueAndLiteral()
+    public function testDateTimeParseValueAndLiteral(): void
     {
-        $timeAsStr = (new \DateTime('now'))->format("Y-m-d H:i:s");
+        $timeAsStr = (new \DateTime('now'))->format('Y-m-d H:i:s');
 
         $this->assertInstanceOf(\DateTime::class, (new DateTime())->parseValue($timeAsStr));
         $this->assertInstanceOf(\DateTime::class, (new DateTime())->parseLiteral(new StringValueNode(['value' => $timeAsStr])));
@@ -88,12 +89,16 @@ class ScalarTypesTest extends Unit
      * @param string|null $exceptionThrown
      * @throws Exception
      */
-    public function testParsingLiteral(ScalarType $type, ValueNode $testValue, mixed $match, ?string $exceptionThrown = null)
+    public function testParsingLiteral(ScalarType $type, ValueNode $testValue, mixed $match, ?string $exceptionThrown = null): void
     {
         if ($exceptionThrown) {
             $this->expectException($exceptionThrown);
+            /** @noinspection PhpParamsInspection */
+            /** @phpstan-ignore-next-line */
             $type->parseLiteral($testValue);
         } else {
+            /** @noinspection PhpParamsInspection */
+            /** @phpstan-ignore-next-line */
             self::assertSame($match, $type->parseLiteral($testValue));
         }
     }
@@ -103,11 +108,11 @@ class ScalarTypesTest extends Unit
      *
      * @throws Error
      */
-    public function testTimeZoneConfigSetting()
+    public function testTimeZoneConfigSetting(): void
     {
         Craft::$app->setTimeZone('America/New_York');
 
-        $dateTime = new \DateTime('now', new \DateTimeZone('UTC'));
+        $dateTime = new \DateTime('now', new DateTimeZone('UTC'));
         $dateField = $this->make(Date::class, [
             'showTimeZone' => false,
             'handle' => 'fieldName',
@@ -153,7 +158,7 @@ class ScalarTypesTest extends Unit
         return [
             [DateTime::getType(), 'testString', 'testString'],
             [DateTime::getType(), null, null],
-            [DateTime::getType(), clone $now, $now->setTimezone(new \DateTimeZone(Craft::$app->getTimeZone()))->format(FormatDateTime::DEFAULT_FORMAT)],
+            [DateTime::getType(), clone $now, $now->setTimezone(new DateTimeZone(Craft::$app->getTimeZone()))->format(FormatDateTime::DEFAULT_FORMAT)],
 
             [Number::getType(), 'testString', 'testString'],
             [Number::getType(), '', null],

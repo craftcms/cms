@@ -226,7 +226,7 @@ import './plugins.scss';
             if (key[0] === '$') {
                 return key;
             }
-            return key.replace(/.{4}/g, '$&-').substr(0, 29).toUpperCase();
+            return key.replace(/.{4}/g, '$&-').substring(0, 29).toUpperCase();
         }
     });
 

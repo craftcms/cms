@@ -197,7 +197,7 @@ class EntriesController extends BaseEntriesController
         $currentUser = Craft::$app->getUser()->getIdentity();
         $section = $entry->getSection();
 
-        // Is this another user's entry (and it's not a Single)?
+        // Is this another user’s entry (and it’s not a Single)?
         if (
             $entry->id &&
             !$duplicate &&
@@ -239,6 +239,7 @@ class EntriesController extends BaseEntriesController
                     'entry'
                 );
             } catch (Throwable $e) {
+                /** @phpstan-ignore-next-line */
                 throw new ServerErrorHttpException(Craft::t('app', 'An error occurred when duplicating the entry.'), 0, $e);
             }
         }
@@ -295,6 +296,7 @@ class EntriesController extends BaseEntriesController
         }
 
         // See if the user happens to have a provisional entry. If so delete it.
+        /** @var Entry|null $provisional */
         $provisional = Entry::find()
             ->provisionalDrafts()
             ->draftOf($entry->id)
@@ -349,6 +351,7 @@ class EntriesController extends BaseEntriesController
             // Is this a provisional draft?
             $provisional = $this->request->getBodyParam('provisional');
             if ($provisional) {
+                /** @var Entry|null $entry */
                 $entry = Entry::find()
                     ->provisionalDrafts()
                     ->draftOf($entryId)

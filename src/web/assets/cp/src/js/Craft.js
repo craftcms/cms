@@ -172,7 +172,7 @@ $.extend(Craft,
                         let number = Craft.formatNumber(arg);
                         let pos;
                         if (format === null && (pos = `${arg}`.indexOf('.')) !== -1) {
-                            number += `.${arg.substr(pos + 1)}`;
+                            number += `.${arg.substring(pos + 1)}`;
                         }
                         return number;
                     })();
@@ -398,8 +398,8 @@ $.extend(Craft,
             } else if (typeof params === 'string') {
                 let anchorPos = params.indexOf('#');
                 if (anchorPos !== -1) {
-                    anchor = params.substr(anchorPos + 1);
-                    params = params.substr(0, anchorPos);
+                    anchor = params.substring(anchorPos + 1);
+                    params = params.substring(0, anchorPos);
                 }
                 params = Object.fromEntries((new URLSearchParams(params)).entries())
             }
@@ -409,16 +409,16 @@ $.extend(Craft,
             if (anchorPos !== -1) {
                 // Only keep it if the params didn't specify a new anchor
                 if (!anchor) {
-                    anchor = path.substr(anchorPos + 1);
+                    anchor = path.substring(anchorPos + 1);
                 }
-                path = path.substr(0, anchorPos);
+                path = path.substring(0, anchorPos);
             }
 
             // Were there already any query string params in the path?
             let qsPos = path.indexOf('?');
             if (qsPos !== -1) {
-                params = $.extend(Object.fromEntries((new URLSearchParams(path.substr(qsPos + 1))).entries()), params);
-                path = path.substr(0, qsPos);
+                params = $.extend(Object.fromEntries((new URLSearchParams(path.substring(qsPos + 1))).entries()), params);
+                path = path.substring(0, qsPos);
             }
 
             // Return path if it appears to be an absolute URL.
@@ -449,8 +449,8 @@ $.extend(Craft,
             // Does the base URL already have a query string?
             qsPos = url.indexOf('?');
             if (qsPos !== -1) {
-                params = $.extend(Object.fromEntries((new URLSearchParams(url.substr(qsPos + 1))).entries()), params);
-                url = url.substr(0, qsPos);
+                params = $.extend(Object.fromEntries((new URLSearchParams(url.substring(qsPos + 1))).entries()), params);
+                url = url.substring(0, qsPos);
             }
 
             if (!Craft.omitScriptNameInUrls && path) {
@@ -532,29 +532,71 @@ $.extend(Craft,
         },
 
         /**
+         * Replaces the page’s current URL.
+         *
+         * The location hash will be left intact, unless the given URL specifies one.
+         *
+         * @param {string} url
+         */
+        setUrl: function(url) {
+            if (typeof history === 'undefined') {
+                return;
+            }
+
+            if (!url.match(/#/)) {
+                url += document.location.hash;
+            }
+
+            history.replaceState({}, '', url);
+        },
+
+        /**
+         * Replaces the page’s current URL based on the given path, leaving the current query string and hash intact.
+         *
+         * @param {string} path
+         */
+        setPath: function(path) {
+            this.path = path;
+            this.setUrl(Craft.getUrl(path, document.location.search));
+        },
+
+        /**
+         * Replaces the page’s current URL based on the given query param name and value, leaving the current URI, other query params, and hash intact.
+         *
+         * @param {string} name
+         * @param value
+         */
+        setQueryParam(name, value) {
+            const baseUrl = document.location.origin + document.location.pathname;
+            const params = this.getQueryParams();
+
+            if (typeof value !== 'undefined' && value !== null && value !== false) {
+                params[name] = value;
+            } else {
+                delete params[name];
+            }
+
+            this.setUrl(Craft.getUrl(baseUrl, params));
+        },
+
+        /**
          * Returns the current URL with a certain page added to it.
          *
          * @param {int} page
          * @return {string}
          */
         getPageUrl: function(page) {
-            let url = document.location.href;
-            if (document.location.search) {
-                url = url.replace(document.location.search, '');
-            }
-            if (document.location.hash) {
-                url = url.replace(document.location.hash, '');
-            }
+            let url = document.location.origin + document.location.pathname;
             url = Craft.rtrim(url, '/');
 
-            let qs = document.location.search ? document.location.search.substr(1) : '';
+            let qs = document.location.search ? document.location.search.substring(1) : '';
 
             // query string-based pagination?
             if (Craft.pageTrigger[0] === '?') {
-                const pageParam = Craft.pageTrigger.substr(1);
+                const pageParam = Craft.pageTrigger.substring(1);
                 // remove the existing page param
                 if (document.location.search) {
-                    const params = $.extend(Object.fromEntries((new URLSearchParams(qs)).entries()), params);
+                    const params = Object.fromEntries((new URLSearchParams(qs)).entries());
                     delete params[pageParam];
                     qs = $.param(params);
                 }
@@ -1020,7 +1062,7 @@ $.extend(Craft,
             paramLoop: for (let p = 0; p < params.length; p++) {
                 // loop through the delta names from most -> least specific
                 for (let n = deltaNames.length - 1; n >= 0; n--) {
-                    const paramName = params[p].substr(0, deltaNames[n].length + 1);
+                    const paramName = params[p].substring(0, deltaNames[n].length + 1);
                     if (
                         paramName === deltaNames[n] + '=' ||
                         paramName === deltaNames[n] + '['
@@ -1297,7 +1339,7 @@ $.extend(Craft,
          * @return boolean
          */
         startsWith: function(str, substr) {
-            return str.substr(0, substr.length) === substr;
+            return str.substring(0, substr.length) === substr;
         },
 
         /**
@@ -1328,7 +1370,7 @@ $.extend(Craft,
         },
 
         /**
-         * Returns whether an element is in an array (unlike jQuery.inArray(), which returns the element's index, or -1).
+         * Returns whether an element is in an array (unlike jQuery.inArray(), which returns the element’s index, or -1).
          *
          * @param elem
          * @param arr
@@ -1406,6 +1448,18 @@ $.extend(Craft,
                 query: m[5] || null,
                 hash: m[6] || null,
             };
+        },
+
+        getQueryParams: function() {
+            return Object.fromEntries((new URLSearchParams(window.location.search)).entries());
+        },
+
+        getQueryParam: function(name) {
+            // h/t https://stackoverflow.com/a/901144/1688568
+            const params = new Proxy(new URLSearchParams(window.location.search), {
+                get: (searchParams, prop) => searchParams.get(prop),
+            });
+            return params[name];
         },
 
         isSameHost: function(url) {
@@ -1582,7 +1636,7 @@ $.extend(Craft,
                     existingCss.push(Craft.escapeRegex(href));
                 }
 
-                var regexp = new RegExp('<link\\s[^>]*href="(?:' + existingCss.join('|') + ')".*?></script>', 'g');
+                const regexp = new RegExp('<link\\s[^>]*href="(?:' + existingCss.join('|') + ')".*?></link>', 'g');
 
                 html = html.replace(regexp, '');
             }

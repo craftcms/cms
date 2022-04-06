@@ -5,9 +5,8 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craftunit\gql\mutations;
+namespace crafttests\unit\gql\mutations;
 
-use Codeception\Test\Unit;
 use craft\base\Field;
 use craft\fieldlayoutelements\CustomField;
 use craft\fields\Checkboxes;
@@ -22,13 +21,14 @@ use craft\gql\types\input\Matrix;
 use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
 use craft\models\MatrixBlockType;
+use craft\test\TestCase;
 use GraphQL\Type\Definition\InputType;
 use GraphQL\Type\Definition\ListOfType;
 use GraphQL\Type\Definition\NonNull;
 
-class InputTypeTest extends Unit
+class InputTypeTest extends TestCase
 {
-    public function testFileInput()
+    public function testFileInput(): void
     {
         self::assertInstanceOf(InputType::class, File::getType());
     }
@@ -40,7 +40,7 @@ class InputTypeTest extends Unit
      * @param bool $isMulti
      * @dataProvider multipleOptionsDataProvider
      */
-    public function testMultipleOptions(Field $field, bool $isMulti)
+    public function testMultipleOptions(Field $field, bool $isMulti): void
     {
         $type = $field->getContentGqlMutationArgumentType();
 
@@ -64,7 +64,7 @@ class InputTypeTest extends Unit
      * @param MatrixField $matrixField
      * @param MatrixBlockType[] $blockTypes
      */
-    public function testMatrixInput(MatrixField $matrixField, array $blockTypes)
+    public function testMatrixInput(MatrixField $matrixField, array $blockTypes): void
     {
         // Trigger addition to the registry
         Matrix::getType($matrixField);
@@ -86,7 +86,7 @@ class InputTypeTest extends Unit
      * @param array $input
      * @param array $normalized
      */
-    public function testMatrixInputValueNormalization(array $input, array $normalized)
+    public function testMatrixInputValueNormalization(array $input, array $normalized): void
     {
         self::assertEquals($normalized, Matrix::normalizeValue($input));
     }

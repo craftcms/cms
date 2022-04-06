@@ -859,7 +859,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
         $formatter = $locale ? (new Locale($locale))->getFormatter() : Craft::$app->getFormatter();
         $fmtTimeZone = $formatter->timeZone;
         $formatter->timeZone = $timezone !== null ? $date->getTimezone()->getName() : $formatter->timeZone;
-        $formatted = $formatter->asDate($date, $format);
+        $formatted = $formatter->asDate(DateTime::createFromInterface($date), $format);
         $formatter->timeZone = $fmtTimeZone;
         return $formatted;
     }
@@ -954,7 +954,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
         $formatter = $locale ? (new Locale($locale))->getFormatter() : Craft::$app->getFormatter();
         $fmtTimeZone = $formatter->timeZone;
         $formatter->timeZone = $timezone !== null ? $date->getTimezone()->getName() : $formatter->timeZone;
-        $formatted = $formatter->asTime($date, $format);
+        $formatted = $formatter->asTime(DateTime::createFromInterface($date), $format);
         $formatter->timeZone = $fmtTimeZone;
         return $formatted;
     }
@@ -984,7 +984,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
         $formatter = $locale ? (new Locale($locale))->getFormatter() : Craft::$app->getFormatter();
         $fmtTimeZone = $formatter->timeZone;
         $formatter->timeZone = $timezone !== null ? $date->getTimezone()->getName() : $formatter->timeZone;
-        $formatted = $formatter->asDatetime($date, $format);
+        $formatted = $formatter->asDatetime(DateTime::createFromInterface($date), $format);
         $formatter->timeZone = $fmtTimeZone;
         return $formatted;
     }
@@ -1334,7 +1334,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * Returns a plugin instance by its handle.
      *
      * @param string $handle The plugin handle
-     * @return PluginInterface|null The plugin, or `null` if it's not installed
+     * @return PluginInterface|null The plugin, or `null` if it’s not installed
      * @since 3.1.0
      */
     public function pluginFunction(string $handle): ?PluginInterface

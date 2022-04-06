@@ -1893,12 +1893,6 @@ abstract class Element extends Component implements ElementInterface
      */
     public function __get($name)
     {
-        if ($name === 'locale') {
-            Craft::$app->getDeprecator()->log('Element::locale', 'The `locale` element property has been deprecated. Use `siteId` instead.');
-
-            return $this->getSite()->handle;
-        }
-
         // Is $name a set of eager-loaded elements?
         if ($this->hasEagerLoadedElements($name)) {
             return $this->getEagerLoadedElements($name);
@@ -3928,12 +3922,14 @@ abstract class Element extends Component implements ElementInterface
             case 'draftCreator':
                 if ($behavior = $this->getBehavior('draft')) {
                     /** @var DraftBehavior $behavior */
+                    /** @var User[] $elements */
                     $behavior->setCreator($elements[0] ?? null);
                 }
                 break;
             case 'revisionCreator':
                 if ($behavior = $this->getBehavior('revision')) {
                     /** @var RevisionBehavior $behavior */
+                    /** @var User[] $elements */
                     $behavior->setCreator($elements[0] ?? null);
                 }
                 break;

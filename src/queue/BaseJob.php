@@ -99,7 +99,7 @@ abstract class BaseJob extends BaseObject implements JobInterface
             }
 
             if ($queue instanceof QueueInterface) {
-                $queue->setProgress($progress, $label);
+                $queue->setProgress((int)$progress, $label);
             }
         }
     }

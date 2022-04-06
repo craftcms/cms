@@ -5,17 +5,18 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craftunit\helpers;
+namespace crafttests\unit\helpers;
 
-use Codeception\Test\Unit;
 use Craft;
 use craft\errors\GqlException;
 use craft\helpers\Gql as GqlHelper;
 use craft\models\GqlSchema;
+use craft\test\TestCase;
 use GraphQL\Type\Definition\Type;
 use GraphQL\Type\Definition\UnionType;
+use yii\base\Exception;
 
-class GqlHelperTest extends Unit
+class GqlHelperTest extends TestCase
 {
     /**
      * Test Schema helper methods.
@@ -27,9 +28,9 @@ class GqlHelperTest extends Unit
      * @param string $failingScope Permission check against this scope must return false
      * @param bool $failAll Whether all tests should fail.
      * @throws GqlException
-     * @throws \yii\base\Exception
+     * @throws Exception
      */
-    public function testSchemaHelper(array $permissionSet, string $permission, string $scope, string $failingScope, bool $failAll = false)
+    public function testSchemaHelper(array $permissionSet, string $permission, string $scope, string $failingScope, bool $failAll = false): void
     {
         $this->_setSchemaWithPermissions($permissionSet);
 
@@ -52,7 +53,7 @@ class GqlHelperTest extends Unit
      * @param array $permissionSet list of permissions the schemas should have
      * @param array $expectedPairs
      */
-    public function testSchemaPermissionExtraction(array $permissionSet, array $expectedPairs)
+    public function testSchemaPermissionExtraction(array $permissionSet, array $expectedPairs): void
     {
         $this->_setSchemaWithPermissions($permissionSet);
         self::assertEquals($expectedPairs, GqlHelper::extractAllowedEntitiesFromSchema());
@@ -61,7 +62,7 @@ class GqlHelperTest extends Unit
     /**
      * Test various helper methods handling errors nicely if no schema set.
      */
-    public function testVariousErrors()
+    public function testVariousErrors(): void
     {
         // Null the schema
         Craft::$app->getGql()->setActiveSchema(null);
@@ -77,9 +78,9 @@ class GqlHelperTest extends Unit
     /**
      * Test whether `canQuery*` functions work correctly
      *
-     * @throws \yii\base\Exception
+     * @throws Exception
      */
-    public function testSchemaQueryAbility()
+    public function testSchemaQueryAbility(): void
     {
         $permissionSet = [
             'usergroups.allUsers:read',
@@ -101,7 +102,7 @@ class GqlHelperTest extends Unit
     /**
      * Test if a union type is successfully created
      */
-    public function testUnionTypes()
+    public function testUnionTypes(): void
     {
         $unionType = GqlHelper::getUnionType('someUnion', ['one', 'two'], function() {
             return 'one';
@@ -112,7 +113,7 @@ class GqlHelperTest extends Unit
     /**
      * Test if a full access schema is created correctly.
      */
-    public function testFullAccessSchema()
+    public function testFullAccessSchema(): void
     {
         $schema = GqlHelper::createFullAccessSchema();
 
@@ -128,7 +129,7 @@ class GqlHelperTest extends Unit
      * @param string $entity
      * @param array $result
      */
-    public function testEntityActionExtraction(array $scope, string $entity, array $result)
+    public function testEntityActionExtraction(array $scope, string $entity, array $result): void
     {
         $this->_setSchemaWithPermissions($scope);
 
@@ -142,7 +143,7 @@ class GqlHelperTest extends Unit
      * @param mixed $expected
      * @dataProvider wrapInNonNullProvider
      */
-    public function testWrapInNonNull(mixed $input, mixed $expected)
+    public function testWrapInNonNull(mixed $input, mixed $expected): void
     {
         self::assertEquals($expected, GqlHelper::wrapInNonNull($input));
     }

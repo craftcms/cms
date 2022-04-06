@@ -34,6 +34,7 @@ class HtmlPurifier extends \yii\helpers\HtmlPurifier
      */
     public static function convertToUtf8(string $string, HTMLPurifier_Config $config): string
     {
+        /** @phpstan-ignore-next-line */
         return HTMLPurifier_Encoder::convertToUTF8($string, $config, null);
     }
 

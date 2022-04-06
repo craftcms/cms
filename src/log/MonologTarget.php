@@ -187,6 +187,7 @@ class MonologTarget extends PsrTarget
             if (!Craft::$app->getRequest()->getIsConsoleRequest()) {
                 $logger->pushHandler((new StreamHandler(
                     'php://stdout',
+                    /** @phpstan-ignore-next-line */
                     $this->level,
                 ))->setFormatter($this->formatter));
             }
@@ -194,6 +195,7 @@ class MonologTarget extends PsrTarget
             $logger->pushHandler((new RotatingFileHandler(
                 App::parseEnv(sprintf('@storage/logs/%s.log', $name)),
                 $this->maxFiles,
+                /** @phpstan-ignore-next-line */
                 $this->level,
                 filePermission: $generalConfig->defaultFileMode,
             ))->setFormatter($this->formatter));

@@ -204,6 +204,7 @@ class AssetIndexesController extends Controller
         }
 
         if (!empty($deleteFiles)) {
+            /** @var Asset[] $assets */
             $assets = Asset::find()
                 ->status(null)
                 ->id($deleteFiles)

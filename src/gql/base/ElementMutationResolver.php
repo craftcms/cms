@@ -45,7 +45,7 @@ abstract class ElementMutationResolver extends MutationResolver
      * use yii\base\Event;
      *
      * Event::on(AssetMutationResolver::class, AssetMutationResolver::EVENT_BEFORE_POPULATE_ELEMENT, function(MutationPopulateElementEvent $event) {
-     *     // Add the timestamp to the element's title
+     *     // Add the timestamp to the element’s title
      *     $event->arguments['title'] = ($event->arguments['title'] ?? '') . '[' . DateTimeHelper::currentTimeStamp() . ']';
      * });
      * ```

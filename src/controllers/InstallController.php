@@ -249,7 +249,7 @@ class InstallController extends Controller
             } else {
                 $configService->setDotEnvVar('DB_DRIVER', $dbConfig->driver);
                 $configService->setDotEnvVar('DB_SERVER', $dbConfig->server);
-                $configService->setDotEnvVar('DB_PORT', $dbConfig->port);
+                $configService->setDotEnvVar('DB_PORT', (string)$dbConfig->port);
                 $configService->setDotEnvVar('DB_DATABASE', $dbConfig->database);
             }
 
@@ -277,7 +277,7 @@ class InstallController extends Controller
         }
 
         // Try to save the site URL to a PRIMARY_SITE_URL environment variable
-        // if it's not already set to an alias or environment variable
+        // if it’s not already set to an alias or environment variable
         if ($siteUrl[0] !== '@' && $siteUrl[0] !== '$' && !App::isEphemeral()) {
             try {
                 $configService->setDotEnvVar('PRIMARY_SITE_URL', $siteUrl);

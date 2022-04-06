@@ -281,7 +281,7 @@ class ElementHelper
      * @param ElementInterface $element The element to return supported site info for
      * @param bool $withUnpropagatedSites Whether to include sites the element is currently not being propagated to
      * @return array
-     * @throws Exception if any of the element's supported sites are invalid
+     * @throws Exception if any of the element’s supported sites are invalid
      */
     public static function supportedSitesForElement(ElementInterface $element, bool $withUnpropagatedSites = false): array
     {
@@ -550,7 +550,8 @@ class ElementHelper
     /**
      * Returns an element type's source definition based on a given source key/path and context.
      *
-     * @param class-string<ElementInterface> $elementType The element type class
+     * @param string $elementType The element type class
+     * @phpstan-param class-string<ElementInterface> $elementType
      * @param string $sourceKey The source key/path
      * @param string $context The context
      * @return array|null The source definition, or null if it cannot be found

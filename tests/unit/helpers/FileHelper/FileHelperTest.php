@@ -7,8 +7,8 @@
 
 namespace crafttests\unit\helpers\FileHelper;
 
-use Codeception\Test\Unit;
 use craft\helpers\FileHelper;
+use craft\test\TestCase;
 use UnitTester;
 use yii\base\ErrorException;
 use yii\base\Exception;
@@ -22,7 +22,7 @@ use yii\base\InvalidConfigException;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class FileHelperTest extends Unit
+class FileHelperTest extends TestCase
 {
     protected UnitTester $tester;
 
@@ -30,7 +30,7 @@ class FileHelperTest extends Unit
      * @throws ErrorException
      * @throws Exception
      */
-    public function testCreateRemove()
+    public function testCreateRemove(): void
     {
         $location = dirname(__DIR__, 4) . '/at-root';
         FileHelper::createDirectory('at-root');
@@ -45,7 +45,7 @@ class FileHelperTest extends Unit
     /**
      * @throws ErrorException
      */
-    public function testCopyAndClear()
+    public function testCopyAndClear(): void
     {
         $copyIntoDir = __DIR__ . '/sandbox/copyInto';
         $copyFromDir = dirname(__DIR__, 3) . '/_data/assets/files';
@@ -76,7 +76,7 @@ class FileHelperTest extends Unit
     /**
      *
      */
-    public function testClearException()
+    public function testClearException(): void
     {
         $this->tester->expectThrowable(InvalidArgumentException::class, function() {
             FileHelper::clearDirectory('not-a-dir');
@@ -89,7 +89,7 @@ class FileHelperTest extends Unit
      * @param string $path
      * @param string $ds
      */
-    public function testNormalizePath(string $expected, string $path, string $ds)
+    public function testNormalizePath(string $expected, string $path, string $ds): void
     {
         self::assertSame($expected, FileHelper::normalizePath($path, $ds));
     }
@@ -100,7 +100,7 @@ class FileHelperTest extends Unit
      * @param string $dir
      * @throws ErrorException
      */
-    public function testIsDirectoryEmpty(bool $expected, string $dir)
+    public function testIsDirectoryEmpty(bool $expected, string $dir): void
     {
         self::assertSame($expected, FileHelper::isDirectoryEmpty($dir));
     }
@@ -108,7 +108,7 @@ class FileHelperTest extends Unit
     /**
      *
      */
-    public function testIsDirEmptyExceptions()
+    public function testIsDirEmptyExceptions(): void
     {
         $this->tester->expectThrowable(InvalidArgumentException::class, function() {
             FileHelper::isDirectoryEmpty('aaaaa//notadir');
@@ -129,7 +129,7 @@ class FileHelperTest extends Unit
      * @param bool $checkExtension
      * @throws InvalidConfigException
      */
-    public function testGetMimeType(?string $expected, string $file, ?string $magicFile, bool $checkExtension)
+    public function testGetMimeType(?string $expected, string $file, ?string $magicFile, bool $checkExtension): void
     {
         self::assertSame($expected, FileHelper::getMimeType($file, $magicFile, $checkExtension));
     }
@@ -137,7 +137,7 @@ class FileHelperTest extends Unit
     /**
      *
      */
-    public function testGetMimeTypeExceptions()
+    public function testGetMimeTypeExceptions(): void
     {
         if (PHP_VERSION_ID < 80100) {
             $this->tester->expectThrowable(ErrorException::class, function() {
@@ -152,7 +152,7 @@ class FileHelperTest extends Unit
      * @param string $filename
      * @param array $options
      */
-    public function testSanitizeFilename(string $expected, string $filename, array $options)
+    public function testSanitizeFilename(string $expected, string $filename, array $options): void
     {
         self::assertSame($expected, FileHelper::sanitizeFilename($filename, $options));
     }
@@ -164,7 +164,7 @@ class FileHelperTest extends Unit
      * @param string|null $magicFile
      * @param bool $checkExtension
      */
-    public function testIsSvg(bool $expected, string $file, ?string $magicFile, bool $checkExtension)
+    public function testIsSvg(bool $expected, string $file, ?string $magicFile, bool $checkExtension): void
     {
         self::assertSame($expected, FileHelper::isSvg($file, $magicFile, $checkExtension));
     }
@@ -176,7 +176,7 @@ class FileHelperTest extends Unit
      * @param string|null $magicFile
      * @param bool $checkExtension
      */
-    public function testIsGif(bool $expected, string $input, ?string $magicFile, bool $checkExtension)
+    public function testIsGif(bool $expected, string $input, ?string $magicFile, bool $checkExtension): void
     {
         self::assertSame($expected, FileHelper::isGif($input, $magicFile, $checkExtension));
     }
@@ -191,7 +191,7 @@ class FileHelperTest extends Unit
      * @param string $removeableDir
      * @throws ErrorException
      */
-    public function testWriteToFile(string|false $content, string $file, string $contents, array $options, bool $removeDir = false, string $removeableDir = '')
+    public function testWriteToFile(string|false $content, string $file, string $contents, array $options, bool $removeDir = false, string $removeableDir = ''): void
     {
         FileHelper::writeToFile($file, $contents, $options);
 
@@ -208,7 +208,7 @@ class FileHelperTest extends Unit
     /**
      * @throws ErrorException
      */
-    public function testWriteToFileAppend()
+    public function testWriteToFileAppend(): void
     {
         $sandboxDir = __DIR__ . '/sandbox/writeto';
         $file = $sandboxDir . '/test-file';
@@ -228,7 +228,7 @@ class FileHelperTest extends Unit
     /**
      *
      */
-    public function testWriteToFileExceptions()
+    public function testWriteToFileExceptions(): void
     {
         $this->tester->expectThrowable(InvalidArgumentException::class, function() {
             FileHelper::writeToFile('notafile/folder', 'somecontent', ['createDirs' => false]);
@@ -351,7 +351,7 @@ class FileHelperTest extends Unit
     /**
      * @inheritdoc
      */
-    protected function _before()
+    protected function _before(): void
     {
         if (!is_dir(__DIR__ . '/sandbox/copyInto')) {
             FileHelper::createDirectory(__DIR__ . '/sandbox/copyInto');

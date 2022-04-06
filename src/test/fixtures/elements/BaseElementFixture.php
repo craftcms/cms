@@ -91,7 +91,7 @@ abstract class BaseElementFixture extends DbFixture
                     'dateDeleted' => Db::prepareDateForDb($dateDeleted),
                 ], ['id' => $element->id], [], false);
             } else {
-                // Only need to index the search keywords if it's not deleted
+                // Only need to index the search keywords if it’s not deleted
                 Craft::$app->getSearch()->indexElementAttributes($element);
             }
 

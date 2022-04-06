@@ -50,6 +50,7 @@ class Volume extends Model
 
     /**
      * @var string Title translation method
+     * @phpstan-var Field::TRANSLATION_METHOD_NONE|Field::TRANSLATION_METHOD_SITE|Field::TRANSLATION_METHOD_SITE_GROUP|Field::TRANSLATION_METHOD_LANGUAGE|Field::TRANSLATION_METHOD_CUSTOM
      */
     public string $titleTranslationMethod = Field::TRANSLATION_METHOD_SITE;
 

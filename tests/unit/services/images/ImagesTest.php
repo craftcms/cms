@@ -12,6 +12,7 @@ use Craft;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
 use craft\services\Images;
+use craft\test\TestCase;
 use Imagick;
 use yii\base\Exception;
 
@@ -22,7 +23,7 @@ use yii\base\Exception;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class ImagesTest extends Unit
+class ImagesTest extends TestCase
 {
     /**
      * @var Images
@@ -44,7 +45,7 @@ class ImagesTest extends Unit
      * @param bool $expected
      * @param string $filePath
      */
-    public function testCheckMemoryForImage(bool $expected, string $filePath)
+    public function testCheckMemoryForImage(bool $expected, string $filePath): void
     {
         self::assertSame($expected, $this->images->checkMemoryForImage($this->path . $filePath));
     }
@@ -52,7 +53,7 @@ class ImagesTest extends Unit
     /**
      * @throws Exception
      */
-    public function testCleanImageSvg()
+    public function testCleanImageSvg(): void
     {
         $this->images->cleanImage(
             $this->sandboxPath . 'dirty-svg.svg'
@@ -71,7 +72,7 @@ class ImagesTest extends Unit
     /**
      * @throws Exception
      */
-    public function testDontCleanWithConfigSetting()
+    public function testDontCleanWithConfigSetting(): void
     {
         Craft::$app->getConfig()->getGeneral()->sanitizeSvgUploads = false;
 
@@ -92,7 +93,7 @@ class ImagesTest extends Unit
     /**
      *
      */
-    public function testRotateImageByExifData()
+    public function testRotateImageByExifData(): void
     {
         $this->_skipIfNoImagick();
 
@@ -104,7 +105,7 @@ class ImagesTest extends Unit
     /**
      * @throws Exception
      */
-    public function testCleanImageRotatesOrientation()
+    public function testCleanImageRotatesOrientation(): void
     {
         $this->_skipIfNoImagick();
 
@@ -118,7 +119,7 @@ class ImagesTest extends Unit
      *
      * @throws Exception
      */
-    public function testCleanImageDoesntDoGifWhenSettingDisabled()
+    public function testCleanImageDoesntDoGifWhenSettingDisabled(): void
     {
         $this->_skipIfNoImagick();
 
@@ -137,7 +138,7 @@ class ImagesTest extends Unit
     /**
      * @todo With data provider for different image types?
      */
-    public function testGetExifData()
+    public function testGetExifData(): void
     {
         $this->_skipIfNoExif();
         $this->_skipIfNoImagick();
@@ -160,7 +161,7 @@ class ImagesTest extends Unit
     /**
      * Test that false is returned (and not for example an exception being thrown) when calling exif based functions.
      */
-    public function testNoExifFalses()
+    public function testNoExifFalses(): void
     {
         self::assertNull($this->images->getExifData($this->sandboxPath . 'craft-logo.svg'));
         self::assertFalse($this->images->rotateImageByExifData($this->sandboxPath . 'craft-logo.svg'));
@@ -182,7 +183,7 @@ class ImagesTest extends Unit
     /**
      * @inheritdoc
      */
-    protected function _before()
+    protected function _before(): void
     {
         parent::_before();
         $this->path = dirname(__DIR__, 3) . '/_data/assets/files/';

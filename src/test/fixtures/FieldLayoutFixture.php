@@ -10,7 +10,7 @@ namespace craft\test\fixtures;
 use Craft;
 use craft\base\Field;
 use craft\base\FieldInterface;
-use craft\base\Model;
+use craft\base\ModelInterface;
 use craft\fieldlayoutelements\CustomField;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Component;
@@ -156,10 +156,10 @@ abstract class FieldLayoutFixture extends DbFixture
     }
 
     /**
-     * @param Model $model
+     * @param ModelInterface $model
      * @throws InvalidArgumentException
      */
-    protected function throwModelError(Model $model): void
+    protected function throwModelError(ModelInterface $model): void
     {
         throw new InvalidArgumentException(
             implode(

@@ -5,7 +5,7 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace tests\gql;
+namespace crafttests\gql;
 
 use Craft;
 use craft\models\GqlSchema;
@@ -99,7 +99,7 @@ class GqlCest
     /**
      * Test whether all query types work correctly
      */
-    public function testQuerying(FunctionalTester $I)
+    public function testQuerying(FunctionalTester $I): void
     {
         $queryTypes = [
             'entries',
@@ -117,7 +117,7 @@ class GqlCest
     /**
      * Test whether querying for wrong gql field returns the correct error.
      */
-    public function testWrongGqlField(FunctionalTester $I)
+    public function testWrongGqlField(FunctionalTester $I): void
     {
         $parameter = 'bogus';
         $I->amOnPage('?action=graphql/api&query={entries{' . $parameter . '}}');
@@ -127,7 +127,7 @@ class GqlCest
     /**
      * Test whether querying with wrong parameters returns the correct error.
      */
-    public function testWrongGqlQueryParameter(FunctionalTester $I)
+    public function testWrongGqlQueryParameter(FunctionalTester $I): void
     {
         $I->amOnPage('?action=graphql/api&query={entries(limit:[5,2]){title}}');
         $I->see('requires type Int');
@@ -136,13 +136,13 @@ class GqlCest
     /**
      * Test whether query results yield the expected results.
      */
-    public function testQueryResults(FunctionalTester $I)
+    public function testQueryResults(FunctionalTester $I): void
     {
         $testData = file_get_contents(__DIR__ . '/data/gql.txt');
         foreach (explode('-----TEST DELIMITER-----', $testData) as $case) {
             [$query, $response] = explode('-----RESPONSE DELIMITER-----', $case);
             [$schemaId, $query] = explode('-----TOKEN DELIMITER-----', $query);
-            $this->_setSchema(trim($schemaId));
+            $this->_setSchema((int)trim($schemaId));
             $I->amOnPage('?action=graphql/api&query=' . urlencode(trim($query)));
             $I->see(trim($response));
             $gqlService = Craft::$app->getGql();

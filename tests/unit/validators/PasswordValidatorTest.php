@@ -7,10 +7,11 @@
 
 namespace crafttests\unit\validators;
 
-use Codeception\Test\Unit;
 use Craft;
 use craft\test\mockclasses\models\ExampleModel;
+use craft\test\TestCase;
 use craft\validators\UserPasswordValidator;
+use TypeError;
 use UnitTester;
 
 /**
@@ -20,7 +21,7 @@ use UnitTester;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class PasswordValidatorTest extends Unit
+class PasswordValidatorTest extends TestCase
 {
     /**
      * @var UnitTester
@@ -43,7 +44,7 @@ class PasswordValidatorTest extends Unit
      * @param bool $mustValidate
      * @param string|null $currentPass
      */
-    public function testValidation(string $inputValue, bool $mustValidate, string $currentPass = null)
+    public function testValidation(string $inputValue, bool $mustValidate, string $currentPass = null): void
     {
         $this->model->exampleParam = $inputValue;
 
@@ -67,7 +68,7 @@ class PasswordValidatorTest extends Unit
      * @param int $min
      * @param int $max
      */
-    public function testCustomConfig(mixed $input, bool $mustValidate, int $min, int $max)
+    public function testCustomConfig(mixed $input, bool $mustValidate, int $min, int $max): void
     {
         $passVal = new UserPasswordValidator(['min' => $min, 'max' => $max]);
         $this->model->exampleParam = $input;
@@ -86,7 +87,7 @@ class PasswordValidatorTest extends Unit
      * @param string $input
      * @param string $currentPassword
      */
-    public function testForceDiffValidation(bool $mustValidate, string $input, string $currentPassword)
+    public function testForceDiffValidation(bool $mustValidate, string $input, string $currentPassword): void
     {
         $this->passwordValidator->forceDifferent = true;
         $this->passwordValidator->currentPassword = Craft::$app->getSecurity()->hashPassword($currentPassword);
@@ -100,11 +101,11 @@ class PasswordValidatorTest extends Unit
         }
     }
 
-    public function testToStringExpectException()
+    public function testToStringExpectException(): void
     {
         $passVal = $this->passwordValidator;
 
-        $this->tester->expectThrowable(\TypeError::class, function() use ($passVal) {
+        $this->tester->expectThrowable(TypeError::class, function() use ($passVal) {
             /** @phpstan-ignore-next-line */
             $passVal->isEmpty = 'craft_increment';
             $passVal->isEmpty(1);
@@ -160,7 +161,7 @@ class PasswordValidatorTest extends Unit
     /**
      * @inheritdoc
      */
-    protected function _before()
+    protected function _before(): void
     {
         $this->passwordValidator = new UserPasswordValidator();
         $this->model = new ExampleModel();

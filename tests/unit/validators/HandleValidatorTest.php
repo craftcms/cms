@@ -7,8 +7,8 @@
 
 namespace crafttests\unit\validators;
 
-use Codeception\Test\Unit;
 use craft\test\mockclasses\models\ExampleModel;
+use craft\test\TestCase;
 use craft\validators\HandleValidator;
 
 /**
@@ -18,7 +18,7 @@ use craft\validators\HandleValidator;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class HandleValidatorTest extends Unit
+class HandleValidatorTest extends TestCase
 {
     /**
      * @var HandleValidator
@@ -35,7 +35,7 @@ class HandleValidatorTest extends Unit
      */
     protected static array $reservedWords = ['bird', 'is', 'the', 'word'];
 
-    public function testStaticConstants()
+    public function testStaticConstants(): void
     {
         self::assertSame('[a-zA-Z][a-zA-Z0-9_]*', HandleValidator::$handlePattern);
         self::assertSame(
@@ -52,7 +52,7 @@ class HandleValidatorTest extends Unit
     /**
      *
      */
-    public function testStaticConstantsArentAllowed()
+    public function testStaticConstantsArentAllowed(): void
     {
         foreach (self::$reservedWords as $reservedWord) {
             $this->model->exampleParam = $reservedWord;
@@ -70,7 +70,7 @@ class HandleValidatorTest extends Unit
      * @param bool $mustValidate
      * @param string $input
      */
-    public function testHandleValidation(bool $mustValidate, string $input)
+    public function testHandleValidation(bool $mustValidate, string $input): void
     {
         $this->model->exampleParam = $input;
 
@@ -103,7 +103,7 @@ class HandleValidatorTest extends Unit
     /**
      * @inheritdoc
      */
-    protected function _before()
+    protected function _before(): void
     {
         $this->model = new ExampleModel();
         $this->handleValidator = new HandleValidator(['reservedWords' => self::$reservedWords]);

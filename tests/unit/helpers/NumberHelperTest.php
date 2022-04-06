@@ -7,9 +7,9 @@
 
 namespace crafttests\unit\helpers;
 
-use Codeception\Test\Unit;
 use craft\helpers\Number;
 use craft\test\mockclasses\ToString;
+use craft\test\TestCase;
 
 /**
  * Class NumberHelperTest.
@@ -18,14 +18,14 @@ use craft\test\mockclasses\ToString;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class NumberHelperTest extends Unit
+class NumberHelperTest extends TestCase
 {
     /**
      * @dataProvider wordDataProvider
      * @param string $expected
      * @param int $num
      */
-    public function testWord(string $expected, int $num)
+    public function testWord(string $expected, int $num): void
     {
         self::assertSame($expected, Number::word($num));
     }
@@ -35,7 +35,7 @@ class NumberHelperTest extends Unit
      * @param string $expected
      * @param int $num
      */
-    public function testUpperAlpha(string $expected, int $num)
+    public function testUpperAlpha(string $expected, int $num): void
     {
         self::assertSame($expected, Number::upperAlpha($num));
     }
@@ -45,7 +45,7 @@ class NumberHelperTest extends Unit
      * @param string $expected
      * @param int $num
      */
-    public function testLowerAlpha(string $expected, int $num)
+    public function testLowerAlpha(string $expected, int $num): void
     {
         self::assertSame($expected, Number::lowerAlpha($num));
     }
@@ -55,7 +55,7 @@ class NumberHelperTest extends Unit
      * @param string $expected
      * @param int $num
      */
-    public function testUpperRoman(string $expected, int $num)
+    public function testUpperRoman(string $expected, int $num): void
     {
         self::assertSame($expected, Number::upperRoman($num));
     }
@@ -65,7 +65,7 @@ class NumberHelperTest extends Unit
      * @param string $expected
      * @param int $num
      */
-    public function testLowerRoman(string $expected, int $num)
+    public function testLowerRoman(string $expected, int $num): void
     {
         self::assertSame($expected, Number::lowerRoman($num));
     }
@@ -75,7 +75,7 @@ class NumberHelperTest extends Unit
      * @param mixed $expected
      * @param mixed $var
      */
-    public function testMakeNumeric(mixed $expected, mixed $var)
+    public function testMakeNumeric(mixed $expected, mixed $var): void
     {
         self::assertSame($expected, Number::makeNumeric($var));
     }

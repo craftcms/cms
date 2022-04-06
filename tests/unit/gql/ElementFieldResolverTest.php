@@ -5,9 +5,8 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craftunit\gql;
+namespace crafttests\unit\gql;
 
-use Codeception\Test\Unit;
 use Craft;
 use craft\base\Fs;
 use craft\elements\Asset;
@@ -39,17 +38,19 @@ use craft\models\UserGroup;
 use craft\models\Volume;
 use craft\services\Assets;
 use craft\services\ImageTransforms;
+use craft\test\TestCase;
+use DateTime;
 use GraphQL\Type\Definition\ResolveInfo;
 use UnitTester;
 
-class ElementFieldResolverTest extends Unit
+class ElementFieldResolverTest extends TestCase
 {
     /**
      * @var UnitTester
      */
     protected UnitTester $tester;
 
-    protected function _before()
+    protected function _before(): void
     {
         // Mock the GQL schema for the volumes below
         $this->tester->mockMethods(
@@ -66,7 +67,7 @@ class ElementFieldResolverTest extends Unit
         );
     }
 
-    protected function _after()
+    protected function _after(): void
     {
     }
 
@@ -74,18 +75,19 @@ class ElementFieldResolverTest extends Unit
      * Test resolving fields on entries.
      *
      * @dataProvider entryFieldTestDataProvider
-     * @param class-string $gqlTypeClass The Gql type class
+     * @param string $gqlTypeClass The Gql type class
+     * @phpstan-param class-string $gqlTypeClass
      * @param string $propertyName The property being tested
      * @param mixed $result True for exact match, false for non-existing or a callback for fetching the data
      */
-    public function testEntryFieldResolving(string $gqlTypeClass, string $propertyName, mixed $result)
+    public function testEntryFieldResolving(string $gqlTypeClass, string $propertyName, mixed $result): void
     {
         $sectionHandle = StringHelper::UUID();
         $typeHandle = StringHelper::UUID();
 
         $mockElement = $this->make(
             EntryElement::class, [
-                'postDate' => new \DateTime(),
+                'postDate' => new DateTime(),
                 '__get' => function($property) {
                     // Assume fields 'plainTextField' and 'typeface'
                     return in_array($property, ['plainTextField', 'typeface'], false) ? 'ok' : $this->$property;
@@ -106,11 +108,12 @@ class ElementFieldResolverTest extends Unit
      * Test resolving fields on assets.
      *
      * @dataProvider assetFieldTestDataProvider
-     * @param class-string $gqlTypeClass The Gql type class
+     * @param string $gqlTypeClass The Gql type class
+     * @phpstan-param class-string $gqlTypeClass
      * @param string $propertyName The property being tested
      * @param mixed $result True for exact match, false for non-existing or a callback for fetching the data
      */
-    public function testAssetFieldResolving(string $gqlTypeClass, string $propertyName, mixed $result)
+    public function testAssetFieldResolving(string $gqlTypeClass, string $propertyName, mixed $result): void
     {
         $mockElement = $this->make(
             AssetElement::class, [
@@ -128,11 +131,12 @@ class ElementFieldResolverTest extends Unit
      * Test resolving fields on global sets.
      *
      * @dataProvider globalSetFieldTestDataProvider
-     * @param class-string $gqlTypeClass The Gql type class
+     * @param string $gqlTypeClass The Gql type class
+     * @phpstan-param class-string $gqlTypeClass
      * @param string $propertyName The property being tested
      * @param mixed $result True for exact match, false for non-existing or a callback for fetching the data
      */
-    public function testGlobalSetFieldResolving(string $gqlTypeClass, string $propertyName, mixed $result)
+    public function testGlobalSetFieldResolving(string $gqlTypeClass, string $propertyName, mixed $result): void
     {
         $mockElement = $this->make(
             GlobalSetElement::class, [
@@ -151,11 +155,12 @@ class ElementFieldResolverTest extends Unit
      * Test resolving fields on categories
      *
      * @dataProvider categoryFieldTestDataProvider
-     * @param class-string $gqlTypeClass The Gql type class
+     * @param string $gqlTypeClass The Gql type class
+     * @phpstan-param class-string $gqlTypeClass
      * @param string $propertyName The property being tested
      * @param mixed $result True for exact match, false for non-existing or a callback for fetching the data
      */
-    public function testCategoryFieldResolving(string $gqlTypeClass, string $propertyName, mixed $result)
+    public function testCategoryFieldResolving(string $gqlTypeClass, string $propertyName, mixed $result): void
     {
         $groupHandle = StringHelper::UUID();
 
@@ -178,11 +183,12 @@ class ElementFieldResolverTest extends Unit
      * Test resolving fields on tags
      *
      * @dataProvider tagFieldTestDataProvider
-     * @param class-string $gqlTypeClass The Gql type class
+     * @param string $gqlTypeClass The Gql type class
+     * @phpstan-param class-string $gqlTypeClass
      * @param string $propertyName The property being tested
      * @param mixed $result True for exact match, false for non-existing or a callback for fetching the data
      */
-    public function testTagFieldResolving(string $gqlTypeClass, string $propertyName, mixed $result)
+    public function testTagFieldResolving(string $gqlTypeClass, string $propertyName, mixed $result): void
     {
         $groupHandle = StringHelper::UUID();
 
@@ -205,11 +211,12 @@ class ElementFieldResolverTest extends Unit
      * Test resolving fields on matrix blocks.
      *
      * @dataProvider matrixBlockFieldTestDataProvider
-     * @param class-string $gqlTypeClass The Gql type class
+     * @param string $gqlTypeClass The Gql type class
+     * @phpstan-param class-string $gqlTypeClass
      * @param string $propertyName The property being tested
      * @param mixed $result True for exact match, false for non-existing or a callback for fetching the data
      */
-    public function testMatrixBlockFieldResolving(string $gqlTypeClass, string $propertyName, mixed $result)
+    public function testMatrixBlockFieldResolving(string $gqlTypeClass, string $propertyName, mixed $result): void
     {
         $typeHandle = StringHelper::UUID();
 
@@ -235,11 +242,12 @@ class ElementFieldResolverTest extends Unit
      * Test resolving fields on users.
      *
      * @dataProvider userFieldTestDataProvider
-     * @param class-string $gqlTypeClass The Gql type class
+     * @param string $gqlTypeClass The Gql type class
+     * @phpstan-param class-string $gqlTypeClass
      * @param string $propertyName The property being tested
      * @param mixed $result True for exact match, false for non-existing or a callback for fetching the data
      */
-    public function testUserFieldResolving(string $gqlTypeClass, string $propertyName, mixed $result)
+    public function testUserFieldResolving(string $gqlTypeClass, string $propertyName, mixed $result): void
     {
         $mockElement = $this->make(
             UserElement::class, [
@@ -274,7 +282,7 @@ class ElementFieldResolverTest extends Unit
      * @param mixed $expectedArguments
      * @dataProvider assetTransformDataProvider
      */
-    public function testAssetUrlTransform(array $fieldArguments, mixed $expectedArguments)
+    public function testAssetUrlTransform(array $fieldArguments, mixed $expectedArguments): void
     {
         $imageTransformService = $this->make(ImageTransforms::class, [
             'getImageTransformer' => $this->make(ImageTransformer::class, [
@@ -312,7 +320,8 @@ class ElementFieldResolverTest extends Unit
      * Run the test on an element for a type class with the property name.
      *
      * @param mixed $element
-     * @param class-string<ObjectType> $gqlTypeClass The Gql type class
+     * @param string $gqlTypeClass The Gql type class
+     * @phpstan-param class-string<ObjectType> $gqlTypeClass
      * @param string $propertyName The property being tested
      * @param mixed $result True for exact match, false for non-existing or a callback for fetching the data
      */

@@ -139,8 +139,8 @@ abstract class ElementResolver extends Resolver
      *
      * @param mixed $source The source. Null if top-level field being resolved.
      * @param array $arguments Arguments to apply to the query.
-     * @param null $fieldName Field name to resolve on the source, if not a top-level resolution.
+     * @param string|null $fieldName Field name to resolve on the source, if not a top-level resolution.
      * @return mixed
      */
-    abstract protected static function prepareQuery(mixed $source, array $arguments, $fieldName = null): mixed;
+    abstract protected static function prepareQuery(mixed $source, array $arguments, ?string $fieldName = null): mixed;
 }

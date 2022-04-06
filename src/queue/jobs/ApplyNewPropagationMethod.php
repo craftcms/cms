@@ -31,7 +31,8 @@ use craft\services\Structures;
 class ApplyNewPropagationMethod extends BaseJob
 {
     /**
-     * @var class-string<ElementInterface> The element type to use
+     * @var string The element type to use
+     * @phpstan-var class-string<ElementInterface>
      */
     public string $elementType;
 
@@ -47,6 +48,7 @@ class ApplyNewPropagationMethod extends BaseJob
     public function execute($queue): void
     {
         /** @var string|ElementInterface $elementType */
+        /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
         $elementType = $this->elementType;
         $query = $elementType::find()
             ->site('*')
@@ -103,7 +105,7 @@ class ApplyNewPropagationMethod extends BaseJob
                     ->status(null)
                     ->drafts(null)
                     ->provisionalDrafts(null)
-                    ->orderBy(null)
+                    ->orderBy([])
                     ->indexBy('siteId')
                     ->all();
 
@@ -136,7 +138,7 @@ class ApplyNewPropagationMethod extends BaseJob
                         continue;
                     }
 
-                    // Should we add the clone to the source element's structure?
+                    // Should we add the clone to the source element’s structure?
                     if (
                         $element->structureId &&
                         $element->root &&

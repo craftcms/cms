@@ -29,7 +29,7 @@ class AppHelperTest extends TestCase
     /**
      *
      */
-    public function testEnv()
+    public function testEnv(): void
     {
         $_SERVER['TEST_SERVER_ENV'] = 'server';
         self::assertSame('server', App::env('TEST_SERVER_ENV'));
@@ -54,7 +54,7 @@ class AppHelperTest extends TestCase
     /**
      *
      */
-    public function testParseEnv()
+    public function testParseEnv(): void
     {
         self::assertSame(null, App::parseEnv(null));
         self::assertSame(CRAFT_TESTS_PATH, App::parseEnv('$CRAFT_TESTS_PATH'));
@@ -68,7 +68,7 @@ class AppHelperTest extends TestCase
      * @param bool|null $expected
      * @param mixed $value
      */
-    public function testParseBooleanEnv(?bool $expected, mixed $value)
+    public function testParseBooleanEnv(?bool $expected, mixed $value): void
     {
         self::assertSame($expected, App::parseBooleanEnv($value));
     }
@@ -76,7 +76,7 @@ class AppHelperTest extends TestCase
     /**
      *
      */
-    public function testCliOption()
+    public function testCliOption(): void
     {
         $argv = $_SERVER['argv'] ?? null;
         $_SERVER['argv'] = [
@@ -114,7 +114,7 @@ class AppHelperTest extends TestCase
     /**
      *
      */
-    public function testEditions()
+    public function testEditions(): void
     {
         self::assertEquals([Craft::Solo, Craft::Pro], App::editions());
     }
@@ -124,7 +124,7 @@ class AppHelperTest extends TestCase
      * @param string|false $expected
      * @param int $edition
      */
-    public function testEditionHandle(string|false $expected, int $edition)
+    public function testEditionHandle(string|false $expected, int $edition): void
     {
         if ($expected === false) {
             self::expectException(InvalidArgumentException::class);
@@ -139,7 +139,7 @@ class AppHelperTest extends TestCase
      * @param string|false $expected
      * @param int $edition
      */
-    public function testEditionName(string|false $expected, int $edition)
+    public function testEditionName(string|false $expected, int $edition): void
     {
         if ($expected === false) {
             self::expectException(InvalidArgumentException::class);
@@ -154,7 +154,7 @@ class AppHelperTest extends TestCase
      * @param int|false $expected
      * @param string $handle
      */
-    public function testEditionIdByHandle(int|false $expected, string $handle)
+    public function testEditionIdByHandle(int|false $expected, string $handle): void
     {
         if ($expected === false) {
             self::expectException(InvalidArgumentException::class);
@@ -169,7 +169,7 @@ class AppHelperTest extends TestCase
      * @param bool $expected
      * @param mixed $edition
      */
-    public function testIsValidEdition(bool $expected, mixed $edition)
+    public function testIsValidEdition(bool $expected, mixed $edition): void
     {
         self::assertSame($expected, App::isValidEdition($edition));
     }
@@ -177,7 +177,7 @@ class AppHelperTest extends TestCase
     /**
      * @dataProvider normalizeValueDataProvider
      */
-    public function testNormalizeValue(mixed $expected, mixed $value)
+    public function testNormalizeValue(mixed $expected, mixed $value): void
     {
         self::assertSame($expected, App::normalizeValue($value));
     }
@@ -187,7 +187,7 @@ class AppHelperTest extends TestCase
      * @param string $expected
      * @param string $version
      */
-    public function testNormalizeVersion(string $expected, string $version)
+    public function testNormalizeVersion(string $expected, string $version): void
     {
         self::assertSame($expected, App::normalizeVersion($version));
     }
@@ -195,10 +195,10 @@ class AppHelperTest extends TestCase
     /**
      *
      */
-    public function testPhpConfigValueAsBool()
+    public function testPhpConfigValueAsBool(): void
     {
         $displayErrorsValue = ini_get('display_errors');
-        @ini_set('display_errors', 1);
+        @ini_set('display_errors', '1');
         self::assertTrue(App::phpConfigValueAsBool('display_errors'));
         @ini_set('display_errors', $displayErrorsValue);
 
@@ -214,7 +214,7 @@ class AppHelperTest extends TestCase
     /**
      *
      */
-    public function testNormalizePhpPaths()
+    public function testNormalizePhpPaths(): void
     {
         self::assertSame([getcwd()], App::normalizePhpPaths('.'));
         self::assertSame([getcwd()], App::normalizePhpPaths('./'));
@@ -232,7 +232,7 @@ class AppHelperTest extends TestCase
      * @param int|float $expected
      * @param string $value
      */
-    public function testPhpSizeToBytes(int|float $expected, string $value)
+    public function testPhpSizeToBytes(int|float $expected, string $value): void
     {
         self::assertSame($expected, App::phpSizeToBytes($value));
     }
@@ -240,9 +240,10 @@ class AppHelperTest extends TestCase
     /**
      * @dataProvider humanizeClassDataProvider
      * @param string $expected
-     * @param class-string $class
+     * @param string $class
+     * @phpstan-param class-string $class
      */
-    public function testHumanizeClass(string $expected, string $class)
+    public function testHumanizeClass(string $expected, string $class): void
     {
         self::assertSame($expected, App::humanizeClass($class));
     }
@@ -250,7 +251,7 @@ class AppHelperTest extends TestCase
     /**
      * @todo 3.1 added new functions to test.
      */
-    public function testMaxPowerCaptain()
+    public function testMaxPowerCaptain(): void
     {
         $oldMemoryLimit = ini_get('memory_limit');
         $oldMaxExecution = ini_get('max_execution_time');
@@ -275,7 +276,7 @@ class AppHelperTest extends TestCase
      * @todo More needed here to test with constant and invalid file path.
      * See coverage report for more info.
      */
-    public function testLicenseKey()
+    public function testLicenseKey(): void
     {
         self::assertSame(250, strlen(App::licenseKey()));
     }
@@ -285,7 +286,7 @@ class AppHelperTest extends TestCase
      * @param string $method
      * @param array $desiredConfig
      */
-    public function testConfigIndexes(string $method, array $desiredConfig)
+    public function testConfigIndexes(string $method, array $desiredConfig): void
     {
         $config = App::$method();
 
@@ -301,7 +302,7 @@ class AppHelperTest extends TestCase
     /**
      * Mailer config now needs a mail settings
      */
-    public function testMailerConfigIndexes()
+    public function testMailerConfigIndexes(): void
     {
         $mailSettings = new MailSettings(['transportType' => Sendmail::class]);
         $result = App::mailerConfig($mailSettings);
@@ -316,7 +317,7 @@ class AppHelperTest extends TestCase
     /**
      *
      */
-    public function testViewConfigIndexes()
+    public function testViewConfigIndexes(): void
     {
         $this->setInaccessibleProperty(Craft::$app->getRequest(), '_isCpRequest', true);
         $this->testConfigIndexes('viewConfig', ['class', 'registeredAssetBundles', 'registeredJsFiles']);

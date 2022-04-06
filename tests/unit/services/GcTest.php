@@ -16,6 +16,7 @@ use craft\elements\User;
 use craft\helpers\ArrayHelper;
 use craft\records\User as UserRecord;
 use craft\services\Gc;
+use craft\test\TestCase;
 use crafttests\fixtures\EntryFixture;
 use crafttests\fixtures\EntryTypeFixture;
 use crafttests\fixtures\SectionsFixture;
@@ -35,7 +36,7 @@ use yii\base\InvalidArgumentException;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class GcTest extends Unit
+class GcTest extends TestCase
 {
     /**
      * @var Gc
@@ -72,7 +73,7 @@ class GcTest extends Unit
     /**
      *
      */
-    public function testRunForDeletedEntriesWithDefaultDuration()
+    public function testRunForDeletedEntriesWithDefaultDuration(): void
     {
         $this->_doEntryTest(1, [
             'Deleted 40 days ago',
@@ -82,7 +83,7 @@ class GcTest extends Unit
     /**
      *
      */
-    public function testRunForDeletedEntriesWithCustomDuration()
+    public function testRunForDeletedEntriesWithCustomDuration(): void
     {
         // 5 Days
         Craft::$app->getConfig()->getGeneral()->softDeleteDuration = 432000;
@@ -96,7 +97,7 @@ class GcTest extends Unit
     /**
      *
      */
-    public function testRunDeleteAllTrashed()
+    public function testRunDeleteAllTrashed(): void
     {
         $this->gc->deleteAllTrashed = true;
 
@@ -114,7 +115,7 @@ class GcTest extends Unit
      * @param string $table
      * @param array $ids
      */
-    public function testGc(int $remainingCount, string $leftoverId, string $table, array $ids)
+    public function testGc(int $remainingCount, string $leftoverId, string $table, array $ids): void
     {
         $this->gc->run(true);
 
@@ -130,7 +131,7 @@ class GcTest extends Unit
     /**
      *
      */
-    public function testRunForExpiringUsers()
+    public function testRunForExpiringUsers(): void
     {
         // 2 days
         Craft::$app->getConfig()->getGeneral()->purgePendingUsersDuration = 60 * 60 * 24 * 2;
@@ -174,7 +175,7 @@ class GcTest extends Unit
     /**
      * @inheritdoc
      */
-    protected function _before()
+    protected function _before(): void
     {
         parent::_before();
 
@@ -193,6 +194,7 @@ class GcTest extends Unit
     {
         $totalEntries = Entry::find()->trashed()->count();
         $this->gc->run(true);
+        /** @var Entry[] $entries */
         $entries = Entry::find()
             ->trashed()
             ->asArray()

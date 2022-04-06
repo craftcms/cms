@@ -60,7 +60,8 @@ class Utilities extends Component
     /**
      * Returns all available utility type classes.
      *
-     * @return class-string<UtilityInterface>[]
+     * @return string[]
+     * @phpstan-return class-string<UtilityInterface>[]
      */
     public function getAllUtilityTypes(): array
     {
@@ -119,12 +120,14 @@ class Utilities extends Component
     /**
      * Returns whether the current user is authorized to use a given utility.
      *
-     * @param class-string<UtilityInterface> $class The utility class
+     * @param string $class The utility class
+     * @phpstan-param class-string<UtilityInterface> $class
      * @return bool
      */
     public function checkAuthorization(string $class): bool
     {
         /** @var string|UtilityInterface $class */
+        /** @phpstan-var class-string<UtilityInterface>|UtilityInterface $class */
         $utilityId = $class::id();
         $user = Craft::$app->getUser();
 
@@ -141,6 +144,7 @@ class Utilities extends Component
     {
         foreach ($this->getAllUtilityTypes() as $class) {
             /** @var string|UtilityInterface $class */
+            /** @phpstan-var class-string<UtilityInterface>|UtilityInterface $class */
             if ($class::id() === $id) {
                 return $class;
             }

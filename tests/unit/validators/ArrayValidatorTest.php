@@ -7,8 +7,8 @@
 
 namespace crafttests\unit\validators;
 
-use Codeception\Test\Unit;
 use craft\test\mockclasses\models\ExampleModel;
+use craft\test\TestCase;
 use craft\validators\ArrayValidator;
 
 /**
@@ -20,7 +20,7 @@ use craft\validators\ArrayValidator;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class ArrayValidatorTest extends Unit
+class ArrayValidatorTest extends TestCase
 {
     /**
      * @var ArrayValidator
@@ -40,7 +40,7 @@ class ArrayValidatorTest extends Unit
      * @param ArrayValidator $validator
      * @param string $variableName
      */
-    public function testMessagingOnEmptyInputArray(ArrayValidator $validator, string $variableName)
+    public function testMessagingOnEmptyInputArray(ArrayValidator $validator, string $variableName): void
     {
         self::assertTrue(strlen($validator->$variableName) > 2);
 
@@ -50,7 +50,7 @@ class ArrayValidatorTest extends Unit
     /**
      *
      */
-    public function testCountArrayInputValue()
+    public function testCountArrayInputValue(): void
     {
         $newValidator = new ArrayValidator(['count' => [2, 5]]);
         self::assertSame(2, $newValidator->min);
@@ -66,7 +66,7 @@ class ArrayValidatorTest extends Unit
      * @param mixed $inputValue
      * @param bool $mustValidate
      */
-    public function testValidation(mixed $inputValue, bool $mustValidate)
+    public function testValidation(mixed $inputValue, bool $mustValidate): void
     {
         $this->arrayValidator->count = null;
 
@@ -84,7 +84,7 @@ class ArrayValidatorTest extends Unit
      * Here we *specifically* test that if we pass in an array which as more than the minimum(4) and less than the maximum(10)
      * BUT that is more than the count(5) an error will still be thrown.
      */
-    public function testCountValidation()
+    public function testCountValidation(): void
     {
         $this->model->exampleParam = [1, 2, 3, 4, 5, 6, 7];
         $this->arrayValidator->validateAttribute($this->model, 'exampleParam');
@@ -124,7 +124,7 @@ class ArrayValidatorTest extends Unit
     /**
      * @inheritdoc
      */
-    protected function _before()
+    protected function _before(): void
     {
         $this->model = new ExampleModel();
         $this->arrayValidator = new ArrayValidator(['count' => 5, 'max' => 10, 'min' => 4, 'tooFew' => 'aint got nuff', 'tooMany' => 'staahhpp', 'notEqual' => 'aint right']);

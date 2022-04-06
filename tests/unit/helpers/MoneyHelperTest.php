@@ -10,6 +10,7 @@ namespace crafttests\unit\helpers;
 use Codeception\Test\Unit;
 use Craft;
 use craft\helpers\MoneyHelper;
+use craft\test\TestCase;
 use Money\Currency;
 use Money\Money;
 
@@ -19,7 +20,7 @@ use Money\Money;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class MoneyHelperTest extends Unit
+class MoneyHelperTest extends TestCase
 {
     /**
      * @dataProvider toMoneyDataProvider

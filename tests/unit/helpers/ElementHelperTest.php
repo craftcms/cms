@@ -8,12 +8,12 @@
 namespace crafttests\unit\helpers;
 
 use Codeception\Stub;
-use Codeception\Test\Unit;
 use Craft;
 use craft\db\Command;
 use craft\errors\OperationAbortedException;
 use craft\helpers\ElementHelper;
 use craft\test\mockclasses\elements\ExampleElement;
+use craft\test\TestCase;
 use crafttests\fixtures\EntryFixture;
 use Exception;
 use UnitTester;
@@ -25,7 +25,7 @@ use UnitTester;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class ElementHelperTest extends Unit
+class ElementHelperTest extends TestCase
 {
     /**
      * @var UnitTester
@@ -48,7 +48,7 @@ class ElementHelperTest extends Unit
      * @param bool|null $ascii
      * @param string|null $language
      */
-    public function testGenerateSlug(string $expected, string $input, ?bool $ascii = null, ?string $language = null)
+    public function testGenerateSlug(string $expected, string $input, ?bool $ascii = null, ?string $language = null): void
     {
         $glue = Craft::$app->getConfig()->getGeneral()->slugWordSeparator;
         $expected = str_replace('[separator-here]', $glue, $expected);
@@ -61,7 +61,7 @@ class ElementHelperTest extends Unit
      * @param string $expected
      * @param string $slug
      */
-    public function testNormalizeSlug(string $expected, string $slug)
+    public function testNormalizeSlug(string $expected, string $slug): void
     {
         $glue = Craft::$app->getConfig()->getGeneral()->slugWordSeparator;
         $expected = str_replace('[separator-here]', $glue, $expected);
@@ -72,7 +72,7 @@ class ElementHelperTest extends Unit
     /**
      *
      */
-    public function testLowerRemoveFromCreateSlug()
+    public function testLowerRemoveFromCreateSlug(): void
     {
         $general = Craft::$app->getConfig()->getGeneral();
         $general->allowUppercaseInSlug = false;
@@ -85,7 +85,7 @@ class ElementHelperTest extends Unit
      * @param bool $expected
      * @param string $uriFormat
      */
-    public function testDoesUriFormatHaveSlugTag(bool $expected, string $uriFormat)
+    public function testDoesUriFormatHaveSlugTag(bool $expected, string $uriFormat): void
     {
         self::assertSame($expected, ElementHelper::doesUriFormatHaveSlugTag($uriFormat));
     }
@@ -97,10 +97,10 @@ class ElementHelperTest extends Unit
      * @param int $duplicates
      * @throws OperationAbortedException
      */
-    public function testSetUniqueUri(array $expected, array $config, int $duplicates = 0)
+    public function testSetUniqueUri(array $expected, array $config, int $duplicates = 0): void
     {
         if ($duplicates) {
-            $db = \Craft::$app->getDb();
+            $db = Craft::$app->getDb();
             $this->tester->mockDbMethods([
                 'createCommand' => function($sql, $params) use (&$duplicates, &$db) {
                     /* @var Command $command */
@@ -128,7 +128,7 @@ class ElementHelperTest extends Unit
     /**
      *
      */
-    public function testMaxSlugIncrementDoesntThrow()
+    public function testMaxSlugIncrementDoesntThrow(): void
     {
         $oldValue = Craft::$app->getConfig()->getGeneral()->maxSlugIncrement;
         Craft::$app->getConfig()->getGeneral()->maxSlugIncrement = 0;
@@ -145,7 +145,7 @@ class ElementHelperTest extends Unit
     /**
      *
      */
-    public function testMaxLength()
+    public function testMaxLength(): void
     {
         try {
             $el = new ExampleElement([
@@ -164,7 +164,7 @@ class ElementHelperTest extends Unit
     /**
      *
      */
-    public function testSetNextOnPrevElement()
+    public function testSetNextOnPrevElement(): void
     {
         $editable = [
             $one = new ExampleElement(['id' => '1']),
@@ -185,7 +185,7 @@ class ElementHelperTest extends Unit
     /**
      * @dataProvider rootSourceDataProvider
      */
-    public function testRootSource(string $expected, string $sourceKey)
+    public function testRootSource(string $expected, string $sourceKey): void
     {
         $this->assertEquals($expected, ElementHelper::rootSourceKey($sourceKey));
     }

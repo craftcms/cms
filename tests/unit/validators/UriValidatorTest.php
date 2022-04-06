@@ -7,8 +7,8 @@
 
 namespace crafttests\unit\validators;
 
-use Codeception\Test\Unit;
 use craft\test\mockclasses\models\ExampleModel;
+use craft\test\TestCase;
 use craft\validators\UriValidator;
 
 /**
@@ -18,7 +18,7 @@ use craft\validators\UriValidator;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class UriValidatorTest extends Unit
+class UriValidatorTest extends TestCase
 {
     /**
      * @var UriValidator
@@ -36,7 +36,7 @@ class UriValidatorTest extends Unit
      * @param mixed $input
      * @param string|null $pattern
      */
-    public function testValidateValue(bool $mustValidate, mixed $input, string $pattern = null)
+    public function testValidateValue(bool $mustValidate, mixed $input, string $pattern = null): void
     {
         if ($pattern) {
             $this->uriValidator->pattern = $pattern;
@@ -69,7 +69,7 @@ class UriValidatorTest extends Unit
     /**
      * @inheritdoc
      */
-    protected function _before()
+    protected function _before(): void
     {
         $this->model = new ExampleModel();
         $this->uriValidator = new UriValidator();

@@ -117,6 +117,7 @@ class UsersController extends Controller
      */
     public function actionListAdmins(): int
     {
+        /** @var User[] $users */
         $users = User::find()
             ->admin()
             ->status(null)
@@ -448,7 +449,7 @@ class UsersController extends Controller
     private function _user(string $value): User
     {
         if (is_numeric($value)) {
-            $user = Craft::$app->getUsers()->getUserById($value);
+            $user = Craft::$app->getUsers()->getUserById((int)$value);
             if (!$user) {
                 throw new InvalidArgumentException("No user exists with the ID: $value");
             }

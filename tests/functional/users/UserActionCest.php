@@ -12,6 +12,7 @@ use craft\elements\User;
 use craft\errors\WrongEditionException;
 use craft\helpers\UrlHelper;
 use FunctionalTester;
+use Throwable;
 use yii\base\InvalidConfigException;
 use yii\db\Exception;
 
@@ -41,7 +42,7 @@ class UserActionCest
 
     /**
      * @param FunctionalTester $I
-     * @throws \Throwable
+     * @throws Throwable
      * @throws WrongEditionException
      * @throws Exception
      */
@@ -64,9 +65,11 @@ class UserActionCest
         Craft::$app->getUsers()->activateUser($user);
         Craft::$app->getUserPermissions()->saveUserPermissions($user->id, ['accessCp']);
 
-        $this->activeUser = User::find()
+        /** @var User|null $user */
+        $user = User::find()
             ->id($user->id)
             ->one();
+        $this->activeUser = $user;
     }
 
     /**

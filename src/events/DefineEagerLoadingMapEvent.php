@@ -29,7 +29,8 @@ class DefineEagerLoadingMapEvent extends Event
     public string $handle;
 
     /**
-     * @var class-string<ElementInterface>|null The element type class to eager-load.
+     * @var string|null The element type class to eager-load.
+     * @phpstan-var class-string<ElementInterface>|null
      */
     public ?string $elementType = null;
 

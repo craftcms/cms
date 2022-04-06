@@ -12,6 +12,7 @@ use Craft;
 use craft\helpers\StringHelper;
 use craft\services\ProjectConfig;
 use craft\services\Routes;
+use craft\test\TestCase;
 
 /**
  * Unit tests for routes service.
@@ -21,7 +22,7 @@ use craft\services\Routes;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class RoutesTest extends Unit
+class RoutesTest extends TestCase
 {
     /**
      * @var Routes
@@ -36,7 +37,7 @@ class RoutesTest extends Unit
      * @param string|null $siteUid
      * @param string|null $routeUid
      */
-    public function testSaveRoute(array $expected, array $uriParts, string $template, ?string $siteUid = null, ?string $routeUid = null)
+    public function testSaveRoute(array $expected, array $uriParts, string $template, ?string $siteUid = null, ?string $routeUid = null): void
     {
         $uid = $this->routes->saveRoute($uriParts, $template, $siteUid, $routeUid);
         self::assertTrue(StringHelper::isUUID($uid));
@@ -126,7 +127,7 @@ class RoutesTest extends Unit
     /**
      * @inheritdoc
      */
-    protected function _before()
+    protected function _before(): void
     {
         parent::_before();
         $this->routes = Craft::$app->getRoutes();

@@ -11,6 +11,7 @@ use Codeception\Test\Unit;
 use Craft;
 use craft\records\Token;
 use craft\services\Tokens;
+use craft\test\TestCase;
 use DateInterval;
 use DateTime;
 use DateTimeZone;
@@ -23,7 +24,7 @@ use Exception;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class TokenTest extends Unit
+class TokenTest extends TestCase
 {
     /**
      * @var Tokens
@@ -33,7 +34,7 @@ class TokenTest extends Unit
     /**
      * @throws Exception
      */
-    public function testCreateToken()
+    public function testCreateToken(): void
     {
         $dt = (new DateTime('now', new DateTimeZone('UTC')))->add(new DateInterval('P1D'));
         $token = $this->token->createToken('do/stuff', 1, $dt);
@@ -54,7 +55,7 @@ class TokenTest extends Unit
     /**
      * @throws Exception
      */
-    public function testCreateTokenDefaults()
+    public function testCreateTokenDefaults(): void
     {
         Craft::$app->getConfig()->getGeneral()->defaultTokenDuration = 10000;
 
@@ -79,7 +80,7 @@ class TokenTest extends Unit
     /**
      * @inheritdoc
      */
-    protected function _before()
+    protected function _before(): void
     {
         parent::_before();
 

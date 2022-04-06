@@ -45,9 +45,9 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
     }
 
     /**
-     * @var string UUID
+     * @var string|null UUID
      */
-    public string $uid;
+    public ?string $uid = null;
 
     /**
      * @var string The selected operator.

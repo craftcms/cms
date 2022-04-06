@@ -383,6 +383,7 @@ class Volumes extends Component
 
         if ($wasTrashed) {
             // Restore the assets that were deleted with the volume
+            /** @var Asset[] $assets */
             $assets = Asset::find()
                 ->volumeId($volumeRecord->id)
                 ->trashed()
@@ -518,6 +519,7 @@ class Volumes extends Component
 
         try {
             // Delete the assets
+            /** @var Asset[] $assets */
             $assets = Asset::find()
                 ->volumeId($volumeRecord->id)
                 ->status(null)

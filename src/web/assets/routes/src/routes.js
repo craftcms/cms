@@ -367,7 +367,7 @@ import './routes.scss';
                         // Remove any leading slashes
                         val = Craft.ltrim(val, '/');
 
-                        // Make sure the first element isn't using the action/CP trigger
+                        // Make sure the first element isn’t using the action/control panel trigger
                         if (Craft.startsWith(val, Craft.actionTrigger + '/')) {
                             this.addUriError(Craft.t('app', 'The URI can’t begin with the {setting} config setting.', {
                                 setting: 'actionTrigger'

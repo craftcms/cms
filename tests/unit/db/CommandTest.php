@@ -12,6 +12,7 @@ use Craft;
 use craft\db\Command;
 use craft\db\Query;
 use craft\db\Table;
+use craft\test\TestCase;
 use DateTime;
 use DateTimeZone;
 use yii\db\Exception;
@@ -23,7 +24,7 @@ use yii\db\Exception;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class CommandTest extends Unit
+class CommandTest extends TestCase
 {
     /**
      * @var DateTime
@@ -41,7 +42,7 @@ class CommandTest extends Unit
     /**
      *
      */
-    public function testEnsureCommand()
+    public function testEnsureCommand(): void
     {
         self::assertInstanceOf(Command::class, Craft::$app->getDb()->createCommand());
     }
@@ -49,7 +50,7 @@ class CommandTest extends Unit
     /**
      * @throws Exception
      */
-    public function testInsertDateCreated()
+    public function testInsertDateCreated(): void
     {
         $session = $this->ensureSession();
         self::assertSame($session['dateCreated'], $this->sessionDate->format('Y-m-d H:i:s'));
@@ -59,7 +60,7 @@ class CommandTest extends Unit
     /**
      * @throws Exception
      */
-    public function testDateUpdatedOnInsertAndUpdate()
+    public function testDateUpdatedOnInsertAndUpdate(): void
     {
         $session = $this->ensureSession();
 

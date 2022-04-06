@@ -85,7 +85,7 @@ class User extends \yii\web\User
     /**
      * Sends a username cookie.
      *
-     * This method is used after a user is logged in. It saves the logged-in user's username in a cookie,
+     * This method is used after a user is logged in. It saves the logged-in user’s username in a cookie,
      * so that login forms can remember the initial Username value on login forms.
      *
      * @param UserElement $user
@@ -111,9 +111,9 @@ class User extends \yii\web\User
      */
     public function getReturnUrl($defaultUrl = null): string
     {
-        // Set the default based on the config, if it's not specified
+        // Set the default based on the config, if it’s not specified
         if ($defaultUrl === null) {
-            // Is this a CP request and can they access the CP?
+            // Is this a control panel request and can they access the control panel?
             if (Craft::$app->getRequest()->getIsCpRequest() && $this->checkPermission('accessCp')) {
                 $defaultUrl = UrlHelper::cpUrl(Craft::$app->getConfig()->getGeneral()->getPostCpLoginRedirect());
             } else {
@@ -475,7 +475,7 @@ class User extends \yii\web\User
             return;
         }
 
-        // Should we be extending the user's session on this request?
+        // Should we be extending the user’s session on this request?
         $extendSession = !Craft::$app->getRequest()->getParam('dontExtendSession');
 
         // Prevent the user session from getting extended?

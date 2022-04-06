@@ -92,13 +92,13 @@ class MatrixBlockQuery extends ElementQuery
      * @var mixed The block type ID(s) that the resulting Matrix blocks must have.
      * ---
      * ```php
-     * // fetch the entry's text blocks
+     * // fetch the entry’s text blocks
      * $blocks = $entry->myMatrixField
      *     ->type('text')
      *     ->all();
      * ```
      * ```twig
-     * {# fetch the entry's text blocks #}
+     * {# fetch the entry’s text blocks #}
      * {% set blocks = entry.myMatrixField
      *   .type('text')
      *   .all() %}
@@ -128,9 +128,6 @@ class MatrixBlockQuery extends ElementQuery
                 break;
             case 'ownerSite':
                 Craft::$app->getDeprecator()->log('MatrixBlockQuery::ownerSite()', 'The `ownerSite` Matrix block query param has been deprecated. Use `site` or `siteId` instead.');
-                break;
-            case 'ownerLocale':
-                Craft::$app->getDeprecator()->log('MatrixBlockQuery::ownerLocale()', 'The `ownerLocale` Matrix block query param has been deprecated. Use `site` or `siteId` instead.');
                 break;
             default:
                 parent::__set($name, $value);
@@ -167,11 +164,11 @@ class MatrixBlockQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $fieldId
      * @since 3.4.0
      */
-    public function field(mixed $value): static
+    public function field(mixed $value): self
     {
         if ($value instanceof MatrixField) {
             $this->fieldId = [$value->id];
@@ -228,10 +225,10 @@ class MatrixBlockQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $fieldId
      */
-    public function fieldId(mixed $value): static
+    public function fieldId(mixed $value): self
     {
         $this->fieldId = $value;
         return $this;
@@ -266,11 +263,11 @@ class MatrixBlockQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $primaryOwnerId
      * @since 4.0.0
      */
-    public function primaryOwnerId(mixed $value): static
+    public function primaryOwnerId(mixed $value): self
     {
         $this->primaryOwnerId = $value;
         return $this;
@@ -296,11 +293,11 @@ class MatrixBlockQuery extends ElementQuery
      * ```
      *
      * @param ElementInterface $primaryOwner The primary owner element
-     * @return static self reference
+     * @return self self reference
      * @uses $primaryOwnerId
      * @since 4.0.0
      */
-    public function primaryOwner(ElementInterface $primaryOwner): static
+    public function primaryOwner(ElementInterface $primaryOwner): self
     {
         $this->primaryOwnerId = [$primaryOwner->id];
         $this->siteId = $primaryOwner->siteId;
@@ -336,10 +333,10 @@ class MatrixBlockQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $ownerId
      */
-    public function ownerId(mixed $value): static
+    public function ownerId(mixed $value): self
     {
         $this->ownerId = $value;
         return $this;
@@ -365,10 +362,10 @@ class MatrixBlockQuery extends ElementQuery
      * ```
      *
      * @param ElementInterface $owner The owner element
-     * @return static self reference
+     * @return self self reference
      * @uses $ownerId
      */
-    public function owner(ElementInterface $owner): static
+    public function owner(ElementInterface $owner): self
     {
         $this->ownerId = [$owner->id];
         $this->siteId = $owner->siteId;
@@ -386,11 +383,11 @@ class MatrixBlockQuery extends ElementQuery
      * | `false` | which cannot belong to a draft.
      *
      * @param bool|null $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $allowOwnerDrafts
      * @since 3.3.10
      */
-    public function allowOwnerDrafts(?bool $value = true): static
+    public function allowOwnerDrafts(?bool $value = true): self
     {
         $this->allowOwnerDrafts = $value;
         return $this;
@@ -407,11 +404,11 @@ class MatrixBlockQuery extends ElementQuery
      * | `false` | which cannot belong to a revision.
      *
      * @param bool|null $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $allowOwnerDrafts
      * @since 3.3.10
      */
-    public function allowOwnerRevisions(?bool $value = true): static
+    public function allowOwnerRevisions(?bool $value = true): self
     {
         $this->allowOwnerRevisions = $value;
         return $this;
@@ -447,10 +444,10 @@ class MatrixBlockQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $typeId
      */
-    public function type(mixed $value): static
+    public function type(mixed $value): self
     {
         if ($value instanceof MatrixBlockType) {
             $this->typeId = $value->id;
@@ -496,10 +493,10 @@ class MatrixBlockQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $typeId
      */
-    public function typeId(mixed $value): static
+    public function typeId(mixed $value): self
     {
         $this->typeId = $value;
         return $this;

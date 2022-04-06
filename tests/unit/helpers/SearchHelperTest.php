@@ -9,6 +9,7 @@ namespace crafttests\unit\helpers;
 
 use Codeception\Test\Unit;
 use craft\helpers\Search;
+use craft\test\TestCase;
 
 /**
  * Unit tests for the Search Helper class.
@@ -17,7 +18,7 @@ use craft\helpers\Search;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class SearchHelperTest extends Unit
+class SearchHelperTest extends TestCase
 {
     /**
      * @dataProvider normalizeKeywordsDataProviders
@@ -27,7 +28,7 @@ class SearchHelperTest extends Unit
      * @param bool $processCharMap
      * @param string|null $language
      */
-    public function testNormalizeKeywords(string $expected, array|string $str, array $ignore = [], bool $processCharMap = true, ?string $language = null)
+    public function testNormalizeKeywords(string $expected, array|string $str, array $ignore = [], bool $processCharMap = true, ?string $language = null): void
     {
         self::assertSame($expected, Search::normalizeKeywords($str, $ignore, $processCharMap, $language));
     }

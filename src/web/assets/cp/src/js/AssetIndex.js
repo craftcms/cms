@@ -392,7 +392,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
                 var $a = this._folderDrag.$draggee.eq(i).children('a'),
                     folderId = $a.data('folder-id');
 
-                // Make sure it's not already in the target folder and use this single folder Id.
+                // Make sure it’s not already in the target folder and use this single folder Id.
                 if (folderId != targetFolderId) {
                     folderIds.push(folderId);
                     break;
@@ -747,10 +747,6 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
     },
 
     _updateUrl: function($source) {
-        if (typeof history === 'undefined') {
-            return;
-        }
-
         // Find all the subfolder sources. At the end, $thisSource will be the root volume source
         let nestedSources = [];
         let $thisSource = $source;
@@ -768,8 +764,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
             });
         }
 
-        const url = Craft.getUrl(uri, document.location.search + document.location.hash);
-        history.replaceState({}, '', url);
+        Craft.setPath(uri);
     },
 
     _getVolumeOrFolderUidFromSourceKey: function(sourceKey) {

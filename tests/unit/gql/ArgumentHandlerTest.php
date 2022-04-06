@@ -5,9 +5,8 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craftunit\gql;
+namespace crafttests\unit\gql;
 
-use Codeception\Test\Unit;
 use Craft;
 use craft\elements\Asset;
 use craft\elements\Category;
@@ -25,12 +24,14 @@ use craft\gql\handlers\RelatedTags;
 use craft\gql\handlers\RelatedUsers;
 use craft\models\GqlSchema;
 use craft\services\Gql;
+use craft\test\TestCase;
+use Exception;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
 use yii\base\Event;
 use yii\base\InvalidConfigException;
 
-class ArgumentHandlerTest extends Unit
+class ArgumentHandlerTest extends TestCase
 {
     /**
      * Test whether it's possible to modify fields
@@ -38,9 +39,9 @@ class ArgumentHandlerTest extends Unit
      * @dataProvider integrationTestDataProvider
      * @param string $argumentString
      * @param array $expectedResult
-     * @throws \Exception
+     * @throws Exception
      */
-    public function testArgumentHandlerIntegration(string $argumentString, array $expectedResult)
+    public function testArgumentHandlerIntegration(string $argumentString, array $expectedResult): void
     {
         $gql = Craft::$app->getGql();
         $gql->flushCaches();

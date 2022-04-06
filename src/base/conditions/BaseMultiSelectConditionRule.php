@@ -75,7 +75,8 @@ abstract class BaseMultiSelectConditionRule extends BaseConditionRule
      *
      * Options can be expressed as value/label pairs, or as arrays with `value` and `label` keys.
      *
-     * @return string[]|array{value: string, label: string}[]
+     * @return string[]|array[]
+     * @phpstan-return string[]|array{value:string,label:string}[]
      */
     abstract protected function options(): array;
 

@@ -35,7 +35,7 @@ class FsListing extends Model
     private string $basename;
 
     /**
-     * @var string Type of listing. Can be "file" or "dir".
+     * @var 'file'|'dir' Type of listing. Can be "file" or "dir".
      */
     private string $type;
 

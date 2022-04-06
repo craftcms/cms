@@ -23,7 +23,8 @@ class Mutex extends YiiMutex
     }
 
     /**
-     * @var YiiMutex|array{class: class-string<YiiMutex>}|class-string<YiiMutex> The internal mutex driver to use.
+     * @var YiiMutex|array|string The internal mutex driver to use.
+     * @phpstan-var YiiMutex|array{class:class-string<YiiMutex>}|class-string<YiiMutex>
      *
      * This can be set from `config/app.php` like so:
      *

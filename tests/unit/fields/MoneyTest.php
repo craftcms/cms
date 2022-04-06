@@ -5,13 +5,14 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace crafttests\unit\helpers;
+namespace crafttests\unit\fields;
 
 use Codeception\Test\Unit;
 use Craft;
 use craft\base\ElementInterface;
 use craft\elements\Entry;
 use craft\fields\Money;
+use craft\test\TestCase;
 use Money\Currency;
 
 /**
@@ -20,7 +21,7 @@ use Money\Currency;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class MoneyTest extends Unit
+class MoneyTest extends TestCase
 {
     /**
      * @var Money
@@ -30,7 +31,7 @@ class MoneyTest extends Unit
     /**
      * @inheritdoc
      */
-    protected function _before()
+    protected function _before(): void
     {
         $this->field = new Money();
     }

@@ -9,11 +9,12 @@ namespace craft\test;
 
 use Codeception\Lib\ModuleContainer;
 use Codeception\Module\Yii2;
-use Codeception\PHPUnit\TestCase;
+use Codeception\PHPUnit\TestCase as CodeceptionTestCase;
 use Codeception\Stub;
 use Codeception\TestInterface;
 use craft\base\ElementInterface;
 use craft\config\DbConfig;
+use craft\console\Application as ConsoleApplication;
 use craft\db\Query;
 use craft\db\Table;
 use craft\errors\ElementNotFoundException;
@@ -24,14 +25,15 @@ use craft\helpers\ProjectConfig;
 use craft\models\FieldLayout;
 use craft\queue\BaseJob;
 use craft\queue\Queue;
+use craft\web\Application as WebApplication;
 use DateTime;
 use Exception;
 use PHPUnit\Framework\ExpectationFailedException;
+use PHPUnit\Framework\MockObject\MockObject;
 use ReflectionException;
 use Throwable;
 use Yii;
 use yii\base\Application;
-use yii\base\Component;
 use yii\base\ErrorException as YiiBaseErrorException;
 use yii\base\Event;
 use yii\base\Exception as YiiBaseException;
@@ -157,13 +159,15 @@ class Craft extends Yii2
      */
     public function _before(TestInterface $test): void
     {
+        /** @var TestCase $test */
         self::$currentTest = $test;
 
         parent::_before($test);
 
         // If full mock, create the mock app and don't perform to any further actions
         if ($this->_getConfig('fullMock') === true) {
-            $mockApp = TestSetup::getMockApp($test);
+            /** @var ConsoleApplication|WebApplication|MockObject $mockApp */
+            $mockApp = TestSetup::getMockModule($test);
             \Craft::$app = $mockApp;
             Yii::$app = $mockApp;
 
@@ -334,7 +338,7 @@ class Craft extends Yii2
     /**
      * Ensure that an event is triggered by the $callback() function.
      *
-     * @param class-string<Component> $class
+     * @param string $class
      * @param string $eventName
      * @param callable $callback
      * @param string $eventInstance
@@ -414,7 +418,7 @@ class Craft extends Yii2
     }
 
     /**
-     * @param class-string<ElementInterface> $elementType
+     * @param string $elementType
      * @param array $searchProperties
      * @param int $amount
      * @param bool $searchAll Whether `status(null)` and `trashed(null)` should be applied
@@ -423,6 +427,7 @@ class Craft extends Yii2
     public function assertElementsExist(string $elementType, array $searchProperties = [], int $amount = 1, bool $searchAll = false): array
     {
         /** @var string|ElementInterface $elementType */
+        /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
         $elementQuery = $elementType::find();
         if ($searchAll) {
             $elementQuery->status(null);
@@ -545,7 +550,7 @@ class Craft extends Yii2
             throw new InvalidArgumentException('Not a job');
         }
 
-        /** @var \craft\queue\Queue $queue */
+        /** @var Queue $queue */
         $queue = \Craft::$app->getQueue();
         $queue->push($job);
         $queue->run();
@@ -565,7 +570,7 @@ class Craft extends Yii2
             );
         }
     }
-    
+
     /**
      * @param string $description
      */
@@ -656,10 +661,10 @@ class Craft extends Yii2
     }
 
     /**
-     * @param TestCase $test
+     * @param CodeceptionTestCase $test
      * @throws ReflectionException
      */
-    protected function mockModulesAndPlugins(TestCase $test): void
+    protected function mockModulesAndPlugins(CodeceptionTestCase $test): void
     {
         foreach ($this->_getConfig('plugins') as $plugin) {
             $moduleClass = $plugin['class'];
@@ -674,11 +679,12 @@ class Craft extends Yii2
     }
 
     /**
-     * @param TestCase $test
-     * @param class-string<Module> $moduleClass
+     * @param CodeceptionTestCase $test
+     * @param string $moduleClass
+     * @phpstan-param class-string<Module> $moduleClass
      * @throws ReflectionException
      */
-    protected function addModule(TestCase $test, string $moduleClass): void
+    protected function addModule(CodeceptionTestCase $test, string $moduleClass): void
     {
         if (!method_exists($moduleClass, 'getComponentMap')) {
             return;
@@ -688,7 +694,7 @@ class Craft extends Yii2
         $componentMap = call_user_func([$moduleClass, 'getComponentMap']);
 
         // Set it.
-        \Craft::$app->loadedModules[$moduleClass] = TestSetup::getMockApp($test, $componentMap, $moduleClass);
+        \Craft::$app->loadedModules[$moduleClass] = TestSetup::getMockModule($test, $componentMap, $moduleClass);
     }
 
     /**

@@ -32,7 +32,8 @@ class Conditions extends Component
      * Creates a condition instance.
      *
      * @template T of ConditionInterface
-     * @param array{class: class-string<T>}|string $config The condition class or configuration array
+     * @param array|string $config The condition class or configuration array
+     * @phpstan-param array{class:class-string<T>}|string $config
      * @return T
      * @throws InvalidArgumentException if the condition does not implement [[ConditionInterface]]
      * @throws InvalidConfigException
@@ -71,7 +72,8 @@ class Conditions extends Component
     /**
      * Creates a condition rule instance.
      *
-     * @param array{class: string}|array{type: string}|string $config The condition class or configuration array
+     * @param array|string $config The condition class or configuration array
+     * @phpstan-param array{class: string}|array{type:string}|string $config The condition class or configuration array
      * @return ConditionRuleInterface
      * @throws InvalidArgumentException if the condition rule does not implement [[ConditionRuleInterface]]
      */

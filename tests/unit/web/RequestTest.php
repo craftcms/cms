@@ -49,11 +49,11 @@ class RequestTest extends TestCase
     /**
      *
      */
-    public function testInit()
+    public function testInit(): void
     {
         $oldServer = $_SERVER;
 
-        // Site request - Craft installed at webroot
+        // Site request: Craft installed at web root
         $_SERVER = array_merge($oldServer, [
             'REQUEST_URI' => '/foo/bar/baz',
             'SCRIPT_NAME' => '/index.php',
@@ -63,7 +63,7 @@ class RequestTest extends TestCase
         self::assertEquals(false, $request->getIsCpRequest());
         self::assertEquals('foo/bar/baz', $request->getPathInfo());
 
-        // Site request w/ base URI - Craft installed at webroot
+        // Site request without base URI: Craft installed at web root
         $_SERVER = array_merge($oldServer, [
             'REQUEST_URI' => '/foo/bar/baz',
             'SCRIPT_NAME' => '/index.php',
@@ -81,7 +81,7 @@ class RequestTest extends TestCase
         self::assertEquals(false, $request->getIsCpRequest());
         self::assertEquals('bar/baz', $request->getPathInfo());
 
-        // Implicit CP request - Craft installed at webroot
+        // Implicit control panel request: Craft installed at web root
         $_SERVER = array_merge($oldServer, [
             'REQUEST_URI' => '/foo/bar/baz',
             'SCRIPT_NAME' => '/index.php',
@@ -95,7 +95,7 @@ class RequestTest extends TestCase
         self::assertEquals(true, $request->getIsCpRequest());
         self::assertEquals('bar/baz', $request->getPathInfo());
 
-        // Explicit CP request w/ CP trigger - Craft installed at webroot
+        // Explicit control panel request with control panel trigger: Craft installed at web root
         $_SERVER = array_merge($oldServer, [
             'REQUEST_URI' => '/foo/bar/baz',
             'SCRIPT_NAME' => '/index.php',
@@ -110,7 +110,7 @@ class RequestTest extends TestCase
         self::assertEquals(true, $request->getIsCpRequest());
         self::assertEquals('bar/baz', $request->getPathInfo());
 
-        // Explicit CP request w/out CP trigger - Craft installed at webroot
+        // Explicit control panel request without control panel trigger: Craft installed at web root
         $_SERVER = array_merge($oldServer, [
             'REQUEST_URI' => '/foo/bar/baz',
             'SCRIPT_NAME' => '/index.php',
@@ -125,7 +125,7 @@ class RequestTest extends TestCase
         self::assertEquals(true, $request->getIsCpRequest());
         self::assertEquals('foo/bar/baz', $request->getPathInfo());
 
-        // Site request - Craft installed in subfolder
+        // Site request: Craft installed in subfolder
         // https://github.com/craftcms/cms/issues/6579
         $_SERVER = array_merge($oldServer, [
             'REQUEST_URI' => '/foo/bar/baz',
@@ -136,7 +136,7 @@ class RequestTest extends TestCase
         self::assertEquals(false, $request->getIsCpRequest());
         self::assertEquals('bar/baz', $request->getPathInfo());
 
-        // Site request w/ base URI - Craft installed in subfolder
+        // Site request without base URI: Craft installed in subfolder
         // https://github.com/craftcms/cms/issues/6579
         $_SERVER = array_merge($oldServer, [
             'REQUEST_URI' => '/foo/bar/baz',
@@ -155,7 +155,7 @@ class RequestTest extends TestCase
         self::assertEquals(false, $request->getIsCpRequest());
         self::assertEquals('baz', $request->getPathInfo());
 
-        // Implicit CP request - Craft installed in subfolder
+        // Implicit control panel request: Craft installed in subfolder
         $_SERVER = array_merge($oldServer, [
             'REQUEST_URI' => '/foo/bar/baz',
             'SCRIPT_NAME' => '/foo/index.php',
@@ -169,7 +169,7 @@ class RequestTest extends TestCase
         self::assertEquals(true, $request->getIsCpRequest());
         self::assertEquals('baz', $request->getPathInfo());
 
-        // Explicit CP request w/ CP trigger - Craft installed in subfolder
+        // Explicit control panel request with control panel trigger: Craft installed in subfolder
         $_SERVER = array_merge($oldServer, [
             'REQUEST_URI' => '/foo/bar/baz',
             'SCRIPT_NAME' => '/foo/index.php',
@@ -184,7 +184,7 @@ class RequestTest extends TestCase
         self::assertEquals(true, $request->getIsCpRequest());
         self::assertEquals('baz', $request->getPathInfo());
 
-        // Explicit CP request w/out CP trigger - Craft installed in subfolder
+        // Explicit control panel request without control panel trigger: Craft installed in subfolder
         $_SERVER = array_merge($oldServer, [
             'REQUEST_URI' => '/foo/bar/baz',
             'SCRIPT_NAME' => '/foo/index.php',
@@ -208,7 +208,7 @@ class RequestTest extends TestCase
      * @param string $userAgent
      * @param bool $detectTablets
      */
-    public function testIsMobileBrowser(bool $expected, string $userAgent, bool $detectTablets = false)
+    public function testIsMobileBrowser(bool $expected, string $userAgent, bool $detectTablets = false): void
     {
         $this->request->getHeaders()->set('User-Agent', $userAgent);
         self::assertSame($expected, $this->request->isMobileBrowser($detectTablets));
@@ -217,7 +217,7 @@ class RequestTest extends TestCase
     /**
      * @throws BadRequestHttpException
      */
-    public function testGetRequiredParam()
+    public function testGetRequiredParam(): void
     {
         $this->request->setBodyParams(['test' => 'RAAA']);
         self::assertSame('RAAA', $this->request->getRequiredParam('test'));
@@ -230,7 +230,7 @@ class RequestTest extends TestCase
     /**
      *
      */
-    public function testGetParamWithBody()
+    public function testGetParamWithBody(): void
     {
         $this->request->setBodyParams(['bodyTest' => 'RAAA']);
         self::assertSame('RAAA', $this->request->getParam('bodyTest'));
@@ -239,7 +239,7 @@ class RequestTest extends TestCase
     /**
      *
      */
-    public function testGetParamWithQuery()
+    public function testGetParamWithQuery(): void
     {
         $this->request->setQueryParams(['queryTest' => 'RAAA']);
         self::assertSame('RAAA', $this->request->getParam('queryTest'));
@@ -248,7 +248,7 @@ class RequestTest extends TestCase
     /**
      *
      */
-    public function testGetParamDefault()
+    public function testGetParamDefault(): void
     {
         self::assertSame('default', $this->request->getParam('not-a-param', 'default'));
     }
@@ -256,7 +256,7 @@ class RequestTest extends TestCase
     /**
      * @throws BadRequestHttpException
      */
-    public function testGetRequiredQueryParam()
+    public function testGetRequiredQueryParam(): void
     {
         $this->request->setBodyParams(['bodyTest' => 'RAAA']);
         $this->tester->expectThrowable(BadRequestHttpException::class, function() {
@@ -270,7 +270,7 @@ class RequestTest extends TestCase
     /**
      * @throws BadRequestHttpException
      */
-    public function testGetRequiredBodyParam()
+    public function testGetRequiredBodyParam(): void
     {
         $this->request->setQueryParams(['queryTest' => 'RAAA']);
         $this->tester->expectThrowable(BadRequestHttpException::class, function() {
@@ -288,7 +288,7 @@ class RequestTest extends TestCase
      * @param string|null $headerValue
      * @param int $filterOptions
      */
-    public function testGetUserIp(?string $expected, ?string $headerName, ?string $headerValue, int $filterOptions = 0)
+    public function testGetUserIp(?string $expected, ?string $headerName, ?string $headerValue, int $filterOptions = 0): void
     {
         if ($headerName !== null) {
             $this->request->getHeaders()->set($headerName, $headerValue);
@@ -302,7 +302,7 @@ class RequestTest extends TestCase
      * @param string $expected
      * @param string $userAgent
      */
-    public function testGetClientOs(string $expected, string $userAgent)
+    public function testGetClientOs(string $expected, string $userAgent): void
     {
         $this->request->getHeaders()->set('User-Agent', $userAgent);
         self::assertSame($expected, $this->request->getClientOs());
@@ -311,7 +311,7 @@ class RequestTest extends TestCase
     /**
      *
      */
-    public function testGetCsrfToken()
+    public function testGetCsrfToken(): void
     {
         $token = $this->request->getCsrfToken();
 
@@ -324,7 +324,7 @@ class RequestTest extends TestCase
     /**
      *
      */
-    public function testGenerateCsrfToken()
+    public function testGenerateCsrfToken(): void
     {
         $token = $this->_generateCsrfToken();
         self::assertSame(40, strlen($token));
@@ -343,7 +343,7 @@ class RequestTest extends TestCase
     /**
      *
      */
-    public function testCsrfTokenValidForCurrentUser()
+    public function testCsrfTokenValidForCurrentUser(): void
     {
         $this->_setMockUser();
         $token = $this->_generateCsrfToken();
@@ -354,7 +354,7 @@ class RequestTest extends TestCase
     /**
      *
      */
-    public function testCsrfTokenValidFailure()
+    public function testCsrfTokenValidFailure(): void
     {
         $token = $this->_generateCsrfToken();
 
@@ -370,7 +370,7 @@ class RequestTest extends TestCase
      * @param string|null $name
      * @throws ReflectionException
      */
-    public function testGetParam(mixed $expected, mixed $defaultValue, array $params, ?string $name)
+    public function testGetParam(mixed $expected, mixed $defaultValue, array $params, ?string $name): void
     {
         self::assertSame($expected, $this->_getParam($name, $defaultValue, $params));
     }
@@ -378,7 +378,7 @@ class RequestTest extends TestCase
     /**
      *
      */
-    public function testCheckRequestTypeWithTokenParam()
+    public function testCheckRequestTypeWithTokenParam(): void
     {
         $this->request->setBodyParams([Craft::$app->getConfig()->getGeneral()->tokenParam => 'something']);
         $this->request->checkIfActionRequest(true);
@@ -390,7 +390,7 @@ class RequestTest extends TestCase
     /**
      * @dataProvider normalizeParamDataProvider
      */
-    public function testNormalizeParam(string $expected, string $name)
+    public function testNormalizeParam(string $expected, string $name): void
     {
         $method = (new ReflectionClass(Request::class))->getMethod('_normalizeParam');
         $method->setAccessible(true);
@@ -503,7 +503,7 @@ class RequestTest extends TestCase
     /**
      * @inheritdoc
      */
-    protected function _before()
+    protected function _before(): void
     {
         parent::_before();
 
@@ -549,7 +549,7 @@ class RequestTest extends TestCase
     private function _setMockUser()
     {
         Craft::$app->getUser()->setIdentity(
-            Craft::$app->getUsers()->getUserById('1')
+            Craft::$app->getUsers()->getUserById(1)
         );
     }
 

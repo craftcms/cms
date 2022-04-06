@@ -21,6 +21,9 @@ use craft\helpers\UrlHelper;
  */
 class AdministrativeAreaConditionRule extends BaseMultiSelectConditionRule implements ElementConditionRuleInterface
 {
+    /**
+     * @var string
+     */
     public string $countryCode = 'US';
 
     /**

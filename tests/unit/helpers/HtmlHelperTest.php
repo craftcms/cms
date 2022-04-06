@@ -9,6 +9,7 @@ namespace crafttests\unit\helpers;
 
 use Codeception\Test\Unit;
 use craft\helpers\Html;
+use craft\test\TestCase;
 use yii\base\InvalidArgumentException;
 
 /**
@@ -18,7 +19,7 @@ use yii\base\InvalidArgumentException;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class HtmlHelperTest extends Unit
+class HtmlHelperTest extends TestCase
 {
     /**
      * @dataProvider encodeParamsDataProvider
@@ -26,7 +27,7 @@ class HtmlHelperTest extends Unit
      * @param string $html
      * @param array $variables
      */
-    public function testEncodeParams(string $expected, string $html, array $variables)
+    public function testEncodeParams(string $expected, string $html, array $variables): void
     {
         self::assertSame($expected, Html::encodeParams($html, $variables));
     }
@@ -36,7 +37,7 @@ class HtmlHelperTest extends Unit
      * @param array|false $expected
      * @param string $tag
      */
-    public function testParseTag(array|false $expected, string $tag)
+    public function testParseTag(array|false $expected, string $tag): void
     {
         if ($expected === false) {
             $this->expectException(InvalidArgumentException::class);
@@ -66,7 +67,7 @@ class HtmlHelperTest extends Unit
      * @param string $html
      * @param string|null $ifExists
      */
-    public function testAppendToTag(string|false $expected, string $tag, string $html, ?string $ifExists)
+    public function testAppendToTag(string|false $expected, string $tag, string $html, ?string $ifExists): void
     {
         if ($expected === false) {
             $this->expectException(InvalidArgumentException::class);
@@ -83,7 +84,7 @@ class HtmlHelperTest extends Unit
      * @param string $html
      * @param string|null $ifExists
      */
-    public function testPrependToTag(string|false $expected, string $tag, string $html, ?string $ifExists)
+    public function testPrependToTag(string|false $expected, string $tag, string $html, ?string $ifExists): void
     {
         if ($expected === false) {
             $this->expectException(InvalidArgumentException::class);
@@ -98,7 +99,7 @@ class HtmlHelperTest extends Unit
      * @param array|false $expected
      * @param string $tag
      */
-    public function testParseTagAttributes(array|false $expected, string $tag)
+    public function testParseTagAttributes(array|false $expected, string $tag): void
     {
         if ($expected === false) {
             $this->expectException(InvalidArgumentException::class);
@@ -114,7 +115,7 @@ class HtmlHelperTest extends Unit
      * @param string $tag
      * @param array $attributes
      */
-    public function testModifyTagAttributes(string|false $expected, string $tag, array $attributes)
+    public function testModifyTagAttributes(string|false $expected, string $tag, array $attributes): void
     {
         if ($expected === false) {
             $this->expectException(InvalidArgumentException::class);
@@ -129,7 +130,7 @@ class HtmlHelperTest extends Unit
      * @param array $expected
      * @param array $attributes
      */
-    public function testNormalizeTagAttributes(array $expected, array $attributes)
+    public function testNormalizeTagAttributes(array $expected, array $attributes): void
     {
         self::assertSame($expected, Html::normalizeTagAttributes($attributes));
     }
@@ -139,7 +140,7 @@ class HtmlHelperTest extends Unit
      * @param string $expected
      * @param string $id
      */
-    public function testId(string $expected, string $id)
+    public function testId(string $expected, string $id): void
     {
         self::assertSame($expected, Html::id($id));
     }
@@ -150,7 +151,7 @@ class HtmlHelperTest extends Unit
      * @param string $name
      * @param string|null $namespace
      */
-    public function testNamespaceInputName(string $expected, string $name, ?string $namespace)
+    public function testNamespaceInputName(string $expected, string $name, ?string $namespace): void
     {
         self::assertSame($expected, Html::namespaceInputName($name, $namespace));
     }
@@ -161,7 +162,7 @@ class HtmlHelperTest extends Unit
      * @param string $name
      * @param string|null $namespace
      */
-    public function testNamespaceId(string $expected, string $name, ?string $namespace)
+    public function testNamespaceId(string $expected, string $name, ?string $namespace): void
     {
         self::assertSame($expected, Html::namespaceId($name, $namespace));
     }
@@ -172,7 +173,7 @@ class HtmlHelperTest extends Unit
      * @param string $html
      * @param string $namespace
      */
-    public function testNamespaceInputs(string $expected, string $html, string $namespace)
+    public function testNamespaceInputs(string $expected, string $html, string $namespace): void
     {
         self::assertSame($expected, Html::namespaceInputs($html, $namespace));
     }
@@ -184,7 +185,7 @@ class HtmlHelperTest extends Unit
      * @param string $namespace
      * @param bool $classNames
      */
-    public function testNamespaceAttributes(string $expected, string $html, string $namespace, bool $classNames)
+    public function testNamespaceAttributes(string $expected, string $html, string $namespace, bool $classNames): void
     {
         self::assertSame($expected, Html::namespaceAttributes($html, $namespace, $classNames));
     }
@@ -194,7 +195,7 @@ class HtmlHelperTest extends Unit
      * @param string $expected
      * @param string $string
      */
-    public function testWidont(string $expected, string $string)
+    public function testWidont(string $expected, string $string): void
     {
         self::assertSame($expected, Html::widont($string));
     }

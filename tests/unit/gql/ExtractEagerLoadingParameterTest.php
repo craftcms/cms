@@ -5,9 +5,8 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craftunit\gql;
+namespace crafttests\unit\gql;
 
-use Codeception\Test\Unit;
 use Craft;
 use craft\elements\db\EagerLoadPlan;
 use craft\fields\Assets;
@@ -16,8 +15,10 @@ use craft\fields\Matrix;
 use craft\gql\ArgumentManager;
 use craft\gql\ElementQueryConditionBuilder;
 use craft\models\MatrixBlockType;
+use craft\test\TestCase;
 use crafttests\fixtures\GqlSchemasFixture;
 use Exception;
+use GraphQL\Error\SyntaxError;
 use GraphQL\Language\AST\DocumentNode;
 use GraphQL\Language\AST\FragmentDefinitionNode;
 use GraphQL\Language\AST\NodeKind;
@@ -29,14 +30,14 @@ use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
 use UnitTester;
 
-class ExtractEagerLoadingParameterTest extends Unit
+class ExtractEagerLoadingParameterTest extends TestCase
 {
     /**
      * @var UnitTester
      */
     protected UnitTester $tester;
 
-    protected function _before()
+    protected function _before(): void
     {
         $gqlService = Craft::$app->getGql();
         $schema = $gqlService->getSchemaById(1000);
@@ -100,7 +101,7 @@ class ExtractEagerLoadingParameterTest extends Unit
         ];
     }
 
-    protected function _after()
+    protected function _after(): void
     {
     }
 
@@ -111,10 +112,10 @@ class ExtractEagerLoadingParameterTest extends Unit
      * @param array $variables Query variables
      * @param array $expectedParameters The expected eager-loading parameters.
      * @param string $returnType The return type of the GQL query
-     * @throws \GraphQL\Error\SyntaxError
+     * @throws SyntaxError
      * @dataProvider eagerLoadingParameterExtractionProvider
      */
-    public function testEagerLoadingParameterExtraction(string $query, array $variables, array $expectedParameters, string $returnType)
+    public function testEagerLoadingParameterExtraction(string $query, array $variables, array $expectedParameters, string $returnType): void
     {
         $documentNode = Parser::parse(new Source($query ?: '', 'GraphQL'));
         $resolveInfo = $this->_buildResolveInfo($documentNode, $variables, $returnType);
