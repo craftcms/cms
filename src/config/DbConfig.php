@@ -23,10 +23,6 @@ use yii\base\InvalidConfigException;
 class DbConfig extends BaseObject
 {
     /**
-     * @since 4.0.0
-     */
-    public const ENV_PREFIX = 'DB_';
-    /**
      * @deprecated in 3.4.0. Use [[Connection::DRIVER_MYSQL]] instead.
      */
     public const DRIVER_MYSQL = 'mysql';
@@ -204,8 +200,6 @@ class DbConfig extends BaseObject
      */
     public function normalize(): void
     {
-        parent::normalize();
-
         // If $url was set, parse it to set other properties
         if ($this->url) {
             Craft::configure($this, Db::url2config($this->url));
