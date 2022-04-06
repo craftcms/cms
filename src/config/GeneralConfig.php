@@ -8,10 +8,10 @@
 namespace craft\config;
 
 use Craft;
-use craft\base\Config as BaseConfig;
 use craft\helpers\ConfigHelper;
 use craft\helpers\Localization;
 use craft\services\Config;
+use yii\base\BaseObject;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\base\UnknownPropertyException;
@@ -22,16 +22,12 @@ use yii\base\UnknownPropertyException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class GeneralConfig extends BaseConfig
+class GeneralConfig extends BaseObject
 {
     public const IMAGE_DRIVER_AUTO = 'auto';
     public const IMAGE_DRIVER_GD = 'gd';
     public const IMAGE_DRIVER_IMAGICK = 'imagick';
 
-    /**
-     * @since 4.0.0
-     */
-    public const ENV_PREFIX = 'CRAFT_';
     /**
      * @since 3.6.0
      */

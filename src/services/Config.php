@@ -123,8 +123,8 @@ class Config extends Component
 
         return match ($category) {
             self::CATEGORY_CUSTOM => (object)$config,
-            self::CATEGORY_DB => new DbConfig($config),
-            self::CATEGORY_GENERAL => new GeneralConfig($config),
+            self::CATEGORY_DB => App::configureFromEnv(new DbConfig($config), 'DB_'),
+            self::CATEGORY_GENERAL => App::configureFromEnv(new GeneralConfig($config), 'CRAFT_'),
             default => throw new InvalidArgumentException("Invalid config category: $category"),
         };
     }

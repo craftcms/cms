@@ -32,12 +32,18 @@ use craft\web\Session;
 use craft\web\User as WebUser;
 use craft\web\View;
 use HTMLPurifier_Encoder;
+use Illuminate\Support\Collection;
+use ReflectionClass;
+use ReflectionNamedType;
+use ReflectionProperty;
+use yii\base\BaseObject;
 use yii\base\Event;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidValueException;
 use yii\helpers\Inflector;
 use yii\mutex\FileMutex;
 use yii\web\JsonParser;
+
 
 /**
  * App helper.
@@ -248,6 +254,7 @@ class App
         return static::env('CRAFT_NITRO') === '1';
     }
 
+
     /**
      * Returns an array of all known Craft editions’ IDs.
      *
@@ -256,6 +263,37 @@ class App
     public static function editions(): array
     {
         return [Craft::Solo, Craft::Pro];
+    }
+
+    /**
+     * Load configuration into an object from environment variables
+     * Values are coerced using Reflection on the object properties.
+     *
+     * @param BaseObject $config The config or settings object
+     * @param string $prefix The prefix of the environment variables to use
+     * @return BaseObject
+     */
+    public static function configureFromEnv(BaseObject $config, string $prefix = ''): BaseObject
+    {
+        $properties = (new ReflectionClass($config))->getProperties(ReflectionProperty::IS_PUBLIC);
+
+        foreach ($properties as $prop) {
+            $name = $prop->getName();
+            $value = static::_getConfigValueFromEnv($name, $prefix) ?? $config->$name;
+
+            // Convert to an array?
+            if (
+                is_string($value) &&
+                str_contains($value, ',') &&
+                static::_getPropertyTypes($prop)->contains('array')
+            ) {
+                $config->$name = StringHelper::split($value);
+            } else {
+                $config->$name = $value;
+            }
+        }
+
+        return $config;
     }
 
     /**
@@ -1061,4 +1099,32 @@ class App
         // Default to the application locale
         return Craft::$app->getLocale();
     }
+
+    private static function _getConfigValueFromEnv(string $name, string $prefix): mixed
+    {
+        $prefix = $prefix ? StringHelper::ensureRight($prefix, '_') : '';
+        $envName = $prefix . strtoupper(StringHelper::toSnakeCase($name));
+
+        return static::env($envName);
+    }
+
+    private static function _getPropertyTypes(ReflectionProperty $property): Collection
+    {
+        return Collection::make([$property->getType()])
+
+            // Checking for getTypes, as ReflectionIntersectionType isn't available until 8.1
+            ->filter(fn($type) => $type && ($type instanceof ReflectionNamedType || method_exists($type, 'getTypes')))
+            ->flatMap(function($type) {
+                if ($type instanceof ReflectionNamedType) {
+                    return [$type->getName()];
+                }
+
+                // Ignoring PHPStan errors, as we've already filtered on `getTypes`.
+                /** @phpstan-ignore-next-line */
+                $types = $type->getTypes();
+
+                return Collection::make($types)->map(fn($type) => $type->getName());
+            });
+    }
+
 }

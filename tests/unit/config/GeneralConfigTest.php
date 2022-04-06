@@ -31,7 +31,6 @@ class GeneralConfigTest extends Unit
     {
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         $generalConfig->$oldProperty = $value;
-        $generalConfig->normalize();
 
         self::assertEquals($value, $generalConfig->$newProperty);
     }

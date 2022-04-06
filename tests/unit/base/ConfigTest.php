@@ -9,6 +9,7 @@ namespace crafttests\unit\base;
 
 use Codeception\Test\Unit;
 use Craft;
+use craft\helpers\App;
 
 /**
  * Unit tests for ConfigTest
@@ -42,7 +43,7 @@ class ConfigTest extends Unit
 
         putenv($envString);
 
-        $generalConfig->normalize();
+        $generalConfig = App::configureFromEnv($generalConfig, 'CRAFT_');
 
         self::assertEquals($expected, $generalConfig->$paramName);
 
