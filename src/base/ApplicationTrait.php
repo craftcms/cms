@@ -377,10 +377,13 @@ trait ApplicationTrait
                 throw $e;
             }
 
-            Craft::error('There was a problem fetching the info row: ' . $e->getMessage(), __METHOD__);
-            /** @var ErrorHandler $errorHandler */
-            $errorHandler = $this->getErrorHandler();
-            $errorHandler->logException($e);
+            // Allow console requests to bypass error
+            if (!$this->getRequest()->getIsConsoleRequest()) {
+                Craft::error('There was a problem fetching the info row: ' . $e->getMessage(), __METHOD__);
+                /** @var ErrorHandler $errorHandler */
+                $errorHandler = $this->getErrorHandler();
+                $errorHandler->logException($e);
+            }
             return $this->_isInstalled = false;
         }
     }
