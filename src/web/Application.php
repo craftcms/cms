@@ -460,6 +460,10 @@ class Application extends \yii\web\Application
         /** @var DebugModule $module */
         $module = $this->getModule('debug');
         $module->bootstrap($this);
+
+        if ($config = Craft::$app->getConfig()->getConfigFromFile('debug')) {
+            Craft::configure($module, $config);
+        }
     }
 
     /**
