@@ -500,7 +500,7 @@ class GeneralConfig extends BaseObject
      *
      * Options include:
      *
-     * - `attribute` – The attribute that the term should apply to (e.g. 'title'), if any. (`null` by default)
+     * - `attribute` – The attribute that the term should apply to (e.g. `'title'`), if any. (`null` by default)
      * - `exact` – Whether the term must be an exact match (only applies if `attribute` is set). (`false` by default)
      * - `exclude` – Whether search results should *exclude* records with this term. (`false` by default)
      * - `subLeft` – Whether to include keywords that contain the term, with additional characters before it. (`false` by default)
@@ -1661,7 +1661,7 @@ class GeneralConfig extends BaseObject
 
     /**
      * @var bool|string Determines what protocol/schema Craft will use when generating tokenized URLs. If set to `'auto'`, Craft will check the
-     * current site’s base URL and the protocol of the current request and if either of them are https will use `https` in the tokenized URL. If not,
+     * current site’s base URL and the protocol of the current request and if either of them are HTTPS will use `https` in the tokenized URL. If not,
      * will use `http`.
      *
      * If set to `false`, Craft will always use `http`. If set to `true`, then, Craft will always use `https`.
