@@ -1718,9 +1718,9 @@ class GeneralConfig extends BaseConfig
     /**
      * @inheritdoc
      */
-    public function normalize(): void
+    public function init(): void
     {
-        parent::normalize();
+        parent::init();
 
         // Merge extraAllowedFileExtensions into allowedFileExtensions
         if (is_array($this->extraAllowedFileExtensions)) {
