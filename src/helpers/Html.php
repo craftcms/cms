@@ -533,7 +533,7 @@ class Html extends \yii\helpers\Html
     {
         $info = static::parseTag($tag);
 
-        // Make sure it's not a void tag
+        // Make sure it’s not a void tag
         if (!isset($info['htmlStart'])) {
             throw new InvalidArgumentException("<{$info['type']}> can't have children.");
         }

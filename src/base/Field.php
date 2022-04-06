@@ -318,7 +318,7 @@ abstract class Field extends SavableComponent implements FieldInterface
             'message' => Craft::t('yii', '{attribute} "{value}" has already been taken.'),
         ];
 
-        // Only validate the ID if it's not a new field
+        // Only validate the ID if it’s not a new field
         if (!$this->getIsNew()) {
             $rules[] = [['id'], 'number', 'integerOnly' => true];
         }
@@ -704,7 +704,7 @@ abstract class Field extends SavableComponent implements FieldInterface
      */
     public function beforeSave(bool $isNew): bool
     {
-        // Set the field context if it's not set
+        // Set the field context if it’s not set
         if (!$this->context) {
             $this->context = Craft::$app->getContent()->fieldContext;
         }

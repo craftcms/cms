@@ -89,9 +89,9 @@ class SearchQuery
 
                 $totalTokens = count($this->_tokens);
 
-                // I suppose it's possible the query started with "OR"
+                // I suppose it’s possible the query started with "OR"
                 if ($totalTokens) {
-                    // Set the previous token to a TermGroup, if it's not already
+                    // Set the previous token to a TermGroup, if it’s not already
                     $previousToken = $this->_tokens[$totalTokens - 1];
 
                     if (!($previousToken instanceof SearchQueryTermGroup)) {

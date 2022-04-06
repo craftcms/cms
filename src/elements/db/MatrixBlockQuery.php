@@ -129,9 +129,6 @@ class MatrixBlockQuery extends ElementQuery
             case 'ownerSite':
                 Craft::$app->getDeprecator()->log('MatrixBlockQuery::ownerSite()', 'The `ownerSite` Matrix block query param has been deprecated. Use `site` or `siteId` instead.');
                 break;
-            case 'ownerLocale':
-                Craft::$app->getDeprecator()->log('MatrixBlockQuery::ownerLocale()', 'The `ownerLocale` Matrix block query param has been deprecated. Use `site` or `siteId` instead.');
-                break;
             default:
                 parent::__set($name, $value);
         }

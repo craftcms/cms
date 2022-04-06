@@ -228,7 +228,7 @@ class Config extends Component
             return [];
         }
 
-        // If it's not a multi-environment config, return the whole thing
+        // If it’s not a multi-environment config, return the whole thing
         if (!array_key_exists('*', $config)) {
             return $config;
         }

@@ -156,7 +156,7 @@ class InstallController extends Controller
         $site->language = $this->language ?: $this->prompt('Site language:', ['default' => InstallHelper::defaultSiteLanguage(), 'validator' => $this->createAttributeValidator($site, 'language')]);
 
         // Try to save the site URL to a PRIMARY_SITE_URL environment variable
-        // if it's not already set to an alias or environment variable
+        // if it’s not already set to an alias or environment variable
         if (!in_array($site->getBaseUrl(false)[0], ['@', '$'])) {
             try {
                 $configService->setDotEnvVar('PRIMARY_SITE_URL', $site->baseUrl);
