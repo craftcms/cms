@@ -44,7 +44,6 @@ use yii\helpers\Inflector;
 use yii\mutex\FileMutex;
 use yii\web\JsonParser;
 
-
 /**
  * App helper.
  *
@@ -1126,5 +1125,4 @@ class App
                 return Collection::make($types)->map(fn($type) => $type->getName());
             });
     }
-
 }
