@@ -8,10 +8,11 @@
 namespace craft\config;
 
 use Craft;
-use craft\base\Config as BaseConfig;
 use craft\helpers\ConfigHelper;
 use craft\helpers\Localization;
+use craft\helpers\StringHelper;
 use craft\services\Config;
+use yii\base\BaseObject;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\base\UnknownPropertyException;
@@ -22,16 +23,12 @@ use yii\base\UnknownPropertyException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class GeneralConfig extends BaseConfig
+class GeneralConfig extends BaseObject
 {
     public const IMAGE_DRIVER_AUTO = 'auto';
     public const IMAGE_DRIVER_GD = 'gd';
     public const IMAGE_DRIVER_IMAGICK = 'imagick';
 
-    /**
-     * @since 4.0.0
-     */
-    public const ENV_PREFIX = 'CRAFT_';
     /**
      * @since 3.6.0
      */
@@ -146,11 +143,11 @@ class GeneralConfig extends BaseConfig
     public bool $allowUpdates = true;
 
     /**
-     * @var string[]|string The file extensions Craft should allow when a user is uploading files.
+     * @var string[] The file extensions Craft should allow when a user is uploading files.
      * @see extraAllowedFileExtensions
      * @group Assets
      */
-    public string|array $allowedFileExtensions = [
+    public array $allowedFileExtensions = [
         '7z',
         'aiff',
         'asc',
@@ -695,11 +692,11 @@ class GeneralConfig extends BaseConfig
     public string $errorTemplatePrefix = '';
 
     /**
-     * @var string[]|string|null List of file extensions that will be merged into the <config3:allowedFileExtensions> config setting.
+     * @var string[]|null List of file extensions that will be merged into the <config3:allowedFileExtensions> config setting.
      * @see allowedFileExtensions
      * @group System
      */
-    public string|array|null $extraAllowedFileExtensions = null;
+    public ?array $extraAllowedFileExtensions = null;
 
     /**
      * @var string[]|null List of extra locale IDs that the application should support, and users should be able to select as their Preferred Language.
@@ -1718,10 +1715,8 @@ class GeneralConfig extends BaseConfig
     /**
      * @inheritdoc
      */
-    public function normalize(): void
+    public function init(): void
     {
-        parent::normalize();
-
         // Merge extraAllowedFileExtensions into allowedFileExtensions
         if (is_array($this->extraAllowedFileExtensions)) {
             $this->allowedFileExtensions = array_merge($this->allowedFileExtensions, $this->extraAllowedFileExtensions);
@@ -1765,6 +1760,11 @@ class GeneralConfig extends BaseConfig
                     throw new InvalidConfigException($e->getMessage(), 0, $e);
                 }
             }
+        }
+
+        // Normalize disabledPlugins
+        if (is_string($this->disabledPlugins) && $this->disabledPlugins !== '*') {
+            $this->disabledPlugins = StringHelper::split($this->disabledPlugins);
         }
     }
 

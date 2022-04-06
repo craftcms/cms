@@ -70,7 +70,6 @@
 - Added `craft\base\conditions\BaseTextConditionRule`.
 - Added `craft\base\conditions\ConditionInterface`.
 - Added `craft\base\conditions\ConditionRuleInterface`.
-- Added `craft\base\Config`. ([#10573](https://github.com/craftcms/cms/pull/10573))
 - Added `craft\base\Element::EVENT_AUTHORIZE_CREATE_DRAFTS`.
 - Added `craft\base\Element::EVENT_AUTHORIZE_DELETE_FOR_SITE`.
 - Added `craft\base\Element::EVENT_AUTHORIZE_DELETE`.
@@ -238,6 +237,7 @@
 - Added `craft\gql\TypeManager::registerFieldDefinitions()`.
 - Added `craft\helpers\App::cliOption()`.
 - Added `craft\helpers\App::devMode()`.
+- Added `craft\helpers\App::envConfig()`. ([#10869](https://github.com/craftcms/cms/pull/10869))
 - Added `craft\helpers\App::isStreamLog()`.
 - Added `craft\helpers\App::normalizeValue()`.
 - Added `craft\helpers\Assets::downloadFile()`.
@@ -467,7 +467,7 @@
 - Control panel resource locations are now cached, so resource requests can be resolved when Craft isn’t installed yet, or a database connection can’t be established. ([#10642](https://github.com/craftcms/cms/pull/10642))
 - Control panel resources are now served with cache headers, if the `buildId` config setting is set. ([#10705](https://github.com/craftcms/cms/pull/10705))
 - Empty subfolders within the temporary upload volume are now removed during garbage collection. ([#10746](https://github.com/craftcms/cms/issues/10746))
-- Most config settings can now be set via environment variables directly, without needing to pull them in from `config/general.php` or `config/db.php`. ([#10573](https://github.com/craftcms/cms/pull/10573))
+- Most config settings can now be overridden via environment variables. ([#10573](https://github.com/craftcms/cms/pull/10573), [#10869](https://github.com/craftcms/cms/pull/10869))
 - It’s now possible to configure the Debug Toolbar to store its data files on a filesystem, rather than within `storage/runtime/debug/`. ([#10825](https://github.com/craftcms/cms/pull/10825))
 - `craft\base\AssetPreviewHandlerInterface::getPreviewHtml()` now accepts an optional array of variable to pass on to the template.
 - `craft\base\Element::__get()` now clones custom field values before returning them. ([#8781](https://github.com/craftcms/cms/discussions/8781))
