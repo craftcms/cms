@@ -8,11 +8,10 @@
 namespace craft\config;
 
 use Craft;
+use craft\base\Config as BaseConfig;
 use craft\helpers\ConfigHelper;
 use craft\helpers\Localization;
-use craft\helpers\StringHelper;
 use craft\services\Config;
-use yii\base\BaseObject;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\base\UnknownPropertyException;
@@ -23,12 +22,16 @@ use yii\base\UnknownPropertyException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class GeneralConfig extends BaseObject
+class GeneralConfig extends BaseConfig
 {
     public const IMAGE_DRIVER_AUTO = 'auto';
     public const IMAGE_DRIVER_GD = 'gd';
     public const IMAGE_DRIVER_IMAGICK = 'imagick';
 
+    /**
+     * @since 4.0.0
+     */
+    public const ENV_PREFIX = 'CRAFT_';
     /**
      * @since 3.6.0
      */
@@ -1715,15 +1718,11 @@ class GeneralConfig extends BaseObject
     /**
      * @inheritdoc
      */
-    public function init(): void
+    public function normalize(): void
     {
+        parent::normalize();
+
         // Merge extraAllowedFileExtensions into allowedFileExtensions
-        if (is_string($this->allowedFileExtensions)) {
-            $this->allowedFileExtensions = StringHelper::split($this->allowedFileExtensions);
-        }
-        if (is_string($this->extraAllowedFileExtensions)) {
-            $this->extraAllowedFileExtensions = StringHelper::split($this->extraAllowedFileExtensions);
-        }
         if (is_array($this->extraAllowedFileExtensions)) {
             $this->allowedFileExtensions = array_merge($this->allowedFileExtensions, $this->extraAllowedFileExtensions);
             $this->extraAllowedFileExtensions = null;

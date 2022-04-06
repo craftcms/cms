@@ -6,6 +6,7 @@
 - It’s now possible to disable native element sources from the Customize Sources modal. ([#10676](https://github.com/craftcms/cms/discussions/10676))
 - GraphQL schemas now include settings that determine which sites elements can be queried from. ([#10610](https://github.com/craftcms/cms/issues/10610))
 - Added the `buildId` general config. ([#10705](https://github.com/craftcms/cms/pull/10705))
+- Added `craft\base\Config`. ([#10573](https://github.com/craftcms/cms/pull/10573))
 - Added `craft\base\FieldInterface::isRequirable()`.
 - Added `craft\base\FsInterface::read()`.
 - Added `craft\base\FsInterface::write()`.
@@ -32,6 +33,7 @@
 - Control panel resource locations are now cached, so resource requests can be resolved when Craft isn’t installed yet, or a database connection can’t be established. ([#10642](https://github.com/craftcms/cms/pull/10642))
 - Control panel resources are now served with cache headers, if the `buildId` config setting is set. ([#10705](https://github.com/craftcms/cms/pull/10705))
 - Empty subfolders within the temporary upload volume are now removed during garbage collection. ([#10746](https://github.com/craftcms/cms/issues/10746))
+- Most config settings can now be set via environment variables directly, without needing to pull them in from `config/general.php` or `config/db.php`. ([#10573](https://github.com/craftcms/cms/pull/10573))
 - `install/*`, `setup/*`, `db/*`, and `help` actions no longer output a warning if Craft can’t connect to the database. ([#10851](https://github.com/craftcms/cms/pull/10851))
 - `craft\elements\Asset::getUrl()` now has an `$immediately` argument.
 - `craft\gql\base\ElementResolver::prepareQuery()` now expects its third argument to have a `string|null` type declaration.

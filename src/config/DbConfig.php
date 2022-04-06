@@ -8,10 +8,10 @@
 namespace craft\config;
 
 use Craft;
+use craft\base\Config as BaseConfig;
 use craft\db\Connection;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
-use yii\base\BaseObject;
 use yii\base\InvalidConfigException;
 
 /**
@@ -20,8 +20,12 @@ use yii\base\InvalidConfigException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class DbConfig extends BaseObject
+class DbConfig extends BaseConfig
 {
+    /**
+     * @since 4.0.0
+     */
+    public const ENV_PREFIX = 'DB_';
     /**
      * @deprecated in 3.4.0. Use [[Connection::DRIVER_MYSQL]] instead.
      */
@@ -198,8 +202,10 @@ class DbConfig extends BaseObject
      * @inheritdoc
      * @throws InvalidConfigException
      */
-    public function init(): void
+    public function normalize(): void
     {
+        parent::normalize();
+
         // If $url was set, parse it to set other properties
         if ($this->url) {
             Craft::configure($this, Db::url2config($this->url));
