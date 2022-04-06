@@ -961,6 +961,11 @@ li.breadcrumb-toggle-wrapper {
 #content-container {
   flex: 1;
 
+  #main-content:not(.has-sidebar):not(.has-details) & {
+    width: 100%;
+    max-width: 100%;
+  }
+
   #main-content.has-sidebar & {
     width: calc(100% - #{$sidebarWidth - 24});
     max-width: calc(100% - #{$sidebarWidth - 24});
@@ -1438,6 +1443,10 @@ li.breadcrumb-toggle-wrapper {
     border-bottom: 1px solid $hairlineColor;
     margin-bottom: var(--s);
   }
+}
+
+#content {
+  overflow-x: auto;
 }
 
 /* flexbox field layouts */

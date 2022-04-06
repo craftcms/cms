@@ -576,10 +576,10 @@ class UrlHelper
      * @param string|null $scheme
      * @param bool $cpUrl
      * @param bool|null $showScriptName
-     * @param bool|null $addToken
+     * @param bool $addToken
      * @return string
      */
-    private static function _createUrl(string $path, array|string|null $params, ?string $scheme, bool $cpUrl, ?bool $showScriptName = null, ?bool $addToken = null): string
+    private static function _createUrl(string $path, array|string|null $params, ?string $scheme, bool $cpUrl, ?bool $showScriptName = null, bool $addToken = true): string
     {
         // Extract any params/fragment from the path
         [$path, $baseParams, $baseFragment] = self::_extractParams($path);
@@ -599,9 +599,9 @@ class UrlHelper
             if (!isset($params['site']) && Craft::$app->getIsMultiSite() && Cp::requestedSite() !== null) {
                 $params['site'] = Cp::requestedSite()->handle;
             }
-        } elseif ($addToken !== false) {
+        } else {
             // token/siteToken params
-            if (!isset($params[$generalConfig->tokenParam]) && ($token = $request->getToken()) !== null) {
+            if ($addToken && !isset($params[$generalConfig->tokenParam]) && ($token = $request->getToken()) !== null) {
                 $params[$generalConfig->tokenParam] = $token;
             }
             if (!isset($params[$generalConfig->siteToken]) && ($siteToken = $request->getSiteToken()) !== null) {

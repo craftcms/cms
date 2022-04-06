@@ -761,8 +761,8 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      * If [[unique()]] is set, this determines which site should be selected when querying multi-site elements.
      *
      * For example, if element “Foo” exists in Site A and Site B, and element “Bar” exists in Site B and Site C,
-     * and this is set to `['c', 'b', 'a']`, then Foo will be returned for Site C, and Bar will be returned
-     * for Site B.
+     * and this is set to `['c', 'b', 'a']`, then Foo will be returned for Site B, and Bar will be returned
+     * for Site C.
      *
      * If this isn’t set, then preference goes to the current site.
      *
