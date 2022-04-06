@@ -1153,13 +1153,17 @@ class Fields extends Component
     }
 
     /**
-     * Returns a layout's tabs by its ID.
+     * Returns a layout's tabs by its ID(s).
      *
-     * @param int|int[] $layoutId The field layout’s ID
+     * @param int|int[] $layoutId The field layout’s ID(s)
      * @return FieldLayoutTab[] The field layout’s tabs
      */
     public function getLayoutTabsById(int|array $layoutId): array
     {
+        if (empty($layoutId)) {
+            return [];
+        }
+
         $result = $this->_createLayoutTabQuery()
             ->where(['layoutId' => $layoutId])
             ->all();
