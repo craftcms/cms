@@ -24,7 +24,7 @@ trait MissingComponentTrait
      * @var string The expected component class name.
      * @phpstan-var class-string<ComponentInterface>
      */
-    public string $expectedType;
+    public string $expectedType = '';
 
     /**
      * @var string|null The exception message that explains why the component class was invalid
