@@ -35,11 +35,11 @@ use yii\db\Exception as DbException;
 class SetupController extends Controller
 {
     /**
-     * @var string|null The database driver to use. Either 'mysql' for MySQL or 'pgsql' for PostgreSQL.
+     * @var string|null The database driver to use. Either `'mysql'` for MySQL or `'pgsql'` for PostgreSQL.
      */
     public $driver;
     /**
-     * @var string|null The database server name or IP address. Usually 'localhost' or '127.0.0.1'.
+     * @var string|null The database server name or IP address. Usually `'localhost'` or `'127.0.0.1'`.
      */
     public $server;
     /**

@@ -100,7 +100,7 @@ class Asset extends Element
             'focalPoint' => [
                 'name' => 'focalPoint',
                 'type' => Type::listOf(Type::float()),
-                'description' => 'The focal point represented as an array with `x` and `y` keys, or null if it\'s not an image.',
+                'description' => 'The focal point represented as an array with `x` and `y` keys, or null if it’s not an image.',
             ],
             'kind' => [
                 'name' => 'kind',
@@ -116,7 +116,7 @@ class Asset extends Element
                 'name' => 'height',
                 'args' => Transform::getArguments(),
                 'type' => Type::int(),
-                'description' => 'The height in pixels or null if it\'s not an image.',
+                'description' => 'The height in pixels or null if it’s not an image.',
                 'complexity' => function($childrenComplexity, $args) {
                     if (empty($args)) {
                         return $childrenComplexity + GqlService::GRAPHQL_COMPLEXITY_SIMPLE_FIELD;
@@ -134,7 +134,7 @@ class Asset extends Element
                 'name' => 'width',
                 'args' => Transform::getArguments(),
                 'type' => Type::int(),
-                'description' => 'The width in pixels or null if it\'s not an image.',
+                'description' => 'The width in pixels or null if it’s not an image.',
                 'complexity' => function($childrenComplexity, $args) {
                     if (empty($args)) {
                         return $childrenComplexity + GqlService::GRAPHQL_COMPLEXITY_SIMPLE_FIELD;
@@ -191,7 +191,7 @@ class Asset extends Element
             'path' => [
                 'name' => 'path',
                 'type' => Type::string(),
-                'description' => 'The asset\'s path in the volume.',
+                'description' => 'The asset’s path in the volume.',
             ],
             'dateModified' => [
                 'name' => 'dateModified',

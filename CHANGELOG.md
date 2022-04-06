@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.7.38 - 2022-04-06
 
 ### Added
 - Added `craft\helpers\ArrayHelper::onlyContains()`.
@@ -17,7 +17,10 @@
 - Fixed deprecation errors that occurred when validating relational and Matrix fields. ([#10815](https://github.com/craftcms/cms/issues/10815))
 - Fixed an error that occurred if field instructions contained any unclosed HTML tags. ([#10290](https://github.com/craftcms/cms/issues/10290))
 - Fixed a bug where the selected volume subfolder would get included in folder drag-and-drop operations. ([#10745](https://github.com/craftcms/cms/issues/10745))
+- Fixed a bug where slideouts weren’t closing when clicked out of, after being opened for the second time. ([#10586](https://github.com/craftcms/cms/issues/10586))
 - Fixed a bug where `Craft.appendHeadHtml()` wasn’t pruning out `<link>` tags that were already present in the DOM.
+- Fixed a bug where image transforms weren’t always getting generated for disabled sites. ([#10498](https://github.com/craftcms/cms/issues/10498))
+- Fixed a bug where it wasn’t possible to scroll the content pane horizontally if any fields took up more than 100% of its width. ([#10849](https://github.com/craftcms/cms/issues/10849))
 
 ## 3.7.37 - 2022-03-16
 
