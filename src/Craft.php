@@ -240,7 +240,7 @@ class Craft extends Yii
                 }
                 foreach ($types as $type) {
                     $type = trim($type, ' \\');
-                    // Add a leading `\` if it's not a variable, self-reference, or primitive type
+                    // Add a leading `\` if it’s not a variable, self-reference, or primitive type
                     if (!preg_match('/^(\$.*|(self|static|bool|boolean|int|integer|float|double|string|array|object|callable|callback|iterable|resource|null|mixed|number|void)(\[\])?)$/i', $type)) {
                         $type = '\\' . $type;
                     }

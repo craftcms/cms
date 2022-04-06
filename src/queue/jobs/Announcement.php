@@ -56,7 +56,7 @@ class Announcement extends BaseJob
             $pluginId = null;
         }
 
-        // Fetch all of the CP users
+        // Fetch all of the control panel users
         $userQuery = User::find()
             ->can('accessCp');
 

@@ -1098,10 +1098,12 @@ class ProjectConfig extends Component
                     // 1) get the previous value at the containing path, which will be stale
                     // 2) get the extra path component from matches array
                     // 3) grab the actual new data from the event and merge it over the stale data
-                    $newValue = $incomingConfig->get($path) ?? [];
+                    $newValue = $incomingConfig->get($path);
                     $extraPath = StringHelper::removeLeft($matches['extra'], '.');
                     $newNestedValue = $event->newValue;
-                    ProjectConfigHelper::traverseDataArray($newValue, $extraPath, $newNestedValue);
+                    if (is_array($newValue)) {
+                        ProjectConfigHelper::traverseDataArray($newValue, $extraPath, $newNestedValue);
+                    }
 
                     $this->getCurrentWorkingConfig()->commitChanges($oldValue, $newValue, $path);
                     continue;

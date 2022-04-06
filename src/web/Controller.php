@@ -144,7 +144,7 @@ abstract class Controller extends \yii\web\Controller
         }
 
         if (!($test & $allowAnonymous)) {
-            // If this is a CP request, make sure they have access to the CP
+            // If this is a control panel request, make sure they have access to the control panel
             if ($this->request->getIsCpRequest()) {
                 $this->requireLogin();
                 $this->requirePermission('accessCp');
@@ -160,7 +160,7 @@ abstract class Controller extends \yii\web\Controller
                 }
             }
 
-            // If the system is offline, make sure they have permission to access the CP/site
+            // If the system is offline, make sure they have permission to access the control panel/site
             if (!$isLive) {
                 $permission = $this->request->getIsCpRequest() ? 'accessCpWhenSystemIsOff' : 'accessSiteWhenSystemIsOff';
                 if (!Craft::$app->getUser()->checkPermission($permission)) {

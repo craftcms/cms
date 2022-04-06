@@ -408,7 +408,7 @@ class UsersController extends Controller
             );
         }
 
-        // Redirect to the login page if this is a CP request
+        // Redirect to the login page if this is a control panel request
         if ($this->request->getIsCpRequest()) {
             return $this->redirect(Request::CP_PATH_LOGIN);
         }
@@ -587,9 +587,9 @@ class UsersController extends Controller
             return $this->asSuccess(data: $return);
         }
 
-        // Can they access the CP?
+        // Can they access the control panel?
         if ($user->can('accessCp')) {
-            // Send them to the CP login page
+            // Send them to the control panel login page
             $url = UrlHelper::cpUrl(Request::CP_PATH_LOGIN);
         } else {
             // Send them to the 'setPasswordSuccessPath'.
@@ -2002,11 +2002,11 @@ JS,
                 $app = Craft::$app;
                 return $app->handleRequest($this->request, true);
             } catch (NotFoundHttpException) {
-                // Just go with the CP template
+                // Just go with the control panel template
             }
         }
 
-        // Otherwise go with the CP's template
+        // Otherwise go with the control panel’s template
         return $this->renderTemplate('setpassword', $variables, View::TEMPLATE_MODE_CP);
     }
 
@@ -2239,7 +2239,7 @@ JS,
             return $this->_processInvalidToken();
         }
 
-        // If someone is logged in and it's not this person, log them out
+        // If someone is logged in and it’s not this person, log them out
         $userSession = Craft::$app->getUser();
         if (!$userSession->getIsGuest() && $userSession->getId() != $user->id) {
             $userSession->logout();
@@ -2341,7 +2341,7 @@ JS,
      */
     private function _redirectUserToCp(User $user): ?Response
     {
-        // Can they access the CP?
+        // Can they access the control panel?
         if ($user->can('accessCp')) {
             $postCpLoginRedirect = Craft::$app->getConfig()->getGeneral()->getPostCpLoginRedirect();
             $url = UrlHelper::cpUrl($postCpLoginRedirect);

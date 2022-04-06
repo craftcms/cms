@@ -2,6 +2,7 @@
 /.browserslistrc export-ignore
 /.codecov.yml export-ignore
 /.env.example export-ignore
+/.git-blame-ignore-revs export-ignore
 /.gitattributes export-ignore
 /.github/ export-ignore
 /.gitignore export-ignore

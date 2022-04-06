@@ -117,7 +117,7 @@ class Entry extends Structure
             'postDate' => [
                 'name' => 'postDate',
                 'type' => DateTime::getType(),
-                'description' => 'The entry\'s post date.',
+                'description' => 'The entry’s post date.',
             ],
             'expiryDate' => [
                 'name' => 'expiryDate',
@@ -201,7 +201,7 @@ class Entry extends Structure
                 'author' => [
                     'name' => 'author',
                     'type' => User::getType(),
-                    'description' => 'The entry\'s author.',
+                    'description' => 'The entry’s author.',
                     'complexity' => Gql::eagerLoadComplexity(),
                 ],
             ]);

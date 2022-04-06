@@ -18,6 +18,7 @@
                 : false,
             sites: (source.sites ?? false) ? source.sites|join(',') : false,
             'override-status': (source.criteria.status ?? false) ? true : false,
+            disabled: source.disabled ?? false,
         }|merge(source.data ?? {}),
         html: sourceInnerHtml(source)
     }) }}
@@ -49,7 +50,11 @@
             <li class="heading"><span>{{ source.heading|t('site') }}</span></li>
         {% else %}
             {% set key = source.keyPath ?? (keyPrefix ~ source.key) %}
-            <li>
+            {% tag 'li' with {
+                class: [
+                    (source.disabled ?? false) ? 'hidden' : null,
+                ]|filter,
+            } %}
                 {{ sourceLink(key, source, not keyPrefix, elementType) }}
                 {% if source.nested is defined and source.nested is not empty %}
                     <button class="toggle" aria-expanded="false" aria-label="{{ 'Show nested sources'|t('app') }}"></button>
@@ -58,7 +63,7 @@
                         sources: source.nested
                     } %}
                 {% endif %}
-            </li>
+            {% endtag %}
         {% endif %}
     {% endfor %}
 </ul>

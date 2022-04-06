@@ -133,13 +133,6 @@ class ElementRelationParamParser extends BaseObject
             'sourceSite' => null,
         ];
 
-        // Check for now-deprecated sourceLocale param
-        if (isset($relCriteria['sourceLocale'])) {
-            Craft::$app->getDeprecator()->log('relatedTo:sourceLocale', 'The `sourceLocale` criteria in `relatedTo` element query params has been deprecated. Use `sourceSite` instead.');
-            $relCriteria['sourceSite'] = $relCriteria['sourceLocale'];
-            unset($relCriteria['sourceLocale']);
-        }
-
         // Normalize the sourceSite param (should be an ID)
         if ($relCriteria['sourceSite'] && !is_numeric($relCriteria['sourceSite'])) {
             if ($relCriteria['sourceSite'] instanceof Site) {

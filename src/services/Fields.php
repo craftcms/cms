@@ -807,7 +807,7 @@ class Fields extends Component
         }
 
         if (!$appliedConfig) {
-            // If it's not a global field, or there weren't any changes in the main field settings, apply the save to the DB + call afterSave()
+            // If it’s not a global field, or there weren't any changes in the main field settings, apply the save to the DB + call afterSave()
             $this->applyFieldSave($field->uid, $configData, $field->context);
         }
 
@@ -1645,7 +1645,7 @@ class Fields extends Component
         // Tell the current CustomFieldBehavior class about the field
         CustomFieldBehavior::$fieldHandles[$fieldRecord->handle] = true;
 
-        // For CP save requests, make sure we have all the custom data already saved on the object.
+        // For control panel save requests, make sure we have all the custom data already saved on the object.
         if (isset($this->_savingFields[$fieldUid])) {
             $field = $this->_savingFields[$fieldUid];
 
