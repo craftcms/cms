@@ -8,7 +8,6 @@
 namespace crafttests;
 
 use craft\helpers\App;
-use craft\helpers\FileHelper;
 use PHPUnit\Framework\TestCase;
 
 class CraftTest extends TestCase
