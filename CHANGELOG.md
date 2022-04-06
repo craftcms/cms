@@ -32,11 +32,15 @@
 - Control panel resource locations are now cached, so resource requests can be resolved when Craft isn’t installed yet, or a database connection can’t be established. ([#10642](https://github.com/craftcms/cms/pull/10642))
 - Control panel resources are now served with cache headers, if the `buildId` config setting is set. ([#10705](https://github.com/craftcms/cms/pull/10705))
 - Empty subfolders within the temporary upload volume are now removed during garbage collection. ([#10746](https://github.com/craftcms/cms/issues/10746))
+- `install/*`, `setup/*`, `db/*`, and `help` actions no longer output a warning if Craft can’t connect to the database. ([#10851](https://github.com/craftcms/cms/pull/10851))
 - `craft\elements\Asset::getUrl()` now has an `$immediately` argument.
 - `craft\gql\base\ElementResolver::prepareQuery()` now expects its third argument to have a `string|null` type declaration.
 - `craft\test\TestSetup::getMockApp()` has been renamed to `getMockModule()`, and its `$appClass` argument has been renamed to `$moduleClass`.
 
 ### Removed
+- Removed the `locale` element property. `siteId` should be used instead.
+- Removed the `ownerLocale` Matrix block query param. `site` or `siteId` should be used instead.
+- Removed support for `sourceLocale` in `relatedTo` element query params. `sourceSite` should be used instead.
 - Removed `craft\base\ElementInterface::getCrumbs()`. ([#10784](https://github.com/craftcms/cms/discussions/10784))
 - Removed `craft\services\ImageTransforms::getAllImageTransformerTypes()`.
 - Removed `craft\services\Volumes::getPublicVolumes()`.
@@ -56,6 +60,8 @@
 - Fixed a JavaScript error that could occur when interacting with condition rules. ([#10779](https://github.com/craftcms/cms/issues/10779))
 - Fixed a bug where it wasn’t possible to add, remove, or reorder rows within Table fields. ([#10835](https://github.com/craftcms/cms/issues/10835))
 - Fixed a bug where the context button on unified element editor pages wouldn’t get a label for potentially multi-site elements that were currently only enabled for a single site. ([#10693](https://github.com/craftcms/cms/issues/10693))
+- Fixed a bug where deprecation warnings weren’t getting saved properly. ([#10840](https://github.com/craftcms/cms/issues/10840))
+- Fixed an error that could occur when applying project config changes. ([#10855](https://github.com/craftcms/cms/issues/10855))
 
 ## 4.0.0-beta.3 - 2022-03-22
 

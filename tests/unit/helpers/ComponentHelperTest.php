@@ -125,7 +125,7 @@ class ComponentHelperTest extends TestCase
             [true, PlainText::class, FieldInterface::class],
             // fails because the class doesn't exist
             [false, 'foo\\bar\\Baz', MissingComponentException::class],
-            // fails because it's not a ComponentInterface
+            // fails because it’s not a ComponentInterface
             [false, HorizontalRule::class, null, InvalidConfigException::class],
             [false, HorizontalRule::class, FieldLayoutElement::class, InvalidConfigException::class],
             // fails because it's the wrong interface

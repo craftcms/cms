@@ -92,7 +92,7 @@ trait MutexTrait
 
         // Is it already acquired in the DB, waiting for the transaction to be completed?
         if (isset($this->_releaseQueue[$name])) {
-            // Pretend it's not
+            // Pretend it’s not
             return false;
         }
 

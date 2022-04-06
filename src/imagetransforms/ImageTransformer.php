@@ -625,13 +625,13 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
             return true;
         }
 
-        // If the asset has been modified since the time the index was created, it's no longer valid
+        // If the asset has been modified since the time the index was created, it’s no longer valid
         $dateModified = ArrayHelper::getValue($asset, 'dateModified');
         if ($result['dateIndexed'] < Db::prepareDateForDb($dateModified)) {
             return false;
         }
 
-        // If it's not a named transform, consider it valid
+        // If it’s not a named transform, consider it valid
         if (!$transform->getIsNamedTransform()) {
             return true;
         }
