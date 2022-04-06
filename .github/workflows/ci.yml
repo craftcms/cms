@@ -17,4 +17,4 @@ jobs:
       run_phpstan: true
       run_tests: true
       php_versions: '["7.4", "8.0", "8.1"]'
-      slack_webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
+      slack_webhook_url: ${{ env.SLACK_WEBHOOK_URL }}
