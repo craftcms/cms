@@ -140,7 +140,7 @@ class Config extends Component
 
         // Merge in any environment value overrides, and typecast everything
         $envConfig = App::envConfig($configClass, $envPrefix);
-        $config = array_merge($config ,$envConfig);
+        $config = array_merge($config, $envConfig);
         Typecast::properties($configClass, $config);
 
         /** @var BaseObject */
