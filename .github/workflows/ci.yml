@@ -11,7 +11,7 @@ on:
 jobs:
 
   call-workflow:
-    uses: craftcms/.github/.github/workflows/ci.yml@main
+    uses: craftcms/.github/.github/workflows/ci.yml@v1
     with:
       run_ecs: true
       run_phpstan: true
