@@ -70,7 +70,7 @@ class Application extends \yii\console\Application
      */
     public function runAction($route, $params = []): int|BaseResponse|null
     {
-        if (!$this->getIsInstalled() && $this->_requireInfoTable($route)) {
+        if (!$this->getIsInstalled() && $this->_requireInfoTable($route, $params)) {
             // Is the connection valid at least?
             if (!$this->getIsDbConnectionValid()) {
                 Console::outputWarning('Craft can’t connect to the database. Check your connection settings.');
@@ -168,8 +168,12 @@ class Application extends \yii\console\Application
         return $component;
     }
 
-    private function _requireInfoTable($route): bool
+    private function _requireInfoTable(string $route, array $params): bool
     {
+        if (isset($params['help'])) {
+            return false;
+        }
+
         [$firstSeg] = explode('/', $route, 2);
         return !in_array($firstSeg, ['install', 'setup', 'db', 'help'], true);
     }
