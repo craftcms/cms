@@ -79,12 +79,12 @@ class MatrixBlock extends Element
             'typeId' => [
                 'name' => 'typeId',
                 'type' => Type::int(),
-                'description' => 'The ID of the matrix block\'s type.',
+                'description' => 'The ID of the matrix block’s type.',
             ],
             'typeHandle' => [
                 'name' => 'typeHandle',
                 'type' => Type::string(),
-                'description' => 'The handle of the matrix block\'s type.',
+                'description' => 'The handle of the matrix block’s type.',
                 'complexity' => Gql::singleQueryComplexity(),
             ],
             'sortOrder' => [

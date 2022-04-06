@@ -126,7 +126,7 @@ class Element extends InterfaceType
             'status' => [
                 'name' => 'status',
                 'type' => Type::string(),
-                'description' => 'The element\'s status.',
+                'description' => 'The element’s status.',
             ],
             'dateCreated' => [
                 'name' => 'dateCreated',
