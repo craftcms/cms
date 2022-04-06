@@ -1,5 +1,7 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
 ## 3.7.38 - 2022-04-06
 
 ### Added
