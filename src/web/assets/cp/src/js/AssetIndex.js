@@ -392,7 +392,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
                 var $a = this._folderDrag.$draggee.eq(i).children('a'),
                     folderId = $a.data('folder-id');
 
-                // Make sure it's not already in the target folder and use this single folder Id.
+                // Make sure it’s not already in the target folder and use this single folder Id.
                 if (folderId != targetFolderId) {
                     folderIds.push(folderId);
                     break;

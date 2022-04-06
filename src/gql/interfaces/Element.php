@@ -127,7 +127,7 @@ class Element extends InterfaceType implements SingularTypeInterface
             'status' => [
                 'name' => 'status',
                 'type' => Type::string(),
-                'description' => 'The element\'s status.',
+                'description' => 'The element’s status.',
             ],
             'dateCreated' => [
                 'name' => 'dateCreated',

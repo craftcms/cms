@@ -6,6 +6,7 @@
 - It’s now possible to disable native element sources from the Customize Sources modal. ([#10676](https://github.com/craftcms/cms/discussions/10676))
 - GraphQL schemas now include settings that determine which sites elements can be queried from. ([#10610](https://github.com/craftcms/cms/issues/10610))
 - Added the `buildId` general config. ([#10705](https://github.com/craftcms/cms/pull/10705))
+- Added `craft\base\Config`. ([#10573](https://github.com/craftcms/cms/pull/10573))
 - Added `craft\base\FieldInterface::isRequirable()`.
 - Added `craft\base\FsInterface::read()`.
 - Added `craft\base\FsInterface::write()`.
@@ -13,6 +14,7 @@
 - Added `craft\db\Migration::archiveTableIfExists()`. ([#10827](https://github.com/craftcms/cms/discussions/10827))
 - Added `craft\helpers\App::devMode()`.
 - Added `craft\services\Assets::getImagePreviewUrl()`.
+- Added `craft\services\Gc::removeEmptyTempFolders()`.
 - Added `craft\web\CpScreenResponseBehavior::selectedSubnavItem()`. ([#10784](https://github.com/craftcms/cms/discussions/10784))
 - Added the `Craft.getQueryParam()` JavaScript method.
 - Added the `Craft.getQueryParams()` JavaScript method.
@@ -30,11 +32,17 @@
 - The default `subLeft` and `subRight` search query term options are now only applied to terms that don’t include an asterisk at the beginning/end, e.g. `hello*`. ([#10613](https://github.com/craftcms/cms/discussions/10613))
 - Control panel resource locations are now cached, so resource requests can be resolved when Craft isn’t installed yet, or a database connection can’t be established. ([#10642](https://github.com/craftcms/cms/pull/10642))
 - Control panel resources are now served with cache headers, if the `buildId` config setting is set. ([#10705](https://github.com/craftcms/cms/pull/10705))
+- Empty subfolders within the temporary upload volume are now removed during garbage collection. ([#10746](https://github.com/craftcms/cms/issues/10746))
+- Most config settings can now be set via environment variables directly, without needing to pull them in from `config/general.php` or `config/db.php`. ([#10573](https://github.com/craftcms/cms/pull/10573))
+- `install/*`, `setup/*`, `db/*`, and `help` actions no longer output a warning if Craft can’t connect to the database. ([#10851](https://github.com/craftcms/cms/pull/10851))
 - `craft\elements\Asset::getUrl()` now has an `$immediately` argument.
 - `craft\gql\base\ElementResolver::prepareQuery()` now expects its third argument to have a `string|null` type declaration.
 - `craft\test\TestSetup::getMockApp()` has been renamed to `getMockModule()`, and its `$appClass` argument has been renamed to `$moduleClass`.
 
 ### Removed
+- Removed the `locale` element property. `siteId` should be used instead.
+- Removed the `ownerLocale` Matrix block query param. `site` or `siteId` should be used instead.
+- Removed support for `sourceLocale` in `relatedTo` element query params. `sourceSite` should be used instead.
 - Removed `craft\base\ElementInterface::getCrumbs()`. ([#10784](https://github.com/craftcms/cms/discussions/10784))
 - Removed `craft\services\ImageTransforms::getAllImageTransformerTypes()`.
 - Removed `craft\services\Volumes::getPublicVolumes()`.
@@ -54,6 +62,8 @@
 - Fixed a JavaScript error that could occur when interacting with condition rules. ([#10779](https://github.com/craftcms/cms/issues/10779))
 - Fixed a bug where it wasn’t possible to add, remove, or reorder rows within Table fields. ([#10835](https://github.com/craftcms/cms/issues/10835))
 - Fixed a bug where the context button on unified element editor pages wouldn’t get a label for potentially multi-site elements that were currently only enabled for a single site. ([#10693](https://github.com/craftcms/cms/issues/10693))
+- Fixed a bug where deprecation warnings weren’t getting saved properly. ([#10840](https://github.com/craftcms/cms/issues/10840))
+- Fixed an error that could occur when applying project config changes. ([#10855](https://github.com/craftcms/cms/issues/10855))
 
 ## 4.0.0-beta.3 - 2022-03-22
 

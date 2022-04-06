@@ -70,6 +70,7 @@
 - Added `craft\base\conditions\BaseTextConditionRule`.
 - Added `craft\base\conditions\ConditionInterface`.
 - Added `craft\base\conditions\ConditionRuleInterface`.
+- Added `craft\base\Config`. ([#10573](https://github.com/craftcms/cms/pull/10573))
 - Added `craft\base\Element::EVENT_AUTHORIZE_CREATE_DRAFTS`.
 - Added `craft\base\Element::EVENT_AUTHORIZE_DELETE_FOR_SITE`.
 - Added `craft\base\Element::EVENT_AUTHORIZE_DELETE`.
@@ -325,6 +326,7 @@
 - Added `craft\services\Fields::createLayout()`.
 - Added `craft\services\Fs`.
 - Added `craft\services\Gc::hardDeleteElements()`.
+- Added `craft\services\Gc::removeEmptyTempFolders()`.
 - Added `craft\services\Gql::prepareFieldDefinitions()`.
 - Added `craft\services\ImageTransforms`.
 - Added `craft\services\Matrix::createRevisionBlocks()`.
@@ -433,6 +435,7 @@
 - The `entries/save-entry` action now returns a 400 HTTP status for JSON responses when the entry couldn’t be saved.
 - The `users/save-user` action no longer includes a `unverifiedEmail` key in failure responses.
 - The `users/set-password` action now returns a 400 HTTP status when an invalid token is passed, if there’s no URL to redirect to. ([#10592](https://github.com/craftcms/cms/discussions/10592))
+- `install/*`, `setup/*`, `db/*`, and `help` actions no longer output a warning if Craft can’t connect to the database. ([#10851](https://github.com/craftcms/cms/pull/10851))
 - `createFoldersInVolume:<uid>` user permissions have been renamed to `createFolders:<uid>`.
 - `deleteFilesAndFoldersInVolume:<uid>` user permissions have been renamed to `deleteAssets:<uid>`.
 - `deletePeerFilesInVolume:<uid>` user permissions have been renamed to `deletePeerAssets:<uid>`.
@@ -461,6 +464,8 @@
 - Block element types’ `getOwner()` methods can now return `null`.
 - Control panel resource locations are now cached, so resource requests can be resolved when Craft isn’t installed yet, or a database connection can’t be established. ([#10642](https://github.com/craftcms/cms/pull/10642))
 - Control panel resources are now served with cache headers, if the `buildId` config setting is set. ([#10705](https://github.com/craftcms/cms/pull/10705))
+- Empty subfolders within the temporary upload volume are now removed during garbage collection. ([#10746](https://github.com/craftcms/cms/issues/10746))
+- Most config settings can now be set via environment variables directly, without needing to pull them in from `config/general.php` or `config/db.php`. ([#10573](https://github.com/craftcms/cms/pull/10573))
 - `craft\base\AssetPreviewHandlerInterface::getPreviewHtml()` now accepts an optional array of variable to pass on to the template.
 - `craft\base\Element::__get()` now clones custom field values before returning them. ([#8781](https://github.com/craftcms/cms/discussions/8781))
 - `craft\base\Element::fieldLayoutFields()` now has a `visibleOnly` argument.
@@ -600,6 +605,9 @@
 - Removed the `enabledForSite` GraphQL argument. `status` should be used instead.
 - Removed the `{% includeHiResCss %}` Twig tag.
 - Removed support for deprecated `DateTime` faux Twig methods `atom()`, `cookie()`, `iso8601()`, `rfc822()`, `rfc850()`, `rfc1036()`, `rfc1123()`, `rfc2822()`, `rfc3339()`, `rss()`, `w3c()`, `w3cDate()`, `mySqlDateTime()`, `localeDate()`, `localeTime()`, `year()`, `month()`, `day()`, `nice()`, and `uiTimestamp()`.
+- Removed the `locale` element property. `siteId` should be used instead.
+- Removed the `ownerLocale` Matrix block query param. `site` or `siteId` should be used instead.
+- Removed support for `sourceLocale` in `relatedTo` element query params. `sourceSite` should be used instead.
 - Removed the `craft.categoryGroups` Twig variable.
 - Removed the `craft.config` Twig variable.
 - Removed the `craft.deprecator` Twig variable.

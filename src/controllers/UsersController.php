@@ -2239,7 +2239,7 @@ JS,
             return $this->_processInvalidToken();
         }
 
-        // If someone is logged in and it's not this person, log them out
+        // If someone is logged in and it’s not this person, log them out
         $userSession = Craft::$app->getUser();
         if (!$userSession->getIsGuest() && $userSession->getId() != $user->id) {
             $userSession->logout();

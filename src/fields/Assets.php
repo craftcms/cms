@@ -663,7 +663,7 @@ class Assets extends BaseRelationField
         if (!$this->showUnpermittedVolumes && !empty($sources)) {
             $userService = Craft::$app->getUser();
             return ArrayHelper::where($sources, function(string $source) use ($assetsService, $userService) {
-                // If it's not a volume folder, let it through
+                // If it’s not a volume folder, let it through
                 if (!str_starts_with($source, 'folder:')) {
                     return true;
                 }

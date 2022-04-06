@@ -2673,7 +2673,7 @@ class Elements extends Component
             $siteSettingsRecord->slug = $element->slug;
             $siteSettingsRecord->uri = $element->uri;
 
-            // Avoid `enabled` getting marked as dirty if it's not really changing
+            // Avoid `enabled` getting marked as dirty if it’s not really changing
             $enabledForSite = $element->getEnabledForSite();
             if ($siteSettingsRecord->getIsNewRecord() || $siteSettingsRecord->enabled != $enabledForSite) {
                 $siteSettingsRecord->enabled = $enabledForSite;

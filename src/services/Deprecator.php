@@ -56,6 +56,11 @@ class Deprecator extends Component
     private array $_requestLogs = [];
 
     /**
+     * @var DeprecationError[] The deprecation errors that still need to be stored in the DB
+     */
+    private array $_pendingRequestLogs = [];
+
+    /**
      * @var DeprecationError[]|null All the unique deprecation errors that have been logged
      */
     private ?array $_allLogs = null;
@@ -66,7 +71,7 @@ class Deprecator extends Component
      */
     public function init(): void
     {
-        if (!$this->throwExceptions && $this->logTarget === 'db') {
+        if ($this->_storeLogsInDb()) {
             Craft::$app->on(Application::EVENT_AFTER_REQUEST, [$this, 'storeLogs'], null, false);
         }
 
@@ -106,7 +111,7 @@ class Deprecator extends Component
         $fingerprint = $file . ($line ? ':' . $line : '');
 
         // Don't log the same key/fingerprint twice in the same request
-        $this->_requestLogs["$key-$fingerprint"] = new DeprecationError([
+        $this->_requestLogs["$key-$fingerprint"] = $this->_pendingRequestLogs["$key-$fingerprint"] = new DeprecationError([
             'key' => $key,
             'fingerprint' => $fingerprint,
             'lastOccurrence' => new DateTime(),
@@ -115,6 +120,15 @@ class Deprecator extends Component
             'message' => $message,
             'traces' => $this->_cleanTraces($traces),
         ]);
+
+        if ($this->_storeLogsInDb() && Craft::$app->state >= Application::STATE_AFTER_REQUEST) {
+            $this->storeLogs();
+        }
+    }
+
+    private function _storeLogsInDb(): bool
+    {
+        return !$this->throwExceptions && $this->logTarget === 'db';
     }
 
     /**
@@ -126,7 +140,7 @@ class Deprecator extends Component
     {
         $db = Craft::$app->getDb();
 
-        foreach ($this->_requestLogs as $log) {
+        foreach ($this->_pendingRequestLogs as $log) {
             try {
                 Db::upsert(Table::DEPRECATIONERRORS, [
                     'key' => $log->key,
@@ -144,6 +158,8 @@ class Deprecator extends Component
                 break;
             }
         }
+
+        $this->_pendingRequestLogs = [];
     }
 
     /**

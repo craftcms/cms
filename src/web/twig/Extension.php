@@ -1334,7 +1334,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * Returns a plugin instance by its handle.
      *
      * @param string $handle The plugin handle
-     * @return PluginInterface|null The plugin, or `null` if it's not installed
+     * @return PluginInterface|null The plugin, or `null` if it’s not installed
      * @since 3.1.0
      */
     public function pluginFunction(string $handle): ?PluginInterface
