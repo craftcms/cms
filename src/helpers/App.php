@@ -32,11 +32,8 @@ use craft\web\Session;
 use craft\web\User as WebUser;
 use craft\web\View;
 use HTMLPurifier_Encoder;
-use Illuminate\Support\Collection;
 use ReflectionClass;
-use ReflectionNamedType;
 use ReflectionProperty;
-use yii\base\BaseObject;
 use yii\base\Event;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidValueException;
@@ -96,6 +93,46 @@ class App
         }
 
         return null;
+    }
+
+    /**
+     * Returns a config array for a given class, based on any environment variables or PHP constants named based on its
+     * public properties.
+     *
+     * Environment variable/PHP constant names must be capitalized, SNAKE_CASED versions of the object’s property names,
+     * possibly with a given prefix.
+     *
+     * For example, if an object has a `fooBar` property, and `X`/`X_` is passed as the prefix, the resulting array
+     * may contain a `fooBar` key set to an `X_FOO_BAR` environment variable value, if it exists.
+     *
+     * @param string $class The class name
+     * @phpstan-param class-string $class
+     * @param string|null $envPrefix The environment variable name prefix
+     * @return array
+     * @phpstan-return array<string, mixed>
+     * @since 4.0.0
+     */
+    public static function envConfig(string $class, ?string $envPrefix = null): array
+    {
+        $envPrefix = $envPrefix !== null ? StringHelper::ensureRight($envPrefix, '_') : '';
+        $properties = (new ReflectionClass($class))->getProperties(ReflectionProperty::IS_PUBLIC);
+        $envConfig = [];
+
+        foreach ($properties as $prop) {
+            if ($prop->isStatic()) {
+                continue;
+            }
+
+            $propName = $prop->getName();
+            $envName = $envPrefix . strtoupper(StringHelper::toSnakeCase($propName));
+            $envValue = static::env($envName);
+
+            if ($envValue !== null) {
+                $envConfig[$propName] = $envValue;
+            }
+        }
+
+        return $envConfig;
     }
 
     /**
@@ -262,37 +299,6 @@ class App
     public static function editions(): array
     {
         return [Craft::Solo, Craft::Pro];
-    }
-
-    /**
-     * Load configuration into an object from environment variables
-     * Values are coerced using Reflection on the object properties.
-     *
-     * @param BaseObject $config The config or settings object
-     * @param string $prefix The prefix of the environment variables to use
-     * @return BaseObject
-     */
-    public static function configureFromEnv(BaseObject $config, string $prefix = ''): BaseObject
-    {
-        $properties = (new ReflectionClass($config))->getProperties(ReflectionProperty::IS_PUBLIC);
-
-        foreach ($properties as $prop) {
-            $name = $prop->getName();
-            $value = self::_getConfigValueFromEnv($name, $prefix) ?? $config->$name;
-
-            // Convert to an array?
-            if (
-                is_string($value) &&
-                str_contains($value, ',') &&
-                self::_getPropertyTypes($prop)->contains('array')
-            ) {
-                $config->$name = StringHelper::split($value);
-            } else {
-                $config->$name = $value;
-            }
-        }
-
-        return $config;
     }
 
     /**
@@ -1097,32 +1103,5 @@ class App
 
         // Default to the application locale
         return Craft::$app->getLocale();
-    }
-
-    private static function _getConfigValueFromEnv(string $name, string $prefix): mixed
-    {
-        $prefix = $prefix ? StringHelper::ensureRight($prefix, '_') : '';
-        $envName = $prefix . strtoupper(StringHelper::toSnakeCase($name));
-
-        return static::env($envName);
-    }
-
-    private static function _getPropertyTypes(ReflectionProperty $property): Collection
-    {
-        return Collection::make([$property->getType()])
-
-            // Checking for getTypes, as ReflectionIntersectionType isn't available until 8.1
-            ->filter(fn($type) => $type && ($type instanceof ReflectionNamedType || method_exists($type, 'getTypes')))
-            ->flatMap(function($type) {
-                if ($type instanceof ReflectionNamedType) {
-                    return [$type->getName()];
-                }
-
-                // Ignoring PHPStan errors, as we've already filtered on `getTypes`.
-                /** @phpstan-ignore-next-line */
-                $types = $type->getTypes();
-
-                return Collection::make($types)->map(fn($type) => $type->getName());
-            });
     }
 }

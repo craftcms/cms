@@ -10,6 +10,7 @@ namespace craft\config;
 use Craft;
 use craft\helpers\ConfigHelper;
 use craft\helpers\Localization;
+use craft\helpers\StringHelper;
 use craft\services\Config;
 use yii\base\BaseObject;
 use yii\base\InvalidArgumentException;
@@ -142,11 +143,11 @@ class GeneralConfig extends BaseObject
     public bool $allowUpdates = true;
 
     /**
-     * @var string[]|string The file extensions Craft should allow when a user is uploading files.
+     * @var string[] The file extensions Craft should allow when a user is uploading files.
      * @see extraAllowedFileExtensions
      * @group Assets
      */
-    public string|array $allowedFileExtensions = [
+    public array $allowedFileExtensions = [
         '7z',
         'aiff',
         'asc',
@@ -691,11 +692,11 @@ class GeneralConfig extends BaseObject
     public string $errorTemplatePrefix = '';
 
     /**
-     * @var string[]|string|null List of file extensions that will be merged into the <config3:allowedFileExtensions> config setting.
+     * @var string[]|null List of file extensions that will be merged into the <config3:allowedFileExtensions> config setting.
      * @see allowedFileExtensions
      * @group System
      */
-    public string|array|null $extraAllowedFileExtensions = null;
+    public ?array $extraAllowedFileExtensions = null;
 
     /**
      * @var string[]|null List of extra locale IDs that the application should support, and users should be able to select as their Preferred Language.
@@ -1759,6 +1760,11 @@ class GeneralConfig extends BaseObject
                     throw new InvalidConfigException($e->getMessage(), 0, $e);
                 }
             }
+        }
+
+        // Normalize disabledPlugins
+        if (is_string($this->disabledPlugins) && $this->disabledPlugins !== '*') {
+            $this->disabledPlugins = StringHelper::split($this->disabledPlugins);
         }
     }
 
