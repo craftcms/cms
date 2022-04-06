@@ -1,7 +1,7 @@
 {
   "name": "craftcms/cms",
   "description": "Craft CMS",
-  "version": "3.7.37",
+  "version": "3.7.38",
   "keywords": [
     "cms",
     "craftcms",
@@ -87,8 +87,12 @@
   "autoload": {
     "psr-4": {
       "craft\\": "src/",
-      "crafttests\\fixtures\\": "tests/fixtures/",
       "yii2tech\\ar\\softdelete\\": "lib/ar-softdelete/src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "crafttests\\": "tests/"
     }
   },
   "scripts": {

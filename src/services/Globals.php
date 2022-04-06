@@ -344,7 +344,7 @@ class Globals extends Component
                 $layout->id = $globalSetRecord->fieldLayoutId;
                 $layout->type = GlobalSet::class;
                 $layout->uid = key($data['fieldLayouts']);
-                Craft::$app->getFields()->saveLayout($layout);
+                Craft::$app->getFields()->saveLayout($layout, false);
                 $globalSetRecord->fieldLayoutId = $layout->id;
             } elseif ($globalSetRecord->fieldLayoutId) {
                 // Delete the field layout

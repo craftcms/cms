@@ -1166,7 +1166,7 @@ class Users extends Component
         $layout->id = $fieldsService->getLayoutByType(User::class)->id;
         $layout->type = User::class;
         $layout->uid = key($data);
-        $fieldsService->saveLayout($layout);
+        $fieldsService->saveLayout($layout, false);
 
         // Invalidate user caches
         Craft::$app->getElements()->invalidateCachesForElementType(User::class);

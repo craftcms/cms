@@ -91,13 +91,8 @@ class Duplicate extends ElementAction
                 continue;
             }
 
-            $newAttributes = [];
-            if ($element::hasTitles() && (!$element->getIsDraft() || $element->getIsUnpublishedDraft())) {
-                $newAttributes['title'] = Craft::t('app', '{title} copy', ['title' => $element->title]);
-            }
-
             try {
-                $duplicate = $elementsService->duplicateElement($element, $newAttributes);
+                $duplicate = $elementsService->duplicateElement($element);
             } catch (\Throwable $e) {
                 // Validation error
                 $failCount++;

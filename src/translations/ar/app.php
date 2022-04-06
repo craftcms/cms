@@ -1860,7 +1860,6 @@ return [
     '{section} Entry Types' => 'أنواع الإدخال في {section}',
     '{step, number} of {total, number}' => '{step, number} من {total, number}',
     '{title} ({site})' => '{title} ({site})',
-    '{title} copy' => 'نسخ {title}',
     '{total, number} {total, plural, =1{{item}} other{{items}}}' => '{total, number} {total, plural, zero {} one {{items}} two {{items}} few {{items}} many {{items}} =1{{item}} other{{items}}}',
     '{total} jobs' => '{total} المهام',
     '{total} updates available!' => '{total} تحديثات متاحة!',

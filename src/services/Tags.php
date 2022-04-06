@@ -247,7 +247,7 @@ class Tags extends Component
                 $layout->id = $tagGroupRecord->fieldLayoutId;
                 $layout->type = Tag::class;
                 $layout->uid = key($data['fieldLayouts']);
-                Craft::$app->getFields()->saveLayout($layout);
+                Craft::$app->getFields()->saveLayout($layout, false);
                 $tagGroupRecord->fieldLayoutId = $layout->id;
             } elseif ($tagGroupRecord->fieldLayoutId) {
                 // Delete the field layout
