@@ -278,13 +278,13 @@ class App
 
         foreach ($properties as $prop) {
             $name = $prop->getName();
-            $value = static::_getConfigValueFromEnv($name, $prefix) ?? $config->$name;
+            $value = self::_getConfigValueFromEnv($name, $prefix) ?? $config->$name;
 
             // Convert to an array?
             if (
                 is_string($value) &&
                 str_contains($value, ',') &&
-                static::_getPropertyTypes($prop)->contains('array')
+                self::_getPropertyTypes($prop)->contains('array')
             ) {
                 $config->$name = StringHelper::split($value);
             } else {
