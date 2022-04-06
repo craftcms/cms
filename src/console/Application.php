@@ -171,11 +171,6 @@ class Application extends \yii\console\Application
     private function _requireInfoTable($route): bool
     {
         [$firstSeg] = explode('/', $route, 2);
-
-        if (in_array($firstSeg, ['install', 'setup', 'db', 'help'], true)) {
-            return false;
-        }
-
-        return true;
+        return !in_array($firstSeg, ['install', 'setup', 'db', 'help'], true);
     }
 }
