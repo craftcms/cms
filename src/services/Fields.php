@@ -806,7 +806,7 @@ class Fields extends Component
         }
 
         if (!$appliedConfig) {
-            // If it's not a global field, or there weren't any changes in the main field settings, apply the save to the DB + call afterSave()
+            // If it’s not a global field, or there weren't any changes in the main field settings, apply the save to the DB + call afterSave()
             $this->applyFieldSave($field->uid, $configData, $field->context);
         }
 

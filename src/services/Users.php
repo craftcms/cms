@@ -296,7 +296,7 @@ class Users extends Component
         $interval = DateTimeHelper::secondsToInterval($generalConfig->verificationCodeDuration);
         $minCodeIssueDate->sub($interval);
 
-        // Make sure it's not expired
+        // Make sure it’s not expired
         if ($user->verificationCodeIssuedDate < $minCodeIssueDate) {
             $userRecord = $userRecord ?? $this->_getUserRecordById($user->id);
             $userRecord->verificationCode = $user->verificationCode = null;
