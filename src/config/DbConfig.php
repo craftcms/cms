@@ -198,7 +198,7 @@ class DbConfig extends BaseObject
      * @inheritdoc
      * @throws InvalidConfigException
      */
-    public function normalize(): void
+    public function init(): void
     {
         // If $url was set, parse it to set other properties
         if ($this->url) {
