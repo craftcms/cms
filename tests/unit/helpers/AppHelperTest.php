@@ -8,6 +8,7 @@
 namespace crafttests\unit\helpers;
 
 use Craft;
+use craft\config\GeneralConfig;
 use craft\helpers\App;
 use craft\mail\transportadapters\Sendmail;
 use craft\models\MailSettings;
@@ -49,6 +50,36 @@ class AppHelperTest extends TestCase
 
         self::assertSame(CRAFT_TESTS_PATH, App::env('CRAFT_TESTS_PATH'));
         self::assertSame(null, App::env('TEST_NONEXISTENT_ENV'));
+    }
+
+    /**
+     * @dataProvider envConfigDataProvider
+     *
+     * @param mixed $expected
+     * @param string $paramName
+     * @param string $overrideName
+     * @param mixed $overrideValue
+     */
+    public function testEnvConfig(mixed $expected, string $paramName, string $overrideName, mixed $overrideValue): void
+    {
+        $envString = $overrideName;
+
+        if ($overrideValue !== null) {
+            $envString .= "=$overrideValue";
+        }
+
+        putenv($envString);
+
+        $config = App::envConfig(GeneralConfig::class, 'CRAFT_');
+        if ($expected === null) {
+            self::assertArrayNotHasKey($paramName, $config);
+        } else {
+            self::assertArrayHasKey($paramName, $config);
+            self::assertEquals($expected, $config[$paramName]);
+        }
+
+        // Cleanup env for subsequent tests
+        putenv($overrideName);
     }
 
     /**
@@ -324,6 +355,57 @@ class AppHelperTest extends TestCase
 
         $this->setInaccessibleProperty(Craft::$app->getRequest(), '_isCpRequest', false);
         $this->testConfigIndexes('viewConfig', ['class']);
+    }
+
+    /**
+     * @return array
+     */
+    public function envConfigDataProvider(): array
+    {
+        return [
+            [
+                false,
+                'allowAdminChanges',
+                'CRAFT_ALLOW_ADMIN_CHANGES',
+                'false',
+            ],
+            [
+                null,
+                'allowAdminChanges',
+                'CRAFT_ALLOW_ADMIN_CHANGES',
+                null,
+            ],
+            [
+                'foo,bar',
+                'disabledPlugins',
+                'CRAFT_DISABLED_PLUGINS',
+                'foo,bar',
+            ],
+            [
+                '*',
+                'disabledPlugins',
+                'CRAFT_DISABLED_PLUGINS',
+                '*',
+            ],
+            [
+                1,
+                'defaultWeekStartDay',
+                'CRAFT_DEFAULT_WEEK_START_DAY',
+                '1',
+            ],
+            [
+                'login,with,comma',
+                'loginPath',
+                'CRAFT_LOGIN_PATH',
+                'login,with,comma',
+            ],
+            [
+                false,
+                'loginPath',
+                'CRAFT_LOGIN_PATH',
+                'false',
+            ],
+        ];
     }
 
     /**

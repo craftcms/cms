@@ -27,7 +27,7 @@ abstract class BaseElementsController extends Controller
      */
     public function beforeAction($action): bool
     {
-        // All actions require CP requests
+        // All actions require control panel requests
         $this->requireCpRequest();
 
         return parent::beforeAction($action);

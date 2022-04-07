@@ -32,6 +32,8 @@ use craft\web\Session;
 use craft\web\User as WebUser;
 use craft\web\View;
 use HTMLPurifier_Encoder;
+use ReflectionClass;
+use ReflectionProperty;
 use yii\base\Event;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidValueException;
@@ -91,6 +93,46 @@ class App
         }
 
         return null;
+    }
+
+    /**
+     * Returns a config array for a given class, based on any environment variables or PHP constants named based on its
+     * public properties.
+     *
+     * Environment variable/PHP constant names must be capitalized, SNAKE_CASED versions of the object’s property names,
+     * possibly with a given prefix.
+     *
+     * For example, if an object has a `fooBar` property, and `X`/`X_` is passed as the prefix, the resulting array
+     * may contain a `fooBar` key set to an `X_FOO_BAR` environment variable value, if it exists.
+     *
+     * @param string $class The class name
+     * @phpstan-param class-string $class
+     * @param string|null $envPrefix The environment variable name prefix
+     * @return array
+     * @phpstan-return array<string, mixed>
+     * @since 4.0.0
+     */
+    public static function envConfig(string $class, ?string $envPrefix = null): array
+    {
+        $envPrefix = $envPrefix !== null ? StringHelper::ensureRight($envPrefix, '_') : '';
+        $properties = (new ReflectionClass($class))->getProperties(ReflectionProperty::IS_PUBLIC);
+        $envConfig = [];
+
+        foreach ($properties as $prop) {
+            if ($prop->isStatic()) {
+                continue;
+            }
+
+            $propName = $prop->getName();
+            $envName = $envPrefix . strtoupper(StringHelper::toSnakeCase($propName));
+            $envValue = static::env($envName);
+
+            if ($envValue !== null) {
+                $envConfig[$propName] = $envValue;
+            }
+        }
+
+        return $envConfig;
     }
 
     /**
@@ -247,6 +289,7 @@ class App
     {
         return static::env('CRAFT_NITRO') === '1';
     }
+
 
     /**
      * Returns an array of all known Craft editions’ IDs.

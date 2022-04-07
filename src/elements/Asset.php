@@ -82,7 +82,7 @@ use yii\web\Response;
  * @property int|null $width the image width
  * @property int|null $volumeId the volume ID
  * @property string $filename the filename (with extension)
- * @property string|array|null $focalPoint the focal point represented as an array with `x` and `y` keys, or null if it's not an image
+ * @property string|array|null $focalPoint the focal point represented as an array with `x` and `y` keys, or null if it’s not an image
  * @property-read Markup|null $img an `<img>` tag based on this asset
  * @property-read VolumeFolder $folder the asset’s volume folder
  * @property-read Volume $volume the asset’s volume
@@ -1910,7 +1910,7 @@ JS;
     }
 
     /**
-     * Returns the focal point represented as an array with `x` and `y` keys, or null if it's not an image.
+     * Returns the focal point represented as an array with `x` and `y` keys, or null if it’s not an image.
      *
      * @param bool $asCss whether the value should be returned in CSS syntax ("50% 25%") instead
      * @return array|string|null

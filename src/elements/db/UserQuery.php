@@ -124,7 +124,7 @@ class UserQuery extends ElementQuery
      * @var mixed The permission that the resulting users must have.
      * ---
      * ```php
-     * // fetch users with CP access
+     * // fetch users with control panel access
      * $admins = \craft\elements\User::find()
      *     ->can('accessCp')
      *     ->all();

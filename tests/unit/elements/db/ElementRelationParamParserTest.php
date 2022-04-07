@@ -67,7 +67,6 @@ class ElementRelationParamParserTest extends TestCase
     {
         return [
             [false, ['element' => 1, 'sourceSite' => 'notARealSiteHandle']],
-            [false, ['element' => 1, 'sourceLocale' => 'notARealSiteHandle']],
             [['element' => ['or'], 'field' => null, 'sourceSite' => null], []],
             [['element' => ['or', 1], 'field' => null, 'sourceSite' => null], 1],
             [['element' => ['or', 1, 2], 'field' => null, 'sourceSite' => null], [1, 2]],

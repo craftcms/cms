@@ -8,6 +8,7 @@
 - Element slideouts now support provisional drafts and autosaving, for element types that support them. ([#10467](https://github.com/craftcms/cms/pull/10467))
 - Element indexes can now be filtered by element attributes and custom field values. ([#9192](https://github.com/craftcms/cms/discussions/9192), [#9450](https://github.com/craftcms/cms/discussions/9450), [#9462](https://github.com/craftcms/cms/discussions/9462), [#9483](https://github.com/craftcms/cms/discussions/9483))
 - Admins can now create custom element sources from the Customize Sources modal. ([#8423](https://github.com/craftcms/cms/discussions/8423))
+- It’s now possible to disable native element sources from the Customize Sources modal. ([#10676](https://github.com/craftcms/cms/discussions/10676))
 - Field layout tabs, fields, and UI elements can now be conditionally shown based on properties of the current user and/or element being edited. ([#8099](https://github.com/craftcms/cms/discussions/8099), [#8154](https://github.com/craftcms/cms/discussions/8154))
 - Assets, Entries, and Users fields have new condition settings that can be used to further limit which elements should be relatable, beyond the existing field settings. ([#10393](https://github.com/craftcms/cms/pull/10393))
 - Assets, Entries, and Users fields have new “Min Relations” settings, and their former “Limit” settings have been renamed to “Max Relations”. ([#8621](https://github.com/craftcms/cms/discussions/8621))
@@ -33,6 +34,7 @@
 - Added the `primaryOwner` and `primaryOwnerId` Matrix block query params.
 - Added the `hasAlt` asset query param.
 - Added the `button`, `submitButton`, `fs`, and `fsField` macros to the `_includes/forms` control panel template.
+- Added the `buildId` general config. ([#10705](https://github.com/craftcms/cms/pull/10705))
 - Added support for setting custom config settings from `config/custom.php`, which are accessible via `Craft::$app->config->custom`. ([#10012](https://github.com/craftcms/cms/issues/10012))
 - Added the `enableLogging` database config setting for logging database queries. ([#10659](https://github.com/craftcms/cms/pull/10659))
 - Added the `enableProfiling` database config setting for logging database query profiling information. ([#10659](https://github.com/craftcms/cms/pull/10659))
@@ -94,6 +96,7 @@
 - Added `craft\base\ElementInterface::hasRevisions()`.
 - Added `craft\base\ElementInterface::prepareEditScreen()`.
 - Added `craft\base\FieldInterface::getElementConditionRuleType()`.
+- Added `craft\base\FieldInterface::isRequirable()`.
 - Added `craft\base\FieldLayoutComponent`.
 - Added `craft\base\Fs`.
 - Added `craft\base\FsInterface`.
@@ -115,6 +118,7 @@
 - Added `craft\controllers\ElementIndexesController::$condition`.
 - Added `craft\controllers\FsController`.
 - Added `craft\controllers\ImageTransformsController`.
+- Added `craft\db\Migration::archiveTableIfExists()`. ([#10827](https://github.com/craftcms/cms/discussions/10827))
 - Added `craft\db\Migration::dropAllForeignKeysToTable()`.
 - Added `craft\db\Migration::dropForeignKeyIfExists()`.
 - Added `craft\db\Migration::renameTable()`.
@@ -124,6 +128,8 @@
 - Added `craft\db\Table::IMAGETRANSFORMINDEX`.
 - Added `craft\db\Table::IMAGETRANSFORMS`.
 - Added `craft\db\Table::MATRIXBLOCKS_OWNERS`.
+- Added `craft\debug\LogTarget`.
+- Added `craft\debug\MailPanel`.
 - Added `craft\elements\Address`.
 - Added `craft\elements\Asset::$alt`.
 - Added `craft\elements\Asset::EVENT_AFTER_GENERATE_TRANSFORM`.
@@ -231,6 +237,7 @@
 - Added `craft\gql\TypeManager::registerFieldDefinitions()`.
 - Added `craft\helpers\App::cliOption()`.
 - Added `craft\helpers\App::devMode()`.
+- Added `craft\helpers\App::envConfig()`. ([#10869](https://github.com/craftcms/cms/pull/10869))
 - Added `craft\helpers\App::isStreamLog()`.
 - Added `craft\helpers\App::normalizeValue()`.
 - Added `craft\helpers\Assets::downloadFile()`.
@@ -321,6 +328,7 @@
 - Added `craft\services\Fields::createLayout()`.
 - Added `craft\services\Fs`.
 - Added `craft\services\Gc::hardDeleteElements()`.
+- Added `craft\services\Gc::removeEmptyTempFolders()`.
 - Added `craft\services\Gql::prepareFieldDefinitions()`.
 - Added `craft\services\ImageTransforms`.
 - Added `craft\services\Matrix::createRevisionBlocks()`.
@@ -362,9 +370,14 @@
 - Added the `Craft.ElementEditor` JavaScript class.
 - Added the `Craft.ElementEditorSlideout` JavaScript class.
 - Added the `Craft.getPageUrl()` JavaScript method.
+- Added the `Craft.getQueryParam()` JavaScript method.
+- Added the `Craft.getQueryParams()` JavaScript method.
 - Added the `Craft.namespaceId()` JavaScript method.
 - Added the `Craft.namespaceInputName()` JavaScript method.
 - Added the `Craft.Queue` JavaScript class.
+- Added the `Craft.setPath()` JavaScript method.
+- Added the `Craft.setQueryParam()` JavaScript method.
+- Added the `Craft.setUrl()` JavaScript method.
 - Added the `Craft.ui.createButton()` JavaScript method.
 - Added the `Craft.ui.createSubmitButton()` JavaScript method.
 - Added the `htmx.org` JavaScript library.
@@ -383,6 +396,7 @@
 - Improved revision creation performance. ([#10589](https://github.com/craftcms/cms/pull/10577))
 - The “What’s New” HUD now displays an icon and label above each announcement, identifying where it came from (Craft CMS or a plugin). ([#9747](https://github.com/craftcms/cms/discussions/9747))
 - The control panel now keeps track of the currently-edited site on a per-tab basis by adding a `site` query string param to all control panel URLs. ([#8920](https://github.com/craftcms/cms/discussions/8920))
+- Element index pages’ status and sort menu option selections are now coded into the page URL via `status` and `sort` query string params. ([#10669](https://github.com/craftcms/cms/discussions/10669))
 - Users are no longer required to have a username or email.
 - Users can now set their Formatting Locale to any known locale; not just the available Language options. ([#10519](https://github.com/craftcms/cms/pull/10519))
 - Users’ Language and Formatting Locale settings now display locale names in the current language and their native languages. ([#10519](https://github.com/craftcms/cms/pull/10519))
@@ -401,6 +415,7 @@
 - Element queries’ `revision` params can now be set to `null` to include normal and revision elements.
 - Element queries can no longer be traversed or accessed like an array. Use a query execution method such as `all()`, `collect()`, or `one()` to fetch the results before working with them.
 - Relational fields now load elements in the current site rather than the primary site, if the source element isn’t localizable. ([#7048](https://github.com/craftcms/cms/issues/7048))
+- Lightswitch fields can no longer be marked as required within field layouts. ([#10773](https://github.com/craftcms/cms/issues/10773))
 - Built-in queue jobs are now always translated for the current user’s language. ([#9745](https://github.com/craftcms/cms/pull/9745))
 - Path options passed to console commands (e.g. `--basePath`) now take precedence over their enivronment variable/PHP constant counterparts.
 - Database backups are now named after the Craft version in the database, rather than the Composer-installed version. ([#9733](https://github.com/craftcms/cms/discussions/9733))
@@ -422,6 +437,7 @@
 - The `entries/save-entry` action now returns a 400 HTTP status for JSON responses when the entry couldn’t be saved.
 - The `users/save-user` action no longer includes a `unverifiedEmail` key in failure responses.
 - The `users/set-password` action now returns a 400 HTTP status when an invalid token is passed, if there’s no URL to redirect to. ([#10592](https://github.com/craftcms/cms/discussions/10592))
+- `install/*`, `setup/*`, `db/*`, and `help` actions no longer output a warning if Craft can’t connect to the database. ([#10851](https://github.com/craftcms/cms/pull/10851))
 - `createFoldersInVolume:<uid>` user permissions have been renamed to `createFolders:<uid>`.
 - `deleteFilesAndFoldersInVolume:<uid>` user permissions have been renamed to `deleteAssets:<uid>`.
 - `deletePeerFilesInVolume:<uid>` user permissions have been renamed to `deletePeerAssets:<uid>`.
@@ -448,6 +464,11 @@
 - Element types’ `sources()` methods’ `$context` arguments should no longer accept `null`.
 - Element types’ `tableAttributes()` and `defineTableAttributes()` methods should no longer return a generic attribute for defining the header column heading at the beginning of the returned array. The header column heading is now set to the element type’s display name, per its `displayName()` method.
 - Block element types’ `getOwner()` methods can now return `null`.
+- Control panel resource locations are now cached, so resource requests can be resolved when Craft isn’t installed yet, or a database connection can’t be established. ([#10642](https://github.com/craftcms/cms/pull/10642))
+- Control panel resources are now served with cache headers, if the `buildId` config setting is set. ([#10705](https://github.com/craftcms/cms/pull/10705))
+- Empty subfolders within the temporary upload volume are now removed during garbage collection. ([#10746](https://github.com/craftcms/cms/issues/10746))
+- Most config settings can now be overridden via environment variables. ([#10573](https://github.com/craftcms/cms/pull/10573), [#10869](https://github.com/craftcms/cms/pull/10869))
+- It’s now possible to configure the Debug Toolbar to store its data files on a filesystem, rather than within `storage/runtime/debug/`. ([#10825](https://github.com/craftcms/cms/pull/10825))
 - `craft\base\AssetPreviewHandlerInterface::getPreviewHtml()` now accepts an optional array of variable to pass on to the template.
 - `craft\base\Element::__get()` now clones custom field values before returning them. ([#8781](https://github.com/craftcms/cms/discussions/8781))
 - `craft\base\Element::fieldLayoutFields()` now has a `visibleOnly` argument.
@@ -587,6 +608,9 @@
 - Removed the `enabledForSite` GraphQL argument. `status` should be used instead.
 - Removed the `{% includeHiResCss %}` Twig tag.
 - Removed support for deprecated `DateTime` faux Twig methods `atom()`, `cookie()`, `iso8601()`, `rfc822()`, `rfc850()`, `rfc1036()`, `rfc1123()`, `rfc2822()`, `rfc3339()`, `rss()`, `w3c()`, `w3cDate()`, `mySqlDateTime()`, `localeDate()`, `localeTime()`, `year()`, `month()`, `day()`, `nice()`, and `uiTimestamp()`.
+- Removed the `locale` element property. `siteId` should be used instead.
+- Removed the `ownerLocale` Matrix block query param. `site` or `siteId` should be used instead.
+- Removed support for `sourceLocale` in `relatedTo` element query params. `sourceSite` should be used instead.
 - Removed the `craft.categoryGroups` Twig variable.
 - Removed the `craft.config` Twig variable.
 - Removed the `craft.deprecator` Twig variable.

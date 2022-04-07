@@ -29,6 +29,14 @@ use yii\validators\Validator;
 interface FieldInterface extends SavableComponentInterface
 {
     /**
+     * Returns whether the field can be marked as required.
+     *
+     * @return bool
+     * @since 4.0.0
+     */
+    public static function isRequirable(): bool;
+
+    /**
      * Returns whether this field has a column in the content table.
      *
      * ::: warning

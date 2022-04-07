@@ -261,7 +261,7 @@ class View extends \yii\web\View
     {
         parent::init();
 
-        // Set the initial template mode based on whether this is a CP or Site request
+        // Set the initial template mode based on whether this is a control panel or site request
         $request = Craft::$app->getRequest();
         if ($request->getIsConsoleRequest() || $request->getIsCpRequest()) {
             $this->setTemplateMode(self::TEMPLATE_MODE_CP);
@@ -269,7 +269,7 @@ class View extends \yii\web\View
             $this->setTemplateMode(self::TEMPLATE_MODE_SITE);
         }
 
-        // Register the CP hooks
+        // Register the control panel hooks
         $this->hook('cp.elements.element', [$this, '_getCpElementHtml']);
     }
 

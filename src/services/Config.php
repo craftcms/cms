@@ -14,6 +14,8 @@ use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
+use craft\helpers\Typecast;
+use yii\base\BaseObject;
 use yii\base\Component;
 use yii\base\ErrorException;
 use yii\base\Exception;
@@ -121,12 +123,28 @@ class Config extends Component
     {
         $config = $this->getConfigFromFile($category);
 
-        return match ($category) {
-            self::CATEGORY_CUSTOM => (object)$config,
-            self::CATEGORY_DB => new DbConfig($config),
-            self::CATEGORY_GENERAL => new GeneralConfig($config),
-            default => throw new InvalidArgumentException("Invalid config category: $category"),
-        };
+        switch ($category) {
+            case self::CATEGORY_CUSTOM:
+                return (object)$config;
+            case self::CATEGORY_DB:
+                $configClass = DbConfig::class;
+                $envPrefix = 'DB_';
+                break;
+            case self::CATEGORY_GENERAL:
+                $configClass = GeneralConfig::class;
+                $envPrefix = 'CRAFT_';
+                break;
+            default:
+                throw new InvalidArgumentException("Invalid config category: $category");
+        }
+
+        // Merge in any environment value overrides, and typecast everything
+        $envConfig = App::envConfig($configClass, $envPrefix);
+        $config = array_merge($config, $envConfig);
+        Typecast::properties($configClass, $config);
+
+        /** @var BaseObject */
+        return new $configClass($config);
     }
 
     /**
@@ -228,7 +246,7 @@ class Config extends Component
             return [];
         }
 
-        // If it's not a multi-environment config, return the whole thing
+        // If it’s not a multi-environment config, return the whole thing
         if (!array_key_exists('*', $config)) {
             return $config;
         }
