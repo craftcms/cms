@@ -625,7 +625,7 @@ class GeneralConfig extends BaseObject
     public $enableCsrfCookie = true;
 
     /**
-     * @var bool Whether GraphQL introspection queries are allowed. Defaults to `true` and is always allowed in the CP.
+     * @var bool Whether GraphQL introspection queries are allowed. Defaults to `true` and is always allowed in the control panel.
      * @since 3.6.0
      * @group GraphQL
      */
@@ -986,7 +986,7 @@ class GeneralConfig extends BaseObject
     /**
      * @var bool Whether generated URLs should omit `index.php` (e.g. `http://domain.com/path` instead of `http://domain.com/index.php/path`)
      *
-     * This can only be possible if your server is configured to redirect would-be 404's to `index.php`, for example, with the redirect found
+     * This can only be possible if your server is configured to redirect would-be 404s to `index.php`, for example, with the redirect found
      * in the `.htaccess` file that came with Craft:
      *
      * ```
@@ -1828,7 +1828,7 @@ class GeneralConfig extends BaseObject
         // Normalize size settings
         $this->maxUploadFileSize = ConfigHelper::sizeInBytes($this->maxUploadFileSize);
 
-        // Normalize the default CP language
+        // Normalize the default control panel language
         if ($this->defaultCpLanguage !== null) {
             try {
                 $this->defaultCpLanguage = Localization::normalizeLanguage($this->defaultCpLanguage);
