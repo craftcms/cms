@@ -4,6 +4,7 @@
 
 ### Fixed
 - Fixed a bug where autosuggest inputs weren’t including numeric and boolean environment variables in their suggestions. ([#10873](https://github.com/craftcms/cms/issues/10873))
+- Fixed an error that occurred when rendering a Twig template from a console request. ([#10879](https://github.com/craftcms/cms/issues/10879))
 
 ## 4.0.0-beta.4 - 2022-04-06
 
