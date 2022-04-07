@@ -8,7 +8,7 @@ module.exports = getConfig({
     watchPaths: [join(__dirname, 'src')],
     config: {
         entry: {
-            garnish: './index.js',
+            d3: './index.js',
         },
         module: {
             rules: [
@@ -18,7 +18,7 @@ module.exports = getConfig({
                     options: {
                         exposes: [
                             {
-                                globalName: "Garnish",
+                                globalName: "d3",
                                 moduleLocalName: "default",
                             }
                         ]
