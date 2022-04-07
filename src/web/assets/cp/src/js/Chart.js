@@ -1,5 +1,9 @@
+import d3 from 'd3';
+import Garnish from './Garnish.js';
+import $ from 'jquery';
+
 /** global: Craft */
-/** global: Garnish */
+
 /**
  * Craft Charts
  */
