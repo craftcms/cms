@@ -460,8 +460,8 @@
             this.id = this.$container.data('id');
             this.isNew = (!this.id || (typeof this.id === 'string' && this.id.substr(0, 3) === 'new'));
 
-            const $actionMenuBtn = this.$container.find('> .actions [data-disclosure-trigger]'),
-                actionDisclosure = new Garnish.DisclosureMenu($actionMenuBtn);
+            const $actionMenuBtn = this.$container.find('> .actions [data-disclosure-trigger]');
+            const actionDisclosure = $actionMenuBtn.data('trigger') || new Garnish.DisclosureMenu($actionMenuBtn);
 
             this.$actionMenu = actionDisclosure.$container;
             this.actionDisclosure = actionDisclosure;
