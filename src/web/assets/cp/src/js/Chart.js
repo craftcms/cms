@@ -1,8 +1,4 @@
-import d3 from 'd3';
-import Garnish from './Garnish.js';
-import $ from 'jquery';
-
-/** global: Craft */
+/** global: Craft, d3, Garnish, $ */
 
 /**
  * Craft Charts
@@ -446,15 +442,18 @@ Craft.charts.Area = Craft.charts.BaseChart.extend({
                 .selectAll('rect')
                 .data(this.dataTable.rows)
                 .enter().append('rect')
-                .attr('class', 'tip-trigger')
+                .attr('class', (d, index) => `trip-trigger tip-trigger-${index}`)
+                .attr('data-index', (d, index) => `${index}`)
                 .style('fill', 'transparent')
                 .style('fill-opacity', '1')
                 .attr('width', tipTriggerWidth)
                 .attr('height', this.height)
                 .attr('x', d => x(d[0]) - tipTriggerWidth / 2)
-                .on('mouseover', (d, index) => {
-                    // Expand plot
+                .on('mouseover', (event, dataValue) => {
+                    // Plot index
+                    var index = d3.select(event.target).attr('data-index');
 
+                    // Expand plot
                     this.drawingArea.select('.plot-' + index).attr('r', 5);
 
                     // Set tip content
@@ -463,8 +462,8 @@ Craft.charts.Area = Craft.charts.BaseChart.extend({
                     var $xValue = $('<div class="x-value" />').appendTo($content);
                     var $yValue = $('<div class="y-value" />').appendTo($content);
 
-                    $xValue.html(this.getXFormatter()(d[0]));
-                    $yValue.html(this.getYFormatter()(d[1]));
+                    $xValue.html(this.getXFormatter()(dataValue[0]));
+                    $yValue.html(this.getYFormatter()(dataValue[1]));
 
                     var content = $content.get(0);
 
@@ -475,24 +474,24 @@ Craft.charts.Area = Craft.charts.BaseChart.extend({
                     var margin = this.getChartMargin();
 
                     var offset = 24;
-                    var top = (y(d[1]) + offset);
+                    var top = (y(dataValue[1]) + offset);
                     var left;
 
                     if (this.orientation !== 'rtl') {
-                        left = (x(d[0]) + margin.left + offset);
+                        left = (x(dataValue[0]) + margin.left + offset);
 
                         var calcLeft = (this.$chart.offset().left + left + this.tip.$tip.width());
                         var maxLeft = this.$chart.offset().left + this.$chart.width() - offset;
 
                         if (calcLeft > maxLeft) {
-                            left = x(d[0]) - (this.tip.$tip.width() + offset);
+                            left = x(dataValue[0]) - (this.tip.$tip.width() + offset);
                         }
                     } else {
-                        left = (x(d[0]) - (this.tip.$tip.width() + margin.left + offset));
+                        left = (x(dataValue[0]) - (this.tip.$tip.width() + margin.left + offset));
                     }
 
                     if (left < 0) {
-                        left = (x(d[0]) + margin.left + offset);
+                        left = (x(dataValue[0]) + margin.left + offset);
                     }
 
                     var position = {
@@ -506,7 +505,10 @@ Craft.charts.Area = Craft.charts.BaseChart.extend({
 
                     this.tip.show();
                 })
-                .on('mouseout', (d, index) => {
+                .on('mouseout', (event, dataValue) => {
+                    // Plot index
+                    var index = d3.select(event.target).attr('data-index');
+
                     // Unexpand Plot
                     this.drawingArea.select('.plot-' + index).attr('r', 4);
 
