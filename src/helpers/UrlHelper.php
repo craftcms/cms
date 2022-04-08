@@ -187,7 +187,7 @@ class UrlHelper
         }
 
         if (static::isRootRelativeUrl($url)) {
-            // Prepend the current request's scheme and host name
+            // Prepend the current request’s scheme and hostname
             $url = static::siteHost() . $url;
         }
 

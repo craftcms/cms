@@ -289,7 +289,7 @@ class GeneralConfig extends BaseObject
      *
      * - `{path}` - the target backup file path
      * - `{port}` - the current database port
-     * - `{server}` - the current database host name
+     * - `{server}` - the current database hostname
      * - `{user}` - the user to connect to the database
      * - `{database}` - the current database name
      * - `{schema}` - the current database schema (if any)
@@ -414,7 +414,7 @@ class GeneralConfig extends BaseObject
      * @var string|null The URI segment Craft should look for when determining if the current request should route to the control panel rather than
      * the front-end website.
      *
-     * This can be set to `null` if you have a dedicated host name for the control panel (e.g. `cms.example.com`), or you are running Craft in
+     * This can be set to `null` if you have a dedicated hostname for the control panel (e.g. `cms.example.com`), or you are running Craft in
      * [Headless Mode](config3:headlessMode). If you do that, you will need to ensure that the control panel is being served from its own web root
      * directory on your server, with an `index.php` file that defines the `CRAFT_CP` PHP constant.
      *
@@ -1288,7 +1288,7 @@ class GeneralConfig extends BaseObject
      *
      * - `{path}` - the backup file path
      * - `{port}` - the current database port
-     * - `{server}` - the current database host name
+     * - `{server}` - the current database hostname
      * - `{user}` - the user to connect to the database
      * - `{database}` - the current database name
      * - `{schema}` - the current database schema (if any)
