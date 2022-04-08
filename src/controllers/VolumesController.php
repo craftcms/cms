@@ -9,11 +9,13 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\Field;
+use craft\base\FsInterface;
 use craft\elements\Asset;
 use craft\helpers\Json;
 use craft\helpers\UrlHelper;
 use craft\models\Volume;
 use craft\web\Controller;
+use Illuminate\Support\Collection;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
@@ -66,11 +68,11 @@ class VolumesController extends Controller
     {
         $this->requireAdmin();
 
-        $volumes = Craft::$app->getVolumes();
+        $volumesServices = Craft::$app->getVolumes();
 
         if ($volume === null) {
             if ($volumeId !== null) {
-                $volume = $volumes->getVolumeById($volumeId);
+                $volume = $volumesServices->getVolumeById($volumeId);
 
                 if ($volume === null) {
                     throw new NotFoundHttpException('Volume not found');
@@ -103,6 +105,20 @@ class VolumesController extends Controller
             ],
         ];
 
+        $fsHandle = $volume->getFsHandle();
+        $allVolumes = $volumesServices->getAllVolumes();
+        /** @var Collection<string> $takenFsHandles */
+        $takenFsHandles = Collection::make($allVolumes)
+            ->map(fn(Volume $volume) => $volume->getFsHandle());
+        $fsOptions = Collection::make(Craft::$app->getFs()->getAllFilesystems())
+            ->filter(fn(FsInterface $fs) => $fs->handle === $fsHandle || !$takenFsHandles->contains($fs->handle))
+            ->sortBy(fn(FsInterface $fs) => $fs->name)
+            ->map(fn(FsInterface $fs) => [
+                'label' => $fs->name,
+                'value' => $fs->handle,
+            ])
+            ->all();
+
         return $this->renderTemplate('settings/assets/volumes/_edit', [
             'volumeId' => $volumeId,
             'volume' => $volume,
@@ -111,6 +127,7 @@ class VolumesController extends Controller
             'crumbs' => $crumbs,
             'typeName' => Asset::displayName(),
             'lowerTypeName' => Asset::lowerDisplayName(),
+            'fsOptions' => $fsOptions,
         ]);
     }
 
