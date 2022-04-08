@@ -152,10 +152,10 @@ class Address extends Element implements AddressInterface, BlockElementInterface
         ], true)) {
             $formatRepo = Craft::$app->getAddresses()->getAddressFormatRepository()->get($countryCode);
             return match ($attribute) {
-                'administrativeArea' => Craft::$app->getAddresses()->getAdministrativeAreaTypeLabel($formatRepo->getAdministrativeAreaType()),
-                'locality' => Craft::$app->getAddresses()->getLocalityTypeLabel($formatRepo->getLocalityType()),
-                'dependentLocality' => Craft::$app->getAddresses()->getDependentLocalityTypeLabel($formatRepo->getDependentLocalityType()),
-                'postalCode' => Craft::$app->getAddresses()->getPostalCodeTypeLabel($formatRepo->getPostalCodeType()),
+                'administrativeArea' => $formatRepo->getAdministrativeAreaType() ? Craft::$app->getAddresses()->getAdministrativeAreaTypeLabel($formatRepo->getAdministrativeAreaType()) : null,
+                'locality' => $formatRepo->getLocalityType() ? Craft::$app->getAddresses()->getLocalityTypeLabel($formatRepo->getLocalityType()) : null,
+                'dependentLocality' => $formatRepo->getDependentLocalityType() ? Craft::$app->getAddresses()->getDependentLocalityTypeLabel($formatRepo->getDependentLocalityType()) : null,
+                'postalCode' => $formatRepo->getPostalCodeType() ? Craft::$app->getAddresses()->getPostalCodeTypeLabel($formatRepo->getPostalCodeType()) : null,
             };
         }
 
