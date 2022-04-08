@@ -869,7 +869,7 @@ class Fields extends Component
             if (empty($field->uid)) {
                 $field->uid = StringHelper::UUID();
             }
-        } else if (!$field->uid) {
+        } elseif (!$field->uid) {
             $field->uid = Db::uidById(Table::FIELDS, $field->id);
         }
 
@@ -1735,8 +1735,8 @@ class Fields extends Component
     {
         $fieldVersion = Craft::$app->getInfo()->fieldVersion;
 
-        // If it doesn't start with `2@`, then it needs to be updated
-        if ($fieldVersion === null || strpos($fieldVersion, '2@') !== 0) {
+        // If it doesn't start with `3@`, then it needs to be updated
+        if ($fieldVersion === null || strpos($fieldVersion, '3@') !== 0) {
             return null;
         }
 
@@ -1754,7 +1754,7 @@ class Fields extends Component
         class_exists(CustomFieldBehavior::class);
 
         $info = Craft::$app->getInfo();
-        $info->fieldVersion = '2@' . StringHelper::randomString(10);
+        $info->fieldVersion = '3@' . StringHelper::randomString(10);
         Craft::$app->saveInfo($info, ['fieldVersion']);
     }
 
@@ -1786,6 +1786,10 @@ class Fields extends Component
 
             $class = $data['type'];
 
+            // Track whether we should remove the field’s search indexes after save
+            $searchable = $data['searchable'] ?? false;
+            $deleteSearchIndexes = !$isNewField && !$searchable && $fieldRecord->searchable;
+
             // Create/alter the content table column(s)
             $contentService = Craft::$app->getContent();
             $oldHandle = !$isNewField ? $fieldRecord->getOldHandle() : null;
@@ -1805,7 +1809,7 @@ class Fields extends Component
                     }
                 } else {
                     $oldColumn = !$isNewField ? ElementHelper::fieldColumn($this->oldFieldColumnPrefix, $oldHandle, $oldColumnSuffix) : null;
-                    $newColumn = ElementHelper::fieldColumn(null, $data['handle'], $data['columnSuffix'] ?? null);;
+                    $newColumn = ElementHelper::fieldColumn(null, $data['handle'], $data['columnSuffix'] ?? null);
                     $this->_updateColumn($db, $transaction, $contentService->contentTable, $oldColumn, $newColumn, $columnType);
                     $newColumns[$newColumn] = true;
                 }
@@ -1838,7 +1842,7 @@ class Fields extends Component
             $fieldRecord->context = $context;
             $fieldRecord->columnSuffix = $data['columnSuffix'] ?? null;
             $fieldRecord->instructions = $data['instructions'];
-            $fieldRecord->searchable = $data['searchable'] ?? false;
+            $fieldRecord->searchable = $searchable;
             $fieldRecord->translationMethod = $data['translationMethod'];
             $fieldRecord->translationKeyFormat = $data['translationKeyFormat'];
             $fieldRecord->type = $data['type'];
@@ -1849,7 +1853,6 @@ class Fields extends Component
             $transaction->commit();
         } catch (\Throwable $e) {
             $transaction->rollBack();
-
             throw $e;
         }
 
@@ -1884,6 +1887,14 @@ class Fields extends Component
                 'field' => $field,
                 'isNew' => $isNewField,
             ]));
+        }
+
+        // If we just dropped `searchable`, delete the field’s search indexes immediately.
+        if ($deleteSearchIndexes) {
+            Db::delete(Table::SEARCHINDEX, [
+                'attribute' => 'field',
+                'fieldId' => $field->id,
+            ]);
         }
 
         // Invalidate all element caches
@@ -2039,7 +2050,7 @@ class Fields extends Component
      */
     private function _createLayoutQuery(): Query
     {
-        $query = (new Query)
+        $query = (new Query())
             ->select([
                 'id',
                 'type',
@@ -2096,7 +2107,7 @@ class Fields extends Component
 
         if (is_numeric($criteria)) {
             $query->where(['id' => $criteria]);
-        } else if (\is_string($criteria)) {
+        } elseif (\is_string($criteria)) {
             $query->where(['uid' => $criteria]);
         }
 

@@ -134,7 +134,12 @@ class UserTest extends TestCase
         $this->user->setIdentity($this->userElement);
         // Session must return null
         $this->_sessionGetStub(null);
+
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $oldValue = $generalConfig->elevatedSessionDuration;
+        $generalConfig->elevatedSessionDuration = 0;
         self::assertSame(false, $this->user->getElevatedSessionTimeout());
+        $generalConfig->elevatedSessionDuration = $oldValue;
 
         Session::reset();
     }
@@ -239,7 +244,7 @@ class UserTest extends TestCase
         $this->tester->mockCraftMethods('session', [
             'set' => function($name, $val) use ($value) {
                 self::assertEqualsWithDelta($value, $val, 1);
-            }
+            },
         ]);
     }
 
@@ -258,7 +263,7 @@ class UserTest extends TestCase
             },
             'get' => function($tokenParam) use ($returnValue) {
                 return $returnValue;
-            }
+            },
         ]);
     }
 

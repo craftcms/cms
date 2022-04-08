@@ -93,7 +93,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      *
      * ```twig
      * {# Fetch a draft {element} #}
-     * {% set {elements-var} = {twig-function}
+     * {% set {elements-var} = {twig-method}
      *   .drafts()
      *   .id(123)
      *   .one() %}
@@ -244,7 +244,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      *
      * ```twig
      * {# Fetch saved, unpublished draft {elements} #}
-     * {% set {elements-var} = {twig-function}
+     * {% set {elements-var} = {twig-method}
      *   .draftOf(false)
      *   .savedDraftsOnly()
      *   .all() %}
@@ -271,7 +271,7 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      *
      * ```twig
      * {# Fetch a revision {element} #}
-     * {% set {elements-var} = {twig-function}
+     * {% set {elements-var} = {twig-method}
      *   .revisions()
      *   .id(123)
      *   .one() %}
@@ -485,6 +485,10 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
 
     /**
      * Causes the query results to be returned in the order specified by [[id()]].
+     *
+     * ::: tip
+     * If no IDs were passed to [[id()]], setting this to `true` will result in an empty result set.
+     * :::
      *
      * ---
      *
@@ -758,8 +762,8 @@ interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, 
      * If [[unique()]] is set, this determines which site should be selected when querying multi-site elements.
      *
      * For example, if element “Foo” exists in Site A and Site B, and element “Bar” exists in Site B and Site C,
-     * and this is set to `['c', 'b', 'a']`, then Foo will be returned for Site C, and Bar will be returned
-     * for Site B.
+     * and this is set to `['c', 'b', 'a']`, then Foo will be returned for Site B, and Bar will be returned
+     * for Site C.
      *
      * If this isn’t set, then preference goes to the current site.
      *

@@ -1867,7 +1867,6 @@ Tebrikler! Craft eposta göndermeyi başardı.Gerkli ayarlar şu şekilde: {{ se
     '{section} Entry Types' => '{section} Kayıt Tipleri',
     '{step, number} of {total, number}' => '{step, number} / {total, number}',
     '{title} ({site})' => '{title} ({site})',
-    '{title} copy' => '{title} kopyası',
     '{total, number} {total, plural, =1{{item}} other{{items}}}' => '{total, number} {total, plural, =1{{item}} other{{items}}}',
     '{total} jobs' => '{total} iş',
     '{total} updates available!' => '{total} güncelleme mevcut!',

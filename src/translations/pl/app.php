@@ -1867,7 +1867,6 @@ Gratulacje! Craft z powodzeniem może wysyłać e-maile. Zostały użyte poniżs
     '{section} Entry Types' => 'Rodzaje wpisów "{section}"',
     '{step, number} of {total, number}' => '{step, number} z {total, number}',
     '{title} ({site})' => '{title} ({site})',
-    '{title} copy' => '{title} – kopia',
     '{total, number} {total, plural, =1{{item}} other{{items}}}' => '{total, number} {total, plural, =1{{item}} other{{items}}}',
     '{total} jobs' => 'Zadania ({total})',
     '{total} updates available!' => '{total} dostępnych aktualizacji!',

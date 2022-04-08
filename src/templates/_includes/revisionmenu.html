@@ -62,7 +62,18 @@
 {% set showMenu = editableSiteIds|length > 1 or showRevisions %}
 
 <div id="context-btngroup" class="btngroup">
-    <button type="button" id="context-btn" class="btn {% if showMenu %}menubtn{% else %}disabled{% endif %}"{% if showSiteLabel %} data-icon="world"{% endif %}>
+    {% tag 'button' with {
+        type: 'button',
+        id: 'context-btn',
+        class: [
+            'btn',
+            'btngroup-btn-last',
+            showMenu ? 'menubtn' : 'disabled',
+        ],
+        data: {
+            icon: showSiteLabel ? 'world' : null,
+        },
+    } %}
         {%- if showSiteLabel %}
             {{- originalElement.getSite().name|t('site') }}
         {%- endif %}
@@ -81,7 +92,7 @@
                 {%- endif -%}
             </span>
         {%- endif -%}
-    </button>
+    {% endtag %}
 
     <div id="revision-menu" class="menu padded{% if not showMenu %} hidden{% endif %}">
         {% set enabledSiteIds = element.id ? craft.app.elements.getEnabledSiteIdsForElement(element.id) : [] %}

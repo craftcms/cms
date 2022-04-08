@@ -989,6 +989,7 @@ class Users extends Component
         $elementsService = Craft::$app->getElements();
 
         foreach (Db::each($query) as $user) {
+            /** @var User $user */
             $elementsService->deleteElement($user);
             Craft::info("Just deleted pending user {$user->username} ({$user->id}), because they took too long to activate their account.", __METHOD__);
         }
@@ -1165,7 +1166,7 @@ class Users extends Component
         $layout->id = $fieldsService->getLayoutByType(User::class)->id;
         $layout->type = User::class;
         $layout->uid = key($data);
-        $fieldsService->saveLayout($layout);
+        $fieldsService->saveLayout($layout, false);
 
         // Invalidate user caches
         Craft::$app->getElements()->invalidateCachesForElementType(User::class);

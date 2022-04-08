@@ -1865,7 +1865,6 @@ return [
     '{section} Entry Types' => '{section} berichttypes',
     '{step, number} of {total, number}' => '{step, number} van {total, number}',
     '{title} ({site})' => '{title} ({site})',
-    '{title} copy' => '{title} - kopie',
     '{total, number} {total, plural, =1{{item}} other{{items}}}' => '{total, number} {total, plural, =1{{item}} other{{items}}}',
     '{total} jobs' => '{total} taken',
     '{total} updates available!' => '{total} updates beschikbaar!',

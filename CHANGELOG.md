@@ -3,10 +3,101 @@
 ## Unreleased
 
 ### Changed
-- Craft now HTML encodes the user’s name in the default system emails.
+- Fields’ search indexes are now immediately removed when their “Use this field’s values as search keywords” settings are disabled.
 
 ### Fixed
-- Fixed a bug where Date fields that were configured to show the time input weren’t displaying properly.
+- Fixed a bug where Matrix blocks could lose their Date field values, if multiple Date fields had with the same handle across different block types. ([#10884](https://github.com/craftcms/cms/issues/10884))
+- Fixed a bug where Matrix block menus were getting truncated if they were too large to fit within the content pane. ([#10883](https://github.com/craftcms/cms/issues/10883))
+
+## 3.7.38 - 2022-04-06
+
+### Added
+- Added `craft\helpers\ArrayHelper::onlyContains()`.
+- Added `craft\test\Craft::assertNotPushedToQueue()`. ([#10510](https://github.com/craftcms/cms/pull/10510))
+
+### Changed
+- Duplicated elements no longer have “copy” appended to the end of their titles. ([#10707](https://github.com/craftcms/cms/pull/10707))
+- User queries’ `group` and `groupId` params now support passing an array that begins with `and`, to only return users that are in all of the subsequent user groups.
+- `Craft.BaseElementSelectorModal` now has `bodyAction` and `indexSettings` settings. ([#4348](https://github.com/craftcms/cms/pull/4348))
+
+### Fixed
+- Fixed a bug where color pickers weren’t clickbale within Table fields. ([#10775](https://github.com/craftcms/cms/issues/10775))
+- Fixed a bug where multi-site elements weren’t getting all of their titles duplicated correctly. ([#10702](https://github.com/craftcms/cms/issues/10702))
+- Fixed deprecation errors that occurred when validating relational and Matrix fields. ([#10815](https://github.com/craftcms/cms/issues/10815))
+- Fixed an error that occurred if field instructions contained any unclosed HTML tags. ([#10290](https://github.com/craftcms/cms/issues/10290))
+- Fixed a bug where the selected volume subfolder would get included in folder drag-and-drop operations. ([#10745](https://github.com/craftcms/cms/issues/10745))
+- Fixed a bug where slideouts weren’t closing when clicked out of, after being opened for the second time. ([#10586](https://github.com/craftcms/cms/issues/10586))
+- Fixed a bug where `Craft.appendHeadHtml()` wasn’t pruning out `<link>` tags that were already present in the DOM.
+- Fixed a bug where image transforms weren’t always getting generated for disabled sites. ([#10498](https://github.com/craftcms/cms/issues/10498))
+- Fixed a bug where it wasn’t possible to scroll the content pane horizontally if any fields took up more than 100% of its width. ([#10849](https://github.com/craftcms/cms/issues/10849))
+
+## 3.7.37 - 2022-03-16
+
+### Changed
+- Improved the styling of copy buttons in the control panel. ([#10732](https://github.com/craftcms/cms/discussions/10732))
+- In-app Plugin Store purchases are now completed on `id.craftcms.com` rather than within the control panel.
+
+### Fixed
+- Fixed a bug where two users could be created with the same username and email, if the **Save** button was double-clicked. ([#9835](https://github.com/craftcms/cms/issues/9835), [#10661](https://github.com/craftcms/cms/issues/10661))
+- Fixed an error that could occur when updating from an earlier version than Craft 3.5.6. ([#10685](https://github.com/craftcms/cms/issues/10685))
+- Fixed an error that could occur when rendering an exception view for another error. ([#10712](https://github.com/craftcms/cms/issues/10712))
+- Fixed a bug where pressing <kbd>Spacebar</kbd> on copy buttons in admin tables didn’t activate them.
+- Fixed a style issue for Safari. ([#10748](https://github.com/craftcms/cms/pull/10748))
+
+## 3.7.36 - 2022-03-03
+
+### Changed
+- `{% js %}` and `{% css %}` tags can now import URLs that don’t end in `.js` or `.css`, so long as they begin with `https://` or `http://`. ([#10666](https://github.com/craftcms/cms/discussions/10666))
+- The `plugin/list` command now shows plugins’ package names. ([#10667](https://github.com/craftcms/cms/discussions/10667))
+
+### Fixed
+- Fixed a bug that prevented moving assets between volumes. ([#10668](https://github.com/craftcms/cms/issues/10668))
+
+## 3.7.35 - 2022-03-01
+
+### Added
+- Added `craft\errors\BusyResourceException`.
+- Added `craft\errors\StaleResourceException`.
+
+### Changed
+- Improved Live Preview accessibility. ([#7476](https://github.com/craftcms/cms/issues/7476))
+- Improved error reporting when trying to upload an Asset from a disallowed location. ([#10633](https://github.com/craftcms/cms/issues/10633))
+- The `resave/entries` command now supports a `--revisions` flag. ([#10634](https://github.com/craftcms/cms/issues/10634))
+
+### Fixed
+- Fixed an error that occurred when initializing an element with custom field values that weren’t included in its field layout. ([#10622](https://github.com/craftcms/cms/issues/10622))
+- Fixed a PHP 8 compatibility bug.
+- Fixed a bug where drafts weren’t getting propagated when a section was enabled for new sites. ([#10634](https://github.com/craftcms/cms/issues/10634))
+- Fixed a bug where moving files and folders from the Assets index page wouldn’t ever resolve properly if there was an unexpected server error.
+- Fixed a bug where disclosure menus could be shorter than their contents. ([#10639](https://github.com/craftcms/cms/issues/10639))
+- Fixed potential race conditions that could result in old project config data getting cached. ([#7795](https://github.com/craftcms/cms/issues/7795))
+- Fixed a bug where numerically-indexed array keys weren’t always consecutive after the project config was rebuilt. ([#10512](https://github.com/craftcms/cms/issues/10512))
+
+## 3.7.34 - 2022-02-22
+
+### Added
+- Added `craft\helpers\App::phpConfigValueAsPaths()`.
+- Added `craft\helpers\App::normalizePhpPaths()`.
+- Added `craft\helpers\App::isPathAllowed()`.
+
+### Changed
+- Improved date and time input accessibility. ([#10575](https://github.com/craftcms/cms/pull/10575))
+- Craft no longer attempts to write a license key file when `CRAFT_EPHEMERAL` is set to `true`. ([#10558](https://github.com/craftcms/cms/pull/10558))
+- Craft no longer attempts to write project config YAML files when `CRAFT_EPHEMERAL` is set to `true`. ([#10558](https://github.com/craftcms/cms/pull/10558))
+- Craft no longer publishes asset bundles when `CRAFT_EPHEMERAL` is set to `true`. ([#10558](https://github.com/craftcms/cms/pull/10558))
+
+### Fixed
+- Fixed a bug where Date fields weren’t displaying properly.
+- Fixed a bug where some GraphQL API query arguments would break element queries. ([#10580](https://github.com/craftcms/cms/issues/10580))
+- Fixed a PHP 8.1 compatibility bug. ([#10594](https://github.com/craftcms/cms/issues/10594))
+- Fixed a bug where Matrix action menus were causing horizontal scrollbars within Live Preview. ([#10601](https://github.com/craftcms/cms/issues/10601))
+- Fixed a PHP warning that would occur when running Craft in Dev Mode, if the `open_basedir` PHP setting was set. ([#10581](https://github.com/craftcms/cms/issues/10581))
+- Fixed a bug where the “View” button on Edit Category pages wasn’t getting linked to a tokenized preview page for disabled sites.
+- Fixed a bug where asset subfolder toggles weren’t visible when their source was focused. ([#10617](https://github.com/craftcms/cms/issues/10617))
+- Fixed a bug where Live Preview would close when the <kbd>Esc</kbd> key was pressed, when a modal window was open. ([#10623](https://github.com/craftcms/cms/issues/10623))
+
+### Security
+- Craft now HTML-encodes user’ names in the default system email messages.
 
 ## 3.7.33 - 2022-02-15
 
@@ -31,7 +122,6 @@
 - Fixed a bug where admin tables would display the wrong handle values after an item was deleted. ([#10538](https://github.com/craftcms/cms/issues/10538))
 - Fixed a bug where entries and Matrix blocks weren’t necessarily getting propagated from the primary site, when they were activated for a new site via a setting change. ([#10561](https://github.com/craftcms/cms/issues/10561))
 - Fixed an error that occurred when testing queue jobs. ([#10569](https://github.com/craftcms/cms/pull/10569))
-- Fixed a bug where some GraphQL API query arguments would break element queries. ([#10580](https://github.com/craftcms/cms/issues/10580))
 
 ### Security
 - Fixed a potential CSRF security issue.

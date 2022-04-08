@@ -35,11 +35,11 @@ use yii\db\Exception as DbException;
 class SetupController extends Controller
 {
     /**
-     * @var string|null The database driver to use. Either 'mysql' for MySQL or 'pgsql' for PostgreSQL.
+     * @var string|null The database driver to use. Either `'mysql'` for MySQL or `'pgsql'` for PostgreSQL.
      */
     public $driver;
     /**
-     * @var string|null The database server name or IP address. Usually 'localhost' or '127.0.0.1'.
+     * @var string|null The database server name or IP address. Usually `'localhost'` or `'127.0.0.1'`.
      */
     public $server;
     /**
@@ -385,7 +385,7 @@ EOD;
                     'default' => $this->schema ?? App::env('DB_SCHEMA') ?: 'public',
                 ]);
                 $db->createCommand("SET search_path TO $this->schema;")->execute();
-            } else if ($this->schema === null) {
+            } elseif ($this->schema === null) {
                 // Make sure that the DB is actually configured to use the provided schema by default
                 $searchPath = $db->createCommand('SHOW search_path')->queryScalar();
                 $defaultSchemas = array_map('trim', explode(',', $searchPath)) ?: ['public'];
@@ -443,7 +443,7 @@ EOD;
             if (!$this->_setEnvVar('DB_DSN', $dbConfig->dsn)) {
                 return ExitCode::UNSPECIFIED_ERROR;
             }
-        } else if (
+        } elseif (
             !$this->_setEnvVar('DB_DRIVER', $this->driver) ||
             !$this->_setEnvVar('DB_SERVER', $this->server) ||
             !$this->_setEnvVar('DB_PORT', $this->port) ||

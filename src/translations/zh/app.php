@@ -1865,7 +1865,6 @@ return [
     '{section} Entry Types' => '{section} 条目类型',
     '{step, number} of {total, number}' => '第 {step, number} 步，共 {total, number} 步',
     '{title} ({site})' => '{title} ({site})',
-    '{title} copy' => '{title} 复制',
     '{total, number} {total, plural, =1{{item}} other{{items}}}' => '{total, number} {total, plural, =1{{item}} other{{items}}}',
     '{total} jobs' => '{total} 个作业',
     '{total} updates available!' => '共有 {total} 次更新可用！',

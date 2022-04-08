@@ -95,7 +95,7 @@ class GqlHelperTest extends Unit
             'usergroups.allUsers:read',
             'globalsets.someSet:read',
             'entrytypes.someEntry:read',
-            'sections.someSection:read'
+            'sections.someSection:read',
         ];
 
         $this->_setSchemaWithPermissions($permissionSet);
@@ -158,20 +158,20 @@ class GqlHelperTest extends Unit
         $typeDef = [
             'name' => 'mock',
             'type' => Type::listOf(Type::string()),
-            'args' => []
+            'args' => [],
         ];
 
         $nonNulledTypeDef = [
             'name' => 'mock',
             'type' => Type::nonNull(Type::listOf(Type::string())),
-            'args' => []
+            'args' => [],
         ];
 
         return [
             [Type::boolean(), Type::nonNull(Type::boolean())],
-            [Type::string(),Type::nonNull(Type::string())],
-            [Type::id(),Type::nonNull(Type::id())],
-            [Type::nonNull(Type::int()),Type::nonNull(Type::int())],
+            [Type::string(), Type::nonNull(Type::string())],
+            [Type::id(), Type::nonNull(Type::id())],
+            [Type::nonNull(Type::int()), Type::nonNull(Type::int())],
             [$typeDef, $nonNulledTypeDef],
         ];
     }
@@ -231,11 +231,11 @@ class GqlHelperTest extends Unit
                     'volumes.someVolume:read',
                     'globalsets.someSet:read',
                     'entrytypes.someEntry:read',
-                    'sections.someSection:read'
+                    'sections.someSection:read',
                 ],
                 'volumes.someVolume',
                 'read',
-                'write'
+                'write',
             ],
             [
                 [
@@ -244,18 +244,18 @@ class GqlHelperTest extends Unit
                     'volumes.someVolume:write',
                     'globalsets.someSet:write',
                     'entrytypes.someEntry:write',
-                    'sections.someSection:write'
+                    'sections.someSection:write',
                 ],
                 'volumes.someVolume',
                 'write',
-                'delete'
+                'delete',
             ],
             [
                 [],
                 'volumes.someVolume',
                 'write',
                 'delete',
-                true
+                true,
             ],
         ];
     }
@@ -269,7 +269,7 @@ class GqlHelperTest extends Unit
                     'volumes.someVolume:read',
                     'globalsets.someSet:read',
                     'entrytypes.someEntry:read',
-                    'sections.someSection:read'
+                    'sections.someSection:read',
                 ],
                 [
                     'usergroups' => ['allUsers'],
@@ -277,7 +277,7 @@ class GqlHelperTest extends Unit
                     'globalsets' => ['someSet'],
                     'entrytypes' => ['someEntry'],
                     'sections' => ['someSection'],
-                ]
+                ],
             ],
             [
                 [
@@ -286,7 +286,7 @@ class GqlHelperTest extends Unit
                 ],
                 [
                     'usergroups' => ['allUsers', 'otherGroup'],
-                ]
+                ],
             ], [
                 [
                     'usergroups.allUsers:read',
@@ -294,7 +294,7 @@ class GqlHelperTest extends Unit
                 ],
                 [
                     'usergroups' => ['allUsers'],
-                ]
+                ],
             ],
             [
                 [
@@ -302,9 +302,9 @@ class GqlHelperTest extends Unit
                     'volumes.someVolume:write',
                     'globalsets.someSet:write',
                     'entrytypes.someEntry:write',
-                    'sections.someSection:write'
+                    'sections.someSection:write',
                 ],
-                []
+                [],
             ],
             [
                 [
@@ -312,15 +312,15 @@ class GqlHelperTest extends Unit
                     'volumes.someVolume:write',
                     'globalsets.someSet:write',
                     'entrytypes.someEntry:read',
-                    'sections.someSection:write'
+                    'sections.someSection:write',
                 ],
                 [
                     'entrytypes' => ['someEntry'],
-                ]
+                ],
             ],
             [
                 [],
-                []
+                [],
             ],
         ];
     }

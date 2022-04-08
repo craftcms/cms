@@ -162,28 +162,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
             activeDropTargetClass: 'sel',
             helperOpacity: 0.75,
 
-            filter: () => {
-                // Return each of the selected <a>'s parent <li>s, except for top level drag attempts.
-                var $selected = this.sourceSelect.getSelectedItems(),
-                    draggees = [];
-
-                for (var i = 0; i < $selected.length; i++) {
-                    var $source = $selected.eq(i);
-
-                    if (!this._getFolderUidFromSourceKey($source.data('key'))) {
-                        continue;
-                    }
-
-                    if ($source.hasClass('sel') && this._getSourceLevel($source) > 1) {
-                        draggees.push($source.parent()[0]);
-                    }
-                }
-
-                return $(draggees);
-            },
-
             helper: $draggeeHelper => {
-                var $helperSidebar = $('<div class="sidebar" style="padding-top: 0; padding-bottom: 0;"/>'),
+                var $helperSidebar = $('<div class="sidebar drag-helper"/>'),
                     $helperNav = $('<nav/>').appendTo($helperSidebar),
                     $helperUl = $('<ul/>').appendTo($helperNav);
 
@@ -1470,30 +1450,28 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
     },
 
     _performBatchRequests: function(parameterArray, finalCallback) {
-        var responseArray = [];
+        const responseArray = [];
+        let activeRequests = parameterArray.length;
 
-        var doRequest = parameters => {
-            Craft.postActionRequest(parameters.action, parameters.params, (data, textStatus) => {
+        while (parameterArray.length) {
+            const parameters = parameterArray.shift();
+            Craft.sendActionRequest('POST', parameters.action, {
+                data: parameters.params
+            }).then((response) => {
+                responseArray.push(response.data);
+            }).finally(() => {
                 this.progressBar.incrementProcessedItemCount(1);
                 this.progressBar.updateProgressBar();
 
-                if (textStatus === 'success') {
-                    responseArray.push(data);
-
+                // Was that the last one?
+                if (--activeRequests === 0) {
                     // If assets were just merged we should get the reference tags updated right away
                     Craft.cp.runQueue();
-                }
-
-                if (responseArray.length >= parameterArray.length) {
                     finalCallback(responseArray);
                 }
             });
-        };
-
-        for (var i = 0; i < parameterArray.length; i++) {
-            doRequest(parameterArray[i]);
         }
-    }
+    },
 });
 
 // Register it!

@@ -133,7 +133,7 @@ class ElementIndexes extends Component
             foreach ($settings['sources'] as $key => &$source) {
                 if (!isset($indexedBaseSources[$key])) {
                     unset($settings['sources'][$key]);
-                } else if (empty($source['headerColHeading'])) {
+                } elseif (empty($source['headerColHeading'])) {
                     unset($source['headerColHeading']);
                 }
             }
@@ -180,7 +180,7 @@ class ElementIndexes extends Component
                 if ($type === 'heading') {
                     // Queue it up. We'll only add it if a real source follows
                     $pendingHeading = $value;
-                } else if (isset($indexedBaseSources[$value])) {
+                } elseif (isset($indexedBaseSources[$value])) {
                     // If there's a pending heading, add that first
                     if ($pendingHeading !== null) {
                         $sources[] = ['heading' => $pendingHeading];
@@ -224,7 +224,7 @@ class ElementIndexes extends Component
         foreach ($attributes as $key => $info) {
             if (!is_array($info)) {
                 $attributes[$key] = ['label' => $info];
-            } else if (!isset($info['label'])) {
+            } elseif (!isset($info['label'])) {
                 $attributes[$key]['label'] = '';
             }
         }

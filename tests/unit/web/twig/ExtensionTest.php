@@ -50,8 +50,8 @@ class ExtensionTest extends Unit
     {
         return [
             'globals' => [
-                'class' => GlobalSetFixture::class
-            ]
+                'class' => GlobalSetFixture::class,
+            ],
         ];
     }
 
@@ -518,7 +518,7 @@ class ExtensionTest extends Unit
             '4 days',
             '{{ d|date("%d days") }}',
             [
-                'd' => new \DateInterval('P2Y4DT6H8M')
+                'd' => new \DateInterval('P2Y4DT6H8M'),
             ]
         );
 
@@ -903,7 +903,7 @@ class ExtensionTest extends Unit
             'yes',
             '{% set q2 = clone(q) %}{{ q2.sectionId == q.sectionId and q2 is not same as(q) ? "yes" : "no" }}',
             [
-                'q' => Entry::find()->sectionId(10)
+                'q' => Entry::find()->sectionId(10),
             ]
         );
     }
@@ -967,7 +967,7 @@ class ExtensionTest extends Unit
     {
         $array = [
             0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
-            'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z'
+            'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
         ];
 
         $this->testRenderResult(

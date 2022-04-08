@@ -1867,7 +1867,6 @@ Congratulazioni! Craft ti ha inviato una email con successo. Ecco le impostazion
     '{section} Entry Types' => 'Tipi di articolo {section}',
     '{step, number} of {total, number}' => '{step, number} di {total, number}',
     '{title} ({site})' => '{title} ({site})',
-    '{title} copy' => 'Copia {title}',
     '{total, number} {total, plural, =1{{item}} other{{items}}}' => '{total, number} {total, plural, =1{{item}} other{{items}}}',
     '{total} jobs' => '{total} attività',
     '{total} updates available!' => '{total} aggiornamenti disponibili!',

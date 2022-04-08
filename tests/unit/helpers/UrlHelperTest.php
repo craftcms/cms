@@ -361,27 +361,27 @@ class UrlHelperTest extends Unit
             'test-simple-endpoint' => [
                 '{siteUrl}{cpTrigger}/nav?param1=entry1&param2=entry2',
                 'nav',
-                ['param1' => 'entry1', 'param2' => 'entry2']
+                ['param1' => 'entry1', 'param2' => 'entry2'],
             ],
             'test-preexisting-endpoints' => [
                 '{siteUrl}{cpTrigger}/nav?param3=entry3&param1=entry1&param2=entry2',
                 'nav?param3=entry3',
-                ['param1' => 'entry1', 'param2' => 'entry2']
+                ['param1' => 'entry1', 'param2' => 'entry2'],
             ],
             [
                 '{siteUrl}{cpTrigger}/nav?param1=entry1&param2=entry2',
                 'nav',
                 [
                     'param1' => 'entry1',
-                    'param2' => 'entry2'
+                    'param2' => 'entry2',
                 ],
-                'https'
+                'https',
             ],
             [
                 '{siteUrl}?param1=entry1&param2=entry2',
                 TestSetup::SITE_URL,
                 ['param1' => 'entry1', 'param2' => 'entry2'],
-                'https'
+                'https',
             ],
         ];
     }
@@ -618,19 +618,19 @@ class UrlHelperTest extends Unit
                 'endpoint',
                 null,
                 null,
-                null
+                null,
             ],
             'full-url-scheme' => [
                 self::ABSOLUTE_URL_HTTPS,
                 self::ABSOLUTE_URL,
                 null,
-                'https'
+                'https',
             ],
             'scheme-override-param-add' => [
                 self::ABSOLUTE_URL_HTTPS . '?param1=entry1&param2=entry2',
                 self::ABSOLUTE_URL,
                 ['param1' => 'entry1', 'param2' => 'entry2'],
-                'https'
+                'https',
             ],
         ];
     }

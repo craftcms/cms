@@ -58,7 +58,7 @@ class m181211_143040_fix_entry_type_uids extends Migration
                             'id' => $dbEntryType['id'],
                         ], [], false);
                     }
-                } else if ($canMakeConfigChanges) {
+                } elseif ($canMakeConfigChanges) {
                     // Remove this entry type from the project config as there's no matching DB data
                     $projectConfig->remove(Sections::CONFIG_SECTIONS_KEY . '.' . $sectionUid . '.entryTypes.' . $entryTypeUid);
                 }

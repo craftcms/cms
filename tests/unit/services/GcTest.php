@@ -55,23 +55,23 @@ class GcTest extends Unit
     {
         return [
             'sessions' => [
-                'class' => SessionsFixture::class
+                'class' => SessionsFixture::class,
             ],
             'entry-types' => [
-                'class' => EntryTypeFixture::class
+                'class' => EntryTypeFixture::class,
             ],
             'entries' => [
-                'class' => EntryFixture::class
+                'class' => EntryFixture::class,
             ],
             'users' => [
-                'class' => UserFixture::class
+                'class' => UserFixture::class,
             ],
             'sections' => [
-                'class' => SectionsFixture::class
+                'class' => SectionsFixture::class,
             ],
             'volumes' => [
-                'class' => VolumesFixture::class
-            ]
+                'class' => VolumesFixture::class,
+            ],
         ];
     }
 
@@ -109,7 +109,7 @@ class GcTest extends Unit
         $this->_doEntryTest(3, [
             'Deleted 40 days ago',
             'Deleted 25 days ago',
-            'Deleted today'
+            'Deleted today',
         ]);
     }
 

@@ -1865,7 +1865,6 @@ return [
     '{section} Entry Types' => 'Typy Záznamov Sekcie {section}',
     '{step, number} of {total, number}' => '{step, number} z {total, number}',
     '{title} ({site})' => '{title} ({site})',
-    '{title} copy' => 'Kópia {title}',
     '{total, number} {total, plural, =1{{item}} other{{items}}}' => '{total, number} {total, plural, =1{{item}} other{{items}}}',
     '{total} jobs' => '{total} úloh',
     '{total} updates available!' => 'Aktualizácii k dispozícii: {total}',

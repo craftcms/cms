@@ -125,7 +125,7 @@ class RegisterResourceTokenParser extends AbstractTokenParser
                 'POS_END',
             ]);
             $position = $nameToken->getValue();
-        } else if ($this->allowRuntimePosition && $stream->test(Token::NAME_TYPE, 'on')) {
+        } elseif ($this->allowRuntimePosition && $stream->test(Token::NAME_TYPE, 'on')) {
             $stream->next();
             $nameToken = $stream->expect(Token::NAME_TYPE, [
                 'ready',

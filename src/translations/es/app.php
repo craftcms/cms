@@ -1865,7 +1865,6 @@ return [
     '{section} Entry Types' => 'Tipos de entrada de {section}',
     '{step, number} of {total, number}' => '{step, number} de {total, number}',
     '{title} ({site})' => '{title} ({site})',
-    '{title} copy' => 'copia de {title}',
     '{total, number} {total, plural, =1{{item}} other{{items}}}' => '{total, number} {total, plural, =1{{item}} other{{items}}}',
     '{total} jobs' => '{total} trabajos',
     '{total} updates available!' => '¡{total} actualizaciones disponibles!',

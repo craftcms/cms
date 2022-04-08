@@ -1867,7 +1867,6 @@ Gratulerer! Craft var i stand til å sende e-post. Her er innstillingene du beny
     '{section} Entry Types' => 'Artikkeltyper for {section}',
     '{step, number} of {total, number}' => '{step, number} av {total, number}',
     '{title} ({site})' => '{title} ({site})',
-    '{title} copy' => '{title} kopi',
     '{total, number} {total, plural, =1{{item}} other{{items}}}' => '{total, number} {total, plural, =1{{item}} other{{items}}}',
     '{total} jobs' => '{total} jobber',
     '{total} updates available!' => '{total} oppdateringer tilgjengelig!',

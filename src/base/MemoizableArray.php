@@ -7,8 +7,13 @@
 
 namespace craft\base;
 
+use ArrayAccess;
+use ArrayObject;
+use Countable;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
+use IteratorAggregate;
+use ReturnTypeWillChange;
 
 /**
  * MemoizableArray represents an array of values that need to be run through [[ArrayHelper::where()]] or [[ArrayHelper::firstWhere()]] repeatedly,
@@ -29,9 +34,27 @@ use craft\helpers\Json;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.8
  */
-class MemoizableArray extends \ArrayObject
+class MemoizableArray implements IteratorAggregate, ArrayAccess, Serializable, Countable
 {
+    /**
+     * @var ArrayObject
+     */
+    private $_array;
+
+    /**
+     * @var array
+     */
     private $_memoized = [];
+
+    /**
+     * @param array|object $array
+     * @param int $flags
+     * @param string $iteratorClass
+     */
+    public function __construct($array = [], int $flags = 0, string $iteratorClass = "ArrayIterator")
+    {
+        $this->_array = new ArrayObject($array, $flags, $iteratorClass);
+    }
 
     /**
      * Returns all items.
@@ -42,7 +65,7 @@ class MemoizableArray extends \ArrayObject
     {
         // It's not clear from the PHP docs whether there is a difference between
         // casting this as an array or calling getArrayCopy(). Casting feels safer though.
-        return (array)$this;
+        return (array)$this->_array;
     }
 
     /**
@@ -60,7 +83,7 @@ class MemoizableArray extends \ArrayObject
         $memKey = $this->_memKey(__METHOD__, $key, $value, $strict);
 
         if (!isset($this->_memoized[$memKey])) {
-            $this->_memoized[$memKey] = new MemoizableArray(ArrayHelper::where($this, $key, $value, $strict, false));
+            $this->_memoized[$memKey] = new MemoizableArray(ArrayHelper::where($this->_array, $key, $value, $strict, false));
         }
 
         return $this->_memoized[$memKey];
@@ -82,7 +105,7 @@ class MemoizableArray extends \ArrayObject
         $memKey = $this->_memKey(__METHOD__, $key, $values, $strict);
 
         if (!isset($this->_memoized[$memKey])) {
-            $this->_memoized[$memKey] = new MemoizableArray(ArrayHelper::whereIn($this, $key, $values, $strict, false));
+            $this->_memoized[$memKey] = new MemoizableArray(ArrayHelper::whereIn($this->_array, $key, $values, $strict, false));
         }
 
         return $this->_memoized[$memKey];
@@ -102,7 +125,7 @@ class MemoizableArray extends \ArrayObject
 
         // Use array_key_exists() because it could be null
         if (!array_key_exists($memKey, $this->_memoized)) {
-            $this->_memoized[$memKey] = ArrayHelper::firstWhere($this, $key, $value, $strict);
+            $this->_memoized[$memKey] = ArrayHelper::firstWhere($this->_array, $key, $value, $strict);
         }
 
         return $this->_memoized[$memKey];
@@ -126,92 +149,237 @@ class MemoizableArray extends \ArrayObject
     }
 
     /**
-     * @inheritdoc
+     * Resets the memoized data.
+     */
+    private function _reset(): void
+    {
+        $this->_memoized = [];
+    }
+
+    /**
+     * Appends the value
+     *
+     * @see https://www.php.net/manual/en/arrayobject.append.php
      */
     public function append($value)
     {
-        parent::append($value);
-        $this->_memoized = [];
+        $this->_array->append($value);
+        $this->_reset();
     }
 
     /**
-     * @inheritdoc
+     * Sort the entries by value
+     *
+     * @see https://www.php.net/manual/en/arrayobject.asort.php
      */
     public function asort(int $sort_flags = SORT_REGULAR)
     {
-        parent::asort($sort_flags);
-        $this->_memoized = [];
+        $this->_array->asort($sort_flags);
+        $this->_reset();
     }
 
     /**
-     * @inheritdoc
+     * Get the number of public properties in the ArrayObject
+     *
+     * @see https://www.php.net/manual/en/arrayobject.count.php
+     */
+    #[ReturnTypeWillChange]
+    public function count()
+    {
+        return $this->_array->count();
+    }
+
+    /**
+     * Exchange the array for another one.
+     *
+     * @see https://www.php.net/manual/en/arrayobject.exchangearray.php
      */
     public function exchangeArray($input)
     {
-        parent::exchangeArray($input);
-        $this->_memoized = [];
+        $this->_array->exchangeArray($input);
+        $this->_reset();
     }
 
     /**
-     * @inheritdoc
+     * Creates a copy of the ArrayObject.
+     *
+     * @see https://www.php.net/manual/en/arrayobject.getarraycopy.php
+     */
+    public function getArrayCopy()
+    {
+        return $this->_array->getArrayCopy();
+    }
+
+    /**
+     * Gets the behavior flags.
+     *
+     * @see https://www.php.net/manual/en/arrayobject.getflags.php
+     */
+    public function getFlags()
+    {
+        return $this->_array->getFlags();
+    }
+
+    /**
+     * Create a new iterator from an ArrayObject instance
+     *
+     * @see https://www.php.net/manual/en/arrayobject.getiterator.php
+     */
+    #[ReturnTypeWillChange]
+    public function getIterator()
+    {
+        return $this->_array->getIterator();
+    }
+
+    /**
+     * Gets the iterator classname for the ArrayObject.
+     *
+     * @see https://www.php.net/manual/en/arrayobject.getiteratorclass.php
+     */
+    public function getIteratorClass()
+    {
+        return $this->_array->getIteratorClass();
+    }
+
+    /**
+     * Sort the entries by key
+     *
+     * @see https://www.php.net/manual/en/arrayobject.ksort.php
      */
     public function ksort(int $sort_flags = SORT_REGULAR)
     {
-        parent::ksort($sort_flags);
-        $this->_memoized = [];
+        $this->_array->ksort($sort_flags);
+        $this->_reset();
     }
 
     /**
-     * @inheritdoc
+     * Sort an array using a case insensitive "natural order" algorithm
+     *
+     * @see https://www.php.net/manual/en/arrayobject.natcasesort.php
      */
     public function natcasesort()
     {
-        parent::natcasesort();
-        $this->_memoized = [];
+        $this->_array->natcasesort();
+        $this->_reset();
     }
 
     /**
-     * @inheritdoc
+     * Sort entries using a "natural order" algorithm
+     *
+     * @see https://www.php.net/manual/en/arrayobject.natsort.php
      */
     public function natsort()
     {
-        parent::natsort();
-        $this->_memoized = [];
+        $this->_array->natsort();
+        $this->_reset();
     }
 
     /**
-     * @inheritdoc
+     * Returns whether the requested index exists
+     *
+     * @see https://www.php.net/manual/en/arrayobject.offsetexists.php
      */
-    public function offsetSet($index, $newval)
+    #[ReturnTypeWillChange]
+    public function offsetExists($offset)
     {
-        parent::offsetSet($index, $newval);
-        $this->_memoized = [];
+        return $this->_array->offsetExists($offset);
     }
 
     /**
-     * @inheritdoc
+     * Returns the value at the specified index
+     *
+     * @see https://www.php.net/manual/en/arrayobject.offsetget.php
      */
-    public function offsetUnset($index)
+    #[ReturnTypeWillChange]
+    public function offsetGet($offset)
     {
-        parent::offsetUnset($index);
-        $this->_memoized = [];
+        return $this->_array->offsetGet($offset);
     }
 
     /**
-     * @inheritdoc
+     * Sets the value at the specified index to newval
+     *
+     * @see https://www.php.net/manual/en/arrayobject.offsetset.php
+     */
+    #[ReturnTypeWillChange]
+    public function offsetSet($offset, $value)
+    {
+        $this->_array->offsetSet($offset, $value);
+        $this->_reset();
+    }
+
+    /**
+     * Unsets the value at the specified index
+     *
+     * @see https://www.php.net/manual/en/arrayobject.offsetunset.php
+     */
+    #[ReturnTypeWillChange]
+    public function offsetUnset($offset)
+    {
+        $this->_array->offsetUnset($offset);
+        $this->_reset();
+    }
+
+    /**
+     * Serialize an ArrayObject
+     *
+     * @see https://www.php.net/manual/en/arrayobject.serialize.php
+     */
+    public function serialize()
+    {
+        return $this->_array->serialize();
+    }
+
+    /**
+     * Sets the behavior flags.
+     *
+     * @see https://www.php.net/manual/en/arrayobject.setflags.php
+     */
+    public function setFlags($flags)
+    {
+        $this->_array->setFlags($flags);
+    }
+
+    /**
+     * Sets the iterator classname for the ArrayObject.
+     *
+     * @see https://www.php.net/manual/en/arrayobject.setiteratorclass.php
+     */
+    public function setIteratorClass($iteratorClass)
+    {
+        $this->_array->setIteratorClass($iteratorClass);
+    }
+
+    /**
+     * Sort the entries with a user-defined comparison function and maintain key association
+     *
+     * @see https://www.php.net/manual/en/arrayobject.uasort.php
      */
     public function uasort($cmp_function)
     {
-        parent::uasort($cmp_function);
-        $this->_memoized = [];
+        $this->_array->uasort($cmp_function);
+        $this->_reset();
     }
 
     /**
-     * @inheritdoc
+     * Sort the entries by keys using a user-defined comparison function
+     *
+     * @see https://www.php.net/manual/en/arrayobject.uksort.php
      */
     public function uksort($cmp_function)
     {
-        parent::uksort($cmp_function);
-        $this->_memoized = [];
+        $this->_array->uksort($cmp_function);
+        $this->_reset();
+    }
+
+    /**
+     * Unserialize an ArrayObject
+     *
+     * @see https://www.php.net/manual/en/arrayobject.unserialize.php
+     */
+    public function unserialize($data)
+    {
+        $this->_array->unserialize($data);
+        $this->_reset();
     }
 }

@@ -386,7 +386,7 @@ class CategoriesController extends Controller
             // Should we show the Share button too?
             if ($category->id !== null) {
                 // If the category is enabled, use its main URL as its share URL.
-                if ($category->getStatus() === Element::STATUS_ENABLED) {
+                if ($category->getStatus() === Element::STATUS_ENABLED && $siteModel->enabled) {
                     $variables['shareUrl'] = $category->getUrl();
                 } else {
                     $variables['shareUrl'] = UrlHelper::actionUrl('categories/share-category', [
@@ -635,7 +635,7 @@ class CategoriesController extends Controller
 
         if (!empty($variables['groupHandle'])) {
             $variables['group'] = Craft::$app->getCategories()->getGroupByHandle($variables['groupHandle']);
-        } else if (!empty($variables['groupId'])) {
+        } elseif (!empty($variables['groupId'])) {
             $variables['group'] = Craft::$app->getCategories()->getGroupById($variables['groupId']);
         }
 

@@ -1867,7 +1867,6 @@ Glückwunsch! Craft konnte erfolgreich eine E-Mail versenden. Hier sind die von 
     '{section} Entry Types' => '{section}-Eintragstypen',
     '{step, number} of {total, number}' => '{step, number} von {total, number}',
     '{title} ({site})' => '{title} ({site})',
-    '{title} copy' => '{title} Kopie',
     '{total, number} {total, plural, =1{{item}} other{{items}}}' => '{total, number} {total, plural, =1{{item}} other{{items}}}',
     '{total} jobs' => '{total} Aufgaben',
     '{total} updates available!' => '{total} Aktualisierungen verfügbar!',

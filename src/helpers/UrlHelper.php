@@ -617,10 +617,10 @@ class UrlHelper
      * @param string|null $scheme
      * @param bool $cpUrl
      * @param bool|null $showScriptName
-     * @param bool|null $addToken
+     * @param bool $addToken
      * @return string
      */
-    private static function _createUrl(string $path, $params, ?string $scheme, bool $cpUrl, ?bool $showScriptName = null, ?bool $addToken = null): string
+    private static function _createUrl(string $path, $params, ?string $scheme, bool $cpUrl, ?bool $showScriptName = null, bool $addToken = true): string
     {
         // Extract any params/fragment from the path
         [$path, $baseParams, $baseFragment] = self::_extractParams($path);
@@ -636,8 +636,8 @@ class UrlHelper
         $request = Craft::$app->getRequest();
 
         // If this is a site URL and there was a (site) token on the request, pass it along
-        if (!$cpUrl && $addToken !== false) {
-            if (!isset($params[$generalConfig->tokenParam]) && ($token = $request->getToken()) !== null) {
+        if (!$cpUrl) {
+            if ($addToken && !isset($params[$generalConfig->tokenParam]) && ($token = $request->getToken()) !== null) {
                 $params[$generalConfig->tokenParam] = $token;
             }
             if (!isset($params[$generalConfig->siteToken]) && ($siteToken = $request->getSiteToken()) !== null) {
@@ -659,7 +659,7 @@ class UrlHelper
             } else {
                 $baseUrl = static::host() . $request->getScriptUrl();
             }
-        } else if ($cpUrl) {
+        } elseif ($cpUrl) {
             $baseUrl = static::baseCpUrl();
         } else {
             $baseUrl = static::baseSiteUrl();

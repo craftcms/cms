@@ -60,7 +60,7 @@ class Images extends Component
     {
         if (strtolower(Craft::$app->getConfig()->getGeneral()->imageDriver) === 'gd') {
             $this->_driver = self::DRIVER_GD;
-        } else if ($this->getCanUseImagick()) {
+        } elseif ($this->getCanUseImagick()) {
             $this->_driver = self::DRIVER_IMAGICK;
         } else {
             $this->_driver = self::DRIVER_GD;

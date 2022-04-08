@@ -81,7 +81,6 @@ class ConfigHelper
             // no break
             case 'k':
                 $value *= 1024;
-            // no break
         }
 
         return $value;

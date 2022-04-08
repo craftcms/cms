@@ -186,16 +186,17 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend({
             data.showSiteMenu = this.settings.showSiteMenu ? '1' : '0';
         }
 
-        Craft.postActionRequest('elements/get-modal-body', data, (response, textStatus) => {
+        Craft.postActionRequest(this.settings.bodyAction, data, (response, textStatus) => {
             if (textStatus === 'success') {
                 this.$body.html(response.html);
+
 
                 if (this.$body.has('.sidebar:not(.hidden)').length) {
                     this.$body.addClass('has-sidebar');
                 }
 
                 // Initialize the element index
-                this.elementIndex = Craft.createElementIndex(this.elementType, this.$body, {
+                this.elementIndex = Craft.createElementIndex(this.elementType, this.$body, Object.assign({
                     context: 'modal',
                     modal: this,
                     storageKey: this.settings.storageKey,
@@ -208,7 +209,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend({
                     hideSidebar: this.settings.hideSidebar,
                     defaultSiteId: this.settings.defaultSiteId,
                     defaultSource: this.settings.defaultSource
-                });
+                }, this.settings.indexSettings));
 
                 // Double-clicking or double-tapping should select the elements
                 this.addListener(this.elementIndex.$elements, 'doubletap', function(ev, touchData) {
@@ -238,6 +239,8 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend({
         onSelect: $.noop,
         hideSidebar: false,
         defaultSiteId: null,
-        defaultSource: null
-    }
+        defaultSource: null,
+        bodyAction: 'elements/get-modal-body',
+        indexSettings: {},
+    },
 });

@@ -831,7 +831,7 @@ abstract class Element extends Component implements ElementInterface
                 } else {
                     unset($viewState['order']);
                 }
-            } else if ($orderBy = self::_indexOrderBy($sourceKey, $viewState['order'], $viewState['sort'] ?? 'asc')) {
+            } elseif ($orderBy = self::_indexOrderBy($sourceKey, $viewState['order'], $viewState['sort'] ?? 'asc')) {
                 $elementQuery->orderBy($orderBy);
 
                 if ((!is_array($orderBy) || !isset($orderBy['score'])) && !empty($viewState['orderHistory'])) {
@@ -1071,9 +1071,8 @@ abstract class Element extends Component implements ElementInterface
 
         // Build the descendant condition & params
         $condition = ['or'];
-        $params = [];
 
-        foreach ($elementStructureData as $i => $elementStructureDatum) {
+        foreach ($elementStructureData as $elementStructureDatum) {
             $thisElementCondition = [
                 'and',
                 ['structureId' => $elementStructureDatum['structureId']],
@@ -1086,7 +1085,6 @@ abstract class Element extends Component implements ElementInterface
             }
 
             $condition[] = $thisElementCondition;
-            $params[":sourceId$i"] = $elementStructureDatum['elementId'];
         }
 
         // Fetch the descendant data
@@ -1159,9 +1157,8 @@ abstract class Element extends Component implements ElementInterface
 
         // Build the ancestor condition & params
         $condition = ['or'];
-        $params = [];
 
-        foreach ($elementStructureData as $i => $elementStructureDatum) {
+        foreach ($elementStructureData as $elementStructureDatum) {
             $thisElementCondition = [
                 'and',
                 ['structureId' => $elementStructureDatum['structureId']],
@@ -1174,7 +1171,6 @@ abstract class Element extends Component implements ElementInterface
             }
 
             $condition[] = $thisElementCondition;
-            $params[":sourceId$i"] = $elementStructureDatum['elementId'];
         }
 
         // Fetch the ancestor data
@@ -1268,7 +1264,7 @@ abstract class Element extends Component implements ElementInterface
         // Get the source element IDs
         $sourceElementIds = ArrayHelper::getColumn($sourceElements, 'id');
 
-        $map = (new Query)
+        $map = (new Query())
             ->select([
                 'source' => 'se.id',
                 'target' => 're.id',
@@ -1457,7 +1453,7 @@ abstract class Element extends Component implements ElementInterface
             if ($i === 0) {
                 // The first column's sort direction is always user-defined
                 $result[$column] = $dir;
-            } else if (preg_match('/^(.*?)\s+(asc|desc)$/i', $column, $matches)) {
+            } elseif (preg_match('/^(.*?)\s+(asc|desc)$/i', $column, $matches)) {
                 $result[$matches[1]] = strcasecmp($matches[2], 'desc') ? SORT_ASC : SORT_DESC;
             } else {
                 $result[$column] = SORT_ASC;
@@ -1492,7 +1488,7 @@ abstract class Element extends Component implements ElementInterface
                     }
                     return $sortOption['orderBy'];
                 }
-            } else if ($key === $attribute) {
+            } elseif ($key === $attribute) {
                 return $key;
             }
         }
@@ -1809,7 +1805,6 @@ abstract class Element extends Component implements ElementInterface
         $behaviors = parent::behaviors();
         $behaviors['customFields'] = [
             'class' => CustomFieldBehavior::class,
-            'canSetProperties' => false,
         ];
         return $behaviors;
     }
@@ -1848,6 +1843,11 @@ abstract class Element extends Component implements ElementInterface
         }
 
         $this->_initialized = true;
+
+        // Stop allowing setting custom field values directly on the behavior
+        /** @var CustomFieldBehavior $behavior */
+        $behavior = $this->getBehavior('customFields');
+        $behavior->canSetProperties = false;
     }
 
     /**
@@ -2400,7 +2400,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function mergeCanonicalChanges(): void
     {
-        if (($canonical = $this->getCanonical()) === null) {
+        if (($canonical = $this->getCanonical()) === $this) {
             return;
         }
 
@@ -2647,7 +2647,7 @@ abstract class Element extends Component implements ElementInterface
         if ($cpEditUrl !== null) {
             if ($this->getIsDraft() && !$this->isProvisionalDraft) {
                 $cpEditUrl = UrlHelper::urlWithParams($cpEditUrl, ['draftId' => $this->draftId]);
-            } else if ($this->getIsRevision()) {
+            } elseif ($this->getIsRevision()) {
                 $cpEditUrl = UrlHelper::urlWithParams($cpEditUrl, ['revisionId' => $this->revisionId]);
             }
         }
@@ -2681,7 +2681,7 @@ abstract class Element extends Component implements ElementInterface
                 $this->trigger(self::EVENT_REGISTER_PREVIEW_TARGETS, $event);
                 $previewTargets = $event->previewTargets;
             }
-        } else if ($url = $this->getUrl()) {
+        } elseif ($url = $this->getUrl()) {
             $previewTargets = [
                 [
                     'label' => Craft::t('app', 'Primary {type} page', [
@@ -3139,7 +3139,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    function getAttributeStatus(string $attribute)
+    public function getAttributeStatus(string $attribute)
     {
         if ($this->isAttributeModified($attribute)) {
             return [
@@ -3377,7 +3377,7 @@ abstract class Element extends Component implements ElementInterface
      * @since 3.4.0
      * @deprecated in 3.7.0. Use [[FieldInterface::getStatus()]] instead.
      */
-    function getFieldStatus(string $fieldHandle)
+    public function getFieldStatus(string $fieldHandle)
     {
         if (($field = $this->fieldByHandle($fieldHandle)) !== null) {
             return $field->getStatus($this);
@@ -3542,7 +3542,7 @@ abstract class Element extends Component implements ElementInterface
             // Do we have any post data for this field?
             if (isset($values[$field->handle])) {
                 $value = $values[$field->handle];
-            } else if (!empty($this->_fieldParamNamePrefix) && UploadedFile::getInstancesByName($this->_fieldParamNamePrefix . '.' . $field->handle)) {
+            } elseif (!empty($this->_fieldParamNamePrefix) && UploadedFile::getInstancesByName($this->_fieldParamNamePrefix . '.' . $field->handle)) {
                 // A file was uploaded for this field
                 $value = null;
             } else {
@@ -4072,7 +4072,7 @@ abstract class Element extends Component implements ElementInterface
             Craft::t('app', 'Notes') => function() {
                 if ($this->getIsRevision()) {
                     $revision = $this;
-                } else if ($this->getIsCanonical() || $this->isProvisionalDraft) {
+                } elseif ($this->getIsCanonical() || $this->isProvisionalDraft) {
                     $element = $this->getCanonical(true);
                     $revision = $element->getCurrentRevision();
                 }

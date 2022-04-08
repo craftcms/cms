@@ -70,5 +70,4 @@ class EditUserCest
                 ->one()->firstName
         );
     }
-
 }

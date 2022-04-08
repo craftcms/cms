@@ -1865,7 +1865,6 @@ return [
     '{section} Entry Types' => '{section} סוגי רשימות',
     '{step, number} of {total, number}' => '{step, number} מה-{total, number}',
     '{title} ({site})' => '{title} ({site})',
-    '{title} copy' => 'עותק של {title}',
     '{total, number} {total, plural, =1{{item}} other{{items}}}' => '{total, number} {total, plural, =1{{item}} other{{items}}}',
     '{total} jobs' => '{total} עבודות',
     '{total} updates available!' => '{total} עדכונים זמינים!',

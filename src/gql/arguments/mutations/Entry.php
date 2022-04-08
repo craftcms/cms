@@ -48,7 +48,7 @@ class Entry extends ElementMutationArguments
             'siteId' => [
                 'name' => 'siteId',
                 'type' => Type::int(),
-                'description' => 'Determines which site(s) the elements should be saved to. Defaults to the primary site.',
+                'description' => 'Determines which site the elements should be saved to. Defaults to the primary site.',
             ],
         ]);
     }

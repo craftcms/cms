@@ -31,6 +31,7 @@ use craft\helpers\StringHelper;
 use craft\models\Site;
 use craft\search\SearchQuery;
 use ReflectionProperty;
+use ReturnTypeWillChange;
 use yii\base\ArrayableTrait;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -634,6 +635,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @param int|string $name The offset to get
      * @return mixed The element at the given offset
      */
+    #[ReturnTypeWillChange]
     public function offsetGet($name)
     {
         if (is_numeric($name) && ($element = $this->nth($name)) !== null) {
@@ -651,6 +653,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @param mixed $value The value
      * @throws NotSupportedException if $name is numeric
      */
+    #[ReturnTypeWillChange]
     public function offsetSet($name, $value)
     {
         if (is_numeric($name)) {
@@ -667,6 +670,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @param string $name The offset to unset
      * @throws NotSupportedException if $name is numeric
      */
+    #[ReturnTypeWillChange]
     public function offsetUnset($name)
     {
         if (is_numeric($name)) {
@@ -674,7 +678,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         /** @noinspection ImplicitMagicMethodCallInspection */
-        return $this->__unset($name);
+        $this->__unset($name);
     }
 
     /**
@@ -757,7 +761,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     {
         if ($value instanceof ElementInterface) {
             $this->draftOf = $value->getCanonicalId();
-        } else if (is_numeric($value) || $value === '*' || $value === false || $value === null) {
+        } elseif (is_numeric($value) || $value === '*' || $value === false || $value === null) {
             $this->draftOf = $value;
         } else {
             throw new InvalidArgumentException('Invalid draftOf value');
@@ -777,7 +781,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     {
         if ($value instanceof User) {
             $this->draftCreator = $value->id;
-        } else if (is_numeric($value) || $value === null) {
+        } elseif (is_numeric($value) || $value === null) {
             $this->draftCreator = $value;
         } else {
             throw new InvalidArgumentException('Invalid draftCreator value');
@@ -843,7 +847,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     {
         if ($value instanceof ElementInterface) {
             $this->revisionOf = $value->getCanonicalId();
-        } else if (is_numeric($value) || $value === null) {
+        } elseif (is_numeric($value) || $value === null) {
             $this->revisionOf = $value;
         } else {
             throw new InvalidArgumentException('Invalid revisionOf value');
@@ -861,7 +865,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     {
         if ($value instanceof User) {
             $this->revisionCreator = $value->id;
-        } else if (is_numeric($value) || $value === null) {
+        } elseif (is_numeric($value) || $value === null) {
             $this->revisionCreator = $value;
         } else {
             throw new InvalidArgumentException('Invalid revisionCreator value');
@@ -1007,11 +1011,11 @@ class ElementQuery extends Query implements ElementQueryInterface
     {
         if ($value === null) {
             $this->siteId = null;
-        } else if ($value === '*') {
+        } elseif ($value === '*') {
             $this->siteId = Craft::$app->getSites()->getAllSiteIds();
-        } else if ($value instanceof Site) {
+        } elseif ($value instanceof Site) {
             $this->siteId = $value->id;
-        } else if (is_string($value)) {
+        } elseif (is_string($value)) {
             $site = Craft::$app->getSites()->getSiteByHandle($value);
             if (!$site) {
                 throw new InvalidArgumentException('Invalid site handle: ' . $value);
@@ -1507,7 +1511,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         if (version_compare($schemaVersion, '3.1.0', '>=')) {
             if ($this->trashed === false) {
                 $this->subQuery->andWhere(['elements.dateDeleted' => null]);
-            } else if ($this->trashed === true) {
+            } elseif ($this->trashed === true) {
                 $this->subQuery->andWhere(['not', ['elements.dateDeleted' => null]]);
             }
         }
@@ -1909,11 +1913,21 @@ class ElementQuery extends Query implements ElementQueryInterface
                             unset($row[$column]);
                         } else {
                             if ($setValue) {
-                                $fieldValues[$field->handle] = [];
+                                $columnValues = [];
+                                $hasColumnValues = false;
+
                                 foreach ($column as $key => $col) {
-                                    $fieldValues[$field->handle][$key] = $row[$col] ?? null;
+                                    $columnValues[$key] = $row[$col] ?? null;
+                                    $hasColumnValues = $hasColumnValues || $columnValues[$key] !== null;
+                                }
+
+                                // Only actually set it on $fieldValues if any of the columns weren't null.
+                                // Otherwise, leave it alone in case another field has the same handle.
+                                if ($hasColumnValues) {
+                                    $fieldValues[$field->handle] = $columnValues;
                                 }
                             }
+
                             foreach ($column as $col) {
                                 unset($row[$col]);
                             }
@@ -2684,13 +2698,13 @@ class ElementQuery extends Query implements ElementQueryInterface
             if ($useCanonicalId) {
                 if ($this->draftOf === '*') {
                     $this->subQuery->andWhere(['not', ['elements.canonicalId' => null]]);
-                } else if ($this->draftOf !== null) {
+                } elseif ($this->draftOf !== null) {
                     $this->subQuery->andWhere(['elements.canonicalId' => $this->draftOf ?: null]);
                 }
             } else {
                 if ($this->draftOf === '*') {
                     $this->subQuery->andWhere(['not', ['drafts.sourceId' => null]]);
-                } else if ($this->draftOf !== null) {
+                } elseif ($this->draftOf !== null) {
                     $this->subQuery->andWhere(['drafts.sourceId' => $this->draftOf ?: null]);
                 }
             }
@@ -2769,7 +2783,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         if (!$this->siteId) {
             // Default to the current site
             $this->siteId = Craft::$app->getSites()->getCurrentSite()->id;
-        } else if ($this->siteId === '*') {
+        } elseif ($this->siteId === '*') {
             $this->siteId = Craft::$app->getSites()->getAllSiteIds();
         }
     }
@@ -2894,7 +2908,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         if (empty($this->orderBy)) {
             if ($this->fixedOrder) {
                 if (empty($this->id)) {
-                    throw new QueryAbortedException;
+                    throw new QueryAbortedException();
                 }
 
                 $ids = $this->id;
@@ -2906,11 +2920,11 @@ class ElementQuery extends Query implements ElementQueryInterface
                     throw new Exception('The database connection doesn’t support fixed ordering.');
                 }
                 $this->orderBy = [new FixedOrderExpression('elements.id', $ids, $db)];
-            } else if (self::_supportsRevisionParams() && $this->revisions) {
+            } elseif (self::_supportsRevisionParams() && $this->revisions) {
                 $this->orderBy = ['num' => SORT_DESC];
-            } else if ($this->_shouldJoinStructureData()) {
+            } elseif ($this->_shouldJoinStructureData()) {
                 $this->orderBy = ['structureelements.lft' => SORT_ASC] + $this->defaultOrderBy;
-            } else if (!empty($this->defaultOrderBy)) {
+            } elseif (!empty($this->defaultOrderBy)) {
                 $this->orderBy = $this->defaultOrderBy;
             } else {
                 return;
@@ -2957,7 +2971,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                     $values = array_reverse($direction->values);
                     $direction = new FixedOrderExpression($direction->column, $values, $direction->db, $direction->params);
                 } // Can't do anything about custom SQL expressions
-                else if (!$direction instanceof ExpressionInterface) {
+                elseif (!$direction instanceof ExpressionInterface) {
                     $direction = $direction === SORT_DESC ? SORT_ASC : SORT_DESC;
                 }
             }
@@ -3056,7 +3070,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             foreach ($this->preferSites as $preferSite) {
                 if (is_numeric($preferSite)) {
                     $preferSites[] = $preferSite;
-                } else if ($site = $sitesService->getSiteByHandle($preferSite)) {
+                } elseif ($site = $sitesService->getSiteByHandle($preferSite)) {
                     $preferSites[] = $site->id;
                 }
             }

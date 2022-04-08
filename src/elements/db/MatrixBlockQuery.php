@@ -168,7 +168,7 @@ class MatrixBlockQuery extends ElementQuery
     {
         if ($value instanceof MatrixField) {
             $this->fieldId = [$value->id];
-        } else if (is_string($value) || (is_array($value) && count($value) === 1)) {
+        } elseif (is_string($value) || (is_array($value) && count($value) === 1)) {
             if (!is_string($value)) {
                 $value = reset($value);
             }
@@ -178,7 +178,7 @@ class MatrixBlockQuery extends ElementQuery
             } else {
                 $this->fieldId = false;
             }
-        } else if ($value !== null) {
+        } elseif ($value !== null) {
             $this->fieldId = (new Query())
                 ->select(['id'])
                 ->from([Table::FIELDS])
@@ -407,7 +407,7 @@ class MatrixBlockQuery extends ElementQuery
     {
         if ($value instanceof MatrixBlockType) {
             $this->typeId = $value->id;
-        } else if ($value !== null) {
+        } elseif ($value !== null) {
             $this->typeId = (new Query())
                 ->select(['id'])
                 ->from([Table::MATRIXBLOCKTYPES])
@@ -544,9 +544,9 @@ class MatrixBlockQuery extends ElementQuery
 
         if (empty($this->fieldId)) {
             $this->fieldId = null;
-        } else if (is_numeric($this->fieldId)) {
+        } elseif (is_numeric($this->fieldId)) {
             $this->fieldId = [$this->fieldId];
-        } else if (!is_array($this->fieldId) || !ArrayHelper::isNumeric($this->fieldId)) {
+        } elseif (!is_array($this->fieldId) || !ArrayHelper::isNumeric($this->fieldId)) {
             $this->fieldId = (new Query())
                 ->select(['id'])
                 ->from([Table::FIELDS])
@@ -565,9 +565,9 @@ class MatrixBlockQuery extends ElementQuery
     {
         if (empty($this->ownerId)) {
             $this->ownerId = null;
-        } else if (is_numeric($this->ownerId)) {
+        } elseif (is_numeric($this->ownerId)) {
             $this->ownerId = [$this->ownerId];
-        } else if (!is_array($this->ownerId) || !ArrayHelper::isNumeric($this->ownerId)) {
+        } elseif (!is_array($this->ownerId) || !ArrayHelper::isNumeric($this->ownerId)) {
             throw new InvalidConfigException('Invalid ownerId param value');
         }
     }

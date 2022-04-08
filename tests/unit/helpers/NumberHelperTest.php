@@ -106,7 +106,7 @@ class NumberHelperTest extends Unit
             ['50', $toStringClass],
             [1, 'five'],
             [1, [false]],
-            [0, []]
+            [0, []],
         ];
     }
 
@@ -119,7 +119,7 @@ class NumberHelperTest extends Unit
             ['ii', 2],
             ['', 0],
             ['l', 50],
-            ['mi', 1001]
+            ['mi', 1001],
         ];
     }
 
@@ -132,7 +132,7 @@ class NumberHelperTest extends Unit
             ['II', 2],
             ['', 0],
             ['L', 50],
-            ['MI', 1001]
+            ['MI', 1001],
         ];
     }
 
@@ -146,7 +146,7 @@ class NumberHelperTest extends Unit
             ['two', 2],
             ['0', 0],
             ['10', 10],
-            ['nine', 9]
+            ['nine', 9],
         ];
     }
 

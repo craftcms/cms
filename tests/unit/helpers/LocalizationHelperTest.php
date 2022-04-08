@@ -122,12 +122,12 @@ class LocalizationHelperTest extends Unit
                     'english' => 'language',
                     'spanish' => 'language',
                     'french' => [
-                        'language', 'france'
-                    ]
-                ], 'a-locale-id'
+                        'language', 'france',
+                    ],
+                ], 'a-locale-id',
             ],
             [['language2'], '/sub/another-locale-id'],
-            [ArrayHelper::merge($nlTranslation, ['dutch' => 'a language']), 'nl']
+            [ArrayHelper::merge($nlTranslation, ['dutch' => 'a language']), 'nl'],
         ];
     }
 }

@@ -31,7 +31,7 @@ class Factory extends \Composer\Factory
      * @param Loop $loop
      * @return Archiver\ArchiveManager
      */
-    public function createArchiveManager(Config $config, DownloadManager $dm, Loop $loop)
+    public function createArchiveManager(Config $config, DownloadManager $dm, Loop $loop): Archiver\ArchiveManager
     {
         $am = new Archiver\ArchiveManager($dm, $loop);
         // $am->addArchiver(new Archiver\ZipArchiver);

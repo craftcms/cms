@@ -100,7 +100,7 @@ class FindAndReplace extends BaseJob
                     $this->_textColumns[] = [$table, $column];
                 }
             }
-        } else if (Db::isTextualColumnType($columnType)) {
+        } elseif (Db::isTextualColumnType($columnType)) {
             $column = ElementHelper::fieldColumn($fieldColumnPrefix, $field->handle, $field->columnSuffix);
             $this->_textColumns[] = [$table, $column];
         }

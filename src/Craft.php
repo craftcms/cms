@@ -294,8 +294,9 @@ EOD;
         }
 
         // Load the template
-        $fileContents = file_get_contents(static::$app->getBasePath() . DIRECTORY_SEPARATOR . 'behaviors' .
-            DIRECTORY_SEPARATOR . 'CustomFieldBehavior.php.template');
+        $templatePath = static::$app->getBasePath() . DIRECTORY_SEPARATOR . 'behaviors' . DIRECTORY_SEPARATOR . 'CustomFieldBehavior.php.template';
+        FileHelper::invalidate($templatePath);
+        $fileContents = file_get_contents($templatePath);
 
         // Replace placeholders with generated code
         $fileContents = str_replace(
@@ -334,7 +335,7 @@ EOD;
                     );
                 },
             ]);
-        } else if ($load) {
+        } elseif ($load) {
             // Just evaluate the code
             eval(preg_replace('/^<\?php\s*/', '', $fileContents));
         }

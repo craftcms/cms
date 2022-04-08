@@ -104,7 +104,7 @@ EOD;
 
         if ($successCount && $failCount) {
             $this->stdout("Successfully renamed $successCount assets, but $failCount assets failed." . PHP_EOL . PHP_EOL);
-        } else if ($successCount) {
+        } elseif ($successCount) {
             $this->stdout("Successfully renamed $successCount assets." . PHP_EOL . PHP_EOL);
         } else {
             $this->stdout("Failed to rename $failCount assets." . PHP_EOL . PHP_EOL);

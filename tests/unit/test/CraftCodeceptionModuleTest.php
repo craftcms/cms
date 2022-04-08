@@ -55,9 +55,9 @@ class CraftCodeceptionModuleTest extends Unit
                     'eventPropName' => 'sender',
                     'desiredValue' => [
                         '22' => '44',
-                        '33' => '55'
-                    ]
-                ]
+                        '33' => '55',
+                    ],
+                ],
             ])
         );
     }
@@ -81,9 +81,9 @@ class CraftCodeceptionModuleTest extends Unit
                     'eventPropName' => 'sender',
                     'desiredClass' => stdClass::class,
                     'desiredValue' => [
-                        'a' => '22'
-                    ]
-                ]
+                        'a' => '22',
+                    ],
+                ],
             ])
         );
     }

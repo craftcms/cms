@@ -28,8 +28,8 @@ use yii\console\Response;
  *
  * @property Request $request The request component
  * @property User $user The user component
- * @method Request getRequest()      Returns the request component.
- * @method Response getResponse()     Returns the response component.
+ * @method Request getRequest() Returns the request component.
+ * @method Response getResponse() Returns the response component.
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */

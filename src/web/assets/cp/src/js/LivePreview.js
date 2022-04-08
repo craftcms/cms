@@ -200,6 +200,11 @@ Craft.LivePreview = Garnish.Base.extend({
 
         Craft.ElementThumbLoader.retryAll();
 
+        Garnish.uiLayerManager.addLayer(this.$sidebar);
+        Garnish.uiLayerManager.registerShortcut(Garnish.ESC_KEY, () => {
+            this.exit();
+        });
+
         this.inPreviewMode = true;
         this.trigger('enter');
     },
@@ -238,12 +243,6 @@ Craft.LivePreview = Garnish.Base.extend({
 
         this.$previewContainer.show().velocity('stop').animateRight(0, 'slow', () => {
             this.updateIframeInterval = setInterval(this.updateIframe.bind(this), 1000);
-
-            this.addListener(Garnish.$bod, 'keyup', function(ev) {
-                if (ev.keyCode === Garnish.ESC_KEY) {
-                    this.exit();
-                }
-            });
         });
     },
 
@@ -257,7 +256,7 @@ Craft.LivePreview = Garnish.Base.extend({
         $('html').removeClass('noscroll');
 
         this.removeListener(Garnish.$win, 'resize');
-        this.removeListener(Garnish.$bod, 'keyup');
+        Garnish.uiLayerManager.removeLayer();
 
         if (this.updateIframeInterval) {
             clearInterval(this.updateIframeInterval);

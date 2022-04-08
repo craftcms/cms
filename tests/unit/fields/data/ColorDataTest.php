@@ -5,7 +5,7 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace crafttests\unit\helpers;
+namespace crafttests\unit\fields\data;
 
 use Codeception\Test\Unit;
 use craft\fields\data\ColorData;
@@ -85,7 +85,7 @@ class ColorDataTest extends Unit
             [120, 100, 50, '#00ff00'],
             [240, 100, 50, '#0000ff'],
             [7, 78, 53, '#E5422B'],
-            [34, 94, 75, '#fbc884']
+            [34, 94, 75, '#fbc884'],
         ];
     }
 }

@@ -94,31 +94,31 @@ class ProjectConfigHelperTest extends Unit
                     'plainSettings' => 'plain',
                     'associativeSettings' => [
                         'some' => 'thing',
-                        'foo' => ['bar', 'baz']
+                        'foo' => ['bar', 'baz'],
                     ],
-                    'randomArray' => [1, 7, 2, 'ok']
+                    'randomArray' => [1, 7, 2, 'ok'],
                 ],
                 [
                     'plainSettings' => 'plain',
                     'associativeSettings' => [
                         ProjectConfig::CONFIG_ASSOC_KEY => [
                             ['some', 'thing'],
-                            ['foo', ['bar', 'baz']]
-                        ]
+                            ['foo', ['bar', 'baz']],
+                        ],
                     ],
-                    'randomArray' => [1, 7, 2, 'ok']
-                ]
+                    'randomArray' => [1, 7, 2, 'ok'],
+                ],
             ],
             [
                 [
                     'test' => [
                         'rootA' => [
-                            'label' => 'childA'
+                            'label' => 'childA',
                         ],
                         'rootB' => [
-                            'label' => 'childB'
-                        ]
-                    ]
+                            'label' => 'childB',
+                        ],
+                    ],
                 ],
                 [
                     'test' => [
@@ -127,22 +127,22 @@ class ProjectConfigHelperTest extends Unit
                                 'rootA',
                                 [
                                     ProjectConfig::CONFIG_ASSOC_KEY => [
-                                        ['label', 'childA']
-                                    ]
-                                ]
+                                        ['label', 'childA'],
+                                    ],
+                                ],
                             ],
                             [
                                 'rootB',
                                 [
                                     ProjectConfig::CONFIG_ASSOC_KEY => [
-                                        ['label', 'childB']
-                                    ]
-                                ]
-                            ]
-                        ]
-                    ]
-                ]
-            ]
+                                        ['label', 'childB'],
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
         ];
     }
 
@@ -159,7 +159,7 @@ class ProjectConfigHelperTest extends Unit
                 [
                     'emptier' => '',
                     'gone' => null,
-                    'obj' => ['okay']
+                    'obj' => ['okay'],
                 ],
             ],
             [
@@ -167,17 +167,17 @@ class ProjectConfigHelperTest extends Unit
                     'plainSettings' => 'plain',
                     'other settings' => [
                         'some' => 'thing',
-                        'foo' => ['bar', 'baz']
+                        'foo' => ['bar', 'baz'],
                     ],
-                    'randomArray' => [1, 7, 2, 'ok']
+                    'randomArray' => [1, 7, 2, 'ok'],
                 ],
                 [
                     'other settings' => [
                         'foo' => ['bar', 'baz'],
-                        'some' => 'thing'
+                        'some' => 'thing',
                     ],
                     'plainSettings' => 'plain',
-                    'randomArray' => [1, 7, 2, 'ok']
+                    'randomArray' => [1, 7, 2, 'ok'],
                 ],
             ],
             // Make sure empty values aren't removed from packed arrays
@@ -189,20 +189,20 @@ class ProjectConfigHelperTest extends Unit
                             ['foo', []],
                             ['bar'],
                             ['baz', 0],
-                        ]
+                        ],
                     ],
                     'b' => [
                         ProjectConfig::CONFIG_ASSOC_KEY => [
                             ['foo', []],
                             ['bar'],
-                        ]
+                        ],
                     ],
                 ],
                 [
                     'a' => [
                         ProjectConfig::CONFIG_ASSOC_KEY => [
                             2 => ['baz', 0],
-                        ]
+                        ],
                     ],
                 ],
             ],
@@ -216,16 +216,16 @@ class ProjectConfigHelperTest extends Unit
                 [
                     'dateModified' => 1,
                     'email' => [
-                        'provider' => 'gmail'
-                    ]
+                        'provider' => 'gmail',
+                    ],
                 ],
                 [
                     'project.yaml' => [
                         'dateModified' => 1,
                         'email' => [
-                            'provider' => 'gmail'
-                        ]
-                    ]
+                            'provider' => 'gmail',
+                        ],
+                    ],
                 ],
             ],
             [
@@ -234,9 +234,9 @@ class ProjectConfigHelperTest extends Unit
                     'email' => [
                         'provider' => 'gmail',
                         'aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa' => [
-                            'key' => 'value'
-                        ]
-                    ]
+                            'key' => 'value',
+                        ],
+                    ],
                 ],
                 [
                     'project.yaml' => [
@@ -244,10 +244,10 @@ class ProjectConfigHelperTest extends Unit
                         'email' => [
                             'provider' => 'gmail',
                             'aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa' => [
-                                'key' => 'value'
-                            ]
-                        ]
-                    ]
+                                'key' => 'value',
+                            ],
+                        ],
+                    ],
                 ],
             ],
             [
@@ -255,17 +255,17 @@ class ProjectConfigHelperTest extends Unit
                     'dateModified' => 3,
                     'email' => [
                         'aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa' => [
-                            'key' => 'value'
-                        ]
-                    ]
+                            'key' => 'value',
+                        ],
+                    ],
                 ],
                 [
                     'email/aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa.yaml' => [
-                        'key' => 'value'
+                        'key' => 'value',
                     ],
                     'project.yaml' => [
-                        'dateModified' => 3
-                    ]
+                        'dateModified' => 3,
+                    ],
                 ],
             ],
             [
@@ -273,23 +273,23 @@ class ProjectConfigHelperTest extends Unit
                     'dateModified' => 4,
                     'email' => [
                         'aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa' => [
-                            'key' => 'value'
+                            'key' => 'value',
                         ],
                         'bbbbbbbb-aaaa-4aaa-aaaa-aaaaaaaaaaaa' => [
-                            'key2' => 'value'
-                        ]
-                    ]
+                            'key2' => 'value',
+                        ],
+                    ],
                 ],
                 [
                     'email/aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa.yaml' => [
-                        'key' => 'value'
+                        'key' => 'value',
                     ],
                     'email/bbbbbbbb-aaaa-4aaa-aaaa-aaaaaaaaaaaa.yaml' => [
-                        'key2' => 'value'
+                        'key2' => 'value',
                     ],
                     'project.yaml' => [
-                        'dateModified' => 4
-                    ]
+                        'dateModified' => 4,
+                    ],
                 ],
             ],
             [
@@ -297,17 +297,17 @@ class ProjectConfigHelperTest extends Unit
                     'dateModified' => 4,
                     'email' => [
                         'aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa' => [
-                            'handle' => 'fooBar'
+                            'handle' => 'fooBar',
                         ],
-                    ]
+                    ],
                 ],
                 [
                     'email/fooBar--aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa.yaml' => [
-                        'handle' => 'fooBar'
+                        'handle' => 'fooBar',
                     ],
                     'project.yaml' => [
-                        'dateModified' => 4
-                    ]
+                        'dateModified' => 4,
+                    ],
                 ],
             ],
             [
@@ -315,17 +315,17 @@ class ProjectConfigHelperTest extends Unit
                     'dateModified' => 4,
                     'email' => [
                         'aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa' => [
-                            'handle' => 'foo-bar'
+                            'handle' => 'foo-bar',
                         ],
-                    ]
+                    ],
                 ],
                 [
                     'email/aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa.yaml' => [
-                        'handle' => 'foo-bar'
+                        'handle' => 'foo-bar',
                     ],
                     'project.yaml' => [
-                        'dateModified' => 4
-                    ]
+                        'dateModified' => 4,
+                    ],
                 ],
             ],
             [
@@ -335,27 +335,27 @@ class ProjectConfigHelperTest extends Unit
                         'provider' => 'gmail',
                         'productTypes' => [
                             'aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa' => [
-                                'key' => 'value'
+                                'key' => 'value',
                             ],
                             'bbbbbbbb-aaaa-4aaa-aaaa-aaaaaaaaaaaa' => [
-                                'key2' => 'value'
-                            ]
-                        ]
+                                'key2' => 'value',
+                            ],
+                        ],
                     ],
                 ],
                 [
                     'commerce/productTypes/aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa.yaml' => [
-                        'key' => 'value'
+                        'key' => 'value',
                     ],
                     'commerce/productTypes/bbbbbbbb-aaaa-4aaa-aaaa-aaaaaaaaaaaa.yaml' => [
-                        'key2' => 'value'
+                        'key2' => 'value',
                     ],
                     'commerce/commerce.yaml' => [
                         'provider' => 'gmail',
                     ],
                     'project.yaml' => [
-                        'dateModified' => 4
-                    ]
+                        'dateModified' => 4,
+                    ],
                 ],
             ],
         ];

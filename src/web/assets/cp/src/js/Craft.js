@@ -1513,7 +1513,7 @@ $.extend(Craft,
                     existingCss.push(Craft.escapeRegex(href));
                 }
 
-                var regexp = new RegExp('<link\\s[^>]*href="(?:' + existingCss.join('|') + ')".*?></script>', 'g');
+                const regexp = new RegExp('<link\\s[^>]*href="(?:' + existingCss.join('|') + ')".*?></link>', 'g');
 
                 html = html.replace(regexp, '');
             }
@@ -2126,14 +2126,10 @@ $.extend($.fn,
 
         disclosureMenu: function() {
             return this.each(function() {
-                var $trigger = $(this);
-                var $disclosureId = $trigger.attr('aria-controls');
-
-                // Only instantiate element if there is a reference to disclosure content
-                if ($disclosureId) {
-                    var settings = {};
-
-                    new Garnish.DisclosureMenu($trigger, settings);
+                const $trigger = $(this);
+                // Only instantiate if it's not already a disclosure trigger, and it references a disclosure content
+                if (!$trigger.data('trigger') && $trigger.attr('aria-controls')) {
+                    new Garnish.DisclosureMenu($trigger);
                 }
             });
         },

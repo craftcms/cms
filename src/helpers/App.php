@@ -38,6 +38,7 @@ use craft\web\User as WebUser;
 use craft\web\View;
 use yii\base\Event;
 use yii\base\InvalidArgumentException;
+use yii\base\InvalidValueException;
 use yii\helpers\Inflector;
 use yii\i18n\PhpMessageSource;
 use yii\log\Dispatcher as YiiDispatcher;
@@ -58,6 +59,12 @@ class App
      * @var bool
      */
     private static $_iconv;
+
+    /**
+     * @var string[]
+     * @see isPathAllowed()
+     */
+    private static $_basePaths;
 
     /**
      * Returns an environment variable, checking for it in `$_SERVER` and calling `getenv()` as a fallback.
@@ -325,6 +332,93 @@ class App
         }
 
         return $value;
+    }
+
+    /**
+     * Retrieves a file path PHP config setting and normalizes it to an array of paths.
+     *
+     * @param string $var The PHP config setting to retrieve
+     * @return string[] The normalized paths
+     * @since 3.7.34
+     */
+    public static function phpConfigValueAsPaths(string $var): array
+    {
+        return static::normalizePhpPaths(ini_get($var));
+    }
+
+    /**
+     * Normalizes a PHP path setting to an array of paths
+     *
+     * @param string $value The PHP path setting value
+     * @return string[] The normalized paths
+     * @since 3.7.34
+     */
+    public static function normalizePhpPaths(string $value): array
+    {
+        // semicolons are used to separate paths on Windows; everything else uses colons
+        $value = str_replace(';', ':', trim($value));
+
+        if ($value === '') {
+            return [];
+        }
+
+        $paths = [];
+
+        foreach (explode(':', $value) as $path) {
+            $path = trim($path);
+
+            // Parse ${ENV_VAR}s
+            try {
+                $path = preg_replace_callback('/\$\{(.*?)\}/', function($match) {
+                    $env = App::env($match[1]);
+                    if ($env === false) {
+                        throw new InvalidValueException();
+                    }
+                    return $env;
+                }, $path);
+            } catch (InvalidValueException $e) {
+                // References an env var that doesn’t exist
+                continue;
+            }
+
+            // '.' => working dir
+            if ($path === '.' || StringHelper::startsWith($path, './') || StringHelper::startsWith($path, '.\\')) {
+                $path = getcwd() . substr($path, 1);
+            }
+
+            // Normalize
+            $paths[] = FileHelper::normalizePath($path);
+        }
+
+        return $paths;
+    }
+
+    /**
+     * Returns whether the given path is within PHP’s `open_basedir` setting.
+     *
+     * @param string $path
+     * @return bool
+     * @since 3.7.34
+     */
+    public static function isPathAllowed(string $path): bool
+    {
+        if (!isset(self::$_basePaths)) {
+            self::$_basePaths = static::phpConfigValueAsPaths('open_basedir');
+        }
+
+        if (!self::$_basePaths) {
+            return true;
+        }
+
+        $path = FileHelper::normalizePath($path);
+
+        foreach (self::$_basePaths as $basePath) {
+            if (strpos($path, $basePath) === 0) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -760,6 +854,7 @@ class App
         return [
             'class' => ProjectConfigService::class,
             'readOnly' => Craft::$app->getIsInstalled() && !Craft::$app->getConfig()->getGeneral()->allowAdminChanges,
+            'writeYamlAutomatically' => !self::isEphemeral(),
         ];
     }
 

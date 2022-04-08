@@ -129,12 +129,24 @@ Craft.ui =
                 'aria-hidden': 'true',
             }).appendTo($btn);
 
-            $btn.on('click', () => {
+            const copyValue = function() {
                 $input[0].select();
                 document.execCommand('copy');
                 Craft.cp.displayNotice(Craft.t('app', 'Copied to clipboard.'));
                 $btn.trigger('copy');
                 $input[0].setSelectionRange(0, 0);
+                $btn.focus();
+            };
+
+            $btn.on('click', () => {
+                copyValue();
+            });
+
+            $btn.on('keydown', ev => {
+                if (ev.keyCode === Garnish.SPACE_KEY) {
+                    copyValue();
+                    ev.preventDefault();
+                }
             });
 
             return $btn;
@@ -922,8 +934,20 @@ Craft.ui =
 
             $('<div class="input"/>').append(input).appendTo($field);
 
+            if (config.tip) {
+                const $tip = $('<p class="notice has-icon"/>');
+                $('<span class="icon" aria-hidden="true"/>').appendTo($tip);
+                $('<span class="visually-hidden"/>').text(Craft.t('app', 'Tip') + ': ').appendTo($tip);
+                $('<span/>').text(config.tip).appendTo($tip);
+                $tip.appendTo($field);
+            }
+
             if (config.warning) {
-                $('<p class="warning"/>').text(config.warning).appendTo($field);
+                const $warning = $('<p class="warning has-icon"/>');
+                $('<span class="icon" aria-hidden="true"/>').appendTo($warning);
+                $('<span class="visually-hidden"/>').text(Craft.t('app', 'Warning') + ': ').appendTo($warning);
+                $('<span/>').text(config.warning).appendTo($warning);
+                $warning.appendTo($field);
             }
 
             if (config.errors) {

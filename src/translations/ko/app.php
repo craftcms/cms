@@ -1865,7 +1865,6 @@ return [
     '{section} Entry Types' => '{section} 항목 타입',
     '{step, number} of {total, number}' => '{step, number} / {total, number}',
     '{title} ({site})' => '{title} ({site})',
-    '{title} copy' => '{title} 복사',
     '{total, number} {total, plural, =1{{item}} other{{items}}}' => '{total, number} {total, plural, =1{{item}} other{{items}}}',
     '{total} jobs' => '{total}개 작업',
     '{total} updates available!' => '총 {total}개의 업데이트가 이용 가능!',

@@ -204,7 +204,7 @@ class ElementRelationParamParser extends BaseObject
 
             if ($condition) {
                 $conditions[] = $condition;
-            } else if ($glue === 'or') {
+            } elseif ($glue === 'or') {
                 continue;
             } else {
                 return false;
@@ -251,7 +251,7 @@ class ElementRelationParamParser extends BaseObject
                         if ($elementParam === 'element') {
                             $relSourceElementIds[] = $element;
                         }
-                    } else if ($element instanceof ElementInterface) {
+                    } elseif ($element instanceof ElementInterface) {
                         if ($elementParam === 'targetElement') {
                             $relElementIds[] = $element->getCanonicalId();
                         } else {
@@ -260,7 +260,7 @@ class ElementRelationParamParser extends BaseObject
                                 $relSourceElementIds[] = $element->getCanonicalId();
                             }
                         }
-                    } else if ($element instanceof ElementQueryInterface) {
+                    } elseif ($element instanceof ElementQueryInterface) {
                         $ids = $element->ids();
                         ArrayHelper::append($relElementIds, ...$ids);
                         if ($elementParam === 'element') {
@@ -334,7 +334,7 @@ class ElementRelationParamParser extends BaseObject
                 if ($fieldModel instanceof BaseRelationField) {
                     // We'll deal with normal relation fields all together
                     $relationFieldIds[] = $fieldModel->id;
-                } else if ($fieldModel instanceof Matrix) {
+                } elseif ($fieldModel instanceof Matrix) {
                     $blockTypeFieldIds = [];
 
                     // Searching by a specific block type field?
