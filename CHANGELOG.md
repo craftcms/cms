@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- Fields’ search indexes are now immediately removed when their “Use this field’s values as search keywords” settings are disabled.
+
 ## 3.7.38 - 2022-04-06
 
 ### Added
