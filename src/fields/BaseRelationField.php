@@ -686,7 +686,7 @@ JS;
     public function getTableAttributeHtml(mixed $value, ElementInterface $element): string
     {
         if ($value instanceof ElementQueryInterface) {
-            $value = $this->_all($value, $element)->all();
+            $value = $this->_all($value, $element)->collect();
         }
 
         return $this->tableAttributeHtml($value);
