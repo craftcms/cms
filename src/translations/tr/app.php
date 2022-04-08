@@ -689,7 +689,7 @@ return [
     'History' => 'History',
     'Homepage' => 'Ana Sayfa',
     'Horizontal Rule' => 'Yatay Cetvel',
-    'Host Name' => 'Sunucu Adı',
+    'Hostname' => 'Hostname',
     'Hours' => 'Saat',
     'How field values will be formatted within element indexes.' => 'Alan değerlerinin öğe dizinleri içinde nasıl biçimlendirileceği.',
     'How should Craft CMS send the emails?' => 'Craft CMS e-postaları nasıl göndermeli?',

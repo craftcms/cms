@@ -689,7 +689,7 @@ return [
     'History' => 'History',
     'Homepage' => 'Úvodní stránka',
     'Horizontal Rule' => 'Horizontální pravidlo',
-    'Host Name' => 'Název serveru',
+    'Hostname' => 'Hostname',
     'Hours' => 'Hodiny',
     'How field values will be formatted within element indexes.' => 'Způsob formátování hodnot polí v indexech prvků.',
     'How should Craft CMS send the emails?' => 'Jak má Craft CMS zasílat e-maily?',

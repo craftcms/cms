@@ -689,7 +689,7 @@ return [
     'History' => 'History',
     'Homepage' => 'Strona główna',
     'Horizontal Rule' => 'Linijka pozioma',
-    'Host Name' => 'Nazwa hosta',
+    'Hostname' => 'Hostname',
     'Hours' => 'Godziny',
     'How field values will be formatted within element indexes.' => 'W jaki sposób wartości pól będą formatowane w indeksach elementów.',
     'How should Craft CMS send the emails?' => 'Jak system Craft CMS powinien wysłać wiadomości e-mail?',

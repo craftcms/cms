@@ -689,7 +689,7 @@ return [
     'History' => 'History',
     'Homepage' => 'ホームページ',
     'Horizontal Rule' => '水平線',
-    'Host Name' => 'ホストネーム',
+    'Hostname' => 'Hostname',
     'Hours' => '時間',
     'How field values will be formatted within element indexes.' => '要素のインデックス内で、フィールドの値がどのようにフォーマットされるか。',
     'How should Craft CMS send the emails?' => 'Craft CMS が電子メールを送信する方法',

@@ -689,7 +689,7 @@ return [
     'History' => 'History',
     'Homepage' => '主页',
     'Horizontal Rule' => '水平线',
-    'Host Name' => '主机名',
+    'Hostname' => 'Hostname',
     'Hours' => '小时',
     'How field values will be formatted within element indexes.' => '字段值在元素索引中的格式设置。',
     'How should Craft CMS send the emails?' => 'Craft CMS 该如何发送电子邮件？',
