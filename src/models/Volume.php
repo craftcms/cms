@@ -80,11 +80,11 @@ class Volume extends Model
     public string $transformSubpath = '';
 
     /**
-     * @var FsInterface
+     * @var FsInterface|null
      * @see getFs()
      * @see setFs()
      */
-    private FsInterface $_fs;
+    private ?FsInterface $_fs = null;
 
     /**
      * @var string|null
@@ -98,7 +98,7 @@ class Volume extends Model
      * @see getTransformFs()
      * @see setTransformFs()
      */
-    private ?FsInterface $_transformFs;
+    private ?FsInterface $_transformFs = null;
 
     /**
      * @var string|null
@@ -257,6 +257,7 @@ class Volume extends Model
     public function setFsHandle(string $handle): void
     {
         $this->_fsHandle = $handle;
+        $this->_fs = null;
     }
 
 
@@ -314,11 +315,12 @@ class Volume extends Model
     /**
      * Sets the transform filesystem handle.
      *
-     * @param string $handle
+     * @param string|null $handle
      */
-    public function setTransformFsHandle(string $handle): void
+    public function setTransformFsHandle(?string $handle): void
     {
         $this->_transformFsHandle = $handle;
+        $this->_transformFs = null;
     }
 
     /**

@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\events\FsEvent`.
+- Added `craft\services\Fs::EVENT_RENAME_FILESYSTEM`.
+
+### Changed
+- Volumes’ Asset Filesystem and Transform Filesystem settings are now automatically updated when a filesystem’s handle changes, if they reference the filesystem’s handle directly. ([#10885](https://github.com/craftcms/cms/issues/10885))
+
 ### Fixed
 - Fixed a bug where autosuggest inputs weren’t including numeric and boolean environment variables in their suggestions. ([#10873](https://github.com/craftcms/cms/issues/10873))
 - Fixed an error that occurred when rendering a Twig template from a console request. ([#10879](https://github.com/craftcms/cms/issues/10879))
