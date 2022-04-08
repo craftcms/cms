@@ -689,7 +689,7 @@ return [
     'History' => 'History',
     'Homepage' => 'خانه',
     'Horizontal Rule' => 'خط افقی',
-    'Host Name' => 'نام هاست',
+    'Hostname' => 'Hostname',
     'Hours' => 'ساعت',
     'How field values will be formatted within element indexes.' => 'چگونه مقادیر فیلدها درون نمایه‌های مؤلفه فرمت خواهد شد.',
     'How should Craft CMS send the emails?' => 'چطور Craft CMS پست های الکترونیکی را بفرستد؟',
