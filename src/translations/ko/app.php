@@ -689,7 +689,7 @@ return [
     'History' => 'History',
     'Homepage' => '홈페이지',
     'Horizontal Rule' => '가로줄',
-    'Host Name' => '호스트명',
+    'Hostname' => 'Hostname',
     'Hours' => '시간',
     'How field values will be formatted within element indexes.' => '요소 인덱스 내에서 필드 값의 형식이 지정되는 방식입니다.',
     'How should Craft CMS send the emails?' => 'Craft CMS에서 이메일을 어떻게 보내시겠습니까?',
