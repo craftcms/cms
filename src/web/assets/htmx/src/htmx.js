@@ -4,8 +4,8 @@ htmx.defineExtension('craft-cp', {
             case 'htmx:configRequest':
                 this.configureRequest(evt);
                 break;
-            case 'htmx:afterProcessNode':
-                this.afterProcessNode(evt);
+            case 'htmx:load':
+                this.onLoad(evt);
                 break;
         }
     },
@@ -13,13 +13,18 @@ htmx.defineExtension('craft-cp', {
         // Add the standard Craft headers
         Object.assign(evt.detail.headers, Craft._actionHeaders());
     },
-    afterProcessNode: function(evt) {
-        if (evt.detail.elt === document.body) {
+
+    // The best place to do this, until an event like `htmx:newContent` is introduced.
+    transformResponse: function(text, xhr, elt) {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(text, "text/html");
+
+        if (doc.body === document.body) {
             return;
         }
 
-        const allHeadHtml = evt.detail.elt.querySelectorAll("template.hx-head-html");
-        const allBodyHtml = evt.detail.elt.querySelectorAll("template.hx-body-html");
+        const allHeadHtml = doc.querySelectorAll("template.hx-head-html");
+        const allBodyHtml = doc.querySelectorAll("template.hx-body-html");
 
         for (let i = 0; i < allHeadHtml.length; i++) {
             const headHtml = allHeadHtml[i].innerHTML;
@@ -35,8 +40,11 @@ htmx.defineExtension('craft-cp', {
             }
         }
 
+        return text;
+    },
+    onLoad: function(evt) {
         Craft.initUiElements(evt.detail.elt);
-    }
+    },
 });
 
 htmx.defineExtension('craft-condition', {
