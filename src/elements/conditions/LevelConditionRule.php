@@ -44,6 +44,6 @@ class LevelConditionRule extends BaseNumberConditionRule implements ElementCondi
      */
     public function matchElement(ElementInterface $element): bool
     {
-        return $this->matchValue($element->level);
+        return $this->matchValue($element->level ?? $element->getCanonical()->level);
     }
 }
