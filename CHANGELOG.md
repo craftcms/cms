@@ -5,6 +5,9 @@
 ### Changed
 - Fields’ search indexes are now immediately removed when their “Use this field’s values as search keywords” settings are disabled.
 
+### Fixed
+- Fixed a bug where Matrix blocks could lose their Date field values, if multiple Date fields had with the same handle across different block types. ([#10884](https://github.com/craftcms/cms/issues/10884))
+
 ## 3.7.38 - 2022-04-06
 
 ### Added
