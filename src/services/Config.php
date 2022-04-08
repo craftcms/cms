@@ -128,7 +128,7 @@ class Config extends Component
                 return (object)$config;
             case self::CATEGORY_DB:
                 $configClass = DbConfig::class;
-                $envPrefix = 'DB_';
+                $envPrefix = 'CRAFT_DB_';
                 break;
             case self::CATEGORY_GENERAL:
                 $configClass = GeneralConfig::class;
