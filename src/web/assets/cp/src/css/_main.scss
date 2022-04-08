@@ -5347,7 +5347,8 @@ body.reduce-focus-visibility {
   align-items: center;
 
   & > .datewrapper + .timewrapper,
-  & > .timewrapper + .timezone {
+  & > .timewrapper + .timezone,
+  & > .select {
     @include margin-left(5px);
   }
 }
