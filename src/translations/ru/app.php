@@ -689,7 +689,7 @@ return [
     'History' => 'History',
     'Homepage' => 'Домашняя страница',
     'Horizontal Rule' => 'Горизонтальная линейка',
-    'Host Name' => 'Имя хоста',
+    'Hostname' => 'Hostname',
     'Hours' => 'Часы',
     'How field values will be formatted within element indexes.' => 'Как значения поля будут отформатированы в индексах элементов.',
     'How should Craft CMS send the emails?' => 'Каким образом должны отправляться электронные сообщения в Craft CMS?',
