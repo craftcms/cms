@@ -3942,7 +3942,7 @@ abstract class Element extends Component implements ElementInterface
                 $this->trigger(self::EVENT_SET_EAGER_LOADED_ELEMENTS, $event);
                 if (!$event->handled) {
                     // No takers. Just store it in the internal array then.
-                    $this->_eagerLoadedElements[$handle] = new Collection($elements);
+                    $this->_eagerLoadedElements[$handle] = Collection::make($elements);
                 }
         }
     }

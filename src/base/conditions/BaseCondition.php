@@ -13,7 +13,6 @@ use craft\helpers\UrlHelper;
 use craft\web\assets\conditionbuilder\ConditionBuilderAsset;
 use Illuminate\Support\Collection;
 use yii\base\InvalidArgumentException;
-use function collect;
 
 /**
  * BaseCondition provides a base implementation for conditions.
@@ -137,7 +136,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
     public function getSelectableConditionRules(): array
     {
         $conditionsService = Craft::$app->getConditions();
-        return collect($this->getConditionRuleTypes())
+        return Collection::make($this->getConditionRuleTypes())
             ->keyBy(fn($type) => is_string($type) ? $type : Json::encode($type))
             ->map(fn($type) => $conditionsService->createConditionRule($type))
             ->filter(fn(ConditionRuleInterface $rule) => $this->isConditionRuleSelectable($rule))
@@ -171,7 +170,7 @@ abstract class BaseCondition extends Component implements ConditionInterface
     public function setConditionRules(array $rules): void
     {
         $conditionsService = Craft::$app->getConditions();
-        $this->_conditionRules = collect($rules)
+        $this->_conditionRules = Collection::make($rules)
             ->map(function($rule) use ($conditionsService) {
                 if ($rule instanceof ConditionRuleInterface) {
                     return $rule;
