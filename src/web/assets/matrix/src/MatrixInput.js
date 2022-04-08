@@ -247,7 +247,7 @@
                   <div class="checkbox" title="${Craft.t('app', 'Select')}"></div>
                   <div class="actions">
                     <div class="status off" title="${Craft.t('app', 'Disabled')}"></div>
-                    <div data-wrapper>
+                    <div>
                       <button type="button" class="btn settings icon menubtn" title="${Craft.t('app', 'Actions')}" aria-controls="${ actionMenuId }" data-disclosure-trigger></button>
                         <div id="${ actionMenuId }" class="menu menu--disclosure">
                          <ul class="padded">
@@ -462,8 +462,8 @@
             this.id = this.$container.data('id');
             this.isNew = (!this.id || (typeof this.id === 'string' && this.id.substring(0, 3) === 'new'));
 
-            const $actionMenuBtn = this.$container.find('> .actions [data-disclosure-trigger]'),
-                actionDisclosure = new Garnish.DisclosureMenu($actionMenuBtn);
+            const $actionMenuBtn = this.$container.find('> .actions [data-disclosure-trigger]');
+            const actionDisclosure = $actionMenuBtn.data('trigger') || new Garnish.DisclosureMenu($actionMenuBtn);
 
             this.$actionMenu = actionDisclosure.$container;
             this.actionDisclosure = actionDisclosure;

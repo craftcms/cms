@@ -1685,11 +1685,21 @@ class ElementQuery extends Query implements ElementQueryInterface
                             unset($row[$column]);
                         } else {
                             if ($setValue) {
-                                $fieldValues[$field->handle] = [];
+                                $columnValues = [];
+                                $hasColumnValues = false;
+
                                 foreach ($column as $key => $col) {
-                                    $fieldValues[$field->handle][$key] = $row[$col] ?? null;
+                                    $columnValues[$key] = $row[$col] ?? null;
+                                    $hasColumnValues = $hasColumnValues || $columnValues[$key] !== null;
+                                }
+
+                                // Only actually set it on $fieldValues if any of the columns weren't null.
+                                // Otherwise, leave it alone in case another field has the same handle.
+                                if ($hasColumnValues) {
+                                    $fieldValues[$field->handle] = $columnValues;
                                 }
                             }
+
                             foreach ($column as $col) {
                                 unset($row[$col]);
                             }
