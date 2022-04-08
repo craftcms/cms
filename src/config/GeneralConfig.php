@@ -289,7 +289,7 @@ class GeneralConfig extends BaseObject
      *
      * - `{path}` - the target backup file path
      * - `{port}` - the current database port
-     * - `{server}` - the current database host name
+     * - `{server}` - the current database hostname
      * - `{user}` - the user to connect to the database
      * - `{database}` - the current database name
      * - `{schema}` - the current database schema (if any)
@@ -404,8 +404,8 @@ class GeneralConfig extends BaseObject
      * @var string|null The URI segment Craft should look for when determining if the current request should route to the control panel rather than
      * the front-end website.
      *
-     * This can be set to `null` if you have a dedicated host name for the control panel (e.g. `cms.example.com`), or you are running Craft in
-     * [Headless Mode](config3:headlessMode). If you do that, you will need to ensure that the control panel is being served from its own webroot
+     * This can be set to `null` if you have a dedicated hostname for the control panel (e.g. `cms.example.com`), or you are running Craft in
+     * [Headless Mode](config3:headlessMode). If you do that, you will need to ensure that the control panel is being served from its own web root
      * directory on your server, with an `index.php` file that defines the `CRAFT_CP` PHP constant.
      *
      * ```php
@@ -413,7 +413,7 @@ class GeneralConfig extends BaseObject
      * ```
      *
      * Alternatively, you can set the <config3:baseCpUrl> config setting, but then you will run the risk of losing access to portions of your
-     * control panel due to URI conflicts with actual folders/files in your main webroot.
+     * control panel due to URI conflicts with actual folders/files in your main web root.
      *
      * (For example, if you have an `assets/` folder, that would conflict with the `/assets` page in the control panel.)
      *
@@ -625,7 +625,7 @@ class GeneralConfig extends BaseObject
     public $enableCsrfCookie = true;
 
     /**
-     * @var bool Whether GraphQL introspection queries are allowed. Defaults to `true` and is always allowed in the CP.
+     * @var bool Whether GraphQL introspection queries are allowed. Defaults to `true` and is always allowed in the control panel.
      * @since 3.6.0
      * @group GraphQL
      */
@@ -986,7 +986,7 @@ class GeneralConfig extends BaseObject
     /**
      * @var bool Whether generated URLs should omit `index.php` (e.g. `http://domain.com/path` instead of `http://domain.com/index.php/path`)
      *
-     * This can only be possible if your server is configured to redirect would-be 404's to `index.php`, for example, with the redirect found
+     * This can only be possible if your server is configured to redirect would-be 404s to `index.php`, for example, with the redirect found
      * in the `.htaccess` file that came with Craft:
      *
      * ```
@@ -1299,7 +1299,7 @@ class GeneralConfig extends BaseObject
      *
      * - `{path}` - the backup file path
      * - `{port}` - the current database port
-     * - `{server}` - the current database host name
+     * - `{server}` - the current database hostname
      * - `{user}` - the user to connect to the database
      * - `{database}` - the current database name
      * - `{schema}` - the current database schema (if any)
@@ -1828,7 +1828,7 @@ class GeneralConfig extends BaseObject
         // Normalize size settings
         $this->maxUploadFileSize = ConfigHelper::sizeInBytes($this->maxUploadFileSize);
 
-        // Normalize the default CP language
+        // Normalize the default control panel language
         if ($this->defaultCpLanguage !== null) {
             try {
                 $this->defaultCpLanguage = Localization::normalizeLanguage($this->defaultCpLanguage);
