@@ -398,6 +398,7 @@ class DbHelperTest extends TestCase
             ['\*', '*'],
             ['\,', ','],
             ['\,\*', ',*'],
+            ['\,\*', '\,\*'],
         ];
     }
 

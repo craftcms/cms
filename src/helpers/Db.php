@@ -446,7 +446,7 @@ class Db
      */
     public static function escapeParam(string $value): string
     {
-        $value = str_replace([',', '*'], ['\,', '\*'], $value);
+        $value = preg_replace('/(?<!\\\)[,*]/', '\\\$0', $value);
 
         // If the value starts with an operator, escape that too.
         foreach (self::$_operators as $operator) {
