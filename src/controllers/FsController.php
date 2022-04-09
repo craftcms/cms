@@ -139,6 +139,7 @@ class FsController extends Controller
             'type' => $type,
             'name' => $this->request->getBodyParam('name'),
             'handle' => $this->request->getBodyParam('handle'),
+            'oldHandle' => $this->request->getBodyParam('oldHandle'),
             'hasUrls' => (bool)$this->request->getBodyParam('hasUrls'),
             'url' => $this->request->getBodyParam('url'),
             'settings' => $this->request->getBodyParam("types.$type"),
@@ -146,15 +147,6 @@ class FsController extends Controller
 
         if (!$fsService->saveFilesystem($fs)) {
             return $this->asModelFailure($fs, Craft::t('app', 'Couldn’t save filesystem.'), 'filesystem');
-        }
-
-        // Remove the old one?
-        $oldHandle = $this->request->getBodyParam('oldHandle') ?: null;
-        if ($oldHandle && $oldHandle !== $fs->handle) {
-            $existingFilesystem = $fsService->getFilesystemByHandle($oldHandle);
-            if ($existingFilesystem) {
-                $fsService->removeFilesystem($existingFilesystem);
-            }
         }
 
         return $this->asModelSuccess($fs, Craft::t('app', 'Filesystem saved.'), 'filesystem');

@@ -327,11 +327,11 @@ class Craft extends Yii2
     public static function createDbConfig(): DbConfig
     {
         return new DbConfig([
-            'dsn' => App::env('DB_DSN'),
-            'user' => App::env('DB_USER'),
-            'password' => App::env('DB_PASSWORD'),
-            'tablePrefix' => App::env('DB_TABLE_PREFIX'),
-            'schema' => App::env('DB_SCHEMA'),
+            'dsn' => App::env('CRAFT_DB_DSN'),
+            'user' => App::env('CRAFT_DB_USER'),
+            'password' => App::env('CRAFT_DB_PASSWORD'),
+            'tablePrefix' => App::env('CRAFT_DB_TABLE_PREFIX'),
+            'schema' => App::env('CRAFT_DB_SCHEMA'),
         ]);
     }
 

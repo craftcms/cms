@@ -28,6 +28,11 @@ trait FsTrait
     public ?string $handle = null;
 
     /**
+     * @var string|null Old handle
+     */
+    public ?string $oldHandle = null;
+
+    /**
      * @var bool Whether the volume has a public URL
      */
     public bool $hasUrls = false;

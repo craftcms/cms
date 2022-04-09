@@ -1351,7 +1351,7 @@ class Db
      * This can be used from `config/db.php`:
      * ---
      * ```php
-     * $url = craft\helpers\App::env('DB_URL');
+     * $url = craft\helpers\App::env('CRAFT_DB_URL');
      * return craft\helpers\Db::url2config($url);
      * ```
      *

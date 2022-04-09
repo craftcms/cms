@@ -524,7 +524,7 @@ class EntryQuery extends ElementQuery
         }
 
         if (ArrayHelper::isTraversable($value)) {
-            $collection = new Collection($value);
+            $collection = Collection::make($value);
             if ($collection->every(fn($v) => $v instanceof UserGroup)) {
                 $this->authorGroupId = $collection->map(fn(UserGroup $g) => $g->id)->all();
                 return $this;
