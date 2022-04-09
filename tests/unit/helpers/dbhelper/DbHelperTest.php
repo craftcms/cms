@@ -96,6 +96,16 @@ class DbHelperTest extends TestCase
     }
 
     /**
+     * @dataProvider escapeCommasDataProvider
+     * @param string $expected
+     * @param string $value
+     */
+    public function testEscapeCommas(string $expected, string $value): void
+    {
+        self::assertSame($expected, Db::escapeCommas($value));
+    }
+
+    /**
      * @dataProvider parseColumnTypeDataProvider
      * @param string|null $expected
      * @param string $columnType
@@ -399,6 +409,18 @@ class DbHelperTest extends TestCase
             ['\,', ','],
             ['\,\*', ',*'],
             ['\,\*', '\,\*'],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function escapeCommasDataProvider(): array
+    {
+        return [
+            ['foo\, bar', 'foo, bar'],
+            ['foo\, bar*', 'foo, bar*'],
+            ['foo\, bar', 'foo\, bar'],
         ];
     }
 

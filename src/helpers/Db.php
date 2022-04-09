@@ -460,6 +460,18 @@ class Db
     }
 
     /**
+     * Escapes commas in a string so the value doesn’t get interpreted as an array by [[Db::parseParam()]].
+     *
+     * @param string $value The param value.
+     * @return string The escaped param value.
+     * @since 4.0.0
+     */
+    public static function escapeCommas(string $value): string
+    {
+        return preg_replace('/(?<!\\\),/', '\\\$0', $value);
+    }
+
+    /**
      * Parses a query param value and returns a [[\yii\db\QueryInterface::where()]]-compatible condition.
      *
      * If the `$value` is a string, it will automatically be converted to an array, split on any commas within the
