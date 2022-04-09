@@ -9,6 +9,7 @@
 ### Changed
 - Volumes’ Asset Filesystem and Transform Filesystem settings are now automatically updated when a filesystem’s handle changes, if they reference the filesystem’s handle directly. ([#10885](https://github.com/craftcms/cms/issues/10885))
 - Volumes’ Asset Filesystem settings no longer list filesystems already in use by other volumes.
+- Element conditions stored in the project config can now contain relational field rule types which specify a related element via its ID, possibly identified by an environment variable. ([#10554](https://github.com/craftcms/cms/pull/10554))
 - Database config settings can now be overridden by like-named environment variables with a `CRAFT_DB_` prefix, rather than `DB_`. ([#10894](https://github.com/craftcms/cms/pull/10894))
 
 ### Fixed
