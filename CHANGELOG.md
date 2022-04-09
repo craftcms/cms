@@ -16,6 +16,7 @@
 - Fixed a PHP error that occurred when viewing an element index with relational field columns. ([#10881](https://github.com/craftcms/cms/pull/10881))
 - Fixed some styling issues in GraphiQL.
 - Fixed a bug where “Level” rules within field layout conditions weren’t matching drafts properly. ([#10816](https://github.com/craftcms/cms/issues/10816))
+- Fixed a PHP error that could occur when editing an address. ([#10888](https://github.com/craftcms/cms/issues/10888))
 
 ## 4.0.0-beta.4 - 2022-04-06
 
