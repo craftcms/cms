@@ -1,7 +1,10 @@
 {% do view.registerAssetBundle("craft\\web\\assets\\vue\\VueAsset") %}
 
 {% if suggestEnvVars ?? false %}
-    {% set suggestions = (suggestions ?? [])|merge(craft.cp.getEnvSuggestions(suggestAliases ?? false)) %}
+    {% set suggestions = (suggestions ?? [])|merge(craft.cp.getEnvSuggestions(
+        suggestAliases ?? false,
+        suggestionFilter ?? null
+    )) %}
 {% endif %}
 
 {%- set id = id ?? "autosuggest#{random()}" %}

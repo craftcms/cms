@@ -106,6 +106,7 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
         if ($this->getCondition()->forProjectConfig) {
             return Cp::autosuggestFieldHtml([
                 'suggestEnvVars' => true,
+                'suggestionFilter' => fn($value) => is_int($value) && $value > 0,
                 'required' => true,
                 'id' => 'elementId',
                 'name' => 'elementId',
