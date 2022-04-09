@@ -35,8 +35,6 @@
 
     <hr>
 
-    {% set fsOptions = craft.cp.getFsOptions() %}
-
     {{ forms.fsField({
         label: 'Asset Filesystem'|t('app'),
         instructions: 'Choose which filesystem assets should be stored in.'|t('app'),
@@ -54,7 +52,7 @@
         name: 'transformFsHandle',
         includeEnvVars: true,
         value: volume.transformFsHandle(false),
-        options: [{label: 'Same as asset filesystem'|t('app'), value: null}]|merge(fsOptions)
+        options: [{label: 'Same as asset filesystem'|t('app'), value: null}]|merge(craft.cp.getFsOptions())
     }) }}
 
     {{ forms.textField({

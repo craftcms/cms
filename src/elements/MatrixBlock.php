@@ -393,7 +393,7 @@ class MatrixBlock extends Element implements BlockElementInterface
         $blockTypeHandle = $this->getType()->handle . ':' . $handle;
 
         if (isset($this->_eagerLoadedBlockTypeElements[$blockTypeHandle])) {
-            return new Collection($this->_eagerLoadedBlockTypeElements[$blockTypeHandle]);
+            return Collection::make($this->_eagerLoadedBlockTypeElements[$blockTypeHandle]);
         }
 
         return parent::getEagerLoadedElements($handle);

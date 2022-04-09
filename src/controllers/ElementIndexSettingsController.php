@@ -14,6 +14,7 @@ use craft\helpers\ArrayHelper;
 use craft\models\UserGroup;
 use craft\services\ElementSources;
 use craft\services\ProjectConfig;
+use Illuminate\Support\Collection;
 use yii\web\Response;
 
 /**
@@ -115,7 +116,7 @@ class ElementIndexSettingsController extends BaseElementsController
         $conditionBuilderHtml = $condition->getBuilderHtml();
         $conditionBuilderJs = $view->clearJsBuffer();
 
-        $userGroups = collect(Craft::$app->getUserGroups()->getAllGroups())
+        $userGroups = Collection::make(Craft::$app->getUserGroups()->getAllGroups())
             ->map(fn(UserGroup $group) => [
                 'label' => Craft::t('site', $group->name),
                 'value' => $group->uid,

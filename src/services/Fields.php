@@ -1576,6 +1576,10 @@ class Fields extends Component
 
             $class = $data['type'];
 
+            // Track whether we should remove the field’s search indexes after save
+            $searchable = $data['searchable'] ?? false;
+            $deleteSearchIndexes = !$isNewField && !$searchable && $fieldRecord->searchable;
+
             // Create/alter the content table column(s)
             $contentService = Craft::$app->getContent();
             $oldHandle = !$isNewField ? $fieldRecord->getOldHandle() : null;
@@ -1628,7 +1632,7 @@ class Fields extends Component
             $fieldRecord->context = $context;
             $fieldRecord->columnSuffix = $data['columnSuffix'] ?? null;
             $fieldRecord->instructions = $data['instructions'];
-            $fieldRecord->searchable = $data['searchable'] ?? false;
+            $fieldRecord->searchable = $searchable;
             $fieldRecord->translationMethod = $data['translationMethod'];
             $fieldRecord->translationKeyFormat = $data['translationKeyFormat'];
             $fieldRecord->type = $data['type'];
@@ -1639,7 +1643,6 @@ class Fields extends Component
             $transaction->commit();
         } catch (Throwable $e) {
             $transaction->rollBack();
-
             throw $e;
         }
 
@@ -1674,6 +1677,14 @@ class Fields extends Component
                 'field' => $field,
                 'isNew' => $isNewField,
             ]));
+        }
+
+        // If we just dropped `searchable`, delete the field’s search indexes immediately.
+        if ($deleteSearchIndexes) {
+            Db::delete(Table::SEARCHINDEX, [
+                'attribute' => 'field',
+                'fieldId' => $field->id,
+            ]);
         }
 
         // Invalidate all element caches

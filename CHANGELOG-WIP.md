@@ -198,6 +198,7 @@
 - Added `craft\events\AuthorizationCheckEvent`.
 - Added `craft\events\CreateElementCheckEvent`.
 - Added `craft\events\DefineHtmlEvent::$static`.
+- Added `craft\events\FsEvent`.
 - Added `craft\events\GenerateTransformEvent::$asset`.
 - Added `craft\events\GenerateTransformEvent::$transform`.
 - Added `craft\events\GenerateTransformEvent::$url`.

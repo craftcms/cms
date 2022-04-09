@@ -435,6 +435,6 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      */
     public static function isNumeric(array $array): bool
     {
-        return (new Collection($array))->every(fn($v) => is_numeric($v));
+        return Collection::make($array)->every(fn($v) => is_numeric($v));
     }
 }

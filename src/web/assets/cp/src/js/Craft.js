@@ -2264,10 +2264,8 @@ $.extend($.fn,
         disclosureMenu: function() {
             return this.each(function() {
                 const $trigger = $(this);
-
-                // Only instantiate element if there is a reference to disclosure content
-                // and if the trigger hasn't already been instantiated
-                if (Garnish.hasAttr($trigger, 'aria-controls') && !$trigger.data('trigger')) {
+                // Only instantiate if it's not already a disclosure trigger, and it references a disclosure content
+                if (!$trigger.data('trigger') && $trigger.attr('aria-controls')) {
                     new Garnish.DisclosureMenu($trigger);
                 }
             });
