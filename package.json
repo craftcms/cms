@@ -38,7 +38,7 @@
     "react": "^16.14.0",
     "react-dom": "^16.14.0",
     "selectize": "^0.12.6",
-    "sortablejs": "^1.14.0",
+    "sortablejs": "^1.15.0",
     "tailwindcss": "^0.7.2",
     "timepicker": "^1.13.18",
     "v-tooltip": "^2.0.3",
