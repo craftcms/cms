@@ -23,6 +23,7 @@
 - Fixed some styling issues in GraphiQL.
 - Fixed a bug where “Level” rules within field layout conditions weren’t matching drafts properly. ([#10816](https://github.com/craftcms/cms/issues/10816))
 - Fixed a PHP error that could occur when editing an address. ([#10888](https://github.com/craftcms/cms/issues/10888))
+- Fixed a bug where address cards weren’t ordered consistently. ([#10897](https://github.com/craftcms/cms/pull/10897))
 
 ## 4.0.0-beta.4 - 2022-04-06
 
