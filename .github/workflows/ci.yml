@@ -25,5 +25,5 @@ jobs:
       success: ${{ needs.ecs.result == 'success' && needs.codecept.result == 'success' }}
     secrets:
       token: ${{ secrets.GITHUB_TOKEN }}
-      slack_webhook_url: ${{ secrets.SLACK_PLUGIN_WEBHOOK_URL }}
+      slack_webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
       slack_group_id: ${{ secrets.SLACK_GROUP_ID }}
