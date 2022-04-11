@@ -48,35 +48,6 @@ class CommandTest extends TestCase
     }
 
     /**
-     * @throws Exception
-     */
-    public function testInsertDateCreated(): void
-    {
-        $session = $this->ensureSession();
-        self::assertSame($session['dateCreated'], $this->sessionDate->format('Y-m-d H:i:s'));
-        $this->clearSession();
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function testDateUpdatedOnInsertAndUpdate(): void
-    {
-        $session = $this->ensureSession();
-
-        // Ensure that there is a diff in dates....
-        sleep(1);
-
-        // Save it again without a dateUpdated value. Ensure dateUpdated is now current.
-        $date = new DateTime('now', new DateTimeZone('UTC'));
-        unset($session['dateUpdated']);
-        $session = $this->updateSession($session);
-
-        self::assertSame($date->format('Y-m-d H:i:s'), $session['dateUpdated']);
-        $this->clearSession();
-    }
-
-    /**
      * Ensure a session row exists
      *
      * @return array
