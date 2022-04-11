@@ -645,11 +645,6 @@ class UserQuery extends ElementQuery
      *     ->one();
      * ```
      *
-     * ::: warning
-     * String values with commas will be treated as arrays, unless they’ve been escaped with the
-     * [`literal`](https://craftcms.com/docs/3.x/dev/filters.html#literal) filter.
-     * :::
-     *
      * @param mixed $value The property value
      * @return self self reference
      * @uses $firstName
@@ -685,11 +680,6 @@ class UserQuery extends ElementQuery
      *     ->lastName('Doe')
      *     ->one();
      * ```
-     *
-     * ::: warning
-     * String values with commas will be treated as arrays, unless they’ve been escaped with the
-     * [`literal`](https://craftcms.com/docs/3.x/dev/filters.html#literal) filter.
-     * :::
      *
      * @param mixed $value The property value
      * @return self self reference
