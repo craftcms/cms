@@ -958,10 +958,12 @@ class User extends Element implements IdentityInterface
                 return [];
             }
 
-            $this->_addresses = Address::find()
+            /** @var Address[] $addresses */
+            $addresses = Address::find()
                 ->ownerId($this->id)
                 ->orderBy(['id' => SORT_ASC])
                 ->all();
+            $this->_addresses = $addresses;
         }
 
         return $this->_addresses;
