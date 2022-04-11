@@ -4729,14 +4729,18 @@ ul.tree,
   cursor: pointer;
 }
 
+.address-card .address-card-header {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+}
+
 .address-card .address-card-header-actions {
-  float: right;
   display: flex;
   justify-content: flex-end;
 }
 
 .address-card .address-card-label {
-  display: inline-block;
   background: #dbeafe;
   color: #2563eb;
   padding: 0.125rem 0.5rem;
@@ -4745,6 +4749,14 @@ ul.tree,
   text-transform: uppercase;
   font-weight: 500;
   margin-bottom: 0.75rem;
+
+  .ltr & {
+    margin-right: 0.5rem;
+  }
+
+  .rtl & {
+    margin-left: 0.5rem;
+  }
 }
 
 /* logout warning/login/elevated session modals */
