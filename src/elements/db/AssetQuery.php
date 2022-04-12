@@ -194,7 +194,7 @@ class AssetQuery extends ElementQuery
 
     /**
      * @var string|null The folder path that resulting assets must live within
-     * @sused-by folderPath()
+     * @used-by folderPath()
      * @since 3.7.39
      */
     public ?string $folderPath = null;
