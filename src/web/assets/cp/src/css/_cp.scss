@@ -1352,6 +1352,7 @@ li.breadcrumb-toggle-wrapper {
         color: $textColor;
         user-select: none;
         border-radius: $largeBorderRadius;
+        word-break: break-word;
 
         .status {
           flex-shrink: 1;
@@ -1362,6 +1363,7 @@ li.breadcrumb-toggle-wrapper {
           flex-shrink: 1;
           width: 18px;
           height: 18px;
+          word-break: normal;
           transition: margin-left linear 150ms, margin-right linear 150ms;
 
           &.icon-mask {
