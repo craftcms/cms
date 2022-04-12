@@ -465,7 +465,7 @@ class ElementIndexesController extends BaseElementsController
 
         if ($source === null) {
             // That wasn't a valid source, or the user doesn't have access to it in this context
-            throw new ForbiddenHttpException('User not permitted to access this source');
+            $this->sourceKey = null;
         }
 
         return $source;
@@ -518,6 +518,11 @@ class ElementIndexesController extends BaseElementsController
         $elementType = $this->elementType;
         $query = $elementType::find();
         $conditionsService = Craft::$app->getConditions();
+
+        if (!$this->source) {
+            $query->id(false);
+            return $query;
+        }
 
         // Does the source specify any criteria attributes?
         switch ($this->source['type']) {
