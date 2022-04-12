@@ -124,7 +124,7 @@ class Plugins extends Component
     /**
      * @var array|null Plugin info provided by Composer, indexed by handles
      */
-    private $_composerPluginInfo;
+    private ?array $_composerPluginInfo;
 
     /**
      * @var array All of the stored info for plugins (enabled or disabled), indexed by handles
