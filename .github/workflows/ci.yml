@@ -24,10 +24,11 @@ jobs:
   notify-slack:
     name: Notify Slack
     needs: [ ecs, phpstan, codecept ]
+    if: ${{ always() }}
     uses: craftcms/.github/.github/workflows/notify-slack.yml@v1
     with:
       success: ${{ needs.ecs.result == 'success' && needs.phpstan.result == 'success' && needs.codecept.result == 'success' }}
+      failure_text_prefix: <!subteam^SGFL9NKNZ>
     secrets:
       token: ${{ secrets.GITHUB_TOKEN }}
       slack_webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
-      slack_group_id: ${{ secrets.SLACK_GROUP_ID }}

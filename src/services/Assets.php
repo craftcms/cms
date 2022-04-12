@@ -828,6 +828,54 @@ class Assets extends Component
     }
 
     /**
+     * Returns the temporary volume and subpath, if set.
+     *
+     * @return array
+     * @throws InvalidConfigException If the temp volume is invalid
+     * @since 3.7.39
+     */
+    public function getTempVolumeAndSubpath(): array
+    {
+        $assetSettings = Craft::$app->getProjectConfig()->get('assets');
+        if (empty($assetSettings['tempVolumeUid'])) {
+            return [null, null];
+        }
+
+        $volume = Craft::$app->getVolumes()->getVolumeByUid($assetSettings['tempVolumeUid']);
+
+        if (!$volume) {
+            throw new InvalidConfigException("The Temp Uploads Location is set to an invalid volume UID: {$assetSettings['tempVolumeUid']}");
+        }
+
+        $subpath = ($assetSettings['tempSubpath'] ?? null) ?: null;
+        return [$volume, $subpath];
+    }
+
+    /**
+     * Creates an asset query that is configured to return assets in the temporary upload location.
+     *
+     * @return AssetQuery
+     * @throws InvalidConfigException If the temp volume is invalid
+     * @since 3.7.39
+     */
+    public function createTempAssetQuery(): AssetQuery
+    {
+        /** @var Volume|null $volume */
+        /** @var string|null $subpath */
+        [$volume, $subpath] = $this->getTempVolumeAndSubpath();
+        $query = Asset::find();
+        if ($volume) {
+            $query->volumeId($volume->id);
+            if ($subpath) {
+                $query->folderPath("$subpath/*");
+            }
+        } else {
+            $query->volumeId(':empty:');
+        }
+        return $query;
+    }
+
+    /**
      * Returns the given user’s temporary upload folder.
      *
      * If no user is provided, the currently-logged in user will be used (if there is one), or a folder named after
@@ -855,15 +903,17 @@ class Assets extends Component
         }
 
         // Is there a designated temp uploads volume?
-        $assetSettings = Craft::$app->getProjectConfig()->get('assets');
-        if (isset($assetSettings['tempVolumeUid'])) {
-            $volume = Craft::$app->getVolumes()->getVolumeByUid($assetSettings['tempVolumeUid']);
-            if (!$volume) {
-                throw new VolumeException(Craft::t('app', 'The volume set for temp asset storage is not valid.'));
-            }
-            $path = (isset($assetSettings['tempSubpath']) ? $assetSettings['tempSubpath'] . '/' : '') .
-                $folderName;
-            return $this->ensureFolderByFullPathAndVolume($path, $volume, false);
+        try {
+            /** @var Volume|null $tempVolume */
+            /** @var string|null $tempSubpath */
+            [$tempVolume, $tempSubpath] = $this->getTempVolumeAndSubpath();
+        } catch (InvalidConfigException $e) {
+            throw new VolumeException($e->getMessage(), 0, $e);
+        }
+
+        if ($tempVolume) {
+            $path = ($tempSubpath ? "$tempSubpath/" : '') . $folderName;
+            return $this->ensureFolderByFullPathAndVolume($path, $tempVolume, false);
         }
 
         $volumeTopFolder = $this->findFolder([
