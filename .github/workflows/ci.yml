@@ -12,6 +12,8 @@ jobs:
   ecs:
     name: ECS
     uses: craftcms/.github/.github/workflows/ecs.yml@v1
+    with:
+      php_version: '7.2'
   codecept:
     name: Codeception
     uses: craftcms/.github/.github/workflows/codecept.yml@v1
