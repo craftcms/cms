@@ -25,6 +25,7 @@
 - Fixed a PHP error that could occur when editing an address. ([#10888](https://github.com/craftcms/cms/issues/10888))
 - Fixed a bug where address cards weren’t ordered consistently. ([#10897](https://github.com/craftcms/cms/pull/10897))
 - Fixed an error that could occur after disabling an element source. ([#10899](https://github.com/craftcms/cms/issues/10899))
+- Fixed a bug where database backups were immediately deleted if the `maxBackups` config setting had been reached. ([#10901](https://github.com/craftcms/cms/issues/10901))
 
 ## 4.0.0-beta.4 - 2022-04-06
 
