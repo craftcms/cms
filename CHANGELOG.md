@@ -2,12 +2,18 @@
 
 ## Unreleased
 
+### Added
+- Added the `folderPath` asset query param.
+- Added `craft\services\Assets::getTempVolumeAndSubpath()`.
+- Added `craft\services\Assets::createTempAssetQuery()`.
+
 ### Changed
 - Fields’ search indexes are now immediately removed when their “Use this field’s values as search keywords” settings are disabled.
 
 ### Fixed
 - Fixed a bug where Matrix blocks could lose their Date field values, if multiple Date fields had with the same handle across different block types. ([#10884](https://github.com/craftcms/cms/issues/10884))
 - Fixed a bug where Matrix block menus were getting truncated if they were too large to fit within the content pane. ([#10883](https://github.com/craftcms/cms/issues/10883))
+- Fixed a bug where Assets fields weren’t respecting their dynamic folder path settings for unpublished drafts, if the Temp Upload Location asset setting was set to a volume. ([#9619](https://github.com/craftcms/cms/issues/9619))
 
 ## 3.7.38 - 2022-04-06
 
