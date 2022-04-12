@@ -1407,6 +1407,7 @@ li.breadcrumb-toggle-wrapper {
         color: $textColor;
         user-select: none;
         border-radius: $largeBorderRadius;
+        word-break: break-word;
 
         .status {
           flex-shrink: 1;
