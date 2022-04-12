@@ -5,15 +5,33 @@ on:
     branches:
       - develop
   pull_request:
-
+env:
+  MINIMUM_PHP_VERSION: '7.2.5'
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 jobs:
-
-  call-workflow:
-    uses: craftcms/.github/.github/workflows/ci.yml@v1
+  ecs:
+    name: ECS
+    uses: craftcms/.github/.github/workflows/ecs.yml@v1
     with:
-      run_ecs: true
-      run_phpstan: false
-      run_tests: true
-      php_versions: '["7.2", "7.3", "7.4", "8.0", "8.1"]'
+      minimum_php_version: ${{ env.MINIMUM_PHP_VERSION }}
+  phpstan:
+    name: PHPStan
+    uses: craftcms/.github/.github/workflows/phpstan.yml@v1
+  codecept:
+    name: Codeception
+    uses: craftcms/.github/.github/workflows/codecept.yml@v1
+    with:
+      php_versions: '["8.0", "8.1"]'
+  notify-slack:
+    name: Notify Slack
+    needs: [ ecs, codecept ]
+    if: ${{ always() }}
+    uses: craftcms/.github/.github/workflows/notify-slack.yml@v1
+    with:
+      success: ${{ needs.ecs.result == 'success' && needs.codecept.result == 'success' }}
+      failure_text_prefix: <!subteam^SGFL9NKNZ>
     secrets:
+      token: ${{ secrets.GITHUB_TOKEN }}
       slack_webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
