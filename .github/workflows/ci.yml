@@ -14,10 +14,12 @@ jobs:
     name: ECS
     uses: craftcms/.github/.github/workflows/ecs.yml@v1
     with:
-      php_version: '7.2'
+      php_version: '8.0'
   phpstan:
     name: PHPStan
     uses: craftcms/.github/.github/workflows/phpstan.yml@v1
+    with:
+      php_version: '8.0'
   codecept:
     name: Codeception
     uses: craftcms/.github/.github/workflows/codecept.yml@v1
