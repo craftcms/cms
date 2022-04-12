@@ -5,8 +5,6 @@ on:
     branches:
       - develop
   pull_request:
-env:
-  MINIMUM_PHP_VERSION: 7.2
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
@@ -15,7 +13,7 @@ jobs:
     name: ECS
     uses: craftcms/.github/.github/workflows/ecs.yml@v1
     with:
-      minimum_php_version: ${{ env.MINIMUM_PHP_VERSION }}
+      minimum_php_version: ${{ secrets.CRAFT_3_MINIMUM_PHP }}
   codecept:
     name: Codeception
     uses: craftcms/.github/.github/workflows/codecept.yml@v1
