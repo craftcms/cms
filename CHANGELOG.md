@@ -3,6 +3,8 @@
 ## Unreleased
 
 ### Added
+- Added `craft\controllers\ElementsController::EVENT_DEFINE_EDITOR_CONTENT`.
+- Added `craft\events\DefineElementEditorHtmlEvent`.
 - Added `craft\events\FsEvent`.
 - Added `craft\helpers\Db::escapeCommas()`.
 - Added `craft\services\Fs::EVENT_RENAME_FILESYSTEM`.

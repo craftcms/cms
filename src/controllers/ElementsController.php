@@ -18,6 +18,7 @@ use craft\elements\User;
 use craft\errors\InvalidElementException;
 use craft\errors\InvalidTypeException;
 use craft\errors\UnsupportedSiteException;
+use craft\events\DefineElementEditorHtmlEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Component;
 use craft\helpers\Cp;
@@ -45,6 +46,12 @@ use yii\web\ServerErrorHttpException;
  */
 class ElementsController extends Controller
 {
+    /**
+     * @event DefineElementEditorHtmlEvent The event that is triggered when rendering an element editor’s content.
+     * @see _editorContent()
+     */
+    public const EVENT_DEFINE_EDITOR_CONTENT = 'defineEditorContent';
+
     private array $_attributes;
     private ?string $_elementType = null;
     private ?int $_elementId = null;
@@ -756,7 +763,20 @@ JS;
             }
         }
 
-        return implode("\n", $components);
+        $html = implode("\n", $components);
+
+        // Trigger a defineEditorContent event
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_EDITOR_CONTENT)) {
+            $event = new DefineElementEditorHtmlEvent([
+                'element' => $element,
+                'html' => $html,
+                'static' => !$canSave,
+            ]);
+            $this->trigger(self::EVENT_DEFINE_EDITOR_CONTENT, $event);
+            $html = $event->html;
+        }
+
+        return $html;
     }
 
     private function _editorSidebar(

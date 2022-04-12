@@ -197,6 +197,7 @@
 - Added `craft\errors\MissingVolumeFolderException`.
 - Added `craft\events\AuthorizationCheckEvent`.
 - Added `craft\events\CreateElementCheckEvent`.
+- Added `craft\events\DefineElementEditorHtmlEvent`.
 - Added `craft\events\DefineHtmlEvent::$static`.
 - Added `craft\events\FsEvent`.
 - Added `craft\events\GenerateTransformEvent::$asset`.
