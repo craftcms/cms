@@ -13,6 +13,8 @@ jobs:
   ecs:
     name: ECS
     uses: craftcms/.github/.github/workflows/ecs.yml@v1
+    with:
+      php_version: '7.2'
   phpstan:
     name: PHPStan
     uses: craftcms/.github/.github/workflows/phpstan.yml@v1
@@ -31,4 +33,4 @@ jobs:
       failure_text_prefix: <!subteam^SGFL9NKNZ>
     secrets:
       token: ${{ secrets.GITHUB_TOKEN }}
-      slack_webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
+      slack_webhook_url: ${{ secrets.SLACK_CRAFT_WEBHOOK_URL }}
