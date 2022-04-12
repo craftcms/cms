@@ -173,6 +173,9 @@ class ElementsController extends Controller
 
         /** @var ElementInterface $element */
         $element = Craft::createObject($this->_elementType);
+        if ($this->_siteId) {
+            $element->siteId = $this->_siteId;
+        }
         $element->setAttributes($this->_attributes);
 
         $user = Craft::$app->getUser()->getIdentity();

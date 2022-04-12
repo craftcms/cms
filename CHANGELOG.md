@@ -26,6 +26,7 @@
 - Fixed a bug where address cards weren’t ordered consistently. ([#10897](https://github.com/craftcms/cms/pull/10897))
 - Fixed an error that could occur after disabling an element source. ([#10899](https://github.com/craftcms/cms/issues/10899))
 - Fixed a bug where database backups were immediately deleted if the `maxBackups` config setting had been reached. ([#10901](https://github.com/craftcms/cms/issues/10901))
+- Fixed a bug where the “New Entry” button wasn’t creating an entry in the selected site. ([#10902](https://github.com/craftcms/cms/issues/10902))
 
 ## 4.0.0-beta.4 - 2022-04-06
 
