@@ -15,7 +15,7 @@ jobs:
     name: ECS
     uses: craftcms/.github/.github/workflows/ecs.yml@v1
     with:
-      minimum_php_version: $MINIMUM_PHP_VERSION
+      minimum_php_version: ${{ env.MINIMUM_PHP_VERSION }}
   codecept:
     name: Codeception
     uses: craftcms/.github/.github/workflows/codecept.yml@v1
