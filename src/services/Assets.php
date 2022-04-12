@@ -831,6 +831,7 @@ class Assets extends Component
      * Returns the temporary volume and subpath, if set.
      *
      * @return array
+     * @phpstan-return array{Volume|null,string|null}
      * @throws InvalidConfigException If the temp volume is invalid
      * @since 3.7.39
      */
@@ -847,6 +848,7 @@ class Assets extends Component
             throw new InvalidConfigException("The Temp Uploads Location is set to an invalid volume UID: {$assetSettings['tempVolumeUid']}");
         }
 
+        /** @var string|null $subpath */
         $subpath = ($assetSettings['tempSubpath'] ?? null) ?: null;
         return [$volume, $subpath];
     }

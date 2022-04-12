@@ -197,7 +197,7 @@ class AssetQuery extends ElementQuery
      * @sused-by folderPath()
      * @since 3.7.39
      */
-    public $folderPath;
+    public ?string $folderPath = null;
 
     /**
      * @var mixed The asset transform indexes that should be eager-loaded, if they exist
@@ -749,7 +749,7 @@ class AssetQuery extends ElementQuery
      * @uses $folderPath
      * @since 3.7.39
      */
-    public function folderPath($value): self
+    public function folderPath(mixed $value): self
     {
         $this->folderPath = $value;
         return $this;
