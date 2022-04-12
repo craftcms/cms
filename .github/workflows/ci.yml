@@ -12,7 +12,7 @@ jobs:
   ecs:
     name: ECS
     uses: craftcms/.github/.github/workflows/ecs.yml@v1
-    with:
+    secrets:
       minimum_php_version: ${{ secrets.CRAFT_3_MINIMUM_PHP }}
   codecept:
     name: Codeception
