@@ -6,7 +6,7 @@ on:
       - develop
   pull_request:
 env:
-  MINIMUM_PHP_VERSION: '7.2.5'
+  MINIMUM_PHP_VERSION: 7.2.5
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
