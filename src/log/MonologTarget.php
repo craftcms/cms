@@ -133,7 +133,7 @@ class MonologTarget extends PsrTarget
     public function init(): void
     {
         $generalConfig = Craft::$app->getConfig()->getGeneral();
-        $this->level = $this->level ?? (App::devMode() ? LogLevel::DEBUG : LogLevel::WARNING);
+        $this->level = $this->level ?? (App::devMode() ? LogLevel::INFO : LogLevel::WARNING);
         $this->addTimestampToMessage = $this->addTimestampToMessage ?? !App::isStreamLog();
         $this->addTimestampToContext = $this->addTimestampToContext ?? !$this->addTimestampToMessage;
         $this->formatter = $this->formatter ?? new LineFormatter(
