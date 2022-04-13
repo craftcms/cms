@@ -22,7 +22,7 @@ use yii2tech\ar\softdelete\SoftDeleteBehavior;
  * @property string $handle Handle
  * @property string $language Language
  * @property bool $primary Primary
- * @property bool $enabled Enabled
+ * @property string $enabled Enabled
  * @property bool $hasUrls Has URLs
  * @property string $baseUrl Base URL
  * @property int $sortOrder Sort order

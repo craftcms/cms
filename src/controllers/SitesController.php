@@ -316,7 +316,7 @@ class SitesController extends Controller
         $site->handle = $this->request->getBodyParam('handle');
         $site->language = $this->request->getBodyParam('language');
         $site->primary = (bool)$this->request->getBodyParam('primary');
-        $site->enabled = $site->primary || $this->request->getBodyParam('enabled');
+        $site->setEnabled($site->primary ? true : $this->request->getBodyParam('enabled', true));
         $site->hasUrls = (bool)$this->request->getBodyParam('hasUrls');
         $site->setBaseUrl($site->hasUrls ? $this->request->getBodyParam('baseUrl') : null);
 

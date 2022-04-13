@@ -734,7 +734,7 @@ class Sites extends Component
             $siteRecord->uid = $siteUid;
             $siteRecord->groupId = $groupRecord->id;
             $siteRecord->primary = $data['primary'];
-            $siteRecord->enabled = $data['enabled'] ?? true;
+            $siteRecord->enabled = $data['enabled'] ?? 'true';
             $siteRecord->name = $data['name'];
             $siteRecord->handle = $data['handle'];
             $siteRecord->language = $data['language'];
@@ -1172,7 +1172,7 @@ class Sites extends Component
             foreach ($results as $result) {
                 $site = new Site($result);
                 $this->_allSitesById[$site->id] = $site;
-                if ($site->enabled) {
+                if ($site->getEnabled()) {
                     $this->_enabledSitesById[$site->id] = $site;
                 }
 

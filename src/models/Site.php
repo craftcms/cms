@@ -23,6 +23,7 @@ use yii\base\InvalidConfigException;
 /**
  * Site model class.
  *
+ * @property bool|string $enabled Enabled
  * @property string|null $baseUrl The site’s base URL
  * @property string $name The site’s name
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -54,12 +55,6 @@ class Site extends Model
      * @var bool Primary site?
      */
     public bool $primary = false;
-
-    /**
-     * @var bool Enabled?
-     * @since 3.5.0
-     */
-    public bool $enabled = true;
 
     /**
      * @var bool Has URLs
@@ -99,6 +94,13 @@ class Site extends Model
      * @see setName()
      */
     private ?string $_name = null;
+
+    /**
+     * @var bool|string Enabled
+     * @see getEnabled()
+     * @see setEnabled()
+     */
+    private bool|string $_enabled = true;
 
     /**
      * Returns the site’s name.
@@ -151,6 +153,36 @@ class Site extends Model
     }
 
     /**
+     * Returns whether the site is enabled.
+     *
+     * @param bool $parse Whether to parse the name for an environment variable
+     * @return bool|string
+     * @since 4.0.0
+     */
+    public function getEnabled(bool $parse = true): bool|string
+    {
+        if ($this->primary) {
+            return true;
+        }
+
+        if ($parse) {
+            return App::parseBooleanEnv($this->_enabled) ?? true;
+        }
+        return $this->_enabled;
+    }
+
+    /**
+     * Sets the site’s name.
+     *
+     * @param bool|string $name
+     * @since 4.0.0
+     */
+    public function setEnabled(bool|string $name): void
+    {
+        $this->_enabled = $name;
+    }
+
+    /**
      * @inheritdoc
      */
     protected function defineBehaviors(): array
@@ -161,6 +193,7 @@ class Site extends Model
                 'attributes' => [
                     'name' => fn() => $this->getName(false),
                     'baseUrl' => fn() => $this->getBaseUrl(false),
+                    'enabled' => fn() => $this->getEnabled(false),
                 ],
             ],
         ];
@@ -195,14 +228,6 @@ class Site extends Model
         if (Craft::$app->getIsInstalled()) {
             $rules[] = [['name', 'handle'], UniqueValidator::class, 'targetClass' => SiteRecord::class];
         }
-
-        $rules[] = [
-            ['enabled'], function(string $attribute) {
-                if ($this->primary && !$this->enabled) {
-                    $this->addError($attribute, Craft::t('app', 'The primary site cannot be disabled.'));
-                }
-            },
-        ];
 
         return $rules;
     }
@@ -278,7 +303,7 @@ class Site extends Model
             'baseUrl' => $this->_baseUrl ?: null,
             'sortOrder' => $this->sortOrder,
             'primary' => $this->primary,
-            'enabled' => $this->enabled,
+            'enabled' => $this->getEnabled(false),
         ];
     }
 }

@@ -58,6 +58,20 @@
             errors: site.getErrors('language'),
         }) }}
 
+        {% if (craft.app.isMultiSite or not site.id) %}
+            {{ forms.booleanMenuField({
+                label: 'Status'|t('app'),
+                id: 'enabled',
+                name: 'enabled',
+                yesLabel: 'Enabled'|t('app'),
+                noLabel: 'Disabled'|t('app'),
+                includeEnvVars: true,
+                value: site.getEnabled(false),
+                disabled: site.primary,
+                tip: site.primary ? 'The primary site cannot be disabled.'|t('app') : null,
+            }) }}
+        {% endif %}
+
         {% if (craft.app.isMultiSite or not site.id) and not site.primary %}
             {{ forms.lightswitchField({
                 label: 'Make this the primary site'|t('app'),
@@ -94,22 +108,6 @@
             }) }}
         </div>
     </div>
-{% endblock %}
-
-{% block details %}
-    {% if (craft.app.isMultiSite or not site.id) %}
-        <div class="meta">
-            {{ forms.lightswitchField({
-                label: 'Enabled'|t('app'),
-                id: 'enabled',
-                name: 'enabled',
-                on: site.primary or site.enabled,
-                disabled: site.primary,
-                instructions: site.primary ? 'The primary site cannot be disabled.'|t('app') : null,
-                errors: site.getErrors('enabled'),
-            }) }}
-        </div>
-    {% endif %}
 {% endblock %}
 
 
