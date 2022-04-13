@@ -621,11 +621,6 @@ class UserPermissions extends Component
                         'nested' => [
                             "saveAssets:$volume->uid" => [
                                 'label' => Craft::t('app', 'Save {type}', ['type' => $type]),
-                                'nested' => [
-                                    "savePeerAssets:$volume->uid" => [
-                                        'label' => Craft::t('app', 'Save assets uploaded by other users'),
-                                    ],
-                                ],
                             ],
                             "deleteAssets:$volume->uid" => [
                                 'label' => Craft::t('app', 'Delete {type}', ['type' => $type]),
