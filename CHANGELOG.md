@@ -3,7 +3,7 @@
 ## Unreleased
 
 ### Added
-- It’s now possible to set sites’ Enabled settings to environment variables. ([#3005](https://github.com/craftcms/cms/issues/3005))
+- It’s now possible to set sites’ Status settings to environment variables. ([#3005](https://github.com/craftcms/cms/issues/3005))
 - Added `craft\controllers\ElementsController::EVENT_DEFINE_EDITOR_CONTENT`.
 - Added `craft\events\DefineElementEditorHtmlEvent`.
 - Added `craft\events\FsEvent`.

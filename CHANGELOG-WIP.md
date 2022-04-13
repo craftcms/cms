@@ -18,7 +18,7 @@
 - Added the “Deactivate…” user action for pending and active users.
 - Users can now have an “Addresses” field. ([#10507](https://github.com/craftcms/cms/pull/10507))
 - Added the concept of “filesystems”, which handle file operations, either locally or on a remote service like Amazon S3.
-- It’s now possible to set sites’ Enabled settings to environment variables. ([#3005](https://github.com/craftcms/cms/issues/3005))
+- It’s now possible to set sites’ Status settings to environment variables. ([#3005](https://github.com/craftcms/cms/issues/3005))
 - Added the Money field type.
 - Craft now provides a native “Alternative Text” (`alt`) field for assets. ([#10302](https://github.com/craftcms/cms/discussions/10302))
 - Asset thumbnails in the control panel now have `alt` attributes, for assets with a filled-in Alternative Text value.
