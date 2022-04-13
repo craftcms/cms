@@ -88,11 +88,15 @@ class Site extends Model
 
     /**
      * @var string|null Base URL
+     * @see getBaseUrl()
+     * @see setBaseUrl()
      */
     private ?string $_baseUrl = '@web/';
 
     /**
      * @var string|null Name
+     * @see getName()
+     * @see setName()
      */
     private ?string $_name = null;
 
@@ -155,12 +159,8 @@ class Site extends Model
             'parser' => [
                 'class' => EnvAttributeParserBehavior::class,
                 'attributes' => [
-                    'name' => function() {
-                        return $this->getName(false);
-                    },
-                    'baseUrl' => function() {
-                        return $this->getBaseUrl(false);
-                    },
+                    'name' => fn() => $this->getName(false),
+                    'baseUrl' => fn() => $this->getBaseUrl(false),
                 ],
             ],
         ];
