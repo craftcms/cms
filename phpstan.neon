@@ -1,6 +1,7 @@
 parameters:
     level: 5
     paths:
+        - bootstrap
         - src
         - tests
     excludePaths:

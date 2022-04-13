@@ -122,7 +122,7 @@ if (!App::env('CRAFT_LICENSE_KEY') && !App::isEphemeral()) {
             @file_put_contents($licenseFullPath, 'temp');
 
             // See if it worked.
-            if (!file_exists($licenseFullPath) || (file_exists($licenseFullPath) && file_get_contents($licenseFullPath) !== 'temp')) {
+            if (!file_exists($licenseFullPath) || file_get_contents($licenseFullPath) !== 'temp') {
                 // Set a 503 response header so things like Varnish won't cache a bad page.
                 http_response_code(503);
                 exit($licensePath . ' isn\'t writable by PHP. Please fix that.' . PHP_EOL);
@@ -145,7 +145,7 @@ if (!App::isStreamLog()) {
 
 // Log errors to storage/logs/phperrors.log or php://stderr
 if (!App::parseBooleanEnv('$CRAFT_LOG_PHP_ERRORS')) {
-    ini_set('log_errors', 1);
+    ini_set('log_errors', '1');
 
     if (App::isStreamLog()) {
         ini_set('error_log', 'php://stderr');
@@ -171,11 +171,11 @@ $generalConfig = $configService->getConfigFromFile('general');
 $devMode = ArrayHelper::getValue($generalConfig, 'devMode', false);
 
 if ($devMode) {
-    ini_set('display_errors', 1);
+    ini_set('display_errors', '1');
     defined('YII_DEBUG') || define('YII_DEBUG', true);
     defined('YII_ENV') || define('YII_ENV', 'dev');
 } else {
-    ini_set('display_errors', 0);
+    ini_set('display_errors', '0');
     defined('YII_DEBUG') || define('YII_DEBUG', false);
     defined('YII_ENV') || define('YII_ENV', 'prod');
 }
