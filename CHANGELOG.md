@@ -6,6 +6,7 @@
 - Added the `folderPath` asset query param.
 - Added `craft\services\Assets::getTempVolumeAndSubpath()`.
 - Added `craft\services\Assets::createTempAssetQuery()`.
+- Added `craft\services\Fields::updateColumn()`.
 
 ### Changed
 - Fields’ search indexes are now immediately removed when their “Use this field’s values as search keywords” settings are disabled.
