@@ -7,6 +7,7 @@
 
 namespace craft\gql\resolvers\elements;
 
+use Craft;
 use craft\db\Table;
 use craft\elements\Entry as EntryElement;
 use craft\gql\base\ElementResolver;
@@ -49,8 +50,18 @@ class Entry extends ElementResolver
             return [];
         }
 
-        $query->andWhere(['in', 'entries.sectionId', array_values(Db::idsByUids(Table::SECTIONS, $pairs['sections']))]);
-        $query->andWhere(['in', 'entries.typeId', array_values(Db::idsByUids(Table::ENTRYTYPES, $pairs['entrytypes']))]);
+        $sectionsService = Craft::$app->getSections();
+        $sectionIds = array_filter(array_map(function(string $uid) use ($sectionsService) {
+            $section = $sectionsService->getSectionByUid($uid);
+            return $section->id ?? null;
+        }, $pairs['sections']));
+        $entryTypeIds = array_filter(array_map(function(string $uid) use ($sectionsService) {
+            $entryType = $sectionsService->getEntryTypeByUid($uid);
+            return $entryType->id ?? null;
+        }, $pairs['entrytypes']));
+
+        $query->andWhere(['in', 'entries.sectionId', $sectionIds]);
+        $query->andWhere(['in', 'entries.typeId', $entryTypeIds]);
 
         return $query;
     }

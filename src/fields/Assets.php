@@ -600,15 +600,21 @@ class Assets extends BaseRelationField
     public function getEagerLoadingGqlConditions()
     {
         $allowedEntities = Gql::extractAllowedEntitiesFromSchema();
-        $allowedVolumeUids = $allowedEntities['volumes'] ?? [];
+        $volumeUids = $allowedEntities['volumes'] ?? [];
 
-        if (empty($allowedVolumeUids)) {
+        if (empty($volumeUids)) {
             return false;
         }
 
-        $volumeIds = Db::idsByUids(DbTable::VOLUMES, $allowedVolumeUids);
+        $volumesService = Craft::$app->getVolumes();
+        $volumeIds = array_filter(array_map(function(string $uid) use ($volumesService) {
+            $volume = $volumesService->getVolumeByUid($uid);
+            return $volume->id ?? null;
+        }, $volumeUids));
 
-        return ['volumeId' => array_values($volumeIds)];
+        return [
+            'volumeId' => $volumeIds,
+        ];
     }
 
     /**

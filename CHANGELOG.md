@@ -7,10 +7,12 @@
 - Added `craft\services\Assets::getTempVolumeAndSubpath()`.
 - Added `craft\services\Assets::createTempAssetQuery()`.
 - Added `craft\services\Fields::updateColumn()`.
+- Added `craft\services\Sections::getEntryTypeByUid()`.
 
 ### Changed
 - Fields’ search indexes are now immediately removed when their “Use this field’s values as search keywords” settings are disabled.
 - User groups’ permission lists are now sorted alphabetically when saved to the project config. ([#10408](https://github.com/craftcms/cms/issues/10408))
+- Improved GraphQL performance.
 
 ### Fixed
 - Fixed a bug where Matrix blocks could lose their Date field values, if multiple Date fields had with the same handle across different block types. ([#10884](https://github.com/craftcms/cms/issues/10884))
