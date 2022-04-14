@@ -470,7 +470,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @see prepare()
      * @see joinElementTable()
      */
-    private $_joinedElementTable = false;
+    private bool $_joinedElementTable = false;
 
     /**
      * Constructor
