@@ -557,10 +557,14 @@ Craft.CustomizeSourcesModal.CustomSource = Craft.CustomizeSourcesModal.Source.ex
     },
 
     getIndexSourceItem: function() {
+        let label = Craft.trim(this.$labelInput.val());
+        if (label === '') {
+            label = Craft.t('app', '(blank)');
+        }
         let $source = this.base();
         if ($source || !this.$settingsContainer) {
             if (this.$settingsContainer) {
-                $source.find('.label').text(this.$labelInput.val());
+                $source.find('.label').text(label);
             }
             return $source;
         }
@@ -570,7 +574,7 @@ Craft.CustomizeSourcesModal.CustomSource = Craft.CustomizeSourcesModal.Source.ex
           }).append(
             $('<span/>', {
                 class: 'label',
-                text: this.$labelInput.val(),
+                text: label,
             })
           )
         );
