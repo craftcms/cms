@@ -48,6 +48,12 @@ class MonologTarget extends PsrTarget
     ];
 
     /**
+     * @see Logger::useMicrosecondTimestamps
+     * @var bool
+     */
+    public bool $useMicrosecondTimestamps = false;
+
+    /**
      * @var array Properties used to configure the Logger.
      */
     public const LOGGER_PROPS = [
@@ -192,7 +198,9 @@ class MonologTarget extends PsrTarget
     private function _createLogger(string $name): Logger
     {
         $generalConfig = Craft::$app->getConfig()->getGeneral();
-        $logger = (new Logger($name))->pushProcessor($this->processor);
+        $logger = (new Logger($name))
+            ->useMicrosecondTimestamps($this->useMicrosecondTimestamps)
+            ->pushProcessor($this->processor);
 
         if (App::isStreamLog()) {
             $logger->pushHandler((new StreamHandler(
