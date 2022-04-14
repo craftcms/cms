@@ -937,9 +937,15 @@ class Assets extends BaseRelationField
                 $folderId = $assets->ensureFolderByFullPathAndVolume($subpath, Craft::$app->getVolumes()->getVolumeById($volumeId), false)->id;
             }
 
-            // If this is a new/disabled element, the subpath probably just contained a token that returned null, like {id}
+            // If this is a new/disabled/draft element, the subpath probably just contained a token that returned null, like {id}
             // so use the user’s upload folder instead
-            if ($element === null || !$element->id || !$element->enabled || !$createDynamicFolders) {
+            if (
+                $element === null ||
+                !$element->id ||
+                !$element->enabled ||
+                !$createDynamicFolders ||
+                ElementHelper::isDraft($element)
+            ) {
                 $userFolder = $assets->getUserTemporaryUploadFolder();
             } else {
                 // Existing element, so this is just a bad subpath
