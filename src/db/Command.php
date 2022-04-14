@@ -280,7 +280,7 @@ class Command extends \yii\db\Command
     {
         if ($this->db->enableLogging) {
             $rawSql = $this->getRawSql();
-            Craft::info("SQL Query:\n" . $rawSql, $category);
+            Craft::debug("SQL query:\n" . $rawSql, $category);
         }
         if (!$this->db->enableProfiling) {
             return [false, isset($rawSql) ? $rawSql : null];
