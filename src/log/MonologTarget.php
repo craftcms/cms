@@ -63,6 +63,7 @@ class MonologTarget extends PsrTarget
         'processor',
         'formatter',
         'addTimestampToMessage',
+        'useMicrosecondTimestamps',
     ];
 
     /**
