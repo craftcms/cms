@@ -31,6 +31,7 @@
 - Fixed a bug where database backups were immediately deleted if the `maxBackups` config setting had been reached. ([#10901](https://github.com/craftcms/cms/issues/10901))
 - Fixed a bug where the “New Entry” button wasn’t creating an entry in the selected site. ([#10902](https://github.com/craftcms/cms/issues/10902))
 - Fixed a bug where “Save assets uploaded by other users” was listed twice in user permission lists. ([#10909](https://github.com/craftcms/cms/issues/10909))
+- Fixed an error that could occur in the `setup` command.
 
 ## 4.0.0-beta.4 - 2022-04-06
 

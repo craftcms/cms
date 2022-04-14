@@ -571,7 +571,7 @@ EOD;
         }
 
         try {
-            $configService->setDotEnvVar($name, $value);
+            $configService->setDotEnvVar($name, $value ?? '');
         } catch (Throwable $e) {
             $this->stderr("Unable to set $name on $path: {$e->getMessage()}" . PHP_EOL, Console::FG_RED);
             return false;
