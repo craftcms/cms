@@ -156,21 +156,32 @@ class MonologTarget extends PsrTarget
     }
 
     /**
+     * Log additional request context.
      * @inheritDoc
      */
     public function export(): void
     {
         parent::export();
 
+        $message = 'Request context';
+        $vars = [];
+
+        if ($this->allowLineBreaks) {
+            $message .= "\n" . trim(parent::getContextMessage());
+        } else {
+            $vars = $this->logVars;
+        }
+
         $this->logger->pushProcessor(new ContextProcessor(
-            vars: $this->logVars,
+            vars: $vars,
         ));
-        $this->logger->log(LogLevel::INFO, 'Request context:');
+
+        $this->logger->log(LogLevel::INFO, $message);
         $this->logger->popProcessor();
     }
 
     /**
-     * Context is logged via {@see self::export} method.
+     * Context is logged via {@see self::export} method, so it can be added using Monolog.
      * @inheritDoc
      */
     protected function getContextMessage(): string
