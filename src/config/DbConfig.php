@@ -148,20 +148,6 @@ class DbConfig extends BaseObject
     public bool $useUnbufferedConnections = false;
 
     /**
-     * @var bool Whether to enable logging of database queries.
-     * @since 4.0.0
-     * @see Connection::$enableLogging
-     */
-    public bool $enableLogging = YII_DEBUG;
-
-    /**
-     * @var bool Whether to enable profiling of opening database connection and database queries.
-     * @since 4.0.0
-     * @see Connection::$enableLogging
-     */
-    public bool $enableProfiling = YII_DEBUG;
-
-    /**
      * @var string|null The database connection URL, if one was provided by your hosting environment.
      *
      * If this is set, the values for [[driver]], [[user]], [[database]], [[server]], [[port]], and [[database]] will be extracted from it.

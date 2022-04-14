@@ -811,8 +811,8 @@ class App
             'password' => $dbConfig->password,
             'charset' => $dbConfig->charset,
             'tablePrefix' => $dbConfig->tablePrefix,
-            'enableLogging' => $dbConfig->enableLogging,
-            'enableProfiling' => $dbConfig->enableProfiling,
+            'enableLogging' => static::devMode(),
+            'enableProfiling' => static::devMode(),
             'schemaMap' => [
                 $driver => $schemaConfig,
             ],
