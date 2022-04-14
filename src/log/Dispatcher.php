@@ -66,11 +66,11 @@ class Dispatcher extends \yii\log\Dispatcher
             static::TARGET_QUEUE,
         ])->mapWithKeys(function($name) {
             $config = $this->monologTargetConfig + [
-                    'name' => $name,
-                    'enabled' => false,
-                    'extractExceptionTrace' => !App::devMode(),
-                    'allowLineBreaks' => App::devMode(),
-                ];
+                'name' => $name,
+                'enabled' => false,
+                'extractExceptionTrace' => !App::devMode(),
+                'allowLineBreaks' => App::devMode(),
+            ];
 
             return [$name => new MonologTarget($config)];
         });

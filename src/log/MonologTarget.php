@@ -89,7 +89,7 @@ class MonologTarget extends PsrTarget
     protected ?FormatterInterface $formatter = null;
 
     /**
-     * @var ProcessorInterface|null The Monolog processor to use. Defaults to `LogProcessor`.
+     * @var ProcessorInterface|null The Monolog processor to use. Defaults to `PsrLogMessageProcessor`.
      */
     protected ?ProcessorInterface $processor = null;
 
@@ -142,11 +142,7 @@ class MonologTarget extends PsrTarget
             ignoreEmptyContextAndExtra: true,
         );
 
-        $this->processor = $this->processor ?? new LogProcessor(
-            includeUserIp: $generalConfig->storeUserIps,
-            contextVars: $this->logVars,
-        );
-
+        $this->processor = $this->processor ?? new PsrLogMessageProcessor();
         $this->logger = $this->_createLogger($this->name);
     }
 
@@ -160,7 +156,21 @@ class MonologTarget extends PsrTarget
     }
 
     /**
-     * Vars are logged to context, not in the message.
+     * @inheritDoc
+     */
+    public function export(): void
+    {
+        parent::export();
+
+        $this->logger->pushProcessor(new ContextProcessor(
+            vars: $this->logVars,
+        ));
+        $this->logger->log(LogLevel::INFO, 'Request context');
+        $this->logger->popProcessor();
+    }
+
+    /**
+     * Context is logged via {@see self::export} method.
      * @inheritDoc
      */
     protected function getContextMessage(): string
@@ -168,13 +178,10 @@ class MonologTarget extends PsrTarget
         return '';
     }
 
-
     private function _createLogger(string $name): Logger
     {
         $generalConfig = Craft::$app->getConfig()->getGeneral();
-        $logger = (new Logger($name))
-            ->pushProcessor(new PsrLogMessageProcessor())
-            ->pushProcessor($this->processor);
+        $logger = (new Logger($name))->pushProcessor($this->processor);
 
         if (App::isStreamLog()) {
             $logger->pushHandler((new StreamHandler(

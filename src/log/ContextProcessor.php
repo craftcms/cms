@@ -14,16 +14,15 @@ use yii\web\Request;
 use yii\web\Session;
 
 /**
- * Class LogProcessor
+ * Class ContextProcessor
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class LogProcessor implements ProcessorInterface
+class ContextProcessor implements ProcessorInterface
 {
     public function __construct(
-        protected bool $includeUserIp = false,
-        protected array $contextVars = [],
+        protected array $vars = [],
     ) {
     }
 
@@ -32,7 +31,7 @@ class LogProcessor implements ProcessorInterface
      */
     public function __invoke(array $record): array
     {
-        if ($this->includeUserIp) {
+        if (Craft::$app->getConfig()->getGeneral()->storeUserIps) {
             $request = Craft::$app->getRequest();
 
             if ($request instanceof Request) {
@@ -53,17 +52,19 @@ class LogProcessor implements ProcessorInterface
         }
 
         if (
-            ($postPos = array_search('_POST', $this->contextVars)) !== false &&
+            ($postPos = array_search('_POST', $this->vars)) !== false &&
             empty($GLOBALS['_POST']) &&
             !empty($body = file_get_contents('php://input'))
         ) {
             // Log the raw request body instead
-            $this->contextVars = array_merge($this->contextVars);
-            array_splice($this->contextVars, $postPos, 1);
+            $this->vars = array_merge($this->vars);
+            array_splice($this->vars, $postPos, 1);
             $record['extra']['body'] = $body;
         }
 
-        $record['extra']['vars'] = $this->filterVars($this->contextVars);
+        if ($vars = $this->filterVars($this->vars)) {
+            $record['extra']['vars'] = $vars;
+        }
 
         return $record;
     }

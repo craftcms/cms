@@ -285,7 +285,7 @@
 - Added `craft\i18n\Translation`.
 - Added `craft\imagetransforms\ImageTransformer`.
 - Added `craft\log\Dispatcher::getTargets()`.
-- Added `craft\log\LogProcessor`.
+- Added `craft\log\ContextProcessor`.
 - Added `craft\log\MonologTarget`.
 - Added `craft\models\AssetIndexingSession`.
 - Added `craft\models\FieldLayout::getElementsByType()`.
