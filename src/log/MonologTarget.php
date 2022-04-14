@@ -165,7 +165,7 @@ class MonologTarget extends PsrTarget
         $this->logger->pushProcessor(new ContextProcessor(
             vars: $this->logVars,
         ));
-        $this->logger->log(LogLevel::INFO, 'Request context');
+        $this->logger->log(LogLevel::INFO, 'Request context:');
         $this->logger->popProcessor();
     }
 
