@@ -126,7 +126,9 @@ class UserGroup extends Model
         ];
 
         if ($withPermissions && $this->id) {
-            $config['permissions'] = Craft::$app->getUserPermissions()->getPermissionsByGroupId($this->id);
+            $permissions = Craft::$app->getUserPermissions()->getPermissionsByGroupId($this->id);
+            sort($permissions);
+            $config['permissions'] = $permissions;
         }
 
         return $config;
