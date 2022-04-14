@@ -33,6 +33,7 @@
 - Fixed a bug where the “New Entry” button wasn’t creating an entry in the selected site. ([#10902](https://github.com/craftcms/cms/issues/10902))
 - Fixed a bug where “Save assets uploaded by other users” was listed twice in user permission lists. ([#10909](https://github.com/craftcms/cms/issues/10909))
 - Fixed an error that could occur in the `setup` command.
+- Fixed a bug where it was impossible to delete missing folders when indexing a volume. ([#10905](https://github.com/craftcms/cms/issues/10905))
 
 ## 4.0.0-beta.4 - 2022-04-06
 

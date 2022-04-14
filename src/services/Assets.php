@@ -290,7 +290,7 @@ class Assets extends Component
         $folders = [];
 
         foreach ((array)$folderIds as $folderId) {
-            $folder = $this->getFolderById($folderId);
+            $folder = $this->getFolderById((int)$folderId);
             $folders[] = $folder;
 
             if ($folder && $deleteDir) {
