@@ -92,19 +92,25 @@ class Users extends BaseRelationField
     public function getEagerLoadingGqlConditions(): ?array
     {
         $allowedEntities = Gql::extractAllowedEntitiesFromSchema();
-        $allowedGroupUids = $allowedEntities['usergroups'] ?? [];
+        $userGroupUids = $allowedEntities['usergroups'] ?? [];
 
-        if (in_array('everyone', $allowedGroupUids, false)) {
+        if (in_array('everyone', $userGroupUids, false)) {
             return [];
         }
 
-        if (empty($allowedGroupUids)) {
+        if (empty($userGroupUids)) {
             return null;
         }
 
-        $groupIds = Db::idsByUids(DbTable::USERGROUPS, $allowedGroupUids);
+        $userGroupsService = Craft::$app->getUserGroups();
+        $userGroupIds = array_filter(array_map(function(string $uid) use ($userGroupsService) {
+            $userGroupsService = $userGroupsService->getGroupByUid($uid);
+            return $userGroupsService->id ?? null;
+        }, $userGroupUids));
 
-        return ['groupId' => array_values($groupIds)];
+        return [
+            'groupId' => $userGroupIds,
+        ];
     }
 
     /**

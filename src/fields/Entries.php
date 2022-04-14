@@ -92,19 +92,26 @@ class Entries extends BaseRelationField
     public function getEagerLoadingGqlConditions(): ?array
     {
         $allowedEntities = Gql::extractAllowedEntitiesFromSchema();
-        $allowedSectionUids = $allowedEntities['sections'] ?? [];
-        $allowedEntryTypeUids = $allowedEntities['entrytypes'] ?? [];
+        $sectionUids = $allowedEntities['sections'] ?? [];
+        $entryTypeUids = $allowedEntities['entrytypes'] ?? [];
 
-        if (empty($allowedSectionUids) || empty($allowedEntryTypeUids)) {
+        if (empty($sectionUids) || empty($entryTypeUids)) {
             return null;
         }
 
-        $entryTypeIds = Db::idsByUids(DbTable::ENTRYTYPES, $allowedEntryTypeUids);
-        $sectionIds = Db::idsByUids(DbTable::SECTIONS, $allowedSectionUids);
+        $sectionsService = Craft::$app->getSections();
+        $sectionIds = array_filter(array_map(function(string $uid) use ($sectionsService) {
+            $section = $sectionsService->getSectionByUid($uid);
+            return $section->id ?? null;
+        }, $sectionUids));
+        $entryTypeIds = array_filter(array_map(function(string $uid) use ($sectionsService) {
+            $entryType = $sectionsService->getEntryTypeByUid($uid);
+            return $entryType->id ?? null;
+        }, $entryTypeUids));
 
         return [
-            'typeId' => array_values($entryTypeIds),
-            'sectionId' => array_values($sectionIds),
+            'sectionId' => $sectionIds,
+            'typeId' => $entryTypeIds,
         ];
     }
 

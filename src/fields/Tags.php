@@ -146,15 +146,21 @@ class Tags extends BaseRelationField
     public function getEagerLoadingGqlConditions(): ?array
     {
         $allowedEntities = Gql::extractAllowedEntitiesFromSchema();
-        $allowedTagGroupUids = $allowedEntities['taggroups'] ?? [];
+        $tagGroupUids = $allowedEntities['taggroups'] ?? [];
 
-        if (empty($allowedTagGroupUids)) {
+        if (empty($tagGroupUids)) {
             return null;
         }
 
-        $tagGroupIds = Db::idsByUids(DbTable::TAGGROUPS, $allowedTagGroupUids);
+        $tagsService = Craft::$app->getTags();
+        $tagGroupIds = array_filter(array_map(function(string $uid) use ($tagsService) {
+            $tagGroup = $tagsService->getTagGroupByUid($uid);
+            return $tagGroup->id ?? null;
+        }, $tagGroupUids));
 
-        return ['groupId' => array_values($tagGroupIds)];
+        return [
+            'groupId' => $tagGroupIds,
+        ];
     }
 
     /**
