@@ -8,11 +8,9 @@
 namespace craft\gql\resolvers\elements;
 
 use Craft;
-use craft\db\Table;
 use craft\elements\db\ElementQuery;
 use craft\elements\Entry as EntryElement;
 use craft\gql\base\ElementResolver;
-use craft\helpers\Db;
 use craft\helpers\Gql as GqlHelper;
 
 /**
