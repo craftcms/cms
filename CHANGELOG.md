@@ -35,6 +35,7 @@
 - Fixed an error that could occur in the `setup` command.
 - Fixed an error that occurred when indexing a volume, if any indexed folders didn’t exist on the filesystem. ([#10905](https://github.com/craftcms/cms/issues/10905))
 - Fixed a bug where element thumbnails weren’t loading for all but the initial content tab. ([#10918](https://github.com/craftcms/cms/issues/10918))
+- Fixed an error that occurred when uploading an SVG with non-integer dimensions. ([#10923](https://github.com/craftcms/cms/issues/10923))
 
 ## 4.0.0-beta.4 - 2022-04-06
 
