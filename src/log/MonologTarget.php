@@ -183,7 +183,8 @@ class MonologTarget extends PsrTarget
             vars: $vars,
         ));
 
-        $this->logger->log(LogLevel::INFO, $message);
+        // Log at default level, so it doesn't get filtered
+        $this->logger->log($this->level, $message);
         $this->logger->popProcessor();
     }
 
