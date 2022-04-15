@@ -22,6 +22,7 @@
 - Fixed a bug where element queries weren’t being limited to return elements of the configured type, if no element type-specific tables were joined in.
 - Fixed a bug where element thumbnails weren’t loading for all but the initial content tab. ([#10918](https://github.com/craftcms/cms/issues/10918))
 - Fixed a bug where Matrix fields’ Min Blocks settings weren’t getting enforced for empty Matrix fields.
+- Fixed an error that could occur when saving Matrix fields with either Min Blocks or Max Blocks configured, but not both, if the Intl extension wasn’t installed. ([#10922](https://github.com/craftcms/cms/issues/10922))
 
 ## 3.7.38 - 2022-04-06
 
