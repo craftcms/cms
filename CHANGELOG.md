@@ -20,6 +20,7 @@
 - Fixed a bug where Assets fields weren’t respecting their dynamic folder path settings for unpublished drafts, if the Temp Upload Location asset setting was set to a volume. ([#9619](https://github.com/craftcms/cms/issues/9619))
 - Fixed an error that could occur when saving an Assets field for a draft.
 - Fixed a bug where element queries weren’t being limited to return elements of the configured type, if no element type-specific tables were joined in.
+- Fixed a bug where element thumbnails weren’t loading for all but the initial content tab. ([#10918](https://github.com/craftcms/cms/issues/10918))
 
 ## 3.7.38 - 2022-04-06
 
