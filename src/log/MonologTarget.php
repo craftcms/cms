@@ -28,16 +28,17 @@ use yii\web\HttpException;
 class MonologTarget extends PsrTarget
 {
     /**
-     * @var bool|null $addTimestampToContext Defaults to `true` if `addTimestampToMessage` is `false`.
-     * @see addTimestampToMessage
-     * @inheritdoc
+     * @var array Properties used to configure the Logger.
      */
-    public $addTimestampToContext;
-
-    /**
-     * @var bool
-     */
-    public bool $allowLineBreaks;
+    public const LOGGER_PROPS = [
+        'allowLineBreaks',
+        'name',
+        'level',
+        'maxFiles',
+        'useMicrosecondTimestamps',
+        'processor',
+        'formatter',
+    ];
 
     /**
      * @inheritdoc
@@ -48,23 +49,15 @@ class MonologTarget extends PsrTarget
     ];
 
     /**
-     * @see Logger::useMicrosecondTimestamps
      * @var bool
      */
-    public bool $useMicrosecondTimestamps = false;
+    protected bool $allowLineBreaks;
 
     /**
-     * @var array Properties used to configure the Logger.
+     * @var string
+     * @see Logger::$name
      */
-    public const LOGGER_PROPS = [
-        'name',
-        'maxFiles',
-        'level',
-        'processor',
-        'formatter',
-        'addTimestampToMessage',
-        'useMicrosecondTimestamps',
-    ];
+    protected string $name;
 
     /**
      * @var string|null The PSR-3 log level to use.
@@ -73,22 +66,16 @@ class MonologTarget extends PsrTarget
     protected ?string $level = null;
 
     /**
-     * @var bool|null Whether to prepend a timestamp to the log message.
-     * Defaults to `true` unless `CRAFT_STREAM_LOG` is set to `true`.
-     */
-    protected ?bool $addTimestampToMessage;
-
-    /**
-     * @var string
-     * @see Logger::$name
-     */
-    public string $name;
-
-    /**
      * @var int The maximum number of files to keep in rotation.
      * @see RotatingFileHandler::$maxFiles
      */
     protected int $maxFiles = 5;
+
+    /**
+     * @see Logger::useMicrosecondTimestamps
+     * @var bool
+     */
+    protected bool $useMicrosecondTimestamps = false;
 
     /**
      * @var FormatterInterface|null The Monolog formatter to use. Defaults to `LineFormatter`.
@@ -139,12 +126,8 @@ class MonologTarget extends PsrTarget
      */
     public function init(): void
     {
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
         $this->level = $this->level ?? (App::devMode() ? LogLevel::INFO : LogLevel::WARNING);
-        $this->addTimestampToMessage = $this->addTimestampToMessage ?? !App::isStreamLog();
-        $this->addTimestampToContext = $this->addTimestampToContext ?? !$this->addTimestampToMessage;
         $this->formatter = $this->formatter ?? new LineFormatter(
-            format: $this->addTimestampToMessage ? null : "%channel%.%level_name%: %message% %context% %extra%\n",
             allowInlineLineBreaks: $this->allowLineBreaks,
             ignoreEmptyContextAndExtra: true,
         );
