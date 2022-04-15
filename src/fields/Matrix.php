@@ -751,6 +751,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
             [
                 'validateBlocks',
                 'on' => [Element::SCENARIO_ESSENTIALS, Element::SCENARIO_DEFAULT, Element::SCENARIO_LIVE],
+                'skipOnEmpty' => false,
             ],
         ];
     }
