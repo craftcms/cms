@@ -1286,7 +1286,7 @@ $.extend(Craft,
          * Trim characters off of the beginning of a string.
          *
          * @param {string} str
-         * @param {string|object|undefined} chars The characters to trim off. Defaults to a space if left blank.
+         * @param {string|object|undefined} [chars] The characters to trim off. Defaults to a space if left blank.
          * @return string
          */
         ltrim: function(str, chars) {
@@ -1322,7 +1322,7 @@ $.extend(Craft,
          * Trim characters off of the beginning and end of a string.
          *
          * @param {string} str
-         * @param {string|object|undefined} chars The characters to trim off. Defaults to a space if left blank.
+         * @param {string|object|undefined} [chars] The characters to trim off. Defaults to a space if left blank.
          * @return string
          */
         trim: function(str, chars) {
