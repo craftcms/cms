@@ -88,7 +88,7 @@ class NavNode extends ForNode
             ->write("}\n")
             // Close out the last item
             ->write("\$context = \$_contextsByLevel[\$_firstItemLevel];\n")
-            ->subcompile($this->navItemNode->getNode('lower_body'), false)
+            ->subcompile($this->navItemNode->getNode('lower_body'))
             // Set the context back
             ->write("\$context = \$_tmpContext;\n")
             // Unset out variables
