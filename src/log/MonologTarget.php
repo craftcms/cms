@@ -28,19 +28,6 @@ use yii\web\HttpException;
 class MonologTarget extends PsrTarget
 {
     /**
-     * @var array Properties used to configure the Logger.
-     */
-    public const LOGGER_PROPS = [
-        'allowLineBreaks',
-        'name',
-        'level',
-        'maxFiles',
-        'useMicrosecondTimestamps',
-        'processor',
-        'formatter',
-    ];
-
-    /**
      * @inheritdoc
      */
     public $except = [
@@ -60,10 +47,10 @@ class MonologTarget extends PsrTarget
     protected string $name;
 
     /**
-     * @var string|null The PSR-3 log level to use.
-     * Defaults to `LogLevel::DEBUG` if `devMode` is set to `true, otherwise `LogLevel::WARNING`.
+     * @var string The PSR-3 log level to use.
+     * @phpstan-var LogLevel::*
      */
-    protected ?string $level = null;
+    protected string $level = LogLevel::WARNING;
 
     /**
      * @var int The maximum number of files to keep in rotation.
@@ -88,59 +75,37 @@ class MonologTarget extends PsrTarget
     protected ?ProcessorInterface $processor = null;
 
     /**
-     * @var Logger|null $logger
+     * @var Logger $logger
+     * @phpstan-var Logger|null $logger
      */
     protected $logger;
-
-    /**
-     * @inheritDoc
-     * @throws InvalidConfigException
-     */
-    public function __set($name, $value): void
-    {
-        // Disallow setting logger props after logger is created.
-        if (in_array($name, static::LOGGER_PROPS, true)) {
-            if ($this->logger) {
-                throw new InvalidConfigException("The property \"$name\" must be set before \"logger\".");
-            }
-
-            $this->$name = $value;
-
-            return;
-        }
-
-        parent::__set($name, $value);
-    }
-
-    public function __get($name)
-    {
-        if (in_array($name, static::LOGGER_PROPS, true)) {
-            return $this->$name;
-        }
-
-        return parent::__get($name);
-    }
 
     /**
      * @inheritDoc
      */
     public function init(): void
     {
-        $this->level = $this->level ?? (App::devMode() ? LogLevel::INFO : LogLevel::WARNING);
         $this->formatter = $this->formatter ?? new LineFormatter(
-            allowInlineLineBreaks: $this->allowLineBreaks,
-            ignoreEmptyContextAndExtra: true,
-        );
-
+                allowInlineLineBreaks: $this->allowLineBreaks,
+                ignoreEmptyContextAndExtra: true,
+            );
         $this->processor = $this->processor ?? new PsrLogMessageProcessor();
         $this->logger = $this->_createLogger($this->name);
+    }
+
+    /**
+     * @return Logger
+     */
+    public function getLogger(): Logger
+    {
+        return $this->logger;
     }
 
     /**
      * @throws InvalidConfigException
      * @inheritDoc
      */
-    public function setLogger(LoggerInterface $logger): void
+    public function setLogger(Logger|LoggerInterface $logger): void
     {
         throw new InvalidConfigException('Logger may not be configured directly.');
     }
@@ -198,7 +163,6 @@ class MonologTarget extends PsrTarget
             if (!Craft::$app->getRequest()->getIsConsoleRequest()) {
                 $logger->pushHandler((new StreamHandler(
                     'php://stdout',
-                    /** @phpstan-ignore-next-line */
                     $this->level,
                 ))->setFormatter($this->formatter));
             }
@@ -206,12 +170,86 @@ class MonologTarget extends PsrTarget
             $logger->pushHandler((new RotatingFileHandler(
                 App::parseEnv(sprintf('@storage/logs/%s.log', $name)),
                 $this->maxFiles,
-                /** @phpstan-ignore-next-line */
                 $this->level,
                 filePermission: $generalConfig->defaultFileMode,
             ))->setFormatter($this->formatter));
         }
 
         return $logger;
+    }
+
+    /**
+     * @param string $name
+     * @throws InvalidConfigException
+     */
+    public function setName(string $name): void
+    {
+        $this->_setLoggerProperty('name', $name);
+    }
+
+    /**
+     * @param bool $allowLineBreaks
+     * @throws InvalidConfigException
+     */
+    public function setAllowLineBreaks(bool $allowLineBreaks): void
+    {
+        $this->_setLoggerProperty('allowLineBreaks', $allowLineBreaks);
+    }
+
+    /**
+     * @param string|null $level
+     * @throws InvalidConfigException
+     */
+    public function setLevel(?string $level): void
+    {
+        $this->_setLoggerProperty('level', $level);
+    }
+
+    /**
+     * @param int $maxFiles
+     * @throws InvalidConfigException
+     */
+    public function setMaxFiles(int $maxFiles): void
+    {
+        $this->_setLoggerProperty('maxFiles', $maxFiles);
+    }
+
+    /**
+     * @param bool $useMicrosecondTimestamps
+     * @throws InvalidConfigException
+     */
+    public function setUseMicrosecondTimestamps(bool $useMicrosecondTimestamps): void
+    {
+        $this->_setLoggerProperty('useMicrosecondTimestamps', $useMicrosecondTimestamps);
+    }
+
+    /**
+     * @param FormatterInterface|null $formatter
+     * @throws InvalidConfigException
+     */
+    public function setFormatter(?FormatterInterface $formatter): void
+    {
+        $this->_setLoggerProperty('formatter', $formatter);
+    }
+
+    /**
+     * @param ProcessorInterface|null $processor
+     * @throws InvalidConfigException
+     */
+    public function setProcessor(?ProcessorInterface $processor): void
+    {
+        $this->_setLoggerProperty('processor', $processor);
+    }
+
+    /**
+     * @throws InvalidConfigException
+     */
+    private function _setLoggerProperty(string $property, mixed $value): void
+    {
+        if (isset($this->logger)) {
+            throw new InvalidConfigException("The property \"$property\" must be set before \"logger\".");
+        }
+
+        $this->$property = $value;
     }
 }

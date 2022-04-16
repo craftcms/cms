@@ -10,6 +10,7 @@ namespace craft\log;
 use Craft;
 use craft\helpers\App;
 use Illuminate\Support\Collection;
+use Psr\Log\LogLevel;
 
 /**
  * Class Dispatcher
@@ -70,6 +71,7 @@ class Dispatcher extends \yii\log\Dispatcher
                 'enabled' => false,
                 'extractExceptionTrace' => !App::devMode(),
                 'allowLineBreaks' => App::devMode(),
+                'level' => App::devMode() ? LogLevel::INFO : LogLevel::WARNING,
             ];
 
             return [$name => new MonologTarget($config)];
