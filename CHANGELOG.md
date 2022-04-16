@@ -9,6 +9,11 @@
 - Added `craft\events\FsEvent`.
 - Added `craft\helpers\Db::escapeCommas()`.
 - Added `craft\services\Fs::EVENT_RENAME_FILESYSTEM`.
+- Added `craft\web\CpScreenResponseBehavior::$formAttributes`. ([#10924](https://github.com/craftcms/cms/issues/10924))
+- Added `craft\web\CpScreenResponseBehavior::$mainAttributes`. ([#10924](https://github.com/craftcms/cms/issues/10924))
+- Added `craft\web\CpScreenResponseBehavior::formAttributes()`. ([#10924](https://github.com/craftcms/cms/issues/10924))
+- Added `craft\web\CpScreenResponseBehavior::mainAttributes()`. ([#10924](https://github.com/craftcms/cms/issues/10924))
+- Added the `Craft.setElementAttributes()` JavaScript method.
 
 ### Changed
 - Volumes’ Asset Filesystem and Transform Filesystem settings are now automatically updated when a filesystem’s handle changes, if they reference the filesystem’s handle directly. ([#10885](https://github.com/craftcms/cms/issues/10885))

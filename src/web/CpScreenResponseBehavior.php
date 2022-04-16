@@ -81,6 +81,26 @@ class CpScreenResponseBehavior extends Behavior
     public array $tabs = [];
 
     /**
+     * @var array Custom attributes to add to the `<main>` tag.
+     *
+     * See [[\yii\helpers\BaseHtml::renderTagAttributes()]] for supported attribute syntaxes.
+     *
+     * This will only be used by full-page screens.
+     *
+     * @see mainAttributes()
+     */
+    public array $mainAttributes = [];
+
+    /**
+     * @var array Custom attributes to add to the `<form>` tag.
+     *
+     * See [[\yii\helpers\BaseHtml::renderTagAttributes()]] for supported attribute syntaxes.
+     *
+     * @see formAttributes()
+     */
+    public array $formAttributes = [];
+
+    /**
      * @var string|null The form action.
      * @see action()
      */
@@ -305,6 +325,36 @@ class CpScreenResponseBehavior extends Behavior
             'class' => Html::explodeClass($class),
             'visible' => $visible,
         ];
+        return $this->owner;
+    }
+
+    /**
+     * Sets custom attributes that should be added to the `<main>` tag.
+     *
+     * See [[\yii\helpers\BaseHtml::renderTagAttributes()]] for supported attribute syntaxes.
+     *
+     * This will only be used by full-page screens.
+     *
+     * @param array $value
+     * @return Response
+     */
+    public function mainAttributes(array $value): Response
+    {
+        $this->mainAttributes = $value;
+        return $this->owner;
+    }
+
+    /**
+     * Sets custom attributes that should be added to the `<form>` tag.
+     *
+     * See [[\yii\helpers\BaseHtml::renderTagAttributes()]] for supported attribute syntaxes.
+     *
+     * @param array $value
+     * @return Response
+     */
+    public function formAttributes(array $value): Response
+    {
+        $this->formAttributes = $value;
         return $this->owner;
     }
 

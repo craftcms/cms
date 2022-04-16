@@ -246,6 +246,10 @@ Craft.CpScreenSlideout = Craft.Slideout.extend({
 
             this.updateTabs(data.tabs);
 
+            if (data.formAttributes) {
+                Craft.setElementAttributes(this.$container, data.formAttributes);
+            }
+
             if (data.editUrl) {
                 this.$editLink
                     .removeClass('hidden')
