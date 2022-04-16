@@ -75,8 +75,7 @@ class MonologTarget extends PsrTarget
     protected ?ProcessorInterface $processor = null;
 
     /**
-     * @var Logger $logger
-     * @phpstan-var Logger|null $logger
+     * @var Logger|null $logger
      */
     protected $logger;
 
