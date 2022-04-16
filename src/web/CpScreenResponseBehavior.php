@@ -30,31 +30,43 @@ class CpScreenResponseBehavior extends Behavior
     public $prepareScreen = null;
 
     /**
-     * @var string|null The control panel edit URL for this screen
+     * @var string|null The control panel edit URL for this screen.
      * @see editUrl()
      */
     public ?string $editUrl = null;
 
     /**
      * @var string|null The document title. If null, [[title]] will be used.
+     *
+     * This will only be used by full-page screens.
+     *
      * @see docTitle()
      */
     public ?string $docTitle = null;
 
     /**
      * @var string|null The page title.
+     *
+     * This will only be used by full-page screens.
+     *
      * @see title()
      */
     public ?string $title = null;
 
     /**
      * @var string|null The selected subnav item’s key in the global sidebar.
+     *
+     * This will only be used by full-page screens.
+     *
      * @see selectedSubnavItem()
      */
     public ?string $selectedSubnavItem = null;
 
     /**
      * @var array|callable|null Breadcrumbs.
+     *
+     * This will only be used by full-page screens.
+     *
      * @see crumbs()
      * @see addCrumb()
      */
@@ -62,26 +74,33 @@ class CpScreenResponseBehavior extends Behavior
 
     /**
      * @var array Tabs.
+     *
      * @see tabs()
      * @see addTab()
      */
     public array $tabs = [];
 
     /**
-     * @var string|null The form action
+     * @var string|null The form action.
      * @see action()
      */
     public ?string $action = null;
 
     /**
-     * @var array|callable|null Alternate form actions
+     * @var array|callable|null Alternate form actions.
+     *
+     * This will only be used by full-page screens.
+     *
      * @see altActions()
      * @see addAltAction()
      */
     public $altActions = null;
 
     /**
-     * @var string|null The URL the form should redirect to after posting
+     * @var string|null The URL the form should redirect to after posting.
+     *
+     * This will only be used by full-page screens.
+     *
      * @see redirectUrl()
      */
     public ?string $redirectUrl = null;
@@ -89,46 +108,55 @@ class CpScreenResponseBehavior extends Behavior
     /**
      * @var string|null The URL the form should redirect to after posting, if submitted via the
      * <kbd>Ctrl</kbd><kbd>Command</kbd> + <kbd>S</kbd> keyboard shortcut.
+     *
+     * This will only be used by full-page screens.
+     *
      * @see saveShortcutRedirectUrl()
      */
     public ?string $saveShortcutRedirectUrl = null;
 
     /**
-     * @var string|callable|null The context menu HTML
+     * @var string|callable|null The context menu HTML.
+     *
+     * This will only be used by full-page screens.
+     *
      * @see contextMenu()
      * @see contextMenuTemplate()
      */
     public $contextMenu = null;
 
     /**
-     * @var string|null The submit button label
+     * @var string|null The submit button label.
      * @see submitButtonLabel()
      */
     public ?string $submitButtonLabel = null;
 
     /**
-     * @var string|callable|null Additional buttons’ HTML
+     * @var string|callable|null Additional buttons’ HTML.
+     *
+     * This will only be used by full-page screens.
+     *
      * @see additionalButtons()
      * @see additionalButtonsTemplate()
      */
     public $additionalButtons = null;
 
     /**
-     * @var string|callable|null The content HTML
+     * @var string|callable|null The content HTML.
      * @see content()
      * @see contentTemplate()
      */
     public $content = null;
 
     /**
-     * @var string|callable|null The sidebar HTML
+     * @var string|callable|null The sidebar HTML.
      * @see sidebar()
      * @see sidebarTemplate()
      */
     public $sidebar = null;
 
     /**
-     * @var string|callable|null The content notice HTML
+     * @var string|callable|null The content notice HTML.
      * @see notice()
      * @see noticeTemplate()
      */
@@ -161,6 +189,8 @@ class CpScreenResponseBehavior extends Behavior
     /**
      * Sets the document title.
      *
+     * This will only be used by full-page screens.
+     *
      * @param string|null $value
      * @return Response
      */
@@ -173,6 +203,8 @@ class CpScreenResponseBehavior extends Behavior
     /**
      * Sets the page title.
      *
+     * This will only be used by full-page screens.
+     *
      * @param string|null $value
      * @return Response
      */
@@ -184,6 +216,8 @@ class CpScreenResponseBehavior extends Behavior
 
     /**
      * Sets the selected subnav item’s key in the global sidebar.
+     *
+     * This will only be used by full-page screens.
      *
      * @param string|null $value
      * @return Response
@@ -199,6 +233,8 @@ class CpScreenResponseBehavior extends Behavior
      *
      * Each breadcrumb should be represented by a nested array with `label` and `url` keys.
      *
+     * This will only be used by full-page screens.
+     *
      * @param callable|array|null $value
      * @return Response
      */
@@ -210,6 +246,8 @@ class CpScreenResponseBehavior extends Behavior
 
     /**
      * Adds a breadcrumb.
+     *
+     * This will only be used by full-page screens.
      *
      * @param string $label
      * @param string $url
@@ -298,6 +336,8 @@ class CpScreenResponseBehavior extends Behavior
      *   (or <kbd>Command</kbd>/<kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>S</kbd> if `'shift' => true` is also set).
      * - `retainScroll` _(optional)_ – Whether the browser should retain its scroll position on the next page.
      *
+     * This will only be used by full-page screens.
+     *
      * @param callable|array|null $value
      * @return Response
      */
@@ -309,6 +349,8 @@ class CpScreenResponseBehavior extends Behavior
 
     /**
      * Adds an alternate form action.
+     *
+     * This will only be used by full-page screens.
      *
      * @param string $label
      * @param array $config
@@ -325,7 +367,9 @@ class CpScreenResponseBehavior extends Behavior
     }
 
     /**
-     * Sets the URL the form should redirect to after posting
+     * Sets the URL the form should redirect to after posting.
+     *
+     * This will only be used by full-page screens.
      *
      * @param string|null $value
      * @return Response
@@ -340,6 +384,8 @@ class CpScreenResponseBehavior extends Behavior
      * Sets URL the form should redirect to after posting, if submitted via the
      * <kbd>Ctrl</kbd><kbd>Command</kbd> + <kbd>S</kbd> keyboard shortcut.
      *
+     * This will only be used by full-page screens.
+     *
      * @param string|null $value
      * @return Response
      */
@@ -352,6 +398,8 @@ class CpScreenResponseBehavior extends Behavior
     /**
      * Sets the context menu HTML.
      *
+     * This will only be used by full-page screens.
+     *
      * @param callable|string|null $value
      * @return Response
      */
@@ -359,6 +407,22 @@ class CpScreenResponseBehavior extends Behavior
     {
         $this->contextMenu = $value;
         return $this->owner;
+    }
+
+    /**
+     * Sets a template that should be used to render the context menu HTML.
+     *
+     * This will only be used by full-page screens.
+     *
+     * @param string $template
+     * @param array $variables
+     * @return Response
+     */
+    public function contextMenuTemplate(string $template, array $variables = []): Response
+    {
+        return $this->contextMenu(
+            fn() => Craft::$app->getView()->renderTemplate($template, $variables, View::TEMPLATE_MODE_CP)
+        );
     }
 
     /**
@@ -374,21 +438,9 @@ class CpScreenResponseBehavior extends Behavior
     }
 
     /**
-     * Sets a template that should be used to render the context menu HTML.
-     *
-     * @param string $template
-     * @param array $variables
-     * @return Response
-     */
-    public function contextMenuTemplate(string $template, array $variables = []): Response
-    {
-        return $this->contextMenu(
-            fn() => Craft::$app->getView()->renderTemplate($template, $variables, View::TEMPLATE_MODE_CP)
-        );
-    }
-
-    /**
      * Sets the additional buttons’ HTML.
+     *
+     * This will only be used by full-page screens.
      *
      * @param callable|string|null $value
      * @return Response
@@ -401,6 +453,8 @@ class CpScreenResponseBehavior extends Behavior
 
     /**
      * Sets a template that should be used to render the additional buttons’ HTML.
+     *
+     * This will only be used by full-page screens.
      *
      * @param string $template
      * @param array $variables
