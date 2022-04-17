@@ -45,6 +45,7 @@
 - Fixed an error that occurred when searching for a specific attribute. ([#10927](https://github.com/craftcms/cms/issues/10927))
 - Fixed a bug where menus weren’t closing when another menu button was clicked on. ([#10928](https://github.com/craftcms/cms/issues/10928))
 - Fixed an error that could occur when saving a field layout, if it had any tabs that were initially empty. ([#10929](https://github.com/craftcms/cms/issues/10929))
+- Fixed an error that occurred when sending an activation email to an invactive user. ([#10932](https://github.com/craftcms/cms/issues/10932))
 
 ## 4.0.0-beta.4 - 2022-04-06
 
