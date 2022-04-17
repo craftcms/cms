@@ -582,6 +582,7 @@
 - Updated vue-autosuggest to 2.2.0.
 
 ### Deprecated
+- Deprecated the `autosaveDrafts` config setting.
 - Deprecated the `anyStatus` element query param. `status(null)` should be used instead.
 - Deprecated the `immediately` argument for transforms created over GraphQL. It no longer has any effect.
 - Deprecated `craft\base\ApplicationTrait::getInstalledSchemaVersion()`.

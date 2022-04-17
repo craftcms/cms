@@ -268,6 +268,7 @@ class GeneralConfig extends BaseObject
      * Note that drafts *will* be autosaved while Live Preview is open, regardless of this setting.
      *
      * @since 3.5.6
+     * @deprecated in 4.0.0
      * @group System
      */
     public bool $autosaveDrafts = true;
