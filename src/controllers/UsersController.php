@@ -1523,7 +1523,7 @@ JS,
             $this->_noUserExists();
         }
 
-        // Only allow activation emails to be send to pending users.
+        // Only allow activation emails to be sent to pending users.
         /** @var User $user */
         if ($user->getStatus() !== User::STATUS_PENDING) {
             throw new BadRequestHttpException('Activation emails can only be sent to pending users');
