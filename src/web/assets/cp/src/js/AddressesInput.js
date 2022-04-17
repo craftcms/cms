@@ -35,8 +35,10 @@ Craft.AddressesInput = Garnish.Base.extend({
     },
 
     initCard: function($card) {
-        this.addListener($card, 'click', () => {
-            this.editAddress($card);
+        this.addListener($card, 'click', ev => {
+            if (!$(ev.target).closest('.menubtn').length) {
+                this.editAddress($card);
+            }
         });
 
         const $actionBtn = $card.find('.menubtn');

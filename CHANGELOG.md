@@ -43,6 +43,7 @@
 - Fixed a bug where relational fields’ Min Relations settings weren’t getting enforced for empty fields.
 - Fixed a bug where sections’ Default Status settings weren’t being respected. ([#10926](https://github.com/craftcms/cms/issues/10926))
 - Fixed an error that occurred when searching for a specific attribute. ([#10927](https://github.com/craftcms/cms/issues/10927))
+- Fixed a bug where menus weren’t closing when another menu button was clicked on. ([#10928](https://github.com/craftcms/cms/issues/10928))
 
 ## 4.0.0-beta.4 - 2022-04-06
 

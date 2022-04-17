@@ -61,9 +61,6 @@ export default Base.extend(
             this.addListener(this.$btn, 'mousedown', 'onMouseDown');
             this.addListener(this.$btn, 'keydown', 'onKeyDown');
             this.addListener(this.$btn, 'blur', 'onBlur');
-            this.addListener(this.$btn, 'click', ev => {
-                ev.stopPropagation();
-            });
             this.enable();
         },
 
@@ -198,7 +195,6 @@ export default Base.extend(
             }
 
             ev.preventDefault();
-            ev.stopPropagation();
 
             if (this.showingMenu) {
                 this.hideMenu();
