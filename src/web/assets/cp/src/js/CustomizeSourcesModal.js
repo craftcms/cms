@@ -564,7 +564,7 @@ Craft.CustomizeSourcesModal.CustomSource = Craft.CustomizeSourcesModal.Source.ex
             $label = $source.find('.label');
         } else {
             $label = $('<span/>', {class: 'label'});
-            $source = ('<li/>').append(
+            $source = $('<li/>').append(
               $('<a/>', {
                   'data-key': this.sourceData.key,
               }).append($label)
