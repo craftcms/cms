@@ -85,9 +85,9 @@ class MonologTarget extends PsrTarget
     public function init(): void
     {
         $this->formatter = $this->formatter ?? new LineFormatter(
-                allowInlineLineBreaks: $this->allowLineBreaks,
-                ignoreEmptyContextAndExtra: true,
-            );
+            allowInlineLineBreaks: $this->allowLineBreaks,
+            ignoreEmptyContextAndExtra: true,
+        );
         $this->processor = $this->processor ?? new PsrLogMessageProcessor();
         $this->logger = $this->_createLogger($this->name);
     }
@@ -246,7 +246,7 @@ class MonologTarget extends PsrTarget
     private function _setLoggerProperty(string $property, mixed $value): void
     {
         if (isset($this->logger)) {
-            throw new InvalidConfigException("The property \"$property\" must be set before \"logger\".");
+            throw new InvalidConfigException("The property “{$property}” may not be set after logger is initialized.");
         }
 
         $this->$property = $value;

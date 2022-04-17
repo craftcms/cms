@@ -52,7 +52,7 @@ class ContextProcessor implements ProcessorInterface
         }
 
         if (
-            ($postPos = array_search('_POST', $this->vars)) !== false &&
+            ($postPos = array_search('_POST', $this->vars, true)) !== false &&
             empty($GLOBALS['_POST']) &&
             !empty($body = file_get_contents('php://input'))
         ) {
