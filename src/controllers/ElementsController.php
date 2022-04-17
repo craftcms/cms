@@ -198,24 +198,27 @@ class ElementsController extends Controller
         // Save it
         $element->setScenario(Element::SCENARIO_ESSENTIALS);
         if (!Craft::$app->getDrafts()->saveElementAsDraft($element, $user->id, null, null, false)) {
-            throw new ServerErrorHttpException(sprintf('Unable to save draft: %s', implode(', ', $element->getErrorSummary(true))));
+            return $this->_asFailure($element, Craft::t('app', 'Couldn’t create {type}.', [
+                'type' => $element::lowerDisplayName(),
+            ]));
         }
 
         // Redirect to its edit page
         $editUrl = $element->getCpEditUrl() ?? UrlHelper::actionUrl('elements/edit', [
                 'draftId' => $element->draftId,
                 'siteId' => $element->siteId,
-                'fresh' => 1,
             ]);
 
         $response = $this->_asSuccess(Craft::t('app', '{type} created.', [
             'type' => Craft::t('app', 'Draft'),
         ]), $element, array_filter([
-            'cpEditUrl' => $this->request->isCpRequest ? $element->getCpEditUrl() : null,
+            'cpEditUrl' => $this->request->isCpRequest ? $editUrl : null,
         ]));
 
         if (!$this->request->getAcceptsJson()) {
-            $response->redirect($editUrl);
+            $response->redirect(UrlHelper::urlWithParams($editUrl, [
+                'fresh' => '1',
+            ]));
         }
 
         return $response;
