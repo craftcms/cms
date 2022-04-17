@@ -85,6 +85,7 @@ class MonologTarget extends PsrTarget
     public function init(): void
     {
         $this->formatter = $this->formatter ?? new LineFormatter(
+            dateFormat: 'Y-m-d H:i:s',
             allowInlineLineBreaks: $this->allowLineBreaks,
             ignoreEmptyContextAndExtra: true,
         );
