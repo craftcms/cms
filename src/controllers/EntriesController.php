@@ -40,12 +40,12 @@ class EntriesController extends BaseEntriesController
      * Creates a new unpublished draft and redirects to its edit page.
      *
      * @param string|null $section The section’s handle
-     * @return Response
+     * @return Response|null
      * @throws BadRequestHttpException
      * @throws ForbiddenHttpException
      * @throws ServerErrorHttpException
      */
-    public function actionCreate(?string $section = null): Response
+    public function actionCreate(?string $section = null): ?Response
     {
         if ($section) {
             $sectionHandle = $section;

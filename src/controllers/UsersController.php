@@ -363,9 +363,9 @@ class UsersController extends Controller
     /**
      * Starts an elevated user session.
      *
-     * @return Response
+     * @return Response|null
      */
-    public function actionStartElevatedSession(): Response
+    public function actionStartElevatedSession(): ?Response
     {
         $password = $this->request->getBodyParam('currentPassword') ?? $this->request->getBodyParam('password');
 
@@ -1503,10 +1503,10 @@ JS,
     /**
      * Sends a new activation email to a user.
      *
-     * @return Response
+     * @return Response|null
      * @throws BadRequestHttpException if the user is not pending
      */
-    public function actionSendActivationEmail(): Response
+    public function actionSendActivationEmail(): ?Response
     {
         $this->requirePostRequest();
 
@@ -1896,9 +1896,9 @@ JS,
     /**
      * Verifies a password for a user.
      *
-     * @return Response
+     * @return Response|null
      */
-    public function actionVerifyPassword(): Response
+    public function actionVerifyPassword(): ?Response
     {
         $this->requireAcceptsJson();
 

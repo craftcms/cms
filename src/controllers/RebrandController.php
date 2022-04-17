@@ -94,9 +94,9 @@ class RebrandController extends Controller
     /**
      * Deletes control panel logo and site icon images.
      *
-     * @return Response
+     * @return Response|null
      */
-    public function actionDeleteSiteImage(): Response
+    public function actionDeleteSiteImage(): ?Response
     {
         $this->requireAdmin();
         $type = $this->request->getRequiredBodyParam('type');

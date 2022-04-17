@@ -37,9 +37,9 @@ class PluginsController extends Controller
     /**
      * Installs a plugin.
      *
-     * @return Response
+     * @return Response|null
      */
-    public function actionInstallPlugin(): Response
+    public function actionInstallPlugin(): ?Response
     {
         $this->requirePostRequest();
 
@@ -70,9 +70,9 @@ class PluginsController extends Controller
     /**
      * Uninstalls a plugin.
      *
-     * @return Response
+     * @return Response|null
      */
-    public function actionUninstallPlugin(): Response
+    public function actionUninstallPlugin(): ?Response
     {
         $this->requirePostRequest();
         $pluginHandle = $this->request->getRequiredBodyParam('pluginHandle');
@@ -106,9 +106,9 @@ class PluginsController extends Controller
     /**
      * Enables a plugin.
      *
-     * @return Response
+     * @return Response|null
      */
-    public function actionEnablePlugin(): Response
+    public function actionEnablePlugin(): ?Response
     {
         $this->requirePostRequest();
         $pluginHandle = $this->request->getRequiredBodyParam('pluginHandle');
@@ -122,9 +122,9 @@ class PluginsController extends Controller
     /**
      * Disables a plugin.
      *
-     * @return Response
+     * @return Response|null
      */
-    public function actionDisablePlugin(): Response
+    public function actionDisablePlugin(): ?Response
     {
         $this->requirePostRequest();
         $pluginHandle = $this->request->getRequiredBodyParam('pluginHandle');

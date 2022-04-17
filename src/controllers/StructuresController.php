@@ -98,9 +98,9 @@ class StructuresController extends Controller
     /**
      * Moves an element within a structure.
      *
-     * @return Response
+     * @return Response|null
      */
-    public function actionMoveElement(): Response
+    public function actionMoveElement(): ?Response
     {
         $structuresService = Craft::$app->getStructures();
 

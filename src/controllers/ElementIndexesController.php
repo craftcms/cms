@@ -172,10 +172,10 @@ class ElementIndexesController extends BaseElementsController
     /**
      * Performs an action on one or more selected elements.
      *
-     * @return Response
+     * @return Response|null
      * @throws BadRequestHttpException if the requested element action is not supported by the element type, or its parameters didn’t validate
      */
-    public function actionPerformAction(): Response
+    public function actionPerformAction(): ?Response
     {
         $this->requirePostRequest();
 

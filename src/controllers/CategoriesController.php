@@ -235,13 +235,13 @@ class CategoriesController extends Controller
      * Creates a new unpublished draft and redirects to its edit page.
      *
      * @param string $groupHandle The group’s handle
-     * @return Response
+     * @return Response|null
      * @throws BadRequestHttpException
      * @throws ForbiddenHttpException
      * @throws ServerErrorHttpException
      * @since 4.0.0
      */
-    public function actionCreate(string $groupHandle): Response
+    public function actionCreate(string $groupHandle): ?Response
     {
         $group = Craft::$app->getCategories()->getGroupByHandle($groupHandle);
         if (!$group) {

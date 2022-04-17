@@ -171,6 +171,8 @@ class AssetsController extends Controller
      */
     public function actionUpload(): Response
     {
+        $this->requireAcceptsJson();
+
         $uploadedFile = UploadedFile::getInstanceByName('assets-upload');
 
         if (!$uploadedFile) {
@@ -614,6 +616,9 @@ class AssetsController extends Controller
      */
     public function actionMoveFolder(): Response
     {
+        $this->requirePostRequest();
+        $this->requireAcceptsJson();
+
         $folderBeingMovedId = $this->request->getRequiredBodyParam('folderId');
         $newParentFolderId = $this->request->getRequiredBodyParam('parentId');
         $force = $this->request->getBodyParam('force', false);
