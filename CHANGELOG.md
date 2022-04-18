@@ -8,6 +8,7 @@
 - Added `craft\events\DefineElementEditorHtmlEvent`.
 - Added `craft\events\FsEvent`.
 - Added `craft\helpers\Db::escapeCommas()`.
+- Added `craft\log\ContextProcessor`.
 - Added `craft\services\Fs::EVENT_RENAME_FILESYSTEM`.
 - Added `craft\web\CpScreenResponseBehavior::$formAttributes`. ([#10924](https://github.com/craftcms/cms/issues/10924))
 - Added `craft\web\CpScreenResponseBehavior::$mainAttributes`. ([#10924](https://github.com/craftcms/cms/issues/10924))
@@ -24,9 +25,20 @@
 - User queries’ `firstName`, `lastName`, and `fullName` params no longer treat values with commas as arrays. ([#10891](https://github.com/craftcms/cms/issues/10891))
 - Improved address card styling. ([#10896](https://github.com/craftcms/cms/pull/10896))
 - Custom sources with a blank label are now labelled as “(blank)”. ([#10915](https://github.com/craftcms/cms/issues/10915))
+- The default log target no longer logs `debug` or `info` messages when Dev Mode is enabled. ([#10916](https://github.com/craftcms/cms/pull/10916))
+- SQL query logs now use the `debug` log level, so they no longer get logged when Dev Mode is enabled. ([#10916](https://github.com/craftcms/cms/pull/10916))
+- Improved the log timestamp format. ([#10916](https://github.com/craftcms/cms/pull/10916))
+- `yii\db\Connection::$enableLogging` and `$enableProfiling` are no longer enabled by default when Dev Mode is disabled. ([#10916](https://github.com/craftcms/cms/pull/10916))
+- The `queue` log target no longer has special handling for Yii or `info` logs. ([#10916](https://github.com/craftcms/cms/pull/10916))
+- Dev Mode can now be enabled via a `CRAFT_DEV_MODE` environment variable. ([#10916](https://github.com/craftcms/cms/pull/10916))
 
 ### Deprecated
 - Deprecated the `autosaveDrafts` config setting.
+
+### Removed
+- Removed the `enableLogging` database connection setting. ([#10916](https://github.com/craftcms/cms/pull/10916))
+- Removed the `enableProfiling` database connection setting. ([#10916](https://github.com/craftcms/cms/pull/10916))
+- Removed `craft\log\LogProcessor`.
 
 ### Fixed
 - Fixed a bug where autosuggest inputs weren’t including numeric and boolean environment variables in their suggestions. ([#10873](https://github.com/craftcms/cms/issues/10873))
@@ -51,6 +63,7 @@
 - Fixed an error that occurred when sending an activation email to an invactive user. ([#10932](https://github.com/craftcms/cms/issues/10932))
 - Fixed a bug where some pending project config chanegs could be overlooked. ([#10865](https://github.com/craftcms/cms/issues/10865))
 - Fixed a JavaScript error that occurred when attempting to remove a UI element from a field layout. ([#10778](https://github.com/craftcms/cms/issues/10778))
+- Fixed a bug where every log message contained the full request context. ([#10903](https://github.com/craftcms/cms/issues/10903))
 
 ## 4.0.0-beta.4 - 2022-04-06
 

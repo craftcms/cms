@@ -37,8 +37,6 @@
 - Added the `button`, `submitButton`, `fs`, and `fsField` macros to the `_includes/forms` control panel template.
 - Added the `buildId` general config. ([#10705](https://github.com/craftcms/cms/pull/10705))
 - Added support for setting custom config settings from `config/custom.php`, which are accessible via `Craft::$app->config->custom`. ([#10012](https://github.com/craftcms/cms/issues/10012))
-- Added the `enableLogging` database config setting for logging database queries. ([#10659](https://github.com/craftcms/cms/pull/10659))
-- Added the `enableProfiling` database config setting for logging database query profiling information. ([#10659](https://github.com/craftcms/cms/pull/10659))
 - GraphQL schemas now include settings that determine which sites elements can be queried from. ([#10610](https://github.com/craftcms/cms/issues/10610))
 - Added the `assets/icon` action.
 - Added the `assets/update-focal-point` action.
@@ -285,7 +283,7 @@
 - Added `craft\i18n\Translation`.
 - Added `craft\imagetransforms\ImageTransformer`.
 - Added `craft\log\Dispatcher::getTargets()`.
-- Added `craft\log\LogProcessor`.
+- Added `craft\log\ContextProcessor`.
 - Added `craft\log\MonologTarget`.
 - Added `craft\models\AssetIndexingSession`.
 - Added `craft\models\FieldLayout::getElementsByType()`.
@@ -433,6 +431,10 @@
 - Log entries are now single-line by default when Dev Mode is disabled. ([#10659](https://github.com/craftcms/cms/pull/10659))
 - Log files are now rotated once every 24 hours. ([#10659](https://github.com/craftcms/cms/pull/10659))
 - `CRAFT_STREAM_LOG` no longer logs _in addition to_ other log targets. ([#10659](https://github.com/craftcms/cms/pull/10659))
+- The default log target no longer logs `debug` or `info` messages when Dev Mode is enabled. ([#10916](https://github.com/craftcms/cms/pull/10916))
+- SQL query logs now use the `debug` log level, so they no longer get logged when Dev Mode is enabled. ([#10916](https://github.com/craftcms/cms/pull/10916))
+- `yii\db\Connection::$enableLogging` and `$enableProfiling` are no longer enabled by default when Dev Mode is disabled. ([#10916](https://github.com/craftcms/cms/pull/10916))
+- The `queue` log target no longer has special handling for Yii or `info` logs. ([#10916](https://github.com/craftcms/cms/pull/10916))
 - Craft’s bootstrap script now attempts to create its configured system paths automatically. ([#10562](https://github.com/craftcms/cms/pull/10562))
 - When using GraphQL to mutate entries, the `enabled` status is now affected on a per-site basis when specifying both the `enabled` and `siteId` parameters. ([#9771](https://github.com/craftcms/cms/issues/9771))
 - The `forms/selectize` control panel template now supports `addOptionFn` and `addOptionLabel` params, which can be set to add new options to the list.
