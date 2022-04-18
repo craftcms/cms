@@ -1488,70 +1488,66 @@ li.breadcrumb-toggle-wrapper {
 }
 
 /* flexbox field layouts */
-#content {
-  overflow-x: auto;
+#content :not(.meta) > .flex-fields {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  margin: 0 -24px -24px;
+  width: calc(100% + 48px);
 
-  :not(.meta) > .flex-fields {
-    display: flex;
-    flex-wrap: wrap;
-    align-content: flex-start;
-    margin: 0 -24px -24px;
+  & > h2 {
+    margin: 0 0 24px !important;
+    padding: 0 24px;
+    width: 100%;
+
+    &:not(:first-child) {
+      padding-top: 24px;
+      border-top: 1px solid $hairlineColor;
+    }
+  }
+
+  & > hr {
+    margin: 0 0 24px;
     width: calc(100% + 48px);
+  }
 
-    & > h2 {
-      margin: 0 0 24px !important;
-      padding: 0 24px;
-      width: 100%;
+  & > :not(h2):not(hr) {
+    &, &:last-child {
+      position: relative;
+      margin: 0 24px 24px !important;
+      width: calc(100% - 48px);
+      box-sizing: border-box;
 
-      &:not(:first-child) {
-        padding-top: 24px;
-        border-top: 1px solid $hairlineColor;
+      // 4 cols for >= 1536px
+      @media only screen and (min-width: $minXlUiWidth) {
+        &.width-25 {
+          width: calc(25% - 48px);
+        }
+        &.width-50 {
+          width: calc(50% - 48px);
+        }
+        &.width-75 {
+          width: calc(75% - 48px);
+        }
       }
-    }
 
-    & > hr {
-      margin: 0 0 24px;
-      width: calc(100% + 48px);
-    }
-
-    & > :not(h2):not(hr) {
-      &, &:last-child {
-        position: relative;
-        margin: 0 24px 24px !important;
-        width: calc(100% - 48px);
-        box-sizing: border-box;
-
-        // 4 cols for >= 1536px
-        @media only screen and (min-width: $minXlUiWidth) {
-          &.width-25 {
-            width: calc(25% - 48px);
-          }
-          &.width-50 {
-            width: calc(50% - 48px);
-          }
-          &.width-75 {
-            width: calc(75% - 48px);
-          }
+      // 2 cols fol 712 - 1536px
+      @media only screen and (min-width: 500px) and (max-width: $minXlUiWidth - 1px) {
+        &.width-25,
+        &.width-50 {
+          width: calc(50% - 48px);
         }
+      }
 
-        // 2 cols fol 712 - 1536px
-        @media only screen and (min-width: 500px) and (max-width: $minXlUiWidth - 1px) {
-          &.width-25,
-          &.width-50 {
-            width: calc(50% - 48px);
-          }
-        }
-
-        &:before {
-          position: absolute;
-          top: 0;
-          @include left(-25px);
-          width: 1px;
-          height: 100%;
-          content: '';
-          // same BG color as the hairline around the content pane’s 1px shadow
-          background-color: transparentize($grey200, 0.5);
-        }
+      &:before {
+        position: absolute;
+        top: 0;
+        @include left(-25px);
+        width: 1px;
+        height: 100%;
+        content: '';
+        // same BG color as the hairline around the content pane’s 1px shadow
+        background-color: transparentize($grey200, 0.5);
       }
     }
   }
