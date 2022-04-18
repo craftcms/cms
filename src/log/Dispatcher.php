@@ -66,6 +66,7 @@ class Dispatcher extends \yii\log\Dispatcher
             static::TARGET_CONSOLE,
             static::TARGET_QUEUE,
         ])->mapWithKeys(function($name) {
+
             $config = $this->monologTargetConfig + [
                 'name' => $name,
                 'enabled' => false,
@@ -74,17 +75,18 @@ class Dispatcher extends \yii\log\Dispatcher
                 'level' => App::devMode() ? LogLevel::INFO : LogLevel::WARNING,
             ];
 
+            if ($name === static::TARGET_QUEUE) {
+                $config = [
+                    'level' => LogLevel::INFO,
+                    'except' => ['yii\*'],
+                    'logContext' => false,
+                ] + $config;
+            }
+
             return [$name => new MonologTarget($config)];
         });
 
-        // Enabled via QueueLogBehavior
-        if (!App::devMode()) {
-            $queueTarget = $targets->get(static::TARGET_QUEUE);
-            // TODO: Ask about except/levels
-            $queueTarget->except = ['yii\*'];
-            $queueTarget->setLevels(['info', 'warning', 'error']);
-        }
-
+        // Queue is enabled via QueueLogBehavior
         if ($isConsoleRequest) {
             $targets->get(static::TARGET_CONSOLE)->enabled = true;
         } else {

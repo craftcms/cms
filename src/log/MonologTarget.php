@@ -35,6 +35,8 @@ class MonologTarget extends PsrTarget
         HttpException::class . ':404',
     ];
 
+    public bool $logContext = true;
+
     /**
      * @var bool
      */
@@ -117,6 +119,10 @@ class MonologTarget extends PsrTarget
     public function export(): void
     {
         parent::export();
+
+        if ($this->logContext) {
+            return;
+        }
 
         $message = 'Request context';
         $vars = [];
