@@ -760,6 +760,7 @@ class Install extends Migration
             'lastName' => $this->string(),
             'email' => $this->string(),
             'password' => $this->string(),
+            'enable2fa' => $this->boolean()->defaultValue(false),
             'lastLoginDate' => $this->dateTime(),
             'lastLoginAttemptIp' => $this->string(45),
             'invalidLoginWindowStart' => $this->dateTime(),
