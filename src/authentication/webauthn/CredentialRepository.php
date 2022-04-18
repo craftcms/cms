@@ -74,7 +74,7 @@ class CredentialRepository implements PublicKeyCredentialSourceRepository
             $record->credentialId = Base64Url::encode($publicKeyCredentialSource->getPublicKeyCredentialId());
         }
 
-        $record->dateLastUsed = Db::prepareDateForDb(DateTimeHelper::currentTimeStamp());
+        $record->dateLastUsed = DateTimeHelper::currentUTCDateTime();
         $record->credential = Json::encode($publicKeyCredentialSource);
         $record->save();
 
@@ -94,7 +94,7 @@ class CredentialRepository implements PublicKeyCredentialSourceRepository
             return false;
         }
 
-        $record->dateLastUsed = Db::prepareDateForDb(DateTimeHelper::currentTimeStamp());
+        $record->dateLastUsed = DateTimeHelper::currentUTCDateTime();
         return $record->save();
     }
 

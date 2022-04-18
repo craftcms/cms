@@ -83,7 +83,7 @@ class EmailCode extends Type implements PreparableTypeInterface, MfaTypeInterfac
             ->compose()
             ->setSubject('Hello')
             ->setTextBody('Here is a code: ' . $code)
-            ->setTo($user);
+            ->setTo($user->email ?? '');
 
         if ($message->send()) {
             $session->setNotice(Craft::t('app', 'Verification email sent!'));
@@ -97,11 +97,11 @@ class EmailCode extends Type implements PreparableTypeInterface, MfaTypeInterfac
      */
     public function authenticate(array $credentials, User $user = null): bool
     {
-        if (is_null($user) || empty($credentials['verification-code'])) {
+        if (is_null($user)) {
             return false;
         }
 
-        $code = $credentials['verification-code'];
+        $code = $credentials['verification-code'] ?? null;
         $session = Craft::$app->getSession();
 
         if (empty($code) || $code !== $session->get(static::CODE_KEY)) {

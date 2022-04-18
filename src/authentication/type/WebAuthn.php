@@ -177,9 +177,9 @@ class WebAuthn extends Type implements UserConfigurableTypeInterface, ElevatedSe
      * @param User $user The user for which to get the credential creation options.
      * @param bool $createNew Whether new credential options should be created
      *
-     * @return PublicKeyCredentialOptions | null
+     * @return PublicKeyCredentialCreationOptions | null
      */
-    public static function getCredentialCreationOptions(User $user, bool $createNew = false): ?PublicKeyCredentialOptions
+    public static function getCredentialCreationOptions(User $user, bool $createNew = false): ?PublicKeyCredentialCreationOptions
     {
         if (Craft::$app->getEdition() !== Craft::Pro) {
             return null;
@@ -206,7 +206,9 @@ class WebAuthn extends Type implements UserConfigurableTypeInterface, ElevatedSe
             $session->set(self::WEBAUTHN_CREDENTIAL_OPTION_KEY, $credentialOptions);
         }
 
-        return PublicKeyCredentialCreationOptions::createFromArray(Json::decodeIfJson($credentialOptions));
+        /** @var PublicKeyCredentialCreationOptions $options */
+        $options = PublicKeyCredentialCreationOptions::createFromArray(Json::decodeIfJson($credentialOptions));
+        return $options;
     }
 
     /**

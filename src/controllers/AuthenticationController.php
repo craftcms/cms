@@ -36,13 +36,11 @@ class AuthenticationController extends Controller
 
     private ?State $_state = null;
 
-    /** @var
-     * string The session variable name to use to store whether user wants to be remembered.
+    /** @var string The session variable name to use to store whether user wants to be remembered.
      */
     private const REMEMBER_ME = 'auth.rememberMe';
 
-    /** @var
-     * string The session variable name to use the entered user name.
+    /** @var string The session variable name to use to store the entered username.
      */
     private const AUTH_USER_NAME = 'auth.userName';
 
@@ -148,7 +146,8 @@ class AuthenticationController extends Controller
             $this->_state->selectAlternateStep($alternateStep);
 
             // Do this earlier, in case there's some preparing that might generate a message or error.
-            $html = $this->_state->getNextStep()->getInputFieldHtml();
+            $nextStep = $this->_state->getNextStep();
+            $html = $nextStep instanceof Type ? $nextStep->getInputFieldHtml() : '';
 
             $output = [
                 'message' => $session->getNotice(),
@@ -279,8 +278,11 @@ class AuthenticationController extends Controller
             );
 
             $options = WebAuthn::getCredentialCreationOptions($currentUser);
-            $credentials = $server->loadAndCheckAttestationResponse(Json::encode($payload), $options, $request->asPsr7());
-            $credentialRepository->saveNamedCredentialSource($credentials, $credentialName);
+
+            if ($options !== null) {
+                $credentials = $server->loadAndCheckAttestationResponse(Json::encode($payload), $options, $request->asPsr7());
+                $credentialRepository->saveNamedCredentialSource($credentials, $credentialName);
+            }
 
             $step = new WebAuthn();
             $output['html'] = $step->getUserSetupFormHtml($currentUser);

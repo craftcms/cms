@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace craft\authentication\base;
 
 use Craft;
-use craft\authentication\Branch;
 use craft\authentication\State;
 use craft\base\Component;
 use craft\elements\User;
@@ -28,11 +27,6 @@ abstract class Type extends Component implements TypeInterface
      * @var State Current authentication state.
      */
     protected State $state;
-
-    /**
-     * @var Branch Current authentication branch.
-     */
-    protected Branch $branch;
 
     /**
      * Return the field HTML.
@@ -88,8 +82,6 @@ abstract class Type extends Component implements TypeInterface
         $state = Craft::createObject(State::class, [[
             'resolvedUser' => $user,
             'lastCompletedStepType' => $this->getStepType(),
-            'authenticationScenario' => $this->state->getAuthenticationScenario(),
-            'authenticationBranch' => $this->state->getAuthenticationBranch(),
         ]]);
 
         return $state;

@@ -233,9 +233,8 @@ class Authentication extends Component
     }
 
     /**
-     * Get the current authentication state for a scenario.
+     * Get the current authentication state
      *
-     * @param string $scenario
      * @return State|null
      */
     public function getAuthState(): ?State

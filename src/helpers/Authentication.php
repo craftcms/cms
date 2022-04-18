@@ -42,7 +42,6 @@ class Authentication
 
         $settings = array_merge($typeConfig['settings'] ?? [], ['state' => $state]);
 
-        /** @var TypeInterface $type */
         return Craft::createObject($class, [$settings]);
     }
 
