@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 /**
  * @link https://craftcms.com/
@@ -10,8 +11,8 @@ namespace craft\helpers;
 
 use Craft;
 use craft\authentication\base\TypeInterface;
-use craft\elements\User;
 use craft\authentication\State;
+use craft\elements\User;
 use PragmaRX\Google2FAQRCode\Google2FA;
 use yii\base\InvalidConfigException;
 
@@ -23,7 +24,6 @@ use yii\base\InvalidConfigException;
  */
 class Authentication
 {
-
     /**
      * Create an authentication type based on a config.
      *
@@ -60,7 +60,7 @@ class Authentication
         return Craft::createObject(State::class, [[
             'authenticationScenario' => $scenario,
             'authenticationBranch' => $branch,
-            'resolvedUser' => $user
+            'resolvedUser' => $user,
         ]]);
     }
 
@@ -92,7 +92,7 @@ class Authentication
             'username' => $username,
             'email' => $username,
             'uid' => StringHelper::UUID(),
-            'id' => 0
+            'id' => 0,
         ]);
     }
 }

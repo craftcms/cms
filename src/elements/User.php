@@ -1188,7 +1188,6 @@ class User extends Element implements IdentityInterface
      */
     public function verifyAuthenticatorCode(string $code): bool
     {
-
         if (empty($this->_authenticatorSecret)) {
             return false;
         }

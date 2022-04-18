@@ -1,9 +1,8 @@
 <?php
+
 declare(strict_types=1);
 
 namespace craft\authentication\base;
-
-use craft\elements\User;
 
 /**
  * PreparableTypeInterface must be implemented by all steps in authentication chains that require preparation, before

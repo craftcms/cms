@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace craft\authentication\type;
@@ -145,7 +146,7 @@ class WebAuthn extends Type implements UserConfigurableTypeInterface, ElevatedSe
             $credentials[] = [
                 'name' => $existingCredential->name,
                 'credentialId' => $existingCredential->credentialId,
-                'lastUsed' => DateTimeHelper::toDateTime($existingCredential->dateLastUsed)
+                'lastUsed' => DateTimeHelper::toDateTime($existingCredential->dateLastUsed),
             ];
         }
 
@@ -153,7 +154,7 @@ class WebAuthn extends Type implements UserConfigurableTypeInterface, ElevatedSe
         return Craft::$app->getView()->renderTemplate('_components/authenticationsteps/WebAuthn/setup', [
             'credentialOptions' => $isSecureConnection ? Json::encode(self::getCredentialCreationOptions($user, true)) : '',
             'existingCredentials' => $credentials,
-            'isSecureConnection' => $isSecureConnection
+            'isSecureConnection' => $isSecureConnection,
         ]);
     }
 
@@ -166,7 +167,7 @@ class WebAuthn extends Type implements UserConfigurableTypeInterface, ElevatedSe
     {
         return Craft::createObject(Server::class, [
             self::getRelayingPartyEntity(),
-            Craft::createObject(CredentialRepository::class)
+            Craft::createObject(CredentialRepository::class),
         ]);
     }
 
@@ -215,7 +216,8 @@ class WebAuthn extends Type implements UserConfigurableTypeInterface, ElevatedSe
      * @return bool
      * @throws InvalidConfigException
      */
-    public static function userHasCredentialsConfigured(User $user): bool {
+    public static function userHasCredentialsConfigured(User $user): bool
+    {
         $userEntity = self::getUserEntity($user);
         return !empty(Craft::createObject(CredentialRepository::class)->findAllForUserEntity($userEntity));
     }

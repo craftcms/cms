@@ -1,12 +1,13 @@
 <?php
+
 declare(strict_types=1);
 
 namespace craft\authentication\type;
 
 use Craft;
 use craft\authentication\base\MfaTypeInterface;
-use craft\authentication\base\Type;
 use craft\authentication\base\PreparableTypeInterface;
+use craft\authentication\base\Type;
 use craft\elements\User;
 use craft\helpers\StringHelper;
 use craft\mail\Message;
@@ -74,7 +75,7 @@ class EmailCode extends Type implements PreparableTypeInterface, MfaTypeInterfac
             return;
         }
 
-        $code = StringHelper::randomString(4).'-'.StringHelper::randomString(4).'-'.StringHelper::randomString(4);
+        $code = StringHelper::randomString(4) . '-' . StringHelper::randomString(4) . '-' . StringHelper::randomString(4);
         $session->set(static::CODE_KEY, $code);
 
         /** @var Message $message */

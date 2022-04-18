@@ -7,12 +7,6 @@
 
 namespace craft\validators;
 
-use Craft;
-use craft\elements\Asset;
-use craft\helpers\Assets;
-use craft\helpers\Assets as AssetsHelper;
-use yii\base\InvalidConfigException;
-use yii\base\Model;
 use yii\validators\Validator;
 
 /**
@@ -38,7 +32,6 @@ class AuthStepConfigValidator extends Validator
             if (empty($stepConfig['choices'])) {
                 $this->addError($model, $attribute, 'An authentication step must have at least one choice defined.');
             }
-
         }
     }
 }

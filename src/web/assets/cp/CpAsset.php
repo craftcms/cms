@@ -19,7 +19,6 @@ use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\i18n\Locale;
 use craft\models\Section;
-use craft\services\Authentication;
 use craft\services\Sites;
 use craft\web\AssetBundle;
 use craft\web\assets\axios\AxiosAsset;

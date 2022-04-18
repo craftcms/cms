@@ -15,7 +15,6 @@ use craft\events\RegisterCpNavItemsEvent;
 use craft\events\RegisterCpSettingsEvent;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
-use craft\helpers\Authentication;
 use craft\helpers\Cp as CpHelper;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;

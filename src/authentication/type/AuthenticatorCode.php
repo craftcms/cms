@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 namespace craft\authentication\type;
@@ -10,7 +11,6 @@ use craft\authentication\base\Type;
 use craft\authentication\base\UserConfigurableTypeInterface;
 use craft\elements\User;
 use craft\helpers\Authentication as AuthenticationHelper;
-use craft\authentication\State;
 
 /**
  * This step type requires the user to enter TOTP
@@ -105,7 +105,6 @@ class AuthenticatorCode extends Type implements MfaTypeInterface, UserConfigurab
 
     public function getUserSetupFormHtml(User $user): string
     {
-
         $qrAuthenticatorCode = '';
 
         if ($user->getIsCurrent() && !$user->hasAuthenticatorSecret()) {
@@ -137,7 +136,7 @@ class AuthenticatorCode extends Type implements MfaTypeInterface, UserConfigurab
      */
     public static function getHasUserSetup(): bool
     {
-       return true;
+        return true;
     }
 
     /**
@@ -155,7 +154,8 @@ class AuthenticatorCode extends Type implements MfaTypeInterface, UserConfigurab
      * @param string $authSecret
      * @return string
      */
-    public static function hashBackupCode(string $backupCode, string $authSecret): string {
+    public static function hashBackupCode(string $backupCode, string $authSecret): string
+    {
         return sha1($authSecret . $backupCode);
     }
 }

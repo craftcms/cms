@@ -24,9 +24,9 @@ abstract class Table
     public const ASSETINDEXINGSESSIONS = '{{%assetindexingsessions}}';
     public const ASSETS = '{{%assets}}';
     /* @since 4.0.0 */
-    const AUTH_AUTHENTICATOR = '{{%auth_authenticator}}';
+    public const AUTH_AUTHENTICATOR = '{{%auth_authenticator}}';
     /* @since 4.0.0 */
-    const AUTH_WEBAUTHN = '{{%auth_webauthn}}';
+    public const AUTH_WEBAUTHN = '{{%auth_webauthn}}';
     /** @since 4.0.0 */
     public const IMAGETRANSFORMINDEX = '{{%imagetransformindex}}';
     /** @since 4.0.0 */

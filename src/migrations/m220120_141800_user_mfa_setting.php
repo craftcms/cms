@@ -2,14 +2,8 @@
 
 namespace craft\migrations;
 
-use Craft;
-use craft\base\ElementInterface;
 use craft\db\Migration;
-use craft\db\Query;
 use craft\db\Table;
-use craft\helpers\Json;
-use craft\services\ElementSources;
-use craft\services\ProjectConfig;
 
 /**
  * m220120_141800_user_mfa_setting migration.

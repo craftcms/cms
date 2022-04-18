@@ -1,11 +1,11 @@
 <?php
+
 declare(strict_types=1);
 
 namespace craft\authentication\base;
 
-use craft\elements\User;
 use craft\authentication\State;
-use yii\base\InvalidConfigException;
+use craft\elements\User;
 
 /**
  * Authentication step type interface class. This interface must be implemented by all valid steps in authentication chains.

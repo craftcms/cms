@@ -4,7 +4,6 @@ namespace craft\migrations;
 
 use craft\db\Migration;
 use craft\db\Table;
-use craft\helpers\MigrationHelper;
 
 /**
  * m210511_140000_user_authenticator_support migration.

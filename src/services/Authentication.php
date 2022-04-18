@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 /**
  * @link https://craftcms.com/
@@ -75,7 +76,7 @@ class Authentication extends Component
     {
         // Fire a 'beforeConfigureAuthFlow' event
         $event = new AuthenticationEvent([
-            'flow' => []
+            'flow' => [],
         ]);
         $this->trigger(self::EVENT_BEFORE_CONSTRUCT_AUTH_FLOW, $event);
 
@@ -88,7 +89,7 @@ class Authentication extends Component
         }
 
         $authentication = [
-            'type' => Password::class
+            'type' => Password::class,
         ];
 
         if ($user && $this->isMfaRequired($user)) {
@@ -98,14 +99,14 @@ class Authentication extends Component
                 throw new AuthenticationException('Unable to find a supported MFA authentication step type, but it is required.');
             }
 
-            $authentication['then'] = array_map(static fn ($type) => ['type' => $type], $availableTypes);
+            $authentication['then'] = array_map(static fn($type) => ['type' => $type], $availableTypes);
         }
 
         $flow[] = $authentication;
 
         // Fire a 'afterConfigureAuthFlow' event
         $event = new AuthenticationEvent([
-            'flow' => $flow
+            'flow' => $flow,
         ]);
         $this->trigger(self::EVENT_AFTER_CONSTRUCT_AUTH_FLOW, $event);
 
@@ -162,7 +163,7 @@ class Authentication extends Component
      */
     public function getMfaTypes(): array
     {
-        return array_filter($this->getAllStepTypes(), static fn ($type) => is_subclass_of($type, MfaTypeInterface::class));
+        return array_filter($this->getAllStepTypes(), static fn($type) => is_subclass_of($type, MfaTypeInterface::class));
     }
 
     /**
@@ -172,7 +173,7 @@ class Authentication extends Component
      */
     public function getUserConfigurableTypes(): array
     {
-        return array_filter($this->getAllStepTypes(), static fn ($type) => is_subclass_of($type, UserConfigurableTypeInterface::class));
+        return array_filter($this->getAllStepTypes(), static fn($type) => is_subclass_of($type, UserConfigurableTypeInterface::class));
     }
 
     /**
@@ -182,7 +183,7 @@ class Authentication extends Component
      */
     public function getElevatedSessionTypes(): array
     {
-        return array_filter($this->getAllStepTypes(), static fn ($type) => is_subclass_of($type, ElevatedSessionTypeInterface::class));
+        return array_filter($this->getAllStepTypes(), static fn($type) => is_subclass_of($type, ElevatedSessionTypeInterface::class));
     }
 
     /**
@@ -250,7 +251,7 @@ class Authentication extends Component
             $this->_state = unserialize($serializedState, [State::class, User::class]);
         } else {
             $this->_state = Craft::createObject(State::class, [
-                'authFlow' => $this->getAuthFlow()
+                'authFlow' => $this->getAuthFlow(),
             ]);
         }
 

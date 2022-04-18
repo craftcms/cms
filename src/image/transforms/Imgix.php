@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 /**
  * @link https://craftcms.com/
@@ -45,7 +46,7 @@ class Imgix implements TransformerInterface
         $params['w'] = $imageTransform->width;
         $params['q'] = $imageTransform->quality;
 
-        $position = array_filter(explode('-', $imageTransform->position), fn ($value) => $value !== 'center');
+        $position = array_filter(explode('-', $imageTransform->position), fn($value) => $value !== 'center');
 
         if (!empty($position)) {
             $params['crop'] = implode(',', $position);
@@ -59,7 +60,5 @@ class Imgix implements TransformerInterface
      */
     public function invalidateAssetTransforms(Asset $asset): void
     {
-
-
     }
 }

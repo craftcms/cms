@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 /**
  * @link https://craftcms.com/
@@ -18,7 +19,6 @@ use craft\elements\User;
 use craft\helpers\Authentication as AuthenticationHelper;
 use craft\helpers\Json;
 use craft\web\Controller;
-use Webauthn\PublicKeyCredentialSource;
 use Webauthn\Server;
 use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
@@ -109,7 +109,7 @@ class AuthenticationController extends Controller
                 'user' => $user,
                 'username' => $user->username,
                 'authState' => $this->_state,
-                'alternativeSteps' => $this->_state->getAlternativeSteps()
+                'alternativeSteps' => $this->_state->getAlternativeSteps(),
             ]),
             'footHtml' => Craft::$app->getView()->getBodyHtml(),
             'stepType' => $currentStep,
@@ -223,7 +223,7 @@ class AuthenticationController extends Controller
 
         return $this->asJson([
             'success' => true,
-            'returnUrl' => $returnUrl
+            'returnUrl' => $returnUrl,
         ]);
     }
 
@@ -334,7 +334,7 @@ class AuthenticationController extends Controller
             } else {
                 $output['error'] = Craft::t('app', 'Failed to verify the authenticator.');
             }
-        } else if (!empty($detach)) {
+        } elseif (!empty($detach)) {
             $currentUser->removeAuthenticator();
             $output['message'] = Craft::t('app', 'Successfully detached the authenticator.');
         }
@@ -351,7 +351,8 @@ class AuthenticationController extends Controller
      * @param string $username
      * @return User|null
      */
-    private function _getUser(string $username): ?User {
+    private function _getUser(string $username): ?User
+    {
         $user = Craft::$app->getUsers()->getUserByUsernameOrEmail($username);
 
         if (!$user && Craft::$app->getConfig()->getGeneral()->preventUserEnumeration) {

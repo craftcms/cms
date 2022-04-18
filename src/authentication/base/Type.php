@@ -1,13 +1,14 @@
 <?php
+
 declare(strict_types=1);
 
 namespace craft\authentication\base;
 
 use Craft;
 use craft\authentication\Branch;
+use craft\authentication\State;
 use craft\base\Component;
 use craft\elements\User;
-use craft\authentication\State;
 
 /**
  * Authentication step type base class. This class must be implemented for all steps indented to be used in Craft CP.
@@ -88,7 +89,7 @@ abstract class Type extends Component implements TypeInterface
             'resolvedUser' => $user,
             'lastCompletedStepType' => $this->getStepType(),
             'authenticationScenario' => $this->state->getAuthenticationScenario(),
-            'authenticationBranch' => $this->state->getAuthenticationBranch()
+            'authenticationBranch' => $this->state->getAuthenticationBranch(),
         ]]);
 
         return $state;

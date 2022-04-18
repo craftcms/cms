@@ -490,7 +490,7 @@ class UsersController extends Controller
         }
 
         if (!empty($errors) && Craft::$app->getConfig()->getGeneral()->preventUserEnumeration) {
-            $list = implode("\n", array_map(function (string $error) {
+            $list = implode("\n", array_map(function(string $error) {
                 return sprintf('- %s', $error);
             }, $errors));
             Craft::warning(sprintf("Password reset email not sent:\n%s", $list), __METHOD__);
@@ -898,7 +898,7 @@ class UsersController extends Controller
             $event->statusActions,
             $event->miscActions,
             $event->sessionActions,
-            array_map(function (array $action): array {
+            array_map(function(array $action): array {
                 $action['destructive'] = true;
                 return $action;
             }, $event->destructiveActions),
@@ -999,10 +999,10 @@ class UsersController extends Controller
 
             // Language
             $appLocales = $i18n->getAppLocales();
-            ArrayHelper::multisort($appLocales, fn (Locale $locale) => $locale->getDisplayName());
+            ArrayHelper::multisort($appLocales, fn(Locale $locale) => $locale->getDisplayName());
             $languageId = Craft::$app->getLocale()->getLanguageID();
 
-            $languageOptions = array_map(fn (Locale $locale) => [
+            $languageOptions = array_map(fn(Locale $locale) => [
                 'label' => $locale->getDisplayName(Craft::$app->language),
                 'value' => $locale->id,
                 'data' => [
@@ -1016,19 +1016,19 @@ class UsersController extends Controller
 
             if (
                 !$userLanguage ||
-                !ArrayHelper::contains($appLocales, fn (Locale $locale) => $locale->id === $userLanguage)
+                !ArrayHelper::contains($appLocales, fn(Locale $locale) => $locale->id === $userLanguage)
             ) {
                 $userLanguage = Craft::$app->language;
             }
 
             // Formatting Locale
             $allLocales = $i18n->getAllLocales();
-            ArrayHelper::multisort($allLocales, fn (Locale $locale) => $locale->getDisplayName());
+            ArrayHelper::multisort($allLocales, fn(Locale $locale) => $locale->getDisplayName());
 
             $localeOptions = [
                 ['label' => Craft::t('app', 'Same as language'), 'value' => ''],
             ];
-            array_push($localeOptions, ...array_map(fn (Locale $locale) => [
+            array_push($localeOptions, ...array_map(fn(Locale $locale) => [
                 'label' => $locale->getDisplayName(Craft::$app->language),
                 'value' => $locale->id,
                 'data' => [
@@ -1042,7 +1042,7 @@ class UsersController extends Controller
 
             if (
                 !$userLocale ||
-                !ArrayHelper::contains($allLocales, fn (Locale $locale) => $locale->id === $userLocale)
+                !ArrayHelper::contains($allLocales, fn(Locale $locale) => $locale->id === $userLocale)
             ) {
                 $userLocale = Craft::$app->getConfig()->getGeneral()->defaultCpLocale;
             }
@@ -1065,7 +1065,7 @@ class UsersController extends Controller
         $deleteModalRedirect = Craft::$app->getSecurity()->hashData(Craft::$app->getEdition() === Craft::Pro ? 'users' : 'dashboard');
 
         $this->getView()->registerJsWithVars(
-            fn ($userId, $isCurrent, $deleteModalRedirect) => <<<JS
+            fn($userId, $isCurrent, $deleteModalRedirect) => <<<JS
 new Craft.AccountSettingsForm($userId, $isCurrent, {
     deleteModalRedirect: $deleteModalRedirect,
 })

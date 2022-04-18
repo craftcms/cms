@@ -11,8 +11,6 @@
 namespace craft\migrations;
 
 use Craft;
-use craft\authentication\type\AuthenticatorCode;
-use craft\authentication\type\WebAuthn;
 use craft\authentication\type\Password;
 use craft\base\Field;
 use craft\db\Migration;
@@ -30,7 +28,6 @@ use craft\models\CategoryGroup;
 use craft\models\Info;
 use craft\models\Section;
 use craft\models\Site;
-use craft\services\Authentication;
 use craft\services\Plugins;
 use craft\services\ProjectConfig;
 use craft\web\Response;
@@ -830,7 +827,7 @@ class Install extends Migration
         $this->createIndex(null, Table::ASSETINDEXDATA, ['volumeId'], false);
         $this->createIndex(null, Table::ASSETS, ['filename', 'folderId'], false);
         $this->createIndex(null, Table::ASSETS, ['folderId'], false);
-        $this->createIndex(null, Table::ASSETS, ['volumeId'], false);  
+        $this->createIndex(null, Table::ASSETS, ['volumeId'], false);
         $this->createIndex(null, Table::AUTH_WEBAUTHN, ['credentialId']);
         $this->createIndex(null, Table::CATEGORIES, ['groupId'], false);
         $this->createIndex(null, Table::CATEGORYGROUPS, ['name'], false);
@@ -1300,7 +1297,7 @@ class Install extends Migration
                 'photoVolumeUid' => null,
                 'photoSubpath' => null,
                 'allowWebAuthn' => true,
-                'require2fa' => []
+                'require2fa' => [],
             ],
         ];
     }
