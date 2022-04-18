@@ -123,7 +123,7 @@ class MonologTarget extends PsrTarget
     {
         parent::export();
 
-        if ($this->logContext) {
+        if (!$this->logContext) {
             return;
         }
 
