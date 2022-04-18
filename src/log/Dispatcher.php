@@ -66,7 +66,6 @@ class Dispatcher extends \yii\log\Dispatcher
             static::TARGET_CONSOLE,
             static::TARGET_QUEUE,
         ])->mapWithKeys(function($name) {
-
             $config = $this->monologTargetConfig + [
                 'name' => $name,
                 'enabled' => false,
