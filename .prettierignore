@@ -2,3 +2,4 @@
 src/web/assets/**/dist/*
 vendor/*
 cpresources/*
+composer.lock
