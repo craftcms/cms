@@ -28,9 +28,9 @@ use yii\web\HttpException;
 class MonologTarget extends PsrTarget
 {
     /**
+     * @inheritdoc
      * @var bool|null $addTimestampToContext Defaults to `true` if `addTimestampToMessage` is `false`.
      * @see addTimestampToMessage
-     * @inheritdoc
      */
     public $addTimestampToContext;
 
@@ -99,7 +99,7 @@ class MonologTarget extends PsrTarget
     protected $logger;
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      * @throws InvalidConfigException
      */
     public function __set($name, $value): void
@@ -128,7 +128,7 @@ class MonologTarget extends PsrTarget
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function init(): void
     {
@@ -151,8 +151,8 @@ class MonologTarget extends PsrTarget
     }
 
     /**
+     * @inheritdoc
      * @throws InvalidConfigException
-     * @inheritDoc
      */
     public function setLogger(LoggerInterface $logger): void
     {
@@ -161,7 +161,7 @@ class MonologTarget extends PsrTarget
 
     /**
      * Vars are logged to context, not in the message.
-     * @inheritDoc
+     * @inheritdoc
      */
     protected function getContextMessage(): string
     {

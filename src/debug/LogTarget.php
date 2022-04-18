@@ -22,7 +22,7 @@ class LogTarget extends \yii\debug\LogTarget
     public $module;
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function export(): void
     {
@@ -105,7 +105,7 @@ class LogTarget extends \yii\debug\LogTarget
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     protected function gc(&$manifest): void
     {
@@ -135,7 +135,7 @@ class LogTarget extends \yii\debug\LogTarget
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     protected function removeStaleDataFiles($manifest): void
     {

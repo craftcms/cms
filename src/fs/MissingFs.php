@@ -94,7 +94,7 @@ class MissingFs extends Fs implements MissingComponentInterface
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function read(string $path): string
     {
@@ -102,7 +102,7 @@ class MissingFs extends Fs implements MissingComponentInterface
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function write(string $path, string $contents, array $config = []): void
     {
