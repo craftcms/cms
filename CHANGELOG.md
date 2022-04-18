@@ -18,6 +18,11 @@
 - Element queries’ `title` params no longer treat values with commas as arrays. ([#10891](https://github.com/craftcms/cms/issues/10891))
 - User queries’ `firstName`, `lastName`, and `fullName` params no longer treat values with commas as arrays. ([#10891](https://github.com/craftcms/cms/issues/10891))
 - Improved address card styling. ([#10896](https://github.com/craftcms/cms/pull/10896))
+- Changed the default log level to `LogLevel::INFO` when `devMode` is set to `true`. ([#10916](https://github.com/craftcms/cms/pull/10916))
+- SQL queries are now logged as `LogLevel::DEBUG`, omitting them from logs by default. ([#10916](https://github.com/craftcms/cms/pull/10916))
+- Simplified logging date format and disabled microsecond precision. ([#10916](https://github.com/craftcms/cms/pull/10916)) 
+- Changed defaults of `\craft\db\Connection::$enableLogging` and `\craft\db\Connection::$enableProfiling` to match the configured `devMode` setting.
+- Removed special handling of log level for the `queue` log target.
 
 ### Fixed
 - Fixed a bug where autosuggest inputs weren’t including numeric and boolean environment variables in their suggestions. ([#10873](https://github.com/craftcms/cms/issues/10873))
@@ -30,6 +35,12 @@
 - Fixed an error that could occur after disabling an element source. ([#10899](https://github.com/craftcms/cms/issues/10899))
 - Fixed a bug where database backups were immediately deleted if the `maxBackups` config setting had been reached. ([#10901](https://github.com/craftcms/cms/issues/10901))
 - Fixed a bug where the “New Entry” button wasn’t creating an entry in the selected site. ([#10902](https://github.com/craftcms/cms/issues/10902))
+- Fixed a bug where every log message contained the full request context. ([#10903](https://github.com/craftcms/cms/issues/10903)) 
+- Fixed a bug where `devMode` could not be set via the `CRAFT_DEV_MODE` environment variable. ([#10916](https://github.com/craftcms/cms/pull/10916))
+
+### Removed
+- Removed `craft\config\DbConfig::enableLogging`. ([#10916](https://github.com/craftcms/cms/pull/10916))
+- Removed `craft\config\DbConfig::enableProfiling`. ([#10916](https://github.com/craftcms/cms/pull/10916))
 
 ## 4.0.0-beta.4 - 2022-04-06
 
