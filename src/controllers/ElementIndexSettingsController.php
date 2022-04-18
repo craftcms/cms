@@ -9,10 +9,12 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\elements\conditions\ElementConditionInterface;
 use craft\helpers\ArrayHelper;
 use craft\models\UserGroup;
 use craft\services\ElementSources;
 use craft\services\ProjectConfig;
+use Illuminate\Support\Collection;
 use yii\web\Response;
 
 /**
@@ -47,13 +49,14 @@ class ElementIndexSettingsController extends BaseElementsController
     public function actionGetCustomizeSourcesModalData(): Response
     {
         /** @var string|ElementInterface $elementType */
+        /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
         $elementType = $this->elementType();
         $conditionsService = Craft::$app->getConditions();
         $view = Craft::$app->getView();
 
         // Get the source info
         $sourcesService = Craft::$app->getElementSources();
-        $sources = $sourcesService->getSources($elementType, ElementSources::CONTEXT_INDEX);
+        $sources = $sourcesService->getSources($elementType, ElementSources::CONTEXT_INDEX, true);
 
         foreach ($sources as &$source) {
             if ($source['type'] === ElementSources::TYPE_HEADING) {
@@ -73,6 +76,7 @@ class ElementIndexSettingsController extends BaseElementsController
 
             if ($source['type'] === ElementSources::TYPE_CUSTOM) {
                 if (isset($source['condition'])) {
+                    /** @var ElementConditionInterface $condition */
                     $condition = $conditionsService->createCondition(ArrayHelper::remove($source, 'condition'));
                     $condition->mainTag = 'div';
                     $condition->name = "sources[{$source['key']}][condition]";
@@ -112,7 +116,7 @@ class ElementIndexSettingsController extends BaseElementsController
         $conditionBuilderHtml = $condition->getBuilderHtml();
         $conditionBuilderJs = $view->clearJsBuffer();
 
-        $userGroups = collect(Craft::$app->getUserGroups()->getAllGroups())
+        $userGroups = Collection::make(Craft::$app->getUserGroups()->getAllGroups())
             ->map(fn(UserGroup $group) => [
                 'label' => Craft::t('site', $group->name),
                 'value' => $group->uid,
@@ -150,6 +154,7 @@ class ElementIndexSettingsController extends BaseElementsController
         $sourceOrder = $this->request->getBodyParam('sourceOrder', []);
         $sourceSettings = $this->request->getBodyParam('sources', []);
         $newSourceConfigs = [];
+        $disabledSourceKeys = [];
 
         // Normalize to the way it's stored in the DB
         foreach ($sourceOrder as $source) {
@@ -179,9 +184,17 @@ class ElementIndexSettingsController extends BaseElementsController
                         if (isset($postedSettings['userGroups']) && $postedSettings['userGroups'] !== '*') {
                             $sourceConfig['userGroups'] = is_array($postedSettings['userGroups']) ? $postedSettings['userGroups'] : false;
                         }
+                    } elseif (isset($postedSettings['enabled'])) {
+                        $sourceConfig['disabled'] = !$postedSettings['enabled'];
+                        if ($sourceConfig['disabled']) {
+                            $disabledSourceKeys[] = $source['key'];
+                        }
                     }
                 } elseif (isset($oldSourceConfigs[$source['key']])) {
                     $sourceConfig += $oldSourceConfigs[$source['key']];
+                    if (!empty($sourceConfig['disabled'])) {
+                        $disabledSourceKeys[] = $source['key'];
+                    }
                 } elseif ($isCustom) {
                     // Ignore it
                     continue;
@@ -192,6 +205,8 @@ class ElementIndexSettingsController extends BaseElementsController
         }
 
         $projectConfig->set(ProjectConfig::PATH_ELEMENT_SOURCES . ".$elementType", $newSourceConfigs);
-        return $this->asSuccess();
+        return $this->asSuccess(data: [
+            'disabledSourceKeys' => $disabledSourceKeys,
+        ]);
     }
 }

@@ -5,9 +5,8 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craftunit\services;
+namespace crafttests\unit\services;
 
-use Codeception\Test\Unit;
 use Craft;
 use craft\db\Table;
 use craft\elements\GlobalSet;
@@ -40,19 +39,21 @@ use craft\services\UserGroups;
 use craft\services\Volumes;
 use craft\test\mockclasses\gql\MockDirective;
 use craft\test\mockclasses\gql\MockType;
+use craft\test\TestCase;
 use GraphQL\Type\Definition\ObjectType;
 use UnitTester;
 use yii\base\Event;
+use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 
-class GqlTest extends Unit
+class GqlTest extends TestCase
 {
     /**
      * @var UnitTester
      */
     protected UnitTester $tester;
 
-    protected function _before()
+    protected function _before(): void
     {
         Craft::$app->getGql()->flushCaches();
         $gql = Craft::$app->getGql();
@@ -62,16 +63,16 @@ class GqlTest extends Unit
         Craft::$app->getConfig()->getGeneral()->enableGraphqlCaching = false;
     }
 
-    protected function _after()
+    protected function _after(): void
     {
     }
 
     /**
      * Test getting active schema errors out if none set
      */
-    public function testCreatingSchemaFail()
+    public function testCreatingSchemaFail(): void
     {
-        $this->expectExceptionMessage("No schema is active.");
+        $this->expectExceptionMessage('No schema is active.');
         $this->expectException(GqlException::class);
 
         $gqlService = Craft::$app->getGql();
@@ -82,7 +83,7 @@ class GqlTest extends Unit
     /**
      * Test schema creation.
      */
-    public function testCreatingSchemaSuccess()
+    public function testCreatingSchemaSuccess(): void
     {
         $schema = Craft::$app->getGql()->getSchemaDef();
         self::assertInstanceOf('GraphQL\Type\Schema', $schema);
@@ -91,7 +92,7 @@ class GqlTest extends Unit
     /**
      * Test adding custom queries to schema
      */
-    public function testRegisteringQuery()
+    public function testRegisteringQuery(): void
     {
         Event::on(Gql::class, Gql::EVENT_REGISTER_GQL_QUERIES, function(RegisterGqlQueriesEvent $event) {
             $event->queries['mockQuery'] = [
@@ -108,7 +109,7 @@ class GqlTest extends Unit
     /**
      * Test adding custom mutations to schema
      */
-    public function testRegisteringMutation()
+    public function testRegisteringMutation(): void
     {
         Event::on(Gql::class, Gql::EVENT_REGISTER_GQL_MUTATIONS, function(RegisterGqlMutationsEvent $event) {
             $event->mutations['mockMutation'] = [
@@ -125,7 +126,7 @@ class GqlTest extends Unit
     /**
      * Test schema validation by adding an invalid query.
      */
-    public function testValidatingSchema()
+    public function testValidatingSchema(): void
     {
         Event::on(Gql::class, Gql::EVENT_REGISTER_GQL_QUERIES, function(RegisterGqlQueriesEvent $event) {
             $event->queries['mockQuery'] = [
@@ -140,7 +141,7 @@ class GqlTest extends Unit
     /**
      * Test if it's possible to execute a query
      */
-    public function testExecuteQuery()
+    public function testExecuteQuery(): void
     {
         $gql = Craft::$app->getGql();
         $schema = $gql->getPublicSchema();
@@ -151,9 +152,9 @@ class GqlTest extends Unit
     /**
      * Test query events
      *
-     * @throws \yii\base\Exception
+     * @throws Exception
      */
-    public function testQueryEvents()
+    public function testQueryEvents(): void
     {
         $gql = Craft::$app->getGql();
         $schema = $gql->getPublicSchema();
@@ -178,7 +179,7 @@ class GqlTest extends Unit
      *
      * @throws \Exception
      */
-    public function testQueryingFillsCache()
+    public function testQueryingFillsCache(): void
     {
         $cache = [];
         $cacheKey = 'testKey';
@@ -201,7 +202,7 @@ class GqlTest extends Unit
     /**
      * Test adding custom directives to schema
      */
-    public function testRegisteringDirective()
+    public function testRegisteringDirective(): void
     {
         Event::on(Gql::class, Gql::EVENT_REGISTER_GQL_DIRECTIVES, function(RegisterGqlDirectivesEvent $event) {
             $event->directives[] = MockDirective::class;
@@ -214,7 +215,7 @@ class GqlTest extends Unit
     /**
      * Test adding custom types to schema
      */
-    public function testRegisteringType()
+    public function testRegisteringType(): void
     {
         Event::on(Gql::class, Gql::EVENT_REGISTER_GQL_TYPES, function(RegisterGqlTypesEvent $event) {
             $event->types[] = MockType::class;
@@ -230,7 +231,7 @@ class GqlTest extends Unit
     /**
      * Test if flushing works.
      */
-    public function testFlushingCaches()
+    public function testFlushingCaches(): void
     {
         // Generate types by creating the interface.
         UserInterface::getType();
@@ -251,9 +252,9 @@ class GqlTest extends Unit
      * Test if token affects the schema.
      *
      * @throws GqlException
-     * @throws \yii\base\Exception
+     * @throws Exception
      */
-    public function testTokenAffectSchema()
+    public function testTokenAffectSchema(): void
     {
         $gqlService = Craft::$app->getGql();
 
@@ -269,7 +270,7 @@ class GqlTest extends Unit
     /**
      * Test if permission list is being generated
      */
-    public function testPermissionListGenerated()
+    public function testPermissionListGenerated(): void
     {
         $sectionService = $this->make(Sections::class, [
             'getAllSections' => [
@@ -381,7 +382,7 @@ class GqlTest extends Unit
     /**
      * Test all sorts of ways to invalidate GraphQL cache.
      */
-    public function testInvalidatingCache()
+    public function testInvalidatingCache(): void
     {
         $gql = Craft::$app->getGql();
         $gql->invalidateCaches();
@@ -406,9 +407,9 @@ class GqlTest extends Unit
     /**
      * Test all Gql Token operations.
      *
-     * @throws \yii\base\Exception
+     * @throws Exception
      */
-    public function testTokenOperations()
+    public function testTokenOperations(): void
     {
         $gql = Craft::$app->getGql();
 
@@ -454,9 +455,9 @@ class GqlTest extends Unit
     /**
      * Test all Gql Schema operations.
      *
-     * @throws \yii\base\Exception
+     * @throws Exception
      */
-    public function testSchemaOperations()
+    public function testSchemaOperations(): void
     {
         $gql = Craft::$app->getGql();
         $gql->invalidateCaches();

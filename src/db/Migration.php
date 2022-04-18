@@ -289,6 +289,40 @@ abstract class Migration extends \yii\db\Migration
     // -------------------------------------------------------------------------
 
     /**
+     * Creates and executes a SQL statement for renaming a DB table to `*_old`, if it exists.
+     *
+     * @param string $table The table to be renamed. The name will be properly quoted by the method.
+     * @since 4.0.0
+     */
+    public function archiveTableIfExists(string $table): void
+    {
+        if (!$this->db->tableExists($table)) {
+            return;
+        }
+
+        $schema = $this->db->getSchema();
+        $schema->maxObjectNameLength = 10;
+        $table = $schema->getRawTableName($table);
+        $tableLength = strlen($table);
+        $i = 0;
+
+        do {
+            $suffix = sprintf('_old%s', $i !== 0 ? "$i" : '');
+            $newNameLength = $tableLength + strlen($suffix);
+            $i++;
+
+            if ($newNameLength <= $schema->maxObjectNameLength) {
+                $newName = $table . $suffix;
+            } else {
+                $overage = $newNameLength - $schema->maxObjectNameLength;
+                $newName = substr($table, 0, $tableLength - $overage) . $suffix;
+            }
+        } while ($this->db->tableExists($newName));
+
+        $this->renameTable($table, $newName);
+    }
+
+    /**
      * Creates and executes a SQL statement for dropping a DB table, if it exists.
      *
      * @param string $table The table to be dropped. The name will be properly quoted by the method.

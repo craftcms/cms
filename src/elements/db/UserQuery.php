@@ -121,10 +121,10 @@ class UserQuery extends ElementQuery
     public ?bool $hasPhoto = null;
 
     /**
-     * @var string|int|false|null The permission that the resulting users must have.
+     * @var mixed The permission that the resulting users must have.
      * ---
      * ```php
-     * // fetch users with CP access
+     * // fetch users with control panel access
      * $admins = \craft\elements\User::find()
      *     ->can('accessCp')
      *     ->all();
@@ -140,7 +140,7 @@ class UserQuery extends ElementQuery
     public mixed $can = null;
 
     /**
-     * @var int|int[]|null The user group ID(s) that the resulting users must belong to.
+     * @var mixed The user group ID(s) that the resulting users must belong to.
      * ---
      * ```php
      * // fetch the authors
@@ -160,32 +160,32 @@ class UserQuery extends ElementQuery
     public mixed $groupId = null;
 
     /**
-     * @var string|string[]|null The email address that the resulting users must have.
+     * @var mixed The email address that the resulting users must have.
      * @used-by email()
      */
     public mixed $email = null;
 
     /**
-     * @var string|string[]|null The username that the resulting users must have.
+     * @var mixed The username that the resulting users must have.
      * @used-by username()
      */
     public mixed $username = null;
 
     /**
-     * @var string|string[]|null The full name that the resulting users must have.
+     * @var mixed The full name that the resulting users must have.
      * @used-by fullName()
      * @since 4.0.0
      */
     public mixed $fullName = null;
 
     /**
-     * @var string|string[]|null The first name that the resulting users must have.
+     * @var mixed The first name that the resulting users must have.
      * @used-by firstName()
      */
     public mixed $firstName = null;
 
     /**
-     * @var string|string[]|null The last name that the resulting users must have.
+     * @var mixed The last name that the resulting users must have.
      * @used-by lastName()
      */
     public mixed $lastName = null;
@@ -367,7 +367,7 @@ class UserQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param string|int|null $value The property value
+     * @param mixed $value The property value
      * @return self self reference
      * @uses $can
      */
@@ -407,7 +407,7 @@ class UserQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param string|string[]|UserGroup|null $value The property value
+     * @param mixed $value The property value
      * @return self self reference
      * @uses $groupId
      */
@@ -493,7 +493,7 @@ class UserQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param int|int[]|null $value The property value
+     * @param mixed $value The property value
      * @return self self reference
      * @uses $groupId
      */
@@ -530,7 +530,7 @@ class UserQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param string|string[]|null $value The property value
+     * @param mixed $value The property value
      * @return self self reference
      * @uses $email
      */
@@ -572,7 +572,7 @@ class UserQuery extends ElementQuery
      *     ->one();
      * ```
      *
-     * @param string|string[]|null $value The property value
+     * @param mixed $value The property value
      * @return self self reference
      * @uses $username
      */
@@ -608,7 +608,7 @@ class UserQuery extends ElementQuery
      *     ->one();
      * ```
      *
-     * @param string|string[]|null $value The property value
+     * @param mixed $value The property value
      * @return self self reference
      * @uses $fullName
      * @since 4.0.0
@@ -645,7 +645,7 @@ class UserQuery extends ElementQuery
      *     ->one();
      * ```
      *
-     * @param string|string[]|null $value The property value
+     * @param mixed $value The property value
      * @return self self reference
      * @uses $firstName
      */
@@ -681,7 +681,7 @@ class UserQuery extends ElementQuery
      *     ->one();
      * ```
      *
-     * @param string|string[]|null $value The property value
+     * @param mixed $value The property value
      * @return self self reference
      * @uses $lastName
      */
@@ -764,6 +764,7 @@ class UserQuery extends ElementQuery
      */
     public function status(array|string|null $value): self
     {
+        /** @var self */
         return parent::status($value);
     }
 
@@ -801,7 +802,7 @@ class UserQuery extends ElementQuery
      */
     public function withGroups(bool $value = true): self
     {
-        $this->withGroups = true;
+        $this->withGroups = $value;
         return $this;
     }
 
@@ -923,14 +924,23 @@ class UserQuery extends ElementQuery
         }
 
         if ($fullNameColumnExists && $this->fullName) {
+            if (is_string($this->fullName)) {
+                $this->fullName = Db::escapeCommas($this->fullName);
+            }
             $this->subQuery->andWhere(Db::parseParam('users.fullName', $this->fullName, '=', true));
         }
 
         if ($this->firstName) {
+            if (is_string($this->firstName)) {
+                $this->firstName = Db::escapeCommas($this->firstName);
+            }
             $this->subQuery->andWhere(Db::parseParam('users.firstName', $this->firstName, '=', true));
         }
 
         if ($this->lastName) {
+            if (is_string($this->lastName)) {
+                $this->lastName = Db::escapeCommas($this->lastName);
+            }
             $this->subQuery->andWhere(Db::parseParam('users.lastName', $this->lastName, '=', true));
         }
 
@@ -1025,6 +1035,7 @@ class UserQuery extends ElementQuery
      */
     public function afterPopulate(array $elements): array
     {
+        /** @var User[] $elements */
         $elements = parent::afterPopulate($elements);
 
         // Eager-load user groups?

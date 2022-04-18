@@ -59,7 +59,7 @@ class Smtp extends BaseTransportAdapter
     public ?string $encryptionMethod = null;
 
     /**
-     * @var string The timeout duration (in seconds)
+     * @var string|int The timeout duration (in seconds)
      */
     public string|int $timeout = 10;
 
@@ -102,7 +102,7 @@ class Smtp extends BaseTransportAdapter
     public function attributeLabels(): array
     {
         return [
-            'host' => Craft::t('app', 'Host Name'),
+            'host' => Craft::t('app', 'Hostname'),
             'port' => Craft::t('app', 'Port'),
             'useAuthentication' => Craft::t('app', 'Use authentication'),
             'username' => Craft::t('app', 'Username'),

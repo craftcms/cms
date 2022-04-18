@@ -11,6 +11,7 @@ use craft\db\ActiveRecord;
 use craft\db\SoftDeleteTrait;
 use craft\db\Table;
 use yii\db\ActiveQueryInterface;
+use yii2tech\ar\softdelete\SoftDeleteBehavior;
 
 /**
  * Class Site record.
@@ -21,11 +22,12 @@ use yii\db\ActiveQueryInterface;
  * @property string $handle Handle
  * @property string $language Language
  * @property bool $primary Primary
- * @property bool $enabled Enabled
+ * @property string $enabled Enabled
  * @property bool $hasUrls Has URLs
  * @property string $baseUrl Base URL
  * @property int $sortOrder Sort order
  * @property SiteGroup $group Group
+ * @mixin SoftDeleteBehavior
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */

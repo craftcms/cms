@@ -50,6 +50,7 @@ class Volume extends Model
 
     /**
      * @var string Title translation method
+     * @phpstan-var Field::TRANSLATION_METHOD_NONE|Field::TRANSLATION_METHOD_SITE|Field::TRANSLATION_METHOD_SITE_GROUP|Field::TRANSLATION_METHOD_LANGUAGE|Field::TRANSLATION_METHOD_CUSTOM
      */
     public string $titleTranslationMethod = Field::TRANSLATION_METHOD_SITE;
 
@@ -79,11 +80,11 @@ class Volume extends Model
     public string $transformSubpath = '';
 
     /**
-     * @var FsInterface
+     * @var FsInterface|null
      * @see getFs()
      * @see setFs()
      */
-    private FsInterface $_fs;
+    private ?FsInterface $_fs = null;
 
     /**
      * @var string|null
@@ -93,11 +94,11 @@ class Volume extends Model
     private ?string $_fsHandle = null;
 
     /**
-     * @var FsInterface
+     * @var FsInterface|null
      * @see getTransformFs()
      * @see setTransformFs()
      */
-    private ?FsInterface $_transformFs;
+    private ?FsInterface $_transformFs = null;
 
     /**
      * @var string|null
@@ -256,6 +257,7 @@ class Volume extends Model
     public function setFsHandle(string $handle): void
     {
         $this->_fsHandle = $handle;
+        $this->_fs = null;
     }
 
 
@@ -313,11 +315,12 @@ class Volume extends Model
     /**
      * Sets the transform filesystem handle.
      *
-     * @param string $handle
+     * @param string|null $handle
      */
-    public function setTransformFsHandle(string $handle): void
+    public function setTransformFsHandle(?string $handle): void
     {
         $this->_transformFsHandle = $handle;
+        $this->_transformFs = null;
     }
 
     /**

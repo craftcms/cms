@@ -35,14 +35,9 @@ class MonologTarget extends PsrTarget
     public $addTimestampToContext;
 
     /**
-     * @inheritdoc
-     */
-    public $extractExceptionTrace = !YII_DEBUG;
-
-    /**
      * @var bool
      */
-    public bool $allowLineBreaks = YII_DEBUG;
+    public bool $allowLineBreaks;
 
     /**
      * @inheritdoc
@@ -80,7 +75,7 @@ class MonologTarget extends PsrTarget
      * @var string
      * @see Logger::$name
      */
-    protected string $name;
+    public string $name;
 
     /**
      * @var int The maximum number of files to keep in rotation.
@@ -99,7 +94,7 @@ class MonologTarget extends PsrTarget
     protected ?ProcessorInterface $processor = null;
 
     /**
-     * @var Logger $logger
+     * @var Logger|null $logger
      */
     protected $logger;
 
@@ -138,7 +133,7 @@ class MonologTarget extends PsrTarget
     public function init(): void
     {
         $generalConfig = Craft::$app->getConfig()->getGeneral();
-        $this->level = $this->level ?? (YII_DEBUG ? LogLevel::DEBUG : LogLevel::WARNING);
+        $this->level = $this->level ?? (App::devMode() ? LogLevel::DEBUG : LogLevel::WARNING);
         $this->addTimestampToMessage = $this->addTimestampToMessage ?? !App::isStreamLog();
         $this->addTimestampToContext = $this->addTimestampToContext ?? !$this->addTimestampToMessage;
         $this->formatter = $this->formatter ?? new LineFormatter(
@@ -192,6 +187,7 @@ class MonologTarget extends PsrTarget
             if (!Craft::$app->getRequest()->getIsConsoleRequest()) {
                 $logger->pushHandler((new StreamHandler(
                     'php://stdout',
+                    /** @phpstan-ignore-next-line */
                     $this->level,
                 ))->setFormatter($this->formatter));
             }
@@ -199,6 +195,7 @@ class MonologTarget extends PsrTarget
             $logger->pushHandler((new RotatingFileHandler(
                 App::parseEnv(sprintf('@storage/logs/%s.log', $name)),
                 $this->maxFiles,
+                /** @phpstan-ignore-next-line */
                 $this->level,
                 filePermission: $generalConfig->defaultFileMode,
             ))->setFormatter($this->formatter));

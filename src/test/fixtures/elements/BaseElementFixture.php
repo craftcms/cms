@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\test\fixtures\elements;
@@ -24,7 +24,7 @@ use yii\test\FileFixtureTrait;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Robuust digital | Bob Olde Hampsink <bob@robuust.digital>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since  3.6.0
+ * @since 3.6.0
  */
 abstract class BaseElementFixture extends DbFixture
 {
@@ -68,7 +68,7 @@ abstract class BaseElementFixture extends DbFixture
             $fieldLayoutType = ArrayHelper::remove($data, 'fieldLayoutType');
             if ($fieldLayoutType) {
                 $fieldLayout = Craft::$app->getFields()->getLayoutByType($fieldLayoutType);
-                if ($fieldLayout) {
+                if ($fieldLayout->id) {
                     $element->fieldLayoutId = $fieldLayout->id;
                 } else {
                     codecept_debug("Field layout with type: $fieldLayoutType could not be found");
@@ -91,7 +91,7 @@ abstract class BaseElementFixture extends DbFixture
                     'dateDeleted' => Db::prepareDateForDb($dateDeleted),
                 ], ['id' => $element->id], [], false);
             } else {
-                // Only need to index the search keywords if it's not deleted
+                // Only need to index the search keywords if it’s not deleted
                 Craft::$app->getSearch()->indexElementAttributes($element);
             }
 

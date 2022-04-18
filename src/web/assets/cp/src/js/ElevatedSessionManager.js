@@ -26,7 +26,7 @@ Craft.ElevatedSessionManager = Garnish.Base.extend({
         this.callback = callback;
         this.canceledCallback = canceledCallback;
 
-        // Check the time remaining on the user's elevated session (if any)
+        // Check the time remaining on the user’s elevated session (if any)
         this.fetchingTimeout = true;
 
         Craft.sendActionRequest('POST', 'users/get-elevated-session-timeout')

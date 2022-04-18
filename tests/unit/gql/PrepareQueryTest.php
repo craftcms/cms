@@ -5,9 +5,8 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craftunit\gql;
+namespace crafttests\unit\gql;
 
-use Codeception\Test\Unit;
 use Craft;
 use craft\gql\resolvers\elements\Asset as AssetResolver;
 use craft\gql\resolvers\elements\Category as CategoryResolver;
@@ -27,29 +26,31 @@ use craft\records\Structure;
 use craft\records\TagGroup;
 use craft\records\UserGroup;
 use craft\records\Volume;
+use craft\test\TestCase;
+use UnitTester;
 
-class PrepareQueryTest extends Unit
+class PrepareQueryTest extends TestCase
 {
     /**
-     * @var \UnitTester
+     * @var UnitTester
      */
-    protected $tester;
+    protected UnitTester $tester;
 
-    private $_volume;
-    private $_structure;
-    private $_categoryGroup;
-    private $_section;
-    private $_entryType;
-    private $_element;
-    private $_globalSet;
-    private $_tagGroup;
-    private $_userGroup;
+    private Volume $_volume;
+    private Structure $_structure;
+    private CategoryGroup $_categoryGroup;
+    private Section $_section;
+    private EntryType $_entryType;
+    private Element $_element;
+    private GlobalSet $_globalSet;
+    private TagGroup $_tagGroup;
+    private UserGroup $_userGroup;
 
 
     /**
      * @inheritdoc
      */
-    protected function _before()
+    protected function _before(): void
     {
         // Mock the GQL token
         $this->tester->mockMethods(
@@ -81,7 +82,7 @@ class PrepareQueryTest extends Unit
     /**
      * @inheritdoc
      */
-    protected function _after()
+    protected function _after(): void
     {
         $this->_volume->delete();
         $this->_structure->delete();
@@ -105,14 +106,14 @@ class PrepareQueryTest extends Unit
     /**
      * Test relational field query preparation
      *
-     * @param class-string $resolverClass The resolver class to test
+     * @param string $resolverClass The resolver class to test
+     * @phpstan-param class-string $resolverClass
      * @param array $preparationArguments The arguments to pass to the `prepareQuery` method
      * @param callable $testFunction The test function to determine the result.
      * @param callable|null $testLoader The callable that will set up the test conditions
-     *
      * @dataProvider relationalFieldQueryPreparationProvider
      */
-    public function testRelationalFieldQueryPreparation(string $resolverClass, array $preparationArguments, callable $testFunction, callable $testLoader = null)
+    public function testRelationalFieldQueryPreparation(string $resolverClass, array $preparationArguments, callable $testFunction, callable $testLoader = null): void
     {
         // Set up the test
         if ($testLoader) {
@@ -126,7 +127,7 @@ class PrepareQueryTest extends Unit
         self::assertTrue($testFunction($result));
     }
 
-    public function relationalFieldQueryPreparationProvider()
+    public function relationalFieldQueryPreparationProvider(): array
     {
         /**
          * Tests:
@@ -253,6 +254,22 @@ class PrepareQueryTest extends Unit
         ]);
 
         $this->_volume->save();
+
+        $volumesService = Craft::$app->getVolumes();
+
+        $this->tester->mockCraftMethods('volumes', [
+            'getVolumeByUid' => function($uid) use ($volumesService) {
+                if ($uid === self::VOLUME_UID) {
+                    return new \craft\models\Volume([
+                        'id' => $this->_volume->id,
+                        'uid' => self::VOLUME_UID,
+                        'name' => $this->_volume->name,
+                        'handle' => $this->_volume->handle,
+                    ]);
+                }
+                return $volumesService->getVolumeByUid($uid);
+            },
+        ]);
     }
 
     private function _setupCategories()
@@ -268,6 +285,23 @@ class PrepareQueryTest extends Unit
         ]);
 
         $this->_categoryGroup->save();
+
+        $categoriesService = Craft::$app->getCategories();
+
+        $this->tester->mockCraftMethods('categories', [
+            'getGroupByUid' => function($uid) use ($categoriesService) {
+                if ($uid === self::CATEGORY_GROUP_UID) {
+                    return new \craft\models\CategoryGroup([
+                        'id' => $this->_categoryGroup->id,
+                        'uid' => self::CATEGORY_GROUP_UID,
+                        'name' => $this->_categoryGroup->name,
+                        'handle' => $this->_categoryGroup->handle,
+                        'structureId' => $this->_structure->id,
+                    ]);
+                }
+                return $categoriesService->getGroupByUid($uid);
+            },
+        ]);
     }
 
     private function _setupEntries()
@@ -319,6 +353,22 @@ class PrepareQueryTest extends Unit
         ]);
 
         $this->_tagGroup->save();
+
+        $tagsService = Craft::$app->getTags();
+
+        $this->tester->mockCraftMethods('tags', [
+            'getTagGroupByUid' => function($uid) use ($tagsService) {
+                if ($uid === self::TAG_GROUP_UID) {
+                    return new \craft\models\TagGroup([
+                        'id' => $this->_tagGroup->id,
+                        'uid' => self::TAG_GROUP_UID,
+                        'name' => $this->_tagGroup->name,
+                        'handle' => $this->_tagGroup->handle,
+                    ]);
+                }
+                return $tagsService->getTagGroupByUid($uid);
+            },
+        ]);
     }
 
     private function _setupUsers()

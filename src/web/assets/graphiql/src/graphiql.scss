@@ -16,6 +16,17 @@ body,
   color: $textColor;
   -webkit-font-smoothing: subpixel-antialiased;
 
+  svg {
+    display: inline-block;
+  }
+
+  select {
+    color: $textColor !important;
+    background-color: transparentize($inputColor, 0.75);
+    border-radius: $largeBorderRadius;
+    padding: 4px;
+  }
+
   .graphiql-container .topBar,
   .graphiql-container .docExplorerShow,
   .graphiql-container .historyShow,
@@ -63,6 +74,7 @@ body,
         direction: rtl;
       }
       padding: 14px 24px;
+      height: 100%;
 
       .title {
         @include sans-serif-font;
@@ -81,6 +93,7 @@ body,
   .doc-explorer-title-bar,
   .history-title-bar {
     background: $white;
+    box-sizing: content-box;
   }
 
   .queryWrap,
@@ -233,7 +246,18 @@ body,
     }
 
     .spinner {
-      background: none;
+      animation: none;
+      border: none;
+      display: inline-flex;
+      height: 24px;
+      width: 24px;
+      position: relative;
+    }
+  }
+
+  .graphiql-explorer-graphql-arguments {
+    select {
+      padding: 2px;
     }
   }
 }

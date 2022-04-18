@@ -28,13 +28,11 @@ use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\StringHelper;
 use craft\models\Site;
-use craft\search\SearchQuery;
 use ReflectionClass;
 use ReflectionProperty;
 use yii\base\ArrayableTrait;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
-use yii\base\Model;
 use yii\base\NotSupportedException;
 use yii\db\Connection;
 use yii\db\Expression;
@@ -70,7 +68,8 @@ class ElementQuery extends Query implements ElementQueryInterface
     public const EVENT_AFTER_POPULATE_ELEMENT = 'afterPopulateElement';
 
     /**
-     * @var class-string<ElementInterface> The name of the [[ElementInterface]] class.
+     * @var string The name of the [[ElementInterface]] class.
+     * @phpstan-var class-string<ElementInterface>
      */
     public string $elementType;
 
@@ -141,7 +140,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     public ?int $draftId = null;
 
     /**
-     * @var int|string|false|null The source element ID that drafts should be returned for.
+     * @var mixed The source element ID that drafts should be returned for.
      *
      * This can be set to one of the following:
      *
@@ -193,19 +192,19 @@ class ElementQuery extends Query implements ElementQueryInterface
     // -------------------------------------------------------------------------
 
     /**
-     * @var int|int[]|false|null The element ID(s). Prefix IDs with `'not '` to exclude them.
+     * @var mixed The element ID(s). Prefix IDs with `'not '` to exclude them.
      * @used-by id()
      */
     public mixed $id = null;
 
     /**
-     * @var string|string[]|null The element UID(s). Prefix UIDs with `'not '` to exclude them.
+     * @var mixed The element UID(s). Prefix UIDs with `'not '` to exclude them.
      * @used-by uid()
      */
     public mixed $uid = null;
 
     /**
-     * @var int|int[]|null The element ID(s) in the `elements_sites` table. Prefix IDs with `'not '` to exclude them.
+     * @var mixed The element ID(s) in the `elements_sites` table. Prefix IDs with `'not '` to exclude them.
      * @used-by siteSettingsId()
      * @since 3.7.0
      */
@@ -252,7 +251,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     public mixed $dateUpdated = null;
 
     /**
-     * @var int|int[]|string|null The site ID(s) that the elements should be returned in, or `'*'` if elements
+     * @var mixed The site ID(s) that the elements should be returned in, or `'*'` if elements
      * should be returned in all supported sites.
      * @used-by site()
      * @used-by siteId()
@@ -280,7 +279,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     public bool $leaves = false;
 
     /**
-     * @var int|array|ElementInterface|null The element relation criteria.
+     * @var mixed The element relation criteria.
      *
      * See [Relations](https://craftcms.com/docs/4.x/relations.html) for supported syntax options.
      *
@@ -289,25 +288,25 @@ class ElementQuery extends Query implements ElementQueryInterface
     public mixed $relatedTo = null;
 
     /**
-     * @var string|string[]|null The title that resulting elements must have.
+     * @var mixed The title that resulting elements must have.
      * @used-by title()
      */
     public mixed $title = null;
 
     /**
-     * @var string|string[]|null The slug that resulting elements must have.
+     * @var mixed The slug that resulting elements must have.
      * @used-by slug()
      */
     public mixed $slug = null;
 
     /**
-     * @var string|string[]|null The URI that the resulting element must have.
+     * @var mixed The URI that the resulting element must have.
      * @used-by uri()
      */
     public mixed $uri = null;
 
     /**
-     * @var string|array|SearchQuery|null The search term to filter the resulting elements by.
+     * @var mixed The search term to filter the resulting elements by.
      *
      * See [Searching](https://craftcms.com/docs/4.x/searching.html) for supported syntax options.
      *
@@ -316,7 +315,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     public mixed $search = null;
 
     /**
-     * @var string|string[]|null The reference code(s) used to identify the element(s).
+     * @var mixed The reference code(s) used to identify the element(s).
      *
      * This property is set when accessing elements via their reference tags, e.g. `{entry:section/slug}`.
      *
@@ -336,7 +335,6 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     /**
      * @inheritdoc
-     * @var string|array
      * @used-by orderBy()
      * @used-by addOrderBy()
      */
@@ -352,7 +350,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     public ?bool $withStructure = null;
 
     /**
-     * @var int|false|null The structure ID that should be used to join in the structureelements table.
+     * @var mixed The structure ID that should be used to join in the structureelements table.
      * @used-by structureId()
      */
     public mixed $structureId = null;
@@ -468,9 +466,17 @@ class ElementQuery extends Query implements ElementQueryInterface
     private array|null $_cacheTags = null;
 
     /**
+     * @var bool Whether an element table has been joined for the query
+     * @see prepare()
+     * @see joinElementTable()
+     */
+    private bool $_joinedElementTable = false;
+
+    /**
      * Constructor
      *
-     * @param class-string<ElementInterface> $elementType The element type class associated with this query
+     * @param string $elementType The element type class associated with this query
+     * @phpstan-param class-string<ElementInterface> $elementType
      * @param array $config Configurations to be applied to the newly created query object
      */
     public function __construct(string $elementType, array $config = [])
@@ -1198,6 +1204,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             throw new QueryAbortedException();
         }
         /** @var string|ElementInterface $class */
+        /** @phpstan-var class-string<ElementInterface>|ElementInterface $class */
         $class = $this->elementType;
 
         // Make sure the siteId param is set
@@ -1236,6 +1243,9 @@ class ElementQuery extends Query implements ElementQueryInterface
             ->from(['subquery' => $this->subQuery])
             ->innerJoin(['elements' => Table::ELEMENTS], '[[elements.id]] = [[subquery.elementsId]]')
             ->innerJoin(['elements_sites' => Table::ELEMENTS_SITES], '[[elements_sites.id]] = [[subquery.elementsSitesId]]');
+
+        // Keep track of whether an element table is joined into the query
+        $this->_joinedElementTable = false;
 
         // Give other classes a chance to make changes up front
         if (!$this->beforePrepare()) {
@@ -1307,6 +1317,9 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         if (isset($this->title) && $this->title !== '' && $class::hasTitles()) {
+            if (is_string($this->title)) {
+                $this->title = Db::escapeCommas($this->title);
+            }
             $this->subQuery->andWhere(Db::parseParam('content.title', $this->title, '=', true));
         }
 
@@ -1329,6 +1342,11 @@ class ElementQuery extends Query implements ElementQueryInterface
         // Give other classes a chance to make changes up front
         if (!$this->afterPrepare()) {
             throw new QueryAbortedException();
+        }
+
+        // If an element table was never joined in, explicitly filter based on the element type
+        if (!$this->_joinedElementTable && $this->elementType) {
+            $this->subQuery->andWhere(['elements.type' => $this->elementType]);
         }
 
         $this->_applyUniqueParam($builder->db);
@@ -1388,6 +1406,7 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     /**
      * @inheritdoc
+     * @return ElementInterface[]|array
      */
     public function all($db = null): array
     {
@@ -1404,10 +1423,9 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     /**
      * @inheritdoc
-     * @return ElementInterface|array|null the first element. Null is returned if the query
-     * results in nothing.
+     * @return ElementInterface|array|null
      */
-    public function one($db = null): Model|array|null
+    public function one($db = null): mixed
     {
         // Cached?
         if (($cachedResult = $this->getCachedResult()) !== null) {
@@ -1453,10 +1471,9 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     /**
      * @inheritdoc
-     * @return ElementInterface|array|null The element. Null is returned if the query
-     * results in nothing.
+     * @return ElementInterface|array|null
      */
-    public function nth(int $n, ?Connection $db = null): Model|array|null
+    public function nth(int $n, ?Connection $db = null): mixed
     {
         // Cached?
         if (($cachedResult = $this->getCachedResult()) !== null) {
@@ -1653,6 +1670,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         /** @var string|ElementInterface $class */
+        /** @phpstan-var class-string<ElementInterface>|ElementInterface $class */
         $class = $this->elementType;
 
         // Instantiate the element
@@ -1685,11 +1703,21 @@ class ElementQuery extends Query implements ElementQueryInterface
                             unset($row[$column]);
                         } else {
                             if ($setValue) {
-                                $fieldValues[$field->handle] = [];
+                                $columnValues = [];
+                                $hasColumnValues = false;
+
                                 foreach ($column as $key => $col) {
-                                    $fieldValues[$field->handle][$key] = $row[$col] ?? null;
+                                    $columnValues[$key] = $row[$col] ?? null;
+                                    $hasColumnValues = $hasColumnValues || $columnValues[$key] !== null;
+                                }
+
+                                // Only actually set it on $fieldValues if any of the columns weren't null.
+                                // Otherwise, leave it alone in case another field has the same handle.
+                                if ($hasColumnValues) {
+                                    $fieldValues[$field->handle] = $columnValues;
                                 }
                             }
+
                             foreach ($column as $col) {
                                 unset($row[$col]);
                             }
@@ -1925,6 +1953,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         $joinTable = [$table => "{{%$table}}"];
         $this->query->innerJoin($joinTable, "[[$table.id]] = [[subquery.elementsId]]");
         $this->subQuery->innerJoin($joinTable, "[[$table.id]] = [[elements.id]]");
+        $this->_joinedElementTable = true;
     }
 
     /**
@@ -1982,7 +2011,8 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * Joins the content table into the query being prepared.
      *
-     * @param class-string<ElementInterface> $class
+     * @param string $class
+     * @phpstan-param class-string<ElementInterface> $class
      * @throws QueryAbortedException
      */
     private function _joinContentTable(string $class): void
@@ -2059,19 +2089,22 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * Applies the 'status' param to the query being prepared.
      *
-     * @param class-string<ElementInterface> $class
+     * @param string $class
+     * @phpstan-param class-string<ElementInterface> $class
      * @throws QueryAbortedException
      */
     private function _applyStatusParam(string $class): void
     {
         /** @var string|ElementInterface $class */
+        /** @phpstan-var class-string<ElementInterface>|ElementInterface $class */
         if (!$this->status || !$class::hasStatuses()) {
             return;
         }
 
+        /** @var string[]|string|null $statuses */
         $statuses = $this->status;
         if (!is_array($statuses)) {
-            $statuses = is_string($statuses) ? StringHelper::split($statuses) : [$statuses];
+            $statuses = $statuses ? StringHelper::split($statuses) : [];
         }
 
         $firstVal = strtolower(reset($statuses));
@@ -2151,7 +2184,8 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * Applies the structure params to the query being prepared.
      *
-     * @param class-string<ElementInterface> $class
+     * @param string $class
+     * @phpstan-param class-string<ElementInterface> $class
      * @throws QueryAbortedException
      */
     private function _applyStructureParams(string $class): void
@@ -2430,7 +2464,8 @@ class ElementQuery extends Query implements ElementQueryInterface
      * Normalizes a structure param value to either an Element object or false.
      *
      * @param string $property The parameter’s property name.
-     * @param class-string<ElementInterface> $class The element class
+     * @param string $class The element class
+     * @phpstan-param class-string<ElementInterface> $class
      * @return ElementInterface The normalized element
      * @throws QueryAbortedException if the element can't be found
      */
@@ -2443,6 +2478,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         /** @var string|ElementInterface $class */
+        /** @phpstan-var class-string<ElementInterface>|ElementInterface $class */
         if ($element instanceof ElementInterface && !$element->lft) {
             $element = $element->getCanonicalId();
 

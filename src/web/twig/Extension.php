@@ -404,7 +404,8 @@ class Extension extends AbstractExtension implements GlobalsInterface
     public function ucwordsFilter(TwigEnvironment $env, string $string): string
     {
         Craft::$app->getDeprecator()->log('ucwords', 'The `|ucwords` filter has been deprecated. Use `|title` instead.');
-        if (($charset = $env->getCharset()) !== null) {
+        $charset = $env->getCharset();
+        if ($charset) {
             return mb_convert_case($string, MB_CASE_TITLE, $charset);
         }
         return ucwords(strtolower($string));
@@ -518,14 +519,14 @@ class Extension extends AbstractExtension implements GlobalsInterface
     /**
      * Formats the value as a decimal number.
      *
-     * @param $value
+     * @param mixed $value
      * @param int|null $decimals
      * @param array $options
      * @param array $textOptions
      * @return string
      * @since 3.6.0
      */
-    public function numberFilter($value, ?int $decimals = null, array $options = [], array $textOptions = []): string
+    public function numberFilter(mixed $value, ?int $decimals = null, array $options = [], array $textOptions = []): string
     {
         if ($value === null || $value === '') {
             return '';
@@ -541,14 +542,14 @@ class Extension extends AbstractExtension implements GlobalsInterface
     /**
      * Formats the value as a percent number with "%" sign.
      *
-     * @param $value
+     * @param mixed $value
      * @param int|null $decimals
      * @param array $options
      * @param array $textOptions
      * @return string
      * @since 3.6.0
      */
-    public function percentageFilter($value, ?int $decimals = null, array $options = [], array $textOptions = []): string
+    public function percentageFilter(mixed $value, ?int $decimals = null, array $options = [], array $textOptions = []): string
     {
         if ($value === null || $value === '') {
             return '';
@@ -810,7 +811,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      *
      * @param mixed $str
      * @param mixed $search
-     * @param mixed|null $replace
+     * @param mixed $replace
      * @return mixed
      */
     public function replaceFilter(mixed $str, mixed $search, mixed $replace = null): mixed
@@ -858,7 +859,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
         $formatter = $locale ? (new Locale($locale))->getFormatter() : Craft::$app->getFormatter();
         $fmtTimeZone = $formatter->timeZone;
         $formatter->timeZone = $timezone !== null ? $date->getTimezone()->getName() : $formatter->timeZone;
-        $formatted = $formatter->asDate($date, $format);
+        $formatted = $formatter->asDate(DateTime::createFromInterface($date), $format);
         $formatter->timeZone = $fmtTimeZone;
         return $formatted;
     }
@@ -953,7 +954,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
         $formatter = $locale ? (new Locale($locale))->getFormatter() : Craft::$app->getFormatter();
         $fmtTimeZone = $formatter->timeZone;
         $formatter->timeZone = $timezone !== null ? $date->getTimezone()->getName() : $formatter->timeZone;
-        $formatted = $formatter->asTime($date, $format);
+        $formatted = $formatter->asTime(DateTime::createFromInterface($date), $format);
         $formatter->timeZone = $fmtTimeZone;
         return $formatted;
     }
@@ -983,7 +984,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
         $formatter = $locale ? (new Locale($locale))->getFormatter() : Craft::$app->getFormatter();
         $fmtTimeZone = $formatter->timeZone;
         $formatter->timeZone = $timezone !== null ? $date->getTimezone()->getName() : $formatter->timeZone;
-        $formatted = $formatter->asDatetime($date, $format);
+        $formatted = $formatter->asDatetime(DateTime::createFromInterface($date), $format);
         $formatter->timeZone = $fmtTimeZone;
         return $formatted;
     }
@@ -1017,14 +1018,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             return array_filter($arr);
         }
 
-        // todo: remove this version check when we drop support for Twig < 2.13.1
-        if (version_compare(TwigEnvironment::VERSION, '2.13.1', '<')) {
-            /** @noinspection PhpParamsInspection */
-            /** @phpstan-ignore-next-line */
-            $filtered = twig_array_filter($arr, $arrow);
-        } else {
-            $filtered = twig_array_filter($env, $arr, $arrow);
-        }
+        $filtered = twig_array_filter($env, $arr, $arrow);
 
         if (is_array($filtered)) {
             return $filtered;
@@ -1266,7 +1260,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function collectFunction(mixed $var): Collection
     {
-        return new Collection($var);
+        return Collection::make($var);
     }
 
     /**
@@ -1340,7 +1334,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      * Returns a plugin instance by its handle.
      *
      * @param string $handle The plugin handle
-     * @return PluginInterface|null The plugin, or `null` if it's not installed
+     * @return PluginInterface|null The plugin, or `null` if it’s not installed
      * @since 3.1.0
      */
     public function pluginFunction(string $handle): ?PluginInterface
@@ -1526,7 +1520,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             'systemName' => $systemName,
             'view' => $this->view,
 
-            'devMode' => YII_DEBUG,
+            'devMode' => App::devMode(),
             'SORT_ASC' => SORT_ASC,
             'SORT_DESC' => SORT_DESC,
             'SORT_REGULAR' => SORT_REGULAR,

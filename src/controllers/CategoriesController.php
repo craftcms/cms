@@ -235,13 +235,13 @@ class CategoriesController extends Controller
      * Creates a new unpublished draft and redirects to its edit page.
      *
      * @param string $groupHandle The group’s handle
-     * @return Response
+     * @return Response|null
      * @throws BadRequestHttpException
      * @throws ForbiddenHttpException
      * @throws ServerErrorHttpException
      * @since 4.0.0
      */
-    public function actionCreate(string $groupHandle): Response
+    public function actionCreate(string $groupHandle): ?Response
     {
         $group = Craft::$app->getCategories()->getGroupByHandle($groupHandle);
         if (!$group) {
@@ -285,7 +285,9 @@ class CategoriesController extends Controller
         // Save it
         $category->setScenario(Element::SCENARIO_ESSENTIALS);
         if (!Craft::$app->getDrafts()->saveElementAsDraft($category, Craft::$app->getUser()->getId(), null, null, false)) {
-            throw new ServerErrorHttpException(sprintf('Unable to save category as a draft: %s', implode(', ', $category->getErrorSummary(true))));
+            return $this->asModelFailure($category, Craft::t('app', 'Couldn’t create {type}.', [
+                'type' => Category::lowerDisplayName(),
+            ]), 'category');
         }
 
         // Set its position in the structure if a before/after param was passed
@@ -301,8 +303,21 @@ class CategoriesController extends Controller
             Craft::$app->getStructures()->moveAfter($group->structureId, $category, $prevCategory);
         }
 
-        // Redirect to its edit page
-        return $this->redirect($category->getCpEditUrl());
+        $editUrl = $category->getCpEditUrl();
+
+        $response = $this->asModelSuccess($category, Craft::t('app', '{type} created.', [
+            'type' => Category::displayName(),
+        ]), 'category', array_filter([
+            'cpEditUrl' => $this->request->isCpRequest ? $editUrl : null,
+        ]));
+
+        if (!$this->request->getAcceptsJson()) {
+            $response->redirect(UrlHelper::urlWithParams($editUrl, [
+                'fresh' => 1,
+            ]));
+        }
+
+        return $response;
     }
 
     /**
@@ -344,6 +359,7 @@ class CategoriesController extends Controller
                     'category'
                 );
             } catch (Throwable $e) {
+                /** @phpstan-ignore-next-line */
                 throw new ServerErrorHttpException(Craft::t('app', 'An error occurred when duplicating the category.'), 0, $e);
             }
         }
@@ -515,10 +531,10 @@ class CategoriesController extends Controller
 
         $categoryIds = $this->request->getParam('categoryIds', []);
 
-        /** @var Category[] $categories */
         $categories = [];
 
         if (!empty($categoryIds)) {
+            /** @var Category[] $categories */
             $categories = Category::find()
                 ->id($categoryIds)
                 ->siteId($this->request->getParam('siteId'))

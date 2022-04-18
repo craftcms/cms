@@ -2,8 +2,10 @@
 
 namespace craft\base\conditions;
 
+use Craft;
 use craft\base\ElementInterface;
 use craft\elements\conditions\ElementConditionInterface;
+use craft\helpers\App;
 use craft\helpers\Cp;
 
 /**
@@ -24,11 +26,11 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
     }
 
     /**
-     * @var int|null
+     * @var int|string|null
      * @see getElementId()
      * @see setElementId()
      */
-    private ?int $_elementId = null;
+    private int|string|null $_elementId = null;
 
     /**
      * Returns the element type that can be selected.
@@ -68,23 +70,28 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
     }
 
     /**
-     * @return int|null
+     * @param bool $parse Whether to parse the value for an environment variable
+     * @return int|string|null
      */
-    public function getElementId(): ?int
+    public function getElementId(bool $parse = true): int|string|null
     {
+        if ($parse && is_string($this->_elementId)) {
+            return App::parseEnv($this->_elementId);
+        }
         return $this->_elementId;
     }
 
     /**
-     * @param mixed $elementId
+     * @param array|int|string|null $elementId
+     * @phpstan-param array<int|string>|int|string|null $elementId
      */
-    public function setElementId(mixed $elementId): void
+    public function setElementId(array|int|string|null $elementId): void
     {
         if (is_array($elementId)) {
             $elementId = reset($elementId);
         }
 
-        $this->_elementId = $elementId ? (int)$elementId : null;
+        $this->_elementId = $elementId ?: null;
     }
 
     /**
@@ -93,7 +100,7 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
     public function getConfig(): array
     {
         return array_merge(parent::getConfig(), [
-            'elementId' => $this->_elementId,
+            'elementId' => $this->getElementId(false),
         ]);
     }
 
@@ -102,7 +109,23 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
      */
     protected function inputHtml(): string
     {
+        if ($this->getCondition()->forProjectConfig) {
+            return Cp::autosuggestFieldHtml([
+                'suggestEnvVars' => true,
+                'suggestionFilter' => fn($value) => is_int($value) && $value > 0,
+                'required' => true,
+                'id' => 'elementId',
+                'name' => 'elementId',
+                'value' => $this->getElementId(false),
+                'fieldClass' => 'fullwidth',
+                'placeholder' => Craft::t('app', '{type} ID', [
+                    'type' => $this->elementType()::displayName(),
+                ]),
+            ]);
+        }
+
         $element = $this->_element();
+
         return Cp::elementSelectHtml([
             'name' => 'elementId',
             'elements' => $element ? [$element] : [],
@@ -119,14 +142,16 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
      */
     private function _element(): ?ElementInterface
     {
-        if (!$this->_elementId) {
+        $elementId = $this->getElementId();
+        if (!$elementId) {
             return null;
         }
 
         /** @var string|ElementInterface $elementType */
+        /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
         $elementType = $this->elementType();
         return $elementType::find()
-            ->id($this->_elementId)
+            ->id($elementId)
             ->status(null)
             ->one();
     }
@@ -144,7 +169,8 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
     /**
      * Returns whether the condition rule matches the given value.
      *
-     * @param ElementInterface|ElementInterface[]|int|int[]|null $value
+     * @param ElementInterface|int|array|null $value
+     * @phpstan-param ElementInterface|int|array<ElementInterface|int>|null $value
      * @return bool
      */
     protected function matchValue(mixed $value): bool

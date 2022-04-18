@@ -45,9 +45,9 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
     }
 
     /**
-     * @var string UUID
+     * @var string|null UUID
      */
-    public string $uid;
+    public ?string $uid = null;
 
     /**
      * @var string The selected operator.
@@ -168,7 +168,7 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
 
         return
             Html::beginTag('div', [
-                'class' => ['flex', 'flex-nowrap'],
+                'class' => ['flex', 'flex-nowrap', 'flex-start'],
             ]) .
             (count($operators) > 1
                 ? (

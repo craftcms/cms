@@ -9,19 +9,22 @@ htmx.defineExtension('craft-cp', {
                 break;
         }
     },
-
     configureRequest: function(evt) {
         // Add the standard Craft headers
         Object.assign(evt.detail.headers, Craft._actionHeaders());
     },
 
-    onLoad: function(evt) {
-        if (evt.detail.elt === document.body) {
+    // The best place to do this, until an event like `htmx:newContent` is introduced.
+    transformResponse: function(text, xhr, elt) {
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(text, "text/html");
+
+        if (doc.body === document.body) {
             return;
         }
 
-        const allHeadHtml = evt.detail.elt.querySelectorAll("template.hx-head-html");
-        const allBodyHtml = evt.detail.elt.querySelectorAll("template.hx-body-html");
+        const allHeadHtml = doc.querySelectorAll("template.hx-head-html");
+        const allBodyHtml = doc.querySelectorAll("template.hx-body-html");
 
         for (let i = 0; i < allHeadHtml.length; i++) {
             const headHtml = allHeadHtml[i].innerHTML;
@@ -37,8 +40,11 @@ htmx.defineExtension('craft-cp', {
             }
         }
 
+        return text;
+    },
+    onLoad: function(evt) {
         Craft.initUiElements(evt.detail.elt);
-    }
+    },
 });
 
 htmx.defineExtension('craft-condition', {
@@ -51,8 +57,12 @@ htmx.defineExtension('craft-condition', {
     },
 
     configureRequest: function(evt) {
-        const config = $(evt.detail.target).children('.condition-main').data('condition-config');
-        if (config.name) {
+        let $conditionContainer = $(evt.detail.target).children('.condition-main');
+        if (!$conditionContainer.length) {
+            $conditionContainer = $(evt.detail.target).closest('.condition-main');
+        }
+        const config = $conditionContainer.data('condition-config');
+        if (config && config.name) {
             const vals = evt.detail.elt.getAttribute('hx-vals') || evt.detail.elt.getAttribute('data-hx-vals');
             const valNames = vals ? Object.keys(JSON.parse(vals)) : [];
             evt.detail.parameters = Object.fromEntries(

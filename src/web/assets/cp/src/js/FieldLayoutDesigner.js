@@ -183,6 +183,10 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend({
         $('<div/>', {class: 'fields', html: contents}).appendTo($body);
         const $footer = $('<div/>', {class: 'fld-element-settings-footer'});
         $('<div/>', {class: 'flex-grow'}).appendTo($footer);
+        const $cancelBtn = Craft.ui.createButton({
+            label: Craft.t('app', 'Close'),
+            spinner: true,
+        }).appendTo($footer);
         Craft.ui.createSubmitButton({
             class: 'secondary',
             label: Craft.t('app', 'Apply'),
@@ -205,6 +209,10 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend({
                 // Focus on the first text input
                 slideout.$container.find('.text:first').trigger('focus');
             });
+        });
+
+        $cancelBtn.on('click', () => {
+            slideout.close();
         });
 
         if (js) {

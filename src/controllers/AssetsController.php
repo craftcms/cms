@@ -25,7 +25,6 @@ use craft\helpers\ImageTransforms;
 use craft\helpers\StringHelper;
 use craft\i18n\Formatter;
 use craft\imagetransforms\ImageTransformer;
-use craft\models\ImageTransform;
 use craft\models\VolumeFolder;
 use craft\web\Controller;
 use craft\web\UploadedFile;
@@ -172,6 +171,8 @@ class AssetsController extends Controller
      */
     public function actionUpload(): Response
     {
+        $this->requireAcceptsJson();
+
         $uploadedFile = UploadedFile::getInstanceByName('assets-upload');
 
         if (!$uploadedFile) {
@@ -324,6 +325,7 @@ class AssetsController extends Controller
                         throw new Exception($targetFilename . ' doesn\'t have the original file extension.');
                     }
 
+                    /** @var Asset|null $assetToReplace */
                     $assetToReplace = Asset::find()
                         ->select(['elements.id'])
                         ->folderId($sourceAsset->folderId)
@@ -567,6 +569,7 @@ class AssetsController extends Controller
 
         if ($this->request->getBodyParam('force')) {
             // Check for a conflicting Asset
+            /** @var Asset|null $conflictingAsset */
             $conflictingAsset = Asset::find()
                 ->select(['elements.id'])
                 ->folderId($folderId)
@@ -613,6 +616,9 @@ class AssetsController extends Controller
      */
     public function actionMoveFolder(): Response
     {
+        $this->requirePostRequest();
+        $this->requireAcceptsJson();
+
         $folderBeingMovedId = $this->request->getRequiredBodyParam('folderId');
         $newParentFolderId = $this->request->getRequiredBodyParam('parentId');
         $force = $this->request->getBodyParam('force', false);
@@ -666,6 +672,7 @@ class AssetsController extends Controller
             // Get the file transfer list.
             $allSourceFolderIds = array_keys($sourceTree);
             $allSourceFolderIds[] = $folderBeingMovedId;
+            /** @var Asset[] $foundAssets */
             $foundAssets = Asset::find()
                 ->folderId($allSourceFolderIds)
                 ->all();
@@ -704,6 +711,7 @@ class AssetsController extends Controller
             // Get file transfer list for the progress bar
             $allSourceFolderIds = array_keys($sourceTree);
             $allSourceFolderIds[] = $folderBeingMovedId;
+            /** @var Asset[] $foundAssets */
             $foundAssets = Asset::find()
                 ->folderId($allSourceFolderIds)
                 ->all();
@@ -799,10 +807,6 @@ class AssetsController extends Controller
 
             $folder = $asset->getFolder();
 
-            if ($folder === null) {
-                throw new BadRequestHttpException('The folder cannot be found');
-            }
-
             // Do what you want with your own photo.
             if ($asset->id != Craft::$app->getUser()->getIdentity()->photoId) {
                 $this->requireVolumePermissionByAsset('editImages', $asset);
@@ -843,7 +847,7 @@ class AssetsController extends Controller
             $generalConfig->upscaleImages = true;
 
             if ($zoom !== 1.0) {
-                $transformer->scaleImage($originalImageWidth * $zoom, $originalImageHeight * $zoom);
+                $transformer->scaleImage((int)($originalImageWidth * $zoom), (int)($originalImageHeight * $zoom));
             }
 
             $generalConfig->upscaleImages = $upscale;
@@ -875,7 +879,7 @@ class AssetsController extends Controller
             }
 
             if ($imageCropped) {
-                $transformer->crop($x, $y, $width, $height);
+                $transformer->crop((int)$x, (int)$y, (int)$width, (int)$height);
             }
 
             if ($imageChanged) {
@@ -942,6 +946,7 @@ class AssetsController extends Controller
         $this->requirePostRequest();
 
         $assetIds = $this->request->getRequiredBodyParam('assetId');
+        /** @var Asset[] $assets */
         $assets = Asset::find()
             ->id($assetIds)
             ->all();
@@ -993,7 +998,7 @@ class AssetsController extends Controller
      * @return Response
      * @since 4.0.0
      */
-    public function actionIcon(string $extension)
+    public function actionIcon(string $extension): Response
     {
         $path = Assets::iconPath($extension);
 
@@ -1061,6 +1066,7 @@ class AssetsController extends Controller
         $assetId = $this->request->getRequiredParam('assetId');
         $requestId = $this->request->getRequiredParam('requestId');
 
+        /** @var Asset|null $asset */
         $asset = Asset::find()->id($assetId)->one();
 
         if (!$asset) {
@@ -1120,6 +1126,7 @@ class AssetsController extends Controller
         $assetUid = Craft::$app->getRequest()->getRequiredBodyParam('assetUid');
         $focalData = Craft::$app->getRequest()->getRequiredBodyParam('focal');
 
+        /** @var Asset|null $asset */
         $asset = Asset::find()->uid($assetUid)->one();
 
         if (!$asset) {
@@ -1169,7 +1176,7 @@ class AssetsController extends Controller
         if (!$asset->getVolumeId()) {
             $userTemporaryFolder = Craft::$app->getAssets()->getUserTemporaryUploadFolder();
 
-            // Skip permission check only if it's the user's temporary folder
+            // Skip permission check only if it’s the user’s temporary folder
             if ($userTemporaryFolder->id == $asset->folderId) {
                 return;
             }
@@ -1212,7 +1219,7 @@ class AssetsController extends Controller
         if (!$folder->volumeId) {
             $userTemporaryFolder = Craft::$app->getAssets()->getUserTemporaryUploadFolder();
 
-            // Skip permission check only if it's the user's temporary folder
+            // Skip permission check only if it’s the user’s temporary folder
             if ($userTemporaryFolder->id == $folder->id) {
                 return;
             }

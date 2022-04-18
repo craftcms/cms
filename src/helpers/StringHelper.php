@@ -132,6 +132,7 @@ class StringHelper extends \yii\helpers\StringHelper
 
         $map = ASCII::charsArrayWithSingleLanguageValues(false, false);
         if ($language !== null) {
+            /** @var ASCII::*_LANGUAGE_CODE $language */
             $langSpecific = ASCII::charsArrayWithOneLanguage($language, false, false);
             if ($langSpecific !== []) {
                 $map = array_merge($map, $langSpecific);
@@ -301,7 +302,7 @@ class StringHelper extends \yii\helpers\StringHelper
      * but can be made insensitive by setting $caseSensitive to false.
      *
      * @param string $haystack The string being checked.
-     * @param array $needles The substrings to look for.
+     * @param string[] $needles The substrings to look for.
      * @param bool $caseSensitive Whether or not to force case-sensitivity.
      * @return bool Whether or not $haystack contains all $needles.
      */
@@ -315,7 +316,7 @@ class StringHelper extends \yii\helpers\StringHelper
      * but can be made insensitive by setting $caseSensitive to false.
      *
      * @param string $haystack The string being checked.
-     * @param array $needles The substrings to look for.
+     * @param string[] $needles The substrings to look for.
      * @param bool $caseSensitive Whether or not to force case-sensitivity.
      * @return bool Whether or not $haystack contains any $needles.
      */
@@ -480,7 +481,7 @@ class StringHelper extends \yii\helpers\StringHelper
      * by setting $caseSensitive to false.
      *
      * @param string $str The string to check the end of.
-     * @param $substrings [] Substrings to look for.
+     * @param string[] $substrings Substrings to look for.
      * @param bool $caseSensitive Whether or not to force case-sensitivity.
      * @return bool Whether or not $str ends with $substring.
      * @since 3.3.0
@@ -1154,13 +1155,13 @@ class StringHelper extends \yii\helpers\StringHelper
      * Replaces all occurrences of $search in $str by $replacement.
      *
      * @param string $str The haystack to search through.
-     * @param array $search The needle(s) to search for.
-     * @param array|string $replacement The string(s) to replace with.
+     * @param string[] $search The needle(s) to search for.
+     * @param string|string[] $replacement The string(s) to replace with.
      * @param bool $caseSensitive Whether or not to perform a case-sensitive search.
      * @return string The resulting string after the replacements.
      * @since 3.3.0
      */
-    public static function replaceAll(string $str, array $search, array|string $replacement, bool $caseSensitive = true): string
+    public static function replaceAll(string $str, array $search, string|array $replacement, bool $caseSensitive = true): string
     {
         return (string)BaseStringy::create($str)->replaceAll($search, $replacement, $caseSensitive);
     }
@@ -1344,7 +1345,9 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function slugify(string $str, string $replacement = '-', ?string $language = null): string
     {
-        return (string)BaseStringy::create($str)->slugify($replacement, $language ?? Craft::$app->language);
+        /** @var ASCII::*_LANGUAGE_CODE $language */
+        $language = $language ?? Craft::$app->language;
+        return (string)BaseStringy::create($str)->slugify($replacement, $language);
     }
 
     /**
@@ -1395,7 +1398,7 @@ class StringHelper extends \yii\helpers\StringHelper
      * setting $caseSensitive to false.
      *
      * @param string $str The string to check the start of.
-     * @param array $substrings The substrings to look for.
+     * @param string[] $substrings The substrings to look for.
      * @param bool $caseSensitive Whether or not to enforce case-sensitivity.
      * @return bool Whether or not $str starts with $substring.
      * @since 3.3.0
@@ -1531,7 +1534,7 @@ class StringHelper extends \yii\helpers\StringHelper
      * preserving any acronyms. Also accepts an array, $ignore, allowing you to list words not to be capitalized.
      *
      * @param string $str The string to titleize.
-     * @param array|null $ignore An array of words not to capitalize.
+     * @param string[]|null $ignore An array of words not to capitalize.
      * @return string The titleized string.
      */
     public static function titleize(string $str, ?array $ignore = null): string
@@ -1548,9 +1551,8 @@ class StringHelper extends \yii\helpers\StringHelper
      * Adapted from John Gruber's script.
      *
      * @see https://gist.github.com/gruber/9f9e8650d68b13ce4d78
-     *
      * @param string $str The string to titleize.
-     * @param array $ignore An array of words not to capitalize.
+     * @param string[] $ignore An array of words not to capitalize.
      * @return string The titleized string.
      * @since 3.3.0
      */
@@ -1572,7 +1574,10 @@ class StringHelper extends \yii\helpers\StringHelper
         // Normalize NFD chars to NFC
         $str = Normalizer::normalize($str, Normalizer::FORM_C);
 
-        return (string)BaseStringy::create($str)->toAscii($language ?? Craft::$app->language);
+        /** @var ASCII::*_LANGUAGE_CODE $language */
+        $language = $language ?? Craft::$app->language;
+
+        return (string)BaseStringy::create($str)->toAscii($language);
     }
 
     /**

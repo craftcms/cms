@@ -47,14 +47,14 @@ class ProjectConfigData extends ReadOnlyProjectConfigData
     /**
      * Commit changes by firing the appropriate events and updating the appropriate storages.
      *
-     * @param $oldValue
-     * @param $newValue
+     * @param mixed $oldValue
+     * @param mixed $newValue
      * @param string $path
      * @param bool $triggerUpdate
      * @param string|null $message
      * @param bool $force
      */
-    public function commitChanges($oldValue, $newValue, string $path, bool $triggerUpdate = false, ?string $message = null, bool $force = false): void
+    public function commitChanges(mixed $oldValue, mixed $newValue, string $path, bool $triggerUpdate = false, ?string $message = null, bool $force = false): void
     {
         if (!$force && !empty($this->parsedChanges[$path])) {
             return;
@@ -109,10 +109,10 @@ class ProjectConfigData extends ReadOnlyProjectConfigData
     /**
      * Update the internal data storage.
      *
-     * @param $path
-     * @param $value
+     * @param string|string[] $path
+     * @param mixed $value
      */
-    protected function setInternal($path, $value): void
+    protected function setInternal(string|array $path, mixed $value): void
     {
         if ($value === null) {
             $this->delete($path);
@@ -124,10 +124,10 @@ class ProjectConfigData extends ReadOnlyProjectConfigData
     /**
      * Delete a path from the internal data storage.
      *
-     * @param $path
-     * @return mixed|null
+     * @param string|string[] $path
+     * @return mixed
      */
-    protected function delete($path): mixed
+    protected function delete(string|array $path): mixed
     {
         ProjectConfigHelper::traverseDataArray($this->data, $path, null, true);
 

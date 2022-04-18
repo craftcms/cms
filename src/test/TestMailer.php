@@ -10,7 +10,6 @@ namespace craft\test;
 use craft\elements\User;
 use craft\mail\Mailer;
 use craft\mail\Message;
-use yii\mail\MessageInterface;
 
 /**
  * Exactly the same as Codeception\Lib\Connector\Yii2\TestMailer except that we override based on Crafts own mailer class.
@@ -34,8 +33,7 @@ class TestMailer extends Mailer
     public User|string|array|null $from = 'test@test.craft';
 
     /**
-     * @param $message
-     * @return bool
+     * @inheritdoc
      */
     protected function sendMessage($message): bool
     {
@@ -44,8 +42,7 @@ class TestMailer extends Mailer
     }
 
     /**
-     * @param MessageInterface $message
-     * @return bool
+     * @inheritdoc
      */
     protected function saveMessage($message): bool
     {

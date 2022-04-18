@@ -115,6 +115,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
 
     /**
      * @var string Propagation method
+     * @phpstan-var self::PROPAGATION_METHOD_NONE|self::PROPAGATION_METHOD_SITE_GROUP|self::PROPAGATION_METHOD_LANGUAGE|self::PROPAGATION_METHOD_ALL
      *
      * This will be set to one of the following:
      *
@@ -425,9 +426,6 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
             $blockTypeFields[$blockTypeId] = [];
             $totalNewFields = 0;
             $fieldLayout = $blockType->getFieldLayout();
-            if (!$fieldLayout) {
-                continue;
-            }
             $tabs = $fieldLayout->getTabs();
             if (empty($tabs)) {
                 continue;
@@ -744,6 +742,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
             [
                 'validateBlocks',
                 'on' => [Element::SCENARIO_ESSENTIALS, Element::SCENARIO_DEFAULT, Element::SCENARIO_LIVE],
+                'skipOnEmpty' => false,
             ],
         ];
     }
@@ -797,14 +796,14 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
             $arrayValidator = new ArrayValidator([
                 'min' => $this->minBlocks ?: null,
                 'max' => $this->maxBlocks ?: null,
-                'tooFew' => Craft::t('app', '{attribute} should contain at least {min, number} {min, plural, one{block} other{blocks}}.', [
+                'tooFew' => $this->minBlocks ? Craft::t('app', '{attribute} should contain at least {min, number} {min, plural, one{block} other{blocks}}.', [
                     'attribute' => Craft::t('site', $this->name),
                     'min' => $this->minBlocks, // Need to pass this in now
-                ]),
-                'tooMany' => Craft::t('app', '{attribute} should contain at most {max, number} {max, plural, one{block} other{blocks}}.', [
+                ]) : null,
+                'tooMany' => $this->maxBlocks ? Craft::t('app', '{attribute} should contain at most {max, number} {max, plural, one{block} other{blocks}}.', [
                     'attribute' => Craft::t('site', $this->name),
                     'max' => $this->maxBlocks, // Need to pass this in now
-                ]),
+                ]) : null,
                 'skipOnEmpty' => false,
             ]);
 
@@ -820,7 +819,6 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
     protected function searchKeywords(mixed $value, ElementInterface $element): string
     {
         /** @var MatrixBlockQuery $value */
-        /** @var MatrixBlock $block */
         $keywords = [];
 
         foreach ($value->all() as $block) {
@@ -1078,10 +1076,11 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
         // Delete any Matrix blocks that primarily belong to this element
         foreach (Craft::$app->getSites()->getAllSiteIds() as $siteId) {
             $elementsService = Craft::$app->getElements();
+            /** @var MatrixBlock[] $matrixBlocks */
             $matrixBlocks = MatrixBlock::find()
+                ->primaryOwnerId($element->id)
                 ->status(null)
                 ->siteId($siteId)
-                ->primaryOwnerId($element->id)
                 ->all();
 
             foreach ($matrixBlocks as $matrixBlock) {
@@ -1101,10 +1100,11 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
         // Also restore any Matrix blocks for this element
         $elementsService = Craft::$app->getElements();
         foreach (ElementHelper::supportedSitesForElement($element) as $siteInfo) {
+            /** @var MatrixBlock[] $blocks */
             $blocks = MatrixBlock::find()
+                ->primaryOwnerId($element->id)
                 ->status(null)
                 ->siteId($siteInfo['siteId'])
-                ->primaryOwnerId($element->id)
                 ->trashed()
                 ->andWhere(['matrixblocks.deletedWithOwner' => true])
                 ->all();
@@ -1222,6 +1222,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
 
         // Get the old blocks
         if ($element->id) {
+            /** @var MatrixBlock[] $oldBlocksById */
             $oldBlocksById = MatrixBlock::find()
                 ->fieldId($this->id)
                 ->ownerId($element->id)
@@ -1284,6 +1285,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
 
             // Existing block?
             if (isset($oldBlocksById[$blockId])) {
+                /** @var MatrixBlock $block */
                 $block = $oldBlocksById[$blockId];
                 $dirty = !empty($blockData);
 
@@ -1348,6 +1350,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
             $blocks[] = $block;
         }
 
+        /** @var MatrixBlock[] $blocks */
         return $blocks;
     }
 }

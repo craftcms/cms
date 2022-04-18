@@ -24,7 +24,7 @@ use craft\elements\conditions\categories\CategoryCondition;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\CategoryQuery;
 use craft\elements\db\ElementQuery;
-use craft\elements\db\ElementQueryInterface;
+use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\UrlHelper;
 use craft\models\CategoryGroup;
@@ -130,7 +130,7 @@ class Category extends Element
      * @inheritdoc
      * @return CategoryQuery The newly created [[CategoryQuery]] instance.
      */
-    public static function find(): ElementQueryInterface
+    public static function find(): CategoryQuery
     {
         return new CategoryQuery(static::class);
     }
@@ -468,6 +468,31 @@ class Category extends Element
     /**
      * @inheritdoc
      */
+    public function createAnother(): ?self
+    {
+        $group = $this->getGroup();
+
+        /** @var self $category */
+        $category = Craft::createObject([
+            'class' => self::class,
+            'groupId' => $this->groupId,
+            'siteId' => $this->siteId,
+        ]);
+
+        $category->enabled = $this->enabled;
+        $category->setEnabledForSite($this->getEnabledForSite());
+
+        // Structure parent
+        if ($group->maxLevels !== 1) {
+            $category->setParentId($this->getParentId());
+        }
+
+        return $category;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function canView(User $user): bool
     {
         if (parent::canView($user)) {
@@ -619,10 +644,90 @@ class Category extends Element
      */
     protected function metaFieldsHtml(bool $static): string
     {
-        return implode('', [
+        $fields = [
             $this->slugFieldHtml($static),
-            parent::metaFieldsHtml($static),
-        ]);
+        ];
+
+        $fields[] = (function() use ($static) {
+            if ($parentId = $this->getParentId()) {
+                $parent = Craft::$app->getCategories()->getCategoryById($parentId, $this->siteId, [
+                    'drafts' => null,
+                    'draftOf' => false,
+                ]);
+            } else {
+                // If the category already has structure data, use it. Otherwise, use its canonical category
+                /** @var self|null $parent */
+                $parent = self::find()
+                    ->siteId($this->siteId)
+                    ->ancestorOf($this->lft ? $this : ($this->getIsCanonical() ? $this->id : $this->getCanonical(true)))
+                    ->ancestorDist(1)
+                    ->drafts(null)
+                    ->draftOf(false)
+                    ->status(null)
+                    ->one();
+            }
+
+            $group = $this->getGroup();
+
+            return Cp::elementSelectFieldHtml([
+                'label' => Craft::t('app', 'Parent'),
+                'id' => 'parentId',
+                'name' => 'parentId',
+                'elementType' => self::class,
+                'selectionLabel' => Craft::t('app', 'Choose'),
+                'sources' => ["group:$group->uid"],
+                'criteria' => $this->_parentOptionCriteria($group),
+                'limit' => 1,
+                'elements' => $parent ? [$parent] : [],
+                'disabled' => $static,
+            ]);
+        })();
+
+        $fields[] = parent::metaFieldsHtml($static);
+
+        return implode("\n", $fields);
+    }
+
+    private function _parentOptionCriteria(CategoryGroup $group): array
+    {
+        $parentOptionCriteria = [
+            'siteId' => $this->siteId,
+            'groupId' => $group->id,
+            'status' => null,
+            'drafts' => null,
+            'draftOf' => false,
+        ];
+
+        // Prevent the current entry, or any of its descendants, from being selected as a parent
+        if ($this->id) {
+            $excludeIds = self::find()
+                ->descendantOf($this)
+                ->drafts(null)
+                ->draftOf(false)
+                ->status(null)
+                ->ids();
+            $excludeIds[] = $this->getCanonicalId();
+            $parentOptionCriteria['id'] = array_merge(['not'], $excludeIds);
+        }
+
+        if ($group->maxLevels) {
+            if ($this->id) {
+                // Figure out how deep the ancestors go
+                $maxDepth = self::find()
+                    ->select('level')
+                    ->descendantOf($this)
+                    ->status(null)
+                    ->leaves()
+                    ->scalar();
+                $depth = 1 + ($maxDepth ?: $this->level) - $this->level;
+            } else {
+                $depth = 1;
+            }
+
+            $parentOptionCriteria['level'] = sprintf('<=%s', $group->maxLevels - $depth);
+        }
+
+        return $parentOptionCriteria;
     }
 
     /**
@@ -809,6 +914,7 @@ class Category extends Element
         $structureId = $this->getGroup()->structureId;
 
         // Add the category back into its structure
+        /** @var self|null $parent */
         $parent = self::find()
             ->structureId($structureId)
             ->innerJoin(['j' => Table::CATEGORIES], '[[j.parentId]] = [[elements.id]]')

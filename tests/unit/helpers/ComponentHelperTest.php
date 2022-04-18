@@ -7,7 +7,6 @@
 
 namespace crafttests\unit\helpers;
 
-use Closure;
 use Codeception\Test\Unit;
 use craft\base\ComponentInterface;
 use craft\base\FieldInterface;
@@ -19,7 +18,9 @@ use craft\helpers\Component;
 use craft\test\mockclasses\components\ComponentExample;
 use craft\test\mockclasses\components\DependencyHeavyComponentExample;
 use craft\test\mockclasses\components\ExtendedComponentExample;
+use craft\test\TestCase;
 use Exception;
+use Throwable;
 use UnitTester;
 use yii\base\InvalidConfigException;
 
@@ -30,22 +31,24 @@ use yii\base\InvalidConfigException;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class ComponentHelperTest extends Unit
+class ComponentHelperTest extends TestCase
 {
     /**
      * @var UnitTester
      */
-    protected $tester;
+    protected UnitTester $tester;
 
     /**
      * @dataProvider validateComponentClassDataProvider
-     *
      * @param bool $expected
-     * @param class-string $class
-     * @param class-string|null $instanceOf
-     * @param class-string $exceptionClass
+     * @param string $class
+     * @phpstan-param class-string $class
+     * @param string|null $instanceOf
+     * @phpstan-param class-string|null $instanceOf
+     * @param string $exceptionClass
+     * @phpstan-param class-string $exceptionClass
      */
-    public function testValidateComponentClass(bool $expected, string $class, ?string $instanceOf = null, string $exceptionClass = \Throwable::class)
+    public function testValidateComponentClass(bool $expected, string $class, ?string $instanceOf = null, string $exceptionClass = Throwable::class): void
     {
         self::assertSame($expected, Component::validateComponentClass($class, $instanceOf));
         if (!$expected) {
@@ -58,10 +61,9 @@ class ComponentHelperTest extends Unit
      * Tests whether the $callback will evaluate to an instance of the componentInterface.
      *
      * @dataProvider successfulComponentCreationDataProvider
-     *
-     * @param $callback
+     * @param callable $callback
      */
-    public function testSuccessfulComponentCreation(Closure $callback)
+    public function testSuccessfulComponentCreation(callable $callback): void
     {
         self::assertInstanceOf(
             ComponentInterface::class,
@@ -71,12 +73,11 @@ class ComponentHelperTest extends Unit
 
     /**
      * @dataProvider failingComponentCreationDataProvider
-     *
      * @param array $settings
-     * @param $desiredParent
+     * @param string|null $desiredParent
      * @param string $requiredException
      */
-    public function testFailedComponentExceptions(array $settings, $desiredParent, string $requiredException)
+    public function testFailedComponentExceptions(array $settings, ?string $desiredParent, string $requiredException): void
     {
         $this->tester->expectThrowable(
             $requiredException,
@@ -89,29 +90,27 @@ class ComponentHelperTest extends Unit
     /**
      * @todo Figure out a way to test plugin functionality. Probably create a mock plugin under /_support/mockclasses
      */
-    public function testComponentCreation()
+    public function testComponentCreation(): void
     {
     }
 
     /**
      * @dataProvider mergeSettingsDataProvider
-     *
      * @param array $expected
      * @param array $config
      */
-    public function testMergeSettings(array $expected, array $config)
+    public function testMergeSettings(array $expected, array $config): void
     {
         self::assertSame($expected, Component::mergeSettings($config));
     }
 
     /**
      * @dataProvider iconSvgDataProvider
-     *
      * @param string $needle
      * @param string|null $icon
      * @param string $label
      */
-    public function testIconSvg(string $needle, ?string $icon, string $label)
+    public function testIconSvg(string $needle, ?string $icon, string $label): void
     {
         self::assertStringContainsString($needle, Component::iconSvg($icon, $label));
     }
@@ -126,7 +125,7 @@ class ComponentHelperTest extends Unit
             [true, PlainText::class, FieldInterface::class],
             // fails because the class doesn't exist
             [false, 'foo\\bar\\Baz', MissingComponentException::class],
-            // fails because it's not a ComponentInterface
+            // fails because it’s not a ComponentInterface
             [false, HorizontalRule::class, null, InvalidConfigException::class],
             [false, HorizontalRule::class, FieldLayoutElement::class, InvalidConfigException::class],
             // fails because it's the wrong interface

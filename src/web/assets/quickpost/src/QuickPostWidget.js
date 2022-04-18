@@ -119,7 +119,7 @@
         },
 
         gotoEntry: function(response) {
-            // Redirect to the entry's edit URL
+            // Redirect to the entry’s edit URL
             Craft.redirectTo(response.cpEditUrl);
         }
     });

@@ -42,9 +42,9 @@ class Craft extends Yii
 
     /**
      * @inheritdoc
-     *
      * @template T
-     * @param class-string<T>|array{class: class-string<T>}|callable(): T $type
+     * @param string|array|callable $type
+     * @phpstan-param class-string<T>|array{class:class-string<T>}|callable():T $type
      * @param array $params
      * @return T
      */
@@ -172,7 +172,8 @@ class Craft extends Yii
     /**
      * Class autoloader.
      *
-     * @param class-string $className
+     * @param string $className
+     * @phpstan-param class-string $className
      */
     public static function autoload($className): void
     {
@@ -186,6 +187,11 @@ class Craft extends Yii
      */
     private static function _autoloadCustomFieldBehavior(): void
     {
+        if (!isset(static::$app)) {
+            // Nothing we can do about it yet
+            return;
+        }
+
         if (!static::$app->getIsInstalled()) {
             // Just load an empty CustomFieldBehavior into memory
             self::_generateCustomFieldBehavior([], null, false, true);
@@ -234,7 +240,7 @@ class Craft extends Yii
                 }
                 foreach ($types as $type) {
                     $type = trim($type, ' \\');
-                    // Add a leading `\` if it's not a variable, self-reference, or primitive type
+                    // Add a leading `\` if it’s not a variable, self-reference, or primitive type
                     if (!preg_match('/^(\$.*|(self|static|bool|boolean|int|integer|float|double|string|array|object|callable|callback|iterable|resource|null|mixed|number|void)(\[\])?)$/i', $type)) {
                         $type = '\\' . $type;
                     }

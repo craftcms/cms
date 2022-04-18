@@ -751,7 +751,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public static function findOne(mixed $criteria = null): ?ElementInterface
+    public static function findOne(mixed $criteria = null): ?static
     {
         return static::findByCondition($criteria, true);
     }
@@ -1626,10 +1626,10 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
-     * @var string|null Revision creator ID to be saved
+     * @var int|null Revision creator ID to be saved
      * @see setRevisionCreatorId()
      */
-    protected ?string $revisionCreatorId = null;
+    protected ?int $revisionCreatorId = null;
 
     /**
      * @var string|null Revision notes to be saved
@@ -1647,16 +1647,16 @@ abstract class Element extends Component implements ElementInterface
     private ?int $_canonicalId = null;
 
     /**
-     * @var static|false|null
+     * @var ElementInterface|false|null
      * @see getCanonical()
      */
-    private self|false|null $_canonical = null;
+    private ElementInterface|false|null $_canonical = null;
 
     /**
-     * @var static|null
+     * @var ElementInterface|null
      * @see getCanonical()
      */
-    private self|null $_canonicalAnySite = null;
+    private ElementInterface|null $_canonicalAnySite = null;
 
     /**
      * @var string|null
@@ -1737,14 +1737,14 @@ abstract class Element extends Component implements ElementInterface
     private array $_dirtyFields = [];
 
     /**
-     * @var static|false
+     * @var ElementInterface|false
      */
-    private self|false $_nextElement;
+    private ElementInterface|false $_nextElement;
 
     /**
-     * @var static|false
+     * @var ElementInterface|false
      */
-    private self|false $_prevElement;
+    private ElementInterface|false $_prevElement;
 
     /**
      * @var int|false|null Parent ID
@@ -1754,11 +1754,11 @@ abstract class Element extends Component implements ElementInterface
     private int|false|null $_parentId = null;
 
     /**
-     * @var static|false|null
+     * @var ElementInterface|false|null
      * @see getParent()
      * @see setParent()
      */
-    private self|false|null $_parent = null;
+    private ElementInterface|false|null $_parent = null;
 
     /**
      * @var bool|null
@@ -1767,16 +1767,16 @@ abstract class Element extends Component implements ElementInterface
     private ?bool $_hasNewParent = null;
 
     /**
-     * @var static|false|null
+     * @var ElementInterface|false|null
      * @see getPrevSibling()
      */
-    private self|false|null $_prevSibling = null;
+    private ElementInterface|false|null $_prevSibling = null;
 
     /**
-     * @var static|false|null
+     * @var ElementInterface|false|null
      * @see getNextSibling()
      */
-    private self|false|null $_nextSibling = null;
+    private ElementInterface|false|null $_nextSibling = null;
 
     /**
      * @var Collection[]
@@ -1793,10 +1793,10 @@ abstract class Element extends Component implements ElementInterface
     private array $_eagerLoadedElementCounts = [];
 
     /**
-     * @var static|false|null
+     * @var ElementInterface|false|null
      * @see getCurrentRevision()
      */
-    private self|false|null $_currentRevision = null;
+    private ElementInterface|false|null $_currentRevision = null;
 
     /**
      * @var bool|bool[]
@@ -1893,12 +1893,6 @@ abstract class Element extends Component implements ElementInterface
      */
     public function __get($name)
     {
-        if ($name === 'locale') {
-            Craft::$app->getDeprecator()->log('Element::locale', 'The `locale` element property has been deprecated. Use `siteId` instead.');
-
-            return $this->getSite()->handle;
-        }
-
         // Is $name a set of eager-loaded elements?
         if ($this->hasEagerLoadedElements($name)) {
             return $this->getEagerLoadedElements($name);
@@ -2474,11 +2468,11 @@ abstract class Element extends Component implements ElementInterface
         // Just fetch that one value ourselves
         if (!isset($this->_canonicalUid)) {
             $this->_canonicalUid = static::find()
-                ->select(['elements.uid'])
                 ->id($this->_canonicalId)
                 ->site('*')
                 ->status(null)
                 ->ignorePlaceholders()
+                ->select(['elements.uid'])
                 ->scalar();
         }
 
@@ -2524,7 +2518,7 @@ abstract class Element extends Component implements ElementInterface
      */
     public function mergeCanonicalChanges(): void
     {
-        if (($canonical = $this->getCanonical()) === null) {
+        if (($canonical = $this->getCanonical()) === $this) {
             return;
         }
 
@@ -3928,12 +3922,14 @@ abstract class Element extends Component implements ElementInterface
             case 'draftCreator':
                 if ($behavior = $this->getBehavior('draft')) {
                     /** @var DraftBehavior $behavior */
+                    /** @var User[] $elements */
                     $behavior->setCreator($elements[0] ?? null);
                 }
                 break;
             case 'revisionCreator':
                 if ($behavior = $this->getBehavior('revision')) {
                     /** @var RevisionBehavior $behavior */
+                    /** @var User[] $elements */
                     $behavior->setCreator($elements[0] ?? null);
                 }
                 break;
@@ -3946,7 +3942,7 @@ abstract class Element extends Component implements ElementInterface
                 $this->trigger(self::EVENT_SET_EAGER_LOADED_ELEMENTS, $event);
                 if (!$event->handled) {
                     // No takers. Just store it in the internal array then.
-                    $this->_eagerLoadedElements[$handle] = new Collection($elements);
+                    $this->_eagerLoadedElements[$handle] = Collection::make($elements);
                 }
         }
     }
@@ -4668,9 +4664,9 @@ JS,
      *
      * @param mixed $criteria Refer to [[findOne()]] and [[findAll()]] for the explanation of this parameter
      * @param bool $one Whether this method is called by [[findOne()]] or [[findAll()]]
-     * @return self|self[]|null
+     * @return static|static[]|null
      */
-    protected static function findByCondition(mixed $criteria, bool $one): array|Element|null
+    protected static function findByCondition(mixed $criteria, bool $one): array|static|null
     {
         $query = static::find();
 

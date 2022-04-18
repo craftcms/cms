@@ -12,6 +12,7 @@ use craft\base\conditions\ConditionInterface;
 use craft\base\conditions\ConditionRuleInterface;
 use craft\helpers\Json;
 use craft\web\Controller;
+use Illuminate\Support\Collection;
 
 /**
  * The ConditionsController class is a controller that handles various condition related actions including managing
@@ -53,7 +54,7 @@ class ConditionsController extends Controller
     public function actionAddRule(): string
     {
         /** @var ConditionRuleInterface|null $rule */
-        $rule = collect($this->_condition->getSelectableConditionRules())
+        $rule = Collection::make($this->_condition->getSelectableConditionRules())
             ->sortBy(fn(ConditionRuleInterface $rule) => $rule->getLabel())
             ->first();
 
@@ -71,7 +72,7 @@ class ConditionsController extends Controller
     public function actionRemoveRule(): string
     {
         $ruleUid = $this->request->getRequiredBodyParam('uid');
-        $conditionRules = collect($this->_condition->getConditionRules())
+        $conditionRules = Collection::make($this->_condition->getConditionRules())
             ->filter(fn(ConditionRuleInterface $rule) => $rule->uid !== $ruleUid)
             ->all();
         $this->_condition->setConditionRules($conditionRules);

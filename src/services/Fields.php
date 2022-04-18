@@ -61,6 +61,7 @@ use craft\records\FieldGroup as FieldGroupRecord;
 use craft\records\FieldLayout as FieldLayoutRecord;
 use craft\records\FieldLayoutField as FieldLayoutFieldRecord;
 use craft\records\FieldLayoutTab as FieldLayoutTabRecord;
+use Illuminate\Support\Collection;
 use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
@@ -411,7 +412,7 @@ class Fields extends Component
      */
     public function deleteGroup(FieldGroup $group): bool
     {
-        /** @var FieldGroupRecord $groupRecord */
+        /** @var FieldGroupRecord|null $groupRecord */
         $groupRecord = FieldGroupRecord::find()
             ->where(['id' => $group->id])
             ->with('fields')
@@ -447,6 +448,7 @@ class Fields extends Component
      * Returns all available field type classes.
      *
      * @return string[] The available field type classes
+     * @phpstan-return class-string<FieldInterface>[]
      */
     public function getAllFieldTypes(): array
     {
@@ -528,6 +530,7 @@ class Fields extends Component
 
         foreach ($this->getAllFieldTypes() as $class) {
             /** @var string|FieldInterface $class */
+            /** @phpstan-var class-string<FieldInterface>|FieldInterface $class */
             if ($class === get_class($field)) {
                 if ($includeCurrent) {
                     $types[] = $class;
@@ -565,8 +568,10 @@ class Fields extends Component
     /**
      * Creates a field with a given config.
      *
-     * @param mixed $config The field’s class name, or its config, with a `type` value and optionally a `settings` value
-     * @return FieldInterface The field
+     * @template T of FieldInterface
+     * @param string|array $config The field’s class name, or its config, with a `type` value and optionally a `settings` value
+     * @phpstan-param class-string<T>|array{type:class-string<T>,id?:int|string,uid?:string} $config
+     * @return T The field
      */
     public function createField(mixed $config): FieldInterface
     {
@@ -802,7 +807,7 @@ class Fields extends Component
         }
 
         if (!$appliedConfig) {
-            // If it's not a global field, or there weren't any changes in the main field settings, apply the save to the DB + call afterSave()
+            // If it’s not a global field, or there weren't any changes in the main field settings, apply the save to the DB + call afterSave()
             $this->applyFieldSave($field->uid, $configData, $field->context);
         }
 
@@ -1095,7 +1100,8 @@ class Fields extends Component
     /**
      * Returns a field layout by its associated element type.
      *
-     * @param class-string<ElementInterface> $type The associated element type
+     * @param string $type The associated element type
+     * @phpstan-param class-string<ElementInterface> $type
      * @return FieldLayout The field layout
      */
     public function getLayoutByType(string $type): FieldLayout
@@ -1126,7 +1132,8 @@ class Fields extends Component
     /**
      * Returns all of the field layouts associated with a given element type.
      *
-     * @param class-string<ElementInterface> $type
+     * @param string $type
+     * @phpstan-param class-string<ElementInterface> $type
      * @return FieldLayout[] The field layouts
      * @since 3.5.0
      */
@@ -1146,13 +1153,17 @@ class Fields extends Component
     }
 
     /**
-     * Returns a layout's tabs by its ID.
+     * Returns a layout's tabs by its ID(s).
      *
-     * @param int $layoutId The field layout’s ID
+     * @param int|int[] $layoutId The field layout’s ID(s)
      * @return FieldLayoutTab[] The field layout’s tabs
      */
-    public function getLayoutTabsById(int $layoutId): array
+    public function getLayoutTabsById(int|array $layoutId): array
     {
+        if (empty($layoutId)) {
+            return [];
+        }
+
         $result = $this->_createLayoutTabQuery()
             ->where(['layoutId' => $layoutId])
             ->all();
@@ -1196,20 +1207,12 @@ class Fields extends Component
             return;
         }
 
-        $result = $this->_createLayoutTabQuery()
-            ->where(['layoutId' => array_keys($layouts)])
-            ->all();
+        $tabs = Collection::make($this->getLayoutTabsById(array_keys($layouts)));
 
-        $tabsByLayoutId = [];
-        $isMysql = Craft::$app->getDb()->getIsMysql();
-
-        foreach ($result as $row) {
-            $tabsByLayoutId[$row['layoutId']][] = $this->_createLayoutTabFromRow($row, $isMysql);
-        }
-
-        foreach ($tabsByLayoutId as $layoutId => $tabs) {
-            $layouts[$layoutId]->setTabs($tabs);
-        }
+        Collection::make($layouts)
+            ->each(function(FieldLayout $layout) use ($tabs) {
+                $layout->setTabs($tabs->where('layoutId', $layout->id)->all());
+            });
     }
 
     /**
@@ -1250,8 +1253,10 @@ class Fields extends Component
     /**
      * Creates a field layout element instance from its config.
      *
+     * @template T of FieldLayoutElement
      * @param array $config
-     * @return FieldLayoutElement
+     * @phpstan-param array{type:class-string<T>} $config
+     * @return T
      * @throws InvalidArgumentException if `$config['type']` does not implement [[FieldLayoutElement]]
      * @since 3.5.0
      */
@@ -1317,6 +1322,7 @@ class Fields extends Component
 
         if (!$isNewLayout) {
             // Get the current layout
+            /** @var FieldLayoutRecord|null $layoutRecord */
             $layoutRecord = FieldLayoutRecord::findWithTrashed()
                 ->andWhere(['id' => $layout->id])
                 ->one();
@@ -1363,6 +1369,7 @@ class Fields extends Component
 
         foreach ($tabs as $tab) {
             if ($tab->id && isset($tabRecords[$tab->id])) {
+                /** @var FieldLayoutTabRecord $tabRecord */
                 $tabRecord = $tabRecords[$tab->id];
                 unset($tabRecords[$tab->id]);
             } else {
@@ -1478,7 +1485,8 @@ class Fields extends Component
     /**
      * Deletes field layouts associated with a given element type.
      *
-     * @param class-string<ElementInterface> $type The element type
+     * @param string $type The element type
+     * @phpstan-param class-string<ElementInterface> $type
      * @return bool Whether the field layouts were deleted successfully
      */
     public function deleteLayoutsByType(string $type): bool
@@ -1568,6 +1576,10 @@ class Fields extends Component
 
             $class = $data['type'];
 
+            // Track whether we should remove the field’s search indexes after save
+            $searchable = $data['searchable'] ?? false;
+            $deleteSearchIndexes = !$isNewField && !$searchable && $fieldRecord->searchable;
+
             // Create/alter the content table column(s)
             $contentService = Craft::$app->getContent();
             $oldHandle = !$isNewField ? $fieldRecord->getOldHandle() : null;
@@ -1582,13 +1594,13 @@ class Fields extends Component
                         [$key, $type] = explode(':', $type, 2);
                         $oldColumn = !$isNewField ? ElementHelper::fieldColumn($this->oldFieldColumnPrefix, $oldHandle, $oldColumnSuffix, $i !== 0 ? $key : null) : null;
                         $newColumn = ElementHelper::fieldColumn(null, $data['handle'], $data['columnSuffix'] ?? null, $i !== 0 ? $key : null);
-                        $this->_updateColumn($db, $transaction, $contentService->contentTable, $oldColumn, $newColumn, $type);
+                        $this->updateColumn($db, $transaction, $contentService->contentTable, $oldColumn, $newColumn, $type);
                         $newColumns[$newColumn] = true;
                     }
                 } else {
                     $oldColumn = !$isNewField ? ElementHelper::fieldColumn($this->oldFieldColumnPrefix, $oldHandle, $oldColumnSuffix) : null;
                     $newColumn = ElementHelper::fieldColumn(null, $data['handle'], $data['columnSuffix'] ?? null);
-                    $this->_updateColumn($db, $transaction, $contentService->contentTable, $oldColumn, $newColumn, $columnType);
+                    $this->updateColumn($db, $transaction, $contentService->contentTable, $oldColumn, $newColumn, $columnType);
                     $newColumns[$newColumn] = true;
                 }
             }
@@ -1620,7 +1632,7 @@ class Fields extends Component
             $fieldRecord->context = $context;
             $fieldRecord->columnSuffix = $data['columnSuffix'] ?? null;
             $fieldRecord->instructions = $data['instructions'];
-            $fieldRecord->searchable = $data['searchable'] ?? false;
+            $fieldRecord->searchable = $searchable;
             $fieldRecord->translationMethod = $data['translationMethod'];
             $fieldRecord->translationKeyFormat = $data['translationKeyFormat'];
             $fieldRecord->type = $data['type'];
@@ -1631,7 +1643,6 @@ class Fields extends Component
             $transaction->commit();
         } catch (Throwable $e) {
             $transaction->rollBack();
-
             throw $e;
         }
 
@@ -1641,7 +1652,7 @@ class Fields extends Component
         // Tell the current CustomFieldBehavior class about the field
         CustomFieldBehavior::$fieldHandles[$fieldRecord->handle] = true;
 
-        // For CP save requests, make sure we have all the custom data already saved on the object.
+        // For control panel save requests, make sure we have all the custom data already saved on the object.
         if (isset($this->_savingFields[$fieldUid])) {
             $field = $this->_savingFields[$fieldUid];
 
@@ -1668,19 +1679,30 @@ class Fields extends Component
             ]));
         }
 
+        // If we just dropped `searchable`, delete the field’s search indexes immediately.
+        if ($deleteSearchIndexes) {
+            Db::delete(Table::SEARCHINDEX, [
+                'attribute' => 'field',
+                'fieldId' => $field->id,
+            ]);
+        }
+
         // Invalidate all element caches
         Craft::$app->getElements()->invalidateAllCaches();
     }
 
     /**
+     * Adds/updates a field’s content table column.
+     *
      * @param Connection $db
      * @param Transaction $transaction
      * @param string $table
      * @param string|null $oldName
      * @param string $newName
      * @param string $type
+     * @since 3.7.39
      */
-    private function _updateColumn(Connection $db, Transaction &$transaction, string $table, ?string $oldName, string $newName, string $type): void
+    protected function updateColumn(Connection $db, Transaction &$transaction, string $table, ?string $oldName, string $newName, string $type): void
     {
         // Clear the schema cache
         $db->getSchema()->refresh();
@@ -1854,6 +1876,7 @@ class Fields extends Component
         }
 
         /** @noinspection PhpIncompatibleReturnTypeInspection */
+        /** @var FieldGroupRecord */
         return $query->one() ?? new FieldGroupRecord();
     }
 

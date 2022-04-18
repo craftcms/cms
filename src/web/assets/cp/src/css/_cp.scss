@@ -161,7 +161,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   display: grid;
   grid-template-columns: 30px auto;
   grid-gap: 10px;
-  height: 100%;
+  height: 50px;
   padding: 0 10px;
   position: relative;
   flex: 0 0 50px;
@@ -674,10 +674,6 @@ li.breadcrumb-toggle-wrapper {
   }
 }
 
-[data-wrapper] {
-  position: relative;
-}
-
 #user-info {
   display: flex;
   flex-direction: row;
@@ -960,6 +956,11 @@ li.breadcrumb-toggle-wrapper {
 
 #content-container {
   flex: 1;
+
+  #main-content:not(.has-sidebar):not(.has-details) & {
+    width: 100%;
+    max-width: 100%;
+  }
 
   #main-content.has-sidebar & {
     width: calc(100% - #{$sidebarWidth - 24});
@@ -1267,11 +1268,14 @@ li.breadcrumb-toggle-wrapper {
 
 /* Sidebar */
 .sidebar {
-  padding: var(--m) 0;
   width: $sidebarWidth;
   box-sizing: border-box;
   font-size: 13px;
-  background-color: $grey050;
+
+  &:not(.drag-helper) {
+    padding: var(--m) 0;
+    background-color: $grey050;
+  }
 
   .heading {
     position: relative;
@@ -1348,6 +1352,7 @@ li.breadcrumb-toggle-wrapper {
         color: $textColor;
         user-select: none;
         border-radius: $largeBorderRadius;
+        word-break: break-word;
 
         .status {
           flex-shrink: 1;
@@ -1358,6 +1363,7 @@ li.breadcrumb-toggle-wrapper {
           flex-shrink: 1;
           width: 18px;
           height: 18px;
+          word-break: normal;
           transition: margin-left linear 150ms, margin-right linear 150ms;
 
           &.icon-mask {
@@ -1435,6 +1441,10 @@ li.breadcrumb-toggle-wrapper {
     border-bottom: 1px solid $hairlineColor;
     margin-bottom: var(--s);
   }
+}
+
+#content {
+  overflow-x: auto;
 }
 
 /* flexbox field layouts */

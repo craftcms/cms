@@ -95,6 +95,7 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
 
     /**
      * @var string How the number should be formatted in element index views.
+     * @phpstan-var self::FORMAT_DECIMAL|self::FORMAT_CURRENCY|self::FORMAT_NONE
      * @since 3.5.11
      */
     public string $previewFormat = self::FORMAT_DECIMAL;

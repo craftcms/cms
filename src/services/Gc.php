@@ -21,12 +21,16 @@ use craft\elements\GlobalSet;
 use craft\elements\MatrixBlock;
 use craft\elements\Tag;
 use craft\elements\User;
+use craft\errors\FsException;
+use craft\fs\Temp;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\records\Volume;
 use craft\records\VolumeFolder;
 use DateTime;
 use yii\base\Component;
+use yii\base\Exception;
+use yii\base\InvalidConfigException;
 use yii\di\Instance;
 
 /**
@@ -138,6 +142,8 @@ class Gc extends Component
         ]);
 
         $this->hardDeleteVolumes();
+
+        $this->removeEmptyTempFolders();
     }
 
     /**
@@ -261,7 +267,8 @@ SQL;
     /**
      * Deletes elements that are missing data in the given element extension table.
      *
-     * @param class-string<ElementInterface> $elementType The element type
+     * @param string $elementType The element type
+     * @phpstan-param class-string<ElementInterface> $elementType
      * @param string $table The extension table name
      * @param string $fk The column name that contains the foreign key to `elements.id`
      * @since 3.6.6
@@ -291,6 +298,38 @@ SQL;
         }
 
         $this->db->createCommand($sql, ['type' => $elementType])->execute();
+    }
+
+    /**
+     * Find all temp upload folders with no assets in them and remove them.
+     *
+     * @throws FsException
+     * @throws Exception
+     * @throws InvalidConfigException
+     * @since 4.0.0
+     */
+    public function removeEmptyTempFolders(): void
+    {
+        $emptyFolders = (new Query())
+            ->from(['folders' => Table::VOLUMEFOLDERS])
+            ->select(['folders.id', 'folders.path'])
+            ->leftJoin(['assets' => Table::ASSETS], '[[assets.folderId]] = [[folders.id]]')
+            ->where([
+                'folders.volumeId' => null,
+                'assets.id' => null,
+            ])
+            ->andWhere(['not', ['folders.parentId' => null]])
+            ->pairs();
+
+        $fs = Craft::createObject(Temp::class);
+
+        foreach ($emptyFolders as $emptyFolderPath) {
+            if ($fs->directoryExists($emptyFolderPath)) {
+                $fs->deleteDirectory($emptyFolderPath);
+            }
+        }
+
+        VolumeFolder::deleteAll(['id' => array_keys($emptyFolders)]);
     }
 
     /**

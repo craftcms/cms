@@ -5,9 +5,8 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craftunit\gql\mutations;
+namespace crafttests\unit\gql\mutations;
 
-use Codeception\Test\Unit;
 use craft\elements\GlobalSet;
 use craft\fields\Number;
 use craft\fields\PlainText;
@@ -27,15 +26,19 @@ use craft\models\GqlSchema;
 use craft\models\Section;
 use craft\models\TagGroup;
 use craft\models\Volume;
+use craft\test\TestCase;
+use Exception;
+use UnitTester;
+use yii\base\InvalidConfigException;
 
-class CreateMutationsTest extends Unit
+class CreateMutationsTest extends TestCase
 {
     /**
-     * @var \UnitTester
+     * @var UnitTester
      */
-    protected $tester;
+    protected UnitTester $tester;
 
-    protected function _before()
+    protected function _before(): void
     {
         // Mock all the things
         $this->tester->mockCraftMethods('volumes', [
@@ -77,7 +80,7 @@ class CreateMutationsTest extends Unit
         ]);
     }
 
-    protected function _after()
+    protected function _after(): void
     {
     }
 
@@ -86,11 +89,10 @@ class CreateMutationsTest extends Unit
      *
      * @param array $scopes
      * @param array $mutationNames
-     *
      * @dataProvider assetMutationDataProvider
-     * @throws \yii\base\InvalidConfigException
+     * @throws InvalidConfigException
      */
-    public function testCreateAssetMutations(array $scopes, array $mutationNames)
+    public function testCreateAssetMutations(array $scopes, array $mutationNames): void
     {
         $this->_mockScope($scopes);
 
@@ -108,7 +110,7 @@ class CreateMutationsTest extends Unit
     /**
      * Check if a created save mutation for a given volume has expected arguments and returns a certain type
      */
-    public function testCreateAssetSaveMutation()
+    public function testCreateAssetSaveMutation(): void
     {
         $volume = $this->make(Volume::class, [
                 '__call' => function($name, $args) {
@@ -132,11 +134,10 @@ class CreateMutationsTest extends Unit
      *
      * @param array $scopes
      * @param array $mutationNames
-     *
      * @dataProvider categoryMutationDataProvider
-     * @throws \yii\base\InvalidConfigException
+     * @throws InvalidConfigException
      */
-    public function testCreateCategoryMutations(array $scopes, array $mutationNames)
+    public function testCreateCategoryMutations(array $scopes, array $mutationNames): void
     {
         $this->_mockScope($scopes);
 
@@ -154,7 +155,7 @@ class CreateMutationsTest extends Unit
     /**
      * Check if a created save mutation for a given category group has expected arguments and returns a certain type
      */
-    public function testCreateCategorySaveMutation()
+    public function testCreateCategorySaveMutation(): void
     {
         $categoryGroup = $this->make(CategoryGroup::class, [
                 '__call' => function($name, $args) {
@@ -178,11 +179,10 @@ class CreateMutationsTest extends Unit
      *
      * @param array $scopes
      * @param array $mutationNames
-     *
      * @dataProvider tagMutationDataProvider
-     * @throws \yii\base\InvalidConfigException
+     * @throws InvalidConfigException
      */
-    public function testCreateTagMutations(array $scopes, array $mutationNames)
+    public function testCreateTagMutations(array $scopes, array $mutationNames): void
     {
         $this->_mockScope($scopes);
 
@@ -200,7 +200,7 @@ class CreateMutationsTest extends Unit
     /**
      * Check if a created save mutation for a given tag group has expected arguments and returns a certain type
      */
-    public function testCreateTagSaveMutation()
+    public function testCreateTagSaveMutation(): void
     {
         $tagGroup = $this->make(TagGroup::class, [
                 '__call' => function($name, $args) {
@@ -223,11 +223,10 @@ class CreateMutationsTest extends Unit
      *
      * @param array $scopes
      * @param array $mutationNames
-     *
      * @dataProvider globalSetMutationDataProvider
-     * @throws \yii\base\InvalidConfigException
+     * @throws InvalidConfigException
      */
-    public function testCreateGlobalSetMutations(array $scopes, array $mutationNames)
+    public function testCreateGlobalSetMutations(array $scopes, array $mutationNames): void
     {
         $this->_mockScope($scopes);
 
@@ -245,7 +244,7 @@ class CreateMutationsTest extends Unit
     /**
      * Check if a created save mutation for a given global set has expected arguments and returns a certain type
      */
-    public function testCreateGlobalSetSaveMutation()
+    public function testCreateGlobalSetSaveMutation(): void
     {
         $globalSet = $this->make(GlobalSet::class, [
                 '__call' => function($name, $args) {
@@ -269,11 +268,10 @@ class CreateMutationsTest extends Unit
      *
      * @param array $scopes
      * @param array $mutationNames
-     *
      * @dataProvider entryMutationDataProvider
-     * @throws \yii\base\InvalidConfigException
+     * @throws InvalidConfigException
      */
-    public function testCreateEntryMutations(array $scopes, array $mutationNames)
+    public function testCreateEntryMutations(array $scopes, array $mutationNames): void
     {
         $this->_mockScope($scopes);
 
@@ -291,7 +289,7 @@ class CreateMutationsTest extends Unit
     /**
      * Check if a created save mutation for a given tag group has expected arguments and returns a certain type
      */
-    public function testCreateEntrySaveMutation()
+    public function testCreateEntrySaveMutation(): void
     {
         $single = $this->make(EntryType::class, [
                 '__call' => function($name, $args) {
@@ -346,7 +344,7 @@ class CreateMutationsTest extends Unit
         self::assertArrayNotHasKey('appendToRoot', $draftMutation['args']);
     }
 
-    public function assetMutationDataProvider()
+    public function assetMutationDataProvider(): array
     {
         return [
             [
@@ -368,7 +366,7 @@ class CreateMutationsTest extends Unit
         ];
     }
 
-    public function categoryMutationDataProvider()
+    public function categoryMutationDataProvider(): array
     {
         return [
             [
@@ -390,7 +388,7 @@ class CreateMutationsTest extends Unit
         ];
     }
 
-    public function tagMutationDataProvider()
+    public function tagMutationDataProvider(): array
     {
         return [
             [
@@ -412,7 +410,7 @@ class CreateMutationsTest extends Unit
         ];
     }
 
-    public function entryMutationDataProvider()
+    public function entryMutationDataProvider(): array
     {
         return [
             [
@@ -438,7 +436,7 @@ class CreateMutationsTest extends Unit
         ];
     }
 
-    public function globalSetMutationDataProvider()
+    public function globalSetMutationDataProvider(): array
     {
         return [
             [
@@ -454,7 +452,7 @@ class CreateMutationsTest extends Unit
 
     /**
      * @param array $scopes
-     * @throws \Exception
+     * @throws Exception
      */
     private function _mockScope(array $scopes)
     {

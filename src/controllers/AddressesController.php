@@ -39,6 +39,7 @@ class AddressesController extends Controller
 
         $addressId = $this->request->getRequiredBodyParam('addressId');
 
+        /** @var Address|null $address */
         $address = Address::find()
             ->id($addressId)
             ->one();
@@ -63,8 +64,7 @@ class AddressesController extends Controller
     /**
      * Returns address fields’ HTML (sans country) for the given country and subdivisions.
      *
-     * $param string $namespace
-     *
+     * @param string $namespace
      * @param string $countryCode
      * @param string|null $administrativeArea
      * @param string|null $locality

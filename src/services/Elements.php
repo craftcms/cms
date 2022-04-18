@@ -296,8 +296,10 @@ class Elements extends Component
     /**
      * Creates an element with a given config.
      *
-     * @param mixed $config The field’s class name, or its config, with a `type` value and optionally a `settings` value
-     * @return ElementInterface The element
+     * @template T of ElementInterface
+     * @param string|array $config The element’s class name, or its config, with a `type` value
+     * @phpstan-param class-string<T>|array{type:class-string<T>} $config
+     * @return T The element
      */
     public function createElement(mixed $config): ElementInterface
     {
@@ -311,7 +313,8 @@ class Elements extends Component
     /**
      * Creates an element query for a given element type.
      *
-     * @param class-string<ElementInterface> $elementType The element class
+     * @param string $elementType The element class
+     * @phpstan-param class-string<ElementInterface> $elementType
      * @return ElementQueryInterface The element query
      * @throws InvalidArgumentException if $elementType is not a valid element
      * @since 3.5.0
@@ -422,7 +425,8 @@ class Elements extends Component
     /**
      * Invalidates caches for the given element type.
      *
-     * @param class-string<ElementInterface> $elementType
+     * @param string $elementType
+     * @phpstan-param class-string<ElementInterface> $elementType
      * @since 3.5.0
      */
     public function invalidateCachesForElementType(string $elementType): void
@@ -473,9 +477,10 @@ class Elements extends Component
      * the $id is, so you should definitely pass it if it’s known.
      * The element’s status will not be a factor when using this method.
      *
-     * @template T
+     * @template T of ElementInterface
      * @param int $elementId The element’s ID.
-     * @param class-string<T>|null $elementType The element class.
+     * @param string|null $elementType The element class.
+     * @phpstan-param class-string<T>|null $elementType
      * @param int|string|int[]|null $siteId The site(s) to fetch the element in.
      * Defaults to the current site.
      * @param array $criteria
@@ -493,9 +498,10 @@ class Elements extends Component
      * the $uid is, so you should definitely pass it if it’s known.
      * The element’s status will not be a factor when using this method.
      *
-     * @template T
+     * @template T of ElementInterface
      * @param string $uid The element’s UID.
-     * @param class-string<T>|null $elementType The element class.
+     * @param string|null $elementType The element class.
+     * @phpstan-param class-string<T>|null $elementType
      * @param int|string|int[]|null $siteId The site(s) to fetch the element in.
      * Defaults to the current site.
      * @param array $criteria
@@ -510,10 +516,11 @@ class Elements extends Component
     /**
      * Returns an element by its ID or UID.
      *
-     * @template T
+     * @template T of ElementInterface
      * @param string $property Either `id` or `uid`
      * @param int|string $elementId The element’s ID/UID
-     * @param class-string<T>|null $elementType The element class.
+     * @param string|null $elementType The element class.
+     * @phpstan-param class-string<T>|null $elementType
      * @param int|string|int[]|null $siteId The site(s) to fetch the element in.
      * Defaults to the current site.
      * @param array $criteria
@@ -829,7 +836,7 @@ class Elements extends Component
                 $this->saveElement($siteElement, false, false);
             }
 
-            // Now the $element's site
+            // Now the $element’s site
             $element->mergeCanonicalChanges();
             $element->dateLastMerged = new DateTime();
             $element->mergingCanonicalChanges = true;
@@ -852,9 +859,10 @@ class Elements extends Component
     /**
      * Updates the canonical element from a given derivative, such as a draft or revision.
      *
-     * @param ElementInterface $element The derivative element
+     * @template T of ElementInterface
+     * @param T $element The derivative element
      * @param array $newAttributes Any attributes to apply to the canonical element
-     * @return ElementInterface The updated canonical element
+     * @return T The updated canonical element
      * @throws InvalidArgumentException if the element is already a canonical element
      * @since 3.7.0
      */
@@ -864,7 +872,7 @@ class Elements extends Component
             throw new InvalidArgumentException('Element was already canonical');
         }
 
-        // "Duplicate" the derivative element with the canonical element's ID, UID, and content ID
+        // "Duplicate" the derivative element with the canonical element’s ID, UID, and content ID
         $canonical = $element->getCanonical();
 
         $newAttributes += [
@@ -968,17 +976,17 @@ class Elements extends Component
                 try {
                     // Make sure the element was queried with its content
                     if ($element::hasContent() && $element->contentId === null) {
-                        throw new InvalidElementException($element, "Skipped resaving $element ($element->id) because it wasn’t loaded with its content.");
+                        throw new InvalidElementException($element, "Skipped resaving {$element->getUiLabel()} ($element->id) because it wasn’t loaded with its content.");
                     }
 
                     // Make sure this isn't a revision
                     if ($skipRevisions) {
                         try {
                             if (ElementHelper::isRevision($element)) {
-                                throw new InvalidElementException($element, "Skipped resaving $element ($element->id) because it's a revision.");
+                                throw new InvalidElementException($element, "Skipped resaving {$element->getUiLabel()} ($element->id) because it's a revision.");
                             }
                         } catch (Throwable $rootException) {
-                            throw new InvalidElementException($element, "Skipped resaving $element ($element->id) due to an error obtaining its root element: " . $rootException->getMessage());
+                            throw new InvalidElementException($element, "Skipped resaving {$element->getUiLabel()} ($element->id) due to an error obtaining its root element: " . $rootException->getMessage());
                         }
                     }
                 } catch (InvalidElementException $e) {
@@ -1110,11 +1118,12 @@ class Elements extends Component
     /**
      * Duplicates an element.
      *
-     * @param ElementInterface $element the element to duplicate
+     * @template T of ElementInterface
+     * @param T $element the element to duplicate
      * @param array $newAttributes any attributes to apply to the duplicate
      * @param bool $placeInStructure whether to position the cloned element after the original one in its structure.
      * (This will only happen if the duplicated element is canonical.)
-     * @return ElementInterface the duplicated element
+     * @return T the duplicated element
      * @throws UnsupportedSiteException if the element is being duplicated into a site it doesn’t support
      * @throws InvalidElementException if saveElement() returns false for any of the sites
      * @throws Throwable if reasons
@@ -1129,7 +1138,7 @@ class Elements extends Component
         // Ensure all fields have been normalized
         $element->getFieldValues();
 
-        // Create our first clone for the $element's site
+        // Create our first clone for the $element’s site
         $mainClone = clone $element;
         $mainClone->id = null;
         $mainClone->uid = StringHelper::UUID();
@@ -1213,12 +1222,12 @@ class Elements extends Component
 
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
-            // Start with $element's site
+            // Start with $element’s site
             if (!$this->_saveElementInternal($mainClone, false, false)) {
                 throw new InvalidElementException($mainClone, 'Element ' . $element->id . ' could not be duplicated for site ' . $element->siteId);
             }
 
-            // Should we add the clone to the source element's structure?
+            // Should we add the clone to the source element’s structure?
             if (
                 $placeInStructure &&
                 $element->structureId &&
@@ -1253,7 +1262,7 @@ class Elements extends Component
                         $siteQuery->revisions();
                     }
 
-                    /** @var Element $siteElement */
+                    /** @var ElementInterface|null $siteElement */
                     $siteElement = $siteQuery->one();
 
                     if ($siteElement === null) {
@@ -1608,10 +1617,11 @@ class Elements extends Component
      * Deletes an element by its ID.
      *
      * @param int $elementId The element’s ID
-     * @param class-string<ElementInterface>|null $elementType The element class.
+     * @param string|null $elementType The element class.
+     * @phpstan-param class-string<ElementInterface>|null $elementType
      * @param int|null $siteId The site to fetch the element in.
      * Defaults to the current site.
-     * @param bool Whether the element should be hard-deleted immediately, instead of soft-deleted
+     * @param bool $hardDelete Whether the element should be hard-deleted immediately, instead of soft-deleted
      * @return bool Whether the element was deleted successfully
      * @throws Throwable
      */
@@ -1653,7 +1663,7 @@ class Elements extends Component
      * Deletes an element.
      *
      * @param ElementInterface $element The element to be deleted
-     * @param bool Whether the element should be hard-deleted immediately, instead of soft-deleted
+     * @param bool $hardDelete Whether the element should be hard-deleted immediately, instead of soft-deleted
      * @return bool Whether the element was deleted successfully
      * @throws Throwable
      */
@@ -1684,7 +1694,7 @@ class Elements extends Component
                     // Re-fetch the record since its lft and rgt attributes just changed
                     $record = StructureElementRecord::findOne($record->id);
                 }
-                // Delete this element's node
+                // Delete this element’s node
                 $record->deleteWithChildren();
             }
 
@@ -1704,7 +1714,7 @@ class Elements extends Component
                     ->softDelete(Table::ELEMENTS, ['id' => $element->id])
                     ->execute();
 
-                // Also soft delete the element's drafts & revisions
+                // Also soft delete the element’s drafts & revisions
                 $this->_cascadeDeleteDraftsAndRevisions($element->id);
             }
 
@@ -1821,7 +1831,7 @@ class Elements extends Component
                     ->restore(Table::ELEMENTS, ['id' => $element->id])
                     ->execute();
 
-                // Also restore the element's drafts & revisions
+                // Also restore the element’s drafts & revisions
                 $this->_cascadeDeleteDraftsAndRevisions($element->id, false);
 
                 // Restore its search indexes
@@ -1865,6 +1875,7 @@ class Elements extends Component
      * Returns all available element classes.
      *
      * @return string[] The available element classes.
+     * @phpstan-return class-string<ElementInterface>[]
      */
     public function getAllElementTypes(): array
     {
@@ -1893,8 +1904,10 @@ class Elements extends Component
     /**
      * Creates an element action with a given config.
      *
-     * @param mixed $config The element action’s class name, or its config, with a `type` value and optionally a `settings` value
-     * @return ElementActionInterface The element action
+     * @template T of ElementActionInterface
+     * @param string|array $config The element action’s class name, or its config, with a `type` value and optionally a `settings` value
+     * @phpstan-param class-string<T>|array{type:class-string<T>} $config
+     * @return T The element action
      */
     public function createAction(mixed $config): ElementActionInterface
     {
@@ -1904,8 +1917,10 @@ class Elements extends Component
     /**
      * Creates an element exporter with a given config.
      *
-     * @param mixed $config The element exporter’s class name, or its config, with a `type` value and optionally a `settings` value
-     * @return ElementExporterInterface The element exporter
+     * @template T of ElementExporterInterface
+     * @param string|array $config The element exporter’s class name, or its config, with a `type` value and optionally a `settings` value
+     * @phpstan-param class-string<T>|array{type:class-string<T>} $config
+     * @return T The element exporter
      */
     public function createExporter(mixed $config): ElementExporterInterface
     {
@@ -1929,6 +1944,7 @@ class Elements extends Component
 
         foreach ($this->getAllElementTypes() as $class) {
             /** @var string|ElementInterface $class */
+            /** @phpstan-var class-string<ElementInterface>|ElementInterface $class */
             if (
                 ($elementRefHandle = $class::refHandle()) !== null &&
                 strcasecmp($elementRefHandle, $refHandle) === 0
@@ -2106,11 +2122,12 @@ class Elements extends Component
     /**
      * Normalizes a `with` element query param into an array of eager-loading plans.
      *
-     * @param string|EagerLoadPlan[]|array
+     * @param string|array $with
+     * @phpstan-param string|array<EagerLoadPlan|array|string> $with
      * @return EagerLoadPlan[]
      * @since 3.5.0
      */
-    public function createEagerLoadingPlans($with): array
+    public function createEagerLoadingPlans(string|array $with): array
     {
         // Normalize the paths and group based on the top level eager loading handle
         if (is_string($with)) {
@@ -2204,7 +2221,8 @@ class Elements extends Component
     /**
      * Eager-loads additional elements onto a given set of elements.
      *
-     * @param class-string<ElementInterface> $elementType The root element type class
+     * @param string $elementType The root element type class
+     * @phpstan-param class-string<ElementInterface> $elementType
      * @param ElementInterface[] $elements The root element models that should be updated with the eager-loaded elements
      * @param array|string|EagerLoadPlan[] $with Dot-delimited paths of the elements that should be eager-loaded into the root elements
      */
@@ -2222,7 +2240,8 @@ class Elements extends Component
     }
 
     /**
-     * @param class-string<ElementInterface> $elementType
+     * @param string $elementType
+     * @phpstan-param class-string<ElementInterface> $elementType
      * @param ElementInterface[][] $elementsBySite
      * @param EagerLoadPlan[] $with
      */
@@ -2575,7 +2594,7 @@ class Elements extends Component
                 $elementRecord->enabled = (bool)$element->enabled;
                 $elementRecord->archived = (bool)$element->archived;
                 $elementRecord->dateLastMerged = Db::prepareDateForDb($element->dateLastMerged);
-                $elementRecord->dateDeleted = $element->dateDeleted;
+                $elementRecord->dateDeleted = Db::prepareDateForDb($element->dateDeleted);
 
                 if ($isNewElement) {
                     if (isset($element->dateCreated)) {
@@ -2630,13 +2649,13 @@ class Elements extends Component
 
                     // If there's a temp ID, update the URI
                     if ($element->tempId && $element->uri) {
-                        $element->uri = str_replace($element->tempId, $element->id, $element->uri);
+                        $element->uri = str_replace($element->tempId, (string)$element->id, $element->uri);
                         $element->tempId = null;
                     }
                 }
             }
 
-            // Save the element's site settings record
+            // Save the element’s site settings record
             if (!$isNewElement) {
                 $siteSettingsRecord = Element_SiteSettingsRecord::findOne([
                     'elementId' => $element->id,
@@ -2654,7 +2673,7 @@ class Elements extends Component
             $siteSettingsRecord->slug = $element->slug;
             $siteSettingsRecord->uri = $element->uri;
 
-            // Avoid `enabled` getting marked as dirty if it's not really changing
+            // Avoid `enabled` getting marked as dirty if it’s not really changing
             $enabledForSite = $element->getEnabledForSite();
             if ($siteSettingsRecord->getIsNewRecord() || $siteSettingsRecord->enabled != $enabledForSite) {
                 $siteSettingsRecord->enabled = $enabledForSite;
@@ -2811,7 +2830,7 @@ class Elements extends Component
             ]));
         }
 
-        // Clear the element's record of dirty fields
+        // Clear the element’s record of dirty fields
         $element->markAsClean();
         $element->firstSave = $originalFirstSave;
         $element->propagateAll = $originalPropagateAll;
@@ -2851,7 +2870,7 @@ class Elements extends Component
             $siteElement = clone $element;
             $siteElement->siteId = $oldSiteElement->siteId;
             $siteElement->contentId = $oldSiteElement->contentId;
-            $siteElement->setEnabledForSite($oldSiteElement->enabledForSite);
+            $siteElement->setEnabledForSite($oldSiteElement->getEnabledForSite());
         } else {
             $siteElement->enabled = $element->enabled;
             $siteElement->resaving = $element->resaving;
@@ -2893,7 +2912,7 @@ class Elements extends Component
                         $element->isFieldDirty($field->handle) &&
                         $field->getTranslationKey($siteElement) === $field->getTranslationKey($element)
                     ) {
-                        // Copy the initial element's value over
+                        // Copy the initial element’s value over
                         $siteElement->setFieldValue($field->handle, $element->getFieldValue($field->handle));
                     }
                 }

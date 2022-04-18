@@ -1076,6 +1076,7 @@ td.right {
     background-color: $grey050;
     overflow: auto;
     box-shadow: inset -1px 0 0 $hairlineColor;
+    @include border-top-left-radius($largeBorderRadius);
 
     & > .btn {
       @include margin(10px, 0, 0, 14px);
@@ -2923,7 +2924,7 @@ $checkboxPadding: $checkboxSize + 4;
 /* element select fields */
 .elementselect {
   position: relative;
-  min-height: 37px;
+  min-height: 34px;
   margin-top: -7px;
 
   .elements:after {
@@ -3350,6 +3351,10 @@ ul.tree,
     .lightswitch {
       display: block;
     }
+  }
+
+  .rule-actions {
+    margin: 7px 0;
   }
 }
 
@@ -4724,14 +4729,18 @@ ul.tree,
   cursor: pointer;
 }
 
+.address-card .address-card-header {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: space-between;
+}
+
 .address-card .address-card-header-actions {
-  float: right;
   display: flex;
   justify-content: flex-end;
 }
 
 .address-card .address-card-label {
-  display: inline-block;
   background: #dbeafe;
   color: #2563eb;
   padding: 0.125rem 0.5rem;
@@ -4740,6 +4749,14 @@ ul.tree,
   text-transform: uppercase;
   font-weight: 500;
   margin-bottom: 0.75rem;
+
+  .ltr & {
+    margin-right: 0.5rem;
+  }
+
+  .rtl & {
+    margin-left: 0.5rem;
+  }
 }
 
 /* logout warning/login/elevated session modals */
@@ -5047,6 +5064,9 @@ ul.tree,
 
 table.shadow-box,
 table.editable {
+  border-collapse: separate;
+  border-spacing: 0;
+
   thead:first-child,
   tbody:first-child {
     tr:first-child {
@@ -5774,7 +5794,8 @@ body.reduce-focus-visibility {
   align-items: center;
 
   & > .datewrapper + .timewrapper,
-  & > .timewrapper + .timezone {
+  & > .timewrapper + .timezone,
+  & > .select {
     @include margin-left(5px);
   }
 }

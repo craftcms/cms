@@ -21,11 +21,21 @@ use yii\validators\Validator;
  *
  * @mixin FieldTrait
  * @mixin YiiComponent
+ * @mixin Model
+ * @mixin SavableComponentTrait
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
 interface FieldInterface extends SavableComponentInterface
 {
+    /**
+     * Returns whether the field can be marked as required.
+     *
+     * @return bool
+     * @since 4.0.0
+     */
+    public static function isRequirable(): bool;
+
     /**
      * Returns whether this field has a column in the content table.
      *
@@ -61,7 +71,7 @@ interface FieldInterface extends SavableComponentInterface
      * ```php
      * public static function valueType(): string
      * {
-     *      return 'int|mixed|\\craft\\elements\\db\\ElementQuery';
+     *      return 'int|string';
      * }
      * ```
      *
@@ -380,7 +390,8 @@ interface FieldInterface extends SavableComponentInterface
      *
      * The rule class must be an instance of [[\craft\fields\conditions\FieldConditionRuleInterface]].
      *
-     * @return string|array{class: string}|null
+     * @return string|array|null
+     * @phpstan-return string|array{class:string}|null
      */
     public function getElementConditionRuleType(): array|string|null;
 

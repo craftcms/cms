@@ -50,7 +50,7 @@ class InstallController extends Controller
     public function beforeAction($action): bool
     {
         // Return a 404 if Craft is already installed
-        if (!YII_DEBUG && Craft::$app->getIsInstalled()) {
+        if (!App::devMode() && Craft::$app->getIsInstalled()) {
             throw new BadRequestHttpException('Craft is already installed');
         }
 
@@ -244,19 +244,19 @@ class InstallController extends Controller
             $this->_populateDbConfig($dbConfig, 'db-');
 
             // If there's a DB_DSN environment variable, go with that
-            if (App::env('DB_DSN') !== null) {
-                $configService->setDotEnvVar('DB_DSN', $dbConfig->dsn);
+            if (App::env('CRAFT_DB_DSN') !== null) {
+                $configService->setDotEnvVar('CRAFT_DB_DSN', $dbConfig->dsn);
             } else {
-                $configService->setDotEnvVar('DB_DRIVER', $dbConfig->driver);
-                $configService->setDotEnvVar('DB_SERVER', $dbConfig->server);
-                $configService->setDotEnvVar('DB_PORT', $dbConfig->port);
-                $configService->setDotEnvVar('DB_DATABASE', $dbConfig->database);
+                $configService->setDotEnvVar('CRAFT_DB_DRIVER', $dbConfig->driver);
+                $configService->setDotEnvVar('CRAFT_DB_SERVER', $dbConfig->server);
+                $configService->setDotEnvVar('CRAFT_DB_PORT', (string)$dbConfig->port);
+                $configService->setDotEnvVar('CRAFT_DB_DATABASE', $dbConfig->database);
             }
 
-            $configService->setDotEnvVar('DB_USER', $dbConfig->user);
-            $configService->setDotEnvVar('DB_PASSWORD', $dbConfig->password);
-            $configService->setDotEnvVar('DB_SCHEMA', $dbConfig->schema);
-            $configService->setDotEnvVar('DB_TABLE_PREFIX', $dbConfig->tablePrefix);
+            $configService->setDotEnvVar('CRAFT_DB_USER', $dbConfig->user);
+            $configService->setDotEnvVar('CRAFT_DB_PASSWORD', $dbConfig->password);
+            $configService->setDotEnvVar('CRAFT_DB_SCHEMA', $dbConfig->schema);
+            $configService->setDotEnvVar('CRAFT_DB_TABLE_PREFIX', $dbConfig->tablePrefix);
 
             // Update the db component based on new values
             $db = Craft::$app->getDb();
@@ -277,7 +277,7 @@ class InstallController extends Controller
         }
 
         // Try to save the site URL to a PRIMARY_SITE_URL environment variable
-        // if it's not already set to an alias or environment variable
+        // if it’s not already set to an alias or environment variable
         if ($siteUrl[0] !== '@' && $siteUrl[0] !== '$' && !App::isEphemeral()) {
             try {
                 $configService->setDotEnvVar('PRIMARY_SITE_URL', $siteUrl);
@@ -335,18 +335,18 @@ class InstallController extends Controller
 
         // Map the DB settings we definitely care about to their environment variable names
         $vars = [
-            'user' => 'DB_USER',
-            'password' => 'DB_PASSWORD',
+            'user' => 'CRAFT_DB_USER',
+            'password' => 'CRAFT_DB_PASSWORD',
         ];
 
-        // If there's a DB_DSN environment variable, go with that
-        if (App::env('DB_DSN') !== null) {
-            $vars['dsn'] = 'DB_DSN';
+        // If there's a CRAFT_DB_DSN environment variable, go with that
+        if (App::env('CRAFT_DB_DSN') !== null) {
+            $vars['dsn'] = 'CRAFT_DB_DSN';
         } else {
-            $vars['driver'] = 'DB_DRIVER';
-            $vars['server'] = 'DB_SERVER';
-            $vars['port'] = 'DB_PORT';
-            $vars['database'] = 'DB_DATABASE';
+            $vars['driver'] = 'CRAFT_DB_DRIVER';
+            $vars['server'] = 'CRAFT_DB_SERVER';
+            $vars['port'] = 'CRAFT_DB_PORT';
+            $vars['database'] = 'CRAFT_DB_DATABASE';
         }
 
         // Save the current environment variable values, and set temporary ones

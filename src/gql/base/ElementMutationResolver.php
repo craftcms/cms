@@ -10,7 +10,6 @@ namespace craft\gql\base;
 use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
-use craft\elements\Entry as EntryElement;
 use craft\errors\GqlException;
 use craft\events\MutationPopulateElementEvent;
 use GraphQL\Error\UserError;
@@ -46,7 +45,7 @@ abstract class ElementMutationResolver extends MutationResolver
      * use yii\base\Event;
      *
      * Event::on(AssetMutationResolver::class, AssetMutationResolver::EVENT_BEFORE_POPULATE_ELEMENT, function(MutationPopulateElementEvent $event) {
-     *     // Add the timestamp to the element's title
+     *     // Add the timestamp to the element’s title
      *     $event->arguments['title'] = ($event->arguments['title'] ?? '') . '[' . DateTimeHelper::currentTimeStamp() . ']';
      * });
      * ```
@@ -89,10 +88,11 @@ abstract class ElementMutationResolver extends MutationResolver
     /**
      * Populate the element with submitted data.
      *
-     * @param ElementInterface $element
+     * @template T of ElementInterface
+     * @param T $element
      * @param array $arguments
      * @param ResolveInfo|null $resolveInfo
-     * @return EntryElement
+     * @return T
      * @throws GqlException if data not found.
      */
     protected function populateElementWithData(ElementInterface $element, array $arguments, ?ResolveInfo $resolveInfo = null): ElementInterface
@@ -192,11 +192,11 @@ abstract class ElementMutationResolver extends MutationResolver
     /**
      * Traverse an argument list revursively and normalize the values.
      *
-     * @param $argumentDefinitions
-     * @param $mutationArguments
+     * @param array $argumentDefinitions
+     * @param array $mutationArguments
      * @return array
      */
-    private function _traverseAndNormalizeArguments($argumentDefinitions, $mutationArguments): array
+    private function _traverseAndNormalizeArguments(array $argumentDefinitions, array $mutationArguments): array
     {
         $normalized = [];
 

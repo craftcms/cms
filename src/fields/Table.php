@@ -86,6 +86,7 @@ class Table extends Field
 
     /**
      * @var string The type of database column the field should have in the content table
+     * @phpstan-var 'auto'|Schema::TYPE_STRING|Schema::TYPE_TEXT|'mediumtext'
      */
     public string $columnType = Schema::TYPE_TEXT;
 
@@ -205,7 +206,7 @@ class Table extends Field
      */
     public function hasMinRows(): bool
     {
-        return $this->minRows;
+        return (bool)$this->minRows;
     }
 
     /**
@@ -213,7 +214,7 @@ class Table extends Field
      */
     public function hasMaxRows(): bool
     {
-        return $this->maxRows;
+        return (bool)$this->maxRows;
     }
 
     /**
@@ -660,6 +661,9 @@ class Table extends Field
             'minRows' => $this->minRows,
             'maxRows' => $this->maxRows,
             'static' => $static,
+            'allowAdd' => true,
+            'allowDelete' => true,
+            'allowReorder' => true,
             'addRowLabel' => Craft::t('site', $this->addRowLabel),
             'describedBy' => $this->describedBy,
         ]);

@@ -106,7 +106,7 @@ class Image
 
         $info = unpack(
             'A8sig/Nchunksize/A4chunktype/Nwidth/Nheight/Cbit-depth/Ccolor/Ccompression/Cfilter/Cinterface',
-            file_get_contents($file, 0, null, 0, 29)
+            file_get_contents($file, false, null, 0, 29)
         );
 
         if (empty($info)) {
@@ -184,6 +184,7 @@ class Image
      *
      * @param string $filePath The path to the image
      * @return array [width, height]
+     * @phpstan-return array{int,int}
      */
     public static function imageSize(string $filePath): array
     {
@@ -307,6 +308,7 @@ class Image
      *
      * @param string $svg The SVG data
      * @return array [width, height]
+     * @phpstan-return array{int,int}
      */
     public static function parseSvgSize(string $svg): array
     {
@@ -316,15 +318,15 @@ class Image
             ($matchedWidth = (float)$widthMatch[2]) &&
             ($matchedHeight = (float)$heightMatch[2])
         ) {
-            $width = floor(
+            $width = (int)floor(
                 $matchedWidth * self::_getSizeUnitMultiplier($widthMatch[3])
             );
-            $height = floor(
+            $height = (int)floor(
                 $matchedHeight * self::_getSizeUnitMultiplier($heightMatch[3])
             );
         } elseif (preg_match(Svg::SVG_VIEWBOX_RE, $svg, $viewboxMatch)) {
-            $width = floor($viewboxMatch[3]);
-            $height = floor($viewboxMatch[4]);
+            $width = (int)floor($viewboxMatch[3]);
+            $height = (int)floor($viewboxMatch[4]);
         } else {
             // Just pretend it's 100x100
             $width = 100;

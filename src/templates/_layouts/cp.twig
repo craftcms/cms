@@ -41,7 +41,7 @@
 
 {% extends "_layouts/basecp" %}
 
-{# The CP only supports queue components that implement QueueInterface #}
+{# The control panel only supports queue components that implement QueueInterface #}
 {% set queue = craft.app.queue %}
 {% js %}
     {% if queue is instance of("craft\\queue\\QueueInterface") %}
@@ -145,12 +145,12 @@
                     </button>
 
                     {# New account dropdown #}
-                    <div class="account-toggle-wrapper" data-wrapper>
-                        <button 
+                    <div class="account-toggle-wrapper">
+                        <button
                             id="user-info"
-                            aria-controls="account-menu" 
-                            class="btn menu-toggle" 
-                            aria-label="{{ 'My Account'|t('app') }}" 
+                            aria-controls="account-menu"
+                            class="btn menu-toggle"
+                            aria-label="{{ 'My Account'|t('app') }}"
                             title="{{ 'My Account'|t('app') }}"
                             data-disclosure-trigger>
                             {{ userPhoto }}

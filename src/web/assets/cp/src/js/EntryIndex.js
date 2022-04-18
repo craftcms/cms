@@ -143,15 +143,14 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
         // Update the URL if we're on the Entries index
         // ---------------------------------------------------------------------
 
-        if (this.settings.context === 'index' && typeof history !== 'undefined') {
+        if (this.settings.context === 'index') {
             let uri = 'entries';
 
             if (handle) {
                 uri += '/' + handle;
             }
 
-            const url = Craft.getUrl(uri, document.location.search + document.location.hash);
-            history.replaceState({}, '', url);
+            Craft.setPath(uri);
         }
     },
 
@@ -170,22 +169,19 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
 
         this.$newEntryBtn.addClass('loading');
 
-        Craft.sendActionRequest('POST', 'elements/create', {
+        Craft.sendActionRequest('POST', 'entries/create', {
             data: {
-                elementType: this.elementType,
                 siteId: this.siteId,
-                sectionId: sectionId,
-                typeId: section.entryTypes[0].id,
-                enabled: section.canSave ? 1 : 0,
+                section: section.handle,
             },
-        }).then(ev => {
+        }).then(({data}) => {
             if (this.settings.context === 'index') {
-                document.location.href = Craft.getUrl(ev.data.cpEditUrl, {fresh: 1});
+                document.location.href = Craft.getUrl(data.cpEditUrl, {fresh: 1});
             } else {
                 const slideout = Craft.createElementEditor(this.elementType, {
                     siteId: this.siteId,
-                    elementId: ev.data.element.id,
-                    draftId: ev.data.element.draftId,
+                    elementId: data.entry.id,
+                    draftId: data.entry.draftId,
                     params: {
                         fresh: 1,
                     },
@@ -198,7 +194,7 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
                         this.selectSourceByKey(sectionSourceKey);
                     }
 
-                    this.selectElementAfterUpdate(ev.data.element.id);
+                    this.selectElementAfterUpdate(data.entry.id);
                     this.updateElements();
                 });
             }

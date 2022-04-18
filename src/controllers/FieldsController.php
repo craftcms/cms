@@ -344,11 +344,11 @@ JS;
     /**
      * Deletes a field.
      *
-     * @return Response
+     * @return Response|null
      * @throws BadRequestHttpException
      * @throws ServerErrorHttpException
      */
-    public function actionDeleteField(): Response
+    public function actionDeleteField(): ?Response
     {
         $this->requirePostRequest();
 

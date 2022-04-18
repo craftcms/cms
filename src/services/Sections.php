@@ -541,7 +541,7 @@ class Sections extends Component
                 if (!$isNewSection) {
                     foreach ($this->getEntryTypesBySectionId($section->id) as $entryType) {
                         if ($entryType->id === $entry->getTypeId()) {
-                            // This is *the* entry's type. Make sure its name & handle match the section's
+                            // This is *the* entry’s type. Make sure its name & handle match the section’s
                             if ($entryType->name !== $section->name || $entryType->handle !== $section->handle) {
                                 $entryType->name = $section->name;
                                 $entryType->handle = $section->handle;
@@ -550,7 +550,7 @@ class Sections extends Component
 
                             $section->setEntryTypes([$entryType]);
                         } else {
-                            // We don't need this one anymore
+                            // We don’t need this one anymore
                             $this->deleteEntryType($entryType);
                         }
                     }
@@ -654,6 +654,7 @@ class Sections extends Component
 
                 // Was this already selected?
                 if (!$isNewSection && isset($allOldSiteSettingsRecords[$siteId])) {
+                    /** @var Section_SiteSettingsRecord $siteSettingsRecord */
                     $siteSettingsRecord = $allOldSiteSettingsRecords[$siteId];
                 } else {
                     $siteSettingsRecord = new Section_SiteSettingsRecord();
@@ -865,8 +866,8 @@ class Sections extends Component
             // All entries *should* be deleted by now via their entry types, but loop through all the sites in case
             // there are any lingering entries from unsupported sites
             $entryQuery = Entry::find()
-                ->status(null)
-                ->sectionId($sectionRecord->id);
+                ->sectionId($sectionRecord->id)
+                ->status(null);
             $elementsService = Craft::$app->getElements();
             foreach (Craft::$app->getSites()->getAllSiteIds() as $siteId) {
                 foreach (Db::each($entryQuery->siteId($siteId)) as $entry) {
@@ -1053,6 +1054,18 @@ class Sections extends Component
     }
 
     /**
+     * Returns an entry type by its UID.
+     *
+     * @param string $uid
+     * @return EntryType|null
+     * @since 3.7.39
+     */
+    public function getEntryTypeByUid(string $uid): ?EntryType
+    {
+        return $this->_entryTypes()->firstWhere('uid', $uid);
+    }
+
+    /**
      * Returns entry types that have a given handle.
      *
      * ---
@@ -1135,11 +1148,12 @@ class Sections extends Component
         ProjectConfigHelper::ensureAllSectionsProcessed();
 
         $section = $this->getSectionByUid($data['section']);
-        $entryTypeRecord = $this->_getEntryTypeRecord($entryTypeUid, true);
 
-        if (!$section || !$entryTypeRecord) {
+        if (!$section) {
             return;
         }
+
+        $entryTypeRecord = $this->_getEntryTypeRecord($entryTypeUid, true);
 
         $transaction = Craft::$app->getDb()->beginTransaction();
 
@@ -1162,7 +1176,7 @@ class Sections extends Component
                 $layout->id = $entryTypeRecord->fieldLayoutId;
                 $layout->type = Entry::class;
                 $layout->uid = key($data['fieldLayouts']);
-                Craft::$app->getFields()->saveLayout($layout);
+                Craft::$app->getFields()->saveLayout($layout, false);
                 $entryTypeRecord->fieldLayoutId = $layout->id;
             } elseif ($entryTypeRecord->fieldLayoutId) {
                 // Delete the field layout
@@ -1196,11 +1210,12 @@ class Sections extends Component
 
         if ($wasTrashed) {
             // Restore the entries that were deleted with the entry type
+            /** @var Entry[] $entries */
             $entries = Entry::find()
-                ->drafts(null)
-                ->draftOf(false)
                 ->sectionId($entryTypeRecord->sectionId)
                 ->typeId($entryTypeRecord->id)
+                ->drafts(null)
+                ->draftOf(false)
                 ->status(null)
                 ->trashed()
                 ->site('*')
@@ -1357,10 +1372,10 @@ class Sections extends Component
             // Delete the entries, including unpublished drafts
             // (loop through all the sites in case there are any lingering entries from unsupported sites
             $entryQuery = Entry::find()
-                ->drafts(null)
-                ->draftOf(false)
+                ->typeId($entryTypeRecord->id)
                 ->status(null)
-                ->typeId($entryTypeRecord->id);
+                ->drafts(null)
+                ->draftOf(false);
 
             $elementsService = Craft::$app->getElements();
             foreach (Craft::$app->getSites()->getAllSiteIds() as $siteId) {
@@ -1497,6 +1512,7 @@ class Sections extends Component
         // ---------------------------------------------------------------------
 
         // If there are any existing entries, find the first one with a valid typeId
+        /** @var Entry|null $entry */
         $entry = Entry::find()
             ->typeId($entryTypeIds)
             ->siteId($siteIds)
@@ -1535,9 +1551,9 @@ class Sections extends Component
 
         $elementsService = Craft::$app->getElements();
         $otherEntriesQuery = Entry::find()
+            ->sectionId($section->id)
             ->drafts(null)
             ->provisionalDrafts(null)
-            ->sectionId($section->id)
             ->site('*')
             ->unique()
             ->id(['not', $entry->id])
@@ -1564,9 +1580,9 @@ class Sections extends Component
     {
         // Add all of the entries to the structure
         $query = Entry::find()
+            ->sectionId($sectionRecord->id)
             ->drafts(null)
             ->draftOf(false)
-            ->sectionId($sectionRecord->id)
             ->site('*')
             ->unique()
             ->status(null)
@@ -1616,6 +1632,7 @@ class Sections extends Component
         $query = $withTrashed ? SectionRecord::findWithTrashed() : SectionRecord::find();
         $query->andWhere(['uid' => $uid]);
         /** @noinspection PhpIncompatibleReturnTypeInspection */
+        /** @var SectionRecord */
         return $query->one() ?? new SectionRecord();
     }
 
@@ -1631,6 +1648,7 @@ class Sections extends Component
         $query = $withTrashed ? EntryTypeRecord::findWithTrashed() : EntryTypeRecord::find();
         $query->andWhere(['uid' => $uid]);
         /** @noinspection PhpIncompatibleReturnTypeInspection */
+        /** @var EntryTypeRecord */
         return $query->one() ?? new EntryTypeRecord();
     }
 }

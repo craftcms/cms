@@ -146,7 +146,7 @@ class Search extends Component
             }
         }
 
-        // Clear the element's current search keywords
+        // Clear the element’s current search keywords
         $deleteCondition = [
             'elementId' => $element->id,
             'siteId' => $element->siteId,
@@ -576,7 +576,7 @@ SQL;
 
             if (!empty($fieldId)) {
                 $attr = 'fieldId';
-                $val = $fieldId;
+                $val = (string)$fieldId;
             } else {
                 $attr = 'attribute';
                 $val = strtolower($term->attribute);
@@ -708,7 +708,7 @@ SQL;
     private function _getFieldIdFromAttribute(string $attribute, ?MemoizableArray $customFields): array|int|null
     {
         if ($customFields !== null) {
-            return ArrayHelper::getColumn((array)$customFields->where('handle', $attribute), 'id');
+            return ArrayHelper::getColumn($customFields->where('handle', $attribute)->all(), 'id');
         }
 
         $field = Craft::$app->getFields()->getFieldByHandle($attribute);
@@ -849,7 +849,7 @@ SQL;
 
         // Give ourselves a little wiggle room.
         /** @noinspection CallableParameterUseCaseInTypeContextInspection */
-        $maxSize = ceil($maxSize * 0.95);
+        $maxSize = (int)ceil($maxSize * 0.95);
 
         if ($cleanKeywordsLength > $maxSize) {
             // Time to truncate.

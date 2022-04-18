@@ -187,7 +187,7 @@ class UrlHelper
         }
 
         if (static::isRootRelativeUrl($url)) {
-            // Prepend the current request's scheme and host name
+            // Prepend the current request’s scheme and hostname
             $url = static::siteHost() . $url;
         }
 
@@ -486,7 +486,7 @@ class UrlHelper
      */
     public static function baseCpUrl(): string
     {
-        // Is a custom base CP URL being defined in the config?
+        // Is a custom base control panel URL being defined in the config?
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         if ($generalConfig->baseCpUrl) {
             return rtrim($generalConfig->baseCpUrl, '/') . '/';
@@ -557,7 +557,7 @@ class UrlHelper
     }
 
     /**
-     * Prepends the CP trigger onto the given path.
+     * Prepends the control panel trigger onto the given path.
      *
      * @param string $path
      * @return string
@@ -576,10 +576,10 @@ class UrlHelper
      * @param string|null $scheme
      * @param bool $cpUrl
      * @param bool|null $showScriptName
-     * @param bool|null $addToken
+     * @param bool $addToken
      * @return string
      */
-    private static function _createUrl(string $path, array|string|null $params, ?string $scheme, bool $cpUrl, ?bool $showScriptName = null, ?bool $addToken = null): string
+    private static function _createUrl(string $path, array|string|null $params, ?string $scheme, bool $cpUrl, ?bool $showScriptName = null, bool $addToken = true): string
     {
         // Extract any params/fragment from the path
         [$path, $baseParams, $baseFragment] = self::_extractParams($path);
@@ -597,14 +597,11 @@ class UrlHelper
         if ($cpUrl) {
             // site param
             if (!isset($params['site']) && Craft::$app->getIsMultiSite() && Cp::requestedSite() !== null) {
-                if ($params === null) {
-                    $params = [];
-                }
                 $params['site'] = Cp::requestedSite()->handle;
             }
-        } elseif ($addToken !== false) {
+        } else {
             // token/siteToken params
-            if (!isset($params[$generalConfig->tokenParam]) && ($token = $request->getToken()) !== null) {
+            if ($addToken && !isset($params[$generalConfig->tokenParam]) && ($token = $request->getToken()) !== null) {
                 $params[$generalConfig->tokenParam] = $token;
             }
             if (!isset($params[$generalConfig->siteToken]) && ($siteToken = $request->getSiteToken()) !== null) {
@@ -617,7 +614,7 @@ class UrlHelper
         }
 
         // If we must show the script name, then just start with the script URL,
-        // regardless of whether this is a CP or site request, as we can't assume
+        // regardless of whether this is a control panel or site request, as we can't assume
         // that index.php lives within the base URL anymore.
         if ($showScriptName) {
             if ($request->getIsConsoleRequest()) {

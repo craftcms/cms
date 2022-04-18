@@ -269,7 +269,7 @@ class Connection extends \yii\db\Connection
 
             // Sort them by file modified time descending (newest first).
             usort($files, static function($a, $b) {
-                return filemtime($a) < filemtime($b);
+                return filemtime($b) <=> filemtime($a);
             });
 
             if (count($files) >= $generalConfig->maxBackups) {
@@ -467,7 +467,6 @@ class Connection extends \yii\db\Connection
         // Nuke any temp connection files that might have been created.
         try {
             if ($this->getIsMysql()) {
-                /** @var craft\db\mysql\Schema $schema */
                 $schema = $this->getSchema();
                 @unlink($schema->tempMyCnfPath);
             }

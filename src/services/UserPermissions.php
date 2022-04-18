@@ -196,6 +196,9 @@ class UserPermissions extends Component
         // Filter out any orphaned permissions
         $permissions = $this->_filterOrphanedPermissions($permissions);
 
+        // Sort ascending
+        sort($permissions);
+
         /** @var UserGroup $group */
         $group = Craft::$app->getUserGroups()->getGroupById($groupId);
         $path = ProjectConfig::PATH_USER_GROUPS . '.' . $group->uid . '.permissions';
@@ -205,7 +208,7 @@ class UserPermissions extends Component
     }
 
     /**
-     * Returns all of a given user's permissions.
+     * Returns all of a given user’s permissions.
      *
      * @param int $userId
      * @return array
@@ -296,8 +299,6 @@ class UserPermissions extends Component
         ProjectConfigHelper::ensureAllUserGroupsProcessed();
         $uid = $event->tokenMatches[0];
         $permissions = $event->newValue;
-
-        /** @var UserGroup $userGroup */
         $userGroup = Craft::$app->getUserGroups()->getGroupByUid($uid);
 
         // No group - no permissions to change.
@@ -623,11 +624,6 @@ class UserPermissions extends Component
                         'nested' => [
                             "saveAssets:$volume->uid" => [
                                 'label' => Craft::t('app', 'Save {type}', ['type' => $type]),
-                                'nested' => [
-                                    "savePeerAssets:$volume->uid" => [
-                                        'label' => Craft::t('app', 'Save assets uploaded by other users'),
-                                    ],
-                                ],
                             ],
                             "deleteAssets:$volume->uid" => [
                                 'label' => Craft::t('app', 'Delete {type}', ['type' => $type]),
@@ -722,7 +718,7 @@ class UserPermissions extends Component
      *
      * @param array $postedPermissions The posted permissions.
      * @param array $groupPermissions Permissions the user is already assigned
-     * to via their group, if we're saving a user's permissions.
+     * to via their group, if we’re saving a user’s permissions.
      * @return array The permissions we'll actually let them save.
      */
     private function _filterOrphanedPermissions(array $postedPermissions, array $groupPermissions = []): array

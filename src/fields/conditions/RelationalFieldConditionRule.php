@@ -89,7 +89,7 @@ class RelationalFieldConditionRule extends BaseElementSelectConditionRule implem
         return array_filter([
             self::OPERATOR_NOT_EMPTY,
             self::OPERATOR_EMPTY,
-            !$this->getCondition()->forProjectConfig ? self::OPERATOR_RELATED_TO : null,
+            self::OPERATOR_RELATED_TO,
         ]);
     }
 
@@ -135,7 +135,7 @@ class RelationalFieldConditionRule extends BaseElementSelectConditionRule implem
     {
         /** @var ElementQueryInterface|Collection $value */
         if ($this->operator === self::OPERATOR_RELATED_TO) {
-            $elementIds = $value->collect()->map(fn(ElementInterface $element) => $element->id);
+            $elementIds = $value->collect()->map(fn(ElementInterface $element) => $element->id)->all();
             return $this->matchValue($elementIds);
         }
 

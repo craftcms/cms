@@ -21,9 +21,10 @@ use yii\base\Arrayable;
 trait MissingComponentTrait
 {
     /**
-     * @var string|Component|null The expected component class name.
+     * @var string The expected component class name.
+     * @phpstan-var class-string<ComponentInterface>
      */
-    public $expectedType;
+    public string $expectedType;
 
     /**
      * @var string|null The exception message that explains why the component class was invalid
@@ -31,14 +32,15 @@ trait MissingComponentTrait
     public ?string $errorMessage = null;
 
     /**
-     * @var mixed The custom settings associated with the component, if it is savable
+     * @var array|null The custom settings associated with the component, if it is savable
      */
-    public $settings;
+    public ?array $settings = null;
 
     /**
      * Creates a new component of a given type based on this one’s properties.
      *
-     * @param class-string<ComponentInterface> $type The component class that should be used as the fallback
+     * @param string $type The component class that should be used as the fallback
+     * @phpstan-param class-string<ComponentInterface> $type
      * @return ComponentInterface
      */
     public function createFallback(string $type): ComponentInterface

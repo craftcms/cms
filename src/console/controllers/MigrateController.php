@@ -410,7 +410,7 @@ class MigrateController extends BaseMigrateController
                 }
         }
 
-        $res = parent::actionUp($limit) ?? ExitCode::OK;
+        $res = parent::actionUp($limit);
 
         if ($res === ExitCode::OK && empty($this->getNewMigrations())) {
             // Update any schema versions.

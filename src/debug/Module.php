@@ -8,16 +8,33 @@
 namespace craft\debug;
 
 use Craft;
+use craft\base\FsInterface;
 use craft\web\View;
 
 /**
- * @inheritdoc
+ * The Yii Debug Module provides the debug toolbar and debugger
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
 class Module extends \yii\debug\Module
 {
+    /**
+     * @var FsInterface|null The filesystem that debug cache files should be stored in.
+     * @since 4.0.0
+     */
+    public ?FsInterface $fs = null;
+
+    /**
+     * @inheritDoc
+     */
+    public function bootstrap($app): void
+    {
+        parent::bootstrap($app);
+
+        $this->logTarget = $app->getLog()->targets['debug'] = new LogTarget($this);
+    }
+
     /**
      * @inheritdoc
      */

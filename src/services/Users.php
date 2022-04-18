@@ -52,12 +52,12 @@ use yii\base\InvalidArgumentException;
 class Users extends Component
 {
     /**
-     * @event UserEvent The event that is triggered before a user's email is verified.
+     * @event UserEvent The event that is triggered before a user’s email is verified.
      */
     public const EVENT_BEFORE_VERIFY_EMAIL = 'beforeVerifyEmail';
 
     /**
-     * @event UserEvent The event that is triggered after a user's email is verified.
+     * @event UserEvent The event that is triggered after a user’s email is verified.
      */
     public const EVENT_AFTER_VERIFY_EMAIL = 'afterVerifyEmail';
 
@@ -165,6 +165,7 @@ class Users extends Component
      */
     public function ensureUserByEmail(string $email): User
     {
+        /** @var User|null $user */
         $user = User::find()
             ->email($email)
             ->status(null)
@@ -240,6 +241,7 @@ class Users extends Component
                 ]);
         }
 
+        /** @var User|null */
         return $query->one();
     }
 
@@ -255,6 +257,7 @@ class Users extends Component
      */
     public function getUserByUid(string $uid): ?User
     {
+        /** @var User|null */
         return User::find()
             ->uid($uid)
             ->status(null)
@@ -293,7 +296,7 @@ class Users extends Component
         $interval = DateTimeHelper::secondsToInterval($generalConfig->verificationCodeDuration);
         $minCodeIssueDate->sub($interval);
 
-        // Make sure it's not expired
+        // Make sure it’s not expired
         if ($user->verificationCodeIssuedDate < $minCodeIssueDate) {
             $userRecord = $userRecord ?? $this->_getUserRecordById($user->id);
             $userRecord->verificationCode = $user->verificationCode = null;
@@ -363,7 +366,7 @@ class Users extends Component
      *
      * @param int $userId The user’s ID
      * @param string $key The preference’s key
-     * @param mixed|null $default The default value, if the preference hasn’t been set
+     * @param mixed $default The default value, if the preference hasn’t been set
      * @return mixed The user’s preference
      */
     public function getUserPreference(int $userId, string $key, mixed $default = null): mixed
@@ -470,7 +473,7 @@ class Users extends Component
      * Removes credentials for a user.
      *
      * @param User $user The user that should have credentials removed.
-     * @return bool Whether the user's credentials were successfully removed.
+     * @return bool Whether the user’s credentials were successfully removed.
      * @throws UserNotFoundException
      * @since 4.0.0
      */
@@ -634,7 +637,7 @@ class Users extends Component
 
         // Update the User record
         $userRecord = $this->_getUserRecordById($user->id);
-        $userRecord->lastLoginDate = $now;
+        $userRecord->lastLoginDate = Db::prepareDateForDb($now);
         $userRecord->invalidLoginWindowStart = null;
         $userRecord->invalidLoginCount = null;
 
@@ -662,7 +665,7 @@ class Users extends Component
         $userRecord = $this->_getUserRecordById($user->id);
         $now = DateTimeHelper::currentUTCDateTime();
 
-        $userRecord->lastInvalidLoginDate = $now;
+        $userRecord->lastInvalidLoginDate = Db::prepareDateForDb($now);
 
         if (Craft::$app->getConfig()->getGeneral()->storeUserIps) {
             $userRecord->lastLoginAttemptIp = Craft::$app->getRequest()->getUserIP();
@@ -681,14 +684,14 @@ class Users extends Component
                     $userRecord->locked = true;
                     $userRecord->invalidLoginCount = null;
                     $userRecord->invalidLoginWindowStart = null;
-                    $userRecord->lockoutDate = $now;
+                    $userRecord->lockoutDate = Db::prepareDateForDb($now);
 
                     $user->locked = true;
                     $user->lockoutDate = $now;
                 }
             } else {
                 // Start the invalid login window and counter
-                $userRecord->invalidLoginWindowStart = $now;
+                $userRecord->invalidLoginWindowStart = Db::prepareDateForDb($now);
                 $userRecord->invalidLoginCount = 1;
             }
 
@@ -1079,7 +1082,7 @@ class Users extends Component
     }
 
     /**
-     * Sets a new verification code on the user's record.
+     * Sets a new verification code on the user’s record.
      *
      * @param User $user The user.
      * @return string The user’s brand new verification code.
@@ -1097,7 +1100,7 @@ class Users extends Component
 
         $hashedCode = $securityService->hashPassword($unhashedCode);
         $userRecord->verificationCode = $hashedCode;
-        $userRecord->verificationCodeIssuedDate = $issueDate;
+        $userRecord->verificationCodeIssuedDate = Db::prepareDateForDb($issueDate);
 
         // Make sure they are set to pending, if not already active
         if (!$userRecord->active) {
@@ -1312,7 +1315,7 @@ class Users extends Component
         $layout->id = $fieldsService->getLayoutByType(User::class)->id;
         $layout->type = User::class;
         $layout->uid = key($data);
-        $fieldsService->saveLayout($layout);
+        $fieldsService->saveLayout($layout, false);
 
         // Invalidate user caches
         Craft::$app->getElements()->invalidateCachesForElementType(User::class);
@@ -1506,7 +1509,7 @@ class Users extends Component
             return UrlHelper::siteUrl($fePath, $params, $scheme);
         }
 
-        // Only use cpUrl() if this is a CP request, or the base CP URL has been explicitly set,
+        // Only use cpUrl() if this is a control panel request, or the base control panel URL has been explicitly set,
         // so UrlHelper won't use HTTP_HOST
         if ($generalConfig->baseCpUrl || Craft::$app->getRequest()->getIsCpRequest()) {
             return UrlHelper::cpUrl($cpPath, $params, $scheme);

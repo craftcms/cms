@@ -383,7 +383,7 @@ class Sites extends Component
             return false;
         }
 
-        /** @var SiteGroupRecord $groupRecord */
+        /** @var SiteGroupRecord|null $groupRecord */
         $groupRecord = SiteGroupRecord::find()
             ->where(['id' => $group->id])
             ->one();
@@ -734,7 +734,7 @@ class Sites extends Component
             $siteRecord->uid = $siteUid;
             $siteRecord->groupId = $groupRecord->id;
             $siteRecord->primary = $data['primary'];
-            $siteRecord->enabled = $data['enabled'] ?? true;
+            $siteRecord->enabled = $data['enabled'] ?? 'true';
             $siteRecord->name = $data['name'];
             $siteRecord->handle = $data['handle'];
             $siteRecord->language = $data['language'];
@@ -824,7 +824,7 @@ class Sites extends Component
     /**
      * Reorders sites.
      *
-     * @param string[] $siteIds The site IDs in their new order
+     * @param int[] $siteIds The site IDs in their new order
      * @return bool Whether the sites were reordered successfully
      * @throws Throwable if reasons
      */
@@ -1172,7 +1172,7 @@ class Sites extends Component
             foreach ($results as $result) {
                 $site = new Site($result);
                 $this->_allSitesById[$site->id] = $site;
-                if ($site->enabled) {
+                if ($site->getEnabled()) {
                     $this->_enabledSitesById[$site->id] = $site;
                 }
 
@@ -1218,6 +1218,7 @@ class Sites extends Component
         }
 
         /** @noinspection PhpIncompatibleReturnTypeInspection */
+        /** @var SiteGroupRecord */
         return $query->one() ?? new SiteGroupRecord();
     }
 
@@ -1257,6 +1258,7 @@ class Sites extends Component
         }
 
         /** @noinspection PhpIncompatibleReturnTypeInspection */
+        /** @var SiteRecord */
         return $query->one() ?? new SiteRecord();
     }
 

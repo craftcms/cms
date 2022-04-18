@@ -7,9 +7,8 @@
 
 namespace crafttests\unit\validators;
 
-use Codeception\Test\Unit;
+use craft\test\TestCase;
 use craft\validators\UsernameValidator;
-use UnitTester;
 use yii\base\NotSupportedException;
 
 /**
@@ -19,26 +18,20 @@ use yii\base\NotSupportedException;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class UsernameValidatorTest extends Unit
+class UsernameValidatorTest extends TestCase
 {
     /**
      * @var UsernameValidator
      */
-    protected $usernameValidator;
-
-    /**
-     * @var UnitTester
-     */
-    protected $tester;
+    protected UsernameValidator $usernameValidator;
 
     /**
      * @dataProvider validateValueDataProvider
-     *
      * @param array|null $expected
      * @param string|null $value
      * @throws NotSupportedException
      */
-    public function testValidateValue(?array $expected, ?string $value)
+    public function testValidateValue(?array $expected, ?string $value): void
     {
         self::assertSame($expected, $this->usernameValidator->validateValue($value));
     }
@@ -57,7 +50,7 @@ class UsernameValidatorTest extends Unit
     /**
      * @inheritdoc
      */
-    protected function _before()
+    protected function _before(): void
     {
         $this->usernameValidator = new UsernameValidator();
     }

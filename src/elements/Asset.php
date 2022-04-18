@@ -78,11 +78,11 @@ use yii\web\Response;
 /**
  * Asset represents an asset element.
  *
- * @property int|float|null $height the image height
- * @property int|float|null $width the image width
+ * @property int|null $height the image height
+ * @property int|null $width the image width
  * @property int|null $volumeId the volume ID
  * @property string $filename the filename (with extension)
- * @property string|array|null $focalPoint the focal point represented as an array with `x` and `y` keys, or null if it's not an image
+ * @property string|array|null $focalPoint the focal point represented as an array with `x` and `y` keys, or null if it’s not an image
  * @property-read Markup|null $img an `<img>` tag based on this asset
  * @property-read VolumeFolder $folder the asset’s volume folder
  * @property-read Volume $volume the asset’s volume
@@ -256,7 +256,7 @@ class Asset extends Element
      * @inheritdoc
      * @return AssetQuery The newly created [[AssetQuery]] instance.
      */
-    public static function find(): ElementQueryInterface
+    public static function find(): AssetQuery
     {
         return new AssetQuery(static::class);
     }
@@ -302,6 +302,7 @@ class Asset extends Element
     public function setEagerLoadedElements(string $handle, array $elements): void
     {
         if ($handle === 'uploader') {
+            /** @var User|null $uploader */
             $uploader = $elements[0] ?? null;
             $this->setUploader($uploader);
         } else {
@@ -399,7 +400,7 @@ class Asset extends Element
             preg_match('/^volume:([a-z0-9\-]+)/', $source, $matches) &&
             $volume = Craft::$app->getVolumes()->getVolumeByUid($matches[1])
         ) {
-            $isTemp = $volume instanceof Temp;
+            $isTemp = $volume->getFs() instanceof Temp;
 
             $actions[] = [
                 'type' => PreviewAsset::class,
@@ -572,7 +573,7 @@ class Asset extends Element
     {
         $volume = $folder->getVolume();
 
-        if ($volume instanceof Temp) {
+        if ($volume->getFs() instanceof Temp) {
             $volumeHandle = 'temp';
         } elseif (!$folder->parentId) {
             $volumeHandle = $volume->handle ?? false;
@@ -721,14 +722,14 @@ class Asset extends Element
     private string $_filename;
 
     /**
-     * @var int|float|null Width
+     * @var int|null Width
      */
-    private int|float|null $_width = null;
+    private int|null $_width = null;
 
     /**
-     * @var int|float|null Height
+     * @var int|null Height
      */
-    private int|float|null $_height = null;
+    private int|null $_height = null;
 
     /**
      * @var array|null Focal point
@@ -985,7 +986,7 @@ class Asset extends Element
 
         $volume = $this->getVolume();
 
-        if ($volume instanceof Temp) {
+        if ($volume->getFs() instanceof Temp) {
             return true;
         }
 
@@ -1012,7 +1013,7 @@ class Asset extends Element
     protected function cpEditUrl(): ?string
     {
         $volume = $this->getVolume();
-        if ($volume instanceof Temp) {
+        if ($volume->getFs() instanceof Temp) {
             return null;
         }
 
@@ -1489,10 +1490,11 @@ JS;
      * @param ImageTransform|string|array|null $transform A transform handle or configuration that should be applied to the
      * image If an array is passed, it can optionally include a `transform` key that defines a base transform
      * which the rest of the settings should be applied to.
+     * @param bool|null $immediately Whether the image should be transformed immediately
      * @return string|null
      * @throws InvalidConfigException
      */
-    public function getUrl(mixed $transform = null): ?string
+    public function getUrl(mixed $transform = null, ?bool $immediately = null): ?string
     {
         // Maybe a plugin wants to do something here
         $event = new DefineAssetUrlEvent([
@@ -1542,9 +1544,11 @@ JS;
                 }
             }
 
-            $immediately = Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad;
             $transform = ImageTransforms::normalizeTransform($transform);
-            $imageTransformer = $transform->getImageTransformer();
+
+            if ($immediately === null) {
+                $immediately = Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad;
+            }
 
             try {
                 if ($this->hasEventHandlers(self::EVENT_BEFORE_GENERATE_TRANSFORM)) {
@@ -1561,6 +1565,7 @@ JS;
                     }
                 }
 
+                $imageTransformer = $transform->getImageTransformer();
                 $url = $imageTransformer->getTransformUrl($this, $transform, $immediately);
 
                 if ($this->hasEventHandlers(self::EVENT_AFTER_GENERATE_TRANSFORM)) {
@@ -1709,10 +1714,10 @@ JS;
      * Returns the image height.
      *
      * @param ImageTransform|string|array|null $transform A transform handle or configuration that should be applied to the image
-     * @return int|float|null
+     * @return int|null
      */
 
-    public function getHeight(mixed $transform = null): float|int|null
+    public function getHeight(mixed $transform = null): ?int
     {
         return $this->_dimensions($transform)[1];
     }
@@ -1720,9 +1725,9 @@ JS;
     /**
      * Sets the image height.
      *
-     * @param float|int|null $height the image height
+     * @param int|null $height the image height
      */
-    public function setHeight(float|int|null $height): void
+    public function setHeight(?int $height): void
     {
         $this->_height = $height;
     }
@@ -1731,9 +1736,9 @@ JS;
      * Returns the image width.
      *
      * @param array|string|ImageTransform|null $transform A transform handle or configuration that should be applied to the image
-     * @return int|float|null
+     * @return int|null
      */
-    public function getWidth(array|string|ImageTransform $transform = null): float|int|null
+    public function getWidth(array|string|ImageTransform $transform = null): ?int
     {
         return $this->_dimensions($transform)[0];
     }
@@ -1741,9 +1746,9 @@ JS;
     /**
      * Sets the image width.
      *
-     * @param float|int|null $width the image width
+     * @param int|null $width the image width
      */
-    public function setWidth(float|int|null $width): void
+    public function setWidth(?int $width): void
     {
         $this->_width = $width;
     }
@@ -1905,7 +1910,7 @@ JS;
     }
 
     /**
-     * Returns the focal point represented as an array with `x` and `y` keys, or null if it's not an image.
+     * Returns the focal point represented as an array with `x` and `y` keys, or null if it’s not an image.
      *
      * @param bool $asCss whether the value should be returned in CSS syntax ("50% 25%") instead
      * @return array|string|null
@@ -2142,7 +2147,7 @@ JS;
      */
     protected function metaFieldsHtml(bool $static): string
     {
-        return implode('', [
+        return implode("\n", [
             Cp::textFieldHtml([
                 'label' => Craft::t('app', 'Filename'),
                 'id' => 'new-filename',
@@ -2307,7 +2312,7 @@ JS;
         // Set the field layout
         $volume = Craft::$app->getAssets()->getFolderById($folderId)->getVolume();
 
-        if (!$volume instanceof Temp) {
+        if (!$volume->getFs() instanceof Temp) {
             $this->fieldLayoutId = $volume->fieldLayoutId;
         }
 
@@ -2358,7 +2363,7 @@ JS;
             $record->size = (int)$this->size ?: null;
             $record->width = (int)$this->_width ?: null;
             $record->height = (int)$this->_height ?: null;
-            $record->dateModified = $this->dateModified;
+            $record->dateModified = Db::prepareDateForDb($this->dateModified);
 
             if ($this->getHasFocalPoint()) {
                 $focal = $this->getFocalPoint();
@@ -2435,7 +2440,7 @@ JS;
         $userSession = Craft::$app->getUser();
         $imageEditable = $context === ElementSources::CONTEXT_INDEX && $this->getSupportsImageEditor();
 
-        if ($volume instanceof Temp || $userSession->getId() == $this->uploaderId) {
+        if ($volume->getFs() instanceof Temp || $userSession->getId() == $this->uploaderId) {
             $attributes['data']['own-file'] = true;
             $movable = $replaceable = true;
         } else {
@@ -2591,8 +2596,6 @@ JS;
                 $oldVolume->getFs()->deleteFile($oldPath);
             }
 
-            $exception = null;
-
             // Upload the file to the new location
             try {
                 $newVolume->getFs()->writeFileFromStream($newPath, $stream, [
@@ -2600,16 +2603,12 @@ JS;
                 ]);
             } catch (VolumeException $exception) {
                 Craft::$app->getErrorHandler()->logException($exception);
+                throw $exception;
             } finally {
                 // If the volume has not already disconnected the stream, clean it up.
                 if (is_resource($stream)) {
                     fclose($stream);
                 }
-            }
-
-            // Re-throw it, after we've made sure that the stream is disconnected.
-            if ($exception !== null) {
-                throw $exception;
             }
         }
 

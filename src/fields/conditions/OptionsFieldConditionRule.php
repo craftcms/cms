@@ -7,6 +7,7 @@ use craft\fields\BaseOptionsField;
 use craft\fields\data\MultiOptionsFieldData;
 use craft\fields\data\OptionData;
 use craft\fields\data\SingleOptionFieldData;
+use Illuminate\Support\Collection;
 
 /**
  * Options field condition rule.
@@ -22,7 +23,7 @@ class OptionsFieldConditionRule extends BaseMultiSelectConditionRule implements 
     {
         /** @var BaseOptionsField $field */
         $field = $this->_field;
-        return collect($field->options)
+        return Collection::make($field->options)
             ->filter(fn(array $option) => !empty($option['value']) && !empty($option['label']))
             ->map(fn(array $option) => [
                 'value' => $option['value'],
@@ -45,6 +46,7 @@ class OptionsFieldConditionRule extends BaseMultiSelectConditionRule implements 
     protected function matchFieldValue($value): bool
     {
         if ($value instanceof MultiOptionsFieldData) {
+            /** @phpstan-ignore-next-line */
             $value = array_map(fn(OptionData $option) => $option->value, (array)$value);
         } elseif ($value instanceof SingleOptionFieldData) {
             $value = $value->value;

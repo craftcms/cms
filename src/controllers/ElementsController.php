@@ -18,6 +18,7 @@ use craft\elements\User;
 use craft\errors\InvalidElementException;
 use craft\errors\InvalidTypeException;
 use craft\errors\UnsupportedSiteException;
+use craft\events\DefineElementEditorHtmlEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Component;
 use craft\helpers\Cp;
@@ -45,6 +46,12 @@ use yii\web\ServerErrorHttpException;
  */
 class ElementsController extends Controller
 {
+    /**
+     * @event DefineElementEditorHtmlEvent The event that is triggered when rendering an element editor’s content.
+     * @see _editorContent()
+     */
+    public const EVENT_DEFINE_EDITOR_CONTENT = 'defineEditorContent';
+
     private array $_attributes;
     private ?string $_elementType = null;
     private ?int $_elementId = null;
@@ -173,6 +180,9 @@ class ElementsController extends Controller
 
         /** @var ElementInterface $element */
         $element = Craft::createObject($this->_elementType);
+        if ($this->_siteId) {
+            $element->siteId = $this->_siteId;
+        }
         $element->setAttributes($this->_attributes);
 
         $user = Craft::$app->getUser()->getIdentity();
@@ -188,24 +198,27 @@ class ElementsController extends Controller
         // Save it
         $element->setScenario(Element::SCENARIO_ESSENTIALS);
         if (!Craft::$app->getDrafts()->saveElementAsDraft($element, $user->id, null, null, false)) {
-            throw new ServerErrorHttpException(sprintf('Unable to save draft: %s', implode(', ', $element->getErrorSummary(true))));
+            return $this->_asFailure($element, Craft::t('app', 'Couldn’t create {type}.', [
+                'type' => $element::lowerDisplayName(),
+            ]));
         }
 
         // Redirect to its edit page
         $editUrl = $element->getCpEditUrl() ?? UrlHelper::actionUrl('elements/edit', [
                 'draftId' => $element->draftId,
                 'siteId' => $element->siteId,
-                'fresh' => 1,
             ]);
 
         $response = $this->_asSuccess(Craft::t('app', '{type} created.', [
             'type' => Craft::t('app', 'Draft'),
         ]), $element, array_filter([
-            'cpEditUrl' => $this->request->isCpRequest ? $element->getCpEditUrl() : null,
+            'cpEditUrl' => $this->request->isCpRequest ? $editUrl : null,
         ]));
 
         if (!$this->request->getAcceptsJson()) {
-            $response->redirect($editUrl);
+            $response->redirect(UrlHelper::urlWithParams($editUrl, [
+                'fresh' => '1',
+            ]));
         }
 
         return $response;
@@ -336,14 +349,14 @@ class ElementsController extends Controller
         if ($canEditMultipleSites) {
             if ($element->enabled && $element->id) {
                 $siteStatusesQuery = $element::find()
-                    ->select(['elements_sites.siteId', 'elements_sites.enabled'])
                     ->drafts($isDraft)
                     ->provisionalDrafts($element->isProvisionalDraft)
                     ->revisions($isRevision)
                     ->id($element->id)
                     ->siteId($propEditableSiteIds)
                     ->status(null)
-                    ->asArray();
+                    ->asArray()
+                    ->select(['elements_sites.siteId', 'elements_sites.enabled']);
                 $siteStatuses = array_map(fn($enabled) => (bool)$enabled, $siteStatusesQuery->pairs());
             } else {
                 // If the element isn't saved yet, assume other sites will share its current status
@@ -615,6 +628,7 @@ class ElementsController extends Controller
                 'element' => $element,
                 'showDrafts' => $showDrafts,
                 'supportedSiteIds' => $propSiteIds,
+                'showSiteLabel' => $isMultiSiteElement,
             ], View::TEMPLATE_MODE_CP);
         }
 
@@ -677,8 +691,8 @@ class ElementsController extends Controller
             $components[] = Html::beginForm() .
                 Html::actionInput('elements/revert') .
                 Html::redirectInput('{cpEditUrl}') .
-                Html::hiddenInput('elementId', $canonical->id) .
-                Html::hiddenInput('revisionId', $element->revisionId) .
+                Html::hiddenInput('elementId', (string)$canonical->id) .
+                Html::hiddenInput('revisionId', (string)$element->revisionId) .
                 Html::beginTag('div', ['class' => 'secondary-buttons']) .
                 Html::button(Craft::t('app', 'Revert content from this revision'), [
                     'class' => ['btn', 'secondary', 'formsubmit'],
@@ -736,15 +750,15 @@ JS;
 
         if ($canSave) {
             if ($element->id) {
-                $components[] = Html::hiddenInput('elementId', $element->getCanonicalId());
+                $components[] = Html::hiddenInput('elementId', (string)$element->getCanonicalId());
             }
 
             if ($element->siteId) {
-                $components[] = Html::hiddenInput('siteId', $element->siteId);
+                $components[] = Html::hiddenInput('siteId', (string)$element->siteId);
             }
 
             if ($element->fieldLayoutId) {
-                $components[] = Html::hiddenInput('fieldLayoutId', $element->fieldLayoutId);
+                $components[] = Html::hiddenInput('fieldLayoutId', (string)$element->fieldLayoutId);
             }
 
             if ($isUnpublishedDraft && $this->_fresh) {
@@ -752,7 +766,20 @@ JS;
             }
         }
 
-        return implode("\n", $components);
+        $html = implode("\n", $components);
+
+        // Trigger a defineEditorContent event
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_EDITOR_CONTENT)) {
+            $event = new DefineElementEditorHtmlEvent([
+                'element' => $element,
+                'html' => $html,
+                'static' => !$canSave,
+            ]);
+            $this->trigger(self::EVENT_DEFINE_EDITOR_CONTENT, $event);
+            $html = $event->html;
+        }
+
+        return $html;
     }
 
     private function _editorSidebar(
@@ -773,7 +800,6 @@ JS;
 
         /** @var ElementInterface|DraftBehavior|RevisionBehavior $element */
         $components[] = $element->getSidebarHtml(!$canSave);
-        ;
 
         if ($this->id) {
             $components[] = Cp::metadataHtml($element->getMetadata());
@@ -941,6 +967,7 @@ JS;
                 'type' => $element::lowerDisplayName(),
             ]));
         } catch (Throwable $e) {
+            /** @phpstan-ignore-next-line */
             throw new ServerErrorHttpException('An error occurred when duplicating the element.', 0, $e);
         }
 
@@ -1062,7 +1089,7 @@ JS;
     {
         $this->requirePostRequest();
 
-        /** @var Element|DraftBehavior $element */
+        /** @var Element|DraftBehavior|null $element */
         $element = $this->_element();
 
         if (!$element || $element->getIsRevision()) {
@@ -1450,6 +1477,7 @@ JS;
         }
 
         /** @var string|ElementInterface $elementType */
+        /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
         $this->_validateElementType($elementType);
 
         if ($strictSite) {
@@ -1530,7 +1558,8 @@ JS;
     /**
      * Ensures the given element type is valid.
      *
-     * @param class-string<ElementInterface> $elementType
+     * @param string $elementType
+     * @phpstan-param class-string<ElementInterface> $elementType
      * @throws BadRequestHttpException
      */
     private function _validateElementType(string $elementType): void

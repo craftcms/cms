@@ -23,9 +23,9 @@ use yii\base\Exception;
 class DeleteUsers extends ElementAction implements DeleteActionInterface
 {
     /**
-     * @var int|null The user ID that the deleted user’s content should be transferred to
+     * @var int|int[]|null The user ID that the deleted user’s content should be transferred to
      */
-    public ?int $transferContentTo = null;
+    public int|array|null $transferContentTo = null;
 
     /**
      * @var bool Whether to permanently delete the elements.
@@ -154,12 +154,12 @@ JS;
         $users = $query->all();
         $undeletableIds = $this->_getUndeletableUserIds();
 
-        // Are we transferring the user's content to a different user?
-        if (is_array($this->transferContentTo) && isset($this->transferContentTo[0])) {
-            $this->transferContentTo = $this->transferContentTo[0];
+        // Are we transferring the user’s content to a different user?
+        if (is_array($this->transferContentTo)) {
+            $this->transferContentTo = reset($this->transferContentTo) ?: null;
         }
 
-        if (!empty($this->transferContentTo)) {
+        if ($this->transferContentTo) {
             $transferContentTo = Craft::$app->getUsers()->getUserById($this->transferContentTo);
 
             if (!$transferContentTo) {
