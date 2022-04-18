@@ -21,8 +21,8 @@
 - Changed the default log level to `LogLevel::INFO` when `devMode` is set to `true`. ([#10916](https://github.com/craftcms/cms/pull/10916))
 - SQL queries are now logged as `LogLevel::DEBUG`, omitting them from logs by default. ([#10916](https://github.com/craftcms/cms/pull/10916))
 - Simplified logging date format and disabled microsecond precision. ([#10916](https://github.com/craftcms/cms/pull/10916)) 
-- Changed defaults of `\craft\db\Connection::$enableLogging` and `\craft\db\Connection::$enableProfiling` to match the configured `devMode` setting.
-- Removed special handling of log level for the `queue` log target.
+- Changed defaults of `\craft\db\Connection::$enableLogging` and `\craft\db\Connection::$enableProfiling` to match the configured `devMode` setting. ([#10916](https://github.com/craftcms/cms/pull/10916))
+- Removed special handling of log level for the `queue` log target. ([#10916](https://github.com/craftcms/cms/pull/10916))
 
 ### Fixed
 - Fixed a bug where autosuggest inputs weren’t including numeric and boolean environment variables in their suggestions. ([#10873](https://github.com/craftcms/cms/issues/10873))
