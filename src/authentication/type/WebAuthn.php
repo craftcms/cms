@@ -14,7 +14,6 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Json;
 use craft\records\AuthWebAuthn;
 use Webauthn\PublicKeyCredentialCreationOptions;
-use Webauthn\PublicKeyCredentialOptions;
 use Webauthn\PublicKeyCredentialRpEntity;
 use Webauthn\PublicKeyCredentialSource as CredentialSource;
 use Webauthn\PublicKeyCredentialUserEntity;
