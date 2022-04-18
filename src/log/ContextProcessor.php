@@ -27,7 +27,7 @@ class ContextProcessor implements ProcessorInterface
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritdoc
      */
     public function __invoke(array $record): array
     {

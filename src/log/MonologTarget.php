@@ -85,7 +85,7 @@ class MonologTarget extends PsrTarget
     protected $logger;
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function init(): void
     {
@@ -107,8 +107,8 @@ class MonologTarget extends PsrTarget
     }
 
     /**
+     * @inheritdoc
      * @throws InvalidConfigException
-     * @inheritDoc
      */
     public function setLogger(Logger|LoggerInterface $logger): void
     {
@@ -117,7 +117,7 @@ class MonologTarget extends PsrTarget
 
     /**
      * Log additional request context.
-     * @inheritDoc
+     * @inheritdoc
      */
     public function export(): void
     {
@@ -147,7 +147,7 @@ class MonologTarget extends PsrTarget
 
     /**
      * Context is logged via {@see self::export} method, so it can be added using Monolog.
-     * @inheritDoc
+     * @inheritdoc
      */
     protected function getContextMessage(): string
     {
