@@ -75,14 +75,6 @@ class Dispatcher extends \yii\log\Dispatcher
                 'level' => App::devMode() ? LogLevel::INFO : LogLevel::WARNING,
             ];
 
-            if ($name === static::TARGET_QUEUE) {
-                $config = [
-                    'level' => LogLevel::INFO,
-                    'except' => ['yii\*'],
-                    'logContext' => false,
-                ] + $config;
-            }
-
             return [$name => new MonologTarget($config)];
         });
 

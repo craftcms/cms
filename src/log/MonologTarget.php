@@ -35,6 +35,9 @@ class MonologTarget extends PsrTarget
         HttpException::class . ':404',
     ];
 
+    /**
+     * @var bool Whether to log request context
+     */
     public bool $logContext = true;
 
     /**
