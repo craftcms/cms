@@ -81,6 +81,11 @@ Craft.EditableTable = Garnish.Base.extend({
             this.createRowObj($rows[i]);
         }
 
+        const $container = this.$table.parent('.input');
+        if ($container.length && this.$table.width() > $container.width()) {
+            $container.css('overflow-x', 'auto');
+        }
+
         this.$addRowBtn = this.$table.next('.add');
         this.updateAddRowButton();
         this.addListener(this.$addRowBtn, 'activate', 'addRow');
