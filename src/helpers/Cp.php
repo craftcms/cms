@@ -1603,7 +1603,6 @@ JS;
             ]),
             'data' => [
                 'uid' => !$forLibrary ? $element->uid : false,
-                'type' => $forLibrary ? str_replace('\\', '-', get_class($element)) : false,
                 'config' => $forLibrary ? ['type' => get_class($element)] + $element->toArray() : false,
                 'has-custom-width' => $element->hasCustomWidth(),
                 'settings-namespace' => $settingsNamespace,
