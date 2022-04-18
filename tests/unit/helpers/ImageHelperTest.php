@@ -196,10 +196,10 @@ class ImageHelperTest extends TestCase
     public function parseSvgSizeProvider(): array
     {
         return [
-            [[140.0, 41.0], file_get_contents(dirname(__FILE__, 3) . '/_data/assets/files/craft-logo.svg')],
-            [[100.0, 100.0], file_get_contents(dirname(__FILE__, 3) . '/_data/assets/files/gng.svg')],
+            [[140, 41], file_get_contents(dirname(__FILE__, 3) . '/_data/assets/files/craft-logo.svg')],
+            [[100, 100], file_get_contents(dirname(__FILE__, 3) . '/_data/assets/files/gng.svg')],
 
-            // This svg is same as craft-logo but we removed viewbox="" and height=""/width="" so it returns 100.0 100.0 instead of 140.0 41.0
+            // This svg is same as craft-logo but we removed viewbox="" and height=""/width="" so it returns 100 100 instead of 140 41
             [[100, 100], file_get_contents(dirname(__FILE__, 3) . '/_data/assets/files/no-dimension-svg.svg')],
             [[100, 100], file_get_contents(dirname(__FILE__, 3) . '/_data/assets/files/google.png')],
         ];
@@ -214,7 +214,7 @@ class ImageHelperTest extends TestCase
             [[960, 640], dirname(__FILE__, 3) . '/_data/assets/files/background.jpg', false],
             [[200, 200], dirname(__FILE__, 3) . '/_data/assets/files/google.png', false],
             [[1728, 2376], dirname(__FILE__, 3) . '/_data/assets/files/random.tiff', true],
-            [[100.0, 100.0], dirname(__FILE__, 3) . '/_data/assets/files/gng.svg', false],
+            [[100, 100], dirname(__FILE__, 3) . '/_data/assets/files/gng.svg', false],
         ];
     }
 

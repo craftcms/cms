@@ -1286,7 +1286,7 @@ $.extend(Craft,
          * Trim characters off of the beginning of a string.
          *
          * @param {string} str
-         * @param {string|object|undefined} chars The characters to trim off. Defaults to a space if left blank.
+         * @param {string|object|undefined} [chars] The characters to trim off. Defaults to a space if left blank.
          * @return string
          */
         ltrim: function(str, chars) {
@@ -1322,7 +1322,7 @@ $.extend(Craft,
          * Trim characters off of the beginning and end of a string.
          *
          * @param {string} str
-         * @param {string|object|undefined} chars The characters to trim off. Defaults to a space if left blank.
+         * @param {string|object|undefined} [chars] The characters to trim off. Defaults to a space if left blank.
          * @return string
          */
         trim: function(str, chars) {
@@ -2048,6 +2048,68 @@ $.extend(Craft,
          */
         setFocusWithin: function(container) {
             Garnish.setFocusWithin(container);
+        },
+
+        /**
+         * Sets/removes attributes on an element.
+         *
+         * Attributes set to `null` or `false` will be removed.
+         *
+         * @param element
+         * @param {Object} attributes
+         */
+        setElementAttributes: function(element, attributes) {
+            const $element = $(element);
+
+            for (let name in attributes) {
+                if (!attributes.hasOwnProperty(name)) {
+                    continue;
+                }
+
+                let value = attributes[name];
+
+                if (value === null || value === false) {
+                    $element.removeAttr(name);
+                } else if (value === true) {
+                    $element.attr(name, '');
+                } else if ($.isArray(value) || $.isPlainObject(value)) {
+                    if (Craft.dataAttributes.includes(name)) {
+                        // Make sure it's an object
+                        value = Object.assign({}, value);
+                        for (let n in value) {
+                            if (!value.hasOwnProperty(n)) {
+                                continue;
+                            }
+                            let subValue = value[n];
+                            if (subValue === null || subValue === false) {
+                                continue;
+                            }
+                            if ($.isPlainObject(subValue) || $.isArray(subValue)) {
+                                subValue = JSON.stringify(subValue)
+                            } else if (subValue === true) {
+                                subValue = '';
+                            } else {
+                                subValue = this.escapeHtml(subValue);
+                            }
+                            $element.attr(`${name}-${n}`, subValue);
+                        }
+                    } else if (name === 'class') {
+                        // Make sure it's an array
+                        if ($.isPlainObject(value)) {
+                            value = Object.values(value);
+                        }
+                        for (let c of value) {
+                            $element.addClass(c);
+                        }
+                    } else if (name === 'style') {
+                        $element.css(value);
+                    } else {
+                        $element.attr(name, JSON.stringify(value));
+                    }
+                } else {
+                    $element.attr(name, this.escapeHtml(value));
+                }
+            }
         },
     });
 

@@ -363,9 +363,9 @@ class UsersController extends Controller
     /**
      * Starts an elevated user session.
      *
-     * @return Response
+     * @return Response|null
      */
-    public function actionStartElevatedSession(): Response
+    public function actionStartElevatedSession(): ?Response
     {
         $password = $this->request->getBodyParam('currentPassword') ?? $this->request->getBodyParam('password');
 
@@ -744,10 +744,12 @@ class UsersController extends Controller
                     $statusLabel = $user->pending ? Craft::t('app', 'Pending') : Craft::t('app', 'Inactive');
                     // Only provide activation actions if they have an email address
                     if ($user->email) {
-                        $statusActions[] = [
-                            'action' => 'users/send-activation-email',
-                            'label' => Craft::t('app', 'Send activation email'),
-                        ];
+                        if ($user->pending || $canAdministrateUsers) {
+                            $statusActions[] = [
+                                'action' => 'users/send-activation-email',
+                                'label' => Craft::t('app', 'Send activation email'),
+                            ];
+                        }
                         if ($canAdministrateUsers) {
                             // Only need to show the "Copy activation URL" option if they don't have a password
                             if (!$user->password) {
@@ -1503,10 +1505,10 @@ JS,
     /**
      * Sends a new activation email to a user.
      *
-     * @return Response
+     * @return Response|null
      * @throws BadRequestHttpException if the user is not pending
      */
-    public function actionSendActivationEmail(): Response
+    public function actionSendActivationEmail(): ?Response
     {
         $this->requirePostRequest();
 
@@ -1523,10 +1525,15 @@ JS,
             $this->_noUserExists();
         }
 
-        // Only allow activation emails to be send to pending users.
+        // Only allow activation emails to be sent to inactive/pending users.
         /** @var User $user */
-        if ($user->getStatus() !== User::STATUS_PENDING) {
-            throw new BadRequestHttpException('Activation emails can only be sent to pending users');
+        $status = $user->getStatus();
+        if (!in_array($status, [User::STATUS_INACTIVE, User::STATUS_PENDING])) {
+            throw new BadRequestHttpException('Activation emails can only be sent to inactive or pending users');
+        }
+
+        if (!$user->pending) {
+            $this->requirePermission('administrateUsers');
         }
 
         $emailSent = Craft::$app->getUsers()->sendActivationEmail($user);
@@ -1896,9 +1903,9 @@ JS,
     /**
      * Verifies a password for a user.
      *
-     * @return Response
+     * @return Response|null
      */
-    public function actionVerifyPassword(): Response
+    public function actionVerifyPassword(): ?Response
     {
         $this->requireAcceptsJson();
 

@@ -9,6 +9,11 @@
 - Added `craft\events\FsEvent`.
 - Added `craft\helpers\Db::escapeCommas()`.
 - Added `craft\services\Fs::EVENT_RENAME_FILESYSTEM`.
+- Added `craft\web\CpScreenResponseBehavior::$formAttributes`. ([#10924](https://github.com/craftcms/cms/issues/10924))
+- Added `craft\web\CpScreenResponseBehavior::$mainAttributes`. ([#10924](https://github.com/craftcms/cms/issues/10924))
+- Added `craft\web\CpScreenResponseBehavior::formAttributes()`. ([#10924](https://github.com/craftcms/cms/issues/10924))
+- Added `craft\web\CpScreenResponseBehavior::mainAttributes()`. ([#10924](https://github.com/craftcms/cms/issues/10924))
+- Added the `Craft.setElementAttributes()` JavaScript method.
 
 ### Changed
 - Volumes’ Asset Filesystem and Transform Filesystem settings are now automatically updated when a filesystem’s handle changes, if they reference the filesystem’s handle directly. ([#10885](https://github.com/craftcms/cms/issues/10885))
@@ -23,6 +28,10 @@
 - Simplified logging date format and disabled microsecond precision. ([#10916](https://github.com/craftcms/cms/pull/10916)) 
 - Changed defaults of `\craft\db\Connection::$enableLogging` and `\craft\db\Connection::$enableProfiling` to match the configured `devMode` setting. ([#10916](https://github.com/craftcms/cms/pull/10916))
 - Removed special handling of log level for the `queue` log target. ([#10916](https://github.com/craftcms/cms/pull/10916))
+- Custom sources with a blank label are now labelled as “(blank)”. ([#10915](https://github.com/craftcms/cms/issues/10915))
+
+### Deprecated
+- Deprecated the `autosaveDrafts` config setting.
 
 ### Fixed
 - Fixed a bug where autosuggest inputs weren’t including numeric and boolean environment variables in their suggestions. ([#10873](https://github.com/craftcms/cms/issues/10873))
@@ -37,6 +46,17 @@
 - Fixed a bug where the “New Entry” button wasn’t creating an entry in the selected site. ([#10902](https://github.com/craftcms/cms/issues/10902))
 - Fixed a bug where every log message contained the full request context. ([#10903](https://github.com/craftcms/cms/issues/10903)) 
 - Fixed a bug where `devMode` could not be set via the `CRAFT_DEV_MODE` environment variable. ([#10916](https://github.com/craftcms/cms/pull/10916))
+- Fixed a bug where “Save assets uploaded by other users” was listed twice in user permission lists. ([#10909](https://github.com/craftcms/cms/issues/10909))
+- Fixed an error that could occur in the `setup` command.
+- Fixed an error that occurred when indexing a volume, if any indexed folders didn’t exist on the filesystem. ([#10905](https://github.com/craftcms/cms/issues/10905))
+- Fixed an error that occurred when uploading an SVG with non-integer dimensions. ([#10923](https://github.com/craftcms/cms/issues/10923))
+- Fixed a bug where relational fields’ Min Relations settings weren’t getting enforced for empty fields.
+- Fixed a bug where sections’ Default Status settings weren’t being respected. ([#10926](https://github.com/craftcms/cms/issues/10926))
+- Fixed an error that occurred when searching for a specific attribute. ([#10927](https://github.com/craftcms/cms/issues/10927))
+- Fixed a bug where menus weren’t closing when another menu button was clicked on. ([#10928](https://github.com/craftcms/cms/issues/10928))
+- Fixed an error that could occur when saving a field layout, if it had any tabs that were initially empty. ([#10929](https://github.com/craftcms/cms/issues/10929))
+- Fixed an error that occurred when sending an activation email to an invactive user. ([#10932](https://github.com/craftcms/cms/issues/10932))
+- Fix a bug where sometimes a subset of project config changes would not be applied. ([#10865](https://github.com/craftcms/cms/issues/10865))
 
 ### Removed
 - Removed `craft\config\DbConfig::enableLogging`. ([#10916](https://github.com/craftcms/cms/pull/10916))

@@ -376,6 +376,7 @@
 - Added the `Craft.namespaceId()` JavaScript method.
 - Added the `Craft.namespaceInputName()` JavaScript method.
 - Added the `Craft.Queue` JavaScript class.
+- Added the `Craft.setElementAttributes()` JavaScript method.
 - Added the `Craft.setPath()` JavaScript method.
 - Added the `Craft.setQueryParam()` JavaScript method.
 - Added the `Craft.setUrl()` JavaScript method.
@@ -579,6 +580,7 @@
 - Updated vue-autosuggest to 2.2.0.
 
 ### Deprecated
+- Deprecated the `autosaveDrafts` config setting.
 - Deprecated the `anyStatus` element query param. `status(null)` should be used instead.
 - Deprecated the `immediately` argument for transforms created over GraphQL. It no longer has any effect.
 - Deprecated `craft\base\ApplicationTrait::getInstalledSchemaVersion()`.

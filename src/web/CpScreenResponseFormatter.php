@@ -88,6 +88,7 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
             'title' => $behavior->title,
             'notice' => $notice,
             'tabs' => $tabs,
+            'formAttributes' => $behavior->formAttributes,
             'action' => $behavior->action,
             'content' => $content,
             'sidebar' => $sidebar,
@@ -141,6 +142,8 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
                 'additionalButtons' => $addlButtons,
                 'tabs' => $behavior->tabs,
                 'fullPageForm' => (bool)$behavior->action,
+                'mainAttributes' => $behavior->mainAttributes,
+                'mainFormAttributes' => $behavior->formAttributes,
                 'formActions' => array_map(function(array $action) use ($security): array {
                     if (isset($action['redirect'])) {
                         $action['redirect'] = $security->hashData($action['redirect']);
