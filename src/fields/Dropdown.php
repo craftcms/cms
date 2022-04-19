@@ -40,12 +40,12 @@ class Dropdown extends BaseOptionsField implements SortableFieldInterface
     /**
      * @inheritdoc
      */
-    public $optgroups = true;
+    protected bool $optgroups = true;
 
     /**
      * @inheritdoc
      */
-    protected function inputHtml($value, ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
     {
         /** @var SingleOptionFieldData $value */
         $options = $this->translatedOptions();

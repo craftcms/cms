@@ -8,8 +8,7 @@
 namespace craft\gql\resolvers\mutations;
 
 use Craft;
-use craft\base\Element;
-use craft\base\Volume;
+use craft\base\ElementInterface;
 use craft\db\Table;
 use craft\elements\Asset as AssetElement;
 use craft\gql\base\ElementMutationResolver;
@@ -17,10 +16,13 @@ use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\UrlHelper;
+use craft\models\Volume;
 use GraphQL\Error\Error;
 use GraphQL\Error\UserError;
 use GraphQL\Type\Definition\ResolveInfo;
 use GuzzleHttp\Client;
+use Throwable;
+use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 
 /**
@@ -32,19 +34,19 @@ use yii\base\InvalidArgumentException;
 class Asset extends ElementMutationResolver
 {
     /** @inheritdoc */
-    protected $immutableAttributes = ['id', 'uid', 'volumeId', 'folderId'];
+    protected array $immutableAttributes = ['id', 'uid', 'volumeId', 'folderId'];
 
     /**
      * Save an asset using the passed arguments.
      *
-     * @param $source
+     * @param mixed $source
      * @param array $arguments
-     * @param $context
+     * @param mixed $context
      * @param ResolveInfo $resolveInfo
-     * @return mixed
-     * @throws \Throwable if reasons.
+     * @return AssetElement
+     * @throws Throwable if reasons.
      */
-    public function saveAsset($source, array $arguments, $context, ResolveInfo $resolveInfo)
+    public function saveAsset(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): AssetElement
     {
         /** @var Volume $volume */
         $volume = $this->getResolutionData('volume');
@@ -84,7 +86,6 @@ class Asset extends ElementMutationResolver
             ]);
         }
 
-        /** @var AssetElement $asset */
         if (empty($newFolderId)) {
             if (!$canIdentify) {
                 $asset->newFolderId = $assetService->getRootFolderByVolumeId($volume->id)->id;
@@ -108,55 +109,52 @@ class Asset extends ElementMutationResolver
     /**
      * Delete an asset identified by the arguments.
      *
-     * @param $source
+     * @param mixed $source
      * @param array $arguments
-     * @param $context
+     * @param mixed $context
      * @param ResolveInfo $resolveInfo
-     * @return mixed
-     * @throws \Throwable if reasons.
+     * @throws Throwable if reasons.
      */
-    public function deleteAsset($source, array $arguments, $context, ResolveInfo $resolveInfo)
+    public function deleteAsset(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): void
     {
         $assetId = $arguments['id'];
 
         $elementService = Craft::$app->getElements();
-        /** @var AssetElement $asset */
+        /** @var AssetElement|null $asset */
         $asset = $elementService->getElementById($assetId, AssetElement::class);
 
         if (!$asset) {
-            return true;
+            return;
         }
 
         $volumeUid = Db::uidById(Table::VOLUMES, $asset->getVolumeId());
         $this->requireSchemaAction('volumes.' . $volumeUid, 'delete');
 
         $elementService->deleteElementById($assetId);
-
-        return true;
     }
 
     /**
      * @inheritdoc
      */
-    protected function populateElementWithData(Element $asset, array $arguments, ResolveInfo $resolveInfo = null): Element
+    protected function populateElementWithData(ElementInterface $element, array $arguments, ?ResolveInfo $resolveInfo = null): ElementInterface
     {
         if (!empty($arguments['_file'])) {
             $fileInformation = $arguments['_file'];
             unset($arguments['_file']);
         }
 
-        /** @var AssetElement $asset */
-        $asset = parent::populateElementWithData($asset, $arguments, $resolveInfo);
+        /** @var AssetElement $element */
+        $element = parent::populateElementWithData($element, $arguments, $resolveInfo);
 
-        if (!empty($fileInformation) && $this->handleUpload($asset, $fileInformation)) {
-            if ($asset->id) {
-                $asset->setScenario(AssetElement::SCENARIO_REPLACE);
+        if (!empty($fileInformation) && $this->handleUpload($element, $fileInformation)) {
+            if ($element->id) {
+                $element->setScenario(AssetElement::SCENARIO_REPLACE);
             } else {
-                $asset->setScenario(AssetElement::SCENARIO_CREATE);
+                $element->setScenario(AssetElement::SCENARIO_CREATE);
             }
         }
 
-        return $asset;
+        return $element;
     }
 
     /**
@@ -164,8 +162,8 @@ class Asset extends ElementMutationResolver
      *
      * @param AssetElement $asset
      * @param array $fileInformation
-     * @return boolean
-     * @throws \yii\base\Exception
+     * @return bool
+     * @throws Exception
      */
     protected function handleUpload(AssetElement $asset, array $fileInformation): bool
     {
@@ -173,7 +171,6 @@ class Asset extends ElementMutationResolver
         $filename = null;
 
         if (!empty($fileInformation['fileData'])) {
-
             $dataString = $fileInformation['fileData'];
             $fileData = null;
 
@@ -189,7 +186,7 @@ class Asset extends ElementMutationResolver
                     if (isset($matches['type'])) {
                         try {
                             $extension = FileHelper::getExtensionByMimeType($matches['type']);
-                        } catch (InvalidArgumentException $e) {
+                        } catch (InvalidArgumentException) {
                         }
                     }
                     if (!$extension) {
@@ -206,7 +203,7 @@ class Asset extends ElementMutationResolver
             } else {
                 throw new UserError('Invalid file data provided');
             }
-        } else if (!empty($fileInformation['url'])) {
+        } elseif (!empty($fileInformation['url'])) {
             $url = $fileInformation['url'];
 
             if (empty($fileInformation['filename'])) {
@@ -227,7 +224,7 @@ class Asset extends ElementMutationResolver
         }
 
         $asset->tempFilePath = $tempPath;
-        $asset->filename = $filename;
+        $asset->setFilename($filename);
         $asset->avoidFilenameConflicts = true;
 
         return true;
@@ -242,5 +239,4 @@ class Asset extends ElementMutationResolver
     {
         return Craft::createGuzzleClient();
     }
-
 }

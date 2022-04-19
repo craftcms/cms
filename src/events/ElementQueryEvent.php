@@ -21,5 +21,5 @@ class ElementQueryEvent extends Event
     /**
      * @var ElementQueryInterface The element query.
      */
-    public $query;
+    public ElementQueryInterface $query;
 }

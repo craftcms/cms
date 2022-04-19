@@ -30,28 +30,28 @@ class UniqueValidator extends YiiUniqueValidator
      * attributes to record primary keys. Defaults to whatever the record's
      * primaryKey() method returns.
      */
-    public $pk;
+    public string|array $pk;
 
     /**
      * @var Model|null The model that is being validated
      */
-    protected $originalModel;
+    protected ?Model $originalModel = null;
 
     /**
      * @var bool Whether a case-insensitive check should be performed.
      */
-    public $caseInsensitive = false;
+    public bool $caseInsensitive = false;
 
     /**
      * @inheritdoc
      */
-    public function validateAttribute($model, $attribute)
+    public function validateAttribute($model, $attribute): void
     {
         if ($targetClass = $this->targetClass) {
             // Exclude this model's row using the filter
             /** @var ActiveRecord|string $targetClass */
             $pks = $targetClass::primaryKey();
-            if ($this->pk !== null) {
+            if (isset($this->pk)) {
                 $pkMap = is_string($this->pk) ? StringHelper::split($this->pk) : $this->pk;
             } else {
                 $pkMap = $pks;
@@ -93,7 +93,7 @@ class UniqueValidator extends YiiUniqueValidator
                 $a = is_int($k) ? $v : $k;
                 $originalAttributes[$a] = $model->$a;
                 $model->$a = mb_strtolower($model->$a);
-                $newTargetAttributes[$a] = "lower([[{$v}]])";
+                $newTargetAttributes[$a] = "lower([[$v]])";
             }
             $this->targetAttribute = $newTargetAttributes;
         }
@@ -109,10 +109,10 @@ class UniqueValidator extends YiiUniqueValidator
     /**
      * @inheritdoc
      */
-    public function addError($model, $attribute, $message, $params = [])
+    public function addError($model, $attribute, $message, $params = []): void
     {
         // Use the original model if there is one
-        if ($this->originalModel !== null) {
+        if (isset($this->originalModel)) {
             $model = $this->originalModel;
         }
 

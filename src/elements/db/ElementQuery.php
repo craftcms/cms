@@ -7,7 +7,6 @@
 
 namespace craft\elements\db;
 
-use ArrayIterator;
 use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
@@ -29,9 +28,8 @@ use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\StringHelper;
 use craft\models\Site;
-use craft\search\SearchQuery;
+use ReflectionClass;
 use ReflectionProperty;
-use ReturnTypeWillChange;
 use yii\base\ArrayableTrait;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
@@ -55,57 +53,47 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @event Event An event that is triggered at the beginning of preparing an element query for the query builder.
      */
-    const EVENT_BEFORE_PREPARE = 'beforePrepare';
+    public const EVENT_BEFORE_PREPARE = 'beforePrepare';
 
     /**
      * @event Event An event that is triggered at the end of preparing an element query for the query builder.
      */
-    const EVENT_AFTER_PREPARE = 'afterPrepare';
+    public const EVENT_AFTER_PREPARE = 'afterPrepare';
 
     /**
      * @event PopulateElementEvent The event that is triggered after an element is populated.
      *
      * If [[PopulateElementEvent::$element]] is replaced by an event handler, the replacement will be returned by [[createElement()]] instead.
      */
-    const EVENT_AFTER_POPULATE_ELEMENT = 'afterPopulateElement';
+    public const EVENT_AFTER_POPULATE_ELEMENT = 'afterPopulateElement';
 
     /**
-     * Returns whether querying for drafts/revisions is supported yet.
-     *
-     * @return bool
-     * @todo remove schema version condition after next beakpoint
+     * @var string The name of the [[ElementInterface]] class.
+     * @phpstan-var class-string<ElementInterface>
      */
-    private static function _supportsRevisionParams(): bool
-    {
-        return Craft::$app->getDb()->columnExists(Table::ELEMENTS, 'draftId');
-    }
-
-    /**
-     * @var string|null The name of the [[ElementInterface]] class.
-     */
-    public $elementType;
+    public string $elementType;
 
     /**
      * @var Query|null The query object created by [[prepare()]]
      * @see prepare()
      */
-    public $query;
+    public ?Query $query = null;
 
     /**
      * @var Query|null The subselect’s query object created by [[prepare()]]
      * @see prepare()
      */
-    public $subQuery;
+    public ?Query $subQuery = null;
 
     /**
      * @var string|null The content table that will be joined by this query.
      */
-    public $contentTable = Table::CONTENT;
+    public ?string $contentTable = Table::CONTENT;
 
     /**
      * @var FieldInterface[]|null The fields that may be involved in this query.
      */
-    public $customFields;
+    public ?array $customFields = null;
 
     // Result formatting attributes
     // -------------------------------------------------------------------------
@@ -114,21 +102,21 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @var bool Whether the results should be queried in reverse.
      * @used-by inReverse()
      */
-    public $inReverse = false;
+    public bool $inReverse = false;
 
     /**
      * @var bool Whether to return each element as an array. If false (default), an object
      * of [[elementType]] will be created to represent each element.
      * @used-by asArray()
      */
-    public $asArray = false;
+    public bool $asArray = false;
 
     /**
      * @var bool Whether to ignore placeholder elements when populating the results.
      * @used-by ignorePlaceholders()
      * @since 3.2.9
      */
-    public $ignorePlaceholders = false;
+    public bool $ignorePlaceholders = false;
 
     // Drafts and revisions
     // -------------------------------------------------------------------------
@@ -137,22 +125,22 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @var bool|null Whether draft elements should be returned.
      * @since 3.2.0
      */
-    public $drafts = false;
+    public ?bool $drafts = false;
 
     /**
      * @var bool|null Whether provisional drafts should be returned.
      * @since 3.7.0
      */
-    public $provisionalDrafts = false;
+    public ?bool $provisionalDrafts = false;
 
     /**
      * @var int|null The ID of the draft to return (from the `drafts` table)
      * @since 3.2.0
      */
-    public $draftId;
+    public ?int $draftId = null;
 
     /**
-     * @var int|string|false|null The source element ID that drafts should be returned for.
+     * @var mixed The source element ID that drafts should be returned for.
      *
      * This can be set to one of the following:
      *
@@ -162,77 +150,77 @@ class ElementQuery extends Query implements ElementQueryInterface
      *
      * @since 3.2.0
      */
-    public $draftOf;
+    public mixed $draftOf = null;
 
     /**
      * @var int|null The drafts’ creator ID
      * @since 3.2.0
      */
-    public $draftCreator;
+    public ?int $draftCreator = null;
 
     /**
      * @var bool Whether only unpublished drafts which have been saved after initial creation should be included in the results.
      * @since 3.6.6
      */
-    public $savedDraftsOnly = false;
+    public bool $savedDraftsOnly = false;
 
     /**
-     * @var bool Whether revision elements should be returned.
+     * @var bool|null Whether revision elements should be returned.
      * @since 3.2.0
      */
-    public $revisions = false;
+    public ?bool $revisions = false;
 
     /**
      * @var int|null The ID of the revision to return (from the `revisions` table)
      * @since 3.2.0
      */
-    public $revisionId;
+    public ?int $revisionId = null;
 
     /**
      * @var int|null The source element ID that revisions should be returned for
      * @since 3.2.0
      */
-    public $revisionOf;
+    public ?int $revisionOf = null;
 
     /**
      * @var int|null The revisions’ creator ID
      * @since 3.2.0
      */
-    public $revisionCreator;
+    public ?int $revisionCreator = null;
 
     // General parameters
     // -------------------------------------------------------------------------
 
     /**
-     * @var int|int[]|false|null The element ID(s). Prefix IDs with `'not '` to exclude them.
+     * @var mixed The element ID(s). Prefix IDs with `'not '` to exclude them.
      * @used-by id()
      */
-    public $id;
+    public mixed $id = null;
 
     /**
-     * @var string|string[]|null The element UID(s). Prefix UIDs with `'not '` to exclude them.
+     * @var mixed The element UID(s). Prefix UIDs with `'not '` to exclude them.
      * @used-by uid()
      */
-    public $uid;
+    public mixed $uid = null;
 
     /**
-     * @var int|int[]|null The element ID(s) in the `elements_sites` table. Prefix IDs with `'not '` to exclude them.
+     * @var mixed The element ID(s) in the `elements_sites` table. Prefix IDs with `'not '` to exclude them.
      * @used-by siteSettingsId()
      * @since 3.7.0
      */
-    public $siteSettingsId;
+    public mixed $siteSettingsId = null;
 
     /**
      * @var bool Whether results should be returned in the order specified by [[id]].
      * @used-by fixedOrder()
      */
-    public $fixedOrder = false;
+    public bool $fixedOrder = false;
 
     /**
      * @var string|string[]|null The status(es) that the resulting elements must have.
      * @used-by status()
      */
-    public $status = [
+    public array|string|null $status = [
         Element::STATUS_ENABLED,
     ];
 
@@ -240,7 +228,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @var bool Whether to return only archived elements.
      * @used-by archived()
      */
-    public $archived = false;
+    public bool $archived = false;
 
     /**
      * @var bool|null Whether to return trashed (soft-deleted) elements.
@@ -248,109 +236,102 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @used-by trashed()
      * @since 3.1.0
      */
-    public $trashed = false;
+    public ?bool $trashed = false;
 
     /**
      * @var mixed When the resulting elements must have been created.
      * @used-by dateCreated()
      */
-    public $dateCreated;
+    public mixed $dateCreated = null;
 
     /**
      * @var mixed When the resulting elements must have been last updated.
      * @used-by dateUpdated()
      */
-    public $dateUpdated;
+    public mixed $dateUpdated = null;
 
     /**
-     * @var int|int[]|string|null The site ID(s) that the elements should be returned in, or `'*'` if elements
+     * @var mixed The site ID(s) that the elements should be returned in, or `'*'` if elements
      * should be returned in all supported sites.
      * @used-by site()
      * @used-by siteId()
      */
-    public $siteId;
+    public mixed $siteId = null;
 
     /**
      * @var bool Whether only elements with unique IDs should be returned by the query.
      * @used-by unique()
      * @since 3.2.0
      */
-    public $unique = false;
+    public bool $unique = false;
 
     /**
      * @var array|null Determines which site should be selected when querying multi-site elements.
      * @used-by preferSites()
      * @since 3.2.0
      */
-    public $preferSites = false;
-
-    /**
-     * @var bool Whether the elements must be enabled for the chosen site.
-     * @used-by enabledForSite()
-     * @deprecated in 3.5.0
-     */
-    public $enabledForSite = false;
+    public ?array $preferSites = null;
 
     /**
      * @var bool Whether the elements must be “leaves” in the structure.
      * @used-by leaves()
      */
-    public $leaves = false;
+    public bool $leaves = false;
 
     /**
-     * @var int|array|ElementInterface|null The element relation criteria.
+     * @var mixed The element relation criteria.
      *
-     * See [Relations](https://craftcms.com/docs/3.x/relations.html) for supported syntax options.
+     * See [Relations](https://craftcms.com/docs/4.x/relations.html) for supported syntax options.
      *
      * @used-by relatedTo()
      */
-    public $relatedTo;
+    public mixed $relatedTo = null;
 
     /**
-     * @var string|string[]|null The title that resulting elements must have.
+     * @var mixed The title that resulting elements must have.
      * @used-by title()
      */
-    public $title;
+    public mixed $title = null;
 
     /**
-     * @var string|string[]|null The slug that resulting elements must have.
+     * @var mixed The slug that resulting elements must have.
      * @used-by slug()
      */
-    public $slug;
+    public mixed $slug = null;
 
     /**
-     * @var string|string[]|null The URI that the resulting element must have.
+     * @var mixed The URI that the resulting element must have.
      * @used-by uri()
      */
-    public $uri;
+    public mixed $uri = null;
 
     /**
-     * @var string|array|SearchQuery|null The search term to filter the resulting elements by.
+     * @var mixed The search term to filter the resulting elements by.
      *
-     * See [Searching](https://craftcms.com/docs/3.x/searching.html) for supported syntax options.
+     * See [Searching](https://craftcms.com/docs/4.x/searching.html) for supported syntax options.
      *
      * @used-by ElementQuery::search()
      */
-    public $search;
+    public mixed $search = null;
 
     /**
-     * @var string|string[]|null The reference code(s) used to identify the element(s).
+     * @var mixed The reference code(s) used to identify the element(s).
      *
      * This property is set when accessing elements via their reference tags, e.g. `{entry:section/slug}`.
      *
      * @used-by ElementQuery::ref()
      */
-    public $ref;
+    public mixed $ref = null;
 
     /**
      * @var string|array|null The eager-loading declaration.
      *
-     * See [Eager-Loading Elements](https://craftcms.com/docs/3.x/dev/eager-loading-elements.html) for supported syntax options.
+     * See [Eager-Loading Elements](https://craftcms.com/docs/4.x/dev/eager-loading-elements.html) for supported syntax options.
      *
      * @used-by with()
      * @used-by andWith()
      */
-    public $with;
+    public array|string|null $with = null;
 
     /**
      * @inheritdoc
@@ -366,85 +347,85 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @var bool|null Whether element structure data should automatically be left-joined into the query.
      * @used-by withStructure()
      */
-    public $withStructure;
+    public ?bool $withStructure = null;
 
     /**
-     * @var int|false|null The structure ID that should be used to join in the structureelements table.
+     * @var mixed The structure ID that should be used to join in the structureelements table.
      * @used-by structureId()
      */
-    public $structureId;
+    public mixed $structureId = null;
 
     /**
      * @var mixed The element’s level within the structure
      * @used-by level()
      */
-    public $level;
+    public mixed $level = null;
 
     /**
      * @var bool|null Whether the resulting elements must have descendants.
      * @used-by hasDescendants()
      * @since 3.0.4
      */
-    public $hasDescendants;
+    public ?bool $hasDescendants = null;
 
     /**
      * @var int|ElementInterface|null The element (or its ID) that results must be an ancestor of.
      * @used-by ancestorOf()
      */
-    public $ancestorOf;
+    public ElementInterface|int|null $ancestorOf = null;
 
     /**
      * @var int|null The maximum number of levels that results may be separated from [[ancestorOf]].
      * @used-by ancestorDist()
      */
-    public $ancestorDist;
+    public ?int $ancestorDist = null;
 
     /**
      * @var int|ElementInterface|null The element (or its ID) that results must be a descendant of.
      * @used-by descendantOf()
      */
-    public $descendantOf;
+    public ElementInterface|int|null $descendantOf = null;
 
     /**
      * @var int|null The maximum number of levels that results may be separated from [[descendantOf]].
      * @used-by descendantDist()
      */
-    public $descendantDist;
+    public ?int $descendantDist = null;
 
     /**
      * @var int|ElementInterface|null The element (or its ID) that the results must be a sibling of.
      * @used-by siblingOf()
      */
-    public $siblingOf;
+    public ElementInterface|int|null $siblingOf = null;
 
     /**
      * @var int|ElementInterface|null The element (or its ID) that the result must be the previous sibling of.
      * @used-by prevSiblingOf()
      */
-    public $prevSiblingOf;
+    public ElementInterface|int|null $prevSiblingOf = null;
 
     /**
      * @var int|ElementInterface|null The element (or its ID) that the result must be the next sibling of.
      * @used-by nextSiblingOf()
      */
-    public $nextSiblingOf;
+    public ElementInterface|int|null $nextSiblingOf = null;
 
     /**
      * @var int|ElementInterface|null The element (or its ID) that the results must be positioned before.
      * @used-by positionedBefore()
      */
-    public $positionedBefore;
+    public ElementInterface|int|null $positionedBefore = null;
 
     /**
      * @var int|ElementInterface|null The element (or its ID) that the results must be positioned after.
      * @used-by positionedAfter()
      */
-    public $positionedAfter;
+    public ElementInterface|int|null $positionedAfter = null;
 
     /**
      * @var array The default [[orderBy]] value to use if [[orderBy]] is empty but not null.
      */
-    protected $defaultOrderBy = ['elements.dateCreated' => SORT_DESC];
+    protected array $defaultOrderBy = ['elements.dateCreated' => SORT_DESC];
 
     // For internal use
     // -------------------------------------------------------------------------
@@ -453,41 +434,49 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @var mixed The placeholder condition for this query.
      * @see _placeholderCondition()
      */
-    private $_placeholderCondition;
+    private mixed $_placeholderCondition = null;
 
     /**
      * @var mixed The [[siteId]] param used at the time the placeholder condition was generated.
      * @see _placeholderCondition()
      */
-    private $_placeholderSiteIds;
+    private mixed $_placeholderSiteIds = null;
 
     /**
      * @var ElementInterface[]|null The cached element query result
      * @see setCachedResult()
      */
-    private $_result;
+    private ?array $_result = null;
 
     /**
      * @var array|null The criteria params that were set when the cached element query result was set
      * @see setCachedResult()
      */
-    private $_resultCriteria;
+    private ?array $_resultCriteria = null;
 
     /**
      * @var array|null
      */
-    private $_searchScores;
+    private ?array $_searchScores = null;
 
     /**
      * @var string[]|null
      * @see getCacheTags()
      */
-    private $_cacheTags;
+    private array|null $_cacheTags = null;
+
+    /**
+     * @var bool Whether an element table has been joined for the query
+     * @see prepare()
+     * @see joinElementTable()
+     */
+    private bool $_joinedElementTable = false;
 
     /**
      * Constructor
      *
      * @param string $elementType The element type class associated with this query
+     * @phpstan-param class-string<ElementInterface> $elementType
      * @param array $config Configurations to be applied to the newly created query object
      */
     public function __construct(string $elementType, array $config = [])
@@ -503,63 +492,11 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      */
-    public function __isset($name)
-    {
-        if ($name === 'order') {
-            Craft::$app->getDeprecator()->log('ElementQuery::order()', 'The `order` element query param has been deprecated. Use `orderBy` instead.');
-
-            return $this->orderBy !== null;
-        }
-
-        return parent::__isset($name);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function __get($name)
-    {
-        // We must ensure $name is a string; if it is 0 then each of these cases could match.
-        // (https://stackoverflow.com/a/8146455)
-        switch ((string)$name) {
-            case 'locale':
-                Craft::$app->getDeprecator()->log('ElementQuery::locale()', 'The `locale` element query param has been deprecated. Use `site` or `siteId` instead.');
-                if ($this->siteId && is_numeric($this->siteId) && ($site = Craft::$app->getSites()->getSiteById($this->siteId))) {
-                    return $site->handle;
-                }
-
-                return null;
-
-            case 'order':
-                Craft::$app->getDeprecator()->log('ElementQuery::order()', 'The `order` element query param has been deprecated. Use `orderBy` instead.');
-
-                return $this->orderBy;
-
-            default:
-                return parent::__get($name);
-        }
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function __set($name, $value)
     {
         switch ($name) {
             case 'site':
                 $this->site($value);
-                break;
-            case 'localeEnabled':
-                Craft::$app->getDeprecator()->log('ElementQuery::localeEnabled()', 'The `localeEnabled` element query param has been deprecated. `status()` should be used instead.');
-                $this->enabledForSite = $value;
-                break;
-            case 'locale':
-                Craft::$app->getDeprecator()->log('ElementQuery::locale()', 'The `locale` element query param has been deprecated. Use `site` or `siteId` instead.');
-                $this->site($value);
-                break;
-            case 'order':
-                Craft::$app->getDeprecator()->log('ElementQuery::order()', 'The `order` element query param has been deprecated. Use `orderBy` instead.');
-                $this->orderBy = $value;
                 break;
             default:
                 parent::__set($name, $value);
@@ -569,125 +506,9 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      */
-    public function __call($name, $params)
-    {
-        if ($name === 'order') {
-            Craft::$app->getDeprecator()->log('ElementQuery::order()', 'The `order` element query param has been deprecated. Use `orderBy` instead.');
-
-            if (count($params) == 1) {
-                $this->orderBy = $params[0];
-            } else {
-                $this->orderBy = $params;
-            }
-
-            return $this;
-        }
-
-        return parent::__call($name, $params);
-    }
-
-    /**
-     * Required by the IteratorAggregate interface.
-     *
-     * @return ArrayIterator
-     */
-    public function getIterator(): ArrayIterator
-    {
-        Craft::$app->getDeprecator()->log('ElementQuery::getIterator()', 'Looping through element queries directly has been deprecated. Use the `all()` function to fetch the query results before looping over them.');
-        return new ArrayIterator($this->all());
-    }
-
-    /**
-     * Required by the ArrayAccess interface.
-     *
-     * @param int|string $name The offset to check
-     * @return bool
-     */
-    public function offsetExists($name): bool
-    {
-        if (is_numeric($name)) {
-            // Cached?
-            if (($cachedResult = $this->getCachedResult()) !== null) {
-                return $name < count($cachedResult);
-            }
-
-            $offset = $this->offset;
-            $limit = $this->limit;
-
-            $this->offset = $name;
-            $this->limit = 1;
-
-            $exists = $this->exists();
-
-            $this->offset = $offset;
-            $this->limit = $limit;
-
-            return $exists;
-        }
-
-        /** @noinspection ImplicitMagicMethodCallInspection */
-        return $this->__isset($name);
-    }
-
-    /**
-     * Required by the ArrayAccess interface.
-     *
-     * @param int|string $name The offset to get
-     * @return mixed The element at the given offset
-     */
-    #[ReturnTypeWillChange]
-    public function offsetGet($name)
-    {
-        if (is_numeric($name) && ($element = $this->nth($name)) !== null) {
-            return $element;
-        }
-
-        /** @noinspection ImplicitMagicMethodCallInspection */
-        return $this->__get($name);
-    }
-
-    /**
-     * Required by the ArrayAccess interface.
-     *
-     * @param string $name The offset to set
-     * @param mixed $value The value
-     * @throws NotSupportedException if $name is numeric
-     */
-    #[ReturnTypeWillChange]
-    public function offsetSet($name, $value)
-    {
-        if (is_numeric($name)) {
-            throw new NotSupportedException('ElementQuery does not support setting an element using array syntax.');
-        }
-
-        /** @noinspection ImplicitMagicMethodCallInspection */
-        $this->__set($name, $value);
-    }
-
-    /**
-     * Required by the ArrayAccess interface.
-     *
-     * @param string $name The offset to unset
-     * @throws NotSupportedException if $name is numeric
-     */
-    #[ReturnTypeWillChange]
-    public function offsetUnset($name)
-    {
-        if (is_numeric($name)) {
-            throw new NotSupportedException('ElementQuery does not support unsetting an element using array syntax.');
-        }
-
-        /** @noinspection ImplicitMagicMethodCallInspection */
-        $this->__unset($name);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function behaviors()
+    public function behaviors(): array
     {
         $behaviors = parent::behaviors();
-        /** @noinspection PhpUndefinedClassInspection */
         $behaviors['customFields'] = [
             'class' => CustomFieldBehavior::class,
             'hasMethods' => true,
@@ -702,7 +523,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $inReverse
      */
-    public function inReverse(bool $value = true)
+    public function inReverse(bool $value = true): self
     {
         $this->inReverse = $value;
         return $this;
@@ -712,7 +533,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $asArray
      */
-    public function asArray(bool $value = true)
+    public function asArray(bool $value = true): self
     {
         $this->asArray = $value;
         return $this;
@@ -722,7 +543,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $asArray
      */
-    public function ignorePlaceholders(bool $value = true)
+    public function ignorePlaceholders(bool $value = true): self
     {
         $this->ignorePlaceholders = $value;
         return $this;
@@ -732,7 +553,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $drafts
      */
-    public function drafts(?bool $value = true)
+    public function drafts(?bool $value = true): self
     {
         $this->drafts = $value;
         return $this;
@@ -743,7 +564,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @uses $draftId
      * @uses $drafts
      */
-    public function draftId(int $value = null)
+    public function draftId(?int $value = null): self
     {
         $this->draftId = $value;
         if ($value !== null && $this->drafts === false) {
@@ -757,11 +578,11 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @uses $draftOf
      * @uses $drafts
      */
-    public function draftOf($value)
+    public function draftOf($value): self
     {
         if ($value instanceof ElementInterface) {
             $this->draftOf = $value->getCanonicalId();
-        } else if (is_numeric($value) || $value === '*' || $value === false || $value === null) {
+        } elseif (is_numeric($value) || $value === '*' || $value === false || $value === null) {
             $this->draftOf = $value;
         } else {
             throw new InvalidArgumentException('Invalid draftOf value');
@@ -777,11 +598,11 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @uses $draftCreator
      * @uses $drafts
      */
-    public function draftCreator($value)
+    public function draftCreator($value): self
     {
         if ($value instanceof User) {
             $this->draftCreator = $value->id;
-        } else if (is_numeric($value) || $value === null) {
+        } elseif (is_numeric($value) || $value === null) {
             $this->draftCreator = $value;
         } else {
             throw new InvalidArgumentException('Invalid draftCreator value');
@@ -797,7 +618,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @uses $provisionalDrafts
      * @uses $drafts
      */
-    public function provisionalDrafts(?bool $value = true)
+    public function provisionalDrafts(?bool $value = true): self
     {
         $this->provisionalDrafts = $value;
         if ($value === true && $this->drafts === false) {
@@ -810,7 +631,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $savedDraftsOnly
      */
-    public function savedDraftsOnly(bool $value = true)
+    public function savedDraftsOnly(bool $value = true): self
     {
         $this->savedDraftsOnly = $value;
         return $this;
@@ -820,7 +641,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $revisions
      */
-    public function revisions(bool $value = true)
+    public function revisions(?bool $value = true): self
     {
         $this->revisions = $value;
         return $this;
@@ -831,10 +652,12 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @uses $revisionId
      * @uses $revisions
      */
-    public function revisionId(int $value = null)
+    public function revisionId(?int $value = null): self
     {
         $this->revisionId = $value;
-        $this->revisions = $value !== null;
+        if ($value !== null && $this->revisions === false) {
+            $this->revisions = true;
+        }
         return $this;
     }
 
@@ -843,16 +666,18 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @uses $revisionOf
      * @uses $revisions
      */
-    public function revisionOf($value)
+    public function revisionOf($value): self
     {
         if ($value instanceof ElementInterface) {
             $this->revisionOf = $value->getCanonicalId();
-        } else if (is_numeric($value) || $value === null) {
+        } elseif (is_numeric($value) || $value === null) {
             $this->revisionOf = $value;
         } else {
             throw new InvalidArgumentException('Invalid revisionOf value');
         }
-        $this->revisions = $value !== null;
+        if ($value !== null && $this->revisions === false) {
+            $this->revisions = true;
+        }
         return $this;
     }
 
@@ -861,16 +686,18 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @uses $revisionCreator
      * @uses $revisions
      */
-    public function revisionCreator($value)
+    public function revisionCreator($value): self
     {
         if ($value instanceof User) {
             $this->revisionCreator = $value->id;
-        } else if (is_numeric($value) || $value === null) {
+        } elseif (is_numeric($value) || $value === null) {
             $this->revisionCreator = $value;
         } else {
             throw new InvalidArgumentException('Invalid revisionCreator value');
         }
-        $this->revisions = $value !== null;
+        if ($value !== null && $this->revisions === false) {
+            $this->revisions = true;
+        }
         return $this;
     }
 
@@ -878,7 +705,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $id
      */
-    public function id($value)
+    public function id($value): self
     {
         $this->id = $value;
         return $this;
@@ -888,7 +715,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $uid
      */
-    public function uid($value)
+    public function uid($value): self
     {
         $this->uid = $value;
         return $this;
@@ -898,7 +725,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $siteSettingsId
      */
-    public function siteSettingsId($value)
+    public function siteSettingsId($value): self
     {
         $this->siteSettingsId = $value;
         return $this;
@@ -908,7 +735,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $fixedOrder
      */
-    public function fixedOrder(bool $value = true)
+    public function fixedOrder(bool $value = true): self
     {
         $this->fixedOrder = $value;
         return $this;
@@ -918,7 +745,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $orderBy
      */
-    public function orderBy($columns)
+    public function orderBy($columns): self
     {
         parent::orderBy($columns);
 
@@ -934,11 +761,11 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $orderBy
      */
-    public function addOrderBy($columns)
+    public function addOrderBy($columns): self
     {
         // If orderBy is an empty, non-null value (leaving it up to the element query class to decide),
         // then treat this is an orderBy() call.
-        if ($this->orderBy !== null && empty($this->orderBy)) {
+        if (isset($this->orderBy) && empty($this->orderBy)) {
             $this->orderBy = null;
         }
 
@@ -956,7 +783,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $status
      */
-    public function status($value)
+    public function status(array|string|null $value): self
     {
         $this->status = $value;
         return $this;
@@ -966,7 +793,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $archived
      */
-    public function archived(bool $value = true)
+    public function archived(bool $value = true): self
     {
         $this->archived = $value;
         return $this;
@@ -976,7 +803,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $trashed
      */
-    public function trashed($value = true)
+    public function trashed(?bool $value = true): self
     {
         $this->trashed = $value;
         return $this;
@@ -986,7 +813,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $dateCreated
      */
-    public function dateCreated($value)
+    public function dateCreated(mixed $value): self
     {
         $this->dateCreated = $value;
         return $this;
@@ -996,7 +823,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $dateUpdated
      */
-    public function dateUpdated($value)
+    public function dateUpdated(mixed $value): self
     {
         $this->dateUpdated = $value;
         return $this;
@@ -1007,15 +834,15 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @throws InvalidArgumentException if $value is invalid
      * @uses $siteId
      */
-    public function site($value)
+    public function site($value): self
     {
         if ($value === null) {
             $this->siteId = null;
-        } else if ($value === '*') {
+        } elseif ($value === '*') {
             $this->siteId = Craft::$app->getSites()->getAllSiteIds();
-        } else if ($value instanceof Site) {
+        } elseif ($value instanceof Site) {
             $this->siteId = $value->id;
-        } else if (is_string($value)) {
+        } elseif (is_string($value)) {
             $site = Craft::$app->getSites()->getSiteByHandle($value);
             if (!$site) {
                 throw new InvalidArgumentException('Invalid site handle: ' . $value);
@@ -1043,7 +870,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $siteId
      */
-    public function siteId($value)
+    public function siteId($value): self
     {
         if (is_array($value) && strtolower(reset($value)) === 'not') {
             array_shift($value);
@@ -1061,25 +888,11 @@ class ElementQuery extends Query implements ElementQueryInterface
     }
 
     /**
-     * Sets the [[$site]] property.
-     *
-     * @param string $value The property value
-     * @return static self reference
-     * @deprecated in 3.0.0. Use [[site]] or [[siteId]] instead.
-     */
-    public function locale(string $value)
-    {
-        Craft::$app->getDeprecator()->log('ElementQuery::locale()', 'The `locale` element query param has been deprecated. Use `site` or `siteId` instead.');
-        $this->site($value);
-        return $this;
-    }
-
-    /**
      * @inheritdoc
      * @uses $unique
      * @since 3.2.0
      */
-    public function unique(bool $value = true)
+    public function unique(bool $value = true): self
     {
         $this->unique = $value;
         return $this;
@@ -1090,7 +903,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @uses $preferSites
      * @since 3.2.0
      */
-    public function preferSites(array $value = null)
+    public function preferSites(?array $value = null): self
     {
         $this->preferSites = $value;
         return $this;
@@ -1098,34 +911,9 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     /**
      * @inheritdoc
-     * @uses $enabledForSite
-     */
-    public function enabledForSite(bool $value = true)
-    {
-        Craft::$app->getDeprecator()->log('ElementQuery::enabledForSite()', 'The `enabledForSite` element query param has been deprecated. `status()` should be used instead.');
-        $this->enabledForSite = $value;
-        return $this;
-    }
-
-    /**
-     * Sets the [[$enabledForSite]] property.
-     *
-     * @param mixed $value The property value (defaults to true)
-     * @return static self reference
-     * @deprecated in 3.0.0. [[status()]] should be used instead.
-     */
-    public function localeEnabled($value = true)
-    {
-        Craft::$app->getDeprecator()->log('ElementQuery::localeEnabled()', 'The `localeEnabled` element query param has been deprecated. `status()` should be used instead.');
-        $this->enabledForSite = $value;
-        return $this;
-    }
-
-    /**
-     * @inheritdoc
      * @uses $relatedTo
      */
-    public function relatedTo($value)
+    public function relatedTo($value): self
     {
         $this->relatedTo = $value;
         return $this;
@@ -1136,7 +924,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @throws NotSupportedException
      * @uses $relatedTo
      */
-    public function andRelatedTo($value)
+    public function andRelatedTo($value): self
     {
         if (!$value) {
             return $this;
@@ -1164,7 +952,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $title
      */
-    public function title($value)
+    public function title($value): self
     {
         $this->title = $value;
         return $this;
@@ -1174,7 +962,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $slug
      */
-    public function slug($value)
+    public function slug($value): self
     {
         $this->slug = $value;
         return $this;
@@ -1184,7 +972,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $uri
      */
-    public function uri($value)
+    public function uri($value): self
     {
         $this->uri = $value;
         return $this;
@@ -1194,7 +982,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $search
      */
-    public function search($value)
+    public function search($value): self
     {
         $this->search = $value;
         return $this;
@@ -1204,7 +992,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $ref
      */
-    public function ref($value)
+    public function ref($value): self
     {
         $this->ref = $value;
         return $this;
@@ -1214,7 +1002,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $with
      */
-    public function with($value)
+    public function with(array|string|null $value): self
     {
         $this->with = $value;
         return $this;
@@ -1224,7 +1012,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $with
      */
-    public function andWith($value)
+    public function andWith(array|string|null $value): self
     {
         if (empty($this->with)) {
             $this->with = [$value];
@@ -1241,7 +1029,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $withStructure
      */
-    public function withStructure(bool $value = true)
+    public function withStructure(bool $value = true): self
     {
         $this->withStructure = $value;
         return $this;
@@ -1251,7 +1039,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $structureId
      */
-    public function structureId(int $value = null)
+    public function structureId(?int $value = null): self
     {
         $this->structureId = $value;
         return $this;
@@ -1261,7 +1049,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $level
      */
-    public function level($value = null)
+    public function level($value = null): self
     {
         $this->level = $value;
         return $this;
@@ -1271,7 +1059,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $hasDescendants
      */
-    public function hasDescendants(bool $value = true)
+    public function hasDescendants(bool $value = true): self
     {
         $this->hasDescendants = $value;
         return $this;
@@ -1281,7 +1069,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $leaves
      */
-    public function leaves(bool $value = true)
+    public function leaves(bool $value = true): self
     {
         $this->leaves = $value;
         return $this;
@@ -1291,7 +1079,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $ancestorOf
      */
-    public function ancestorOf($value)
+    public function ancestorOf(ElementInterface|int|null $value): self
     {
         $this->ancestorOf = $value;
         return $this;
@@ -1301,7 +1089,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $ancestorDist
      */
-    public function ancestorDist(int $value = null)
+    public function ancestorDist(?int $value = null): self
     {
         $this->ancestorDist = $value;
         return $this;
@@ -1311,7 +1099,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $descendantOf
      */
-    public function descendantOf($value)
+    public function descendantOf(ElementInterface|int|null $value): self
     {
         $this->descendantOf = $value;
         return $this;
@@ -1321,7 +1109,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $descendantDist
      */
-    public function descendantDist(int $value = null)
+    public function descendantDist(?int $value = null): self
     {
         $this->descendantDist = $value;
         return $this;
@@ -1331,7 +1119,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $siblingOf
      */
-    public function siblingOf($value)
+    public function siblingOf(ElementInterface|int|null $value): self
     {
         $this->siblingOf = $value;
         return $this;
@@ -1341,7 +1129,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $prevSiblingOf
      */
-    public function prevSiblingOf($value)
+    public function prevSiblingOf(ElementInterface|int|null $value): self
     {
         $this->prevSiblingOf = $value;
         return $this;
@@ -1351,7 +1139,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $nextSiblingOf
      */
-    public function nextSiblingOf($value)
+    public function nextSiblingOf(ElementInterface|int|null $value): self
     {
         $this->nextSiblingOf = $value;
         return $this;
@@ -1361,7 +1149,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $positionedBefore
      */
-    public function positionedBefore($value)
+    public function positionedBefore(ElementInterface|int|null $value): self
     {
         $this->positionedBefore = $value;
         return $this;
@@ -1371,19 +1159,22 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @uses $positionedAfter
      */
-    public function positionedAfter($value)
+    public function positionedAfter(ElementInterface|int|null $value): self
     {
         $this->positionedAfter = $value;
         return $this;
     }
 
     /**
-     * @inheritdoc
+     * Sets the [[status()|status]] param to `null`.
+     *
+     * @return self self reference
+     * @since 3.0.17
+     * @deprecated in 4.0.0. `status(null)` should be used instead.
      */
-    public function anyStatus()
+    public function anyStatus(): self
     {
         $this->status = null;
-        $this->enabledForSite = false;
         return $this;
     }
 
@@ -1393,7 +1184,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      */
-    public function cache($duration = true, $dependency = null)
+    public function cache($duration = true, $dependency = null): \yii\db\Query|ElementQuery
     {
         if ($dependency === null) {
             $dependency = new ElementQueryTagDependency($this);
@@ -1406,12 +1197,14 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @throws QueryAbortedException if it can be determined that there won’t be any results
      */
-    public function prepare($builder)
+    public function prepare($builder): Query
     {
         // Is the query already doomed?
-        if ($this->id !== null && empty($this->id)) {
+        if (isset($this->id) && empty($this->id)) {
             throw new QueryAbortedException();
         }
+        /** @var string|ElementInterface $class */
+        /** @phpstan-var class-string<ElementInterface>|ElementInterface $class */
         $class = $this->elementType;
 
         // Make sure the siteId param is set
@@ -1424,7 +1217,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             }
         } catch (SiteNotFoundException $e) {
             // Fail silently if Craft isn't installed yet or is in the middle of updating
-            if (Craft::$app->getIsInstalled() && !Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
+            if (Craft::$app->getIsInstalled() && !Craft::$app->getUpdates()->getIsCraftUpdatePending()) {
                 /** @noinspection PhpUnhandledExceptionInspection */
                 throw $e;
             }
@@ -1446,15 +1239,18 @@ class ElementQuery extends Query implements ElementQueryInterface
         $this->query->withQueries = $this->withQueries;
         $this->subQuery = new Query();
 
-        // Give other classes a chance to make changes up front
-        if (!$this->beforePrepare()) {
-            throw new QueryAbortedException();
-        }
-
         $this->query
             ->from(['subquery' => $this->subQuery])
             ->innerJoin(['elements' => Table::ELEMENTS], '[[elements.id]] = [[subquery.elementsId]]')
             ->innerJoin(['elements_sites' => Table::ELEMENTS_SITES], '[[elements_sites.id]] = [[subquery.elementsSitesId]]');
+
+        // Keep track of whether an element table is joined into the query
+        $this->_joinedElementTable = false;
+
+        // Give other classes a chance to make changes up front
+        if (!$this->beforePrepare()) {
+            throw new QueryAbortedException();
+        }
 
         $this->subQuery
             ->addSelect([
@@ -1472,7 +1268,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             $this->subQuery->andWhere(['elements_sites.siteId' => $this->siteId]);
         }
 
-        if ($class::hasContent() && $this->contentTable !== null) {
+        if ($class::hasContent() && isset($this->contentTable)) {
             $this->customFields = $this->customFields();
             $this->_joinContentTable($class);
         } else {
@@ -1488,7 +1284,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         if ($this->id) {
-            $this->subQuery->andWhere(Db::parseParam('elements.id', $this->id));
+            $this->subQuery->andWhere(Db::parseNumericParam('elements.id', $this->id));
         }
 
         if ($this->uid) {
@@ -1496,7 +1292,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         if ($this->siteSettingsId) {
-            $this->subQuery->andWhere(Db::parseParam('elements_sites.id', $this->siteSettingsId));
+            $this->subQuery->andWhere(Db::parseNumericParam('elements_sites.id', $this->siteSettingsId));
         }
 
         if ($this->archived) {
@@ -1506,14 +1302,10 @@ class ElementQuery extends Query implements ElementQueryInterface
             $this->_applyStatusParam($class);
         }
 
-        // todo: remove schema version condition after next beakpoint
-        $schemaVersion = Craft::$app->getInstalledSchemaVersion();
-        if (version_compare($schemaVersion, '3.1.0', '>=')) {
-            if ($this->trashed === false) {
-                $this->subQuery->andWhere(['elements.dateDeleted' => null]);
-            } else if ($this->trashed === true) {
-                $this->subQuery->andWhere(['not', ['elements.dateDeleted' => null]]);
-            }
+        if ($this->trashed === false) {
+            $this->subQuery->andWhere(['elements.dateDeleted' => null]);
+        } elseif ($this->trashed === true) {
+            $this->subQuery->andWhere(['not', ['elements.dateDeleted' => null]]);
         }
 
         if ($this->dateCreated) {
@@ -1524,7 +1316,10 @@ class ElementQuery extends Query implements ElementQueryInterface
             $this->subQuery->andWhere(Db::parseDateParam('elements.dateUpdated', $this->dateUpdated));
         }
 
-        if ($this->title !== null && $this->title !== '' && $class::hasTitles()) {
+        if (isset($this->title) && $this->title !== '' && $class::hasTitles()) {
+            if (is_string($this->title)) {
+                $this->title = Db::escapeCommas($this->title);
+            }
             $this->subQuery->andWhere(Db::parseParam('content.title', $this->title, '=', true));
         }
 
@@ -1534,10 +1329,6 @@ class ElementQuery extends Query implements ElementQueryInterface
 
         if ($this->uri) {
             $this->subQuery->andWhere(Db::parseParam('elements_sites.uri', $this->uri, '=', true));
-        }
-
-        if ($this->enabledForSite) {
-            $this->subQuery->andWhere(['elements_sites.enabled' => true]);
         }
 
         $this->_applyRelatedToParam();
@@ -1551,6 +1342,11 @@ class ElementQuery extends Query implements ElementQueryInterface
         // Give other classes a chance to make changes up front
         if (!$this->afterPrepare()) {
             throw new QueryAbortedException();
+        }
+
+        // If an element table was never joined in, explicitly filter based on the element type
+        if (!$this->_joinedElementTable && $this->elementType) {
+            $this->subQuery->andWhere(['elements.type' => $this->elementType]);
         }
 
         $this->_applyUniqueParam($builder->db);
@@ -1568,14 +1364,14 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @return ElementInterface[]|array The resulting elements.
      */
-    public function populate($rows)
+    public function populate($rows): array
     {
         if (empty($rows)) {
             return [];
         }
 
         // Should we set a search score on the elements?
-        if ($this->_searchScores !== null) {
+        if (isset($this->_searchScores)) {
             foreach ($rows as &$row) {
                 if (isset($row['id'], $this->_searchScores[$row['id']])) {
                     $row['searchScore'] = $this->_searchScores[$row['id']];
@@ -1598,7 +1394,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      */
-    public function count($q = '*', $db = null)
+    public function count($q = '*', $db = null): bool|int|string|null
     {
         // Cached?
         if (($cachedResult = $this->getCachedResult()) !== null) {
@@ -1610,8 +1406,9 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     /**
      * @inheritdoc
+     * @return ElementInterface[]|array
      */
-    public function all($db = null)
+    public function all($db = null): array
     {
         // Cached?
         if (($cachedResult = $this->getCachedResult()) !== null) {
@@ -1626,10 +1423,9 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     /**
      * @inheritdoc
-     * @return ElementInterface|array|null the first element. Null is returned if the query
-     * results in nothing.
+     * @return ElementInterface|array|null
      */
-    public function one($db = null)
+    public function one($db = null): mixed
     {
         // Cached?
         if (($cachedResult = $this->getCachedResult()) !== null) {
@@ -1648,11 +1444,11 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @inheritdoc
      * @since 3.3.16.2
      */
-    public function column($db = null)
+    public function column($db = null): array
     {
         // Avoid indexing by an ambiguous column
         if (
-            $this->from === null &&
+            !isset($this->from) &&
             is_string($this->indexBy) &&
             in_array($this->indexBy, ['id', 'dateCreated', 'dateUpdated', 'uid'], true)
         ) {
@@ -1668,17 +1464,16 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      */
-    public function exists($db = null)
+    public function exists($db = null): bool
     {
-        return ($this->getCachedResult() !== null) ?: parent::exists($db);
+        return $this->getCachedResult() !== null || parent::exists($db);
     }
 
     /**
      * @inheritdoc
-     * @return ElementInterface|array|null The element. Null is returned if the query
-     * results in nothing.
+     * @return ElementInterface|array|null
      */
-    public function nth(int $n, Connection $db = null)
+    public function nth(int $n, ?Connection $db = null): mixed
     {
         // Cached?
         if (($cachedResult = $this->getCachedResult()) !== null) {
@@ -1691,15 +1486,8 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      */
-    public function ids($db = null): array
+    public function ids(?Connection $db = null): array
     {
-        // TODO: Remove this in Craft 4
-        // Make sure $db is not a list of attributes
-        if ($this->_setAttributes($db)) {
-            Craft::$app->getDeprecator()->log('ElementQuery::ids($criteria)', 'Passing new criteria params to the `ids()` element query function is now deprecated. Set the parameters before calling `ids()`.');
-            $db = null;
-        }
-
         $select = $this->select;
         $this->select = ['elements.id' => 'elements.id'];
         $result = $this->column($db);
@@ -1714,9 +1502,9 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @return ElementInterface[]|null $elements The resulting elements, or null if setCachedResult() was never called or the criteria has changed
      * @see setCachedResult()
      */
-    public function getCachedResult()
+    public function getCachedResult(): ?array
     {
-        if ($this->_result === null) {
+        if (!isset($this->_result)) {
             return null;
         }
 
@@ -1738,20 +1526,20 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @param ElementInterface[] $elements The resulting elements.
      * @see getCachedResult()
      */
-    public function setCachedResult(array $elements)
+    public function setCachedResult(array $elements): void
     {
         $this->_result = $elements;
         $this->_resultCriteria = $this->getCriteria();
     }
 
     /**
-     * Clears the [cached result](https://craftcms.com/docs/3.x/element-queries.html#cache).
+     * Clears the [cached result](https://craftcms.com/docs/4.x/element-queries.html#cache).
      *
      * @see getCachedResult()
      * @see setCachedResult()
      * @since 3.4.0
      */
-    public function clearCachedResult()
+    public function clearCachedResult(): void
     {
         $this->_result = $this->_resultCriteria = null;
     }
@@ -1781,7 +1569,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         $names = [];
 
         // By default, include all public, non-static properties that were defined by a sub class, and certain ones in this class
-        foreach ((new \ReflectionClass($this))->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
+        foreach ((new ReflectionClass($this))->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
             if (!$property->isStatic()) {
                 $dec = $property->getDeclaringClass();
                 if (
@@ -1796,7 +1584,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         // Add custom field properties
         /** @var CustomFieldBehavior $behavior */
         $behavior = $this->getBehavior('customFields');
-        foreach ((new \ReflectionClass($behavior))->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
+        foreach ((new ReflectionClass($behavior))->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
             if (!$property->isStatic()) {
                 $name = $property->getName();
                 if (
@@ -1852,7 +1640,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @return array The list of field names or field definitions.
      * @see toArray()
      */
-    public function fields()
+    public function fields(): array
     {
         $fields = array_unique(array_merge(
             array_keys(Craft::getObjectVars($this)),
@@ -1881,6 +1669,8 @@ class ElementQuery extends Query implements ElementQueryInterface
             return $element;
         }
 
+        /** @var string|ElementInterface $class */
+        /** @phpstan-var class-string<ElementInterface>|ElementInterface $class */
         $class = $this->elementType;
 
         // Instantiate the element
@@ -1888,7 +1678,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             $row['structureId'] = $this->structureId;
         }
 
-        if ($class::hasContent() && $this->contentTable !== null) {
+        if ($class::hasContent() && isset($this->contentTable)) {
             if ($class::hasTitles()) {
                 // Ensure the title is a string
                 $row['title'] = (string)($row['title'] ?? '');
@@ -1913,11 +1703,21 @@ class ElementQuery extends Query implements ElementQueryInterface
                             unset($row[$column]);
                         } else {
                             if ($setValue) {
-                                $fieldValues[$field->handle] = [];
+                                $columnValues = [];
+                                $hasColumnValues = false;
+
                                 foreach ($column as $key => $col) {
-                                    $fieldValues[$field->handle][$key] = $row[$col] ?? null;
+                                    $columnValues[$key] = $row[$col] ?? null;
+                                    $hasColumnValues = $hasColumnValues || $columnValues[$key] !== null;
+                                }
+
+                                // Only actually set it on $fieldValues if any of the columns weren't null.
+                                // Otherwise, leave it alone in case another field has the same handle.
+                                if ($hasColumnValues) {
+                                    $fieldValues[$field->handle] = $columnValues;
                                 }
                             }
+
                             foreach ($column as $col) {
                                 unset($row[$col]);
                             }
@@ -1956,12 +1756,20 @@ class ElementQuery extends Query implements ElementQueryInterface
             }
         }
 
-        if ($this->revisions) {
-            $behaviors['revision'] = new RevisionBehavior([
-                'creatorId' => ArrayHelper::remove($row, 'revisionCreatorId'),
-                'revisionNum' => ArrayHelper::remove($row, 'revisionNum'),
-                'revisionNotes' => ArrayHelper::remove($row, 'revisionNotes'),
-            ]);
+        if ($this->revisions !== false) {
+            if (!empty($row['revisionId'])) {
+                $behaviors['revision'] = new RevisionBehavior([
+                    'creatorId' => ArrayHelper::remove($row, 'revisionCreatorId'),
+                    'revisionNum' => ArrayHelper::remove($row, 'revisionNum'),
+                    'revisionNotes' => ArrayHelper::remove($row, 'revisionNotes'),
+                ]);
+            } else {
+                unset(
+                    $row['revisionCreatorId'],
+                    $row['revisionNum'],
+                    $row['revisionNotes'],
+                );
+            }
         }
 
         $element = new $class($row);
@@ -1978,88 +1786,6 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         return $element;
-    }
-
-    // Deprecated Methods
-    // -------------------------------------------------------------------------
-
-    /**
-     * Sets the [[$orderBy]] property.
-     *
-     * @param string $value The property value
-     * @return static self reference
-     * @deprecated in Craft 3.0. Use [[orderBy()]] instead.
-     */
-    public function order(string $value)
-    {
-        Craft::$app->getDeprecator()->log('ElementQuery::order()', 'The `order` element query param has been deprecated. Use `orderBy` instead.');
-
-        return $this->orderBy($value);
-    }
-
-    /**
-     * Returns all elements that match the criteria.
-     *
-     * @param array|null $attributes Any last-minute parameters that should be added.
-     * @return ElementInterface[] The matched elements.
-     * @deprecated in Craft 3.0. Use all() instead.
-     */
-    public function find(array $attributes = null): array
-    {
-        Craft::$app->getDeprecator()->log('ElementQuery::find()', 'The `find()` function used to query for elements is now deprecated. Use `all()` instead.');
-        $this->_setAttributes($attributes);
-
-        return $this->all();
-    }
-
-    /**
-     * Returns the first element that matches the criteria.
-     *
-     * @param array|null $attributes
-     * @return ElementInterface|null
-     * @deprecated in Craft 3.0. Use one() instead.
-     */
-    public function first(array $attributes = null)
-    {
-        Craft::$app->getDeprecator()->log('ElementQuery::first()', 'The `first()` function used to query for elements is now deprecated. Use `one()` instead.');
-        $this->_setAttributes($attributes);
-
-        return $this->one();
-    }
-
-    /**
-     * Returns the last element that matches the criteria.
-     *
-     * @param array|null $attributes
-     * @return ElementInterface|null
-     * @deprecated in Craft 3.0. Use nth() instead.
-     */
-    public function last(array $attributes = null)
-    {
-        Craft::$app->getDeprecator()->log('ElementQuery::last()', 'The `last()` function used to query for elements is now deprecated. Use `inReverse().one()` instead.');
-        $this->_setAttributes($attributes);
-        $count = $this->count();
-        $offset = $this->offset;
-        $this->offset = 0;
-        $result = $this->nth($count - 1);
-        $this->offset = $offset;
-
-        return $result;
-    }
-
-    /**
-     * Returns the total elements that match the criteria.
-     *
-     * @param array|null $attributes
-     * @return int
-     * @deprecated in Craft 3.0. Use count() instead.
-     */
-    public function total(array $attributes = null): int
-    {
-        Craft::$app->getDeprecator()->log('ElementQuery::total()', 'The `total()` function used to query for elements is now deprecated. Use `count()` instead.');
-        $this->_setAttributes($attributes);
-
-        return $this->count();
     }
 
     /**
@@ -2171,11 +1897,6 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     protected function customFields(): array
     {
-        // todo: remove this after the next breakpoint
-        if (Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
-            return [];
-        }
-
         $contentService = Craft::$app->getContent();
         $originalFieldContext = $contentService->fieldContext;
         $contentService->fieldContext = 'global';
@@ -2205,25 +1926,21 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @param string $status The status
      * @return string|array|ExpressionInterface|false|null The status condition, or false if $status is an unsupported status
      */
-    protected function statusCondition(string $status)
+    protected function statusCondition(string $status): mixed
     {
-        switch ($status) {
-            case Element::STATUS_ENABLED:
-                return [
-                    'elements.enabled' => true,
-                    'elements_sites.enabled' => true,
-                ];
-            case Element::STATUS_DISABLED:
-                return [
-                    'or',
-                    ['elements.enabled' => false],
-                    ['elements_sites.enabled' => false],
-                ];
-            case Element::STATUS_ARCHIVED:
-                return ['elements.archived' => true];
-            default:
-                return false;
-        }
+        return match ($status) {
+            Element::STATUS_ENABLED => [
+                'elements.enabled' => true,
+                'elements_sites.enabled' => true,
+            ],
+            Element::STATUS_DISABLED => [
+                'or',
+                ['elements.enabled' => false],
+                ['elements_sites.enabled' => false],
+            ],
+            Element::STATUS_ARCHIVED => ['elements.archived' => true],
+            default => false,
+        };
     }
 
     /**
@@ -2231,17 +1948,18 @@ class ElementQuery extends Query implements ElementQueryInterface
      *
      * @param string $table The unprefixed table name. This will also be used as the table’s alias within the query.
      */
-    protected function joinElementTable(string $table)
+    protected function joinElementTable(string $table): void
     {
         $joinTable = [$table => "{{%$table}}"];
-        $this->query->innerJoin($joinTable, "[[{$table}.id]] = [[subquery.elementsId]]");
-        $this->subQuery->innerJoin($joinTable, "[[{$table}.id]] = [[elements.id]]");
+        $this->query->innerJoin($joinTable, "[[$table.id]] = [[subquery.elementsId]]");
+        $this->subQuery->innerJoin($joinTable, "[[$table.id]] = [[elements.id]]");
+        $this->_joinedElementTable = true;
     }
 
     /**
      * @inheritdoc
      */
-    protected function normalizeOrderBy($columns)
+    protected function normalizeOrderBy($columns): array
     {
         // Special case for 'score' - that should be shorthand for SORT_DESC, not SORT_ASC
         if ($columns === 'score') {
@@ -2257,13 +1975,13 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @param mixed $condition
      * @return mixed
      */
-    private function _placeholderCondition($condition)
+    private function _placeholderCondition(mixed $condition): mixed
     {
         if ($this->ignorePlaceholders) {
             return $condition;
         }
 
-        if ($this->_placeholderCondition === null || $this->siteId !== $this->_placeholderSiteIds) {
+        if (!isset($this->_placeholderCondition) || $this->siteId !== $this->_placeholderSiteIds) {
             $placeholderSourceIds = [];
             $placeholderElements = Craft::$app->getElements()->getPlaceholderElements();
             if (!empty($placeholderElements)) {
@@ -2294,9 +2012,10 @@ class ElementQuery extends Query implements ElementQueryInterface
      * Joins the content table into the query being prepared.
      *
      * @param string $class
+     * @phpstan-param class-string<ElementInterface> $class
      * @throws QueryAbortedException
      */
-    private function _joinContentTable(string $class)
+    private function _joinContentTable(string $class): void
     {
         /** @var ElementInterface|string $class */
         // Join in the content table on both queries
@@ -2350,14 +2069,18 @@ class ElementQuery extends Query implements ElementQueryInterface
                     $contentService->fieldColumnPrefix = $field->columnPrefix;
                 }
 
-                $fieldResponse = $field->modifyElementsQuery($this, $fieldAttributeValue);
+                $exception = null;
+                try {
+                    $field->modifyElementsQuery($this, $fieldAttributeValue);
+                } catch (QueryAbortedException $exception) {
+                }
 
                 // Set it back
                 $contentService->fieldColumnPrefix = $originalFieldColumnPrefix;
 
                 // Need to bail early?
-                if ($fieldResponse === false) {
-                    throw new QueryAbortedException();
+                if ($exception !== null) {
+                    throw $exception;
                 }
             }
         }
@@ -2367,18 +2090,21 @@ class ElementQuery extends Query implements ElementQueryInterface
      * Applies the 'status' param to the query being prepared.
      *
      * @param string $class
+     * @phpstan-param class-string<ElementInterface> $class
      * @throws QueryAbortedException
      */
-    private function _applyStatusParam(string $class)
+    private function _applyStatusParam(string $class): void
     {
         /** @var string|ElementInterface $class */
+        /** @phpstan-var class-string<ElementInterface>|ElementInterface $class */
         if (!$this->status || !$class::hasStatuses()) {
             return;
         }
 
+        /** @var string[]|string|null $statuses */
         $statuses = $this->status;
         if (!is_array($statuses)) {
-            $statuses = is_string($statuses) ? StringHelper::split($statuses) : [$statuses];
+            $statuses = $statuses ? StringHelper::split($statuses) : [];
         }
 
         $firstVal = strtolower(reset($statuses));
@@ -2423,7 +2149,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      *
      * @throws QueryAbortedException
      */
-    private function _applyRelatedToParam()
+    private function _applyRelatedToParam(): void
     {
         if (!$this->relatedTo) {
             return;
@@ -2459,9 +2185,10 @@ class ElementQuery extends Query implements ElementQueryInterface
      * Applies the structure params to the query being prepared.
      *
      * @param string $class
+     * @phpstan-param class-string<ElementInterface> $class
      * @throws QueryAbortedException
      */
-    private function _applyStructureParams(string $class)
+    private function _applyStructureParams(string $class): void
     {
         if (!$this->_shouldJoinStructureData()) {
             $structureParams = [
@@ -2478,7 +2205,7 @@ class ElementQuery extends Query implements ElementQueryInterface
 
             foreach ($structureParams as $param) {
                 if ($this->$param !== null) {
-                    throw new QueryAbortedException("Unable to apply the '{$param}' param because 'structureId' isn't set");
+                    throw new QueryAbortedException("Unable to apply the '$param' param because 'structureId' isn't set");
                 }
             }
 
@@ -2514,12 +2241,8 @@ class ElementQuery extends Query implements ElementQueryInterface
                 ]);
             $existsQuery = (new Query())
                 ->from([Table::STRUCTURES])
-                ->where('[[id]] = [[structureelements.structureId]]');
-            // todo: remove schema version condition after next beakpoint
-            $schemaVersion = Craft::$app->getInstalledSchemaVersion();
-            if (version_compare($schemaVersion, '3.1.0', '>=')) {
-                $existsQuery->andWhere(['dateDeleted' => null]);
-            }
+                ->where('[[id]] = [[structureelements.structureId]]')
+                ->andWhere(['dateDeleted' => null]);
             $this->subQuery
                 ->addSelect(['structureelements.structureId'])
                 ->leftJoin(['structureelements' => Table::STRUCTUREELEMENTS], [
@@ -2529,7 +2252,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                 ]);
         }
 
-        if ($this->hasDescendants !== null) {
+        if (isset($this->hasDescendants)) {
             if ($this->hasDescendants) {
                 $this->subQuery->andWhere('[[structureelements.rgt]] > [[structureelements.lft]] + 1');
             } else {
@@ -2636,7 +2359,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         if ($this->level) {
-            $this->subQuery->andWhere(Db::parseParam('structureelements.level', $this->level));
+            $this->subQuery->andWhere(Db::parseNumericParam('structureelements.level', $this->level));
         }
 
         if ($this->leaves) {
@@ -2646,22 +2369,9 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     /**
      * Applies draft and revision params to the query being prepared.
-     *
-     * @throws QueryAbortedException
      */
-    private function _applyRevisionParams()
+    private function _applyRevisionParams(): void
     {
-        if (!self::_supportsRevisionParams()) {
-            if ($this->drafts !== false || $this->revisions) {
-                throw new QueryAbortedException();
-            }
-            return;
-        }
-
-        // todo: remove this check after the next breakpoint
-        $db = Craft::$app->getDb();
-        $useCanonicalId = $db->columnExists(Table::ELEMENTS, 'canonicalId');
-
         if ($this->drafts !== false) {
             $joinType = $this->drafts === true ? 'INNER JOIN' : 'LEFT JOIN';
             $this->subQuery->join($joinType, ['drafts' => Table::DRAFTS], '[[drafts.id]] = [[elements.draftId]]');
@@ -2670,40 +2380,26 @@ class ElementQuery extends Query implements ElementQueryInterface
             $this->query->addSelect([
                 'elements.draftId',
                 'drafts.creatorId as draftCreatorId',
+                'drafts.provisional as isProvisionalDraft',
                 'drafts.name as draftName',
                 'drafts.notes as draftNotes',
             ]);
-
-            // todo: remove this check after the next breakpoint
-            $useProvisionalDrafts = $db->columnExists(Table::DRAFTS, 'provisional');
-            if ($useProvisionalDrafts) {
-                $this->query->addSelect(['drafts.provisional as isProvisionalDraft']);
-            }
 
             if ($this->draftId) {
                 $this->subQuery->andWhere(['elements.draftId' => $this->draftId]);
             }
 
-            // todo: remove this check after the next breakpoint
-            if ($useCanonicalId) {
-                if ($this->draftOf === '*') {
-                    $this->subQuery->andWhere(['not', ['elements.canonicalId' => null]]);
-                } else if ($this->draftOf !== null) {
-                    $this->subQuery->andWhere(['elements.canonicalId' => $this->draftOf ?: null]);
-                }
-            } else {
-                if ($this->draftOf === '*') {
-                    $this->subQuery->andWhere(['not', ['drafts.sourceId' => null]]);
-                } else if ($this->draftOf !== null) {
-                    $this->subQuery->andWhere(['drafts.sourceId' => $this->draftOf ?: null]);
-                }
+            if ($this->draftOf === '*') {
+                $this->subQuery->andWhere(['not', ['elements.canonicalId' => null]]);
+            } elseif (isset($this->draftOf)) {
+                $this->subQuery->andWhere(['elements.canonicalId' => $this->draftOf ?: null]);
             }
 
             if ($this->draftCreator) {
                 $this->subQuery->andWhere(['drafts.creatorId' => $this->draftCreator]);
             }
 
-            if ($useProvisionalDrafts && $this->provisionalDrafts !== null) {
+            if (isset($this->provisionalDrafts)) {
                 $this->subQuery->andWhere([
                     'or',
                     ['elements.draftId' => null],
@@ -2712,49 +2408,35 @@ class ElementQuery extends Query implements ElementQueryInterface
             }
 
             if ($this->savedDraftsOnly) {
-                // todo: remove this check after the next breakpoint
-                if ($useCanonicalId) {
-                    $this->subQuery->andWhere([
-                        'or',
-                        ['elements.draftId' => null],
-                        ['not', ['elements.canonicalId' => null]],
-                        ['drafts.saved' => true],
-                    ]);
-                } else {
-                    $this->subQuery->andWhere([
-                        'or',
-                        ['elements.draftId' => null],
-                        ['not', ['drafts.sourceId' => null]],
-                        ['drafts.saved' => true],
-                    ]);
-                }
+                $this->subQuery->andWhere([
+                    'or',
+                    ['elements.draftId' => null],
+                    ['not', ['elements.canonicalId' => null]],
+                    ['drafts.saved' => true],
+                ]);
             }
         } else {
             $this->subQuery->andWhere($this->_placeholderCondition(['elements.draftId' => null]));
         }
 
-        if ($this->revisions) {
-            $this->subQuery->innerJoin(['revisions' => Table::REVISIONS], '[[revisions.id]] = [[elements.revisionId]]');
-            $this->query
-                ->innerJoin(['revisions' => Table::REVISIONS], '[[revisions.id]] = [[elements.revisionId]]')
-                ->addSelect([
-                    'elements.revisionId',
-                    'revisions.creatorId as revisionCreatorId',
-                    'revisions.num as revisionNum',
-                    'revisions.notes as revisionNotes',
-                ]);
+        if ($this->revisions !== false) {
+            $joinType = $this->revisions === true ? 'INNER JOIN' : 'LEFT JOIN';
+            $this->subQuery->join($joinType, ['revisions' => Table::REVISIONS], '[[revisions.id]] = [[elements.revisionId]]');
+            $this->query->join($joinType, ['revisions' => Table::REVISIONS], '[[revisions.id]] = [[elements.revisionId]]');
+
+            $this->query->addSelect([
+                'elements.revisionId',
+                'revisions.creatorId as revisionCreatorId',
+                'revisions.num as revisionNum',
+                'revisions.notes as revisionNotes',
+            ]);
 
             if ($this->revisionId) {
                 $this->subQuery->andWhere(['elements.revisionId' => $this->revisionId]);
             }
 
             if ($this->revisionOf) {
-                // todo: remove this check after the next breakpoint
-                if ($useCanonicalId) {
-                    $this->subQuery->andWhere(['elements.canonicalId' => $this->revisionOf]);
-                } else {
-                    $this->subQuery->andWhere(['revisions.sourceId' => $this->revisionOf]);
-                }
+                $this->subQuery->andWhere(['elements.canonicalId' => $this->revisionOf]);
             }
 
             if ($this->revisionCreator) {
@@ -2768,12 +2450,12 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * Normalizes the siteId param value.
      */
-    private function _normalizeSiteId()
+    private function _normalizeSiteId(): void
     {
         if (!$this->siteId) {
             // Default to the current site
             $this->siteId = Craft::$app->getSites()->getCurrentSite()->id;
-        } else if ($this->siteId === '*') {
+        } elseif ($this->siteId === '*') {
             $this->siteId = Craft::$app->getSites()->getAllSiteIds();
         }
     }
@@ -2783,6 +2465,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      *
      * @param string $property The parameter’s property name.
      * @param string $class The element class
+     * @phpstan-param class-string<ElementInterface> $class
      * @return ElementInterface The normalized element
      * @throws QueryAbortedException if the element can't be found
      */
@@ -2795,6 +2478,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         /** @var string|ElementInterface $class */
+        /** @phpstan-var class-string<ElementInterface>|ElementInterface $class */
         if ($element instanceof ElementInterface && !$element->lft) {
             $element = $element->getCanonicalId();
 
@@ -2808,7 +2492,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                 ->id($element)
                 ->siteId($this->siteId)
                 ->structureId($this->structureId)
-                ->anyStatus()
+                ->status(null)
                 ->one();
 
             if ($element === null) {
@@ -2838,7 +2522,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @throws Exception if the DB connection doesn't support fixed ordering
      * @throws QueryAbortedException
      */
-    private function _applySearchParam(Connection $db)
+    private function _applySearchParam(Connection $db): void
     {
         $this->_searchScores = null;
 
@@ -2883,10 +2567,10 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @throws Exception if the DB connection doesn't support fixed ordering
      * @throws QueryAbortedException
      */
-    private function _applyOrderByParams(Connection $db)
+    private function _applyOrderByParams(Connection $db): void
     {
         if (
-            $this->orderBy === null ||
+            !isset($this->orderBy) ||
             $this->orderBy === ['score' => SORT_ASC] ||
             $this->orderBy === ['score' => SORT_DESC] ||
             !empty($this->query->orderBy)
@@ -2898,7 +2582,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         if (empty($this->orderBy)) {
             if ($this->fixedOrder) {
                 if (empty($this->id)) {
-                    throw new QueryAbortedException;
+                    throw new QueryAbortedException();
                 }
 
                 $ids = $this->id;
@@ -2910,11 +2594,11 @@ class ElementQuery extends Query implements ElementQueryInterface
                     throw new Exception('The database connection doesn’t support fixed ordering.');
                 }
                 $this->orderBy = [new FixedOrderExpression('elements.id', $ids, $db)];
-            } else if (self::_supportsRevisionParams() && $this->revisions) {
+            } elseif ($this->revisions) {
                 $this->orderBy = ['num' => SORT_DESC];
-            } else if ($this->_shouldJoinStructureData()) {
+            } elseif ($this->_shouldJoinStructureData()) {
                 $this->orderBy = ['structureelements.lft' => SORT_ASC] + $this->defaultOrderBy;
-            } else if (!empty($this->defaultOrderBy)) {
+            } elseif (!empty($this->defaultOrderBy)) {
                 $this->orderBy = $this->defaultOrderBy;
             } else {
                 return;
@@ -2941,6 +2625,7 @@ class ElementQuery extends Query implements ElementQueryInterface
 
         // Rename orderBy keys based on the real column name mapping
         // (yes this is awkward but we need to preserve the order of the keys!)
+        /** @var array $orderBy */
         $orderBy = array_merge($this->orderBy);
         $orderByColumns = array_keys($orderBy);
 
@@ -2961,7 +2646,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                     $values = array_reverse($direction->values);
                     $direction = new FixedOrderExpression($direction->column, $values, $direction->db, $direction->params);
                 } // Can't do anything about custom SQL expressions
-                else if (!$direction instanceof ExpressionInterface) {
+                elseif (!$direction instanceof ExpressionInterface) {
                     $direction = $direction === SORT_DESC ? SORT_ASC : SORT_DESC;
                 }
             }
@@ -2975,7 +2660,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * Applies the 'select' param to the query being prepared.
      */
-    private function _applySelectParam()
+    private function _applySelectParam(): void
     {
         // Select all columns defined by [[select]]
         $select = array_merge((array)$this->select);
@@ -2987,10 +2672,12 @@ class ElementQuery extends Query implements ElementQueryInterface
             // Merge in the default columns
             $select = array_merge($select, [
                 'elements.id' => 'elements.id',
+                'elements.canonicalId' => 'elements.canonicalId',
                 'elements.fieldLayoutId' => 'elements.fieldLayoutId',
                 'elements.uid' => 'elements.uid',
                 'elements.enabled' => 'elements.enabled',
                 'elements.archived' => 'elements.archived',
+                'elements.dateLastMerged' => 'elements.dateLastMerged',
                 'elements.dateCreated' => 'elements.dateCreated',
                 'elements.dateUpdated' => 'elements.dateUpdated',
                 'siteSettingsId' => 'elements_sites.id',
@@ -2999,12 +2686,6 @@ class ElementQuery extends Query implements ElementQueryInterface
                 'elements_sites.uri' => 'elements_sites.uri',
                 'enabledForSite' => 'elements_sites.enabled',
             ]);
-
-            // todo: remove this condition after the next breakpoint
-            if (Craft::$app->getDb()->columnExists(Table::ELEMENTS, 'canonicalId')) {
-                $select['elements.canonicalId'] = 'elements.canonicalId';
-                $select['elements.dateLastMerged'] = 'elements.dateLastMerged';
-            }
 
             // If the query includes soft-deleted elements, include the date deleted
             if ($this->trashed !== false) {
@@ -3023,9 +2704,9 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * Applies the 'join' params to the query being prepared.
      */
-    private function _applyJoinParams()
+    private function _applyJoinParams(): void
     {
-        if ($this->join !== null) {
+        if (isset($this->join)) {
             foreach ($this->join as $join) {
                 $this->query->join[] = $join;
                 $this->subQuery->join[] = $join;
@@ -3038,7 +2719,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      *
      * @param Connection $db
      */
-    private function _applyUniqueParam(Connection $db)
+    private function _applyUniqueParam(Connection $db): void
     {
         if (
             !$this->unique ||
@@ -3060,7 +2741,7 @@ class ElementQuery extends Query implements ElementQueryInterface
             foreach ($this->preferSites as $preferSite) {
                 if (is_numeric($preferSite)) {
                     $preferSites[] = $preferSite;
-                } else if ($site = $sitesService->getSiteByHandle($preferSite)) {
+                } elseif ($site = $sitesService->getSiteByHandle($preferSite)) {
                     $preferSites[] = $site->id;
                 }
             }
@@ -3070,13 +2751,12 @@ class ElementQuery extends Query implements ElementQueryInterface
         $caseParams = [];
         foreach ($preferSites as $index => $siteId) {
             $param = 'preferSites' . $index;
-            $caseSql .= " when [[elements_sites.siteId]] = :{$param} then {$index}";
+            $caseSql .= " when [[elements_sites.siteId]] = :$param then $index";
             $caseParams[$param] = $siteId;
         }
         $caseSql .= ' else ' . count($preferSites) . ' end';
 
-        $subSelectSqlQuery = clone $this->subQuery;
-        $subSelectSql = $subSelectSqlQuery
+        $subSelectSql = (clone $this->subQuery)
             ->select(['elements_sites.id'])
             ->andWhere('[[subElements.id]] = [[tmpElements.id]]')
             ->orderBy([
@@ -3092,11 +2772,11 @@ class ElementQuery extends Query implements ElementQueryInterface
         $qSubElements = $db->quoteTableName('subElements');
         $qTmpElements = $db->quoteTableName('tmpElements');
         $q = $qElements[0];
-        $subSelectSql = str_replace("{$qElements}.", "{$qSubElements}.", $subSelectSql);
-        $subSelectSql = str_replace("{$q} {$qElements}", "{$q} {$qSubElements}", $subSelectSql);
+        $subSelectSql = str_replace("$qElements.", "$qSubElements.", $subSelectSql);
+        $subSelectSql = str_replace("$q $qElements", "$q $qSubElements", $subSelectSql);
         $subSelectSql = str_replace($qTmpElements, $qElements, $subSelectSql);
 
-        $this->subQuery->andWhere(new Expression("[[elements_sites.id]] = ({$subSelectSql})"));
+        $this->subQuery->andWhere(new Expression("[[elements_sites.id]] = ($subSelectSql)"));
     }
 
     /**
@@ -3105,7 +2785,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @param FieldInterface $field
      * @return string|string[]|null
      */
-    private function _fieldColumn(FieldInterface $field)
+    private function _fieldColumn(FieldInterface $field): array|string|null
     {
         if (!$field::hasContentColumn()) {
             return null;
@@ -3130,12 +2810,12 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @param array $rows
      * @return array|ElementInterface[]
      */
-    private function _createElements(array $rows)
+    private function _createElements(array $rows): array
     {
         $elements = [];
 
         if ($this->asArray === true) {
-            if ($this->indexBy === null) {
+            if (!isset($this->indexBy)) {
                 return $rows;
             }
 
@@ -3153,7 +2833,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                 $element = $this->createElement($row);
 
                 // Add it to the elements array
-                if ($this->indexBy === null) {
+                if (!isset($this->indexBy)) {
                     $elements[] = $element;
                 } else {
                     if (is_string($this->indexBy)) {
@@ -3175,27 +2855,5 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         return $elements;
-    }
-
-    /**
-     * Batch-sets attributes. Used by [[find()]], [[first()]], [[last()]], [[ids()]], and [[total()]].
-     *
-     * @param mixed $attributes
-     * @return bool Whether $attributes was an array
-     * @todo Remove this in Craft 4, along with the methods that call it.
-     */
-    private function _setAttributes($attributes): bool
-    {
-        if (is_array($attributes) || $attributes instanceof \IteratorAggregate) {
-            foreach ($attributes as $name => $value) {
-                if ($this->canSetProperty($name)) {
-                    $this->$name = $value;
-                }
-            }
-
-            return true;
-        }
-
-        return false;
     }
 }

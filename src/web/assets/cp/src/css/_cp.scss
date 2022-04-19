@@ -2,8 +2,13 @@
 @import "@craftcms/sass/mixins";
 
 :root {
-  --padding: 24px;
-  --neg-padding: -24px;
+  --xs: 4px;
+  --s: 8px;
+  --m: 14px;
+  --l: 18px;
+  --xl: 24px;
+  --padding: var(--xl);
+  --neg-padding: calc(var(--padding) * -1);
 }
 
 $sidebarWidth: 226px;
@@ -156,6 +161,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   display: grid;
   grid-template-columns: 30px auto;
   grid-gap: 10px;
+  height: 50px;
   padding: 0 10px;
   position: relative;
   flex: 0 0 50px;
@@ -211,7 +217,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
       position: absolute;
       top: 0;
       @include right(0);
-      width: 14px;
+      width: var(--m);
       background-image: linear-gradient(to right, transparentize($systemInfoBgColor, 1), $systemInfoBgColor);
 
       #system-info:hover & {
@@ -260,8 +266,8 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
 #nav {
   flex: 1;
-  margin: 27px 0 0;
-  padding-bottom: 24px;
+  margin: 22px 0 0;
+  padding-bottom: var(--xl);
   overflow: visible;
 
   li {
@@ -277,8 +283,8 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
     a {
       position: relative;
-      padding-left: 14px;
-      padding-right: 14px;
+      padding-left: var(--m);
+      padding-right: var(--m);
 
       &:focus {
         z-index: 1;
@@ -333,7 +339,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
       margin-bottom: 10px;
 
       li a {
-        @include padding(3px, 14px, 3px, 42px, !important);
+        @include padding(3px, var(--m), 3px, 42px, !important);
         font-size: 12px;
 
         &:not(.active) {
@@ -348,21 +354,20 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 14px 14px 24px;
+  padding: var(--m) var(--m) var(--xl);
 }
 
 #app-info {
-  margin-top: 7px;
+  margin-top: var(--xs);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 12px;
   color: $grey600;
   text-align: center;
+  gap: var(--s);
 
   li {
-    margin: 0 7px;
-
     a {
       color: $grey600;
       text-decoration: underline;
@@ -386,7 +391,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   & > .edition-name,
   & > .edition-trial {
     padding: 6px 7px 5px;
-    line-height: 8px;
+    line-height: var(--s);
   }
 
   & > .edition-name {
@@ -460,7 +465,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   color: $errorColor;
 
   li {
-    padding: 4px 24px;
+    padding: 4px var(--xl);
 
     a {
       color: $errorColor;
@@ -489,7 +494,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
 #global-header {
   width: 100%;
-  margin-bottom: 14px;
+  margin-bottom: var(--m);
   @include pane;
   background: $grey050;
 
@@ -551,7 +556,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
     }
 
     &:after {
-      margin: 0 7px;
+      margin: 0 var(--s);
       @include angle(right, $mediumHairlineColor);
     }
   }
@@ -575,6 +580,16 @@ li.breadcrumb-toggle-wrapper {
 
 #nav-toggle {
   display: none;
+}
+
+#account-menu {
+  ul {
+    li {
+      a {
+        max-width: calc(100% + 28px) !important;
+      }
+    }
+  }
 }
 
 #announcements-btn {
@@ -617,11 +632,23 @@ li.breadcrumb-toggle-wrapper {
       margin-top: 20px;
     }
 
-    .timestamp {
+    .announcement-label-container {
       margin-top: -3px;
-      font-size: 12px;
-      color: $lightTextColor;
+      display: flex;
+      align-items: center;
       margin-bottom: 3px;
+
+      .announcement-icon svg {
+        display: block;
+        width: 15px;
+        height: 15px;
+      }
+
+      .announcement-label {
+        margin-left: 5px;
+        font-size: 12px;
+        color: $lightTextColor;
+      }
     }
 
     h2 {
@@ -645,10 +672,6 @@ li.breadcrumb-toggle-wrapper {
       margin: 0;
     }
   }
-}
-
-[data-wrapper] {
-  position: relative;
 }
 
 #user-info {
@@ -732,13 +755,13 @@ li.breadcrumb-toggle-wrapper {
 }
 
 #header-container {
-  margin-bottom: 14px;
+  margin-bottom: var(--m);
 }
 
 #crumbs,
 #header {
-  @include padding-left(30px);
-  @include padding-right(24px);
+  padding-left: var(--xl);
+  padding-right: var(--xl);
 }
 
 #global-header,
@@ -750,10 +773,6 @@ li.breadcrumb-toggle-wrapper {
     &.flex-nowrap {
       min-width: 0;
     }
-
-    & > * {
-      margin-bottom: 0;
-    }
   }
 }
 
@@ -763,8 +782,9 @@ li.breadcrumb-toggle-wrapper {
   align-content: stretch;
   flex-wrap: nowrap;
   justify-content: space-between;
-  padding-top: 8px;
-  padding-bottom: 8px;
+  gap: var(--s);
+  padding-top: var(--s);
+  padding-bottom: var(--s);
   position: relative;
   z-index: 2;
   width: calc(100vw - #{$sidebarWidth});
@@ -792,14 +812,6 @@ li.breadcrumb-toggle-wrapper {
     }
   }
 
-  .flex {
-    &:not(:last-child) {
-      @media only screen and (min-width: $minHorizontalUiWidth) {
-        @include margin-right(7px);
-      }
-    }
-  }
-
   h1 {
     line-height: 34px;
     margin-top: 0;
@@ -808,10 +820,6 @@ li.breadcrumb-toggle-wrapper {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-
-    &:not(:last-child) {
-      @include margin-right(14px !important);
-    }
   }
 
   .buttons,
@@ -823,7 +831,7 @@ li.breadcrumb-toggle-wrapper {
 #page-title {
   &.has-toolbar {
     @media only screen and (min-width: $minHorizontalUiWidth) {
-      min-width: #{$sidebarWidth - 30 - 7} !important;
+      min-width: calc(#{$sidebarWidth} - var(--xl) - var(--s)) !important;
     }
   }
 }
@@ -842,7 +850,8 @@ li.breadcrumb-toggle-wrapper {
   .menubtn:after,
   [data-icon]:before,
   [data-icon-after]:after {
-    color: var(--ui-control-color);
+    color: currentColor;
+    opacity: 0.8;
   }
 
   .text {
@@ -876,13 +885,9 @@ li.breadcrumb-toggle-wrapper {
       background-clip: border-box;
     }
   }
-
-  .spinner {
-    background-image: url(../images/spinner_toolbar.gif);
-  }
 }
 
-#action-button {
+#action-buttons {
   height: 34px;
 }
 
@@ -891,7 +896,7 @@ li.breadcrumb-toggle-wrapper {
   flex-direction: row;
   align-items: flex-start;
   width: calc(100vw - #{$sidebarWidth});
-  padding: 0 24px 48px;
+  padding: 0 var(--xl) 48px;
   box-sizing: border-box;
 
   // for the Dashboard and any other full-page grids:
@@ -908,7 +913,7 @@ li.breadcrumb-toggle-wrapper {
   flex: 0 0 $sidebarWidth;
   width: $sidebarWidth;
   box-sizing: border-box;
-  @include margin-left(-24px);
+  @include margin-left(calc(var(--xl) * -1));
 }
 
 #sidebar {
@@ -920,8 +925,8 @@ li.breadcrumb-toggle-wrapper {
   &.fixed {
     position: fixed;
     overflow-y: auto;
-    padding-top: 14px;
-    padding-bottom: 14px;
+    padding-top: var(--m);
+    padding-bottom: var(--m);
   }
 
   nav {
@@ -952,14 +957,19 @@ li.breadcrumb-toggle-wrapper {
 #content-container {
   flex: 1;
 
+  #main-content:not(.has-sidebar):not(.has-details) & {
+    width: 100%;
+    max-width: 100%;
+  }
+
   #main-content.has-sidebar & {
     width: calc(100% - #{$sidebarWidth - 24});
     max-width: calc(100% - #{$sidebarWidth - 24});
   }
 
   #main-content.has-details & {
-    width: calc(100% - #{$detailsWidth} - 14px);
-    max-width: calc(100% - #{$detailsWidth} - 14px);
+    width: calc(100% - #{$detailsWidth} - var(--m));
+    max-width: calc(100% - #{$detailsWidth} - var(--m));
   }
 
   #main-content.has-sidebar.has-details {
@@ -973,21 +983,23 @@ li.breadcrumb-toggle-wrapper {
   border-radius: $largeBorderRadius;
   position: relative;
   background-clip: padding-box;
-  padding: 24px;
+  padding: var(--xl);
   word-wrap: break-word;
 
   & > hr {
-    margin-left: -24px;
-    margin-right: -24px;
+    margin-left: calc(var(--xl) * -1);
+    margin-right: calc(var(--xl) * -1);
   }
 }
 
 #footer {
   z-index: 1;
-  margin: 25px -24px -24px; // 1px extra on top is intentional
-  padding: 10px 24px;
+  margin: 25px calc(var(--xl) * -1) calc(var(--xl) * -1); // 1px extra on top is intentional
+  padding: var(--s) var(--xl);
   background-color: $grey050;
   border-radius: 0 0 $largeBorderRadius $largeBorderRadius;
+  box-sizing: border-box;
+  min-height: 50px;
 
   &:empty {
     display: none;
@@ -1002,130 +1014,65 @@ li.breadcrumb-toggle-wrapper {
 #details-container {
   flex: 0 0 #{$detailsWidth + 38};
   width: $detailsWidth + 38;
-  @include margin-right(-24px);
+  @include margin-right(calc(var(--xl) * -1));
   box-sizing: border-box;
 }
 
 #details {
   box-sizing: border-box;
-  padding-bottom: 24px;
-  @include padding-right(24px);
-  @include padding-left(14px);
+  @include padding-right(var(--xl));
+  @include padding-left(var(--m));
   width: $detailsWidth + 38;
 
   &.fixed {
     position: fixed;
     overflow-y: auto;
-    padding-top: 14px;
+    padding-top: var(--m);
   }
 
-  .meta {
-    margin-bottom: 14px;
-    border-radius: $largeBorderRadius;
-    padding: 0 24px;
+  .details {
+    .meta {
+      border-radius: $largeBorderRadius;
 
-    &:not(.warning) {
-      @include pane;
-    }
-
-    &:not(.read-only):not(.warning) {
-      background-color: $grey050;
-    }
-
-    &.read-only {
-      padding-top: 8px;
-      padding-bottom: 8px;
-      color: $mediumTextColor;
-      background-color: transparent;
-    }
-
-    &.warning {
-      border: 2px solid $yellow300;
-      padding: 19px 22px;
-      background: $white;
-      color: $textColor !important;
-
-      p {
-        margin-bottom: 5px;
+      &:not(.read-only):not(.warning) {
+        @include pane;
       }
 
-      .btn {
-        background-color: $yellow300;
+      &.read-only {
+        color: $mediumTextColor;
+        background-color: transparent !important;
+      }
 
-        &:hover,
-        &:focus {
-          background-color: darken($yellow300, 10%);
+      & > .field,
+      & > .data {
+        &:first-child {
+          &,
+          & > .status-badge {
+            border-top-left-radius: $largeBorderRadius;
+          }
+          border-top-right-radius: $largeBorderRadius;
         }
 
-        &:active {
-          background-color: darken($yellow300, 15%);
+        &:last-child {
+          &,
+          & > .status-badge {
+            border-bottom-left-radius: $largeBorderRadius;
+          }
+          border-bottom-right-radius: $largeBorderRadius;
         }
       }
     }
 
-    & > .field,
-    & > .data {
-      margin: 0 -24px !important;
-
-      &:first-child {
-        &,
-        & > .status-badge {
-          border-top-left-radius: $largeBorderRadius;
-        }
-        border-top-right-radius: $largeBorderRadius;
-      }
-
-      &:last-child {
-        &,
-        & > .status-badge {
-          border-bottom-left-radius: $largeBorderRadius;
-        }
-        border-bottom-right-radius: $largeBorderRadius;
-      }
-
-      & > .heading > label,
-      & > .heading {
-        color: $grey600;
+    & > .field {
+      & > .input > .text.fullwidth {
+        @include pane;
       }
     }
 
-    & > .field  > .status-badge {
-      @include left(-1px);
-    }
-
-    .text::placeholder,
-    .datewrapper .text + div[data-icon],
-    .timewrapper .text + div[data-icon] {
-      color: $grey500;
-    }
-
-    .ui-datepicker {
-      @include margin(0, 0, 0, -8px);
-    }
-  }
-
-  hr {
-    margin: 14px 0;
-    border-top-color: $hairlineColor;
-  }
-
-  .spinner {
-    background-image: url(../images/spinner_details.gif);
-  }
-
-  @include placeholder-styles($grey500);
-
-  .text {
-    background-color: transparent;
-    resize: none;
-  }
-
-  & > .text {
-    border-radius: $largeBorderRadius;
-    margin-bottom: 14px;
-
-    &:not(:focus) {
-      border-color: transparentize($inputColor, 0.6);
+    .notes {
+      border-radius: 5px;
+      padding-top: 15px;
+      padding-bottom: 15px;
     }
   }
 }
@@ -1209,7 +1156,7 @@ li.breadcrumb-toggle-wrapper {
 
   #sidebar-toggle-container {
     display: block;
-    margin-bottom: 14px;
+    margin-bottom: var(--m);
   }
 
   #sidebar-toggle {
@@ -1241,7 +1188,7 @@ li.breadcrumb-toggle-wrapper {
   }
 
   #sidebar {
-    margin-bottom: 14px;
+    margin-bottom: var(--m);
 
     body:not(.showing-sidebar) & {
       display: none;
@@ -1259,7 +1206,7 @@ li.breadcrumb-toggle-wrapper {
 
   #details {
     padding: 0 !important;
-    margin-top: 14px;
+    margin-top: var(--m);
   }
 }
 
@@ -1274,8 +1221,8 @@ li.breadcrumb-toggle-wrapper {
 
   #tabs ul li {
     a {
-      padding-left: 14px;
-      padding-right: 14px;
+      padding-left: var(--m);
+      padding-right: var(--m);
     }
 
     & + li {
@@ -1321,15 +1268,18 @@ li.breadcrumb-toggle-wrapper {
 
 /* Sidebar */
 .sidebar {
-  padding: 14px 0;
   width: $sidebarWidth;
   box-sizing: border-box;
   font-size: 13px;
-  background-color: $grey050;
+
+  &:not(.drag-helper) {
+    padding: var(--m) 0;
+    background-color: $grey050;
+  }
 
   .heading {
     position: relative;
-    margin: 14px 24px 2px;
+    margin: var(--m) var(--xl) 2px;
 
     span {
       display: inline-block;
@@ -1338,7 +1288,7 @@ li.breadcrumb-toggle-wrapper {
       padding: 0 5px;
       margin: 0 -5px;
       text-transform: uppercase;
-      color: $mediumTextColor;
+      color: $lightTextColor;
       font-size: 11px;
       font-weight: bold;
     }
@@ -1350,12 +1300,12 @@ li.breadcrumb-toggle-wrapper {
     }
 
     & > .toggle {
-      @include left(14px * $level);
+      @include left(calc(var(--m) * #{$level}));
     }
   }
 
   nav {
-    padding: 0 7px;
+    padding: 0 var(--s);
 
     & > ul > li {
       @include nav-level(0);
@@ -1396,12 +1346,13 @@ li.breadcrumb-toggle-wrapper {
         display: flex;
         flex-direction: row;
         align-items: center;
-        padding: 7px 24px;
-        min-height: 24px;
+        padding: var(--s) var(--xl);
+        min-height: var(--xl);
         box-sizing: border-box;
         color: $textColor;
         user-select: none;
         border-radius: $largeBorderRadius;
+        word-break: break-word;
 
         .status {
           flex-shrink: 1;
@@ -1412,6 +1363,7 @@ li.breadcrumb-toggle-wrapper {
           flex-shrink: 1;
           width: 18px;
           height: 18px;
+          word-break: normal;
           transition: margin-left linear 150ms, margin-right linear 150ms;
 
           &.icon-mask {
@@ -1448,7 +1400,7 @@ li.breadcrumb-toggle-wrapper {
           padding: 0 6px;
           font-size: 11px;
           line-height: 16px;
-          border-radius: 8px;
+          border-radius: var(--s);
           background-color: $mediumTextColor;
           color: $white;
         }
@@ -1459,7 +1411,7 @@ li.breadcrumb-toggle-wrapper {
         z-index: 1;
         height: 34px;
         top: 0;
-        width: 24px;
+        width: var(--xl);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -1480,62 +1432,57 @@ li.breadcrumb-toggle-wrapper {
   @include margin-left($sidebarWidth);
 }
 
+#content-notice {
+  margin: 0 calc(var(--xl) * -1);
+  padding: 0 var(--xl);
+
+  &:not(:last-child) {
+    padding-bottom: var(--s);
+    border-bottom: 1px solid $hairlineColor;
+    margin-bottom: var(--s);
+  }
+}
+
 /* flexbox field layouts */
-#content :not(.meta) > .flex-fields {
+#content :not(.meta) > .flex-fields,
+#content > .flex-fields,
+.so-content .flex-fields {
+  --row-gap: var(--xl);
   display: flex;
+  gap: var(--row-gap) 0;
   flex-wrap: wrap;
   align-content: flex-start;
-  margin: 0 -24px -24px;
-  width: calc(100% + 48px);
+  margin: 0 calc(var(--row-gap) * -1);
+  width: calc(100% + var(--row-gap) * 2);
+
+  & > * {
+    margin: 0 !important;
+    padding: 0 var(--row-gap);
+    box-sizing: border-box;
+  }
 
   & > h2 {
-    margin: 0 0 24px !important;
-    padding: 0 24px;
-    width: 100%;
+    flex: 4 0 100%;
 
     &:not(:first-child) {
-      padding-top: 24px;
+      padding-top: var(--xl);
       border-top: 1px solid $hairlineColor;
     }
   }
 
   & > hr {
-    margin: 0 0 24px;
-    width: calc(100% + 48px);
+    flex: 4 0 100%;
   }
 
   & > :not(h2):not(hr) {
     &, &:last-child {
       position: relative;
-      margin: 0 24px 24px !important;
-      width: calc(100% - 48px);
-      box-sizing: border-box;
-
-      // 4 cols for >= 1536px
-      @media only screen and (min-width: $minXlUiWidth) {
-        &.width-25 {
-          width: calc(25% - 48px);
-        }
-        &.width-50 {
-          width: calc(50% - 48px);
-        }
-        &.width-75 {
-          width: calc(75% - 48px);
-        }
-      }
-
-      // 2 cols fol 712 - 1536px
-      @media only screen and (min-width: 500px) and (max-width: $minXlUiWidth - 1px) {
-        &.width-25,
-        &.width-50 {
-          width: calc(50% - 48px);
-        }
-      }
+      width: 100%;
 
       &:before {
         position: absolute;
         top: 0;
-        @include left(-25px);
+        @include left(-1px);
         width: 1px;
         height: 100%;
         content: '';
@@ -1546,32 +1493,44 @@ li.breadcrumb-toggle-wrapper {
   }
 }
 
-/* retina */
-@media only screen and (-webkit-min-device-pixel-ratio: 1.5),
-only screen and (-moz-min-device-pixel-ratio: 1.5),
-only screen and (-o-min-device-pixel-ratio: 3/2),
-only screen and (min-device-pixel-ratio: 1.5),
-only screen and (min-resolution: 1.5dppx) {
-  #details {
-    .spinner {
-      background-image: url(../images/spinner_details_2x.gif);
-      background-size: 20px;
+#content :not(.meta) > .flex-fields,
+#content > .flex-fields {
+  & > :not(h2):not(hr) {
+    &, &:last-child {
+      // 4 cols for >= 1536px
+      @media only screen and (min-width: $minXlUiWidth) {
+        &.width-25 {
+          width: 25%;
+        }
+        &.width-50 {
+          width: 50%;
+        }
+        &.width-75 {
+          width: 75%;
+        }
+      }
+
+      // 2 cols for 712 - 1536px
+      @media only screen and (min-width: 500px) and (max-width: $minXlUiWidth - 1px) {
+        &.width-25,
+        &.width-50 {
+          width: 50%;
+        }
+      }
     }
   }
-  #toolbar {
-    .spinner {
-      background-image: url(../images/spinner_toolbar_2x.gif);
-      background-size: 20px;
-    }
-  }
-  #upgrademodal.loading {
-    background-image: url(../images/spinner_big_2x.gif);
-    background-size: 48px;
-  }
-  #upgrademodal-success {
-    .message {
-      background-image: url(../images/success_2x.png);
-      background-size: 48px;
+}
+
+.so-content .flex-fields {
+  & > :not(h2):not(hr) {
+    &, &:last-child {
+      // 2 cols for >= 712px
+      @media only screen and (min-width: $minXlUiWidth) {
+        &.width-25,
+        &.width-50 {
+          width: 50%;
+        }
+      }
     }
   }
 }

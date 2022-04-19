@@ -8,6 +8,7 @@
 namespace craft\helpers;
 
 use Craft;
+use DateInterval;
 use yii\base\InvalidConfigException;
 
 /**
@@ -31,7 +32,7 @@ class ConfigHelper
      * @return int The time duration in seconds
      * @throws InvalidConfigException if the duration can't be determined
      */
-    public static function durationInSeconds($value): int
+    public static function durationInSeconds(mixed $value): int
     {
         if (!$value) {
             return 0;
@@ -42,10 +43,10 @@ class ConfigHelper
         }
 
         if (is_string($value)) {
-            $value = new \DateInterval($value);
+            $value = new DateInterval($value);
         }
 
-        if (!$value instanceof \DateInterval) {
+        if (!$value instanceof DateInterval) {
             throw new InvalidConfigException("Unable to convert to seconds.");
         }
 
@@ -62,7 +63,7 @@ class ConfigHelper
      * @param int|string $value The size
      * @return int|float The size in bytes
      */
-    public static function sizeInBytes($value)
+    public static function sizeInBytes(int|string $value): float|int
     {
         // See if we can recognize that.
         if (is_numeric($value) || !preg_match('/(\d+)(K|M|G)/i', $value, $matches)) {
@@ -81,7 +82,6 @@ class ConfigHelper
             // no break
             case 'k':
                 $value *= 1024;
-            // no break
         }
 
         return $value;
@@ -99,7 +99,7 @@ class ConfigHelper
      * @param string|null $siteHandle The site handle the value should be defined for. Defaults to the current site.
      * @return mixed
      */
-    public static function localizedValue($value, ?string $siteHandle = null)
+    public static function localizedValue(mixed $value, ?string $siteHandle = null): mixed
     {
         if (is_scalar($value)) {
             return $value;

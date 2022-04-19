@@ -1,0 +1,52 @@
+{% import "_includes/forms" as forms -%}
+
+{% set id = id ?? "color#{random()}" -%}
+{% set containerId = containerId ?? id~'-container' -%}
+{% set hexLabelId = "hex-#{id}" %}
+{% set name = name ?? null -%}
+{% set value = value ?? null -%}
+{% set small = small ?? false -%}
+{% set autofocus = (autofocus ?? false) and not craft.app.request.isMobileBrowser(true) -%}
+{% set disabled = disabled ?? false -%}
+{% set labelledBy = labelledBy ?? null %}
+
+{% set containerAttributes = {
+    id: containerId,
+    class: ['flex', 'color-container'],
+}|merge(containerAttributes ?? [], recursive=true) %}
+
+{%- if block('attr') is defined %}
+    {%- set containerAttributes = containerAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
+{% endif %}
+
+{% apply spaceless %}
+    {% tag 'div' with containerAttributes %}
+        {% tag 'div' with {
+            class: ['color', 'static', small ? 'small']|filter,
+        } %}
+            {{ tag('div', {
+                class: ['color-preview'],
+                style: {'background-color': value}|filter,
+            }) }}
+        {% endtag %}
+        <div class="color-input-container">
+            <div class="color-hex-indicator light code" aria-hidden="true">#</div>
+            <span id="{{ hexLabelId }}" class="visually-hidden">{{ 'Color hex value'|t('app') }}</span>
+            {{ forms.text({
+                id: id,
+                describedBy: describedBy ?? false,
+                name: name,
+                value: value|trim('#'),
+                size: 10,
+                class: 'color-input',
+                autofocus: autofocus,
+                disabled: disabled,
+                labelledBy: [labelledBy, hexLabelId]|filter|join(' '),
+            }) }}
+        </div>
+    {% endtag %}
+{% endapply -%}
+
+{% js %}
+    new Craft.ColorInput('#{{ containerId|namespaceInputId }}');
+{% endjs -%}

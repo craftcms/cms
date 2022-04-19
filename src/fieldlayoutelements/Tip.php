@@ -21,18 +21,19 @@ use yii\helpers\Markdown;
  */
 class Tip extends BaseUiElement
 {
-    const STYLE_TIP = 'tip';
-    const STYLE_WARNING = 'warning';
+    public const STYLE_TIP = 'tip';
+    public const STYLE_WARNING = 'warning';
 
     /**
      * @var string The tip text
      */
-    public $tip;
+    public string $tip = '';
 
     /**
      * @var string The tip style (`tip` or `warning`)
+     * @phpstan-var self::STYLE_TIP|self::STYLE_WARNING
      */
-    public $style = self::STYLE_TIP;
+    public string $style = self::STYLE_TIP;
 
     /**
      * @inheritdoc
@@ -49,7 +50,7 @@ class Tip extends BaseUiElement
     /**
      * @inheritdoc
      */
-    protected function selectorIcon()
+    protected function selectorIcon(): ?string
     {
         return '@appicons/' . ($this->_isTip() ? 'tip' : 'alert') . '.svg';
     }
@@ -57,7 +58,7 @@ class Tip extends BaseUiElement
     /**
      * @inheritdoc
      */
-    public function settingsHtml()
+    protected function settingsHtml(): ?string
     {
         return Cp::textareaFieldHtml([
             'label' => $this->_isTip() ? Craft::t('app', 'Tip') : Craft::t('app', 'Warning'),
@@ -72,7 +73,7 @@ class Tip extends BaseUiElement
     /**
      * @inheritdoc
      */
-    public function formHtml(ElementInterface $element = null, bool $static = false)
+    public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
         $noteClass = $this->_isTip() ? self::STYLE_TIP : self::STYLE_WARNING;
         $tip = Markdown::process(Html::encode(Craft::t('site', $this->tip)));

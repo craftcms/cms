@@ -46,6 +46,9 @@
                 defaultValues: {
                     type: 'singleline'
                 },
+                allowAdd: true,
+                allowReorder: true,
+                allowDelete: true,
                 onAddRow: this.onAddColumn.bind(this),
                 onDeleteRow: this.reconstructDefaultsTable.bind(this)
             });
@@ -53,7 +56,10 @@
 
         initDefaultsTable: function() {
             this.defaultsTable = new Craft.EditableTable(this.defaultsTableId, this.defaultsTableName, this.columnsData, {
-                rowIdPrefix: 'row'
+                rowIdPrefix: 'row',
+                allowAdd: true,
+                allowReorder: true,
+                allowDelete: true,
             });
         },
 

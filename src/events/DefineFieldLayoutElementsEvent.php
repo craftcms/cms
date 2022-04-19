@@ -7,7 +7,7 @@
 
 namespace craft\events;
 
-use craft\base\FieldLayoutElementInterface;
+use craft\base\FieldLayoutElement;
 use yii\base\Event;
 
 /**
@@ -19,7 +19,7 @@ use yii\base\Event;
 class DefineFieldLayoutElementsEvent extends Event
 {
     /**
-     * @var FieldLayoutElementInterface[]|string[]|array[] The elements that should be available to the field layout designer.
+     * @var FieldLayoutElement[]|string[]|array[] The elements that should be available to the field layout designer.
      */
-    public $elements = [];
+    public array $elements = [];
 }

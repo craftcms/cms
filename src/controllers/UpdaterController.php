@@ -12,6 +12,8 @@ use Composer\Semver\Comparator;
 use Composer\Semver\VersionParser;
 use Craft;
 use craft\errors\InvalidPluginException;
+use RequirementsChecker;
+use Throwable;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
 
@@ -24,17 +26,17 @@ use yii\web\Response;
  */
 class UpdaterController extends BaseUpdaterController
 {
-    const ACTION_FORCE_UPDATE = 'force-update';
-    const ACTION_BACKUP = 'backup';
-    const ACTION_SERVER_CHECK = 'server-check';
-    const ACTION_REVERT = 'revert';
-    const ACTION_RESTORE_DB = 'restore-db';
-    const ACTION_MIGRATE = 'migrate';
+    public const ACTION_FORCE_UPDATE = 'force-update';
+    public const ACTION_BACKUP = 'backup';
+    public const ACTION_SERVER_CHECK = 'server-check';
+    public const ACTION_REVERT = 'revert';
+    public const ACTION_RESTORE_DB = 'restore-db';
+    public const ACTION_MIGRATE = 'migrate';
 
     /**
      * @inheritdoc
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         if (!parent::beforeAction($action)) {
             return false;
@@ -67,7 +69,7 @@ class UpdaterController extends BaseUpdaterController
     {
         try {
             $this->data['dbBackupPath'] = Craft::$app->getDb()->backup();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Craft::error('Error backing up the database: ' . $e->getMessage(), __METHOD__);
             if (!empty($this->data['install'])) {
                 $firstAction = $this->actionOption(Craft::t('app', 'Revert the update'), self::ACTION_REVERT);
@@ -99,7 +101,7 @@ class UpdaterController extends BaseUpdaterController
     {
         try {
             Craft::$app->getDb()->restore($this->data['dbBackupPath']);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Craft::error('Error restoring up the database: ' . $e->getMessage(), __METHOD__);
             return $this->send([
                 'error' => Craft::t('app', 'Couldn’t restore the database. How would you like to proceed?'),
@@ -133,7 +135,7 @@ class UpdaterController extends BaseUpdaterController
             Craft::$app->getComposer()->install($this->data['current'], $io);
             Craft::info("Reverted Composer requirements.\nOutput: " . $io->getOutput(), __METHOD__);
             $this->data['reverted'] = true;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Craft::error('Error reverting Composer requirements: ' . $e->getMessage() . "\nOutput: " . $io->getOutput(), __METHOD__);
             return $this->sendComposerError(Craft::t('app', 'Composer was unable to revert the updates.'), $e, $io->getOutput());
         }
@@ -148,7 +150,7 @@ class UpdaterController extends BaseUpdaterController
      */
     public function actionServerCheck(): Response
     {
-        $reqCheck = new \RequirementsChecker();
+        $reqCheck = new RequirementsChecker();
         $reqCheck->checkCraft();
 
         $errors = [];
@@ -262,10 +264,7 @@ class UpdaterController extends BaseUpdaterController
     }
 
     /**
-     * Returns the initial state for the updater JS.
-     *
-     * @param bool $force Whether to go through with the update even if Maintenance Mode is enabled
-     * @return array
+     * @inheritdoc
      */
     protected function initialState(bool $force = false): array
     {
@@ -335,22 +334,15 @@ class UpdaterController extends BaseUpdaterController
      */
     protected function actionStatus(string $action): string
     {
-        switch ($action) {
-            case self::ACTION_FORCE_UPDATE:
-                return Craft::t('app', 'Updating…');
-            case self::ACTION_BACKUP:
-                return Craft::t('app', 'Backing-up database…');
-            case self::ACTION_RESTORE_DB:
-                return Craft::t('app', 'Restoring database…');
-            case self::ACTION_MIGRATE:
-                return Craft::t('app', 'Updating database…');
-            case self::ACTION_REVERT:
-                return Craft::t('app', 'Reverting update (this may take a minute)…');
-            case self::ACTION_SERVER_CHECK:
-                return Craft::t('app', 'Checking server requirements…');
-            default:
-                return parent::actionStatus($action);
-        }
+        return match ($action) {
+            self::ACTION_FORCE_UPDATE => Craft::t('app', 'Updating…'),
+            self::ACTION_BACKUP => Craft::t('app', 'Backing-up database…'),
+            self::ACTION_RESTORE_DB => Craft::t('app', 'Restoring database…'),
+            self::ACTION_MIGRATE => Craft::t('app', 'Updating database…'),
+            self::ACTION_REVERT => Craft::t('app', 'Reverting update (this may take a minute)…'),
+            self::ACTION_SERVER_CHECK => Craft::t('app', 'Checking server requirements…'),
+            default => parent::actionStatus($action),
+        };
     }
 
     /**
@@ -402,7 +394,7 @@ class UpdaterController extends BaseUpdaterController
             $pluginInfo = null;
             try {
                 $pluginInfo = Craft::$app->getPlugins()->getPluginInfo($handle);
-            } catch (InvalidPluginException $e) {
+            } catch (InvalidPluginException) {
             }
 
             if ($pluginInfo === null || !$pluginInfo['isInstalled']) {

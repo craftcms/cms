@@ -23,12 +23,12 @@ class CacheNode extends Node
     /**
      * @var int
      */
-    private static $_cacheCount = 1;
+    private static int $_cacheCount = 1;
 
     /**
      * @inheritdoc
      */
-    public function compile(Compiler $compiler)
+    public function compile(Compiler $compiler): void
     {
         $n = self::$_cacheCount++;
 
@@ -45,14 +45,14 @@ class CacheNode extends Node
             ->addDebugInfo($this)
             ->write('$cacheService = ' . Craft::class . "::\$app->getTemplateCaches();\n")
             ->write('$request = ' . Craft::class . "::\$app->getRequest();\n")
-            ->write("\$ignoreCache{$n} = (\$request->getIsLivePreview() || \$request->getToken()");
+            ->write("\$ignoreCache$n = (\$request->getIsLivePreview() || \$request->getToken()");
 
         if ($conditions) {
             $compiler
                 ->raw(' || !(')
                 ->subcompile($conditions)
                 ->raw(')');
-        } else if ($ignoreConditions) {
+        } elseif ($ignoreConditions) {
             $compiler
                 ->raw(' || (')
                 ->subcompile($ignoreConditions)
@@ -61,9 +61,9 @@ class CacheNode extends Node
 
         $compiler
             ->raw(");\n")
-            ->write("if (!\$ignoreCache{$n}) {\n")
+            ->write("if (!\$ignoreCache$n) {\n")
             ->indent()
-            ->write("\$cacheKey{$n} = ");
+            ->write("\$cacheKey$n = ");
 
         if ($key) {
             $compiler->subcompile($key);
@@ -73,26 +73,26 @@ class CacheNode extends Node
 
         $compiler
             ->raw(";\n")
-            ->write("\$cacheBody{$n} = \$cacheService->getTemplateCache(\$cacheKey{$n}, {$global}, true);\n")
+            ->write("\$cacheBody$n = \$cacheService->getTemplateCache(\$cacheKey$n, $global, true);\n")
             ->outdent()
             ->write("} else {\n")
             ->indent()
-            ->write("\$cacheBody{$n} = null;\n")
+            ->write("\$cacheBody$n = null;\n")
             ->outdent()
             ->write("}\n")
-            ->write("if (\$cacheBody{$n} === null) {\n")
+            ->write("if (\$cacheBody$n === null) {\n")
             ->indent()
-            ->write("if (!\$ignoreCache{$n}) {\n")
+            ->write("if (!\$ignoreCache$n) {\n")
             ->indent()
             ->write("\$cacheService->startTemplateCache(true);\n")
             ->outdent()
             ->write("}\n")
             ->write("ob_start();\n")
             ->subcompile($this->getNode('body'))
-            ->write("\$cacheBody{$n} = ob_get_clean();\n")
-            ->write("if (!\$ignoreCache{$n}) {\n")
+            ->write("\$cacheBody$n = ob_get_clean();\n")
+            ->write("if (!\$ignoreCache$n) {\n")
             ->indent()
-            ->write("\$cacheService->endTemplateCache(\$cacheKey{$n}, {$global}, ");
+            ->write("\$cacheService->endTemplateCache(\$cacheKey$n, $global, ");
 
         if ($durationNum) {
             // So silly that PHP doesn't support "+1 week" http://www.php.net/manual/en/datetime.formats.relative.php
@@ -106,7 +106,7 @@ class CacheNode extends Node
                 }
             }
 
-            $compiler->raw("'+{$durationNum} {$durationUnit}'");
+            $compiler->raw("'+$durationNum $durationUnit'");
         } else {
             $compiler->raw('null');
         }
@@ -120,11 +120,11 @@ class CacheNode extends Node
         }
 
         $compiler
-            ->raw(", \$cacheBody{$n}, true);\n")
+            ->raw(", \$cacheBody$n, true);\n")
             ->outdent()
             ->write("}\n")
             ->outdent()
             ->write("}\n")
-            ->write("echo \$cacheBody{$n};\n");
+            ->write("echo \$cacheBody$n;\n");
     }
 }

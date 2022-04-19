@@ -5,29 +5,23 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craftunit\helpers;
+namespace crafttests\unit\helpers;
 
-use Codeception\Test\Unit;
 use Craft;
 use craft\helpers\FileHelper;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
 use craft\services\ProjectConfig;
+use craft\test\TestCase;
 
-class ProjectConfigHelperTest extends Unit
+class ProjectConfigHelperTest extends TestCase
 {
     /**
-     * @var \UnitTester
-     */
-    protected $tester;
-
-    /**
      * @dataProvider packedUnpackedDataProvider
-     *
-     * @param array $field
-     * @param array $expectedResult
+     * @param array $unpackedData
+     * @param array $packedData
      */
-    public function testAssociativeArrayConfigTransforms($unpackedData, $packedData)
+    public function testAssociativeArrayConfigTransforms(array $unpackedData, array $packedData): void
     {
         self::assertSame($packedData, ProjectConfigHelper::packAssociativeArrays($unpackedData));
         self::assertSame($unpackedData, ProjectConfigHelper::unpackAssociativeArrays($packedData));
@@ -35,20 +29,20 @@ class ProjectConfigHelperTest extends Unit
 
     /**
      * @dataProvider cleanupConfigDataProvider
-     * @param $inputData
-     * @param $expectedResult
+     * @param array $inputData
+     * @param array $expectedResult
      */
-    public function testCleanupConfig($inputData, $expectedResult)
+    public function testCleanupConfig(array $inputData, array $expectedResult): void
     {
         self::assertSame($expectedResult, ProjectConfigHelper::cleanupConfig($inputData));
     }
 
     /**
      * @dataProvider splitIntoComponentsProvider
-     * @param $inputData
-     * @param $expectedResult
+     * @param array $inputData
+     * @param array $expectedResult
      */
-    public function testSplitIntoComponents($inputData, $expectedResult)
+    public function testSplitIntoComponents(array $inputData, array $expectedResult): void
     {
         self::assertSame($expectedResult, ProjectConfigHelper::splitConfigIntoComponents($inputData));
     }
@@ -58,7 +52,7 @@ class ProjectConfigHelperTest extends Unit
      * @param string $input
      * @param string $expected
      */
-    public function testTouch(string $input, string $expected)
+    public function testTouch(string $input, string $expected): void
     {
         // Make sure they both end in a newline
         $input = StringHelper::ensureRight($input, "\n");
@@ -74,13 +68,23 @@ class ProjectConfigHelperTest extends Unit
 
         // Test
         $timestamp = time();
-        $expected = str_replace('__TIMESTAMP__', $timestamp, $expected);
+        $expected = str_replace('__TIMESTAMP__', (string)$timestamp, $expected);
         ProjectConfigHelper::touch($timestamp);
         self::assertSame($expected, file_get_contents($path));
 
         // Put the old project.yaml back
         FileHelper::unlink($path);
         rename($backup, $path);
+    }
+
+    /**
+     * @param mixed $incomingData
+     * @param string $expectedResult
+     * @dataProvider encodeTestDataProvider
+     */
+    public function testEncodeData(mixed $incomingData, string $expectedResult): void
+    {
+        self::assertSame($expectedResult, ProjectConfigHelper::encodeValueAsString($incomingData));
     }
 
     /**
@@ -94,59 +98,59 @@ class ProjectConfigHelperTest extends Unit
                     'plainSettings' => 'plain',
                     'associativeSettings' => [
                         'some' => 'thing',
-                        'foo' => ['bar', 'baz']
+                        'foo' => ['bar', 'baz'],
                     ],
-                    'randomArray' => [1, 7, 2, 'ok']
+                    'randomArray' => [1, 7, 2, 'ok'],
                 ],
                 [
                     'plainSettings' => 'plain',
                     'associativeSettings' => [
-                        ProjectConfig::CONFIG_ASSOC_KEY => [
+                        ProjectConfig::ASSOC_KEY => [
                             ['some', 'thing'],
-                            ['foo', ['bar', 'baz']]
-                        ]
+                            ['foo', ['bar', 'baz']],
+                        ],
                     ],
-                    'randomArray' => [1, 7, 2, 'ok']
-                ]
+                    'randomArray' => [1, 7, 2, 'ok'],
+                ],
             ],
             [
                 [
                     'test' => [
                         'rootA' => [
-                            'label' => 'childA'
+                            'label' => 'childA',
                         ],
                         'rootB' => [
-                            'label' => 'childB'
-                        ]
-                    ]
+                            'label' => 'childB',
+                        ],
+                    ],
                 ],
                 [
                     'test' => [
-                        ProjectConfig::CONFIG_ASSOC_KEY => [
+                        ProjectConfig::ASSOC_KEY => [
                             [
                                 'rootA',
                                 [
-                                    ProjectConfig::CONFIG_ASSOC_KEY => [
-                                        ['label', 'childA']
-                                    ]
-                                ]
+                                    ProjectConfig::ASSOC_KEY => [
+                                        ['label', 'childA'],
+                                    ],
+                                ],
                             ],
                             [
                                 'rootB',
                                 [
-                                    ProjectConfig::CONFIG_ASSOC_KEY => [
-                                        ['label', 'childB']
-                                    ]
-                                ]
-                            ]
-                        ]
-                    ]
-                ]
-            ]
+                                    ProjectConfig::ASSOC_KEY => [
+                                        ['label', 'childB'],
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
         ];
     }
 
-    public function cleanupConfigDataProvider()
+    public function cleanupConfigDataProvider(): array
     {
         return [
             [
@@ -159,7 +163,7 @@ class ProjectConfigHelperTest extends Unit
                 [
                     'emptier' => '',
                     'gone' => null,
-                    'obj' => ['okay']
+                    'obj' => ['okay'],
                 ],
             ],
             [
@@ -167,17 +171,17 @@ class ProjectConfigHelperTest extends Unit
                     'plainSettings' => 'plain',
                     'other settings' => [
                         'some' => 'thing',
-                        'foo' => ['bar', 'baz']
+                        'foo' => ['bar', 'baz'],
                     ],
-                    'randomArray' => [1, 7, 2, 'ok']
+                    'randomArray' => [1, 7, 2, 'ok'],
                 ],
                 [
                     'other settings' => [
                         'foo' => ['bar', 'baz'],
-                        'some' => 'thing'
+                        'some' => 'thing',
                     ],
                     'plainSettings' => 'plain',
-                    'randomArray' => [1, 7, 2, 'ok']
+                    'randomArray' => [1, 7, 2, 'ok'],
                 ],
             ],
             // Make sure empty values aren't removed from packed arrays
@@ -185,47 +189,47 @@ class ProjectConfigHelperTest extends Unit
             [
                 [
                     'a' => [
-                        ProjectConfig::CONFIG_ASSOC_KEY => [
+                        ProjectConfig::ASSOC_KEY => [
                             ['foo', []],
                             ['bar'],
                             ['baz', 0],
-                        ]
+                        ],
                     ],
                     'b' => [
-                        ProjectConfig::CONFIG_ASSOC_KEY => [
+                        ProjectConfig::ASSOC_KEY => [
                             ['foo', []],
                             ['bar'],
-                        ]
+                        ],
                     ],
                 ],
                 [
                     'a' => [
-                        ProjectConfig::CONFIG_ASSOC_KEY => [
+                        ProjectConfig::ASSOC_KEY => [
                             2 => ['baz', 0],
-                        ]
+                        ],
                     ],
                 ],
             ],
         ];
     }
 
-    public function splitIntoComponentsProvider()
+    public function splitIntoComponentsProvider(): array
     {
         return [
             [
                 [
                     'dateModified' => 1,
                     'email' => [
-                        'provider' => 'gmail'
-                    ]
+                        'provider' => 'gmail',
+                    ],
                 ],
                 [
                     'project.yaml' => [
                         'dateModified' => 1,
                         'email' => [
-                            'provider' => 'gmail'
-                        ]
-                    ]
+                            'provider' => 'gmail',
+                        ],
+                    ],
                 ],
             ],
             [
@@ -234,9 +238,9 @@ class ProjectConfigHelperTest extends Unit
                     'email' => [
                         'provider' => 'gmail',
                         'aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa' => [
-                            'key' => 'value'
-                        ]
-                    ]
+                            'key' => 'value',
+                        ],
+                    ],
                 ],
                 [
                     'project.yaml' => [
@@ -244,10 +248,10 @@ class ProjectConfigHelperTest extends Unit
                         'email' => [
                             'provider' => 'gmail',
                             'aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa' => [
-                                'key' => 'value'
-                            ]
-                        ]
-                    ]
+                                'key' => 'value',
+                            ],
+                        ],
+                    ],
                 ],
             ],
             [
@@ -255,17 +259,17 @@ class ProjectConfigHelperTest extends Unit
                     'dateModified' => 3,
                     'email' => [
                         'aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa' => [
-                            'key' => 'value'
-                        ]
-                    ]
+                            'key' => 'value',
+                        ],
+                    ],
                 ],
                 [
                     'email/aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa.yaml' => [
-                        'key' => 'value'
+                        'key' => 'value',
                     ],
                     'project.yaml' => [
-                        'dateModified' => 3
-                    ]
+                        'dateModified' => 3,
+                    ],
                 ],
             ],
             [
@@ -273,23 +277,23 @@ class ProjectConfigHelperTest extends Unit
                     'dateModified' => 4,
                     'email' => [
                         'aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa' => [
-                            'key' => 'value'
+                            'key' => 'value',
                         ],
                         'bbbbbbbb-aaaa-4aaa-aaaa-aaaaaaaaaaaa' => [
-                            'key2' => 'value'
-                        ]
-                    ]
+                            'key2' => 'value',
+                        ],
+                    ],
                 ],
                 [
                     'email/aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa.yaml' => [
-                        'key' => 'value'
+                        'key' => 'value',
                     ],
                     'email/bbbbbbbb-aaaa-4aaa-aaaa-aaaaaaaaaaaa.yaml' => [
-                        'key2' => 'value'
+                        'key2' => 'value',
                     ],
                     'project.yaml' => [
-                        'dateModified' => 4
-                    ]
+                        'dateModified' => 4,
+                    ],
                 ],
             ],
             [
@@ -297,17 +301,17 @@ class ProjectConfigHelperTest extends Unit
                     'dateModified' => 4,
                     'email' => [
                         'aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa' => [
-                            'handle' => 'fooBar'
+                            'handle' => 'fooBar',
                         ],
-                    ]
+                    ],
                 ],
                 [
                     'email/fooBar--aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa.yaml' => [
-                        'handle' => 'fooBar'
+                        'handle' => 'fooBar',
                     ],
                     'project.yaml' => [
-                        'dateModified' => 4
-                    ]
+                        'dateModified' => 4,
+                    ],
                 ],
             ],
             [
@@ -315,17 +319,17 @@ class ProjectConfigHelperTest extends Unit
                     'dateModified' => 4,
                     'email' => [
                         'aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa' => [
-                            'handle' => 'foo-bar'
+                            'handle' => 'foo-bar',
                         ],
-                    ]
+                    ],
                 ],
                 [
                     'email/aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa.yaml' => [
-                        'handle' => 'foo-bar'
+                        'handle' => 'foo-bar',
                     ],
                     'project.yaml' => [
-                        'dateModified' => 4
-                    ]
+                        'dateModified' => 4,
+                    ],
                 ],
             ],
             [
@@ -335,33 +339,71 @@ class ProjectConfigHelperTest extends Unit
                         'provider' => 'gmail',
                         'productTypes' => [
                             'aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa' => [
-                                'key' => 'value'
+                                'key' => 'value',
                             ],
                             'bbbbbbbb-aaaa-4aaa-aaaa-aaaaaaaaaaaa' => [
-                                'key2' => 'value'
-                            ]
-                        ]
+                                'key2' => 'value',
+                            ],
+                        ],
                     ],
                 ],
                 [
                     'commerce/productTypes/aaaaaaaa-aaaa-4aaa-aaaa-aaaaaaaaaaaa.yaml' => [
-                        'key' => 'value'
+                        'key' => 'value',
                     ],
                     'commerce/productTypes/bbbbbbbb-aaaa-4aaa-aaaa-aaaaaaaaaaaa.yaml' => [
-                        'key2' => 'value'
+                        'key2' => 'value',
                     ],
                     'commerce/commerce.yaml' => [
                         'provider' => 'gmail',
                     ],
                     'project.yaml' => [
-                        'dateModified' => 4
-                    ]
+                        'dateModified' => 4,
+                    ],
                 ],
             ],
         ];
     }
 
-    public function touchDataProvider()
+    public function encodeTestDataProvider(): array
+    {
+        return [
+            [
+                'foo',
+                '"foo"',
+            ],
+            [
+                true,
+                'true',
+            ],
+            [
+                null,
+                'null',
+            ],
+            [
+                false,
+                'false',
+            ],
+            [
+                2.5,
+                '2.5',
+            ],
+            [
+                0,
+                '0',
+            ],
+            [
+                2,
+                '2',
+            ],
+            [
+                2.0,
+                '2.0',
+            ],
+        ];
+    }
+
+    public function touchDataProvider(): array
     {
         $input1 = <<<EOL
 dateModified: 1603054241

@@ -7,7 +7,6 @@
 
 namespace craft\gql\types\elements;
 
-use Craft;
 use craft\elements\Asset as AssetElement;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
 use craft\helpers\Gql;
@@ -36,18 +35,17 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    protected function resolve($source, $arguments, $context, ResolveInfo $resolveInfo)
+    protected function resolve(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): mixed
     {
         /** @var AssetElement $source */
         $fieldName = $resolveInfo->fieldName;
 
         if (!empty($arguments) && in_array($fieldName, ['url', 'width', 'height'], true)) {
-            $generateNow = $arguments['immediately'] ?? Craft::$app->getConfig()->general->generateTransformsBeforePageLoad;
             $transform = Gql::prepareTransformArguments($arguments);
 
             switch ($fieldName) {
                 case 'url':
-                    return $source->getUrl($transform, $generateNow);
+                    return $source->getUrl($transform);
                 case 'width':
                     return $source->getWidth($transform);
                 case 'height':

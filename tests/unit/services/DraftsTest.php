@@ -8,7 +8,6 @@
 
 namespace crafttests\unit\services;
 
-
 use Codeception\Test\Unit;
 use Craft;
 use craft\behaviors\DraftBehavior;
@@ -21,9 +20,9 @@ use craft\errors\InvalidElementException;
 use craft\services\Drafts;
 use craft\services\Elements;
 use craft\services\Revisions;
+use craft\test\TestCase;
 use crafttests\fixtures\EntryFixture;
 use Throwable;
-use UnitTester;
 use yii\base\Exception;
 
 /**
@@ -33,27 +32,22 @@ use yii\base\Exception;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class DraftsTest extends Unit
+class DraftsTest extends TestCase
 {
-    /**
-     * @var UnitTester
-     */
-    protected $tester;
-
     /**
      * @var Elements
      */
-    protected $elements;
+    protected Elements $elements;
 
     /**
      * @var Drafts
      */
-    protected $drafts;
+    protected Drafts $drafts;
 
     /**
      * @var Revisions
      */
-    protected $revisions;
+    protected Revisions $revisions;
 
     /**
      * @return array
@@ -62,7 +56,7 @@ class DraftsTest extends Unit
     {
         return [
             'entries' => [
-                'class' => EntryFixture::class
+                'class' => EntryFixture::class,
             ],
         ];
     }
@@ -72,11 +66,14 @@ class DraftsTest extends Unit
      *
      * @throws Throwable
      */
-    public function testPublishDraft()
+    public function testPublishDraft(): void
     {
+        /** @var Entry $entry */
         $entry = Entry::find()
             ->title('Pending 1')
             ->one();
+
+        self::assertNotNull($entry);
 
         $draft = $this->_setupEntryDraft($entry);
 
@@ -88,7 +85,9 @@ class DraftsTest extends Unit
         $this->drafts->applyDraft($draft);
 
         // Re-get the entry (By the same id)
+        /** @var Entry $newEntry */
         $newEntry = Entry::find()->id($entry->id)->one();
+        self::assertNotNull($newEntry);
 
         // Have the props changed
         self::assertEquals($entry->id, $newEntry->id);
@@ -108,11 +107,14 @@ class DraftsTest extends Unit
      * @throws ElementNotFoundException
      * @throws Exception
      */
-    public function testEntryRevisions()
+    public function testEntryRevisions(): void
     {
+        /** @var Entry $entry */
         $entry = Entry::find()
             ->title('With versioning')
             ->one();
+
+        self::assertNotNull($entry);
 
         $entry->title = 'With versioning EDITED';
         $entry->revisionNotes = 'I am a change note.';
@@ -124,18 +126,21 @@ class DraftsTest extends Unit
             throw new InvalidElementException($entry);
         }
 
-        /** @var Entry|RevisionBehavior $revision */
+        /** @var Entry $revision */
         $revision = Entry::find()
             ->revisionOf($entry)
             ->siteId($entry->siteId)
-            ->anyStatus()
+            ->status(null)
             ->orderBy(['num' => SORT_DESC])
             ->one();
 
         self::assertNotNull($revision);
         self::assertSame($entry->dateUpdated->format('Y-m-d H:i:s'), $revision->dateCreated->format('Y-m-d H:i:s'));
         self::assertSame('With versioning EDITED', $revision->title);
-        self::assertSame('I am a change note.', $revision->revisionNotes);
+
+        /** @var RevisionBehavior $behavior */
+        $behavior = $revision->getBehavior('revision');
+        self::assertSame('I am a change note.', $behavior->revisionNotes);
     }
 
     /**
@@ -144,7 +149,7 @@ class DraftsTest extends Unit
      * @throws ElementNotFoundException
      * @throws Exception
      */
-    public function testEntryRevertToVersion()
+    public function testEntryRevertToVersion(): void
     {
         $data = $this->_setupEntryRevert('With versioning', ['title' => 'Changed title']);
         /** @var Entry $entry */
@@ -154,9 +159,12 @@ class DraftsTest extends Unit
 
         $this->revisions->revertToRevision($v1, 1);
 
+        /** @var Entry $newEntry */
         $newEntry = Entry::find()
             ->id($entry->id)
             ->one();
+
+        self::assertNotNull($newEntry);
 
         // Old title should now be da one.
         self::assertSame('With versioning', $newEntry->title);
@@ -173,9 +181,12 @@ class DraftsTest extends Unit
      */
     protected function _setupEntryRevert(string $entryTitle, array $changes = []): array
     {
+        /** @var Entry $entry */
         $entry = Entry::find()
             ->title($entryTitle)
             ->one();
+
+        self::assertNotNull($entry);
 
         foreach ($changes as $paramName => $value) {
             $entry->$paramName = $value;
@@ -188,20 +199,23 @@ class DraftsTest extends Unit
             throw new InvalidElementException($entry);
         }
 
+        /** @var Entry $v1 */
         $v1 = Entry::find()
             ->revisionOf($entry)
             ->siteId($entry->siteId)
-            ->anyStatus()
+            ->status(null)
             ->orderBy(['num' => SORT_DESC])
             ->offset(1)
             ->one();
+
+        self::assertNotNull($v1);
 
         return ['entry' => $entry, 'v1' => $v1];
     }
 
     /**
      * @param Entry $entry
-     * @return Entry|DraftBehavior
+     * @return Entry
      * @throws Throwable
      */
     protected function _setupEntryDraft(Entry $entry): Entry
@@ -223,7 +237,7 @@ class DraftsTest extends Unit
     /**
      * @inheritdoc
      */
-    protected function _before()
+    protected function _before(): void
     {
         parent::_before();
         $this->elements = Craft::$app->getElements();

@@ -4,7 +4,7 @@
  * Preview
  */
 Craft.Preview = Garnish.Base.extend({
-    draftEditor: null,
+    elementEditor: null,
 
     $shade: null,
     $editorContainer: null,
@@ -61,8 +61,8 @@ Craft.Preview = Garnish.Base.extend({
     _editorWidth: null,
     _editorWidthInPx: null,
 
-    init: function(draftEditor) {
-        this.draftEditor = draftEditor;
+    init: function(elementEditor) {
+        this.elementEditor = elementEditor;
 
         this._updateIframeProxy = this.updateIframe.bind(this);
 
@@ -134,20 +134,20 @@ Craft.Preview = Garnish.Base.extend({
                 this.$previewHeader = $('<header/>', {'class': 'lp-preview-header'}).appendTo(this.$previewContainer);
 
                 // Preview targets
-                if (this.draftEditor.settings.previewTargets.length > 1) {
+                if (this.elementEditor.settings.previewTargets.length > 1) {
                     this.$targetBtn = $('<button/>', {
                         type: 'button',
                         'class': 'btn menubtn',
-                        text: this.draftEditor.settings.previewTargets[0].label,
+                        text: this.elementEditor.settings.previewTargets[0].label,
                     }).appendTo(this.$previewHeader);
                     this.$targetMenu = $('<div/>', {'class': 'menu lp-target-menu'}).insertAfter(this.$targetBtn);
                     const $ul = $('<ul/>', {'class': 'padded'}).appendTo(this.$targetMenu);
                     let $li, $a;
-                    for (let i = 0; i < this.draftEditor.settings.previewTargets.length; i++) {
+                    for (let i = 0; i < this.elementEditor.settings.previewTargets.length; i++) {
                         $li = $('<li/>').appendTo($ul)
                         $a = $('<a/>', {
                             data: {target: i},
-                            text: this.draftEditor.settings.previewTargets[i].label,
+                            text: this.elementEditor.settings.previewTargets[i].label,
                             'class': i === 0 ? 'sel' : null,
                         }).appendTo($li);
                     }
@@ -213,7 +213,7 @@ Craft.Preview = Garnish.Base.extend({
 
             this.addListener($closeBtn, 'click', 'close');
             this.addListener(this.$statusIcon, 'click', () => {
-                this.draftEditor.showStatusHud(this.$statusIcon);
+                this.elementEditor.showStatusHud(this.$statusIcon);
             });
         }
 
@@ -254,8 +254,8 @@ Craft.Preview = Garnish.Base.extend({
 
         this.updateIframe();
 
-        this.draftEditor.on('update', this._updateIframeProxy);
-        Garnish.on(Craft.BaseElementEditor, 'saveElement', this._updateIframeProxy);
+        this.elementEditor.on('update', this._updateIframeProxy);
+        Garnish.on(Craft.ElementEditorSlideout, 'submit', this._updateIframeProxy);
         Garnish.on(Craft.AssetImageEditor, 'save', this._updateIframeProxy);
 
         Craft.ElementThumbLoader.retryAll();
@@ -364,7 +364,7 @@ Craft.Preview = Garnish.Base.extend({
     },
 
     _activeTarget: function() {
-        return this.draftEditor.settings.previewTargets[this.activeTarget];
+        return this.elementEditor.settings.previewTargets[this.activeTarget];
     },
 
     /**
@@ -386,13 +386,13 @@ Craft.Preview = Garnish.Base.extend({
 
     switchTarget: function(i) {
         this.activeTarget = i;
-        this.$targetBtn.text(this.draftEditor.settings.previewTargets[i].label);
+        this.$targetBtn.text(this.elementEditor.settings.previewTargets[i].label);
         this.$targetMenu.find('a.sel').removeClass('sel');
         this.$targetMenu.find('a').eq(i).addClass('sel');
         this.updateIframe(true);
         this._updateRefreshBtn();
         this.trigger('switchTarget', {
-            previewTarget: this.draftEditor.settings.previewTargets[i],
+            previewTarget: this.elementEditor.settings.previewTargets[i],
         });
     },
 
@@ -458,8 +458,8 @@ Craft.Preview = Garnish.Base.extend({
             this.$previewContainer.hide();
         });
 
-        this.draftEditor.off('update', this._updateIframeProxy);
-        Garnish.off(Craft.BaseElementEditor, 'saveElement', this._updateIframeProxy);
+        this.elementEditor.off('update', this._updateIframeProxy);
+        Garnish.off(Craft.ElementEditorSlideout, 'submit', this._updateIframeProxy);
         Garnish.off(Craft.AssetImageEditor, 'save', this._updateIframeProxy);
 
         Craft.ElementThumbLoader.retryAll();
@@ -515,7 +515,7 @@ Craft.Preview = Garnish.Base.extend({
         resetScroll = resetScroll === true;
 
         // If the draft ID has changed or there's no iframe, we definitely need to refresh
-        if (this.draftId !== (this.draftId = this.draftEditor.settings.draftId) || !this.$iframe) {
+        if (this.draftId !== (this.draftId = this.elementEditor.settings.draftId) || !this.$iframe) {
             refresh = true;
         }
 
@@ -536,7 +536,7 @@ Craft.Preview = Garnish.Base.extend({
             return;
         }
 
-        this.draftEditor.getTokenizedPreviewUrl(target.url, 'x-craft-live-preview').then(url => {
+        this.elementEditor.getTokenizedPreviewUrl(target.url, 'x-craft-live-preview').then(url => {
             // Maintain the current scroll position?
             let sameHost;
             if (resetScroll) {
@@ -603,7 +603,7 @@ Craft.Preview = Garnish.Base.extend({
             }
 
             this.trigger('afterUpdateIframe', {
-                previewTarget: this.draftEditor.settings.previewTargets[this.activeTarget],
+                previewTarget: this.elementEditor.settings.previewTargets[this.activeTarget],
                 $iframe: this.$iframe,
             });
 

@@ -279,7 +279,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend({
 
             this.appendElements($newElements);
             Craft.appendHeadHtml(response.data.headHtml);
-            Craft.appendFootHtml(response.data.footHtml);
+            Craft.appendBodyHtml(response.data.bodyHtml);
 
             if (this.elementSelect) {
                 this.elementSelect.addItems($newElements.filter(':not(.disabled)'));
@@ -324,9 +324,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend({
     },
 
     createElementEditor: function($element) {
-        Craft.createElementEditor($element.data('type'), $element, {
-            elementIndex: this.elementIndex
-        });
+        Craft.createElementEditor($element.data('type'), $element);
     },
 
     disable: function() {

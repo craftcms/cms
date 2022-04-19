@@ -175,7 +175,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
 
     createElementEditor: function($element) {
         Craft.createElementEditor($element.data('type'), $element, {
-            params: {
+            saveParams: {
                 includeTableAttributesForSource: this.elementIndex.sourceKey
             },
             onSaveElement: response => {
@@ -302,7 +302,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
                     }
 
                     Craft.appendHeadHtml(response.data.headHtml);
-                    Craft.appendFootHtml(response.data.footHtml);
+                    Craft.appendBodyHtml(response.data.bodyHtml);
                     Craft.cp.updateResponsiveTables();
 
                     this.setTotalVisible(totalVisible);

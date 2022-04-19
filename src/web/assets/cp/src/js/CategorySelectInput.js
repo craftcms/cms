@@ -42,14 +42,16 @@ Craft.CategorySelectInput = Craft.BaseElementSelectInput.extend({
             selectionLabel: this.settings.selectionLabel
         };
 
-        Craft.postActionRequest('elements/get-categories-input-html', data, (response, textStatus) => {
+        const onResponse = () => {
             this.modal.enable();
             this.modal.enableCancelBtn();
             this.modal.enableSelectBtn();
             this.modal.hideFooterSpinner();
-
-            if (textStatus === 'success') {
-                var $newInput = $(response.html),
+        };
+        Craft.sendActionRequest('POST', 'categories/input-html', {data})
+            .then((response) => {
+                onResponse();
+                var $newInput = $(response.data.html),
                     $newElementsContainer = $newInput.children('.elements');
 
                 this.$elementsContainer.replaceWith($newElementsContainer);
@@ -71,8 +73,10 @@ Craft.CategorySelectInput = Craft.BaseElementSelectInput.extend({
                 this.updateDisabledElementsInModal();
                 this.modal.hide();
                 this.onSelectElements(filteredElements);
-            }
-        });
+            })
+            .catch(({response}) => {
+                onResponse();
+            });
     },
 
     removeElement: function($element) {

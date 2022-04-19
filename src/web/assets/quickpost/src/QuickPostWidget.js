@@ -7,7 +7,7 @@
         formHtml: null,
         $widget: null,
         $form: null,
-        $spinner: null,
+        $saveBtn: null,
         $errorList: null,
         loading: false,
 
@@ -22,7 +22,7 @@
 
         initForm: function($form) {
             this.$form = $form;
-            this.$spinner = this.$form.find('.spinner');
+            this.$saveBtn = this.$form.find('button[type=submit]');
 
             this.initFields();
 
@@ -51,45 +51,48 @@
             }
 
             this.loading = true;
-            this.$spinner.removeClass('hidden');
+            this.$saveBtn.addClass('loading');
 
             var formData = Garnish.getPostData(this.$form),
                 data = $.extend({enabled: 1}, formData, this.params);
 
-            Craft.postActionRequest('entries/save-entry', data, (response, textStatus) => {
-                this.loading = false;
-                this.$spinner.addClass('hidden');
+            Craft.sendActionRequest('POST', 'entries/save-entry', {data})
+                .then((response) => {
+                    if (this.$errorList) {
+                        this.$errorList.children().remove();
+                    }
 
-                if (this.$errorList) {
-                    this.$errorList.children().remove();
-                }
+                    Craft.cp.displayNotice(Craft.t('app', 'Entry saved.'));
+                    callback(response.data);
+                })
+                .catch(({response}) => {
+                    if (this.$errorList) {
+                        this.$errorList.children().remove();
+                    }
 
-                if (textStatus === 'success') {
-                    if (response.success) {
-                        Craft.cp.displayNotice(Craft.t('app', 'Entry saved.'));
-                        callback(response);
-                    } else {
-                        Craft.cp.displayError(Craft.t('app', 'Couldn’t save entry.'));
+                    Craft.cp.displayError(Craft.t('app', 'Couldn’t save entry.'));
 
-                        if (response.errors) {
-                            if (!this.$errorList) {
-                                this.$errorList = $('<ul class="errors"/>').insertAfter(this.$form);
+                    if (response.data.errors) {
+                        if (!this.$errorList) {
+                            this.$errorList = $('<ul class="errors"/>').insertAfter(this.$form);
+                        }
+
+                        for (var attribute in response.data.errors) {
+                            if (!response.data.errors.hasOwnProperty(attribute)) {
+                                continue;
                             }
 
-                            for (var attribute in response.errors) {
-                                if (!response.errors.hasOwnProperty(attribute)) {
-                                    continue;
-                                }
-
-                                for (var i = 0; i < response.errors[attribute].length; i++) {
-                                    var error = response.errors[attribute][i];
-                                    $('<li>' + error + '</li>').appendTo(this.$errorList);
-                                }
+                            for (var i = 0; i < response.data.errors[attribute].length; i++) {
+                                var error = response.data.errors[attribute][i];
+                                $('<li>' + error + '</li>').appendTo(this.$errorList);
                             }
                         }
                     }
-                }
-            });
+                })
+                .finally(() => {
+                    this.loading = false;
+                    this.$saveBtn.removeClass('loading');
+                });
         },
 
         onSave: function(response) {
@@ -116,7 +119,7 @@
         },
 
         gotoEntry: function(response) {
-            // Redirect to the entry's edit URL
+            // Redirect to the entry’s edit URL
             Craft.redirectTo(response.cpEditUrl);
         }
     });

@@ -1,0 +1,56 @@
+<?php
+
+namespace yii\validators;
+
+class Validator
+{
+    /**
+     * @var string|null
+     */
+    public $message;
+
+    /**
+     * @var callable|null
+     */
+    public $isEmpty;
+
+    /**
+     * @param string|\Closure $type
+     * @param \yii\base\Model|\craft\base\ModelInterface $model
+     * @param string[]|string $attributes
+     * @param mixed[] $params
+     * @return static
+     */
+    public static function createValidator($type, $model, $attributes, $params = []) {}
+
+    /**
+     * @param \yii\base\Model|\craft\base\ModelInterface $model
+     * @param string[]|string|null $attributes
+     * @return void
+     */
+    public function validateAttributes($model, $attributes = null) {}
+
+    /**
+     * @param \yii\base\Model|\craft\base\ModelInterface $model
+     * @param string $attribute
+     * @return void
+     */
+    public function validateAttribute($model, $attribute) {}
+
+    /**
+     * @param \yii\base\Model|\craft\base\ModelInterface $model
+     * @param string $attribute
+     * @param string $message
+     * @param mixed[] $params
+     * @return void
+     */
+    public function addError($model, $attribute, $message, $params = []) {}
+}
+
+namespace yii\base;
+
+class Model {}
+
+namespace craft\base;
+
+interface ModelInterface {}

@@ -639,12 +639,12 @@
             // Show a spinner
             this.$typeSettingsContainer.html('<div class="zilch"><div class="spinner"></div></div>');
 
-            this.getFieldTypeSettings(type).then(({fresh, $settings, headHtml, footHtml}) => {
+            this.getFieldTypeSettings(type).then(({fresh, $settings, headHtml, bodyHtml}) => {
                 this.$typeSettingsContainer.html('').append($settings);
                 if (fresh) {
                     Craft.initUiElements($settings);
                     Craft.appendHeadHtml(headHtml);
-                    Craft.appendFootHtml(footHtml);
+                    Craft.appendBodyHtml(bodyHtml);
                 }
 
                 Garnish.$win.trigger('resize');
@@ -663,17 +663,17 @@
                     return;
                 }
 
-                this.configurator.getFieldTypeSettingsHtml(type).then(({settingsHtml, headHtml, footHtml}) => {
+                this.configurator.getFieldTypeSettingsHtml(type).then(({settingsHtml, headHtml, bodyHtml}) => {
                     settingsHtml = this.getParsedFieldTypeHtml(settingsHtml);
                     headHtml = this.getParsedFieldTypeHtml(headHtml);
-                    footHtml = this.getParsedFieldTypeHtml(footHtml);
+                    bodyHtml = this.getParsedFieldTypeHtml(bodyHtml);
                     let $settings = $('<div/>').html(settingsHtml);
                     this.initializedFieldTypeSettings[type] = $settings;
                     resolve({
                         fresh: true,
                         $settings: $settings,
                         headHtml: headHtml,
-                        footHtml: footHtml,
+                        bodyHtml: bodyHtml,
                     });
                 }).catch($.noop);
             });

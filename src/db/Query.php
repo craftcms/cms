@@ -10,6 +10,7 @@ namespace craft\db;
 use craft\base\ClonefixTrait;
 use craft\events\DefineBehaviorsEvent;
 use craft\helpers\ArrayHelper;
+use Illuminate\Support\Collection;
 use yii\base\Exception;
 use yii\db\Connection as YiiConnection;
 
@@ -27,18 +28,18 @@ class Query extends \yii\db\Query
      * @event \yii\base\Event The event that is triggered after the query's init cycle
      * @see init()
      */
-    const EVENT_INIT = 'init';
+    public const EVENT_INIT = 'init';
 
     /**
      * @event DefineBehaviorsEvent The event that is triggered when defining the class behaviors
      * @see behaviors()
      */
-    const EVENT_DEFINE_BEHAVIORS = 'defineBehaviors';
+    public const EVENT_DEFINE_BEHAVIORS = 'defineBehaviors';
 
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -50,7 +51,7 @@ class Query extends \yii\db\Query
     /**
      * @inheritdoc
      */
-    public function behaviors()
+    public function behaviors(): array
     {
         // Fire a 'defineBehaviors' event
         $event = new DefineBehaviorsEvent();
@@ -67,7 +68,7 @@ class Query extends \yii\db\Query
     public function isJoined(string $table): bool
     {
         foreach ($this->join as $join) {
-            if ($join[1] === $table || strpos($join[1], $table) === 0) {
+            if ($join[1] === $table || str_starts_with($join[1], $table)) {
                 return true;
             }
         }
@@ -78,7 +79,7 @@ class Query extends \yii\db\Query
     /**
      * @inheritdoc
      */
-    public function where($condition, $params = [])
+    public function where($condition, $params = []): static
     {
         if (!$condition) {
             $condition = null;
@@ -90,7 +91,7 @@ class Query extends \yii\db\Query
     /**
      * @inheritdoc
      */
-    public function andWhere($condition, $params = [])
+    public function andWhere($condition, $params = []): static
     {
         if (!$condition) {
             return $this;
@@ -102,7 +103,7 @@ class Query extends \yii\db\Query
     /**
      * @inheritdoc
      */
-    public function orWhere($condition, $params = [])
+    public function orWhere($condition, $params = []): static
     {
         if (!$condition) {
             return $this;
@@ -122,11 +123,11 @@ class Query extends \yii\db\Query
      * @return array the query results. If the query results in nothing, an empty array will be returned.
      * @throws Exception if less than two columns were selected
      */
-    public function pairs(YiiConnection $db = null): array
+    public function pairs(?YiiConnection $db = null): array
     {
         try {
             $rows = $this->createCommand($db)->queryAll();
-        } catch (QueryAbortedException $e) {
+        } catch (QueryAbortedException) {
             return [];
         }
 
@@ -146,20 +147,32 @@ class Query extends \yii\db\Query
     /**
      * @inheritdoc
      */
-    public function all($db = null)
+    public function all($db = null): array
     {
         try {
             return parent::all($db);
-        } catch (QueryAbortedException $e) {
+        } catch (QueryAbortedException) {
             return [];
         }
     }
 
     /**
-     * @inheritdoc
-     * @return mixed|null first row of the query result array, or `null` if there are no query results.
+     * Executes the query and returns all results as a collection.
+     *
+     * @param YiiConnection|null $db The database connection used to generate the SQL statement.
+     * If this parameter is not given, the `db` application component will be used.
+     * @return Collection A collection of the resulting elements.
+     * @since 4.0.0
      */
-    public function one($db = null)
+    public function collect(?YiiConnection $db = null): Collection
+    {
+        return Collection::make($this->all($db));
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function one($db = null): mixed
     {
         $limit = $this->limit;
         $this->limit = 1;
@@ -169,7 +182,7 @@ class Query extends \yii\db\Query
             if ($result === false) {
                 $result = null;
             }
-        } catch (QueryAbortedException $e) {
+        } catch (QueryAbortedException) {
             $result = null;
         }
         $this->limit = $limit;
@@ -179,13 +192,13 @@ class Query extends \yii\db\Query
     /**
      * @inheritdoc
      */
-    public function scalar($db = null)
+    public function scalar($db = null): bool|int|string|null
     {
         $limit = $this->limit;
         $this->limit = 1;
         try {
             $result = parent::scalar($db);
-        } catch (QueryAbortedException $e) {
+        } catch (QueryAbortedException) {
             $result = false;
         }
         $this->limit = $limit;
@@ -195,11 +208,11 @@ class Query extends \yii\db\Query
     /**
      * @inheritdoc
      */
-    public function column($db = null)
+    public function column($db = null): array
     {
         try {
             return parent::column($db);
-        } catch (QueryAbortedException $e) {
+        } catch (QueryAbortedException) {
             return [];
         }
     }
@@ -207,11 +220,11 @@ class Query extends \yii\db\Query
     /**
      * @inheritdoc
      */
-    public function exists($db = null)
+    public function exists($db = null): bool
     {
         try {
             return parent::exists($db);
-        } catch (QueryAbortedException $e) {
+        } catch (QueryAbortedException) {
             return false;
         }
     }
@@ -222,10 +235,10 @@ class Query extends \yii\db\Query
      * @param int $n The offset of the row to return. If [[offset]] is set, $offset will be added to it.
      * @param YiiConnection|null $db The database connection used to generate the SQL statement.
      * If this parameter is not given, the `db` application component will be used.
-     * @return array|null The row (in terms of an array) of the query result. Null is returned if the query
+     * @return mixed The row (in terms of an array) of the query result. Null is returned if the query
      * results in nothing.
      */
-    public function nth(int $n, YiiConnection $db = null)
+    public function nth(int $n, ?YiiConnection $db = null): mixed
     {
         $offset = $this->offset;
         $this->offset = ($offset ?: 0) + $n;
@@ -244,7 +257,7 @@ class Query extends \yii\db\Query
      * @see createCommand()
      * @see \yii\db\Command::getRawSql()
      */
-    public function getRawSql(YiiConnection $db = null): string
+    public function getRawSql(?YiiConnection $db = null): string
     {
         return $this->createCommand($db)->getRawSql();
     }
@@ -252,11 +265,11 @@ class Query extends \yii\db\Query
     /**
      * @inheritdoc
      */
-    protected function queryScalar($selectExpression, $db)
+    protected function queryScalar($selectExpression, $db): bool|string|null
     {
         try {
             return parent::queryScalar($selectExpression, $db);
-        } catch (QueryAbortedException $e) {
+        } catch (QueryAbortedException) {
             return false;
         }
     }

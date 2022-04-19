@@ -24,33 +24,33 @@ class UserGroup extends Model
     /**
      * @var int|null ID
      */
-    public $id;
+    public ?int $id = null;
 
     /**
      * @var string|null Name
      */
-    public $name;
+    public ?string $name = null;
 
     /**
      * @var string|null Handle
      */
-    public $handle;
+    public ?string $handle = null;
 
     /**
      * @var string|null Description
      * @since 3.5.0
      */
-    public $description;
+    public ?string $description = null;
 
     /**
      * @var string|null UID
      */
-    public $uid;
+    public ?string $uid = null;
 
     /**
      * @inheritdoc
      */
-    public function attributeLabels()
+    public function attributeLabels(): array
     {
         return [
             'handle' => Craft::t('app', 'Handle'),
@@ -73,9 +73,11 @@ class UserGroup extends Model
             'reservedWords' => [
                 'admins',
                 'all',
+                'credentialed',
                 'dateCreated',
                 'dateUpdated',
                 'id',
+                'inactive',
                 'new',
                 'title',
                 'uid',
@@ -126,7 +128,9 @@ class UserGroup extends Model
         ];
 
         if ($withPermissions && $this->id) {
-            $config['permissions'] = Craft::$app->getUserPermissions()->getPermissionsByGroupId($this->id);
+            $permissions = Craft::$app->getUserPermissions()->getPermissionsByGroupId($this->id);
+            sort($permissions);
+            $config['permissions'] = $permissions;
         }
 
         return $config;

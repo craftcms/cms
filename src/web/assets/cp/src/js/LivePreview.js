@@ -195,7 +195,7 @@ Craft.LivePreview = Garnish.Base.extend({
             this.slideIn();
         }
 
-        Garnish.on(Craft.BaseElementEditor, 'saveElement', this._forceUpdateIframeProxy);
+        Garnish.on(Craft.ElementEditorSlideout, 'submit', this._forceUpdateIframeProxy);
         Garnish.on(Craft.AssetImageEditor, 'save', this._forceUpdateIframeProxy);
 
         Craft.ElementThumbLoader.retryAll();
@@ -210,14 +210,12 @@ Craft.LivePreview = Garnish.Base.extend({
     },
 
     createToken: function() {
-        Craft.postActionRequest('live-preview/create-token', {
-            previewAction: this.settings.previewAction
-        }, (response, textStatus) => {
-            if (textStatus === 'success') {
-                this.token = response.token;
+        const data = {previewAction: this.settings.previewAction};
+        Craft.sendActionRequest('POST', 'live-preview/create-token', {data})
+            .then((response) => {
+                this.token = response.data.token;
                 this.enter();
-            }
-        });
+            });
     },
 
     save: function() {
@@ -278,7 +276,8 @@ Craft.LivePreview = Garnish.Base.extend({
             this.$previewContainer.hide();
         });
 
-        Garnish.off(Craft.BaseElementEditor, 'saveElement', this._forceUpdateIframeProxy);
+        Garnish.off(Craft.ElementEditorSlideout, 'submit', this._forceUpdateIframeProxy);
+        Garnish.off(Craft.AssetImageEditor, 'save', this._forceUpdateIframeProxy);
 
         Craft.ElementThumbLoader.retryAll();
 

@@ -1,0 +1,11 @@
+<?php
+
+namespace yii\web;
+
+class Request
+{
+    /**
+     * @return string|null
+     */
+    protected function loadCsrfToken() {}
+}

@@ -1,14 +1,14 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace crafttests\unit\validators;
 
-use Codeception\Test\Unit;
 use craft\test\mockclasses\models\ExampleModel;
+use craft\test\TestCase;
 use craft\validators\UriValidator;
 
 /**
@@ -18,30 +18,25 @@ use craft\validators\UriValidator;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class UriValidatorTest extends Unit
+class UriValidatorTest extends TestCase
 {
     /**
      * @var UriValidator
      */
-    protected $uriValidator;
+    protected UriValidator $uriValidator;
 
     /**
      * @var ExampleModel
      */
-    protected $model;
-    /*
-     * @var UnitTester
-     */
-    protected $tester;
+    protected ExampleModel $model;
 
     /**
      * @dataProvider validateValueDataProvider
-     *
-     * @param      $mustValidate
-     * @param      $input
-     * @param null $pattern
+     * @param bool $mustValidate
+     * @param mixed $input
+     * @param string|null $pattern
      */
-    public function testValidateValue($mustValidate, $input, $pattern = null)
+    public function testValidateValue(bool $mustValidate, mixed $input, string $pattern = null): void
     {
         if ($pattern) {
             $this->uriValidator->pattern = $pattern;
@@ -74,7 +69,7 @@ class UriValidatorTest extends Unit
     /**
      * @inheritdoc
      */
-    protected function _before()
+    protected function _before(): void
     {
         $this->model = new ExampleModel();
         $this->uriValidator = new UriValidator();

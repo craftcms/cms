@@ -10,6 +10,8 @@ namespace craft\controllers;
 use Craft;
 use craft\elements\User;
 use craft\web\Controller;
+use yii\base\InvalidRouteException;
+use yii\console\Exception;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
 use yii\web\ServerErrorHttpException;
@@ -26,12 +28,12 @@ class LivePreviewController extends Controller
     /**
      * @inheritdoc
      */
-    protected $allowAnonymous = ['preview'];
+    protected array|bool|int $allowAnonymous = ['preview'];
 
     /**
      * @inheritdoc
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         // Mark this as a Live Preview request
         if ($action->id === 'preview') {
@@ -78,16 +80,17 @@ class LivePreviewController extends Controller
      * @param string $previewAction
      * @param int $userId
      * @return mixed
-     * @throws \yii\web\BadRequestHttpException
-     * @throws \yii\base\InvalidRouteException
+     * @throws BadRequestHttpException
+     * @throws InvalidRouteException
      * @throws ServerErrorHttpException
-     * @throws \yii\console\Exception
+     * @throws Exception
      */
-    public function actionPreview(string $previewAction, int $userId)
+    public function actionPreview(string $previewAction, int $userId): mixed
     {
         $this->requireToken();
 
         // Switch the identity for this one request
+        /** @var User|null $user */
         $user = User::find()
             ->id($userId)
             ->status([User::STATUS_ACTIVE, User::STATUS_PENDING])

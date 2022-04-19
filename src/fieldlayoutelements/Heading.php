@@ -23,7 +23,7 @@ class Heading extends BaseUiElement
     /**
      * @var string The heading text
      */
-    public $heading;
+    public string $heading = '';
 
     /**
      * @inheritdoc
@@ -36,7 +36,7 @@ class Heading extends BaseUiElement
     /**
      * @inheritdoc
      */
-    protected function selectorIcon()
+    protected function selectorIcon(): ?string
     {
         return '@appicons/hash.svg';
     }
@@ -44,7 +44,7 @@ class Heading extends BaseUiElement
     /**
      * @inheritdoc
      */
-    public function settingsHtml()
+    protected function settingsHtml(): ?string
     {
         return Cp::textFieldHtml([
             'label' => Craft::t('app', 'Heading'),
@@ -57,7 +57,7 @@ class Heading extends BaseUiElement
     /**
      * @inheritdoc
      */
-    public function formHtml(ElementInterface $element = null, bool $static = false)
+    public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
         return Html::tag('h2', Html::encode(Craft::t('site', $this->heading)));
     }

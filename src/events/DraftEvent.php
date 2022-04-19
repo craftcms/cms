@@ -8,7 +8,6 @@
 namespace craft\events;
 
 use craft\base\ElementInterface;
-use craft\behaviors\DraftBehavior;
 use yii\base\Event;
 
 /**
@@ -20,33 +19,32 @@ use yii\base\Event;
 class DraftEvent extends Event
 {
     /**
-     * @var ElementInterface|null The canonical element
-     * @todo rename to canonical in v4
+     * @var ElementInterface The canonical element
      */
-    public $source;
+    public ElementInterface $canonical;
 
     /**
      * @var int The creator ID
      */
-    public $creatorId;
+    public int $creatorId;
 
     /**
      * @var bool Whether this is a provisional draft
      */
-    public $provisional = false;
+    public bool $provisional = false;
 
     /**
      * @var string|null The draft name
      */
-    public $draftName;
+    public ?string $draftName = null;
 
     /**
      * @var string|null The draft notes
      */
-    public $draftNotes;
+    public ?string $draftNotes = null;
 
     /**
-     * @var ElementInterface|DraftBehavior|null The draft associated with the event (if it exists yet)
+     * @var ElementInterface|null The draft associated with the event (if it exists yet)
      */
-    public $draft;
+    public ?ElementInterface $draft = null;
 }

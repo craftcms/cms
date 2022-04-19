@@ -23,31 +23,31 @@ class SlugValidator extends Validator
     /**
      * @var string|null The source attribute that auto-generated slugs should be based on. Set to null to skip validation for blank slugs.
      */
-    public $sourceAttribute = 'title';
+    public ?string $sourceAttribute = 'title';
 
     /**
      * @var bool|null Whether auto-generated slugs should be limited to ASCII characters. Defaults to the `limitAutoSlugsToAscii` config setting if left null.
      */
-    public $limitAutoSlugsToAscii;
+    public ?bool $limitAutoSlugsToAscii = null;
 
     /**
      * @var string|null The language to pull ASCII character mappings for, if [[limitAutoSlugsToAscii]] is enabled.
      * @since 3.1.9
      */
-    public $language;
+    public ?string $language = null;
 
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
-        if ($this->sourceAttribute !== null) {
+        if (isset($this->sourceAttribute)) {
             $this->skipOnEmpty = false;
         }
 
-        if ($this->limitAutoSlugsToAscii === null) {
+        if (!isset($this->limitAutoSlugsToAscii)) {
             $this->limitAutoSlugsToAscii = Craft::$app->getConfig()->getGeneral()->limitAutoSlugsToAscii;
         }
     }
@@ -55,7 +55,7 @@ class SlugValidator extends Validator
     /**
      * @inheritdoc
      */
-    public function validateAttribute($model, $attribute)
+    public function validateAttribute($model, $attribute): void
     {
         $slug = $originalSlug = (string)$model->$attribute;
         $isTemp = ElementHelper::isTempSlug($slug);
@@ -66,9 +66,9 @@ class SlugValidator extends Validator
             return;
         }
 
-        if (($slug === '' || $isTemp) && $this->sourceAttribute !== null) {
-            // Create a new slug for them, based on the element's title.
-            $slug = ElementHelper::generateSlug($model->{$this->sourceAttribute}, $this->limitAutoSlugsToAscii, $this->language);
+        if (($slug === '' || $isTemp) && isset($this->sourceAttribute)) {
+            // Create a new slug for them, based on the element’s title.
+            $slug = ElementHelper::generateSlug((string)$model->{$this->sourceAttribute}, $this->limitAutoSlugsToAscii, $this->language);
         } else {
             // Apply normal slug rules
             $slug = ElementHelper::normalizeSlug($slug);
@@ -76,7 +76,7 @@ class SlugValidator extends Validator
 
         if ($slug !== '') {
             $model->$attribute = $slug;
-        } else if (!$isTemp) {
+        } elseif (!$isTemp) {
             if ($originalSlug !== '') {
                 $this->addError($model, $attribute, Craft::t('yii', '{attribute} is invalid.'));
             } else {
@@ -88,7 +88,7 @@ class SlugValidator extends Validator
     /**
      * @inheritdoc
      */
-    protected function validateValue($value)
+    protected function validateValue($value): ?array
     {
         $value = (string)$value;
 

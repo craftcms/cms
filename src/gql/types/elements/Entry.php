@@ -8,7 +8,6 @@
 namespace craft\gql\types\elements;
 
 use craft\behaviors\DraftBehavior;
-use craft\behaviors\RevisionBehavior;
 use craft\elements\Entry as EntryElement;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
 use GraphQL\Type\Definition\ResolveInfo;
@@ -36,32 +35,20 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    protected function resolve($source, $arguments, $context, ResolveInfo $resolveInfo)
+    protected function resolve(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): mixed
     {
-        /** @var EntryElement $source */
+        /** @var EntryElement|DraftBehavior $source */
         $fieldName = $resolveInfo->fieldName;
 
-        switch ($fieldName) {
-            case 'sectionId':
-                return $source->sectionId;
-            case 'typeId':
-                return $source->typeId;
-            case 'sectionHandle':
-                return $source->getSection()->handle;
-            case 'typeHandle':
-                return $source->getType()->handle;
-            case 'draftName':
-            case 'draftNotes':
-                /** @var DraftBehavior|EntryElement $source */
-                return $source->getIsDraft() ? $source->{$fieldName} : null;
-            case 'draftCreator':
-                /** @var DraftBehavior|EntryElement $source */
-                return $source->getIsDraft() ? $source->getCreator() : null;
-            case 'revisionCreator':
-                /** @var RevisionBehavior|EntryElement $source */
-                return $source->getIsRevision() ? $source->getCreator() : null;
-        }
-
-        return parent::resolve($source, $arguments, $context, $resolveInfo);
+        return match ($fieldName) {
+            'sectionId' => $source->sectionId,
+            'typeId' => $source->getTypeId(),
+            'sectionHandle' => $source->getSection()->handle,
+            'typeHandle' => $source->getType()->handle,
+            'draftName', 'draftNotes' => $source->getIsDraft() ? $source->{$fieldName} : null,
+            'draftCreator' => $source->getIsDraft() ? $source->getCreator() : null,
+            'revisionCreator' => $source->getIsRevision() ? $source->getCreator() : null,
+            default => parent::resolve($source, $arguments, $context, $resolveInfo),
+        };
     }
 }

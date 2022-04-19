@@ -30,14 +30,14 @@ class ReplaceFile extends ElementAction
     /**
      * @inheritdoc
      */
-    public function getTriggerHtml()
+    public function getTriggerHtml(): ?string
     {
         $type = Json::encode(static::class);
 
         $js = <<<JS
 (() => {
     new Craft.ElementActionTrigger({
-        type: {$type},
+        type: $type,
         batch: false,
         validateSelection: function(\$selectedItems)
         {

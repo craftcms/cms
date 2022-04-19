@@ -30,7 +30,7 @@ class Mutation
     }
 
     /**
-     * @inheritdoc
+     * Returns the GraphQL type name.
      */
     public static function getName(): string
     {

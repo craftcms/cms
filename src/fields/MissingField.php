@@ -9,12 +9,14 @@ namespace craft\fields;
 
 use craft\base\ElementInterface;
 use craft\base\Field;
+use craft\base\FieldInterface;
 use craft\base\MissingComponentInterface;
 use craft\base\MissingComponentTrait;
 
 /**
  * MissingField represents a field with an invalid class.
  *
+ * @property class-string<FieldInterface> $expectedType
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
@@ -33,7 +35,7 @@ class MissingField extends Field implements MissingComponentInterface
     /**
      * @inheritdoc
      */
-    protected function inputHtml($value, ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
     {
         return $this->getPlaceholderHtml();
     }

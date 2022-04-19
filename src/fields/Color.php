@@ -44,7 +44,7 @@ class Color extends Field implements PreviewableFieldInterface
     /**
      * @var string|null The default color hex
      */
-    public $defaultColor;
+    public ?string $defaultColor = null;
 
     /**
      * @inheritdoc
@@ -55,7 +55,7 @@ class Color extends Field implements PreviewableFieldInterface
     }
 
     /** @inheritdoc */
-    public function getSettingsHtml()
+    public function getSettingsHtml(): ?string
     {
         return Cp::colorFieldHtml([
             'label' => Craft::t('app', 'Default Color'),
@@ -87,7 +87,7 @@ class Color extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function normalizeValue($value, ElementInterface $element = null)
+    public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
         if ($value instanceof ColorData) {
             return $value;
@@ -121,21 +121,21 @@ class Color extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    protected function inputHtml($value, ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
     {
         /** @var ColorData|null $value */
         return Craft::$app->getView()->renderTemplate('_includes/forms/color', [
             'id' => $this->getInputId(),
             'describedBy' => $this->describedBy,
             'name' => $this->handle,
-            'value' => $value ? $value->getHex() : null,
+            'value' => $value?->getHex(),
         ]);
     }
 
     /**
      * @inheritdoc
      */
-    public function getStaticHtml($value, ElementInterface $element): string
+    public function getStaticHtml(mixed $value, ElementInterface $element): string
     {
         /** @var ColorData|null $value */
         if (!$value) {
@@ -152,7 +152,7 @@ class Color extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function getTableAttributeHtml($value, ElementInterface $element): string
+    public function getTableAttributeHtml(mixed $value, ElementInterface $element): string
     {
         /** @var ColorData|null $value */
         if (!$value) {

@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\test\fixtures\elements;
@@ -28,7 +28,7 @@ use yii\test\FileFixtureTrait;
  * - `fields` – an array of custom field handles/values that should be set on the element
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since  3.6.0
+ * @since 3.6.0
  */
 abstract class BaseContentFixture extends DbFixture
 {
@@ -36,29 +36,30 @@ abstract class BaseContentFixture extends DbFixture
 
     /**
      * @var string The element type this is for
+     * @phpstan-var class-string<ElementInterface>
      */
-    public $elementType;
+    public string $elementType;
 
     /**
      * @var bool Whether to skip elements that can’t be found per the criteria in the [[$dataFile|data file]].
      *
      * If this is set to `false`, an exception will be thrown.
      */
-    public $skipMissingElements = true;
+    public bool $skipMissingElements = true;
 
     /**
      * @var ElementInterface[]|null[] The loaded elements
      */
-    private $_elements = [];
+    private array $_elements = [];
 
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
-        if ($this->elementType === null || !is_subclass_of($this->elementType, ElementInterface::class)) {
+        if (!isset($this->elementType) || !is_subclass_of($this->elementType, ElementInterface::class)) {
             throw new InvalidConfigException('$elementType must set to a valid element class name');
         }
     }
@@ -66,7 +67,7 @@ abstract class BaseContentFixture extends DbFixture
     /**
      * @inheritdoc
      */
-    public function load()
+    public function load(): void
     {
         foreach ($this->loadData($this->dataFile) as $key => $data) {
             $element = $this->findElement($data);
@@ -91,7 +92,7 @@ abstract class BaseContentFixture extends DbFixture
     /**
      * @inheritdoc
      */
-    public function unload()
+    public function unload(): void
     {
         $this->_elements = [];
     }

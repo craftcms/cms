@@ -11,6 +11,7 @@ use Craft;
 use craft\base\Model;
 use craft\behaviors\EnvAttributeParserBehavior;
 use craft\mail\transportadapters\Sendmail;
+use craft\mail\transportadapters\TransportAdapterInterface;
 use craft\validators\TemplateValidator;
 
 /**
@@ -24,56 +25,57 @@ class MailSettings extends Model
     /**
      * @var string|null The default email address that emails should be sent from
      */
-    public $fromEmail;
+    public ?string $fromEmail = null;
 
     /**
      * @var string|null The default Reply-To email address that emails should have
      * @since 3.4.0
      */
-    public $replyToEmail;
+    public ?string $replyToEmail = null;
 
     /**
      * @var string|null The default name that emails should be sent from
      */
-    public $fromName;
+    public ?string $fromName = null;
 
     /**
      * @var string|null The template that emails should be sent with
      */
-    public $template;
+    public ?string $template = null;
 
     /**
      * @var string|null The transport type that should be used
+     * @phpstan-var class-string<TransportAdapterInterface>|null
      */
-    public $transportType = Sendmail::class;
+    public ?string $transportType = Sendmail::class;
 
     /**
      * @var array|null The transport type’s settings
      */
-    public $transportSettings;
+    public ?array $transportSettings = null;
 
     /**
      * @inheritdoc
      */
-    public function behaviors()
+    protected function defineBehaviors(): array
     {
-        $behaviors = parent::behaviors();
-        $behaviors['parser'] = [
-            'class' => EnvAttributeParserBehavior::class,
-            'attributes' => [
-                'fromEmail',
-                'replyToEmail',
-                'fromName',
-                'template',
+        return [
+            'parser' => [
+                'class' => EnvAttributeParserBehavior::class,
+                'attributes' => [
+                    'fromEmail',
+                    'replyToEmail',
+                    'fromName',
+                    'template',
+                ],
             ],
         ];
-        return $behaviors;
     }
 
     /**
      * @inheritdoc
      */
-    public function attributeLabels()
+    public function attributeLabels(): array
     {
         return [
             'fromEmail' => Craft::t('app', 'System Email Address'),

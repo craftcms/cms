@@ -18,42 +18,42 @@ trait PluginTrait
     /**
      * @var string|null The plugin’s package name
      */
-    public $packageName;
+    public ?string $packageName = null;
 
     /**
      * @var string|null The plugin’s display name
      */
-    public $name;
+    public ?string $name = null;
 
     /**
-     * @var string|null The plugin’s schema version number
+     * @var string The plugin’s schema version number
      */
-    public $schemaVersion = '1.0.0';
+    public string $schemaVersion = '1.0.0';
 
     /**
      * @var string|null The plugin’s description
      */
-    public $description;
+    public ?string $description = null;
 
     /**
      * @var string|null The plugin developer’s name
      */
-    public $developer;
+    public ?string $developer = null;
 
     /**
      * @var string|null The plugin developer’s website URL
      */
-    public $developerUrl;
+    public ?string $developerUrl = null;
 
     /**
      * @var string|null The plugin developer’s support email
      */
-    public $developerEmail;
+    public ?string $developerEmail = null;
 
     /**
      * @var string|null The plugin’s documentation URL
      */
-    public $documentationUrl;
+    public ?string $documentationUrl = null;
 
     /**
      * @var string|null The plugin’s changelog URL.
@@ -82,45 +82,45 @@ trait PluginTrait
      * - For consistency and clarity, release notes should follow [keepachangelog.com](http://keepachangelog.com/), but it’s not enforced.
      * - Release notes can contain notes using the format `> {note} Some note`. `{warning}` and `{tip}` are also supported.
      */
-    public $changelogUrl;
+    public ?string $changelogUrl = null;
 
     /**
      * @var string|null The plugin’s download URL
      */
-    public $downloadUrl;
+    public ?string $downloadUrl = null;
 
     /**
      * @var string|null The translation category that this plugin’s translation messages should use. Defaults to the lowercased plugin handle.
      */
-    public $t9nCategory;
+    public ?string $t9nCategory = null;
 
     /**
      * @var string The language that the plugin’s messages were written in
      */
-    public $sourceLanguage = 'en-US';
+    public string $sourceLanguage = 'en-US';
 
     /**
      * @var bool Whether the plugin has a settings page in the control panel
      */
-    public $hasCpSettings = false;
+    public bool $hasCpSettings = false;
 
     /**
      * @var bool Whether the plugin has its own section in the control panel
      */
-    public $hasCpSection = false;
+    public bool $hasCpSection = false;
 
     /**
      * @var bool Whether the plugin is currently installed. (Will only be false when a plugin is currently being installed.)
      */
-    public $isInstalled = false;
+    public bool $isInstalled = false;
 
     /**
      * @var string The minimum required version the plugin has to be so it can be updated.
      */
-    public $minVersionRequired;
+    public string $minVersionRequired = '';
 
     /**
      * @var string The active edition.
      */
-    public $edition = 'standard';
+    public string $edition = 'standard';
 }
