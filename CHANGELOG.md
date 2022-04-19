@@ -64,6 +64,7 @@
 - Fixed a bug where some pending project config chanegs could be overlooked. ([#10865](https://github.com/craftcms/cms/issues/10865))
 - Fixed a JavaScript error that occurred when attempting to remove a UI element from a field layout. ([#10778](https://github.com/craftcms/cms/issues/10778))
 - Fixed a bug where every log message contained the full request context. ([#10903](https://github.com/craftcms/cms/issues/10903))
+- Fixed a bug where element index pages weren’t retaining the selected sort attribute and direction.
 
 ## 4.0.0-beta.4 - 2022-04-06
 

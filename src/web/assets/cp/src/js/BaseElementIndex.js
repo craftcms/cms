@@ -311,17 +311,6 @@ Craft.BaseElementIndex = Garnish.Base.extend({
             }
         }
 
-        if (queryParams.sort) {
-            const lastDashPos = queryParams.sort.lastIndexOf('-');
-            if (lastDashPos !== -1) {
-                const attr = queryParams.sort.substr(0, lastDashPos);
-                const dir = queryParams.sort.substr(lastDashPos + 1);
-                this.setSortAttribute(attr);
-                this.setSortDirection(dir);
-                this.storeSortAttributeAndDirection();
-            }
-        }
-
         // Initialize the Export button
         // ---------------------------------------------------------------------
 
@@ -337,6 +326,20 @@ Craft.BaseElementIndex = Garnish.Base.extend({
         // ---------------------------------------------------------------------
 
         this.selectDefaultSource();
+
+        // Select the default sort attribute/direction
+        // ---------------------------------------------------------------------
+
+        if (queryParams.sort) {
+            const lastDashPos = queryParams.sort.lastIndexOf('-');
+            if (lastDashPos !== -1) {
+                const attr = queryParams.sort.substr(0, lastDashPos);
+                const dir = queryParams.sort.substr(lastDashPos + 1);
+                this.setSortAttribute(attr);
+                this.setSortDirection(dir);
+                this.storeSortAttributeAndDirection();
+            }
+        }
 
         // Load the first batch of elements!
         // ---------------------------------------------------------------------
@@ -1001,6 +1004,8 @@ Craft.BaseElementIndex = Garnish.Base.extend({
         this.$sortMenuBtn.attr('data-icon', dir);
         this.$sortDirectionsList.find('a.sel').removeClass('sel');
         this.getSortDirectionOption(dir).addClass('sel');
+
+        this._setSortQueryParam();
     },
 
     _setSortQueryParam: function() {
@@ -1199,7 +1204,6 @@ Craft.BaseElementIndex = Garnish.Base.extend({
 
         this.setSortAttribute(sortAttr);
         this.setSortDirection(sortDir);
-        this._setSortQueryParam();
     },
 
     getDefaultSort: function() {
@@ -1619,7 +1623,6 @@ Craft.BaseElementIndex = Garnish.Base.extend({
         }
 
         this.storeSortAttributeAndDirection();
-        this._setSortQueryParam();
         this.updateElements();
     },
 
@@ -1652,7 +1655,6 @@ Craft.BaseElementIndex = Garnish.Base.extend({
                 var $firstOption = this.$sortAttributesList.find('a:not(.disabled):first')
                 this.setSortAttribute($firstOption.data('attr'));
                 this.setSortDirection('asc');
-                this._setSortQueryParam();
             }
         } else {
             $option.removeClass('disabled');
