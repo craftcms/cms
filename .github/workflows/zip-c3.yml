@@ -35,7 +35,7 @@ jobs:
         with:
           type: 'zip'
           filename: 'Craft-release.zip'
-          exclusions: 'craft-workspace/*'
+          path: 'craft-workspace'
 
       - name: Archive production artifacts
         uses: actions/upload-artifact@v3
