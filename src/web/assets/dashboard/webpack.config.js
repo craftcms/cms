@@ -3,10 +3,10 @@
 const {getConfig} = require('@craftcms/webpack');
 
 module.exports = getConfig({
-    context: __dirname,
-    config: {
-        entry: {
-            Dashboard: './Dashboard.js'
-        },
-    }
+  context: __dirname,
+  config: {
+    entry: {
+      Dashboard: './Dashboard.js',
+    },
+  },
 });

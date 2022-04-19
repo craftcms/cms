@@ -1,6 +1,6 @@
 name: Bug Report – Craft 4 Beta
 description: Report an issue or unexpected behavior pertaining to Craft 4 Beta
-title: "[4.x]: "
+title: '[4.x]: '
 labels:
   - bug
   - craft4
@@ -27,7 +27,6 @@ body:
 
 
         ### Actual behavior
-
 
     validations:
       required: true

@@ -1,7 +1,8 @@
 *.php
 *.md
+composer.lock
 src/web/assets/**/dist/*
 vendor/*
 lib/*
 cpresources/*
-composer.lock
+src/templates/*
