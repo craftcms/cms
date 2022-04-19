@@ -33,13 +33,11 @@ jobs:
       - name: debug2
         run: ls -al craft-workspace/.env
 
-      - name: debug3
-        run: cat craft-workspace/.env
-
       - name: Move .env
         run: sudo mv craft-workspace/.env.example craft-workspace/.env
 
-
+      - name: debug3
+        run: cat craft-workspace/.env
 
 #    runs-on: ubuntu-latest
 #    steps:
