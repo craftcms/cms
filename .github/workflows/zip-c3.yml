@@ -25,7 +25,7 @@ jobs:
           php_version: "7.2"
           dev: no
           php_extensions: pcre zip
-          command: create-project craftcms/craft craft-workspace
+          command: create-project craftcms/craft
 
       - name: debug
         run: cat .env
