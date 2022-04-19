@@ -1,0 +1,57 @@
+name: zip-c3
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+(.[0-9]+)?'
+jobs:
+
+  compress-files:
+    runs-on: ubuntu-latest
+
+    steps:
+      #- uses: actions/checkout@v2
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v2
+        with:
+          path: /tmp/composer-cache
+          key: ${{ runner.os }}-${{ hashFiles('**/composer.lock') }}
+
+      - uses: php-actions/composer@v6
+        with:
+          php_version: "7.2"
+          dev: no
+          command: composer create-project craftcms/craft ./craft-workspace
+
+
+
+#    runs-on: ubuntu-latest
+#    steps:
+#      - uses: actions/checkout@v2
+#      - name: Run script file
+#      run: |
+#        chmod +x ./public/scripts/test.sh
+#        ./public/scripts/test.sh
+
+
+
+#      shell: bash
+#      - uses: actions/checkout@master
+#      - name: Create Zip
+#        uses: thedoctor0/zip-release@master
+#        with:
+#          type: 'zip'
+#          filename: 'Craft-release.zip'
+#          exclusions: '*.git* /*node_modules/* .editorconfig'
+#  notify-slack:
+#    name: Notify Slack
+#    needs: [ ecs, codecept ]
+#    if: ${{ always() }}
+#    uses: craftcms/.github/.github/workflows/notify-slack.yml@v1
+#    with:
+#      success: ${{ needs.ecs.result == 'success' && needs.codecept.result == 'success' }}
+#      failure_text_prefix: <!subteam^SGFL9NKNZ>
+#    secrets:
+#      token: ${{ secrets.GITHUB_TOKEN }}
+#      slack_webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
