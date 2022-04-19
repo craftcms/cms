@@ -30,7 +30,13 @@ jobs:
       - name: Move .env
         run: mv craft-workspace/.env.example craft-workspace/.env
 
-      - name: debug
+      - name: debug1
+        run: ls -al craft-workspace/.env.example
+
+      - name: debug2
+        run: ls -al craft-workspace/.env
+
+      - name: debug3
         run: cat craft-workspace/.env
 
 
