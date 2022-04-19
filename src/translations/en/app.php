@@ -1349,7 +1349,7 @@ return [
     'TLS' => 'TLS',
     'Table Columns' => 'Table Columns',
     'Table' => 'Table',
-    'Table {name} sorted by {attribute}, {direction}' =>   'Table {name} sorted by {attribute}, {direction}',
+    'Table {name} sorted by {attribute}, {direction}' => 'Table {name} sorted by {attribute}, {direction}',
     'Tablet' => 'Tablet',
     'Tag Group' => 'Tag Group',
     'Tag Groups' => 'Tag Groups',

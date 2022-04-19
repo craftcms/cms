@@ -2245,72 +2245,67 @@ table {
     }
 
     thead {
-      th:not([data-orderable]),
+      th,
       td {
-        padding-top: 15px;
-        padding-bottom: 15px;
         width: auto;
         background-color: $grey050;
         cursor: default;
       }
 
-      th[data-orderable] {
-        position: relative;
+      th:not(.orderable),
+      td {
+        padding-top: 15px;
+        padding-bottom: 15px;
       }
 
       th {
         white-space: nowrap;
         vertical-align: middle;
 
-        button {
+        &.orderable {
           position: relative;
-          font: inherit;
-          width: 100%;
-          padding: 14px;
-
-          body.ltr & {
-            text-align: left;
-          }
-
-          body.rtl & {
-            text-align: right;
-          }
-        }
-
-        &[data-orderable] {
           padding-left: 0;
           padding-right: 0;
-        }
 
-        &.orderable:not(.ordered):hover {
-          background-color: $grey100;
-        }
+          &:not(.ordered):hover {
+            background-color: $grey100;
+          }
 
-        &.ordered {
-          background-color: $lightSelColor;
-        }
+          &.ordered {
+            background-color: $lightSelColor;
 
-        &.ordered {
-          & button {
+            &:not(.loading) {
+              button:after {
+                @include angle(up);
+                position: absolute;
+                @include right(10px);
+                top: calc(50% - 3px);
+              }
+
+              &.desc button:after {
+                transform: rotate(45deg);
+              }
+            }
+          }
+
+          button {
+            position: relative;
             @include padding-right(26px);
-          }
+            font: inherit;
+            width: 100%;
+            padding: 14px;
+            @include alignleft;
 
-          &:not(.loading) {
-            & button:after {
-              @include angle(up);
-              position: absolute;
-              @include right(10px);
-              top: calc(50% - 3px);
-            }
-
-            &.desc button:after {
-              transform: rotate(45deg);
+            &:focus {
+              z-index: 1;
             }
           }
         }
 
-        &:not(.loading) .spinner {
-          display: none;
+        &:not(.loading) {
+          .spinner {
+            display: none;
+          }
         }
 
         .spinner {

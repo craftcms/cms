@@ -30,10 +30,9 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
         this.initTableHeaders();
 
         // Add callback for after elements are updated
-        this.elementIndex.settings.onUpdateElements = () => {
-            this.$table.find('th [aria-pressed="true"]').focus();
+        this.elementIndex.on('updateElements', () => {
             this._updateScreenReaderStatus();
-        };
+        });
 
         // Create the Structure Table Sorter
         if (
@@ -61,30 +60,25 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
     },
 
     initTableHeaders: function() {
-        var selectedSortAttr = this.elementIndex.getSelectedSortAttribute(),
-            $tableHeaders = this.$table.children('thead').children().children('[data-attribute]');
+        const selectedSortAttr = this.elementIndex.getSelectedSortAttribute();
+        const $tableHeaders = this.$table.children('thead').children().children('[data-attribute]');
 
-        for (var i = 0; i < $tableHeaders.length; i++) {
-            var $header = $tableHeaders.eq(i),
-                attr = $header.attr('data-attribute');
-
+        for (let i = 0; i < $tableHeaders.length; i++) {
+            const $header = $tableHeaders.eq(i);
+            const attr = $header.attr('data-attribute');
             let sortValue = 'none';
 
             // Is this the selected sort attribute?
             if (attr === selectedSortAttr) {
                 this.$selectedSortHeader = $header;
-                var selectedSortDir = this.elementIndex.getSelectedSortDirection();
-
+                const selectedSortDir = this.elementIndex.getSelectedSortDirection();
                 sortValue = selectedSortDir === 'asc' ? 'ascending' : 'descending';
-
                 $header.addClass('ordered ' + selectedSortDir);
                 this.makeColumnSortable($header, true);
             } else {
                 // Is this attribute sortable?
-                var $sortAttribute = this.elementIndex.getSortAttributeOption(attr);
-
+                const $sortAttribute = this.elementIndex.getSortAttributeOption(attr);
                 if ($sortAttribute.length) {
-                    $header.addClass('orderable');
                     this.makeColumnSortable($header);
                 }
             }
@@ -94,14 +88,17 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
     },
 
     makeColumnSortable: function($header, sorted = false) {
-        const $headerText = $header.html();
+        $header.addClass('orderable');
+
+        const headerHtml = $header.html();
         const $instructions = this.$tableCaption.find('[data-sort-instructions]');
+        const $headerButton = $('<button/>', {
+            id: `${this.elementIndex.idPrefix}-${$header.attr('data-attribute')}`,
+            type: 'button',
+            'aria-pressed': 'false',
+        }).html(headerHtml);
 
-        $header.attr('data-orderable', true);
-
-        $headerButton = $('<button type="button" aria-pressed="false"></button>').html($headerText);
-
-        if ($instructions) {
+        if ($instructions.length) {
             $headerButton.attr('aria-describedby', $instructions.attr('id'));
         }
 
@@ -371,7 +368,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
             this.$selectedSortHeader.removeClass('ordered asc desc');
         }
 
-        $header.removeClass('orderable').addClass('ordered loading');
+        $header.addClass('ordered loading');
         this.elementIndex.storeSortAttributeAndDirection();
         this.elementIndex.updateElements();
 
