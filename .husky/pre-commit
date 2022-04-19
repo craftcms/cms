@@ -1,0 +1,7 @@
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+# Add to path for GUIs (Tower, etc.)
+PATH="/usr/local/bin:$PATH"
+
+npx lint-staged
