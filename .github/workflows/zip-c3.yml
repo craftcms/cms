@@ -27,6 +27,9 @@ jobs:
           php_extensions: pcre zip
           command: create-project craftcms/craft craft-workspace
 
+      - name: Move .env
+        run: mv .env.example .env
+
       - name: debug
         run: cat craft-workspace/.env
 
