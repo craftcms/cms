@@ -1,0 +1,4 @@
+*.php
+src/web/assets/**/dist/*
+vendor/*
+cpresources/*
