@@ -37,7 +37,7 @@ jobs:
         run: cat craft-workspace/.env
 
       - name: Move .env
-        run: mv craft-workspace/.env.example craft-workspace/.env
+        run: sudo mv craft-workspace/.env.example craft-workspace/.env
 
 
 
