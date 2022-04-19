@@ -8,7 +8,7 @@ on:
       - feature/zipgha
 jobs:
 
-  compress-files:
+  build-release:
     runs-on: ubuntu-latest
 
     steps:
@@ -24,7 +24,7 @@ jobs:
         with:
           php_version: "7.2"
           dev: no
-          command: composer create-project craftcms/craft ./craft-workspace
+          command: create-project craftcms/craft ./craft-workspace
 
 
 
