@@ -27,17 +27,23 @@ jobs:
           php_extensions: pcre zip
           command: create-project craftcms/craft craft-workspace
 
-      - name: debug1
-        run: ls -al craft-workspace/.env.example
-
-      - name: debug2
-        run: ls -al craft-workspace/.env
-
       - name: Move .env
         run: sudo mv craft-workspace/.env.example craft-workspace/.env
 
-      - name: debug3
-        run: cat craft-workspace/.env
+      - name: Create Zip
+        uses: thedoctor0/zip-release@master
+        with:
+          type: 'zip'
+          filename: 'Craft-release.zip'
+          exclusions: 'craft-workspace/*'
+
+      - name: Archive production artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: craft-release
+          path: |
+            Craft-release.zip
+
 
 #    runs-on: ubuntu-latest
 #    steps:
