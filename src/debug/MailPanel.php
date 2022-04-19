@@ -76,7 +76,7 @@ class MailPanel extends \yii\debug\panels\MailPanel
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function save(): array
     {
@@ -84,7 +84,7 @@ class MailPanel extends \yii\debug\panels\MailPanel
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function getMessagesFileName(): array
     {

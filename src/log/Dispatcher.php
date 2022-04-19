@@ -10,6 +10,7 @@ namespace craft\log;
 use Craft;
 use craft\helpers\App;
 use Illuminate\Support\Collection;
+use Psr\Log\LogLevel;
 
 /**
  * Class Dispatcher
@@ -66,23 +67,17 @@ class Dispatcher extends \yii\log\Dispatcher
             static::TARGET_QUEUE,
         ])->mapWithKeys(function($name) {
             $config = $this->monologTargetConfig + [
-                    'name' => $name,
-                    'enabled' => false,
-                    'extractExceptionTrace' => !App::devMode(),
-                    'allowLineBreaks' => App::devMode(),
-                ];
+                'name' => $name,
+                'enabled' => false,
+                'extractExceptionTrace' => !App::devMode(),
+                'allowLineBreaks' => App::devMode(),
+                'level' => App::devMode() ? LogLevel::INFO : LogLevel::WARNING,
+            ];
 
             return [$name => new MonologTarget($config)];
         });
 
-        // Enabled via QueueLogBehavior
-        if (!App::devMode()) {
-            $queueTarget = $targets->get(static::TARGET_QUEUE);
-            // TODO: Ask about except/levels
-            $queueTarget->except = ['yii\*'];
-            $queueTarget->setLevels(['info', 'warning', 'error']);
-        }
-
+        // Queue is enabled via QueueLogBehavior
         if ($isConsoleRequest) {
             $targets->get(static::TARGET_CONSOLE)->enabled = true;
         } else {

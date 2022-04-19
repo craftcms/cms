@@ -233,7 +233,7 @@ class Local extends Fs implements LocalFsInterface
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function read(string $path): string
     {
@@ -245,7 +245,7 @@ class Local extends Fs implements LocalFsInterface
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function write(string $path, string $contents, array $config = []): void
     {
