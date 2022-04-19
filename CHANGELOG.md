@@ -65,6 +65,7 @@
 - Fixed a JavaScript error that occurred when attempting to remove a UI element from a field layout. ([#10778](https://github.com/craftcms/cms/issues/10778))
 - Fixed a bug where every log message contained the full request context. ([#10903](https://github.com/craftcms/cms/issues/10903))
 - Fixed a bug where element index pages weren’t retaining the selected sort attribute and direction.
+- Fixed a bug where Single section entries weren’t getting a Post Date set automatically when initially created. ([#10939](https://github.com/craftcms/cms/issues/10939))
 
 ## 4.0.0-beta.4 - 2022-04-06
 
