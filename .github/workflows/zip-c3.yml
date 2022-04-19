@@ -28,7 +28,7 @@ jobs:
           command: create-project craftcms/craft craft-workspace
 
       - name: Move .env
-        run: mv .env.example .env
+        run: mv craft-workspace/.env.example craft-workspace/.env
 
       - name: debug
         run: cat craft-workspace/.env
