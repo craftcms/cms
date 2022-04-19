@@ -27,6 +27,9 @@ jobs:
           php_extensions: pcre zip
           command: create-project craftcms/craft craft-workspace
 
+      - name: debug
+        run: cat .env
+
 
 
 #    runs-on: ubuntu-latest
