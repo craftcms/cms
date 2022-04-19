@@ -24,7 +24,7 @@ jobs:
         with:
           php_version: "7.2"
           dev: no
-          php_extensions: dom json mbstring openssl prce pdo zip
+          php_extensions: prce zip
           command: create-project craftcms/craft craft-workspace
 
 
