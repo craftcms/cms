@@ -846,7 +846,8 @@ class UserQuery extends ElementQuery
 
         // TODO: cleanup after next breakpoint
         if (version_compare(Craft::$app->getInfo()->schemaVersion, '4.0.0', '>=')) {
-            $this->leftJoin(['authenticator' => Table::AUTH_AUTHENTICATOR], '[[authenticator.userId]] = [[users.id]]');
+            $this->query->leftJoin(['authenticator' => Table::AUTH_AUTHENTICATOR], '[[authenticator.userId]] = [[users.id]]');
+            $this->subQuery->leftJoin(['authenticator' => Table::AUTH_AUTHENTICATOR], '[[authenticator.userId]] = [[users.id]]');
             $this->query->addSelect([
                 'authenticator.authenticatorSecret',
                 'authenticator.authenticatorTimestamp',
