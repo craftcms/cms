@@ -2247,48 +2247,65 @@ table {
     thead {
       th,
       td {
-        padding-top: 15px;
-        padding-bottom: 15px;
         width: auto;
         background-color: $grey050;
         cursor: default;
       }
 
+      th:not(.orderable),
+      td {
+        padding-top: 15px;
+        padding-bottom: 15px;
+      }
+
       th {
         white-space: nowrap;
+        vertical-align: middle;
 
-        &.orderable:not(.ordered):hover {
-          background-color: $grey100;
-        }
-
-        &.ordered {
-          background-color: $lightSelColor;
-        }
-
-        &.ordered {
+        &.orderable {
           position: relative;
-          @include padding-right(26px);
+          padding-left: 0;
+          padding-right: 0;
 
-          &:first-child {
-            @include padding-left(10px);
+          &:not(.ordered):hover {
+            background-color: $grey100;
           }
 
-          &:not(.loading) {
-            &:after {
-              @include angle(up);
-              position: absolute;
-              @include right(10px);
-              top: calc(50% - 3px);
-            }
+          &.ordered {
+            background-color: $lightSelColor;
 
-            &.desc:after {
-              transform: rotate(45deg);
+            &:not(.loading) {
+              button:after {
+                @include angle(up);
+                position: absolute;
+                @include right(10px);
+                top: calc(50% - 3px);
+              }
+
+              &.desc button:after {
+                transform: rotate(45deg);
+              }
+            }
+          }
+
+          button {
+            position: relative;
+            @include padding-right(26px);
+            font: inherit;
+            width: 100%;
+            padding: 14px;
+            @include alignleft;
+
+            &:focus {
+              z-index: 1;
             }
           }
         }
 
-        &:not(.loading) .spinner {
-          display: none;
+        &:not(.loading) {
+          .spinner {
+            display: none;
+          }
         }
 
         .spinner {

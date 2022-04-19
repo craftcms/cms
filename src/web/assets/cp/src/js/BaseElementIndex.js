@@ -6,6 +6,7 @@
 Craft.BaseElementIndex = Garnish.Base.extend({
     initialized: false,
     elementType: null,
+    idPrefix: null,
 
     instanceState: null,
     sourceStates: null,
@@ -94,6 +95,11 @@ Craft.BaseElementIndex = Garnish.Base.extend({
         this.elementType = elementType;
         this.$container = $container;
         this.setSettings(settings, Craft.BaseElementIndex.defaults);
+
+        // Define an ID prefix that can be used for dynamically created elements
+        // ---------------------------------------------------------------------
+
+        this.idPrefix = Craft.randomString(10);
 
         // Set the state objects
         // ---------------------------------------------------------------------
@@ -966,7 +972,7 @@ Craft.BaseElementIndex = Garnish.Base.extend({
             this.$sortAttributesList.find('a.sel').removeClass('sel');
             $option.addClass('sel');
 
-            var label = $option.text();
+            const label = this.getSortLabel(attr);
             this.$sortMenuBtn.attr('title', Craft.t('app', 'Sort by {attribute}', {attribute: label}));
             this.$sortMenuBtn.text(label);
 
@@ -982,6 +988,14 @@ Craft.BaseElementIndex = Garnish.Base.extend({
                 this.$sortDirectionsList.find('a').removeClass('disabled');
             }
         }
+    },
+
+    getSortLabel: function(attr) {
+        const $option = this.getSortAttributeOption(attr);
+
+        if (!$option.length) return;
+
+        return $option.text();
     },
 
     getSortDirectionOption: function(dir) {
@@ -1745,6 +1759,9 @@ Craft.BaseElementIndex = Garnish.Base.extend({
             this.actions = this.actionsHeadHtml = this.actionsBodyHtml = this._$triggers = null;
         }
 
+        // Capture the focused element, in case it's about to get removed from the DOM
+        const activeElement = document.activeElement;
+
         // Update the count text
         // -------------------------------------------------------------
 
@@ -1896,6 +1913,13 @@ Craft.BaseElementIndex = Garnish.Base.extend({
             checkboxMode: !!this.actions,
             onSelectionChange: this._handleSelectionChange.bind(this)
         });
+
+        // Refocus the previously-focused element
+        // -------------------------------------------------------------
+
+        if (activeElement && activeElement.id && !document.body.contains(activeElement)) {
+            $(`#${activeElement.id}`).focus();
+        }
 
         // Auto-select elements
         // -------------------------------------------------------------
