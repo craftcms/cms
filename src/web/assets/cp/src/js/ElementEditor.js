@@ -15,6 +15,7 @@ Craft.ElementEditor = Garnish.Base.extend({
     $spinner: null,
     $expandSiteStatusesBtn: null,
     $statusIcon: null,
+    $previewBtn: null,
 
     $editMetaBtn: null,
     metaHud: null,
@@ -95,6 +96,7 @@ Craft.ElementEditor = Garnish.Base.extend({
 
         this.$revisionBtn = this.$container.find('.context-btn');
         this.$revisionLabel = this.$container.find('.revision-label');
+        this.$previewBtn = this.$container.find('.preview-btn');
 
         const $spinnerContainer = this.isFullPage ? $('#page-title') : this.slideout.$toolbar;
         this.$spinner = $('<div/>', {
@@ -117,7 +119,7 @@ Craft.ElementEditor = Garnish.Base.extend({
 
         if (this.settings.previewTargets.length && this.isFullPage) {
             if (this.settings.enablePreview) {
-                this.addListener(this.$container.find('.preview-btn'), 'click', 'openPreview');
+                this.addListener(this.$previewBtn, 'click', 'openPreview');
             }
 
             const $previewBtnContainer = this.$container.find('.preview-btn-container');

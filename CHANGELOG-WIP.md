@@ -26,6 +26,7 @@
 - Added the “Deactivate users by default” user registration setting, which replaces “Suspend users by default”. ([#5830](https://github.com/craftcms/cms/issues/5830))
 - Element source settings are now stored in the project config. ([#8616](https://github.com/craftcms/cms/discussions/8616))
 - Improved element index table accessibility for screen readers. ([#10629](https://github.com/craftcms/cms/pull/10629))
+- Improved Live Preview accessibility for screen readers. ([#10688](https://github.com/craftcms/cms/pull/10688))
 - Added support for `JSON` columns. ([#9089](https://github.com/craftcms/cms/pull/9089))
 - It’s now possible to edit images’ focal points from their preview modals. ([#8489](https://github.com/craftcms/cms/discussions/8489))
 - Added support for Monolog and the PSR-3 logging interface. ([#10659](https://github.com/craftcms/cms/pull/10659))

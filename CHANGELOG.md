@@ -26,6 +26,7 @@
 
 ### Changed
 - Improved element index table accessibility for screen readers. ([#10629](https://github.com/craftcms/cms/pull/10629))
+- Improved Live Preview accessibility for screen readers. ([#10688](https://github.com/craftcms/cms/pull/10688))
 - Volumes’ Asset Filesystem and Transform Filesystem settings are now automatically updated when a filesystem’s handle changes, if they reference the filesystem’s handle directly. ([#10885](https://github.com/craftcms/cms/issues/10885))
 - Volumes’ Asset Filesystem settings no longer list filesystems already in use by other volumes.
 - Element conditions stored in the project config can now contain relational field rule types which specify a related element via its ID, possibly identified by an environment variable. ([#10554](https://github.com/craftcms/cms/pull/10554))

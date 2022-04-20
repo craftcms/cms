@@ -1306,6 +1306,7 @@ return [
     'Sites' => 'مواقع',
     'Size' => 'الحجم',
     'Skip to content' => 'Skip to content',
+    'Skip to {title}' => 'Skip to {title}',
     'Skipped files' => 'الملفات التي تم تخطيها',
     'Slug' => 'الجزء المعرّف',
     'Some categories restored.' => 'تم استعادة بعض الفئات.',

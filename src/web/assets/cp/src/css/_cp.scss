@@ -51,6 +51,7 @@ body {
 
 .skip-link {
   position: absolute;
+  margin: 5px;
   left: -10000px;
   top: auto;
   width: 1px;
@@ -59,7 +60,8 @@ body {
   z-index: $sidebarZIndex + 1;
 
   &:focus {
-    left: 0;
+    left: unset;
+    @include left(0);
     width: auto;
     height: auto;
     background-color: $grey100 !important;
