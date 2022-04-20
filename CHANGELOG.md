@@ -67,6 +67,7 @@
 - Fixed a bug where every log message contained the full request context. ([#10903](https://github.com/craftcms/cms/issues/10903))
 - Fixed a bug where element index pages weren’t retaining the selected sort attribute and direction.
 - Fixed a bug where Single section entries weren’t getting a Post Date set automatically when initially created. ([#10939](https://github.com/craftcms/cms/issues/10939))
+- Fixed a bug where entries weren’t getting created for the currently-selected site. ([#10938](https://github.com/craftcms/cms/issues/10938))
 
 ## 4.0.0-beta.4 - 2022-04-06
 

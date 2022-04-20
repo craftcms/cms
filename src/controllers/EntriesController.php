@@ -58,14 +58,22 @@ class EntriesController extends BaseEntriesController
             throw new BadRequestHttpException("Invalid section handle: $sectionHandle");
         }
 
-        $site = Cp::requestedSite();
+        $sitesService = Craft::$app->getSites();
+        $siteId = $this->request->getBodyParam('siteId');
 
-        if (!$site) {
-            throw new ForbiddenHttpException('User not authorized to edit content in any sites.');
+        if ($siteId) {
+            $site = $sitesService->getSiteById($siteId);
+            if (!$site) {
+                throw new BadRequestHttpException("Invalid site ID: $siteId");
+            }
+        } else {
+            $site = Cp::requestedSite();
+            if (!$site) {
+                throw new ForbiddenHttpException('User not authorized to edit content in any sites.');
+            }
         }
 
         $editableSiteIds = $this->editableSiteIds($section);
-        $sitesService = Craft::$app->getSites();
 
         if (!in_array($site->id, $editableSiteIds)) {
             // If there’s more than one possibility and entries doesn’t propagate to all sites, let the user choose
