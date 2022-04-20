@@ -147,7 +147,7 @@ class ElementQueryConditionBuilder extends Component
         /** @var \ArrayObject $fieldNodes */
         $fieldNodes = $this->_resolveInfo->fieldNodes;
 
-        if ($fieldNodes->count() === 0) {
+        if ($fieldNodes->count() === 0 || empty($fieldNodes[0])) {
             return [];
         }
 
