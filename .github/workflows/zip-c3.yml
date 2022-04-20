@@ -4,8 +4,6 @@ on:
   push:
     tags:
       - '[0-9]+.[0-9]+.[0-9]+.?[0-9]?'
-    branches:
-      - feature/zipgha
 jobs:
 
   build-release:
@@ -56,13 +54,13 @@ jobs:
       - name: Add zip to archive
         uses: actions/upload-artifact@v3
         with:
-          name: craft-zip-release
+          name: Craft-${{github.ref_name}}.zip
           path: Craft-${{github.ref_name}}.zip
 
       - name: Add tar.gz to archive
         uses: actions/upload-artifact@v3
         with:
-          name: craft-tar-release
+          name: Craft-${{github.ref_name}}.tar.gz
           path: Craft-${{github.ref_name}}.tar.gz
 
       - name: Debug
