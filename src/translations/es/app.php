@@ -269,6 +269,7 @@ return [
     'Clear all' => 'Borrar Todos',
     'Clear caches' => 'Borrar cachés',
     'Clear' => 'Borrar',
+    'Clear search' => 'Clear search',
     'Clearing cache:' => 'Borrando caché:',
     'Close Preview' => 'Cerrar vista previa',
     'Close' => 'Cerrar',
