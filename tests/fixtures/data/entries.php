@@ -11,6 +11,8 @@ return [
         'sectionId' => '1000',
         'typeId' => '1000',
         'title' => 'Theories of life',
+        'plainTextField' => 'foo',
+        'appointments' => [['col1' => 'foo', 'col2' => '2019-06-25 07:00:00', 'col3' => '7', 'col4' => '1']],
     ],
 
     // Deleted
@@ -19,21 +21,27 @@ return [
         'sectionId' => '1000',
         'typeId' => '1000',
         'title' => 'Deleted today',
-        'dateDeleted' => (new DateTime('now'))->format('Y-m-d H:i:s')
+        'dateDeleted' => (new DateTime('now'))->format('Y-m-d H:i:s'),
+        'plainTextField' => 'foo',
+        'appointments' => [['col1' => 'foo', 'col2' => '2019-06-25 07:00:00', 'col3' => '7', 'col4' => '1']],
     ],
     [
         'authorId' => '1',
         'sectionId' => '1000',
         'typeId' => '1000',
         'title' => 'Deleted 40 days ago',
-        'dateDeleted' => (new DateTime('now'))->sub(new DateInterval('P40D'))->format('Y-m-d H:i:s')
+        'dateDeleted' => (new DateTime('now'))->sub(new DateInterval('P40D'))->format('Y-m-d H:i:s'),
+        'plainTextField' => 'foo',
+        'appointments' => [['col1' => 'foo', 'col2' => '2019-06-25 07:00:00', 'col3' => '7', 'col4' => '1']],
     ],
     [
         'authorId' => '1',
         'sectionId' => '1000',
         'typeId' => '1000',
         'title' => 'Deleted 25 days ago',
-        'dateDeleted' => (new DateTime('now'))->sub(new DateInterval('P25D'))->format('Y-m-d H:i:s')
+        'dateDeleted' => (new DateTime('now'))->sub(new DateInterval('P25D'))->format('Y-m-d H:i:s'),
+        'plainTextField' => 'foo',
+        'appointments' => [['col1' => 'foo', 'col2' => '2019-06-25 07:00:00', 'col3' => '7', 'col4' => '1']],
     ],
 
     [
@@ -53,25 +61,25 @@ return [
         'authorId' => '1',
         'sectionId' => '1003',
         'typeId' => '1003',
-        'title' => 'Pending 1'
+        'title' => 'Pending 1',
     ],
     [
         'authorId' => '1',
         'sectionId' => '1003',
         'typeId' => '1003',
-        'title' => 'Pending 2'
+        'title' => 'Pending 2',
     ],
     [
         'authorId' => '1',
         'sectionId' => '1004',
         'typeId' => '1004',
-        'title' => 'With versioning'
+        'title' => 'With versioning',
     ],
     [
         'authorId' => '1',
         'sectionId' => '1005',
         'typeId' => '1005',
-        'title' => 'Single entry'
+        'title' => 'Single entry',
     ],
 
 ];

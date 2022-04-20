@@ -18,12 +18,12 @@ use craft\gql\base\RelationArgumentHandler;
  */
 class RelatedAssets extends RelationArgumentHandler
 {
-    protected $argumentName = 'relatedToAssets';
+    protected string $argumentName = 'relatedToAssets';
 
     /**
      * @inheritdoc
      */
-    protected function handleArgument($argumentValue)
+    protected function handleArgument($argumentValue): mixed
     {
         $argumentValue = parent::handleArgument($argumentValue);
         return $this->getIds(Asset::class, $argumentValue);

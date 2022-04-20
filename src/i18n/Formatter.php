@@ -25,42 +25,42 @@ class Formatter extends \yii\i18n\Formatter
     /**
      * @var array The locale’s date/time formats.
      */
-    public $dateTimeFormats;
+    public array $dateTimeFormats;
 
     /**
      * @var array|null The localized "stand alone" month names.
      */
-    public $standAloneMonthNames;
+    public ?array $standAloneMonthNames = null;
 
     /**
      * @var array|null The localized month names.
      */
-    public $monthNames;
+    public ?array $monthNames = null;
 
     /**
      * @var array|null The localized "stand alone" day of the week names.
      */
-    public $standAloneWeekDayNames;
+    public ?array $standAloneWeekDayNames = null;
 
     /**
      * @var array|null The localized day of the week names.
      */
-    public $weekDayNames;
+    public ?array $weekDayNames = null;
 
     /**
      * @var string|null The localized AM name.
      */
-    public $amName;
+    public ?string $amName = null;
 
     /**
      * @var string|null The localized PM name.
      */
-    public $pmName;
+    public ?string $pmName = null;
 
     /**
      * @var array|null The locale's currency symbols.
      */
-    public $currencySymbols;
+    public ?array $currencySymbols = null;
 
     /**
      * @inheritdoc
@@ -84,11 +84,7 @@ class Formatter extends \yii\i18n\Formatter
             return $this->_formatDateTimeValueWithPhpFormat($value, substr($format, 4), 'date');
         }
 
-        if (Craft::$app->getI18n()->getIsIntlLoaded()) {
-            return parent::asDate($value, $format);
-        }
-
-        return $this->_formatDateTimeValue($value, $format, 'date');
+        return parent::asDate($value, $format);
     }
 
     /**
@@ -113,11 +109,7 @@ class Formatter extends \yii\i18n\Formatter
             return $this->_formatDateTimeValueWithPhpFormat($value, substr($format, 4), 'time');
         }
 
-        if (Craft::$app->getI18n()->getIsIntlLoaded()) {
-            return parent::asTime($value, $format);
-        }
-
-        return $this->_formatDateTimeValue($value, $format, 'time');
+        return parent::asTime($value, $format);
     }
 
     /**
@@ -142,11 +134,7 @@ class Formatter extends \yii\i18n\Formatter
             return $this->_formatDateTimeValueWithPhpFormat($value, substr($format, 4), 'datetime');
         }
 
-        if (Craft::$app->getI18n()->getIsIntlLoaded()) {
-            return parent::asDatetime($value, $format);
-        }
-
-        return $this->_formatDateTimeValue($value, $format, 'datetime');
+        return parent::asDatetime($value, $format);
     }
 
     /**
@@ -175,7 +163,7 @@ class Formatter extends \yii\i18n\Formatter
      * @throws InvalidConfigException if the date format is invalid.
      * @see datetimeFormat
      */
-    public function asTimestamp($value, string $format = null, bool $withPreposition = false): string
+    public function asTimestamp($value, ?string $format = null, bool $withPreposition = false): string
     {
         /** @var DateTime $timestamp */
         /** @var bool $hasTimeInfo */
@@ -198,7 +186,7 @@ class Formatter extends \yii\i18n\Formatter
 
         // If it were up to 7 days ago, display the weekday name.
         if (DateTimeHelper::isWithinLast($timestamp, '7 days')) {
-            $day = $timestamp->format('w');
+            $day = (int)$timestamp->format('w');
             $dayName = Craft::$app->getLocale()->getWeekDayName($day);
             return $withPreposition ? Craft::t('app', 'on {day}', ['day' => $dayName]) : $dayName;
         }
@@ -209,10 +197,21 @@ class Formatter extends \yii\i18n\Formatter
     }
 
     /**
+     * @inheritdoc
+     */
+    public function asPercent($value, $decimals = null, $options = [], $textOptions = []): string
+    {
+        if (empty($value)) {
+            $value = 0;
+        } elseif ($decimals === null && is_numeric($value)) {
+            $decimals = strpos(strrev((string)($value * 100)), '.') ?: 0;
+        }
+
+        return parent::asPercent($value, $decimals, $options, $textOptions);
+    }
+
+    /**
      * Formats the value as a currency number.
-     *
-     * This function does not requires the [PHP intl extension](https://php.net/manual/en/book.intl.php) to be installed
-     * to work but it is highly recommended to install it to get good formatting results.
      *
      * @param mixed $value the value to be formatted.
      * @param string|null $currency the 3-letter ISO 4217 currency code indicating the currency to use.
@@ -224,48 +223,24 @@ class Formatter extends \yii\i18n\Formatter
      * @throws InvalidArgumentException if the input value is not numeric.
      * @throws InvalidConfigException if no currency is given and [[currencyCode]] is not defined.
      */
-    public function asCurrency($value, $currency = null, $options = [], $textOptions = [], $stripZeros = false): string
+    public function asCurrency($value, $currency = null, $options = [], $textOptions = [], bool $stripZeros = false): string
     {
         $omitDecimals = ($stripZeros && (int)$value == $value);
 
-        if (Craft::$app->getI18n()->getIsIntlLoaded()) {
-            if ($omitDecimals) {
-                $options[NumberFormatter::MAX_FRACTION_DIGITS] = 0;
-                $options[NumberFormatter::MIN_FRACTION_DIGITS] = 0;
-            }
-
-            return parent::asCurrency($value, $currency, $options, $textOptions);
+        if ($omitDecimals) {
+            $options[NumberFormatter::MAX_FRACTION_DIGITS] = 0;
+            $options[NumberFormatter::MIN_FRACTION_DIGITS] = 0;
         }
 
-        // Code adapted from \yii\i18n\Formatter
-        if ($value === null) {
-            return $this->nullDisplay;
-        }
-
-        $value = $this->normalizeNumericValue($value);
-
-        if ($currency === null) {
-            if ($this->currencyCode === null) {
-                throw new InvalidConfigException('The default currency code for the formatter is not defined.');
-            }
-
-            $currency = $this->currencyCode;
-        }
-
-        // Do we have a localized symbol for this currency?
-        if (isset($this->currencySymbols[$currency])) {
-            $currency = $this->currencySymbols[$currency];
-        }
-
-        $decimals = $omitDecimals ? 0 : 2;
-
-        return $currency . $this->asDecimal($value, $decimals, $options, $textOptions);
+        return parent::asCurrency($value, $currency, $options, $textOptions);
     }
 
     /**
      * @inheritdoc
+     * @param string|DateTime|null $value
+     * @return string
      */
-    public function asText($value)
+    public function asText($value): string
     {
         if ($value instanceof DateTime) {
             return $this->asDatetime($value);
@@ -278,7 +253,7 @@ class Formatter extends \yii\i18n\Formatter
      * @inheritdoc
      * @since 3.4.0
      */
-    public function asShortSize($value, $decimals = null, $options = [], $textOptions = [])
+    public function asShortSize($value, $decimals = null, $options = [], $textOptions = []): string
     {
         return strtoupper(parent::asShortSize($value, $decimals, $options, $textOptions));
     }
@@ -291,7 +266,7 @@ class Formatter extends \yii\i18n\Formatter
      * @see isNormalizedValueMispresented()
      * @since 3.7.24
      */
-    public function willBeMisrepresented($value): bool
+    public function willBeMisrepresented(mixed $value): bool
     {
         if ($value === null) {
             return false;
@@ -304,10 +279,11 @@ class Formatter extends \yii\i18n\Formatter
      * Formats a value as a date, using a PHP date format.
      *
      * @param int|string|DateTime $value
-     * @param string|null $format
+     * @param string $format
      * @param string $type 'date', 'time', or 'datetime'.
+     * @return string
      */
-    private function _formatDateTimeValueWithPhpFormat($value, string $format, string $type): string
+    private function _formatDateTimeValueWithPhpFormat(mixed $value, string $format, string $type): string
     {
         // special cases for PHP format characters not supported by ICU
         $split = preg_split('/(?<!\\\\)(S|w|t|L|B|u|I|Z|U|A|a)/', $format, -1, PREG_SPLIT_DELIM_CAPTURE);
@@ -344,110 +320,5 @@ class Formatter extends \yii\i18n\Formatter
         }
 
         return $formatted;
-    }
-
-    /**
-     * Formats a given date/time.
-     *
-     * Code mostly copied from [[parent::formatDateTimeValue()]], with the exception that translatable strings
-     * in the date/time format will be returned in the correct locale.
-     *
-     * @param int|string|DateTime $value The value to be formatted. The following
-     * types of value are supported:
-     * - an int representing a UNIX timestamp
-     * - a string that can be [parsed to create a DateTime object](https://php.net/manual/en/datetime.formats.php).
-     *   The timestamp is assumed to be in [[defaultTimeZone]] unless a time zone is explicitly given.
-     * - a PHP [DateTime](https://php.net/manual/en/class.datetime.php) object
-     * @param string $format The format used to convert the value into a date string.
-     * @param string $type 'date', 'time', or 'datetime'.
-     * @return string the formatted result.
-     * @throws InvalidConfigException if the date format is invalid.
-     */
-    private function _formatDateTimeValue($value, string $format, string $type): string
-    {
-        $timeZone = $this->timeZone;
-
-        // Avoid time zone conversion for date-only values
-        if ($type === 'date') {
-            [$timestamp, $hasTimeInfo] = $this->normalizeDatetimeValue($value, true);
-
-            if (!$hasTimeInfo) {
-                $timeZone = $this->defaultTimeZone;
-            }
-        } else {
-            $timestamp = $this->normalizeDatetimeValue($value);
-        }
-
-        if ($timestamp === null) {
-            return $this->nullDisplay;
-        }
-
-        if ($timeZone != null) {
-            $timestamp->setTimezone(new DateTimeZone($timeZone));
-        }
-
-        // Parse things that we can translate before passing it off to DateTime::format()
-        $tr = [];
-
-        if (preg_match_all('/(?<!\')\'.*?[^\']\'(?!\')/', $format, $matches)) {
-            foreach ($matches[0] as $match) {
-                $tr[$match] = $match;
-            }
-        }
-
-        if ($this->standAloneMonthNames !== null || $this->monthNames !== null) {
-            $month = $timestamp->format('n') - 1;
-
-            if ($this->standAloneMonthNames !== null) {
-                $tr['LLLLL'] = '\'' . $this->standAloneMonthNames['abbreviated'][$month] . '\'';
-                $tr['LLLL'] = '\'' . $this->standAloneMonthNames['full'][$month] . '\'';
-                $tr['LLL'] = '\'' . $this->standAloneMonthNames['medium'][$month] . '\'';
-            }
-
-            if ($this->monthNames !== null) {
-                $tr['MMMMM'] = '\'' . $this->monthNames['abbreviated'][$month] . '\'';
-                $tr['MMMM'] = '\'' . $this->monthNames['full'][$month] . '\'';
-                $tr['MMM'] = '\'' . $this->monthNames['medium'][$month] . '\'';
-            }
-        }
-
-        if ($this->standAloneWeekDayNames !== null || $this->weekDayNames !== null) {
-            $day = $timestamp->format('w');
-
-            if ($this->standAloneWeekDayNames !== null) {
-                $tr['cccccc'] = '\'' . $this->standAloneWeekDayNames['short'][$day] . '\'';
-                $tr['ccccc'] = '\'' . $this->standAloneWeekDayNames['abbreviated'][$day] . '\'';
-                $tr['cccc'] = '\'' . $this->standAloneWeekDayNames['full'][$day] . '\'';
-                $tr['ccc'] = '\'' . $this->standAloneWeekDayNames['medium'][$day] . '\'';
-            }
-
-            if ($this->weekDayNames !== null) {
-                $tr['EEEEEE'] = '\'' . $this->weekDayNames['short'][$day] . '\'';
-                $tr['EEEEE'] = '\'' . $this->weekDayNames['abbreviated'][$day] . '\'';
-                $tr['EEEE'] = '\'' . $this->weekDayNames['full'][$day] . '\'';
-                $tr['EEE'] = '\'' . $this->weekDayNames['medium'][$day] . '\'';
-                $tr['EE'] = '\'' . $this->weekDayNames['medium'][$day] . '\'';
-                $tr['E'] = '\'' . $this->weekDayNames['medium'][$day] . '\'';
-
-                $tr['eeeeee'] = '\'' . $this->weekDayNames['short'][$day] . '\'';
-                $tr['eeeee'] = '\'' . $this->weekDayNames['abbreviated'][$day] . '\'';
-                $tr['eeee'] = '\'' . $this->weekDayNames['full'][$day] . '\'';
-                $tr['eee'] = '\'' . $this->weekDayNames['medium'][$day] . '\'';
-            }
-        }
-
-        $amPmName = $timestamp->format('a') . 'Name';
-
-        if ($this->$amPmName !== null) {
-            $tr['a'] = '\'' . $this->$amPmName . '\'';
-        }
-
-        if (!empty($tr)) {
-            $format = strtr($format, $tr);
-        }
-
-        $format = FormatConverter::convertDateIcuToPhp($format, $type, $this->locale);
-
-        return $timestamp->format($format);
     }
 }

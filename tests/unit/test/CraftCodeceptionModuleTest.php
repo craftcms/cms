@@ -7,12 +7,13 @@
 
 namespace crafttests\unit\test;
 
-use Codeception\Test\Unit;
 use Craft;
 use craft\elements\User;
 use craft\errors\ElementNotFoundException;
 use craft\errors\InvalidElementException;
+use craft\helpers\ArrayHelper;
 use craft\test\mockclasses\components\EventTriggeringComponent;
+use craft\test\TestCase;
 use DateInterval;
 use DateTime;
 use DateTimeZone;
@@ -29,17 +30,17 @@ use yii\base\Event;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class CraftCodeceptionModuleTest extends Unit
+class CraftCodeceptionModuleTest extends TestCase
 {
     /**
      * @var UnitTester $tester
      */
-    protected $tester;
+    protected UnitTester $tester;
 
     /**
      *
      */
-    public function testEventHandler()
+    public function testEventHandler(): void
     {
         $component = new EventTriggeringComponent();
         $this->tester->expectEvent(
@@ -55,9 +56,9 @@ class CraftCodeceptionModuleTest extends Unit
                     'eventPropName' => 'sender',
                     'desiredValue' => [
                         '22' => '44',
-                        '33' => '55'
-                    ]
-                ]
+                        '33' => '55',
+                    ],
+                ],
             ])
         );
     }
@@ -65,7 +66,7 @@ class CraftCodeceptionModuleTest extends Unit
     /**
      *
      */
-    public function testEventHandlerWithStdClass()
+    public function testEventHandlerWithStdClass(): void
     {
         $component = new EventTriggeringComponent();
         $this->tester->expectEvent(
@@ -81,9 +82,9 @@ class CraftCodeceptionModuleTest extends Unit
                     'eventPropName' => 'sender',
                     'desiredClass' => stdClass::class,
                     'desiredValue' => [
-                        'a' => '22'
-                    ]
-                ]
+                        'a' => '22',
+                    ],
+                ],
             ])
         );
     }
@@ -93,9 +94,10 @@ class CraftCodeceptionModuleTest extends Unit
      * @throws ElementNotFoundException
      * @throws \yii\base\Exception
      */
-    public function testAssertElementsExist()
+    public function testAssertElementsExist(): void
     {
         $configArray = [
+            'active' => true,
             'firstName' => 'john',
             'lastName' => 'smith',
             'username' => 'user2',
@@ -105,7 +107,7 @@ class CraftCodeceptionModuleTest extends Unit
         $user = new User($configArray);
         $this->tester->saveElement($user);
 
-        $this->tester->assertElementsExist(User::class, $configArray);
+        $this->tester->assertElementsExist(User::class, ArrayHelper::without($configArray, 'active'));
         $this->tester->deleteElement($user);
     }
 
@@ -114,9 +116,10 @@ class CraftCodeceptionModuleTest extends Unit
      * @throws ElementNotFoundException
      * @throws \yii\base\Exception
      */
-    public function testAssertElementFails()
+    public function testAssertElementFails(): void
     {
         $configArray = [
+            'active' => true,
             'firstName' => 'john',
             'lastName' => 'smith',
             'username' => 'user2',
@@ -127,7 +130,7 @@ class CraftCodeceptionModuleTest extends Unit
         $this->tester->saveElement($user);
 
         $this->tester->assertTestFails(function() use ($configArray) {
-            $this->tester->assertElementsExist(User::class, $configArray, 2);
+            $this->tester->assertElementsExist(User::class, ArrayHelper::without($configArray, 'active'), 2);
         });
 
         $this->tester->deleteElement($user);
@@ -138,9 +141,10 @@ class CraftCodeceptionModuleTest extends Unit
      * @throws InvalidElementException
      * @throws \yii\base\Exception
      */
-    public function testAssertElementExistsWorksWithMultiple()
+    public function testAssertElementExistsWorksWithMultiple(): void
     {
         $configArray = [
+            'active' => true,
             'firstName' => 'john',
             'lastName' => 'smith',
             'username' => 'user2',
@@ -154,8 +158,8 @@ class CraftCodeceptionModuleTest extends Unit
         $dupeConfig = ['username' => 'user3', 'email' => 'user3@crafttest.com'];
         $dupeUser = Craft::$app->getElements()->duplicateElement($user, $dupeConfig);
 
-        $this->tester->assertElementsExist(User::class, $configArray, 1);
-        $this->tester->assertElementsExist(User::class, array_merge($configArray, $dupeConfig), 1);
+        $this->tester->assertElementsExist(User::class, ArrayHelper::without($configArray, 'active'), 1);
+        $this->tester->assertElementsExist(User::class, array_merge(ArrayHelper::without($configArray, 'active'), $dupeConfig), 1);
 
         $this->tester->deleteElement($user);
         $this->tester->deleteElement($dupeUser);
@@ -164,7 +168,7 @@ class CraftCodeceptionModuleTest extends Unit
     /**
      * @throws Exception
      */
-    public function testDateTimeCompare()
+    public function testDateTimeCompare(): void
     {
         $dateTime = new DateTime('now', new DateTimeZone('UTC'));
 

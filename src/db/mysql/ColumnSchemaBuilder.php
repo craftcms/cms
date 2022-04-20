@@ -20,7 +20,7 @@ class ColumnSchemaBuilder extends YiiColumnSchemaBuilder
     /**
      * @inheritdoc
      */
-    protected function buildLengthString()
+    protected function buildLengthString(): string
     {
         if ($this->type == Schema::TYPE_ENUM) {
             $schema = Craft::$app->getDb()->getSchema();

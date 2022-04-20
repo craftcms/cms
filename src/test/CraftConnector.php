@@ -31,7 +31,7 @@ class CraftConnector extends Yii2
     /**
      * @var array
      */
-    protected $emails = [];
+    protected array $emails = [];
 
     /**
      * @inheritdoc
@@ -44,11 +44,11 @@ class CraftConnector extends Yii2
     /**
      * We override to prevent a bug with the matching of user agent and session.
      *
-     * @param $user
+     * @param mixed $user
      * @param bool $disableRequiredUserAgent
      * @throws ConfigurationException
      */
-    public function findAndLoginUser($user, bool $disableRequiredUserAgent = true)
+    public function findAndLoginUser(mixed $user, bool $disableRequiredUserAgent = true): void
     {
         $oldRequirement = Craft::$app->getConfig()->getGeneral()->requireUserAgentAndIpForSession;
         if ($disableRequiredUserAgent) {
@@ -65,7 +65,7 @@ class CraftConnector extends Yii2
     /**
      * @inheritdoc
      */
-    protected function mockMailer(array $config)
+    protected function mockMailer(array $config): array
     {
         $config = parent::mockMailer($config);
         $config['components']['mailer'] = array_merge($config['components']['mailer'], [
@@ -81,7 +81,7 @@ class CraftConnector extends Yii2
      * @param Application $app
      * @throws InvalidPluginException
      */
-    public function resetRequest(Application $app)
+    protected function resetRequest(Application $app): void
     {
         parent::resetRequest($app);
         $app->getRequest()->setIsConsoleRequest(false);
@@ -107,6 +107,8 @@ class CraftConnector extends Yii2
                 $module = new $moduleClass($moduleId, Craft::$app);
             }
 
+            /** @var string|Module $moduleClass */
+            /** @phpstan-var class-string<Module>|Module $moduleClass */
             $moduleClass::setInstance(
                 $module
             );
@@ -117,7 +119,7 @@ class CraftConnector extends Yii2
     /**
      * @inheritdoc
      */
-    public function resetApplication($closeSession = true)
+    public function resetApplication($closeSession = true): void
     {
         parent::resetApplication($closeSession);
         Db::reset();

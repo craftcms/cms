@@ -14,6 +14,7 @@ use craft\events\RegisterCacheOptionsEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
 use craft\web\assets\clearcaches\ClearCachesAsset;
+use Exception;
 use yii\base\Event;
 use yii\base\InvalidArgumentException;
 
@@ -37,7 +38,7 @@ class ClearCaches extends Utility
      *
      * @see cacheOptions()
      */
-    const EVENT_REGISTER_CACHE_OPTIONS = 'registerCacheOptions';
+    public const EVENT_REGISTER_CACHE_OPTIONS = 'registerCacheOptions';
 
     /**
      * @event RegisterCacheOptionsEvent The event that is triggered when registering cache tag invalidation options.
@@ -50,7 +51,7 @@ class ClearCaches extends Utility
      * @see tagOptions()
      * @since 3.5.0
      */
-    const EVENT_REGISTER_TAG_OPTIONS = 'registerTagOptions';
+    public const EVENT_REGISTER_TAG_OPTIONS = 'registerTagOptions';
 
     /**
      * @inheritdoc
@@ -71,7 +72,7 @@ class ClearCaches extends Utility
     /**
      * @inheritdoc
      */
-    public static function iconPath()
+    public static function iconPath(): ?string
     {
         return Craft::getAlias('@appicons/trash.svg');
     }
@@ -134,13 +135,12 @@ class ClearCaches extends Utility
                 'action' => function() use ($pathService) {
                     $dirs = [
                         $pathService->getAssetSourcesPath(false),
-                        $pathService->getAssetThumbsPath(false),
                         $pathService->getAssetsIconsPath(false),
                     ];
                     foreach ($dirs as $dir) {
                         try {
                             FileHelper::clearDirectory($dir);
-                        } catch (InvalidArgumentException $e) {
+                        } catch (InvalidArgumentException) {
                             // the directory doesn't exist
                         }
                     }
@@ -155,6 +155,14 @@ class ClearCaches extends Utility
                 'action' => $pathService->getCompiledTemplatesPath(false),
             ],
             [
+                'key' => 'compiled-classes',
+                'label' => Craft::t('app', 'Compiled classes'),
+                'info' => Craft::t('app', 'Contents of {path}', [
+                    'path' => '`storage/runtime/compiled_classes/`',
+                ]),
+                'action' => $pathService->getCompiledClassesPath(false),
+            ],
+            [
                 'key' => 'cp-resources',
                 'label' => Craft::t('app', 'Control panel resources'),
                 'info' => Craft::t('app', 'Contents of {path}', [
@@ -166,16 +174,19 @@ class ClearCaches extends Utility
                     if (
                         $request->getIsConsoleRequest() &&
                         $request->isWebrootAliasSetDynamically &&
-                        strpos($basePath, '@webroot') === 0
+                        str_starts_with($basePath, '@webroot')
                     ) {
-                        throw new \Exception("Unable to clear control panel resources because the location isn't known for console commands.\n" .
+                        throw new Exception("Unable to clear control panel resources because the location isn't known for console commands.\n" .
                             "Explicitly set the @webroot alias in config/general.php to avoid this error.\n" .
-                            'See https://craftcms.com/docs/3.x/config/#aliases for more info.');
+                            'See https://craftcms.com/docs/4.x/config/#aliases for more info.');
                     }
 
-                    FileHelper::clearDirectory(Craft::getAlias($basePath), [
-                        'except' => ['.gitignore'],
-                    ]);
+                    $basePath = Craft::getAlias($basePath);
+                    if ($basePath !== false) {
+                        FileHelper::clearDirectory($basePath, [
+                            'except' => ['.gitignore'],
+                        ]);
+                    }
                 },
             ],
             [
@@ -192,7 +203,7 @@ class ClearCaches extends Utility
                 'info' => Craft::t('app', 'Record of generated image transforms'),
                 'action' => function() {
                     Craft::$app->getDb()->createCommand()
-                        ->truncateTable(Table::ASSETTRANSFORMINDEX)
+                        ->truncateTable(Table::IMAGETRANSFORMINDEX)
                         ->execute();
                 },
             ],

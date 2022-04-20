@@ -26,9 +26,10 @@ class GetAttrNode extends GetAttrExpression
      * @param array $nodes An array of named nodes
      * @param array $attributes An array of attributes (should not be nodes)
      * @param int $lineno The line number
-     * @param string $tag The tag name associated with the Node
+     * @param string|null $tag The tag name associated with the Node
+     * @noinspection PhpMissingParentConstructorInspection
      */
-    public function __construct(array $nodes = [], array $attributes = [], int $lineno = 0, string $tag = null)
+    public function __construct(array $nodes = [], array $attributes = [], int $lineno = 0, ?string $tag = null)
     {
         // Skip parent::__construct()
         Node::__construct($nodes, $attributes, $lineno, $tag);
@@ -37,7 +38,7 @@ class GetAttrNode extends GetAttrExpression
     /**
      * @inheritdoc
      */
-    public function compile(Compiler $compiler)
+    public function compile(Compiler $compiler): void
     {
         $env = $compiler->getEnvironment();
 

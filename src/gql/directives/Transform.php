@@ -7,7 +7,6 @@
 
 namespace craft\gql\directives;
 
-use Craft;
 use craft\elements\Asset;
 use craft\gql\arguments\Transform as TransformArguments;
 use craft\gql\base\Directive;
@@ -46,16 +45,14 @@ class Transform extends Directive
             return $type;
         }
 
-        $type = GqlEntityRegistry::createEntity(static::name(), new self([
+        return GqlEntityRegistry::createEntity(static::name(), new self([
             'name' => static::name(),
             'locations' => [
                 DirectiveLocation::FIELD,
             ],
             'args' => TransformArguments::getArguments(),
-            'description' => 'Returns a URL for an [asset transform](https://craftcms.com/docs/3.x/image-transforms.html). Accepts the same arguments you would use for a transform in Craft and adds the `immediately` argument.',
+            'description' => 'Returns a URL for an [asset transform](https://craftcms.com/docs/4.x/image-transforms.html). Accepts the same arguments you would use for a transform in Craft.',
         ]));
-
-        return $type;
     }
 
     /**
@@ -69,7 +66,7 @@ class Transform extends Directive
     /**
      * @inheritdoc
      */
-    public static function apply($source, $value, array $arguments, ResolveInfo $resolveInfo)
+    public static function apply(mixed $source, mixed $value, array $arguments, ResolveInfo $resolveInfo): mixed
     {
         $onAssetElement = $value instanceof Asset;
         $onAssetElementList = is_array($value) && !empty($value);
@@ -79,7 +76,6 @@ class Transform extends Directive
             return $value;
         }
 
-        $generateNow = $arguments['immediately'] ?? Craft::$app->getConfig()->general->generateTransformsBeforePageLoad;
         $transform = Gql::prepareTransformArguments($arguments);
 
         // If this directive is applied to an entire Asset
@@ -88,7 +84,7 @@ class Transform extends Directive
         }
 
         if ($onAssetElementList) {
-            foreach ($value as &$asset) {
+            foreach ($value as $asset) {
                 // If this somehow ended up being a mix of elements, don't explicitly fail, just set the transform on the asset elements
                 if ($asset instanceof Asset) {
                     $asset->setTransform($transform);
@@ -98,15 +94,11 @@ class Transform extends Directive
             return $value;
         }
 
-        switch ($resolveInfo->fieldName) {
-            case 'height':
-                return $source->getHeight($transform);
-            case 'width':
-                return $source->getWidth($transform);
-            case 'url':
-                return $source->getUrl($transform, $generateNow);
-        }
-
-        return $value;
+        return match ($resolveInfo->fieldName) {
+            'height' => $source->getHeight($transform),
+            'width' => $source->getWidth($transform),
+            'url' => $source->getUrl($transform),
+            default => $value,
+        };
     }
 }

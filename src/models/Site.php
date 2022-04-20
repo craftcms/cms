@@ -17,11 +17,13 @@ use craft\validators\HandleValidator;
 use craft\validators\LanguageValidator;
 use craft\validators\UniqueValidator;
 use craft\validators\UrlValidator;
+use DateTime;
 use yii\base\InvalidConfigException;
 
 /**
  * Site model class.
  *
+ * @property bool|string $enabled Enabled
  * @property string|null $baseUrl The site’s base URL
  * @property string $name The site’s name
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -32,97 +34,73 @@ class Site extends Model
     /**
      * @var int|null ID
      */
-    public $id;
+    public ?int $id = null;
 
     /**
      * @var int|null Group ID
      */
-    public $groupId;
+    public ?int $groupId = null;
 
     /**
      * @var string|null Handle
      */
-    public $handle;
+    public ?string $handle = null;
 
     /**
      * @var string|null Name
      */
-    public $language;
+    public ?string $language = null;
 
     /**
      * @var bool Primary site?
      */
-    public $primary = false;
-
-    /**
-     * @var bool Enabled?
-     * @since 3.5.0
-     */
-    public $enabled = true;
+    public bool $primary = false;
 
     /**
      * @var bool Has URLs
      */
-    public $hasUrls = true;
-
-    /**
-     * @var string|null Original name (set if [[name]] was overridden by the config)
-     * @deprecated in 3.6.0
-     */
-    public $originalName;
-
-    /**
-     * @var string|null Original base URL (set if [[baseUrl]] was overridden by the config)
-     * @deprecated in 3.6.0
-     */
-    public $originalBaseUrl;
+    public bool $hasUrls = true;
 
     /**
      * @var int Sort order
      */
-    public $sortOrder = 1;
+    public int $sortOrder = 1;
 
     /**
      * @var string|null Site UID
      */
-    public $uid;
+    public ?string $uid = null;
 
     /**
-     * @var \DateTime Date created
+     * @var DateTime|null Date created
      */
-    public $dateCreated;
+    public ?DateTime $dateCreated = null;
 
     /**
-     * @var \DateTime Date updated
+     * @var DateTime|null Date updated
      */
-    public $dateUpdated;
+    public ?DateTime $dateUpdated = null;
 
     /**
      * @var string|null Base URL
+     * @see getBaseUrl()
+     * @see setBaseUrl()
      */
-    private $_baseUrl = '@web/';
+    private ?string $_baseUrl = '@web/';
 
     /**
      * @var string|null Name
+     * @see getName()
+     * @see setName()
      */
-    private $_name;
+    private ?string $_name = null;
 
     /**
-     * @inheritdoc
-     * @since 3.5.0
+     * @var bool|string Enabled
+     * @see getEnabled()
+     * @see setEnabled()
      */
-    public function init()
-    {
-        // Typecast DB values
-        $this->id = (int)$this->id ?: null;
-        $this->groupId = (int)$this->groupId ?: null;
-        $this->primary = (bool)$this->primary;
-        $this->enabled = (bool)$this->enabled;
-        $this->hasUrls = (bool)$this->hasUrls;
-        $this->sortOrder = (int)$this->sortOrder;
-
-        parent::init();
-    }
+    private bool|string $_enabled = true;
 
     /**
      * Returns the site’s name.
@@ -154,7 +132,7 @@ class Site extends Model
      * @return string|null
      * @since 3.1.0
      */
-    public function getBaseUrl(bool $parse = true)
+    public function getBaseUrl(bool $parse = true): ?string
     {
         if ($this->_baseUrl) {
             return $parse ? rtrim(App::parseEnv($this->_baseUrl), '/') . '/' : $this->_baseUrl;
@@ -175,29 +153,56 @@ class Site extends Model
     }
 
     /**
-     * @inheritdoc
+     * Returns whether the site is enabled.
+     *
+     * @param bool $parse Whether to parse the name for an environment variable
+     * @return bool|string
+     * @since 4.0.0
      */
-    public function behaviors()
+    public function getEnabled(bool $parse = true): bool|string
     {
-        $behaviors = parent::behaviors();
-        $behaviors['parser'] = [
-            'class' => EnvAttributeParserBehavior::class,
-            'attributes' => [
-                'name' => function() {
-                    return $this->getName(false);
-                },
-                'baseUrl' => function() {
-                    return $this->getBaseUrl(false);
-                },
-            ],
-        ];
-        return $behaviors;
+        if ($this->primary) {
+            return true;
+        }
+
+        if ($parse) {
+            return App::parseBooleanEnv($this->_enabled) ?? true;
+        }
+        return $this->_enabled;
+    }
+
+    /**
+     * Sets the site’s name.
+     *
+     * @param bool|string $name
+     * @since 4.0.0
+     */
+    public function setEnabled(bool|string $name): void
+    {
+        $this->_enabled = $name;
     }
 
     /**
      * @inheritdoc
      */
-    public function attributeLabels()
+    protected function defineBehaviors(): array
+    {
+        return [
+            'parser' => [
+                'class' => EnvAttributeParserBehavior::class,
+                'attributes' => [
+                    'name' => fn() => $this->getName(false),
+                    'baseUrl' => fn() => $this->getBaseUrl(false),
+                    'enabled' => fn() => $this->getEnabled(false),
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function attributeLabels(): array
     {
         return [
             'baseUrl' => Craft::t('app', 'Base URL'),
@@ -224,21 +229,13 @@ class Site extends Model
             $rules[] = [['name', 'handle'], UniqueValidator::class, 'targetClass' => SiteRecord::class];
         }
 
-        $rules[] = [
-            ['enabled'], function(string $attribute) {
-                if ($this->primary && !$this->enabled) {
-                    $this->addError($attribute, Craft::t('app', 'The primary site cannot be disabled.'));
-                }
-            },
-        ];
-
         return $rules;
     }
 
     /**
      * @inheritdoc
      */
-    public function attributes()
+    public function attributes(): array
     {
         $attributes = parent::attributes();
         $attributes[] = 'name';
@@ -264,7 +261,7 @@ class Site extends Model
      */
     public function getGroup(): SiteGroup
     {
-        if ($this->groupId === null) {
+        if (!isset($this->groupId)) {
             throw new InvalidConfigException('Site is missing its group ID');
         }
 
@@ -273,30 +270,6 @@ class Site extends Model
         }
 
         return $group;
-    }
-
-    /**
-     * Overrides the name while keeping track of the original one.
-     *
-     * @param string $name
-     * @deprecated in 3.6.0
-     */
-    public function overrideName(string $name)
-    {
-        $this->originalName = (string)$this->_name;
-        $this->setName($name);
-    }
-
-    /**
-     * Overrides the base URL while keeping track of the original one.
-     *
-     * @param string $baseUrl
-     * @deprecated in 3.6.0
-     */
-    public function overrideBaseUrl(string $baseUrl)
-    {
-        $this->originalBaseUrl = (string)$this->_baseUrl;
-        $this->setBaseUrl($baseUrl);
     }
 
     /**
@@ -323,14 +296,14 @@ class Site extends Model
     {
         return [
             'siteGroup' => $this->getGroup()->uid,
-            'name' => $this->originalName ?? $this->_name,
+            'name' => $this->_name,
             'handle' => $this->handle,
             'language' => $this->language,
-            'hasUrls' => (bool)$this->hasUrls,
-            'baseUrl' => $this->originalBaseUrl ?? ($this->_baseUrl ?: null),
-            'sortOrder' => (int)$this->sortOrder,
-            'primary' => (bool)$this->primary,
-            'enabled' => (bool)$this->enabled,
+            'hasUrls' => $this->hasUrls,
+            'baseUrl' => $this->_baseUrl ?: null,
+            'sortOrder' => $this->sortOrder,
+            'primary' => $this->primary,
+            'enabled' => $this->getEnabled(false),
         ];
     }
 }

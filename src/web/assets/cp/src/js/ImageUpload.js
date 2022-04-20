@@ -50,11 +50,11 @@ Craft.ImageUpload = Garnish.Base.extend({
         this.$container.find(this.settings.deleteButtonSelector).on('click', ev => {
             if (confirm(Craft.t('app', 'Are you sure you want to delete this image?'))) {
                 $(ev.currentTarget).parent().append('<div class="blocking-modal"></div>');
-                Craft.postActionRequest(this.settings.deleteAction, this.settings.postParameters, (response, textStatus) => {
-                    if (textStatus === 'success') {
+
+                Craft.sendActionRequest('POST', this.settings.deleteAction, {data: this.settings.postParameters})
+                    .then((response) => {
                         this.refreshImage(response);
-                    }
-                });
+                    });
             }
         });
     },

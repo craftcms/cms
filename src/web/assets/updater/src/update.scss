@@ -7,6 +7,8 @@
   top: 50%;
   left: 50%;
   @include margin(-48px, 0, 0, -24px);
+  width: 48px;
+  height: 48px;
   background-repeat: no-repeat;
   background-position: 50% 50%;
 

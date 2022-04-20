@@ -5,7 +5,7 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craftunit\gql\mutations;
+namespace crafttests\unit\gql\mutations;
 
 use Codeception\Stub\Expected;
 use Craft;
@@ -13,53 +13,55 @@ use craft\base\Element;
 use craft\elements\db\EntryQuery;
 use craft\elements\Entry;
 use craft\fields\Matrix;
-use craft\fields\Number;
-use craft\fields\PlainText;
 use craft\gql\base\ElementMutationResolver;
 use craft\gql\base\Mutation;
+use craft\gql\base\MutationResolver;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\resolvers\mutations\Entry as EntryMutationResolver;
 use craft\helpers\StringHelper;
 use craft\models\GqlSchema;
-use craft\models\Section;
 use craft\services\Elements;
 use craft\test\TestCase;
 use GraphQL\Error\Error;
 use GraphQL\Error\UserError;
-use GraphQL\Type\Definition\FieldArgument;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
+use ReflectionException;
+use UnitTester;
+use yii\base\InvalidConfigException;
 
 class GeneralMutationResolverTest extends TestCase
 {
     /**
-     * @var \UnitTester
+     * @var UnitTester
      */
-    protected $tester;
-    protected $resolver;
+    protected UnitTester $tester;
 
-    protected function _before()
+    /**
+     * @var MutationResolver
+     */
+    protected MutationResolver $resolver;
+
+    protected function _before(): void
     {
         $this->resolver = new EntryMutationResolver();
     }
 
-    protected function _after()
+    protected function _after(): void
     {
     }
 
     /**
      * Test whether data and value normalizes is stored on the resolver correctly.
-     *
-     * @param $data
      */
-    public function testStoringResolverData()
+    public function testStoringResolverData(): void
     {
         $testKey = 'someKey';
         $testString = StringHelper::randomString();
         $testData = [
             'one' => 'two',
-            'three' => ['four', 'five']
+            'three' => ['four', 'five'],
         ];
         $valueNormalizers = [
             'reverseArgument' => function(string $value) {
@@ -67,7 +69,7 @@ class GeneralMutationResolverTest extends TestCase
             },
             'allCaps' => function(string $value) {
                 return strtoupper($value);
-            }
+            },
         ];
 
         $this->resolver = new EntryMutationResolver($testData, $valueNormalizers);
@@ -100,7 +102,7 @@ class GeneralMutationResolverTest extends TestCase
     /**
      * Test whether schemas are enforced correctly
      */
-    public function testSchemaActionRequirements()
+    public function testSchemaActionRequirements(): void
     {
         $this->resolver = new EntryMutationResolver();
 
@@ -110,8 +112,8 @@ class GeneralMutationResolverTest extends TestCase
 
         $this->tester->mockCraftMethods('gql', [
             'getActiveSchema' => $this->make(GqlSchema::class, [
-                'scope' => ['missingScope:implode']
-            ])
+                'scope' => ['missingScope:implode'],
+            ]),
         ]);
         $this->invokeMethod($this->resolver, 'requireSchemaAction', ['missingScope', 'implode']);
     }
@@ -119,15 +121,15 @@ class GeneralMutationResolverTest extends TestCase
     /**
      * Test whether populating an element with data behaves as expected.
      *
-     * @param $contentFields
-     * @param $arguments
-     * @throws \ReflectionException
+     * @param array $contentFields
+     * @param array $arguments
+     * @throws ReflectionException
      * @dataProvider populatingElementWithDataProvider
      */
-    public function testPopulatingElementWithData($contentFields, $arguments)
+    public function testPopulatingElementWithData(array $contentFields, array $arguments): void
     {
         $entry = $this->make(Entry::class, [
-            'setFieldValue' => Expected::exactly(count($contentFields))
+            'setFieldValue' => Expected::exactly(count($contentFields)),
         ]);
 
         $this->resolver->setResolutionData(ElementMutationResolver::CONTENT_FIELD_KEY, $contentFields);
@@ -144,9 +146,9 @@ class GeneralMutationResolverTest extends TestCase
     /**
      * Tests whether immutable attributes are immutable indeed.
      *
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
-    public function testImmutableAttributes()
+    public function testImmutableAttributes(): void
     {
         $testId = random_int(1, 9999);
         $testUid = StringHelper::UUID();
@@ -155,13 +157,13 @@ class GeneralMutationResolverTest extends TestCase
         $entry = $this->make(Entry::class, [
             'id' => $testId,
             'uid' => $testUid,
-            'title' => $testTitle
+            'title' => $testTitle,
         ]);
 
         $arguments = [
             'id' => random_int(1, 9999),
             'uid' => StringHelper::UUID(),
-            'title' => StringHelper::UUID()
+            'title' => StringHelper::UUID(),
         ];
 
         $this->setInaccessibleProperty($this->resolver, 'immutableAttributes', ['id', 'uid', 'title']);
@@ -176,7 +178,7 @@ class GeneralMutationResolverTest extends TestCase
         self::assertNotSame($entry->title, $arguments['title']);
     }
 
-    public function populatingElementWithDataProvider()
+    public function populatingElementWithDataProvider(): array
     {
         return [
             [
@@ -187,14 +189,14 @@ class GeneralMutationResolverTest extends TestCase
                 [
                     'someField' => StringHelper::UUID(),
                     'otherField' => StringHelper::UUID(),
-                    'title' => StringHelper::UUID()
-                ]
+                    'title' => StringHelper::UUID(),
+                ],
             ],
             [
                 [],
                 [
-                    'title' => StringHelper::UUID()
-                ]
+                    'title' => StringHelper::UUID(),
+                ],
             ],
         ];
     }
@@ -202,13 +204,13 @@ class GeneralMutationResolverTest extends TestCase
     /**
      * Test whether saving an element with validation errors throws the right exception.
      *
-     * @throws \ReflectionException
-     * @throws \yii\base\InvalidConfigException
+     * @throws ReflectionException
+     * @throws InvalidConfigException
      */
-    public function testSavingElementWithValidationError()
+    public function testSavingElementWithValidationError(): void
     {
         $elementService = $this->make(Elements::class, [
-            'saveElement' => Expected::once(false)
+            'saveElement' => Expected::once(false),
         ]);
         Craft::$app->set('elements', $elementService);
 
@@ -216,7 +218,7 @@ class GeneralMutationResolverTest extends TestCase
 
         $entry = $this->make(Entry::class, [
             'hasErrors' => true,
-            'getFirstErrors' => [$validationError]
+            'getFirstErrors' => [$validationError],
         ]);
 
         $this->expectExceptionMessage($validationError);
@@ -228,13 +230,13 @@ class GeneralMutationResolverTest extends TestCase
     /**
      * Test whether saving an element that is enabled correctly changes the scenario before saving.
      *
-     * @throws \ReflectionException
-     * @throws \yii\base\InvalidConfigException
+     * @throws ReflectionException
+     * @throws InvalidConfigException
      */
-    public function testSavingElementWithoutValidationError()
+    public function testSavingElementWithoutValidationError(): void
     {
         $elementService = $this->make(Elements::class, [
-            'saveElement' => false
+            'saveElement' => false,
         ]);
         Craft::$app->set('elements', $elementService);
 
@@ -256,7 +258,7 @@ class GeneralMutationResolverTest extends TestCase
         self::assertNotSame($scenario, $entry->getScenario());
     }
 
-    public function testNestedNormalizers()
+    public function testNestedNormalizers(): void
     {
         $values = [];
 
@@ -264,7 +266,7 @@ class GeneralMutationResolverTest extends TestCase
         $entry = $this->make(Entry::class, [
             'setFieldValue' => function($name, $value) use (&$values) {
                 $values[$name] = $value;
-            }
+            },
         ]);
 
         // Set up the normalizer to make some measurable impact
@@ -282,7 +284,7 @@ class GeneralMutationResolverTest extends TestCase
                     'type' => Type::string(),
                 ],
             ],
-            'normalizeValue' => $normalizer
+            'normalizeValue' => $normalizer,
         ]));
 
         $parentObjectType = GqlEntityRegistry::createEntity('parentType', new InputObjectType([
@@ -290,10 +292,19 @@ class GeneralMutationResolverTest extends TestCase
             'fields' => [
                 'nested' => [
                     'name' => 'nested',
-                    'type' => $nestedObjectType
-                ]
+                    'type' => $nestedObjectType,
+                ],
             ],
-            'normalizeValue' => $normalizer
+            'normalizeValue' => $normalizer,
+        ]));
+
+        $query = $this->make(EntryQuery::class, [
+            'one' => $entry,
+        ]);
+
+        Craft::$app->set('elements', $this->make(Elements::class, [
+            'saveElement' => true,
+            'createElementQuery' => $query,
         ]));
 
         // Set up the mutation resolve to return our mock entry and pretend to save the entry, when asked to
@@ -305,19 +316,17 @@ class GeneralMutationResolverTest extends TestCase
             },
             'performStructureOperations' => true,
             'argumentTypeDefsByName' => [
-                'parentField' => $parentObjectType
+                'parentField' => $parentObjectType,
             ],
-            'identifyEntry' => $this->make(EntryQuery::class, [
-                'one' => $entry
-            ])
+            'identifyEntry' => $query,
         ]);
 
         // Finish setting up for the test
         $contentFields = [
             $this->make(Matrix::class, [
                 'handle' => 'parentField',
-                'getContentGqlMutationArgumentType' => $parentObjectType
-            ])
+                'getContentGqlMutationArgumentType' => $parentObjectType,
+            ]),
         ];
         $this->invokeStaticMethod(Mutation::class, 'prepareResolver', [$mutationResolver, $contentFields]);
 
@@ -326,9 +335,9 @@ class GeneralMutationResolverTest extends TestCase
         $arguments = [
             'parentField' => [
                 'nested' => [
-                    'nestedValue' => 'foo'
-                ]
-            ]
+                    'nestedValue' => 'foo',
+                ],
+            ],
         ];
 
         // Finally, do that ONE thing

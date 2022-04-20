@@ -10,7 +10,6 @@ namespace craft\gql\base;
 use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
-use craft\elements\Entry as EntryElement;
 use craft\errors\GqlException;
 use craft\events\MutationPopulateElementEvent;
 use GraphQL\Error\UserError;
@@ -31,7 +30,7 @@ abstract class ElementMutationResolver extends MutationResolver
     /**
      * Constant used to reference content fields in resolution data storage.
      */
-    const CONTENT_FIELD_KEY = '_contentFields';
+    public const CONTENT_FIELD_KEY = '_contentFields';
 
     /**
      * @event MutationPopulateElementEvent The event that is triggered before populating an element when resolving a mutation
@@ -46,12 +45,12 @@ abstract class ElementMutationResolver extends MutationResolver
      * use yii\base\Event;
      *
      * Event::on(AssetMutationResolver::class, AssetMutationResolver::EVENT_BEFORE_POPULATE_ELEMENT, function(MutationPopulateElementEvent $event) {
-     *     // Add the timestamp to the element's title
+     *     // Add the timestamp to the element’s title
      *     $event->arguments['title'] = ($event->arguments['title'] ?? '') . '[' . DateTimeHelper::currentTimeStamp() . ']';
      * });
      * ```
      */
-    const EVENT_BEFORE_POPULATE_ELEMENT = 'beforeMutationPopulateElement';
+    public const EVENT_BEFORE_POPULATE_ELEMENT = 'beforeMutationPopulateElement';
 
     /**
      * @event MutationPopulateElementEvent The event that is triggered after populating an element when resolving a mutation
@@ -72,30 +71,31 @@ abstract class ElementMutationResolver extends MutationResolver
      * });
      * ```
      */
-    const EVENT_AFTER_POPULATE_ELEMENT = 'afterMutationPopulateElement';
+    public const EVENT_AFTER_POPULATE_ELEMENT = 'afterMutationPopulateElement';
 
     /**
      * A list of attributes that are unchangeable by mutations.
      *
      * @var string[]
      */
-    protected $immutableAttributes = ['id', 'uid'];
+    protected array $immutableAttributes = ['id', 'uid'];
 
     /**
      * @var Type[] Argument type definitions by name.
      */
-    protected $argumentTypeDefsByName = [];
+    protected array $argumentTypeDefsByName = [];
 
     /**
      * Populate the element with submitted data.
      *
-     * @param Element $element
+     * @template T of ElementInterface
+     * @param T $element
      * @param array $arguments
-     * @param ResolveInfo $resolveInfo
-     * @return EntryElement
+     * @param ResolveInfo|null $resolveInfo
+     * @return T
      * @throws GqlException if data not found.
      */
-    protected function populateElementWithData(Element $element, array $arguments, ResolveInfo $resolveInfo = null): Element
+    protected function populateElementWithData(ElementInterface $element, array $arguments, ?ResolveInfo $resolveInfo = null): ElementInterface
     {
         $normalized = false;
 
@@ -152,6 +152,7 @@ abstract class ElementMutationResolver extends MutationResolver
      * Save an element.
      *
      * @param ElementInterface $element
+     * @return ElementInterface
      * @throws UserError if validation errors.
      */
     protected function saveElement(ElementInterface $element): ElementInterface
@@ -166,7 +167,7 @@ abstract class ElementMutationResolver extends MutationResolver
         if ($element->hasErrors()) {
             $validationErrors = [];
 
-            foreach ($element->getFirstErrors() as $attribute => $errorMessage) {
+            foreach ($element->getFirstErrors() as $errorMessage) {
                 $validationErrors[] = $errorMessage;
             }
 
@@ -183,7 +184,7 @@ abstract class ElementMutationResolver extends MutationResolver
      * @param array $mutationArguments
      * @return array
      */
-    protected function recursivelyNormalizeArgumentValues(ResolveInfo $resolveInfo, array $mutationArguments)
+    protected function recursivelyNormalizeArgumentValues(ResolveInfo $resolveInfo, array $mutationArguments): array
     {
         return $this->_traverseAndNormalizeArguments($resolveInfo->fieldDefinition->args ?? [], $mutationArguments);
     }
@@ -191,11 +192,11 @@ abstract class ElementMutationResolver extends MutationResolver
     /**
      * Traverse an argument list revursively and normalize the values.
      *
-     * @param $argumentDefinitions
-     * @param $mutationArguments
+     * @param array $argumentDefinitions
+     * @param array $mutationArguments
      * @return array
      */
-    private function _traverseAndNormalizeArguments($argumentDefinitions, $mutationArguments): array
+    private function _traverseAndNormalizeArguments(array $argumentDefinitions, array $mutationArguments): array
     {
         $normalized = [];
 

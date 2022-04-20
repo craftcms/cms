@@ -26,7 +26,6 @@ trait ControllerTrait
     /**
      * Sets [[\yii\console\Controller::$interactive]] to `false` if this isn’t a TTY shell.
      *
-     * @return void
      * @since 3.6.1
      */
     protected function checkTty(): void
@@ -79,7 +78,7 @@ trait ControllerTrait
      * @param string $command
      * @param bool $withScriptName
      */
-    protected function outputCommand(string $command, bool $withScriptName = true)
+    protected function outputCommand(string $command, bool $withScriptName = true): void
     {
         Console::outputCommand($command, $withScriptName);
     }

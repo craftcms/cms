@@ -10,6 +10,7 @@ namespace craft\validators;
 use Craft;
 use craft\helpers\DateTimeHelper;
 use craft\i18n\Locale;
+use DateTime;
 use yii\base\InvalidConfigException;
 use yii\validators\Validator;
 
@@ -28,40 +29,40 @@ class TimeValidator extends Validator
      * @var string|null The minimum time allowed. Should be in the format `HH:MM`.
      * @see $tooEarly for the customized message used when the time is too early
      */
-    public $min;
+    public ?string $min = null;
 
     /**
      * @var string|null The maximum time allowed. Should be in the format `HH:MM`.
      * @see $tooLate for the customized message used when the time is too late
      */
-    public $max;
+    public ?string $max = null;
 
     /**
      * @var string user-defined error message used when the value is earlier than [[min]]
      */
-    public $tooEarly;
+    public string $tooEarly;
 
     /**
      * @var string user-defined error message used when the value is later than [[max]]
      */
-    public $tooLate;
+    public string $tooLate;
 
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
-        if ($this->message === null) {
+        if (!isset($this->message)) {
             $this->message = Craft::t('app', '{attribute} must be a time.');
         }
 
-        if ($this->min !== null && $this->tooEarly === null) {
+        if (isset($this->min) && !isset($this->tooEarly)) {
             $this->tooEarly = Craft::t('app', '{attribute} must be no earlier than {min}.');
         }
 
-        if ($this->max !== null && $this->tooLate === null) {
+        if (isset($this->max) && !isset($this->tooLate)) {
             $this->tooLate = Craft::t('app', '{attribute} must be no later than {max}.');
         }
     }
@@ -70,10 +71,10 @@ class TimeValidator extends Validator
      * @inheritdoc
      * @throws InvalidConfigException
      */
-    public function validateAttribute($model, $attribute)
+    public function validateAttribute($model, $attribute): void
     {
         $value = $model->$attribute;
-        if (!$value instanceof \DateTime) {
+        if (!$value instanceof DateTime) {
             $value = DateTimeHelper::toDateTime(['time' => $value], true);
         }
 
@@ -82,7 +83,7 @@ class TimeValidator extends Validator
             return;
         }
 
-        if ($this->min !== null) {
+        if (isset($this->min)) {
             $min = DateTimeHelper::toDateTime(['time' => $this->min], true);
             if (!$min) {
                 throw new InvalidConfigException("Invalid minimum time: $this->min");
@@ -94,7 +95,7 @@ class TimeValidator extends Validator
             }
         }
 
-        if ($this->max !== null) {
+        if (isset($this->max)) {
             $max = DateTimeHelper::toDateTime(['time' => $this->max], true);
             if (!$max) {
                 throw new InvalidConfigException("Invalid maximum time: $this->max");

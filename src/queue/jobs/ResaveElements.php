@@ -12,6 +12,7 @@ use craft\base\ElementInterface;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\events\BatchElementActionEvent;
+use craft\i18n\Translation;
 use craft\queue\BaseJob;
 use craft\services\Elements;
 
@@ -24,25 +25,26 @@ use craft\services\Elements;
 class ResaveElements extends BaseJob
 {
     /**
-     * @var string|ElementInterface|null The element type that should be resaved
+     * @var string The element type that should be resaved
+     * @phpstan-var class-string<ElementInterface>
      */
-    public $elementType;
+    public string $elementType;
 
     /**
      * @var array|null The element criteria that determines which elements should be resaved
      */
-    public $criteria;
+    public ?array $criteria = null;
 
     /**
      * @var bool Whether to update the search indexes for the resaved elements.
      * @since 3.4.2
      */
-    public $updateSearchIndex = false;
+    public bool $updateSearchIndex = false;
 
     /**
      * @inheritdoc
      */
-    public function execute($queue)
+    public function execute($queue): void
     {
         /** @var ElementQuery $query */
         $query = $this->_query();
@@ -54,7 +56,7 @@ class ResaveElements extends BaseJob
 
         $callback = function(BatchElementActionEvent $e) use ($queue, $query, $total) {
             if ($e->query === $query) {
-                $this->setProgress($queue, ($e->position - 1) / $total, Craft::t('app', '{step, number} of {total, number}', [
+                $this->setProgress($queue, ($e->position - 1) / $total, Translation::prep('app', '{step, number} of {total, number}', [
                     'step' => $e->position,
                     'total' => $total,
                 ]));
@@ -69,13 +71,13 @@ class ResaveElements extends BaseJob
     /**
      * @inheritdoc
      */
-    protected function defaultDescription(): string
+    protected function defaultDescription(): ?string
     {
         /** @var ElementQuery $query */
         $query = $this->_query();
         /** @var ElementInterface $elementType */
         $elementType = $query->elementType;
-        return Craft::t('app', 'Resaving {type}', [
+        return Translation::prep('app', 'Resaving {type}', [
             'type' => $elementType::pluralLowerDisplayName(),
         ]);
     }
@@ -87,6 +89,8 @@ class ResaveElements extends BaseJob
      */
     private function _query(): ElementQueryInterface
     {
+        /** @var string|ElementInterface $elementType */
+        /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
         $elementType = $this->elementType;
         $query = $elementType::find();
 

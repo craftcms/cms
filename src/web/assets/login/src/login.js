@@ -11,7 +11,6 @@ import './login.scss';
         $forgotPasswordLink: null,
         $rememberPasswordLink: null,
         $submitBtn: null,
-        $spinner: null,
         $errors: null,
 
         forgotPassword: false,
@@ -25,7 +24,6 @@ import './login.scss';
             this.$forgotPasswordLink = $('#forgot-password');
             this.$rememberPasswordLink = $('#remember-password');
             this.$submitBtn = $('#submit');
-            this.$spinner = $('#spinner');
             this.$errors = $('#login-errors');
 
             new Craft.PasswordInput(this.$passwordInput, {
@@ -101,8 +99,7 @@ import './login.scss';
                 return;
             }
 
-            this.$submitBtn.addClass('active');
-            this.$spinner.removeClass('hidden');
+            this.$submitBtn.addClass('loading');
 
             this.clearErrors();
 
@@ -118,17 +115,13 @@ import './login.scss';
                 loginName: this.$loginNameInput.val()
             };
 
-            Craft.postActionRequest('users/send-password-reset-email', data, (response, textStatus) => {
-                if (textStatus === 'success') {
-                    if (response.success) {
-                        new MessageSentModal();
-                    } else {
-                        this.showError(response.error);
-                    }
-                }
-
-                this.onSubmitResponse();
-            });
+            Craft.sendActionRequest('POST', 'users/send-password-reset-email', {data})
+                .then((response) => {
+                    new MessageSentModal();
+                })
+                .catch(({response}) => {
+                    this.showError(response.data.message);
+                });
         },
 
         submitLogin: function() {
@@ -138,28 +131,23 @@ import './login.scss';
                 rememberMe: (this.$rememberMeCheckbox.prop('checked') ? 'y' : '')
             };
 
-            Craft.postActionRequest('users/login', data, (response, textStatus) => {
-                if (textStatus === 'success') {
-                    if (response.success) {
-                        window.location.href = response.returnUrl;
-                    } else {
-                        Garnish.shake(this.$form);
-                        this.onSubmitResponse();
-
-                        // Add the error message
-                        this.showError(response.error);
-                    }
-                } else {
+            Craft.sendActionRequest('POST', 'users/login', {data})
+                .then((response) => {
+                    window.location.href = response.data.returnUrl;
+                })
+                .catch(({response}) => {
+                    Garnish.shake(this.$form);
                     this.onSubmitResponse();
-                }
-            });
+
+                    // Add the error message
+                    this.showError(response.data.message);
+                });
 
             return false;
         },
 
         onSubmitResponse: function() {
-            this.$submitBtn.removeClass('active');
-            this.$spinner.addClass('hidden');
+            this.$submitBtn.removeClass('loading');
         },
 
         showError: function(error) {

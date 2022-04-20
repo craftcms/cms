@@ -18,7 +18,7 @@ use craft\base\ElementInterface;
 class FieldElementEvent extends ModelEvent
 {
     /**
-     * @var ElementInterface|null The element associated with this event
+     * @var ElementInterface The element associated with this event
      */
-    public $element;
+    public ElementInterface $element;
 }

@@ -17,7 +17,6 @@ use craft\mail\transportadapters\Gmail;
 use craft\mail\transportadapters\Sendmail;
 use craft\mail\transportadapters\Smtp;
 use craft\mail\transportadapters\TransportAdapterInterface;
-use craft\models\MailSettings;
 use yii\base\Event;
 use yii\helpers\Inflector;
 
@@ -47,12 +46,13 @@ class MailerHelper
      * );
      * ```
      */
-    const EVENT_REGISTER_MAILER_TRANSPORT_TYPES = 'registerMailerTransportTypes';
+    public const EVENT_REGISTER_MAILER_TRANSPORT_TYPES = 'registerMailerTransportTypes';
 
     /**
      * Returns all available mailer transport adapter classes.
      *
      * @return string[]
+     * @phpstan-return class-string<TransportAdapterInterface>[]
      */
     public static function allMailerTransportTypes(): array
     {
@@ -73,46 +73,32 @@ class MailerHelper
     /**
      * Creates a transport adapter based on the given mail settings.
      *
+     * @template T of TransportAdapterInterface
      * @param string $type
+     * @phpstan-param class-string<T> $type
      * @param array|null $settings
-     * @return TransportAdapterInterface
+     * @return T
      * @throws MissingComponentException if $type is missing
      */
     public static function createTransportAdapter(string $type, ?array $settings = null): TransportAdapterInterface
     {
-        /** @var BaseTransportAdapter $adapter */
-        $adapter = Component::createComponent([
+        return Component::createComponent([
             'type' => $type,
             'settings' => $settings,
         ], TransportAdapterInterface::class);
-
-        return $adapter;
-    }
-
-    /**
-     * Creates a mailer component based on the given mail settings.
-     *
-     * @param MailSettings $settings
-     * @return Mailer
-     * @deprecated in 3.0.18. Use [[App::mailerConfig()]] instead.
-     */
-    public static function createMailer(MailSettings $settings): Mailer
-    {
-        $config = App::mailerConfig($settings);
-        return Craft::createObject($config);
     }
 
     /**
      * Normalizes To/From/CC/BCC values into an array of email addresses, or email/name pairs.
      *
      * @param string|array|User|User[]|null $emails
-     * @return array|null
+     * @return array
      * @since 3.5.0
      */
-    public static function normalizeEmails($emails)
+    public static function normalizeEmails(mixed $emails): array
     {
         if (empty($emails)) {
-            return null;
+            return [];
         }
 
         if (!is_array($emails)) {
@@ -123,12 +109,12 @@ class MailerHelper
 
         foreach ($emails as $key => $value) {
             if ($value instanceof User) {
-                if (($name = $value->getFullName()) !== null) {
-                    $normalized[$value->email] = $name;
+                if ($value->fullName !== null) {
+                    $normalized[$value->email] = $value->fullName;
                 } else {
                     $normalized[] = $value->email;
                 }
-            } else if (is_numeric($key)) {
+            } elseif (is_numeric($key)) {
                 $normalized[] = $value;
             } else {
                 $normalized[$key] = $value;
@@ -160,14 +146,18 @@ class MailerHelper
         $security = Craft::$app->getSecurity();
 
         // Use the transport adapter settings if it was sent
+        /** @var BaseTransportAdapter|null $transportAdapter */
         if ($transportAdapter !== null) {
             /** @var BaseTransportAdapter $transportAdapter */
-            foreach ($transportAdapter->settingsAttributes() as $name) {
+            $settingsAttributes = $transportAdapter->settingsAttributes();
+            foreach ($settingsAttributes as $name) {
                 $transportSettings[$transportAdapter->getAttributeLabel($name)] = $transportAdapter->$name;
             }
         } else {
             // Otherwise just output whatever public properties we have available on the transport
-            foreach ((array)$transportAdapter as $name => $value) {
+            /** @var array $asArray */
+            $asArray = (array)$transportAdapter;
+            foreach ($asArray as $name => $value) {
                 $transportSettings[Inflector::camel2words($name, true)] = $value;
             }
         }
@@ -175,9 +165,9 @@ class MailerHelper
         foreach ($transportSettings as $label => $value) {
             if (is_scalar($value)) {
                 $settings[$label] = $security->redactIfSensitive($label, $value);
-            } else if (is_array($value)) {
+            } elseif (is_array($value)) {
                 $settings[$label] = 'Array';
-            } else if (is_object($value)) {
+            } elseif (is_object($value)) {
                 $settings[$label] = 'Object';
             }
         }
@@ -193,13 +183,13 @@ class MailerHelper
     /**
      * Normalizes a list of emails and returns them in a comma-separated list.
      *
-     * @param $emails
+     * @param mixed $emails
      * @return string
      */
-    private static function _emailList($emails): string
+    private static function _emailList(mixed $emails): string
     {
         $normalized = static::normalizeEmails($emails);
-        if ($normalized === null) {
+        if (empty($normalized)) {
             return '';
         }
         $list = [];

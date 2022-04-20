@@ -1,0 +1,68 @@
+{% extends "_layouts/cp" %}
+{% set title = "Button Tests" %}
+
+
+{% block actionButton %}
+    <div class="btn menubtn">Current</div>
+    <div class="menu">
+        <ul class="padded">
+            <li><a class="sel" href="http://craft.dev/admin/entries/blog/204">Current</a></li>
+        </ul>
+        <hr class="padded">
+        <ul class="padded">
+            <li><a href="http://craft.dev/admin/entries/blog/204/versions/13">Version 13 <span class="light">admin</span></a></li>
+            <li><a href="http://craft.dev/admin/entries/blog/204/versions/14">Version 14 <span class="light">admin</span></a></li>
+            <li><a href="http://craft.dev/admin/entries/blog/204/versions/15">Version 15 <span class="light">admin</span></a></li>
+            <li><a href="http://craft.dev/admin/entries/blog/204/versions/16">Version 16 <span class="light">admin</span></a></li>
+            <li><a href="http://craft.dev/admin/entries/blog/204/versions/17">Version 17 <span class="light">admin</span></a></li>
+            <li><a href="http://craft.dev/admin/entries/blog/204/versions/18">Version 18 <span class="light">admin</span></a></li>
+        </ul>
+    </div>
+{% endblock %}
+
+
+{% block content %}
+
+    <div class="buttons">
+        <div class="btn">Click me</div>
+    </div>
+
+    <div class="buttons">
+        <div class="btn submit">Submit me</div>
+    </div>
+
+    <div class="buttons">
+        <div class="btngroup">
+            <div data-view="table" role="button" class="btn active" title="Display in a table" data-icon="list"></div>
+            <div data-view="table" role="button" class="btn" title="Display hierarchically" data-icon="structure"></div>
+            <div data-view="thumbs" role="button" class="btn" title="Display as thumbnails" data-icon="grid"></div>
+        </div>
+        <button type="button" class="btn formsubmit" data-action="foo/bar" data-redirect="http://craft.dev/admin/entries/blog/204/drafts/{draftId}" tabindex="0">Create a draft</button>
+    </div>
+
+    <div class="buttons">
+        <div class="btngroup">
+            <div data-view="table" role="button" class="btn" title="Display in a table" data-icon="list"></div>
+            <div data-view="table" role="button" class="btn active" title="Display hierarchically" data-icon="structure"></div>
+            <div data-view="thumbs" role="button" class="btn" title="Display as thumbnails" data-icon="grid"></div>
+        </div>
+    </div>
+
+    <div class="buttons">
+        <div class="btngroup">
+            <div data-view="table" role="button" class="btn" title="Display in a table" data-icon="list"></div>
+            <div data-view="table" role="button" class="btn" title="Display hierarchically" data-icon="structure"></div>
+            <div data-view="thumbs" role="button" class="btn active" title="Display as thumbnails" data-icon="grid"></div>
+        </div>
+    </div>
+
+    <div class="buttons">
+        <div class="btngroup">
+            <button type="submit" class="btn submit">Save</button>
+            <div class="btn submit menubtn"></div>
+        </div>
+
+        <button type="button" class="btn formsubmit" data-action="foo/bar" data-redirect="http://craft.dev/admin/entries/blog/204/drafts/{draftId}" tabindex="0">Create a draft</button>
+    </div>
+
+{% endblock %}

@@ -1,7 +1,0 @@
-<div id="{{ id }}" class="btngroup big">
-    {% for option in options %}
-        <div title="{{ allOptions[option] }}" aria-label="{{ allOptions[option] }}" class="btn big {% if option == value %} active{% endif %}" data-icon="pos{{ option|replace('-', '') }}" data-option="{{ option }}"></div>
-    {% endfor %}
-</div>
-
-<input type="hidden" name="{{ name }}" value="{{ value }}">

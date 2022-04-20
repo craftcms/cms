@@ -17,6 +17,7 @@ coverage:
     - src/config/*
     - src/icons/*
     - src/test/internal/*
+    - src/test/templates/*
     - src/migrations/*
     - src/templates/*
     - src/translations/*
@@ -52,7 +53,6 @@ groups:
   db: [tests/unit/db]
   elements: [tests/unit/elements]
   helpers: [tests/unit/helpers]
-  log: [tests/unit/log]
   mail: [tests/unit/mail]
   search: [tests/unit/search]
   services: [tests/unit/services]

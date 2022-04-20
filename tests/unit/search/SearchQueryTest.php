@@ -7,16 +7,17 @@
 
 namespace crafttests\unit\search;
 
-use Codeception\Test\Unit;
+use craft\helpers\ArrayHelper;
 use craft\search\SearchQuery;
 use craft\search\SearchQueryTerm;
 use craft\search\SearchQueryTermGroup;
+use craft\test\TestCase;
 
 /**
  * Unit tests for SearchTest
  *
  * Searching and some of the commands run in this test are documented here:
- * https://craftcms.com/docs/3.x/searching.html
+ * https://craftcms.com/docs/4.x/searching.html
  *
  * @todo There are MySQL and PostgreSQL specific search tests that need to be performed.
  *
@@ -24,34 +25,32 @@ use craft\search\SearchQueryTermGroup;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class SearchQueryTest extends Unit
+class SearchQueryTest extends TestCase
 {
-    const DEFAULT_SEARCH_QUERY_TERM_CONFIG = [
+    public const DEFAULT_SEARCH_QUERY_TERM_CONFIG = [
         'exclude' => false,
         'exact' => false,
         'subLeft' => false,
         'subRight' => true,
-        'attribute' => null,
-        'phrase' => null
+        'phrase' => false,
     ];
 
     /**
-     * @param $token
-     * @param $configOptions
-     * @param $index
+     * @param SearchQueryTerm $token
+     * @param array|null $configOptions
+     * @param string|null $index
      * @return SearchQueryTerm
      */
-    public function getWhatItShouldBe($token, $configOptions, $index): SearchQueryTerm
+    public function getWhatItShouldBe(SearchQueryTerm $token, ?array $configOptions, ?string $index): SearchQueryTerm
     {
         // Get whether the data provider gave us custom config options for this term based on the above searchParam
-        $config = $this->getConfigFromOptions($index, $configOptions);
-
+        $config = $configOptions[$index] ?? self::DEFAULT_SEARCH_QUERY_TERM_CONFIG;
         return $this->createDefaultSearchQueryTermFromString($token->term, $config);
     }
 
     /**
-     * @param $term
-     * @param $config
+     * @param string $term
+     * @param array $config
      * @return SearchQueryTerm
      */
     public function createDefaultSearchQueryTermFromString(string $term, array $config): SearchQueryTerm
@@ -64,27 +63,6 @@ class SearchQueryTest extends Unit
     }
 
     /**
-     * Essentially a function that sees if the $key exists in the $config options and returns that. If it doesnt exist it returns
-     * self::DEFAULT_SEARCH_QUERY_TERM_CONFIG
-     *
-     * @param string|null $key
-     * @param array|null $configOptions
-     * @return array|mixed
-     */
-    public function getConfigFromOptions(string $key = null, array $configOptions = null)
-    {
-        if (!$configOptions) {
-            return self::DEFAULT_SEARCH_QUERY_TERM_CONFIG;
-        }
-
-        if (!array_key_exists($key, $configOptions) || !isset($configOptions[$key])) {
-            return self::DEFAULT_SEARCH_QUERY_TERM_CONFIG;
-        }
-
-        return $configOptions[$key];
-    }
-
-    /**
      * Compare two searchQueryTerm objects to make sure they are the same.
      *
      * @param SearchQueryTerm $one
@@ -92,15 +70,14 @@ class SearchQueryTest extends Unit
      */
     public function ensureIdenticalSearchTermObjects(SearchQueryTerm $one, SearchQueryTerm $two)
     {
-        self::assertSame([
-            $one->exclude, $one->exact, $one->subLeft, $one->subRight, $one->attribute, $one->term, $one->phrase
-        ], [$two->exclude, $two->exact, $two->subLeft, $two->subRight, $two->attribute, $two->term, $two->phrase]);
+        $properties = ['subLeft', 'subRight', 'exclude', 'exact', 'attribute', 'term', 'phrase'];
+        self::assertSame(ArrayHelper::toArray($one, $properties), ArrayHelper::toArray($two, $properties));
     }
 
     /**
      *
      */
-    public function testSearchQueryGrouping()
+    public function testSearchQueryGrouping(): void
     {
         $search = new SearchQuery('i live OR die');
 
@@ -121,7 +98,7 @@ class SearchQueryTest extends Unit
     /**
      *
      */
-    public function testOnlyOr()
+    public function testOnlyOr(): void
     {
         $search = new SearchQuery('OR');
         self::assertSame([], $search->getTokens());
@@ -130,15 +107,14 @@ class SearchQueryTest extends Unit
     /*
      * Test that additional default _termOptions are respected
      */
-    public function testAdditionalDefaultTerms()
+    public function testAdditionalDefaultTerms(): void
     {
         $search = new SearchQuery('search', [
             'exclude' => true,
             'exact' => true,
             'subLeft' => true,
             'subRight' => true,
-            'attribute' => [],
-            'phrase' => [],
+            'phrase' => false,
         ]);
 
         $this->ensureIdenticalSearchTermObjects($search->getTokens()[0], new SearchQueryTerm([
@@ -146,16 +122,15 @@ class SearchQueryTest extends Unit
             'exact' => true,
             'subLeft' => true,
             'subRight' => true,
-            'attribute' => [],
             'term' => 'search',
-            'phrase' => [],
+            'phrase' => false,
         ]));
     }
 
     /**
      * Test the defaults of the SearchQuery class
      */
-    public function testDefaultQueryTokens()
+    public function testDefaultQueryTokens(): void
     {
         $search = new SearchQuery('search');
 
@@ -167,9 +142,8 @@ class SearchQueryTest extends Unit
             'exact' => false,
             'subLeft' => false,
             'subRight' => true,
-            'attribute' => null,
             'term' => $search->getQuery(),
-            'phrase' => null
+            'phrase' => false,
         ]);
 
         $tokens = $search->getTokens()[0];
@@ -179,12 +153,11 @@ class SearchQueryTest extends Unit
 
     /**
      * @dataProvider searchQueryDataProviders
-     *
      * @param string $query
-     * @param array $configOptions
+     * @param array|null $configOptions
      * @param int|null $sizeOfArray
      */
-    public function testSearchQuery(string $query, array $configOptions = null, int $sizeOfArray = null)
+    public function testSearchQuery(string $query, ?array $configOptions = null, int $sizeOfArray = null): void
     {
         $search = new SearchQuery($query);
 
@@ -203,16 +176,14 @@ class SearchQueryTest extends Unit
 
     /**
      * @dataProvider searchQueryDataProviders
-     *
      * @param string $query
      * @param array|null $configOptions
      */
-    public function testSearchQuerySortOrder(string $query, array $configOptions = null)
+    public function testSearchQuerySortOrder(string $query, array $configOptions = null): void
     {
         $exploded = explode(' ', $query);
         foreach ((new SearchQuery($query))->getTokens() as $index => $token) {
-            $config = $this->getConfigFromOptions($index, $configOptions);
-
+            $config = $configOptions[$index] ?? self::DEFAULT_SEARCH_QUERY_TERM_CONFIG;
             $fromExplodedString = $this->createDefaultSearchQueryTermFromString($exploded[$index], $config);
             $this->ensureIdenticalSearchTermObjects($fromExplodedString, $token);
         }
@@ -224,38 +195,41 @@ class SearchQueryTest extends Unit
     public function searchQueryDataProviders(): array
     {
         // The $searchQueryTerm->term property will not contain the "" double quotes and will have ['phrase'] set to true
-        $quotedPhraseConfig = self::DEFAULT_SEARCH_QUERY_TERM_CONFIG;
+        $quotedPhraseConfig = array_merge(self::DEFAULT_SEARCH_QUERY_TERM_CONFIG);
         $quotedPhraseConfig['phrase'] = true;
         $quotedPhraseConfig['term'] = 'Hello';
 
-
-        $excludeTermConfig = self::DEFAULT_SEARCH_QUERY_TERM_CONFIG;
+        $excludeTermConfig = array_merge(self::DEFAULT_SEARCH_QUERY_TERM_CONFIG);
         $excludeTermConfig['exclude'] = true;
         $excludeTermConfig['term'] = 'Hello';
 
-
-        $subtermLeft = self::DEFAULT_SEARCH_QUERY_TERM_CONFIG;
+        $subtermLeft = array_merge(self::DEFAULT_SEARCH_QUERY_TERM_CONFIG);
         $subtermLeft['subLeft'] = true;
+        $subtermLeft['subRight'] = false;
         $subtermLeft['term'] = 'Hello';
 
-        $subTermRight = self::DEFAULT_SEARCH_QUERY_TERM_CONFIG;
+        $subTermRight = array_merge(self::DEFAULT_SEARCH_QUERY_TERM_CONFIG);
         $subTermRight['term'] = 'Hello';
 
-        $firstQuote = self::DEFAULT_SEARCH_QUERY_TERM_CONFIG;
+        $subtermBoth = array_merge(self::DEFAULT_SEARCH_QUERY_TERM_CONFIG);
+        $subtermBoth['subLeft'] = true;
+        $subtermBoth['subRight'] = true;
+        $subtermBoth['term'] = 'Hello';
+
+        $firstQuote = array_merge(self::DEFAULT_SEARCH_QUERY_TERM_CONFIG);
         $firstQuote['term'] = 'i';
         $firstQuote['phrase'] = true;
 
-        $attributeConfig = self::DEFAULT_SEARCH_QUERY_TERM_CONFIG;
+        $attributeConfig = array_merge(self::DEFAULT_SEARCH_QUERY_TERM_CONFIG);
         $attributeConfig['term'] = 'test';
         $attributeConfig['attribute'] = 'body';
         $attributeConfig['exact'] = true;
         $attributeConfig['subRight'] = false;
 
-
-        $attributePhraseConfig = $attributeConfig;
+        $attributePhraseConfig = array_merge($attributeConfig);
         $attributePhraseConfig['phrase'] = true;
 
-        $emptyConfig = self::DEFAULT_SEARCH_QUERY_TERM_CONFIG;
+        $emptyConfig = array_merge(self::DEFAULT_SEARCH_QUERY_TERM_CONFIG);
         $emptyConfig['term'] = '';
         $emptyConfig['exclude'] = true;
         $emptyConfig['subRight'] = false;
@@ -268,13 +242,13 @@ class SearchQueryTest extends Unit
             ['i said -Hello', ['2' => $excludeTermConfig], 3],
             ['i said *Hello', ['2' => $subtermLeft], 3],
             ['i said Hello*', ['2' => $subTermRight], 3],
-            ['i said *Hello*', ['2' => $subtermLeft], 3],
+            ['i said *Hello*', ['2' => $subtermBoth], 3],
             ['i said body::"test"', ['2' => $attributePhraseConfig], 3],
             ['i said -body:*', ['2' => $emptyConfig], 3],
             ['i said body::test', ['2' => $attributeConfig], 3],
 
             ['i have spaces and lines', null, 5],
-            ['"i" said Hello', ['0' => $firstQuote], 3]
+            ['"i" said Hello', ['0' => $firstQuote], 3],
         ];
     }
 }

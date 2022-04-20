@@ -22,12 +22,12 @@ class NewSiblingBefore extends ElementAction
     /**
      * @var string|null The trigger label
      */
-    public $label;
+    public ?string $label = null;
 
     /**
      * @var string|null The URL that the user should be taken to after clicking on this element action
      */
-    public $newSiblingUrl;
+    public ?string $newSiblingUrl = null;
 
     /**
      * @inheritdoc
@@ -40,7 +40,7 @@ class NewSiblingBefore extends ElementAction
     /**
      * @inheritdoc
      */
-    public function getTriggerHtml()
+    public function getTriggerHtml(): ?string
     {
         $type = Json::encode(static::class);
         $newSiblingUrl = Json::encode($this->newSiblingUrl);
@@ -48,7 +48,7 @@ class NewSiblingBefore extends ElementAction
         $js = <<<JS
 (() => {
     let trigger = new Craft.ElementActionTrigger({
-        type: {$type},
+        type: $type,
         batch: false,
         activate: function(\$selectedItems)
         {

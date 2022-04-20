@@ -26,7 +26,7 @@ class UserSettingsController extends Controller
     /**
      * @inheritdoc
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         // All user settings actions require an admin
         $this->requireAdmin();
@@ -44,7 +44,7 @@ class UserSettingsController extends Controller
      * @return Response|null
      * @throws BadRequestHttpException
      */
-    public function actionSaveGroup()
+    public function actionSaveGroup(): ?Response
     {
         $this->requirePostRequest();
 
@@ -89,6 +89,14 @@ class UserSettingsController extends Controller
             }
         }
 
+        // assignNewUserGroup => assignUserGroup:<uid>
+        if (!$groupId) {
+            $assignNewGroupKey = array_search('assignNewUserGroup', $permissions);
+            if ($assignNewGroupKey !== false) {
+                $permissions[$assignNewGroupKey] = "assignUserGroup:$group->uid";
+            }
+        }
+
         Craft::$app->getUserPermissions()->saveGroupPermissions($group->id, $permissions);
 
         $this->setSuccessFlash(Craft::t('app', 'Group saved.'));
@@ -109,7 +117,7 @@ class UserSettingsController extends Controller
 
         Craft::$app->getUserGroups()->deleteGroupById($groupId);
 
-        return $this->asJson(['success' => true]);
+        return $this->asSuccess();
     }
 
     /**
@@ -117,7 +125,7 @@ class UserSettingsController extends Controller
      *
      * @return Response|null
      */
-    public function actionSaveUserSettings()
+    public function actionSaveUserSettings(): ?Response
     {
         $this->requirePostRequest();
         $projectConfig = Craft::$app->getProjectConfig();
@@ -130,7 +138,7 @@ class UserSettingsController extends Controller
             $settings['requireEmailVerification'] = (bool)$this->request->getBodyParam('requireEmailVerification');
             $settings['validateOnPublicRegistration'] = (bool)$this->request->getBodyParam('validateOnPublicRegistration');
             $settings['allowPublicRegistration'] = (bool)$this->request->getBodyParam('allowPublicRegistration');
-            $settings['suspendByDefault'] = (bool)$this->request->getBodyParam('suspendByDefault');
+            $settings['deactivateByDefault'] = (bool)$this->request->getBodyParam('deactivateByDefault');
             $settings['defaultGroup'] = $this->request->getBodyParam('defaultGroup');
         }
 

@@ -25,40 +25,40 @@ class CsvResponseFormatter extends Component implements ResponseFormatterInterfa
     /**
      * @var string the Content-Type header for the response
      */
-    public $contentType = 'text/csv';
+    public string $contentType = 'text/csv';
 
     /**
      * @var bool whether the response data should include a header row
      */
-    public $includeHeaderRow = true;
+    public bool $includeHeaderRow = true;
 
     /**
      * @var string[] the header row values. The array keys of first result in
      * [[YiiResponse::$data]] will be used by default.
      */
-    public $headers;
+    public array $headers;
 
     /**
      * @var string the field delimiter (one character only)
      */
-    public $delimiter = ',';
+    public string $delimiter = ',';
 
     /**
      * @var string the field enclosure (one character only)
      */
-    public $enclosure = '"';
+    public string $enclosure = '"';
 
     /**
      * @var string the escape character (one character only)
      */
-    public $escapeChar = '';
+    public string $escapeChar = "\\";
 
     /**
      * Formats the specified response.
      *
      * @param YiiResponse $response the response to be formatted.
      */
-    public function format($response)
+    public function format($response): void
     {
         if (stripos($this->contentType, 'charset') === false) {
             $this->contentType .= '; charset=' . $response->charset;
@@ -80,12 +80,8 @@ class CsvResponseFormatter extends Component implements ResponseFormatterInterfa
 
         $suspectCharacters = ['=', '-', '+', '@'];
 
-        $escapeChar = $this->escapeChar;
-        if ($escapeChar === '' && PHP_VERSION_ID < 70400) {
-            $escapeChar = '\\';
-        }
-
         $headersIncluded = false;
+
         foreach ($data as $row) {
             // Include the headers
             if (!$headersIncluded && $this->includeHeaderRow) {
@@ -107,7 +103,7 @@ class CsvResponseFormatter extends Component implements ResponseFormatterInterfa
                 }
             }
             unset($field);
-            fputcsv($fp, $row, $this->delimiter, $this->enclosure, $escapeChar);
+            fputcsv($fp, $row, $this->delimiter, $this->enclosure, $this->escapeChar);
         }
 
         fclose($fp);

@@ -22,14 +22,14 @@ class EditImage extends ElementAction
     /**
      * @var string The trigger label
      */
-    public $label;
+    public string $label;
 
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
-        if ($this->label === null) {
+        if (!isset($this->label)) {
             $this->label = Craft::t('app', 'Edit Image');
         }
     }
@@ -45,14 +45,14 @@ class EditImage extends ElementAction
     /**
      * @inheritdoc
      */
-    public function getTriggerHtml()
+    public function getTriggerHtml(): ?string
     {
         $type = Json::encode(static::class);
 
         $js = <<<JS
 (() => {
     new Craft.ElementActionTrigger({
-        type: {$type},
+        type: $type,
         batch: false,
         _imageEditor: null,
         validateSelection: function(\$selectedItems)

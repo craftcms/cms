@@ -18,12 +18,12 @@ use craft\gql\base\RelationArgumentHandler;
  */
 class RelatedTags extends RelationArgumentHandler
 {
-    protected $argumentName = 'relatedToTags';
+    protected string $argumentName = 'relatedToTags';
 
     /**
      * @inheritdoc
      */
-    protected function handleArgument($argumentValue)
+    protected function handleArgument($argumentValue): mixed
     {
         $argumentValue = parent::handleArgument($argumentValue);
         return $this->getIds(Tag::class, $argumentValue);

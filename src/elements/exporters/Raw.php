@@ -30,7 +30,7 @@ class Raw extends ElementExporter
     /**
      * @inheritdoc
      */
-    public function export(ElementQueryInterface $query): array
+    public function export(ElementQueryInterface $query): mixed
     {
         return $query->asArray()->all();
     }

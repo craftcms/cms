@@ -19,7 +19,6 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend({
     $primaryButtons: null,
     $secondaryButtons: null,
     $cancelBtn: null,
-    $footerSpinner: null,
 
     init: function(elementType, settings) {
         this.elementType = elementType;
@@ -39,7 +38,6 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend({
 
         this.base($container, this.settings);
 
-        this.$footerSpinner = $('<div class="spinner hidden"/>').appendTo($footer);
         this.$secondaryButtons = $('<div class="buttons left secondary-buttons"/>').appendTo($footer);
         this.$primaryButtons = $('<div class="buttons right"/>').appendTo($footer);
         this.$cancelBtn = $('<button/>', {
@@ -47,10 +45,10 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend({
             class: 'btn',
             text: Craft.t('app', 'Cancel'),
         }).appendTo(this.$primaryButtons);
-        this.$selectBtn = $('<button/>', {
-            type: 'button',
-            class: 'btn disabled submit',
-            text: Craft.t('app', 'Select'),
+        this.$selectBtn = Craft.ui.createSubmitButton({
+            class: 'disabled',
+            label: Craft.t('app', 'Select'),
+            spinner: true,
         }).appendTo(this.$primaryButtons);
 
         this.$body = $body;
@@ -103,11 +101,11 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend({
     },
 
     showFooterSpinner: function() {
-        this.$footerSpinner.removeClass('hidden');
+        this.$selectBtn.addClass('loading');
     },
 
     hideFooterSpinner: function() {
-        this.$footerSpinner.addClass('hidden');
+        this.$selectBtn.removeClass('loading');
     },
 
     cancel: function() {
@@ -186,19 +184,20 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend({
             data.showSiteMenu = this.settings.showSiteMenu ? '1' : '0';
         }
 
-        Craft.postActionRequest('elements/get-modal-body', data, (response, textStatus) => {
-            if (textStatus === 'success') {
-                this.$body.html(response.html);
+        Craft.sendActionRequest('POST', this.settings.bodyAction, {data})
+            .then((response) => {
+                this.$body.html(response.data.html);
 
                 if (this.$body.has('.sidebar:not(.hidden)').length) {
                     this.$body.addClass('has-sidebar');
                 }
 
                 // Initialize the element index
-                this.elementIndex = Craft.createElementIndex(this.elementType, this.$body, {
+                this.elementIndex = Craft.createElementIndex(this.elementType, this.$body, Object.assign({
                     context: 'modal',
                     modal: this,
                     storageKey: this.settings.storageKey,
+                    condition: this.settings.condition,
                     criteria: this.settings.criteria,
                     disabledElementIds: this.settings.disabledElementIds,
                     selectable: true,
@@ -208,7 +207,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend({
                     hideSidebar: this.settings.hideSidebar,
                     defaultSiteId: this.settings.defaultSiteId,
                     defaultSource: this.settings.defaultSource
-                });
+                }, this.settings.indexSettings));
 
                 // Double-clicking or double-tapping should select the elements
                 this.addListener(this.elementIndex.$elements, 'doubletap', function(ev, touchData) {
@@ -218,8 +217,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend({
                         this.selectElements();
                     }
                 });
-            }
-        });
+            });
     }
 }, {
     defaults: {
@@ -227,6 +225,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend({
         resizable: true,
         storageKey: null,
         sources: null,
+        condition: null,
         criteria: null,
         multiSelect: false,
         showSiteMenu: null,
@@ -238,6 +237,8 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend({
         onSelect: $.noop,
         hideSidebar: false,
         defaultSiteId: null,
-        defaultSource: null
-    }
+        defaultSource: null,
+        bodyAction: 'element-selector-modals/body',
+        indexSettings: {},
+    },
 });

@@ -31,59 +31,60 @@ use craft\validators\UniqueValidator;
  */
 class Section extends Model
 {
-    const TYPE_SINGLE = 'single';
-    const TYPE_CHANNEL = 'channel';
-    const TYPE_STRUCTURE = 'structure';
+    public const TYPE_SINGLE = 'single';
+    public const TYPE_CHANNEL = 'channel';
+    public const TYPE_STRUCTURE = 'structure';
 
-    const PROPAGATION_METHOD_NONE = 'none';
-    const PROPAGATION_METHOD_SITE_GROUP = 'siteGroup';
-    const PROPAGATION_METHOD_LANGUAGE = 'language';
-    const PROPAGATION_METHOD_ALL = 'all';
+    public const PROPAGATION_METHOD_NONE = 'none';
+    public const PROPAGATION_METHOD_SITE_GROUP = 'siteGroup';
+    public const PROPAGATION_METHOD_LANGUAGE = 'language';
+    public const PROPAGATION_METHOD_ALL = 'all';
     /** @since 3.5.0 */
-    const PROPAGATION_METHOD_CUSTOM = 'custom';
+    public const PROPAGATION_METHOD_CUSTOM = 'custom';
 
     /** @since 3.7.0 */
-    const DEFAULT_PLACEMENT_BEGINNING = 'beginning';
+    public const DEFAULT_PLACEMENT_BEGINNING = 'beginning';
     /** @since 3.7.0 */
-    const DEFAULT_PLACEMENT_END = 'end';
+    public const DEFAULT_PLACEMENT_END = 'end';
 
     /**
      * @var int|null ID
      */
-    public $id;
+    public ?int $id = null;
 
     /**
      * @var int|null Structure ID
      */
-    public $structureId;
+    public ?int $structureId = null;
 
     /**
      * @var string|null Name
      */
-    public $name;
+    public ?string $name = null;
 
     /**
      * @var string|null Handle
      */
-    public $handle;
+    public ?string $handle = null;
 
     /**
      * @var string|null Type
      */
-    public $type;
+    public ?string $type = null;
 
     /**
      * @var int|null Max levels
      */
-    public $maxLevels;
+    public ?int $maxLevels = null;
 
     /**
      * @var bool Enable versioning
      */
-    public $enableVersioning = true;
+    public bool $enableVersioning = true;
 
     /**
      * @var string Propagation method
+     * @phpstan-var self::PROPAGATION_METHOD_NONE|self::PROPAGATION_METHOD_SITE_GROUP|self::PROPAGATION_METHOD_LANGUAGE|self::PROPAGATION_METHOD_ALL|self::PROPAGATION_METHOD_CUSTOM
      *
      * This will be set to one of the following:
      *
@@ -94,46 +95,41 @@ class Section extends Model
      *
      * @since 3.2.0
      */
-    public $propagationMethod = self::PROPAGATION_METHOD_ALL;
-
-    /**
-     * @var bool Propagate entries
-     * @deprecated in 3.2.0. Use [[$propagationMethod]] instead
-     */
-    public $propagateEntries = true;
+    public string $propagationMethod = self::PROPAGATION_METHOD_ALL;
 
     /**
      * @var string Default placement
+     * @phpstan-var self::DEFAULT_PLACEMENT_BEGINNING|self::DEFAULT_PLACEMENT_END
      * @since 3.7.0
      */
-    public $defaultPlacement = self::DEFAULT_PLACEMENT_END;
+    public string $defaultPlacement = self::DEFAULT_PLACEMENT_END;
 
     /**
-     * @var array Preview targets
+     * @var array|null Preview targets
      */
-    public $previewTargets = null;
+    public ?array $previewTargets = null;
 
     /**
      * @var string|null Section's UID
      */
-    public $uid;
+    public ?string $uid = null;
 
     /**
      * @var Section_SiteSettings[]|null
      */
-    private $_siteSettings;
+    private ?array $_siteSettings = null;
 
     /**
      * @var EntryType[]|null
      */
-    private $_entryTypes;
+    private ?array $_entryTypes = null;
 
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
-        if ($this->previewTargets === null) {
+        if (!isset($this->previewTargets)) {
             $this->previewTargets = [
                 [
                     'label' => Craft::t('app', 'Primary {type} page', [
@@ -144,17 +140,13 @@ class Section extends Model
             ];
         }
 
-        // todo: remove this in 4.0
-        // Set propagateEntries in case anything is still checking it
-        $this->propagateEntries = $this->propagationMethod !== self::PROPAGATION_METHOD_NONE;
-
         parent::init();
     }
 
     /**
      * @inheritdoc
      */
-    public function attributeLabels()
+    public function attributeLabels(): array
     {
         return [
             'handle' => Craft::t('app', 'Handle'),
@@ -199,7 +191,7 @@ class Section extends Model
     /**
      * Validates the site settings.
      */
-    public function validateSiteSettings()
+    public function validateSiteSettings(): void
     {
         // If this is an existing section, make sure they aren't moving it to a
         // completely different set of sites in one fell swoop
@@ -217,7 +209,7 @@ class Section extends Model
 
         foreach ($this->getSiteSettings() as $i => $siteSettings) {
             if (!$siteSettings->validate()) {
-                $this->addModelErrors($siteSettings, "siteSettings[{$i}]");
+                $this->addModelErrors($siteSettings, "siteSettings[$i]");
             }
         }
     }
@@ -225,7 +217,7 @@ class Section extends Model
     /**
      * Validates the preview targets.
      */
-    public function validatePreviewTargets()
+    public function validatePreviewTargets(): void
     {
         $hasErrors = false;
 
@@ -262,7 +254,7 @@ class Section extends Model
      */
     public function getSiteSettings(): array
     {
-        if ($this->_siteSettings !== null) {
+        if (isset($this->_siteSettings)) {
             return $this->_siteSettings;
         }
 
@@ -281,7 +273,7 @@ class Section extends Model
      *
      * @param Section_SiteSettings[] $siteSettings Array of Section_SiteSettings objects.
      */
-    public function setSiteSettings(array $siteSettings)
+    public function setSiteSettings(array $siteSettings): void
     {
         $this->_siteSettings = ArrayHelper::index($siteSettings, 'siteId');
 
@@ -306,7 +298,7 @@ class Section extends Model
      * @param array $errors
      * @param int $siteId
      */
-    public function addSiteSettingsErrors(array $errors, int $siteId)
+    public function addSiteSettingsErrors(array $errors, int $siteId): void
     {
         foreach ($errors as $attribute => $siteErrors) {
             $key = $attribute . '-' . $siteId;
@@ -323,7 +315,7 @@ class Section extends Model
      */
     public function getEntryTypes(): array
     {
-        if ($this->_entryTypes !== null) {
+        if (isset($this->_entryTypes)) {
             return $this->_entryTypes;
         }
 
@@ -342,7 +334,7 @@ class Section extends Model
      * @param EntryType[] $entryTypes
      * @since 3.1.0
      */
-    public function setEntryTypes(array $entryTypes)
+    public function setEntryTypes(array $entryTypes): void
     {
         $this->_entryTypes = $entryTypes;
     }
@@ -374,7 +366,7 @@ class Section extends Model
             'name' => $this->name,
             'handle' => $this->handle,
             'type' => $this->type,
-            'enableVersioning' => (bool)$this->enableVersioning,
+            'enableVersioning' => $this->enableVersioning,
             'propagationMethod' => $this->propagationMethod,
             'siteSettings' => [],
             'defaultPlacement' => $this->defaultPlacement ?? self::DEFAULT_PLACEMENT_END,

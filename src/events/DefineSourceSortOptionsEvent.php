@@ -7,6 +7,7 @@
 
 namespace craft\events;
 
+use craft\base\ElementInterface;
 use yii\base\Event;
 
 /**
@@ -19,13 +20,14 @@ class DefineSourceSortOptionsEvent extends Event
 {
     /**
      * @var string The element type class
+     * @phpstan-var class-string<ElementInterface>
      */
-    public $elementType;
+    public string $elementType;
 
     /**
      * @var string The element source key
      */
-    public $source;
+    public string $source;
 
     /**
      * @var array The sort option definitions.
@@ -37,5 +39,5 @@ class DefineSourceSortOptionsEvent extends Event
      * - `attribute` _(optional)_ – The table attribute name that this option is associated with
      *   (required if `orderBy` is an array or more than one column name)
      */
-    public $sortOptions = [];
+    public array $sortOptions = [];
 }

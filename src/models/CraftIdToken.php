@@ -21,44 +21,44 @@ class CraftIdToken extends Model
     /**
      * @var int|null
      */
-    public $id;
+    public ?int $id = null;
 
     /**
      * @var int|null
      */
-    public $userId;
+    public ?int $userId = null;
 
     /**
      * @var string|null
      */
-    public $accessToken;
+    public ?string $accessToken = null;
 
     /**
      * @var DateTime|null
      */
-    public $expiryDate;
+    public ?DateTime $expiryDate = null;
 
     /**
      * @var DateTime|null
      */
-    public $dateCreated;
+    public ?DateTime $dateCreated = null;
 
     /**
      * @var DateTime|null
      */
-    public $dateUpdated;
+    public ?DateTime $dateUpdated = null;
 
     /**
-     * @var string
+     * @var string|null
      */
-    public $uid;
+    public ?string $uid = null;
 
     /**
      * Has token expired.
      *
      * @return bool
      */
-    public function hasExpired()
+    public function hasExpired(): bool
     {
         $now = new DateTime();
         $expiryDate = $this->expiryDate;
@@ -71,23 +71,11 @@ class CraftIdToken extends Model
      *
      * @return int
      */
-    public function getRemainingSeconds()
+    public function getRemainingSeconds(): int
     {
         $now = new DateTime();
         $expiryDate = $this->expiryDate;
 
         return $expiryDate->getTimestamp() - $now->getTimestamp();
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function datetimeAttributes(): array
-    {
-        $attributes = parent::datetimeAttributes();
-
-        $attributes[] = 'expiryDate';
-
-        return $attributes;
     }
 }

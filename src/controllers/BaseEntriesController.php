@@ -8,7 +8,6 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\behaviors\DraftBehavior;
 use craft\elements\Entry;
 use craft\models\Section;
 use craft\models\Site;
@@ -55,7 +54,7 @@ abstract class BaseEntriesController extends Controller
      * @throws ForbiddenHttpException
      * @since 3.5.0
      */
-    protected function enforceSitePermission(Site $site)
+    protected function enforceSitePermission(Site $site): void
     {
         if (Craft::$app->getIsMultiSite()) {
             $this->requirePermission('editSite:' . $site->uid);
@@ -69,51 +68,21 @@ abstract class BaseEntriesController extends Controller
      * @param bool $duplicate
      * @throws ForbiddenHttpException
      */
-    protected function enforceEditEntryPermissions(Entry $entry, bool $duplicate = false)
+    protected function enforceEditEntryPermissions(Entry $entry, bool $duplicate = false): void
     {
-        $permissionSuffix = ':' . $entry->getSection()->uid;
-
-        // Make sure the user is allowed to edit entries in this section
-        $this->requirePermission('editEntries' . $permissionSuffix);
-
-        // Is it a new entry?
-        if (!$entry->id || $duplicate) {
-            // Make sure they have permission to create new entries in this section
-            $this->requirePermission('createEntries' . $permissionSuffix);
-            return;
+        if ($duplicate) {
+            $id = $entry->id;
+            $entry->id = null;
         }
 
-        $userId = Craft::$app->getUser()->getId();
-
-        if ($entry->getIsDraft()) {
-            // If it's another user's draft, make sure they have permission to edit those
-            /** @var Entry|DraftBehavior $entry */
-            if ($entry->creatorId != $userId) {
-                $this->requirePermission('editPeerEntryDrafts' . $permissionSuffix);
+        try {
+            if (!$entry->canSave(Craft::$app->getUser()->getIdentity())) {
+                throw new ForbiddenHttpException('User is not authorized to perform this action.');
             }
-            return;
-        }
-
-        // If it's another user's entry (and it's not a Single), make sure they have permission to edit those
-        if (
-            $entry->authorId != $userId &&
-            $entry->getSection()->type !== Section::TYPE_SINGLE
-        ) {
-            $this->requirePermission('editPeerEntries' . $permissionSuffix);
-        }
-    }
-
-    /**
-     * Enforces entry deletion permissions.
-     *
-     * @param Entry $entry
-     * @throws ForbiddenHttpException
-     * @since 3.6.0
-     */
-    protected function enforceDeleteEntryPermissions(Entry $entry)
-    {
-        if (!$entry->getIsDeletable()) {
-            throw new ForbiddenHttpException('User is not permitted to perform this action');
+        } finally {
+            if ($duplicate) {
+                $entry->id = $id;
+            }
         }
     }
 
@@ -124,7 +93,7 @@ abstract class BaseEntriesController extends Controller
      * @throws ForbiddenHttpException
      * @since 3.4.0
      */
-    protected function enabledForSiteValue()
+    protected function enabledForSiteValue(): array|bool|null
     {
         $enabledForSite = $this->request->getBodyParam('enabledForSite');
         if (is_array($enabledForSite)) {

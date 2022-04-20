@@ -9,6 +9,7 @@ namespace craft\db;
 
 use PDO;
 use Throwable;
+use yii\db\Connection as YiiConnection;
 
 /**
  * @property bool $enableReplicas whether to enable read/write splitting by using [[replicas]] to read data.
@@ -48,11 +49,11 @@ use Throwable;
  * ]
  * ```
  * @property bool $shufflePrimaries whether to shuffle [[primaries]] before getting one.
- * @property-read Connection|null $primary The currently active primary connection. `null` is returned if no primary
+ * @property-read YiiConnection|null $primary The currently active primary connection. `null` is returned if no primary
  * connection is available. This property is read-only.
  * @property-read PDO $primaryPdo The PDO instance for the currently active primary connection. This property is
  * read-only.
- * @property-read Connection $replica The currently active replica connection. This property is read-only.
+ * @property-read YiiConnection $replica The currently active replica connection. This property is read-only.
  * @property-read PDO $replicaPdo The PDO instance for the currently active replica connection. This property
  * is read-only.
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -77,7 +78,7 @@ trait PrimaryReplicaTrait
      * @param bool $value
      * @internal
      */
-    public function setEnableReplicas(bool $value)
+    public function setEnableReplicas(bool $value): void
     {
         $this->enableSlaves = $value;
     }
@@ -99,7 +100,7 @@ trait PrimaryReplicaTrait
      * @param array $value
      * @internal
      */
-    public function setReplicas(array $value)
+    public function setReplicas(array $value): void
     {
         $this->slaves = $value;
     }
@@ -121,7 +122,7 @@ trait PrimaryReplicaTrait
      * @param array $value
      * @internal
      */
-    public function setReplicaConfig(array $value)
+    public function setReplicaConfig(array $value): void
     {
         $this->slaveConfig = $value;
     }
@@ -143,7 +144,7 @@ trait PrimaryReplicaTrait
      * @param array $value
      * @internal
      */
-    public function setPrimaries(array $value)
+    public function setPrimaries(array $value): void
     {
         $this->masters = $value;
     }
@@ -165,7 +166,7 @@ trait PrimaryReplicaTrait
      * @param array $value
      * @internal
      */
-    public function setPrimaryConfig(array $value)
+    public function setPrimaryConfig(array $value): void
     {
         $this->masterConfig = $value;
     }
@@ -187,7 +188,7 @@ trait PrimaryReplicaTrait
      * @param bool $value
      * @internal
      */
-    public function setShufflePrimaries(bool $value)
+    public function setShufflePrimaries(bool $value): void
     {
         $this->shuffleMasters = $value;
     }
@@ -201,7 +202,7 @@ trait PrimaryReplicaTrait
      * @return PDO|null the PDO instance for the currently active replica connection. `null` is returned if no
      * replica connections are available and `$fallbackToPrimary` is false.
      */
-    public function getReplicaPdo(bool $fallbackToPrimary = true)
+    public function getReplicaPdo(bool $fallbackToPrimary = true): ?PDO
     {
         return $this->getSlavePdo($fallbackToPrimary);
     }
@@ -224,10 +225,10 @@ trait PrimaryReplicaTrait
      *
      * @param bool $fallbackToPrimary whether to return the primary connection if no replica connections are
      * available.
-     * @return Connection|null the currently active replica connection. `null` is returned if no replica connections
+     * @return YiiConnection|null the currently active replica connection. `null` is returned if no replica connections
      * are available and `$fallbackToPrimary` is false.
      */
-    public function getReplica($fallbackToPrimary = true)
+    public function getReplica(bool $fallbackToPrimary = true): ?YiiConnection
     {
         return $this->getSlave($fallbackToPrimary);
     }
@@ -236,10 +237,10 @@ trait PrimaryReplicaTrait
      * Returns the currently active primary connection.
      * If this method is called for the first time, it will try to open a primary connection.
      *
-     * @return Connection|null the currently active primary connection. `null` is returned if no primary connection
+     * @return YiiConnection|null the currently active primary connection. `null` is returned if no primary connection
      * is available.
      */
-    public function getPrimary()
+    public function getPrimary(): ?YiiConnection
     {
         return $this->getMaster();
     }
@@ -261,7 +262,7 @@ trait PrimaryReplicaTrait
      * @return mixed the return value of the callback
      * @throws Throwable if there is any exception thrown from the callback
      */
-    public function usePrimary(callable $callback)
+    public function usePrimary(callable $callback): mixed
     {
         return $this->useMaster($callback);
     }

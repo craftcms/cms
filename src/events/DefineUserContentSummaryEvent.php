@@ -20,10 +20,10 @@ class DefineUserContentSummaryEvent extends Event
     /**
      * @var int|int[] The user ID(s) associated with the event
      */
-    public $userId;
+    public int|array $userId;
 
     /**
      * @var string[] Summary of content that is owned by the user(s)
      */
-    public $contentSummary = [];
+    public array $contentSummary = [];
 }

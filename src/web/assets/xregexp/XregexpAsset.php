@@ -17,7 +17,7 @@ class XregexpAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         $this->sourcePath = __dir__ . '/dist';
 

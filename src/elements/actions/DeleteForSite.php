@@ -30,12 +30,12 @@ class DeleteForSite extends ElementAction
     /**
      * @var string|null The confirmation message that should be shown before the elements get deleted
      */
-    public $confirmationMessage;
+    public ?string $confirmationMessage = null;
 
     /**
      * @var string|null The message that should be shown after the elements get deleted
      */
-    public $successMessage;
+    public ?string $successMessage = null;
 
     /**
      * @inheritdoc
@@ -84,9 +84,9 @@ JS;
     /**
      * @inheritdoc
      */
-    public function getConfirmationMessage()
+    public function getConfirmationMessage(): ?string
     {
-        if ($this->confirmationMessage !== null) {
+        if (isset($this->confirmationMessage)) {
             return $this->confirmationMessage;
         }
 
@@ -104,6 +104,7 @@ JS;
     public function performAction(ElementQueryInterface $query): bool
     {
         $elementsService = Craft::$app->getElements();
+        $user = Craft::$app->getUser()->getIdentity();
 
         // Fetch the elements in some other site than the selected one
         $otherSiteElements = (clone $query)
@@ -122,7 +123,7 @@ JS;
 
             // Resave the elements
             foreach ($otherSiteElements as $element) {
-                if (!$element->getIsDeletable()) {
+                if (!$element->canDelete($user)) {
                     continue;
                 }
 
@@ -138,14 +139,14 @@ JS;
             ->all();
 
         foreach ($singleSiteElements as $element) {
-            if (!$element->getIsDeletable()) {
+            if (!$element->canDelete($user)) {
                 continue;
             }
 
             $elementsService->deleteElement($element);
         }
 
-        if ($this->successMessage !== null) {
+        if (isset($this->successMessage)) {
             $this->setMessage($this->successMessage);
         } else {
             /** @var ElementInterface|string $elementType */

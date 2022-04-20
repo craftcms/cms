@@ -20,12 +20,12 @@ class ErrorHandler extends \yii\console\ErrorHandler
     /**
      * @event ExceptionEvent The event that is triggered before handling an exception.
      */
-    const EVENT_BEFORE_HANDLE_EXCEPTION = 'beforeHandleException';
+    public const EVENT_BEFORE_HANDLE_EXCEPTION = 'beforeHandleException';
 
     /**
      * @inheritdoc
      */
-    public function handleException($exception)
+    public function handleException($exception): void
     {
         // Fire a 'beforeHandleException' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_HANDLE_EXCEPTION)) {
