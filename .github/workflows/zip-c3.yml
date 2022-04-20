@@ -30,13 +30,18 @@ jobs:
       - name: Move .env
         run: sudo mv craft-workspace/.env.example craft-workspace/.env
 
-      - name: Create Zip
-        uses: thedoctor0/zip-release@master
-        with:
-          type: 'zip'
-          filename: 'craft-release.zip'
-          path: 'craft-workspace'
-          directory: '.'
+      - name: Test zip
+        run: |
+          cd craft-workspace
+          zip -r craft-release.zip *
+
+#      - name: Create Zip
+#        uses: thedoctor0/zip-release@master
+#        with:
+#          type: 'zip'
+#          filename: 'craft-release.zip'
+#          path: 'craft-workspace'
+#          directory: '.'
 
 #      - name: Create Tar
 #        uses: thedoctor0/zip-release@master
@@ -50,7 +55,7 @@ jobs:
         with:
           name: Craft Release Zip
           path: |
-            craft-release.zip
+            craft-workspace/craft-release.zip
 
 
 #    runs-on: ubuntu-latest
