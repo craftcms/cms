@@ -269,6 +269,7 @@ return [
     'Clear all' => 'Rensa alla',
     'Clear caches' => 'Rensa cache',
     'Clear' => 'Rensa',
+    'Clear search' => 'Clear search',
     'Clearing cache:' => 'Rensar cache:',
     'Close Preview' => 'Stäng förhandsgranskning',
     'Close' => 'Stäng',
