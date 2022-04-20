@@ -80,6 +80,10 @@ Craft.AssetImageEditor = Garnish.Modal.extend({
             this.settings.allowDegreeFractions = Craft.isImagick;
         }
 
+        if (Garnish.prefersReducedMotion()) {
+            this.settings.animationDuration = 1;
+        }
+
         this.assetId = assetId;
         this.flipData = {x: 0, y: 0};
 
