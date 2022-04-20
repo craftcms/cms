@@ -269,6 +269,7 @@ return [
     'Clear all' => 'Очистить все',
     'Clear caches' => 'Очистить кэши',
     'Clear' => 'Очищено',
+    'Clear search' => 'Clear search',
     'Clearing cache:' => 'Очистить кэш:',
     'Close Preview' => 'Закрыть предпросмотр',
     'Close' => 'Закрыть',
