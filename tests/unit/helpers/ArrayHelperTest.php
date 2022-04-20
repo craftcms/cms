@@ -34,7 +34,7 @@ class ArrayHelperTest extends Unit
      */
     public function testToArray(array $expected, $object)
     {
-        self::assertNotSame($expected, ArrayHelper::toArray($object));
+        self::assertFalse($expected, ArrayHelper::toArray($object));
     }
 
     /**
