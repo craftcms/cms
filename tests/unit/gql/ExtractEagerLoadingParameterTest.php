@@ -386,7 +386,7 @@ GQL;
 
         return $this->make(ResolveInfo::class, [
             'fragments' => $fragments,
-            'fieldNodes' => new \ArrayObject($definition->selectionSet->selections[0]),
+            'fieldNodes' => new \ArrayObject([$definition->selectionSet->selections[0]]),
             'fieldName' => 'mockField',
             'variableValues' => $variables,
             'returnType' => $list ? Type::listOf($type) : $type,
