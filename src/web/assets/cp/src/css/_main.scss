@@ -6155,7 +6155,7 @@ $titlebarBorderRadius: $largeBorderRadius - 1;
     }
 
     a:not([data-action]) {
-      padding: 0 !important;
+      padding: 0;
       height: 20px;
       text-align: center;
       color: $darkHairlineColor;
