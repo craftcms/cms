@@ -9,6 +9,7 @@
 
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
+use craft\log\Logger;
 use craft\services\Config;
 use yii\base\ErrorException;
 
@@ -18,6 +19,7 @@ $lastError = error_get_last();
 
 // Setup
 // -----------------------------------------------------------------------------
+
 
 // Validate the app type
 if (!isset($appType) || ($appType !== 'web' && $appType !== 'console')) {
@@ -194,6 +196,9 @@ $libPath = $cmsPath . DIRECTORY_SEPARATOR . 'lib';
 $srcPath = $cmsPath . DIRECTORY_SEPARATOR . 'src';
 require $libPath . DIRECTORY_SEPARATOR . 'yii2' . DIRECTORY_SEPARATOR . 'Yii.php';
 require $srcPath . DIRECTORY_SEPARATOR . 'Craft.php';
+
+// Set logger
+Craft::setLogger(new Logger());
 
 // Set aliases
 Craft::setAlias('@root', $rootPath);
