@@ -269,6 +269,7 @@ return [
     'Clear all' => 'Hepsini Temizle',
     'Clear caches' => 'Önbellekleri temizle',
     'Clear' => 'Temizle',
+    'Clear search' => 'Clear search',
     'Clearing cache:' => 'Önbellek temizleniyor:',
     'Close Preview' => 'Önizlemeyi Kapat',
     'Close' => 'Kapat',
