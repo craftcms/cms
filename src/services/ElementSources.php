@@ -238,6 +238,11 @@ class ElementSources extends Component
      */
     public function getFieldLayoutsForSource(string $elementType, string $sourceKey): array
     {
+        // Don't bother the element type for custom sources
+        if (str_starts_with($sourceKey, 'custom:')) {
+            return Craft::$app->getFields()->getLayoutsByType($elementType);
+        }
+
         if (!isset($this->_fieldLayouts[$elementType][$sourceKey])) {
             /** @var string|ElementInterface $elementType */
             /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */

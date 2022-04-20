@@ -24,6 +24,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
 
     elementTypeName: null,
     availableTableAttributes: null,
+    customFieldAttributes: null,
 
     conditionBuilderHtml: null,
     conditionBuilderJs: null,
@@ -81,6 +82,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
 
     buildModal: function(response) {
         this.availableTableAttributes = response.availableTableAttributes;
+        this.customFieldAttributes = response.customFieldAttributes;
         this.elementTypeName = response.elementTypeName;
         this.conditionBuilderHtml = response.conditionBuilderHtml;
         this.conditionBuilderJs = response.conditionBuilderJs;
@@ -126,7 +128,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
         }).appendTo($menuBtnContainer);
 
         const addSource = sourceData => {
-            const source = this.addSource(sourceData);
+            const source = this.addSource(sourceData, true);
             Garnish.scrollContainerToElement(this.$sidebar, source.$item);
             source.select();
             this.addSourceMenu.hide();
@@ -169,7 +171,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
         this.addSourceMenu = new Garnish.DisclosureMenu($menuBtn);
     },
 
-    addSource: function(sourceData) {
+    addSource: function(sourceData, isNew) {
         const $item = $('<div class="customize-sources-item"/>').appendTo(this.$sourcesContainer);
         const $itemLabel = $('<div class="label"/>').appendTo($item);
         const $itemInput = $('<input type="hidden"/>').appendTo($item);
@@ -180,14 +182,14 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
         if (sourceData.type === 'heading') {
             $item.addClass('heading');
             $itemInput.attr('name', 'sourceOrder[][heading]');
-            source = new Craft.CustomizeSourcesModal.Heading(this, $item, $itemLabel, $itemInput, sourceData);
+            source = new Craft.CustomizeSourcesModal.Heading(this, $item, $itemLabel, $itemInput, sourceData, isNew);
             source.updateItemLabel(sourceData.heading);
         } else {
             $itemInput.attr('name', 'sourceOrder[][key]').val(sourceData.key);
             if (sourceData.type === 'native') {
-                source = new Craft.CustomizeSourcesModal.Source(this, $item, $itemLabel, $itemInput, sourceData);
+                source = new Craft.CustomizeSourcesModal.Source(this, $item, $itemLabel, $itemInput, sourceData, isNew);
             } else {
-                source = new Craft.CustomizeSourcesModal.CustomSource(this, $item, $itemLabel, $itemInput, sourceData);
+                source = new Craft.CustomizeSourcesModal.CustomSource(this, $item, $itemLabel, $itemInput, sourceData, isNew);
             }
             source.updateItemLabel(sourceData.label);
 
@@ -330,13 +332,15 @@ Craft.CustomizeSourcesModal.BaseSource = Garnish.Base.extend({
     $settingsContainer: null,
 
     sourceData: null,
+    isNew: null,
 
-    init: function(modal, $item, $itemLabel, $itemInput, sourceData) {
+    init: function(modal, $item, $itemLabel, $itemInput, sourceData, isNew) {
         this.modal = modal;
         this.$item = $item;
         this.$itemLabel = $itemLabel;
         this.$itemInput = $itemInput;
         this.sourceData = sourceData;
+        this.isNew = isNew;
 
         this.$item.data('source', this);
 
@@ -435,7 +439,9 @@ Craft.CustomizeSourcesModal.Source = Craft.CustomizeSourcesModal.BaseSource.exte
     },
 
     createTableAttributesField: function($container) {
-        if (!this.sourceData.tableAttributes.length && !this.modal.availableTableAttributes.length) {
+        const availableTableAttributes = this.availableTableAttributes();
+
+        if (!this.sourceData.tableAttributes.length && !availableTableAttributes.length) {
             return;
         }
 
@@ -452,9 +458,6 @@ Craft.CustomizeSourcesModal.Source = Craft.CustomizeSourcesModal.BaseSource.exte
         }
 
         // Add the rest
-        const availableTableAttributes = this.modal.availableTableAttributes.slice(0);
-        availableTableAttributes.push(...this.sourceData.availableTableAttributes);
-
         for (let i = 0; i < availableTableAttributes.length; i++) {
             const [key, label] = availableTableAttributes[i];
             if (!Craft.inArray(key, selectedAttributes)) {
@@ -471,6 +474,12 @@ Craft.CustomizeSourcesModal.Source = Craft.CustomizeSourcesModal.BaseSource.exte
             label: Craft.t('app', 'Table Columns'),
             instructions: Craft.t('app', 'Choose which table columns should be visible for this source, and in which order.')
         }).appendTo($container);
+    },
+
+    availableTableAttributes: function() {
+        const attributes = this.modal.availableTableAttributes.slice(0);
+        attributes.push(...this.sourceData.availableTableAttributes);
+        return attributes;
     },
 
     createTableColumnOption: function(key, label, checked) {
@@ -545,6 +554,14 @@ Craft.CustomizeSourcesModal.CustomSource = Craft.CustomizeSourcesModal.Source.ex
 
         this.addListener(this.$labelInput, 'input', 'handleLabelInputChange');
         this.addListener(this.$deleteBtn, 'click', 'destroy');
+    },
+
+    availableTableAttributes: function() {
+        const attributes = this.base();
+        if (this.isNew) {
+            attributes.push(...this.modal.customFieldAttributes);
+        }
+        return attributes;
     },
 
     select: function() {
