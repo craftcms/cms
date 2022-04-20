@@ -5446,10 +5446,6 @@ body.reduce-focus-visibility {
 .select:not(.selectize) select {
   @include select-input-styles;
   white-space: pre;
-
-  option {
-    background-color: $white;
-  }
 }
 
 .select:not(.selectize).fullwidth select {

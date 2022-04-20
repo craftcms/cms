@@ -598,7 +598,7 @@ $radioSize: 16px;
   font-size: 14px;
   line-height: 20px;
   color: $textColor;
-  background-color: transparentize($inputColor, 0.75);
+  background-color: hsl(212, 25%, 90%);
   appearance: none;
   // from https://stackoverflow.com/a/15933790/1688568
   &::-ms-expand {
@@ -612,7 +612,7 @@ $radioSize: 16px;
 
 @mixin select-input-focused-styles {
   outline-color: transparent;
-  background-color: transparentize($inputColor, 0.6);
+  background-color: hsl(212, 25%, 85%);
   box-shadow: var(--focus-ring);
 }
 
