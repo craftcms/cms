@@ -269,6 +269,7 @@ return [
     'Clear all' => '모두 지우기',
     'Clear caches' => '캐시 지우기',
     'Clear' => '지우기',
+    'Clear search' => 'Clear search',
     'Clearing cache:' => '캐시 삭제 중',
     'Close Preview' => '미리보기 닫기',
     'Close' => '닫기',
