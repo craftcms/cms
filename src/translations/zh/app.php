@@ -269,6 +269,7 @@ return [
     'Clear all' => '全部清除',
     'Clear caches' => '清除缓存',
     'Clear' => '清除',
+    'Clear search' => 'Clear search',
     'Clearing cache:' => '正在清除缓存：',
     'Close Preview' => '关闭预览',
     'Close' => '关闭',
