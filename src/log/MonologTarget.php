@@ -90,7 +90,7 @@ class MonologTarget extends PsrTarget
     public function init(): void
     {
         $this->formatter = $this->formatter ?? new LineFormatter(
-            format: "%datetime% [%channel%.%level_name%][%extra.yii_category%] %message% %context% %extra%\n",
+            format: "%datetime% [%channel%.%level_name%] [%extra.yii_category%] %message% %context% %extra%\n",
             dateFormat: 'Y-m-d H:i:s',
             allowInlineLineBreaks: $this->allowLineBreaks,
             ignoreEmptyContextAndExtra: true,
@@ -127,7 +127,7 @@ class MonologTarget extends PsrTarget
             return;
         }
 
-        $message = 'Request context';
+        $message = 'Request context:';
         $vars = [];
 
         if ($this->allowLineBreaks) {

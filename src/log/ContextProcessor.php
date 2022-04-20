@@ -21,8 +21,13 @@ use yii\web\Session;
  */
 class ContextProcessor implements ProcessorInterface
 {
+    /**
+     * @param array $vars The global variables to include {@see \yii\log\Target::$logVars}
+     * @param string $key The key in the record to push context data
+     */
     public function __construct(
         protected array $vars = [],
+        protected string $key = 'context',
     ) {
     }
 
@@ -35,20 +40,20 @@ class ContextProcessor implements ProcessorInterface
             $request = Craft::$app->getRequest();
 
             if ($request instanceof Request) {
-                $record['extra']['ip'] = $request->getUserIP();
+                $record[$this->key]['ip'] = $request->getUserIP();
             }
         }
 
         $user = Craft::$app->has('user', true) ? Craft::$app->getUser() : null;
         if ($user && ($identity = $user->getIdentity(false))) {
-            $record['extra']['userId'] = $identity->getId();
+            $record[$this->key]['userId'] = $identity->getId();
         }
 
         /** @var Session|null $session */
         $session = Craft::$app->has('session', true) ? Craft::$app->get('session') : null;
 
         if ($session && $session->getIsActive()) {
-            $record['extra']['sessionId'] = $session->getId();
+            $record[$this->key]['sessionId'] = $session->getId();
         }
 
         if (
@@ -59,11 +64,11 @@ class ContextProcessor implements ProcessorInterface
             // Log the raw request body instead
             $this->vars = array_merge($this->vars);
             array_splice($this->vars, $postPos, 1);
-            $record['extra']['body'] = $body;
+            $record[$this->key]['body'] = $body;
         }
 
         if ($vars = $this->filterVars($this->vars)) {
-            $record['extra']['vars'] = $vars;
+            $record[$this->key]['vars'] = $vars;
         }
 
         return $record;

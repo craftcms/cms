@@ -1,11 +1,20 @@
 <?php
+
 namespace craft\log;
 
 use Illuminate\Support\Collection;
 use Monolog\Processor\ProcessorInterface;
 
+/**
+ * Class MessageProcessor
+ *
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 4.0.0
+ */
 class MessageProcessor implements ProcessorInterface
 {
+    public const DEFAULT_CATEGORY = 'application';
+
     /**
      * @inheritdoc
      */
@@ -22,7 +31,7 @@ class MessageProcessor implements ProcessorInterface
     {
         $category = $record->pull('context.category');
         $extra = Collection::make($record['extra']);
-        $extra->put('yii_category', $category ?? '');
+        $extra->put('yii_category', $category ?? self::DEFAULT_CATEGORY);
         $record->put('extra', $extra->all());
 
         return $record;
