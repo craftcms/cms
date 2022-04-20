@@ -8,8 +8,10 @@
 namespace craft\gql\interfaces\elements;
 
 use Craft;
+use craft\gql\arguments\elements\Address as AddressArguments;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\Element;
+use craft\gql\resolvers\elements\Address as AddressResolver;
 use craft\gql\types\generators\UserType;
 use craft\helpers\Gql;
 use GraphQL\Type\Definition\InterfaceType;
@@ -112,6 +114,14 @@ class User extends Element
                 'name' => 'email',
                 'type' => Type::string(),
                 'description' => 'The user’s email.',
+            ],
+            'addresses' => [
+                'name' => 'addresses',
+                'args' => AddressArguments::getArguments(),
+                'type' => Type::listOf(Address::getType()),
+                'description' => 'The user’s addresses.',
+                'complexity' => Gql::eagerLoadComplexity(),
+                'resolve' => AddressResolver::class . '::resolve',
             ],
         ]), self::getName());
     }
