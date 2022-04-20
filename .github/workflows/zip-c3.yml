@@ -33,7 +33,7 @@ jobs:
       - name: Test zip
         run: |
           cd craft-workspace
-          zip -r craft-release.zip *
+          sudo zip -r craft-release.zip *
 
 #      - name: Create Zip
 #        uses: thedoctor0/zip-release@master
