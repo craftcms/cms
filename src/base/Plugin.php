@@ -31,7 +31,7 @@ use yii\base\Module;
  */
 class Plugin extends Module implements PluginInterface
 {
-    use PluginTrait;
+    use PluginTrait  ;
 
     /**
      * @event ModelEvent The event that is triggered before the plugin’s settings are saved.
