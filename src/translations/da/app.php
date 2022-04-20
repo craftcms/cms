@@ -269,6 +269,7 @@ return [
     'Clear all' => 'Ryd Alt',
     'Clear caches' => 'Ryd caches',
     'Clear' => 'Ryd',
+    'Clear search' => 'Clear search',
     'Clearing cache:' => 'Rydnings-cache:',
     'Close Preview' => 'Luk forhåndsvisning',
     'Close' => 'Luk',
