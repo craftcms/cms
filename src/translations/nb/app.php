@@ -269,6 +269,7 @@ return [
     'Clear all' => 'Tøm alt',
     'Clear caches' => 'Tøm hurtigbufferene',
     'Clear' => 'Tøm',
+    'Clear search' => 'Clear search',
     'Clearing cache:' => 'Tøm hurtigbuffer:',
     'Close Preview' => 'Lukk forhåndsvisning',
     'Close' => 'Lukk',
