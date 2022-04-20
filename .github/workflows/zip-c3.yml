@@ -65,6 +65,9 @@ jobs:
           name: craft-tar-release
           path: craft-release.tar.gz
 
+      - name: Debug
+        run: echo ${{github.ref_name}}
+
 
 #    runs-on: ubuntu-latest
 #    steps:
