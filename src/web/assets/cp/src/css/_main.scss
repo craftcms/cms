@@ -59,6 +59,7 @@
   --medium-focus-hsl: #{hue($mediumFocusColor)}, #{saturation($mediumFocusColor)}, #{lightness($mediumFocusColor)};
   --dark-focus-hsl: #{hue($darkFocusColor)}, #{saturation($darkFocusColor)}, #{lightness($darkFocusColor)};
   --focus-ring: 0 0 0 1px hsl(var(--dark-focus-hsl)), 0 0 0 3px hsla(var(--dark-focus-hsl), 0.7);
+  --touch-target-size: 44px; /* Minimum recommended touch target size */
 }
 
 body,
@@ -5664,7 +5665,7 @@ body.reduce-focus-visibility {
   }
 
   &.clearable {
-    @include padding-right(22px);
+    @include padding-right(var(--touch-target-size));
   }
 
   input {
@@ -5701,25 +5702,12 @@ body.reduce-focus-visibility {
     }
   }
 
-  .clear {
+  .clear-btn {
     position: absolute;
-    top: 5px;
-    @include right(9px);
-    color: var(--ui-control-color);
-    cursor: pointer;
-
-    &:hover {
-      color: var(--ui-control-hover-color);
-    }
-
-    &:active {
-      color: var(--ui-control-active-color);
-    }
-
-    &:before {
-      @include icon;
-      content: "remove";
-    }
+    top: calc((var(--touch-target-size) - 34px) / -2); /* Responds to min-height of text input */
+    @include right(0);
+    width: var(--touch-target-size);
+    height: var(--touch-target-size);
   }
 
   &.has-filter-btn {
@@ -5761,12 +5749,12 @@ body.reduce-focus-visibility {
       @include padding-left(26px);
 
       &.clearable {
-        @include padding-right(55px);
+        @include padding-right(calc(30px + var(--touch-target-size)));
       }
     }
 
-    .clear {
-      @include right(42px);
+    .clear-btn {
+      @include right(30px);
     }
   }
 }

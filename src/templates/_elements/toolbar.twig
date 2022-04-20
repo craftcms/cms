@@ -64,7 +64,14 @@
             },
         },
     }) }}
-    <div class="clear hidden" title="{{ 'Clear'|t('app') }}" aria-label="{{ 'Clear'|t('app') }}"></div>
+    {{ tag('button', {
+        role: 'button',
+        class: 'clear-btn hidden',
+        title: 'Clear search'|t('app'),
+        aria: {
+            label: 'Clear search'|t('app'),
+        },
+    }) }}
     <button class="filter-btn" title="{{ 'Filter results'|t('app') }}" aria-label="{{ 'Filter results'|t('app') }}"></button>
 </div>
 <div>
