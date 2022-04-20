@@ -269,6 +269,7 @@ return [
     'Clear all' => 'Minden törlése',
     'Clear caches' => 'Gyorsítótárak kiürítése',
     'Clear' => 'Törlés',
+    'Clear search' => 'Clear search',
     'Clearing cache:' => 'Gyorsítótár kiürítése:',
     'Close Preview' => 'Előnézet bezárása',
     'Close' => 'Bezárás',
