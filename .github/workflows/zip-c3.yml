@@ -35,7 +35,7 @@ jobs:
           cd craft-workspace
           sudo zip -r craft-release.zip *
           sudo mv craft-release.zip ../
-          tar -zcvf craft-release.tar.gz *
+          sudo tar -zcvf craft-release.tar.gz *
           sudo mv craft-release.tar.gz ../
 
 #      - name: Create Zip
