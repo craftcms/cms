@@ -269,6 +269,7 @@ return [
     'Clear all' => 'مسح الكل',
     'Clear caches' => 'مسح ذاكرة التخزين المؤقت',
     'Clear' => 'مسح',
+    'Clear search' => 'Clear search',
     'Clearing cache:' => 'جاري مسح ذاكرة التخزين المؤقتة:',
     'Close Preview' => 'إغلاق المعاينة',
     'Close' => 'إغلاق',
