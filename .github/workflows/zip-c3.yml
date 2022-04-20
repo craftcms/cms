@@ -35,8 +35,8 @@ jobs:
         with:
           type: 'zip'
           filename: 'craft-release.zip'
-          path: 'craft-workspace/*'
-          directory: '.'
+          path: '.'
+          directory: 'craft-workspace'
 
 #      - name: Create Tar
 #        uses: thedoctor0/zip-release@master
