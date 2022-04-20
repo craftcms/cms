@@ -3,10 +3,18 @@
 ## Unreleased
 
 ### Added
+- Added the `addresses`, `address`, and `addressCount` GraphQL queries.
+- Added the `addresses` field to user GraphQL queries.
 - It’s now possible to set sites’ Status settings to environment variables. ([#3005](https://github.com/craftcms/cms/issues/3005))
 - Added `craft\controllers\ElementsController::EVENT_DEFINE_EDITOR_CONTENT`.
 - Added `craft\events\DefineElementEditorHtmlEvent`.
 - Added `craft\events\FsEvent`.
+- Added `craft\gql\arguments\elements\Address`.
+- Added `craft\gql\interfaces\elements\Address`.
+- Added `craft\gql\queries\Address`.
+- Added `craft\gql\resolvers\elements\Address`.
+- Added `craft\gql\types\elements\Address`.
+- Added `craft\gql\types\generators\AddressType`.
 - Added `craft\helpers\Db::escapeCommas()`.
 - Added `craft\log\ContextProcessor`.
 - Added `craft\services\Fs::EVENT_RENAME_FILESYSTEM`.
