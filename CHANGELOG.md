@@ -25,7 +25,7 @@
 - Added the `Craft.setElementAttributes()` JavaScript method.
 
 ### Changed
-- Improved element index table accessibility for screen readers. ([#10629](https://github.com/craftcms/cms/pull/10629))
+- Improved element index accessibility. ([#10629](https://github.com/craftcms/cms/pull/10629), [#10660](https://github.com/craftcms/cms/pull/10660))
 - Improved Live Preview accessibility for screen readers. ([#10688](https://github.com/craftcms/cms/pull/10688))
 - Slideouts, Live Preview, and Matrix blocks are no longer animated for browsers that have requested reduced motion. ([#10665](https://github.com/craftcms/cms/pull/10665))
 - Volumes’ Asset Filesystem and Transform Filesystem settings are now automatically updated when a filesystem’s handle changes, if they reference the filesystem’s handle directly. ([#10885](https://github.com/craftcms/cms/issues/10885))
