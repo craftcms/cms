@@ -48,7 +48,7 @@ jobs:
       - name: Archive production artifacts
         uses: actions/upload-artifact@v3
         with:
-          name: craft-release.zip
+          name: craft-release-zip
           path: |
             craft-release.zip
 
