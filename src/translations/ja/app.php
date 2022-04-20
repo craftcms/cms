@@ -269,6 +269,7 @@ return [
     'Clear all' => 'すべてクリア',
     'Clear caches' => 'キャッシュをクリア',
     'Clear' => 'クリア',
+    'Clear search' => 'Clear search',
     'Clearing cache:' => 'キャッシュをクリア:',
     'Close Preview' => 'プレビューを閉じる',
     'Close' => '閉じる',
