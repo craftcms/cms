@@ -269,6 +269,7 @@ return [
     'Clear all' => 'Alles wissen',
     'Clear caches' => 'Caches leegmaken',
     'Clear' => 'Verwijderen',
+    'Clear search' => 'Clear search',
     'Clearing cache:' => 'Cache legen:',
     'Close Preview' => 'Preview sluiten',
     'Close' => 'Sluiten',
