@@ -90,11 +90,11 @@ class MonologTarget extends PsrTarget
     public function init(): void
     {
         $this->formatter = $this->formatter ?? new LineFormatter(
+            format: "%datetime% [%channel%.%level_name%][%extra.yii_category%] %message% %context% %extra%\n",
             dateFormat: 'Y-m-d H:i:s',
             allowInlineLineBreaks: $this->allowLineBreaks,
             ignoreEmptyContextAndExtra: true,
         );
-        $this->processor = $this->processor ?? new PsrLogMessageProcessor();
         $this->logger = $this->_createLogger($this->name);
     }
 
@@ -157,9 +157,15 @@ class MonologTarget extends PsrTarget
     private function _createLogger(string $name): Logger
     {
         $generalConfig = Craft::$app->getConfig()->getGeneral();
-        $logger = (new Logger($name))
-            ->useMicrosecondTimestamps($this->useMicrosecondTimestamps)
-            ->pushProcessor($this->processor);
+        $logger = (new Logger($name))->useMicrosecondTimestamps($this->useMicrosecondTimestamps);
+
+        if ($this->processor) {
+            $logger->pushProcessor($this->processor);
+        } else {
+            $logger
+                ->pushProcessor(new PsrLogMessageProcessor())
+                ->pushProcessor(new MessageProcessor());
+        }
 
         if (App::isStreamLog()) {
             $logger->pushHandler((new StreamHandler(
