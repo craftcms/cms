@@ -269,6 +269,7 @@ return [
     'Clear all' => 'Wyczyść wszystko',
     'Clear caches' => 'Wyczyść bufory',
     'Clear' => 'Wyczyść',
+    'Clear search' => 'Clear search',
     'Clearing cache:' => 'Czyszczenie pamięci podręcznej:',
     'Close Preview' => 'Zamknij podgląd',
     'Close' => 'Zamknij',
