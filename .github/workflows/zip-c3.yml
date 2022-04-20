@@ -45,12 +45,12 @@ jobs:
 #          filename: 'craft-release.tar.gz'
 #          directory: 'craft-workspace'
 
-#      - name: Archive production artifacts
-#        uses: actions/upload-artifact@v3
-#        with:
-#          name: craft-release.tar.gz
-#          path: |
-#            craft-release.tar.gz
+      - name: Archive production artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: craft-release.zip
+          path: |
+            craft-release.zip
 
 
 #    runs-on: ubuntu-latest
