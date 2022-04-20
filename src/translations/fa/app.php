@@ -269,6 +269,7 @@ return [
     'Clear all' => 'پاک کردن همه',
     'Clear caches' => 'پاک کردن حافظه های نهان',
     'Clear' => 'پاک کردن',
+    'Clear search' => 'Clear search',
     'Clearing cache:' => 'پاک کردن حافظه نهان:',
     'Close Preview' => 'بستن پیش نمایش',
     'Close' => 'بستن',
