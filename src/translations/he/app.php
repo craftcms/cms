@@ -269,6 +269,7 @@ return [
     'Clear all' => 'נקה הכל',
     'Clear caches' => 'ניקוי מטמונים',
     'Clear' => 'נקה',
+    'Clear search' => 'Clear search',
     'Clearing cache:' => 'מנקה מטמון:',
     'Close Preview' => 'סגור תצוגה מקדימה',
     'Close' => 'סגור',
