@@ -1525,7 +1525,7 @@ return [
     'Top-Center' => 'Top-Center',
     'Top-Left' => 'Top-Left',
     'Top-Right' => 'Top-Right',
-    'Top of Preview' => 'Top of Preview',
+    'Top of preview' => 'Top of preview',
     'Total Price' => 'Total Price',
     'Total releases' => 'Total releases',
     'Townland' => 'Townland',
