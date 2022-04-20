@@ -774,8 +774,7 @@ td.right {
 .clear {
   display: block;
   clear: both;
-  width: var(--touch-target-size);
-  height: var(--touch-target-size);
+  height: 0;
 }
 
 .fullwidth {
@@ -5703,25 +5702,12 @@ body.reduce-focus-visibility {
     }
   }
 
-  .clear {
+  .clear-btn {
     position: absolute;
     top: calc((var(--touch-target-size) - 34px) / -2); /* Responds to min-height of text input */
     @include right(0);
-    color: var(--ui-control-color);
-    cursor: pointer;
-
-    &:hover {
-      color: var(--ui-control-hover-color);
-    }
-
-    &:active {
-      color: var(--ui-control-active-color);
-    }
-
-    &:before {
-      @include icon;
-      content: "remove";
-    }
+    width: var(--touch-target-size);
+    height: var(--touch-target-size);
   }
 
   &.has-filter-btn {
@@ -5763,12 +5749,12 @@ body.reduce-focus-visibility {
       @include padding-left(26px);
 
       &.clearable {
-        @include padding-right(calc(42px + var(--touch-target-size)));
+        @include padding-right(calc(30px + var(--touch-target-size)));
       }
     }
 
-    .clear {
-      @include right(42px);
+    .clear-btn {
+      @include right(30px);
     }
   }
 }
