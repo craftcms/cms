@@ -1,4 +1,6 @@
 <?php
+
+declare(strict_types=1);
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -8,18 +10,19 @@
 namespace craft\gql\types;
 
 use craft\errors\GqlException;
+use craft\gql\base\SingularTypeInterface;
 use craft\gql\directives\FormatDateTime;
 use craft\gql\GqlEntityRegistry;
 use GraphQL\Language\AST\StringValueNode;
 use GraphQL\Type\Definition\ScalarType;
 
 /**
- * Class DateTime
+ * Class DateTime implements the Datetime scalar type for GraphQL.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.3.0
  */
-class DateTime extends ScalarType
+class DateTime extends ScalarType implements SingularTypeInterface
 {
     /**
      * @var string
@@ -30,11 +33,6 @@ class DateTime extends ScalarType
      * @var string
      */
     public $description = 'The `DateTime` scalar type represents a point in time.';
-
-    public function __construct(array $config = [])
-    {
-        parent::__construct($config);
-    }
 
     /**
      * Returns a singleton instance to ensure one type per schema.
@@ -47,7 +45,6 @@ class DateTime extends ScalarType
     }
 
     /**
-     *
      * @return string
      */
     public static function getName(): string
@@ -84,7 +81,7 @@ class DateTime extends ScalarType
     /**
      * @inheritdoc
      */
-    public function parseLiteral($valueNode, array $variables = null)
+    public function parseLiteral($valueNode, ?array $variables = null)
     {
         if ($valueNode instanceof StringValueNode) {
             return new \DateTime($valueNode->value);

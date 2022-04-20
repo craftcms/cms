@@ -10,6 +10,7 @@ namespace craft\console\controllers;
 use Craft;
 use craft\console\Controller;
 use craft\helpers\Console;
+use Throwable;
 
 /**
  * Updates Craft and plugins.
@@ -23,12 +24,12 @@ trait BackupTrait
     /**
      * @var string|null The path to the database backup
      */
-    protected $backupPath;
+    protected ?string $backupPath = null;
 
     /**
      * Attempts to backup the database.
      *
-     * @param bool|null $flag The user's indication of whether they want the DB to be backed up
+     * @param bool|null $flag The user’s indication of whether they want the DB to be backed up
      * @return bool
      */
     protected function backup(?bool $flag = null): bool
@@ -42,7 +43,7 @@ trait BackupTrait
 
         try {
             $this->backupPath = Craft::$app->getDb()->backup();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->stdout('error: ' . $e->getMessage() . PHP_EOL, Console::FG_RED);
 
             if (!$this->_backupWarning()) {
@@ -60,7 +61,7 @@ trait BackupTrait
     /**
      * Returns whether the database should be backed up
      *
-     * @param bool|null $flag The user's indication of whether they want the DB to be backed up
+     * @param bool|null $flag The user’s indication of whether they want the DB to be backed up
      * @return bool
      */
     private function _shouldBackup(?bool $flag): bool

@@ -9,20 +9,22 @@ namespace craft\controllers;
 
 use craft\web\Controller;
 use yii\web\NotFoundHttpException;
+use yii\web\Response;
 
 class NotFoundController extends Controller
 {
     /**
      * @inheritdoc
      */
-    protected $allowAnonymous = true;
+    protected array|bool|int $allowAnonymous = true;
 
     /**
      * Just return a 404 error.
      *
+     * @return Response
      * @throws NotFoundHttpException
      */
-    public function actionIndex()
+    public function actionIndex(): Response
     {
         throw new NotFoundHttpException();
     }

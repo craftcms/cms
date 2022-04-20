@@ -16,6 +16,7 @@ use craft\helpers\Db;
 use craft\models\CategoryGroup;
 use GraphQL\Error\Error;
 use GraphQL\Type\Definition\ResolveInfo;
+use Throwable;
 
 /**
  * Class Categoy
@@ -28,19 +29,19 @@ class Category extends ElementMutationResolver
     use StructureMutationTrait;
 
     /** @inheritdoc */
-    protected $immutableAttributes = ['id', 'uid', 'groupId'];
+    protected array $immutableAttributes = ['id', 'uid', 'groupId'];
 
     /**
      * Save a category using the passed arguments.
      *
-     * @param $source
+     * @param mixed $source
      * @param array $arguments
-     * @param $context
+     * @param mixed $context
      * @param ResolveInfo $resolveInfo
-     * @return mixed
-     * @throws \Throwable if reasons.
+     * @return CategoryElement
+     * @throws Throwable if reasons.
      */
-    public function saveCategory($source, array $arguments, $context, ResolveInfo $resolveInfo)
+    public function saveCategory(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): CategoryElement
     {
         /** @var CategoryGroup $categoryGroup */
         $categoryGroup = $this->getResolutionData('categoryGroup');
@@ -79,14 +80,13 @@ class Category extends ElementMutationResolver
     /**
      * Delete a category identified by the arguments.
      *
-     * @param $source
+     * @param mixed $source
      * @param array $arguments
-     * @param $context
+     * @param mixed $context
      * @param ResolveInfo $resolveInfo
-     * @return mixed
-     * @throws \Throwable if reasons.
+     * @throws Throwable if reasons.
      */
-    public function deleteCategory($source, array $arguments, $context, ResolveInfo $resolveInfo)
+    public function deleteCategory(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): void
     {
         $categoryId = $arguments['id'];
 
@@ -94,14 +94,12 @@ class Category extends ElementMutationResolver
         $category = $elementService->getElementById($categoryId, CategoryElement::class);
 
         if (!$category) {
-            return true;
+            return;
         }
 
         $categoryGroupUid = Db::uidById(Table::CATEGORYGROUPS, $category->groupId);
         $this->requireSchemaAction('categorygroups.' . $categoryGroupUid, 'delete');
 
         $elementService->deleteElementById($categoryId);
-
-        return true;
     }
 }

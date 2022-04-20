@@ -5,9 +5,8 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craftunit\gql;
+namespace crafttests\unit\gql;
 
-use Codeception\Test\Unit;
 use Craft as Craft;
 use craft\elements\Entry;
 use craft\errors\GqlException;
@@ -15,34 +14,34 @@ use craft\fields\Date;
 use craft\gql\directives\FormatDateTime;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\types\DateTime;
+use craft\gql\types\Money;
 use craft\gql\types\Number;
 use craft\gql\types\QueryArgument;
+use craft\test\TestCase;
+use DateTimeZone;
+use Exception;
+use GraphQL\Error\Error;
 use GraphQL\Language\AST\BooleanValueNode;
 use GraphQL\Language\AST\FloatValueNode;
 use GraphQL\Language\AST\IntValueNode;
 use GraphQL\Language\AST\NullValueNode;
 use GraphQL\Language\AST\StringValueNode;
+use GraphQL\Language\AST\ValueNode;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\ScalarType;
 
-class ScalarTypesTest extends Unit
+class ScalarTypesTest extends TestCase
 {
-    /**
-     * @var \UnitTester
-     */
-    protected $tester;
-
     /**
      * Test the serialization of scalar data types
      *
      * @dataProvider serializationDataProvider
-     *
      * @param ScalarType $type
-     * @param $testValue
-     * @param $match
-     * @throws \GraphQL\Error\Error
+     * @param mixed $testValue
+     * @param mixed $match
+     * @throws Error
      */
-    public function testSerialization(ScalarType $type, $testValue, $match)
+    public function testSerialization(ScalarType $type, mixed $testValue, mixed $match): void
     {
         self::assertSame($match, $type->serialize($testValue));
     }
@@ -51,14 +50,13 @@ class ScalarTypesTest extends Unit
      * Test parsing a value provided as a query variable
      *
      * @dataProvider parsingValueDataProvider
-     *
      * @param ScalarType $type
-     * @param $testValue
-     * @param $match
-     * @param $exceptionThrown
-     * @throws \GraphQL\Error\Error
+     * @param mixed $testValue
+     * @param mixed $match
+     * @param string|null $exceptionThrown
+     * @throws Error
      */
-    public function testParsingValue(ScalarType $type, $testValue, $match, $exceptionThrown)
+    public function testParsingValue(ScalarType $type, mixed $testValue, mixed $match, ?string $exceptionThrown = null): void
     {
         if ($exceptionThrown) {
             $this->expectException($exceptionThrown);
@@ -70,11 +68,12 @@ class ScalarTypesTest extends Unit
 
     /**
      * Test DateTime parsing value correctly.
-     * @throws \GraphQL\Error\Error
+     *
+     * @throws Error
      */
-    public function testDateTimeParseValueAndLiteral()
+    public function testDateTimeParseValueAndLiteral(): void
     {
-        $timeAsStr = (new \DateTime('now'))->format("Y-m-d H:i:s");
+        $timeAsStr = (new \DateTime('now'))->format('Y-m-d H:i:s');
 
         $this->assertInstanceOf(\DateTime::class, (new DateTime())->parseValue($timeAsStr));
         $this->assertInstanceOf(\DateTime::class, (new DateTime())->parseLiteral(new StringValueNode(['value' => $timeAsStr])));
@@ -84,43 +83,48 @@ class ScalarTypesTest extends Unit
      * Test parsing a value provided as a query variable
      *
      * @dataProvider parsingLiteralDataProvider
-     *
      * @param ScalarType $type
-     * @param $testValue
-     * @param $match
-     * @param $exceptionThrown
-     * @throws \Exception
+     * @param ValueNode $testValue
+     * @param mixed $match
+     * @param string|null $exceptionThrown
+     * @throws Exception
      */
-    public function testParsingLiteral(ScalarType $type, $testValue, $match, $exceptionThrown)
+    public function testParsingLiteral(ScalarType $type, ValueNode $testValue, mixed $match, ?string $exceptionThrown = null): void
     {
         if ($exceptionThrown) {
             $this->expectException($exceptionThrown);
+            /** @noinspection PhpParamsInspection */
+            /** @phpstan-ignore-next-line */
             $type->parseLiteral($testValue);
         } else {
+            /** @noinspection PhpParamsInspection */
+            /** @phpstan-ignore-next-line */
             self::assertSame($match, $type->parseLiteral($testValue));
         }
     }
 
     /**
      * Test the useSystemTimezoneForGraphQlDates setting.
-     * 
-     * @throws \GraphQL\Error\Error
+     *
+     * @throws Error
      */
-    public function testTimeZoneConfigSetting()
+    public function testTimeZoneConfigSetting(): void
     {
         Craft::$app->setTimeZone('America/New_York');
 
-        $dateTime = new \DateTime('now', new \DateTimeZone('UTC'));
+        $dateTime = new \DateTime('now', new DateTimeZone('UTC'));
         $dateField = $this->make(Date::class, [
             'showTimeZone' => false,
-            'handle' => 'fieldName'
+            'handle' => 'fieldName',
         ]);
         $resolveInfo = $this->make(ResolveInfo::class, [
-            'fieldName' => 'fieldName'
+            'fieldName' => 'fieldName',
         ]);
         $resolver = $dateField->getContentGqlType()['resolve'];
         $element = $this->make(Entry::class, [
-            'getFieldValue' => function () use ($dateTime) { return clone $dateTime; }
+            'getFieldValue' => function() use ($dateTime) {
+                return clone $dateTime;
+            },
         ]);
 
         $settingValue = Craft::$app->getConfig()->getGeneral()->setGraphqlDatesToSystemTimeZone;
@@ -145,7 +149,7 @@ class ScalarTypesTest extends Unit
     /**
      * @return array[]
      */
-    public function serializationDataProvider()
+    public function serializationDataProvider(): array
     {
         $now = new \DateTime();
 
@@ -154,7 +158,7 @@ class ScalarTypesTest extends Unit
         return [
             [DateTime::getType(), 'testString', 'testString'],
             [DateTime::getType(), null, null],
-            [DateTime::getType(), clone $now, $now->setTimezone(new \DateTimeZone(FormatDateTime::defaultTimezone()))->format(FormatDateTime::DEFAULT_FORMAT)],
+            [DateTime::getType(), clone $now, $now->setTimezone(new DateTimeZone(Craft::$app->getTimeZone()))->format(FormatDateTime::DEFAULT_FORMAT)],
 
             [Number::getType(), 'testString', 'testString'],
             [Number::getType(), '', null],
@@ -170,52 +174,68 @@ class ScalarTypesTest extends Unit
             [QueryArgument::getType(), 2, 2],
             [QueryArgument::getType(), true, true],
             [QueryArgument::getType(), 2.9, '2.9'],
+
+            'money-1-dollar' => [Money::getType(), \Money\Money::USD(100), '$1.00'],
+            'money-1-thousand-dollars' => [Money::getType(), \Money\Money::USD(123456), '$1,234.56'],
+            'money-null' => [Money::getType(), null, null],
+            'money-error' => [Money::getType(), 'testString', 'testString'],
         ];
     }
 
     /**
      * @return array[]
      */
-    public function parsingValueDataProvider()
+    public function parsingValueDataProvider(): array
     {
         GqlEntityRegistry::setPrefix('');
 
         return [
-            [Number::getType(), 2, 2, false],
-            [Number::getType(), 2.0, 2.0, false],
-            [Number::getType(), null, null, false],
+            [Number::getType(), 2, 2],
+            [Number::getType(), 2.0, 2.0],
+            [Number::getType(), null, null],
             [Number::getType(), 'oops', null, GqlException::class],
 
-            [QueryArgument::getType(), 2, 2, false],
-            [QueryArgument::getType(), 'ok', 'ok', false],
-            [QueryArgument::getType(), true, true, false],
+            [QueryArgument::getType(), 2, 2],
+            [QueryArgument::getType(), 'ok', 'ok'],
+            [QueryArgument::getType(), true, true],
             [QueryArgument::getType(), 2.0, null, GqlException::class],
 
+            [Money::getType(), 2, 2],
+            [Money::getType(), 2.0, 2.0],
+            [Money::getType(), null, null],
+            [Money::getType(), -2.0, -2.0],
+            [Money::getType(), 'err', null, GqlException::class],
         ];
     }
 
     /**
      * @return array[]
      */
-    public function parsingLiteralDataProvider()
+    public function parsingLiteralDataProvider(): array
     {
         GqlEntityRegistry::setPrefix('');
 
         return [
             [DateTime::getType(), new IntValueNode(['value' => 2]), null, GqlException::class],
 
-            [Number::getType(), new StringValueNode(['value' => '2.4']), 2.4, false],
-            [Number::getType(), new StringValueNode(['value' => 'fake']), 0.0, false],
-            [Number::getType(), new FloatValueNode(['value' => 2.4]), 2.4, false],
-            [Number::getType(), new IntValueNode(['value' => 2]), 2, false],
-            [Number::getType(), new NullValueNode([]), null, false],
+            [Number::getType(), new StringValueNode(['value' => '2.4']), 2.4],
+            [Number::getType(), new StringValueNode(['value' => 'fake']), 0.0],
+            [Number::getType(), new FloatValueNode(['value' => 2.4]), 2.4],
+            [Number::getType(), new IntValueNode(['value' => 2]), 2],
+            [Number::getType(), new NullValueNode([]), null],
             [Number::getType(), new BooleanValueNode(['value' => false]), null, GqlException::class],
 
-            [QueryArgument::getType(), new StringValueNode(['value' => '2']), '2', false],
-            [QueryArgument::getType(), new IntValueNode(['value' => 2]), 2, false],
-            [QueryArgument::getType(), new BooleanValueNode(['value' => true]), true, false],
+            [QueryArgument::getType(), new StringValueNode(['value' => '2']), '2'],
+            [QueryArgument::getType(), new IntValueNode(['value' => 2]), 2],
+            [QueryArgument::getType(), new BooleanValueNode(['value' => true]), true],
             [QueryArgument::getType(), new FloatValueNode(['value' => '2']), null, GqlException::class],
 
+            [Money::getType(), new StringValueNode(['value' => '2.4']), 2.4],
+            [Money::getType(), new StringValueNode(['value' => 'fake']), 0.0],
+            [Money::getType(), new FloatValueNode(['value' => 2.4]), 2.4],
+            [Money::getType(), new IntValueNode(['value' => 2]), 2],
+            [Money::getType(), new NullValueNode([]), null],
+            [Money::getType(), new BooleanValueNode(['value' => false]), null, GqlException::class],
         ];
     }
 }

@@ -22,11 +22,6 @@ use yii\base\Exception;
 class CopyReferenceTag extends ElementAction
 {
     /**
-     * @var string|null The element type associated with this action
-     */
-    public $elementType;
-
-    /**
      * @inheritdoc
      */
     public function getTriggerLabel(): string
@@ -37,14 +32,15 @@ class CopyReferenceTag extends ElementAction
     /**
      * @inheritdoc
      */
-    public function getTriggerHtml()
+    public function getTriggerHtml(): ?string
     {
         $type = Json::encode(static::class);
         /** @var string|ElementInterface $elementType */
+        /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
         $elementType = $this->elementType;
 
         if (($refHandle = $elementType::refHandle()) === null) {
-            throw new Exception("Element type \"{$elementType}\" doesn't have a reference handle.");
+            throw new Exception("Element type \"$elementType\" doesn't have a reference handle.");
         }
 
         $refHandleJs = Json::encode($refHandle);
@@ -52,13 +48,13 @@ class CopyReferenceTag extends ElementAction
         $js = <<<JS
 (() => {
     new Craft.ElementActionTrigger({
-        type: {$type},
+        type: $type,
         batch: false,
         activate: function(\$selectedItems)
         {
             Craft.ui.createCopyTextPrompt({
                 label: Craft.t('app', 'Copy the reference tag'),
-                value: '{'+{$refHandleJs}+':'+\$selectedItems.find('.element').data('id')+'}',
+                value: '{'+$refHandleJs+':'+\$selectedItems.find('.element').data('id')+'}',
             });
         }
     });

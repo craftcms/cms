@@ -23,10 +23,10 @@ class ElementIndexTableAttributeEvent extends Event
     /**
      * @var ElementQueryInterface The Element query being built
      */
-    public $query;
+    public ElementQueryInterface $query;
 
     /**
      * @var string The table attribute name, as registered by the Element, and not implicitly a native field or attribute name.
      */
-    public $attribute;
+    public string $attribute;
 }

@@ -25,24 +25,24 @@ use yii\base\UnknownPropertyException;
  */
 class GeneralConfig extends BaseObject
 {
-    const IMAGE_DRIVER_AUTO = 'auto';
-    const IMAGE_DRIVER_GD = 'gd';
-    const IMAGE_DRIVER_IMAGICK = 'imagick';
+    public const IMAGE_DRIVER_AUTO = 'auto';
+    public const IMAGE_DRIVER_GD = 'gd';
+    public const IMAGE_DRIVER_IMAGICK = 'imagick';
 
     /**
      * @since 3.6.0
      */
-    const CAMEL_CASE = 'camel';
+    public const CAMEL_CASE = 'camel';
     /**
      * @since 3.6.0
      */
-    const PASCAL_CASE = 'pascal';
+    public const PASCAL_CASE = 'pascal';
     /**
      * @since 3.6.0
      */
-    const SNAKE_CASE = 'snake';
+    public const SNAKE_CASE = 'snake';
 
-    private static $renamedSettings = [
+    private static array $renamedSettings = [
         'activateAccountFailurePath' => 'invalidUserTokenPath',
         'allowAutoUpdates' => 'allowUpdates',
         'backupDbOnUpdate' => 'backupOnUpdate',
@@ -68,7 +68,7 @@ class GeneralConfig extends BaseObject
      * @since 3.6.4
      * @group System
      */
-    public $accessibilityDefaults = [
+    public array $accessibilityDefaults = [
         'alwaysShowFocusRings' => false,
         'useShapes' => false,
         'underlineLinks' => false,
@@ -78,7 +78,7 @@ class GeneralConfig extends BaseObject
      * @var string The URI segment Craft should look for when determining if the current request should be routed to a controller action.
      * @group Routing
      */
-    public $actionTrigger = 'actions';
+    public string $actionTrigger = 'actions';
 
     /**
      * @var mixed The URI that users without access to the control panel should be redirected to after activating their account.
@@ -88,19 +88,19 @@ class GeneralConfig extends BaseObject
      * @see getActivateAccountSuccessPath()
      * @group Routing
      */
-    public $activateAccountSuccessPath = '';
+    public mixed $activateAccountSuccessPath = '';
 
     /**
      * @var bool Whether auto-generated URLs should have trailing slashes.
      * @group Routing
      */
-    public $addTrailingSlashesToUrls = false;
+    public bool $addTrailingSlashesToUrls = false;
 
     /**
      * @var array Any custom Yii [aliases](https://www.yiiframework.com/doc/guide/2.0/en/concept-aliases) that should be defined for every request.
      * @group Environment
      */
-    public $aliases = [];
+    public array $aliases = [];
 
     /**
      * @var bool Whether admins should be allowed to make administrative changes to the system.
@@ -118,10 +118,10 @@ class GeneralConfig extends BaseObject
      * @since 3.1.0
      * @group System
      */
-    public $allowAdminChanges = true;
+    public bool $allowAdminChanges = true;
 
     /**
-     * @var string[]|false|null The Ajax origins that should be allowed to access the GraphQL API, if enabled.
+     * @var string[]|null|false The Ajax origins that should be allowed to access the GraphQL API, if enabled.
      *
      * If this is set to an array, then `graphql/api` requests will only include the current request’s [[\yii\web\Request::getOrigin()|origin]]
      * in the `Access-Control-Allow-Origin` response header if it’s listed here.
@@ -131,7 +131,7 @@ class GeneralConfig extends BaseObject
      * @since 3.5.0
      * @group GraphQL
      */
-    public $allowedGraphqlOrigins;
+    public array|null|false $allowedGraphqlOrigins = null;
 
     /**
      * @var bool Whether Craft should allow system and plugin updates in the control panel, and plugin installation from the Plugin Store.
@@ -140,14 +140,14 @@ class GeneralConfig extends BaseObject
      *
      * @group System
      */
-    public $allowUpdates = true;
+    public bool $allowUpdates = true;
 
     /**
      * @var string[] The file extensions Craft should allow when a user is uploading files.
      * @see extraAllowedFileExtensions
      * @group Assets
      */
-    public $allowedFileExtensions = [
+    public array $allowedFileExtensions = [
         '7z',
         'aiff',
         'asc',
@@ -248,19 +248,19 @@ class GeneralConfig extends BaseObject
      * @var bool Whether users should be allowed to create similarly-named tags.
      * @group System
      */
-    public $allowSimilarTags = false;
+    public bool $allowSimilarTags = false;
 
     /**
      * @var bool Whether uppercase letters should be allowed in slugs.
      * @group Routing
      */
-    public $allowUppercaseInSlug = false;
+    public bool $allowUppercaseInSlug = false;
 
     /**
      * @var bool Whether users should automatically be logged in after activating their account or resetting their password.
      * @group System
      */
-    public $autoLoginAfterAccountActivation = false;
+    public bool $autoLoginAfterAccountActivation = false;
 
     /**
      * @var bool Whether drafts should be saved automatically as they are edited.
@@ -268,19 +268,20 @@ class GeneralConfig extends BaseObject
      * Note that drafts *will* be autosaved while Live Preview is open, regardless of this setting.
      *
      * @since 3.5.6
+     * @deprecated in 4.0.0
      * @group System
      */
-    public $autosaveDrafts = true;
+    public bool $autosaveDrafts = true;
 
     /**
      * @var bool Whether Craft should create a database backup before applying a new system update.
      * @see backupCommand
      * @group System
      */
-    public $backupOnUpdate = true;
+    public bool $backupOnUpdate = true;
 
     /**
-     * @var string|false|null The shell command that Craft should execute to create a database backup.
+     * @var string|null|false The shell command that Craft should execute to create a database backup.
      *
      * When set to `null` (default), Craft will run `mysqldump` or `pg_dump`, provided that those libraries are in the `$PATH` variable
      * for the system user running the web server.
@@ -289,7 +290,7 @@ class GeneralConfig extends BaseObject
      *
      * - `{path}` - the target backup file path
      * - `{port}` - the current database port
-     * - `{server}` - the current database host name
+     * - `{server}` - the current database hostname
      * - `{user}` - the user to connect to the database
      * - `{database}` - the current database name
      * - `{schema}` - the current database schema (if any)
@@ -298,7 +299,7 @@ class GeneralConfig extends BaseObject
      *
      * @group Environment
      */
-    public $backupCommand;
+    public string|null|false $backupCommand = null;
 
     /**
      * @var string|null The base URL Craft should use when generating control panel URLs.
@@ -311,7 +312,7 @@ class GeneralConfig extends BaseObject
      *
      * @group Routing
      */
-    public $baseCpUrl;
+    public ?string $baseCpUrl = null;
 
     /**
      * @var int The higher the cost value, the longer it takes to generate a password hash and to verify against it.
@@ -327,7 +328,7 @@ class GeneralConfig extends BaseObject
      *
      * @group Security
      */
-    public $blowfishHashCost = 13;
+    public int $blowfishHashCost = 13;
 
     /**
      * @var string|null The server path to an image file that should be sent when responding to an image request with a
@@ -337,7 +338,17 @@ class GeneralConfig extends BaseObject
      * @since 3.5.0
      * @group Image Handling
      */
-    public $brokenImagePath;
+    public ?string $brokenImagePath = null;
+
+    /**
+     * @var string|null A unique ID representing the current build of the codebase.
+     *
+     * This should be set to something unique to the deployment, e.g. a Git SHA or a deployment timestamp.
+     *
+     * @since 4.0.0
+     * @group Environment
+     */
+    public ?string $buildId = null;
 
     /**
      * @var mixed The default length of time Craft will store data, RSS feed, and template caches.
@@ -349,7 +360,7 @@ class GeneralConfig extends BaseObject
      * @group System
      * @defaultAlt 1 day
      */
-    public $cacheDuration = 86400;
+    public mixed $cacheDuration = 86400;
 
     /**
      * @var bool Whether uploaded filenames with non-ASCII characters should be converted to ASCII (i.e. `ñ` → `n`).
@@ -360,7 +371,7 @@ class GeneralConfig extends BaseObject
      *
      * @group Assets
      */
-    public $convertFilenamesToAscii = false;
+    public bool $convertFilenamesToAscii = false;
 
     /**
      * @var mixed The amount of time a user must wait before re-attempting to log in after their account is locked due to too many
@@ -373,7 +384,7 @@ class GeneralConfig extends BaseObject
      * @group Security
      * @defaultAlt 5 minutes
      */
-    public $cooldownDuration = 300;
+    public mixed $cooldownDuration = 300;
 
     /**
      * @var array List of additional HTML tags that should be included in the `<head>` of control panel pages.
@@ -398,14 +409,14 @@ class GeneralConfig extends BaseObject
      * @since 3.5.0
      * @group System
      */
-    public $cpHeadTags = [];
+    public array $cpHeadTags = [];
 
     /**
      * @var string|null The URI segment Craft should look for when determining if the current request should route to the control panel rather than
      * the front-end website.
      *
-     * This can be set to `null` if you have a dedicated host name for the control panel (e.g. `cms.example.com`), or you are running Craft in
-     * [Headless Mode](config3:headlessMode). If you do that, you will need to ensure that the control panel is being served from its own webroot
+     * This can be set to `null` if you have a dedicated hostname for the control panel (e.g. `cms.example.com`), or you are running Craft in
+     * [Headless Mode](config3:headlessMode). If you do that, you will need to ensure that the control panel is being served from its own web root
      * directory on your server, with an `index.php` file that defines the `CRAFT_CP` PHP constant.
      *
      * ```php
@@ -413,36 +424,20 @@ class GeneralConfig extends BaseObject
      * ```
      *
      * Alternatively, you can set the <config3:baseCpUrl> config setting, but then you will run the risk of losing access to portions of your
-     * control panel due to URI conflicts with actual folders/files in your main webroot.
+     * control panel due to URI conflicts with actual folders/files in your main web root.
      *
      * (For example, if you have an `assets/` folder, that would conflict with the `/assets` page in the control panel.)
      *
      * @group Routing
      */
-    public $cpTrigger = 'admin';
+    public ?string $cpTrigger = 'admin';
 
     /**
      * @var string The name of CSRF token used for CSRF validation if <config3:enableCsrfProtection> is set to `true`.
      * @see enableCsrfProtection
      * @group Security
      */
-    public $csrfTokenName = 'CRAFT_CSRF_TOKEN';
-
-    /**
-     * @var array Any custom ASCII character mappings.
-     *
-     * This array is merged into the default one in StringHelper::asciiCharMap(). The key is the ASCII character to be used for the replacement
-     * and the value is an array of non-ASCII characters that the key maps to.
-     * ---
-     * ```php
-     * 'customAsciiCharMappings' => [
-     *     'c' => ['ç', 'ć', 'č', 'ĉ', 'ċ'],
-     * ],
-     * ```
-     *
-     * @deprecated in 3.0.10. Any corrections to ASCII char mappings should be submitted to [Stringy](https://github.com/voku/Stringy).
-     */
-    public $customAsciiCharMappings = [];
+    public string $csrfTokenName = 'CRAFT_CSRF_TOKEN';
 
     /**
      * @var string The domain that cookies generated by Craft should be created for. If blank, it will be left up to the browser to determine
@@ -451,13 +446,13 @@ class GeneralConfig extends BaseObject
      *
      * @group Environment
      */
-    public $defaultCookieDomain = '';
+    public string $defaultCookieDomain = '';
 
     /**
      * @var string|null The default language the control panel should use for users who haven’t set a preferred language yet.
      * @group System
      */
-    public $defaultCpLanguage;
+    public ?string $defaultCpLanguage = null;
 
     /**
      * @var string|null The default locale the control panel should use for date/number formatting, for users who haven’t set
@@ -468,7 +463,7 @@ class GeneralConfig extends BaseObject
      * @since 3.5.0
      * @group System
      */
-    public $defaultCpLocale;
+    public ?string $defaultCpLocale = null;
 
     /**
      * @var mixed The default permission to be set for newly-generated directories.
@@ -477,7 +472,7 @@ class GeneralConfig extends BaseObject
      *
      * @group System
      */
-    public $defaultDirMode = 0775;
+    public mixed $defaultDirMode = 0775;
 
     /**
      * @var int|null The default permission to be set for newly-generated files.
@@ -486,35 +481,34 @@ class GeneralConfig extends BaseObject
      *
      * @group System
      */
-    public $defaultFileMode;
+    public ?int $defaultFileMode = null;
 
     /**
      * @var int The quality level Craft will use when saving JPG and PNG files. Ranges from 1 (worst quality, smallest file) to
      * 100 (best quality, biggest file).
      * @group Image Handling
      */
-    public $defaultImageQuality = 82;
+    public int $defaultImageQuality = 82;
 
     /**
      * @var array The default options that should be applied to each search term.
      *
      * Options include:
      *
-     * - `attribute` – The attribute that the term should apply to (e.g. 'title'), if any. (`null` by default)
-     * - `exact` – Whether the term must be an exact match (only applies if `attribute` is set). (`false` by default)
-     * - `exclude` – Whether search results should *exclude* records with this term. (`false` by default)
-     * - `subLeft` – Whether to include keywords that contain the term, with additional characters before it. (`false` by default)
-     * - `subRight` – Whether to include keywords that contain the term, with additional characters after it. (`true` by default)
+     * - `subLeft` – Whether to include keywords that contain the term, with additional characters before it. (`false` by default)
+     * - `subRight` – Whether to include keywords that contain the term, with additional characters after it. (`true` by default)
+     * - `exclude` – Whether search results should *exclude* records with this term. (`false` by default)
+     * - `exact` – Whether the term must be an exact match (only applies if the search term specifies an attribute). (`false` by default)
      *
      * @group System
      */
-    public $defaultSearchTermOptions = [];
+    public array $defaultSearchTermOptions = [];
 
     /**
      * @var string[] The template file extensions Craft will look for when matching a template path to a file on the front end.
      * @group System
      */
-    public $defaultTemplateExtensions = ['html', 'twig'];
+    public array $defaultTemplateExtensions = ['html', 'twig'];
 
     /**
      * @var mixed The default amount of time tokens can be used before expiring.
@@ -524,7 +518,7 @@ class GeneralConfig extends BaseObject
      * @group Security
      * @defaultAlt 1 day
      */
-    public $defaultTokenDuration = 86400;
+    public mixed $defaultTokenDuration = 86400;
 
     /**
      * @var int The default day new users should have set as their Week Start Day.
@@ -542,7 +536,7 @@ class GeneralConfig extends BaseObject
      * @group System
      * @defaultAlt Monday
      */
-    public $defaultWeekStartDay = 1;
+    public int $defaultWeekStartDay = 1;
 
     /**
      * @var bool By default, Craft requires a front-end “password” field for public user registrations. Setting this to `true`
@@ -553,13 +547,13 @@ class GeneralConfig extends BaseObject
      *
      * @group Security
      */
-    public $deferPublicRegistrationPassword = false;
+    public bool $deferPublicRegistrationPassword = false;
 
     /**
      * @var bool Whether the system should run in [Dev Mode](https://craftcms.com/support/dev-mode).
      * @group System
      */
-    public $devMode = false;
+    public bool $devMode = false;
 
     /**
      * @var string[]|string|null Array of plugin handles that should be disabled, regardless of what the project config says.
@@ -586,7 +580,7 @@ class GeneralConfig extends BaseObject
      * @since 3.1.9
      * @group System
      */
-    public $disabledPlugins;
+    public string|array|null $disabledPlugins = null;
 
     /**
      * @var bool Whether front end requests should respond with `X-Robots-Tag: none` HTTP headers, indicating that pages should not be indexed,
@@ -599,21 +593,21 @@ class GeneralConfig extends BaseObject
      * @since 3.5.10
      * @group System
      */
-    public $disallowRobots = false;
+    public bool $disallowRobots = false;
 
     /**
      * @var bool Whether the `transform` directive should be disabled for the GraphQL API.
      * @since 3.6.0
      * @group GraphQL
      */
-    public $disableGraphqlTransformDirective = false;
+    public bool $disableGraphqlTransformDirective = false;
 
     /**
      * @var bool Whether front-end web requests should support basic HTTP authentication.
      * @since 3.5.0
      * @group Security
      */
-    public $enableBasicHttpAuth = false;
+    public bool $enableBasicHttpAuth = false;
 
     /**
      * @var bool Whether to use a cookie to persist the CSRF token if <config3:enableCsrfProtection> is enabled. If false, the CSRF token will be
@@ -622,14 +616,14 @@ class GeneralConfig extends BaseObject
      * @see enableCsrfProtection
      * @group Security
      */
-    public $enableCsrfCookie = true;
+    public bool $enableCsrfCookie = true;
 
     /**
-     * @var bool Whether GraphQL introspection queries are allowed. Defaults to `true` and is always allowed in the CP.
+     * @var bool Whether GraphQL introspection queries are allowed. Defaults to `true` and is always allowed in the control panel.
      * @since 3.6.0
      * @group GraphQL
      */
-    public $enableGraphqlIntrospection = true;
+    public bool $enableGraphqlIntrospection = true;
 
     /**
      * @var bool Whether the GraphQL API should be enabled.
@@ -639,7 +633,7 @@ class GeneralConfig extends BaseObject
      * @since 3.3.1
      * @group GraphQL
      */
-    public $enableGql = true;
+    public bool $enableGql = true;
 
     /**
      * @var mixed The amount of time a user’s elevated session will last, which is required for some sensitive actions (e.g. user group/permission assignment).
@@ -651,7 +645,7 @@ class GeneralConfig extends BaseObject
      * @group Security
      * @defaultAlt 5 minutes
      */
-    public $elevatedSessionDuration = 300;
+    public mixed $elevatedSessionDuration = 300;
 
     /**
      * @var bool Whether to enable CSRF protection via hidden form inputs for all forms submitted via Craft.
@@ -659,7 +653,7 @@ class GeneralConfig extends BaseObject
      * @see enableCsrfCookie
      * @group Security
      */
-    public $enableCsrfProtection = true;
+    public bool $enableCsrfProtection = true;
 
     /**
      * @var bool Whether Craft should cache GraphQL queries.
@@ -673,21 +667,21 @@ class GeneralConfig extends BaseObject
      * @since 3.3.12
      * @group GraphQL
      */
-    public $enableGraphqlCaching = true;
+    public bool $enableGraphqlCaching = true;
 
     /**
      * @var bool Whether dates returned by the GraphQL API should be set to the system time zone by default, rather than UTC.
      * @since 3.7.0
      * @group GraphQL
      */
-    public $setGraphqlDatesToSystemTimeZone = false;
+    public bool $setGraphqlDatesToSystemTimeZone = false;
 
     /**
      * @var bool Whether to enable Craft’s template `{% cache %}` tag on a global basis.
      * @see http://craftcms.com/docs/templating/cache
      * @group System
      */
-    public $enableTemplateCaching = true;
+    public bool $enableTemplateCaching = true;
 
     /**
      * @var string The prefix that should be prepended to HTTP error status codes when determining the path to look for an error’s template.
@@ -696,25 +690,21 @@ class GeneralConfig extends BaseObject
      *
      * @group System
      */
-    public $errorTemplatePrefix = '';
+    public string $errorTemplatePrefix = '';
 
     /**
      * @var string[]|null List of file extensions that will be merged into the <config3:allowedFileExtensions> config setting.
      * @see allowedFileExtensions
      * @group System
      */
-    public $extraAllowedFileExtensions;
+    public ?array $extraAllowedFileExtensions = null;
 
     /**
      * @var string[]|null List of extra locale IDs that the application should support, and users should be able to select as their Preferred Language.
-     *
-     * Only use this setting if your server has the Intl PHP extension, or if you’ve saved the corresponding
-     * [locale data](https://github.com/craftcms/locales) into your `config/locales/` folder.
-     *
      * @since 3.0.24
      * @group System
      */
-    public $extraAppLocales;
+    public ?array $extraAppLocales = null;
 
     /**
      * @var array List of additional file kinds Craft should support. This array will get merged with the one defined in
@@ -742,28 +732,29 @@ class GeneralConfig extends BaseObject
      * @since 3.0.37
      * @group Assets
      */
-    public $extraFileKinds = [];
+    public array $extraFileKinds = [];
 
     /**
-     * @var string|bool The string to use to separate words when uploading Assets. If set to `false`, spaces will be left alone.
+     * @var string|false The string to use to separate words when uploading Assets. If set to `false`, spaces will be left alone.
      * @group Assets
      */
-    public $filenameWordSeparator = '-';
+    public string|false $filenameWordSeparator = '-';
 
     /**
      * @var bool Whether image transforms should be generated before page load.
      * @group Image Handling
      */
-    public $generateTransformsBeforePageLoad = false;
+    public bool $generateTransformsBeforePageLoad = false;
 
     /**
      * @var string Prefix to use for all type names returned by GraphQL.
      * @group GraphQL
      */
-    public $gqlTypePrefix = '';
+    public string $gqlTypePrefix = '';
 
     /**
      * @var string The casing to use for autogenerated component handles.
+     * @phpstan-var self::CAMEL_CASE|self::PASCAL_CASE|self::SNAKE_CASE
      *
      * This can be set to one of the following:
      *
@@ -774,7 +765,7 @@ class GeneralConfig extends BaseObject
      * @since 3.6.0
      * @group System
      */
-    public $handleCasing = self::CAMEL_CASE;
+    public string $handleCasing = self::CAMEL_CASE;
 
     /**
      * @var bool Whether the system should run in Headless Mode, which optimizes the system and control panel for headless CMS implementations.
@@ -797,7 +788,7 @@ class GeneralConfig extends BaseObject
      * @since 3.3.0
      * @group System
      */
-    public $headlessMode = false;
+    public bool $headlessMode = false;
 
     /**
      * @var string|null The proxy server that should be used for outgoing HTTP requests.
@@ -807,21 +798,21 @@ class GeneralConfig extends BaseObject
      * @group System
      * @since 3.7.0
      */
-    public $httpProxy;
+    public ?string $httpProxy = null;
 
     /**
      * @var mixed The image driver Craft should use to cleanse and transform images. By default Craft will use ImageMagick if it’s installed
      * and otherwise fall back to GD. You can explicitly set either `'imagick'` or `'gd'` here to override that behavior.
      * @group Image Handling
      */
-    public $imageDriver = self::IMAGE_DRIVER_AUTO;
+    public mixed $imageDriver = self::IMAGE_DRIVER_AUTO;
 
     /**
      * @var array An array containing the selectable image aspect ratios for the image editor. The array must be in the format
      * of `label` => `ratio`, where ratio must be a float or a string. For string values, only values of “none” and “original” are allowed.
      * @group Image Handling
      */
-    public $imageEditorRatios = [
+    public array $imageEditorRatios = [
         'Unconstrained' => 'none',
         'Original' => 'original',
         'Square' => 1,
@@ -838,7 +829,7 @@ class GeneralConfig extends BaseObject
      * matching a template path to a file on the front end.
      * @group System
      */
-    public $indexTemplateFilenames = ['index'];
+    public array $indexTemplateFilenames = ['index'];
 
     /**
      * @var mixed The amount of time to track invalid login attempts for a user, for determining if Craft should lock an account.
@@ -848,7 +839,7 @@ class GeneralConfig extends BaseObject
      * @group Security
      * @defaultAlt 1 hour
      */
-    public $invalidLoginWindowDuration = 3600;
+    public mixed $invalidLoginWindowDuration = 3600;
 
     /**
      * @var mixed The URI Craft should redirect to when user token validation fails. A token is used on things like setting and resetting user account
@@ -859,7 +850,7 @@ class GeneralConfig extends BaseObject
      * @see getInvalidUserTokenPath()
      * @group Routing
      */
-    public $invalidUserTokenPath = '';
+    public mixed $invalidUserTokenPath = '';
 
     /**
      * @var string[]|null List of headers where proxies store the real client IP.
@@ -870,14 +861,14 @@ class GeneralConfig extends BaseObject
      *
      * @group System
      */
-    public $ipHeaders;
+    public ?array $ipHeaders = null;
 
     /**
      * @var bool|null Whether the site is currently live. If set to `true` or `false`, it will take precedence over the System Status setting
      * in Settings → General.
      * @group System
      */
-    public $isSystemLive;
+    public ?bool $isSystemLive = null;
 
     /**
      * @var bool Whether non-ASCII characters in auto-generated slugs should be converted to ASCII (i.e. ñ → n).
@@ -888,7 +879,7 @@ class GeneralConfig extends BaseObject
      *
      * @group System
      */
-    public $limitAutoSlugsToAscii = false;
+    public bool $limitAutoSlugsToAscii = false;
 
     /**
      * @var mixed The URI Craft should use for user login on the front end.
@@ -902,7 +893,7 @@ class GeneralConfig extends BaseObject
      * @see getLoginPath()
      * @group Routing
      */
-    public $loginPath = 'login';
+    public mixed $loginPath = 'login';
 
     /**
      * @var mixed The URI Craft should use for user logout on the front end.
@@ -916,47 +907,47 @@ class GeneralConfig extends BaseObject
      * @see getLogoutPath()
      * @group Routing
      */
-    public $logoutPath = 'logout';
+    public mixed $logoutPath = 'logout';
 
     /**
      * @var int The maximum dimension size to use when caching images from external sources to use in transforms. Set to `0` to never cache them.
      * @group Image Handling
      */
-    public $maxCachedCloudImageSize = 2000;
+    public int $maxCachedCloudImageSize = 2000;
 
     /**
      * @var int The maximum allowed complexity a GraphQL query is allowed to have. Set to `0` to allow any complexity.
      * @since 3.6.0
      * @group GraphQL
      */
-    public $maxGraphqlComplexity = 0;
+    public int $maxGraphqlComplexity = 0;
 
     /**
      * @var int The maximum allowed depth a GraphQL query is allowed to reach. Set to `0` to allow any depth.
      * @since 3.6.0
      * @group GraphQL
      */
-    public $maxGraphqlDepth = 0;
+    public int $maxGraphqlDepth = 0;
 
     /**
      * @var int The maximum allowed results for a single GraphQL query. Set to `0` to disable any limits.
      * @since 3.6.0
      * @group GraphQL
      */
-    public $maxGraphqlResults = 0;
+    public int $maxGraphqlResults = 0;
 
     /**
-     * @var int The number of invalid login attempts Craft will allow within the specified duration before the account gets locked.
+     * @var int|false The number of invalid login attempts Craft will allow within the specified duration before the account gets locked.
      * @group Security
      */
-    public $maxInvalidLogins = 5;
+    public int|false $maxInvalidLogins = 5;
 
     /**
      * @var int|false The number of backups Craft should make before it starts deleting the oldest backups. If set to `false`, Craft will
      * not delete any backups.
      * @group System
      */
-    public $maxBackups = 20;
+    public int|false $maxBackups = 20;
 
     /**
      * @var int|null The maximum number of revisions that should be stored for each element.
@@ -966,13 +957,13 @@ class GeneralConfig extends BaseObject
      * @since 3.2.0
      * @group System
      */
-    public $maxRevisions = 50;
+    public ?int $maxRevisions = 50;
 
     /**
      * @var int The highest number Craft will tack onto a slug in order to make it unique before giving up and throwing an error.
      * @group System
      */
-    public $maxSlugIncrement = 100;
+    public int $maxSlugIncrement = 100;
 
     /**
      * @var int|string The maximum upload file size allowed.
@@ -981,12 +972,12 @@ class GeneralConfig extends BaseObject
      * @group Assets
      * @defaultAlt 16MB
      */
-    public $maxUploadFileSize = 16777216;
+    public string|int $maxUploadFileSize = 16777216;
 
     /**
      * @var bool Whether generated URLs should omit `index.php` (e.g. `http://domain.com/path` instead of `http://domain.com/index.php/path`)
      *
-     * This can only be possible if your server is configured to redirect would-be 404's to `index.php`, for example, with the redirect found
+     * This can only be possible if your server is configured to redirect would-be 404s to `index.php`, for example, with the redirect found
      * in the `.htaccess` file that came with Craft:
      *
      * ```
@@ -998,7 +989,7 @@ class GeneralConfig extends BaseObject
      *
      * @group Routing
      */
-    public $omitScriptNameInUrls = false;
+    public bool $omitScriptNameInUrls = false;
 
     /**
      * @var bool Whether Craft should optimize images for reduced file sizes without noticeably reducing image quality. (Only supported when
@@ -1006,7 +997,7 @@ class GeneralConfig extends BaseObject
      * @see imageDriver
      * @group Image Handling
      */
-    public $optimizeImageFilesize = true;
+    public bool $optimizeImageFilesize = true;
 
     /**
      * @var string The string preceding a number which Craft will look for when determining if the current request is for a particular page in
@@ -1027,7 +1018,7 @@ class GeneralConfig extends BaseObject
      * @see getPageTrigger()
      * @group Routing
      */
-    public $pageTrigger = 'p';
+    public string $pageTrigger = 'p';
 
     /**
      * @var string|null The query string param that Craft will check when determining the request’s path.
@@ -1041,15 +1032,14 @@ class GeneralConfig extends BaseObject
      *
      * @group Routing
      */
-    public $pathParam = 'p';
+    public ?string $pathParam = 'p';
 
     /**
      * @var string|null The `Permissions-Policy` header that should be sent for web responses.
-     *
      * @since 3.6.14
      * @group System
      */
-    public $permissionsPolicyHeader = null;
+    public ?string $permissionsPolicyHeader = null;
 
     /**
      * @var string|null The maximum amount of memory Craft will try to reserve during memory-intensive operations such as zipping,
@@ -1059,14 +1049,14 @@ class GeneralConfig extends BaseObject
      *
      * @group System
      */
-    public $phpMaxMemoryLimit;
+    public ?string $phpMaxMemoryLimit = null;
 
     /**
      * @var string The name of the PHP session cookie.
      * @see https://php.net/manual/en/function.session-name.php
      * @group Session
      */
-    public $phpSessionName = 'CraftSessionId';
+    public string $phpSessionName = 'CraftSessionId';
 
     /**
      * @var mixed The path users should be redirected to after logging into the control panel.
@@ -1079,7 +1069,7 @@ class GeneralConfig extends BaseObject
      * @see getPostCpLoginRedirect()
      * @group Routing
      */
-    public $postCpLoginRedirect = 'dashboard';
+    public mixed $postCpLoginRedirect = 'dashboard';
 
     /**
      * @var mixed The path users should be redirected to after logging in from the front-end site.
@@ -1092,7 +1082,7 @@ class GeneralConfig extends BaseObject
      * @see getPostLoginRedirect()
      * @group Routing
      */
-    public $postLoginRedirect = '';
+    public mixed $postLoginRedirect = '';
 
     /**
      * @var mixed The path that users should be redirected to after logging out from the front-end site.
@@ -1102,14 +1092,14 @@ class GeneralConfig extends BaseObject
      * @see getPostLogoutRedirect()
      * @group Routing
      */
-    public $postLogoutRedirect = '';
+    public mixed $postLogoutRedirect = '';
 
     /**
      * @var bool Whether the <config3:gqlTypePrefix> config setting should have an impact on `query`, `mutation`, and `subscription` types.
      * @since 3.6.6
      * @group GraphQL
      */
-    public $prefixGqlRootTypes = true;
+    public bool $prefixGqlRootTypes = true;
 
     /**
      * @var bool Whether CMYK should be preserved as the colorspace when manipulating images.
@@ -1120,7 +1110,7 @@ class GeneralConfig extends BaseObject
      * @since 3.0.8
      * @group Image Handling
      */
-    public $preserveCmykColorspace = false;
+    public bool $preserveCmykColorspace = false;
 
     /**
      * @var bool Whether the EXIF data should be preserved when manipulating and uploading images.
@@ -1131,7 +1121,7 @@ class GeneralConfig extends BaseObject
      *
      * @group Image Handling
      */
-    public $preserveExifData = false;
+    public bool $preserveExifData = false;
 
     /**
      * @var bool Whether the embedded Image Color Profile (ICC) should be preserved when manipulating images.
@@ -1141,7 +1131,7 @@ class GeneralConfig extends BaseObject
      *
      * @group Image Handling
      */
-    public $preserveImageColorProfiles = true;
+    public bool $preserveImageColorProfiles = true;
 
     /**
      * @var bool When `true`, Craft will always return a successful response in the “forgot password” flow, making it difficult to enumerate users.
@@ -1152,7 +1142,7 @@ class GeneralConfig extends BaseObject
      *
      * @group Security
      */
-    public $preventUserEnumeration = false;
+    public bool $preventUserEnumeration = false;
 
     /**
      * @var array Custom [iFrame Resizer options](http://davidjbradshaw.github.io/iframe-resizer/#options) that should be used for preview iframes.
@@ -1166,7 +1156,7 @@ class GeneralConfig extends BaseObject
      * @since 3.5.0
      * @group System
      */
-    public $previewIframeResizerOptions = [];
+    public array $previewIframeResizerOptions = [];
 
     /**
      * @var mixed The amount of time content preview tokens can be used before expiring.
@@ -1177,7 +1167,7 @@ class GeneralConfig extends BaseObject
      * @defaultAlt 1 day
      * @since 3.7.0
      */
-    public $previewTokenDuration;
+    public mixed $previewTokenDuration = null;
 
     /**
      * @var string The template path segment prefix that should be used to identify “private” templates, which are templates that are not
@@ -1187,7 +1177,7 @@ class GeneralConfig extends BaseObject
      *
      * @group System
      */
-    public $privateTemplateTrigger = '_';
+    public string $privateTemplateTrigger = '_';
 
     /**
      * @var mixed The amount of time to wait before Craft purges pending users from the system that have not activated.
@@ -1199,12 +1189,12 @@ class GeneralConfig extends BaseObject
      * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
      *
      * ::: tip
-     * Users will only be purged when [garbage collection](https://craftcms.com/docs/3.x/gc.html) is run.
+     * Users will only be purged when [garbage collection](https://craftcms.com/docs/4.x/gc.html) is run.
      * :::
      *
      * @group Garbage Collection
      */
-    public $purgePendingUsersDuration = 0;
+    public mixed $purgePendingUsersDuration = 0;
 
     /**
      * @var mixed The amount of time to wait before Craft purges stale user sessions from the sessions table in the database.
@@ -1217,7 +1207,7 @@ class GeneralConfig extends BaseObject
      * @group Garbage Collection
      * @defaultAlt 90 days
      */
-    public $purgeStaleUserSessionDuration = 7776000;
+    public mixed $purgeStaleUserSessionDuration = 7776000;
 
     /**
      * @var mixed The amount of time to wait before Craft purges unpublished drafts that were never updated with content.
@@ -1230,7 +1220,7 @@ class GeneralConfig extends BaseObject
      * @group Garbage Collection
      * @defaultAlt 30 days
      */
-    public $purgeUnsavedDraftsDuration = 2592000;
+    public mixed $purgeUnsavedDraftsDuration = 2592000;
 
     /**
      * @var bool Whether SVG thumbnails should be rasterized.
@@ -1240,7 +1230,7 @@ class GeneralConfig extends BaseObject
      * @since 3.6.0
      * @group Image Handling
      */
-    public $rasterizeSvgThumbs = false;
+    public bool $rasterizeSvgThumbs = false;
 
     /**
      * @var mixed The amount of time Craft will remember a username and pre-populate it on the control panel’s Login page.
@@ -1252,7 +1242,7 @@ class GeneralConfig extends BaseObject
      * @group Session
      * @defaultAlt 1 year
      */
-    public $rememberUsernameDuration = 31536000;
+    public mixed $rememberUsernameDuration = 31536000;
 
     /**
      * @var mixed The amount of time a user stays logged if “Remember Me” is checked on the login page.
@@ -1264,34 +1254,34 @@ class GeneralConfig extends BaseObject
      * @group Session
      * @defaultAlt 14 days
      */
-    public $rememberedUserSessionDuration = 1209600;
+    public mixed $rememberedUserSessionDuration = 1209600;
 
     /**
      * @var bool Whether Craft should require a matching user agent string when restoring a user session from a cookie.
      * @group Session
      */
-    public $requireMatchingUserAgentForSession = true;
+    public bool $requireMatchingUserAgentForSession = true;
 
     /**
      * @var bool Whether Craft should require the existence of a user agent string and IP address when creating a new user session.
      * @group Session
      */
-    public $requireUserAgentAndIpForSession = true;
+    public bool $requireUserAgentAndIpForSession = true;
 
     /**
      * @var string The path to the root directory that should store published control panel resources.
      * @group Environment
      */
-    public $resourceBasePath = '@webroot/cpresources';
+    public string $resourceBasePath = '@webroot/cpresources';
 
     /**
      * @var string The URL to the root directory that should store published control panel resources.
      * @group Environment
      */
-    public $resourceBaseUrl = '@web/cpresources';
+    public string $resourceBaseUrl = '@web/cpresources';
 
     /**
-     * @var string|null The shell command Craft should execute to restore a database backup.
+     * @var string|null|false The shell command Craft should execute to restore a database backup.
      *
      * By default Craft will run `mysql` or `psql`, provided those libraries are in the `$PATH` variable for the user the web server is running as.
      *
@@ -1299,7 +1289,7 @@ class GeneralConfig extends BaseObject
      *
      * - `{path}` - the backup file path
      * - `{port}` - the current database port
-     * - `{server}` - the current database host name
+     * - `{server}` - the current database hostname
      * - `{user}` - the user to connect to the database
      * - `{database}` - the current database name
      * - `{schema}` - the current database schema (if any)
@@ -1308,20 +1298,20 @@ class GeneralConfig extends BaseObject
      *
      * @group Environment
      */
-    public $restoreCommand;
+    public string|null|false $restoreCommand = null;
 
     /**
      * @var bool Whether asset URLs should be revved so browsers don’t load cached versions when they’re modified.
      * @since 3.7.0
      * @group Assets
      */
-    public $revAssetUrls = false;
+    public bool $revAssetUrls = false;
 
     /**
      * @var bool Whether Craft should rotate images according to their EXIF data on upload.
      * @group Image Handling
      */
-    public $rotateImagesOnUploadByExifData = true;
+    public bool $rotateImagesOnUploadByExifData = true;
 
     /**
      * @var bool Whether Craft should run pending queue jobs automatically when someone visits the control panel.
@@ -1340,28 +1330,24 @@ class GeneralConfig extends BaseObject
      * :::
      * @group System
      */
-    public $runQueueAutomatically = true;
+    public bool $runQueueAutomatically = true;
 
     /**
      * @var bool Whether images uploaded via the control panel should be sanitized.
      * @since 3.6.0
      * @group Security
      */
-    public $sanitizeCpImageUploads = true;
+    public bool $sanitizeCpImageUploads = true;
 
     /**
-     * @var string The [SameSite](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie/SameSite) value that should be set on Craft cookies, if any.
+     * @var 'None'|'Lax'|'Strict'|null The [SameSite](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie/SameSite) value that should be set on Craft cookies, if any.
      *
      * This can be set to `'None'`, `'Lax'`, `'Strict'`, or `null`.
-     *
-     * ::: tip
-     * This setting requires PHP 7.3 or later.
-     * :::
      *
      * @since 3.1.33
      * @group System
      */
-    public $sameSiteCookieValue = null;
+    public ?string $sameSiteCookieValue = null;
 
     /**
      * @var bool Whether Craft should sanitize uploaded SVG files and strip out potential malicious-looking content.
@@ -1370,7 +1356,7 @@ class GeneralConfig extends BaseObject
      *
      * @group Security
      */
-    public $sanitizeSvgUploads = true;
+    public bool $sanitizeSvgUploads = true;
 
     /**
      * @var string A private, random, cryptographically-secure key that is used for hashing and encrypting data in [[\craft\services\Security]].
@@ -1379,21 +1365,21 @@ class GeneralConfig extends BaseObject
      *
      * @group Security
      */
-    public $securityKey;
+    public string $securityKey;
 
     /**
      * @var bool Whether a `Content-Length` header should be sent with responses.
      * @since 3.7.3
      * @group System
      */
-    public $sendContentLengthHeader = false;
+    public bool $sendContentLengthHeader = false;
 
     /**
      * @var bool Whether an `X-Powered-By: Craft CMS` header should be sent, helping services like [BuiltWith](https://builtwith.com/) and
      * [Wappalyzer](https://www.wappalyzer.com/) identify that the site is running on Craft.
      * @group System
      */
-    public $sendPoweredByHeader = true;
+    public bool $sendPoweredByHeader = true;
 
     /**
      * @var mixed The URI or URL that Craft should use for Set Password forms on the front end.
@@ -1409,7 +1395,7 @@ class GeneralConfig extends BaseObject
      * @see getSetPasswordPath()
      * @group Routing
      */
-    public $setPasswordPath = 'setpassword';
+    public mixed $setPasswordPath = 'setpassword';
 
     /**
      * @var mixed The URI to the page where users can request to change their password.
@@ -1427,7 +1413,7 @@ class GeneralConfig extends BaseObject
      * @group Routing
      * @since 3.5.14
      */
-    public $setPasswordRequestPath;
+    public mixed $setPasswordRequestPath = null;
 
     /**
      * @var mixed The URI Craft should redirect users to after setting their password from the front end.
@@ -1437,49 +1423,20 @@ class GeneralConfig extends BaseObject
      * @see getSetPasswordSuccessPath()
      * @group Routing
      */
-    public $setPasswordSuccessPath = '';
-
-    /**
-     * @var string|string[] The site name(s). If set, it will take precedence over the Name settings in Settings → Sites → [Site Name].
-     *
-     * This can be set to a string, which will override the primary site’s name only, or an array with site handles used as the keys.
-     *
-     * @deprecated in 3.6.0. Set your sites’ Name settings on a per-environment basis using environment variables instead.
-     * See [Environmental Configuration](https://craftcms.com/docs/3.x/config/#environmental-configuration) for more info.
-     */
-    public $siteName;
+    public mixed $setPasswordSuccessPath = '';
 
     /**
      * @var string The query string parameter name that site tokens should be set to.
      * @since 3.5.0
      * @group Routing
      */
-    public $siteToken = 'siteToken';
-
-    /**
-     * @var string|string[] The base URL to the site(s). If set, it will take precedence over the Base URL settings in Settings → Sites → [Site Name].
-     *
-     * This can be set to a string, which will override the primary site’s base URL only, or an array with site handles used as the keys.
-     *
-     * The URL(s) must begin with either `http://`, `https://`, `//` (protocol-relative), or an [alias](config3:aliases).
-     *
-     * ```php
-     * 'siteUrl' => [
-     *     'siteA' => 'https://site-a.com/',
-     *     'siteB' => 'https://site-b.com/',
-     * ],
-     * ```
-     *
-     * @deprecated in 3.6.0. Set your sites’ Base URL settings on a per-environment basis using aliases or environment variables instead.
-     * See [Environmental Configuration](https://craftcms.com/docs/3.x/config/#environmental-configuration) for more info.
-     */
-    public $siteUrl;
+    public string $siteToken = 'siteToken';
 
     /**
      * @var string The character(s) that should be used to separate words in slugs.
      * @group System
      */
-    public $slugWordSeparator = '-';
+    public string $slugWordSeparator = '-';
 
     /**
      * @var array|null Lists of headers that are, by default, subject to the trusted host configuration.
@@ -1490,7 +1447,7 @@ class GeneralConfig extends BaseObject
      *
      * @group Security
      */
-    public $secureHeaders;
+    public ?array $secureHeaders = null;
 
     /**
      * @var array|null List of headers to check for determining whether the connection is made via HTTPS.
@@ -1501,7 +1458,7 @@ class GeneralConfig extends BaseObject
      *
      * @group Security
      */
-    public $secureProtocolHeaders;
+    public ?array $secureProtocolHeaders = null;
 
     /**
      * @var mixed The amount of time before a soft-deleted item will be up for hard-deletion by garbage collection.
@@ -1514,26 +1471,17 @@ class GeneralConfig extends BaseObject
      * @group Garbage Collection
      * @defaultAlt 30 days
      */
-    public $softDeleteDuration = 2592000;
+    public mixed $softDeleteDuration = 2592000;
 
     /**
      * @var bool Whether user IP addresses should be stored/logged by the system.
      * @since 3.1.0
      * @group Security
      */
-    public $storeUserIps = false;
+    public bool $storeUserIps = false;
 
     /**
-     * @var bool Whether Twig runtime errors should be suppressed.
-     *
-     * If it is set to `true`, the errors will still be logged to Craft’s log files.
-     *
-     * @deprecated in 3.3.0
-     */
-    public $suppressTemplateErrors = false;
-
-    /**
-     * @var string|array|false|null Configures Craft to send all system emails to either a single email address or an array of email addresses
+     * @var string|array|null|false Configures Craft to send all system emails to either a single email address or an array of email addresses
      * for testing purposes.
      *
      * By default, the recipient name(s) will be “Test Recipient”, but you can customize that by setting the value with the format
@@ -1541,7 +1489,7 @@ class GeneralConfig extends BaseObject
      *
      * @group System
      */
-    public $testToEmailAddress;
+    public string|array|null|false $testToEmailAddress = null;
 
     /**
      * @var string|null The timezone of the site. If set, it will take precedence over the Timezone setting in Settings → General.
@@ -1550,34 +1498,34 @@ class GeneralConfig extends BaseObject
      *
      * @group System
      */
-    public $timezone;
+    public ?string $timezone = null;
 
     /**
      * @var bool Whether GIF files should be cleansed/transformed.
      * @since 3.0.7
      * @group Image Handling
      */
-    public $transformGifs = true;
+    public bool $transformGifs = true;
 
     /**
      * @var bool Whether SVG files should be transformed.
      * @since 3.7.1
      * @group Image Handling
      */
-    public $transformSvgs = true;
+    public bool $transformSvgs = true;
 
     /**
      * @var bool Whether translated messages should be wrapped in special characters to help find any strings that are not being run through
      * `Craft::t()` or the `|translate` filter.
      * @group System
      */
-    public $translationDebugOutput = false;
+    public bool $translationDebugOutput = false;
 
     /**
      * @var string The query string parameter name that Craft tokens should be set to.
      * @group Routing
      */
-    public $tokenParam = 'token';
+    public string $tokenParam = 'token';
 
     /**
      * @var array The configuration for trusted security-related headers.
@@ -1588,21 +1536,14 @@ class GeneralConfig extends BaseObject
      *
      * @group Security
      */
-    public $trustedHosts = ['any'];
+    public array $trustedHosts = ['any'];
 
     /**
      * @var bool Whether images should be upscaled if the provided transform size is larger than the image.
      * @since 3.4.0
      * @group Image Handling
      */
-    public $upscaleImages = true;
-
-    /**
-     * @var bool Whether Craft should include minified JavaScript files whenever possible, and minify JavaScript code passed to
-     * [[\craft\web\View::includeJs()]] or `{% js %}` Twig tags.
-     * @deprecated in 3.5.0
-     */
-    public $useCompressedJs = true;
+    public bool $upscaleImages = true;
 
     /**
      * @var bool Whether Craft should set users’ usernames to their email addresses, rather than let them set their username separately.
@@ -1615,7 +1556,7 @@ class GeneralConfig extends BaseObject
      *
      * @group System
      */
-    public $useEmailAsUsername = false;
+    public bool $useEmailAsUsername = false;
 
     /**
      * @var bool Whether [iFrame Resizer options](http://davidjbradshaw.github.io/iframe-resizer/#options) should be used for Live Preview.
@@ -1626,7 +1567,7 @@ class GeneralConfig extends BaseObject
      * than the iframe document itself. This can lead to some unexpected CSS issues, however, because the previewed viewport height will be taller
      * than the visible portion of the iframe.
      *
-     * If you have a [decoupled front end](https://craftcms.com/docs/3.x/entries.html#previewing-decoupled-front-ends), you will need to include
+     * If you have a [decoupled front end](https://craftcms.com/docs/4.x/entries.html#previewing-decoupled-front-ends), you will need to include
      * [iframeResizer.contentWindow.min.js](https://raw.github.com/davidjbradshaw/iframe-resizer/master/js/iframeResizer.contentWindow.min.js) on your
      * page as well for this to work. You can conditionally include it for only Live Preview requests by checking if the requested URL contains a
      * `x-craft-live-preview` query string parameter.
@@ -1638,7 +1579,7 @@ class GeneralConfig extends BaseObject
      * @since 3.5.5
      * @group System
      */
-    public $useIframeResizer = false;
+    public bool $useIframeResizer = false;
 
     /**
      * @var bool Whether Craft should specify the path using `PATH_INFO` or as a query string parameter when generating URLs.
@@ -1647,7 +1588,7 @@ class GeneralConfig extends BaseObject
      *
      * @group Routing
      */
-    public $usePathInfo = false;
+    public bool $usePathInfo = false;
 
     /**
      * @var bool|string Whether Craft will set the “secure” flag when saving cookies when using `Craft::cookieConfig()` to create a cookie.
@@ -1657,18 +1598,18 @@ class GeneralConfig extends BaseObject
      *
      * @group Security
      */
-    public $useSecureCookies = 'auto';
+    public string|bool $useSecureCookies = 'auto';
 
     /**
      * @var bool|string Determines what protocol/schema Craft will use when generating tokenized URLs. If set to `'auto'`, Craft will check the
-     * current site’s base URL and the protocol of the current request and if either of them are https will use `https` in the tokenized URL. If not,
+     * current site’s base URL and the protocol of the current request and if either of them are HTTPS will use `https` in the tokenized URL. If not,
      * will use `http`.
      *
      * If set to `false`, Craft will always use `http`. If set to `true`, then, Craft will always use `https`.
      *
      * @group Routing
      */
-    public $useSslOnTokenizedUrls = 'auto';
+    public string|bool $useSslOnTokenizedUrls = 'auto';
 
     /**
      * @var mixed The amount of time before a user will get logged out due to inactivity.
@@ -1680,26 +1621,19 @@ class GeneralConfig extends BaseObject
      * @group Session
      * @defaultAlt 1 hour
      */
-    public $userSessionDuration = 3600;
+    public mixed $userSessionDuration = 3600;
 
     /**
      * @var bool|null Whether to grab an exclusive lock on a file when writing to it by using the `LOCK_EX` flag.
      *
      * Some file systems, such as NFS, do not support exclusive file locking.
      *
-     * If not set to `true` or `false`, Craft will try to detect if the underlying file system supports exclusive file locking and cache the results.
+     * If `null`, Craft will try to detect if the underlying file system supports exclusive file locking and cache the results.
      *
      * @see https://php.net/manual/en/function.file-put-contents.php
      * @group System
      */
-    public $useFileLocks;
-
-    /**
-     * @var bool Whether the project config should be saved to the `config/` folder.
-     * @since 3.1.0
-     * @deprecated in 3.5.0. Craft now always saves the project config out to the `config/` folder.
-     */
-    public $useProjectConfigFile = true;
+    public ?bool $useFileLocks = null;
 
     /**
      * @var mixed The amount of time a user verification code can be used before expiring.
@@ -1709,7 +1643,7 @@ class GeneralConfig extends BaseObject
      * @group Security
      * @defaultAlt 1 day
      */
-    public $verificationCodeDuration = 86400;
+    public mixed $verificationCodeDuration = 86400;
 
     /**
      * @var mixed The URI or URL that Craft should use for email verification links on the front end.
@@ -1722,7 +1656,7 @@ class GeneralConfig extends BaseObject
      * @since 3.4.0
      * @group Routing
      */
-    public $verifyEmailPath = 'verifyemail';
+    public mixed $verifyEmailPath = 'verifyemail';
 
     /**
      * @var mixed The URI that users without access to the control panel should be redirected to after verifying a new email address.
@@ -1733,12 +1667,7 @@ class GeneralConfig extends BaseObject
      * @since 3.1.20
      * @group Routing
      */
-    public $verifyEmailSuccessPath = '';
-
-    /**
-     * @var array Stores any custom config settings
-     */
-    private $_customSettings = [];
+    public mixed $verifyEmailSuccessPath = '';
 
     /**
      * @inheritdoc
@@ -1747,10 +1676,6 @@ class GeneralConfig extends BaseObject
     {
         if (isset(self::$renamedSettings[$name])) {
             return $this->{self::$renamedSettings[$name]};
-        }
-
-        if (array_key_exists($name, $this->_customSettings)) {
-            return $this->_customSettings[$name];
         }
 
         return parent::__get($name);
@@ -1763,7 +1688,7 @@ class GeneralConfig extends BaseObject
     {
         if (isset(self::$renamedSettings[$name])) {
             $newName = self::$renamedSettings[$name];
-            $configFilePath = $configFilePath ?? Craft::$app->getConfig()->getConfigFilePath(Config::CATEGORY_GENERAL);
+            $configFilePath = Craft::$app->getConfig()->getConfigFilePath(Config::CATEGORY_GENERAL);
             Craft::$app->getDeprecator()->log($name, "The `$name` config setting has been renamed to `$newName`.", $configFilePath);
             $this->$newName = $value;
             return;
@@ -1771,8 +1696,8 @@ class GeneralConfig extends BaseObject
 
         try {
             parent::__set($name, $value);
-        } catch (UnknownPropertyException $e) {
-            $this->_customSettings[$name] = $value;
+        } catch (UnknownPropertyException) {
+            throw new UnknownPropertyException("Invalid general config setting: $name. You can set custom config settings from config/custom.php.");
         }
     }
 
@@ -1785,25 +1710,15 @@ class GeneralConfig extends BaseObject
             return isset($this->{self::$renamedSettings[$name]});
         }
 
-        if (array_key_exists($name, $this->_customSettings)) {
-            return $this->_customSettings[$name] !== null;
-        }
-
         return parent::__isset($name);
     }
 
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         // Merge extraAllowedFileExtensions into allowedFileExtensions
-        if (is_string($this->allowedFileExtensions)) {
-            $this->allowedFileExtensions = StringHelper::split($this->allowedFileExtensions);
-        }
-        if (is_string($this->extraAllowedFileExtensions)) {
-            $this->extraAllowedFileExtensions = StringHelper::split($this->extraAllowedFileExtensions);
-        }
         if (is_array($this->extraAllowedFileExtensions)) {
             $this->allowedFileExtensions = array_merge($this->allowedFileExtensions, $this->extraAllowedFileExtensions);
             $this->extraAllowedFileExtensions = null;
@@ -1828,8 +1743,8 @@ class GeneralConfig extends BaseObject
         // Normalize size settings
         $this->maxUploadFileSize = ConfigHelper::sizeInBytes($this->maxUploadFileSize);
 
-        // Normalize the default CP language
-        if ($this->defaultCpLanguage !== null) {
+        // Normalize the default control panel language
+        if (isset($this->defaultCpLanguage)) {
             try {
                 $this->defaultCpLanguage = Localization::normalizeLanguage($this->defaultCpLanguage);
             } catch (InvalidArgumentException $e) {
@@ -1848,32 +1763,10 @@ class GeneralConfig extends BaseObject
             }
         }
 
-        if ($this->siteName) {
-            if (is_array($this->siteName) && count($this->siteName) > 1) {
-                $fix = 'You can set your sites’ Name settings on a per-environment basis using environment variables.';
-            } else {
-                $fix = 'You can set your site’s Name setting on a per-environment basis using an environment variable.';
-            }
-            Craft::$app->getDeprecator()->log('siteName', "The `siteName` config setting has been deprecated. $fix " .
-                'See [Environmental Configuration](https://craftcms.com/docs/3.x/config/#environmental-configuration) for more info.');
+        // Normalize disabledPlugins
+        if (is_string($this->disabledPlugins) && $this->disabledPlugins !== '*') {
+            $this->disabledPlugins = StringHelper::split($this->disabledPlugins);
         }
-
-        if ($this->siteUrl) {
-            if (is_array($this->siteUrl) && count($this->siteUrl) > 1) {
-                $fix = 'You can set your sites’ Base URL settings on a per-environment basis using aliases or environment variables.';
-            } else {
-                $fix = 'You can set your site’s Base URL setting on a per-environment basis using an alias or environment variable.';
-            }
-            Craft::$app->getDeprecator()->log('siteUrl', "The `siteUrl` config setting has been deprecated. $fix " .
-                'See [Environmental Configuration](https://craftcms.com/docs/3.x/config/#environmental-configuration) for more info.');
-        }
-
-        if ($this->suppressTemplateErrors) {
-            Craft::$app->getDeprecator()->log('suppressTemplateErrors', "The `suppressTemplateErrors` config setting has been deprecated because it relies on a deprecated Twig feature.");
-        }
-
-        // Always use project config files
-        $this->useProjectConfigFile = true;
     }
 
     /**
@@ -1883,9 +1776,10 @@ class GeneralConfig extends BaseObject
      * @return string
      * @see activateAccountSuccessPath
      */
-    public function getActivateAccountSuccessPath(string $siteHandle = null): string
+    public function getActivateAccountSuccessPath(?string $siteHandle = null): string
     {
-        return ConfigHelper::localizedValue($this->activateAccountSuccessPath, $siteHandle);
+        $path = ConfigHelper::localizedValue($this->activateAccountSuccessPath, $siteHandle);
+        return is_string($path) ? trim($path, '/') : $path;
     }
 
     /**
@@ -1896,9 +1790,10 @@ class GeneralConfig extends BaseObject
      * @see verifyEmailPath
      * @since 3.4.0
      */
-    public function getVerifyEmailPath(string $siteHandle = null): string
+    public function getVerifyEmailPath(?string $siteHandle = null): string
     {
-        return ConfigHelper::localizedValue($this->verifyEmailPath, $siteHandle);
+        $path = ConfigHelper::localizedValue($this->verifyEmailPath, $siteHandle);
+        return is_string($path) ? trim($path, '/') : $path;
     }
 
     /**
@@ -1909,9 +1804,10 @@ class GeneralConfig extends BaseObject
      * @see verifyEmailSuccessPath
      * @since 3.1.20
      */
-    public function getVerifyEmailSuccessPath(string $siteHandle = null): string
+    public function getVerifyEmailSuccessPath(?string $siteHandle = null): string
     {
-        return ConfigHelper::localizedValue($this->verifyEmailSuccessPath, $siteHandle);
+        $path = ConfigHelper::localizedValue($this->verifyEmailSuccessPath, $siteHandle);
+        return is_string($path) ? trim($path, '/') : $path;
     }
 
     /**
@@ -1921,9 +1817,10 @@ class GeneralConfig extends BaseObject
      * @return string
      * @see invalidUserTokenPath
      */
-    public function getInvalidUserTokenPath(string $siteHandle = null): string
+    public function getInvalidUserTokenPath(?string $siteHandle = null): string
     {
-        return ConfigHelper::localizedValue($this->invalidUserTokenPath, $siteHandle);
+        $path = ConfigHelper::localizedValue($this->invalidUserTokenPath, $siteHandle);
+        return is_string($path) ? trim($path, '/') : $path;
     }
 
     /**
@@ -1933,9 +1830,10 @@ class GeneralConfig extends BaseObject
      * @return mixed
      * @see loginPath
      */
-    public function getLoginPath(string $siteHandle = null)
+    public function getLoginPath(?string $siteHandle = null): mixed
     {
-        return ConfigHelper::localizedValue($this->loginPath, $siteHandle);
+        $path = ConfigHelper::localizedValue($this->loginPath, $siteHandle);
+        return is_string($path) ? trim($path, '/') : $path;
     }
 
     /**
@@ -1945,9 +1843,10 @@ class GeneralConfig extends BaseObject
      * @return mixed
      * @see logoutPath
      */
-    public function getLogoutPath(string $siteHandle = null)
+    public function getLogoutPath(?string $siteHandle = null): mixed
     {
-        return ConfigHelper::localizedValue($this->logoutPath, $siteHandle);
+        $path = ConfigHelper::localizedValue($this->logoutPath, $siteHandle);
+        return is_string($path) ? trim($path, '/') : $path;
     }
 
     /**
@@ -1968,7 +1867,7 @@ class GeneralConfig extends BaseObject
      * @return string
      * @see postLoginRedirect
      */
-    public function getPostLoginRedirect(string $siteHandle = null): string
+    public function getPostLoginRedirect(?string $siteHandle = null): string
     {
         return ConfigHelper::localizedValue($this->postLoginRedirect, $siteHandle);
     }
@@ -1980,7 +1879,7 @@ class GeneralConfig extends BaseObject
      * @return string
      * @see postLogoutRedirect
      */
-    public function getPostLogoutRedirect(string $siteHandle = null): string
+    public function getPostLogoutRedirect(?string $siteHandle = null): string
     {
         return ConfigHelper::localizedValue($this->postLogoutRedirect, $siteHandle);
     }
@@ -1992,9 +1891,10 @@ class GeneralConfig extends BaseObject
      * @return string
      * @see setPasswordPath
      */
-    public function getSetPasswordPath(string $siteHandle = null): string
+    public function getSetPasswordPath(?string $siteHandle = null): string
     {
-        return ConfigHelper::localizedValue($this->setPasswordPath, $siteHandle);
+        $path = ConfigHelper::localizedValue($this->setPasswordPath, $siteHandle);
+        return is_string($path) ? trim($path, '/') : $path;
     }
 
     /**
@@ -2005,9 +1905,10 @@ class GeneralConfig extends BaseObject
      * @see setPasswordRequestPath
      * @since 3.5.14
      */
-    public function getSetPasswordRequestPath(string $siteHandle = null)
+    public function getSetPasswordRequestPath(?string $siteHandle = null): ?string
     {
-        return ConfigHelper::localizedValue($this->setPasswordRequestPath, $siteHandle);
+        $path = ConfigHelper::localizedValue($this->setPasswordRequestPath, $siteHandle);
+        return is_string($path) ? trim($path, '/') : $path;
     }
 
     /**
@@ -2017,9 +1918,10 @@ class GeneralConfig extends BaseObject
      * @return string
      * @see setPasswordSuccessPath
      */
-    public function getSetPasswordSuccessPath(string $siteHandle = null): string
+    public function getSetPasswordSuccessPath(?string $siteHandle = null): string
     {
-        return ConfigHelper::localizedValue($this->setPasswordSuccessPath, $siteHandle);
+        $path = ConfigHelper::localizedValue($this->setPasswordSuccessPath, $siteHandle);
+        return is_string($path) ? trim($path, '/') : $path;
     }
 
     /**
@@ -2043,12 +1945,12 @@ class GeneralConfig extends BaseObject
     {
         $pageTrigger = $this->pageTrigger;
 
-        if (!is_string($pageTrigger) || $pageTrigger === '') {
+        if ($pageTrigger === '') {
             $pageTrigger = 'p';
         }
 
         // Is this query string-based pagination?
-        if (strpos($pageTrigger, '?') === 0) {
+        if (str_starts_with($pageTrigger, '?')) {
             $pageTrigger = trim($pageTrigger, '?=');
 
             // Avoid conflict with the path param

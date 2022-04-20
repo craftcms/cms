@@ -20,5 +20,5 @@ class DefineBehaviorsEvent extends Event
     /**
      * @var array The component definitions
      */
-    public $behaviors = [];
+    public array $behaviors = [];
 }

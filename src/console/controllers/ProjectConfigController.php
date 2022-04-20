@@ -12,8 +12,8 @@ use craft\console\Controller;
 use craft\events\ConfigEvent;
 use craft\helpers\Console;
 use craft\helpers\ProjectConfig;
-use craft\services\Plugins;
 use craft\services\ProjectConfig as ProjectConfigService;
+use Throwable;
 use yii\console\ExitCode;
 
 /**
@@ -27,33 +27,33 @@ class ProjectConfigController extends Controller
     /**
      * @var bool Whether every entry change should be force-applied.
      */
-    public $force = false;
+    public bool $force = false;
 
     /**
      * @var bool Whether to treat the loaded project config as the source of truth, instead of the YAML files.
      * @since 3.5.13
      */
-    public $invert = false;
+    public bool $invert = false;
 
     /**
      * @var int Counter of the total paths that have been processed.
      */
-    private $_pathCount = 0;
+    private int $_pathCount = 0;
 
     /**
      * @var array The config paths that are currently being processed.
      */
-    private $_processingPaths;
+    private array $_processingPaths;
 
     /**
      * @var array The config paths that have finished being processed.
      */
-    private $_completedPaths = [];
+    private array $_completedPaths = [];
 
     /**
      * @inheritdoc
      */
-    public function options($actionID)
+    public function options($actionID): array
     {
         $options = parent::options($actionID);
 
@@ -117,7 +117,7 @@ class ProjectConfigController extends Controller
     {
         $updatesService = Craft::$app->getUpdates();
 
-        if ($updatesService->getIsCraftDbMigrationNeeded() || $updatesService->getIsPluginDbUpdateNeeded()) {
+        if ($updatesService->getIsCraftUpdatePending() || $updatesService->getIsPluginUpdatePending()) {
             $this->stderr('Craft has pending migrations. Please run `craft migrate/all` first.' . PHP_EOL, Console::FG_RED);
             return ExitCode::UNSPECIFIED_ERROR;
         }
@@ -142,13 +142,13 @@ class ProjectConfigController extends Controller
         }
 
         // Do we need to create a new config file?
-        if (!$projectConfig->getDoesYamlExist()) {
+        if (!$projectConfig->getDoesExternalConfigExist()) {
             $this->stdout("No project config files found. Generating them from internal config ... ", Console::FG_YELLOW);
-            $projectConfig->regenerateYamlFromConfig();
+            $projectConfig->regenerateExternalConfig();
         } else {
             // Any plugins need to be installed/uninstalled?
-            $loadedConfigPlugins = array_keys($projectConfig->get(Plugins::CONFIG_PLUGINS_KEY) ?? []);
-            $yamlPlugins = array_keys($projectConfig->get(Plugins::CONFIG_PLUGINS_KEY, true) ?? []);
+            $loadedConfigPlugins = array_keys($projectConfig->get(ProjectConfigService::PATH_PLUGINS) ?? []);
+            $yamlPlugins = array_keys($projectConfig->get(ProjectConfigService::PATH_PLUGINS, true) ?? []);
 
             if (!$this->_installPlugins(array_diff($yamlPlugins, $loadedConfigPlugins))) {
                 $this->stdout('Aborting config apply process' . PHP_EOL, Console::FG_RED);
@@ -171,10 +171,10 @@ class ProjectConfigController extends Controller
                 $projectConfig->on(ProjectConfigService::EVENT_UPDATE_ITEM, [$this, 'onStartProcessingItem'], ['label' => 'updating'], false);
                 $projectConfig->on(ProjectConfigService::EVENT_UPDATE_ITEM, [$this, 'onFinishProcessingItem'], ['label' => 'updating'], true);
 
-                $projectConfig->applyYamlChanges();
+                $projectConfig->applyExternalChanges();
 
                 $projectConfig->forceUpdate = $forceUpdate;
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 $this->stderr("\nerror: " . $e->getMessage() . PHP_EOL, Console::FG_RED);
                 Craft::$app->getErrorHandler()->logException($e);
                 return ExitCode::UNSPECIFIED_ERROR;
@@ -197,7 +197,6 @@ class ProjectConfigController extends Controller
      * Called when a project config item has started getting processed.
      *
      * @param ConfigEvent $event
-     * @return void
      * @since 3.6.10
      */
     public function onStartProcessingItem(ConfigEvent $event): void
@@ -225,7 +224,6 @@ class ProjectConfigController extends Controller
      * Called when a project config item has finished getting processed.
      *
      * @param ConfigEvent $event
-     * @return void
      * @since 3.6.10
      */
     public function onFinishProcessingItem(ConfigEvent $event): void
@@ -266,7 +264,7 @@ class ProjectConfigController extends Controller
     public function actionWrite(): int
     {
         $this->stdout('Writing out project config files ... ');
-        Craft::$app->getProjectConfig()->regenerateYamlFromConfig();
+        Craft::$app->getProjectConfig()->regenerateExternalConfig();
         $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
         return ExitCode::OK;
     }
@@ -281,16 +279,16 @@ class ProjectConfigController extends Controller
     {
         $projectConfig = Craft::$app->getProjectConfig();
 
-        if ($projectConfig->writeYamlAutomatically && !$projectConfig->getDoesYamlExist()) {
+        if ($projectConfig->writeYamlAutomatically && !$projectConfig->getDoesExternalConfigExist()) {
             $this->stdout("No project config files found. Generating them from internal config ... ", Console::FG_YELLOW);
-            $projectConfig->regenerateYamlFromConfig();
+            $projectConfig->regenerateExternalConfig();
         }
 
         $this->stdout('Rebuilding the project config from the current state ... ', Console::FG_YELLOW);
 
         try {
             $projectConfig->rebuild();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->stderr('error: ' . $e->getMessage() . PHP_EOL, Console::FG_RED);
             Craft::$app->getErrorHandler()->logException($e);
             return ExitCode::UNSPECIFIED_ERROR;
@@ -318,13 +316,13 @@ class ProjectConfigController extends Controller
      *
      * @param string[] $handles
      */
-    private function _uninstallPlugins(array $handles)
+    private function _uninstallPlugins(array $handles): void
     {
         $pluginsService = Craft::$app->getPlugins();
 
         foreach ($handles as $handle) {
             $this->stdout('Uninstalling plugin ', Console::FG_YELLOW);
-            $this->stdout("\"{$handle}\"", Console::FG_CYAN);
+            $this->stdout("\"$handle\"", Console::FG_CYAN);
             $this->stdout(' ... ', Console::FG_YELLOW);
 
             ob_start();
@@ -347,7 +345,7 @@ class ProjectConfigController extends Controller
 
         foreach ($handles as $handle) {
             $this->stdout('Installing plugin ', Console::FG_YELLOW);
-            $this->stdout("\"{$handle}\"", Console::FG_CYAN);
+            $this->stdout("\"$handle\"", Console::FG_CYAN);
             $this->stdout(' ... ', Console::FG_YELLOW);
 
             ob_start();
@@ -356,7 +354,7 @@ class ProjectConfigController extends Controller
                 $pluginsService->installPlugin($handle);
                 ob_end_clean();
                 $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 ob_end_clean();
                 $this->stdout('error: ' . $e->getMessage() . PHP_EOL, Console::FG_RED);
                 Craft::$app->getErrorHandler()->logException($e);

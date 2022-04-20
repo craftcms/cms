@@ -20,5 +20,5 @@ class RegisterElementSortOptionsEvent extends Event
     /**
      * @var array List of registered sort options for the element type.
      */
-    public $sortOptions = [];
+    public array $sortOptions = [];
 }

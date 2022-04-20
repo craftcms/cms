@@ -12,11 +12,12 @@ use craft\errors\MigrationException;
 use craft\helpers\App;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
+use DateTime;
+use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
-use yii\db\Expression;
 use yii\db\MigrationInterface;
 use yii\di\Instance;
 
@@ -31,52 +32,52 @@ class MigrationManager extends Component
     /**
      * The name of the dummy migration that marks the beginning of the whole migration history.
      */
-    const BASE_MIGRATION = 'm000000_000000_base';
+    public const BASE_MIGRATION = 'm000000_000000_base';
 
     /**
      * @since 3.5.0
      */
-    const TRACK_CRAFT = 'craft';
+    public const TRACK_CRAFT = 'craft';
     /**
      * @since 3.5.0
      */
-    const TRACK_CONTENT = 'content';
+    public const TRACK_CONTENT = 'content';
 
     /**
      * @var string The migration track (e.g. `craft`, `content`, `plugin:commerce`, etc.)
      * @since 3.5.0
      */
-    public $track;
+    public string $track;
 
     /**
      * @var string|null The namespace that the migration classes are in
      */
-    public $migrationNamespace;
+    public ?string $migrationNamespace = null;
 
     /**
      * @var string|null The path to the migrations directory
      */
-    public $migrationPath;
+    public ?string $migrationPath = null;
 
     /**
      * @var Connection|array|string The DB connection object or the application component ID of the DB connection
      */
-    public $db = 'db';
+    public string|array|Connection $db = 'db';
 
     /**
      * @var string The migrations table name
      */
-    public $migrationTable = Table::MIGRATIONS;
+    public string $migrationTable = Table::MIGRATIONS;
 
     /**
      * @inheritdoc
      * @throws InvalidConfigException
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
-        if ($this->migrationPath === null) {
+        if (!isset($this->migrationPath)) {
             throw new InvalidConfigException('The migration path has not been set.');
         }
 
@@ -91,7 +92,7 @@ class MigrationManager extends Component
      * @return MigrationInterface|\yii\db\Migration The migration instance
      * @throws Exception if the migration folder doesn't exist
      */
-    public function createMigration(string $name)
+    public function createMigration(string $name): \yii\db\Migration|MigrationInterface
     {
         if (!is_dir($this->migrationPath)) {
             throw new Exception("Can't instantiate migrations because the migration folder doesn't exist");
@@ -101,7 +102,7 @@ class MigrationManager extends Component
         $class = $this->migrationNamespace . '\\' . $name;
         require_once $file;
 
-        return new $class;
+        return new $class();
     }
 
     /**
@@ -111,7 +112,7 @@ class MigrationManager extends Component
      * applying all available new migrations.
      * @throws MigrationException on migrate failure
      */
-    public function up(int $limit = 0)
+    public function up(int $limit = 0): void
     {
         // This might take a while
         App::maxPowerCaptain();
@@ -162,7 +163,7 @@ class MigrationManager extends Component
      * meaning the last applied migration will be reverted. If set to 0, all migrations will be reverted.
      * @throws MigrationException on migrate failure
      */
-    public function down(int $limit = 1)
+    public function down(int $limit = 1): void
     {
         // This might take a while
         App::maxPowerCaptain();
@@ -198,11 +199,11 @@ class MigrationManager extends Component
     /**
      * Upgrades with the specified migration.
      *
-     * @param string|MigrationInterface|\yii\db\Migration $migration The name of the migration to apply, or the migration itself
+     * @param \yii\db\Migration|string|MigrationInterface $migration The name of the migration to apply, or the migration itself
      * @throws InvalidConfigException if $migration is invalid
      * @throws MigrationException on migrate failure
      */
-    public function migrateUp($migration)
+    public function migrateUp(\yii\db\Migration|string|MigrationInterface $migration): void
     {
         [$migrationName, $migration] = $this->_normalizeMigration($migration);
 
@@ -233,7 +234,7 @@ class MigrationManager extends Component
             } else {
                 $success = ($migration->up() !== false);
             }
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $success = false;
         }
         $time = microtime(true) - $start;
@@ -259,11 +260,11 @@ class MigrationManager extends Component
     /**
      * Downgrades with the specified migration.
      *
-     * @param string|MigrationInterface|\yii\db\Migration $migration The name of the migration to revert, or the migration itself
+     * @param \yii\db\Migration|string|MigrationInterface $migration The name of the migration to revert, or the migration itself
      * @throws InvalidConfigException if $migration is invalid
      * @throws MigrationException on migrate failure
      */
-    public function migrateDown($migration)
+    public function migrateDown(\yii\db\Migration|string|MigrationInterface $migration): void
     {
         [$migrationName, $migration] = $this->_normalizeMigration($migration);
 
@@ -294,7 +295,7 @@ class MigrationManager extends Component
             } else {
                 $success = ($migration->down() !== false);
             }
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $success = false;
         }
         $time = microtime(true) - $start;
@@ -341,25 +342,12 @@ class MigrationManager extends Component
      * @param string $name The migration name
      * @throws NotSupportedException
      */
-    public function addMigrationHistory(string $name)
+    public function addMigrationHistory(string $name): void
     {
-        // TODO: Remove after next breakpoint
-        if ($this->db->columnExists(Table::MIGRATIONS, 'type')) {
-            if ($this->track !== self::TRACK_CRAFT) {
-                throw new NotSupportedException('Plugin and content migrations aren’t allowed until you update Craft.');
-            }
-            Db::insert($this->migrationTable, [
-                'type' => 'app',
-                'name' => $name,
-                'applyTime' => Db::prepareDateForDb(new \DateTime()),
-            ]);
-            return;
-        }
-
         Db::insert($this->migrationTable, [
             'track' => $this->track,
             'name' => $name,
-            'applyTime' => Db::prepareDateForDb(new \DateTime()),
+            'applyTime' => Db::prepareDateForDb(new DateTime()),
         ]);
     }
 
@@ -368,7 +356,7 @@ class MigrationManager extends Component
      *
      * @param string $name The migration name
      */
-    public function removeMigrationHistory(string $name)
+    public function removeMigrationHistory(string $name): void
     {
         Db::delete($this->migrationTable, [
             'track' => $this->track,
@@ -381,7 +369,7 @@ class MigrationManager extends Component
      *
      * @since 3.0.32
      */
-    public function truncateHistory()
+    public function truncateHistory(): void
     {
         Db::delete($this->migrationTable, [
             'track' => $this->track,
@@ -439,10 +427,10 @@ class MigrationManager extends Component
     /**
      * Normalizes the $migration argument passed to [[migrateUp()]] and [[migrateDown()]].
      *
-     * @param string|MigrationInterface|\yii\db\Migration $migration The name of the migration to apply, or the migration itself
+     * @param \yii\db\Migration|string|MigrationInterface $migration The name of the migration to apply, or the migration itself
      * @return array
      */
-    private function _normalizeMigration($migration): array
+    private function _normalizeMigration(\yii\db\Migration|string|MigrationInterface $migration): array
     {
         if (is_string($migration)) {
             $migrationName = $migration;
@@ -462,61 +450,6 @@ class MigrationManager extends Component
      */
     private function _createMigrationQuery(): Query
     {
-        // TODO: Remove after next breakpoint
-        if ($this->db->columnExists($this->migrationTable, 'version', true)) {
-            $query = (new Query())
-                ->select(['version as name', 'applyTime'])
-                ->from([$this->migrationTable])
-                ->orderBy(['name' => SORT_DESC]);
-
-            if ($this->track === 'craft') {
-                $query->where(['pluginId' => null]);
-            } else {
-                $pluginId = null;
-                if (strpos($this->track, 'plugin:') === 0) {
-                    $pluginId = (new Query())
-                        ->select(['id'])
-                        ->from([Table::PLUGINS])
-                        ->where(['handle' => substr($this->track, 7)])
-                        ->scalar();
-                }
-                if ($pluginId) {
-                    $query->where(['pluginId' => $pluginId]);
-                } else {
-                    $query->where(new Expression('1 = 0'));
-                }
-            }
-
-            return $query;
-        }
-
-        // TODO: Remove after next breakpoint
-        if ($this->db->columnExists($this->migrationTable, 'type', true)) {
-            $query = (new Query())
-                ->select(['name', 'applyTime'])
-                ->from([$this->migrationTable])
-                ->orderBy(['name' => SORT_DESC]);
-
-            if ($this->track === 'craft') {
-                $query->where(['type' => 'app']);
-            } else if (strpos($this->track, 'plugin:') === 0) {
-                $pluginId = (new Query())
-                    ->select(['id'])
-                    ->from([Table::PLUGINS])
-                    ->where(['handle' => substr($this->track, 7)])
-                    ->scalar();
-                if ($pluginId) {
-                    $query->where(['pluginId' => $pluginId]);
-                } else {
-                    $query->where(new Expression('1 = 0'));
-                }
-            } else {
-                $query->where(['type' => 'content']);
-            }
-
-            return $query;
-        }
-
         return (new Query())
             ->select(['name', 'applyTime'])
             ->from([$this->migrationTable])

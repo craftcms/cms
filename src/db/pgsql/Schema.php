@@ -25,7 +25,7 @@ class Schema extends \yii\db\pgsql\Schema
     /**
      * @var int The maximum length that objects' names can be.
      */
-    public $maxObjectNameLength = 63;
+    public int $maxObjectNameLength = 63;
 
     /**
      * Creates a query builder for the database.
@@ -58,14 +58,14 @@ class Schema extends \yii\db\pgsql\Schema
      * @param string $name The savepoint name.
      * @throws Exception
      */
-
-    public function releaseSavepoint($name)
+    public function releaseSavepoint($name): void
     {
         try {
             parent::releaseSavepoint($name);
         } catch (Exception $e) {
             // Specifically look for a "No such savepoint" error.
-            if ($e->getCode() === '25P01' || $e->getCode() === '3B001') {
+            /** @phpstan-ignore-next-line */
+            if (in_array($e->getCode(), ['25P01', '3B001'], true)) {
                 Craft::warning('Tried to release a savepoint, but it does not exist: ' . $e->getMessage(), __METHOD__);
             } else {
                 throw $e;
@@ -79,7 +79,7 @@ class Schema extends \yii\db\pgsql\Schema
      * @param string $name The savepoint name.
      * @throws Exception
      */
-    public function rollBackSavepoint($name)
+    public function rollBackSavepoint($name): void
     {
         try {
             parent::rollBackSavepoint($name);
@@ -96,10 +96,10 @@ class Schema extends \yii\db\pgsql\Schema
     /**
      * @inheritdoc
      */
-    public function getLastInsertID($sequenceName = '')
+    public function getLastInsertID($sequenceName = ''): string
     {
         if ($sequenceName !== '') {
-            if (strpos($sequenceName, '.') === false) {
+            if (!str_contains($sequenceName, '.')) {
                 $sequenceName = $this->defaultSchema . '.' . $this->getRawTableName($sequenceName);
             }
             $sequenceName .= '_id_seq';
@@ -111,10 +111,10 @@ class Schema extends \yii\db\pgsql\Schema
     /**
      * Returns the default backup command to execute.
      *
-     * @param string[]|null The table names whose data should be excluded from the backup
-     * @return string|false The command to execute
+     * @param string[]|null $ignoreTables The table names whose data should be excluded from the backup
+     * @return string The command to execute
      */
-    public function getDefaultBackupCommand(array $ignoreTables = null)
+    public function getDefaultBackupCommand(?array $ignoreTables = null): string
     {
         if ($ignoreTables === null) {
             $ignoreTables = $this->db->getIgnoredBackupTables();
@@ -122,7 +122,7 @@ class Schema extends \yii\db\pgsql\Schema
         $ignoredTableArgs = [];
         foreach ($ignoreTables as $table) {
             $table = $this->getRawTableName($table);
-            $ignoredTableArgs[] = "--exclude-table-data '{schema}.{$table}'";
+            $ignoredTableArgs[] = "--exclude-table-data '{schema}.$table'";
         }
 
         return $this->_pgpasswordCommand() .
@@ -204,7 +204,7 @@ class Schema extends \yii\db\pgsql\Schema
      * @param string $name table name
      * @return TableSchema|null driver dependent table metadata. Null if the table does not exist.
      */
-    public function loadTableSchema($name)
+    public function loadTableSchema($name): ?TableSchema
     {
         $table = new TableSchema();
         $this->resolveTableNames($table, $name);
@@ -222,7 +222,7 @@ class Schema extends \yii\db\pgsql\Schema
      *
      * @param TableSchema $table the table metadata
      */
-    protected function findConstraints($table)
+    protected function findConstraints($table): void
     {
         parent::findConstraints($table);
 
@@ -251,8 +251,8 @@ from
     LEFT JOIN pg_attribute fa ON fa.attrelid=ct.confrelid AND fa.attnum = ct.confkey[ct.s]
 WHERE
     ct.contype='f'
-    AND c.relname={$tableName}
-    AND ns.nspname={$tableSchema}
+    AND c.relname=$tableName
+    AND ns.nspname=$tableSchema
 ORDER BY 
     fns.nspname, fc.relname, a.attnum
 SQL;
@@ -261,42 +261,22 @@ SQL;
 
         foreach ($extendedConstraints as $key => $extendedConstraint) {
             // Find out what to do on update.
-            switch ($extendedConstraint['update_type']) {
-                case 'a':
-                    $updateAction = 'NO ACTION';
-                    break;
-                case 'r':
-                    $updateAction = 'RESTRICT';
-                    break;
-                case 'c':
-                    $updateAction = 'CASCADE';
-                    break;
-                case 'n':
-                    $updateAction = 'SET NULL';
-                    break;
-                default:
-                    $updateAction = 'DEFAULT';
-                    break;
-            }
+            $updateAction = match ($extendedConstraint['update_type']) {
+                'a' => 'NO ACTION',
+                'r' => 'RESTRICT',
+                'c' => 'CASCADE',
+                'n' => 'SET NULL',
+                default => 'DEFAULT',
+            };
 
             // Find out what to do on update.
-            switch ($extendedConstraint['delete_type']) {
-                case 'a':
-                    $deleteAction = 'NO ACTION';
-                    break;
-                case 'r':
-                    $deleteAction = 'RESTRICT';
-                    break;
-                case 'c':
-                    $deleteAction = 'CASCADE';
-                    break;
-                case 'n':
-                    $deleteAction = 'SET NULL';
-                    break;
-                default:
-                    $deleteAction = 'DEFAULT';
-                    break;
-            }
+            $deleteAction = match ($extendedConstraint['delete_type']) {
+                'a' => 'NO ACTION',
+                'r' => 'RESTRICT',
+                'c' => 'CASCADE',
+                'n' => 'SET NULL',
+                default => 'DEFAULT',
+            };
 
             $table->addExtendedForeignKey($key, [
                 'updateType' => $updateAction,

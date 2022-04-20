@@ -180,14 +180,15 @@ $radioSize: 16px;
   opacity: 0.8;
 }
 
-@mixin angle($dir: down, $color: var(--ui-control-color)) {
+@mixin angle($dir: down, $color: currentColor) {
   display: block;
   content: '';
   font-size: 0;
-  width: 5px;
-  height: 5px;
+  width: 7px;
+  height: 7px;
   border: solid $color;
   border-width: 0 2px 2px 0;
+  opacity: 0.8;
 
   @if $dir == up {
     transform: rotate(225deg);
@@ -466,7 +467,7 @@ $radioSize: 16px;
 }
 
 @mixin header-btn {
-  width: 34px;
+  width: 30px;
   height: 30px;
   padding-left: 0;
   padding-right: 0;
@@ -481,22 +482,24 @@ $radioSize: 16px;
 
 @mixin h6-styles {
   margin: 14px 0 3px;
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1.2;
   color: $lightTextColor;
   text-transform: uppercase;
-  font-weight: bold;
 }
 
 @mixin token-styles {
   display: inline-block;
-  border-radius: 10px;
-  padding: 2px 7px;
+  border-radius: $smallBorderRadius;
+  padding: 3px 7px;
   font-size: 12px;
   line-height: 14px;
   color: $textColor;
-  background-color: transparentize($white, 0.5);
-  box-shadow: 0 0 0 1px $darkHairlineColor;
+  background-color: $grey100;
+}
+
+@mixin active-token-styles {
+  background-color: $grey200;
 }
 
 @mixin menu-styles {

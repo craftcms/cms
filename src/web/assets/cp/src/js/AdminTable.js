@@ -76,16 +76,14 @@ Craft.AdminTable = Garnish.Base.extend({
             ids: JSON.stringify(ids)
         };
 
-        Craft.postActionRequest(this.settings.reorderAction, data, (response, textStatus) => {
-            if (textStatus === 'success') {
-                if (response.success) {
-                    this.onReorderItems(ids);
-                    Craft.cp.displayNotice(Craft.t('app', this.settings.reorderSuccessMessage));
-                } else {
-                    Craft.cp.displayError(Craft.t('app', this.settings.reorderFailMessage));
-                }
-            }
-        });
+        Craft.sendActionRequest('POST', this.settings.reorderAction, {data})
+            .then((response) => {
+                this.onReorderItems(ids);
+                Craft.cp.displayNotice(Craft.t('app', this.settings.reorderSuccessMessage));
+            })
+            .catch(({response}) => {
+                Craft.cp.displayError(Craft.t('app', this.settings.reorderFailMessage));
+            });
     },
 
     handleDeleteBtnClick: function(event) {
@@ -111,31 +109,33 @@ Craft.AdminTable = Garnish.Base.extend({
             id: this.getItemId($row)
         };
 
-        Craft.postActionRequest(this.settings.deleteAction, data, (response, textStatus) => {
-            if (textStatus === 'success') {
-                this.handleDeleteItemResponse(response, $row);
-            }
-        });
+        Craft.sendActionRequest('POST', this.settings.deleteAction, {data})
+            .then((response) => this.handleDeleteItemSuccess(response.data, $row))
+            .catch(({response}) => this.handleDeleteItemFailure(response.data, $row))
+        ;
     },
 
-    handleDeleteItemResponse: function(response, $row) {
+    handleDeleteItemFailure: function(data, $row) {
         var id = this.getItemId($row),
             name = this.getItemName($row);
 
-        if (response.success) {
-            if (this.sorter) {
-                this.sorter.removeItems($row);
-            }
+        Craft.cp.displayError(Craft.t('app', this.settings.deleteFailMessage, {name}));
+    },
 
-            $row.remove();
-            this.totalItems--;
-            this.updateUI();
-            this.onDeleteItem(id);
+    handleDeleteItemSuccess: function(data, $row) {
+        var id = this.getItemId($row),
+            name = this.getItemName($row);
 
-            Craft.cp.displayNotice(Craft.t('app', this.settings.deleteSuccessMessage, {name}));
-        } else {
-            Craft.cp.displayError(Craft.t('app', this.settings.deleteFailMessage, {name}));
+        if (this.sorter) {
+            this.sorter.removeItems($row);
         }
+
+        $row.remove();
+        this.totalItems--;
+        this.updateUI();
+        this.onDeleteItem(id);
+
+        Craft.cp.displayNotice(Craft.t('app', this.settings.deleteSuccessMessage, {name}));
     },
 
     onReorderItems: function(ids) {

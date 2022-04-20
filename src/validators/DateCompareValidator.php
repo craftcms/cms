@@ -27,7 +27,7 @@ class DateCompareValidator extends Validator
      * and [[compareValue]] are set, the latter takes precedence.
      * @see compareValue
      */
-    public $compareAttribute;
+    public ?string $compareAttribute = null;
 
     /**
      * @var DateTime|callable|null the constant value to be compared with. When both this property
@@ -46,7 +46,7 @@ class DateCompareValidator extends Validator
      * - `<`: check if value being validated is less than the value being compared with.
      * - `<=`: check if value being validated is less than or equal to the value being compared with.
      */
-    public $operator = '==';
+    public string $operator = '==';
 
     /**
      * @var string|null the user-defined error message. It may contain the following placeholders which
@@ -63,49 +63,36 @@ class DateCompareValidator extends Validator
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
-        if ($this->message === null) {
-            switch ($this->operator) {
-                case '==':
-                    $this->message = Craft::t('yii', '{attribute} must be equal to "{compareValueOrAttribute}".');
-                    break;
-                case '!=':
-                    $this->message = Craft::t('yii', '{attribute} must not be equal to "{compareValueOrAttribute}".');
-                    break;
-                case '>':
-                    $this->message = Craft::t('yii', '{attribute} must be greater than "{compareValueOrAttribute}".');
-                    break;
-                case '>=':
-                    $this->message = Craft::t('yii', '{attribute} must be greater than or equal to "{compareValueOrAttribute}".');
-                    break;
-                case '<':
-                    $this->message = Craft::t('yii', '{attribute} must be less than "{compareValueOrAttribute}".');
-                    break;
-                case '<=':
-                    $this->message = Craft::t('yii', '{attribute} must be less than or equal to "{compareValueOrAttribute}".');
-                    break;
-                default:
-                    throw new InvalidConfigException("Unknown operator: $this->operator");
-            }
+        if (!isset($this->message)) {
+            $this->message = match ($this->operator) {
+                '==' => Craft::t('yii', '{attribute} must be equal to "{compareValueOrAttribute}".'),
+                '!=' => Craft::t('yii', '{attribute} must not be equal to "{compareValueOrAttribute}".'),
+                '>' => Craft::t('yii', '{attribute} must be greater than "{compareValueOrAttribute}".'),
+                '>=' => Craft::t('yii', '{attribute} must be greater than or equal to "{compareValueOrAttribute}".'),
+                '<' => Craft::t('yii', '{attribute} must be less than "{compareValueOrAttribute}".'),
+                '<=' => Craft::t('yii', '{attribute} must be less than or equal to "{compareValueOrAttribute}".'),
+                default => throw new InvalidConfigException("Unknown operator: $this->operator"),
+            };
         }
     }
 
     /**
      * @inheritdoc
      */
-    public function validateAttribute($model, $attribute)
+    public function validateAttribute($model, $attribute): void
     {
-        if ($this->compareValue === null && $this->compareAttribute === null) {
+        if (!isset($this->compareValue) && !isset($this->compareAttribute)) {
             throw new InvalidConfigException('DateCompareValidator::compareValue or compareAttribute must be set.');
         }
 
         $value = $model->$attribute;
 
-        if ($this->compareValue !== null) {
-            if ($this->compareValue instanceof \Closure) {
+        if (isset($this->compareValue)) {
+            if (is_callable($this->compareValue)) {
                 $this->compareValue = call_user_func($this->compareValue);
             }
             $compareValue = $this->compareValue;
@@ -131,13 +118,13 @@ class DateCompareValidator extends Validator
     /**
      * @inheritdoc
      */
-    protected function validateValue($value)
+    protected function validateValue($value): ?array
     {
-        if ($this->compareValue === null) {
+        if (!isset($this->compareValue)) {
             throw new InvalidConfigException('CompareValidator::compareValue must be set.');
         }
 
-        if ($this->compareValue instanceof \Closure) {
+        if (is_callable($this->compareValue)) {
             $this->compareValue = call_user_func($this->compareValue);
         }
 
@@ -152,7 +139,7 @@ class DateCompareValidator extends Validator
                     'compareAttribute' => $formattedCompareValue,
                     'compareValue' => $formattedCompareValue,
                     'compareValueOrAttribute' => $formattedCompareValue,
-                ]
+                ],
             ];
         }
 
@@ -169,21 +156,14 @@ class DateCompareValidator extends Validator
      */
     protected function compareValues(string $operator, DateTime $value, DateTime $compareValue): bool
     {
-        switch ($operator) {
-            case '==':
-                return $value == $compareValue;
-            case '!=':
-                return $value != $compareValue;
-            case '>':
-                return $value > $compareValue;
-            case '>=':
-                return $value >= $compareValue;
-            case '<':
-                return $value < $compareValue;
-            case '<=':
-                return $value <= $compareValue;
-            default:
-                return false;
-        }
+        return match ($operator) {
+            '==' => $value == $compareValue,
+            '!=' => $value != $compareValue,
+            '>' => $value > $compareValue,
+            '>=' => $value >= $compareValue,
+            '<' => $value < $compareValue,
+            '<=' => $value <= $compareValue,
+            default => false,
+        };
     }
 }

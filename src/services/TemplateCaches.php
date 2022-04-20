@@ -8,14 +8,12 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\ElementInterface;
-use craft\elements\db\ElementQuery;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Html;
 use craft\helpers\StringHelper;
 use DateTime;
+use Throwable;
 use yii\base\Component;
-use yii\base\Event;
 use yii\base\Exception;
 
 /**
@@ -29,30 +27,16 @@ use yii\base\Exception;
 class TemplateCaches extends Component
 {
     /**
-     * @event SectionEvent The event that is triggered before template caches are deleted.
-     * @since 3.0.2
-     * @deprecated in 3.5.0
-     */
-    const EVENT_BEFORE_DELETE_CACHES = 'beforeDeleteCaches';
-
-    /**
-     * @event SectionEvent The event that is triggered after template caches are deleted.
-     * @since 3.0.2
-     * @deprecated in 3.5.0
-     */
-    const EVENT_AFTER_DELETE_CACHES = 'afterDeleteCaches';
-
-    /**
      * @var bool Whether template caching should be enabled for this request
      * @see _isTemplateCachingEnabled()
      */
-    private $_enabled;
+    private bool $_enabled;
 
     /**
      * @var string|null The current request's path
      * @see _path()
      */
-    private $_path;
+    private ?string $_path = null;
 
     /**
      * Returns a cached template by its key.
@@ -63,7 +47,7 @@ class TemplateCaches extends Component
      * @return string|null
      * @throws Exception if this is a console request and `false` is passed to `$global`
      */
-    public function getTemplateCache(string $key, bool $global, bool $registerScripts = false)
+    public function getTemplateCache(string $key, bool $global, bool $registerScripts = false): ?string
     {
         // Make sure template caching is enabled
         if ($this->_isTemplateCachingEnabled() === false) {
@@ -98,7 +82,7 @@ class TemplateCaches extends Component
      * included in the cache. If this is `true`, be sure to pass `$withScripts = true` to [[endTemplateCache()]]
      * as well.
      */
-    public function startTemplateCache(bool $withScripts = false)
+    public function startTemplateCache(bool $withScripts = false): void
     {
         // Make sure template caching is enabled
         if ($this->_isTemplateCachingEnabled() === false) {
@@ -116,40 +100,20 @@ class TemplateCaches extends Component
     }
 
     /**
-     * Includes an element criteria in any active caches.
-     *
-     * @param Event $event The 'afterPrepare' element query event
-     * @deprecated in 3.5.0
-     */
-    public function includeElementQueryInTemplateCaches(Event $event)
-    {
-    }
-
-    /**
-     * Includes an element in any active caches.
-     *
-     * @param int $elementId The element ID.
-     * @deprecated in 3.5.0
-     */
-    public function includeElementInTemplateCaches(int $elementId)
-    {
-    }
-
-    /**
      * Ends a template cache.
      *
      * @param string $key The template cache key.
      * @param bool $global Whether the cache should be stored globally.
      * @param string|null $duration How long the cache should be stored for. Should be a [relative time format](https://php.net/manual/en/datetime.formats.relative.php).
-     * @param mixed|null $expiration When the cache should expire.
+     * @param mixed $expiration When the cache should expire.
      * @param string $body The contents of the cache.
      * @param bool $withScripts Whether JS and CSS code registered with [[\craft\web\View::registerJs()]],
      * [[\craft\web\View::registerScript()]], and [[\craft\web\View::registerCss()]] should be captured and
      * included in the cache.
      * @throws Exception if this is a console request and `false` is passed to `$global`
-     * @throws \Throwable
+     * @throws Throwable
      */
-    public function endTemplateCache(string $key, bool $global, ?string $duration, $expiration, string $body, bool $withScripts = false)
+    public function endTemplateCache(string $key, bool $global, ?string $duration, mixed $expiration, string $body, bool $withScripts = false): void
     {
         // Make sure template caching is enabled
         if ($this->_isTemplateCachingEnabled() === false) {
@@ -232,165 +196,13 @@ class TemplateCaches extends Component
     }
 
     /**
-     * Deletes a cache by its ID(s).
-     *
-     * @param int|int[] $cacheId The cache ID(s)
-     * @return bool
-     * @deprecated in 3.5.0
-     */
-    public function deleteCacheById($cacheId): bool
-    {
-        return false;
-    }
-
-    /**
-     * Deletes caches by a given element class.
-     *
-     * @param string $elementType The element class.
-     * @return bool
-     * @deprecated in 3.5.0. Use [[\craft\services\Elements::invalidateCachesForElementType()]] instead.
-     */
-    public function deleteCachesByElementType(string $elementType): bool
-    {
-        Craft::$app->getElements()->invalidateCachesForElementType($elementType);
-        return true;
-    }
-
-    /**
-     * Deletes caches that include a given element(s).
-     *
-     * @param ElementInterface|ElementInterface[] $elements The element(s) whose caches should be deleted.
-     * @return bool
-     * @deprecated in 3.5.0. Use [[\craft\services\Elements::invalidateCachesForElement()]] instead.
-     */
-    public function deleteCachesByElement($elements): bool
-    {
-        $elementsService = Craft::$app->getElements();
-        if (is_array($elements)) {
-            foreach ($elements as $element) {
-                $elementsService->invalidateCachesForElement($element);
-            }
-        } else {
-            $elementsService->invalidateCachesForElement($elements);
-        }
-        return true;
-    }
-
-    /**
-     * Deletes caches that include an a given element ID(s).
-     *
-     * @param int|int[] $elementId The ID of the element(s) whose caches should be cleared.
-     * @param bool $deleteQueryCaches Whether a DeleteStaleTemplateCaches job
-     * should be added to the queue, deleting any query caches that may now
-     * involve this element, but hadn't previously. (Defaults to `true`.)
-     * @return bool
-     * @deprecated in 3.5.0. Use [[\craft\services\Elements::invalidateCachesForElement()]] instead.
-     */
-    public function deleteCachesByElementId($elementId, bool $deleteQueryCaches = true): bool
-    {
-        $elementsService = Craft::$app->getElements();
-        $element = Craft::$app->getElements()->getElementById($elementId);
-        if (!$element) {
-            return false;
-        }
-        $elementsService->invalidateCachesForElement($element);
-        return true;
-    }
-
-    /**
-     * Queues up a Delete Stale Template Caches job
-     *
-     * @deprecated in 3.5.0
-     */
-    public function handleResponse()
-    {
-    }
-
-    /**
-     * Deletes caches that include elements that match a given element query's parameters.
-     *
-     * @param ElementQuery $query The element query that should be used to find elements whose caches
-     * should be deleted.
-     * @return bool
-     * @deprecated in 3.5.0. Use [[\craft\services\Elements::invalidateCachesForElementType()]] instead.
-     */
-    public function deleteCachesByElementQuery(ElementQuery $query): bool
-    {
-        if (!$query->elementType) {
-            return false;
-        }
-        Craft::$app->getElements()->invalidateCachesForElementType($query->elementType);
-        return true;
-    }
-
-    /**
-     * Deletes a cache by its key(s).
-     *
-     * @param string|string[] $key The cache key(s) to delete.
-     * @param bool|null $global Whether the template caches are stored globally.
-     * @param int|null $siteId The site ID to delete caches for.
-     * @return bool
-     * @throws Exception if this is a console request and `null` or `false` is passed to `$global`
-     */
-    public function deleteCachesByKey($key, ?bool $global = null, ?int $siteId = null): bool
-    {
-        $cache = Craft::$app->getCache();
-
-        if ($global === null) {
-            $this->deleteCachesByKey($key, true, $siteId);
-            $this->deleteCachesByKey($key, false, $siteId);
-            return true;
-        }
-
-        foreach ((array)$key as $k) {
-            $cache->delete($this->_cacheKey($k, $global, $siteId));
-        }
-
-        return true;
-    }
-
-    /**
-     * Deletes any expired caches.
-     *
-     * @return bool
-     * @deprecated in 3.5.0
-     */
-    public function deleteExpiredCaches(): bool
-    {
-        return true;
-    }
-
-    /**
-     * Deletes any expired caches.
-     *
-     * @return bool
-     * @deprecated in 3.2.0
-     */
-    public function deleteExpiredCachesIfOverdue(): bool
-    {
-        return true;
-    }
-
-    /**
-     * Deletes all the template caches.
-     *
-     * @return bool
-     * @deprecated in 3.5.0. Use [[\craft\services\Elements::invalidateAllCaches()]] instead.
-     */
-    public function deleteAllCaches(): bool
-    {
-        Craft::$app->getElements()->invalidateAllCaches();
-        return true;
-    }
-
-    /**
      * Returns whether template caching is enabled, based on the 'enableTemplateCaching' config setting.
      *
      * @return bool Whether template caching is enabled
      */
     private function _isTemplateCachingEnabled(): bool
     {
-        if ($this->_enabled === null) {
+        if (!isset($this->_enabled)) {
             $this->_enabled = (
                 Craft::$app->getConfig()->getGeneral()->enableTemplateCaching &&
                 !Craft::$app->getRequest()->getIsConsoleRequest()
@@ -405,9 +217,10 @@ class TemplateCaches extends Component
      * @param string $key
      * @param bool $global
      * @param int|null $siteId
+     * @return string
      * @throws Exception if this is a console request and `false` is passed to `$global`
      */
-    private function _cacheKey(string $key, bool $global, int $siteId = null): string
+    private function _cacheKey(string $key, bool $global, ?int $siteId = null): string
     {
         $cacheKey = "template::$key::" . ($siteId ?? Craft::$app->getSites()->getCurrentSite()->id);
 
@@ -426,7 +239,7 @@ class TemplateCaches extends Component
      */
     private function _path(): string
     {
-        if ($this->_path !== null) {
+        if (isset($this->_path)) {
             return $this->_path;
         }
 

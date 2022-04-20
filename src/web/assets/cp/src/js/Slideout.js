@@ -27,6 +27,7 @@
 
             this.$outerContainer = $('<div/>', {class: 'slideout-container hidden'});
             this.$container = $(`<${this.settings.containerElement}/>`, this.settings.containerAttributes)
+                .attr('data-slideout', '')
                 .addClass('slideout')
                 .append(contents)
                 .data('slideout', this)
@@ -113,7 +114,6 @@
             this._cancelTransitionListeners();
 
             if (this.$shade) {
-                this.removeListener(this.$shade, 'click');
                 this.$shade
                     .removeClass('so-visible')
                     .one('transitionend.slideout', () => {

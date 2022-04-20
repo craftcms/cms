@@ -21,57 +21,58 @@ class AssetIndexData extends Model
     /**
      * @var int|null ID
      */
-    public $id;
+    public ?int $id = null;
 
     /**
      * @var int|null Volume ID
      */
-    public $volumeId;
+    public ?int $volumeId = null;
 
     /**
      * @var string|null Session ID
      */
-    public $sessionId;
+    public ?string $sessionId = null;
 
     /**
      * @var string|null URI
      */
-    public $uri;
+    public ?string $uri = null;
 
     /**
      * @var int|null Size
      */
-    public $size;
+    public ?int $size = null;
 
     /**
      * @var int|null Record ID
      */
-    public $recordId;
+    public ?int $recordId = null;
+
+    /**
+     * @var bool|null Whether the path was skipped
+     * @since 4.0.0
+     */
+    public ?bool $isSkipped = null;
 
     /**
      * @var DateTime|null The index timestamp
      */
-    public $timestamp;
+    public ?DateTime $timestamp = null;
+
+    /**
+     * @var bool is Dir
+     */
+    public bool $isDir;
 
     /**
      * @var bool Is completed
      */
-    public $completed = false;
+    public bool $completed = false;
 
     /**
      * @var bool In progress
      */
-    public $inProgress = false;
-
-    /**
-     * @inheritdoc
-     */
-    public function datetimeAttributes(): array
-    {
-        $attributes = parent::datetimeAttributes();
-        $attributes[] = 'timestamp';
-        return $attributes;
-    }
+    public bool $inProgress = false;
 
     /**
      * @inheritdoc

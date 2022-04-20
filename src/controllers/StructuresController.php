@@ -28,18 +28,18 @@ class StructuresController extends Controller
     /**
      * @var Structure|null
      */
-    private $_structure;
+    private ?Structure $_structure = null;
 
     /**
      * @var ElementInterface|null
      */
-    private $_element;
+    private ?ElementInterface $_element = null;
 
     /**
      * @inheritdoc
      * @throws NotFoundHttpException if the requested element cannot be found
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -72,11 +72,11 @@ class StructuresController extends Controller
             ->provisionalDrafts(null)
             ->id($elementId)
             ->siteId($siteId)
-            ->anyStatus()
+            ->status(null)
             ->structureId($structureId)
             ->one();
 
-        if ($this->_element === null) {
+        if (!isset($this->_element)) {
             throw new NotFoundHttpException('Element not found');
         }
 
@@ -98,9 +98,9 @@ class StructuresController extends Controller
     /**
      * Moves an element within a structure.
      *
-     * @return Response
+     * @return Response|null
      */
-    public function actionMoveElement(): Response
+    public function actionMoveElement(): ?Response
     {
         $structuresService = Craft::$app->getStructures();
 
@@ -110,13 +110,16 @@ class StructuresController extends Controller
         if ($prevElementId) {
             $prevElement = Craft::$app->getElements()->getElementById($prevElementId, null, $this->_element->siteId);
             $success = $structuresService->moveAfter($this->_structure->id, $this->_element, $prevElement);
-        } else if ($parentElementId) {
+        } elseif ($parentElementId) {
             $parentElement = Craft::$app->getElements()->getElementById($parentElementId, null, $this->_element->siteId);
             $success = $structuresService->prepend($this->_structure->id, $this->_element, $parentElement);
         } else {
             $success = $structuresService->prependToRoot($this->_structure->id, $this->_element);
         }
 
-        return $this->asJson(compact('success'));
+        if ($success) {
+            return $this->asSuccess();
+        }
+        return $this->asFailure();
     }
 }

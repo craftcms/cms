@@ -18,7 +18,7 @@ use craft\elements\User;
 class UserAssignGroupEvent extends CancelableEvent
 {
     /**
-     * @var User|null The user model associated with this event
+     * @var User The user model associated with this event
      */
-    public $user;
+    public User $user;
 }

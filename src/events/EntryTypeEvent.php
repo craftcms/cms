@@ -7,6 +7,7 @@
 
 namespace craft\events;
 
+use craft\models\EntryType;
 use yii\base\Event;
 
 /**
@@ -18,12 +19,12 @@ use yii\base\Event;
 class EntryTypeEvent extends Event
 {
     /**
-     * @var \craft\models\EntryType|null The entry type model associated with the event.
+     * @var EntryType The entry type model associated with the event.
      */
-    public $entryType;
+    public EntryType $entryType;
 
     /**
      * @var bool Whether the entry type is brand new
      */
-    public $isNew = false;
+    public bool $isNew = false;
 }

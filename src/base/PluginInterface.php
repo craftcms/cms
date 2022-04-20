@@ -17,6 +17,7 @@ use yii\base\Module;
  *
  * @mixin PluginTrait
  * @mixin Module
+ * @property string $handle The plugin’s handle (alias of [[id]])
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
@@ -38,27 +39,16 @@ interface PluginInterface
     public function getHandle(): string;
 
     /**
-     * Returns the plugin’s current version.
-     *
-     * @return string The plugin’s current version
-     */
-    public function getVersion();
-
-    /**
      * Installs the plugin.
      *
-     * @return null|false Return `false` to indicate the installation failed.
-     * All other return values mean the installation was successful.
      */
-    public function install();
+    public function install(): void;
 
     /**
      * Uninstalls the plugin.
      *
-     * @return null|false Return `false` to indicate the uninstallation failed.
-     * All other return values mean the uninstallation was successful.
      */
-    public function uninstall();
+    public function uninstall(): void;
 
     /**
      * Returns the plugin’s migration manager
@@ -72,21 +62,21 @@ interface PluginInterface
      *
      * @return Model|null The model that the plugin’s settings should be stored on, if the plugin has settings
      */
-    public function getSettings();
+    public function getSettings(): ?Model;
 
     /**
      * Sets the plugin settings
      *
      * @param array $settings The plugin settings that should be set on the settings model
      */
-    public function setSettings(array $settings);
+    public function setSettings(array $settings): void;
 
     /**
      * Returns the settings page response.
      *
      * @return mixed The result that should be returned from [[\craft\controllers\PluginsController::actionEditPluginSettings()]]
      */
-    public function getSettingsResponse();
+    public function getSettingsResponse(): mixed;
 
     /**
      * Returns the control panel nav item definition for this plugin, if it has a section in the control panel.
@@ -129,7 +119,7 @@ interface PluginInterface
      * @see PluginTrait::$hasCpSection
      * @see Cp::nav()
      */
-    public function getCpNavItem();
+    public function getCpNavItem(): ?array;
 
     // Events
     // -------------------------------------------------------------------------
@@ -147,5 +137,5 @@ interface PluginInterface
      *
      * @since 3.0.16
      */
-    public function afterSaveSettings();
+    public function afterSaveSettings(): void;
 }

@@ -16,6 +16,7 @@
         addBlockBtnContainerWidth: null,
 
         $container: null,
+        $form: null,
         $blockContainer: null,
         $addBlockBtnContainer: null,
         $addBlockBtnGroup: null,
@@ -39,6 +40,7 @@
             this.setSettings(settings, Craft.MatrixInput.defaults);
 
             this.$container = $('#' + this.id);
+            this.$form = this.$container.closest('form');
             this.$blockContainer = this.$container.children('.blocks');
             this.$addBlockBtnContainer = this.$container.children('.buttons');
             this.$addBlockBtnGroup = this.$addBlockBtnContainer.children('.btngroup');
@@ -245,7 +247,7 @@
                   <div class="checkbox" title="${Craft.t('app', 'Select')}"></div>
                   <div class="actions">
                     <div class="status off" title="${Craft.t('app', 'Disabled')}"></div>
-                    <div data-wrapper>
+                    <div>
                       <button type="button" class="btn settings icon menubtn" title="${Craft.t('app', 'Actions')}" aria-controls="${ actionMenuId }" data-disclosure-trigger></button>
                         <div id="${ actionMenuId }" class="menu menu--disclosure">
                          <ul class="padded">
@@ -286,8 +288,8 @@
             var $block = $(html);
 
             // Pause the draft editor
-            if (window.draftEditor) {
-                window.draftEditor.pause();
+            if (this.$form.data('elementEditor')) {
+                this.$form.data('elementEditor').pause();
             }
 
             if ($insertBefore) {
@@ -298,7 +300,7 @@
 
             var $fieldsContainer = $('<div class="fields"/>').appendTo($block),
                 bodyHtml = this.getParsedBlockHtml(this.blockTypesByHandle[type].bodyHtml, id),
-                footHtml = this.getParsedBlockHtml(this.blockTypesByHandle[type].footHtml, id);
+                js = this.getParsedBlockHtml(this.blockTypesByHandle[type].js, id);
 
             $(bodyHtml).appendTo($fieldsContainer);
 
@@ -312,14 +314,14 @@
                 'margin-bottom': 10
             }, 'fast', () => {
                 $block.css('margin-bottom', '');
-                Garnish.$bod.append(footHtml);
+                Garnish.$bod.append(js);
                 Craft.initUiElements($fieldsContainer);
                 new MatrixBlock(this, $block);
                 this.blockSort.addItems($block);
                 this.blockSelect.addItems($block);
                 this.updateAddBlockBtn();
 
-                Garnish.requestAnimationFrame(function() {
+                Garnish.requestAnimationFrame(() => {
                     if (typeof autofocus === 'undefined' || autofocus) {
                         // Scroll to the block
                         Garnish.scrollContainerToElement($block);
@@ -328,8 +330,8 @@
                     }
 
                     // Resume the draft editor
-                    if (window.draftEditor) {
-                        window.draftEditor.resume();
+                    if (this.$form.data('elementEditor')) {
+                        this.$form.data('elementEditor').resume();
                     }
                 });
             });
@@ -458,10 +460,10 @@
             this.$container.data('block', this);
 
             this.id = this.$container.data('id');
-            this.isNew = (!this.id || (typeof this.id === 'string' && this.id.substr(0, 3) === 'new'));
+            this.isNew = (!this.id || (typeof this.id === 'string' && this.id.substring(0, 3) === 'new'));
 
-            const $actionMenuBtn = this.$container.find('> .actions [data-disclosure-trigger]'),
-                actionDisclosure = new Garnish.DisclosureMenu($actionMenuBtn);
+            const $actionMenuBtn = this.$container.find('> .actions [data-disclosure-trigger]');
+            const actionDisclosure = $actionMenuBtn.data('trigger') || new Garnish.DisclosureMenu($actionMenuBtn);
 
             this.$actionMenu = actionDisclosure.$container;
             this.actionDisclosure = actionDisclosure;
@@ -573,11 +575,11 @@
 
             if (animate) {
                 this.$fieldsContainer.velocity('fadeOut', {duration: 'fast'});
-                this.$container.velocity({height: 16}, 'fast');
+                this.$container.velocity({height: 32}, 'fast');
             } else {
                 this.$previewContainer.show();
                 this.$fieldsContainer.hide();
-                this.$container.css({height: 16});
+                this.$container.css({height: 32});
             }
 
             setTimeout(() => {
@@ -778,8 +780,8 @@
 
         selfDestruct: function() {
             // Pause the draft editor
-            if (window.draftEditor) {
-                window.draftEditor.pause();
+            if (this.matrix.$form.data('elementEditor')) {
+                this.matrix.$form.data('elementEditor').pause();
             }
 
             this.$container.velocity(this.matrix.getHiddenBlockCss(this.$container), 'fast', () => {
@@ -787,8 +789,8 @@
                 this.matrix.updateAddBlockBtn();
 
                 // Resume the draft editor
-                if (window.draftEditor) {
-                    window.draftEditor.resume();
+                if (this.matrix.$form.data('elementEditor')) {
+                    this.matrix.$form.data('elementEditor').resume();
                 }
 
                 this.matrix.trigger('blockDeleted', {

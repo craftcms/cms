@@ -11,6 +11,7 @@ use Craft;
 use craft\console\Controller;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Console;
+use Throwable;
 use yii\console\ExitCode;
 
 /**
@@ -25,7 +26,7 @@ class PluginController extends Controller
      * @var bool Whether the plugin uninstallation should be forced.
      * @since 3.6.14
      */
-    public $force = false;
+    public bool $force = false;
 
     /**
      * @inheritdoc
@@ -35,7 +36,7 @@ class PluginController extends Controller
     /**
      * @inheritdoc
      */
-    public function options($actionID)
+    public function options($actionID): array
     {
         $options = parent::options($actionID);
 
@@ -51,7 +52,7 @@ class PluginController extends Controller
     /**
      * @inheritdoc
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         Console::ensureProjectConfigFileExists();
         return parent::beforeAction($action);
@@ -81,7 +82,7 @@ class PluginController extends Controller
 
             if ($info['isEnabled']) {
                 $color = Console::FG_GREEN;
-            } else if ($info['isInstalled']) {
+            } elseif ($info['isInstalled']) {
                 $color = Console::FG_YELLOW;
             } else {
                 $color = Console::FG_GREY;
@@ -121,12 +122,12 @@ class PluginController extends Controller
             }
         }
 
-        $this->stdout("*** installing {$handle}" . PHP_EOL, Console::FG_YELLOW);
+        $this->stdout("*** installing $handle" . PHP_EOL, Console::FG_YELLOW);
         $start = microtime(true);
 
         try {
             $success = Craft::$app->getPlugins()->installPlugin($handle);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $success = false;
         } finally {
             if (!$success) {
@@ -136,7 +137,7 @@ class PluginController extends Controller
         }
 
         $time = sprintf('%.3f', microtime(true) - $start);
-        $this->stdout("*** installed {$handle} successfully (time: {$time}s)" . PHP_EOL . PHP_EOL, Console::FG_GREEN);
+        $this->stdout("*** installed $handle successfully (time: {$time}s)" . PHP_EOL . PHP_EOL, Console::FG_GREEN);
         return ExitCode::OK;
     }
 
@@ -162,12 +163,12 @@ class PluginController extends Controller
             }
         }
 
-        $this->stdout("*** uninstalling {$handle}" . PHP_EOL, Console::FG_YELLOW);
+        $this->stdout("*** uninstalling $handle" . PHP_EOL, Console::FG_YELLOW);
         $start = microtime(true);
 
         try {
             $success = Craft::$app->plugins->uninstallPlugin($handle, $this->force);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $success = false;
         } finally {
             if (!$success) {
@@ -181,7 +182,7 @@ class PluginController extends Controller
         }
 
         $time = sprintf('%.3f', microtime(true) - $start);
-        $this->stdout("*** uninstalled {$handle} successfully (time: {$time}s)" . PHP_EOL . PHP_EOL, Console::FG_GREEN);
+        $this->stdout("*** uninstalled $handle successfully (time: {$time}s)" . PHP_EOL . PHP_EOL, Console::FG_GREEN);
         return ExitCode::OK;
     }
 
@@ -207,12 +208,12 @@ class PluginController extends Controller
             }
         }
 
-        $this->stdout("*** enabling {$handle}" . PHP_EOL, Console::FG_YELLOW);
+        $this->stdout("*** enabling $handle" . PHP_EOL, Console::FG_YELLOW);
         $start = microtime(true);
 
         try {
             $success = Craft::$app->plugins->enablePlugin($handle);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $success = false;
         } finally {
             if (!$success) {
@@ -222,7 +223,7 @@ class PluginController extends Controller
         }
 
         $time = sprintf('%.3f', microtime(true) - $start);
-        $this->stdout("*** enabled {$handle} successfully (time: {$time}s)" . PHP_EOL . PHP_EOL, Console::FG_GREEN);
+        $this->stdout("*** enabled $handle successfully (time: {$time}s)" . PHP_EOL . PHP_EOL, Console::FG_GREEN);
         return ExitCode::OK;
     }
 
@@ -248,12 +249,12 @@ class PluginController extends Controller
             }
         }
 
-        $this->stdout("*** disabling {$handle}" . PHP_EOL, Console::FG_YELLOW);
+        $this->stdout("*** disabling $handle" . PHP_EOL, Console::FG_YELLOW);
         $start = microtime(true);
 
         try {
             $success = Craft::$app->plugins->disablePlugin($handle);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $success = false;
         } finally {
             if (!$success) {
@@ -263,7 +264,7 @@ class PluginController extends Controller
         }
 
         $time = sprintf('%.3f', microtime(true) - $start);
-        $this->stdout("*** disabled {$handle} successfully (time: {$time}s)" . PHP_EOL . PHP_EOL, Console::FG_GREEN);
+        $this->stdout("*** disabled $handle successfully (time: {$time}s)" . PHP_EOL . PHP_EOL, Console::FG_GREEN);
         return ExitCode::OK;
     }
 
@@ -274,7 +275,7 @@ class PluginController extends Controller
      * @param callable|null $filterCallback
      * @return string|int
      */
-    private function _pluginPrompt(string $tableMessage, string $noPlugins, string $prompt, ?callable $filterCallback)
+    private function _pluginPrompt(string $tableMessage, string $noPlugins, string $prompt, ?callable $filterCallback): int|string
     {
         if (!$this->interactive) {
             $this->stderr('A plugin handle must be specified.' . PHP_EOL, Console::FG_RED);
@@ -306,7 +307,7 @@ class PluginController extends Controller
         return $this->prompt($prompt, [
             'validator' => function(string $input) use ($uninstalledPluginInfo) {
                 return isset($uninstalledPluginInfo[$input]);
-            }
+            },
         ]);
     }
 

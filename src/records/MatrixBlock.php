@@ -15,10 +15,9 @@ use yii\db\ActiveQueryInterface;
  * Class MatrixBlock record.
  *
  * @property int $id ID
- * @property int $ownerId Owner ID
+ * @property int $primaryOwnerId Primary owner ID
  * @property int $fieldId Field ID
  * @property int $typeId Type ID
- * @property int $sortOrder Sort order
  * @property Element $element Element
  * @property Element $owner Owner
  * @property Field $field Field
@@ -49,13 +48,13 @@ class MatrixBlock extends ActiveRecord
     }
 
     /**
-     * Returns the matrix block’s owner.
+     * Returns the matrix block’s primary owner.
      *
      * @return ActiveQueryInterface The relational query object.
      */
-    public function getOwner(): ActiveQueryInterface
+    public function getPrimaryOwner(): ActiveQueryInterface
     {
-        return $this->hasOne(Element::class, ['id' => 'ownerId']);
+        return $this->hasOne(Element::class, ['id' => 'primaryOwnerId']);
     }
 
     /**

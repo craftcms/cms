@@ -10,7 +10,6 @@ namespace craft\widgets;
 use Craft;
 use craft\base\Widget;
 use craft\helpers\App;
-use craft\helpers\Json;
 use craft\web\assets\craftsupport\CraftSupportAsset;
 
 /**
@@ -49,7 +48,7 @@ class CraftSupport extends Widget
     /**
      * @inheritdoc
      */
-    public static function icon()
+    public static function icon(): ?string
     {
         return Craft::getAlias('@appicons/buoey.svg');
     }
@@ -57,27 +56,30 @@ class CraftSupport extends Widget
     /**
      * @inheritdoc
      */
-    public function getTitle(): string
+    public function getTitle(): ?string
     {
-        return '';
+        return null;
     }
 
     /**
      * @inheritdoc
      */
-    public function getBodyHtml()
+    public function getBodyHtml(): ?string
     {
         // Only admins get the Craft Support widget.
         if (!Craft::$app->getUser()->getIsAdmin()) {
-            return false;
+            return null;
         }
 
         $view = Craft::$app->getView();
         $assetBundle = $view->registerAssetBundle(CraftSupportAsset::class);
 
-        $plugins = '';
+        $cmsVersion = Craft::$app->getVersion();
+        $cmsMajorVersion = (int)$cmsVersion;
+
+        $pluginVersions = [];
         foreach (Craft::$app->getPlugins()->getAllPlugins() as $plugin) {
-            $plugins .= "\n    - " . $plugin->name . ' ' . $plugin->getVersion();
+            $pluginVersions[] = sprintf('- %s %s', $plugin->name, $plugin->getVersion());
         }
 
         $db = Craft::$app->getDb();
@@ -94,17 +96,45 @@ class CraftSupport extends Widget
             $imageDriver = 'Imagick';
         }
 
-        $envInfoJs = Json::encode([
-            'Craft version' => Craft::$app->getVersion() . ' (' . Craft::$app->getEditionName() . ')',
-            'PHP version' => App::phpVersion(),
-            'OS version' => PHP_OS . ' ' . php_uname('r'),
-            'Database driver & version' => $dbDriver . ' ' . App::normalizeVersion($db->getSchema()->getServerVersion()),
-            'Image driver & version' => $imageDriver . ' ' . $imagesService->getVersion(),
-            'Plugins & versions' => $plugins,
-        ]);
+        $body = <<<EOD
+### Description
 
-        $js = "new Craft.CraftSupportWidget({$this->id}, {$envInfoJs});";
-        $view->registerJs($js);
+
+
+### Steps to reproduce
+
+1.
+
+### Expected behavior
+
+
+
+### Actual behavior
+
+
+EOD;
+
+        $view->registerJsWithVars(function($id, $settings) {
+            return <<<JS
+new Craft.CraftSupportWidget($id, $settings);
+JS;
+        }, [
+            $this->id,
+            [
+                'issueTitlePrefix' => sprintf("[%s.x]: ", $cmsMajorVersion),
+                'issueParams' => [
+                    'labels' => sprintf("bug,craft%s", $cmsMajorVersion),
+                    'template' => sprintf("BUG-REPORT-V%s.yml", $cmsMajorVersion),
+                    'body' => $body,
+                    'cmsVersion' => sprintf('%s (%s)', $cmsVersion, Craft::$app->getEditionName()),
+                    'phpVersion' => App::phpVersion(),
+                    'os' => sprintf('%s %s', PHP_OS, php_uname('r')),
+                    'db' => sprintf('%s %s', $dbDriver, App::normalizeVersion($db->getSchema()->getServerVersion())),
+                    'imageDriver' => sprintf('%s %s', $imageDriver, $imagesService->getVersion()),
+                    'plugins' => implode("\n", $pluginVersions),
+                ],
+            ],
+        ]);
 
         $iconsDir = Craft::getAlias('@appicons');
 

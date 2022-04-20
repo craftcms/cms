@@ -12,6 +12,7 @@ use Craft;
 use craft\db\Command;
 use craft\db\Query;
 use craft\db\Table;
+use craft\test\TestCase;
 use DateTime;
 use DateTimeZone;
 use yii\db\Exception;
@@ -23,56 +24,27 @@ use yii\db\Exception;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class CommandTest extends Unit
+class CommandTest extends TestCase
 {
     /**
      * @var DateTime
      */
-    protected $sessionDate;
+    protected DateTime $sessionDate;
 
     /**
      * @var array
      */
-    private $_sessionData = [
+    private array $_sessionData = [
         'userId' => 1,
-        'token' => 'test'
+        'token' => 'test',
     ];
 
     /**
      *
      */
-    public function testEnsureCommand()
+    public function testEnsureCommand(): void
     {
         self::assertInstanceOf(Command::class, Craft::$app->getDb()->createCommand());
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function testInsertDateCreated()
-    {
-        $session = $this->ensureSession();
-        self::assertSame($session['dateCreated'], $this->sessionDate->format('Y-m-d H:i:s'));
-        $this->clearSession();
-    }
-
-    /**
-     * @throws Exception
-     */
-    public function testDateUpdatedOnInsertAndUpdate()
-    {
-        $session = $this->ensureSession();
-
-        // Ensure that there is a diff in dates....
-        sleep(1);
-
-        // Save it again without a dateUpdated value. Ensure dateUpdated is now current.
-        $date = new DateTime('now', new DateTimeZone('UTC'));
-        unset($session['dateUpdated']);
-        $session = $this->updateSession($session);
-
-        self::assertSame($date->format('Y-m-d H:i:s'), $session['dateUpdated']);
-        $this->clearSession();
     }
 
     /**
@@ -107,15 +79,15 @@ class CommandTest extends Unit
     /**
      * Updates a session row.
      *
-     * @param $values
+     * @param array $values
      * @return array
      * @throws Exception
      */
-    public function updateSession($values): array
+    public function updateSession(array $values): array
     {
         $condition = [
             'userId' => $values['userId'],
-            'token' => $values['token']
+            'token' => $values['token'],
         ];
 
         Craft::$app->getDb()->createCommand()

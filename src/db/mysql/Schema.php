@@ -16,6 +16,7 @@ use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
 use mikehaertl\shellcommand\Command as ShellCommand;
+use PDOException;
 use yii\base\ErrorException;
 use yii\base\NotSupportedException;
 use yii\db\Exception;
@@ -29,10 +30,10 @@ use yii\db\Exception;
  */
 class Schema extends \yii\db\mysql\Schema
 {
-    const TYPE_TINYTEXT = 'tinytext';
-    const TYPE_MEDIUMTEXT = 'mediumtext';
-    const TYPE_LONGTEXT = 'longtext';
-    const TYPE_ENUM = 'enum';
+    public const TYPE_TINYTEXT = 'tinytext';
+    public const TYPE_MEDIUMTEXT = 'mediumtext';
+    public const TYPE_LONGTEXT = 'longtext';
+    public const TYPE_ENUM = 'enum';
 
     /**
      * @inheritdoc
@@ -42,17 +43,17 @@ class Schema extends \yii\db\mysql\Schema
     /**
      * @var int The maximum length that objects' names can be.
      */
-    public $maxObjectNameLength = 64;
+    public int $maxObjectNameLength = 64;
 
     /**
      * @var string|null The path to the temporary my.cnf file used for backups and restoration.
      */
-    public $tempMyCnfPath;
+    public ?string $tempMyCnfPath = null;
 
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -93,7 +94,7 @@ class Schema extends \yii\db\mysql\Schema
      * @param string $name The savepoint name.
      * @throws Exception
      */
-    public function releaseSavepoint($name)
+    public function releaseSavepoint($name): void
     {
         try {
             parent::releaseSavepoint($name);
@@ -113,7 +114,7 @@ class Schema extends \yii\db\mysql\Schema
      * @param string $name The savepoint name.
      * @throws Exception
      */
-    public function rollBackSavepoint($name)
+    public function rollBackSavepoint($name): void
     {
         try {
             parent::rollBackSavepoint($name);
@@ -136,7 +137,7 @@ class Schema extends \yii\db\mysql\Schema
      * @param int|string|array $length length or precision of the column. See [[ColumnSchemaBuilder::$length]].
      * @return ColumnSchemaBuilder column schema builder instance
      */
-    public function createColumnSchemaBuilder($type, $length = null)
+    public function createColumnSchemaBuilder($type, $length = null): ColumnSchemaBuilder
     {
         return new ColumnSchemaBuilder($type, $length, $this->db);
     }
@@ -144,11 +145,11 @@ class Schema extends \yii\db\mysql\Schema
     /**
      * Returns the default backup command to execute.
      *
-     * @param string[]|null The table names whose data should be excluded from the backup
+     * @param string[]|null $ignoreTables The table names whose data should be excluded from the backup
      * @return string The command to execute
      * @throws ErrorException
      */
-    public function getDefaultBackupCommand(array $ignoreTables = null): string
+    public function getDefaultBackupCommand(?array $ignoreTables = null): string
     {
         $defaultArgs =
             ' --defaults-extra-file="' . $this->_createDumpConfigFile() . '"' .
@@ -193,7 +194,7 @@ class Schema extends \yii\db\mysql\Schema
         $ignoreTableArgs = [];
         foreach ($ignoreTables as $table) {
             $table = $this->getRawTableName($table);
-            $ignoreTableArgs[] = "--ignore-table={database}.{$table}";
+            $ignoreTableArgs[] = "--ignore-table={database}.$table";
         }
 
         $schemaDump = 'mysqldump' .
@@ -272,9 +273,9 @@ class Schema extends \yii\db\mysql\Schema
      * @return TableSchema|null driver dependent table metadata. Null if the table does not exist.
      * @throws \Exception
      */
-    protected function loadTableSchema($name)
+    protected function loadTableSchema($name): ?TableSchema
     {
-        $table = new TableSchema;
+        $table = new TableSchema();
         $this->resolveTableNames($table, $name);
 
         if ($this->findColumns($table)) {
@@ -292,7 +293,7 @@ class Schema extends \yii\db\mysql\Schema
      * @param TableSchema $table the table metadata
      * @throws Exception
      */
-    protected function findConstraints($table)
+    protected function findConstraints($table): void
     {
         // This is almost directly copied from yii\db\mysql\Schema::findConstraints() (Yii 2.0.37) except:
         // - addition of DELETE_RULE & UPDATE_RULE in the SELECT clause
@@ -342,7 +343,7 @@ SQL;
             }
         } catch (\Exception $e) {
             $previous = $e->getPrevious();
-            if (!$previous instanceof \PDOException || strpos($previous->getMessage(), 'SQLSTATE[42S02') === false) {
+            if (!$previous instanceof PDOException || !str_contains($previous->getMessage(), 'SQLSTATE[42S02')) {
                 throw $e;
             }
 

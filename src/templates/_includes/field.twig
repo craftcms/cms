@@ -1,0 +1,44 @@
+{% from '_includes/forms' import field %}
+
+{% set static = static ?? false %}
+{% set element = element ?? null %}
+
+{% set value = (element ? element.getFieldValue(field.handle) : field.normalizeValue(null)) %}
+{% set errors = (element and not static ? element.getErrors(field.handle) : null) %}
+{% set instructions = field.instructions ? field.instructions|t('site') %}
+{% set translatable = field.getIsTranslatable(element) %}
+{% set siteId = (translatable and (element.isLocalized() ?? true)) ? (siteId ?? element.siteId ?? craft.app.sites.currentSite.id) %}
+
+{% if not static %}
+    {% set isDeltaRegistrationActive = view.getIsDeltaRegistrationActive() %}
+    {% set registerDeltas = (element.id ?? false) and isDeltaRegistrationActive and (registerDeltas ?? false) %}
+    {% do view.setIsDeltaRegistrationActive(registerDeltas) %}
+    {% do view.registerDeltaName(field.handle) %}
+    {% if not element or not element.id or element.isFieldEmpty(field.handle) %}
+        {% do view.setInitialDeltaValue(field.handle, null) %}
+    {% endif %}
+    {% set input = field.getInputHtml(value, element) %}
+    {% do view.setIsDeltaRegistrationActive(isDeltaRegistrationActive) %}
+{% else %}
+    {% set input = field.getStaticHtml(value, element) %}
+{% endif %}
+
+{% if instructions or input %}
+    {{ field({
+        status: element ? field.getStatus(element),
+        label: field.name|t('site')|e,
+        attribute: field.handle,
+        translatable: translatable,
+        translationDescription: field.getTranslationDescription(element),
+        siteId: siteId,
+        required: (not static ? required : false),
+        instructions: instructions|e,
+        id: field.handle,
+        errors: errors,
+        fieldAttributes: {
+            data: {
+                type: className(field),
+            },
+        },
+    }, input) }}
+{% endif %}

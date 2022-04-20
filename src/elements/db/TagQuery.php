@@ -22,7 +22,7 @@ use yii\db\Connection;
  * @property-write string|string[]|TagGroup|null $group The tag group(s) that resulting tags must belong to
  * @method Tag[]|array all($db = null)
  * @method Tag|array|null one($db = null)
- * @method Tag|array|null nth(int $n, Connection $db = null)
+ * @method Tag|array|null nth(int $n, ?Connection $db = null)
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  * @doc-path tags.md
@@ -40,13 +40,13 @@ class TagQuery extends ElementQuery
     /**
      * @inheritdoc
      */
-    protected $defaultOrderBy = ['content.title' => SORT_ASC];
+    protected array $defaultOrderBy = ['content.title' => SORT_ASC];
 
     // General parameters
     // -------------------------------------------------------------------------
 
     /**
-     * @var int|int[]|null|false The tag group ID(s) that the resulting tags must be in.
+     * @var mixed The tag group ID(s) that the resulting tags must be in.
      * ---
      * ```php
      * // fetch tags in the Topics group
@@ -63,7 +63,7 @@ class TagQuery extends ElementQuery
      * @used-by group()
      * @used-by groupId()
      */
-    public $groupId;
+    public mixed $groupId = null;
 
     /**
      * @inheritdoc
@@ -106,15 +106,15 @@ class TagQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param string|string[]|TagGroup|null $value The property value
-     * @return static self reference
+     * @param mixed $value The property value
+     * @return self self reference
      * @uses $groupId
      */
-    public function group($value)
+    public function group(mixed $value): self
     {
         if ($value instanceof TagGroup) {
             $this->groupId = [$value->id];
-        } else if ($value !== null) {
+        } elseif ($value !== null) {
             $this->groupId = (new Query())
                 ->select(['id'])
                 ->from([Table::TAGGROUPS])
@@ -155,11 +155,11 @@ class TagQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param int|int[]|null $value The property value
-     * @return static self reference
+     * @param mixed $value The property value
+     * @return self self reference
      * @uses $groupId
      */
-    public function groupId($value)
+    public function groupId(mixed $value): self
     {
         $this->groupId = $value;
         return $this;
@@ -190,7 +190,7 @@ class TagQuery extends ElementQuery
      *
      * @throws QueryAbortedException
      */
-    private function _normalizeGroupId()
+    private function _normalizeGroupId(): void
     {
         if ($this->groupId === false) {
             throw new QueryAbortedException();
@@ -198,13 +198,13 @@ class TagQuery extends ElementQuery
 
         if (empty($this->groupId)) {
             $this->groupId = null;
-        } else if (is_numeric($this->groupId)) {
+        } elseif (is_numeric($this->groupId)) {
             $this->groupId = [$this->groupId];
-        } else if (!is_array($this->groupId) || !ArrayHelper::isNumeric($this->groupId)) {
+        } elseif (!is_array($this->groupId) || !ArrayHelper::isNumeric($this->groupId)) {
             $this->groupId = (new Query())
                 ->select(['id'])
                 ->from([Table::TAGGROUPS])
-                ->where(Db::parseParam('id', $this->groupId))
+                ->where(Db::parseNumericParam('id', $this->groupId))
                 ->column();
         }
     }

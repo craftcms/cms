@@ -24,7 +24,7 @@ class ElementUriValidator extends UriValidator
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -35,7 +35,7 @@ class ElementUriValidator extends UriValidator
      * @inheritdoc
      * @throws InvalidConfigException if $attribute is not 'uri'
      */
-    public function validateAttribute($model, $attribute)
+    public function validateAttribute($model, $attribute): void
     {
         if ($attribute !== 'uri' || !$model instanceof ElementInterface) {
             throw new InvalidConfigException('Invalid use of ElementUriValidator');
@@ -54,7 +54,7 @@ class ElementUriValidator extends UriValidator
 
         try {
             ElementHelper::setUniqueUri($model);
-        } catch (OperationAbortedException $e) {
+        } catch (OperationAbortedException) {
             // Not a big deal if the element isn't enabled yet
             if (
                 $model->enabled &&

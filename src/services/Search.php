@@ -25,6 +25,7 @@ use craft\models\Site;
 use craft\search\SearchQuery;
 use craft\search\SearchQueryTerm;
 use craft\search\SearchQueryTermGroup;
+use Throwable;
 use yii\base\Component;
 use yii\db\Expression;
 use yii\db\Schema;
@@ -42,49 +43,44 @@ class Search extends Component
     /**
      * @event SearchEvent The event that is triggered before a search is performed.
      */
-    const EVENT_BEFORE_SEARCH = 'beforeSearch';
+    public const EVENT_BEFORE_SEARCH = 'beforeSearch';
 
     /**
      * @event SearchEvent The event that is triggered after a search is performed.
      */
-    const EVENT_AFTER_SEARCH = 'afterSearch';
+    public const EVENT_AFTER_SEARCH = 'afterSearch';
 
     /**
      * @var bool Whether fulltext searches should be used ever. (MySQL only.)
      * @since 3.4.10
      */
-    public $useFullText = true;
+    public bool $useFullText = true;
 
     /**
      * @var int|null The minimum word length that keywords must be in order to use a full-text search (MySQL only).
      */
-    public $minFullTextWordLength;
+    public ?int $minFullTextWordLength = null;
 
     /**
-     * @var
+     * @var SearchQueryTerm[]
      */
-    private $_tokens;
+    private array $_terms;
 
     /**
-     * @var
+     * @var SearchQueryTerm[][]
      */
-    private $_terms;
-
-    /**
-     * @var
-     */
-    private $_groups;
+    private array $_groups;
 
     /**
      * @var bool
      */
-    private $_isMysql;
+    private bool $_isMysql;
 
     /**
      * @var array|null
      * @see _isSupportedFullTextWord()
      */
-    private $_mysqlStopWords;
+    private ?array $_mysqlStopWords = null;
 
     /**
      * @var int Because the `keywords` column in the search index table is a
@@ -92,18 +88,18 @@ class Search extends Component
      * for index" error with a lot of data. This value is a hard limit to
      * truncate search index data for a single row in Postgres.
      */
-    public $maxPostgresKeywordLength = 2450;
+    public int $maxPostgresKeywordLength = 2450;
 
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
         $this->_isMysql = Craft::$app->getDb()->getIsMysql();
 
-        if ($this->_isMysql && $this->minFullTextWordLength === null) {
+        if ($this->_isMysql && !isset($this->minFullTextWordLength)) {
             $this->minFullTextWordLength = 4;
         }
     }
@@ -117,11 +113,11 @@ class Search extends Component
      * @return bool Whether the indexing was a success.
      * @throws SiteNotFoundException
      */
-    public function indexElementAttributes(ElementInterface $element, array $fieldHandles = null): bool
+    public function indexElementAttributes(ElementInterface $element, ?array $fieldHandles = null): bool
     {
         // Acquire a lock for this element/site ID
         $mutex = Craft::$app->getMutex();
-        $lockKey = "searchindex:{$element->id}:{$element->siteId}";
+        $lockKey = "searchindex:$element->id:$element->siteId";
 
         if (!$mutex->acquire($lockKey)) {
             // Not worth waiting around; for all we know the other process has newer search attributes anyway
@@ -137,7 +133,7 @@ class Search extends Component
             if ($fieldHandles !== null) {
                 $fieldHandles = array_flip($fieldHandles);
             }
-            foreach ($fieldLayout->getFields() as $field) {
+            foreach ($fieldLayout->getCustomFields() as $field) {
                 if ($field->searchable) {
                     // Are we updating this field's keywords?
                     if ($fieldHandles === null || isset($fieldHandles[$field->handle])) {
@@ -150,7 +146,7 @@ class Search extends Component
             }
         }
 
-        // Clear the element's current search keywords
+        // Clear the element’s current search keywords
         $deleteCondition = [
             'elementId' => $element->id,
             'siteId' => $element->siteId,
@@ -185,49 +181,6 @@ class Search extends Component
     }
 
     /**
-     * Indexes the field values for a given element and site.
-     *
-     * @param int $elementId The ID of the element getting indexed.
-     * @param int $siteId The site ID of the content getting indexed.
-     * @param array $fields The field values, indexed by field ID.
-     * @return bool Whether the indexing was a success.
-     * @throws SiteNotFoundException
-     * @deprecated in 3.4.0. Use [[indexElementAttributes()]] instead.
-     */
-    public function indexElementFields(int $elementId, int $siteId, array $fields): bool
-    {
-        foreach ($fields as $fieldId => $value) {
-            $this->_indexElementKeywords($elementId, 'field', (string)$fieldId, $siteId, $value);
-        }
-
-        return true;
-    }
-
-    /**
-     * Filters a list of element IDs by a given search query.
-     *
-     * @param int[] $elementIds The list of element IDs to filter by the search query.
-     * @param string|array|SearchQuery $searchQuery The search query (either a string or a SearchQuery instance)
-     * @param bool $scoreResults Whether to order the results based on how closely they match the query. (No longer checked.)
-     * @param int|int[]|null $siteId The site ID(s) to filter by.
-     * @param bool $returnScores Whether the search scores should be included in the results. If true, results will be returned as `element ID => score`.
-     * @param FieldInterface[]|null $customFields The custom fields involved in the query.
-     * @return array The filtered list of element IDs.
-     * @deprecated in 3.7.14. Use [[searchElements()]] instead.
-     */
-    public function filterElementIdsByQuery(
-        array $elementIds,
-        $searchQuery,
-        bool $scoreResults = true,
-        $siteId = null,
-        bool $returnScores = false,
-        ?array $customFields = null
-    ): array {
-        $scoredResults = $this->_searchElements(null, $elementIds, $searchQuery, $siteId, $customFields);
-        return $returnScores ? $scoredResults : array_keys($scoredResults);
-    }
-
-    /**
      * Searches for elements that match the given element query.
      *
      * @param ElementQuery $elementQuery The element query being executed
@@ -236,59 +189,36 @@ class Search extends Component
      */
     public function searchElements(ElementQuery $elementQuery): array
     {
-        return $this->_searchElements($elementQuery, null, $elementQuery->search, $elementQuery->siteId, $elementQuery->customFields);
-    }
-
-    /**
-     * Filters a list of element IDs by a given search query.
-     *
-     * @param ElementQuery|null $elementQuery
-     * @param int[]|null $elementIds
-     * @param string|array|SearchQuery $searchQuery
-     * @param int|int[]|null $siteId
-     * @param FieldInterface[]|null $customFields
-     * @return array
-     */
-    private function _searchElements(
-        ?ElementQuery $elementQuery,
-        ?array $elementIds,
-        $searchQuery,
-        $siteId,
-        ?array $customFields
-    ): array {
-        if ($elementQuery !== null) {
-            $elementQuery = (clone $elementQuery)
-                ->search(null)
-                ->offset(null)
-                ->limit(null);
-        }
-
+        $searchQuery = $elementQuery->search;
         if (is_string($searchQuery)) {
             $searchQuery = new SearchQuery($searchQuery, Craft::$app->getConfig()->getGeneral()->defaultSearchTermOptions);
-        } else if (is_array($searchQuery)) {
-            $options = $searchQuery;
-            $searchQuery = $options['query'];
-            unset($options['query']);
+        } elseif (is_array($searchQuery)) {
+            $options = array_merge($searchQuery);
+            $searchQuery = ArrayHelper::remove($options, 'query');
             $options = array_merge(Craft::$app->getConfig()->getGeneral()->defaultSearchTermOptions, $options);
             $searchQuery = new SearchQuery($searchQuery, $options);
         }
+
+        $elementQuery = (clone $elementQuery)
+            ->search(null)
+            ->offset(null)
+            ->limit(null);
 
         // Fire a 'beforeSearch' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_SEARCH)) {
             $this->trigger(self::EVENT_BEFORE_SEARCH, new SearchEvent([
                 'elementQuery' => $elementQuery,
                 'query' => $searchQuery,
-                'siteId' => $siteId,
+                'siteId' => $elementQuery->siteId,
             ]));
         }
 
         // Get tokens for query
-        $this->_tokens = $searchQuery->getTokens();
         $this->_terms = [];
         $this->_groups = [];
 
         // Set Terms and Groups based on tokens
-        foreach ($this->_tokens as $obj) {
+        foreach ($searchQuery->getTokens() as $obj) {
             if ($obj instanceof SearchQueryTermGroup) {
                 $this->_groups[] = $obj->terms;
             } else {
@@ -296,12 +226,14 @@ class Search extends Component
             }
         }
 
-        if ($customFields !== null) {
-            $customFields = new MemoizableArray($customFields);
+        if ($elementQuery->customFields !== null) {
+            $customFields = new MemoizableArray($elementQuery->customFields);
+        } else {
+            $customFields = null;
         }
 
         // Get where clause from tokens, bail out if no valid query is there
-        $where = $this->_getWhereClause($siteId, $customFields);
+        $where = $this->_getWhereClause($elementQuery->siteId, $customFields);
 
         if (empty($where)) {
             return [];
@@ -309,20 +241,14 @@ class Search extends Component
 
         $query = (new Query())
             ->from([Table::SEARCHINDEX])
-            ->where(new Expression($where));
+            ->where(new Expression($where))
+            ->andWhere([
+                'elementId' => $elementQuery->select(['elements.id']),
+            ])
+            ->cache(true, new ElementQueryTagDependency($elementQuery));
 
-        if ($siteId !== null) {
-            $query->andWhere(['siteId' => $siteId]);
-        }
-
-        if ($elementQuery !== null) {
-            $query
-                ->andWhere([
-                    'elementId' => $elementQuery->select(['elements.id']),
-                ])
-                ->cache(true, new ElementQueryTagDependency($elementQuery));
-        } else if (!empty($elementIds)) {
-            $query->andWhere(['elementId' => $elementIds]);
+        if ($elementQuery->siteId !== null) {
+            $query->andWhere(['siteId' => $elementQuery->siteId]);
         }
 
         // Execute the sql
@@ -334,7 +260,7 @@ class Search extends Component
         // Loop through results and calculate score per element
         foreach ($results as $row) {
             $elementId = $row['elementId'];
-            $score = $this->_scoreRow($row, $siteId);
+            $score = $this->_scoreRow($row, $elementQuery->siteId);
 
             if (!isset($scoresByElementId[$elementId])) {
                 $scoresByElementId[$elementId] = $score;
@@ -349,9 +275,8 @@ class Search extends Component
         if ($this->hasEventHandlers(self::EVENT_AFTER_SEARCH)) {
             $this->trigger(self::EVENT_AFTER_SEARCH, new SearchEvent([
                 'elementQuery' => $elementQuery,
-                'elementIds' => array_keys($scoresByElementId),
                 'query' => $searchQuery,
-                'siteId' => $siteId,
+                'siteId' => $elementQuery->siteId,
                 'results' => $results,
             ]));
         }
@@ -364,7 +289,7 @@ class Search extends Component
      *
      * @since 3.2.10
      */
-    public function deleteOrphanedIndexes()
+    public function deleteOrphanedIndexes(): void
     {
         $db = Craft::$app->getDb();
         $searchIndexTable = Table::SEARCHINDEX;
@@ -398,7 +323,7 @@ SQL;
      * @param string $dirtyKeywords
      * @throws SiteNotFoundException
      */
-    private function _indexElementKeywords(int $elementId, string $attribute, string $fieldId, int $siteId, string $dirtyKeywords)
+    private function _indexElementKeywords(int $elementId, string $attribute, string $fieldId, int $siteId, string $dirtyKeywords): void
     {
         $attribute = strtolower($attribute);
 
@@ -416,7 +341,7 @@ SQL;
             'siteId' => $site->id,
         ];
 
-        if ($cleanKeywords !== null && $cleanKeywords !== false && $cleanKeywords !== '') {
+        if ($cleanKeywords !== '') {
             // Add padding around keywords
             $cleanKeywords = ' ' . $cleanKeywords . ' ';
         }
@@ -439,7 +364,7 @@ SQL;
         }
 
         // Insert/update the row in searchindex
-        Db::insert(Table::SEARCHINDEX, $columns, false);
+        Db::insert(Table::SEARCHINDEX, $columns);
     }
 
     /**
@@ -449,7 +374,7 @@ SQL;
      * @param int|int[]|null $siteId
      * @return float The total score for this row.
      */
-    private function _scoreRow(array $row, $siteId = null): float
+    private function _scoreRow(array $row, array|int|null $siteId = null): float
     {
         // Starting point
         $score = 0;
@@ -482,7 +407,7 @@ SQL;
      * @param int|int[]|null $siteId
      * @return float The total score for this term/row combination.
      */
-    private function _scoreTerm(SearchQueryTerm $term, array $row, $weight = 1, $siteId = null): float
+    private function _scoreTerm(SearchQueryTerm $term, array $row, float|int $weight = 1, array|int|null $siteId = null): float
     {
         // Skip these terms: exact filtering is just that, no weighted search applies since all elements will
         // already apply for these filters.
@@ -511,7 +436,7 @@ SQL;
             if (trim($keywords) === trim($haystack)) {
                 $mod = 100;
             } // Don't scale up for substring matches
-            else if ($term->subLeft || $term->subRight) {
+            elseif ($term->subLeft || $term->subRight) {
                 $mod = 10;
             } else {
                 $mod = 50;
@@ -535,7 +460,7 @@ SQL;
      * @param MemoizableArray<FieldInterface>|null $customFields
      * @return string|false
      */
-    private function _getWhereClause($siteId, ?MemoizableArray $customFields)
+    private function _getWhereClause(array|int|null $siteId, ?MemoizableArray $customFields): string|false
     {
         $where = [];
 
@@ -573,9 +498,9 @@ SQL;
      * @param int|int[]|null $siteId
      * @param MemoizableArray<FieldInterface>|null $customFields
      * @return string|false
-     * @throws \Throwable
+     * @throws Throwable
      */
-    private function _processTokens(array $tokens, bool $inclusive, $siteId, ?MemoizableArray $customFields)
+    private function _processTokens(array $tokens, bool $inclusive, array|int|null $siteId, ?MemoizableArray $customFields): string|false
     {
         $glue = $inclusive ? ' AND ' : ' OR ';
         $where = [];
@@ -595,7 +520,7 @@ SQL;
             if ($sql) {
                 $where[] = $sql;
             } // No SQL but keywords, save them for later
-            else if ($keywords !== null && $keywords !== '') {
+            elseif ($keywords !== null && $keywords !== '') {
                 if ($inclusive && $db->getIsMysql()) {
                     $keywords = '+' . $keywords;
                 }
@@ -616,7 +541,7 @@ SQL;
 
             // And group together for non-inclusive queries
             if (!$inclusive) {
-                $where = "({$where})";
+                $where = "($where)";
             }
         } else {
             // If the tokens didn't produce a valid where clause,
@@ -635,9 +560,9 @@ SQL;
      * @param int|int[]|null $siteId
      * @param MemoizableArray<FieldInterface>|null $customFields
      * @return array
-     * @throws \Throwable
+     * @throws Throwable
      */
-    private function _getSqlFromTerm(SearchQueryTerm $term, $siteId, ?MemoizableArray $customFields): array
+    private function _getSqlFromTerm(SearchQueryTerm $term, array|int|null $siteId, ?MemoizableArray $customFields): array
     {
         // Initiate return value
         $sql = null;
@@ -651,7 +576,7 @@ SQL;
 
             if (!empty($fieldId)) {
                 $attr = 'fieldId';
-                $val = $fieldId;
+                $val = (string)$fieldId;
             } else {
                 $attr = 'attribute';
                 $val = strtolower($term->attribute);
@@ -759,7 +684,7 @@ SQL;
      * @param int|int[]|null $siteId
      * @return string
      */
-    private function _normalizeTerm(string $term, $siteId = null): string
+    private function _normalizeTerm(string $term, array|int|null $siteId = null): string
     {
         static $terms = [];
 
@@ -780,10 +705,10 @@ SQL;
      * @param MemoizableArray<FieldInterface>|null $customFields
      * @return int|int[]|null
      */
-    private function _getFieldIdFromAttribute(string $attribute, ?MemoizableArray $customFields)
+    private function _getFieldIdFromAttribute(string $attribute, ?MemoizableArray $customFields): array|int|null
     {
         if ($customFields !== null) {
-            return ArrayHelper::getColumn($customFields->where('handle', $attribute), 'id');
+            return ArrayHelper::getColumn($customFields->where('handle', $attribute)->all(), 'id');
         }
 
         $field = Craft::$app->getFields()->getFieldByHandle($attribute);
@@ -812,9 +737,9 @@ SQL;
      * @param bool $bool Use In Boolean Mode or not
      * @param string $glue If multiple values are passed in as an array, the operator to combine them (AND or OR)
      * @return string
-     * @throws \Throwable
+     * @throws Throwable
      */
-    private function _sqlFullText($val, bool $bool = true, string $glue = ' AND '): string
+    private function _sqlFullText(mixed $val, bool $bool = true, string $glue = ' AND '): string
     {
         $db = Craft::$app->getDb();
 
@@ -831,7 +756,7 @@ SQL;
         if (is_array($val)) {
             foreach ($val as $key => $value) {
                 if (StringHelper::contains($value, ' ')) {
-                    $temp = explode(' ', $val[$key]);
+                    $temp = explode(' ', $value);
                     $temp = implode(' & ', $temp);
                     $val[$key] = $temp;
                 }
@@ -854,7 +779,7 @@ SQL;
      * @param int|int[]|null $siteId
      * @return string|false
      */
-    private function _sqlSubSelect(string $where, $siteId)
+    private function _sqlSubSelect(string $where, array|int|null $siteId): string|false
     {
         $query = (new Query())
             ->select(['elementId'])
@@ -892,7 +817,7 @@ SQL;
             $this->_isSupportedFullTextWord($keywords) &&
             // Workaround on MySQL until this gets fixed: https://bugs.mysql.com/bug.php?id=78485
             // Related issue: https://github.com/craftcms/cms/issues/3862
-            strpos($keywords, ' ') === false;
+            !str_contains($keywords, ' ');
     }
 
     /**
@@ -924,7 +849,7 @@ SQL;
 
         // Give ourselves a little wiggle room.
         /** @noinspection CallableParameterUseCaseInTypeContextInspection */
-        $maxSize = ceil($maxSize * 0.95);
+        $maxSize = (int)ceil($maxSize * 0.95);
 
         if ($cleanKeywordsLength > $maxSize) {
             // Time to truncate.
@@ -957,7 +882,7 @@ SQL;
             return false;
         }
 
-        if ($this->_mysqlStopWords === null) {
+        if (!isset($this->_mysqlStopWords)) {
             $this->_mysqlStopWords = [];
             // todo: make this list smaller when we start requiring MySQL 5.6+ and can start forcing the searchindex table to use InnoDB
             $stopWords = [

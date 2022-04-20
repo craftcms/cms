@@ -11,6 +11,7 @@ use Craft;
 use craft\events\DefineBehaviorsEvent;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
+use DateTime;
 
 /**
  * Active Record base class.
@@ -31,13 +32,13 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord
      * @see behaviors()
      * @since 3.4.0
      */
-    const EVENT_DEFINE_BEHAVIORS = 'defineBehaviors';
+    public const EVENT_DEFINE_BEHAVIORS = 'defineBehaviors';
 
     /**
      * @inheritdoc
      * @return ActiveQuery the newly created [[ActiveQuery]] instance.
      */
-    public static function find()
+    public static function find(): ActiveQuery
     {
         return Craft::createObject(ActiveQuery::class, [static::class]);
     }
@@ -58,7 +59,7 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord
      * @inheritdoc
      * @since 3.4.0
      */
-    public function behaviors()
+    public function behaviors(): array
     {
         // Fire a 'defineBehaviors' event
         $event = new DefineBehaviorsEvent();
@@ -70,7 +71,7 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord
      * @inheritdoc
      * @since 3.4.0
      */
-    public function setAttribute($name, $value)
+    public function setAttribute($name, $value): void
     {
         $value = $this->_prepareValue($name, $value);
         parent::setAttribute($name, $value);
@@ -79,7 +80,7 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord
     /**
      * @inheritdoc
      */
-    public function beforeSave($insert)
+    public function beforeSave($insert): bool
     {
         $this->prepareForDb();
         return parent::beforeSave($insert);
@@ -90,9 +91,9 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord
      *
      * @since 3.1.0
      */
-    protected function prepareForDb()
+    protected function prepareForDb(): void
     {
-        $now = Db::prepareDateForDb(new \DateTime());
+        $now = Db::prepareDateForDb(new DateTime());
 
         if ($this->getIsNewRecord()) {
             if ($this->hasAttribute('dateCreated') && !isset($this->dateCreated)) {
@@ -113,7 +114,7 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord
                     unset($this->$key);
                 }
             }
-        } else if (
+        } elseif (
             !empty($this->getDirtyAttributes()) &&
             $this->hasAttribute('dateUpdated')
         ) {
@@ -133,15 +134,9 @@ abstract class ActiveRecord extends \yii\db\ActiveRecord
      * @return mixed The prepared value
      * @since 3.4.0
      */
-    private function _prepareValue(string $name, $value)
+    private function _prepareValue(string $name, mixed $value): mixed
     {
-        $value = Db::prepareValueForDb($value);
-
-        $columns = static::getTableSchema()->columns;
-        if (isset($columns[$name])) {
-            $value = $columns[$name]->phpTypecast($value);
-        }
-
-        return $value;
+        $columnType = static::getTableSchema()->columns[$name]->dbType ?? null;
+        return Db::prepareValueForDb($value, $columnType);
     }
 }

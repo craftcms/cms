@@ -24,19 +24,19 @@ class LanguageValidator extends Validator
     /**
      * @var bool Whether to limit the value to the sites' languages
      */
-    public $onlySiteLanguages = true;
+    public bool $onlySiteLanguages = true;
 
     /**
      * @var string The error message to use if the value isn't allowed
      */
-    public $notAllowed;
+    public string $notAllowed;
 
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
-        if ($this->notAllowed === null) {
+        if (!isset($this->notAllowed)) {
             if ($this->onlySiteLanguages) {
                 $this->notAllowed = Craft::t('app', '{value} is not a valid site language.');
             } else {
@@ -50,12 +50,12 @@ class LanguageValidator extends Validator
     /**
      * @inheritdoc
      */
-    public function validateAttribute($model, $attribute)
+    public function validateAttribute($model, $attribute): void
     {
         $original = $model->$attribute;
         try {
             $value = Localization::normalizeLanguage($original);
-        } catch (InvalidArgumentException $e) {
+        } catch (InvalidArgumentException) {
             $this->addError($model, $attribute, $this->notAllowed);
             return;
         }
@@ -63,11 +63,11 @@ class LanguageValidator extends Validator
         $result = $this->validateValue($value);
         if (!empty($result)) {
             $this->addError($model, $attribute, $result[0], $result[1]);
-        } else if ($value !== $original) {
+        } elseif ($value !== $original) {
             // update the model with the normalized value
             try {
                 $model->$attribute = $value;
-            } catch (UnknownPropertyException $e) {
+            } catch (UnknownPropertyException) {
                 // fine, validate the original value
                 parent::validateAttribute($model, $attribute);
             }
@@ -77,7 +77,7 @@ class LanguageValidator extends Validator
     /**
      * @inheritdoc
      */
-    public function validateValue($value)
+    public function validateValue($value): ?array
     {
         if ($this->onlySiteLanguages) {
             $allowed = Craft::$app->getI18n()->getSiteLocaleIds();

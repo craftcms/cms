@@ -9,8 +9,8 @@ namespace crafttests\unit\web\twig;
 
 use Codeception\Test\Unit;
 use Craft;
+use craft\test\TestCase;
 use craft\web\View;
-use UnitTester;
 
 /**
  * Unit tests for the Various functions in the Extension class.
@@ -19,17 +19,12 @@ use UnitTester;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.7.24
  */
-class FieldTest extends Unit
+class FieldTest extends TestCase
 {
-    /**
-     * @var UnitTester
-     */
-    protected $tester;
-
     /**
      * @var View
      */
-    protected $view;
+    protected View $view;
 
     /**
      *
@@ -52,7 +47,7 @@ class FieldTest extends Unit
 TWIG;
 
         $html = $this->view->renderString($template, [], View::TEMPLATE_MODE_CP);
-        $this->assertStringContainsString('<div id="foo-field" class="field" data-foo="test">', $html);
+        $this->assertStringContainsString('<div id="foo-field" class="field" data-attribute="foo" data-foo="test">', $html);
         $this->assertStringContainsString('TEST HEADING', $html);
         $this->assertStringContainsString('<label id="label" for="foo">TEST LABEL</label>', $html);
         $this->assertStringContainsString('<div id="foo-instructions" class="instructions"><p>TEST INSTRUCTIONS</p>', $html);
@@ -64,7 +59,7 @@ TWIG;
     /**
      * @inheritdoc
      */
-    protected function _before()
+    protected function _before(): void
     {
         parent::_before();
         $this->view = Craft::$app->getView();

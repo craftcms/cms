@@ -24,17 +24,17 @@ class RevisionBehavior extends BaseRevisionBehavior
     /**
      * @var int The revision number
      */
-    public $revisionNum;
+    public int $revisionNum;
 
     /**
      * @var string|null The revision notes
      */
-    public $revisionNotes;
+    public ?string $revisionNotes = null;
 
     /**
      * @inheritdoc
      */
-    public function events()
+    public function events(): array
     {
         return [
             Element::EVENT_AFTER_DELETE => [$this, 'handleDelete'],
@@ -44,7 +44,7 @@ class RevisionBehavior extends BaseRevisionBehavior
     /**
      * Deletes the row in the `drafts` table after the draft element is deleted.
      */
-    public function handleDelete()
+    public function handleDelete(): void
     {
         Db::delete(Table::REVISIONS, [
             'id' => $this->owner->revisionId,

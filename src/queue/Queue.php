@@ -15,6 +15,8 @@ use craft\helpers\Db;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
+use craft\i18n\Translation;
+use DateTime;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\db\Expression;
@@ -36,36 +38,36 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     /**
      * @see isFailed()
      */
-    const STATUS_FAILED = 4;
+    public const STATUS_FAILED = 4;
 
     /**
      * @var Connection|array|string The database connection to use
      * @since 3.4.0
      */
-    public $db = 'db';
+    public string|array|Connection $db = 'db';
 
     /**
      * @var Mutex|array|string The mutex component to use
      * @since 3.4.0
      */
-    public $mutex = 'mutex';
+    public Mutex|string|array $mutex = 'mutex';
 
     /**
      * @var int The time (in seconds) to wait for mutex locks to be released when attempting to reserve new jobs.
      */
-    public $mutexTimeout = 5;
+    public int $mutexTimeout = 5;
 
     /**
      * @var string The table name the queue is stored in.
      * @since 3.4.0
      */
-    public $tableName = Table::QUEUE;
+    public string $tableName = Table::QUEUE;
 
     /**
      * @var string The `channel` column value to the queue should use.
      * @since 3.4.0
      */
-    public $channel = 'queue';
+    public string $channel = 'queue';
 
     /**
      * @inheritdoc
@@ -75,33 +77,33 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     /**
      * @var string|null The description of the job being pushed into the queue
      */
-    private $_jobDescription;
+    private ?string $_jobDescription = null;
 
     /**
      * @var string|null The currently-executing job ID
      */
-    private $_executingJobId;
+    private ?string $_executingJobId = null;
 
     /**
-     * @var int The timestamp the last job was reserved
+     * @var int|null The timestamp the last job was reserved
      */
-    private $_reserveTime;
+    private ?int $_reserveTime = null;
 
     /**
      * @var bool Whether we're already listening for the web response
      */
-    private $_listeningForResponse = false;
+    private bool $_listeningForResponse = false;
 
     /**
      * @var bool Whether a mutex lock has been acquired
      * @see _lock()
      */
-    private $_locked = false;
+    private bool $_locked = false;
 
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -131,9 +133,9 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
                     if ($this->handleMessage($payload['id'], $payload['job'], $payload['ttr'], $payload['attempt'])) {
                         $this->release($payload['id']);
                     }
-                } else if (!$repeat) {
+                } elseif (!$repeat) {
                     break;
-                } else if ($timeout) {
+                } elseif ($timeout) {
                     sleep($timeout);
                 }
             }
@@ -143,7 +145,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     /**
      * Listens to the queue and runs new jobs.
      *
-     * @param integer $timeout The number of seconds to wait between cycles
+     * @param int $timeout The number of seconds to wait between cycles
      * @retrun int|null the exit code
      * @deprecated in 3.6.11. Use [[run()]] instead.
      */
@@ -162,9 +164,9 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     }
 
     /**
-     *
+     * @inheritdoc
      */
-    public function status($id)
+    public function status($id): int
     {
         $payload = $this->db->usePrimary(function() use ($id) {
             return $this->_createJobQuery()
@@ -180,7 +182,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     /**
      * @inheritdoc
      */
-    public function push($job)
+    public function push($job): ?string
     {
         // Capture the description so pushMessage() can access it
         if ($job instanceof JobInterface) {
@@ -208,7 +210,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     /**
      * @inheritdoc
      */
-    public function retry(string $id)
+    public function retry(string $id): void
     {
         $this->_lock(function() use ($id) {
             Db::update($this->tableName, [
@@ -229,7 +231,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     /**
      * @inheritdoc
      */
-    public function retryAll()
+    public function retryAll(): void
     {
         $this->_lock(function() {
             // Move expired messages into waiting list
@@ -254,7 +256,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     /**
      * @inheritdoc
      */
-    public function release(string $id)
+    public function release(string $id): void
     {
         $this->_lock(function() use ($id) {
             Db::delete($this->tableName, [
@@ -266,7 +268,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     /**
      * @inheritdoc
      */
-    public function releaseAll()
+    public function releaseAll(): void
     {
         $this->_lock(function() {
             Db::delete($this->tableName, [
@@ -278,7 +280,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     /**
      * @inheritdoc
      */
-    public function setProgress(int $progress, string $label = null)
+    public function setProgress(int $progress, ?string $label = null): void
     {
         $this->_lock(function() use ($progress, $label) {
             $data = [
@@ -406,8 +408,8 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
             'status' => $this->_status($result),
             'error' => $result['error'] ?? '',
             'progress' => $result['progress'],
-            'progressLabel' => $result['progressLabel'],
-            'description' => $result['description'],
+            'progressLabel' => Translation::translate((string)$result['progressLabel']) ?: null,
+            'description' => Translation::translate((string)$result['description']) ?: null,
             'job' => $job,
             'ttr' => (int)$result['ttr'],
             'Priority' => $result['priority'],
@@ -420,7 +422,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     /**
      * @inheritdoc
      */
-    public function getTotalJobs()
+    public function getTotalJobs(): int
     {
         return $this->db->usePrimary(function() {
             return $this->_createJobQuery()
@@ -431,7 +433,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     /**
      * @inheritdoc
      */
-    public function getJobInfo(int $limit = null): array
+    public function getJobInfo(?int $limit = null): array
     {
         // Move expired messages into waiting list
         $this->_moveExpired();
@@ -463,8 +465,8 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
                 'delay' => max(0, $result['timePushed'] + $result['delay'] - time()),
                 'status' => $this->_status($result),
                 'progress' => (int)$result['progress'],
-                'progressLabel' => $result['progressLabel'],
-                'description' => $result['description'],
+                'progressLabel' => Translation::translate((string)$result['progressLabel']) ?: null,
+                'description' => Translation::translate((string)$result['description']) ?: null,
                 'error' => $result['error'],
             ];
         }
@@ -475,7 +477,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     /**
      * @inheritdoc
      */
-    public function handleError(ExecEvent $event)
+    public function handleError(ExecEvent $event): bool
     {
         $this->_executingJobId = null;
 
@@ -488,7 +490,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
                 }
                 Db::update($this->tableName, [
                     'fail' => true,
-                    'dateFailed' => Db::prepareDateForDb(new \DateTime()),
+                    'dateFailed' => Db::prepareDateForDb(new DateTime()),
                     'error' => $event->error ? $this->_truncateErrorMessage($event->error->getMessage()) : null,
                 ], [
                     'id' => $event->id,
@@ -503,7 +505,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     /**
      * Figure out how to initiate a new worker.
      */
-    public function handleResponse()
+    public function handleResponse(): void
     {
         // Prevent this from getting called twice
         $response = Craft::$app->getResponse();
@@ -561,23 +563,18 @@ EOD;
     /**
      * @inheritdoc
      */
-    protected function pushMessage($message, $ttr, $delay, $priority)
+    protected function pushMessage($message, $ttr, $delay, $priority): string
     {
-        $data = [
+        Db::insert($this->tableName, [
+            'channel' => $this->channel,
             'job' => $message,
             'description' => $this->_jobDescription,
             'timePushed' => time(),
             'ttr' => $ttr,
             'delay' => $delay,
             'priority' => $priority ?: 1024,
-        ];
+        ], $this->db);
 
-        // todo: remove this check after the next breakpoint
-        if ($this->db->columnExists($this->tableName, 'channel')) {
-            $data['channel'] = $this->channel;
-        }
-
-        Db::insert($this->tableName, $data, false, $this->db);
         return $this->db->getLastInsertID($this->tableName);
     }
 
@@ -585,7 +582,7 @@ EOD;
      * @return array|null The payload, or null if there aren't any jobs to reserve
      * @throws Exception in case it hasn't waited the lock
      */
-    protected function reserve()
+    protected function reserve(): ?array
     {
         $payload = null;
 
@@ -594,17 +591,18 @@ EOD;
             $this->_moveExpired();
 
             // Reserve one message
+            /** @var array|null $payload */
             $payload = $this->db->usePrimary(function() {
                 return $this->_createJobQuery()
                     ->andWhere(['fail' => false, 'timeUpdated' => null])
                     ->andWhere('[[timePushed]] + [[delay]] <= :time', ['time' => time()])
                     ->orderBy(['priority' => SORT_ASC, 'id' => SORT_ASC])
                     ->limit(1)
-                    ->one($this->db);
+                    ->one($this->db) ?: null;
             });
 
             if (is_array($payload)) {
-                $payload['dateReserved'] = new \DateTime();
+                $payload['dateReserved'] = new DateTime();
                 $payload['timeUpdated'] = $payload['dateReserved']->getTimestamp();
                 $payload['attempt'] = (int)$payload['attempt'] + 1;
                 Db::update($this->tableName, [
@@ -631,12 +629,12 @@ EOD;
      * @param string|resource $job
      * @return string
      */
-    private function _jobData($job)
+    private function _jobData(mixed $job): string
     {
         if (is_resource($job)) {
             $job = stream_get_contents($job);
 
-            if (is_string($job) && strpos($job, 'x') === 0) {
+            if (is_string($job) && str_starts_with($job, 'x')) {
                 $hex = substr($job, 1);
                 if (StringHelper::isHexadecimal($hex)) {
                     $job = hex2bin($hex);
@@ -650,7 +648,7 @@ EOD;
     /**
      * Moves expired messages into waiting list.
      */
-    private function _moveExpired()
+    private function _moveExpired(): void
     {
         if ($this->_reserveTime !== time()) {
             $this->_lock(function() {
@@ -749,7 +747,7 @@ EOD;
      * @param array|false $payload
      * @return int
      */
-    private function _status($payload): int
+    private function _status(array|false $payload): int
     {
         if (!$payload) {
             return self::STATUS_DONE;
@@ -770,7 +768,6 @@ EOD;
      * Acquires a lock and then executes the provided callback
      *
      * @param callable $callback
-     * @return void
      * @throws Exception
      */
     private function _lock(callable $callback): void

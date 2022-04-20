@@ -10,7 +10,6 @@ namespace craft\base;
 use Craft;
 use craft\db\Migration;
 use craft\db\MigrationManager;
-use craft\errors\MigrationException;
 use craft\events\ModelEvent;
 use craft\events\RegisterTemplateRootsEvent;
 use craft\helpers\ArrayHelper;
@@ -40,13 +39,13 @@ class Plugin extends Module implements PluginInterface
      *
      * @since 3.0.16
      */
-    const EVENT_BEFORE_SAVE_SETTINGS = 'beforeSaveSettings';
+    public const EVENT_BEFORE_SAVE_SETTINGS = 'beforeSaveSettings';
 
     /**
      * @event \yii\base\Event The event that is triggered after the plugin’s settings are saved.
      * @since 3.0.16
      */
-    const EVENT_AFTER_SAVE_SETTINGS = 'afterSaveSettings';
+    public const EVENT_AFTER_SAVE_SETTINGS = 'afterSaveSettings';
 
     /**
      * @inheritdoc
@@ -62,7 +61,7 @@ class Plugin extends Module implements PluginInterface
      * @var Model|bool|null The model used to store the plugin’s settings
      * @see getSettings()
      */
-    private $_settings;
+    private bool|null|Model $_settings = null;
 
     /**
      * @inheritdoc
@@ -103,7 +102,7 @@ class Plugin extends Module implements PluginInterface
         static::setInstance($this);
 
         // Set the default controller namespace
-        if ($this->controllerNamespace === null && ($pos = strrpos(static::class, '\\')) !== false) {
+        if (!isset($this->controllerNamespace) && ($pos = strrpos(static::class, '\\')) !== false) {
             $namespace = substr(static::class, 0, $pos);
             if (Craft::$app->getRequest()->getIsConsoleRequest()) {
                 $this->controllerNamespace = $namespace . '\\console\\controllers';
@@ -126,21 +125,15 @@ class Plugin extends Module implements PluginInterface
     /**
      * @inheritdoc
      */
-    public function install()
+    public function install(): void
     {
-        if ($this->beforeInstall() === false) {
-            return false;
-        }
+        $this->beforeInstall();
 
         $migrator = $this->getMigrator();
 
         // Run the install migration, if there is one
         if (($migration = $this->createInstallMigration()) !== null) {
-            try {
-                $migrator->migrateUp($migration);
-            } catch (MigrationException $e) {
-                return false;
-            }
+            $migrator->migrateUp($migration);
         }
 
         // Mark all existing migrations as applied
@@ -151,38 +144,28 @@ class Plugin extends Module implements PluginInterface
         $this->isInstalled = true;
 
         $this->afterInstall();
-
-        return null;
     }
 
     /**
      * @inheritdoc
      */
-    public function uninstall()
+    public function uninstall(): void
     {
-        if ($this->beforeUninstall() === false) {
-            return false;
-        }
+        $this->beforeUninstall();
 
         if (($migration = $this->createInstallMigration()) !== null) {
-            try {
-                $this->getMigrator()->migrateDown($migration);
-            } catch (MigrationException $e) {
-                return false;
-            }
+            $this->getMigrator()->migrateDown($migration);
         }
 
         $this->afterUninstall();
-
-        return null;
     }
 
     /**
      * @inheritdoc
      */
-    public function getSettings()
+    public function getSettings(): ?Model
     {
-        if ($this->_settings === null) {
+        if (!isset($this->_settings)) {
             $this->_settings = $this->createSettingsModel() ?: false;
         }
 
@@ -192,7 +175,7 @@ class Plugin extends Module implements PluginInterface
     /**
      * @inheritdoc
      */
-    public function setSettings(array $settings)
+    public function setSettings(array $settings): void
     {
         if (($model = $this->getSettings()) === null) {
             Craft::warning('Attempting to set settings on a plugin that doesn\'t have settings: ' . $this->id);
@@ -205,7 +188,7 @@ class Plugin extends Module implements PluginInterface
     /**
      * @inheritdoc
      */
-    public function getSettingsResponse()
+    public function getSettingsResponse(): mixed
     {
         $view = Craft::$app->getView();
         $settingsHtml = $view->namespaceInputs(function() {
@@ -226,14 +209,13 @@ class Plugin extends Module implements PluginInterface
      */
     public function getMigrator(): MigrationManager
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('migrator');
     }
 
     /**
      * @inheritdoc
      */
-    public function getCpNavItem()
+    public function getCpNavItem(): ?array
     {
         $ret = [
             'label' => $this->name,
@@ -272,30 +254,15 @@ class Plugin extends Module implements PluginInterface
             throw new InvalidArgumentException('Unsupported edition: ' . $edition);
         }
 
-        switch ($operator) {
-            case '<':
-            case 'lt':
-                return $activeIndex < $otherIndex;
-            case '<=':
-            case 'le':
-                return $activeIndex <= $otherIndex;
-            case '>':
-            case 'gt':
-                return $activeIndex > $otherIndex;
-            case '>=':
-            case 'ge':
-                return $activeIndex >= $otherIndex;
-            case '==':
-            case '=':
-            case 'eq':
-                return $activeIndex == $otherIndex;
-            case '!=':
-            case '<>':
-            case 'ne':
-                return $activeIndex != $otherIndex;
-            default:
-                throw new InvalidArgumentException('Invalid edition comparison operator: ' . $operator);
-        }
+        return match ($operator) {
+            '<', 'lt' => $activeIndex < $otherIndex,
+            '<=', 'le' => $activeIndex <= $otherIndex,
+            '>', 'gt' => $activeIndex > $otherIndex,
+            '>=', 'ge' => $activeIndex >= $otherIndex,
+            '==', '=', 'eq' => $activeIndex == $otherIndex,
+            '!=', '<>', 'ne' => $activeIndex != $otherIndex,
+            default => throw new InvalidArgumentException('Invalid edition comparison operator: ' . $operator),
+        };
     }
 
     // Events
@@ -316,7 +283,7 @@ class Plugin extends Module implements PluginInterface
     /**
      * @inheritdoc
      */
-    public function afterSaveSettings()
+    public function afterSaveSettings(): void
     {
         // Trigger an 'afterSaveSettings' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_SETTINGS)) {
@@ -329,7 +296,7 @@ class Plugin extends Module implements PluginInterface
      *
      * @return Migration|null The plugin’s installation migration
      */
-    protected function createInstallMigration()
+    protected function createInstallMigration(): ?Migration
     {
         // See if there's an Install migration in the plugin’s migrations folder
         $migrator = $this->getMigrator();
@@ -342,40 +309,38 @@ class Plugin extends Module implements PluginInterface
         require_once $path;
         $class = $migrator->migrationNamespace . '\\Install';
 
-        return new $class;
+        return new $class();
     }
 
     /**
      * Performs actions before the plugin is installed.
      *
-     * @return bool Whether the plugin should be installed
      */
-    protected function beforeInstall(): bool
+    protected function beforeInstall(): void
     {
-        return true;
     }
 
     /**
      * Performs actions after the plugin is installed.
+     *
      */
-    protected function afterInstall()
+    protected function afterInstall(): void
     {
     }
 
     /**
      * Performs actions before the plugin is uninstalled.
      *
-     * @return bool Whether the plugin should be uninstalled
      */
-    protected function beforeUninstall(): bool
+    protected function beforeUninstall(): void
     {
-        return true;
     }
 
     /**
      * Performs actions after the plugin is uninstalled.
+     *
      */
-    protected function afterUninstall()
+    protected function afterUninstall(): void
     {
     }
 
@@ -384,7 +349,7 @@ class Plugin extends Module implements PluginInterface
      *
      * @return Model|null
      */
-    protected function createSettingsModel()
+    protected function createSettingsModel(): ?Model
     {
         return null;
     }
@@ -394,7 +359,7 @@ class Plugin extends Module implements PluginInterface
      *
      * @return string|null The rendered settings HTML
      */
-    protected function settingsHtml()
+    protected function settingsHtml(): ?string
     {
         return null;
     }
@@ -405,7 +370,7 @@ class Plugin extends Module implements PluginInterface
      * @return string|null
      * @see getCpNavItem()
      */
-    protected function cpNavIconPath()
+    protected function cpNavIconPath(): ?string
     {
         $path = $this->getBasePath() . DIRECTORY_SEPARATOR . 'icon-mask.svg';
 

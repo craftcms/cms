@@ -56,22 +56,22 @@ class Table extends Field
     /**
      * @var string|null Custom add row button label
      */
-    public $addRowLabel;
+    public ?string $addRowLabel = null;
 
     /**
      * @var int|null Maximum number of Rows allowed
      */
-    public $maxRows;
+    public ?int $maxRows = null;
 
     /**
      * @var int|null Minimum number of Rows allowed
      */
-    public $minRows;
+    public ?int $minRows = null;
 
     /**
-     * @var array|null The columns that should be shown in the table
+     * @var array The columns that should be shown in the table
      */
-    public $columns = [
+    public array $columns = [
         'col1' => [
             'heading' => '',
             'handle' => '',
@@ -80,67 +80,81 @@ class Table extends Field
     ];
 
     /**
-     * @var array The default row values that new elements should have
+     * @var array|null The default row values that new elements should have
      */
-    public $defaults;
+    public ?array $defaults = null;
 
     /**
      * @var string The type of database column the field should have in the content table
+     * @phpstan-var 'auto'|Schema::TYPE_STRING|Schema::TYPE_TEXT|'mediumtext'
      */
-    public $columnType = Schema::TYPE_TEXT;
+    public string $columnType = Schema::TYPE_TEXT;
 
     /**
      * @inheritdoc
      */
-    public function init()
+    public function __construct($config = [])
     {
-        parent::init();
-
-        if ($this->addRowLabel === null) {
-            $this->addRowLabel = Craft::t('app', 'Add a row');
-        }
-
-        if (!is_array($this->columns)) {
-            $this->columns = [];
-        } else {
-            foreach ($this->columns as $colId => &$column) {
-                // If the column doesn't specify a type, then it probably wasn't meant to be submitted
-                if (!isset($column['type'])) {
-                    unset($this->columns[$colId]);
-                    continue;
-                }
-
-                if ($column['type'] === 'select') {
-                    if (!isset($column['options'])) {
-                        $column['options'] = [];
-                    } else if (is_string($column['options'])) {
-                        $column['options'] = Json::decode($column['options']);
+        // Config normalization}
+        if (array_key_exists('columns', $config)) {
+            if (!is_array($config['columns'])) {
+                unset($config['columns']);
+            } else {
+                foreach ($config['columns'] as $colId => &$column) {
+                    // If the column doesn't specify a type, then it probably wasn't meant to be submitted
+                    if (!isset($column['type'])) {
+                        unset($config['columns'][$colId]);
+                        continue;
                     }
-                } else {
-                    unset($column['options']);
+
+                    if ($column['type'] === 'select') {
+                        if (!isset($column['options'])) {
+                            $column['options'] = [];
+                        } elseif (is_string($column['options'])) {
+                            $column['options'] = Json::decode($column['options']);
+                        }
+                    } else {
+                        unset($column['options']);
+                    }
                 }
+                unset($column);
             }
-            unset($column);
         }
 
-        if (!is_array($this->defaults)) {
-            $this->defaults = $this->id || $this->defaults === '' ? [] : [[]];
-        } else {
-            // Make sure the array is non-associative and with incrementing keys
-            $this->defaults = array_values($this->defaults);
+        if (isset($config['defaults'])) {
+            if (!is_array($config['defaults'])) {
+                $config['defaults'] = (!empty($config['id']) || $config['defaults'] === '') ? [] : [[]];
+            } else {
+                // Make sure the array is non-associative and with incrementing keys
+                $config['defaults'] = array_values($config['defaults']);
+            }
         }
 
         // Convert default date cell values to ISO8601 strings
-        if (!empty($this->columns) && $this->defaults !== null) {
-            foreach ($this->columns as $colId => $col) {
+        if (!empty($config['columns']) && isset($config['defaults'])) {
+            foreach ($config['columns'] as $colId => $col) {
                 if (in_array($col['type'], ['date', 'time'], true)) {
-                    foreach ($this->defaults as &$row) {
+                    foreach ($config['defaults'] as &$row) {
                         if (isset($row[$colId])) {
                             $row[$colId] = DateTimeHelper::toIso8601($row[$colId]) ?: null;
                         }
                     }
                 }
             }
+        }
+
+        parent::__construct($config);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function init(): void
+    {
+        parent::init();
+
+        if (!isset($this->addRowLabel)) {
+            $this->addRowLabel = Craft::t('app', 'Add a row');
         }
     }
 
@@ -158,9 +172,9 @@ class Table extends Field
     }
 
     /**
-     * Validatse the column configs.
+     * Validates the column configs.
      */
-    public function validateColumns()
+    public function validateColumns(): void
     {
         foreach ($this->columns as &$col) {
             if ($col['handle']) {
@@ -170,7 +184,7 @@ class Table extends Field
                     $error = Craft::t('app', '“{handle}” isn’t a valid handle.', [
                         'handle' => $col['handle'],
                     ]);
-                } else if (preg_match('/^col\d+$/', $col['handle'])) {
+                } elseif (preg_match('/^col\d+$/', $col['handle'])) {
                     $error = Craft::t('app', 'Column handles can’t be in the format “{format}”.', [
                         'format' => 'colX',
                     ]);
@@ -192,7 +206,7 @@ class Table extends Field
      */
     public function hasMinRows(): bool
     {
-        return $this->minRows;
+        return (bool)$this->minRows;
     }
 
     /**
@@ -200,7 +214,7 @@ class Table extends Field
      */
     public function hasMaxRows(): bool
     {
-        return $this->maxRows;
+        return (bool)$this->maxRows;
     }
 
     /**
@@ -214,7 +228,7 @@ class Table extends Field
     /**
      * @inheritdoc
      */
-    public function getSettingsHtml()
+    public function getSettingsHtml(): ?string
     {
         $typeOptions = [
             'checkbox' => Craft::t('app', 'Checkbox'),
@@ -284,6 +298,9 @@ class Table extends Field
             'id' => '__ID__',
             'name' => '__NAME__',
             'addRowLabel' => Craft::t('app', 'Add an option'),
+            'allowAdd' => true,
+            'allowReorder' => true,
+            'allowDelete' => true,
             'cols' => $dropdownSettingsCols,
             'initJs' => false,
         ]);
@@ -296,7 +313,7 @@ class Table extends Field
             Json::encode($view->namespaceInputName('columns'), JSON_UNESCAPED_UNICODE) . ', ' .
             Json::encode($view->namespaceInputName('defaults'), JSON_UNESCAPED_UNICODE) . ', ' .
             Json::encode($this->columns, JSON_UNESCAPED_UNICODE) . ', ' .
-            Json::encode($this->defaults, JSON_UNESCAPED_UNICODE) . ', ' .
+            Json::encode($this->defaults ?? [], JSON_UNESCAPED_UNICODE) . ', ' .
             Json::encode($columnSettings, JSON_UNESCAPED_UNICODE) . ', ' .
             Json::encode($dropdownSettingsHtml, JSON_UNESCAPED_UNICODE) . ', ' .
             Json::encode($dropdownSettingsCols, JSON_UNESCAPED_UNICODE) .
@@ -313,8 +330,11 @@ class Table extends Field
             'instructions' => Craft::t('app', 'Define the default values for the field.'),
             'id' => 'defaults',
             'name' => 'defaults',
+            'allowAdd' => true,
+            'allowReorder' => true,
+            'allowDelete' => true,
             'cols' => $this->columns,
-            'rows' => $this->defaults,
+            'rows' => $this->defaults ?? [[]],
             'initJs' => false,
         ]);
 
@@ -336,7 +356,7 @@ class Table extends Field
     /**
      * @inheritdoc
      */
-    protected function inputHtml($value, ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
     {
         Craft::$app->getView()->registerAssetBundle(TimepickerAsset::class);
         return $this->_getInputHtml($value, $element, false);
@@ -355,7 +375,7 @@ class Table extends Field
      *
      * @param ElementInterface $element
      */
-    public function validateTableData(ElementInterface $element)
+    public function validateTableData(ElementInterface $element): void
     {
         $value = $element->getFieldValue($this->handle);
 
@@ -378,12 +398,12 @@ class Table extends Field
     /**
      * @inheritdoc
      */
-    public function normalizeValue($value, ElementInterface $element = null)
+    public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
         if (is_string($value) && !empty($value)) {
             $value = Json::decodeIfJson($value);
-        } else if ($value === null && $this->isFresh($element)) {
-            $value = array_values($this->defaults);
+        } elseif ($value === null && $this->isFresh($element)) {
+            $value = array_values($this->defaults ?? []);
         }
 
         if (!is_array($value) || empty($this->columns)) {
@@ -395,7 +415,7 @@ class Table extends Field
             foreach ($this->columns as $colId => $col) {
                 if (array_key_exists($colId, $row)) {
                     $cellValue = $row[$colId];
-                } else if ($col['handle'] && array_key_exists($col['handle'], $row)) {
+                } elseif ($col['handle'] && array_key_exists($col['handle'], $row)) {
                     $cellValue = $row[$col['handle']];
                 } else {
                     $cellValue = null;
@@ -414,7 +434,7 @@ class Table extends Field
     /**
      * @inheritdoc
      */
-    public function serializeValue($value, ElementInterface $element = null)
+    public function serializeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
         if (!is_array($value) || empty($this->columns)) {
             return null;
@@ -442,7 +462,7 @@ class Table extends Field
     /**
      * @inheritdoc
      */
-    protected function searchKeywords($value, ElementInterface $element): string
+    protected function searchKeywords(mixed $value, ElementInterface $element): string
     {
         if (!is_array($value) || empty($this->columns)) {
             return '';
@@ -464,7 +484,7 @@ class Table extends Field
     /**
      * @inheritdoc
      */
-    public function getStaticHtml($value, ElementInterface $element): string
+    public function getStaticHtml(mixed $value, ElementInterface $element): string
     {
         return $this->_getInputHtml($value, $element, true);
     }
@@ -473,7 +493,7 @@ class Table extends Field
      * @inheritdoc
      * @since 3.3.0
      */
-    public function getContentGqlType()
+    public function getContentGqlType(): Type|array
     {
         $type = TableRowTypeGenerator::generateType($this);
         return Type::listOf($type);
@@ -483,7 +503,7 @@ class Table extends Field
      * @inheritdoc
      * @since 3.5.0
      */
-    public function getContentGqlMutationArgumentType()
+    public function getContentGqlMutationArgumentType(): Type|array
     {
         $typeName = $this->handle . '_TableRowInput';
 
@@ -491,7 +511,7 @@ class Table extends Field
             return Type::listOf($argumentType);
         }
 
-        $contentFields = TableRow::prepareRowFieldDefinition($this->columns, $typeName, false);
+        $contentFields = TableRow::prepareRowFieldDefinition($this->columns, false);
 
         $argumentType = GqlEntityRegistry::createEntity($typeName, new InputObjectType([
             'name' => $typeName,
@@ -511,7 +531,7 @@ class Table extends Field
      * @return mixed
      * @see normalizeValue()
      */
-    private function _normalizeCellValue(string $type, $value)
+    private function _normalizeCellValue(string $type, mixed $value): mixed
     {
         switch ($type) {
             case 'color':
@@ -541,6 +561,7 @@ class Table extends Field
                     $value = LitEmoji::shortcodeToUnicode($value);
                     return trim(preg_replace('/\R/u', "\n", $value));
                 }
+                // no break
             case 'date':
             case 'time':
                 return DateTimeHelper::toDateTime($value) ?: null;
@@ -554,11 +575,11 @@ class Table extends Field
      *
      * @param string $type The cell type
      * @param mixed $value The cell value
-     * @param string|null &$error The error text to set on the element
+     * @param string|null $error The error text to set on the element
      * @return bool Whether the value is valid
      * @see normalizeValue()
      */
-    private function _validateCellValue(string $type, $value, string &$error = null): bool
+    private function _validateCellValue(string $type, mixed $value, ?string &$error = null): bool
     {
         if ($value === null || $value === '') {
             return true;
@@ -592,7 +613,7 @@ class Table extends Field
      * @param bool $static
      * @return string
      */
-    private function _getInputHtml($value, ?ElementInterface $element, bool $static): string
+    private function _getInputHtml(mixed $value, ?ElementInterface $element, bool $static): string
     {
         if (empty($this->columns)) {
             return '';
@@ -640,6 +661,9 @@ class Table extends Field
             'minRows' => $this->minRows,
             'maxRows' => $this->maxRows,
             'static' => $static,
+            'allowAdd' => true,
+            'allowDelete' => true,
+            'allowReorder' => true,
             'addRowLabel' => Craft::t('site', $this->addRowLabel),
             'describedBy' => $this->describedBy,
         ]);

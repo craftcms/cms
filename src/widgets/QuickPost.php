@@ -33,7 +33,7 @@ class QuickPost extends Widget
     /**
      * @inheritdoc
      */
-    public static function icon()
+    public static function icon(): ?string
     {
         return Craft::getAlias('@appicons/newspaper.svg');
     }
@@ -41,27 +41,27 @@ class QuickPost extends Widget
     /**
      * @var string The site ID that the widget should pull entries from
      */
-    public $siteId;
+    public string $siteId = '';
 
     /**
      * @var int|null The ID of the section that the widget should post to
      */
-    public $section;
+    public ?int $section = null;
 
     /**
      * @var int|null The ID of the entry type that the widget should create
      */
-    public $entryType;
+    public ?int $entryType = null;
 
     /**
      * @var int[]|null The IDs of the fields that the widget should show
      */
-    public $fields;
+    public ?array $fields = null;
 
     /**
-     * @var
+     * @var Section|false|null
      */
-    private $_section;
+    private Section|false|null $_section = null;
 
     /**
      * @inheritdoc
@@ -97,7 +97,7 @@ class QuickPost extends Widget
     /**
      * @inheritdoc
      */
-    public function getSettingsHtml()
+    public function getSettingsHtml(): ?string
     {
         // Find the sections the user has permission to create entries in
         $sections = [];
@@ -128,7 +128,7 @@ class QuickPost extends Widget
     /**
      * @inheritdoc
      */
-    public function getTitle(): string
+    public function getTitle(): ?string
     {
         $section = $this->_getSection();
 
@@ -142,7 +142,7 @@ class QuickPost extends Widget
     /**
      * @inheritdoc
      */
-    public function getBodyHtml()
+    public function getBodyHtml(): ?string
     {
         $view = Craft::$app->getView();
         $view->registerAssetBundle(QuickPostAsset::class);
@@ -200,14 +200,14 @@ JS;
      *
      * @return Section|null
      */
-    private function _getSection()
+    private function _getSection(): ?Section
     {
-        if ($this->_section === null) {
+        if (!isset($this->_section)) {
             if ($this->section) {
                 $this->_section = Craft::$app->getSections()->getSectionById($this->section);
             }
 
-            if ($this->_section === null) {
+            if (!isset($this->_section)) {
                 $this->_section = false;
             }
         }

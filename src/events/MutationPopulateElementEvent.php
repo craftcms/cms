@@ -7,8 +7,6 @@
 
 namespace craft\events;
 
-use craft\base\ElementInterface;
-
 /**
  * Mutation populate event class.
  *
@@ -20,10 +18,5 @@ class MutationPopulateElementEvent extends ElementEvent
     /**
      * @var array The arguments used to populate element with data
      */
-    public $arguments;
-
-    /**
-     * @var ElementInterface The element being populated with data
-     */
-    public $element;
+    public array $arguments;
 }
