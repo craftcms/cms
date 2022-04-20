@@ -269,6 +269,7 @@ return [
     'Clear all' => 'Clear all',
     'Clear caches' => 'Clear caches',
     'Clear' => 'Clear',
+    'Clear search' => 'Clear search',
     'Clearing cache:' => 'Clearing cache:',
     'Close Preview' => 'Close Preview',
     'Close' => 'Close',
