@@ -269,6 +269,7 @@ return [
     'Clear all' => 'Vymazať Všetko',
     'Clear caches' => 'Vymazať cache',
     'Clear' => 'Vyčistiť',
+    'Clear search' => 'Clear search',
     'Clearing cache:' => 'Mazanie vyrovnávacej pamäte:',
     'Close Preview' => 'Zatvoriť ukážku',
     'Close' => 'Zavrieť',
