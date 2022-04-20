@@ -74,9 +74,9 @@ class ElementQueryConditionBuilder extends Component
     public const LOCALIZED_NODENAME = 'localized';
 
     /**
-     * @var ResolveInfo
+     * @var ResolveInfo|null
      */
-    private mixed $_resolveInfo = null;
+    private ?ResolveInfo $_resolveInfo = null;
 
     /**
      * @var ArgumentManager

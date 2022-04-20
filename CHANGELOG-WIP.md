@@ -38,6 +38,8 @@
 - Added the `button`, `submitButton`, `fs`, and `fsField` macros to the `_includes/forms` control panel template.
 - Added the `buildId` general config. ([#10705](https://github.com/craftcms/cms/pull/10705))
 - Added support for setting custom config settings from `config/custom.php`, which are accessible via `Craft::$app->config->custom`. ([#10012](https://github.com/craftcms/cms/issues/10012))
+- Added the `addresses`, `address`, and `addressCount` GraphQL queries.
+- Added the `addresses` field to user GraphQL queries.
 - GraphQL schemas now include settings that determine which sites elements can be queried from. ([#10610](https://github.com/craftcms/cms/issues/10610))
 - Added the `assets/icon` action.
 - Added the `assets/update-focal-point` action.
@@ -235,8 +237,14 @@
 - Added `craft\fs\Local`.
 - Added `craft\fs\MissingFs`.
 - Added `craft\fs\Temp`.
+- Added `craft\gql\arguments\elements\Address`.
 - Added `craft\gql\base\SingularTypeInterface`.
+- Added `craft\gql\interfaces\elements\Address`.
+- Added `craft\gql\queries\Address`.
+- Added `craft\gql\resolvers\elements\Address`.
 - Added `craft\gql\TypeManager::registerFieldDefinitions()`.
+- Added `craft\gql\types\elements\Address`.
+- Added `craft\gql\types\generators\AddressType`.
 - Added `craft\helpers\App::cliOption()`.
 - Added `craft\helpers\App::devMode()`.
 - Added `craft\helpers\App::envConfig()`. ([#10869](https://github.com/craftcms/cms/pull/10869))
@@ -283,8 +291,8 @@
 - Added `craft\helpers\Typecast`. ([#10706](https://github.com/craftcms/cms/pull/10706))
 - Added `craft\i18n\Translation`.
 - Added `craft\imagetransforms\ImageTransformer`.
-- Added `craft\log\Dispatcher::getTargets()`.
 - Added `craft\log\ContextProcessor`.
+- Added `craft\log\Dispatcher::getTargets()`.
 - Added `craft\log\MonologTarget`.
 - Added `craft\models\AssetIndexingSession`.
 - Added `craft\models\FieldLayout::getElementsByType()`.
