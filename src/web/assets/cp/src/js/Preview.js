@@ -508,8 +508,8 @@ Craft.Preview = Garnish.Base.extend({
 
         Craft.ElementThumbLoader.retryAll();
 
-        if (this.draftEditor.$previewBtn) {
-            this.draftEditor.$previewBtn.focus();
+        if (this.elementEditor.$previewBtn) {
+            this.elementEditor.$previewBtn.focus();
         }
 
         this.isActive = false;
