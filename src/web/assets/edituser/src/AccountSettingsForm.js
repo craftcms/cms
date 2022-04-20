@@ -9,7 +9,7 @@ import './account.scss';
 
         $copyPasswordResetUrlBtn: null,
         $copyImpersonationUrlBtn: null,
-        $actionSpinner: null,
+        $actionBtn: null,
 
         confirmDeleteModal: null,
         $deleteBtn: null,
@@ -22,7 +22,7 @@ import './account.scss';
 
             this.$copyPasswordResetUrlBtn = $('#copy-passwordreset-url');
             this.$copyImpersonationUrlBtn = $('#copy-impersonation-url')
-            this.$actionSpinner = $('#action-spinner');
+            this.$actionBtn = $('#action-menubtn');
             this.$deleteBtn = $('#delete-btn');
 
             this.addListener(this.$copyPasswordResetUrlBtn, 'click', 'handleCopyPasswordResetUrlBtnClick');
@@ -36,55 +36,63 @@ import './account.scss';
         },
 
         getPasswordResetUrl: function() {
-            this.$actionSpinner.removeClass('hidden');
+            this.$actionBtn.addClass('loading');
 
             var data = {
                 userId: this.userId
             };
 
-            Craft.postActionRequest('users/get-password-reset-url', data, (response, textStatus) => {
-                this.$actionSpinner.addClass('hidden');
-
-                if (textStatus === 'success') {
+            Craft.sendActionRequest('POST', 'users/get-password-reset-url', {data})
+                .then((response) => {
+                    this.$actionBtn.removeClass('loading');
                     Craft.ui.createCopyTextPrompt({
                         label: Craft.t('app', 'Copy the activation URL'),
-                        value: response.url,
+                        value: response.data.url,
                     });
-                }
-            });
+
+                })
+                .catch(({response}) => {
+                    this.$actionBtn.removeClass('loading');
+                });
         },
 
         handleCopyImpersonationUrlBtnClick: function() {
-            this.$actionSpinner.removeClass('hidden');
+            this.$actionBtn.addClass('loading');
 
             var data = {
                 userId: this.userId
             };
 
-            Craft.postActionRequest('users/get-impersonation-url', data, (response, textStatus) => {
-                this.$actionSpinner.addClass('hidden');
-
-                if (textStatus === 'success') {
+            Craft.sendActionRequest('POST', 'users/get-impersonation-url', {data})
+                .then((response) => {
+                    this.$actionBtn.removeClass('loading');
                     Craft.ui.createCopyTextPrompt({
                         label: Craft.t('app', 'Copy the impersonation URL, and open it in a new private window.'),
-                        value: response.url,
+                        value: response.data.url,
                     });
-                }
-            });
+
+                })
+                .catch(({response}) => {
+                    this.$actionBtn.removeClass('loading');
+                });
         },
 
         showConfirmDeleteModal: function() {
             if (!this.confirmDeleteModal) {
-                this.$actionSpinner.removeClass('hidden');
-                Craft.postActionRequest('users/user-content-summary', {userId: this.userId}, (response, textStatus) => {
-                    this.$actionSpinner.addClass('hidden');
-                    if (textStatus === 'success') {
+                this.$actionBtn.addClass('loading');
+
+                let data = {userId: this.userId};
+                Craft.sendActionRequest('POST', 'users/user-content-summary', {data})
+                    .then((response) => {
+                        this.$actionBtn.removeClass('loading');
                         this.confirmDeleteModal = new Craft.DeleteUserModal(this.userId, {
-                            contentSummary: response,
+                            contentSummary: response.data,
                             redirect: this.settings.deleteModalRedirect
                         });
-                    }
-                });
+                    })
+                    .catch(({response}) => {
+                        this.$actionBtn.removeClass('loading');
+                    });
             } else {
                 this.confirmDeleteModal.show();
             }

@@ -21,7 +21,6 @@ class FieldHelper
      * Ensures that the given field has a column suffix set on it, if it should have one.
      *
      * @param FieldInterface $field
-     * @return void
      */
     public static function ensureColumnSuffix(FieldInterface $field): void
     {

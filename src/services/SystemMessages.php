@@ -30,12 +30,12 @@ class SystemMessages extends Component
     /**
      * @event RegisterEmailMessagesEvent The event that is triggered when registering email messages.
      */
-    const EVENT_REGISTER_MESSAGES = 'registerMessages';
+    public const EVENT_REGISTER_MESSAGES = 'registerMessages';
 
     /**
      * @var SystemMessage[]|null
      */
-    private $_defaultMessages;
+    private ?array $_defaultMessages = null;
 
     /**
      * Returns all of the default system email messages, without subject/body overrides.
@@ -44,7 +44,7 @@ class SystemMessages extends Component
      */
     public function getAllDefaultMessages(): array
     {
-        if ($this->_defaultMessages !== null) {
+        if (isset($this->_defaultMessages)) {
             return $this->_defaultMessages;
         }
 
@@ -110,7 +110,7 @@ class SystemMessages extends Component
      * @param string $key
      * @return SystemMessage|null
      */
-    public function getDefaultMessage(string $key)
+    public function getDefaultMessage(string $key): ?SystemMessage
     {
         return $this->getAllDefaultMessages()[$key] ?? null;
     }
@@ -121,7 +121,7 @@ class SystemMessages extends Component
      * @param string|null $language
      * @return SystemMessage[]
      */
-    public function getAllMessages(string $language = null): array
+    public function getAllMessages(?string $language = null): array
     {
         if ($language === null) {
             $language = Craft::$app->getSites()->getPrimarySite()->language;
@@ -160,7 +160,7 @@ class SystemMessages extends Component
      * @param string|null $language
      * @return SystemMessage|null
      */
-    public function getMessage(string $key, string $language = null)
+    public function getMessage(string $key, ?string $language = null): ?SystemMessage
     {
         // Get the default message (and ensure $key is valid)
         if (($default = $this->getDefaultMessage($key)) === null) {
@@ -184,7 +184,7 @@ class SystemMessages extends Component
             ->andWhere([
                 'or',
                 ['language' => [$language, $languageId]],
-                ['like', 'language', "{$languageId}%", false],
+                ['like', 'language', "$languageId%", false],
             ])
             ->orderBy(new Expression('case when ([[language]] = :language) then 0 when ([[language]] = :languageId) then 1 else 2 end', [
                 'language' => $language,
@@ -210,7 +210,7 @@ class SystemMessages extends Component
      * @param string|null $language
      * @return bool
      */
-    public function saveMessage(SystemMessage $message, string $language = null): bool
+    public function saveMessage(SystemMessage $message, ?string $language = null): bool
     {
         $record = $this->_getMessageRecord($message->key, $language);
 

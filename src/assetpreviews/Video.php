@@ -22,7 +22,7 @@ class Video extends AssetPreviewHandler
     /**
      * @inheritdoc
      */
-    public function getPreviewHtml(): string
+    public function getPreviewHtml(array $variables = []): string
     {
         $url = $this->asset->getUrl();
 
@@ -30,9 +30,11 @@ class Video extends AssetPreviewHandler
             throw new NotSupportedException('Preview not supported.');
         }
 
-        return Craft::$app->getView()->renderTemplate('assets/_previews/video', [
-            'asset' => $this->asset,
-            'url' => $url,
-        ]);
+        return Craft::$app->getView()->renderTemplate('assets/_previews/video',
+            array_merge([
+                'asset' => $this->asset,
+                'url' => $url,
+            ], $variables)
+        );
     }
 }

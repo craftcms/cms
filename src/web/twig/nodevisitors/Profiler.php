@@ -28,7 +28,7 @@ class Profiler implements NodeVisitorInterface
     /**
      * @inheritdoc
      */
-    public function enterNode(Node $node, Environment $env)
+    public function enterNode(Node $node, Environment $env): Node
     {
         return $node;
     }
@@ -36,7 +36,7 @@ class Profiler implements NodeVisitorInterface
     /**
      * @inheritdoc
      */
-    public function leaveNode(Node $node, Environment $env)
+    public function leaveNode(Node $node, Environment $env): ?Node
     {
         if ($node instanceof ModuleNode) {
             $name = $node->getTemplateName();
@@ -48,14 +48,14 @@ class Profiler implements NodeVisitorInterface
                 new ProfileNode(Template::PROFILE_STAGE_END, Template::PROFILE_TYPE_TEMPLATE, $name),
                 $node->getNode('display_end'),
             ]));
-        } else if ($node instanceof BlockNode) {
+        } elseif ($node instanceof BlockNode) {
             $name = $node->getAttribute('name');
             $node->setNode('body', new BodyNode([
                 new ProfileNode(Template::PROFILE_STAGE_BEGIN, Template::PROFILE_TYPE_BLOCK, $name),
                 $node->getNode('body'),
                 new ProfileNode(Template::PROFILE_STAGE_END, Template::PROFILE_TYPE_BLOCK, $name),
             ]));
-        } else if ($node instanceof MacroNode) {
+        } elseif ($node instanceof MacroNode) {
             $name = $node->getAttribute('name');
             $node->setNode('body', new BodyNode([
                 new ProfileNode(Template::PROFILE_STAGE_BEGIN, Template::PROFILE_TYPE_MACRO, $name),
@@ -70,7 +70,7 @@ class Profiler implements NodeVisitorInterface
     /**
      * @inheritdoc
      */
-    public function getPriority()
+    public function getPriority(): int
     {
         return 0;
     }

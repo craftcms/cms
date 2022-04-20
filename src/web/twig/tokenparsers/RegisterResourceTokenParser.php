@@ -9,7 +9,6 @@ namespace craft\web\twig\tokenparsers;
 
 use Craft;
 use craft\web\twig\nodes\RegisterResourceNode;
-use Twig\Parser;
 use Twig\Token;
 use Twig\TokenParser\AbstractTokenParser;
 use Twig\TokenStream;
@@ -25,44 +24,38 @@ class RegisterResourceTokenParser extends AbstractTokenParser
     /**
      * @var string The tag name
      */
-    public $tag;
+    public string $tag;
 
     /**
      * @var string The View method the tag represents
      */
-    public $method;
+    public string $method;
 
     /**
      * @var bool Whether the tag supports a tag pair mode for capturing the JS/CSS
      */
-    public $allowTagPair = false;
+    public bool $allowTagPair = false;
 
     /**
      * @var bool Whether the tag can specify the position of the resource
      */
-    public $allowPosition = false;
+    public bool $allowPosition = false;
 
     /**
      * @var bool Whether the tag can specify a runtime-based position (load/ready)
      */
-    public $allowRuntimePosition = false;
+    public bool $allowRuntimePosition = false;
 
     /**
      * @var bool Whether the tag can specify additional options
      */
-    public $allowOptions = false;
+    public bool $allowOptions = false;
 
     /**
      * @var int|null The default `$position` value that should be possed to the [[method]], if it has a `$position` argument.
      * @since 3.6.11
      */
-    public $defaultPosition;
-
-    /**
-     * @var string|null The new template code that should be used if this tag is deprecated
-     * @todo Remove this in Craft 4
-     */
-    public $newCode;
+    public ?int $defaultPosition = null;
 
     /**
      * @param string $tag the tag name
@@ -82,15 +75,9 @@ class RegisterResourceTokenParser extends AbstractTokenParser
     /**
      * @inheritdoc
      */
-    public function parse(Token $token)
+    public function parse(Token $token): RegisterResourceNode
     {
-        // Is this the deprecated version?
-        if ($this->newCode !== null) {
-            \Craft::$app->getDeprecator()->log($this->tag, "`{% {$this->tag}` %} is now deprecated. Use `{$this->newCode}` instead.");
-        }
-
         $lineno = $token->getLine();
-        /** @var Parser $parser */
         $parser = $this->parser;
         $stream = $parser->getStream();
         $expressionParser = $parser->getExpressionParser();
@@ -103,7 +90,6 @@ class RegisterResourceTokenParser extends AbstractTokenParser
             (
                 $this->_testPositionParam($stream) ||
                 $this->_testOptionsParam($stream) ||
-                $this->_testFirstParam($stream) ||
                 $stream->test(Token::BLOCK_END_TYPE)
             )
         ) {
@@ -125,7 +111,7 @@ class RegisterResourceTokenParser extends AbstractTokenParser
                 'POS_END',
             ]);
             $position = $nameToken->getValue();
-        } else if ($this->allowRuntimePosition && $stream->test(Token::NAME_TYPE, 'on')) {
+        } elseif ($this->allowRuntimePosition && $stream->test(Token::NAME_TYPE, 'on')) {
             $stream->next();
             $nameToken = $stream->expect(Token::NAME_TYPE, [
                 'ready',
@@ -144,8 +130,6 @@ class RegisterResourceTokenParser extends AbstractTokenParser
             $nodes['options'] = $expressionParser->parseExpression();
         }
 
-        $first = $this->_getFirstValue($stream);
-
         // Close out the tag
         $stream->expect(Token::BLOCK_END_TYPE);
 
@@ -163,7 +147,6 @@ class RegisterResourceTokenParser extends AbstractTokenParser
             'defaultPosition' => $this->defaultPosition,
             'capture' => $capture,
             'position' => $position,
-            'first' => $first,
         ];
 
         return new RegisterResourceNode($nodes, $attributes, $lineno, $this->getTag());
@@ -172,7 +155,7 @@ class RegisterResourceTokenParser extends AbstractTokenParser
     /**
      * @inheritdoc
      */
-    public function getTag()
+    public function getTag(): string
     {
         return $this->tag;
     }
@@ -209,33 +192,5 @@ class RegisterResourceTokenParser extends AbstractTokenParser
     private function _testOptionsParam(TokenStream $stream): bool
     {
         return ($this->allowOptions && $stream->test(Token::NAME_TYPE, 'with'));
-    }
-
-    /**
-     * Returns whether the next token in the stream is the deprecated `first` param
-     *
-     * @param TokenStream $stream The Twig token stream
-     * @return bool
-     */
-    private function _testFirstParam(TokenStream $stream): bool
-    {
-        return ($this->newCode !== null && $first = $stream->test(Token::NAME_TYPE, 'first'));
-    }
-
-    /**
-     * Returns whether the next token in the stream is the deprecated `first` param.
-     *
-     * @param TokenStream $stream The Twig token stream
-     * @return bool
-     */
-    private function _getFirstValue(TokenStream $stream): bool
-    {
-        if ($this->_testFirstParam($stream)) {
-            $stream->next();
-
-            return true;
-        }
-
-        return false;
     }
 }

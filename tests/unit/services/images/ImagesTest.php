@@ -7,14 +7,13 @@
 
 namespace crafttests\unit\services\images;
 
-
 use Codeception\Test\Unit;
 use Craft;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
 use craft\services\Images;
+use craft\test\TestCase;
 use Imagick;
-use UnitTester;
 use yii\base\Exception;
 
 /**
@@ -24,35 +23,29 @@ use yii\base\Exception;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class ImagesTest extends Unit
+class ImagesTest extends TestCase
 {
-    /**
-     * @var UnitTester
-     */
-    protected $tester;
-
     /**
      * @var Images
      */
-    protected $images;
+    protected Images $images;
 
     /**
      * @var string
      */
-    protected $path;
+    protected string $path;
 
     /**
      * @var string
      */
-    protected $sandboxPath;
+    protected string $sandboxPath;
 
     /**
      * @dataProvider checkMemoryForImageDataProvider
-     *
      * @param bool $expected
      * @param string $filePath
      */
-    public function testCheckMemoryForImage(bool $expected, string $filePath)
+    public function testCheckMemoryForImage(bool $expected, string $filePath): void
     {
         self::assertSame($expected, $this->images->checkMemoryForImage($this->path . $filePath));
     }
@@ -60,7 +53,7 @@ class ImagesTest extends Unit
     /**
      * @throws Exception
      */
-    public function testCleanImageSvg()
+    public function testCleanImageSvg(): void
     {
         $this->images->cleanImage(
             $this->sandboxPath . 'dirty-svg.svg'
@@ -79,7 +72,7 @@ class ImagesTest extends Unit
     /**
      * @throws Exception
      */
-    public function testDontCleanWithConfigSetting()
+    public function testDontCleanWithConfigSetting(): void
     {
         Craft::$app->getConfig()->getGeneral()->sanitizeSvgUploads = false;
 
@@ -100,7 +93,7 @@ class ImagesTest extends Unit
     /**
      *
      */
-    public function testRotateImageByExifData()
+    public function testRotateImageByExifData(): void
     {
         $this->_skipIfNoImagick();
 
@@ -112,7 +105,7 @@ class ImagesTest extends Unit
     /**
      * @throws Exception
      */
-    public function testCleanImageRotatesOrientation()
+    public function testCleanImageRotatesOrientation(): void
     {
         $this->_skipIfNoImagick();
 
@@ -126,14 +119,15 @@ class ImagesTest extends Unit
      *
      * @throws Exception
      */
-    public function testCleanImageDoesntDoGifWhenSettingDisabled()
+    public function testCleanImageDoesntDoGifWhenSettingDisabled(): void
     {
         $this->_skipIfNoImagick();
 
         Craft::$app->getConfig()->getGeneral()->transformGifs = false;
 
         $oldContents = file_get_contents($this->sandboxPath . 'example-gif.gif');
-        self::assertNull($this->images->cleanImage($this->sandboxPath . 'example-gif.gif'));
+
+        $this->images->cleanImage($this->sandboxPath . 'example-gif.gif');
         self::assertSame($oldContents, file_get_contents($this->sandboxPath . 'example-gif.gif'));
 
         Craft::$app->getConfig()->getGeneral()->transformGifs = true;
@@ -144,9 +138,11 @@ class ImagesTest extends Unit
     /**
      * @todo With data provider for different image types?
      */
-    public function testGetExifData()
+    public function testGetExifData(): void
     {
+        $this->_skipIfNoExif();
         $this->_skipIfNoImagick();
+
         $exifData = $this->images->getExifData($this->sandboxPath . 'image-rotated-180.jpg');
 
         $requiredValues = [
@@ -154,7 +150,7 @@ class ImagesTest extends Unit
             'ifd0.XResolution' => '72/1',
             'ifd0.YResolution' => '72/1',
             'ifd0.ResolutionUnit' => 2,
-            'ifd0.YCbCrPositioning' => 1
+            'ifd0.YCbCrPositioning' => 1,
         ];
 
         foreach ($requiredValues as $key => $value) {
@@ -165,7 +161,7 @@ class ImagesTest extends Unit
     /**
      * Test that false is returned (and not for example an exception being thrown) when calling exif based functions.
      */
-    public function testNoExifFalses()
+    public function testNoExifFalses(): void
     {
         self::assertNull($this->images->getExifData($this->sandboxPath . 'craft-logo.svg'));
         self::assertFalse($this->images->rotateImageByExifData($this->sandboxPath . 'craft-logo.svg'));
@@ -187,7 +183,7 @@ class ImagesTest extends Unit
     /**
      * @inheritdoc
      */
-    protected function _before()
+    protected function _before(): void
     {
         parent::_before();
         $this->path = dirname(__DIR__, 3) . '/_data/assets/files/';
@@ -214,6 +210,16 @@ class ImagesTest extends Unit
     {
         if (!($this->images->getIsImagick() && method_exists(Imagick::class, 'getImageOrientation'))) {
             $this->markTestSkipped('Need Imagick to test this function.');
+        }
+    }
+
+    /**
+     *
+     */
+    private function _skipIfNoExif()
+    {
+        if (!extension_loaded('exif')) {
+            $this->markTestSkipped('Need ext-exif to test this function.');
         }
     }
 }

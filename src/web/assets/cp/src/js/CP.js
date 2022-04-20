@@ -35,7 +35,7 @@ Craft.CP = Garnish.Base.extend({
     fixedHeader: false,
 
     breadcrumbListWidth: 0,
-    breadcrumbDisclosureItem: `<li class="breadcrumb-toggle-wrapper" data-disclosure-item data-wrapper><button data-disclosure-trigger aria-controls="breadcrumb-disclosure" aria-haspopup="true">${Craft.t('app', 'More')}…</button><div id="breadcrumb-disclosure" class="menu menu--disclosure" data-disclosure-menu><ul></ul></div></li>`,
+    breadcrumbDisclosureItem: `<li class="breadcrumb-toggle-wrapper" data-disclosure-item><button data-disclosure-trigger aria-controls="breadcrumb-disclosure" aria-haspopup="true">${Craft.t('app', 'More…')}</button><div id="breadcrumb-disclosure" class="menu menu--disclosure" data-disclosure-menu><ul></ul></div></li>`,
 
     tabManager: null,
 
@@ -192,6 +192,15 @@ Craft.CP = Garnish.Base.extend({
 
         this.initTabs();
 
+        if (this.tabManager) {
+            if (window.LOCATION_HASH) {
+                const $tab = this.tabManager.$tabs.filter(`[href="#${window.LOCATION_HASH}"]`);
+                if ($tab.length) {
+                    this.tabManager.selectTab($tab);
+                }
+            }
+        }
+
         // Should we match the previous scroll position?
         let scrollY = Craft.getLocalStorage('scrollY');
         if (typeof scrollY !== 'undefined') {
@@ -219,14 +228,15 @@ Craft.CP = Garnish.Base.extend({
             this.addListener($btn, 'click', () => {
                 if (!hud) {
                     let contents = '';
-                    Craft.group(Craft.announcements, 'timestamp').forEach(([announcements, timestamp]) => {
-                        announcements.forEach((a, i) => {
-                            contents += `<div class="announcement ${a.unread ? 'unread' : ''}">` +
-                                (i === 0 ? `<div class="timestamp">${a.timestamp}</div>` : '') +
-                                `<h2>${a.heading}</h2>` +
-                                `<p>${a.body}</p>` +
-                                '</div>';
-                        });
+                    Craft.announcements.forEach(a => {
+                        contents += `<div class="announcement ${a.unread ? 'unread' : ''}">` +
+                            '<div class="announcement-label-container">' +
+                            `<div class="announcement-icon">${a.icon}</div>` +
+                            `<div class="announcement-label">${a.label}</div>` +
+                            '</div>' +
+                            `<h2>${a.heading}</h2>` +
+                            `<p>${a.body}</p>` +
+                            '</div>';
                     });
                     hud = new Garnish.HUD($btn, `<div id="announcements">${contents}</div>`, {
                         onShow: () => {
@@ -259,6 +269,25 @@ Craft.CP = Garnish.Base.extend({
         }
     },
 
+    get $contentHeader() {
+        const $contentHeader = $('#content-header');
+        if ($contentHeader.length) {
+            return $contentHeader;
+        }
+        return $('<header/>', {
+            id: 'content-header',
+            class: 'pane-header',
+        }).prependTo($('#content'));
+    },
+
+    get $noticeContainer() {
+        const $noticeContainer = $('#content-notice');
+        if ($noticeContainer.length) {
+            return $noticeContainer;
+        }
+        return $('<div id="content-notice"/>').prependTo(this.$contentHeader);
+    },
+
     initSpecialForms: function() {
         // Look for forms that we should watch for changes on
         this.$confirmUnloadForms = $('form[data-confirm-unload]');
@@ -268,11 +297,11 @@ Craft.CP = Garnish.Base.extend({
             return;
         }
 
-        var $forms = this.$confirmUnloadForms.add(this.$deltaForms);
-        var $form, serialized;
+        const $forms = this.$confirmUnloadForms.add(this.$deltaForms);
 
-        for (var i = 0; i < $forms.length; i++) {
-            $form = $forms.eq(i);
+        for (let i = 0; i < $forms.length; i++) {
+            const $form = $forms.eq(i);
+            let serialized;
             if (!$form.data('initialSerializedValue')) {
                 if (typeof $form.data('serializer') === 'function') {
                     serialized = $form.data('serializer')();
@@ -287,13 +316,20 @@ Craft.CP = Garnish.Base.extend({
                 }
                 if (Garnish.hasAttr($form, 'data-delta')) {
                     ev.preventDefault();
-                    var serialized;
+                    let serialized;
                     if (typeof $form.data('serializer') === 'function') {
                         serialized = $form.data('serializer')();
                     } else {
                         serialized = $form.serialize();
                     }
-                    var data = Craft.findDeltaData($form.data('initialSerializedValue'), serialized, Craft.deltaNames);
+                    const data = Craft.findDeltaData(
+                        $form.data('initialSerializedValue'),
+                        serialized,
+                        $form.data('delta-names'),
+                        null,
+                        $form.data('initial-delta-values'),
+                        $form.data('modified-delta-names')
+                    );
                     Craft.createForm(data)
                         .appendTo(Garnish.$bod)
                         .submit();
@@ -302,13 +338,13 @@ Craft.CP = Garnish.Base.extend({
         }
 
         this.addListener(Garnish.$win, 'beforeunload', function(ev) {
-            var confirmUnload = false;
-            var $form, serialized;
+            let confirmUnload = false;
             if (typeof Craft.livePreview !== 'undefined' && Craft.livePreview.inPreviewMode) {
                 confirmUnload = true;
             } else {
-                for (var i = 0; i < this.$confirmUnloadForms.length; i++) {
-                    $form = this.$confirmUnloadForms.eq(i);
+                for (let i = 0; i < this.$confirmUnloadForms.length; i++) {
+                    const $form = this.$confirmUnloadForms.eq(i);
+                    let serialized;
                     if (typeof $form.data('serializer') === 'function') {
                         serialized = $form.data('serializer')();
                     } else {
@@ -400,7 +436,7 @@ Craft.CP = Garnish.Base.extend({
 
     enableGlobalSidebarLinks: function() {
         const focusableItems = this.$globalSidebar.find(':focusable');
-        
+
         $(focusableItems).each(function() {
             $(this).attr('tabindex', '0');
         });
@@ -408,7 +444,7 @@ Craft.CP = Garnish.Base.extend({
 
     disableGlobalSidebarLinks: function() {
         const focusableItems = this.$globalSidebar.find(':focusable');
-        
+
         $(focusableItems).each(function() {
             $(this).attr('tabindex', '-1');
         });
@@ -493,12 +529,25 @@ Craft.CP = Garnish.Base.extend({
                 $(ev.$tab.attr('href')).addClass('hidden');
             }
         });
+    },
 
-        if (window.LOCATION_HASH) {
-            const $tab = this.tabManager.$tabs.filter(`[href="#${window.LOCATION_HASH}"]`);
-            if ($tab.length) {
-                this.tabManager.selectTab($tab);
+    updateTabs: function(tabs) {
+        if (tabs) {
+            const $tabContainer = $(tabs).attr('id', 'tabs');
+            if (this.tabManager) {
+                this.tabManager.$container.replaceWith($tabContainer);
+            } else {
+                $tabContainer.appendTo(this.$contentHeader);
             }
+            this.initTabs();
+        } else if (this.tabManager) {
+            if (this.tabManager.$container.siblings().length) {
+                this.tabManager.$container.remove();
+            } else {
+                this.tabManager.$container.parent().remove();
+            }
+            this.tabManager.destroy();
+            this.tabManager = null;
         }
     },
 
@@ -567,7 +616,7 @@ Craft.CP = Garnish.Base.extend({
         this.$breadcrumbList.css(Craft.orientation === 'ltr' ? 'margin-right' : 'margin-left', '');
         const listWidth = this.$breadcrumbList[0].getBoundingClientRect().width;
         let totalItemWidth = 0;
-        
+
         // Iterate through all list items (inclusive of more button)
         const $items = this.$breadcrumbList.find('li');
         for (let i = 0; i < $items.length; i++) {
@@ -618,12 +667,12 @@ Craft.CP = Garnish.Base.extend({
         // Separate breadcrums that should remain visible vs. hidden
         const shownItems = this.$breadcrumbItems.slice(0, finalIndex + 1);
         const hiddenItems = this.$breadcrumbItems.slice(finalIndex + 1);
-        
+
         // Empty list DOM and add shown items and trigger item
         this.$breadcrumbList.html('');
         this.$breadcrumbList.append(shownItems);
         this.$breadcrumbList.append(this.breadcrumbDisclosureItem);
-        
+
         // Add hidden items to disclosure menu and initialize
         this.$breadcrumbList.find('[data-disclosure-menu] ul').append(hiddenItems);
         this.$breadcrumbList.find('[data-disclosure-trigger]').disclosureMenu();
@@ -782,7 +831,10 @@ Craft.CP = Garnish.Base.extend({
             path: Craft.path
         };
 
-        Craft.queueActionRequest('app/get-cp-alerts', data, this.displayAlerts.bind(this));
+        Craft.queueActionRequest(() => {
+            return Craft.sendActionRequest('POST', 'app/get-cp-alerts', {data})
+                .then(() => this.displayAlerts.bind(this))
+        });
     },
 
     displayAlerts: function(alerts) {
@@ -813,17 +865,12 @@ Craft.CP = Garnish.Base.extend({
                 var $link = $(ev.currentTarget);
 
                 var data = {
-                    message: $link.prop('className').substr(5)
+                    message: $link.prop('className').substring(5)
                 };
-
-                Craft.queueActionRequest('app/shun-cp-alert', data, (response, textStatus) => {
-                    if (textStatus === 'success') {
-                        if (response.success) {
-                            $link.parent().remove();
-                        } else {
-                            this.displayError(response.error);
-                        }
-                    }
+                Craft.queueActionRequest(() => {
+                    return Craft.sendActionRequest('POST', 'app/shun-cp-alert', {data})
+                        .then((response) => $link.parent().remove())
+                        .catch(({response}) => this.displayError(response.data.message));
                 });
             });
         }
@@ -912,13 +959,10 @@ Craft.CP = Garnish.Base.extend({
                 onlyIfCached: true,
                 includeDetails: includeDetails,
             };
-            Craft.postActionRequest('app/check-for-updates', data, function(info, textStatus) {
-                if (textStatus === 'success') {
-                    resolve(info);
-                } else {
-                    resolve({cached: false});
-                }
-            });
+
+            Craft.sendActionRequest('POST', 'app/check-for-updates', {data})
+                .then((response) => resolve(response.data))
+                .catch(({response}) => resolve({cached: false}));
         });
     },
 
@@ -935,20 +979,12 @@ Craft.CP = Garnish.Base.extend({
     },
 
     _cacheUpdates: function(updates, includeDetails) {
-        return new Promise(function(resolve, reject) {
-            Craft.postActionRequest('app/cache-updates', {
-                updates: updates,
-                includeDetails: includeDetails,
-            }, function(info, textStatus) {
-                if (textStatus === 'success') {
-                    resolve(info);
-                } else {
-                    reject();
-                }
-            }, {
-                contentType: 'json'
-            });
-        });
+        const data = {
+            updates,
+            includeDetails,
+        };
+
+        return Craft.sendActionRequest('POST', 'app/cache-updates', {data});
     },
 
     updateUtilitiesBadge: function() {
@@ -959,18 +995,21 @@ Craft.CP = Garnish.Base.extend({
             return;
         }
 
-        Craft.queueActionRequest('app/get-utilities-badge-count', response => {
-            // Get the existing utility nav badge, if any
-            var $badge = $utilitiesLink.children('.badge');
+        Craft.queueActionRequest(() => {
+            return Craft.sendActionRequest('POST', 'app/get-utilities-badge-count')
+                .then((response) => {
+                    // Get the existing utility nav badge, if any
+                    var $badge = $utilitiesLink.children('.badge');
 
-            if (response.badgeCount) {
-                if (!$badge.length) {
-                    $badge = $('<span class="badge"/>').appendTo($utilitiesLink);
-                }
-                $badge.text(response.badgeCount);
-            } else if ($badge.length) {
-                $badge.remove();
-            }
+                    if (response.data.badgeCount) {
+                        if (!$badge.length) {
+                            $badge = $('<span class="badge"/>').appendTo($utilitiesLink);
+                        }
+                        $badge.text(response.data.badgeCount);
+                    } else if ($badge.length) {
+                        $badge.remove();
+                    }
+                });
         });
     },
 
@@ -980,10 +1019,9 @@ Craft.CP = Garnish.Base.extend({
         }
 
         if (Craft.runQueueAutomatically) {
-            Craft.queueActionRequest('queue/run', (response, textStatus) => {
-                if (textStatus === 'success') {
-                    this.trackJobProgress(false, true);
-                }
+            Craft.queueActionRequest(() => {
+                return Craft.sendActionRequest('POST', 'queue/run')
+                    .then(() => this.trackJobProgress(false, true));
             });
         } else {
             this.trackJobProgress(false, true);
@@ -1011,17 +1049,18 @@ Craft.CP = Garnish.Base.extend({
     },
 
     _trackJobProgressInternal: function() {
-        Craft.queueActionRequest('queue/get-job-info?limit=50&dontExtendSession=1', (response, textStatus) => {
-            if (textStatus === 'success') {
-                this.trackJobProgressTimeout = null;
-                this.totalJobs = response.total;
-                this.setJobInfo(response.jobs);
+        Craft.queueActionRequest(() => {
+            return Craft.sendActionRequest('POST', 'queue/get-job-info?limit=50&dontExtendSession=1')
+                .then((response) => {
+                    this.trackJobProgressTimeout = null;
+                    this.totalJobs = response.data.total;
+                    this.setJobInfo(response.data.jobs);
 
-                if (this.jobInfo.length) {
-                    // Check again after a delay
-                    this.trackJobProgress(true);
-                }
-            }
+                    if (this.jobInfo.length) {
+                        // Check again after a delay
+                        this.trackJobProgress(true);
+                    }
+                });
         });
     },
 
@@ -1058,7 +1097,7 @@ Craft.CP = Garnish.Base.extend({
     },
 
     /**
-     * Returns info for the job that should be displayed in the CP sidebar
+     * Returns info for the job that should be displayed in the control panel sidebar
      */
     getDisplayedJobInfo: function() {
         if (!this.enableQueue) {
@@ -1125,7 +1164,7 @@ Craft.CP = Garnish.Base.extend({
             this.setSiteId(siteId);
             return siteId;
         }
-        return Craft.getCookie('siteId');
+        return Craft.siteId;
     },
 
     /**
@@ -1133,10 +1172,20 @@ Craft.CP = Garnish.Base.extend({
      * @param {number} siteId
      */
     setSiteId: function(siteId) {
-        Craft.setCookie('siteId', siteId, {
-            maxAge: 31536000 // 1 year
-        });
-    }
+        const site = Craft.sites.find(s => s.id === siteId);
+        if (site) {
+            // update the current URL
+            const url = Craft.getUrl(document.location.href, {site: site.handle});
+            history.replaceState({}, '', url);
+
+            // update other URLs on the page
+            $('a').each(function() {
+                if (this.hostname.length && this.hostname === location.hostname && this.href.indexOf(Craft.cpTrigger) !== -1) {
+                    this.href = Craft.getUrl(this.href, {site: site.handle});
+                }
+            })
+        }
+    },
 }, {
     //maxWidth: 1051, //1024,
     notificationDuration: 2000,

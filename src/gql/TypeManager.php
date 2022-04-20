@@ -7,6 +7,7 @@
 
 namespace craft\gql;
 
+use Craft as Craft;
 use craft\base\Component;
 use craft\events\DefineGqlTypeFieldsEvent;
 
@@ -47,53 +48,40 @@ class TypeManager extends Component
      * });
      * ```
      */
-    const EVENT_DEFINE_GQL_TYPE_FIELDS = 'defineGqlTypeFields';
-
-    /**
-     * @var self
-     */
-    private static $_instance;
-
-    /**
-     * @var array A list of definitions already prepared by type name.
-     */
-    private static $_definitions = [];
+    public const EVENT_DEFINE_GQL_TYPE_FIELDS = 'defineGqlTypeFields';
 
     /**
      * Prepare field definitions for a GraphQL type by giving plugins a chance to modify them.
      *
      * @param array $fields
      * @param string $typeName
-     * @return mixed
+     * @return array
+     * @deprecated in 4.0.0. Use [[craft\services\Gql::prepareFieldDefinitions()]] instead.
      */
-    public static function prepareFieldDefinitions(array $fields, string $typeName)
+    public static function prepareFieldDefinitions(array $fields, string $typeName): array
     {
-        // TODO In Craft 4.0, kill all the static in this class to make it more injectable and testable.
-        if (!isset(self::$_definitions[$typeName])) {
-            $instance = self::$_instance ?? self::$_instance = new self();
-            self::$_definitions[$typeName] = $instance->_triggerEvent($fields, $typeName);
-        }
-
-        return self::$_definitions[$typeName];
+        Craft::$app->getDeprecator()->log('TypeManager::prepareFieldDefinitions()', '`TypeManager::prepareFieldDefinitions()` has been deprecated. Use `craft\services\Gql::prepareFieldDefinition()` instead.');
+        return Craft::$app->getGql()->prepareFieldDefinitions($fields, $typeName);
     }
 
     /**
      * Flush all prepared field definitions.
+     *
+     * @deprecated in 4.0.0. `craft\services\Gql::flushCaches()` should be used instead.
      */
-    public static function flush()
+    public static function flush(): void
     {
-        // TODO looking at you, static method flush.
-        self::$_definitions = [];
+        Craft::$app->getDeprecator()->log('TypeManager::flush()', '`TypeManager::flush()` has been deprecated and has no effect.');
     }
 
     /**
-     * Actually trigger the event on an instance of the class.
+     * Register field definitions for a given type and give plugins a chance to modify them.
      *
      * @param array $fields
      * @param string $typeName
      * @return array
      */
-    private function _triggerEvent(array $fields, string $typeName)
+    public function registerFieldDefinitions(array $fields, string $typeName): array
     {
         if ($this->hasEventHandlers(self::EVENT_DEFINE_GQL_TYPE_FIELDS)) {
             $event = new DefineGqlTypeFieldsEvent([

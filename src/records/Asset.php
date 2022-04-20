@@ -21,11 +21,12 @@ use yii\db\ActiveQueryInterface;
  * @property int|null $uploaderId Uploader ID
  * @property string $filename Filename
  * @property string $kind Kind
+ * @property string|null $alt Alternative text
  * @property int $width Width
  * @property int $height Height
  * @property int $size Size
- * @property string $focalPoint Focal point coordinates
- * @property \DateTime $dateModified Date modified
+ * @property string|null $focalPoint Focal point coordinates
+ * @property string $dateModified Date modified
  * @property Element $element Element
  * @property Volume $volume Volume
  * @property VolumeFolder $folder Folder

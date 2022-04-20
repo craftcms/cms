@@ -5,15 +5,16 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craftunit\gql;
+namespace crafttests\unit\gql;
 
-use Codeception\Test\Unit;
 use Craft;
+use craft\base\ElementInterface;
 use craft\elements\Asset;
 use craft\elements\Entry;
 use craft\elements\GlobalSet;
 use craft\elements\MatrixBlock;
 use craft\elements\User;
+use craft\gql\base\Resolver;
 use craft\gql\resolvers\elements\Asset as AssetResolver;
 use craft\gql\resolvers\elements\Entry as EntryResolver;
 use craft\gql\resolvers\elements\GlobalSet as GlobalSetResolver;
@@ -21,49 +22,46 @@ use craft\gql\resolvers\elements\MatrixBlock as MatrixBlockResolver;
 use craft\gql\resolvers\elements\User as UserResolver;
 use craft\helpers\StringHelper;
 use craft\test\mockclasses\elements\ExampleElement;
+use craft\test\TestCase;
 use crafttests\fixtures\AssetFixture;
 use crafttests\fixtures\EntryFixture;
 use crafttests\fixtures\GlobalSetFixture;
 use crafttests\fixtures\GqlSchemasFixture;
 use crafttests\fixtures\UserFixture;
+use Exception;
 use GraphQL\Type\Definition\ResolveInfo;
 
-class TypeResolverTest extends Unit
+class TypeResolverTest extends TestCase
 {
-    /**
-     * @var \UnitTester
-     */
-    protected $tester;
-
-    protected function _before()
+    protected function _before(): void
     {
         $gqlService = Craft::$app->getGql();
         $schema = $gqlService->getSchemaById(1000);
         $gqlService->setActiveSchema($schema);
     }
 
-    protected function _after()
+    protected function _after(): void
     {
         Craft::$app->getGql()->flushCaches();
     }
 
-    public function _fixtures()
+    public function _fixtures(): array
     {
         return [
             'entries' => [
-                'class' => EntryFixture::class
+                'class' => EntryFixture::class,
             ],
             'assets' => [
-                'class' => AssetFixture::class
+                'class' => AssetFixture::class,
             ],
             'users' => [
-                'class' => UserFixture::class
+                'class' => UserFixture::class,
             ],
             'globalSets' => [
-                'class' => GlobalSetFixture::class
+                'class' => GlobalSetFixture::class,
             ],
             'gqlSchemas' => [
-                'class' => GqlSchemasFixture::class
+                'class' => GqlSchemasFixture::class,
             ],
         ];
     }
@@ -71,7 +69,7 @@ class TypeResolverTest extends Unit
     /**
      * Test resolving a related element.
      **/
-    public function testRunGqlResolveTest()
+    public function testRunGqlResolveTest(): void
     {
         // Not using a data provider for this because of fixture load/unload on *every* iteration.
         $data = [
@@ -103,7 +101,7 @@ class TypeResolverTest extends Unit
         ];
 
         foreach ($data as $testData) {
-            $this->_runResolverTest(... $testData);
+            $this->_runResolverTest(...$testData);
         }
     }
 
@@ -111,13 +109,16 @@ class TypeResolverTest extends Unit
      * Run the test.
      *
      * @param string $elementType The element class providing the elements
-     * @param array $parameterSet Querying parameters to use
+     * @phpstan-param class-string<ElementInterface> $elementType
+     * @param array $params Querying parameters to use
      * @param string $resolverClass The resolver class being tested
-     * @param boolean $mustNotBeSame Whether the results should differ instead
-     * @throws \Exception
+     * @phpstan-param class-string<Resolver> $resolverClass
+     * @param bool $mustNotBeSame Whether the results should differ instead
+     * @throws Exception
      */
     public function _runResolverTest(string $elementType, array $params, string $resolverClass, bool $mustNotBeSame = false)
     {
+        /** @var string|ElementInterface $elementType */
         $elementQuery = Craft::configure($elementType::find(), $params);
 
         // Get the ids and elements.
@@ -129,8 +130,9 @@ class TypeResolverTest extends Unit
 
         $filterParameters = [];
 
-        $resolveInfo = $this->make(ResolveInfo::class, ['fieldName' => 'someField', 'fieldNodes' => [null]]);
+        $resolveInfo = $this->make(ResolveInfo::class, ['fieldName' => 'someField', 'fieldNodes' => new \ArrayObject([null])]);
 
+        /** @var Resolver $resolverClass */
         $resolvedField = $resolverClass::resolve($sourceElement, $filterParameters, null, $resolveInfo);
 
         if ($mustNotBeSame) {

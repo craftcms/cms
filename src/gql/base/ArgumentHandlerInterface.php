@@ -10,7 +10,7 @@ namespace craft\gql\base;
 use craft\gql\ArgumentManager;
 
 /**
- * Class ArgumentHandlerInterface
+ * ArgumentHandlerInterface defines the common interface to be implemented by all argument handler classes.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.6.0
@@ -21,7 +21,7 @@ interface ArgumentHandlerInterface
      * Handle an argument collection
      *
      * @param array $argumentList argument list to be used for the query
-     * @return mixed
+     * @return array
      */
     public function handleArgumentCollection(array $argumentList = []): array;
 

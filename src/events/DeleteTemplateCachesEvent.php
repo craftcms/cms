@@ -20,5 +20,5 @@ class DeleteTemplateCachesEvent extends Event
     /**
      * @var int[] Array of template cache IDs that are associated with this event
      */
-    public $cacheIds;
+    public array $cacheIds;
 }

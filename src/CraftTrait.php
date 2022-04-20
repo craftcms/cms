@@ -5,6 +5,9 @@
  * @license https://craftcms.github.io/license/
  */
 
+use craft\console\Application as ConsoleApplication;
+use craft\web\Application as WebApplication;
+
 /**
  * Helps with IDE auto-completion.
  *
@@ -14,7 +17,7 @@
 trait CraftTrait
 {
     /**
-     * @var \craft\web\Application|\craft\console\Application
+     * @var WebApplication|ConsoleApplication|null
      */
-    public static $app;
+    public static WebApplication|ConsoleApplication|null $app = null;
 }

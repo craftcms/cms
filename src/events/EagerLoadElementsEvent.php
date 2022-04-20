@@ -21,16 +21,17 @@ class EagerLoadElementsEvent extends Event
 {
     /**
      * @var string The source element type
+     * @phpstan-var class-string<ElementInterface>
      */
-    public $elementType;
+    public string $elementType;
 
     /**
      * @var ElementInterface[] The source elements
      */
-    public $elements;
+    public array $elements;
 
     /**
      * @var EagerLoadPlan[] The eager-loading plans
      */
-    public $with;
+    public array $with;
 }

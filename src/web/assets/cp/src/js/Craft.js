@@ -15,14 +15,14 @@ $.extend(Craft,
 
         /**
          * @callback indexKeyCallback
-         * @param {object} currentValue
+         * @param {Object} currentValue
          * @param {number} [index]
          * @return {string}
          */
         /**
          * Indexes an array of objects by a specified key
          *
-         * @param {object[]} arr
+         * @param {Object[]} arr
          * @param {(string|indexKeyCallback)} key
          */
         index: function(arr, key) {
@@ -38,14 +38,14 @@ $.extend(Craft,
 
         /**
          * @callback indexKeyCallback
-         * @param {object} currentValue
+         * @param {Object} currentValue
          * @param {number} [index]
          * @return {string}
          */
         /**
          * Groups an array of objects by a specified key
          *
-         * @param {object[]} arr
+         * @param {Object[]} arr
          * @param {(string|indexKeyCallback)} key
          */
         group: function(arr, key) {
@@ -71,7 +71,7 @@ $.extend(Craft,
          *
          * @param {string} category
          * @param {string} message
-         * @param {object} params
+         * @param {Object} params
          * @return string
          */
         t: function(category, message, params) {
@@ -172,7 +172,7 @@ $.extend(Craft,
                         let number = Craft.formatNumber(arg);
                         let pos;
                         if (format === null && (pos = `${arg}`.indexOf('.')) !== -1) {
-                            number += `.${arg.substr(pos + 1)}`;
+                            number += `.${arg.substring(pos + 1)}`;
                         }
                         return number;
                     })();
@@ -380,10 +380,10 @@ $.extend(Craft,
         },
 
         /**
+         * @param {string} [path]
+         * @param {Object|string} [params]
+         * @param {string} [baseUrl]
          * @return string
-         * @param path
-         * @param params
-         * @param baseUrl
          */
         getUrl: function(path, params, baseUrl) {
             if (typeof path !== 'string') {
@@ -391,60 +391,45 @@ $.extend(Craft,
             }
 
             // Normalize the params
-            var anchor = '';
-
-            if ($.isPlainObject(params)) {
-                var aParams = [];
-
-                for (var name in params) {
-                    if (!params.hasOwnProperty(name)) {
-                        continue;
-                    }
-
-                    var value = params[name];
-
-                    if (name === '#') {
-                        anchor = value;
-                    } else if (value !== null && value !== '') {
-                        aParams.push(name + '=' + value);
-                    }
+            let anchor = null;
+            if ($.isPlainObject(params) && typeof params['#'] !== 'undefined') {
+                anchor = params['#'];
+                delete params['#'];
+            } else if (typeof params === 'string') {
+                let anchorPos = params.indexOf('#');
+                if (anchorPos !== -1) {
+                    anchor = params.substring(anchorPos + 1);
+                    params = params.substring(0, anchorPos);
                 }
-
-                params = aParams;
-            }
-
-            if (Garnish.isArray(params)) {
-                params = params.join('&');
-            } else {
-                params = Craft.trim(params, '&?');
+                params = Object.fromEntries((new URLSearchParams(params)).entries())
             }
 
             // Was there already an anchor on the path?
-            var apos = path.indexOf('#');
-            if (apos !== -1) {
+            let anchorPos = path.indexOf('#');
+            if (anchorPos !== -1) {
                 // Only keep it if the params didn't specify a new anchor
                 if (!anchor) {
-                    anchor = path.substr(apos + 1);
+                    anchor = path.substring(anchorPos + 1);
                 }
-                path = path.substr(0, apos);
+                path = path.substring(0, anchorPos);
             }
 
             // Were there already any query string params in the path?
-            var qpos = path.indexOf('?');
-            if (qpos !== -1) {
-                params = path.substr(qpos + 1) + (params ? '&' + params : '');
-                path = path.substr(0, qpos);
+            let qsPos = path.indexOf('?');
+            if (qsPos !== -1) {
+                params = $.extend(Object.fromEntries((new URLSearchParams(path.substring(qsPos + 1))).entries()), params);
+                path = path.substring(0, qsPos);
             }
 
             // Return path if it appears to be an absolute URL.
             if (path.search('://') !== -1 || path[0] === '/') {
-                return path + (params ? '?' + params : '') + (anchor ? '#' + anchor : '');
+                return path + (params ? '?' + $.param(params) : '') + (anchor ? '#' + anchor : '');
             }
 
             path = Craft.trim(path, '/');
 
             // Put it all together
-            var url;
+            let url;
 
             if (baseUrl) {
                 url = baseUrl;
@@ -462,10 +447,10 @@ $.extend(Craft,
             }
 
             // Does the base URL already have a query string?
-            qpos = url.indexOf('?');
-            if (qpos !== -1) {
-                params = url.substr(qpos + 1) + (params ? '&' + params : '');
-                url = url.substr(0, qpos);
+            qsPos = url.indexOf('?');
+            if (qsPos !== -1) {
+                params = $.extend(Object.fromEntries((new URLSearchParams(url.substring(qsPos + 1))).entries()), params);
+                url = url.substring(0, qsPos);
             }
 
             if (!Craft.omitScriptNameInUrls && path) {
@@ -478,26 +463,17 @@ $.extend(Craft,
                     // Move the path into the query string params
 
                     // Is the path param already set?
-                    if (params && params.substr(0, Craft.pathParam.length + 1) === Craft.pathParam + '=') {
-                        var basePath,
-                            endPath = params.indexOf('&');
-
-                        if (endPath !== -1) {
-                            basePath = params.substring(2, endPath);
-                            params = params.substr(endPath + 1);
-                        } else {
-                            basePath = params.substr(2);
-                            params = null;
-                        }
-
-                        // Just in case
-                        basePath = Craft.rtrim(basePath);
-
+                    if (params && typeof params[Craft.pathParam] !== 'undefined') {
+                        let basePath = Craft.rtrim(params[Craft.pathParam]);
                         path = basePath + (path ? '/' + path : '');
                     }
 
                     // Now move the path into the params
-                    params = Craft.pathParam + '=' + path + (params ? '&' + params : '');
+                    if (typeof params !== 'object') {
+                        params = {};
+                    }
+
+                    params[Craft.pathParam] = path;
                     path = null;
                 }
             }
@@ -507,7 +483,7 @@ $.extend(Craft,
             }
 
             if (params) {
-                url += '?' + params;
+                url += '?' + $.param(params);
             }
 
             if (anchor) {
@@ -518,18 +494,18 @@ $.extend(Craft,
         },
 
         /**
+         * @param {string} [path]
+         * @param {Object|string} [params]
          * @return string
-         * @param path
-         * @param params
          */
         getCpUrl: function(path, params) {
             return this.getUrl(path, params, Craft.baseCpUrl);
         },
 
         /**
+         * @param {string} [path]
+         * @param {Object|string} [params]
          * @return string
-         * @param path
-         * @param params
          */
         getSiteUrl: function(path, params) {
             return this.getUrl(path, params, Craft.baseSiteUrl);
@@ -538,12 +514,12 @@ $.extend(Craft,
         /**
          * Returns an action URL.
          *
-         * @param {string} path
-         * @param {object|string|undefined} params
+         * @param {string} action
+         * @param {Object|string} [params]
          * @return string
          */
-        getActionUrl: function(path, params) {
-            return Craft.getUrl(path, params, Craft.actionUrl);
+        getActionUrl: function(action, params) {
+            return Craft.getUrl(action, params, Craft.actionUrl);
         },
 
         /**
@@ -553,6 +529,90 @@ $.extend(Craft,
          */
         redirectTo: function(url) {
             document.location.href = this.getUrl(url);
+        },
+
+        /**
+         * Replaces the page’s current URL.
+         *
+         * The location hash will be left intact, unless the given URL specifies one.
+         *
+         * @param {string} url
+         */
+        setUrl: function(url) {
+            if (typeof history === 'undefined') {
+                return;
+            }
+
+            if (!url.match(/#/)) {
+                url += document.location.hash;
+            }
+
+            history.replaceState({}, '', url);
+        },
+
+        /**
+         * Replaces the page’s current URL based on the given path, leaving the current query string and hash intact.
+         *
+         * @param {string} path
+         */
+        setPath: function(path) {
+            this.path = path;
+            this.setUrl(Craft.getUrl(path, document.location.search));
+        },
+
+        /**
+         * Replaces the page’s current URL based on the given query param name and value, leaving the current URI, other query params, and hash intact.
+         *
+         * @param {string} name
+         * @param value
+         */
+        setQueryParam(name, value) {
+            const baseUrl = document.location.origin + document.location.pathname;
+            const params = this.getQueryParams();
+
+            if (typeof value !== 'undefined' && value !== null && value !== false) {
+                params[name] = value;
+            } else {
+                delete params[name];
+            }
+
+            this.setUrl(Craft.getUrl(baseUrl, params));
+        },
+
+        /**
+         * Returns the current URL with a certain page added to it.
+         *
+         * @param {int} page
+         * @return {string}
+         */
+        getPageUrl: function(page) {
+            let url = document.location.origin + document.location.pathname;
+            url = Craft.rtrim(url, '/');
+
+            let qs = document.location.search ? document.location.search.substring(1) : '';
+
+            // query string-based pagination?
+            if (Craft.pageTrigger[0] === '?') {
+                const pageParam = Craft.pageTrigger.substring(1);
+                // remove the existing page param
+                if (document.location.search) {
+                    const params = Object.fromEntries((new URLSearchParams(qs)).entries());
+                    delete params[pageParam];
+                    qs = $.param(params);
+                }
+                if (page !== 1) {
+                    qs += (qs !== '' ? '&' : '') + `${pageParam}=${page}`;
+                }
+            } else {
+                // Remove the existing page segment(s)
+                url = url.replace(new RegExp('/' + Craft.escapeRegex(Craft.pageTrigger) + '\\d+$'), '');
+
+                if (page !== 1) {
+                    url += `/${Craft.pageTrigger}${page}`;
+                }
+            }
+
+            return url + (qs ? `?${qs}` : '') + document.location.hash;
         },
 
         /**
@@ -568,13 +628,13 @@ $.extend(Craft,
             }
         },
 
-        /**
+                /**
          * Posts an action request to the server.
          *
          * @param {string} action
-         * @param {object|undefined} data
+         * @param {Object|undefined} data
          * @param {function|undefined} callback
-         * @param {object|undefined} options
+         * @param {Object|undefined} options
          * @return jqXHR
          * @deprecated in 3.4.6. sendActionRequest() should be used instead
          */
@@ -635,15 +695,8 @@ $.extend(Craft,
         /**
          * Queues up an action request to be posted to the server.
          */
-        queueActionRequest: function(action, data, callback, options) {
-            // Make 'data' optional
-            if (typeof data === 'function') {
-                options = callback;
-                callback = data;
-                data = undefined;
-            }
-
-            Craft._ajaxQueue.push([action, data, callback, options]);
+        queueActionRequest: function(callback) {
+            Craft._ajaxQueue.push(callback);
 
             if (!Craft._waitingOnAjax) {
                 Craft._postNextActionRequestInQueue();
@@ -653,19 +706,20 @@ $.extend(Craft,
         _postNextActionRequestInQueue: function() {
             Craft._waitingOnAjax = true;
 
-            var args = Craft._ajaxQueue.shift();
+            var callback = Craft._ajaxQueue.shift();
 
-            Craft.postActionRequest(args[0], args[1], function(data, textStatus, jqXHR) {
-                if (args[2] && typeof args[2] === 'function') {
-                    args[2](data, textStatus, jqXHR);
-                }
+            callback()
+                .then((response) => {
+                    if (callback && typeof callback === 'function') {
+                        callback(response ? response.data : null);
+                    }
 
-                if (Craft._ajaxQueue.length) {
-                    Craft._postNextActionRequestInQueue();
-                } else {
-                    Craft._waitingOnAjax = false;
-                }
-            }, args[3]);
+                    if (Craft._ajaxQueue.length) {
+                        Craft._postNextActionRequestInQueue();
+                    } else {
+                        Craft._waitingOnAjax = false;
+                    }
+                });
         },
 
         _actionHeaders: function() {
@@ -684,16 +738,32 @@ $.extend(Craft,
         /**
          * Sends a request to a Craft/plugin action
          * @param {string} method The request action to use ('GET' or 'POST')
-         * @param {string} action The action to request
-         * @param {Object} options Axios request options
+         * @param {string|null} [action] The action to request
+         * @param {Object} [options] Axios request options
          * @returns {Promise}
          * @since 3.4.6
          */
-        sendActionRequest: function(method, action, options) {
+        sendActionRequest: function(method, action, options = {}) {
+            if ($.isPlainObject(action)) {
+                options = action;
+                action = null;
+            }
+
+            if (method.toUpperCase() === 'POST' && action && options.data) {
+                // Avoid conflicting `action` params
+                if (typeof options.data === 'string') {
+                    const namespace = options && options.headers && options.headers['X-Craft-Namespace'];
+                    const actionName = this.namespaceInputName('action', namespace);
+                    options.data += `&${actionName}=${action}`;
+                } else {
+                    delete options.data.action;
+                }
+            }
+
             return new Promise((resolve, reject) => {
                 options = options ? $.extend({}, options) : {};
                 options.method = method;
-                options.url = Craft.getActionUrl(action);
+                options.url = action ? Craft.getActionUrl(action) : Craft.getCpUrl();
                 options.headers = $.extend({
                     'X-Requested-With': 'XMLHttpRequest',
                 }, options.headers || {}, this._actionHeaders());
@@ -920,15 +990,19 @@ $.extend(Craft,
          *
          * @param {string} oldData
          * @param {string} newData
-         * @param {object} deltaNames
-         * @param {function} [callback] Callback function that should be called whenever a new group of modified params has been found
-         * @param {object} [initialDeltaValues] Initial delta values. If undefined, `Craft.initialDeltaValues` will be used.
+         * @param {Object} deltaNames
+         * @param {function|null} [callback] Callback function that should be called whenever a new group of modified params has been found
+         * @param {Object} [initialDeltaValues] Initial delta values. If undefined, `Craft.initialDeltaValues` will be used.
+         * @param {Object} [modifiedDeltaNames} List of delta names that should be considered modified regardles of their param values
          * @return {string}
          */
-        findDeltaData: function(oldData, newData, deltaNames, callback, initialDeltaValues) {
+        findDeltaData: function(oldData, newData, deltaNames, callback, initialDeltaValues, modifiedDeltaNames) {
             // Make sure oldData and newData are always strings. This is important because further below String.split is called.
             oldData = typeof oldData === 'string' ? oldData : '';
             newData = typeof newData === 'string' ? newData : '';
+            deltaNames = $.isArray(deltaNames) ? deltaNames : [];
+            initialDeltaValues = $.isPlainObject(initialDeltaValues) ? initialDeltaValues : {};
+            modifiedDeltaNames = $.isArray(modifiedDeltaNames) ? modifiedDeltaNames : [];
 
             // Sort the delta namespaces from least -> most specific
             deltaNames.sort(function(a, b) {
@@ -939,23 +1013,22 @@ $.extend(Craft,
             });
 
             // Group all of the old & new params by namespace
-            if (typeof initialDeltaValues === 'undefined') {
-                initialDeltaValues = Craft.initialDeltaValues;
-            }
             var groupedOldParams = this._groupParamsByDeltaNames(oldData.split('&'), deltaNames, false, initialDeltaValues);
             var groupedNewParams = this._groupParamsByDeltaNames(newData.split('&'), deltaNames, true, false);
 
             // Figure out which of the new params should actually be posted
             var params = groupedNewParams.__root__;
-            var modifiedDeltaNames = [];
             for (var n = 0; n < deltaNames.length; n++) {
-                if (Craft.inArray(deltaNames[n], Craft.modifiedDeltaNames) || (
-                    typeof groupedNewParams[deltaNames[n]] === 'object' &&
+                if (
+                    Craft.inArray(deltaNames[n], modifiedDeltaNames) ||
                     (
-                        typeof groupedOldParams[deltaNames[n]] !== 'object' ||
-                        JSON.stringify(groupedOldParams[deltaNames[n]]) !== JSON.stringify(groupedNewParams[deltaNames[n]])
+                        typeof groupedNewParams[deltaNames[n]] === 'object' &&
+                        (
+                            typeof groupedOldParams[deltaNames[n]] !== 'object' ||
+                            JSON.stringify(groupedOldParams[deltaNames[n]]) !== JSON.stringify(groupedNewParams[deltaNames[n]])
+                        )
                     )
-                )) {
+                ) {
                     params = params.concat(groupedNewParams[deltaNames[n]]);
                     params.push('modifiedDeltaNames[]=' + deltaNames[n]);
                     if (callback) {
@@ -968,10 +1041,10 @@ $.extend(Craft,
         },
 
         /**
-         * @param {object} params
-         * @param {object} deltaNames
+         * @param {Object} params
+         * @param {Object} deltaNames
          * @param {boolean} withRoot
-         * @param {boolean|object} initialValues
+         * @param {boolean|Object} initialValues
          * @returns {{}}
          * @private
          */
@@ -989,7 +1062,7 @@ $.extend(Craft,
             paramLoop: for (let p = 0; p < params.length; p++) {
                 // loop through the delta names from most -> least specific
                 for (let n = deltaNames.length - 1; n >= 0; n--) {
-                    const paramName = params[p].substr(0, deltaNames[n].length + 1);
+                    const paramName = params[p].substring(0, deltaNames[n].length + 1);
                     if (
                         paramName === deltaNames[n] + '=' ||
                         paramName === deltaNames[n] + '['
@@ -1021,7 +1094,7 @@ $.extend(Craft,
         /**
          * Expands an array of POST array-style strings into an actual array.
          *
-         * @param {object} arr
+         * @param {Object} arr
          * @return array
          */
         expandPostArray: function(arr) {
@@ -1170,7 +1243,7 @@ $.extend(Craft,
         /**
          * Returns an array of an object's keys.
          *
-         * @param {object} obj
+         * @param {Object} obj
          * @return string
          */
         getObjectKeys: function(obj) {
@@ -1213,7 +1286,7 @@ $.extend(Craft,
          * Trim characters off of the beginning of a string.
          *
          * @param {string} str
-         * @param {string|object|undefined} chars The characters to trim off. Defaults to a space if left blank.
+         * @param {string|object|undefined} [chars] The characters to trim off. Defaults to a space if left blank.
          * @return string
          */
         ltrim: function(str, chars) {
@@ -1231,7 +1304,7 @@ $.extend(Craft,
          * Trim characters off of the end of a string.
          *
          * @param {string} str
-         * @param {string|object|undefined} chars The characters to trim off. Defaults to a space if left blank.
+         * @param {string|object|undefined} [chars] The characters to trim off. Defaults to a space if left blank.
          * @return string
          */
         rtrim: function(str, chars) {
@@ -1249,7 +1322,7 @@ $.extend(Craft,
          * Trim characters off of the beginning and end of a string.
          *
          * @param {string} str
-         * @param {string|object|undefined} chars The characters to trim off. Defaults to a space if left blank.
+         * @param {string|object|undefined} [chars] The characters to trim off. Defaults to a space if left blank.
          * @return string
          */
         trim: function(str, chars) {
@@ -1266,13 +1339,13 @@ $.extend(Craft,
          * @return boolean
          */
         startsWith: function(str, substr) {
-            return str.substr(0, substr.length) === substr;
+            return str.substring(0, substr.length) === substr;
         },
 
         /**
          * Filters an array.
          *
-         * @param {object} arr
+         * @param {Object} arr
          * @param {function} callback A user-defined callback function. If null, we'll just remove any elements that equate to false.
          * @return array
          */
@@ -1297,7 +1370,7 @@ $.extend(Craft,
         },
 
         /**
-         * Returns whether an element is in an array (unlike jQuery.inArray(), which returns the element's index, or -1).
+         * Returns whether an element is in an array (unlike jQuery.inArray(), which returns the element’s index, or -1).
          *
          * @param elem
          * @param arr
@@ -1314,7 +1387,7 @@ $.extend(Craft,
          * Removes an element from an array.
          *
          * @param elem
-         * @param {object} arr
+         * @param {Object} arr
          * @return boolean Whether the element could be found or not.
          */
         removeFromArray: function(elem, arr) {
@@ -1330,7 +1403,7 @@ $.extend(Craft,
         /**
          * Returns the last element in an array.
          *
-         * @param {object} arr
+         * @param {Object} arr
          * @return mixed
          */
         getLast: function(arr) {
@@ -1375,6 +1448,18 @@ $.extend(Craft,
                 query: m[5] || null,
                 hash: m[6] || null,
             };
+        },
+
+        getQueryParams: function() {
+            return Object.fromEntries((new URLSearchParams(window.location.search)).entries());
+        },
+
+        getQueryParam: function(name) {
+            // h/t https://stackoverflow.com/a/901144/1688568
+            const params = new Proxy(new URLSearchParams(window.location.search), {
+                get: (searchParams, prop) => searchParams.get(prop),
+            });
+            return params[name];
         },
 
         isSameHost: function(url) {
@@ -1450,7 +1535,7 @@ $.extend(Craft,
          * Converts extended ASCII characters to ASCII.
          *
          * @param {string} str
-         * @param {object|undefined} charMap
+         * @param {Object|undefined} charMap
          * @return string
          */
         asciiString: function(str, charMap) {
@@ -1468,6 +1553,39 @@ $.extend(Craft,
             return asciiStr;
         },
 
+        uuid: function() {
+            if (typeof crypto.randomUUID === 'function') {
+                return crypto.randomUUID();
+            }
+
+            // h/t https://stackoverflow.com/a/2117523/1688568
+            return ([1e7]+-1e3+-4e3+-8e3+-1e11).replace(/[018]/g, c =>
+              (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+            );
+        },
+
+        /**
+         * @param {string} name
+         * @param {string} [namespace]
+         * @returns {string}
+         */
+        namespaceInputName: function(name, namespace) {
+            if (!namespace) {
+                return name;
+            }
+
+            return name.replace(/([^'"\[\]]+)([^'"]*)/, `${namespace}[$1]$2`);
+        },
+
+        /**
+         * @param {string} id
+         * @param {string} [namespace]
+         * @returns {string}
+         */
+        namespaceId: function(id, namespace) {
+            return Craft.formatInputId(namespace ? `${namespace}-${id}` : id);
+        },
+
         randomString: function(length) {
             // h/t https://stackoverflow.com/a/1349426/1688568
             var result = '';
@@ -1481,7 +1599,7 @@ $.extend(Craft,
         /**
          * Creates a validation error list.
          *
-         * @param {object} errors
+         * @param {Object} errors
          * @return jQuery
          */
         createErrorList: function(errors) {
@@ -1496,6 +1614,11 @@ $.extend(Craft,
             return $ul;
         },
 
+        /**
+         * Appends HTML to the page `<head>`.
+         *
+         * @param {string} html
+         */
         appendHeadHtml: function(html) {
             if (!html) {
                 return;
@@ -1513,7 +1636,7 @@ $.extend(Craft,
                     existingCss.push(Craft.escapeRegex(href));
                 }
 
-                var regexp = new RegExp('<link\\s[^>]*href="(?:' + existingCss.join('|') + ')".*?></script>', 'g');
+                const regexp = new RegExp('<link\\s[^>]*href="(?:' + existingCss.join('|') + ')".*?></link>', 'g');
 
                 html = html.replace(regexp, '');
             }
@@ -1521,7 +1644,13 @@ $.extend(Craft,
             $('head').append(html);
         },
 
-        appendFootHtml: function(html) {
+
+        /**
+         * Appends HTML to the page `<body>`.
+         *
+         * @param {string} html
+         */
+        appendBodyHtml: function(html) {
             if (!html) {
                 return;
             }
@@ -1547,9 +1676,19 @@ $.extend(Craft,
         },
 
         /**
+         * Appends HTML to the page `<body>`.
+         *
+         * @deprecated in 4.0.0. `appendBodyHtml()` should be used instead
+         */
+        appendFootHtml: function(html) {
+            console.warn('Craft.appendFootHtml() is deprecated. Craft.appendBodyHtml() should be used instead.');
+            this.appendBodyHtml(html);
+        },
+
+        /**
          * Initializes any common UI elements in a given container.
          *
-         * @param {object} $container
+         * @param {Object} $container
          */
         initUiElements: function($container) {
             $('.grid', $container).grid();
@@ -1624,7 +1763,7 @@ $.extend(Craft,
          *
          * @param {string} elementType
          * @param $container
-         * @param {object} settings
+         * @param {Object} settings
          * @return BaseElementIndex
          */
         createElementIndex: function(elementType, $container, settings) {
@@ -1643,7 +1782,7 @@ $.extend(Craft,
          * Creates a new element selector modal for a given element type.
          *
          * @param {string} elementType
-         * @param {object} settings
+         * @param {Object} settings
          */
         createElementSelectorModal: function(elementType, settings) {
             var func;
@@ -1658,11 +1797,11 @@ $.extend(Craft,
         },
 
         /**
-         * Creates a new element editor HUD for a given element type.
+         * Creates a new element editor slideout for a given element type.
          *
          * @param {string} elementType
          * @param element $element
-         * @param {object} settings
+         * @param {Object} settings
          */
         createElementEditor: function(elementType, element, settings) {
             // Param mapping
@@ -1678,14 +1817,7 @@ $.extend(Craft,
                 settings.elementType = elementType;
             }
 
-            var func;
-            if (typeof this._elementEditorClasses[elementType] !== 'undefined') {
-                func = this._elementEditorClasses[elementType];
-            } else {
-                func = Craft.BaseElementEditor;
-            }
-
-            return new func(element, settings);
+            return new Craft.ElementEditorSlideout(element, settings);
         },
 
         /**
@@ -1873,8 +2005,7 @@ $.extend(Craft,
                     type: 'hidden',
                     name: 'action',
                     val: options.action,
-                })
-                    .appendTo($form);
+                }).appendTo($form);
             }
 
             if (options.redirect) {
@@ -1882,8 +2013,7 @@ $.extend(Craft,
                     type: 'hidden',
                     name: 'redirect',
                     val: options.redirect,
-                })
-                    .appendTo($form);
+                }).appendTo($form);
             }
 
             if (options.params) {
@@ -1893,8 +2023,7 @@ $.extend(Craft,
                         type: 'hidden',
                         name: name,
                         val: value,
-                    })
-                        .appendTo($form);
+                    }).appendTo($form);
                 }
             }
 
@@ -1920,7 +2049,77 @@ $.extend(Craft,
         setFocusWithin: function(container) {
             Garnish.setFocusWithin(container);
         },
+
+        /**
+         * Sets/removes attributes on an element.
+         *
+         * Attributes set to `null` or `false` will be removed.
+         *
+         * @param element
+         * @param {Object} attributes
+         */
+        setElementAttributes: function(element, attributes) {
+            const $element = $(element);
+
+            for (let name in attributes) {
+                if (!attributes.hasOwnProperty(name)) {
+                    continue;
+                }
+
+                let value = attributes[name];
+
+                if (value === null || value === false) {
+                    $element.removeAttr(name);
+                } else if (value === true) {
+                    $element.attr(name, '');
+                } else if ($.isArray(value) || $.isPlainObject(value)) {
+                    if (Craft.dataAttributes.includes(name)) {
+                        // Make sure it's an object
+                        value = Object.assign({}, value);
+                        for (let n in value) {
+                            if (!value.hasOwnProperty(n)) {
+                                continue;
+                            }
+                            let subValue = value[n];
+                            if (subValue === null || subValue === false) {
+                                continue;
+                            }
+                            if ($.isPlainObject(subValue) || $.isArray(subValue)) {
+                                subValue = JSON.stringify(subValue)
+                            } else if (subValue === true) {
+                                subValue = '';
+                            } else {
+                                subValue = this.escapeHtml(subValue);
+                            }
+                            $element.attr(`${name}-${n}`, subValue);
+                        }
+                    } else if (name === 'class') {
+                        // Make sure it's an array
+                        if ($.isPlainObject(value)) {
+                            value = Object.values(value);
+                        }
+                        for (let c of value) {
+                            $element.addClass(c);
+                        }
+                    } else if (name === 'style') {
+                        $element.css(value);
+                    } else {
+                        $element.attr(name, JSON.stringify(value));
+                    }
+                } else {
+                    $element.attr(name, this.escapeHtml(value));
+                }
+            }
+        },
     });
+
+// -------------------------------------------
+//  Broadcast channel
+// -------------------------------------------
+
+if (typeof BroadcastChannel !== 'undefined') {
+    Craft.broadcastChannel = new BroadcastChannel(`CraftCMS:${Craft.appId}`);
+}
 
 // -------------------------------------------
 //  Custom jQuery plugins
@@ -2126,14 +2325,10 @@ $.extend($.fn,
 
         disclosureMenu: function() {
             return this.each(function() {
-                var $trigger = $(this);
-                var $disclosureId = $trigger.attr('aria-controls');
-
-                // Only instantiate element if there is a reference to disclosure content
-                if ($disclosureId) {
-                    var settings = {};
-
-                    new Garnish.DisclosureMenu($trigger, settings);
+                const $trigger = $(this);
+                // Only instantiate if it's not already a disclosure trigger, and it references a disclosure content
+                if (!$trigger.data('trigger') && $trigger.attr('aria-controls')) {
+                    new Garnish.DisclosureMenu($trigger);
                 }
             });
         },

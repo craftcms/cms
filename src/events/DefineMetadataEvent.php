@@ -21,5 +21,5 @@ class DefineMetadataEvent extends Event
      * @var array The metadata, with keys representing the labels. The values can either be strings or
      * callables. If a value is `false`, it will be omitted.
      */
-    public $metadata = [];
+    public array $metadata = [];
 }

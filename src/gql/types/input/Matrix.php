@@ -26,12 +26,11 @@ class Matrix extends InputObjectType
     /**
      * Create the type for a matrix field.
      *
-     * @param $context
-     * @return bool|mixed
+     * @param MatrixField $context
+     * @return mixed
      */
-    public static function getType(MatrixField $context)
+    public static function getType(MatrixField $context): mixed
     {
-        /** @var MatrixField $context */
         $typeName = $context->handle . '_MatrixInput';
 
         if ($inputType = GqlEntityRegistry::getEntity($typeName)) {
@@ -44,7 +43,7 @@ class Matrix extends InputObjectType
 
         // For all the blocktypes
         foreach ($blockTypes as $blockType) {
-            $fields = $blockType->getFields();
+            $fields = $blockType->getCustomFields();
             $blockTypeFields = [
                 'id' => [
                     'name' => 'id',
@@ -78,7 +77,7 @@ class Matrix extends InputObjectType
             },
         ]));
 
-        $inputType = GqlEntityRegistry::createEntity($typeName, new InputObjectType([
+        return GqlEntityRegistry::createEntity($typeName, new InputObjectType([
             'name' => $typeName,
             'fields' => function() use ($blockContainerInputType) {
                 return [
@@ -94,17 +93,15 @@ class Matrix extends InputObjectType
             },
             'normalizeValue' => [self::class, 'normalizeValue'],
         ]));
-
-        return $inputType;
     }
 
     /**
      * Normalize Matrix GraphQL input data to what Craft expects.
      *
-     * @param $value
+     * @param mixed $value
      * @return mixed
      */
-    public static function normalizeValue($value)
+    public static function normalizeValue(mixed $value): mixed
     {
         $preparedBlocks = [];
         $blockCounter = 1;

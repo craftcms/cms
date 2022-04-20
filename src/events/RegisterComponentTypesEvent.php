@@ -20,5 +20,5 @@ class RegisterComponentTypesEvent extends Event
     /**
      * @var string[] List of registered component types classes.
      */
-    public $types = [];
+    public array $types = [];
 }

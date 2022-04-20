@@ -21,25 +21,25 @@ class RegisterUserActionsEvent extends Event
     /**
      * @var User|null The user associated with the event
      */
-    public $user;
+    public ?User $user = null;
 
     /**
      * @var array Actions related to the user’s status
      */
-    public $statusActions = [];
+    public array $statusActions = [];
 
     /**
      * @var array Actions related to the user’s authenticated session
      */
-    public $sessionActions = [];
+    public array $sessionActions = [];
 
     /**
      * @var array Destructive actions
      */
-    public $destructiveActions = [];
+    public array $destructiveActions = [];
 
     /**
      * @var array Miscellaneous actions
      */
-    public $miscActions = [];
+    public array $miscActions = [];
 }

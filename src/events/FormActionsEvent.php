@@ -33,5 +33,5 @@ class FormActionsEvent extends Event
      *   keyboard shortcut.
      * - `shift` – `true` or `false` depending on whether the keyboard shortcut requires the <kbd>Shift</kbd> key to be pressed.
      */
-    public $formActions;
+    public array $formActions;
 }

@@ -22,40 +22,40 @@ class CommandTestItem extends Model
     /**
      * @var string|string[]|Traversable
      */
-    public $desiredOutput;
+    public string|array|Traversable $desiredOutput;
 
     /**
      * @var array
      */
-    public $options;
+    public array $options;
 
     /**
      * @var string
      */
-    public $prompt;
+    public string $prompt;
 
     /**
      * @var string
      */
-    public $type;
+    public string $type;
 
     /**
      * @var string
      */
-    public $message;
+    public string $message;
 
     /**
      * @var bool
      */
-    public $default;
+    public bool $default;
 
     /**
      * @var mixed
      */
-    public $returnValue;
+    public mixed $returnValue = null;
 
     /**
-     * @var string
+     * @var bool
      */
-    public $withScriptName;
+    public bool $withScriptName;
 }

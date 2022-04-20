@@ -15,11 +15,6 @@ use Craft;
 class AssetBundle extends \yii\web\AssetBundle
 {
     /**
-     * @var bool Whether Craft is configured to serve compressed JavaScript files
-     */
-    private static $_useCompressedJs;
-
-    /**
      * @inheritdoc
      */
     public function init()
@@ -51,11 +46,11 @@ class AssetBundle extends \yii\web\AssetBundle
     /**
      * Prefix the string with the dev server host if the dev server is running.
      *
-     * @param string|array $filePath
+     * @param array|string $filePath
      * @return string|array
      * @since 3.7.22
      */
-    private function _prependDevServer($filePath)
+    private function _prependDevServer(array|string $filePath): array|string
     {
         // Handle $filePath being an array: https://www.yiiframework.com/doc/api/2.0/yii-web-assetbundle#$js-detail
         if (is_array($filePath)) {
@@ -72,31 +67,5 @@ class AssetBundle extends \yii\web\AssetBundle
         }
 
         return $filePath;
-    }
-
-    /**
-     * Returns whether Craft is configured to serve compressed JavaScript files
-     *
-     * @return bool
-     * @deprecated in 3.5.0
-     */
-    protected function useCompressedJs(): bool
-    {
-        if (self::$_useCompressedJs !== null) {
-            return self::$_useCompressedJs;
-        }
-
-        return self::$_useCompressedJs = (bool)Craft::$app->getConfig()->getGeneral()->useCompressedJs;
-    }
-
-    /**
-     * Returns '.min.js' if Craft is configured to serve compressed JavaScript files, otherwise '.js'.
-     *
-     * @return string
-     * @deprecated in 3.5.0
-     */
-    protected function dotJs(): string
-    {
-        return $this->useCompressedJs() ? '.min.js' : '.js';
     }
 }

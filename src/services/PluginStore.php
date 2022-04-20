@@ -31,44 +31,44 @@ class PluginStore extends Component
     /**
      * @var string Craft ID endpoint
      */
-    public $craftIdEndpoint = 'https://id.craftcms.com';
+    public string $craftIdEndpoint = 'https://id.craftcms.com';
 
     /**
      * @var string OAuth endpoint
      */
-    public $craftOauthEndpoint = 'https://id.craftcms.com/oauth';
+    public string $craftOauthEndpoint = 'https://id.craftcms.com/oauth';
 
     /**
      * @var string API endpoint
      */
-    public $craftApiEndpoint = 'https://api.craftcms.com/v1';
+    public string $craftApiEndpoint = 'https://api.craftcms.com/v1';
 
     /**
      * @var string CraftIdOauthClientId
      */
-    public $craftIdOauthClientId = '6DvEra7eqRKLYic9fovyD2FWFjYxRwZn';
+    public string $craftIdOauthClientId = '6DvEra7eqRKLYic9fovyD2FWFjYxRwZn';
 
     /**
      * @var string Dev server manifest path
      */
-    public $devServerManifestPath = 'https://localhost:8082/';
+    public string $devServerManifestPath = 'https://localhost:8082/';
 
     /**
      * @var string Dev server public path
      */
-    public $devServerPublicPath = 'https://localhost:8082/';
+    public string $devServerPublicPath = 'https://localhost:8082/';
 
     /**
      * @var bool Enable dev server
      */
-    public $useDevServer = false;
+    public bool $useDevServer = false;
 
     /**
      * Saves the OAuth token.
      *
      * @param array $tokenArray
      */
-    public function saveToken(array $tokenArray)
+    public function saveToken(array $tokenArray): void
     {
         $oneDay = new DateTime();
         $oneDay->add(new DateInterval('P1D'));
@@ -100,18 +100,15 @@ class PluginStore extends Component
         } else {
             // Save token to database
 
-            $oauthTokenRecord = OauthTokenRecord::find()
+            OauthTokenRecord::find()
                 ->where(['userId' => $userId])
-                ->one();
-
-            if ($oauthTokenRecord) {
-                $oauthTokenRecord->delete();
-            }
+                ->one()
+                ?->delete();
 
             $oauthTokenRecord = new OauthTokenRecord();
             $oauthTokenRecord->userId = $oauthToken->userId;
             $oauthTokenRecord->accessToken = $oauthToken->accessToken;
-            $oauthTokenRecord->expiryDate = $oauthToken->expiryDate;
+            $oauthTokenRecord->expiryDate = Db::prepareDateForDb($oauthToken->expiryDate);
             $oauthTokenRecord->save();
         }
     }
@@ -121,7 +118,7 @@ class PluginStore extends Component
      *
      * @return CraftIdToken|null
      */
-    public function getToken()
+    public function getToken(): ?CraftIdToken
     {
         $userId = Craft::$app->getUser()->getIdentity()->id;
 
@@ -143,7 +140,7 @@ class PluginStore extends Component
 
         $token = new CraftIdToken($oauthTokenRecord->getAttributes());
 
-        if (!$token || ($token && $token->hasExpired())) {
+        if ($token->hasExpired()) {
             return null;
         }
 
@@ -153,20 +150,15 @@ class PluginStore extends Component
     /**
      * Deletes an OAuth token.
      */
-    public function deleteToken()
+    public function deleteToken(): void
     {
         // Delete DB token
-
         $userId = Craft::$app->getUser()->getIdentity()->id;
 
-        $oauthToken = OauthTokenRecord::find()
+        OauthTokenRecord::find()
             ->where(['userId' => $userId])
-            ->one();
-
-        if ($oauthToken) {
-            $oauthToken->delete();
-        }
-
+            ->one()
+            ?->delete();
 
         // Delete session token
         Session::remove('pluginStore.token');
@@ -196,10 +188,10 @@ class PluginStore extends Component
     /**
      * Returns the token by user ID.
      *
-     * @param $userId
+     * @param int $userId
      * @return CraftIdToken|null
      */
-    public function getTokenByUserId($userId)
+    public function getTokenByUserId(int $userId): ?CraftIdToken
     {
         $record = OauthTokenRecord::findOne(['userId' => $userId, 'provider' => 'craftid']);
 

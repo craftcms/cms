@@ -7,6 +7,8 @@
 
 namespace craft\base;
 
+use craft\console\Request as ConsoleRequest;
+use craft\web\Request as WebRequest;
 use yii\base\InvalidConfigException;
 
 /**
@@ -22,12 +24,12 @@ trait RequestTrait
     /**
      * @var bool
      */
-    public $isWebrootAliasSetDynamically = false;
+    public bool $isWebrootAliasSetDynamically = false;
 
     /**
      * @var bool
      */
-    public $isWebAliasSetDynamically = false;
+    public bool $isWebAliasSetDynamically = false;
 
     /**
      * Returns the requested script name being used to access Craft (e.g. “index.php”).
@@ -37,7 +39,7 @@ trait RequestTrait
      */
     public function getScriptFilename(): string
     {
-        /** @var \craft\web\Request|\craft\console\Request $this */
+        /** @var WebRequest|ConsoleRequest $this */
         return basename($this->getScriptFile());
     }
 }

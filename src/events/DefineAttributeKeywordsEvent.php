@@ -20,10 +20,10 @@ class DefineAttributeKeywordsEvent extends Event
     /**
      * @var string $attribute The element attribute
      */
-    public $attribute;
+    public string $attribute;
 
     /**
      * @var string $keywords
      */
-    public $keywords = '';
+    public string $keywords = '';
 }

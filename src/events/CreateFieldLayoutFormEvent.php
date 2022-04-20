@@ -23,20 +23,20 @@ class CreateFieldLayoutFormEvent extends Event
     /**
      * @var FieldLayoutForm The field layout form being created
      */
-    public $form;
+    public FieldLayoutForm $form;
 
     /**
      * @var ElementInterface|null The element the form is being rendered for
      */
-    public $element;
+    public ?ElementInterface $element = null;
 
     /**
      * @var bool Whether the form should be static (non-interactive)
      */
-    public $static = false;
+    public bool $static = false;
 
     /**
      * @var FieldLayoutTab[] The field layout tabs that will be displayed in the form.
      */
-    public $tabs;
+    public array $tabs;
 }

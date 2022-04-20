@@ -25,7 +25,8 @@ use craft\models\Update;
 use craft\models\Updates;
 use craft\web\Controller;
 use craft\web\ServiceUnavailableHttpException;
-use Http\Client\Common\Exception\ServerErrorException;
+use DateInterval;
+use Throwable;
 use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
@@ -46,7 +47,7 @@ class AppController extends Controller
     /**
      * @inheritdoc
      */
-    public $allowAnonymous = [
+    protected array|bool|int $allowAnonymous = [
         'migrate' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'broken-image' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'health-check' => self::ALLOW_ANONYMOUS_LIVE,
@@ -55,7 +56,7 @@ class AppController extends Controller
     /**
      * @inheritdoc
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         if ($action->id === 'migrate') {
             $this->enableCsrfValidation = false;
@@ -97,7 +98,7 @@ class AppController extends Controller
      * @throws BadRequestHttpException
      * @since 3.3.16
      */
-    public function actionProcessApiResponseHeaders()
+    public function actionProcessApiResponseHeaders(): Response
     {
         $this->requireCpRequest();
         $headers = $this->request->getRequiredBodyParam('headers');
@@ -192,7 +193,7 @@ class AppController extends Controller
             foreach ($updates->plugins as $pluginHandle => $pluginUpdate) {
                 try {
                     $pluginInfo = $pluginsService->getPluginInfo($pluginHandle);
-                } catch (InvalidPluginException $e) {
+                } catch (InvalidPluginException) {
                     continue;
                 }
                 $res['updates']['plugins'][] = $this->_transformUpdate($allowUpdates, $pluginUpdate, $pluginHandle, $pluginInfo['name']);
@@ -211,9 +212,10 @@ class AppController extends Controller
      * downtime after a deployment.
      *
      * @param bool $applyProjectConfigChanges
-     * @throws ServerErrorException if something went wrong
+     * @return Response
+     * @throws ServerErrorHttpException
      */
-    public function actionMigrate(bool $applyProjectConfigChanges = false)
+    public function actionMigrate(bool $applyProjectConfigChanges = false): Response
     {
         $this->requirePostRequest();
 
@@ -247,8 +249,9 @@ class AppController extends Controller
         if ($backup) {
             try {
                 $backupPath = $db->backup();
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 Craft::$app->disableMaintenanceMode();
+                /** @phpstan-ignore-next-line */
                 throw new ServerErrorHttpException('Error backing up the database.', 0, $e);
             }
         }
@@ -264,7 +267,7 @@ class AppController extends Controller
             // Sync project.yaml?
             if ($applyProjectConfigChanges) {
                 try {
-                    $projectConfigService->applyYamlChanges();
+                    $projectConfigService->applyExternalChanges();
                 } catch (BusyResourceException|StaleResourceException $e) {
                     Craft::$app->getErrorHandler()->logException($e);
                     Craft::warning("Couldn’t apply project config YAML changes: {$e->getMessage()}", __METHOD__);
@@ -272,7 +275,7 @@ class AppController extends Controller
             }
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
 
             // MySQL may have implicitly committed the transaction
@@ -284,7 +287,7 @@ class AppController extends Controller
                 try {
                     $db->restore($backupPath);
                     $restored = true;
-                } catch (\Throwable $restoreException) {
+                } catch (Throwable $restoreException) {
                     // Just log it
                     Craft::$app->getErrorHandler()->logException($restoreException);
                 }
@@ -293,13 +296,14 @@ class AppController extends Controller
             $error = 'An error occurred running new migrations.';
             if ($restored) {
                 $error .= ' The database has been restored to its previous state.';
-            } else if (isset($restoreException)) {
+            } elseif (isset($restoreException)) {
                 $error .= ' The database could not be restored due to a separate error: ' . $restoreException->getMessage();
             } else {
                 $error .= ' The database has not been restored.';
             }
 
             Craft::$app->disableMaintenanceMode();
+            /** @phpstan-ignore-next-line */
             throw new ServerErrorHttpException($error, 0, $e);
         }
 
@@ -361,15 +365,13 @@ class AppController extends Controller
         $user = Craft::$app->getUser()->getIdentity();
 
         $currentTime = DateTimeHelper::currentUTCDateTime();
-        $tomorrow = $currentTime->add(new \DateInterval('P1D'));
+        $tomorrow = $currentTime->add(new DateInterval('P1D'));
 
         if (Craft::$app->getUsers()->shunMessageForUser($user->id, $message, $tomorrow)) {
-            return $this->asJson([
-                'success' => true,
-            ]);
+            return $this->asSuccess();
         }
 
-        return $this->asErrorJson(Craft::t('app', 'A server error occurred.'));
+        return $this->asFailure(Craft::t('app', 'A server error occurred.'));
     }
 
     /**
@@ -391,16 +393,11 @@ class AppController extends Controller
             $licensedEdition = 0;
         }
 
-        switch ($edition) {
-            case 'solo':
-                $edition = Craft::Solo;
-                break;
-            case 'pro':
-                $edition = Craft::Pro;
-                break;
-            default:
-                throw new BadRequestHttpException('Invalid Craft edition: ' . $edition);
-        }
+        $edition = match ($edition) {
+            'solo' => Craft::Solo,
+            'pro' => Craft::Pro,
+            default => throw new BadRequestHttpException('Invalid Craft edition: ' . $edition),
+        };
 
         // If this is actually an upgrade, make sure that they are allowed to test edition upgrades
         if ($edition > $licensedEdition && !Craft::$app->getCanTestEditions()) {
@@ -409,9 +406,7 @@ class AppController extends Controller
 
         Craft::$app->setEdition($edition);
 
-        return $this->asJson([
-            'success' => true,
-        ]);
+        return $this->asSuccess();
     }
 
     /**
@@ -432,7 +427,7 @@ class AppController extends Controller
             $success = true;
         }
 
-        return $this->asJson(['success' => $success]);
+        return $success ? $this->asSuccess() : $this->asFailure();
     }
 
     /**
@@ -450,7 +445,7 @@ class AppController extends Controller
     }
 
     /**
-     * Updates a plugin's license key.
+     * Updates a plugin’s license key.
      *
      * @return Response
      */
@@ -503,7 +498,7 @@ class AppController extends Controller
                         'name' => $update->replacementName,
                     ]);
             }
-        } else if ($update->status === Update::STATUS_EXPIRED) {
+        } elseif ($update->status === Update::STATUS_EXPIRED) {
             $arr['statusText'] = Craft::t('app', '<strong>Your license has expired!</strong> Renew your {name} license for another year of amazing updates.', [
                 'name' => $name,
             ]);
@@ -540,7 +535,7 @@ class AppController extends Controller
      * @param array|null $pluginLicenses
      * @return array
      */
-    private function _pluginLicenseInfo(array $pluginLicenses = null): array
+    private function _pluginLicenseInfo(?array $pluginLicenses = null): array
     {
         $result = [];
 
@@ -635,7 +630,7 @@ class AppController extends Controller
 
         $statusCode = $this->response->getStatusCode();
         return $this->response
-            ->sendFile($imagePath, ['inline' => true])
+            ->sendFile($imagePath, null, ['inline' => true])
             ->setStatusCode($statusCode);
     }
 }

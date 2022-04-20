@@ -1,6 +1,6 @@
 <?php
 
-use craft\test\Craft;
+use craft\helpers\App;
 
 /**
  * General Configuration
@@ -14,6 +14,5 @@ return [
     'cpTrigger' => 'adminustriggerus',
     'slugWordSeparator' => '--',
     'allowUppercaseInSlug' => true,
-    'securityKey' => getenv('SECURITY_KEY'),
-    'useProjectConfigFile' => isset(Craft::$instance) && Craft::$instance->_getConfig('projectConfig') !== null,
+    'securityKey' => App::env('SECURITY_KEY'),
 ];

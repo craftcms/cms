@@ -1,0 +1,70 @@
+{% apply spaceless %}
+{% set keyPrefix = keyPrefix ?? '' %}
+
+{% macro sourceLink(key, source, isTopLevel, elementType) %}
+    {% from _self import sourceInnerHtml %}
+    {{ tag('a', {
+        data: {
+            key: key,
+            'has-thumbs': (source.hasThumbs ?? false) ? true : false,
+            'has-structure': (source.structureId ?? false) ? true : false,
+            'default-sort': (source.defaultSort ?? false)
+                ? (source.defaultSort is iterable ? source.defaultSort|join(':') : source.defaultSort)
+                : false,
+            'sort-options': isTopLevel
+                ? craft.app.elementSources.getSourceSortOptions(elementType, key)
+                    |map(o => [o.label, o.attribute ?? o.orderBy])
+                    |json_encode
+                : false,
+            sites: (source.sites ?? false) ? source.sites|join(',') : false,
+            'override-status': (source.criteria.status ?? false) ? true : false,
+            disabled: source.disabled ?? false,
+        }|merge(source.data ?? {}),
+        html: sourceInnerHtml(source)
+    }) }}
+{% endmacro %}
+
+{% macro sourceInnerHtml(source) %}
+    {% if source.status is defined %}
+        <span class="status {{ source.status }}"></span>
+    {% elseif source.icon is defined %}
+        <span class="icon">
+            {{ (svg(source.icon, sanitize=true, namespace=true) ?: "<span data-icon='#{source.icon}'></span>")|raw }}
+        </span>
+    {% elseif source.iconMask is defined %}
+        <span class="icon icon-mask">
+            {{ (svg(source.iconMask, sanitize=true, namespace=true) ?: "<span data-icon='#{source.iconMask}'></span>")|raw }}
+        </span>
+    {% endif %}
+    <span class="label">{{ source.label|trim is not same as('') ? source.label : '(blank)'|t('app') }}</span>
+    {% if source.badgeCount is defined %}
+        <span class="badge">{{ source.badgeCount|number(decimals=0) }}</span>
+    {% endif %}
+{% endmacro %}
+
+{% from _self import sourceLink %}
+
+<ul>
+    {% for source in sources %}
+        {% if (source.type ?? null) == 'heading' %}
+            <li class="heading"><span>{{ source.heading|t('site') }}</span></li>
+        {% else %}
+            {% set key = source.keyPath ?? (keyPrefix ~ source.key) %}
+            {% tag 'li' with {
+                class: [
+                    (source.disabled ?? false) ? 'hidden' : null,
+                ]|filter,
+            } %}
+                {{ sourceLink(key, source, not keyPrefix, elementType) }}
+                {% if source.nested is defined and source.nested is not empty %}
+                    <button class="toggle" aria-expanded="false" aria-label="{{ 'Show nested sources'|t('app') }}"></button>
+                    {% include "_elements/sources" with {
+                        keyPrefix: key ~ '/',
+                        sources: source.nested
+                    } %}
+                {% endif %}
+            {% endtag %}
+        {% endif %}
+    {% endfor %}
+</ul>
+{% endapply %}

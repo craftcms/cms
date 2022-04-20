@@ -22,7 +22,7 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -93,7 +93,7 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
      * They should be bound to the DB command later.
      * @return string The SQL statement for replacing some text in a given table.
      */
-    public function replace(string $table, string $column, string $find, string $replace, $condition, array &$params): string
+    public function replace(string $table, string $column, string $find, string $replace, array|string $condition, array &$params): string
     {
         $column = $this->db->quoteColumnName($column);
 
@@ -103,7 +103,7 @@ class QueryBuilder extends \yii\db\mysql\QueryBuilder
         $replacePhName = self::PARAM_PREFIX . count($params);
         $params[$replacePhName] = $replace;
 
-        $sql = "UPDATE {$table} SET {$column} = REPLACE({$column}, {$findPhName}, {$replacePhName})";
+        $sql = "UPDATE $table SET $column = REPLACE($column, $findPhName, $replacePhName)";
         $where = $this->buildWhere($condition, $params);
 
         return $where === '' ? $sql : $sql . ' ' . $where;

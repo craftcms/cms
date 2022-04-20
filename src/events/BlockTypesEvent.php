@@ -23,15 +23,15 @@ class BlockTypesEvent extends Event
     /**
      * @var MatrixBlockType[] The block types that will be available for the current field
      */
-    public $blockTypes;
+    public array $blockTypes;
 
     /**
      * @var ElementInterface|null The element that the field is generating an input for.
      */
-    public $element;
+    public ?ElementInterface $element = null;
 
     /**
      * @var MatrixBlock[] The current value of the field.
      */
-    public $value;
+    public array $value;
 }

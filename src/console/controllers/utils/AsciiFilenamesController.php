@@ -13,6 +13,7 @@ use craft\elements\Asset;
 use craft\errors\InvalidElementException;
 use craft\helpers\Console;
 use craft\helpers\FileHelper;
+use Throwable;
 use yii\console\ExitCode;
 use yii\db\Expression;
 
@@ -51,6 +52,7 @@ EOD;
             $query->andWhere(new Expression("[[filename]] ~ '[^[:ascii:]]'"));
         }
 
+        /** @var Asset[] $assets */
         $assets = $query->all();
         $total = count($assets);
 
@@ -67,7 +69,7 @@ EOD;
                 break;
             }
 
-            $this->stdout("    - {$asset->filename}" . PHP_EOL);
+            $this->stdout("    - {$asset->getFilename()}" . PHP_EOL);
         }
 
         $this->stdout(PHP_EOL);
@@ -81,17 +83,17 @@ EOD;
         $failCount = 0;
 
         foreach ($assets as $asset) {
-            $asset->newFilename = FileHelper::sanitizeFilename($asset->filename, [
+            $asset->newFilename = FileHelper::sanitizeFilename($asset->getFilename(), [
                 'asciiOnly' => true,
             ]);
-            $this->stdout("    - Renaming {$asset->filename} to {$asset->newFilename} ... ");
+            $this->stdout("    - Renaming {$asset->getFilename()} to $asset->newFilename ... ");
             try {
                 if (!Craft::$app->getElements()->saveElement($asset)) {
                     throw new InvalidElementException($asset, implode(', ', $asset->getFirstErrors()));
                 }
                 $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
                 $successCount++;
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 $this->stdout('error: ' . $e->getMessage() . PHP_EOL, Console::FG_RED);
                 if (!$e instanceof InvalidElementException) {
                     Craft::$app->getErrorHandler()->logException($e);
@@ -104,7 +106,7 @@ EOD;
 
         if ($successCount && $failCount) {
             $this->stdout("Successfully renamed $successCount assets, but $failCount assets failed." . PHP_EOL . PHP_EOL);
-        } else if ($successCount) {
+        } elseif ($successCount) {
             $this->stdout("Successfully renamed $successCount assets." . PHP_EOL . PHP_EOL);
         } else {
             $this->stdout("Failed to rename $failCount assets." . PHP_EOL . PHP_EOL);

@@ -11,20 +11,22 @@ use craft\db\ActiveRecord;
 use craft\db\SoftDeleteTrait;
 use craft\db\Table;
 use yii\db\ActiveQueryInterface;
+use yii2tech\ar\softdelete\SoftDeleteBehavior;
 
 /**
  * Class CategoryGroup record.
  *
  * @property int $id ID
  * @property int $structureId Structure ID
- * @property int $fieldLayoutId Field layout ID
+ * @property int|null $fieldLayoutId Field layout ID
  * @property string $name Name
  * @property string $handle Handle
  * @property string $defaultPlacement Default placement
- * @property Structure $structure Structure
+ * @property Structure|null $structure Structure
  * @property FieldLayout $fieldLayout Field layout
  * @property CategoryGroup_SiteSettings[] $siteSettings Site settings
  * @property Category[] $categories Categories
+ * @mixin SoftDeleteBehavior
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */

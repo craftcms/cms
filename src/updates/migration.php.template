@@ -32,22 +32,26 @@ class <?= $className ?> extends Migration
     /**
      * @inheritdoc
      */
-    public function safeUp()
+    public function safeUp(): bool
     {
 <?php if ($isInstall) { ?>
         // Place installation code here...
 <?php } else { ?>
         // Place migration code here...
 <?php } ?>
+
+        return true;
     }
 
     /**
      * @inheritdoc
      */
-    public function safeDown()
+    public function safeDown(): bool
     {
 <?php if ($isInstall) { ?>
         // Place uninstallation code here...
+
+        return true;
 <?php } else { ?>
         echo "<?= $className ?> cannot be reverted.\n";
         return false;

@@ -32,7 +32,7 @@ class Path
         foreach ($segs as $seg) {
             if ($seg === '..') {
                 $level--;
-            } else if ($seg !== '.') {
+            } elseif ($seg !== '.') {
                 $level++;
             }
 

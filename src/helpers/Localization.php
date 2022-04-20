@@ -21,9 +21,9 @@ use yii\i18n\MissingTranslationEvent;
 class Localization
 {
     /**
-     * @var
+     * @var string[][]
      */
-    private static $_translations;
+    private static array $_translations = [];
 
     /**
      * Normalizes a language into the correct format (e.g. `en-US`).
@@ -57,12 +57,12 @@ class Localization
      * @param string|null $localeId The locale ID that the number is set in
      * @return mixed The normalized number.
      */
-    public static function normalizeNumber($number, ?string $localeId = null)
+    public static function normalizeNumber(mixed $number, ?string $localeId = null): mixed
     {
         if (is_string($number)) {
             if ($localeId === null) {
                 $locale = Craft::$app->getFormattingLocale();
-            } else if ($localeId === Craft::$app->language) {
+            } elseif ($localeId === Craft::$app->language) {
                 $locale = Craft::$app->getLocale();
             } else {
                 $locale = Craft::$app->getI18n()->getLocaleById($localeId);
@@ -79,46 +79,16 @@ class Localization
     }
 
     /**
-     * Returns fallback data for a locale if the Intl extension isn't loaded.
-     *
-     * @param string $localeId
-     * @return array|null
-     */
-    public static function localeData(string $localeId)
-    {
-        $data = null;
-
-        // Load the locale data
-        $appDataPath = Craft::$app->getBasePath() . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'locales' . DIRECTORY_SEPARATOR . $localeId . '.php';
-        $customDataPath = Craft::$app->getPath()->getConfigPath() . DIRECTORY_SEPARATOR . 'locales' . DIRECTORY_SEPARATOR . $localeId . '.php';
-
-        if (is_file($appDataPath)) {
-            $data = require $appDataPath;
-        }
-
-        if (is_file($customDataPath)) {
-            if ($data !== null) {
-                $data = ArrayHelper::merge($data, require $customDataPath);
-            } else {
-                $data = require $customDataPath;
-            }
-        }
-
-        return $data;
-    }
-
-    /**
      * Looks for a missing translation string in Yii's core translations.
      *
      * @param MissingTranslationEvent $event
      */
-    public static function findMissingTranslation(MissingTranslationEvent $event)
+    public static function findMissingTranslation(MissingTranslationEvent $event): void
     {
         // Look for translation file from most to least specific.  So nl_nl.php gets checked before nl.php, for example.
         $translationFiles = [];
         $parts = explode('_', $event->language);
         $totalParts = count($parts);
-        $loadedAlready = false;
 
         for ($i = 1; $i <= $totalParts; $i++) {
             $translationFiles[] = implode('_', array_slice($parts, 0, $i));
@@ -128,13 +98,8 @@ class Localization
 
         // First see if we have any cached info.
         foreach ($translationFiles as $translationFile) {
-            $loadedAlready = false;
-
             // We've loaded the translation file already, just check for the translation.
             if (isset(self::$_translations[$translationFile])) {
-                /** @noinspection PhpUnusedLocalVariableInspection */
-                $loadedAlready = true;
-
                 if (isset(self::$_translations[$translationFile][$event->message])) {
                     // Found a match... grab it and go.
                     $event->message = self::$_translations[$translationFile][$event->message];
@@ -145,11 +110,6 @@ class Localization
                 // No translation... just give up.
                 return;
             }
-        }
-
-        // We've checked through an already loaded message file and there was no match. Just give up.
-        if ($loadedAlready) {
-            return;
         }
 
         // No luck in cache, check the file system.
@@ -164,7 +124,6 @@ class Localization
 
                 if (isset(self::$_translations[$translationFile][$event->message])) {
                     $event->message = self::$_translations[$translationFile][$event->message];
-
                     return;
                 }
             } else {

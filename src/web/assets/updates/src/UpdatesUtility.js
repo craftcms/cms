@@ -23,18 +23,18 @@ import './updates.scss';
                 includeDetails: true
             };
 
-            Craft.cp.checkForUpdates(true, true, info => {
-                this.allowUpdates = info.allowUpdates;
+            Craft.cp.checkForUpdates(true, true, ({data}) => {
+                this.allowUpdates = data.allowUpdates;
 
                 // Craft CMS update?
-                if (info.updates.cms) {
-                    this.processUpdate(info.updates.cms, false);
+                if (data.updates.cms) {
+                    this.processUpdate(data.updates.cms, false);
                 }
 
                 // Plugin updates?
-                if (info.updates.plugins && info.updates.plugins.length) {
-                    for (var i = 0; i < info.updates.plugins.length; i++) {
-                        this.processUpdate(info.updates.plugins[i], true);
+                if (data.updates.plugins && data.updates.plugins.length) {
+                    for (var i = 0; i < data.updates.plugins.length; i++) {
+                        this.processUpdate(data.updates.plugins[i], true);
                     }
                 }
 
@@ -56,7 +56,7 @@ import './updates.scss';
                             .insertAfter($('#header > .flex:last'));
                     }
                 } else {
-                    $graphic.addClass('success');
+                    $graphic.removeClass('spinner').addClass('success');
                     $status.text(Craft.t('app', 'You’re all up to date!'));
                 }
             });

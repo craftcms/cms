@@ -132,11 +132,13 @@ new Vue({
         retryAll() {
             return new Promise((resolve, reject) => {
                 window.clearTimeout(this.indexTimeout)
-                this.postActionRequest('queue/retry-all').then(response => {
-                    Craft.cp.displayNotice(Craft.t('app', 'Retrying all failed jobs.'))
-                    this.updateJobProgress()
-                    resolve()
-                }).catch(reject)
+                Craft.sendActionRequest('POST', 'queue/retry-all')
+                    .then((response) => {
+                        Craft.cp.displayNotice(Craft.t('app', 'Retrying all failed jobs.'))
+                        this.updateJobProgress()
+                        resolve()
+                    })
+                    .catch(reject);
             })
         },
 
@@ -151,12 +153,14 @@ new Vue({
                     return
                 }
 
-                this.postActionRequest('queue/release-all').then(response => {
-                    Craft.cp.displayNotice(Craft.t('app', 'All jobs released.'))
-                    this.clearActiveJob(true)
-                    this.updateJobProgress()
-                    resolve(true)
-                }).catch(reject)
+                Craft.sendActionRequest('POST', 'queue/release-all')
+                    .then(response => {
+                        Craft.cp.displayNotice(Craft.t('app', 'All jobs released.'))
+                        this.clearActiveJob(true)
+                        this.updateJobProgress()
+                        resolve(true)
+                    })
+                    .catch(reject);
             })
         },
 
@@ -180,16 +184,18 @@ new Vue({
 
                 window.clearTimeout(this.indexTimeout)
 
-                this.postActionRequest('queue/retry', {id: job.id}).then(response => {
-                    if (job.status == 2) {
-                        Craft.cp.displayNotice(Craft.t('app', 'Job restarted.'))
-                    } else {
-                        Craft.cp.displayNotice(Craft.t('app', 'Job retried.'))
-                    }
+                Craft.sendActionRequest('POST', 'queue/retry', {data: {id: job.id}})
+                    .then(response => {
+                        if (job.status == 2) {
+                            Craft.cp.displayNotice(Craft.t('app', 'Job restarted.'))
+                        } else {
+                            Craft.cp.displayNotice(Craft.t('app', 'Job retried.'))
+                        }
 
-                    this.updateJobProgress()
-                    resolve(true)
-                }).catch(reject)
+                        this.updateJobProgress()
+                        resolve(true);
+                    })
+                    .catch(reject);
             })
         },
 
@@ -217,11 +223,14 @@ new Vue({
                     resolve(false)
                     return
                 }
-                this.postActionRequest('queue/release', {id: job.id}).then(response => {
-                    Craft.cp.displayNotice(Craft.t('app', 'Job released.'))
-                    this.updateJobProgress()
-                    resolve(true)
-                })
+
+                Craft.sendActionRequest('POST', 'queue/release', {data: {id: job.id}})
+                    .then((response) => {
+                        Craft.cp.displayNotice(Craft.t('app', 'Job released.'))
+                        this.updateJobProgress()
+                        resolve(true)
+                    })
+                    .catch(({response}) => reject);
             })
         },
 
@@ -371,23 +380,5 @@ new Vue({
                 num: value
             })
         },
-
-        /**
-         * Promise wrapper for `Craft.postActionRequest()`.
-         * @param {string} action
-         * @param {Object} params
-         * @returns {Promise}
-         */
-        postActionRequest(action, params) {
-            return new Promise((resolve, reject) => {
-                Craft.postActionRequest(action, params, (response, textStatus) => {
-                    if (textStatus !== 'success') {
-                        reject()
-                        return
-                    }
-                    resolve(response)
-                })
-            })
-        }
     }
 })

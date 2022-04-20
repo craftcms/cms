@@ -323,11 +323,10 @@ Craft.StructureDrag = Garnish.Drag.extend({
                     parentId: this.$draggee.parent('ul').parent('li').children('.row').children('.element').data('id')
                 };
 
-                Craft.postActionRequest('structures/move-element', data, function(response, textStatus) {
-                    if (textStatus === 'success') {
+                Craft.sendActionRequest('POST', 'structures/move-element', {data})
+                    .then((response) => {
                         Craft.cp.displayNotice(Craft.t('app', 'New order saved.'));
-                    }
-                });
+                    });
             }
         }
 

@@ -8,7 +8,7 @@
 namespace craft\gql\base;
 
 /**
- * Class GeneratorInterface
+ * GeneratorInterface defines the common interface to be implemented by GraphQL type generator classes.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.3.0
@@ -21,5 +21,5 @@ interface GeneratorInterface
      * @param mixed $context Context for generated types
      * @return ObjectType[]
      */
-    public static function generateTypes($context = null): array;
+    public static function generateTypes(mixed $context = null): array;
 }

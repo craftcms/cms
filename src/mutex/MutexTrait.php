@@ -22,22 +22,22 @@ trait MutexTrait
      * @var string a string prefixed to every lock name. This can be used to avoid lock conflicts if
      * multiple applications are sharing the same database connection.
      */
-    public $namePrefix = '';
+    public string $namePrefix = '';
 
     /**
      * @var Connection
      */
-    private $_db;
+    private Connection $_db;
 
     /**
      * @var array List of mutex locks that are queued to be released once the current DB transaction is complete.
      */
-    private $_releaseQueue = [];
+    private array $_releaseQueue = [];
 
     /**
      * Initializes the component.
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -52,7 +52,7 @@ trait MutexTrait
      * @param int $timeout
      * @return bool
      */
-    public function acquire($name, $timeout = 0)
+    public function acquire($name, $timeout = 0): bool
     {
         $name = $this->_name($name);
 
@@ -69,7 +69,7 @@ trait MutexTrait
      * @param string $name
      * @return bool
      */
-    public function release($name)
+    public function release($name): bool
     {
         $name = $this->_name($name);
 
@@ -86,13 +86,13 @@ trait MutexTrait
      * @param string $name
      * @return bool
      */
-    public function isAcquired($name)
+    public function isAcquired($name): bool
     {
         $name = $this->_name($name);
 
         // Is it already acquired in the DB, waiting for the transaction to be completed?
         if (isset($this->_releaseQueue[$name])) {
-            // Pretend it's not
+            // Pretend it’s not
             return false;
         }
 
@@ -119,5 +119,3 @@ trait MutexTrait
         $this->_releaseQueue = [];
     }
 }
-
-class_alias(MutexTrait::class, DbMutexTrait::class);

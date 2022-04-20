@@ -79,6 +79,8 @@ Craft.PreviewFileModal = Garnish.Modal.extend({
         instance.destroy();
 
         Craft.PreviewFileModal.openInstance = null;
+        Craft.focalPoint.destruct();
+        Craft.focalPoint = null;
 
         return true;
     },
@@ -124,34 +126,36 @@ Craft.PreviewFileModal = Garnish.Modal.extend({
         this.$spinner.css({left: left, top: top, position: 'absolute'});
         this.requestId++;
 
-        Craft.postActionRequest('assets/preview-file', {assetId: assetId, requestId: this.requestId}, (response, textStatus) => {
+        let data = {assetId: assetId, requestId: this.requestId};
+        let onResponse = () => {
             this.$container.removeClass('loading');
             this.$spinner.remove();
             this.loaded = true;
+        };
+        Craft.sendActionRequest('POST', 'assets/preview-file', {data})
+            .then((response) => {
+                onResponse();
 
-            if (textStatus === 'success') {
-                if (response.success) {
-                    if (response.requestId != this.requestId) {
-                        return;
-                    }
-
-                    if (!response.previewHtml) {
-                        this.$container.addClass('zilch');
-                        this.$container.append($('<p/>', {text: Craft.t('app', 'No preview available.')}));
-                        return;
-                    }
-
-                    this.$container.removeClass('zilch');
-                    this.$container.append(response.previewHtml);
-                    Craft.appendHeadHtml(response.headHtml);
-                    Craft.appendFootHtml(response.footHtml);
-                } else {
-                    alert(response.error);
-
-                    this.hide();
+                if (response.data.requestId != this.requestId) {
+                    return;
                 }
-            }
-        });
+
+                if (!response.data.previewHtml) {
+                    this.$container.addClass('zilch');
+                    this.$container.append($('<p/>', {text: Craft.t('app', 'No preview available.')}));
+                    return;
+                }
+
+                this.$container.removeClass('zilch');
+                this.$container.append(response.data.previewHtml);
+                Craft.appendHeadHtml(response.data.headHtml);
+                Craft.appendBodyHtml(response.data.bodyHtml);
+            })
+            .catch(({response}) => {
+                onResponse();
+                alert(response.data.message);
+                this.hide();
+            });
     },
 
     /**
