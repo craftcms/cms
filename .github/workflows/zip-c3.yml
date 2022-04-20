@@ -25,24 +25,25 @@ jobs:
           php_version: "7.2"
           dev: no
           php_extensions: pcre zip
-          command: create-project craftcms/craft craft-workspace
+          command: create-project craftcms/craft .
 
       - name: Move .env
-        run: sudo mv craft-workspace/.env.example craft-workspace/.env
+        run: sudo mv .env.example .env
 
       - name: Create Zip
         uses: thedoctor0/zip-release@master
         with:
           type: 'zip'
           filename: 'craft-release.zip'
-          directory: 'craft-workspace'
+#          path: 'craft-workspace/*'
+#          directory: 'craft-workspace'
 
       - name: Create Tar
         uses: thedoctor0/zip-release@master
         with:
           type: 'tar'
           filename: 'craft-release.tar.gz'
-          directory: 'craft-workspace'
+#          directory: 'craft-workspace'
 
       - name: Archive production artifacts
         uses: actions/upload-artifact@v3
