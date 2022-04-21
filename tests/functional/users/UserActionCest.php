@@ -81,7 +81,7 @@ class UserActionCest
     {
         $I->amOnPage('/' . $this->cpTrigger . '/users/' . $this->activeUser->id . '');
 
-        $I->see('Login as');
+        $I->see('Sign in as');
 
         Craft::$app->getConfig()->getGeneral()->requireUserAgentAndIpForSession = false;
         $I->submitForm('#userform', [
