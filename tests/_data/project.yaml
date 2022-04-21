@@ -108,8 +108,7 @@ users:
   fieldLayouts:
     2da91a33-0856-4fe4-a2ae-ca3fb7b5eaed:
       tabs:
-        -
-          fields:
+        - fields:
             024666e4-a54f-49b4-aea7-f1a3c1eb0994:
               required: true
               sortOrder: '1'

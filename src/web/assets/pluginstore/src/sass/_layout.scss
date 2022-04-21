@@ -1,5 +1,5 @@
 @charset "UTF-8";
-@import "@craftcms/sass/mixins";
+@import '@craftcms/sass/mixins';
 
 #main-container #main #main-content #content-container #content {
   display: flex;
@@ -37,7 +37,6 @@
     .ps-sidebar {
       @apply .border-b-0 .border-r .overflow-auto;
       max-width: 225px;
-
 
       .categories {
         display: block;

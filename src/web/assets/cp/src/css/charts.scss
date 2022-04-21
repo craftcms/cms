@@ -1,6 +1,6 @@
 @charset "UTF-8";
 
-@import "@craftcms/sass/mixins";
+@import '@craftcms/sass/mixins';
 
 .cp-chart {
   margin: 0;
@@ -33,17 +33,17 @@
 }
 
 .cp-chart .axis text {
-  fill: RGBA(0, 0, 0, .6);
+  fill: RGBA(0, 0, 0, 0.6);
 }
 
 .cp-chart .grid-line .tick {
-  stroke: RGBA(0, 0, 0, .08);
+  stroke: RGBA(0, 0, 0, 0.08);
   stroke-opacity: 0.7;
   shape-rendering: crispEdges;
 }
 
 .cp-chart .grid-line .tick line {
-  stroke: RGBA(0, 0, 0, .08);
+  stroke: RGBA(0, 0, 0, 0.08);
   stroke-opacity: 0.7;
   shape-rendering: crispEdges;
 }

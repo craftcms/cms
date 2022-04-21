@@ -3,9 +3,9 @@
 const {getConfig} = require('@craftcms/webpack');
 
 module.exports = getConfig({
-    context: __dirname,
-    type: 'vue',
-    config: {
-        entry: {'queue-manager': './queue-manager.js'},
-    }
+  context: __dirname,
+  type: 'vue',
+  config: {
+    entry: {'queue-manager': './queue-manager.js'},
+  },
 });

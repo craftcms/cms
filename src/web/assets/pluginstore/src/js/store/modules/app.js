@@ -2,47 +2,47 @@
  * State
  */
 const state = {
-    searchQuery: '',
-    showingScreenshotModal: false,
-    screenshotModalImages: null,
-    screenshotModalImageKey: 0,
-}
+  searchQuery: '',
+  showingScreenshotModal: false,
+  screenshotModalImages: null,
+  screenshotModalImageKey: 0,
+};
 
 /**
  * Getters
  */
-const getters = {}
+const getters = {};
 
 /**
  * Actions
  */
-const actions = {}
+const actions = {};
 
 /**
  * Mutations
  */
 const mutations = {
-    updateSearchQuery(state, searchQuery) {
-        state.searchQuery = searchQuery
-    },
+  updateSearchQuery(state, searchQuery) {
+    state.searchQuery = searchQuery;
+  },
 
-    updateShowingScreenshotModal(state, show) {
-        state.showingScreenshotModal = show
-    },
+  updateShowingScreenshotModal(state, show) {
+    state.showingScreenshotModal = show;
+  },
 
-    updateScreenshotModalImages(state, images) {
-        state.screenshotModalImages = images
-    },
+  updateScreenshotModalImages(state, images) {
+    state.screenshotModalImages = images;
+  },
 
-    updateScreenshotModalImageKey(state, key) {
-        state.screenshotModalImageKey = key
-    },
-}
+  updateScreenshotModalImageKey(state, key) {
+    state.screenshotModalImageKey = key;
+  },
+};
 
 export default {
-    namespaced: true,
-    state,
-    getters,
-    actions,
-    mutations
-}
+  namespaced: true,
+  state,
+  getters,
+  actions,
+  mutations,
+};

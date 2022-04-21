@@ -1,5 +1,5 @@
 @charset "UTF-8";
-@import "@craftcms/sass/mixins";
+@import '@craftcms/sass/mixins';
 
 $base: 24px;
 $tabPadding: 14px;
@@ -9,7 +9,7 @@ $gridColor: hsl(212, 50%, 95%);
 @mixin workspaceBg {
   background-color: $grey050;
   background-image: linear-gradient(to right, $gridColor 1px, transparent 0px),
-  linear-gradient(to bottom, $gridColor 1px, transparent 1px);
+    linear-gradient(to bottom, $gridColor 1px, transparent 1px);
   background-size: $base $base;
 }
 
@@ -82,7 +82,8 @@ $gridColor: hsl(212, 50%, 95%);
 .fld-new-tab-btn,
 .fld-new-tab-btn:hover {
   background-color: $white;
-  box-shadow: 0 0 0 1px transparentize($grey900, 0.9), 0 2px 5px -2px transparentize($grey900, 0.8);
+  box-shadow: 0 0 0 1px transparentize($grey900, 0.9),
+    0 2px 5px -2px transparentize($grey900, 0.8);
 }
 
 .fld-tab .settings,
@@ -138,7 +139,12 @@ $gridColor: hsl(212, 50%, 95%);
 
   .fld-tabcontent {
     padding: $tabPadding;
-    @include border-radius(0, $mediumBorderRadius, $mediumBorderRadius, $mediumBorderRadius);
+    @include border-radius(
+      0,
+      $mediumBorderRadius,
+      $mediumBorderRadius,
+      $mediumBorderRadius
+    );
   }
 
   &.fld-insertion {
