@@ -694,8 +694,8 @@ class View extends \yii\web\View
      * - TemplateName/index.twig
      *
      * If this is a front-end request, the actual list of file extensions and
-     * index filenames are configurable via the <config3:defaultTemplateExtensions>
-     * and <config3:indexTemplateFilenames> config settings.
+     * index filenames are configurable via the <config4:defaultTemplateExtensions>
+     * and <config4:indexTemplateFilenames> config settings.
      *
      * For example if you set the following in config/general.php:
      *
