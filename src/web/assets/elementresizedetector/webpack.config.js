@@ -4,17 +4,19 @@ const {getConfig} = require('@craftcms/webpack');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = getConfig({
-    context: __dirname,
-    config: {
-        plugins: [
-            new CopyWebpackPlugin({
-                patterns: [
-                    {
-                        from: require.resolve('element-resize-detector/dist/element-resize-detector.min.js'),
-                        to: 'element-resize-detector.js',
-                    },
-                ],
-            }),
-        ]
-    }
+  context: __dirname,
+  config: {
+    plugins: [
+      new CopyWebpackPlugin({
+        patterns: [
+          {
+            from: require.resolve(
+              'element-resize-detector/dist/element-resize-detector.min.js'
+            ),
+            to: 'element-resize-detector.js',
+          },
+        ],
+      }),
+    ],
+  },
 });

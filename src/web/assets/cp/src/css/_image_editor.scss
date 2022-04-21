@@ -1,8 +1,9 @@
 @charset "UTF-8";
-@import "@craftcms/sass/mixins";
+@import '@craftcms/sass/mixins';
 
 /* No Scroll */
-html.noscroll, html.noscroll body {
+html.noscroll,
+html.noscroll body {
   overflow: hidden;
   height: 100%;
 }
@@ -99,15 +100,15 @@ html.noscroll, html.noscroll body {
   height: 24px;
 }
 
-.modal.imageeditor .body .tabs ul li[data-view="rotate"] i {
+.modal.imageeditor .body .tabs ul li[data-view='rotate'] i {
   background-image: url(../images/image-editor/rotate-left.svg);
 }
 
-.modal.imageeditor .body .tabs ul li[data-view="crop"] i {
+.modal.imageeditor .body .tabs ul li[data-view='crop'] i {
   background-image: url(../images/image-editor/crop.svg);
 }
 
-.modal.imageeditor .body .tabs ul li[data-view="filters"] i {
+.modal.imageeditor .body .tabs ul li[data-view='filters'] i {
   background-image: url(../images/image-editor/filters.svg);
 }
 
@@ -211,15 +212,15 @@ html.noscroll, html.noscroll body {
     justify-content: center;
 
     input {
-      -webkit-appearance:none;
-      -moz-appearance:none;
-      appearance:none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
       background-position: center center;
       background-repeat: no-repeat;
       margin: 0 4px;
       cursor: pointer;
 
-      &[value="landscape"] {
+      &[value='landscape'] {
         width: 30px;
         height: 20px;
         background-image: url(../images/image-editor/orientation-landscape-unchecked.svg);
@@ -229,7 +230,7 @@ html.noscroll, html.noscroll body {
         }
       }
 
-      &[value="portrait"] {
+      &[value='portrait'] {
         width: 20px;
         height: 30px;
         background-image: url(../images/image-editor/orientation-portrait-unchecked.svg);
@@ -354,7 +355,7 @@ html.noscroll, html.noscroll body {
   margin: 0 -24px;
   margin-bottom: -24px;
   padding: 24px;
-  text-align: center
+  text-align: center;
 }
 
 .vertical.imageeditor .body .views .filters ul li {
@@ -379,7 +380,7 @@ html.noscroll, html.noscroll body {
   height: 0;
   border-left: 5px solid transparent;
   border-right: 5px solid transparent;
-  border-top: 5px solid #63A6E1;
+  border-top: 5px solid #63a6e1;
 }
 
 .slide-rule .graduations {
@@ -414,7 +415,7 @@ html.noscroll, html.noscroll body {
 }
 
 .slide-rule .graduations ul li.selected:before {
-  border-left-color: #63A6E1;
+  border-left-color: #63a6e1;
 }
 
 .slide-rule .graduations ul li:before {
@@ -455,7 +456,13 @@ html.noscroll, html.noscroll body {
   right: 0;
   bottom: 1px;
   left: 0;
-  background-image: linear-gradient(to right, $grey900 0%, transparentize($grey900, 1) 15%, transparentize($grey900, 1) 85%, $grey900 100%);
+  background-image: linear-gradient(
+    to right,
+    $grey900 0%,
+    transparentize($grey900, 1) 15%,
+    transparentize($grey900, 1) 85%,
+    $grey900 100%
+  );
 }
 
 /* Misc */
