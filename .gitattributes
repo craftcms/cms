@@ -6,6 +6,8 @@
 /.github/ export-ignore
 /.gitignore export-ignore
 /.lando.yml export-ignore
+/.prettierignore export-ignore
+/.prettierrc.json export-ignore
 /CHANGELOG.md export-ignore
 /README.md export-ignore
 /SECURITY.md export-ignore
