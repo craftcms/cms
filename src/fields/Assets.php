@@ -568,9 +568,8 @@ class Assets extends BaseRelationField
                 });
             } else {
                 // Find the files with temp sources and just move those.
-                $assetsToMove = Asset::find()
+                $assetsToMove = $assetsService->createTempAssetQuery()
                     ->id(ArrayHelper::getColumn($assets, 'id'))
-                    ->volumeId(':empty:')
                     ->all();
             }
 
@@ -601,15 +600,21 @@ class Assets extends BaseRelationField
     public function getEagerLoadingGqlConditions()
     {
         $allowedEntities = Gql::extractAllowedEntitiesFromSchema();
-        $allowedVolumeUids = $allowedEntities['volumes'] ?? [];
+        $volumeUids = $allowedEntities['volumes'] ?? [];
 
-        if (empty($allowedVolumeUids)) {
+        if (empty($volumeUids)) {
             return false;
         }
 
-        $volumeIds = Db::idsByUids(DbTable::VOLUMES, $allowedVolumeUids);
+        $volumesService = Craft::$app->getVolumes();
+        $volumeIds = array_filter(array_map(function(string $uid) use ($volumesService) {
+            $volume = $volumesService->getVolumeByUid($uid);
+            return $volume->id ?? null;
+        }, $volumeUids));
 
-        return ['volumeId' => array_values($volumeIds)];
+        return [
+            'volumeId' => $volumeIds,
+        ];
     }
 
     /**
@@ -920,9 +925,15 @@ class Assets extends BaseRelationField
                 $folderId = $assets->ensureFolderByFullPathAndVolume($subpath, Craft::$app->getVolumes()->getVolumeById($volumeId), false);
             }
 
-            // If this is a new/disabled element, the subpath probably just contained a token that returned null, like {id}
+            // If this is a new/disabled/draft element, the subpath probably just contained a token that returned null, like {id}
             // so use the user's upload folder instead
-            if ($element === null || !$element->id || !$element->enabled || !$createDynamicFolders) {
+            if (
+                $element === null ||
+                !$element->id ||
+                !$element->enabled ||
+                !$createDynamicFolders ||
+                ElementHelper::isDraft($element)
+            ) {
                 $userFolder = $assets->getUserTemporaryUploadFolder();
             } else {
                 // Existing element, so this is just a bad subpath

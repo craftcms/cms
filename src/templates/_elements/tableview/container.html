@@ -3,7 +3,7 @@
         <thead>
         <tr>
             {% if showCheckboxes %}
-                <th class="checkbox-cell selectallcontainer orderable"></th>
+                <th class="checkbox-cell selectallcontainer"></th>
             {% endif %}
             {% for attribute in attributes %}
                 {% set icon = (attribute[1].icon is defined ? attribute[1].icon : null) %}

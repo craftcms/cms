@@ -1,5 +1,5 @@
 @charset "UTF-8";
-@import "@craftcms/sass/mixins";
+@import '@craftcms/sass/mixins';
 
 @mixin spinner {
   width: 24px;
@@ -41,10 +41,10 @@
 }
 
 @font-face {
-  font-family: "Craft";
-  src: url("../fonts/Craft.woff") format("woff"),
-    url("../fonts/Craft.ttf") format("truetype"),
-    url("../fonts/Craft.svg#Craft") format("svg");
+  font-family: 'Craft';
+  src: url('../fonts/Craft.woff') format('woff'),
+    url('../fonts/Craft.ttf') format('truetype'),
+    url('../fonts/Craft.svg#Craft') format('svg');
   font-weight: normal;
   font-style: normal;
 }
@@ -60,10 +60,14 @@
   --ui-control-color: #{$grey400};
   --ui-control-hover-color: #{$grey500};
   --ui-control-active-color: #{$grey600};
-  --light-focus-hsl: #{hue($lightFocusColor)}, #{saturation($lightFocusColor)}, #{lightness($lightFocusColor)};
-  --medium-focus-hsl: #{hue($mediumFocusColor)}, #{saturation($mediumFocusColor)}, #{lightness($mediumFocusColor)};
-  --dark-focus-hsl: #{hue($darkFocusColor)}, #{saturation($darkFocusColor)}, #{lightness($darkFocusColor)};
-  --focus-ring: 0 0 0 1px hsl(var(--dark-focus-hsl)), 0 0 0 3px hsla(var(--dark-focus-hsl), 0.7);
+  --light-focus-hsl: #{hue($lightFocusColor)}, #{saturation($lightFocusColor)},
+    #{lightness($lightFocusColor)};
+  --medium-focus-hsl: #{hue($mediumFocusColor)},
+    #{saturation($mediumFocusColor)}, #{lightness($mediumFocusColor)};
+  --dark-focus-hsl: #{hue($darkFocusColor)}, #{saturation($darkFocusColor)},
+    #{lightness($darkFocusColor)};
+  --focus-ring: 0 0 0 1px hsl(var(--dark-focus-hsl)),
+    0 0 0 3px hsla(var(--dark-focus-hsl), 0.7);
 }
 
 body,
@@ -204,50 +208,50 @@ table.editable textarea {
   content: attr(data-icon-after);
 }
 
-body.rtl [data-icon="list"]:before,
-body.rtl [data-icon-after="list"]:after {
-  content: "listrtl";
+body.rtl [data-icon='list']:before,
+body.rtl [data-icon-after='list']:after {
+  content: 'listrtl';
 }
 
-body.rtl [data-icon="structure"]:before,
-body.rtl [data-icon-after="structure"]:after {
-  content: "structurertl";
+body.rtl [data-icon='structure']:before,
+body.rtl [data-icon-after='structure']:after {
+  content: 'structurertl';
 }
 
 .icon.secure:before {
-  content: "secure";
+  content: 'secure';
 }
 
 .icon.insecure:before {
-  content: "insecure";
+  content: 'insecure';
 }
 
 .icon.add:before {
-  content: "plus";
+  content: 'plus';
 }
 
 .icon.edit:before {
-  content: "edit";
+  content: 'edit';
 }
 
 .icon.settings:before {
-  content: "settings";
+  content: 'settings';
 }
 
 .icon.search:before {
-  content: "search";
+  content: 'search';
 }
 
 .icon.expand:before {
-  content: "expand";
+  content: 'expand';
 }
 
 .icon.collapse:before {
-  content: "collapse";
+  content: 'collapse';
 }
 
 .help:before {
-  content: "help";
+  content: 'help';
   color: $pink400;
 }
 
@@ -260,15 +264,15 @@ body.rtl [data-icon-after="structure"]:after {
 
 #preview-btn:before {
   margin-top: -2px;
-  content: "view";
+  content: 'view';
 }
 
 #share-btn:before {
   body.ltr & {
-    content: "share";
+    content: 'share';
   }
   body.rtl & {
-    content: "shareleft";
+    content: 'shareleft';
   }
 }
 
@@ -415,10 +419,10 @@ li.sel a {
   @include padding-left(4px);
   color: var(--ui-control-color);
   body.ltr & {
-    content: "circlerarr";
+    content: 'circlerarr';
   }
   body.rtl & {
-    content: "circlelarr";
+    content: 'circlelarr';
   }
 }
 
@@ -458,7 +462,7 @@ li.sel a {
   background-color: $grey200;
 
   &:before {
-    content: "check";
+    content: 'check';
     color: $successColor;
   }
 }
@@ -467,7 +471,7 @@ li.sel a {
   background-color: $grey200;
 
   &:before {
-    content: "alert";
+    content: 'alert';
     color: $errorColor;
   }
 }
@@ -658,7 +662,7 @@ input.checkbox + label.smalltext {
 }
 
 .required:after {
-  content: "asterisk";
+  content: 'asterisk';
   @include margin(-2px, 0, 0, 5px);
   font-size: 7px;
   color: $errorColor;
@@ -682,13 +686,13 @@ td {
   vertical-align: middle;
 }
 
-body.ltr table[dir="rtl"] {
+body.ltr table[dir='rtl'] {
   th,
   td {
     text-align: right;
   }
 }
-body.rtl table[dir="ltr"] {
+body.rtl table[dir='ltr'] {
   th,
   td {
     text-align: left;
@@ -715,16 +719,16 @@ td.right {
   @include token-styles;
 }
 
-.token[data-name="*"] {
+.token[data-name='*'] {
   position: relative;
   width: 10px;
 }
 
-.token[data-name="*"] span {
+.token[data-name='*'] span {
   opacity: 0;
 }
 
-.token[data-name="*"]:before {
+.token[data-name='*']:before {
   @include icon;
   display: block;
   position: absolute;
@@ -733,7 +737,7 @@ td.right {
   width: 100%;
   font-size: 9px;
   line-height: 17px;
-  content: "asterisk";
+  content: 'asterisk';
   text-indent: 0;
 }
 
@@ -758,7 +762,7 @@ td.right {
 }
 
 .pane.highlight {
-  pre[class*="language-"] {
+  pre[class*='language-'] {
     overflow: visible;
 
     & > code.diff-highlight .token:not(.prefix) {
@@ -803,7 +807,7 @@ td.right {
   &.with-icon,
   .icon {
     &:before {
-      content: "lightbulb";
+      content: 'lightbulb';
     }
   }
 }
@@ -814,7 +818,7 @@ td.right {
   &.with-icon,
   .icon {
     &:before {
-      content: "alert";
+      content: 'alert';
     }
   }
 }
@@ -832,7 +836,7 @@ td.right {
 }
 
 .icon.move:before {
-  content: "move";
+  content: 'move';
   color: var(--ui-control-color);
 }
 
@@ -845,7 +849,7 @@ td.right {
   line-height: inherit;
 
   &:before {
-    content: "remove";
+    content: 'remove';
     color: var(--ui-control-color);
   }
 
@@ -905,7 +909,7 @@ td.right {
 
   &:not(.warning) {
     &:before {
-      content: "info";
+      content: 'info';
     }
     &:hover:before {
       color: $linkColor;
@@ -914,7 +918,7 @@ td.right {
 
   &.warning {
     &:before {
-      content: "alert";
+      content: 'alert';
     }
     &:hover:before {
       color: $warningColor;
@@ -1294,7 +1298,7 @@ ul.icons {
     }
   }
 
-  &[type="color"] {
+  &[type='color'] {
     padding: 6px !important;
     width: 36px;
   }
@@ -1384,7 +1388,7 @@ ul.icons {
 
 .btn.icon.add.loading:after {
   position: absolute;
-  content: "";
+  content: '';
   font-size: 0;
   display: block;
   width: 24px;
@@ -1863,12 +1867,12 @@ div.btn.submit input {
       color: $mediumTextColor;
       cursor: default;
 
-      &[data-toggle="on"] {
+      &[data-toggle='on'] {
         @include padding-right(10px);
         @include margin-left(7px);
       }
 
-      &[data-toggle="off"] {
+      &[data-toggle='off'] {
         @include padding-left(10px);
         @include margin-right(7px);
       }
@@ -2300,7 +2304,7 @@ table {
 
         &:before {
           margin-right: 5px;
-          content: attr(data-title) ":";
+          content: attr(data-title) ':';
           font-weight: bold;
         }
 
@@ -2536,7 +2540,7 @@ $elementInnerSpacing: 5px;
     @include padding-right($baseElementSidePadding + 24);
 
     &:after {
-      content: "";
+      content: '';
       font-size: 0;
       position: absolute;
       bottom: 0;
@@ -2564,7 +2568,7 @@ $checkboxPadding: $checkboxSize + 4;
 
     &:after {
       display: block;
-      content: "";
+      content: '';
       font-size: 0;
       position: absolute;
       top: 0;
@@ -2584,7 +2588,7 @@ $checkboxPadding: $checkboxSize + 4;
     box-shadow: none;
 
     &:after {
-      content: "";
+      content: '';
     }
 
     .selectallcontainer {
@@ -2762,7 +2766,7 @@ $checkboxPadding: $checkboxSize + 4;
       padding: 0 5px;
 
       &:before {
-        content: "downangle";
+        content: 'downangle';
         color: $darkHairlineColor;
       }
 
@@ -3006,7 +3010,7 @@ table.editable {
           opacity: 1;
 
           &:after {
-            content: "";
+            content: '';
             font-size: 0;
             position: absolute;
             top: 0;
@@ -3367,7 +3371,7 @@ ul.tree,
 
     &:after {
       display: block;
-      content: "";
+      content: '';
       font-size: 0;
       position: absolute;
       top: 0;
@@ -3509,7 +3513,7 @@ ul.tree,
           width: 31px;
           @include alignright;
           @include icon;
-          content: "plus";
+          content: 'plus';
           color: $lightTextColor;
         }
 
@@ -3566,7 +3570,7 @@ ul.tree,
       display: flex;
       align-items: center;
 
-      & > [data-icon="draft"] {
+      & > [data-icon='draft'] {
         margin-top: -2px;
         @include margin-right(8px);
       }
@@ -4047,7 +4051,7 @@ ul.tree,
       @include icon;
       @include margin(-6px, 0, 0, -58px);
       @include floatleft;
-      content: "alert";
+      content: 'alert';
       font-size: 40px;
       color: $lightTextColor;
     }
@@ -4060,7 +4064,7 @@ ul.tree,
       @include icon;
       @include margin(-14px, 0, 0, -56px);
       @include floatleft;
-      content: "secure";
+      content: 'secure';
       font-size: 58px;
       color: $lightTextColor;
     }
@@ -4181,7 +4185,7 @@ ul.tree,
 
   &.loading {
     &:after {
-      content: "";
+      content: '';
       font-size: 0;
       display: block;
       position: absolute;
@@ -4492,7 +4496,7 @@ ul.tree,
           }
 
           &.sel:not([data-icon]):before {
-            content: "check";
+            content: 'check';
           }
         }
       }
@@ -4537,7 +4541,7 @@ ul.tree,
           position: absolute;
           top: 36px;
           @include left(7px);
-          content: "check";
+          content: 'check';
           font-size: 14px;
           color: $lightTextColor;
         }
@@ -4864,7 +4868,7 @@ fieldset {
     @include left(-25px);
     width: 2px;
     height: 100%;
-    content: "";
+    content: '';
     cursor: help;
 
     &.modified {
@@ -5027,7 +5031,7 @@ div.checkbox:empty {
 
 input.checkbox + label:empty:after,
 div.checkbox:empty:after {
-  content: "";
+  content: '';
   font-size: 0;
 }
 
@@ -5041,7 +5045,7 @@ div.checkbox:before {
   width: $checkboxSize !important;
   height: $checkboxSize;
   box-sizing: border-box;
-  content: "";
+  content: '';
   font-size: 0;
   background-color: hsl(212, 50%, 99%);
   border: 1px solid transparentize($inputColor, 0.6);
@@ -5068,13 +5072,13 @@ div.checkbox.indeterminate:before {
 input.checkbox:checked:not(:indeterminate) + label:before,
 div.checkbox.checked:not(.indeterminate):before,
 .sel div.checkbox:not(.indeterminate):before {
-  content: "check";
+  content: 'check';
   font-size: 15px;
 }
 
 input.checkbox:indeterminate + label:before,
 div.checkbox.indeterminate:before {
-  content: "minus";
+  content: 'minus';
   font-size: 7px;
   text-align: center;
 }
@@ -5150,7 +5154,7 @@ div.radio:before,
 div.radio:after {
   display: block;
   position: absolute;
-  content: "";
+  content: '';
   box-sizing: border-box;
   background-clip: padding-box;
   border-radius: 100%;
@@ -5299,7 +5303,7 @@ body.reduce-focus-visibility {
 
     &:before {
       @include icon;
-      content: "remove";
+      content: 'remove';
     }
   }
 }
@@ -5366,7 +5370,7 @@ body.reduce-focus-visibility {
 
   &:before {
     @include icon;
-    content: "remove";
+    content: 'remove';
   }
 
   &:hover {
@@ -5446,10 +5450,6 @@ body.reduce-focus-visibility {
 .select:not(.selectize) select {
   @include select-input-styles;
   white-space: pre;
-
-  option {
-    background-color: $white;
-  }
 }
 
 .select:not(.selectize).fullwidth select {
@@ -5563,14 +5563,14 @@ body .selectize-dropdown-content {
   padding: 3px 14px;
 }
 
-body .selectize-dropdown-content > div[data-value="new"]:before {
+body .selectize-dropdown-content > div[data-value='new']:before {
   @include icon;
-  content: "plus";
+  content: 'plus';
   margin-right: 5px;
 }
 
-body .selectize-dropdown-content > div[data-value="new"]:after {
-  content: "…";
+body .selectize-dropdown-content > div[data-value='new']:after {
+  content: '…';
 }
 
 body .selectize-dropdown [data-selectable],
@@ -5986,7 +5986,7 @@ ul.errors li {
       &.mci-required:after {
         @include icon;
         @include margin(-2px, 0, 0, 4px);
-        content: "asterisk";
+        content: 'asterisk';
         font-size: 8px;
       }
     }
@@ -6063,7 +6063,7 @@ $titlebarBorderRadius: $largeBorderRadius - 1;
 
     &:after {
       display: block;
-      content: "";
+      content: '';
       position: absolute;
       bottom: -1px;
       left: 14px;
@@ -6159,7 +6159,7 @@ $titlebarBorderRadius: $largeBorderRadius - 1;
     }
 
     a:not([data-action]) {
-      padding: 0 !important;
+      padding: 0;
       height: 20px;
       text-align: center;
       color: $darkHairlineColor;

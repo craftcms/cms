@@ -2,12 +2,30 @@
 
 ## Unreleased
 
+### Added
+- Added the `folderPath` asset query param.
+- Added `craft\services\Assets::getTempVolumeAndSubpath()`.
+- Added `craft\services\Assets::createTempAssetQuery()`.
+- Added `craft\services\Fields::updateColumn()`.
+- Added `craft\services\Sections::getEntryTypeByUid()`.
+
 ### Changed
 - Fields’ search indexes are now immediately removed when their “Use this field’s values as search keywords” settings are disabled.
+- User groups’ permission lists are now sorted alphabetically when saved to the project config. ([#10408](https://github.com/craftcms/cms/issues/10408))
+- Improved dropdown menu styling for Firefox.
+- Improved GraphQL performance.
+- `{% nav %}` tags now skips elements whose immediate parent weren’t included in the output. ([#10925](https://github.com/craftcms/cms/issues/10925))
 
 ### Fixed
 - Fixed a bug where Matrix blocks could lose their Date field values, if multiple Date fields had with the same handle across different block types. ([#10884](https://github.com/craftcms/cms/issues/10884))
 - Fixed a bug where Matrix block menus were getting truncated if they were too large to fit within the content pane. ([#10883](https://github.com/craftcms/cms/issues/10883))
+- Fixed a bug where Assets fields weren’t respecting their dynamic folder path settings for unpublished drafts, if the Temp Upload Location asset setting was set to a volume. ([#9619](https://github.com/craftcms/cms/issues/9619))
+- Fixed an error that could occur when saving an Assets field for a draft.
+- Fixed a bug where element queries weren’t being limited to return elements of the configured type, if no element type-specific tables were joined in.
+- Fixed a bug where element thumbnails weren’t loading for all but the initial content tab. ([#10918](https://github.com/craftcms/cms/issues/10918))
+- Fixed a bug where Matrix fields’ Min Blocks settings weren’t getting enforced for empty Matrix fields.
+- Fixed an error that could occur when saving Matrix fields with either Min Blocks or Max Blocks configured, but not both, if the Intl extension wasn’t installed. ([#10922](https://github.com/craftcms/cms/issues/10922))
+- Fixed a bug where the system name container was taking up the full viewport height in Safari 13. ([#10930](https://github.com/craftcms/cms/issues/10930))
 
 ## 3.7.38 - 2022-04-06
 

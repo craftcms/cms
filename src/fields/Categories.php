@@ -192,14 +192,20 @@ class Categories extends BaseRelationField
     public function getEagerLoadingGqlConditions()
     {
         $allowedEntities = Gql::extractAllowedEntitiesFromSchema();
-        $allowedCategoryUids = $allowedEntities['categorygroups'] ?? [];
+        $categoryGroupUids = $allowedEntities['categorygroups'] ?? [];
 
-        if (empty($allowedCategoryUids)) {
+        if (empty($categoryGroupUids)) {
             return false;
         }
 
-        $categoryIds = Db::idsByUids(DbTable::CATEGORYGROUPS, $allowedCategoryUids);
+        $categoriesService = Craft::$app->getCategories();
+        $groupIds = array_filter(array_map(function(string $uid) use ($categoriesService) {
+            $group = $categoriesService->getGroupByUid($uid);
+            return $group->id ?? null;
+        }, $categoryGroupUids));
 
-        return ['groupId' => array_values($categoryIds)];
+        return [
+            'groupId' => $groupIds,
+        ];
     }
 }

@@ -751,6 +751,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
             [
                 'validateBlocks',
                 'on' => [Element::SCENARIO_ESSENTIALS, Element::SCENARIO_DEFAULT, Element::SCENARIO_LIVE],
+                'skipOnEmpty' => false,
             ],
         ];
     }
@@ -804,14 +805,14 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
             $arrayValidator = new ArrayValidator([
                 'min' => $this->minBlocks ?: null,
                 'max' => $this->maxBlocks ?: null,
-                'tooFew' => Craft::t('app', '{attribute} should contain at least {min, number} {min, plural, one{block} other{blocks}}.', [
+                'tooFew' => $this->minBlocks ? Craft::t('app', '{attribute} should contain at least {min, number} {min, plural, one{block} other{blocks}}.', [
                     'attribute' => Craft::t('site', $this->name),
                     'min' => $this->minBlocks, // Need to pass this in now
-                ]),
-                'tooMany' => Craft::t('app', '{attribute} should contain at most {max, number} {max, plural, one{block} other{blocks}}.', [
+                ]) : null,
+                'tooMany' => $this->maxBlocks ? Craft::t('app', '{attribute} should contain at most {max, number} {max, plural, one{block} other{blocks}}.', [
                     'attribute' => Craft::t('site', $this->name),
                     'max' => $this->maxBlocks, // Need to pass this in now
-                ]),
+                ]) : null,
                 'skipOnEmpty' => false,
             ]);
 
