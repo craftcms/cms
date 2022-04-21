@@ -2251,10 +2251,13 @@ table {
       font-weight: bold;
     }
 
-    thead,
-    tbody,
-    tfoot {
-      &:first-child tr:first-child {
+    thead:first-child,
+    tbody:first-child,
+    tfoot:first-child,
+    caption + thead,
+    caption + tbody,
+    caption + tfoot {
+      tr:first-child {
         th,
         td {
           &:first-child {
@@ -5110,8 +5113,9 @@ table.editable {
   border-collapse: separate;
   border-spacing: 0;
 
-  thead:first-child,
-  tbody:first-child {
+  thead,
+  tbody:first-child,
+  caption + tbody {
     tr:first-child {
       th:first-child,
       td:first-child {
