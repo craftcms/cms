@@ -47,6 +47,7 @@
 - Dev Mode can now be enabled via a `CRAFT_DEV_MODE` environment variable. ([#10916](https://github.com/craftcms/cms/pull/10916))
 - A selected volume for user photo storage if no longer displayed if no volume has been set.
 - The user photo volume can now only be set to a volume that has a public transform filesystem configured.
+- When an invalid filesystem handle is set on a volume, instead of throwing an exception, an error is logged an an instance of `MissingFs` is returned.
 
 ### Deprecated
 - Deprecated the `autosaveDrafts` config setting.
