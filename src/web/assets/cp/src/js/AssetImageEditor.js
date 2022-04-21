@@ -1457,12 +1457,13 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
       this.saving = true;
       $button.addClass('loading');
+      const replace = $button.hasClass('replace');
 
       var postData = {
         assetId: this.assetId,
         viewportRotation: this.viewportRotation,
         imageRotation: this.imageStraightenAngle,
-        replace: $button.hasClass('replace') ? 1 : 0,
+        replace: replace ? 1 : 0,
       };
 
       if (this.cropperState) {
@@ -1487,20 +1488,24 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
       postData.flipData = this.flipData;
       postData.zoom = this.zoomRatio;
 
-      const onResponse = () => {
-        this.$buttons.find('.btn').removeClass('loading');
-        this.saving = false;
-      };
       Craft.sendActionRequest('POST', 'assets/save-image', {data: postData})
-        .then((response) => {
-          onResponse();
-          this.onSave(response.data);
+        .then(({data}) => {
+          this.onSave(data);
+          if (replace && Craft.broadcaster) {
+            Craft.broadcaster.postMessage({
+              event: 'saveElement',
+              id: this.assetId,
+            });
+          }
           this.hide();
           Craft.cp.runQueue();
         })
         .catch(({response}) => {
-          onResponse();
           alert(response.data.message);
+        })
+        .finally(() => {
+          this.$buttons.find('.btn').removeClass('loading');
+          this.saving = false;
         });
     },
 

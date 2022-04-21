@@ -6,6 +6,9 @@
 - Added the `addresses`, `address`, and `addressCount` GraphQL queries.
 - Added the `addresses` field to user GraphQL queries.
 - It’s now possible to set sites’ Status settings to environment variables. ([#3005](https://github.com/craftcms/cms/issues/3005))
+- Added the `app/render-element` control panel controller action.
+- Added the `element-indexes/element-table-html` control panel controller action.
+- Added `craft\behaviors\SessionBehavior::broadcastToJs()`.
 - Added `craft\controllers\ElementsController::EVENT_DEFINE_EDITOR_CONTENT`.
 - Added `craft\events\DefineElementEditorHtmlEvent`.
 - Added `craft\events\FsEvent`.
@@ -31,6 +34,7 @@
 - Improved Live Preview accessibility for screen readers. ([#10688](https://github.com/craftcms/cms/pull/10688))
 - Slideouts, Live Preview, and Matrix blocks are no longer animated for browsers that have requested reduced motion. ([#10665](https://github.com/craftcms/cms/pull/10665))
 - Custom element sources can now include table columns for custom fields, and be sorted by custom field values. ([#10900](https://github.com/craftcms/cms/issues/10900))
+- Elements throughout the control panel are now automatically updated whenever they’re saved by another browser tab.
 - Volumes’ Asset Filesystem and Transform Filesystem settings are now automatically updated when a filesystem’s handle changes, if they reference the filesystem’s handle directly. ([#10885](https://github.com/craftcms/cms/issues/10885))
 - Volumes’ Asset Filesystem settings no longer list filesystems already in use by other volumes.
 - Element conditions stored in the project config can now contain relational field rule types which specify a related element via its ID, possibly identified by an environment variable. ([#10554](https://github.com/craftcms/cms/pull/10554))
@@ -48,6 +52,8 @@
 - A selected volume for user photo storage if no longer displayed if no volume has been set.
 - The user photo volume can now only be set to a volume that has a public transform filesystem configured.
 - When an invalid filesystem handle is set on a volume, instead of throwing an exception, an error is logged an an instance of `MissingFs` is returned.
+- `craft\helpers\Cp::elementHtml()` now has an `$autoReload` argument.
+- `Craft.broadcastChannel` has been split up into two broadcast channels: `Craft.broadcaster` and `Craft.messageReceiver`.
 
 ### Deprecated
 - Deprecated the `autosaveDrafts` config setting.
@@ -90,6 +96,7 @@
 - Fixed a bug where users’ photos weren’t always displaying correctly in element indexes. ([#10955](https://github.com/craftcms/cms/pull/10955))
 - Fixed an error that could occur when loading an element selector modal.
 - Fixed a bug where asset preview thumbnails weren’t getting refreshed after editing them.
+- Fixed a bug where elements within relational fields weren’t getting updated when the related elements were updated from element editor slideouts. ([#10969](https://github.com/craftcms/cms/issues/10969))
 
 ## 4.0.0-beta.4 - 2022-04-06
 

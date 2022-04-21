@@ -1420,6 +1420,14 @@ JS,
             return $this->_redirectUserToCp($user) ?? $this->_redirectUserAfterAccountActivation($user);
         }
 
+        if (!$this->request->getAcceptsJson()) {
+            // Tell all browser windows about the draft deletion
+            Craft::$app->getSession()->broadcastToJs([
+                'event' => 'saveElement',
+                'id' => $user->id,
+            ]);
+        }
+
         return $this->redirectToPostedUrl($user);
     }
 

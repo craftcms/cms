@@ -254,9 +254,13 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
         value: id,
       }).appendTo($element);
 
-      $('<a/>', {
+      $('<button/>', {
         class: 'delete icon',
         title: Craft.t('app', 'Remove'),
+        type: 'button',
+        'aria-label': Craft.t('app', 'Remove {label}', {
+          label: title,
+        }),
       }).appendTo($element);
 
       var $titleContainer = $('<div/>', {

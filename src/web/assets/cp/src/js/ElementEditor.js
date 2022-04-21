@@ -177,17 +177,37 @@ Craft.ElementEditor = Garnish.Base.extend(
         this.showStatusHud(this.$statusIcon);
       });
 
-      if (this.isFullPage && Craft.broadcastChannel) {
-        Craft.broadcastChannel.onmessage = (ev) => {
+      if (this.isFullPage && Craft.messageReceiver) {
+        Craft.messageReceiver.addEventListener('message', (ev) => {
+          // Ignore broadcasts from this page
+          if (ev.data.pageId === Craft.pageId) {
+            return;
+          }
+
           if (
-            ev.data.event === 'saveDraft' &&
-            ev.data.canonicalId === this.settings.canonicalId &&
-            (ev.data.draftId === this.settings.draftId ||
-              (ev.data.isProvisionalDraft && !this.settings.draftId))
+            (ev.data.event === 'saveDraft' &&
+              ev.data.canonicalId === this.settings.canonicalId &&
+              (ev.data.draftId === this.settings.draftId ||
+                (ev.data.isProvisionalDraft && !this.settings.draftId))) ||
+            (ev.data.event === 'saveElement' &&
+              ev.data.id === this.settings.canonicalId &&
+              !this.settings.draftId)
           ) {
             window.location.reload();
+          } else if (
+            ev.data.event === 'deleteDraft' &&
+            ev.data.canonicalId === this.settings.canonicalId &&
+            ev.data.draftId === this.settings.draftId
+          ) {
+            const url = new URL(window.location.href);
+            url.searchParams.delete('draftId');
+            if (url.href !== document.location.href) {
+              window.location.href = url;
+            } else {
+              window.location.reload();
+            }
           }
-        };
+        });
       }
     },
 
@@ -1409,8 +1429,9 @@ Craft.ElementEditor = Garnish.Base.extend(
 
             this.afterUpdate(data);
 
-            if (Craft.broadcastChannel) {
-              Craft.broadcastChannel.postMessage({
+            if (Craft.broadcaster) {
+              Craft.broadcaster.postMessage({
+                pageId: Craft.pageId,
                 event: 'saveDraft',
                 canonicalId: this.settings.canonicalId,
                 draftId: this.settings.draftId,

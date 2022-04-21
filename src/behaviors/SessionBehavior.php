@@ -8,6 +8,7 @@
 namespace craft\behaviors;
 
 use Craft;
+use craft\helpers\Json;
 use craft\web\Session;
 use craft\web\View;
 use yii\base\Behavior;
@@ -173,6 +174,27 @@ class SessionBehavior extends Behavior
     public function getJsFlashes(bool $delete = true): array
     {
         return $this->owner->getFlash($this->jsFlashKey, [], $delete);
+    }
+
+    /**
+     * Broadcasts a message to all tabs opened to the control panel.
+     *
+     * @param string|array $message The message to broadcast.
+     * @since 4.0.0
+     */
+    public function broadcastToJs(string|array $message): void
+    {
+        // This is a control panel-only feature
+        if (!Craft::$app->getRequest()->getIsCpRequest()) {
+            return;
+        }
+
+        $jsonMessage = Json::encode($message);
+        $this->addJsFlash(<<<JS
+if (Craft.broadcaster) {
+    Craft.broadcaster.postMessage($jsonMessage);
+}
+JS);
     }
 
     // Session-Based Authorization

@@ -2046,7 +2046,8 @@ JS;
             true,
             true,
             true,
-            $context['single'] ?? false
+            $context['single'] ?? false,
+            $context['autoReload'] ?? true,
         );
     }
 }

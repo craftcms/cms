@@ -20,7 +20,9 @@
                     {%- if structureEditable %}<a class="move icon" title="{{ 'Reorder'|t('app') }}" aria-label="{{ 'Reorder'|t('app') }}" role="button">&nbsp;</a>{% endif %}
                     {%- if structure and totalDescendants %}<span class="toggle{% if element.id not in collapsedElementIds %} expanded{% endif
                     %}" title="{{ 'Show/hide children'|t('app') }}" aria-label="{{ 'Show/hide children'|t('app') }}"></span>{% endif %}
-                    {%- include "_elements/element" -%}
+                    {%- include '_elements/element' with {
+                        autoReload: false,
+                    } -%}
                 </th>
             {% else %}
                 <td data-title="{{ attribute[1].label }}" data-attr="{{ attribute[0] }}">

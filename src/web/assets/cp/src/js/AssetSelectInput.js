@@ -192,26 +192,6 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
     this.base();
   },
 
-  refreshThumbnail: function (elementId) {
-    var parameters = {
-      elementId: elementId,
-      siteId: this.settings.criteria.siteId,
-      thumbSize: this.settings.viewMode,
-    };
-
-    Craft.sendActionRequest('POST', 'elements/get-element-html', {data})
-      .then((response) => {
-        var $existing = this.$elements.filter('[data-id="' + elementId + '"]');
-        $existing
-          .find('.elementthumb')
-          .replaceWith($(response.data.html).find('.elementthumb'));
-        this.thumbLoader.load($existing);
-      })
-      .catch(({response}) => {
-        alert(response.data.message);
-      });
-  },
-
   /**
    * Add the freshly uploaded file to the input field.
    */

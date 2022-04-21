@@ -14,6 +14,8 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
   _totalVisiblePostStructureTableDraggee: null,
   _morePendingPostStructureTableDraggee: false,
 
+  _broadcastListener: null,
+
   getElementContainer: function () {
     // Save a reference to the table
     this.$table = this.$container.find('table:first');
@@ -59,6 +61,50 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
           }
         }
       });
+    }
+
+    // Set up the broadcast listener
+    if (Craft.messageReceiver) {
+      this._broadcastListener = (ev) => {
+        if (ev.data.event === 'saveElement') {
+          const $rows = this.$table.find(
+            `> tbody > tr[data-id="${ev.data.id}"]`
+          );
+          if ($rows.length) {
+            const data = {
+              elementType: this.elementIndex.elementType,
+              source: this.elementIndex.sourceKey,
+              id: ev.data.id,
+              siteId: this.elementIndex.siteId,
+            };
+            Craft.sendActionRequest(
+              'POST',
+              'element-indexes/element-table-html',
+              {data}
+            ).then(({data}) => {
+              for (let i = 0; i < $rows.length; i++) {
+                const $row = $rows.eq(i);
+                $row
+                  .find('> th[data-titlecell] .element')
+                  .replaceWith(data.elementHtml);
+                for (let attribute in data.attributeHtml) {
+                  if (data.attributeHtml.hasOwnProperty(attribute)) {
+                    $row
+                      .find(`> td[data-attr="${attribute}"]`)
+                      .html(data.attributeHtml[attribute]);
+                  }
+                }
+              }
+              new Craft.ElementThumbLoader().load($rows);
+            });
+          }
+        }
+      };
+
+      Craft.messageReceiver.addEventListener(
+        'message',
+        this._broadcastListener
+      );
     }
   },
 
@@ -179,20 +225,6 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
     }
 
     Craft.cp.updateResponsiveTables();
-  },
-
-  createElementEditor: function ($element) {
-    Craft.createElementEditor($element.data('type'), $element, {
-      saveParams: {
-        includeTableAttributesForSource: this.elementIndex.sourceKey,
-      },
-      onSaveElement: (response) => {
-        if (response.tableAttributes) {
-          this._updateTableAttributes($element, response.tableAttributes);
-        }
-      },
-      elementIndex: this.elementIndex,
-    });
   },
 
   _collapseElement: function ($toggle, force) {
@@ -442,5 +474,17 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
         .children('[data-attr="' + attr + '"]:first')
         .html(tableAttributes[attr]);
     }
+  },
+
+  destroy: function () {
+    if (this._broadcastListener) {
+      Craft.messageReceiver.removeEventListener(
+        'message',
+        this._broadcastListener
+      );
+      delete this._broadcastListener;
+    }
+
+    this.base();
   },
 });

@@ -246,6 +246,7 @@ class Cp
      * @param bool $showLabel Whether the element label should be shown
      * @param bool $showDraftName Whether to show the draft name beside the label if the element is a draft of a published element
      * @param bool $single Whether the input name should omit the trailing `[]`
+     * @param bool $autoReload Whether the element should auto-reload itself when it’s saved
      * @return string
      * @since 3.5.8
      */
@@ -259,6 +260,7 @@ class Cp
         bool $showLabel = true,
         bool $showDraftName = true,
         bool $single = false,
+        bool $autoReload = true,
     ): string {
         $isDraft = $element->getIsDraft();
         $isRevision = !$isDraft && $element->getIsRevision();
@@ -314,6 +316,14 @@ class Cp
                     'label' => (string)$element,
                     'url' => $element->getUrl(),
                     'level' => $element->level,
+                    'settings' => $autoReload ? compact(
+                        'context',
+                        'thumbSize',
+                        'showStatus',
+                        'showThumb',
+                        'showLabel',
+                        'showDraftName',
+                    ) : false,
                 ]),
             ]
         );
