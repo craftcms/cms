@@ -1,8 +1,8 @@
 import {currency} from '../filters/currency';
 
 const getPriceLabel = (price) => {
-  return price > 0 ? currency(price) : 'Free'
-}
+  return price > 0 ? currency(price) : 'Free';
+};
 
 const getPriceRange = (editions) => {
   let min = null;
@@ -14,7 +14,7 @@ const getPriceRange = (editions) => {
     let price = 0;
 
     if (edition.price) {
-      price = parseInt(edition.price)
+      price = parseInt(edition.price);
     }
 
     if (min === null) {
@@ -26,43 +26,38 @@ const getPriceRange = (editions) => {
     }
 
     if (price < min) {
-      min = price
+      min = price;
     }
 
     if (price > max) {
-      max = price
+      max = price;
     }
   }
 
   return {
     min,
-    max
-  }
-}
+    max,
+  };
+};
 
 const getPriceRangeLabel = (plugin) => {
-  const {min, max} = getPriceRange(plugin.editions)
+  const {min, max} = getPriceRange(plugin.editions);
 
   if (min !== max) {
-    return `${getPriceLabel(min)} – ${getPriceLabel(max)}`
+    return `${getPriceLabel(min)} – ${getPriceLabel(max)}`;
   }
 
-  return getPriceLabel(min)
-}
+  return getPriceLabel(min);
+};
 
 const isPluginFree = (plugin) => {
-  const {min, max} = getPriceRange(plugin.editions)
+  const {min, max} = getPriceRange(plugin.editions);
 
   if (min !== 0 || max !== 0) {
-    return false
+    return false;
   }
 
-  return true
-}
+  return true;
+};
 
-export {
-  getPriceLabel,
-  getPriceRange,
-  getPriceRangeLabel,
-  isPluginFree,
-}
+export {getPriceLabel, getPriceRange, getPriceRangeLabel, isPluginFree};

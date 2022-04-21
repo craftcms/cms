@@ -17,6 +17,7 @@
 - Added `craft\gql\types\generators\AddressType`.
 - Added `craft\helpers\Db::escapeCommas()`.
 - Added `craft\log\ContextProcessor`.
+- Added `craft\log\MessageProcessor`.
 - Added `craft\services\Fs::EVENT_RENAME_FILESYSTEM`.
 - Added `craft\web\CpScreenResponseBehavior::$formAttributes`. ([#10924](https://github.com/craftcms/cms/issues/10924))
 - Added `craft\web\CpScreenResponseBehavior::$mainAttributes`. ([#10924](https://github.com/craftcms/cms/issues/10924))
@@ -25,7 +26,10 @@
 - Added the `Craft.setElementAttributes()` JavaScript method.
 
 ### Changed
-- Improved element index table accessibility for screen readers. ([#10629](https://github.com/craftcms/cms/pull/10629))
+- Improved element index accessibility. ([#10629](https://github.com/craftcms/cms/pull/10629), [#10660](https://github.com/craftcms/cms/pull/10660))
+- Improved Live Preview accessibility for screen readers. ([#10688](https://github.com/craftcms/cms/pull/10688))
+- Slideouts, Live Preview, and Matrix blocks are no longer animated for browsers that have requested reduced motion. ([#10665](https://github.com/craftcms/cms/pull/10665))
+- Custom element sources can now include table columns for custom fields, and be sorted by custom field values. ([#10900](https://github.com/craftcms/cms/issues/10900))
 - Volumes’ Asset Filesystem and Transform Filesystem settings are now automatically updated when a filesystem’s handle changes, if they reference the filesystem’s handle directly. ([#10885](https://github.com/craftcms/cms/issues/10885))
 - Volumes’ Asset Filesystem settings no longer list filesystems already in use by other volumes.
 - Element conditions stored in the project config can now contain relational field rule types which specify a related element via its ID, possibly identified by an environment variable. ([#10554](https://github.com/craftcms/cms/pull/10554))
@@ -36,7 +40,7 @@
 - Custom sources with a blank label are now labelled as “(blank)”. ([#10915](https://github.com/craftcms/cms/issues/10915))
 - The default log target no longer logs `debug` or `info` messages when Dev Mode is enabled. ([#10916](https://github.com/craftcms/cms/pull/10916))
 - SQL query logs now use the `debug` log level, so they no longer get logged when Dev Mode is enabled. ([#10916](https://github.com/craftcms/cms/pull/10916))
-- Improved the log timestamp format. ([#10916](https://github.com/craftcms/cms/pull/10916))
+- Improved the log message format. ([#10916](https://github.com/craftcms/cms/pull/10916), [#10959](https://github.com/craftcms/cms/pull/10959))
 - `yii\db\Connection::$enableLogging` and `$enableProfiling` are no longer enabled by default when Dev Mode is disabled. ([#10916](https://github.com/craftcms/cms/pull/10916))
 - The `queue` log target no longer has special handling for Yii or `info` logs. ([#10916](https://github.com/craftcms/cms/pull/10916))
 - Dev Mode can now be enabled via a `CRAFT_DEV_MODE` environment variable. ([#10916](https://github.com/craftcms/cms/pull/10916))
@@ -77,6 +81,8 @@
 - Fixed a bug where Single section entries weren’t getting a Post Date set automatically when initially created. ([#10939](https://github.com/craftcms/cms/issues/10939))
 - Fixed a bug where entries weren’t getting created for the currently-selected site. ([#10938](https://github.com/craftcms/cms/issues/10938))
 - Fixed a bug where GraphQL eager loading would not work.
+- Fixed a bug where entry and category slugs weren’t getting regenerated based on the title, when their value was cleared. ([#10949](https://github.com/craftcms/cms/issues/10949))
+- Fixed a bug where no source was getting selected by default when switching the site on the Entries index page, if the previously-selected source wasn’t enabled for the new site. ([#10954](https://github.com/craftcms/cms/issues/10954))
 - Fixed a bug where user’s photos were displaying incorrectly in Element index tables. ([#10955](https://github.com/craftcms/cms/pull/10955))
 
 ## 4.0.0-beta.4 - 2022-04-06

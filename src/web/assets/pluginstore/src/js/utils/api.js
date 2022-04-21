@@ -1,7 +1,7 @@
 /* global Craft */
 
 class Api {
-  abortController = null
+  abortController = null;
 
   setAbortController(abortController) {
     this.abortController = abortController;
@@ -12,7 +12,7 @@ class Api {
    */
   cancelRequests() {
     if (this.abortController) {
-      this.abortController.abort()
+      this.abortController.abort();
     }
   }
 
@@ -26,8 +26,8 @@ class Api {
    * @returns {Promise}
    */
   sendApiRequest(method, uri, options) {
-    options = this.prepareOptions(options)
-    return Craft.sendApiRequest(method, uri, options)
+    options = this.prepareOptions(options);
+    return Craft.sendApiRequest(method, uri, options);
   }
 
   /**
@@ -40,8 +40,8 @@ class Api {
    * @returns {Promise}
    */
   sendActionRequest(method, action, options) {
-    options = this.prepareOptions(options)
-    return Craft.sendActionRequest(method, action, options)
+    options = this.prepareOptions(options);
+    return Craft.sendActionRequest(method, action, options);
   }
 
   /**
@@ -52,23 +52,28 @@ class Api {
    * @returns {object}
    */
   prepareOptions(options) {
-    if (!this.abortController || (this.abortController && this.abortController.signal && this.abortController.signal.aborted)) {
-      this.abortController = new AbortController()
+    if (
+      !this.abortController ||
+      (this.abortController &&
+        this.abortController.signal &&
+        this.abortController.signal.aborted)
+    ) {
+      this.abortController = new AbortController();
     }
 
     if (!options) {
-      options = {}
+      options = {};
     }
 
     // Add abort signal if needed
     if (!options.signal) {
-      options.signal = this.abortController.signal
+      options.signal = this.abortController.signal;
     }
 
-    return options
+    return options;
   }
 }
 
-const ApiInstance = new Api()
+const ApiInstance = new Api();
 
-export default ApiInstance
+export default ApiInstance;

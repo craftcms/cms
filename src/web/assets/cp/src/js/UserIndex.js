@@ -4,14 +4,17 @@
  * User index class
  */
 Craft.UserIndex = Craft.BaseElementIndex.extend({
-  init: function(elementType, $container, settings) {
+  init: function (elementType, $container, settings) {
     this.on('selectSource', this.updateUrl.bind(this));
     this.base(elementType, $container, settings);
   },
 
-  getDefaultSourceKey: function() {
+  getDefaultSourceKey: function () {
     // Did they request a specific group in the URL?
-    if (this.settings.context === 'index' && typeof defaultSourceSlug !== 'undefined') {
+    if (
+      this.settings.context === 'index' &&
+      typeof defaultSourceSlug !== 'undefined'
+    ) {
       for (let i = 0; i < this.$sources.length; i++) {
         const $source = $(this.$sources[i]);
         if ($source.data('slug') === defaultSourceSlug) {
@@ -23,7 +26,7 @@ Craft.UserIndex = Craft.BaseElementIndex.extend({
     return this.base();
   },
 
-  updateUrl: function() {
+  updateUrl: function () {
     if (this.settings.context === 'index') {
       let uri = 'users';
       const slug = this.$source.data('slug');

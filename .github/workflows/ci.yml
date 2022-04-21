@@ -22,13 +22,13 @@ jobs:
       php_version: '8.0'
   codecept:
     name: Codeception
-    needs: [ ecs, phpstan ]
+    needs: [ecs, phpstan]
     uses: craftcms/.github/.github/workflows/codecept.yml@v2
     with:
       php_versions: '["8.0", "8.1"]'
   notify-slack:
     name: Notify Slack
-    needs: [ ecs, phpstan, codecept ]
+    needs: [ecs, phpstan, codecept]
     if: ${{ always() }}
     uses: craftcms/.github/.github/workflows/notify-slack.yml@v2
     with:

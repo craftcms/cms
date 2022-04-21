@@ -2,10 +2,7 @@
   <div class="tw-w-14 tw-h-14">
     <!-- CMS edition -->
     <template v-if="item.lineItem.purchasable.type === 'cms-edition'">
-      <img
-        :src="craftLogo"
-        class="tw-w-full"
-      />
+      <img :src="craftLogo" class="tw-w-full" />
     </template>
 
     <!-- Plugin edition -->
@@ -20,17 +17,17 @@
 </template>
 
 <script>
-import {mapState} from 'vuex';
+  import {mapState} from 'vuex';
 
-export default {
-  props: {
-    item: Object,
-  },
+  export default {
+    props: {
+      item: Object,
+    },
 
-  computed: {
-    ...mapState({
-      craftLogo: state => state.craft.craftLogo,
-    }),
-  }
-}
+    computed: {
+      ...mapState({
+        craftLogo: (state) => state.craft.craftLogo,
+      }),
+    },
+  };
 </script>

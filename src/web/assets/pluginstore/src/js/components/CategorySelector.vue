@@ -3,12 +3,11 @@
     <a
       href="#"
       class="category-selector-btn"
-      @click.prevent="showCategorySelector = !showCategorySelector">All
-      categories</a>
+      @click.prevent="showCategorySelector = !showCategorySelector"
+      >All categories</a
+    >
 
-    <div
-      class="category-selector"
-      :class="{ hidden: !showCategorySelector }">
+    <div class="category-selector" :class="{hidden: !showCategorySelector}">
       <div
         class="category-selector-header"
         :class="{
@@ -31,100 +30,97 @@
 </template>
 
 <script>
-import {mapState} from 'vuex'
-import NavItems from './NavItems';
+  import {mapState} from 'vuex';
+  import NavItems from './NavItems';
 
-export default {
-  components: {NavItems},
-  data() {
-    return {
-      showCategorySelector: false,
-    }
-  },
+  export default {
+    components: {NavItems},
+    data() {
+      return {
+        showCategorySelector: false,
+      };
+    },
 
-  computed: {
-    ...mapState({
-      categories: state => state.pluginStore.categories,
-      CraftEdition: state => state.craft.CraftEdition,
-      CraftPro: state => state.craft.CraftPro,
-      licensedEdition: state => state.craft.licensedEdition,
-    }),
-  },
-}
+    computed: {
+      ...mapState({
+        categories: (state) => state.pluginStore.categories,
+        CraftEdition: (state) => state.craft.CraftEdition,
+        CraftPro: (state) => state.craft.CraftPro,
+        licensedEdition: (state) => state.craft.licensedEdition,
+      }),
+    },
+  };
 </script>
 
-<style
-  lang="scss"
-  scoped>
-@import "@craftcms/sass/mixins";
+<style lang="scss" scoped>
+  @import '@craftcms/sass/mixins';
 
-/* Category Selector Btn */
+  /* Category Selector Btn */
 
-.category-selector-btn {
-  @apply tw-block tw-relative;
-  @apply lg:tw-hidden;
-  background: $grey050;
-  border: 1px solid $hairlineColor;
-  padding: 10px 20px;
-  border-radius: 4px;
-  color: $secondaryColor;
+  .category-selector-btn {
+    @apply tw-block tw-relative;
+    @apply lg:tw-hidden;
+    background: $grey050;
+    border: 1px solid $hairlineColor;
+    padding: 10px 20px;
+    border-radius: 4px;
+    color: $secondaryColor;
 
-  &:before {
-    @include icon;
-    @apply tw-absolute tw-right-0;
-    top: calc(50% - 10px);
-    font-size: 16px;
-    width: 43px;
-    line-height: 20px;
-    content: 'downangle';
+    &:before {
+      @include icon;
+      @apply tw-absolute tw-right-0;
+      top: calc(50% - 10px);
+      font-size: 16px;
+      width: 43px;
+      line-height: 20px;
+      content: 'downangle';
+    }
+
+    &:hover {
+      @apply tw-no-underline;
+    }
   }
 
-  &:hover {
-    @apply tw-no-underline;
-  }
-}
+  /* Category Selector */
 
-
-/* Category Selector */
-
-.category-selector {
-  @apply lg:tw-flex tw-flex-col tw-fixed tw-top-0 tw-left-0 tw-bg-white tw-z-20;
-  @apply tw-hidden;
-  width: 100vw;
-  height: 100vh;
-  box-sizing: border-box;
-
-  .category-selector-body {
-    @apply tw-overflow-auto tw-h-full tw-p-6;
+  .category-selector {
+    @apply lg:tw-flex tw-flex-col tw-fixed tw-top-0 tw-left-0 tw-bg-white tw-z-20;
+    @apply tw-hidden;
+    width: 100vw;
+    height: 100vh;
     box-sizing: border-box;
 
-    .nav-items {
-      ul {
-        li {
-          &:first-child a {
-            border-top: 0;
-          }
+    .category-selector-body {
+      @apply tw-overflow-auto tw-h-full tw-p-6;
+      box-sizing: border-box;
 
-          &:first-child:before {
-            @apply tw-hidden;
-          }
+      .nav-items {
+        ul {
+          li {
+            &:first-child a {
+              border-top: 0;
+            }
 
-          &:before,
-          &:after {
-            left: 1rem;
-            right: 1rem;
-          }
+            &:first-child:before {
+              @apply tw-hidden;
+            }
 
-          a {
-            padding-left: 55px;
+            &:before,
+            &:after {
+              left: 1rem;
+              right: 1rem;
+            }
 
-            img {
-              left: 24px;
+            a {
+              padding-left: 55px;
+
+              img {
+                left: 24px;
+              }
             }
           }
         }
       }
     }
   }
-}
 </style>

@@ -21,21 +21,21 @@
 </template>
 
 <script>
-import {isPluginFree, getPriceRangeLabel} from '../utils/plugins';
-import PluginEdition from './PluginEdition';
+  import {isPluginFree, getPriceRangeLabel} from '../utils/plugins';
+  import PluginEdition from './PluginEdition';
 
-export default {
-  components: {PluginEdition},
-  props: {
-    plugin: {
-      type: Object,
-      required: true,
+  export default {
+    components: {PluginEdition},
+    props: {
+      plugin: {
+        type: Object,
+        required: true,
+      },
     },
-  },
 
-  methods: {
-    isPluginFree,
-    getPriceRangeLabel,
-  }
-}
+    methods: {
+      isPluginFree,
+      getPriceRangeLabel,
+    },
+  };
 </script>

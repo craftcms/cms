@@ -4,95 +4,97 @@
       ref="pluginstoremodal"
       id="pluginstore-modal"
       class="pluginstore-modal modal"
-      :class="'step-'+modalStep">
+      :class="'step-' + modalStep"
+    >
       <cart
         v-if="modalStep === 'cart'"
-        @continue-shopping="$root.closeModal()"></cart>
+        @continue-shopping="$root.closeModal()"
+      ></cart>
     </div>
   </div>
 </template>
 
 <script>
-/* global Garnish */
+  /* global Garnish */
 
-import {mapState} from 'vuex'
-import Cart from './steps/Cart'
+  import {mapState} from 'vuex';
+  import Cart from './steps/Cart';
 
-export default {
-  components: {
-    Cart,
-  },
+  export default {
+    components: {
+      Cart,
+    },
 
-  props: ['pluginId', 'show'],
+    props: ['pluginId', 'show'],
 
-  data() {
-    return {
-      modal: null,
-    }
-  },
+    data() {
+      return {
+        modal: null,
+      };
+    },
 
-  computed: {
-    modalStep() {
-      return this.$root.modalStep
-    }
-  },
+    computed: {
+      modalStep() {
+        return this.$root.modalStep;
+      },
+    },
 
-  watch: {
-    show(show) {
-      if (show) {
-        this.modal.show()
-      } else {
-        this.modal.hide()
-      }
-    }
-  },
+    watch: {
+      show(show) {
+        if (show) {
+          this.modal.show();
+        } else {
+          this.modal.hide();
+        }
+      },
+    },
 
-  mounted() {
-    let $this = this
+    mounted() {
+      let $this = this;
 
-    this.modal = new Garnish.Modal(this.$refs.pluginstoremodal, {
-      autoShow: false,
-      resizable: true,
-      onHide() {
-        $this.$emit('update:show', false)
-      }
-    })
-  }
-}
+      this.modal = new Garnish.Modal(this.$refs.pluginstoremodal, {
+        autoShow: false,
+        resizable: true,
+        onHide() {
+          $this.$emit('update:show', false);
+        },
+      });
+    },
+  };
 </script>
 
 <style lang="scss">
-@import "@craftcms/sass/mixins";
+  @import '@craftcms/sass/mixins';
 
-#pluginstore-modal {
-  @apply tw-absolute tw-top-0 tw-left-0;
-  max-width: 850px;
-  max-height: 650px;
-  z-index: 100;
+  #pluginstore-modal {
+    @apply tw-absolute tw-top-0 tw-left-0;
+    max-width: 850px;
+    max-height: 650px;
+    z-index: 100;
 
-  .pluginstore-modal-flex {
-    @apply tw-absolute tw-inset-0 tw-flex tw-flex-col;
+    .pluginstore-modal-flex {
+      @apply tw-absolute tw-inset-0 tw-flex tw-flex-col;
 
-    header {
-      .btn-left {
-        @apply tw-absolute;
-        top: 28px;
-        @include left(24px);
+      header {
+        .btn-left {
+          @apply tw-absolute;
+          top: 28px;
+          @include left(24px);
+        }
+
+        h1 {
+          @apply tw-text-center;
+        }
       }
 
-      h1 {
-        @apply tw-text-center;
-      }
-    }
+      .pluginstore-modal-main {
+        @apply tw-relative tw-flex tw-flex-grow tw-mb-0 tw-min-h-0;
 
-    .pluginstore-modal-main {
-      @apply tw-relative tw-flex tw-flex-grow tw-mb-0 tw-min-h-0;
-
-      .pluginstore-modal-content {
-        @apply tw-overflow-auto tw-flex-grow;
-        padding: 24px;
+        .pluginstore-modal-content {
+          @apply tw-overflow-auto tw-flex-grow;
+          padding: 24px;
+        }
       }
     }
   }
-}
 </style>

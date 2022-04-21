@@ -4,9 +4,7 @@
       <slot name="body"></slot>
     </template>
     <template v-else>
-      <header
-        v-if="!!$slots['header']"
-        class="header">
+      <header v-if="!!$slots['header']" class="header">
         <slot name="header"></slot>
       </header>
       <div class="pluginstore-modal-main">

@@ -6,7 +6,7 @@ module.exports = getConfig({
   context: __dirname,
   config: {
     entry: {
-      'ConditionBuilder': './ConditionBuilder.js',
+      ConditionBuilder: './ConditionBuilder.js',
     },
   },
 });

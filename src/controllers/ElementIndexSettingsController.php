@@ -9,6 +9,7 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\base\PreviewableFieldInterface;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\helpers\ArrayHelper;
 use craft\models\UserGroup;
@@ -104,6 +105,17 @@ class ElementIndexSettingsController extends BaseElementsController
             $availableTableAttributes[] = [$key, $labelInfo['label']];
         }
 
+        // Get previewable custom fields that should be available for all custom sources
+        $customFieldAttributes = [];
+
+        foreach (Craft::$app->getFields()->getLayoutsByType($elementType) as $fieldLayout) {
+            foreach ($fieldLayout->getCustomFields() as $field) {
+                if ($field instanceof PreviewableFieldInterface) {
+                    $customFieldAttributes[] = ["field:$field->uid", Craft::t('site', $field->name)];
+                }
+            }
+        }
+
         $condition = $elementType::createCondition();
         $condition->id = '__ID__';
         $condition->name = 'sources[__SOURCE_KEY__][condition]';
@@ -126,6 +138,7 @@ class ElementIndexSettingsController extends BaseElementsController
         return $this->asJson([
             'sources' => $sources,
             'availableTableAttributes' => $availableTableAttributes,
+            'customFieldAttributes' => $customFieldAttributes,
             'elementTypeName' => $elementType::displayName(),
             'conditionBuilderHtml' => $conditionBuilderHtml,
             'conditionBuilderJs' => $conditionBuilderJs,

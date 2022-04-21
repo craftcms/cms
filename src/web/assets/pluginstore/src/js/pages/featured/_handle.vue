@@ -15,54 +15,58 @@
       </plugin-index>
     </template>
     <template v-else>
-      <c-spinner/>
+      <c-spinner />
     </template>
   </div>
 </template>
 
 <script>
-import {mapState} from 'vuex'
-import PluginIndex from '../../components/PluginIndex'
+  import {mapState} from 'vuex';
+  import PluginIndex from '../../components/PluginIndex';
 
-export default {
-  components: {
-    PluginIndex,
-  },
+  export default {
+    components: {
+      PluginIndex,
+    },
 
-  data() {
-    return {
-      loading: true,
-      pluginsLoaded: false,
-      sectionLoaded: false,
-    }
-  },
-
-  computed: {
-    ...mapState({
-      featuredSection: state => state.pluginStore.featuredSection,
-      plugins: state => state.pluginStore.plugins,
-    }),
-
-    requestData() {
+    data() {
       return {
-        featuredSectionHandle: this.$route.params.handle
-      }
-    }
-  },
+        loading: true,
+        pluginsLoaded: false,
+        sectionLoaded: false,
+      };
+    },
 
-  mounted() {
-    this.$store.commit('pluginStore/updatePlugins', [])
+    computed: {
+      ...mapState({
+        featuredSection: (state) => state.pluginStore.featuredSection,
+        plugins: (state) => state.pluginStore.plugins,
+      }),
 
-    const featuredSectionHandle = this.$route.params.handle
+      requestData() {
+        return {
+          featuredSectionHandle: this.$route.params.handle,
+        };
+      },
+    },
 
-    // retrieve featured section
-    this.$store.dispatch('pluginStore/getFeaturedSectionByHandle', featuredSectionHandle)
-      .then(() => {
-        this.loading = false
-      })
-      .catch(() => {
-        this.loading = false
-      })
-  }
-}
+    mounted() {
+      this.$store.commit('pluginStore/updatePlugins', []);
+
+      const featuredSectionHandle = this.$route.params.handle;
+
+      // retrieve featured section
+      this.$store
+        .dispatch(
+          'pluginStore/getFeaturedSectionByHandle',
+          featuredSectionHandle
+        )
+        .then(() => {
+          this.loading = false;
+        })
+        .catch(() => {
+          this.loading = false;
+        });
+    },
+  };
 </script>

@@ -1,6 +1,6 @@
 /* jshint esversion: 6 */
 /* globals module, require */
-const path = require('path')
+const path = require('path');
 const {getConfig} = require('@craftcms/webpack');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 
@@ -19,9 +19,9 @@ module.exports = getConfig({
         patterns: [
           {
             from: './images',
-            to: './images'
-          }
-        ]
+            to: './images',
+          },
+        ],
       }),
     ],
   },

@@ -1,8 +1,8 @@
 // global-setup.js
-const { chromium, expect } = require('@playwright/test');
+const {chromium, expect} = require('@playwright/test');
 
-module.exports = async config => {
-  const { baseURL } = config.projects[0].use;
+module.exports = async (config) => {
+  const {baseURL} = config.projects[0].use;
   const browser = await chromium.launch({
     // devtools: true
   });
@@ -17,6 +17,8 @@ module.exports = async config => {
   await expect(title).toHaveText('Dashboard');
 
   // Save signed-in state
-  await page.context().storageState({ path: './tests/.playwright/authentication/admin.json' });
+  await page
+    .context()
+    .storageState({path: './tests/.playwright/authentication/admin.json'});
   await browser.close();
 };
