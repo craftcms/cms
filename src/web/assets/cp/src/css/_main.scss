@@ -2526,6 +2526,7 @@ $elementInnerSpacing: 5px;
       img {
         display: block;
         flex-shrink: 0;
+        flex-grow: 1;
         pointer-events: none;
         border-radius: $smallBorderRadius;
         max-width: 100%;
