@@ -11,22 +11,24 @@ concurrency:
 jobs:
   ecs:
     name: ECS
-    uses: craftcms/.github/.github/workflows/ecs.yml@v1
-    secrets:
-      minimum_php_version: ${{ secrets.CRAFT_3_MINIMUM_PHP }}
+    uses: craftcms/.github/.github/workflows/ecs.yml@v2
+    with:
+      php_version: '7.2'
   codecept:
     name: Codeception
-    uses: craftcms/.github/.github/workflows/codecept.yml@v1
+    needs: [ecs]
+    uses: craftcms/.github/.github/workflows/codecept.yml@v2
     with:
       php_versions: '["7.2", "7.3", "7.4", "8.0", "8.1"]'
   notify-slack:
     name: Notify Slack
     needs: [ecs, codecept]
     if: ${{ always() }}
-    uses: craftcms/.github/.github/workflows/notify-slack.yml@v1
+    uses: craftcms/.github/.github/workflows/notify-slack.yml@v2
     with:
       success: ${{ needs.ecs.result == 'success' && needs.codecept.result == 'success' }}
+      failure: ${{ needs.ecs.result == 'failure' || needs.codecept.result == 'failure' }}
       failure_text_prefix: <!subteam^SGFL9NKNZ>
     secrets:
       token: ${{ secrets.GITHUB_TOKEN }}
-      slack_webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
+      slack_webhook_url: ${{ secrets.SLACK_CRAFT_WEBHOOK_URL }}

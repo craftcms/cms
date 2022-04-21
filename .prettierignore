@@ -1,8 +1,9 @@
-*.php
 *.md
+*.php
 composer.lock
-src/web/assets/**/dist/*
-vendor/*
-lib/*
 cpresources/*
+lib/*
 src/templates/*
+src/web/assets/**/dist/*
+tests/_craft/*
+vendor/*
