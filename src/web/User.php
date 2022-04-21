@@ -168,7 +168,7 @@ class User extends \yii\web\User
      *
      *   <input type="password" name="password">
      *
-     *   <input type="submit" value="Login">
+     *   <input type="submit" value="Sign in">
      * </form>
      * ```
      *

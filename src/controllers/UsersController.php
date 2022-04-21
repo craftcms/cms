@@ -815,8 +815,8 @@ class UsersController extends Controller
                     $sessionActions[] = [
                         'action' => 'users/impersonate',
                         'label' => $name
-                            ? Craft::t('app', 'Login as {user}', ['user' => $user->getName()])
-                            : Craft::t('app', 'Login as user'),
+                            ? Craft::t('app', 'Sign in as {user}', ['user' => $user->getName()])
+                            : Craft::t('app', 'Sign in as user'),
                     ];
                     $sessionActions[] = [
                         'id' => 'copy-impersonation-url',
@@ -2305,7 +2305,7 @@ JS,
             return $this->redirect(UrlHelper::siteUrl($url));
         }
 
-        throw new BadRequestHttpException(Craft::t('app', 'Invalid verification code. Please login or reset your password.'));
+        throw new BadRequestHttpException(Craft::t('app', 'Invalid verification code. Please sign in or reset your password.'));
     }
 
     /**

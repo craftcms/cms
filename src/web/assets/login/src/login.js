@@ -181,7 +181,7 @@ import './login.scss';
 
       this.$form.toggleClass('reset-password', this.forgotPassword);
       this.$submitBtn.text(
-        Craft.t('app', this.forgotPassword ? 'Reset Password' : 'Login')
+        Craft.t('app', this.forgotPassword ? 'Reset Password' : 'Sign in')
       );
     },
   });

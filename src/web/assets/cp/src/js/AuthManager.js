@@ -159,7 +159,7 @@ Craft.AuthManager = Garnish.Base.extend(
         let $logoutBtn = $('<button/>', {
           type: 'button',
           class: 'btn',
-          text: Craft.t('app', 'Log out now'),
+          text: Craft.t('app', 'Sign out now'),
         }).appendTo($buttons);
         let $renewSessionBtn = $('<button/>', {
           type: 'submit',
@@ -290,7 +290,7 @@ Craft.AuthManager = Garnish.Base.extend(
         this.$loginBtn = Craft.ui
           .createSubmitButton({
             class: 'disabled',
-            label: Craft.t('app', 'Login'),
+            label: Craft.t('app', 'Sign in'),
             spinner: true,
           })
           .appendTo($buttonContainer);

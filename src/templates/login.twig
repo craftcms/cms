@@ -1,6 +1,6 @@
 {% extends "_layouts/basecp" %}
 {% import "_includes/forms" as forms %}
-{% set title = "Login"|t('app') %}
+{% set title = "Sign In"|t('app') %}
 {% set bodyClass = 'login' %}
 {% do view.registerAssetBundle("craft\\web\\assets\\login\\LoginAsset") %}
 
@@ -89,7 +89,7 @@
                 <div class="buttons">
                     {{ forms.submitButton({
                         id: 'submit',
-                        label: 'Login'|t('app'),
+                        label: 'Sign in'|t('app'),
                         spinner: true,
                     }) }}
                 </div>
