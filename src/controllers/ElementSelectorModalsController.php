@@ -8,7 +8,6 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\helpers\ArrayHelper;
 use craft\helpers\ElementHelper;
 use craft\services\ElementSources;
 use yii\web\Response;
@@ -66,14 +65,14 @@ class ElementSelectorModalsController extends BaseElementsController
                         $pos = array_search($key, $sourceKeys);
                         $inserted = false;
                         if ($pos > 0) {
-                            $prevKey = $sourceKeys[$pos-1];
-                             foreach ($sources as $i => $otherSource) {
-                                 if (($otherSource['key'] ?? null) === $prevKey) {
-                                     array_splice($sources, $i + 1, 0, [$source]);
-                                     $inserted = true;
-                                     break;
-                                 }
-                             }
+                            $prevKey = $sourceKeys[$pos - 1];
+                            foreach ($sources as $i => $otherSource) {
+                                if (($otherSource['key'] ?? null) === $prevKey) {
+                                    array_splice($sources, $i + 1, 0, [$source]);
+                                    $inserted = true;
+                                    break;
+                                }
+                            }
                         }
                         if (!$inserted) {
                             $sources[] = $source;
