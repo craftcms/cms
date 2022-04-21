@@ -83,7 +83,7 @@
 - Fixed a bug where GraphQL eager loading would not work.
 - Fixed a bug where entry and category slugs weren’t getting regenerated based on the title, when their value was cleared. ([#10949](https://github.com/craftcms/cms/issues/10949))
 - Fixed a bug where no source was getting selected by default when switching the site on the Entries index page, if the previously-selected source wasn’t enabled for the new site. ([#10954](https://github.com/craftcms/cms/issues/10954))
-- Fixed a bug where user’s photos were displaying incorrectly in Element index tables. ([#10955](https://github.com/craftcms/cms/pull/10955))
+- Fixed a bug where users’ photos weren’t always displaying correctly in element indexes. ([#10955](https://github.com/craftcms/cms/pull/10955))
 
 ## 4.0.0-beta.4 - 2022-04-06
 
