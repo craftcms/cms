@@ -5,16 +5,16 @@ const CopyWebpackPlugin = require('copy-webpack-plugin');
 const path = require('path');
 
 module.exports = getConfig({
-    context: __dirname,
-    config: {
-        plugins: [
-            new CopyWebpackPlugin({
-                patterns: [
-                    {
-                        from: require.resolve('picturefill/dist/picturefill.js')
-                    },
-                ],
-            }),
-        ]
-    }
+  context: __dirname,
+  config: {
+    plugins: [
+      new CopyWebpackPlugin({
+        patterns: [
+          {
+            from: require.resolve('picturefill/dist/picturefill.js'),
+          },
+        ],
+      }),
+    ],
+  },
 });

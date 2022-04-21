@@ -1,14 +1,14 @@
 /* global Craft */
 
-import axios from 'axios'
-import api from '../utils/api'
+import axios from 'axios';
+import api from '../utils/api';
 
 export default {
   /**
    * Cancel requests.
    */
   cancelRequests() {
-    api.cancelRequests()
+    api.cancelRequests();
   },
 
   /**
@@ -16,18 +16,19 @@ export default {
    */
   getCraftData() {
     return new Promise((resolve, reject) => {
-      api.sendActionRequest('GET', 'plugin-store/craft-data')
+      api
+        .sendActionRequest('GET', 'plugin-store/craft-data')
         .then((response) => {
-          resolve(response)
+          resolve(response);
         })
         .catch((error) => {
           if (axios.isCancel(error)) {
             // request cancelled
           } else {
-            reject(error)
+            reject(error);
           }
-        })
-    })
+        });
+    });
   },
 
   /**
@@ -35,22 +36,23 @@ export default {
    */
   getCraftIdData({accessToken}) {
     return new Promise((resolve, reject) => {
-      api.sendApiRequest('GET', 'account', {
+      api
+        .sendApiRequest('GET', 'account', {
           headers: {
-            'Authorization': 'Bearer ' + accessToken,
-          }
+            Authorization: 'Bearer ' + accessToken,
+          },
         })
         .then((responseData) => {
-          resolve(responseData)
+          resolve(responseData);
         })
         .catch((error) => {
           if (axios.isCancel(error)) {
             // request cancelled
           } else {
-            reject(error)
+            reject(error);
           }
-        })
-    })
+        });
+    });
   },
 
   /**
@@ -58,18 +60,19 @@ export default {
    */
   getCountries() {
     return new Promise((resolve, reject) => {
-      api.sendApiRequest('GET', 'countries')
+      api
+        .sendApiRequest('GET', 'countries')
         .then((responseData) => {
-          resolve(responseData)
+          resolve(responseData);
         })
         .catch((error) => {
           if (axios.isCancel(error)) {
             // request cancelled
           } else {
-            reject(error)
+            reject(error);
           }
-        })
-    })
+        });
+    });
   },
 
   /**
@@ -77,32 +80,34 @@ export default {
    */
   getPluginLicenseInfo() {
     return new Promise((resolve, reject) => {
-      api.sendApiRequest('GET', 'cms-licenses', {
+      api
+        .sendApiRequest('GET', 'cms-licenses', {
           params: {
             include: 'plugins',
           },
         })
         .then((response) => {
-          api.sendActionRequest('POST', 'app/get-plugin-license-info', {
+          api
+            .sendActionRequest('POST', 'app/get-plugin-license-info', {
               data: {
                 pluginLicenses: response.license.pluginLicenses || [],
               },
               headers: {
                 'X-CSRF-Token': Craft.csrfTokenValue,
-              }
+              },
             })
             .then((response) => {
-              resolve(response)
+              resolve(response);
             })
             .catch((error) => {
               if (axios.isCancel(error)) {
                 // request cancelled
               } else {
-                reject(error)
+                reject(error);
               }
-            })
-        })
-    })
+            });
+        });
+    });
   },
 
   /**
@@ -110,26 +115,27 @@ export default {
    */
   switchPluginEdition(pluginHandle, edition) {
     return new Promise((resolve, reject) => {
-      const data = 'pluginHandle=' + pluginHandle + '&edition=' + edition
+      const data = 'pluginHandle=' + pluginHandle + '&edition=' + edition;
 
-      api.sendActionRequest('POST', 'plugins/switch-edition', {
+      api
+        .sendActionRequest('POST', 'plugins/switch-edition', {
           data,
           headers: {
             'X-CSRF-Token': Craft.csrfTokenValue,
           },
         })
         .then((response) => {
-          Craft.clearCachedApiHeaders()
-          resolve(response)
+          Craft.clearCachedApiHeaders();
+          resolve(response);
         })
         .catch((error) => {
           if (axios.isCancel(error)) {
             // request cancelled
           } else {
-            reject(error)
+            reject(error);
           }
-        })
-    })
+        });
+    });
   },
 
   /**
@@ -137,23 +143,24 @@ export default {
    */
   tryEdition(edition) {
     return new Promise((resolve, reject) => {
-      api.sendActionRequest('POST', 'app/try-edition', {
+      api
+        .sendActionRequest('POST', 'app/try-edition', {
           data: 'edition=' + edition,
           headers: {
             'X-CSRF-Token': Craft.csrfTokenValue,
-          }
+          },
         })
         .then((response) => {
-          Craft.clearCachedApiHeaders()
-          resolve(response)
+          Craft.clearCachedApiHeaders();
+          resolve(response);
         })
         .catch((error) => {
           if (axios.isCancel(error)) {
             // request cancelled
           } else {
-            reject(error)
+            reject(error);
           }
-        })
-    })
+        });
+    });
   },
-}
+};

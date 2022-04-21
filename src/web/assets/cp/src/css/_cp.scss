@@ -1,5 +1,5 @@
 @charset "UTF-8";
-@import "@craftcms/sass/mixins";
+@import '@craftcms/sass/mixins';
 
 :root {
   --xs: 4px;
@@ -103,7 +103,8 @@ $sidebarLinkSecondaryColor: $grey200;
   -webkit-overflow-scrolling: touch;
   @include light-on-dark-text;
   background-color: $grey800;
-  --focus-ring: 0 0 0 1px hsl(var(--light-focus-hsl)), 0 0 0 3px hsla(var(--light-focus-hsl), 0.7);
+  --focus-ring: 0 0 0 1px hsl(var(--light-focus-hsl)),
+    0 0 0 3px hsla(var(--light-focus-hsl), 0.7);
 
   a {
     color: $sidebarLinkStaticColor;
@@ -220,10 +221,18 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
       top: 0;
       @include right(0);
       width: var(--m);
-      background-image: linear-gradient(to right, transparentize($systemInfoBgColor, 1), $systemInfoBgColor);
+      background-image: linear-gradient(
+        to right,
+        transparentize($systemInfoBgColor, 1),
+        $systemInfoBgColor
+      );
 
       #system-info:hover & {
-        background-image: linear-gradient(to right, transparentize($systemInfoHoverBgColor, 1), $systemInfoHoverBgColor);
+        background-image: linear-gradient(
+          to right,
+          transparentize($systemInfoHoverBgColor, 1),
+          $systemInfoHoverBgColor
+        );
       }
     }
   }
@@ -696,7 +705,7 @@ li.breadcrumb-toggle-wrapper {
     border-color: var(--ui-control-hover-color);
   }
 
-  &[aria-expanded=true]:after {
+  &[aria-expanded='true']:after {
     border-color: var(--ui-control-active-color);
   }
 }
@@ -710,11 +719,13 @@ li.breadcrumb-toggle-wrapper {
     height: 30px;
     max-width: none;
     border-radius: 50%;
-    box-shadow: 0 0 0 1px transparentize($grey900, 0.95), 0 0 0 transparentize($grey900, 1);
+    box-shadow: 0 0 0 1px transparentize($grey900, 0.95),
+      0 0 0 transparentize($grey900, 1);
     transition: box-shadow linear 150ms;
 
     #user-info:hover & {
-      box-shadow: 0 0 0 1px transparentize($grey900, 0.95), 0 2px 10px -2px transparentize($grey900, 0.7);
+      box-shadow: 0 0 0 1px transparentize($grey900, 0.95),
+        0 2px 10px -2px transparentize($grey900, 0.7);
     }
   }
 }
@@ -805,7 +816,8 @@ li.breadcrumb-toggle-wrapper {
 
   @supports (backdrop-filter: blur(10px)) {
     & {
-      transition: background-color linear 100ms, box-shadow linear 100ms, backdrop-filter linear 100ms;
+      transition: background-color linear 100ms, box-shadow linear 100ms,
+        backdrop-filter linear 100ms;
 
       body.fixed-header & {
         background-color: transparentize($grey100, 0.25);
@@ -1477,7 +1489,8 @@ li.breadcrumb-toggle-wrapper {
   }
 
   & > :not(h2):not(hr) {
-    &, &:last-child {
+    &,
+    &:last-child {
       position: relative;
       width: 100%;
 
@@ -1498,7 +1511,8 @@ li.breadcrumb-toggle-wrapper {
 #content :not(.meta) > .flex-fields,
 #content > .flex-fields {
   & > :not(h2):not(hr) {
-    &, &:last-child {
+    &,
+    &:last-child {
       // 4 cols for >= 1536px
       @media only screen and (min-width: $minXlUiWidth) {
         &.width-25 {
@@ -1525,7 +1539,8 @@ li.breadcrumb-toggle-wrapper {
 
 .so-content .flex-fields {
   & > :not(h2):not(hr) {
-    &, &:last-child {
+    &,
+    &:last-child {
       // 2 cols for >= 712px
       @media only screen and (min-width: $minXlUiWidth) {
         &.width-25,

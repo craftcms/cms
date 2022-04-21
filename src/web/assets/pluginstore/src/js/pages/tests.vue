@@ -1,10 +1,13 @@
 <template>
   <div>
     <h2>Translations</h2>
-    <p>{{ somePrice|currency }} per year for updates</p>
-    <p>{{
-        "{price} per year for updates"|t('app', {price: $root.$options.filters.currency(somePrice)})
-      }}</p>
+    <p>{{ somePrice | currency }} per year for updates</p>
+    <p>
+      {{
+        '{price} per year for updates'
+          | t('app', {price: $root.$options.filters.currency(somePrice)})
+      }}
+    </p>
     <p>{{ "Go to {link}"|t('app', {link: '<a href="#">test</a>' }) }}</p>
     <p v-html="craftTranslation"></p>
 
@@ -13,46 +16,42 @@
     <p><a @click="openModal()">Open Garnish Modal</a></p>
 
     <div class="tw-hidden">
-      <div
-        ref="garnishmodalcontent"
-        class="modal">
-        <div class="body">
-          Hello World
-        </div>
+      <div ref="garnishmodalcontent" class="modal">
+        <div class="body">Hello World</div>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-/* global Craft */
-/* global Garnish */
+  /* global Craft */
+  /* global Garnish */
 
-export default {
-  data() {
-    return {
-      somePrice: '99.00',
-      modal: null,
-    }
-  },
-
-  computed: {
-    craftTranslation() {
-      return Craft.t('app', 'Go to {link}', {link: '<a href="#">test</a>'})
+  export default {
+    data() {
+      return {
+        somePrice: '99.00',
+        modal: null,
+      };
     },
-  },
 
-  mounted() {
-    this.modal = new Garnish.Modal(this.$refs.garnishmodalcontent, {
-      autoShow: false,
-      resizable: true
-    })
-  },
-
-  methods: {
-    openModal() {
-      this.modal.show()
+    computed: {
+      craftTranslation() {
+        return Craft.t('app', 'Go to {link}', {link: '<a href="#">test</a>'});
+      },
     },
-  }
-}
+
+    mounted() {
+      this.modal = new Garnish.Modal(this.$refs.garnishmodalcontent, {
+        autoShow: false,
+        resizable: true,
+      });
+    },
+
+    methods: {
+      openModal() {
+        this.modal.show();
+      },
+    },
+  };
 </script>

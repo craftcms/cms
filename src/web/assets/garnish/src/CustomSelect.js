@@ -53,7 +53,9 @@ export default Base.extend(
       // Deprecated
       if (this.settings.attachToElement) {
         this.settings.anchor = this.settings.attachToElement;
-        console.warn("The 'attachToElement' setting is deprecated. Use 'anchor' instead.");
+        console.warn(
+          "The 'attachToElement' setting is deprecated. Use 'anchor' instead."
+        );
       }
 
       if (this.settings.anchor) {
@@ -218,7 +220,7 @@ export default Base.extend(
 
       this.$container.velocity(
         'fadeOut',
-        { duration: Garnish.FX_DURATION },
+        {duration: Garnish.FX_DURATION},
         function () {
           this.$container.detach();
         }.bind(this)
@@ -232,7 +234,7 @@ export default Base.extend(
 
     selectOption: function (option) {
       this.settings.onOptionSelect(option);
-      this.trigger('optionselect', { selectedOption: option });
+      this.trigger('optionselect', {selectedOption: option});
       this.hide();
     },
 

@@ -1,5 +1,5 @@
 @charset "UTF-8";
-@import "@craftcms/sass/mixins";
+@import '@craftcms/sass/mixins';
 
 @mixin checkered-bg($size) {
   // h/t https://gist.github.com/dfrankland/f6fed3e3ccc42e3de482b324126f9542
@@ -36,10 +36,10 @@
 }
 
 @font-face {
-  font-family: "Craft";
-  src: url("../fonts/Craft.woff") format("woff"),
-    url("../fonts/Craft.ttf") format("truetype"),
-    url("../fonts/Craft.svg#Craft") format("svg");
+  font-family: 'Craft';
+  src: url('../fonts/Craft.woff') format('woff'),
+    url('../fonts/Craft.ttf') format('truetype'),
+    url('../fonts/Craft.svg#Craft') format('svg');
   font-weight: normal;
   font-style: normal;
 }
@@ -55,10 +55,14 @@
   --ui-control-color: #{$grey400};
   --ui-control-hover-color: #{$grey500};
   --ui-control-active-color: #{$grey600};
-  --light-focus-hsl: #{hue($lightFocusColor)}, #{saturation($lightFocusColor)}, #{lightness($lightFocusColor)};
-  --medium-focus-hsl: #{hue($mediumFocusColor)}, #{saturation($mediumFocusColor)}, #{lightness($mediumFocusColor)};
-  --dark-focus-hsl: #{hue($darkFocusColor)}, #{saturation($darkFocusColor)}, #{lightness($darkFocusColor)};
-  --focus-ring: 0 0 0 1px hsl(var(--dark-focus-hsl)), 0 0 0 3px hsla(var(--dark-focus-hsl), 0.7);
+  --light-focus-hsl: #{hue($lightFocusColor)}, #{saturation($lightFocusColor)},
+    #{lightness($lightFocusColor)};
+  --medium-focus-hsl: #{hue($mediumFocusColor)},
+    #{saturation($mediumFocusColor)}, #{lightness($mediumFocusColor)};
+  --dark-focus-hsl: #{hue($darkFocusColor)}, #{saturation($darkFocusColor)},
+    #{lightness($darkFocusColor)};
+  --focus-ring: 0 0 0 1px hsl(var(--dark-focus-hsl)),
+    0 0 0 3px hsla(var(--dark-focus-hsl), 0.7);
   --touch-target-size: 44px; /* Minimum recommended touch target size */
 }
 
@@ -203,50 +207,50 @@ table.editable textarea {
   content: attr(data-icon-after);
 }
 
-body.rtl [data-icon="list"]:before,
-body.rtl [data-icon-after="list"]:after {
-  content: "listrtl";
+body.rtl [data-icon='list']:before,
+body.rtl [data-icon-after='list']:after {
+  content: 'listrtl';
 }
 
-body.rtl [data-icon="structure"]:before,
-body.rtl [data-icon-after="structure"]:after {
-  content: "structurertl";
+body.rtl [data-icon='structure']:before,
+body.rtl [data-icon-after='structure']:after {
+  content: 'structurertl';
 }
 
 .icon.secure:before {
-  content: "secure";
+  content: 'secure';
 }
 
 .icon.insecure:before {
-  content: "insecure";
+  content: 'insecure';
 }
 
 .icon.add:before {
-  content: "plus";
+  content: 'plus';
 }
 
 .icon.edit:before {
-  content: "edit";
+  content: 'edit';
 }
 
 .icon.settings:before {
-  content: "settings";
+  content: 'settings';
 }
 
 .icon.search:before {
-  content: "search";
+  content: 'search';
 }
 
 .icon.expand:before {
-  content: "expand";
+  content: 'expand';
 }
 
 .icon.collapse:before {
-  content: "collapse";
+  content: 'collapse';
 }
 
 .help:before {
-  content: "help";
+  content: 'help';
   color: $pink400;
 }
 
@@ -259,15 +263,15 @@ body.rtl [data-icon-after="structure"]:after {
 
 .preview-btn:before {
   margin-top: -2px;
-  content: "view";
+  content: 'view';
 }
 
 .view-btn:before {
   body.ltr & {
-    content: "share";
+    content: 'share';
   }
   body.rtl & {
-    content: "shareleft";
+    content: 'shareleft';
   }
 }
 
@@ -414,10 +418,10 @@ li.sel a {
   @include padding-left(4px);
   color: var(--ui-control-color);
   body.ltr & {
-    content: "circlerarr";
+    content: 'circlerarr';
   }
   body.rtl & {
-    content: "circlelarr";
+    content: 'circlelarr';
   }
 }
 
@@ -458,7 +462,7 @@ button {
   background-color: $grey200;
 
   &:before {
-    content: "check";
+    content: 'check';
     color: $successColor;
   }
 }
@@ -467,7 +471,7 @@ button {
   background-color: $grey200;
 
   &:before {
-    content: "alert";
+    content: 'alert';
     color: $errorColor;
   }
 }
@@ -544,15 +548,28 @@ button {
   }
 
   .so-notice > & {
-    @include margin(calc(var(--s) * -1), 0, calc(var(--s) * -1), calc(var(--xl) * -1));
+    @include margin(
+      calc(var(--s) * -1),
+      0,
+      calc(var(--s) * -1),
+      calc(var(--xl) * -1)
+    );
     @include padding(var(--s), 0, var(--s), var(--xl));
     @include border-bottom-left-radius($largeBorderRadius);
 
     body.ltr & {
-      background-image: linear-gradient(to bottom right, transparentize($blue600, 0.8), transparentize($blue600, 1) 50%);
+      background-image: linear-gradient(
+        to bottom right,
+        transparentize($blue600, 0.8),
+        transparentize($blue600, 1) 50%
+      );
     }
     body.rtl & {
-      background-image: linear-gradient(to left, transparentize($blue600, 0.8), transparentize($blue600, 1));
+      background-image: linear-gradient(
+        to left,
+        transparentize($blue600, 0.8),
+        transparentize($blue600, 1)
+      );
     }
   }
 
@@ -728,7 +745,7 @@ input.checkbox + label.smalltext {
 }
 
 .required:after {
-  content: "asterisk";
+  content: 'asterisk';
   @include margin(-2px, 0, 0, 5px);
   font-size: 7px;
   color: $errorColor;
@@ -752,13 +769,13 @@ td {
   vertical-align: middle;
 }
 
-body.ltr table[dir="rtl"] {
+body.ltr table[dir='rtl'] {
   th,
   td {
     text-align: right;
   }
 }
-body.rtl table[dir="ltr"] {
+body.rtl table[dir='ltr'] {
   th,
   td {
     text-align: left;
@@ -785,16 +802,16 @@ td.right {
   @include token-styles;
 }
 
-.token[data-name="*"] {
+.token[data-name='*'] {
   position: relative;
   width: 10px;
 }
 
-.token[data-name="*"] span {
+.token[data-name='*'] span {
   opacity: 0;
 }
 
-.token[data-name="*"]:before {
+.token[data-name='*']:before {
   @include icon;
   display: block;
   position: absolute;
@@ -803,7 +820,7 @@ td.right {
   width: 100%;
   font-size: 9px;
   line-height: 17px;
-  content: "asterisk";
+  content: 'asterisk';
   text-indent: 0;
 }
 
@@ -827,7 +844,7 @@ td.right {
 }
 
 .pane.highlight {
-  pre[class*="language-"] {
+  pre[class*='language-'] {
     overflow: visible;
 
     & > code.diff-highlight .token:not(.prefix) {
@@ -872,7 +889,7 @@ td.right {
   &.with-icon,
   .icon {
     &:before {
-      content: "lightbulb";
+      content: 'lightbulb';
     }
   }
 }
@@ -883,7 +900,7 @@ td.right {
   &.with-icon,
   .icon {
     &:before {
-      content: "alert";
+      content: 'alert';
     }
   }
 }
@@ -901,7 +918,7 @@ td.right {
 }
 
 .icon.move:before {
-  content: "move";
+  content: 'move';
   color: var(--ui-control-color);
 }
 
@@ -914,7 +931,7 @@ td.right {
   line-height: inherit;
 
   &:before {
-    content: "remove";
+    content: 'remove';
     color: var(--ui-control-color);
   }
 
@@ -974,7 +991,7 @@ td.right {
 
   &:not(.warning) {
     &:before {
-      content: "info";
+      content: 'info';
     }
     &:hover:before {
       color: $linkColor;
@@ -983,7 +1000,7 @@ td.right {
 
   &.warning {
     &:before {
-      content: "alert";
+      content: 'alert';
     }
     &:hover:before {
       color: $warningColor;
@@ -1403,7 +1420,7 @@ ul.icons {
     }
   }
 
-  &[type="color"] {
+  &[type='color'] {
     padding: 6px !important;
     width: 36px;
   }
@@ -1690,9 +1707,9 @@ ul.icons {
 
   &:before {
     display: block;
-    content: "";
+    content: '';
     font-size: 0;
-    animation: rotator .7s linear infinite;
+    animation: rotator 0.7s linear infinite;
     box-sizing: border-box;
     width: var(--size, 20px);
     height: var(--size, 20px);
@@ -1817,17 +1834,22 @@ ul.icons {
   background-color: $secondaryColor !important;
 }
 
-.secondary-buttons .btn.submit:not(.disabled):not(.inactive):not(.loading):hover,
-.secondary-buttons .btn.submit:not(.disabled):not(.inactive):not(.loading).hover,
-.secondary-buttons .btn.submit:not(.disabled):not(.inactive):not(.loading):focus,
+.secondary-buttons
+  .btn.submit:not(.disabled):not(.inactive):not(.loading):hover,
+.secondary-buttons
+  .btn.submit:not(.disabled):not(.inactive):not(.loading).hover,
+.secondary-buttons
+  .btn.submit:not(.disabled):not(.inactive):not(.loading):focus,
 .btn.secondary:not(.disabled):not(.inactive):not(.loading):hover,
 .btn.secondary:not(.disabled):not(.inactive):not(.loading).hover,
 .btn.secondary:not(.disabled):not(.inactive):not(.loading):focus {
   background-color: darken($secondaryColor, 5%) !important;
 }
 
-.secondary-buttons .btn.submit:not(.disabled):not(.inactive):not(.loading):active,
-.secondary-buttons .btn.submit:not(.disabled):not(.inactive):not(.loading).active,
+.secondary-buttons
+  .btn.submit:not(.disabled):not(.inactive):not(.loading):active,
+.secondary-buttons
+  .btn.submit:not(.disabled):not(.inactive):not(.loading).active,
 .btn.secondary:not(.disabled):not(.inactive):not(.loading):active,
 .btn.secondary:not(.disabled):not(.inactive):not(.loading).active {
   background-color: darken($secondaryColor, 10%) !important;
@@ -1961,12 +1983,12 @@ div.btn.submit input {
       color: $mediumTextColor;
       cursor: default;
 
-      &[data-toggle="on"] {
+      &[data-toggle='on'] {
         @include padding-right(10px);
         @include margin-left(7px);
       }
 
-      &[data-toggle="off"] {
+      &[data-toggle='off'] {
         @include padding-left(10px);
         @include margin-right(7px);
       }
@@ -2416,7 +2438,7 @@ table {
 
         &:before {
           margin-right: 5px;
-          content: attr(data-title) ":";
+          content: attr(data-title) ':';
           font-weight: bold;
         }
 
@@ -2670,7 +2692,7 @@ $checkboxPadding: $checkboxSize + 4;
 
     &:after {
       display: block;
-      content: "";
+      content: '';
       font-size: 0;
       position: absolute;
       top: 0;
@@ -2693,7 +2715,7 @@ $checkboxPadding: $checkboxSize + 4;
     box-shadow: none;
 
     &:after {
-      content: "";
+      content: '';
     }
 
     .selectallcontainer {
@@ -2871,7 +2893,7 @@ $checkboxPadding: $checkboxSize + 4;
       padding: 0 5px;
 
       &:before {
-        content: "downangle";
+        content: 'downangle';
         color: $darkHairlineColor;
       }
 
@@ -3115,7 +3137,7 @@ table.editable {
           opacity: 1;
 
           &:after {
-            content: "";
+            content: '';
             font-size: 0;
             position: absolute;
             top: 0;
@@ -3518,7 +3540,7 @@ ul.tree,
 
     &:after {
       display: block;
-      content: "";
+      content: '';
       font-size: 0;
       position: absolute;
       top: 0;
@@ -3555,7 +3577,7 @@ ul.tree,
   align-items: center;
   max-width: 100%;
 
-  [role="tablist"] {
+  [role='tablist'] {
     margin: calc(var(--s) * -1) var(--neg-padding) 0;
     padding: var(--s) var(--padding) 0;
     flex: 1;
@@ -3585,7 +3607,7 @@ ul.tree,
       }
     }
 
-    [role="tab"] {
+    [role='tab'] {
       display: flex;
       flex-direction: row;
       align-items: center;
@@ -3679,7 +3701,7 @@ ul.tree,
       padding-bottom: var(--m);
       color: $textColor !important;
       background-color: $yellow050 !important;
-      box-shadow: 0 0 0 1px $yellow300,  0 2px 12px transparentize($grey200, 0.5);
+      box-shadow: 0 0 0 1px $yellow300, 0 2px 12px transparentize($grey200, 0.5);
 
       p {
         margin-bottom: 5px;
@@ -3709,7 +3731,7 @@ ul.tree,
       }
     }
 
-    & > .field  > .status-badge {
+    & > .field > .status-badge {
       @include left(0);
     }
 
@@ -3810,7 +3832,7 @@ ul.tree,
           width: 31px;
           @include alignright;
           @include icon;
-          content: "plus";
+          content: 'plus';
           color: $lightTextColor;
         }
 
@@ -3867,7 +3889,7 @@ ul.tree,
       display: flex;
       align-items: center;
 
-      & > [data-icon="draft"] {
+      & > [data-icon='draft'] {
         margin-top: -2px;
         @include margin-right(8px);
       }
@@ -4363,7 +4385,7 @@ ul.tree,
       @include icon;
       @include margin(-6px, 0, 0, -58px);
       @include floatleft;
-      content: "alert";
+      content: 'alert';
       font-size: 40px;
       color: $lightTextColor;
     }
@@ -4376,7 +4398,7 @@ ul.tree,
       @include icon;
       @include margin(-14px, 0, 0, -56px);
       @include floatleft;
-      content: "secure";
+      content: 'secure';
       font-size: 58px;
       color: $lightTextColor;
     }
@@ -4498,7 +4520,7 @@ ul.tree,
 
   &.loading {
     &:after {
-      content: "";
+      content: '';
       font-size: 0;
       display: block;
       position: absolute;
@@ -4712,11 +4734,11 @@ ul.tree,
 }
 
 .address-card.error {
-  border: 1px solid #CF1124;
+  border: 1px solid #cf1124;
 }
 
 .address-card.error:hover {
-  border-color: #CF1124;
+  border-color: #cf1124;
 }
 
 @media (min-width: 1024px) {
@@ -4900,7 +4922,7 @@ ul.tree,
           }
 
           &.sel:not([data-icon]):before {
-            content: "check";
+            content: 'check';
           }
         }
       }
@@ -4951,7 +4973,7 @@ ul.tree,
           position: absolute;
           top: 36px;
           @include left(7px);
-          content: "check";
+          content: 'check';
           font-size: 14px;
           color: $lightTextColor;
         }
@@ -5284,7 +5306,7 @@ fieldset {
     @include left(0);
     width: 2px;
     height: 100%;
-    content: "";
+    content: '';
     cursor: help;
 
     &.modified {
@@ -5447,7 +5469,7 @@ div.checkbox:empty {
 
 input.checkbox + label:empty:after,
 div.checkbox:empty:after {
-  content: "";
+  content: '';
   font-size: 0;
 }
 
@@ -5461,7 +5483,7 @@ div.checkbox:before {
   width: $checkboxSize !important;
   height: $checkboxSize;
   box-sizing: border-box;
-  content: "";
+  content: '';
   font-size: 0;
   background-color: hsl(212, 50%, 99%);
   border: 1px solid transparentize($inputColor, 0.6);
@@ -5488,13 +5510,13 @@ div.checkbox.indeterminate:before {
 input.checkbox:checked:not(:indeterminate) + label:before,
 div.checkbox.checked:not(.indeterminate):before,
 .sel div.checkbox:not(.indeterminate):before {
-  content: "check";
+  content: 'check';
   font-size: 15px;
 }
 
 input.checkbox:indeterminate + label:before,
 div.checkbox.indeterminate:before {
-  content: "minus";
+  content: 'minus';
   font-size: 7px;
   text-align: center;
 }
@@ -5570,7 +5592,7 @@ div.radio:before,
 div.radio:after {
   display: block;
   position: absolute;
-  content: "";
+  content: '';
   box-sizing: border-box;
   background-clip: padding-box;
   border-radius: 100%;
@@ -5704,7 +5726,9 @@ body.reduce-focus-visibility {
 
   .clear-btn {
     position: absolute;
-    top: calc((var(--touch-target-size) - 34px) / -2); /* Responds to min-height of text input */
+    top: calc(
+      (var(--touch-target-size) - 34px) / -2
+    ); /* Responds to min-height of text input */
     @include right(0);
     width: var(--touch-target-size);
     height: var(--touch-target-size);
@@ -5821,7 +5845,7 @@ body.reduce-focus-visibility {
 
   &:before {
     @include icon;
-    content: "remove";
+    content: 'remove';
   }
 
   &:hover {
@@ -5905,7 +5929,7 @@ tr.indexingSession td.progress div.progressContainer .progressbar {
   z-index: 1;
 }
 
-tr.indexingSession td.progress div.progressContainer  div.progressInfo {
+tr.indexingSession td.progress div.progressContainer div.progressInfo {
   width: 20%;
 }
 
@@ -6057,14 +6081,14 @@ body .selectize-dropdown-content {
   }
 }
 
-body .selectize-dropdown-content > div[data-value="new"]:before {
+body .selectize-dropdown-content > div[data-value='new']:before {
   @include icon;
-  content: "plus";
+  content: 'plus';
   margin-right: 5px;
 }
 
-body .selectize-dropdown-content > div[data-value="new"]:after {
-  content: "…";
+body .selectize-dropdown-content > div[data-value='new']:after {
+  content: '…';
 }
 
 body .selectize-dropdown [data-selectable],
@@ -6480,7 +6504,7 @@ ul.errors li {
       &.mci-required:after {
         @include icon;
         @include margin(-2px, 0, 0, 4px);
-        content: "asterisk";
+        content: 'asterisk';
         font-size: 8px;
       }
     }
@@ -6561,7 +6585,7 @@ $titlebarBorderRadius: $largeBorderRadius - 1;
 
     &:after {
       display: block;
-      content: "";
+      content: '';
       position: absolute;
       bottom: -1px;
       left: 14px;
@@ -6811,7 +6835,6 @@ body.sitepicker {
   only screen and (-o-min-device-pixel-ratio: 3/2),
   only screen and (min-device-pixel-ratio: 1.5),
   only screen and (min-resolution: 1.5dppx) {
-
   .structure ul li {
     background-size: 40px;
     body.ltr & {

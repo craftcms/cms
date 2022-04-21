@@ -1,13 +1,13 @@
 @tailwind base;
 
 @charset "UTF-8";
-@import "@craftcms/sass/mixins";
-@import "tailwind";
-@import "layout";
-@import "general";
-@import "nav-items";
-@import "tooltip";
-@import "readable";
+@import '@craftcms/sass/mixins';
+@import 'tailwind';
+@import 'layout';
+@import 'general';
+@import 'nav-items';
+@import 'tooltip';
+@import 'readable';
 
 @tailwind components;
 @tailwind utilities;

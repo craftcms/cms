@@ -1,12 +1,12 @@
-import axios from 'axios'
-import api from '../utils/api'
+import axios from 'axios';
+import api from '../utils/api';
 
 export default {
   /**
    * Cancel requests.
    */
   cancelRequests() {
-    api.cancelRequests()
+    api.cancelRequests();
   },
 
   /**
@@ -16,18 +16,19 @@ export default {
    */
   getCoreData() {
     return new Promise((resolve, reject) => {
-      api.sendApiRequest('GET', 'plugin-store/core-data')
+      api
+        .sendApiRequest('GET', 'plugin-store/core-data')
         .then((responseData) => {
-          resolve(responseData)
+          resolve(responseData);
         })
         .catch((error) => {
           if (axios.isCancel(error)) {
             // request cancelled
           } else {
-            reject(error)
+            reject(error);
           }
-        })
-    })
+        });
+    });
   },
 
   /**
@@ -37,18 +38,19 @@ export default {
    */
   getCmsEditions() {
     return new Promise((resolve, reject) => {
-      api.sendApiRequest('GET', 'cms-editions')
+      api
+        .sendApiRequest('GET', 'cms-editions')
         .then((responseData) => {
-          resolve(responseData)
+          resolve(responseData);
         })
         .catch((error) => {
           if (axios.isCancel(error)) {
             // request cancelled
           } else {
-            reject(error)
+            reject(error);
           }
-        })
-    })
+        });
+    });
   },
 
   /**
@@ -59,18 +61,19 @@ export default {
    */
   getDeveloper(developerId) {
     return new Promise((resolve, reject) => {
-      api.sendApiRequest('GET', 'developer/' + developerId)
+      api
+        .sendApiRequest('GET', 'developer/' + developerId)
         .then((responseData) => {
-          resolve(responseData)
+          resolve(responseData);
         })
         .catch((error) => {
           if (axios.isCancel(error)) {
             // request cancelled
           } else {
-            reject(error)
+            reject(error);
           }
-        })
-    })
+        });
+    });
   },
 
   /**
@@ -81,18 +84,22 @@ export default {
    */
   getFeaturedSectionByHandle(featuredSectionHandle) {
     return new Promise((resolve, reject) => {
-      api.sendApiRequest('GET', 'plugin-store/featured-section/' + featuredSectionHandle)
+      api
+        .sendApiRequest(
+          'GET',
+          'plugin-store/featured-section/' + featuredSectionHandle
+        )
         .then((responseData) => {
-          resolve(responseData)
+          resolve(responseData);
         })
         .catch((error) => {
           if (axios.isCancel(error)) {
             // request cancelled
           } else {
-            reject(error)
+            reject(error);
           }
-        })
-    })
+        });
+    });
   },
 
   /**
@@ -102,18 +109,19 @@ export default {
    */
   getFeaturedSections() {
     return new Promise((resolve, reject) => {
-      api.sendApiRequest('GET', 'plugin-store/featured-sections')
+      api
+        .sendApiRequest('GET', 'plugin-store/featured-sections')
         .then((responseData) => {
-          resolve(responseData)
+          resolve(responseData);
         })
         .catch((error) => {
           if (axios.isCancel(error)) {
             // request cancelled
           } else {
-            reject(error)
+            reject(error);
           }
-        })
-    })
+        });
+    });
   },
 
   /**
@@ -124,18 +132,19 @@ export default {
    */
   getPluginChangelog(pluginId) {
     return new Promise((resolve, reject) => {
-      api.sendApiRequest('GET', 'plugin/' + pluginId + '/changelog')
+      api
+        .sendApiRequest('GET', 'plugin/' + pluginId + '/changelog')
         .then((responseData) => {
-          resolve(responseData)
+          resolve(responseData);
         })
         .catch((error) => {
           if (axios.isCancel(error)) {
             // request cancelled
           } else {
-            reject(error)
+            reject(error);
           }
-        })
-    })
+        });
+    });
   },
 
   /**
@@ -146,18 +155,19 @@ export default {
    */
   getPluginDetails(pluginId) {
     return new Promise((resolve, reject) => {
-      api.sendApiRequest('GET', 'plugin/' + pluginId)
+      api
+        .sendApiRequest('GET', 'plugin/' + pluginId)
         .then((responseData) => {
-          resolve(responseData)
+          resolve(responseData);
         })
         .catch((error) => {
           if (axios.isCancel(error)) {
             // request cancelled
           } else {
-            reject(error)
+            reject(error);
           }
-        })
-    })
+        });
+    });
   },
 
   /**
@@ -168,23 +178,24 @@ export default {
    */
   getPluginDetailsByHandle(pluginHandle) {
     return new Promise((resolve, reject) => {
-      api.sendApiRequest('GET', 'plugin-store/plugin/' + pluginHandle, {
+      api
+        .sendApiRequest('GET', 'plugin-store/plugin/' + pluginHandle, {
           params: {
             withInstallHistory: true,
             withIssueStats: true,
-          }
+          },
         })
         .then((responseData) => {
-          resolve(responseData)
+          resolve(responseData);
         })
         .catch((error) => {
           if (axios.isCancel(error)) {
             // request cancelled
           } else {
-            reject(error)
+            reject(error);
           }
-        })
-    })
+        });
+    });
   },
 
   /**
@@ -196,23 +207,24 @@ export default {
    */
   getPluginsByCategory(categoryId, pluginIndexParams) {
     return new Promise((resolve, reject) => {
-      const params = this._getPluginIndexParams(pluginIndexParams)
-      params.categoryId = categoryId
+      const params = this._getPluginIndexParams(pluginIndexParams);
+      params.categoryId = categoryId;
 
-      api.sendApiRequest('GET', 'plugin-store/plugins', {
+      api
+        .sendApiRequest('GET', 'plugin-store/plugins', {
           params,
         })
         .then((responseData) => {
-          resolve(responseData)
+          resolve(responseData);
         })
         .catch((error) => {
           if (axios.isCancel(error)) {
             // Request was cancelled, silently fail
           } else {
-            reject(error)
+            reject(error);
           }
-        })
-    })
+        });
+    });
   },
 
   /**
@@ -224,23 +236,24 @@ export default {
    */
   getPluginsByDeveloperId(developerId, pluginIndexParams) {
     return new Promise((resolve, reject) => {
-      const params = this._getPluginIndexParams(pluginIndexParams)
-      params.developerId = developerId
+      const params = this._getPluginIndexParams(pluginIndexParams);
+      params.developerId = developerId;
 
-      api.sendApiRequest('GET', 'plugin-store/plugins', {
+      api
+        .sendApiRequest('GET', 'plugin-store/plugins', {
           params,
         })
         .then((responseData) => {
-          resolve(responseData)
+          resolve(responseData);
         })
         .catch((error) => {
           if (axios.isCancel(error)) {
             // request cancelled
           } else {
-            reject(error)
+            reject(error);
           }
-        })
-    })
+        });
+    });
   },
 
   /**
@@ -252,22 +265,27 @@ export default {
    */
   getPluginsByFeaturedSectionHandle(featuredSectionHandle, pluginIndexParams) {
     return new Promise((resolve, reject) => {
-      const params = this._getPluginIndexParams(pluginIndexParams)
+      const params = this._getPluginIndexParams(pluginIndexParams);
 
-      api.sendApiRequest('GET', 'plugin-store/plugins-by-featured-section/' + featuredSectionHandle, {
-          params,
-        })
+      api
+        .sendApiRequest(
+          'GET',
+          'plugin-store/plugins-by-featured-section/' + featuredSectionHandle,
+          {
+            params,
+          }
+        )
         .then((responseData) => {
-          resolve(responseData)
+          resolve(responseData);
         })
         .catch((error) => {
           if (axios.isCancel(error)) {
             // request cancelled
           } else {
-            reject(error)
+            reject(error);
           }
-        })
-    })
+        });
+    });
   },
 
   /**
@@ -278,30 +296,31 @@ export default {
    */
   getPluginsByHandles(pluginHandles) {
     return new Promise((resolve, reject) => {
-      let pluginHandlesString
+      let pluginHandlesString;
 
       if (Array.isArray(pluginHandles)) {
-        pluginHandlesString = pluginHandles.join(',')
+        pluginHandlesString = pluginHandles.join(',');
       } else {
-        pluginHandlesString = pluginHandles
+        pluginHandlesString = pluginHandles;
       }
 
-      api.sendApiRequest('GET', 'plugin-store/plugins-by-handles', {
+      api
+        .sendApiRequest('GET', 'plugin-store/plugins-by-handles', {
           params: {
-            pluginHandles: pluginHandlesString
+            pluginHandles: pluginHandlesString,
           },
         })
         .then((responseData) => {
-          resolve(responseData)
+          resolve(responseData);
         })
         .catch((error) => {
           if (axios.isCancel(error)) {
             // request cancelled
           } else {
-            reject(error)
+            reject(error);
           }
-        })
-    })
+        });
+    });
   },
 
   /**
@@ -312,30 +331,31 @@ export default {
    */
   getPluginsByIds(pluginIds) {
     return new Promise((resolve, reject) => {
-      let pluginIdsString
+      let pluginIdsString;
 
       if (Array.isArray(pluginIds)) {
-        pluginIdsString = pluginIds.join(',')
+        pluginIdsString = pluginIds.join(',');
       } else {
-        pluginIdsString = pluginIds
+        pluginIdsString = pluginIds;
       }
 
-      api.sendApiRequest('GET', 'plugins', {
+      api
+        .sendApiRequest('GET', 'plugins', {
           params: {
-            ids: pluginIdsString
+            ids: pluginIdsString,
           },
         })
         .then((responseData) => {
-          resolve(responseData)
+          resolve(responseData);
         })
         .catch((error) => {
           if (axios.isCancel(error)) {
             // request cancelled
           } else {
-            reject(error)
+            reject(error);
           }
-        })
-    })
+        });
+    });
   },
 
   /**
@@ -347,23 +367,24 @@ export default {
    */
   searchPlugins(searchQuery, pluginIndexParams) {
     return new Promise((resolve, reject) => {
-      const params = this._getPluginIndexParams(pluginIndexParams)
-      params.searchQuery = searchQuery
+      const params = this._getPluginIndexParams(pluginIndexParams);
+      params.searchQuery = searchQuery;
 
-      api.sendApiRequest('GET', 'plugin-store/plugins', {
+      api
+        .sendApiRequest('GET', 'plugin-store/plugins', {
           params,
         })
         .then((responseData) => {
-          resolve(responseData)
+          resolve(responseData);
         })
         .catch((error) => {
           if (axios.isCancel(error)) {
             // request cancelled
           } else {
-            reject(error)
+            reject(error);
           }
-        })
-    })
+        });
+    });
   },
 
   /**
@@ -378,18 +399,18 @@ export default {
    */
   _getPluginIndexParams({perPage, page, orderBy, direction}) {
     if (!perPage) {
-      perPage = 96
+      perPage = 96;
     }
 
     if (!page) {
-      page = 1
+      page = 1;
     }
 
     return {
       perPage,
       page,
       orderBy,
-      direction
-    }
+      direction,
+    };
   },
-}
+};

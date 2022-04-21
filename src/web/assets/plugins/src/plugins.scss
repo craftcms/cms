@@ -1,5 +1,5 @@
 @charset "UTF-8";
-@import "@craftcms/sass/mixins";
+@import '@craftcms/sass/mixins';
 
 #plugins {
   tbody {
@@ -29,7 +29,8 @@
           line-height: 0;
         }
 
-        svg, img {
+        svg,
+        img {
           display: block;
           width: 44px;
           height: 44px;
@@ -42,7 +43,7 @@
           @include left(26px);
           width: 20px;
           height: 20px;
-          background: no-repeat 0 0 url(images/invalid-icon.svg) ;
+          background: no-repeat 0 0 url(images/invalid-icon.svg);
           background-size: 100% 100%;
 
           &.valid {
@@ -121,13 +122,15 @@
                 body.ltr & {
                   left: -7px;
                   border-width: 0 7px 16px 0;
-                  border-color: transparent $mediumTextColor transparent transparent;
+                  border-color: transparent $mediumTextColor transparent
+                    transparent;
                 }
 
                 body.rtl & {
                   right: -7px;
                   border-width: 0 0 16px 7px;
-                  border-color: transparent transparent transparent $mediumTextColor;
+                  border-color: transparent transparent transparent
+                    $mediumTextColor;
                 }
               }
             }
@@ -232,7 +235,8 @@
             }
           }
 
-          .btn, .spinner {
+          .btn,
+          .spinner {
             margin: 0;
           }
         }

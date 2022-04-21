@@ -1,13 +1,17 @@
 const {test, expect} = require('@playwright/test');
 
-test('Should show developer details', async ({ page, baseURL }) => {
+test('Should show developer details', async ({page, baseURL}) => {
   await page.goto(baseURL + '/plugin-store/developer/610');
 
   // Wait for developer request to be done
-  await page.waitForResponse(response => response.url().includes('//api.craftcms.com/v1/developer/610'))
+  await page.waitForResponse((response) =>
+    response.url().includes('//api.craftcms.com/v1/developer/610')
+  );
 
   // Wait for the plugins request to be done
-  await page.waitForResponse(response => response.url().includes('//api.craftcms.com/v1/plugin-store/plugins'))
+  await page.waitForResponse((response) =>
+    response.url().includes('//api.craftcms.com/v1/plugin-store/plugins')
+  );
 
   // Developer name
   const title = page.locator('.ps-wrapper h1');
@@ -19,5 +23,5 @@ test('Should show developer details', async ({ page, baseURL }) => {
 
   // Plugins
   const pluginsLength = await page.locator('.plugin-card').count();
-  expect((pluginsLength > 0)).toBeTruthy();
+  expect(pluginsLength > 0).toBeTruthy();
 });

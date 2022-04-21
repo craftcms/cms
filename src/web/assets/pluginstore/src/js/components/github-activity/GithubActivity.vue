@@ -1,14 +1,12 @@
 <template>
-  <meta-stat
-    v-if="issueStats"
-    class="tw-pt-4"
-    :border="false"
-  >
+  <meta-stat v-if="issueStats" class="tw-pt-4" :border="false">
     <template #title>
       <span v-html="githubActivityTitle"></span>
     </template>
     <template #content>
-      <div class="tw-mt-4 tw-border tw-border-solid tw-border-gray-200 tw-rounded-lg">
+      <div
+        class="tw-mt-4 tw-border tw-border-solid tw-border-gray-200 tw-rounded-lg"
+      >
         <div class="tw-grid tw-grid-cols-2">
           <activity-stat class="tw-border-r tw-border-solid tw-border-gray-200">
             <template #icon>
@@ -35,7 +33,7 @@
               {{ issueStats.closedIssues }}
             </template>
             <template #title>
-              {{ "Closed Issues"|t('app')}}
+              {{ 'Closed Issues' | t('app') }}
             </template>
           </activity-stat>
           <activity-stat>
@@ -61,10 +59,12 @@
               {{ issueStats.openIssues }}
             </template>
             <template #title>
-              {{ "New Issues"|t('app')}}
+              {{ 'New Issues' | t('app') }}
             </template>
           </activity-stat>
-          <activity-stat class="tw-border-t tw-border-r tw-border-solid tw-border-gray-200">
+          <activity-stat
+            class="tw-border-t tw-border-r tw-border-solid tw-border-gray-200"
+          >
             <template #icon>
               <svg
                 aria-hidden="true"
@@ -86,7 +86,7 @@
               {{ issueStats.mergedPulls }}
             </template>
             <template #title>
-              {{ "Merged PRs"|t('app')}}
+              {{ 'Merged PRs' | t('app') }}
             </template>
           </activity-stat>
           <activity-stat class="tw-border-t tw-border-solid tw-border-gray-200">
@@ -111,7 +111,7 @@
               {{ issueStats.openPulls }}
             </template>
             <template #title>
-              {{ "Open PRs"|t('app')}}
+              {{ 'Open PRs' | t('app') }}
             </template>
           </activity-stat>
         </div>
@@ -121,36 +121,40 @@
 </template>
 
 <script>
-import MetaStat from '../MetaStat';
-import ActivityStat from './ActivityStat';
+  import MetaStat from '../MetaStat';
+  import ActivityStat from './ActivityStat';
 
-export default {
-  components: {ActivityStat, MetaStat},
-  props: {
-    plugin: {
-      type: Object,
-      required: true,
-    },
-  },
-
-  computed: {
-    githubActivityTitle() {
-      return this.$options.filters.t('Activity <small>({period} days)</small>', 'app', {
-        period: this.issueStats.period,
-      });
+  export default {
+    components: {ActivityStat, MetaStat},
+    props: {
+      plugin: {
+        type: Object,
+        required: true,
+      },
     },
 
-    issueStats() {
-      if (!this.plugin) {
-        return null
-      }
+    computed: {
+      githubActivityTitle() {
+        return this.$options.filters.t(
+          'Activity <small>({period} days)</small>',
+          'app',
+          {
+            period: this.issueStats.period,
+          }
+        );
+      },
 
-      if (!this.plugin.issueStats) {
-        return null
-      }
+      issueStats() {
+        if (!this.plugin) {
+          return null;
+        }
 
-      return this.plugin.issueStats.find(s => s.period === 30)
-    }
-  }
-}
+        if (!this.plugin.issueStats) {
+          return null;
+        }
+
+        return this.plugin.issueStats.find((s) => s.period === 30);
+      },
+    },
+  };
 </script>

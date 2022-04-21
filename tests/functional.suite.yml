@@ -6,8 +6,8 @@
 
 class_name: FunctionalTester
 modules:
-    enabled:
-        - Asserts
-        - \craft\test\Craft:
-              projectConfig: {file: 'tests/_data/project.yaml'}
-        - \Helper\Functional
+  enabled:
+    - Asserts
+    - \craft\test\Craft:
+        projectConfig: {file: 'tests/_data/project.yaml'}
+    - \Helper\Functional

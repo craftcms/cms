@@ -14,12 +14,12 @@
 </template>
 
 <script>
-export default {
-  props: {
-    border: {
-      type: Boolean,
-      default: true,
+  export default {
+    props: {
+      border: {
+        type: Boolean,
+        default: true,
+      },
     },
-  }
-}
+  };
 </script>

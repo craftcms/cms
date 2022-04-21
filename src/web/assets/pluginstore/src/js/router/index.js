@@ -1,20 +1,20 @@
-import Vue from 'vue'
-import VueRouter from 'vue-router'
-import Index from '../pages/index'
-import CategoriesId from '../pages/categories/_id'
-import UpgradeCraft from '../pages/upgrade-craft'
-import DeveloperId from '../pages/developer/_id'
-import FeaturedHandle from '../pages/featured/_handle'
-import BuyPlugin from '../pages/buy/_plugin'
-import BuyAllTrials from '../pages/buy-all-trials'
-import Tests from '../pages/tests'
-import NotFound from '../pages/_not-found'
-import Search from '../pages/search'
-import PluginsHandle from '../pages/_handle'
-import PluginsHandlePricing from '../pages/_handle/pricing'
-import PluginsHandleChangelog from '../pages/_handle/changelog'
+import Vue from 'vue';
+import VueRouter from 'vue-router';
+import Index from '../pages/index';
+import CategoriesId from '../pages/categories/_id';
+import UpgradeCraft from '../pages/upgrade-craft';
+import DeveloperId from '../pages/developer/_id';
+import FeaturedHandle from '../pages/featured/_handle';
+import BuyPlugin from '../pages/buy/_plugin';
+import BuyAllTrials from '../pages/buy-all-trials';
+import Tests from '../pages/tests';
+import NotFound from '../pages/_not-found';
+import Search from '../pages/search';
+import PluginsHandle from '../pages/_handle';
+import PluginsHandlePricing from '../pages/_handle/pricing';
+import PluginsHandleChangelog from '../pages/_handle/changelog';
 
-Vue.use(VueRouter)
+Vue.use(VueRouter);
 
 export default new VueRouter({
   base: window.pluginStoreAppBaseUrl,
@@ -22,7 +22,7 @@ export default new VueRouter({
   mode: 'history',
 
   scrollBehavior() {
-    return {x: 0, y: 0}
+    return {x: 0, y: 0};
   },
 
   routes: [
@@ -96,5 +96,5 @@ export default new VueRouter({
       name: 'NotFound',
       component: NotFound,
     },
-  ]
-})
+  ],
+});

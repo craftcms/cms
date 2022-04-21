@@ -3,17 +3,13 @@ module.exports = {
   corePlugins: {
     preflight: false,
   },
-  content: [
-    "./src/**/*.{vue,js}",
-    "../../../templates/plugin-store/**/*.twig"
-  ],
+  content: ['./src/**/*.{vue,js}', '../../../templates/plugin-store/**/*.twig'],
   theme: {
     extend: {
-
       screens: {
-        'xl': '1200px',
+        xl: '1200px',
       },
     },
   },
   plugins: [],
-}
+};
