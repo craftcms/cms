@@ -97,6 +97,7 @@
 - Fixed an error that could occur when loading an element selector modal.
 - Fixed a bug where asset preview thumbnails weren’t getting refreshed after editing them.
 - Fixed a bug where elements within relational fields weren’t getting updated when the related elements were updated from element editor slideouts. ([#10969](https://github.com/craftcms/cms/issues/10969))
+- Fixed an error that could occur when updating asset indexes. ([#10947](https://github.com/craftcms/cms/issues/10947))
 
 ## 4.0.0-beta.4 - 2022-04-06
 
