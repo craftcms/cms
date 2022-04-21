@@ -2119,10 +2119,8 @@ Craft.sendActionRequest('POST', 'assets/preview-thumb', {
         width: 350,
         height: 190,
     },
-}).then((response, textStatus) => {
-    if (textStatus === 'success') {
-        $('#$thumbContainerId').find('img').replaceWith(response.img);
-    }
+}).then(({data}) => {
+    $('#$thumbContainerId').find('img').replaceWith(data.img);
 }).finally(() => {
     $('#$thumbContainerId').removeClass('loading')
         .find('.spinner').remove();

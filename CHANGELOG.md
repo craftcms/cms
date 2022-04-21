@@ -88,6 +88,8 @@
 - Fixed a bug where entry and category slugs weren’t getting regenerated based on the title, when their value was cleared. ([#10949](https://github.com/craftcms/cms/issues/10949))
 - Fixed a bug where no source was getting selected by default when switching the site on the Entries index page, if the previously-selected source wasn’t enabled for the new site. ([#10954](https://github.com/craftcms/cms/issues/10954))
 - Fixed a bug where users’ photos weren’t always displaying correctly in element indexes. ([#10955](https://github.com/craftcms/cms/pull/10955))
+- Fixed an error that could occur when loading an element selector modal.
+- Fixed a bug where asset preview thumbnails weren’t getting refreshed after editing them.
 
 ## 4.0.0-beta.4 - 2022-04-06
 
