@@ -30,7 +30,7 @@ class ElementSelectorModalsController extends BaseElementsController
     {
         $this->requireAcceptsJson();
 
-        $sourceKeys = $providedSourceKeys = $this->request->getParam('sources');
+        $sourceKeys = $this->request->getParam('sources');
         $elementType = $this->elementType();
         $context = $this->context();
 
@@ -41,33 +41,45 @@ class ElementSelectorModalsController extends BaseElementsController
         }
 
         if (is_array($sourceKeys)) {
-            $sourceKeys = array_flip($sourceKeys);
+            $indexedSourceKeys = array_flip($sourceKeys);
             $allSources = Craft::$app->getElementSources()->getSources($elementType);
             $sources = [];
 
             foreach ($allSources as $source) {
                 if ($source['type'] === ElementSources::TYPE_HEADING) {
                     $sources[] = $source;
-                } elseif (isset($sourceKeys[$source['key']])) {
+                } elseif (isset($indexedSourceKeys[$source['key']])) {
                     $sources[] = $source;
                     // Unset so we can keep track of which keys couldn't be found
-                    unset($sourceKeys[$source['key']]);
+                    unset($indexedSourceKeys[$source['key']]);
                 }
             }
 
             $sources = ElementSources::filterExtraHeadings($sources);
 
             // Did we miss any source keys? (This could happen if some are nested)
-            if (!empty($sourceKeys)) {
-                foreach (array_keys($sourceKeys) as $key) {
+            if (!empty($indexedSourceKeys)) {
+                foreach (array_keys($indexedSourceKeys) as $key) {
                     $source = ElementHelper::findSource($elementType, $key, $context);
                     if ($source !== null) {
-                        $sources[] = $source;
+                        // If it was listed after another source key that made it in, insert it there
+                        $pos = array_search($key, $sourceKeys);
+                        $inserted = false;
+                        if ($pos > 0) {
+                            $prevKey = $sourceKeys[$pos-1];
+                             foreach ($sources as $i => $otherSource) {
+                                 if (($otherSource['key'] ?? null) === $prevKey) {
+                                     array_splice($sources, $i + 1, 0, [$source]);
+                                     $inserted = true;
+                                     break;
+                                 }
+                             }
+                        }
+                        if (!$inserted) {
+                            $sources[] = $source;
+                        }
                     }
                 }
-
-                // Sort it by the original order
-                ArrayHelper::multisort($sources, 'key', [$providedSourceKeys]);
             }
         } else {
             $sources = Craft::$app->getElementSources()->getSources($elementType);
