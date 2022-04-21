@@ -360,6 +360,7 @@
 - Added `craft\services\Users::EVENT_BEFORE_DEACTIVATE_USER`.
 - Added `craft\services\Users::removeCredentials()`.
 - Added `craft\services\Volumes::getTemporaryVolume()`.
+- Added `craft\services\Volumes::getUserPhotoVolume()`.
 - Added `craft\validators\MoneyValidator`.
 - Added `craft\web\assets\conditionbuilder\ConditionBuilderAsset`.
 - Added `craft\web\assets\htmx\HtmxAsset`.
@@ -591,6 +592,8 @@
 - The `Craft.getUrl()` JavaScript method now removes duplicate query string params when passing in a param that’s already included in the base URL.
 - The `Craft.getUrl()` JavaScript method now encodes any query string params passed to it.
 - Local volumes no longer use Flysystem.
+- A selected volume for user photo storage if no longer displayed if no volume has been set.
+- The user photo volume can now only be set to a volume that has a public transform filesystem configured.
 - Craft now uses Symfony Mailer to send email. ([#10062](https://github.com/craftcms/cms/discussions/10062))
 - Updated Twig to 3.3.
 - Updated vue-autosuggest to 2.2.0.

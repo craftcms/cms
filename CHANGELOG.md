@@ -19,6 +19,7 @@
 - Added `craft\log\ContextProcessor`.
 - Added `craft\log\MessageProcessor`.
 - Added `craft\services\Fs::EVENT_RENAME_FILESYSTEM`.
+- Added `craft\services\Volumes::getUserPhotoVolume()`.
 - Added `craft\web\CpScreenResponseBehavior::$formAttributes`. ([#10924](https://github.com/craftcms/cms/issues/10924))
 - Added `craft\web\CpScreenResponseBehavior::$mainAttributes`. ([#10924](https://github.com/craftcms/cms/issues/10924))
 - Added `craft\web\CpScreenResponseBehavior::formAttributes()`. ([#10924](https://github.com/craftcms/cms/issues/10924))
@@ -44,6 +45,8 @@
 - `yii\db\Connection::$enableLogging` and `$enableProfiling` are no longer enabled by default when Dev Mode is disabled. ([#10916](https://github.com/craftcms/cms/pull/10916))
 - The `queue` log target no longer has special handling for Yii or `info` logs. ([#10916](https://github.com/craftcms/cms/pull/10916))
 - Dev Mode can now be enabled via a `CRAFT_DEV_MODE` environment variable. ([#10916](https://github.com/craftcms/cms/pull/10916))
+- A selected volume for user photo storage if no longer displayed if no volume has been set.
+- The user photo volume can now only be set to a volume that has a public transform filesystem configured.
 
 ### Deprecated
 - Deprecated the `autosaveDrafts` config setting.

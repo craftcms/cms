@@ -23,8 +23,13 @@
 
 {% set allVolumes = craft.app.volumes.getAllVolumes() %}
 {% set volumeList = [] %}
+{% set validVolumeUids = [] %}
+
 {% for volume in allVolumes %}
-    {% set volumeList = volumeList|push({label: volume.name, value: volume.uid}) %}
+    {% if volume.getTransformFs().hasUrls %}
+        {% set volumeList = volumeList|push({label: volume.name, value: volume.uid}) %}
+        {% set validVolumeUids = validVolumeUids|push(volume.uid) %}
+    {% endif %}
 {% endfor %}
 
 {% macro assetLocationInput(volumeOptions, volumeUid, subpath) %}
@@ -58,6 +63,10 @@
         {{ csrfInput() }}
 
         {% if volumeList %}
+            {%  if settings.photoVolumeUid is not defined or settings.photoVolumeUid not in validVolumeUids %}
+                {% set volumeList = [{label: "Select a volume"|t('app'), value: null}]|merge(volumeList) %}
+            {%  endif %}
+
             {{ forms.field({
                 first: true,
                 label: "User Photo Location"|t('app'),
