@@ -8,7 +8,8 @@
   },
   "devDependencies": {
     "@craftcms/webpack": "./packages/craftcms-webpack",
-    "lerna": "^4.0.0"
+    "lerna": "^4.0.0",
+    "prettier": "2.6.2"
   },
   "dependencies": {
     "@benmajor/jquery-touch-events": "^2.0.3",

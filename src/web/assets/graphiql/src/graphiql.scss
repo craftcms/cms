@@ -1,5 +1,5 @@
 @charset "UTF-8";
-@import "@craftcms/sass/mixins";
+@import '@craftcms/sass/mixins';
 
 body,
 #graphiql {
@@ -38,7 +38,7 @@ body,
   .graphiql-container .toolbar-select-options > li.hover,
   .graphiql-container .toolbar-select-options > li:active,
   .graphiql-container .toolbar-select-options > li:hover,
-  .CodeMirror-gutters{
+  .CodeMirror-gutters {
     background: none;
     border: none;
   }
@@ -85,7 +85,7 @@ body,
 
   .queryWrap,
   .docExplorerWrap,
-  .historyPaneWrap, {
+  .historyPaneWrap {
     @include pane;
     overflow: hidden;
   }
@@ -150,7 +150,8 @@ body,
       }
     }
 
-    .execute-options, .toolbar-menu-items {
+    .execute-options,
+    .toolbar-menu-items {
       min-width: 100%;
       margin-top: 0;
       @include menu-styles;
@@ -190,8 +191,8 @@ body,
     }
 
     .execute-button {
-      background: linear-gradient(#fdfdfd, #CFD6DC);
-      border: 1px solid #CFD6DC;
+      background: linear-gradient(#fdfdfd, #cfd6dc);
+      border: 1px solid #cfd6dc;
     }
 
     .graphiql-explorer-root {

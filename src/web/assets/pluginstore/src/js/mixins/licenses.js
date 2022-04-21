@@ -1,21 +1,26 @@
 export default {
-    computed: {
-        licenseMismatched() {
-            return this.getLicenseMismatched(this.pluginLicenseInfo)
-        },
-
-        licenseValidOrAstray() {
-            return this.getLicenseValidOrAstray(this.pluginLicenseInfo)
-        }
+  computed: {
+    licenseMismatched() {
+      return this.getLicenseMismatched(this.pluginLicenseInfo);
     },
 
-    methods: {
-        getLicenseMismatched(pluginLicenseInfo) {
-            return pluginLicenseInfo && pluginLicenseInfo.licenseKeyStatus === 'mismatched'
-        },
+    licenseValidOrAstray() {
+      return this.getLicenseValidOrAstray(this.pluginLicenseInfo);
+    },
+  },
 
-        getLicenseValidOrAstray(pluginLicenseInfo) {
-            return (pluginLicenseInfo.licenseKeyStatus === 'valid' || pluginLicenseInfo.licenseKeyStatus === 'astray')
-        },
-    }
-}
+  methods: {
+    getLicenseMismatched(pluginLicenseInfo) {
+      return (
+        pluginLicenseInfo && pluginLicenseInfo.licenseKeyStatus === 'mismatched'
+      );
+    },
+
+    getLicenseValidOrAstray(pluginLicenseInfo) {
+      return (
+        pluginLicenseInfo.licenseKeyStatus === 'valid' ||
+        pluginLicenseInfo.licenseKeyStatus === 'astray'
+      );
+    },
+  },
+};

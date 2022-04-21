@@ -1,7 +1,8 @@
 @charset "UTF-8";
-@import "@craftcms/sass/mixins";
+@import '@craftcms/sass/mixins';
 
-html, body {
+html,
+body {
   height: 100%;
 }
 
@@ -72,7 +73,6 @@ body {
 }
 
 #login-form.reset-password {
-
   #password-field,
   #rememberMe-field,
   #forgot-password {
@@ -150,7 +150,7 @@ body {
   text-align: center;
   margin-top: 70px;
   margin-bottom: 48px;
-  opacity: .8;
+  opacity: 0.8;
 }
 
 #poweredby:hover,
