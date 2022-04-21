@@ -295,6 +295,7 @@
 - Added `craft\imagetransforms\ImageTransformer`.
 - Added `craft\log\ContextProcessor`.
 - Added `craft\log\Dispatcher::getTargets()`.
+- Added `craft\log\MessageProcessor`.
 - Added `craft\log\MonologTarget`.
 - Added `craft\models\AssetIndexingSession`.
 - Added `craft\models\FieldLayout::getElementsByType()`.

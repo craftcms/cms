@@ -17,6 +17,7 @@
 - Added `craft\gql\types\generators\AddressType`.
 - Added `craft\helpers\Db::escapeCommas()`.
 - Added `craft\log\ContextProcessor`.
+- Added `craft\log\MessageProcessor`.
 - Added `craft\services\Fs::EVENT_RENAME_FILESYSTEM`.
 - Added `craft\web\CpScreenResponseBehavior::$formAttributes`. ([#10924](https://github.com/craftcms/cms/issues/10924))
 - Added `craft\web\CpScreenResponseBehavior::$mainAttributes`. ([#10924](https://github.com/craftcms/cms/issues/10924))
@@ -39,7 +40,7 @@
 - Custom sources with a blank label are now labelled as “(blank)”. ([#10915](https://github.com/craftcms/cms/issues/10915))
 - The default log target no longer logs `debug` or `info` messages when Dev Mode is enabled. ([#10916](https://github.com/craftcms/cms/pull/10916))
 - SQL query logs now use the `debug` log level, so they no longer get logged when Dev Mode is enabled. ([#10916](https://github.com/craftcms/cms/pull/10916))
-- Improved the log timestamp format. ([#10916](https://github.com/craftcms/cms/pull/10916))
+- Improved the log message format. ([#10916](https://github.com/craftcms/cms/pull/10916), [#10959](https://github.com/craftcms/cms/pull/10959))
 - `yii\db\Connection::$enableLogging` and `$enableProfiling` are no longer enabled by default when Dev Mode is disabled. ([#10916](https://github.com/craftcms/cms/pull/10916))
 - The `queue` log target no longer has special handling for Yii or `info` logs. ([#10916](https://github.com/craftcms/cms/pull/10916))
 - Dev Mode can now be enabled via a `CRAFT_DEV_MODE` environment variable. ([#10916](https://github.com/craftcms/cms/pull/10916))
