@@ -1,7 +1,6 @@
 <?php
 
 /** @noinspection PhpInconsistentReturnPointsInspection */
-declare(strict_types=1);
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
