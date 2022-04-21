@@ -2306,8 +2306,63 @@ $.extend(Craft, {
 //  Broadcast channel
 // -------------------------------------------
 
+Craft.pageId = Craft.uuid();
+
 if (typeof BroadcastChannel !== 'undefined') {
-  Craft.broadcastChannel = new BroadcastChannel(`CraftCMS:${Craft.appId}`);
+  const channelName = `CraftCMS:${Craft.appId}`;
+  Craft.broadcaster = new BroadcastChannel(channelName);
+  Craft.messageReceiver = new BroadcastChannel(channelName);
+
+  Craft.messageReceiver.addEventListener('message', (ev) => {
+    if (ev.data.event === 'saveElement') {
+      // Are there any instances of the same element on the page?
+      const $elements = $(
+        `div.element[data-id="${ev.data.id}"][data-settings]`
+      );
+      if (!$elements.length) {
+        return;
+      }
+      const data = {
+        type: $elements.data('type'),
+        id: ev.data.id,
+        instances: [],
+      };
+      for (let i = 0; i < $elements.length; i++) {
+        const $element = $elements.eq(i);
+        data.instances.push(
+          Object.assign(
+            {
+              siteId: $element.data('site-id'),
+            },
+            $element.data('settings')
+          )
+        );
+      }
+      Craft.sendActionRequest('POST', 'app/render-element', {data}).then(
+        ({data}) => {
+          for (let i = 0; i < $elements.length; i++) {
+            const $element = $elements.eq(i);
+            if (data.elementHtml[i]) {
+              const $replacement = $(data.elementHtml[i]);
+              for (let attribute of $replacement[0].attributes) {
+                if (attribute.name === 'class') {
+                  $element.addClass(attribute.value);
+                } else {
+                  $element.attr(attribute.name, attribute.value);
+                }
+              }
+              const $inputs = $element.find('input,button').detach();
+              $element.html($replacement.html());
+              if ($inputs.length) {
+                $inputs.prependTo($element);
+              }
+            }
+          }
+          new Craft.ElementThumbLoader().load($elements);
+        }
+      );
+    }
+  });
 }
 
 // -------------------------------------------

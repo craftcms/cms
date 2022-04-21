@@ -79,7 +79,6 @@ class ElementsController extends Controller
     private ?string $_context = null;
     private ?string $_thumbSize = null;
     private ?string $_viewMode = null;
-    private ?string $_includeTableAttributesForSource = null;
 
     /**
      * @inheritdoc
@@ -119,7 +118,6 @@ class ElementsController extends Controller
         $this->_context = $this->_param('context');
         $this->_thumbSize = $this->_param('thumbSize');
         $this->_viewMode = $this->_param('viewMode');
-        $this->_includeTableAttributesForSource = $this->_param('includeTableAttributesForSource');
 
         unset($this->_attributes['failMessage']);
         unset($this->_attributes['redirect']);
@@ -898,36 +896,18 @@ JS;
             $elementsService->deleteElement($provisional, true);
         }
 
-        return $this->_asSuccess(Craft::t('app', '{type} saved.', [
-            'type' => $element::displayName(),
-        ]), $element, $this->_saveData($element), true);
-    }
-
-    /**
-     * Returns any additional data that should be included in save responses.
-     *
-     * @param ElementInterface $element
-     * @return array
-     */
-    private function _saveData(ElementInterface $element): array
-    {
-        $data = [];
-
-        // Should we be including table attributes too?
-        if ($this->_includeTableAttributesForSource) {
-            $attributes = Craft::$app->getElementSources()->getTableAttributes(get_class($element), $this->_includeTableAttributesForSource);
-
-            // Drop the first one
-            array_shift($attributes);
-
-            foreach ($attributes as $attribute) {
-                $data['tableAttributes'][$attribute[0]] = $element->getTableAttributeHtml($attribute[0]);
-            }
+        if (!$this->request->getAcceptsJson()) {
+            // Tell all browser windows about the element save
+            Craft::$app->getSession()->broadcastToJs([
+                'event' => 'saveElement',
+                'id' => $element->id,
+            ]);
         }
 
-        return $data;
+        return $this->_asSuccess(Craft::t('app', '{type} saved.', [
+            'type' => $element::displayName(),
+        ]), $element, addAnother: true);
     }
-
 
     /**
      * Duplicates an element.
@@ -1280,19 +1260,20 @@ JS;
             }
         }
 
-        if ($element->draftId && !$this->request->getAcceptsJson()) {
-            // Let any other browser windows editing the draft that they can reload themselves
-            $js = <<<JS
-if (typeof BroadcastChannel !== 'undefined') {
-    (new BroadcastChannel('ElementEditor')).postMessage({
-        event: 'saveDraft',
-        canonicalId: $canonical->id,
-        draftId: $element->draftId,
-        isProvisionalDraft: false,
-    });
-}
-JS;
-            Craft::$app->getSession()->addJsFlash($js);
+        if (!$this->request->getAcceptsJson()) {
+            // Tell all browser windows about the element save
+            $session = Craft::$app->getSession();
+            $session->broadcastToJs([
+                'event' => 'saveElement',
+                'id' => $canonical->id,
+            ]);
+            if (!$isUnpublishedDraft) {
+                $session->broadcastToJs([
+                    'event' => 'deleteDraft',
+                    'canonicalId' => $element->getCanonicalId(),
+                    'draftId' => $element->draftId,
+                ]);
+            }
         }
 
         if ($isUnpublishedDraft) {
@@ -1307,7 +1288,7 @@ JS;
             $message = Craft::t('app', 'Draft applied.');
         }
 
-        return $this->_asSuccess($message, $canonical, $this->_saveData($canonical), true);
+        return $this->_asSuccess($message, $canonical, addAnother: true);
     }
 
     private function _asAppyDraftFailure(ElementInterface $element): ?Response
@@ -1363,6 +1344,15 @@ JS;
         } else {
             $message = Craft::t('app', '{type} deleted.', [
                 'type' => Craft::t('app', 'Draft'),
+            ]);
+        }
+
+        if (!$this->request->getAcceptsJson()) {
+            // Tell all browser windows about the draft deletion
+            Craft::$app->getSession()->broadcastToJs([
+                'event' => 'deleteDraft',
+                'canonicalId' => $element->getCanonicalId(),
+                'draftId' => $element->draftId,
             ]);
         }
 

@@ -59,6 +59,8 @@
 - Added the `elements/save` action.
 - Added the `users/delete-address` action.
 - Added the `users/save-address` action.
+- Added the `app/render-element` control panel controller action.
+- Added the `element-indexes/element-table-html` control panel controller action.
 - Added `craft\base\ApplicationTrait::getConditions()`.
 - Added `craft\base\ApplicationTrait::getElementSources()`, which replaces `getElementIndexes()`.
 - Added `craft\base\ApplicationTrait::getFs()`.
@@ -114,6 +116,7 @@
 - Added `craft\base\Model::defineBehaviors()`. ([#10691](https://github.com/craftcms/cms/pull/10691))
 - Added `craft\base\ModelInterface`.
 - Added `craft\base\NameTrait`.
+- Added `craft\behaviors\SessionBehavior::broadcastToJs()`.
 - Added `craft\behaviors\SessionBehavior::getError()`.
 - Added `craft\behaviors\SessionBehavior::getNotice()`.
 - Added `craft\controllers\AddressesController`.
@@ -360,6 +363,7 @@
 - Added `craft\services\Users::EVENT_BEFORE_DEACTIVATE_USER`.
 - Added `craft\services\Users::removeCredentials()`.
 - Added `craft\services\Volumes::getTemporaryVolume()`.
+- Added `craft\services\Volumes::getUserPhotoVolume()`.
 - Added `craft\validators\MoneyValidator`.
 - Added `craft\web\assets\conditionbuilder\ConditionBuilderAsset`.
 - Added `craft\web\assets\htmx\HtmxAsset`.
@@ -417,6 +421,7 @@
 - User queries now return all users by default, rather than only active users.
 - Filtering users by `active`, `pending`, and `locked` statuses no longer excludes suspended users.
 - `credentialed` and `inactive` are now reserved user group handles.
+- Elements throughout the control panel are now automatically updated whenever they’re saved by another browser tab.
 - Assets fields that are restricted to a single location can now be configured to allow selection within subfolders of that location. ([#9070](https://github.com/craftcms/cms/discussions/9070))
 - When an image is saved as a new asset from the Image Editor via an Assets field, the Assets field will now automatically replace the selected asset with the new one. ([#8974](https://github.com/craftcms/cms/discussions/8974))
 - `alt` is now a reserved field handle for volume field layouts.
@@ -529,6 +534,7 @@
 - `craft\helpers\Assets::generateUrl()` no longer accepts a transform index for date modified comparisons. A `DateTime` object is expected instead.
 - `craft\helpers\Assets::urlAppendix()` no longer accepts a transform index for date modified comparisons. A `DateTime` object is expected instead.
 - `craft\helpers\Component::createComponent()` now automatically typecasts values that map to properties with `int`, `float`, `int|float`, `string`, `bool`, `array`, or `DateTime` type declarations. ([#10706](https://github.com/craftcms/cms/pull/10706))
+- `craft\helpers\Cp::elementHtml()` now has an `$autoReload` argument.
 - `craft\helpers\Db::batchInsert()`, `craft\helpers\Db::insert()`, `craft\db\Command::batchInsert()`, `craft\db\Command::insert()`, `craft\db\Migration::batchInsert()`, and `craft\db\Migration::insert()` no longer have `$includeAuditColumns` arguments, and now check if the table has `dateCreated`, `dateUpdated`, and/or `uid` columns before setting their values.
 - `craft\helpers\Db::parseParam()` now validates that numeric values are passed if the `$columnType` is set to a numeric column type. ([#9142](https://github.com/craftcms/cms/issues/9142))
 - `craft\helpers\Db::prepareDateForDb()` no longer has a `$stripSeconds` argument.
@@ -590,7 +596,10 @@
 - `craft\web\View::setNamespace()`’ `$namespace` argument no longer has a default value of `null`.
 - The `Craft.getUrl()` JavaScript method now removes duplicate query string params when passing in a param that’s already included in the base URL.
 - The `Craft.getUrl()` JavaScript method now encodes any query string params passed to it.
+- `Craft.broadcastChannel` has been split up into two broadcast channels: `Craft.broadcaster` and `Craft.messageReceiver`.
 - Local volumes no longer use Flysystem.
+- A selected volume for user photo storage if no longer displayed if no volume has been set.
+- The user photo volume can now only be set to a volume that has a public transform filesystem configured.
 - Craft now uses Symfony Mailer to send email. ([#10062](https://github.com/craftcms/cms/discussions/10062))
 - Updated Twig to 3.3.
 - Updated vue-autosuggest to 2.2.0.

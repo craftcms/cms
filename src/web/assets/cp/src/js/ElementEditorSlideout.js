@@ -35,9 +35,16 @@ Craft.ElementEditorSlideout = Craft.CpScreenSlideout.extend(
         }
       });
 
-      if (this.settings.onSaveElement) {
-        this.on('submit', (ev) => {
-          // Pass the response data off to onSaveElement() for backwards compatibility
+      this.on('submit', (ev) => {
+        if (Craft.broadcaster) {
+          Craft.broadcaster.postMessage({
+            event: 'saveElement',
+            id: ev.response.data.element.id,
+          });
+        }
+
+        // Pass the response data off to onSaveElement() for backwards compatibility
+        if (this.settings.onSaveElement) {
           const data = Object.assign(
             {},
             ev.response.data,
@@ -47,8 +54,8 @@ Craft.ElementEditorSlideout = Craft.CpScreenSlideout.extend(
           delete data.modelName;
           delete data.message;
           this.settings.onSaveElement(data);
-        });
-      }
+        }
+      });
     },
 
     getParams: function () {
@@ -100,10 +107,8 @@ Craft.ElementEditorSlideout = Craft.CpScreenSlideout.extend(
       siteId: null,
       prevalidate: false,
       saveParams: {},
-      elementIndex: null,
       onSaveElement: null,
       validators: [],
-      elementSelectInput: null,
     },
   }
 );

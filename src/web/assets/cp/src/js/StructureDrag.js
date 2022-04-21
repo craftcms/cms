@@ -180,14 +180,13 @@ Craft.StructureDrag = Garnish.Drag.extend({
           }
         }
       } else if (
-
-      /**
-       * Scenario 2: Next row is a child of this one.
-       *
-       *     * Row 1
-       *     ----------------------
-       *         * Row 2
-       */
+        /**
+         * Scenario 2: Next row is a child of this one.
+         *
+         *     * Row 1
+         *     ----------------------
+         *         * Row 2
+         */
         this._.$nextTargetLi &&
         this._.nextTargetLevel > this._.closestTargetLevel
       ) {
@@ -204,14 +203,13 @@ Craft.StructureDrag = Garnish.Drag.extend({
           }
         }
       } else {
-
-      /**
-       * Scenario 3: Next row is a child of a parent node, or there is no next row.
-       *
-       *         * Row 1
-       *     ----------------------
-       *     * Row 2
-       */
+        /**
+         * Scenario 3: Next row is a child of a parent node, or there is no next row.
+         *
+         *         * Row 1
+         *     ----------------------
+         *     * Row 2
+         */
         if (this._.hoveringBetweenRows) {
           // Determine which <li> to position the insertion after
           this._.draggeeX = this.mouseX - this.targetItemMouseDiffX;

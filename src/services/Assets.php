@@ -583,6 +583,10 @@ class Assets extends Component
             $height = $width;
         }
 
+        $params = [
+            'v' => $asset->dateModified->getTimestamp(),
+        ];
+
         // Maybe a plugin wants to do something here
         if ($this->hasEventHandlers(self::EVENT_DEFINE_THUMB_URL)) {
             $event = new DefineAssetThumbUrlEvent([
@@ -594,7 +598,7 @@ class Assets extends Component
 
             // If a plugin set the url, we'll just use that.
             if ($event->url !== null) {
-                return $event->url;
+                return UrlHelper::urlWithParams($event->url, $params);
             }
         }
 
@@ -612,9 +616,7 @@ class Assets extends Component
 
         $transformUrl = $asset->getUrl($transform, false);
 
-        return UrlHelper::urlWithParams($transformUrl, [
-            'v' => $asset->dateModified->getTimestamp(),
-        ]);
+        return UrlHelper::urlWithParams($transformUrl, $params);
     }
 
     /**
@@ -646,7 +648,11 @@ class Assets extends Component
             $transform = null;
         }
 
-        return $asset->getUrl($transform, true);
+        $url = $asset->getUrl($transform, true);
+
+        return UrlHelper::urlWithParams($url, [
+            'v' => $asset->dateModified->getTimestamp(),
+        ]);
     }
 
     /**

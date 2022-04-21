@@ -101,6 +101,9 @@ class SetupController extends Controller
     /**
      * Sets up all the things.
      *
+     * This is an interactive wrapper for the `setup/app-id`, `setup/security-key`, `setup/db-creds`,
+     * and `install` commands, each of which support being run non-interactively.
+     *
      * @return int
      */
     public function actionIndex(): int
