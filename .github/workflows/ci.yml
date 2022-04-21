@@ -14,6 +14,9 @@ jobs:
     uses: craftcms/.github/.github/workflows/ecs.yml@v2
     with:
       php_version: '7.2'
+  prettier:
+    name: Prettier
+    uses: craftcms/.github/.github/workflows/prettier.yml@v2
   codecept:
     name: Codeception
     needs: [ecs]
