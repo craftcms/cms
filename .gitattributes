@@ -5,7 +5,9 @@
 /.gitattributes export-ignore
 /.github/ export-ignore
 /.gitignore export-ignore
+/.husky/ export-ignore
 /.lando.yml export-ignore
+/.lintstagedrc.json export-ignore
 /.prettierignore export-ignore
 /.prettierrc.json export-ignore
 /CHANGELOG.md export-ignore
