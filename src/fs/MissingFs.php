@@ -1,4 +1,5 @@
 <?php
+
 /** @noinspection PhpInconsistentReturnPointsInspection */
 /**
  * @link https://craftcms.com/
