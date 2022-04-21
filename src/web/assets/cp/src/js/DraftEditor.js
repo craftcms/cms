@@ -582,11 +582,13 @@ Craft.DraftEditor = Garnish.Base.extend(
     },
 
     createEditMetaBtn: function () {
+      const $btnGroup = $('#context-btngroup');
       this.$editMetaBtn = $('<button/>', {
         type: 'button',
         class: 'btn edit icon',
         title: Craft.t('app', 'Edit draft settings'),
-      }).appendTo($('#context-btngroup'));
+      }).appendTo($btnGroup);
+      $btnGroup.find('.btngroup-btn-last').removeClass('btngroup-btn-last');
       this.addListener(this.$editMetaBtn, 'click', 'showMetaHud');
     },
 
