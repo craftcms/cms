@@ -3,7 +3,7 @@ module.exports = {
   // corePlugins: {
   //   preflight: true,
   // },
-  content: ["./src/**/*.{vue,js}"],
+  content: ['./src/**/*.{vue,js}'],
   // theme: {
   //   extend: {
   //     screens: {
@@ -12,4 +12,4 @@ module.exports = {
   //   },
   // },
   // plugins: [],
-}
+};

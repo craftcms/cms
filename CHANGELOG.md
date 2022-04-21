@@ -3,10 +3,18 @@
 ## Unreleased
 
 ### Added
+- Added the `addresses`, `address`, and `addressCount` GraphQL queries.
+- Added the `addresses` field to user GraphQL queries.
 - It’s now possible to set sites’ Status settings to environment variables. ([#3005](https://github.com/craftcms/cms/issues/3005))
 - Added `craft\controllers\ElementsController::EVENT_DEFINE_EDITOR_CONTENT`.
 - Added `craft\events\DefineElementEditorHtmlEvent`.
 - Added `craft\events\FsEvent`.
+- Added `craft\gql\arguments\elements\Address`.
+- Added `craft\gql\interfaces\elements\Address`.
+- Added `craft\gql\queries\Address`.
+- Added `craft\gql\resolvers\elements\Address`.
+- Added `craft\gql\types\elements\Address`.
+- Added `craft\gql\types\generators\AddressType`.
 - Added `craft\helpers\Db::escapeCommas()`.
 - Added `craft\log\ContextProcessor`.
 - Added `craft\services\Fs::EVENT_RENAME_FILESYSTEM`.
@@ -17,7 +25,10 @@
 - Added the `Craft.setElementAttributes()` JavaScript method.
 
 ### Changed
-- Improved element index table accessibility for screen readers. ([#10629](https://github.com/craftcms/cms/pull/10629))
+- Improved element index accessibility. ([#10629](https://github.com/craftcms/cms/pull/10629), [#10660](https://github.com/craftcms/cms/pull/10660))
+- Improved Live Preview accessibility for screen readers. ([#10688](https://github.com/craftcms/cms/pull/10688))
+- Slideouts, Live Preview, and Matrix blocks are no longer animated for browsers that have requested reduced motion. ([#10665](https://github.com/craftcms/cms/pull/10665))
+- Custom element sources can now include table columns for custom fields, and be sorted by custom field values. ([#10900](https://github.com/craftcms/cms/issues/10900))
 - Volumes’ Asset Filesystem and Transform Filesystem settings are now automatically updated when a filesystem’s handle changes, if they reference the filesystem’s handle directly. ([#10885](https://github.com/craftcms/cms/issues/10885))
 - Volumes’ Asset Filesystem settings no longer list filesystems already in use by other volumes.
 - Element conditions stored in the project config can now contain relational field rule types which specify a related element via its ID, possibly identified by an environment variable. ([#10554](https://github.com/craftcms/cms/pull/10554))
@@ -68,6 +79,9 @@
 - Fixed a bug where element index pages weren’t retaining the selected sort attribute and direction.
 - Fixed a bug where Single section entries weren’t getting a Post Date set automatically when initially created. ([#10939](https://github.com/craftcms/cms/issues/10939))
 - Fixed a bug where entries weren’t getting created for the currently-selected site. ([#10938](https://github.com/craftcms/cms/issues/10938))
+- Fixed a bug where GraphQL eager loading would not work.
+- Fixed a bug where entry and category slugs weren’t getting regenerated based on the title, when their value was cleared. ([#10949](https://github.com/craftcms/cms/issues/10949))
+- Fixed a bug where no source was getting selected by default when switching the site on the Entries index page, if the previously-selected source wasn’t enabled for the new site. ([#10954](https://github.com/craftcms/cms/issues/10954))
 
 ## 4.0.0-beta.4 - 2022-04-06
 

@@ -1,4 +1,4 @@
-import Accounting from 'accounting'
+import Accounting from 'accounting';
 
 /**
  * Formats a value as a currency value
@@ -13,7 +13,7 @@ export function currency(value) {
   }
 
   if (floatValue < 0) {
-    return '-' + Accounting.formatMoney((floatValue * -1), '$', precision);
+    return '-' + Accounting.formatMoney(floatValue * -1, '$', precision);
   }
 
   return Accounting.formatMoney(floatValue, '$', precision);

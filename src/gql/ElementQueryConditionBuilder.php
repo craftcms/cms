@@ -74,9 +74,9 @@ class ElementQueryConditionBuilder extends Component
     public const LOCALIZED_NODENAME = 'localized';
 
     /**
-     * @var ResolveInfo
+     * @var ResolveInfo|null
      */
-    private mixed $_resolveInfo = null;
+    private ?ResolveInfo $_resolveInfo = null;
 
     /**
      * @var ArgumentManager
@@ -144,11 +144,14 @@ class ElementQueryConditionBuilder extends Component
      */
     public function extractQueryConditions(?FieldInterface $startingParentField = null): array
     {
-        $startingNode = reset($this->_resolveInfo->fieldNodes);
+        /** @var \ArrayObject $fieldNodes */
+        $fieldNodes = $this->_resolveInfo->fieldNodes;
 
-        if (!$startingNode) {
+        if ($fieldNodes->count() === 0 || empty($fieldNodes[0])) {
             return [];
         }
+
+        $startingNode = $fieldNodes[0];
 
         $rootPlan = new EagerLoadPlan();
 
@@ -288,6 +291,7 @@ class ElementQueryConditionBuilder extends Component
         if (!isset($this->_additionalEagerLoadableNodes)) {
             $list = [
                 'photo' => [UserField::class, 'canBeAliased' => false],
+                'addresses' => [UserField::class, 'canBeAliased' => true],
                 'author' => [EntryField::class, 'canBeAliased' => false],
                 'uploader' => [AssetField::class, 'canBeAliased' => false],
                 'parent' => [BaseRelationField::class, 'canBeAliased' => false],

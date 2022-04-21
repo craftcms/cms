@@ -3,8 +3,8 @@
 const {getConfig} = require('@craftcms/webpack');
 
 module.exports = getConfig({
-    context: __dirname,
-    config: {
-        entry: {transforms: './transforms.js'},
-    },
+  context: __dirname,
+  config: {
+    entry: {transforms: './transforms.js'},
+  },
 });

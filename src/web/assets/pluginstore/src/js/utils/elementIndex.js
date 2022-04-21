@@ -1,18 +1,18 @@
 const getElementIndexParams = ({perPage, page, orderBy, direction}) => {
   if (!perPage) {
-    perPage = 96
+    perPage = 96;
   }
 
   if (!page) {
-    page = 1
+    page = 1;
   }
 
   return {
     perPage,
     page,
     orderBy,
-    direction
-  }
-}
+    direction,
+  };
+};
 
-export {getElementIndexParams}
+export {getElementIndexParams};

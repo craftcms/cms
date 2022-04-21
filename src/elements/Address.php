@@ -169,6 +169,14 @@ class Address extends Element implements AddressInterface, BlockElementInterface
     }
 
     /**
+     * @inheritdoc
+     */
+    public static function gqlTypeNameByContext(mixed $context): string
+    {
+        return 'Address';
+    }
+
+    /**
      * @var int|null Owner ID
      */
     public ?int $ownerId = null;

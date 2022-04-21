@@ -1,5 +1,5 @@
 @charset "UTF-8";
-@import "@craftcms/sass/mixins";
+@import '@craftcms/sass/mixins';
 
 /* widgets */
 .widget {
@@ -127,7 +127,7 @@
 }
 
 /* Recent Entries widget */
-.craft\\widgets\\recententries .body .table  {
+.craft\\widgets\\recententries .body .table {
   table-layout: fixed;
 }
 

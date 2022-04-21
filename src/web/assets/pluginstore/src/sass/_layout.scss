@@ -1,5 +1,5 @@
 @charset "UTF-8";
-@import "@craftcms/sass/mixins";
+@import '@craftcms/sass/mixins';
 
 #main-container #main #main-content #content-container #content {
   display: flex;
@@ -17,7 +17,6 @@
     background-color: $grey050;
     @include border-radius($largeBorderRadius, 0, 0, $largeBorderRadius);
     @apply lg:tw-border-b-0 lg:tw-border-r lg:tw-overflow-auto lg:tw-w-64;
-
 
     .categories {
       @apply lg:tw-block;

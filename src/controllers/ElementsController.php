@@ -105,7 +105,7 @@ class ElementsController extends Controller
         $this->_siteId = $this->_param('siteId');
         $this->_enabled = $this->_param('enabled');
         $this->_enabledForSite = $this->_param('enabledForSite');
-        $this->_slug = $this->_param('slug') ?: null;
+        $this->_slug = $this->_param('slug');
         $this->_fresh = (bool)$this->_param('fresh');
         $this->_draftName = $this->_param('draftName');
         $this->_notes = $this->_param('notes');

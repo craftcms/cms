@@ -7,15 +7,15 @@
 </template>
 
 <script>
-import CategorySelector from './CategorySelector'
-import PluginSearch from './PluginSearch'
-import NavItems from './NavItems';
+  import CategorySelector from './CategorySelector';
+  import PluginSearch from './PluginSearch';
+  import NavItems from './NavItems';
 
-export default {
-  components: {
-    NavItems,
-    CategorySelector,
-    PluginSearch,
-  },
-}
+  export default {
+    components: {
+      NavItems,
+      CategorySelector,
+      PluginSearch,
+    },
+  };
 </script>
