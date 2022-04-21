@@ -352,10 +352,9 @@ class Cp
 
         if ($context === 'field' && $inputName !== null) {
             $innerHtml .= Html::hiddenInput($inputName . ($single ? '' : '[]'), (string)$element->id) .
-                Html::tag('button', '', [
+                Html::button('', [
                     'class' => ['delete', 'icon'],
                     'title' => Craft::t('app', 'Remove'),
-                    'type' => 'button',
                     'aria' => [
                         'label' => Craft::t('app', 'Remove {label}', [
                             'label' => $label,
