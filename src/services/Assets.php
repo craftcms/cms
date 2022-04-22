@@ -429,9 +429,9 @@ class Assets extends Component
      * @param mixed $criteria
      * @return VolumeFolder[]
      */
-    public function findFolders(mixed $criteria = null): array
+    public function findFolders(mixed $criteria = []): array
     {
-        if (!($criteria instanceof FolderCriteria)) {
+        if (!$criteria instanceof FolderCriteria) {
             $criteria = new FolderCriteria($criteria);
         }
 
@@ -502,9 +502,9 @@ class Assets extends Component
      * @param mixed $criteria
      * @return VolumeFolder|null
      */
-    public function findFolder(mixed $criteria = null): ?VolumeFolder
+    public function findFolder(mixed $criteria = []): ?VolumeFolder
     {
-        if (!($criteria instanceof FolderCriteria)) {
+        if (!$criteria instanceof FolderCriteria) {
             $criteria = new FolderCriteria($criteria);
         }
 

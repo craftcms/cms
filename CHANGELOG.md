@@ -99,6 +99,7 @@
 - Fixed a bug where elements within relational fields weren’t getting updated when the related elements were updated from element editor slideouts. ([#10969](https://github.com/craftcms/cms/issues/10969))
 - Fixed an error that could occur when updating asset indexes. ([#10947](https://github.com/craftcms/cms/issues/10947))
 - Fixed a bug where the `{% exit %}` tag was resulting in an unstyled error page. ([#10946](https://github.com/craftcms/cms/issues/10946))
+- Fixed an error that occurred when calling `craft\services\Assets::findFolders()` or `findFolder()` without passing an argument. ([#10975](https://github.com/craftcms/cms/issues/10975))
 
 ## 4.0.0-beta.4 - 2022-04-06
 
