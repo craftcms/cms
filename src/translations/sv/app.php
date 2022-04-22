@@ -410,6 +410,7 @@ return [
     'Create a new tag group' => 'Skapa en ny taggrupp',
     'Create a new user group' => 'Skapa en ny grupp av användare',
     'Create a new user' => 'Create a new user',
+    'Create a new volume…' => 'Create a new volume…',
     'Create a new {section} entry type' => 'Skapa en ny inläggstyp i {section}',
     'Create a new {type}' => 'Skapa en ny {type}',
     'Create and add another' => 'Skapa och lägg till ett nytt',
