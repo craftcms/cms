@@ -6,6 +6,9 @@
 - Added the `addresses`, `address`, and `addressCount` GraphQL queries.
 - Added the `addresses` field to user GraphQL queries.
 - It’s now possible to set sites’ Status settings to environment variables. ([#3005](https://github.com/craftcms/cms/issues/3005))
+- Added the `hasAlt` argument to asset GraphQL queries.
+- Added the `alt` field to asset GraphQL queries.
+- Added the `fullName`, `assetUploaders`, and `authors` arguments to user GraphQL queries.
 - Added the `app/render-element` control panel controller action.
 - Added the `element-indexes/element-table-html` control panel controller action.
 - Added `craft\behaviors\SessionBehavior::broadcastToJs()`.

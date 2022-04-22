@@ -72,6 +72,11 @@ class Asset extends ElementArguments
                 'type' => Type::string(),
                 'description' => 'Narrows the query results based on the assets’ files’ last-modified dates.',
             ],
+            'hasAlt' => [
+                'name' => 'hasAlt',
+                'type' => Type::boolean(),
+                'description' => 'Narrows the query results based on whether the assets have alternative text.',
+            ],
             'includeSubfolders' => [
                 'name' => 'includeSubfolders',
                 'type' => Type::boolean(),

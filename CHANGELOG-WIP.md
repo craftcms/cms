@@ -41,6 +41,9 @@
 - Added the `buildId` general config. ([#10705](https://github.com/craftcms/cms/pull/10705))
 - Added support for setting custom config settings from `config/custom.php`, which are accessible via `Craft::$app->config->custom`. ([#10012](https://github.com/craftcms/cms/issues/10012))
 - Added the `addresses`, `address`, and `addressCount` GraphQL queries.
+- Added the `hasAlt` argument to asset GraphQL queries.
+- Added the `alt` field to assets queried via GraphQL.
+- Added the `fullName`, `assetUploaders`, and `authors` arguments to user GraphQL queries.
 - Added the `addresses` field to user GraphQL queries.
 - GraphQL schemas now include settings that determine which sites elements can be queried from. ([#10610](https://github.com/craftcms/cms/issues/10610))
 - Added the `assets/icon` action.

@@ -72,6 +72,11 @@ class Asset extends Element
     {
         // @TODO Remove the `uri` field for Assets.
         return Craft::$app->getGql()->prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), self::getConditionalFields(), [
+            'alt' => [
+                'name' => 'alt',
+                'type' => Type::string(),
+                'description' => 'Alternative text for the asset.',
+            ],
             'volumeId' => [
                 'name' => 'volumeId',
                 'type' => Type::int(),
