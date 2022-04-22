@@ -410,6 +410,7 @@ return [
     'Create a new tag group' => 'Создать новую группу тегов',
     'Create a new user group' => 'Создать новую группу пользователей',
     'Create a new user' => 'Create a new user',
+    'Create a new volume…' => 'Create a new volume…',
     'Create a new {section} entry type' => 'Создать новый тип записи в разделе {section}',
     'Create a new {type}' => 'Создать новый {type}',
     'Create and add another' => 'Создать и добавить еще один',
