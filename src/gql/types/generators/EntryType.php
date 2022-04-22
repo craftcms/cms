@@ -17,7 +17,6 @@ use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
 use craft\gql\TypeManager;
 use craft\gql\types\elements\Entry;
-use craft\helpers\Gql;
 use craft\helpers\Gql as GqlHelper;
 use craft\models\EntryType as EntryTypeModel;
 

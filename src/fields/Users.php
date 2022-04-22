@@ -8,13 +8,11 @@
 namespace craft\fields;
 
 use Craft;
-use craft\db\Table as DbTable;
 use craft\elements\db\UserQuery;
 use craft\elements\User;
 use craft\gql\arguments\elements\User as UserArguments;
 use craft\gql\interfaces\elements\User as UserInterface;
 use craft\gql\resolvers\elements\User as UserResolver;
-use craft\helpers\Db;
 use craft\helpers\Gql;
 use craft\helpers\Gql as GqlHelper;
 use craft\models\GqlSchema;

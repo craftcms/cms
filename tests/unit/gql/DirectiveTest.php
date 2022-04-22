@@ -10,7 +10,6 @@ namespace craftunit\gql;
 use Codeception\Test\Unit;
 use Craft;
 use craft\config\GeneralConfig;
-use craft\console\Application;
 use craft\elements\Asset;
 use craft\gql\directives\FormatDateTime;
 use craft\gql\directives\Markdown;

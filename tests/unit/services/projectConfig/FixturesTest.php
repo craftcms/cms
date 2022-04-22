@@ -10,7 +10,6 @@ namespace crafttests\unit\services\projectConfig;
 use Codeception\Test\Unit;
 use Craft;
 use craft\helpers\StringHelper;
-use craft\services\Fields;
 use craft\services\Sections;
 use crafttests\fixtures\EntryTypeFixture;
 use crafttests\fixtures\EntryWithFieldsFixture;
