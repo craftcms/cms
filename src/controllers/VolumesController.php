@@ -12,7 +12,6 @@ use craft\base\Field;
 use craft\base\FsInterface;
 use craft\elements\Asset;
 use craft\helpers\Json;
-use craft\helpers\UrlHelper;
 use craft\models\Volume;
 use craft\web\Controller;
 use Illuminate\Support\Collection;
