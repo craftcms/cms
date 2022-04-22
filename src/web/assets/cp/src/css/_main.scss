@@ -2526,15 +2526,23 @@ $elementInnerSpacing: 5px;
       img {
         display: block;
         flex-shrink: 0;
-        flex-grow: 1;
         pointer-events: none;
         border-radius: $smallBorderRadius;
         max-width: 100%;
         max-height: 100%;
       }
 
-      &.rounded img {
+      &.rounded {
         border-radius: 50%;
+        overflow: hidden;
+
+        img {
+          max-height: none;
+          max-width: none;
+          min-height: 100%;
+          min-width: 100%;
+          object-fit: cover;
+        }
       }
     }
     .elementthumb.open-preview {
