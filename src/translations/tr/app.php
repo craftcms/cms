@@ -410,6 +410,7 @@ return [
     'Create a new tag group' => 'Yeni bir etiket grubu oluştur',
     'Create a new user group' => 'Yeni bir kullanıcı grubu oluştur',
     'Create a new user' => 'Create a new user',
+    'Create a new volume…' => 'Create a new volume…',
     'Create a new {section} entry type' => 'Yeni bir {section} kayıt tipi oluştur',
     'Create a new {type}' => 'Yeni bir {type} oluştur',
     'Create and add another' => 'Oluştur ve başka bir tane ekle',
