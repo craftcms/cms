@@ -29,6 +29,9 @@
 - Fixed a bug where Matrix sub-fields were losing their column suffixes after they were resaved. ([#10973](https://github.com/craftcms/cms/issues/10973))
 - Fixed a bug where saving a Matrix field without any block types would result in no changes made to the previously-configured block types, rather than displaying a validation error. ([#10989](https://github.com/craftcms/cms/issues/10989))
 
+### Security
+- The `redirect` controller action now requires the passed-in `url` param to be hashed. ([#10994](https://github.com/craftcms/cms/issues/10994))
+
 ## 3.7.38 - 2022-04-06
 
 ### Added
