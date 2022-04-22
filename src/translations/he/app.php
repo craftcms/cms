@@ -1314,7 +1314,7 @@ return [
     'Sites' => 'אתרים',
     'Size' => 'גודל',
     'Skip to content' => 'Skip to content',
-    'Skip to {title}' => 'Skip to {title}',
+    'Skip to {title}' => 'דלג ל{title}',
     'Skipped files' => 'קבצים שהמערכת דילגה עליהם',
     'Slug' => 'סלאג',
     'Some categories restored.' => 'חלק מהקטגוריות שוחזרו.',
