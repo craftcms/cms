@@ -410,6 +410,7 @@ return [
     'Create a new tag group' => 'צור קבוצת תגיות חדשה',
     'Create a new user group' => 'צור קבוצת משתמשים חדשה',
     'Create a new user' => 'צור משתמש חדש',
+    'Create a new volume…' => 'Create a new volume…',
     'Create a new {section} entry type' => 'צור סוג חדש של רשומת {section}',
     'Create a new {type}' => 'צור {type} חדש',
     'Create and add another' => 'צור והוסף עוד אחת',
