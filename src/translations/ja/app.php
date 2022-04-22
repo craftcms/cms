@@ -410,6 +410,7 @@ return [
     'Create a new tag group' => '新しいタググループを作成する',
     'Create a new user group' => '新しいユーザーグループを作る',
     'Create a new user' => 'Create a new user',
+    'Create a new volume…' => 'Create a new volume…',
     'Create a new {section} entry type' => '新規の {section} 入力タイプを作成してください。',
     'Create a new {type}' => '新しい{type}を作成',
     'Create and add another' => 'もう 1 つを作成して追加',
