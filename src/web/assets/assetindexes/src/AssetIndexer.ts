@@ -302,7 +302,6 @@ export class AssetIndexer {
             `);
     }
 
-
     if (haveMissingItems) {
       let itemText = '';
       if (missingFiles.length) {

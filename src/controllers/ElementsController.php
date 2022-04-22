@@ -727,7 +727,7 @@ class ElementsController extends Controller
             $this->view->registerJsWithVars(fn($settingsJs) => <<<JS
 new Craft.ElementEditor($('#$containerId'), $settingsJs);
 JS, [
-                $jsSettingsFn($form)
+                $jsSettingsFn($form),
             ]);
         }
 
