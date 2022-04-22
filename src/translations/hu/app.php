@@ -410,6 +410,7 @@ return [
     'Create a new tag group' => 'Új fül csoport létrehozása',
     'Create a new user group' => 'Új felhasználói csoport létrehozása',
     'Create a new user' => 'Create a new user',
+    'Create a new volume…' => 'Create a new volume…',
     'Create a new {section} entry type' => 'Készíts egy új {section} bejegyzéstípust',
     'Create a new {type}' => 'Új {type} létrehozása',
     'Create and add another' => 'Létrehozás és új hozzáadása',
