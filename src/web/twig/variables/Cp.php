@@ -706,7 +706,7 @@ class Cp extends Component
     }
 
     /**
-     * Returns all filesystems for a time zone input.
+     * Returns all options for a filesystem input.
      *
      * @return array
      * @since 4.0.0
