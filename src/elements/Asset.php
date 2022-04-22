@@ -885,7 +885,7 @@ class Asset extends Element
         $rules[] = [['volumeId', 'folderId', 'width', 'height', 'size'], 'number', 'integerOnly' => true];
         $rules[] = [['dateModified'], DateTimeValidator::class];
         $rules[] = [['filename', 'kind'], 'required'];
-        $rules[] = [['filename', 'alt'], 'safe'];
+        $rules[] = [['filename', 'newFilename', 'alt'], 'safe'];
         $rules[] = [['kind'], 'string', 'max' => 50];
         $rules[] = [['newLocation'], 'required', 'on' => [self::SCENARIO_CREATE, self::SCENARIO_MOVE, self::SCENARIO_FILEOPS]];
         $rules[] = [['tempFilePath'], 'required', 'on' => [self::SCENARIO_CREATE, self::SCENARIO_REPLACE]];
@@ -2267,7 +2267,7 @@ JS;
     public function beforeSave(bool $isNew): bool
     {
         // newFolderId/newFilename => newLocation.
-        if ($this->newFilename === '') {
+        if ($this->newFilename === '' || $this->newFilename === $this->filename) {
             $this->newFilename = null;
         }
         if (isset($this->newFolderId) || isset($this->newFilename)) {
