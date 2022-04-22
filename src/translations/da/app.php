@@ -410,6 +410,7 @@ return [
     'Create a new tag group' => 'Opret en ny tag gruppe',
     'Create a new user group' => 'Opret en ny bruger gruppe',
     'Create a new user' => 'Create a new user',
+    'Create a new volume…' => 'Create a new volume…',
     'Create a new {section} entry type' => 'Opret en ny {section} indtastnings type',
     'Create a new {type}' => 'Opret en ny {type}',
     'Create and add another' => 'Opret og tilføj en mere',
