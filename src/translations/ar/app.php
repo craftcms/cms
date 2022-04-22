@@ -410,6 +410,7 @@ return [
     'Create a new tag group' => 'إنشاء مجموعة علامات جديدة',
     'Create a new user group' => 'إنشاء مجموعة مستخدمين جديدة',
     'Create a new user' => 'Create a new user',
+    'Create a new volume…' => 'Create a new volume…',
     'Create a new {section} entry type' => 'إنشاء نوع إدخال جديد في {section}',
     'Create a new {type}' => 'إنشاء {type} جديد',
     'Create and add another' => 'إنشاء وإضافة آخر',
