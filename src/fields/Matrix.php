@@ -158,6 +158,10 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
             unset($config['localizeBlocks']);
         }
 
+        if (isset($config['blockTypes']) && $config['blockTypes'] === '') {
+            $config['blockTypes'] = [];
+        }
+
         parent::__construct($config);
     }
 
