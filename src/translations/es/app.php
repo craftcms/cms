@@ -410,6 +410,7 @@ return [
     'Create a new tag group' => 'Crear un nuevo grupo de etiquetas',
     'Create a new user group' => 'Crear un nuevo grupo de usuarios',
     'Create a new user' => 'Crear un nuevo usuario',
+    'Create a new volume…' => 'Create a new volume…',
     'Create a new {section} entry type' => 'Crear una nueva entrada de tipo {section}',
     'Create a new {type}' => 'Crear un nuevo {type}',
     'Create and add another' => 'Crear y añadir otra',
