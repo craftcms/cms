@@ -410,6 +410,7 @@ return [
     'Create a new tag group' => '创建新的标签组',
     'Create a new user group' => '创建新用户组',
     'Create a new user' => 'Create a new user',
+    'Create a new volume…' => 'Create a new volume…',
     'Create a new {section} entry type' => '创建新的 {section} 条目类型',
     'Create a new {type}' => '创建新{type}',
     'Create and add another' => '创建并添加另一个',
