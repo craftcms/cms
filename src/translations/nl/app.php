@@ -410,6 +410,7 @@ return [
     'Create a new tag group' => 'Maak een nieuwe tag-groep',
     'Create a new user group' => 'Maak nieuwe gebruikersgroep aan',
     'Create a new user' => 'Nieuwe gebruiker maken',
+    'Create a new volume…' => 'Create a new volume…',
     'Create a new {section} entry type' => 'Maak een nieuw {section}-berichttype',
     'Create a new {type}' => 'Maak een nieuwe {type} aan',
     'Create and add another' => 'Maken en nog een toevoegen',
