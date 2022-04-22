@@ -155,12 +155,12 @@ class Users extends Component
     public const EVENT_AFTER_ASSIGN_USER_TO_DEFAULT_GROUP = 'afterAssignUserToDefaultGroup';
 
     /**
-     * Returns a user by an email address, creating one if non already exists.
+     * Returns a user by an email address, creating one if none already exists.
      *
      * @param string $email
      * @return User
      * @throws InvalidArgumentException if `$email` is invalid
-     * @throws Exception if the user couldn’t save for some unexpected reason
+     * @throws Exception if the user couldn’t be saved for some unexpected reason
      * @since 4.0.0
      */
     public function ensureUserByEmail(string $email): User
