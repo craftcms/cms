@@ -27,6 +27,7 @@
 - Fixed an error that could occur when saving Matrix fields with either Min Blocks or Max Blocks configured, but not both, if the Intl extension wasn’t installed. ([#10922](https://github.com/craftcms/cms/issues/10922))
 - Fixed a bug where the system name container was taking up the full viewport height in Safari 13. ([#10930](https://github.com/craftcms/cms/issues/10930))
 - Fixed a bug where Matrix sub-fields were losing their column suffixes after they were resaved. ([#10973](https://github.com/craftcms/cms/issues/10973))
+- Fixed a bug where saving a Matrix field without any block types would result in no changes made to the previously-configured block types, rather than displaying a validation error. ([#10989](https://github.com/craftcms/cms/issues/10989))
 
 ## 3.7.38 - 2022-04-06
 
