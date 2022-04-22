@@ -410,6 +410,7 @@ return [
     'Create a new tag group' => 'Vytvořit skupinu tagů',
     'Create a new user group' => 'Vytvořit novou skupinu uživatelů',
     'Create a new user' => 'Create a new user',
+    'Create a new volume…' => 'Create a new volume…',
     'Create a new {section} entry type' => 'Vytvořit typ záznamu v sekci {section}',
     'Create a new {type}' => 'Vytvořit nový {type}',
     'Create and add another' => 'Vytvořit a přidat další',
