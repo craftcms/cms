@@ -426,7 +426,9 @@ class Matrix extends Component
                     ->scalar();
 
                 // Delete the field layout
-                $fieldsService->deleteLayoutById($fieldLayoutId);
+                if ($fieldLayoutId) {
+                    $fieldsService->deleteLayoutById($fieldLayoutId);
+                }
 
                 // Finally delete the actual block type
                 Db::delete(Table::MATRIXBLOCKTYPES, [

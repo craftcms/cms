@@ -107,6 +107,7 @@
 - Fixed a bug where the `{% exit %}` tag was resulting in an unstyled error page. ([#10946](https://github.com/craftcms/cms/issues/10946))
 - Fixed an error that occurred when calling `craft\services\Assets::findFolders()` or `findFolder()` without passing an argument. ([#10975](https://github.com/craftcms/cms/issues/10975))
 - Fixed an error that could occur when rendering a field layout designer without customizable tabs. ([#10978](https://github.com/craftcms/cms/pull/10978))
+- Fixed an error that occurred when attempting to delete a Matrix field that had a block type without any sub-fields. ([#10989](https://github.com/craftcms/cms/issues/10989))
 
 ## 4.0.0-beta.4 - 2022-04-06
 
