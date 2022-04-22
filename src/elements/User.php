@@ -1255,7 +1255,7 @@ class User extends Element implements IdentityInterface
         $photo = $this->getPhoto();
 
         if ($photo) {
-            return $photo->getThumbUrl($size);
+            return Craft::$app->getAssets()->getThumbUrl($photo, $size);
         }
 
         return Craft::$app->getAssetManager()->getPublishedUrl('@app/web/assets/cp/dist', true, 'images/user.svg');

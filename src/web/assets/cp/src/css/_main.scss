@@ -2532,17 +2532,8 @@ $elementInnerSpacing: 5px;
         max-height: 100%;
       }
 
-      &.rounded {
+      &.rounded img {
         border-radius: 50%;
-        overflow: hidden;
-
-        img {
-          max-height: none;
-          max-width: none;
-          min-height: 100%;
-          min-width: 100%;
-          object-fit: cover;
-        }
       }
     }
     .elementthumb.open-preview {
