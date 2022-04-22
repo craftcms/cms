@@ -261,7 +261,6 @@ export class AssetIndexer {
 
     this._currentlyReviewing = true;
     this.pruneWaitingTasks(session.getSessionId());
-    let $confirmBody = $('<div></div>');
 
     const missingEntries = session.getMissingEntries() as {
       files: StringHash;
@@ -273,7 +272,16 @@ export class AssetIndexer {
     const missingFolders = missingEntries.folders
       ? Object.entries(missingEntries.folders)
       : [];
+
     const skippedFiles = session.getSkippedEntries();
+    const haveMissingItems = missingFiles.length || missingFolders.length;
+
+    if (!skippedFiles.length && !haveMissingItems) {
+      this._currentlyReviewing = false;
+      return;
+    }
+
+    let $confirmBody = $('<div></div>');
 
     if (skippedFiles.length) {
       let skippedFilesList = '';
@@ -294,7 +302,6 @@ export class AssetIndexer {
             `);
     }
 
-    const haveMissingItems = missingFiles.length || missingFolders.length;
 
     if (haveMissingItems) {
       let itemText = '';
