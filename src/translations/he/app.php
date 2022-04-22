@@ -1661,7 +1661,7 @@ return [
     'Whether to show files that the user doesn’t have permission to view, per the “View files uploaded by other users” permission.' => 'האם להציג קבצים שלמשתמש אין הרשאה לצפות בהם, לפי ההרשאה "צפה בקבצים שהועלו על ידי משתמשים אחרים".',
     'Whether to show volumes that the user doesn’t have permission to view.' => 'האם להציג אמצעי אחסון שלמשתמש אין הרשאה לצפות בהם.',
     'Whether validation errors on the related {type} should prevent the source element from being saved.' => 'שגיאות אימות הקשורות ל-{type} צריכות למנוע מרכיב המקור להישמר.',
-    'Whether {type} elements should be allowed to relate to themselves.' => 'האם פריטי {type} צריכים להיות רשאים לקשר את עצמם.',
+    'Whether {type} elements should be allowed to relate to themselves.' => 'האם פריטי {type} צריכים להיות מורשים לקשר את עצמם.',
     'Which fields should be visible in the widget?' => 'אילו שדות אמורים להיראות ביישומון?',
     'Which group should this field be displayed in?' => 'באיז קבוצה השדה הזה צריך להיות מוצג?',
     'Which group should this site belong to?' => 'לאיזו קבוצה האתר הזה צריך להיות שייך?',
