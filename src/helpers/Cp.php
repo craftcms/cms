@@ -1372,7 +1372,7 @@ JS, [
         $tabs = array_filter($fieldLayout->getTabs(), fn(FieldLayoutTab $tab) => !empty($tab->getElements()));
 
         if (!$config['customizableTabs']) {
-            $tab = array_shift($tabs) ?? new FieldLayoutTab();
+            $tab = array_shift($tabs) ?? new FieldLayoutTab(['layout' => $fieldLayout]);
             $tab->name = $config['pretendTabName'] ?? Craft::t('app', 'Content');
 
             // Any extra tabs?
