@@ -410,6 +410,7 @@ return [
     'Create a new tag group' => 'Create a new tag group',
     'Create a new user group' => 'Create a new user group',
     'Create a new user' => 'สร้างผู้ใช้ใหม่',
+    'Create a new volume…' => 'Create a new volume…',
     'Create a new {section} entry type' => 'Create a new {section} entry type',
     'Create a new {type}' => 'สร้าง {type} ใหม่',
     'Create and add another' => 'สร้างและเพิ่มรายการ',
