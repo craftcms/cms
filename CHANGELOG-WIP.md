@@ -37,7 +37,7 @@
 - Added the `assetUploaders`, `authors`, and `fullName` user query params.
 - Added the `primaryOwner` and `primaryOwnerId` Matrix block query params.
 - Added the `hasAlt` asset query param.
-- Added the `button`, `submitButton`, `fs`, and `fsField` macros to the `_includes/forms` control panel template.
+- Added the `button`, `submitButton`, `fs`, `fsField`, `volume`, and `volumeField` macros to the `_includes/forms` control panel template.
 - Added the `buildId` general config. ([#10705](https://github.com/craftcms/cms/pull/10705))
 - Added support for setting custom config settings from `config/custom.php`, which are accessible via `Craft::$app->config->custom`. ([#10012](https://github.com/craftcms/cms/issues/10012))
 - Added the `addresses`, `address`, and `addressCount` GraphQL queries.
@@ -385,6 +385,7 @@
 - Added `craft\web\twig\Extension::moneyFilter()`.
 - Added `craft\web\twig\variables\Cp::fieldLayoutDesigner()`.
 - Added `craft\web\twig\variables\Cp::getFsOptions()`.
+- Added `craft\web\twig\variables\Cp::getVolumeOptions()`.
 - Added the `Craft.appendBodyHtml()` JavaScript method, which replaces the now-deprecated `appendFootHtml()` method.
 - Added the `Craft.CpScreenSlideout` JavaScript class, which can be used to create slideouts from actions that return `$this->asCpScreen()`.
 - Added the `Craft.ElementEditor` JavaScript class.
@@ -431,6 +432,7 @@
 - Volumes no longer have “types”, and their file operations are now delegated to a filesystem selected by an “Asset Filesystem” setting on the volume.
 - Volumes now have “Transform Filesystem” and “Transform Subpath” settings, which can be used to choose where image transforms should be stored. (The volume’s Asset Filesystem will be used by default.)
 - Asset thumbnails are now generated as image transforms.
+- It’s now possible to create volumes directly from the User Settings page.
 - Images that are not web-safe now are always converted to JPEGs when transforming, if no format was specified.
 - Entry post dates are no longer set automatically until the entry is validated with the `live` scenario. ([#10093](https://github.com/craftcms/cms/pull/10093))
 - Entry queries’ `authorGroup()` param method now accepts an array of `craft\models\UserGroup` objects.

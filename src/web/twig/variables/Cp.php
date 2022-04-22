@@ -19,6 +19,7 @@ use craft\helpers\Cp as CpHelper;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
+use craft\models\Volume;
 use craft\web\twig\TemplateLoaderException;
 use DateTime;
 use DateTimeZone;
@@ -717,6 +718,24 @@ class Cp extends Component
             'label' => $fs->name,
             'value' => $fs->handle,
         ], Craft::$app->getFs()->getAllFilesystems());
+
+        ArrayHelper::multisort($options, 'label');
+
+        return $options;
+    }
+
+    /**
+     * Returns all options for a volume input.
+     *
+     * @return array
+     * @since 4.0.0
+     */
+    public function getVolumeOptions(): array
+    {
+        $options = array_map(fn(Volume $volume) => [
+            'label' => $volume->name,
+            'value' => $volume->id,
+        ], Craft::$app->getVolumes()->getAllVolumes());
 
         ArrayHelper::multisort($options, 'label');
 

@@ -131,7 +131,9 @@ class UserSettingsController extends Controller
         $projectConfig = Craft::$app->getProjectConfig();
         $settings = $projectConfig->get('users') ?? [];
 
-        $settings['photoVolumeUid'] = $this->request->getBodyParam('photoVolumeUid') ?: null;
+        $photoVolumeId = $this->request->getBodyParam('photoVolumeId');
+
+        $settings['photoVolumeUid'] = $photoVolumeId ? Craft::$app->getVolumes()->getVolumeById($photoVolumeId)?->uid : null;
         $settings['photoSubpath'] = $this->request->getBodyParam('photoSubpath') ?: null;
 
         if (Craft::$app->getEdition() === Craft::Pro) {

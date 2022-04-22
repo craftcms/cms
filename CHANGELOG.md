@@ -9,6 +9,7 @@
 - Added the `hasAlt` argument to asset GraphQL queries.
 - Added the `alt` field to asset GraphQL queries.
 - Added the `fullName`, `assetUploaders`, and `authors` arguments to user GraphQL queries.
+- Added the `volume` and `volumeField` macros to the `_includes/forms` control panel template.
 - Added the `app/render-element` control panel controller action.
 - Added the `element-indexes/element-table-html` control panel controller action.
 - Added `craft\behaviors\SessionBehavior::broadcastToJs()`.
@@ -30,6 +31,7 @@
 - Added `craft\web\CpScreenResponseBehavior::$mainAttributes`. ([#10924](https://github.com/craftcms/cms/issues/10924))
 - Added `craft\web\CpScreenResponseBehavior::formAttributes()`. ([#10924](https://github.com/craftcms/cms/issues/10924))
 - Added `craft\web\CpScreenResponseBehavior::mainAttributes()`. ([#10924](https://github.com/craftcms/cms/issues/10924))
+- Added `craft\web\twig\variables\Cp::getVolumeOptions()`.
 - Added the `Craft.setElementAttributes()` JavaScript method.
 
 ### Changed
@@ -40,6 +42,7 @@
 - Elements throughout the control panel are now automatically updated whenever they’re saved by another browser tab.
 - Volumes’ Asset Filesystem and Transform Filesystem settings are now automatically updated when a filesystem’s handle changes, if they reference the filesystem’s handle directly. ([#10885](https://github.com/craftcms/cms/issues/10885))
 - Volumes’ Asset Filesystem settings no longer list filesystems already in use by other volumes.
+- It’s now possible to create volumes directly from the User Settings page.
 - Element conditions stored in the project config can now contain relational field rule types which specify a related element via its ID, possibly identified by an environment variable. ([#10554](https://github.com/craftcms/cms/pull/10554))
 - Database config settings can now be overridden by like-named environment variables with a `CRAFT_DB_` prefix, rather than `DB_`. ([#10894](https://github.com/craftcms/cms/pull/10894))
 - Element queries’ `title` params no longer treat values with commas as arrays. ([#10891](https://github.com/craftcms/cms/issues/10891))

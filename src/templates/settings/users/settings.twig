@@ -21,6 +21,9 @@
     defaultGroup: null,
 }|merge(settings) %}
 
+{% set hasVolumes = craft.app.volumes.getAllVolumes|length != 0 %}
+{% set photoVolume = settings.photoVolumeUid ? craft.app.volumes.getVolumeByUid(settings.photoVolumeUid) : null %}
+
 {% set allVolumes = craft.app.volumes.getAllVolumes() %}
 {% set volumeList = [] %}
 {% set validVolumeUids = [] %}
@@ -32,19 +35,19 @@
     {% endif %}
 {% endfor %}
 
-{% macro assetLocationInput(volumeOptions, volumeUid, subpath) %}
-    {% from "_includes/forms" import select, text %}
+{% macro assetLocationInput(volumeOptions, photoVolume, subpath) %}
+    {% import '_includes/forms' as forms %}
     <div class="flex">
         <div>
-            {{ select({
-                id: 'photoVolumeUid',
-                name: 'photoVolumeUid',
+            {{ forms.volume({
+                id: 'photoVolumeId',
+                name: 'photoVolumeId',
                 options: volumeOptions,
-                value: volumeUid,
+                value: photoVolume.id ?? null,
             }) }}
         </div>
         <div class="flex-grow">
-            {{ text({
+            {{ forms.text({
                 id: 'photoSubpath',
                 class: 'ltr',
                 name: 'photoSubpath',
@@ -55,23 +58,22 @@
     </div>
 {% endmacro %}
 
-{% from _self import assetLocationInput %}
-
 {% block content %}
     <form id="settings-form" method="post" class="centered" accept-charset="UTF-8" data-saveshortcut>
         {{ actionInput('user-settings/save-user-settings') }}
         {{ csrfInput() }}
 
-        {% if volumeList %}
-            {%  if settings.photoVolumeUid is not defined or settings.photoVolumeUid not in validVolumeUids %}
-                {% set volumeList = [{label: "Select a volume"|t('app'), value: null}]|merge(volumeList) %}
+        {% if hasVolumes %}
+            {% set volumeOptions = craft.cp.getVolumeOptions() %}
+            {%  if not photoVolume %}
+                {% set volumeOptions = volumeOptions|unshift({label: 'Select a volume'|t('app'), value: null}) %}
             {%  endif %}
 
             {{ forms.field({
                 first: true,
                 label: "User Photo Location"|t('app'),
                 instructions: "Where do you want to store user photos? Note that the subfolder path can contain variables like <code>{username}</code>."|t('app')
-            }, assetLocationInput(volumeList, settings.photoVolumeUid, settings.photoSubpath)) }}
+            }, _self.assetLocationInput(volumeOptions, photoVolume, settings.photoSubpath)) }}
         {% else %}
             {{ forms.field({
                 first: true,

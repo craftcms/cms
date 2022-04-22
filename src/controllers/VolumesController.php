@@ -90,21 +90,6 @@ class VolumesController extends Controller
             $title = trim($volume->name) ?: Craft::t('app', 'Edit Volume');
         }
 
-        $crumbs = [
-            [
-                'label' => Craft::t('app', 'Settings'),
-                'url' => UrlHelper::url('settings'),
-            ],
-            [
-                'label' => Craft::t('app', 'Assets'),
-                'url' => UrlHelper::url('settings/assets'),
-            ],
-            [
-                'label' => Craft::t('app', 'Volumes'),
-                'url' => UrlHelper::url('settings/assets'),
-            ],
-        ];
-
         $fsHandle = $volume->getFsHandle();
         $allVolumes = $volumesServices->getAllVolumes();
         /** @var Collection<string> $takenFsHandles */
@@ -119,16 +104,29 @@ class VolumesController extends Controller
             ])
             ->all();
 
-        return $this->renderTemplate('settings/assets/volumes/_edit', [
-            'volumeId' => $volumeId,
-            'volume' => $volume,
-            'isNewVolume' => $isNewVolume,
-            'title' => $title,
-            'crumbs' => $crumbs,
-            'typeName' => Asset::displayName(),
-            'lowerTypeName' => Asset::lowerDisplayName(),
-            'fsOptions' => $fsOptions,
-        ]);
+        if (empty($fsOptions)) {
+            $fsOptions = [
+
+            ];
+        }
+
+        return $this->asCpScreen()
+            ->title($title)
+            ->addCrumb(Craft::t('app', 'Settings'), 'settings')
+            ->addCrumb(Craft::t('app', 'Assets'), 'settings/assets')
+            ->addCrumb(Craft::t('app', 'Volumes'), 'settings/assets')
+            ->action('volumes/save-volume')
+            ->redirectUrl('settings/assets')
+            ->saveShortcutRedirectUrl('settings/assets/volumes/{id}')
+            ->editUrl($volume->id ? "settings/assets/volumes/$volume->id" : null)
+            ->contentTemplate('settings/assets/volumes/_edit', [
+                'volumeId' => $volumeId,
+                'volume' => $volume,
+                'isNewVolume' => $isNewVolume,
+                'typeName' => Asset::displayName(),
+                'lowerTypeName' => Asset::lowerDisplayName(),
+                'fsOptions' => $fsOptions,
+            ]);
     }
 
     /**
@@ -170,18 +168,10 @@ class VolumesController extends Controller
         $volume->setFieldLayout($fieldLayout);
 
         if (!$volumesService->saveVolume($volume)) {
-            $this->setFailFlash(Craft::t('app', 'Couldn’t save volume.'));
-
-            // Send the volume back to the template
-            Craft::$app->getUrlManager()->setRouteParams([
-                'volume' => $volume,
-            ]);
-
-            return null;
+            return $this->asModelFailure($volume, Craft::t('app', 'Couldn’t save volume.'), 'volume');
         }
 
-        $this->setSuccessFlash(Craft::t('app', 'Volume saved.'));
-        return $this->redirectToPostedUrl();
+        return $this->asModelSuccess($volume, Craft::t('app', 'Volume saved.'), 'volume');
     }
 
     /**
