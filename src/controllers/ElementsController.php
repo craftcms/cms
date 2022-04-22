@@ -25,7 +25,6 @@ use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
-use craft\helpers\Json;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayoutForm;
 use craft\services\Elements;
@@ -724,11 +723,13 @@ class ElementsController extends Controller
             ->content($contentFn($form))
             ->sidebar($sidebarFn($form));
 
-        $settingsJs = Json::encode($jsSettingsFn($form));
-        $js = <<<JS
+        if (!$element->getIsRevision()) {
+            $this->view->registerJsWithVars(fn($settingsJs) => <<<JS
 new Craft.ElementEditor($('#$containerId'), $settingsJs);
-JS;
-        $this->view->registerJs($js);
+JS, [
+                $jsSettingsFn($form)
+            ]);
+        }
 
         // Give the element a chance to do things here too
         $element->prepareEditScreen($response, $containerId);

@@ -109,6 +109,7 @@
 - Fixed an error that could occur when rendering a field layout designer without customizable tabs. ([#10978](https://github.com/craftcms/cms/pull/10978))
 - Fixed an error that occurred when attempting to delete a Matrix field that had a block type without any sub-fields. ([#10989](https://github.com/craftcms/cms/issues/10989))
 - Fixed a bug where it wasn’t possible to change assets’ filenames. ([#10981](https://github.com/craftcms/cms/issues/10981))
+- Fixed a JavaScript error that occurred when viewing an entry revision. ([#10990](https://github.com/craftcms/cms/issues/10990))
 
 ## 4.0.0-beta.4 - 2022-04-06
 
