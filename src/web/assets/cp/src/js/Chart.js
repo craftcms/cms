@@ -611,9 +611,15 @@ Craft.charts.Area = Craft.charts.BaseChart.extend({
     },
 
     getYMaxValue: function() {
-        return d3.max(this.dataTable.rows, function(d) {
+        let max = d3.max(this.dataTable.rows, function(d) {
             return d[1];
         });
+
+        if (max === 0) {
+            max = 1;
+        }
+
+        return max;
     },
 
     getYTickValues: function() {
