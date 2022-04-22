@@ -689,7 +689,7 @@ return [
     'History' => 'History',
     'Homepage' => 'דף הבית',
     'Horizontal Rule' => 'סרגל אופקי',
-    'Hostname' => 'Hostname',
+    'Hostname' => 'שם המחשב',
     'Hours' => 'שעות',
     'How field values will be formatted within element indexes.' => 'כיצד ערכי שדות יהיו מפורמטים בתוך אינדקסים של אלמנטים.',
     'How should Craft CMS send the emails?' => 'כיצד Craft CMS שולח את הודעות הדוא"ל?',
