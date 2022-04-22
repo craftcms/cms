@@ -410,6 +410,7 @@ return [
     'Create a new tag group' => '새 태그 그룹 생성',
     'Create a new user group' => '새 사용자 그룹 생성',
     'Create a new user' => 'Create a new user',
+    'Create a new volume…' => 'Create a new volume…',
     'Create a new {section} entry type' => '새 {section} 항목 유형 생성',
     'Create a new {type}' => '새 {type} 생성',
     'Create and add another' => '생성 후 다른 항목 추가',
