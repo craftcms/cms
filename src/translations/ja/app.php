@@ -294,7 +294,7 @@ return [
     'Composer was unable to remove the plugin.' => 'Composer でプラグインを削除することができませんでした。',
     'Composer was unable to revert the updates.' => 'Composer でアップデートを元に戻すことができませんでした。',
     'Compressed' => '圧縮済み',
-    'Condition {num, number}' => 'Condition {num, number}',
+    'Condition {num, number}' => '条件 {num, number}',
     'Configuration' => '構成',
     'Configure the category group’s site-specific settings.' => 'カテゴリグループのサイト固有の設定を行います。',
     'Congrats! You’re up to date.' => '最新の状態に更新されています。',
