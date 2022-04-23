@@ -1822,12 +1822,14 @@ JS,
         $this->populateNameAttributes($address);
 
         // All safe attributes
+        $safeAttributes = [];
         foreach ($address->safeAttributes() as $name) {
             $value = $this->request->getBodyParam($name);
             if ($value !== null) {
-                $address->$name = $value;
+                $safeAttributes[$name] = $value;
             }
         }
+        $address->setAttributes($safeAttributes);
 
         // Custom fields
         $fieldsLocation = $this->request->getParam('fieldsLocation') ?? 'fields';
