@@ -450,7 +450,7 @@ return [
     'Default Focal Point' => 'Ponto focal predefinido',
     'Default Instructions' => 'Instruções por padrão',
     'Default Status' => 'Estado predefinido',
-    'Default Upload Location' => 'Localização padrão do upload',
+    'Default Upload Location' => 'Localização padrão do carregamento',
     'Default User Group' => 'Grupo de usuário padrão',
     'Default Value' => 'Valor padrão',
     'Default Values' => 'Valores padrão',
