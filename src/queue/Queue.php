@@ -19,7 +19,6 @@ use craft\helpers\UrlHelper;
 use craft\i18n\Translation;
 use craft\queue\jobs\Proxy;
 use DateTime;
-use Yii;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
@@ -115,6 +114,12 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
      * @see _lock()
      */
     private bool $_locked = false;
+
+    /**
+     * @var string|null The application component ID
+     * @see componentId()
+     */
+    private ?string $_componentId = null;
 
     /**
      * @inheritdoc
@@ -265,6 +270,19 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
                 'id' => $id,
             ], [], false, $this->db);
         });
+
+        // If there's a proxy queue, send a new job to that as well
+        if ($this->proxyQueue) {
+            $job = (new Query())
+                ->select(['priority', 'delay', 'ttr'])
+                ->from($this->tableName)
+                ->where(['id' => $id])
+                ->one();
+
+            if ($job) {
+                $this->pushProxyJob($id, $job['priority'], $job['delay'], $job['ttr']);
+            }
+        }
     }
 
     /**
@@ -619,14 +637,27 @@ EOD;
 
         // If there's a proxy queue, send a job to that as well
         if ($this->proxyQueue) {
-            $proxyJob = new Proxy([
-                'queue' => $this->componentId(),
-                'jobId' => (int)$id,
-            ]);
-            QueueHelper::push($proxyJob, $priority, $delay, $ttr, $this->proxyQueue);
+            $this->pushProxyJob($id, $priority, $delay, $ttr);
         }
 
         return $id;
+    }
+
+    /**
+     * Pushes a new job to the proxy queue.
+     *
+     * @param string $id
+     * @param int|null $priority
+     * @param int|null $delay
+     * @param int|null $ttr
+     */
+    private function pushProxyJob(string $id, ?int $priority, ?int $delay, ?int $ttr)
+    {
+        $job = new Proxy([
+            'queue' => $this->componentId(),
+            'jobId' => $id,
+        ]);
+        QueueHelper::push($job, $priority, $delay, $ttr, $this->proxyQueue);
     }
 
     /**
@@ -635,12 +666,19 @@ EOD;
      */
     private function componentId(): string
     {
-        foreach (Yii::$app->getComponents(false) as $id => $component) {
-            if ($component === $this) {
-                return $id;
+        if (!isset($this->_componentId)) {
+            foreach (Craft::$app->getComponents(false) as $id => $component) {
+                if ($component === $this) {
+                    $this->_componentId = $id;
+                    break;
+                }
+            }
+            if (!isset($this->_componentId)) {
+                throw new InvalidConfigException('Queue must be an application component.');
             }
         }
-        throw new InvalidConfigException('Queue must be an application component.');
+
+        return $this->_componentId;
     }
 
     /**
