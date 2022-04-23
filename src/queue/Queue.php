@@ -68,10 +68,10 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     public string $tableName = Table::QUEUE;
 
     /**
-     * @var string The `channel` column value to the queue should use.
+     * @var string|null The `channel` column value to the queue should use. If null, the queue’s application component ID will be used.
      * @since 3.4.0
      */
-    public string $channel = 'queue';
+    public ?string $channel = null;
 
     /**
      * @inheritdoc
@@ -304,7 +304,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
                 'dateFailed' => null,
                 'error' => null,
             ], [
-                'channel' => $this->channel,
+                'channel' => $this->channel(),
                 'fail' => true,
             ], [], false, $this->db);
         });
@@ -329,7 +329,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     {
         $this->_lock(function() {
             Db::delete($this->tableName, [
-                'channel' => $this->channel,
+                'channel' => $this->channel(),
             ], [], $this->db);
         });
     }
@@ -624,7 +624,7 @@ EOD;
     protected function pushMessage($message, $ttr, $delay, $priority): string
     {
         Db::insert($this->tableName, [
-            'channel' => $this->channel,
+            'channel' => $this->channel(),
             'job' => $message,
             'description' => $this->_jobDescription,
             'timePushed' => time(),
@@ -770,7 +770,7 @@ EOD;
                         ->where([
                             'and',
                             [
-                                'channel' => $this->channel,
+                                'channel' => $this->channel(),
                                 'fail' => false,
                             ],
                             '[[timeUpdated]] < :time - [[ttr]]',
@@ -801,7 +801,18 @@ EOD;
     {
         return (new Query())
             ->from($this->tableName)
-            ->where(['channel' => $this->channel]);
+            ->where(['channel' => $this->channel()]);
+    }
+
+    /**
+     * Returns the `channel` value to use.
+     *
+     * @return string
+     * @throws InvalidConfigException
+     */
+    private function channel(): string
+    {
+        return $this->channel ?? $this->componentId();
     }
 
     /**
@@ -881,9 +892,12 @@ EOD;
      */
     private function _lock(callable $callback): void
     {
-        if ($acquireLock = !$this->_locked) {
-            if (!$this->mutex->acquire(__CLASS__ . "::$this->channel", $this->mutexTimeout)) {
-                throw new Exception("Could not acquire a mutex lock for the queue ($this->channel).");
+        $acquireLock = !$this->_locked;
+
+        if ($acquireLock) {
+            $channel = $this->channel();
+            if (!$this->mutex->acquire(__CLASS__ . "::$channel", $this->mutexTimeout)) {
+                throw new Exception("Could not acquire a mutex lock for the queue ($channel).");
             }
             $this->_locked = true;
         }
@@ -891,7 +905,7 @@ EOD;
         $callback();
 
         if ($acquireLock) {
-            $this->mutex->release(__CLASS__ . "::$this->channel");
+            $this->mutex->release(__CLASS__ . "::$channel");
             $this->_locked = false;
         }
     }
