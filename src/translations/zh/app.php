@@ -37,7 +37,7 @@ return [
     'Actions' => '操作',
     'Activate account' => '激活账户',
     'Activation email sent.' => '激活电子邮件已发送。',
-    'Active Installs' => 'Active Installs',
+    'Active Installs' => '主动安装',
     'Active Trials' => '主动试验',
     'Active trials added to the cart.' => '有效试用版已添加到购物车。',
     'Active' => '活动',
