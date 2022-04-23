@@ -123,7 +123,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
      * @inheritdoc
      * @param bool $repeat Whether to continue listening when the queue is empty.
      * @param int $timeout The number of seconds to wait between cycles
-     * @retrun int|null the exit code
+     * @return int|null the exit code
      */
     public function run(bool $repeat = false, int $timeout = 0): ?int
     {
@@ -146,7 +146,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
      * Listens to the queue and runs new jobs.
      *
      * @param int $timeout The number of seconds to wait between cycles
-     * @retrun int|null the exit code
+     * @return int|null the exit code
      * @deprecated in 3.6.11. Use [[run()]] instead.
      */
     public function listen(int $timeout = 0): ?int
@@ -155,7 +155,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     }
 
     /**
-     * @param string $id of a job message
+     * @param string $id The job ID.
      * @return bool
      */
     public function isFailed(string $id): bool

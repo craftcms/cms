@@ -86,7 +86,7 @@ class GraphqlController extends Controller
     /**
      * Lists all GraphQL schemas.
      *
-     * @retrun int
+     * @return int
      * @since 3.7.15
      */
     public function actionListSchemas(): int
