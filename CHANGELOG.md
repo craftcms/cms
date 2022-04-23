@@ -110,7 +110,6 @@
 - Fixed an error that occurred when attempting to delete a Matrix field that had a block type without any sub-fields. ([#10989](https://github.com/craftcms/cms/issues/10989))
 - Fixed a bug where it wasn’t possible to change assets’ filenames. ([#10981](https://github.com/craftcms/cms/issues/10981))
 - Fixed a JavaScript error that occurred when viewing an entry revision. ([#10990](https://github.com/craftcms/cms/issues/10990))
-- Fixed a bug where the Asset Indexes utility would display an empty modal once it was finished, if there weren’t any skipped or missing files to report. ([#10992](https://github.com/craftcms/cms/issues/10992))
 
 ## 4.0.0-beta.4 - 2022-04-06
 
