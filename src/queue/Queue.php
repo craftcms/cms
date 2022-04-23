@@ -13,17 +13,22 @@ use craft\db\Table;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\Json;
+use craft\helpers\Queue as QueueHelper;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\i18n\Translation;
+use craft\queue\jobs\Proxy;
 use DateTime;
+use Yii;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
+use yii\base\InvalidConfigException;
 use yii\db\Expression;
 use yii\db\Query;
 use yii\di\Instance;
 use yii\mutex\Mutex;
 use yii\queue\ExecEvent;
+use yii\queue\Queue as BaseQueue;
 use yii\web\Response;
 
 /**
@@ -75,6 +80,17 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     public $commandClass = Command::class;
 
     /**
+     * @var BaseQueue|array|string|null An external queue that proxy jobs should be sent to.
+     *
+     * If this is set, [[push()]] will send [[Proxy]] jobs to it that reference the internal job IDs.
+     * When executed, those jobs will cause the referenced internal jobs to be executed, unless they’ve
+     * already been run directly.
+     *
+     * @since 4.0.0
+     */
+    public BaseQueue|array|string|null $proxyQueue = null;
+
+    /**
      * @var string|null The description of the job being pushed into the queue
      */
     private ?string $_jobDescription = null;
@@ -110,6 +126,10 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
         $this->db = Instance::ensure($this->db, Connection::class);
         $this->mutex = Instance::ensure($this->mutex, Mutex::class);
 
+        if (isset($this->proxyQueue)) {
+            $this->proxyQueue = Instance::ensure($this->proxyQueue, BaseQueue::class);
+        }
+
         $this->on(self::EVENT_BEFORE_EXEC, function(ExecEvent $e) {
             $this->_executingJobId = $e->id;
         });
@@ -129,17 +149,36 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     {
         return $this->runWorker(function(callable $canContinue) use ($repeat, $timeout) {
             while ($canContinue()) {
-                if ($payload = $this->reserve()) {
-                    if ($this->handleMessage($payload['id'], $payload['job'], $payload['ttr'], $payload['attempt'])) {
-                        $this->release($payload['id']);
+                if (!$this->executeJob()) {
+                    if (!$repeat) {
+                        break;
+                    } elseif ($timeout) {
+                        sleep($timeout);
                     }
-                } elseif (!$repeat) {
-                    break;
-                } elseif ($timeout) {
-                    sleep($timeout);
                 }
             }
         });
+    }
+
+    /**
+     * Executes a single job.
+     *
+     * @param string|null $id The job ID, if a specific job should be run
+     * @return bool Whether a job was found
+     */
+    public function executeJob(?string $id = null): bool
+    {
+        $payload = $this->reserve($id);
+
+        if (!$payload) {
+            return false;
+        }
+
+        if ($this->handleMessage($payload['id'], $payload['job'], $payload['ttr'], $payload['attempt'])) {
+            $this->release($payload['id']);
+        }
+
+        return true;
     }
 
     /**
@@ -562,6 +601,7 @@ EOD;
 
     /**
      * @inheritdoc
+     * @throws InvalidConfigException
      */
     protected function pushMessage($message, $ttr, $delay, $priority): string
     {
@@ -575,30 +615,61 @@ EOD;
             'priority' => $priority ?: 1024,
         ], $this->db);
 
-        return $this->db->getLastInsertID($this->tableName);
+        $id = $this->db->getLastInsertID($this->tableName);
+
+        // If there's a proxy queue, send a job to that as well
+        if ($this->proxyQueue) {
+            $proxyJob = new Proxy([
+                'queue' => $this->componentId(),
+                'jobId' => (int)$id,
+            ]);
+            QueueHelper::push($proxyJob, $priority, $delay, $ttr, $this->proxyQueue);
+        }
+
+        return $id;
     }
 
     /**
+     * @return string The component ID
+     * @throws InvalidConfigException
+     */
+    private function componentId(): string
+    {
+        foreach (Yii::$app->getComponents(false) as $id => $component) {
+            if ($component === $this) {
+                return $id;
+            }
+        }
+        throw new InvalidConfigException('Queue must be an application component.');
+    }
+
+    /**
+     * @param string|null $id The job ID
      * @return array|null The payload, or null if there aren't any jobs to reserve
      * @throws Exception in case it hasn't waited the lock
      */
-    protected function reserve(): ?array
+    protected function reserve(?string $id = null): ?array
     {
         $payload = null;
 
-        $this->_lock(function() use (&$payload) {
+        $this->_lock(function() use (&$payload, $id) {
             // Move expired messages into waiting list
             $this->_moveExpired();
 
             // Reserve one message
             /** @var array|null $payload */
-            $payload = $this->db->usePrimary(function() {
-                return $this->_createJobQuery()
+            $payload = $this->db->usePrimary(function() use ($id) {
+                $query = $this->_createJobQuery()
                     ->andWhere(['fail' => false, 'timeUpdated' => null])
                     ->andWhere('[[timePushed]] + [[delay]] <= :time', ['time' => time()])
                     ->orderBy(['priority' => SORT_ASC, 'id' => SORT_ASC])
-                    ->limit(1)
-                    ->one($this->db) ?: null;
+                    ->limit(1);
+
+                if ($id) {
+                    $query->andWhere(['id' => $id]);
+                }
+
+                return $query->one($this->db) ?: null;
             });
 
             if (is_array($payload)) {
