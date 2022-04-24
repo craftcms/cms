@@ -26,7 +26,7 @@ return [
     'Access {plugin}' => '{plugin} hozzáférés',
     'Access' => 'Hozzáférés',
     'Accessibility' => 'Elérhetőség',
-    'Account Type' => 'Account Type',
+    'Account Type' => 'Fiók típusa',
     'Account has not been activated.' => 'A felhasználói fiók nincs aktiválva.',
     'Account locked. Try again in {time}.' => 'Felhasználói fiók lezárva. Próbáld újra {time} múlva.',
     'Account locked.' => 'Felhasználói fiók lezárva.',
