@@ -60,6 +60,7 @@
 - When an invalid filesystem handle is set on a volume, instead of throwing an exception, an error is logged an an instance of `MissingFs` is returned.
 - `craft\helpers\Cp::elementHtml()` now has an `$autoReload` argument.
 - `Craft.broadcastChannel` has been split up into two broadcast channels: `Craft.broadcaster` and `Craft.messageReceiver`.
+- Craft will now parse the [url](https://craftcms.com/docs/3.x/config/db-settings.html#url) database config setting for querystring parameters and append them to the DSN.
 
 ### Deprecated
 - Deprecated the `autosaveDrafts` config setting.
