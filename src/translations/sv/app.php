@@ -454,7 +454,7 @@ return [
     'Delete other authors’ entries' => 'Radera andra författares inlägg',
     'Delete permanently' => 'Radera permanent',
     'Delete photo' => 'Radera foto',
-    'Delete row {index}' => 'Delete row {index}',
+    'Delete row {index}' => 'Ta bort rad {index}',
     'Delete selected group' => 'Radera vald grupp',
     'Delete tags from the “{tagGroup}” tag group' => 'Radera taggar från taggruppen “{tagGroup}”',
     'Delete their content' => 'Ta bort deras innehåll',
