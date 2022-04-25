@@ -993,7 +993,7 @@ return [
     'Notes about your changes' => 'نکاتی درباره تغییرات شما',
     'Notes' => 'یادداشت ها',
     'Nothing selected.' => 'چیزی انتخاب نشده است.',
-    'Nothing to index.' => 'چیزی برای فهرست‌شدن نیست.',
+    'Nothing to index.' => 'چیزی برای فهرست‌شدن موجود نیست.',
     'Nothing to update.' => 'چیزی برای بروزرسانی موجود نیست.',
     'Notice' => 'Notice',
     'Number' => 'عدد',
