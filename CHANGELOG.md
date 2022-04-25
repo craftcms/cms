@@ -60,6 +60,7 @@
 - A selected volume for user photo storage if no longer displayed if no volume has been set.
 - The user photo volume can now only be set to a volume that has a public transform filesystem configured.
 - When an invalid filesystem handle is set on a volume, instead of throwing an exception, an error is logged an an instance of `MissingFs` is returned.
+- `craft\base\Element::setFieldValue()` now unsets any previously-eager-loaded elements for the field. ([#11003](https://github.com/craftcms/cms/discussions/11003))
 - `craft\helpers\Cp::elementHtml()` now has an `$autoReload` argument.
 - `craft\helpers\Queue::push()` now has a `$queue` argument.
 - `craft\queue\Queue::$channel` is now set automatically based on the queue’s application component ID.
