@@ -1643,7 +1643,7 @@ JS;
         return Html::tag('img', '', [
             'sizes' => "{$thumbSizes[0][0]}px",
             'srcset' => implode(', ', $srcsets),
-            'alt' => $this->title,
+            'alt' => $this->alt ?? $this->title,
         ]);
     }
 

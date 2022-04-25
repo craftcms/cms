@@ -472,12 +472,12 @@ Craft.Preview = Garnish.Base.extend(
       const $mobileLabel = $('<label/>', {
         for: 'device-phone',
         class: 'btn lp-device-type__label lp-device-type__label--phone',
-        title: this._getDeviceTypeTranslation('mobile'),
+        title: this._getDeviceTypeTranslation('phone'),
       }).appendTo($mobileWrapper);
 
       $('<span/>', {
         class: 'visually-hidden',
-        text: this._getDeviceTypeTranslation('mobile'),
+        text: this._getDeviceTypeTranslation('phone'),
       }).appendTo($mobileLabel);
     },
 
