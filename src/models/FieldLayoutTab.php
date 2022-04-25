@@ -193,15 +193,11 @@ class FieldLayoutTab extends FieldLayoutComponent
     /**
      * Returns the field layout tab’s config.
      *
-     * @return array|null
+     * @return array
      * @since 3.5.0
      */
-    public function getConfig(): ?array
+    public function getConfig(): array
     {
-        if (empty($this->_elements)) {
-            return null;
-        }
-
         if (!isset($this->uid)) {
             $this->uid = StringHelper::UUID();
         }

@@ -25,6 +25,8 @@
 - Added `craft\helpers\Db::escapeCommas()`.
 - Added `craft\log\ContextProcessor`.
 - Added `craft\log\MessageProcessor`.
+- Added `craft\queue\Queue::$proxyQueue`, which can be set to another queue configuration that all jobs should be sent to as proxies. ([#10999](https://github.com/craftcms/cms/pull/10999))
+- Added `craft\queue\jobs\Proxy`.
 - Added `craft\services\Fs::EVENT_RENAME_FILESYSTEM`.
 - Added `craft\services\Volumes::getUserPhotoVolume()`.
 - Added `craft\web\CpScreenResponseBehavior::$formAttributes`. ([#10924](https://github.com/craftcms/cms/issues/10924))
@@ -58,7 +60,10 @@
 - A selected volume for user photo storage if no longer displayed if no volume has been set.
 - The user photo volume can now only be set to a volume that has a public transform filesystem configured.
 - When an invalid filesystem handle is set on a volume, instead of throwing an exception, an error is logged an an instance of `MissingFs` is returned.
+- `craft\base\Element::setFieldValue()` now unsets any previously-eager-loaded elements for the field. ([#11003](https://github.com/craftcms/cms/discussions/11003))
 - `craft\helpers\Cp::elementHtml()` now has an `$autoReload` argument.
+- `craft\helpers\Queue::push()` now has a `$queue` argument.
+- `craft\queue\Queue::$channel` is now set automatically based on the queue’s application component ID.
 - `Craft.broadcastChannel` has been split up into two broadcast channels: `Craft.broadcaster` and `Craft.messageReceiver`.
 - Craft will now parse the [url](https://craftcms.com/docs/3.x/config/db-settings.html#url) database config setting for querystring parameters and append them to the DSN.
 
@@ -114,6 +119,7 @@
 - Fixed a bug where the Asset Indexes utility would display an empty modal once it was finished, if there weren’t any skipped or missing files to report. ([#10992](https://github.com/craftcms/cms/issues/10992))
 - Fixed an error that could occur when saving an address via the `users/save-address` controller action, if the post data included any date attributes. ([#11001](https://github.com/craftcms/cms/issues/11001))
 - Fixed a bug where it wasn’t possible to modify dropdown options within Table fields. ([#11002](https://github.com/craftcms/cms/issues/11002))
+- Fixed a bug where asset transform URLs could contain backslashes on Windows. ([#11004](https://github.com/craftcms/cms/issues/11004))
 
 ## 4.0.0-beta.4 - 2022-04-06
 

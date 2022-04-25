@@ -3670,6 +3670,10 @@ abstract class Element extends Component implements ElementInterface
         if ($this->_initialized) {
             $this->_dirtyFields[$fieldHandle] = true;
         }
+
+        // If the field value was previously eager-loaded, undo that
+        unset($this->_eagerLoadedElements[$fieldHandle]);
+        unset($this->_eagerLoadedElementCounts[$fieldHandle]);
     }
 
     /**

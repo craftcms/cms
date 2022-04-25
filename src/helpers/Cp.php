@@ -1372,7 +1372,10 @@ JS, [
         $tabs = array_filter($fieldLayout->getTabs(), fn(FieldLayoutTab $tab) => !empty($tab->getElements()));
 
         if (!$config['customizableTabs']) {
-            $tab = array_shift($tabs) ?? new FieldLayoutTab(['layout' => $fieldLayout]);
+            $tab = array_shift($tabs) ?? new FieldLayoutTab([
+                    'uid' => StringHelper::UUID(),
+                    'layout' => $fieldLayout,
+                ]);
             $tab->name = $config['pretendTabName'] ?? Craft::t('app', 'Content');
 
             // Any extra tabs?
@@ -1425,8 +1428,12 @@ JS;
         self::_setLayoutOnElements($availableNativeFields, $fieldLayout);
         self::_setLayoutOnElements($availableUiElements, $fieldLayout);
 
-        $fieldLayoutConfig = $fieldLayout->getConfig();
-        $fieldLayoutConfig['uid'] = $fieldLayout->uid;
+        // Don't call FieldLayout::getConfig() here because we want to include *all* tabs, not just non-empty ones
+        $fieldLayoutConfig = [
+            'uid' => $fieldLayout->uid,
+            'tabs' => array_map(fn(FieldLayoutTab $tab) => $tab->getConfig(), $tabs),
+        ];
+
         if ($fieldLayout->id) {
             $fieldLayoutConfig['id'] = $fieldLayout->id;
         }
