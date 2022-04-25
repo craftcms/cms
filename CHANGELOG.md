@@ -25,6 +25,8 @@
 - Added `craft\helpers\Db::escapeCommas()`.
 - Added `craft\log\ContextProcessor`.
 - Added `craft\log\MessageProcessor`.
+- Added `craft\queue\Queue::$proxyQueue`, which can be set to another queue configuration that all jobs should be sent to as proxies. ([#10999](https://github.com/craftcms/cms/pull/10999))
+- Added `craft\queue\jobs\Proxy`.
 - Added `craft\services\Fs::EVENT_RENAME_FILESYSTEM`.
 - Added `craft\services\Volumes::getUserPhotoVolume()`.
 - Added `craft\web\CpScreenResponseBehavior::$formAttributes`. ([#10924](https://github.com/craftcms/cms/issues/10924))
@@ -59,6 +61,8 @@
 - The user photo volume can now only be set to a volume that has a public transform filesystem configured.
 - When an invalid filesystem handle is set on a volume, instead of throwing an exception, an error is logged an an instance of `MissingFs` is returned.
 - `craft\helpers\Cp::elementHtml()` now has an `$autoReload` argument.
+- `craft\helpers\Queue::push()` now has a `$queue` argument.
+- `craft\queue\Queue::$channel` is now set automatically based on the queue’s application component ID.
 - `Craft.broadcastChannel` has been split up into two broadcast channels: `Craft.broadcaster` and `Craft.messageReceiver`.
 
 ### Deprecated
