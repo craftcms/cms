@@ -1661,7 +1661,7 @@ return [
     'Whether to show files that the user doesn’t have permission to view, per the “View files uploaded by other users” permission.' => 'Weergeven van bestanden waarvoor de gebruiker niet is gemachtigd om te bekijken volgens de machtiging "Bestanden geüpload door andere gebruikers weergeven".',
     'Whether to show volumes that the user doesn’t have permission to view.' => 'Weergeven van volumes waarvoor de gebruiker niet is gemachtigd om deze te bekijken.',
     'Whether validation errors on the related {type} should prevent the source element from being saved.' => 'Indien ingeschakeld, wordt het bronelement niet opgeslagen bij validatiefouten voor de betreffende {type}.',
-    'Whether {type} elements should be allowed to relate to themselves.' => 'Of {type} elementen tot zichzelf gerelateerd mogen zijn.',
+    'Whether {type} elements should be allowed to relate to themselves.' => 'Of {type}-elementen aan zichzelf mogen zijn gerelateerd.',
     'Which fields should be visible in the widget?' => 'Welke velden moeten zichtbaar zijn in de widget?',
     'Which group should this field be displayed in?' => 'In welke groep moet dit veld worden weergegeven?',
     'Which group should this site belong to?' => 'Tot welke groep behoort deze site?',
