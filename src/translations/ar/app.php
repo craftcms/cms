@@ -1155,7 +1155,7 @@ return [
     'Route deleted.' => 'تم حذف المسار.',
     'Routes' => 'المسارات',
     'Row actions' => 'إجراءات الصف',
-    'Row could not be added. Maximum number of rows reached.' => 'Row could not be added. Maximum number of rows reached.',
+    'Row could not be added. Maximum number of rows reached.' => 'لا يمكن إضافة الصف. تم بلوغ الحد الأقصى لعدد الصفوف.',
     'Row could not be deleted. Minimum number of rows reached.' => 'لا يمكن حذف الصف. تم بلوغ الحد الأدنى لعدد الصفوف.',
     'SSL' => 'SSL',
     'SVG file recommended. The logo will be displayed at {size} wide.' => 'يوصى باستخدام ملف SVG. سيتم عرض الشعار بعرض {size}.',
