@@ -690,7 +690,7 @@ return [
     'History' => 'History',
     'Homepage' => 'Forside',
     'Horizontal Rule' => 'Horisontal regel',
-    'Hostname' => 'Hostname',
+    'Hostname' => 'Værtsnavn',
     'Hours' => 'Timer',
     'How field values will be formatted within element indexes.' => 'Hvordan feltværdier formateres inden i elementindekser.',
     'How should Craft CMS send the emails?' => 'Hvordan skal Craft CMS sende e-mail?',
