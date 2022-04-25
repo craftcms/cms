@@ -1156,7 +1156,7 @@ return [
     'Routes' => 'Útvonalak',
     'Row actions' => 'Sorműveletek',
     'Row could not be added. Maximum number of rows reached.' => 'A sor hozzáadása sikertelen volt. Elérte a sorok maximálás számát.',
-    'Row could not be deleted. Minimum number of rows reached.' => 'A sor törlése sikertelen volt. Elérte a sorok minimálás számát.',
+    'Row could not be deleted. Minimum number of rows reached.' => 'A sor törlése sikertelen volt. Elérte a sorok minimális számát.',
     'SSL' => 'SSL',
     'SVG file recommended. The logo will be displayed at {size} wide.' => 'SVG fájl javasolt.  A logó {size} szélesen fog megjelenni.',
     'Same as language' => 'Ugyanaz, mint a nyelv',
