@@ -159,8 +159,7 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend(
   </div>
   <div class="fld-tabcontent"></div>
 </div>
-`)
-        .appendTo(this.$tabContainer);
+`).appendTo(this.$tabContainer);
 
       this.tabGrid.addItems($tab);
       this.tabDrag.addItems($tab);
