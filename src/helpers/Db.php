@@ -1413,7 +1413,7 @@ class Db
 
         // Append any query params to the DSN
         if (isset($parsed['query'])) {
-            $config['dsn'] .= ';'.$parsed['query'];
+            $config['dsn'] .= ';' . $parsed['query'];
         }
 
         return $config;
