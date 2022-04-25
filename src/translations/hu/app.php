@@ -689,7 +689,7 @@ return [
     'History' => 'History',
     'Homepage' => 'Főoldal',
     'Horizontal Rule' => 'Vízszintes vonal',
-    'Hostname' => 'Hostname',
+    'Hostname' => 'Állomásnév',
     'Hours' => 'Óra',
     'How field values will be formatted within element indexes.' => 'A mező értékeinek formázási módja az elemek indexein belül.',
     'How should Craft CMS send the emails?' => 'Hogyan küldjön e-mailt a Craft CMS?',
