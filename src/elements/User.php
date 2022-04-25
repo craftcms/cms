@@ -1266,7 +1266,7 @@ class User extends Element implements IdentityInterface
      */
     public function getThumbAlt(): ?string
     {
-        return $this->getPhoto()?->alt;
+        return $this->getPhoto()?->alt ?? $this->getName();
     }
 
     /**
