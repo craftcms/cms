@@ -3,15 +3,19 @@
         <div class="btn" id="toggle-focal">
         </div>
     </div>
-    <img id="preview-image"
-         src="{{ url }}"
-         width="{{ asset.width }}"
-         height="{{ asset.height }}"
-         data-uid="{{ asset.uid }}"
-         data-focal="{{ asset.focalPoint|join(';') }}"
-         data-maxWidth="{{ asset.width }}"
-         data-maxHeight="{{ asset.height }}"
-         onload="resizePreviewImage()" />
+    {{ tag('img', {
+        src: url,
+        width: asset.width,
+        height: asset.height,
+        alt: asset.alt,
+        data: {
+            uid: asset.uid,
+            focal: asset.focalPoint|join(';'),
+            maxWidth: asset.width,
+            maxHeight: asset.height,
+        },
+        onload: 'resizePreviewImage()',
+    }) }}
 </div>
 
 {% do view.registerAssetBundle("craft\\web\\assets\\focalpoint\\FocalPointAsset") %}

@@ -1264,6 +1264,14 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
+    public function getThumbAlt(): ?string
+    {
+        return $this->getPhoto()?->alt;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getHasRoundedThumb(): bool
     {
         return true;

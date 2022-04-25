@@ -117,7 +117,7 @@
             height: 30,
             sizes: '30px',
             srcset: "#{currentUser.getThumbUrl(30)} 30w, #{currentUser.getThumbUrl(60)} 60w",
-            alt: currentUser.getName(),
+            alt: currentUser.getThumbAlt() ?? currentUser.getName(),
         }) }}
     </div>
 {% endset %}
