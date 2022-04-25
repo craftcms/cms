@@ -160,7 +160,6 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend(
   <div class="fld-tabcontent"></div>
 </div>
 `)
-        .data('config', {name: name, elements: []})
         .appendTo(this.$tabContainer);
 
       this.tabGrid.addItems($tab);
@@ -259,7 +258,11 @@ Craft.FieldLayoutDesigner.Tab = Garnish.Base.extend({
     // New tab?
     if (!this.uid) {
       this.uid = Craft.uuid();
-      this.config = $.extend(this.$container.data('config'), {uid: this.uid});
+      this.config = {
+        uid: this.uid,
+        name: this.$container.find('.tabs .tab span').text(),
+        elements: [],
+      };
       this.$container.data(
         'settings-namespace',
         this.designer.$container
@@ -462,17 +465,23 @@ Craft.FieldLayoutDesigner.Tab = Garnish.Base.extend({
   },
 
   get config() {
-    const config =
-      this.designer.config.tabs.find((c) => c.uid === this.uid) || {};
-    if (!config.elements) {
-      config.elements = [];
+    if (!this.uid) {
+      throw 'Tab is missing its UID';
+    }
+    let config = this.designer.config.tabs.find((c) => c.uid === this.uid);
+    if (!config) {
+      config = {
+        uid: this.uid,
+        elements: [],
+      };
+      this.config = config;
     }
     return config;
   },
 
   set config(config) {
     // Is the name changing?
-    if (this.config && config.name !== this.config.name) {
+    if (config.name && config.name !== this.config.name) {
       this.$container.find('.tabs .tab span').text(config.name);
     }
 
@@ -725,7 +734,17 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
   },
 
   get config() {
-    return this.tab.config.elements.find((c) => c.uid === this.uid) || {};
+    if (!this.uid) {
+      throw 'Tab is missing its UID';
+    }
+    let config = this.tab.config.elements.find((c) => c.uid === this.uid);
+    if (!config) {
+      config = {
+        uid: this.uid,
+      };
+      this.config = config;
+    }
+    return config;
   },
 
   set config(config) {

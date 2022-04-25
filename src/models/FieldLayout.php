@@ -464,7 +464,7 @@ class FieldLayout extends Model
 
         foreach ($this->getTabs() as $tab) {
             $tabConfig = $tab->getConfig();
-            if ($tabConfig) {
+            if (!empty($tabConfig['elements'])) {
                 $tabConfigs[] = $tabConfig;
             }
         }
