@@ -1115,6 +1115,11 @@ class Db
 
         $config['dsn'] = "{$driver}:" . implode(';', $dsnParams);
 
+        if (isset($parsed['query'])) {
+            parse_str($parsed['query'], $queryParams);
+            $config['attributes'] = $queryParams;
+        }
+
         return $config;
     }
 

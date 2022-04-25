@@ -15,6 +15,7 @@
 - Improved dropdown menu styling for Firefox.
 - Improved GraphQL performance.
 - `{% nav %}` tags now skips elements whose immediate parent weren’t included in the output. ([#10925](https://github.com/craftcms/cms/issues/10925))
+- Craft will now parse the [url](https://craftcms.com/docs/3.x/config/db-settings.html#url) database config setting for querystring parameters and pass them into PDO.
 
 ### Fixed
 - Fixed a bug where Matrix blocks could lose their Date field values, if multiple Date fields had with the same handle across different block types. ([#10884](https://github.com/craftcms/cms/issues/10884))
