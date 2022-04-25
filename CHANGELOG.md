@@ -47,6 +47,7 @@
 - It’s now possible to create volumes directly from the User Settings page.
 - Element conditions stored in the project config can now contain relational field rule types which specify a related element via its ID, possibly identified by an environment variable. ([#10554](https://github.com/craftcms/cms/pull/10554))
 - Database config settings can now be overridden by like-named environment variables with a `CRAFT_DB_` prefix, rather than `DB_`. ([#10894](https://github.com/craftcms/cms/pull/10894))
+- The `url` database connection setting now supports query string parameters.
 - Element queries’ `title` params no longer treat values with commas as arrays. ([#10891](https://github.com/craftcms/cms/issues/10891))
 - User queries’ `firstName`, `lastName`, and `fullName` params no longer treat values with commas as arrays. ([#10891](https://github.com/craftcms/cms/issues/10891))
 - Improved address card styling. ([#10896](https://github.com/craftcms/cms/pull/10896))
@@ -65,7 +66,6 @@
 - `craft\helpers\Queue::push()` now has a `$queue` argument.
 - `craft\queue\Queue::$channel` is now set automatically based on the queue’s application component ID.
 - `Craft.broadcastChannel` has been split up into two broadcast channels: `Craft.broadcaster` and `Craft.messageReceiver`.
-- Craft will now parse the [url](https://craftcms.com/docs/3.x/config/db-settings.html#url) database config setting for querystring parameters and append them to the DSN.
 
 ### Deprecated
 - Deprecated the `autosaveDrafts` config setting.
