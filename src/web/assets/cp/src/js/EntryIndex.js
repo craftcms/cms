@@ -238,6 +238,9 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
           this.selectSourceByKey(sectionSourceKey);
         }
 
+        this.clearSearch();
+        this.setSortAttribute('dateCreated');
+        this.setSortDirection('desc');
         this.selectElementAfterUpdate(response.id);
         this.updateElements();
       },
