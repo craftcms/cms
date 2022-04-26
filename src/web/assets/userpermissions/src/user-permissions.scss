@@ -1,5 +1,5 @@
 @charset "UTF-8";
-@import "@craftcms/sass/mixins";
+@import '@craftcms/sass/mixins';
 
 .user-permissions {
   position: relative;
@@ -26,7 +26,7 @@
 }
 
 .user-permissions input.checkbox:disabled + label {
-  opacity: .5;
+  opacity: 0.5;
 }
 
 .user-permissions input.checkbox:disabled + label:before,

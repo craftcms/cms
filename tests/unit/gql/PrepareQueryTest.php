@@ -27,6 +27,7 @@ use craft\records\Structure;
 use craft\records\TagGroup;
 use craft\records\UserGroup;
 use craft\records\Volume;
+use craft\volumes\Local;
 
 class PrepareQueryTest extends Unit
 {
@@ -35,13 +36,22 @@ class PrepareQueryTest extends Unit
      */
     protected $tester;
 
+    /**
+     * @var Volume
+     */
     private $_volume;
     private $_structure;
+    /**
+     * @var CategoryGroup
+     */
     private $_categoryGroup;
     private $_section;
     private $_entryType;
     private $_element;
     private $_globalSet;
+    /**
+     * @var TagGroup
+     */
     private $_tagGroup;
     private $_userGroup;
 
@@ -254,6 +264,23 @@ class PrepareQueryTest extends Unit
         ]);
 
         $this->_volume->save();
+
+        $volumesService = Craft::$app->getVolumes();
+
+        $this->tester->mockCraftMethods('volumes', [
+            'getVolumeByUid' => function($uid) use ($volumesService) {
+                if ($uid === self::VOLUME_UID) {
+                    return new Local([
+                        'id' => $this->_volume->id,
+                        'uid' => self::VOLUME_UID,
+                        'name' => $this->_volume->name,
+                        'handle' => $this->_volume->handle,
+                        'hasUrls' => false,
+                    ]);
+                }
+                return $volumesService->getVolumeByUid($uid);
+            },
+        ]);
     }
 
     private function _setupCategories()
@@ -269,6 +296,23 @@ class PrepareQueryTest extends Unit
         ]);
 
         $this->_categoryGroup->save();
+
+        $categoriesService = Craft::$app->getCategories();
+
+        $this->tester->mockCraftMethods('categories', [
+            'getGroupByUid' => function($uid) use ($categoriesService) {
+                if ($uid === self::CATEGORY_GROUP_UID) {
+                    return new \craft\models\CategoryGroup([
+                        'id' => $this->_categoryGroup->id,
+                        'uid' => self::CATEGORY_GROUP_UID,
+                        'name' => $this->_categoryGroup->name,
+                        'handle' => $this->_categoryGroup->handle,
+                        'structureId' => $this->_structure->id,
+                    ]);
+                }
+                return $categoriesService->getGroupByUid($uid);
+            },
+        ]);
     }
 
     private function _setupEntries()
@@ -320,6 +364,22 @@ class PrepareQueryTest extends Unit
         ]);
 
         $this->_tagGroup->save();
+
+        $tagsService = Craft::$app->getTags();
+
+        $this->tester->mockCraftMethods('tags', [
+            'getTagGroupByUid' => function($uid) use ($tagsService) {
+                if ($uid === self::TAG_GROUP_UID) {
+                    return new \craft\models\TagGroup([
+                        'id' => $this->_tagGroup->id,
+                        'uid' => self::TAG_GROUP_UID,
+                        'name' => $this->_tagGroup->name,
+                        'handle' => $this->_tagGroup->handle,
+                    ]);
+                }
+                return $tagsService->getTagGroupByUid($uid);
+            },
+        ]);
     }
 
     private function _setupUsers()

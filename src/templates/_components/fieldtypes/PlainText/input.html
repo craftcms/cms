@@ -7,7 +7,7 @@
 ]|filter %}
 
 {% set config = {
-    id: id,
+    id: id ?? field.getInputId(),
     describedBy: field.describedBy,
     name: name,
     value: value,

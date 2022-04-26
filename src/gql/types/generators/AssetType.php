@@ -18,7 +18,6 @@ use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
 use craft\gql\TypeManager;
 use craft\gql\types\elements\Asset;
-use craft\helpers\Gql;
 use craft\helpers\Gql as GqlHelper;
 
 /**

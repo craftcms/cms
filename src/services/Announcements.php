@@ -10,7 +10,6 @@ namespace craft\services;
 use Craft;
 use craft\db\Query;
 use craft\db\Table;
-use craft\events\AnnouncementEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;

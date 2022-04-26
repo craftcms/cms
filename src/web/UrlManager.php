@@ -39,7 +39,7 @@ class UrlManager extends \yii\web\UrlManager
      * use craft\web\UrlManager;
      * use yii\base\Event;
      * Event::on(UrlManager::class, UrlManager::EVENT_REGISTER_CP_URL_RULES, function(RegisterUrlRulesEvent $e) {
-     *     $e->rules['foo'] => 'bar/baz';
+     *     $e->rules['foo'] = 'bar/baz';
      * });
      * ```
      */
@@ -60,7 +60,7 @@ class UrlManager extends \yii\web\UrlManager
      * use craft\web\UrlManager;
      * use yii\base\Event;
      * Event::on(UrlManager::class, UrlManager::EVENT_REGISTER_SITE_URL_RULES, function(RegisterUrlRulesEvent $e) {
-     *     $e->rules['foo'] => 'bar/baz';
+     *     $e->rules['foo'] = 'bar/baz';
      * });
      * ```
      */
@@ -472,7 +472,7 @@ class UrlManager extends \yii\web\UrlManager
         return [
             'redirect',
             [
-                'url' => $redirectUri,
+                'url' => Craft::$app->getSecurity()->hashData($redirectUri),
                 'statusCode' => 302,
             ],
         ];

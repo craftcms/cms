@@ -12,7 +12,6 @@ use craft\elements\Tag as TagElement;
 use craft\gql\base\ElementMutationArguments;
 use craft\gql\base\ElementMutationResolver;
 use craft\gql\base\Mutation;
-use craft\gql\resolvers\mutations\DeleteTag;
 use craft\gql\resolvers\mutations\Tag as TagResolver;
 use craft\gql\types\generators\TagType;
 use craft\helpers\Gql;

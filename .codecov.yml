@@ -1,7 +1,7 @@
 codecov:
   require_ci_to_pass: yes
 coverage:
-  range: "20...100"
+  range: '20...100'
   round: down
   precision: 2
   status:
@@ -9,9 +9,9 @@ coverage:
       default:
         threshold: .1
   notify:
-      slack:
-        default:
-          url: "secret:M/dQaxt1nCzNG8JinXO5SmKdYoqErol7pzCV4Xv194cltAc0qu9WEezFP8Gnwkdg4eXfdxw2M0SbjcE8R8QB2B9n/YUHdXPdWsnhxa/HuIwc4kbvcaHyM7fU/lh7eWgYs4O5K3z/YnrirkmqNlzcgUuRmBOajf6MocPp4zd3sz8="
+    slack:
+      default:
+        url: 'secret:M/dQaxt1nCzNG8JinXO5SmKdYoqErol7pzCV4Xv194cltAc0qu9WEezFP8Gnwkdg4eXfdxw2M0SbjcE8R8QB2B9n/YUHdXPdWsnhxa/HuIwc4kbvcaHyM7fU/lh7eWgYs4O5K3z/YnrirkmqNlzcgUuRmBOajf6MocPp4zd3sz8='
 parsers:
   gcov:
     branch_detection:
@@ -23,17 +23,17 @@ comment: off
 github_checks:
   annotations: false
 ignore:
-  - "src/web/assets"
-  - "src/test/internal"
-  - "src/config"
-  - "src/icons"
-  - "src/test/internal"
-  - "src/migrations"
-  - "src/templates"
-  - "src/translations"
-  - "src/views"
-  - "src/web/assets"
-  - "bootstrap"
-  - "lib"
-  - "tests"
-  - "vendor"
+  - 'src/web/assets'
+  - 'src/test/internal'
+  - 'src/config'
+  - 'src/icons'
+  - 'src/test/internal'
+  - 'src/migrations'
+  - 'src/templates'
+  - 'src/translations'
+  - 'src/views'
+  - 'src/web/assets'
+  - 'bootstrap'
+  - 'lib'
+  - 'tests'
+  - 'vendor'

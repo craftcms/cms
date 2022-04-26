@@ -283,7 +283,8 @@ class FieldLayoutTab extends Model
      */
     public function getHtmlId(): string
     {
-        return 'tab-' . StringHelper::toKebabCase($this->name);
+        // Use two dashes here in case a tab name starts with “Tab”
+        return 'tab--' . StringHelper::toKebabCase($this->name);
     }
 
     /**

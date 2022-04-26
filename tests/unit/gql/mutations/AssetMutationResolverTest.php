@@ -8,14 +8,10 @@
 namespace craftunit\gql\mutations;
 
 use craft\base\Element;
-use craft\elements\db\EntryQuery;
-use craft\elements\Entry;
 use craft\gql\resolvers\mutations\Asset;
-use craft\gql\resolvers\mutations\Entry as EntryMutationResolver;
 use craft\models\VolumeFolder;
 use craft\records\Volume;
 use craft\services\Assets;
-use craft\services\Elements;
 use craft\test\TestCase;
 use GraphQL\Type\Definition\ResolveInfo;
 

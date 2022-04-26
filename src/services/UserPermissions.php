@@ -311,6 +311,9 @@ class UserPermissions extends Component
         // Filter out any orphaned permissions
         $permissions = $this->_filterOrphanedPermissions($permissions);
 
+        // Sort ascending
+        sort($permissions);
+
         /** @var UserGroup $group */
         $group = Craft::$app->getUserGroups()->getGroupById($groupId);
         $path = UserGroups::CONFIG_USERPGROUPS_KEY . '.' . $group->uid . '.permissions';

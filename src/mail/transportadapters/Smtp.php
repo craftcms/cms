@@ -88,7 +88,7 @@ class Smtp extends BaseTransportAdapter
     public function attributeLabels()
     {
         return [
-            'host' => Craft::t('app', 'Host Name'),
+            'host' => Craft::t('app', 'Hostname'),
             'port' => Craft::t('app', 'Port'),
             'useAuthentication' => Craft::t('app', 'Use authentication'),
             'username' => Craft::t('app', 'Username'),

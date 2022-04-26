@@ -485,6 +485,13 @@ class ElementQuery extends Query implements ElementQueryInterface
     private $_cacheTags;
 
     /**
+     * @var bool Whether an element table has been joined for the query
+     * @see prepare()
+     * @see joinElementTable()
+     */
+    private $_joinedElementTable = false;
+
+    /**
      * Constructor
      *
      * @param string $elementType The element type class associated with this query
@@ -1446,6 +1453,9 @@ class ElementQuery extends Query implements ElementQueryInterface
         $this->query->withQueries = $this->withQueries;
         $this->subQuery = new Query();
 
+        // Keep track of whether an element table is joined into the query
+        $this->_joinedElementTable = false;
+
         // Give other classes a chance to make changes up front
         if (!$this->beforePrepare()) {
             throw new QueryAbortedException();
@@ -1551,6 +1561,11 @@ class ElementQuery extends Query implements ElementQueryInterface
         // Give other classes a chance to make changes up front
         if (!$this->afterPrepare()) {
             throw new QueryAbortedException();
+        }
+
+        // If an element table was never joined in, explicitly filter based on the element type
+        if (!$this->_joinedElementTable && $this->elementType) {
+            $this->subQuery->andWhere(['elements.type' => $this->elementType]);
         }
 
         $this->_applyUniqueParam($builder->db);
@@ -1913,11 +1928,21 @@ class ElementQuery extends Query implements ElementQueryInterface
                             unset($row[$column]);
                         } else {
                             if ($setValue) {
-                                $fieldValues[$field->handle] = [];
+                                $columnValues = [];
+                                $hasColumnValues = false;
+
                                 foreach ($column as $key => $col) {
-                                    $fieldValues[$field->handle][$key] = $row[$col] ?? null;
+                                    $columnValues[$key] = $row[$col] ?? null;
+                                    $hasColumnValues = $hasColumnValues || $columnValues[$key] !== null;
+                                }
+
+                                // Only actually set it on $fieldValues if any of the columns weren't null.
+                                // Otherwise, leave it alone in case another field has the same handle.
+                                if ($hasColumnValues) {
+                                    $fieldValues[$field->handle] = $columnValues;
                                 }
                             }
+
                             foreach ($column as $col) {
                                 unset($row[$col]);
                             }
@@ -2236,6 +2261,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         $joinTable = [$table => "{{%$table}}"];
         $this->query->innerJoin($joinTable, "[[{$table}.id]] = [[subquery.elementsId]]");
         $this->subQuery->innerJoin($joinTable, "[[{$table}.id]] = [[elements.id]]");
+        $this->_joinedElementTable = true;
     }
 
     /**

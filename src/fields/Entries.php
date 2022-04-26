@@ -8,13 +8,11 @@
 namespace craft\fields;
 
 use Craft;
-use craft\db\Table as DbTable;
 use craft\elements\db\EntryQuery;
 use craft\elements\Entry;
 use craft\gql\arguments\elements\Entry as EntryArguments;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
 use craft\gql\resolvers\elements\Entry as EntryResolver;
-use craft\helpers\Db;
 use craft\helpers\Gql;
 use craft\helpers\Gql as GqlHelper;
 use craft\models\GqlSchema;
@@ -91,19 +89,26 @@ class Entries extends BaseRelationField
     public function getEagerLoadingGqlConditions()
     {
         $allowedEntities = Gql::extractAllowedEntitiesFromSchema();
-        $allowedSectionUids = $allowedEntities['sections'] ?? [];
-        $allowedEntryTypeUids = $allowedEntities['entrytypes'] ?? [];
+        $sectionUids = $allowedEntities['sections'] ?? [];
+        $entryTypeUids = $allowedEntities['entrytypes'] ?? [];
 
-        if (empty($allowedSectionUids) || empty($allowedEntryTypeUids)) {
+        if (empty($sectionUids) || empty($entryTypeUids)) {
             return false;
         }
 
-        $entryTypeIds = Db::idsByUids(DbTable::ENTRYTYPES, $allowedEntryTypeUids);
-        $sectionIds = Db::idsByUids(DbTable::SECTIONS, $allowedSectionUids);
+        $sectionsService = Craft::$app->getSections();
+        $sectionIds = array_filter(array_map(function(string $uid) use ($sectionsService) {
+            $section = $sectionsService->getSectionByUid($uid);
+            return $section->id ?? null;
+        }, $sectionUids));
+        $entryTypeIds = array_filter(array_map(function(string $uid) use ($sectionsService) {
+            $entryType = $sectionsService->getEntryTypeByUid($uid);
+            return $entryType->id ?? null;
+        }, $entryTypeUids));
 
         return [
-            'typeId' => array_values($entryTypeIds),
-            'sectionId' => array_values($sectionIds),
+            'sectionId' => $sectionIds,
+            'typeId' => $entryTypeIds,
         ];
     }
 }
