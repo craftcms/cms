@@ -19,7 +19,6 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 
   _uploadTotalFiles: 0,
   _uploadFileProgress: {},
-  _uploadedAssetIds: [],
   _currentUploaderSettings: {},
 
   _assetDrag: null,
@@ -969,7 +968,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
     const {result} = data;
 
     // Add the uploaded file to the selected ones, if appropriate
-    this._uploadedAssetIds.push(result.assetId);
+    this.selectElementAfterUpdate(result.assetId);
 
     // If there is a prompt, add it to the queue
     if (result.conflict) {
@@ -1003,7 +1002,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
    */
   _updateAfterUpload: function () {
     if (this.settings.context !== 'index') {
-      this.setSortAttribute('dateModified');
+      this.clearSearch();
+      this.setSortAttribute('dateCreated');
       this.setSortDirection('desc');
     }
     this.updateElements();
@@ -1046,7 +1046,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
       };
       const followupSuccess = (data) => {
         if (data.assetId) {
-          this._uploadedAssetIds.push(data.assetId);
+          this.selectElementAfterUpdate(data.assetId);
         }
 
         followupAlways();
@@ -1110,18 +1110,6 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
       }
 
       this._assetDrag.addItems($newElements.has('div.element[data-movable]'));
-    }
-
-    // See if we have freshly uploaded files to add to selection
-    if (this._uploadedAssetIds.length) {
-      if (this.view.settings.selectable) {
-        for (var i = 0; i < this._uploadedAssetIds.length; i++) {
-          this.view.selectElementById(this._uploadedAssetIds[i]);
-        }
-      }
-
-      // Reset the list.
-      this._uploadedAssetIds = [];
     }
 
     this.base(append, $newElements);

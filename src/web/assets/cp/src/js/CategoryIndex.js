@@ -195,6 +195,7 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend({
               this.selectSourceByKey(groupSourceKey);
             }
 
+            this.clearSearch();
             this.selectElementAfterUpdate(ev.data.element.id);
             this.updateElements();
           });
