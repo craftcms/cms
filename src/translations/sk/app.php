@@ -26,7 +26,7 @@ return [
     'Access {plugin}' => 'Prístup k {plugin}',
     'Access' => 'Prístup',
     'Accessibility' => 'Prístupnosť',
-    'Account Type' => 'Account Type',
+    'Account Type' => 'Typ účtu',
     'Account has not been activated.' => 'Účet nebol aktivovaný.',
     'Account locked. Try again in {time}.' => 'Účet je uzamknutý. Skús znova o {time}.',
     'Account locked.' => 'Účet je uzamknutý.',
