@@ -1,6 +1,6 @@
 {% from '_includes/forms' import text %}
 
-{%- set id = field.handle|id %}
+{%- set id = id ?? field.getInputId() %}
 {%- set descriptionId = descriptionId ?? "#{id}-desc" %}
 {%- set prefix = field.prefix ?? false %}
 {%- set suffix = field.suffix ?? false %}
