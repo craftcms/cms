@@ -745,7 +745,6 @@ return [
     'Initial Rows' => '初始行',
     'Insert the button label for adding a new row to the table.' => '插入按钮标签以向表中添加新行。',
     'Install Craft CMS' => '安装 Craft CMS',
-    'Install Craft' => '安装 Craft',
     'Install with Composer' => '随编辑器安装',
     'Install' => '安装',
     'Installed as a trial' => '作为试用版安装',
