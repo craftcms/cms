@@ -9,7 +9,6 @@ namespace craft\services;
 
 use Craft;
 use craft\elements\Entry;
-use craft\errors\EntryDraftNotFoundException;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
 

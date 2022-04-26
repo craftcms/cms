@@ -9,14 +9,12 @@ namespace craft\fields;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\db\Table as DbTable;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\TagQuery;
 use craft\elements\Tag;
 use craft\gql\arguments\elements\Tag as TagArguments;
 use craft\gql\interfaces\elements\Tag as TagInterface;
 use craft\gql\resolvers\elements\Tag as TagResolver;
-use craft\helpers\Db;
 use craft\helpers\Gql;
 use craft\helpers\Gql as GqlHelper;
 use craft\models\GqlSchema;

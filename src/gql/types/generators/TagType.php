@@ -17,7 +17,6 @@ use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\elements\Tag as TagInterface;
 use craft\gql\TypeManager;
 use craft\gql\types\elements\Tag;
-use craft\helpers\Gql;
 use craft\helpers\Gql as GqlHelper;
 use craft\models\TagGroup;
 

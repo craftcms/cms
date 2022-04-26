@@ -254,19 +254,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
       // Clear the search when the X button is clicked
       this.addListener(this.$clearSearchBtn, 'click', () => {
-        this.$search.val('');
-
-        if (this.searchTimeout) {
-          clearTimeout(this.searchTimeout);
-        }
+        this.clearSearch(true);
 
         if (!Garnish.isMobileBrowser(true)) {
           this.$search.trigger('focus');
         }
-
-        this.stopSearching();
-
-        this.updateElementsIfSearchTextChanged();
       });
 
       // Auto-focus the Search box
@@ -523,6 +515,26 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
       this._updateStructureSortOption();
       this.setSortAttribute('score');
+    },
+
+    clearSearch: function (updateElements) {
+      if (!this.searching) {
+        return;
+      }
+
+      this.$search.val('');
+
+      if (this.searchTimeout) {
+        clearTimeout(this.searchTimeout);
+      }
+
+      this.stopSearching();
+
+      if (updateElements) {
+        this.updateElementsIfSearchTextChanged();
+      } else {
+        this.searchText = null;
+      }
     },
 
     stopSearching: function () {

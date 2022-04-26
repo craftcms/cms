@@ -15,6 +15,8 @@
 - Improved dropdown menu styling for Firefox.
 - Improved GraphQL performance.
 - `{% nav %}` tags now skips elements whose immediate parent weren’t included in the output. ([#10925](https://github.com/craftcms/cms/issues/10925))
+- Asset, entry, and category selection modals now clear the search results when a new element is created. ([#11015](https://github.com/craftcms/cms/issues/11015))
+- Asset and entry selection modals now sort the elements by Date Created (descending) when a new element is created, to ensure it is immediately visible and selected.
 
 ### Fixed
 - Fixed a bug where Matrix blocks could lose their Date field values, if multiple Date fields had with the same handle across different block types. ([#10884](https://github.com/craftcms/cms/issues/10884))
@@ -26,6 +28,11 @@
 - Fixed a bug where Matrix fields’ Min Blocks settings weren’t getting enforced for empty Matrix fields.
 - Fixed an error that could occur when saving Matrix fields with either Min Blocks or Max Blocks configured, but not both, if the Intl extension wasn’t installed. ([#10922](https://github.com/craftcms/cms/issues/10922))
 - Fixed a bug where the system name container was taking up the full viewport height in Safari 13. ([#10930](https://github.com/craftcms/cms/issues/10930))
+- Fixed a bug where Matrix sub-fields were losing their column suffixes after they were resaved. ([#10973](https://github.com/craftcms/cms/issues/10973))
+- Fixed a bug where saving a Matrix field without any block types would result in no changes made to the previously-configured block types, rather than displaying a validation error. ([#10989](https://github.com/craftcms/cms/issues/10989))
+
+### Security
+- The `redirect` controller action now requires the passed-in `url` param to be hashed. ([#10994](https://github.com/craftcms/cms/issues/10994))
 
 ## 3.7.38 - 2022-04-06
 
