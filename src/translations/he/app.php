@@ -745,7 +745,6 @@ return [
     'Initial Rows' => 'שורות ראשונות',
     'Insert the button label for adding a new row to the table.' => 'הכנס את תווית הלחצן להוספת שורה חדשה לטבלה.',
     'Install Craft CMS' => 'התקנת Craft CMS',
-    'Install Craft' => 'התקן את Craft',
     'Install with Composer' => 'התקן באמצעות Composer',
     'Install' => 'התקן',
     'Installed as a trial' => 'מותקן בגרסת ניסיון',
