@@ -120,6 +120,8 @@
 - Fixed an error that could occur when saving an address via the `users/save-address` controller action, if the post data included any date attributes. ([#11001](https://github.com/craftcms/cms/issues/11001))
 - Fixed a bug where it wasn’t possible to modify dropdown options within Table fields. ([#11002](https://github.com/craftcms/cms/issues/11002))
 - Fixed a bug where asset transform URLs could contain backslashes on Windows. ([#11004](https://github.com/craftcms/cms/issues/11004))
+- Fixed a bug where Money field labels’ `for` attributes weren’t referencing the correct input ID. ([#11016](https://github.com/craftcms/cms/pull/11016))
+- Fixed a bug where Money field inputs weren’t getting `aria-describedby` attributes. ([#11016](https://github.com/craftcms/cms/pull/11016))
 
 ## 4.0.0-beta.4 - 2022-04-06
 
