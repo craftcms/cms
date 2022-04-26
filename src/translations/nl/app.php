@@ -745,7 +745,6 @@ return [
     'Initial Rows' => 'Vooringestelde rijen',
     'Insert the button label for adding a new row to the table.' => 'Voeg de knoplabel in om een nieuwe rij aan de tabel toe te voegen.',
     'Install Craft CMS' => 'Installeer Craft CMS',
-    'Install Craft' => 'Installeer Craft',
     'Install with Composer' => 'Installeren met Composer',
     'Install' => 'Installeren',
     'Installed as a trial' => 'Geïnstalleerd als proef',
