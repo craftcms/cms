@@ -321,6 +321,8 @@
 - Added `craft\models\ProjectConfigData`.
 - Added `craft\models\ReadOnlyProjectConfigData`.
 - Added `craft\models\Volume`.
+- Added `craft\queue\jobs\Proxy`.
+- Added `craft\queue\Queue::$proxyQueue`, which can be set to another queue configuration that all jobs should be sent to as proxies. ([#10999](https://github.com/craftcms/cms/pull/10999))
 - Added `craft\records\Address`.
 - Added `craft\records\AssetIndexingSession`.
 - Added `craft\records\ImageTransform`.
@@ -504,6 +506,7 @@
 - `craft\base\Element::fieldLayoutFields()` now has a `visibleOnly` argument.
 - `craft\base\Element::getFieldValue()` now returns eager-loaded element values for the field, when they exist. ([#10047](https://github.com/craftcms/cms/issues/10047))
 - `craft\base\Element::metaFieldsHtml()` now has a `static` argument.
+- `craft\base\Element::setFieldValue()` now unsets any previously-eager-loaded elements for the field. ([#11003](https://github.com/craftcms/cms/discussions/11003))
 - `craft\base\Element::slugFieldHtml()` now has a `static` argument.
 - `craft\base\ElementInterface::getEagerLoadedElements()` now returns an `Illuminate\Support\Collection` object instead of an array. ([#8513](https://github.com/craftcms/cms/discussions/8513))
 - `craft\base\ElementInterface::getSidebarHtml()` now has a `static` argument.
@@ -554,9 +557,11 @@
 - `craft\helpers\i18n\Formatter::asPercent()` now treats all empty values as `0`.
 - `craft\helpers\MailerHelper::normalizeEmails()` now returns an empty array instead of `null`.
 - `craft\helpers\MigrationHelper::dropAllIndexesOnTable()` no longer returns an array of the dropped indexes.
+- `craft\helpers\Queue::push()` now has a `$queue` argument.
 - `craft\models\FieldLayout::EVENT_DEFINE_STANDARD_FIELDS` has been renamed to `EVENT_DEFINE_NATIVE_FIELDS`.
 - `craft\models\FieldLayout::getAvailableStandardFields()` has been renamed to `getAvailableNativeFields()`.
 - `craft\models\FieldLayout::getFields()` has been renamed to `getCustomFields()`.
+- `craft\queue\Queue::$channel` is now set automatically based on the queue’s application component ID.
 - `craft\services\Announcements::push()` no longer accepts callables to be passed to the `$heading` and `$body` arguments. `craft\i18n\Translation::prep()` should be used to prepare the messages to be lazy-translated instead.
 - `craft\services\AssetIndexer::storeIndexList()` now expects the first argument to be a generator that returns `craft\models\FsListing` objects.
 - `craft\services\Assets::ensureFolderByFullPathAndVolume()` now returns a `craft\models\VolumeFolder` object rather than a folder ID.

@@ -410,6 +410,7 @@ return [
     'Create a new tag group' => 'Opprett en ny stikkordsgruppe',
     'Create a new user group' => 'Opprett en ny brukergruppe',
     'Create a new user' => 'Create a new user',
+    'Create a new volume…' => 'Create a new volume…',
     'Create a new {section} entry type' => 'Opprett en ny {section} artikkeltype',
     'Create a new {type}' => 'Create a new {type}',
     'Create and add another' => 'Create and add another',
