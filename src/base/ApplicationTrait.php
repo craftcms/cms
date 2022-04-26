@@ -378,7 +378,7 @@ trait ApplicationTrait
             }
 
             // Allow console requests to bypass error
-            if (!$this->getRequest()->getIsConsoleRequest()) {
+            if ($this instanceof WebApplication) {
                 Craft::error('There was a problem fetching the info row: ' . $e->getMessage(), __METHOD__);
                 /** @var ErrorHandler $errorHandler */
                 $errorHandler = $this->getErrorHandler();
