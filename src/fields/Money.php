@@ -235,14 +235,6 @@ class Money extends Field implements PreviewableFieldInterface, SortableFieldInt
     /**
      * @inheritdoc
      */
-    public function getInputId(): string
-    {
-        return sprintf('%s-money', parent::getInputId());
-    }
-
-    /**
-     * @inheritdoc
-     */
     protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
     {
         $id = $this->getInputId();
