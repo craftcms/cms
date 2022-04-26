@@ -5351,7 +5351,8 @@ body.reduce-focus-visibility {
   align-items: center;
 
   & > .datewrapper + .timewrapper,
-  & > .timewrapper + .timezone {
+  & > .timewrapper + .timezone,
+  & > .select {
     @include margin-left(5px);
   }
 }
@@ -5449,10 +5450,6 @@ body.reduce-focus-visibility {
 .select:not(.selectize) select {
   @include select-input-styles;
   white-space: pre;
-
-  option {
-    background-color: $white;
-  }
 }
 
 .select:not(.selectize).fullwidth select {
@@ -6162,7 +6159,7 @@ $titlebarBorderRadius: $largeBorderRadius - 1;
     }
 
     a:not([data-action]) {
-      padding: 0 !important;
+      padding: 0;
       height: 20px;
       text-align: center;
       color: $darkHairlineColor;

@@ -155,6 +155,14 @@ class ClearCaches extends Utility
                 'action' => $pathService->getCompiledTemplatesPath(false),
             ],
             [
+                'key' => 'compiled-classes',
+                'label' => Craft::t('app', 'Compiled classes'),
+                'info' => Craft::t('app', 'Contents of {path}', [
+                    'path' => '`storage/runtime/compiled_classes/`',
+                ]),
+                'action' => $pathService->getCompiledClassesPath(false),
+            ],
+            [
                 'key' => 'cp-resources',
                 'label' => Craft::t('app', 'Control panel resources'),
                 'info' => Craft::t('app', 'Contents of {path}', [

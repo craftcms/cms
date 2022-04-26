@@ -1786,6 +1786,10 @@ class Fields extends Component
 
             $class = $data['type'];
 
+            // Track whether we should remove the field’s search indexes after save
+            $searchable = $data['searchable'] ?? false;
+            $deleteSearchIndexes = !$isNewField && !$searchable && $fieldRecord->searchable;
+
             // Create/alter the content table column(s)
             $contentService = Craft::$app->getContent();
             $oldHandle = !$isNewField ? $fieldRecord->getOldHandle() : null;
@@ -1800,13 +1804,13 @@ class Fields extends Component
                         [$key, $type] = explode(':', $type, 2);
                         $oldColumn = !$isNewField ? ElementHelper::fieldColumn($this->oldFieldColumnPrefix, $oldHandle, $oldColumnSuffix, $i !== 0 ? $key : null) : null;
                         $newColumn = ElementHelper::fieldColumn(null, $data['handle'], $data['columnSuffix'] ?? null, $i !== 0 ? $key : null);
-                        $this->_updateColumn($db, $transaction, $contentService->contentTable, $oldColumn, $newColumn, $type);
+                        $this->updateColumn($db, $transaction, $contentService->contentTable, $oldColumn, $newColumn, $type);
                         $newColumns[$newColumn] = true;
                     }
                 } else {
                     $oldColumn = !$isNewField ? ElementHelper::fieldColumn($this->oldFieldColumnPrefix, $oldHandle, $oldColumnSuffix) : null;
                     $newColumn = ElementHelper::fieldColumn(null, $data['handle'], $data['columnSuffix'] ?? null);
-                    $this->_updateColumn($db, $transaction, $contentService->contentTable, $oldColumn, $newColumn, $columnType);
+                    $this->updateColumn($db, $transaction, $contentService->contentTable, $oldColumn, $newColumn, $columnType);
                     $newColumns[$newColumn] = true;
                 }
             }
@@ -1838,7 +1842,7 @@ class Fields extends Component
             $fieldRecord->context = $context;
             $fieldRecord->columnSuffix = $data['columnSuffix'] ?? null;
             $fieldRecord->instructions = $data['instructions'];
-            $fieldRecord->searchable = $data['searchable'] ?? false;
+            $fieldRecord->searchable = $searchable;
             $fieldRecord->translationMethod = $data['translationMethod'];
             $fieldRecord->translationKeyFormat = $data['translationKeyFormat'];
             $fieldRecord->type = $data['type'];
@@ -1849,7 +1853,6 @@ class Fields extends Component
             $transaction->commit();
         } catch (\Throwable $e) {
             $transaction->rollBack();
-
             throw $e;
         }
 
@@ -1886,11 +1889,21 @@ class Fields extends Component
             ]));
         }
 
+        // If we just dropped `searchable`, delete the field’s search indexes immediately.
+        if ($deleteSearchIndexes) {
+            Db::delete(Table::SEARCHINDEX, [
+                'attribute' => 'field',
+                'fieldId' => $field->id,
+            ]);
+        }
+
         // Invalidate all element caches
         Craft::$app->getElements()->invalidateAllCaches();
     }
 
     /**
+     * Adds/updates a field’s content table column.
+     *
      * @param Connection $db
      * @param Transaction $transaction
      * @param string $table
@@ -1898,8 +1911,9 @@ class Fields extends Component
      * @param string $newName
      * @param string $type
      * @return void
+     * @since 3.7.39
      */
-    private function _updateColumn(Connection $db, Transaction &$transaction, string $table, ?string $oldName, string $newName, string $type): void
+    protected function updateColumn(Connection $db, Transaction &$transaction, string $table, ?string $oldName, string $newName, string $type): void
     {
         // Clear the schema cache
         $db->getSchema()->refresh();

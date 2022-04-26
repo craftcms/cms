@@ -38,8 +38,8 @@ Craft.CP = Garnish.Base.extend(
     breadcrumbListWidth: 0,
     breadcrumbDisclosureItem: `<li class="breadcrumb-toggle-wrapper" data-disclosure-item><button data-disclosure-trigger aria-controls="breadcrumb-disclosure" aria-haspopup="true">${Craft.t(
       'app',
-      'More'
-    )}…</button><div id="breadcrumb-disclosure" class="menu menu--disclosure" data-disclosure-menu><ul></ul></div></li>`,
+      'More…'
+    )}</button><div id="breadcrumb-disclosure" class="menu menu--disclosure" data-disclosure-menu><ul></ul></div></li>`,
 
     tabManager: null,
 

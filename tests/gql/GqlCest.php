@@ -12,7 +12,6 @@ use craft\models\GqlSchema;
 use crafttests\fixtures\EntryWithFieldsFixture;
 use crafttests\fixtures\GlobalSetFixture;
 use crafttests\fixtures\GqlSchemasFixture;
-use crafttests\fixtures\GqlTokensFixture;
 use FunctionalTester;
 use yii\base\Exception;
 

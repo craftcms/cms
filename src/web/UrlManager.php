@@ -472,7 +472,7 @@ class UrlManager extends \yii\web\UrlManager
         return [
             'redirect',
             [
-                'url' => $redirectUri,
+                'url' => Craft::$app->getSecurity()->hashData($redirectUri),
                 'statusCode' => 302,
             ],
         ];

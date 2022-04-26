@@ -7,11 +7,10 @@
 
 namespace craft\gql\resolvers\elements;
 
-use craft\db\Table;
+use Craft;
 use craft\elements\User as UserElement;
 use craft\gql\base\ElementResolver;
 use craft\helpers\ArrayHelper;
-use craft\helpers\Db;
 use craft\helpers\Gql as GqlHelper;
 
 /**
@@ -52,7 +51,12 @@ class User extends ElementResolver
             }
 
             $pairs = GqlHelper::extractAllowedEntitiesFromSchema('read');
-            $allowedGroupIds = array_values(Db::idsByUids(Table::USERGROUPS, $pairs['usergroups']));
+
+            $userGroupsService = Craft::$app->getUserGroups();
+            $allowedGroupIds = array_filter(array_map(function(string $uid) use ($userGroupsService) {
+                $userGroupsService = $userGroupsService->getGroupByUid($uid);
+                return $userGroupsService->id ?? null;
+            }, $pairs['usergroups']));
 
             $query->groupId = $query->groupId ? array_intersect($allowedGroupIds, (array)$query->groupId) : $allowedGroupIds;
         }

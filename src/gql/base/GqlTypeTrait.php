@@ -30,12 +30,12 @@ trait GqlTypeTrait
             'id' => [
                 'name' => 'id',
                 'type' => Type::id(),
-                'description' => 'The id of the entity',
+                'description' => 'The ID of the entity',
             ],
             'uid' => [
                 'name' => 'uid',
                 'type' => Type::string(),
-                'description' => 'The uid of the entity',
+                'description' => 'The UID of the entity',
             ],
         ];
     }

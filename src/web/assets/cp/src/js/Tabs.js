@@ -114,6 +114,8 @@ Craft.Tabs = Garnish.Base.extend({
     this.trigger('selectTab', {
       $tab: $tab,
     });
+
+    $('#content').trigger('scroll');
   },
 
   deselectTab: function () {

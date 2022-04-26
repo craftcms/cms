@@ -10,7 +10,6 @@ namespace craft\widgets;
 use Craft;
 use craft\base\Widget;
 use craft\helpers\App;
-use craft\helpers\Json;
 use craft\web\assets\craftsupport\CraftSupportAsset;
 
 /**
