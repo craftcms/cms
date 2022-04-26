@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.7.39 - 2022-04-26
 
 ### Added
 - The Caches utility now has a “Compiled classes” option. ([#10281](https://github.com/craftcms/cms/pull/10281))
