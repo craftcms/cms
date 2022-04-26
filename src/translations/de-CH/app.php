@@ -745,7 +745,6 @@ return [
     'Initial Rows' => 'Ursprüngliche Zeilen',
     'Insert the button label for adding a new row to the table.' => 'Fügen Sie die Schaltflächenbeschriftung hinzu, um eine neue Zeile in der Tabelle hinzuzfügen.',
     'Install Craft CMS' => 'Craft CMS installieren',
-    'Install Craft' => 'Craft installieren',
     'Install with Composer' => 'Install with Composer',
     'Install' => 'Installieren',
     'Installed as a trial' => 'Installiert als Trial-Version',
