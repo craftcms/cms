@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.0.0-RC1 - 2022-04-26
 
 ### Added
 - Added the `addresses`, `address`, and `addressCount` GraphQL queries.
