@@ -745,7 +745,6 @@ return [
     'Initial Rows' => 'تعداد ردیف ها در ابتدا',
     'Insert the button label for adding a new row to the table.' => 'برچسب دکمه را برای اضافه کردن یک ردیف جدید به جدول وارد نمایید.',
     'Install Craft CMS' => 'نصب کردن Craft CMS',
-    'Install Craft' => 'نصب کردن Craft',
     'Install with Composer' => 'نصب از طریق Composer',
     'Install' => 'نصب کردن',
     'Installed as a trial' => 'به صورت آزمایشی نصب گردید',

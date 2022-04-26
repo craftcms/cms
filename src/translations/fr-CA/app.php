@@ -745,7 +745,6 @@ return [
     'Initial Rows' => 'Premières lignes',
     'Insert the button label for adding a new row to the table.' => 'Insérez l\'étiquette du bouton pour ajouter une nouvelle ligne au tableau.',
     'Install Craft CMS' => 'Installer Craft CMS',
-    'Install Craft' => 'Installer Craft',
     'Install with Composer' => 'Install with Composer',
     'Install' => 'Installer',
     'Installed as a trial' => 'Installé à titre d\'essai',

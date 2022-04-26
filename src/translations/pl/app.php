@@ -745,7 +745,6 @@ return [
     'Initial Rows' => 'Wiersze wstępne',
     'Insert the button label for adding a new row to the table.' => 'Wstaw etykietę przycisku, aby dodać nowy wiersz do tabeli.',
     'Install Craft CMS' => 'Zainstaluj Craft CMS',
-    'Install Craft' => 'Zainstaluj Craft',
     'Install with Composer' => 'Zainstaluj za pomocą programu Composer',
     'Install' => 'Zainstaluj',
     'Installed as a trial' => 'Zainstalowano jako wersję próbną',

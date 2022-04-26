@@ -745,7 +745,6 @@ return [
     'Initial Rows' => 'Birincil Diziler',
     'Insert the button label for adding a new row to the table.' => 'Tabloya yeni satır eklemek için düğme etiketini ekleyin.',
     'Install Craft CMS' => 'Craft CMS\'i Yükle',
-    'Install Craft' => 'Craft\'ı Yükle',
     'Install with Composer' => 'Composer ile yükle',
     'Install' => 'Yükle',
     'Installed as a trial' => 'Deneme olarak yüklendi',

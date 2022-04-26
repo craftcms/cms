@@ -745,7 +745,6 @@ return [
     'Initial Rows' => '초기 열',
     'Insert the button label for adding a new row to the table.' => '테이블에 새로운 행을 추가하고자 할 경우 버튼 라벨을 누르세요.',
     'Install Craft CMS' => 'Craft CMS 설치',
-    'Install Craft' => 'Craft 설치',
     'Install with Composer' => 'Composer로 설치',
     'Install' => '설치',
     'Installed as a trial' => '체험판 설치',
