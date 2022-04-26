@@ -17,7 +17,6 @@ use craft\elements\db\ElementQueryInterface;
 use craft\gql\types\Money as MoneyType;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
-use craft\helpers\Html;
 use craft\helpers\MoneyHelper;
 use craft\validators\MoneyValidator;
 use GraphQL\Type\Definition\Type;
