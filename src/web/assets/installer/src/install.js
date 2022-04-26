@@ -236,7 +236,7 @@ import './install.scss';
                 })($input);
               }
 
-              Garnish.shake(this.$currentScreen);
+              Garnish.shake(this.modal.$container);
             } else {
               console.warn('Unexpected response:', response);
             }
