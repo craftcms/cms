@@ -245,7 +245,7 @@ class Money extends Field implements PreviewableFieldInterface, SortableFieldInt
      */
     protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
     {
-        $id = parent::getInputId();
+        $id = $this->getInputId();
         $view = Craft::$app->getView();
         $namespacedId = $view->namespaceInputId($id);
 
