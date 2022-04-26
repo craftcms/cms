@@ -745,7 +745,6 @@ return [
     'Initial Rows' => 'Inledande rader',
     'Insert the button label for adding a new row to the table.' => 'Infoga knappetiketten för att lägga till en ny rad i en tabell.',
     'Install Craft CMS' => 'Installera Craft CMS',
-    'Install Craft' => 'Installera Craft',
     'Install with Composer' => 'Installera med Composer',
     'Install' => 'Installera',
     'Installed as a trial' => 'Installerad på prov',
