@@ -79,7 +79,7 @@ class Transform extends Directive
             return $value;
         }
 
-        $generateNow = $arguments['immediately'] ?? Craft::$app->getConfig()->general->generateTransformsBeforePageLoad;
+        $generateNow = $arguments['immediately'] ?? Craft::$app->getConfig()->getGeneral()->generateTransformsBeforePageLoad;
         $transform = Gql::prepareTransformArguments($arguments);
 
         // If this directive is applied to an entire Asset
