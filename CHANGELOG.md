@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- The Caches utility now has a “Compiled classes” option. ([#10281](https://github.com/craftcms/cms/pull/10281))
 - Added the `folderPath` asset query param.
 - Added `craft\services\Assets::getTempVolumeAndSubpath()`.
 - Added `craft\services\Assets::createTempAssetQuery()`.
