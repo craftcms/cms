@@ -745,7 +745,6 @@ return [
     'Initial Rows' => 'Начальные строки',
     'Insert the button label for adding a new row to the table.' => 'Вставьте метку кнопки, чтобы добавить в таблицу новую строку.',
     'Install Craft CMS' => 'Установить Craft CMS',
-    'Install Craft' => 'Установить Craft',
     'Install with Composer' => 'Установить с помощью компоновщика',
     'Install' => 'Установить',
     'Installed as a trial' => 'Установлено как пробная версия',

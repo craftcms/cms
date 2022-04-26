@@ -745,7 +745,6 @@ return [
     'Initial Rows' => 'الصفوف الأولية',
     'Insert the button label for adding a new row to the table.' => 'أدخل تسمية الزر لإضافة صف جديد في الجدول.',
     'Install Craft CMS' => 'تثبيت Craft CMS',
-    'Install Craft' => 'تثبيت Craft',
     'Install with Composer' => 'التثبيت باستخدام Composer',
     'Install' => 'تثبيت',
     'Installed as a trial' => 'تم التثبيت كتجربة',

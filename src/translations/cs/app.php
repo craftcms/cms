@@ -745,7 +745,6 @@ return [
     'Initial Rows' => 'Počet řádků',
     'Insert the button label for adding a new row to the table.' => 'Vložte popisek tlačítka pro přidání nového řádku do tabulky.',
     'Install Craft CMS' => 'Nainstalovat Craft CMS',
-    'Install Craft' => 'Nainstalovat Craft',
     'Install with Composer' => 'Instalace pomocí nástroje Composer',
     'Install' => 'Nainstalovat',
     'Installed as a trial' => 'Nainstalováno jako zkušební verze',

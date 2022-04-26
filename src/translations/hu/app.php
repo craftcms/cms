@@ -745,7 +745,6 @@ return [
     'Initial Rows' => 'Sorok száma',
     'Insert the button label for adding a new row to the table.' => 'Illessze be a gombcímkét egy új sor táblához adásához.',
     'Install Craft CMS' => 'Craft CMS telepítése',
-    'Install Craft' => 'A Craft telepítése',
     'Install with Composer' => 'Telepítés Composerrel',
     'Install' => 'Telepítés',
     'Installed as a trial' => 'Telepítve próbaverzióként',

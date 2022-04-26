@@ -745,7 +745,6 @@ return [
     'Initial Rows' => '最初の行',
     'Insert the button label for adding a new row to the table.' => '新しい行をテーブルに追加するためのボタンラベルを挿入します。',
     'Install Craft CMS' => 'Craft CMSをインストール',
-    'Install Craft' => 'Craft をインストール',
     'Install with Composer' => 'Composer でインストール',
     'Install' => 'インストール',
     'Installed as a trial' => 'トライアルとしてインストール済み',

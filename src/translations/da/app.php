@@ -746,7 +746,6 @@ return [
     'Initial Rows' => 'Første Rækker',
     'Insert the button label for adding a new row to the table.' => 'Indsæt knapetiketten til at tilføje en ny række i tabellen.',
     'Install Craft CMS' => 'Installer Craft CMS',
-    'Install Craft' => 'Installer Craft',
     'Install with Composer' => 'Installer med Composer',
     'Install' => 'Instalér',
     'Installed as a trial' => 'Installeret som en prøve',
