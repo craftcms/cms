@@ -346,10 +346,9 @@ class AppController extends Controller
 
         $path = $this->request->getRequiredBodyParam('path');
 
-        // Fetch 'em and send 'em
-        $alerts = Cp::alerts($path, true);
-
-        return $this->asJson($alerts);
+        return $this->asJson([
+            'alerts' => Cp::alerts($path, true),
+        ]);
     }
 
     /**

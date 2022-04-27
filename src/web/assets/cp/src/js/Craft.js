@@ -751,38 +751,6 @@ $.extend(Craft, {
     return jqXHR;
   },
 
-  _waitingOnAjax: false,
-  _ajaxQueue: [],
-
-  /**
-   * Queues up an action request to be posted to the server.
-   */
-  queueActionRequest: function (callback) {
-    Craft._ajaxQueue.push(callback);
-
-    if (!Craft._waitingOnAjax) {
-      Craft._postNextActionRequestInQueue();
-    }
-  },
-
-  _postNextActionRequestInQueue: function () {
-    Craft._waitingOnAjax = true;
-
-    var callback = Craft._ajaxQueue.shift();
-
-    callback().then((response) => {
-      if (callback && typeof callback === 'function') {
-        callback(response ? response.data : null);
-      }
-
-      if (Craft._ajaxQueue.length) {
-        Craft._postNextActionRequestInQueue();
-      } else {
-        Craft._waitingOnAjax = false;
-      }
-    });
-  },
-
   _actionHeaders: function () {
     let headers = {
       'X-Registered-Asset-Bundles': Object.keys(

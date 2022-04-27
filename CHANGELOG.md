@@ -13,10 +13,14 @@
 ### Changed
 - `{% cache %}` tags now store any external JavaScript or CSS files registered with `{% js %}` and `{% css %}` tags. ([#9987](https://github.com/craftcms/cms/discussions/9987))
 
+### Removed
+- Removed the `Craft.queueActionRequest()` JavaScript method. `Craft.queue.push()` can be used instead.
+
 ### Fixed
 - Fixed the vertical alignment of condition rules’ sort handles. ([#11025](https://github.com/craftcms/cms/issues/11025))
 - Fixed a JavaScript error that occurred if `Craft.cp.$tabsList` or `Craft.cp.$tabs` were referenced.
 - Fixed a bug where “Name” and “Handle” were not getting translated properly in filesystem validation errors. ([#11029](https://github.com/craftcms/cms/issues/11029))
+- Fixed a bug where queue-tracking Ajax requsets would fire in rapid succession.
 
 ## 4.0.0-RC1 - 2022-04-26
 
