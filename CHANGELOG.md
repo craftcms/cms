@@ -1,5 +1,18 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+### Added
+- Added `craft\helpers\Html::unwrapCondition()`.
+- Added `craft\helpers\Html::unwrapNoscript()`.
+- Added `craft\web\View::clearCssFileBuffer()`.
+- Added `craft\web\View::clearJsFileBuffer()`.
+- Added `craft\web\View::startCssFileBuffer()`.
+- Added `craft\web\View::startJsFileBuffer()`.
+
+### Changed
+- `{% cache %}` tags now store any external JavaScript or CSS files registered with `{% js %}` and `{% css %}` tags. ([#9987](https://github.com/craftcms/cms/discussions/9987))
+
 ## 4.0.0-RC1 - 2022-04-26
 
 ### Added

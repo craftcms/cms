@@ -571,6 +571,47 @@ class Html extends \yii\helpers\Html
     }
 
     /**
+     * Unwraps an IE conditional comment from the given HTML.
+     *
+     * @param string $content
+     * @return array[] An array containing the HTML content, and the condition (if there is one).
+     * @phpstan-return array{string,string|null}
+     * @since 4.0.0
+     * @see wrapIntoCondition()
+     */
+    public static function unwrapCondition(string $content): array
+    {
+        if (preg_match('/^<!--\[if (.*?)]>(?:<!-->)?\\n(.*)\\n<!(?:--<!)?\[endif]-->$/s', $content, $match)) {
+            $condition = $match[1];
+            $content = $match[2];
+        } else {
+            $condition = null;
+        }
+
+        return [$content, $condition];
+    }
+
+    /**
+     * Unwraps a `<noscript>` tag from the given HTML.
+     *
+     * @param string $content
+     * @return array[] An array containing the HTML content, and whether a `<noscript>` tag was found.
+     * @phpstan-return array{string,bool}
+     * @since 4.0.0
+     */
+    public static function unwrapNoscript(string $content): array
+    {
+        if (preg_match('/^<noscript>(.*)<\/noscript>$/s', $content, $match)) {
+            $noscript = true;
+            $content = $match[1];
+        } else {
+            $noscript = false;
+        }
+
+        return [$content, $noscript];
+    }
+
+    /**
      * Normalizes an element ID into only alphanumeric characters, underscores, and dashes, or generates one at random.
      *
      * @param string $id

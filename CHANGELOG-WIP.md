@@ -289,6 +289,8 @@
 - Added `craft\helpers\FileHelper::deleteQueuedFiles()`.
 - Added `craft\helpers\Gql::getSchemaContainedEntryTypes)()`.
 - Added `craft\helpers\Html::hiddenLabel()`.
+- Added `craft\helpers\Html::unwrapCondition()`.
+- Added `craft\helpers\Html::unwrapNoscript()`.
 - Added `craft\helpers\ImageTransforms`.
 - Added `craft\helpers\Money`.
 - Added `craft\helpers\Number::isInt()`.
@@ -388,6 +390,10 @@
 - Added `craft\web\twig\variables\Cp::fieldLayoutDesigner()`.
 - Added `craft\web\twig\variables\Cp::getFsOptions()`.
 - Added `craft\web\twig\variables\Cp::getVolumeOptions()`.
+- Added `craft\web\View::clearCssFileBuffer()`.
+- Added `craft\web\View::clearJsFileBuffer()`.
+- Added `craft\web\View::startCssFileBuffer()`.
+- Added `craft\web\View::startJsFileBuffer()`.
 - Added the `Craft.appendBodyHtml()` JavaScript method, which replaces the now-deprecated `appendFootHtml()` method.
 - Added the `Craft.CpScreenSlideout` JavaScript class, which can be used to create slideouts from actions that return `$this->asCpScreen()`.
 - Added the `Craft.ElementEditor` JavaScript class.
@@ -450,6 +456,7 @@
 - Template autosuggestions now include their filename. ([#9744](https://github.com/craftcms/cms/pull/9744))
 - Improved the look of loading spinners in the control panel. ([#9109](https://github.com/craftcms/cms/discussions/9109))
 - The default `subLeft` and `subRight` search query term options are now only applied to terms that don’t include an asterisk at the beginning/end, e.g. `hello*`. ([#10613](https://github.com/craftcms/cms/discussions/10613))
+- `{% cache %}` tags now store any external JavaScript or CSS files registered with `{% js %}` and `{% css %}` tags. ([#9987](https://github.com/craftcms/cms/discussions/9987))
 - All control panel templates end in `.twig` now. ([#9743](https://github.com/craftcms/cms/pull/9743))
 - 404 requests are no longer logged by default. ([#10659](https://github.com/craftcms/cms/pull/10659))
 - Log entries are now single-line by default when Dev Mode is disabled. ([#10659](https://github.com/craftcms/cms/pull/10659))

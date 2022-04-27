@@ -8,6 +8,7 @@
 namespace craft\services;
 
 use Craft;
+use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Html;
 use craft\helpers\StringHelper;
@@ -43,11 +44,11 @@ class TemplateCaches extends Component
      *
      * @param string $key The template cache key
      * @param bool $global Whether the cache would have been stored globally.
-     * @param bool $registerScripts Whether JS and CSS code coptured with the cache should be registered
+     * @param bool $registerResources Whether JS and CSS resources captured by the cache should be registered
      * @return string|null
      * @throws Exception if this is a console request and `false` is passed to `$global`
      */
-    public function getTemplateCache(string $key, bool $global, bool $registerScripts = false): ?string
+    public function getTemplateCache(string $key, bool $global, bool $registerResources = false): ?string
     {
         // Make sure template caching is enabled
         if ($this->_isTemplateCachingEnabled() === false) {
@@ -61,14 +62,20 @@ class TemplateCaches extends Component
             return null;
         }
 
-        [$body, $tags, $bufferedJs, $bufferedScripts, $bufferedCss] = array_pad($data, 5, null);
+        [$body, $tags, $bufferedJs, $bufferedScripts, $bufferedCss, $bufferedJsFiles, $bufferedCssFiles] = array_pad($data, 7, null);
 
         // If we're actively collecting element cache tags, add this cache's tags to the collection
         Craft::$app->getElements()->collectCacheTags($tags);
 
         // Register JS and CSS tags
-        if ($registerScripts) {
-            $this->_registerScripts($bufferedJs ?? [], $bufferedScripts ?? [], $bufferedCss ?? []);
+        if ($registerResources) {
+            $this->_registerResources(
+                $bufferedJs ?? [],
+                $bufferedScripts ?? [],
+                $bufferedCss ?? [],
+                $bufferedJsFiles ?? [],
+                $bufferedCssFiles ?? [],
+            );
         }
 
         return $body;
@@ -77,12 +84,13 @@ class TemplateCaches extends Component
     /**
      * Starts a new template cache.
      *
-     * @param bool $withScripts Whether JS and CSS code registered with [[\craft\web\View::registerJs()]],
-     * [[\craft\web\View::registerScript()]], and [[\craft\web\View::registerCss()]] should be captured and
-     * included in the cache. If this is `true`, be sure to pass `$withScripts = true` to [[endTemplateCache()]]
+     * @param bool $withResources Whether JS and CSS code registered with [[\craft\web\View::registerJs()]],
+     * [[\craft\web\View::registerScript()]], [[\craft\web\View::registerCss()]],
+     * [[\craft\web\View::registerJsFile()]], and [[\craft\web\View::registerCssFile()]] should be captured and
+     * included in the cache. If this is `true`, be sure to pass `$withResources = true` to [[endTemplateCache()]]
      * as well.
      */
-    public function startTemplateCache(bool $withScripts = false): void
+    public function startTemplateCache(bool $withResources = false): void
     {
         // Make sure template caching is enabled
         if ($this->_isTemplateCachingEnabled() === false) {
@@ -91,11 +99,13 @@ class TemplateCaches extends Component
 
         Craft::$app->getElements()->startCollectingCacheTags();
 
-        if ($withScripts) {
+        if ($withResources) {
             $view = Craft::$app->getView();
             $view->startJsBuffer();
             $view->startScriptBuffer();
             $view->startCssBuffer();
+            $view->startJsFileBuffer();
+            $view->startCssFileBuffer();
         }
     }
 
@@ -107,13 +117,14 @@ class TemplateCaches extends Component
      * @param string|null $duration How long the cache should be stored for. Should be a [relative time format](https://php.net/manual/en/datetime.formats.relative.php).
      * @param mixed $expiration When the cache should expire.
      * @param string $body The contents of the cache.
-     * @param bool $withScripts Whether JS and CSS code registered with [[\craft\web\View::registerJs()]],
-     * [[\craft\web\View::registerScript()]], and [[\craft\web\View::registerCss()]] should be captured and
-     * included in the cache.
+     * @param bool $withResources Whether JS and CSS code registered with [[\craft\web\View::registerJs()]],
+     * [[\craft\web\View::registerScript()]], [[\craft\web\View::registerCss()]],
+     * [[\craft\web\View::registerJsFile()]], and [[\craft\web\View::registerCssFile()]] should be captured
+     * and included in the cache.
      * @throws Exception if this is a console request and `false` is passed to `$global`
      * @throws Throwable
      */
-    public function endTemplateCache(string $key, bool $global, ?string $duration, mixed $expiration, string $body, bool $withScripts = false): void
+    public function endTemplateCache(string $key, bool $global, ?string $duration, mixed $expiration, string $body, bool $withResources = false): void
     {
         // Make sure template caching is enabled
         if ($this->_isTemplateCachingEnabled() === false) {
@@ -122,11 +133,13 @@ class TemplateCaches extends Component
 
         $dep = Craft::$app->getElements()->stopCollectingCacheTags();
 
-        if ($withScripts) {
+        if ($withResources) {
             $view = Craft::$app->getView();
             $bufferedJs = $view->clearJsBuffer(false, false);
             $bufferedScripts = $view->clearScriptBuffer();
             $bufferedCss = $view->clearCssBuffer();
+            $bufferedJsFiles = $view->clearJsFileBuffer();
+            $bufferedCssFiles = $view->clearCssFileBuffer();
         }
 
         // If there are any transform generation URLs in the body, don't cache it.
@@ -140,23 +153,17 @@ class TemplateCaches extends Component
 
         $cacheValue = [$body, $dep->tags];
 
-        if ($withScripts) {
+        if ($withResources) {
             // Parse the JS/CSS code and tag attributes out of the <script> and <style> tags
-            $bufferedScripts = array_map(function($tags) {
-                return array_map(function($tag) {
-                    $tag = Html::parseTag($tag);
-                    return [$tag['children'][0]['value'], $tag['attributes']];
-                }, $tags);
-            }, $bufferedScripts);
-            $bufferedCss = array_map(function($tag) {
-                $tag = Html::parseTag($tag);
-                return [$tag['children'][0]['value'], $tag['attributes']];
-            }, $bufferedCss);
+            $bufferedScripts = array_map(fn(array $tags) => $this->_parseInlineResourceTags($tags), $bufferedScripts);
+            $bufferedCss = $this->_parseInlineResourceTags($bufferedCss);
+            $bufferedJsFiles = array_map(fn(array $tags) => $this->_parseExternalResourceTags($tags, 'src'), $bufferedJsFiles);
+            $bufferedCssFiles = $this->_parseExternalResourceTags($bufferedCssFiles, 'href');
 
-            array_push($cacheValue, $bufferedJs, $bufferedScripts, $bufferedCss);
+            array_push($cacheValue, $bufferedJs, $bufferedScripts, $bufferedCss, $bufferedJsFiles, $bufferedCssFiles);
 
             // Re-register the JS and CSS
-            $this->_registerScripts($bufferedJs, $bufferedScripts, $bufferedCss);
+            $this->_registerResources($bufferedJs, $bufferedScripts, $bufferedCss, $bufferedJsFiles, $bufferedCssFiles);
         }
 
         $cacheKey = $this->_cacheKey($key, $global);
@@ -172,26 +179,66 @@ class TemplateCaches extends Component
         Craft::$app->getCache()->set($cacheKey, $cacheValue, $duration, $dep);
     }
 
-    private function _registerScripts(array $bufferedJs, array $bufferedScripts, array $bufferedCss): void
+    private function _parseInlineResourceTags(array $tags): array
     {
+        return array_map(function($tag) {
+            $tag = Html::parseTag($tag);
+            return [$tag['children'][0]['value'], $tag['attributes']];
+        }, $tags);
+    }
+
+    private function _parseExternalResourceTags(array $tags, string $urlAttribute): array
+    {
+        return array_map(function($tag) use ($urlAttribute) {
+            [$tag, $condition] = Html::unwrapCondition($tag);
+            [$tag, $noscript] = Html::unwrapNoscript($tag);
+            $tag = Html::parseTag($tag);
+            $url = ArrayHelper::remove($tag['attributes'], $urlAttribute);
+            $options = $tag['attributes'];
+            if ($condition) {
+                $options['condition'] = $condition;
+            }
+            if ($noscript) {
+                $options['noscript'] = true;
+            }
+            return [$url, $options];
+        }, $tags);
+    }
+
+    private function _registerResources(
+        array $bufferedJs,
+        array $bufferedScripts,
+        array $bufferedCss,
+        array $bufferedJsFiles,
+        array $bufferedCssFiles,
+    ): void {
         $view = Craft::$app->getView();
 
         foreach ($bufferedJs as $pos => $scripts) {
-            foreach ($scripts as $key => $script) {
-                $view->registerJs($script, $pos, $key);
+            foreach ($scripts as $key => $js) {
+                $view->registerJs($js, $pos, $key);
             }
         }
 
         foreach ($bufferedScripts as $pos => $tags) {
-            foreach ($tags as $key => $tag) {
-                [$script, $options] = $tag;
+            foreach ($tags as $key => [$script, $options]) {
                 $view->registerScript($script, $pos, $options, $key);
             }
         }
 
-        foreach ($bufferedCss as $key => $tag) {
-            [$css, $options] = $tag;
+        foreach ($bufferedCss as $key => [$css, $options]) {
             $view->registerCss($css, $options, $key);
+        }
+
+        foreach ($bufferedJsFiles as $pos => $tags) {
+            foreach ($tags as $key => [$url, $options]) {
+                $options['position'] = $pos;
+                $view->registerJsFile($url, $options, $key);
+            }
+        }
+
+        foreach ($bufferedCssFiles as $key => [$url, $options]) {
+            $view->registerCssFile($url, $options, $key);
         }
     }
 

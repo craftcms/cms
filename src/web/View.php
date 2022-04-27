@@ -220,6 +220,20 @@ class View extends \yii\web\View
     private array $_cssBuffers = [];
 
     /**
+     * @var array
+     * @see startCssFileBuffer()
+     * @see clearCssFileBuffer()
+     */
+    private array $_cssFileBuffers = [];
+
+    /**
+     * @var array
+     * @see startJsFileBuffer()
+     * @see clearJsFileBuffer()
+     */
+    private array $_jsFileBuffers = [];
+
+    /**
      * @var array|null the registered generic `<script>` code blocks
      * @see registerScript()
      */
@@ -1028,6 +1042,79 @@ class View extends \yii\web\View
         $bufferedCss = $this->css;
         $this->css = array_pop($this->_cssBuffers);
         return $bufferedCss;
+    }
+
+    /**
+     * Starts a buffer for any `<link>` tags registered with [[registerCssFile()]].
+     *
+     * The buffer’s contents can be cleared and returned later via [[clearCssFileBuffer()]].
+     *
+     * @see clearCssFileBuffer()
+     * @since 4.0.0
+     */
+    public function startCssFileBuffer(): void
+    {
+        $this->_cssFileBuffers[] = $this->cssFiles;
+        $this->cssFiles = [];
+    }
+
+    /**
+     * Clears and ends a buffer started via [[startCssFileBuffer()]], returning any `<link rel="stylesheet">` tags that were registered
+     * while the buffer was active.
+     *
+     * @return array|false The `<link rel="stylesheet">` tags that were registered while the buffer was active, or `false` if there wasn’t an active buffer.
+     * @see startCssFileBuffer()
+     * @since 4.0.0
+     */
+    public function clearCssFileBuffer(): array|false
+    {
+        if (empty($this->_cssFileBuffers)) {
+            return false;
+        }
+
+        $bufferedCssFiles = $this->cssFiles;
+        $this->cssFiles = array_pop($this->_cssFileBuffers);
+        return $bufferedCssFiles;
+    }
+
+    /**
+     * Starts a buffer for any `<script>` tags registered with [[registerJsFile()]].
+     *
+     * The buffer’s contents can be cleared and returned later via [[clearJsFileBuffer()]].
+     *
+     * @see clearJsFileBuffer()
+     * @since 4.0.0
+     */
+    public function startJsFileBuffer(): void
+    {
+        $this->_jsFileBuffers[] = $this->jsFiles;
+        $this->jsFiles = [];
+    }
+
+    /**
+     * Clears and ends a buffer started via [[startJsFileBuffer()]], returning any `<script>` tags that were registered
+     * while the buffer was active.
+     *
+     * @return array|false The `<script>` tags that were registered while the buffer was active (indexed by position), or `false` if there wasn’t an active buffer.
+     * @see startJsFileBuffer()
+     * @since 4.0.0
+     */
+    public function clearJsFileBuffer(): array|false
+    {
+        if (empty($this->_jsFileBuffers)) {
+            return false;
+        }
+
+        $bufferedJsFiles = $this->jsFiles;
+        $this->jsFiles = array_pop($this->_jsFileBuffers);
+
+        foreach ($bufferedJsFiles as $files) {
+            foreach (array_keys($files) as $key) {
+                unset($this->_registeredJsFiles[$key]);
+            }
+        }
+
+        return $bufferedJsFiles;
     }
 
     /**
