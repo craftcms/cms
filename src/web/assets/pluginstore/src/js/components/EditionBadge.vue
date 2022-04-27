@@ -48,7 +48,7 @@
     }
 
     .edition-badge-name {
-      @apply tw-inline-block tw-uppercase tw-border tw-border-solid tw-border-gray-400 tw-px-2 tw-py-0 tw-text-gray-500 tw-rounded tw-text-xs;
+      @apply tw-inline-block tw-uppercase tw-border tw-border-solid tw-border-gray-400 tw-px-2 tw-py-1 tw-text-gray-500 tw-rounded tw-text-xs;
       letter-spacing: 1.5px;
     }
   }
