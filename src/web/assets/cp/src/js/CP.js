@@ -614,13 +614,13 @@ Craft.CP = Garnish.Base.extend(
      * @deprecated in 3.7.0
      */
     get $tabsList() {
-      return this.tabManager ? this.tabManager.$ul : undefined;
+      return this.tabManager ? this.tabManager.$tablist : undefined;
     },
     /**
      * @deprecated in 3.7.0
      */
     get $tabs() {
-      return this.tabManager ? this.tabManager.$ul.find('> li') : undefined;
+      return this.tabManager ? this.tabManager.$tablist.find('> li') : undefined;
     },
     /**
      * @deprecated in 3.7.0
