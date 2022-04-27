@@ -209,10 +209,10 @@ class GlobalSet extends Element
      */
     public function attributeLabels(): array
     {
-        return [
+        return array_merge(parent::attributeLabels(), [
             'handle' => Craft::t('app', 'Handle'),
             'name' => Craft::t('app', 'Name'),
-        ];
+        ]);
     }
 
     /**
