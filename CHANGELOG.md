@@ -13,6 +13,9 @@
 ### Changed
 - `{% cache %}` tags now store any external JavaScript or CSS files registered with `{% js %}` and `{% css %}` tags. ([#9987](https://github.com/craftcms/cms/discussions/9987))
 
+### Fixed
+- Fixed the vertical alignment of condition rules’ sort handles. ([#11025](https://github.com/craftcms/cms/issues/11025))
+
 ## 4.0.0-RC1 - 2022-04-26
 
 ### Added

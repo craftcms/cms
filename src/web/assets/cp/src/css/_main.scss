@@ -3390,14 +3390,15 @@ ul.tree,
     border-top-width: 0;
   }
 
-  .rule-body {
+  & > .rule-move,
+  & > .rule-actions {
+    margin-top: 5px;
+  }
+
+  & > .rule-body {
     .lightswitch {
       display: block;
     }
-  }
-
-  .rule-actions {
-    margin: 7px 0;
   }
 }
 
