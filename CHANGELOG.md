@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Fixed
+- Fixed a bug where “Name” and “Handle” were not getting translated properly in field, volume, and global set validation errors. ([#11029](https://github.com/craftcms/cms/issues/11029))
+
+## 3.7.39 - 2022-04-26
+
 ### Added
 - Added `craft\helpers\Html::unwrapCondition()`.
 - Added `craft\helpers\Html::unwrapNoscript()`.
