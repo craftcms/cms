@@ -620,7 +620,9 @@ Craft.CP = Garnish.Base.extend(
      * @deprecated in 3.7.0
      */
     get $tabs() {
-      return this.tabManager ? this.tabManager.$tablist.find('> li') : undefined;
+      return this.tabManager
+        ? this.tabManager.$tablist.find('> li')
+        : undefined;
     },
     /**
      * @deprecated in 3.7.0
