@@ -48,6 +48,7 @@
             :loading="addToCartLoading"
             :disabled="loading"
             :class="{
+              'tw-text-blue-600 hover:tw-underline': true,
               'disabled hover:tw-no-underline': activeTrial.licenseMismatched,
             }"
           >

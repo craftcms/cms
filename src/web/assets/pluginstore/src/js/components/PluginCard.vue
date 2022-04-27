@@ -150,12 +150,15 @@
     }
   }
 
-  .plugin-card {
+  a.plugin-card {
     box-sizing: border-box;
+    @apply tw-text-gray-900;
 
     &:hover {
+      @apply tw-text-gray-900;
+
       strong {
-        color: $linkColor;
+        @apply tw-text-blue-600;
       }
     }
 

@@ -7,6 +7,17 @@
   min-height: 400px;
 }
 
+.ps-wrapper,
+#pluginstore-modal {
+  a {
+    @apply tw-text-blue-600;
+
+    &:hover {
+      @apply tw-text-blue-600;
+    }
+  }
+}
+
 .ps-wrapper {
   @apply tw-flex tw-flex-1 tw-flex-col;
   @apply lg:tw-flex-row;
