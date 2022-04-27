@@ -38,7 +38,6 @@
 
     &:not(.is-block) {
       @apply tw-relative;
-      top: -1px;
     }
 
     &.is-big {
