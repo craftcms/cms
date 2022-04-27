@@ -612,7 +612,7 @@ return [
     'Export Type' => 'Export típusa',
     'Export' => 'Export',
     'Export…' => 'Export…',
-    'External project config changes discarded.' => 'A külső projekt konfigurációjának a változtatásai elvetve.',
+    'External project config changes discarded.' => 'A projekt konfigurációjának a külső változtatásai elvetve.',
     'Failed to generate transform with id of {id}.' => 'Nem sikerült {id} azonosítójú átalakítást létrehozni.',
     'Failed to load the SVG string.' => 'Az SVG-karakterlánc betöltése nem sikerült.',
     'Failed to save the asset:' => 'A tartalom mentése nem sikerült:',
