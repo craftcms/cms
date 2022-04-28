@@ -1185,7 +1185,7 @@ class Fields extends Component
                 ->andWhere(['type' => $type])
                 ->all();
 
-            $this->_allLayoutsByType = [];
+            $this->_allLayoutsByType[$type] = [];
 
             foreach ($results as $result) {
                 $this->_allLayoutsByType[$type][] = new FieldLayout($result);
