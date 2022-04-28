@@ -426,7 +426,7 @@ class Cp
         }
 
         // Allow elements to modify the inner HTML
-        $innerHtml = $element->getElementHtml($innerHtml);
+        $innerHtml = $element->getElementHtml($context, $innerHtml);
 
         return Html::tag('div', $innerHtml, $attributes);
     }

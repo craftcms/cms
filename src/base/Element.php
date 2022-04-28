@@ -4040,7 +4040,7 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
-    public function getElementHtml($html): ?string
+    public function getElementHtml(string $context, string $html): ?string
     {
         return $html;
     }
