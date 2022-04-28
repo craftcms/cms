@@ -679,7 +679,7 @@ class AppController extends Controller
                 $elementHtml[] = Cp::elementHtml(
                     $elements[$instance['siteId']],
                     $instance['context'],
-                    $instance['thumbSize'],
+                    $instance['size'],
                     null,
                     $instance['showStatus'],
                     $instance['showThumb'],
