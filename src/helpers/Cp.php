@@ -14,7 +14,7 @@ use craft\behaviors\DraftBehavior;
 use craft\elements\Address;
 use craft\enums\LicenseKeyStatus;
 use craft\events\RegisterCpAlertsEvent;
-use craft\events\RegisterCpElementHtmlEvent;
+use craft\events\DefineElementInnerHtmlEvent;
 use craft\fieldlayoutelements\BaseField;
 use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
@@ -39,10 +39,10 @@ class Cp
     public const EVENT_REGISTER_ALERTS = 'registerAlerts';
 
     /**
-     * @event RegisterCpElementHtmlEvent The event that is triggered when to modify the element's HTML.
+     * @event DefineElementInnerHtmlEvent The event that is triggered when defining an element’s inner HTML.
      * @since 4.0.0
      */
-    public const EVENT_MODIFY_ELEMENT_HTML = 'modifyElementHtml';
+    public const EVENT_DEFINE_ELEMENT_INNER_HTML = 'defineElementInnerHtml';
 
     /**
      * @since 3.5.8
@@ -433,12 +433,17 @@ class Cp
         }
 
         // Allow plugins to modify the inner HTML
-        $event = new RegisterCpElementHtmlEvent([
-            'element' => $element,
-            'context' => $context,
-            'innerHtml' => $innerHtml,
-        ]);
-        Event::trigger(self::class, self::EVENT_MODIFY_ELEMENT_HTML, $event);
+        $event = new DefineElementInnerHtmlEvent(compact(
+            'element',
+            'context',
+            'size',
+            'showStatus',
+            'showThumb',
+            'showLabel',
+            'showDraftName',
+            'innerHtml',
+        ));
+        Event::trigger(self::class, self::EVENT_DEFINE_ELEMENT_INNER_HTML, $event);
 
         return Html::tag('div', $event->innerHtml, $attributes);
     }
