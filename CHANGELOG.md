@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- `craft\services\Fields::getLayoutsByType()` now memoizes its results. ([#11037](https://github.com/craftcms/cms/pull/11037))
+
 ### Removed
 - Removed the `--propagate` option from `resave/*` commands, which didn’t have any effect. ([#11032](https://github.com/craftcms/cms/discussions/11032))
 
