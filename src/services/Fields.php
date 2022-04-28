@@ -1656,7 +1656,7 @@ class Fields extends Component
             ]));
         }
 
-        if (!array_key_exists($layout->type, $this->_allLayoutsByType)) {
+        if ($this->_allLayoutsByType === null || !array_key_exists($layout->type, $this->_allLayoutsByType)) {
             $this->_allLayoutsByType[$layout->type] = [];
         }
 
