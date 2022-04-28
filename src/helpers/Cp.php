@@ -425,6 +425,9 @@ class Cp
             $innerHtml .= '</span></div>';
         }
 
+        // Allow elements to modify the inner HTML
+        $innerHtml = $element->getElementHtml($innerHtml);
+
         return Html::tag('div', $innerHtml, $attributes);
     }
 

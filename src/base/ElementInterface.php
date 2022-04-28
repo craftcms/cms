@@ -1482,6 +1482,15 @@ interface ElementInterface extends ComponentInterface
     // -------------------------------------------------------------------------
 
     /**
+     * Returns the HTML (icon, title, status, etc) for the element, used within element indexes and element select fields.
+     *
+     * @param string $html The default inner-html
+     * @return string|null
+     * @since 4.0.0
+     */
+    public function getElementHtml(string $html): ?string;
+
+    /**
      * Returns any attributes that should be included in the element’s DOM representation in the control panel.
      *
      * The attribute HTML will be rendered with [[\yii\helpers\BaseHtml::renderTagAttributes()]].
