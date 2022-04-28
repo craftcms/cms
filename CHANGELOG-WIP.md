@@ -209,6 +209,7 @@
 - Added `craft\events\AuthorizationCheckEvent`.
 - Added `craft\events\CreateElementCheckEvent`.
 - Added `craft\events\DefineElementEditorHtmlEvent`.
+- Added `craft\events\DefineElementInnerHtmlEvent`. ([#11035](https://github.com/craftcms/cms/pull/11035))
 - Added `craft\events\DefineHtmlEvent::$static`.
 - Added `craft\events\FsEvent`.
 - Added `craft\events\GenerateTransformEvent::$asset`.
@@ -268,6 +269,7 @@
 - Added `craft\helpers\Cp::dateFieldHtml()`.
 - Added `craft\helpers\Cp::dateHtml()`.
 - Added `craft\helpers\Cp::elementSelectHtml()`.
+- Added `craft\helpers\Cp::EVENT_DEFINE_ELEMENT_INNER_HTML`. ([#11035](https://github.com/craftcms/cms/pull/11035))
 - Added `craft\helpers\Cp::fieldLayoutDesignerHtml()`.
 - Added `craft\helpers\Cp::lightswitchHtml()`.
 - Added `craft\helpers\Cp::multiSelectFieldHtml()`.

@@ -13,6 +13,7 @@ use craft\base\FieldLayoutElement;
 use craft\behaviors\DraftBehavior;
 use craft\elements\Address;
 use craft\enums\LicenseKeyStatus;
+use craft\events\DefineElementInnerHtmlEvent;
 use craft\events\RegisterCpAlertsEvent;
 use craft\fieldlayoutelements\BaseField;
 use craft\models\FieldLayout;
@@ -36,6 +37,12 @@ class Cp
      * @event RegisterCpAlertsEvent The event that is triggered when registering control panel alerts.
      */
     public const EVENT_REGISTER_ALERTS = 'registerAlerts';
+
+    /**
+     * @event DefineElementInnerHtmlEvent The event that is triggered when defining an element’s inner HTML.
+     * @since 4.0.0
+     */
+    public const EVENT_DEFINE_ELEMENT_INNER_HTML = 'defineElementInnerHtml';
 
     /**
      * @since 3.5.8
@@ -239,7 +246,7 @@ class Cp
      *
      * @param ElementInterface $element The element to be rendered
      * @param string $context The context the element is going to be shown in (`index`, `field`, etc.)
-     * @param string $thumbSize The size of the element (`small` or `large`)
+     * @param string $size The size of the element (`small` or `large`)
      * @param string|null $inputName The `name` attribute that should be set on the hidden input, if `$context` is set to `field`
      * @param bool $showStatus Whether the element status should be shown (if the element type has statuses)
      * @param bool $showThumb Whether the element thumb should be shown (if the element has one)
@@ -253,7 +260,7 @@ class Cp
     public static function elementHtml(
         ElementInterface $element,
         string $context = 'index',
-        string $thumbSize = self::ELEMENT_SIZE_SMALL,
+        string $size = self::ELEMENT_SIZE_SMALL,
         ?string $inputName = null,
         bool $showStatus = true,
         bool $showThumb = true,
@@ -269,7 +276,7 @@ class Cp
 
         // Create the thumb/icon image, if there is one
         if ($showThumb) {
-            $thumbSizePx = $thumbSize === self::ELEMENT_SIZE_SMALL ? 34 : 120;
+            $thumbSizePx = $size === self::ELEMENT_SIZE_SMALL ? 34 : 120;
             $thumbUrl = $element->getThumbUrl($thumbSizePx);
         } else {
             $thumbSizePx = $thumbUrl = null;
@@ -289,7 +296,7 @@ class Cp
                 'class' => array_filter([
                     'elementthumb',
                     $element->getHasCheckeredThumb() ? 'checkered' : null,
-                    $thumbSize === self::ELEMENT_SIZE_SMALL && $element->getHasRoundedThumb() ? 'rounded' : null,
+                    $size === self::ELEMENT_SIZE_SMALL && $element->getHasRoundedThumb() ? 'rounded' : null,
                 ]),
                 'data' => [
                     'sizes' => $sizesHtml,
@@ -304,7 +311,7 @@ class Cp
         $attributes = ArrayHelper::merge(
             Html::normalizeTagAttributes($element->getHtmlAttributes($context)),
             [
-                'class' => ['element', $thumbSize],
+                'class' => ['element', $size],
                 'title' => $label . (Craft::$app->getIsMultiSite() ? ' – ' . Craft::t('site', $element->getSite()->getName()) : ''),
                 'data' => array_filter([
                     'type' => get_class($element),
@@ -318,7 +325,7 @@ class Cp
                     'level' => $element->level,
                     'settings' => $autoReload ? compact(
                         'context',
-                        'thumbSize',
+                        'size',
                         'showStatus',
                         'showThumb',
                         'showLabel',
@@ -425,7 +432,20 @@ class Cp
             $innerHtml .= '</span></div>';
         }
 
-        return Html::tag('div', $innerHtml, $attributes);
+        // Allow plugins to modify the inner HTML
+        $event = new DefineElementInnerHtmlEvent(compact(
+            'element',
+            'context',
+            'size',
+            'showStatus',
+            'showThumb',
+            'showLabel',
+            'showDraftName',
+            'innerHtml',
+        ));
+        Event::trigger(self::class, self::EVENT_DEFINE_ELEMENT_INNER_HTML, $event);
+
+        return Html::tag('div', $event->innerHtml, $attributes);
     }
 
     /**
