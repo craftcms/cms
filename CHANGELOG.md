@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- Added `craft\base\PluginInterface::config()`. ([#11039](https://github.com/craftcms/cms/pull/11039))
 - Added `craft\helpers\Html::unwrapCondition()`.
 - Added `craft\helpers\Html::unwrapNoscript()`.
 - Added `craft\web\View::clearCssFileBuffer()`.
