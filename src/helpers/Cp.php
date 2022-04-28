@@ -14,6 +14,7 @@ use craft\behaviors\DraftBehavior;
 use craft\elements\Address;
 use craft\enums\LicenseKeyStatus;
 use craft\events\RegisterCpAlertsEvent;
+use craft\events\RegisterCpElementHtmlEvent;
 use craft\fieldlayoutelements\BaseField;
 use craft\models\FieldLayout;
 use craft\models\FieldLayoutTab;
@@ -36,6 +37,12 @@ class Cp
      * @event RegisterCpAlertsEvent The event that is triggered when registering control panel alerts.
      */
     public const EVENT_REGISTER_ALERTS = 'registerAlerts';
+
+    /**
+     * @event RegisterCpElementHtmlEvent The event that is triggered when to modify the element's HTML.
+     * @since 4.0.0
+     */
+    public const EVENT_MODIFY_ELEMENT_HTML = 'modifyElementHtml';
 
     /**
      * @since 3.5.8
@@ -425,10 +432,15 @@ class Cp
             $innerHtml .= '</span></div>';
         }
 
-        // Allow elements to modify the inner HTML
-        $innerHtml = $element->getElementHtml($context, $innerHtml);
+        // Allow plugins to modify the inner HTML
+        $event = new RegisterCpElementHtmlEvent([
+            'element' => $element,
+            'context' => $context,
+            'innerHtml' => $innerHtml,
+        ]);
+        Event::trigger(self::class, self::EVENT_MODIFY_ELEMENT_HTML, $event);
 
-        return Html::tag('div', $innerHtml, $attributes);
+        return Html::tag('div', $event->innerHtml, $attributes);
     }
 
     /**
