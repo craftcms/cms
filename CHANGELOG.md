@@ -4,6 +4,8 @@
 
 ### Added
 - Added `craft\base\PluginInterface::config()`. ([#11039](https://github.com/craftcms/cms/pull/11039))
+- Added `craft\events\DefineElementInnerHtmlEvent`. ([#11035](https://github.com/craftcms/cms/pull/11035))
+- Added `craft\helpers\Cp::EVENT_DEFINE_ELEMENT_INNER_HTML`. ([#11035](https://github.com/craftcms/cms/pull/11035))
 - Added `craft\helpers\Html::unwrapCondition()`.
 - Added `craft\helpers\Html::unwrapNoscript()`.
 - Added `craft\web\View::clearCssFileBuffer()`.
