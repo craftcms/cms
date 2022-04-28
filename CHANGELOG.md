@@ -21,6 +21,7 @@
 - Fixed a JavaScript error that occurred if `Craft.cp.$tabsList` or `Craft.cp.$tabs` were referenced.
 - Fixed a bug where “Name” and “Handle” were not getting translated properly in filesystem validation errors. ([#11029](https://github.com/craftcms/cms/issues/11029))
 - Fixed a bug where queue-tracking Ajax requsets would fire in rapid succession.
+- Fixed a bug where the Plugin Store wasn’t loading for multi-site installs. ([#11031](https://github.com/craftcms/cms/issues/11031))
 
 ## 4.0.0-RC1 - 2022-04-26
 

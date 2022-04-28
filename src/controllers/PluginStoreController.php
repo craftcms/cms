@@ -278,7 +278,8 @@ class PluginStoreController extends Controller
      */
     private function _getVueAppBaseUrl(): string
     {
-        return UrlHelper::rootRelativeUrl(UrlHelper::url('plugin-store'));
+        $url = UrlHelper::rootRelativeUrl(UrlHelper::url('plugin-store'));
+        return UrlHelper::removeParam($url, 'site');
     }
 
     /**
