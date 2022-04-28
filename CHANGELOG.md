@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.0.0-RC2 - 2022-04-28
 
 ### Added
 - Added `craft\base\PluginInterface::config()`. ([#11039](https://github.com/craftcms/cms/pull/11039))
