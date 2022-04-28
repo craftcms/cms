@@ -162,14 +162,17 @@ import './dashboard.scss';
           type: type,
         };
 
-        Craft.sendActionRequest('POST', 'dashboard/create-widget', {data})
-          .then((response) => {
-            $container.removeClass('loading');
-            widget.update(response.data);
-          })
-          .catch(({response}) => {
-            widget.destroy();
-          });
+        Craft.queue.push(() => new Promise(resolve => {
+          Craft.sendActionRequest('POST', 'dashboard/create-widget', {data})
+            .then(response => {
+              $container.removeClass('loading');
+              widget.update(response.data);
+            })
+            .catch(() => {
+              widget.destroy();
+            })
+            .finally(resolve);
+        }));
       }
     },
 
@@ -406,45 +409,48 @@ import './dashboard.scss';
 
       this.$saveBtn.addClass('loading');
 
-      var action = this.$container.hasClass('new')
-          ? 'dashboard/create-widget'
-          : 'dashboard/save-widget-settings',
-        data = this.$settingsForm.serialize();
+      Craft.queue.push(() => new Promise(resolve => {
+        const action = this.$container.hasClass('new')
+            ? 'dashboard/create-widget'
+            : 'dashboard/save-widget-settings',
+          data = this.$settingsForm.serialize();
 
-      Craft.sendActionRequest('POST', action, {data})
-        .then((response) => {
-          if (this.$settingsErrorList) {
-            this.$settingsErrorList.remove();
-            this.$settingsErrorList = null;
-          }
+        Craft.sendActionRequest('POST', action, {data})
+          .then(response => {
+            if (this.$settingsErrorList) {
+              this.$settingsErrorList.remove();
+              this.$settingsErrorList = null;
+            }
 
-          Craft.cp.displayNotice(Craft.t('app', 'Widget saved.'));
+            Craft.cp.displayNotice(Craft.t('app', 'Widget saved.'));
 
-          // Make sure the widget is still allowed to be shown, just in case
-          if (!response.data.info) {
-            this.destroy();
-          } else {
-            this.update(response.data);
-            this.hideSettings();
-          }
-        })
-        .catch(({response}) => {
-          if (this.$settingsErrorList) {
-            this.$settingsErrorList.remove();
-            this.$settingsErrorList = null;
-          }
+            // Make sure the widget is still allowed to be shown, just in case
+            if (!response.data.info) {
+              this.destroy();
+            } else {
+              this.update(response.data);
+              this.hideSettings();
+            }
+          })
+          .catch(({response}) => {
+            if (this.$settingsErrorList) {
+              this.$settingsErrorList.remove();
+              this.$settingsErrorList = null;
+            }
 
-          Craft.cp.displayError(Craft.t('app', 'Couldn’t save widget.'));
+            Craft.cp.displayError(Craft.t('app', 'Couldn’t save widget.'));
 
-          if (response.data.errors) {
-            this.$settingsErrorList = Craft.ui
-              .createErrorList(response.data.errors)
-              .insertAfter(this.$settingsContainer);
-          }
-        })
-        .finally(() => {
-          this.$saveBtn.removeClass('loading');
-        });
+            if (response.data.errors) {
+              this.$settingsErrorList = Craft.ui
+                .createErrorList(response.data.errors)
+                .insertAfter(this.$settingsContainer);
+            }
+          })
+          .finally(() => {
+            this.$saveBtn.removeClass('loading');
+            resolve();
+          });
+      }));
     },
 
     update: function (response) {
