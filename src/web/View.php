@@ -312,6 +312,11 @@ class View extends \yii\web\View
      */
     public function createTwig(): Environment
     {
+        // Log a warning if the app isn't fully initialized yet
+        if (!Craft::$app->getIsInitialized()) {
+            Craft::warning('Twig instantiated before Craft is fully initialized.', __METHOD__);
+        }
+
         $twig = new Environment(new TemplateLoader($this), $this->_getTwigOptions());
 
         $twig->addExtension(new StringLoaderExtension());

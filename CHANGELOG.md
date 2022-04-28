@@ -15,6 +15,8 @@
 
 ### Changed
 - `{% cache %}` tags now store any external JavaScript or CSS files registered with `{% js %}` and `{% css %}` tags. ([#9987](https://github.com/craftcms/cms/discussions/9987))
+- A warning is now logged if an element query is executed before Craft is fully initialized. ([#11033](https://github.com/craftcms/cms/issues/11033))
+- A warning is now logged if Twig is instantiated before Craft is fully initialized. ([#11033](https://github.com/craftcms/cms/issues/11033))
 
 ### Removed
 - Removed the `Craft.queueActionRequest()` JavaScript method. `Craft.queue.push()` can be used instead.
