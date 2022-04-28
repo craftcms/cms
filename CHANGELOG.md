@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a bug that could cause duplicated queries on element indexes.
+
 ## 3.7.39 - 2022-04-26
 
 ### Added

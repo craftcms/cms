@@ -207,6 +207,11 @@ class Fields extends Component
     private $_layoutsByType;
 
     /**
+     * @var
+     */
+    private $_allLayoutsByType;
+
+    /**
      * @var array
      */
     private $_savingFields = [];
@@ -1177,17 +1182,30 @@ class Fields extends Component
      */
     public function getLayoutsByType(string $type): array
     {
+        if ($this->_allLayoutsByType !== null && array_key_exists($type, $this->_allLayoutsByType)) {
+            return $this->_allLayoutsByType[$type];
+        }
+
         $results = $this->_createLayoutQuery()
             ->andWhere(['type' => $type])
             ->all();
 
-        $layouts = [];
-
-        foreach ($results as $result) {
-            $layouts[] = new FieldLayout($result);
+        if (!$results) {
+            return [];
         }
 
-        return $layouts;
+        if ($this->_allLayoutsByType === null) {
+            $this->_allLayoutsByType = [];
+        }
+
+        $this->_allLayoutsByType[$type] = !array_key_exists($type, $this->_allLayoutsByType) ? [] : $this->_allLayoutsByType[$type];
+
+        foreach ($results as $result) {
+            $fieldLayout = new FieldLayout($result);
+            $this->_allLayoutsByType[$type][$fieldLayout->id] = $fieldLayout;
+        }
+
+        return $this->_allLayoutsByType[$type];
     }
 
     /**
@@ -1638,7 +1656,11 @@ class Fields extends Component
             ]));
         }
 
-        $this->_layoutsByType[$layout->type] = $this->_layoutsById[$layout->id] = $layout;
+        if (!array_key_exists($layout->type, $this->_allLayoutsByType)) {
+            $this->_allLayoutsByType[$layout->type] = [];
+        }
+
+        $this->_layoutsByType[$layout->type] = $this->_layoutsById[$layout->id] = $this->_allLayoutsByType[$layout->type][$layout->id] = $layout;
 
         return true;
     }
