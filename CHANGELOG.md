@@ -23,6 +23,7 @@
 - Fixed a bug where queue-tracking Ajax requsets would fire in rapid succession.
 - Fixed a bug where the Plugin Store wasn’t loading for multi-site installs. ([#11031](https://github.com/craftcms/cms/issues/11031))
 - Fixed a bug where it wasn’t possible for users to publicly register themselves if their email was already in use by an inactive account. ([#11028](https://github.com/craftcms/cms/discussions/11028))
+- Fixed a bug where logging out could trigger infinite browser redirects, if the `postLogoutRedirect` config setting wasn’t set.
 
 ## 4.0.0-RC1 - 2022-04-26
 
