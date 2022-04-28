@@ -199,17 +199,17 @@ class Fields extends Component
     /**
      * @var
      */
-    private $_layoutsById;
+    private $_layoutsById = [];
 
     /**
      * @var
      */
-    private $_layoutsByType;
+    private $_layoutsByType = [];
 
     /**
      * @var
      */
-    private $_allLayoutsByType;
+    private $_allLayoutsByType = [];
 
     /**
      * @var array
@@ -1092,7 +1092,7 @@ class Fields extends Component
      */
     public function getLayoutById(int $layoutId)
     {
-        if ($this->_layoutsById !== null && array_key_exists($layoutId, $this->_layoutsById)) {
+        if (array_key_exists($layoutId, $this->_layoutsById)) {
             return $this->_layoutsById[$layoutId];
         }
 
@@ -1115,14 +1115,12 @@ class Fields extends Component
         $response = [];
 
         // Don't re-fetch any layouts we've already memoized
-        if (isset($this->_layoutsById)) {
-            foreach ($layoutIds as $key => $id) {
-                if (array_key_exists($id, $this->_layoutsById)) {
-                    if ($this->_layoutsById[$id] !== null) {
-                        $response[$id] = $this->_layoutsById[$id];
-                    }
-                    unset($layoutIds[$key]);
+        foreach ($layoutIds as $key => $id) {
+            if (array_key_exists($id, $this->_layoutsById)) {
+                if ($this->_layoutsById[$id] !== null) {
+                    $response[$id] = $this->_layoutsById[$id];
                 }
+                unset($layoutIds[$key]);
             }
         }
 
@@ -1151,7 +1149,7 @@ class Fields extends Component
      */
     public function getLayoutByType(string $type): FieldLayout
     {
-        if ($this->_layoutsByType !== null && array_key_exists($type, $this->_layoutsByType)) {
+        if (isset($this->_layoutsByType[$type])) {
             return $this->_layoutsByType[$type];
         }
 
@@ -1182,27 +1180,16 @@ class Fields extends Component
      */
     public function getLayoutsByType(string $type): array
     {
-        if ($this->_allLayoutsByType !== null && array_key_exists($type, $this->_allLayoutsByType)) {
-            return $this->_allLayoutsByType[$type];
-        }
+        if (!isset($this->_allLayoutsByType[$type])) {
+            $results = $this->_createLayoutQuery()
+                ->andWhere(['type' => $type])
+                ->all();
 
-        $results = $this->_createLayoutQuery()
-            ->andWhere(['type' => $type])
-            ->all();
-
-        if (!$results) {
-            return [];
-        }
-
-        if ($this->_allLayoutsByType === null) {
             $this->_allLayoutsByType = [];
-        }
 
-        $this->_allLayoutsByType[$type] = !array_key_exists($type, $this->_allLayoutsByType) ? [] : $this->_allLayoutsByType[$type];
-
-        foreach ($results as $result) {
-            $fieldLayout = new FieldLayout($result);
-            $this->_allLayoutsByType[$type][$fieldLayout->id] = $fieldLayout;
+            foreach ($results as $result) {
+                $this->_allLayoutsByType[$type][] = new FieldLayout($result);
+            }
         }
 
         return $this->_allLayoutsByType[$type];
@@ -1656,11 +1643,10 @@ class Fields extends Component
             ]));
         }
 
-        if ($this->_allLayoutsByType === null || !array_key_exists($layout->type, $this->_allLayoutsByType)) {
-            $this->_allLayoutsByType[$layout->type] = [];
-        }
+        $this->_layoutsByType[$layout->type] = $this->_layoutsById[$layout->id] = $layout;
 
-        $this->_layoutsByType[$layout->type] = $this->_layoutsById[$layout->id] = $this->_allLayoutsByType[$layout->type][$layout->id] = $layout;
+        // Clear caches
+        unset($this->_allLayoutsByType[$layout->type]);
 
         return true;
     }
@@ -1713,6 +1699,11 @@ class Fields extends Component
             ]));
         }
 
+        // Clear caches
+        unset($this->_layoutsById[$layout->id]);
+        unset($this->_layoutsByType[$layout->type]);
+        unset($this->_allLayoutsByType[$layout->type]);
+
         return true;
     }
 
@@ -1727,6 +1718,11 @@ class Fields extends Component
         $affectedRows = Craft::$app->getDb()->createCommand()
             ->softDelete(Table::FIELDLAYOUTS, ['type' => $type])
             ->execute();
+
+        // Clear caches
+        $this->_layoutsById = [];
+        $this->_layoutsByType = [];
+        $this->_allLayoutsByType = [];
 
         return (bool)$affectedRows;
     }
@@ -1743,6 +1739,11 @@ class Fields extends Component
         $affectedRows = Craft::$app->getDb()->createCommand()
             ->restore(Table::FIELDLAYOUTS, ['id' => $id])
             ->execute();
+
+        // Clear caches
+        $this->_layoutsById = [];
+        $this->_layoutsByType = [];
+        $this->_allLayoutsByType = [];
 
         return (bool)$affectedRows;
     }
