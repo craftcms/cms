@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Changed
+- `craft\services\Fields::getLayoutsByType()` now memoizes its results. ([#11037](https://github.com/craftcms/cms/pull/11037))
+
 ## 3.7.39 - 2022-04-26
 
 ### Added
