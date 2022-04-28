@@ -2,8 +2,8 @@
 
 ## Unreleased
 
-### Fixed
-- Fixed a bug that could cause duplicated queries on element indexes.
+### Changed
+- `craft\services\Fields::getLayoutsByType()` now memoizes its results. ([#11037](https://github.com/craftcms/cms/pull/11037))
 
 ## 3.7.39 - 2022-04-26
 
