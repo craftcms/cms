@@ -47,12 +47,12 @@ Craft.Queue = Garnish.Base.extend({
       this.jobs[method](() => {
         return new Promise((qResolve, qReject) => {
           job()
-            .then(value => {
+            .then((value) => {
               // ...arguments doesn't work here :(
               resolve(value);
               qResolve();
             })
-            .catch(value => {
+            .catch((value) => {
               // ...arguments doesn't work here :(
               reject(value);
               qReject();

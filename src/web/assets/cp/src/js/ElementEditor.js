@@ -368,31 +368,34 @@ Craft.ElementEditor = Garnish.Base.extend(
             Craft.t('app', 'Are you sure you want to discard your changes?')
           )
         ) {
-          this.queue.unshift(() => new Promise((resolve, reject) => {
-            if (this.isFullPage) {
-              Craft.submitForm(this.$container, {
-                action: 'elements/delete-draft',
-                redirect: this.settings.hashedCpEditUrl,
-                params: {
-                  draftId: this.settings.draftId,
-                  provisional: 1,
-                },
-              });
-            } else {
-              Craft.sendActionRequest('POST', 'elements/delete-draft', {
-                  data: {
-                    elementId: this.settings.canonicalId,
-                    draftId: this.settings.draftId,
-                    provisional: 1,
-                  },
-                })
-                .then((response) => {
-                  Craft.cp.displayNotice(response.data.message);
-                  this.slideout.close();
-                })
-                .catch(reject);
-            }
-          }));
+          this.queue.unshift(
+            () =>
+              new Promise((resolve, reject) => {
+                if (this.isFullPage) {
+                  Craft.submitForm(this.$container, {
+                    action: 'elements/delete-draft',
+                    redirect: this.settings.hashedCpEditUrl,
+                    params: {
+                      draftId: this.settings.draftId,
+                      provisional: 1,
+                    },
+                  });
+                } else {
+                  Craft.sendActionRequest('POST', 'elements/delete-draft', {
+                    data: {
+                      elementId: this.settings.canonicalId,
+                      draftId: this.settings.draftId,
+                      provisional: 1,
+                    },
+                  })
+                    .then((response) => {
+                      Craft.cp.displayNotice(response.data.message);
+                      this.slideout.close();
+                    })
+                    .catch(reject);
+                }
+              })
+          );
         }
       });
     },
@@ -1029,39 +1032,42 @@ Craft.ElementEditor = Garnish.Base.extend(
      * @returns {Promise}
      */
     checkForm: function (force) {
-      return this.queue.push(() => new Promise((resolve, reject) => {
-        // If this isn't a draft and there's no active preview, then there's nothing to check
-        if (
-          this.settings.revisionId ||
-          this.pauseLevel > 0 ||
-          !this.enableAutosave ||
-          !this.settings.canCreateDrafts
-        ) {
-          resolve();
-        }
+      return this.queue.push(
+        () =>
+          new Promise((resolve, reject) => {
+            // If this isn't a draft and there's no active preview, then there's nothing to check
+            if (
+              this.settings.revisionId ||
+              this.pauseLevel > 0 ||
+              !this.enableAutosave ||
+              !this.settings.canCreateDrafts
+            ) {
+              resolve();
+            }
 
-        clearTimeout(this.timeout);
-        this.timeout = null;
+            clearTimeout(this.timeout);
+            this.timeout = null;
 
-        // Has anything changed?
-        const data = this.serializeForm(true);
-        if (
-          !force &&
-          data ===
-          (this.lastSerializedValue ||
-            this.$container.data('initialSerializedValue'))
-        ) {
-          resolve();
-          return;
-        }
+            // Has anything changed?
+            const data = this.serializeForm(true);
+            if (
+              !force &&
+              data ===
+                (this.lastSerializedValue ||
+                  this.$container.data('initialSerializedValue'))
+            ) {
+              resolve();
+              return;
+            }
 
-        this.saveDraft(data)
-          .then(resolve)
-          .catch((e) => {
-            console.warn('Couldn’t save draft:', e);
-            reject(e);
-          });
-      }));
+            this.saveDraft(data)
+              .then(resolve)
+              .catch((e) => {
+                console.warn('Couldn’t save draft:', e);
+                reject(e);
+              });
+          })
+      );
     },
 
     isPreviewActive: function () {
@@ -1069,9 +1075,14 @@ Craft.ElementEditor = Garnish.Base.extend(
     },
 
     createDraft: function () {
-      return this.queue.push(() => new Promise((resolve, reject) => {
-        this.saveDraft(this.serializeForm(true)).then(resolve).catch(reject);
-      }));
+      return this.queue.push(
+        () =>
+          new Promise((resolve, reject) => {
+            this.saveDraft(this.serializeForm(true))
+              .then(resolve)
+              .catch(reject);
+          })
+      );
     },
 
     /**

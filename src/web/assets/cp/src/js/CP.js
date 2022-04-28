@@ -930,16 +930,19 @@ Craft.CP = Garnish.Base.extend(
     },
 
     fetchAlerts: function () {
-      return Craft.queue.push(() => new Promise((resolve, reject) => {
-        const data = {
-          path: Craft.path,
-        };
-        Craft.sendActionRequest('POST', 'app/get-cp-alerts', {data})
-          .then(({data}) => {
-            resolve(data.alerts);
+      return Craft.queue.push(
+        () =>
+          new Promise((resolve, reject) => {
+            const data = {
+              path: Craft.path,
+            };
+            Craft.sendActionRequest('POST', 'app/get-cp-alerts', {data})
+              .then(({data}) => {
+                resolve(data.alerts);
+              })
+              .catch(reject);
           })
-          .catch(reject);
-      }));
+      );
     },
 
     displayAlerts: function (alerts) {
@@ -974,21 +977,24 @@ Craft.CP = Garnish.Base.extend(
         this.addListener($shunnableAlerts[i], 'click', (ev) => {
           ev.preventDefault();
 
-          Craft.queue.push(() => new Promise((resolve, reject) => {
-            const $link = $(ev.currentTarget);
-            const data = {
-              message: $link.prop('className').substring(5),
-            };
-            Craft.sendActionRequest('POST', 'app/shun-cp-alert', {data})
-              .then(() => {
-                $link.parent().remove();
-                resolve();
+          Craft.queue.push(
+            () =>
+              new Promise((resolve, reject) => {
+                const $link = $(ev.currentTarget);
+                const data = {
+                  message: $link.prop('className').substring(5),
+                };
+                Craft.sendActionRequest('POST', 'app/shun-cp-alert', {data})
+                  .then(() => {
+                    $link.parent().remove();
+                    resolve();
+                  })
+                  .catch(({response}) => {
+                    this.displayError(response.data.message);
+                    reject();
+                  });
               })
-              .catch(({response}) => {
-                this.displayError(response.data.message);
-                reject();
-              });
-          }));
+          );
         });
       }
     },
@@ -1109,24 +1115,29 @@ Craft.CP = Garnish.Base.extend(
         return;
       }
 
-      Craft.queue.push(() => new Promise((resolve, reject) => {
-        Craft.sendActionRequest('POST', 'app/get-utilities-badge-count')
-          .then(({data}) => {
-            // Get the existing utility nav badge, if any
-            let $badge = $utilitiesLink.children('.badge');
+      Craft.queue.push(
+        () =>
+          new Promise((resolve, reject) => {
+            Craft.sendActionRequest('POST', 'app/get-utilities-badge-count')
+              .then(({data}) => {
+                // Get the existing utility nav badge, if any
+                let $badge = $utilitiesLink.children('.badge');
 
-            if (data.badgeCount) {
-              if (!$badge.length) {
-                $badge = $('<span class="badge"/>').appendTo($utilitiesLink);
-              }
-              $badge.text(data.badgeCount);
-            } else if ($badge.length) {
-              $badge.remove();
-            }
-            resolve();
+                if (data.badgeCount) {
+                  if (!$badge.length) {
+                    $badge = $('<span class="badge"/>').appendTo(
+                      $utilitiesLink
+                    );
+                  }
+                  $badge.text(data.badgeCount);
+                } else if ($badge.length) {
+                  $badge.remove();
+                }
+                resolve();
+              })
+              .catch(reject);
           })
-          .catch(reject);
-      }));
+      );
     },
 
     runQueue: function () {
@@ -1135,14 +1146,17 @@ Craft.CP = Garnish.Base.extend(
       }
 
       if (Craft.runQueueAutomatically) {
-        Craft.queue.push(() => new Promise((resolve, reject) => {
-          Craft.sendActionRequest('POST', 'queue/run')
-            .then(() => {
-              this.trackJobProgress(false, true);
-              resolve();
+        Craft.queue.push(
+          () =>
+            new Promise((resolve, reject) => {
+              Craft.sendActionRequest('POST', 'queue/run')
+                .then(() => {
+                  this.trackJobProgress(false, true);
+                  resolve();
+                })
+                .catch(reject);
             })
-            .catch(reject);
-        }));
+        );
       } else {
         this.trackJobProgress(false, true);
       }
@@ -1172,20 +1186,26 @@ Craft.CP = Garnish.Base.extend(
     },
 
     _trackJobProgressInternal: function () {
-      Craft.queue.push(() => new Promise((resolve, reject) => {
-        Craft.sendActionRequest('POST', 'queue/get-job-info?limit=50&dontExtendSession=1')
-          .then(({data}) => {
-            this.trackJobProgressTimeout = null;
-            this.totalJobs = data.total;
-            this.setJobInfo(data.jobs);
-            if (this.jobInfo.length) {
-              // Check again after a delay
-              this.trackJobProgress(true);
-            }
-            resolve();
+      Craft.queue.push(
+        () =>
+          new Promise((resolve, reject) => {
+            Craft.sendActionRequest(
+              'POST',
+              'queue/get-job-info?limit=50&dontExtendSession=1'
+            )
+              .then(({data}) => {
+                this.trackJobProgressTimeout = null;
+                this.totalJobs = data.total;
+                this.setJobInfo(data.jobs);
+                if (this.jobInfo.length) {
+                  // Check again after a delay
+                  this.trackJobProgress(true);
+                }
+                resolve();
+              })
+              .catch(reject);
           })
-          .catch(reject);
-      }));
+      );
     },
 
     setJobInfo: function (jobInfo) {
