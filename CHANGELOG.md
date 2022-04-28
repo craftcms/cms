@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Removed
+- Removed the `--propagate` option from `resave/*` commands, which didn’t have any effect. ([#11032](https://github.com/craftcms/cms/discussions/11032))
+
 ### Fixed
 - Fixed a bug where “Name” and “Handle” were not getting translated properly in field, volume, and global set validation errors. ([#11029](https://github.com/craftcms/cms/issues/11029))
 
