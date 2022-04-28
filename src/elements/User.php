@@ -1687,6 +1687,7 @@ class User extends Element implements IdentityInterface
         // Get the user record
         if (!$isNew) {
             $record = UserRecord::findOne($this->id);
+            $isInactive = $record->active || $record->pending;
 
             if (!$record) {
                 throw new InvalidConfigException("Invalid user ID: $this->id");
@@ -1697,7 +1698,10 @@ class User extends Element implements IdentityInterface
             }
 
             if ($this->pending != $record->pending) {
-                throw new Exception('Unable to change a user’s pending state like this.');
+                if ($isInactive) {
+                    throw new Exception('Unable to change a user’s pending state like this.');
+                }
+                $record->pending = $this->pending;
             }
 
             if ($this->locked != $record->locked) {

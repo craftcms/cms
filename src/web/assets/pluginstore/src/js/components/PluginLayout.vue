@@ -43,8 +43,8 @@
                 <li v-for="(tab, tabKey) in tabs" :key="tabKey">
                   <router-link
                     :class="{
-                      'tw-inline-block tw-px-1 tw-py-3 tw-border-solid tw-border-b-2 tw-text-gray-500 tw-text-opacity-75 hover:tw-text-opacity-100 hover:tw-no-underline': true,
-                      'tw-border-transparent hover:tw-border-separator hover:tw-border-gray-200':
+                      'tw-inline-block tw-px-1 tw-py-3 tw-border-solid tw-border-b-2 tw-text-opacity-75 hover:tw-text-opacity-100 hover:tw-no-underline': true,
+                      'tw-border-transparent hover:tw-border-separator hover:tw-border-gray-200 tw-text-gray-500':
                         $route.path !==
                         '/' + plugin.handle + (tab.slug ? '/' + tab.slug : ''),
                       'tw-text-blue-600 tw-border-blue-600 tw-text-opacity-100':

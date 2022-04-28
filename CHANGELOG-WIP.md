@@ -119,6 +119,7 @@
 - Added `craft\base\Model::defineBehaviors()`. ([#10691](https://github.com/craftcms/cms/pull/10691))
 - Added `craft\base\ModelInterface`.
 - Added `craft\base\NameTrait`.
+- Added `craft\base\PluginInterface::config()`. ([#11039](https://github.com/craftcms/cms/pull/11039))
 - Added `craft\behaviors\SessionBehavior::broadcastToJs()`.
 - Added `craft\behaviors\SessionBehavior::getError()`.
 - Added `craft\behaviors\SessionBehavior::getNotice()`.
