@@ -636,7 +636,7 @@ return [
     'Files in this filesystem have public URLs' => 'A fájlrendszerben lévő fájloknak nyilvános URL-címük van',
     'Filesystem saved.' => 'Fájlrendszer elmentve.',
     'Filesystems' => 'Fájlrendszerek',
-    'Filesystem Type' => 'Filesystem Type',
+    'Filesystem Type' => 'Fájlrendszer típusa',
     'Filter results' => 'Eredmények szűrése',
     'Find Text' => 'Szöveg keresése',
     'Find an official Craft Partner' => 'Hivatalos Craft Partner keresése',
