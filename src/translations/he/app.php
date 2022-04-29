@@ -636,7 +636,7 @@ return [
     'Files in this filesystem have public URLs' => 'לקבצים במערכת הקבצים הזאת יש כתובות URL ציבוריות',
     'Filesystem saved.' => 'מערכת הקבצים נשמרה.',
     'Filesystems' => 'מערכות קבצים',
-    'Filesytem Type' => 'סוג מערכת קבצים',
+    'Filesystem Type' => 'Filesystem Type',
     'Filter results' => 'תוצאות הסינון',
     'Find Text' => 'חפש טקסט',
     'Find an official Craft Partner' => 'מצא שותף Craft רשמי',
