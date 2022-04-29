@@ -636,7 +636,7 @@ return [
     'Files in this filesystem have public URLs' => '此文件系统中的文件具有公开 URL',
     'Filesystem saved.' => '文件系统已保存。',
     'Filesystems' => '文件系统',
-    'Filesytem Type' => '文件系统类型',
+    'Filesystem Type' => '文件系统类型',
     'Filter results' => '筛选结果',
     'Find Text' => '查找文本',
     'Find an official Craft Partner' => '查找官方 Craft 合作伙伴',

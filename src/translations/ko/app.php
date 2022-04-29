@@ -636,7 +636,7 @@ return [
     'Files in this filesystem have public URLs' => '이 파일 시스템의 파일은 공용 URL을 포함합니다',
     'Filesystem saved.' => '파일 시스템이 저장되었습니다.',
     'Filesystems' => '파일 시스템',
-    'Filesytem Type' => '파일 시스템 유형',
+    'Filesystem Type' => '파일 시스템 유형',
     'Filter results' => '결과 필터링',
     'Find Text' => '텍스트 찾기',
     'Find an official Craft Partner' => '공식 Craft 파트너사 찾기',

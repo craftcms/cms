@@ -636,7 +636,7 @@ return [
     'Files in this filesystem have public URLs' => 'Filer i dette filsystem har offentligt url\'er',
     'Filesystem saved.' => 'Filsystem gemt.',
     'Filesystems' => 'Filsystemer',
-    'Filesytem Type' => 'Filsystemtype',
+    'Filesystem Type' => 'Filsystemtype',
     'Filter results' => 'Filtrer resultater',
     'Find Text' => 'Find tekst',
     'Find an official Craft Partner' => 'Find en officiel Craft-partner 

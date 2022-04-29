@@ -636,7 +636,7 @@ return [
     'Files in this filesystem have public URLs' => 'Bestanden in dit bestandssysteem hebben openbare URL\'s',
     'Filesystem saved.' => 'Bestandssysteem opgeslagen.',
     'Filesystems' => 'Bestandssystemen',
-    'Filesytem Type' => 'Type bestandssysteem',
+    'Filesystem Type' => 'Type bestandssysteem',
     'Filter results' => 'Resultaten filteren',
     'Find Text' => 'Tekst zoeken',
     'Find an official Craft Partner' => 'Zoek een officiële Craft-partner',
