@@ -636,7 +636,7 @@ return [
     'Files in this filesystem have public URLs' => 'الملفات في نظام الملفات هذا لها عناوين URL عامة',
     'Filesystem saved.' => 'تم حفظ نظام الملفات.',
     'Filesystems' => 'أنظمة الملفات',
-    'Filesystem Type' => 'Filesystem Type',
+    'Filesystem Type' => 'نوع نظام الملف',
     'Filter results' => 'تصفية النتائج',
     'Find Text' => 'بحث عن نص',
     'Find an official Craft Partner' => 'العثور على شريك رسمي لـ Craft',
