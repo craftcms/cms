@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where `Craft.cp.$tabs` was returning an empty collection.
+
 ## 4.0.0-RC2 - 2022-04-28
 
 ### Added

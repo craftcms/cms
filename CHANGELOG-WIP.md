@@ -619,6 +619,7 @@
 - The `Craft.getUrl()` JavaScript method now removes duplicate query string params when passing in a param that’s already included in the base URL.
 - The `Craft.getUrl()` JavaScript method now encodes any query string params passed to it.
 - `Craft.broadcastChannel` has been split up into two broadcast channels: `Craft.broadcaster` and `Craft.messageReceiver`.
+- `Craft.cp.$tabs` now returns a collection of the tabs’ `<a>` elements, as they no longer have wrapping `<li>` elements.
 - Local volumes no longer use Flysystem.
 - A selected volume for user photo storage if no longer displayed if no volume has been set.
 - The user photo volume can now only be set to a volume that has a public transform filesystem configured.
