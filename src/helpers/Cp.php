@@ -1595,11 +1595,14 @@ JS;
      */
     private static function _fldTabSettingsData(FieldLayoutTab $tab): array
     {
-        $namespace = "tab-$tab->uid";
         $view = Craft::$app->getView();
+        $oldNamespace = $view->getNamespace();
+        $namespace = $view->namespaceInputName("tab-$tab->uid");
+        $view->setNamespace($namespace);
         $view->startJsBuffer();
-        $settingsHtml = $view->namespaceInputs(fn() => $tab->getSettingsHtml(), $namespace);
+        $settingsHtml = $view->namespaceInputs($tab->getSettingsHtml());
         $settingsJs = $view->clearJsBuffer(false);
+        $view->setNamespace($oldNamespace);
 
         return [
             'settings-namespace' => $namespace,
@@ -1625,11 +1628,14 @@ JS;
             ]);
         }
 
-        $settingsNamespace = 'element-' . ($forLibrary ? 'ELEMENT_UID' : $element->uid);
         $view = Craft::$app->getView();
+        $oldNamespace = $view->getNamespace();
+        $namespace = $view->namespaceInputName('element-' . ($forLibrary ? 'ELEMENT_UID' : $element->uid));
+        $view->setNamespace($namespace);
         $view->startJsBuffer();
-        $settingsHtml = $view->namespaceInputs(fn() => $element->getSettingsHtml(), $settingsNamespace);
+        $settingsHtml = $view->namespaceInputs($element->getSettingsHtml());
         $settingsJs = $view->clearJsBuffer(false);
+        $view->setNamespace($oldNamespace);
 
         $attr = ArrayHelper::merge($attr, [
             'class' => array_filter([
@@ -1641,7 +1647,7 @@ JS;
                 'uid' => !$forLibrary ? $element->uid : false,
                 'config' => $forLibrary ? ['type' => get_class($element)] + $element->toArray() : false,
                 'has-custom-width' => $element->hasCustomWidth(),
-                'settings-namespace' => $settingsNamespace,
+                'settings-namespace' => $namespace,
                 'settings-html' => $settingsHtml ?: false,
                 'settings-js' => $settingsJs ?: false,
             ],
