@@ -636,7 +636,7 @@ return [
     'Files in this filesystem have public URLs' => 'このファイルシステムのファイルにはパブリック URL があります',
     'Filesystem saved.' => 'ファイルシステムが保存されました。',
     'Filesystems' => 'ファイルシステム',
-    'Filesystem Type' => 'Filesystem Type',
+    'Filesystem Type' => 'ファイルシステムタイプ',
     'Filter results' => '結果をフィルター',
     'Find Text' => 'テキストを検索',
     'Find an official Craft Partner' => '公式のクラフトパートナーを探す',
