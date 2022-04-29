@@ -636,7 +636,7 @@ return [
     'Files in this filesystem have public URLs' => 'Bu dosya sisteminde dosyaların herkese açık URL\'leri var',
     'Filesystem saved.' => 'Dosya sistemi kaydedildi.',
     'Filesystems' => 'Dosya sistemleri',
-    'Filesystem Type' => 'Filesystem Type',
+    'Filesystem Type' => 'Dosya Sistemi Türü',
     'Filter results' => 'Sonuçları Filtrele',
     'Find Text' => 'Metni Bul',
     'Find an official Craft Partner' => 'Resmi Craft İş Ortağı Bul',
