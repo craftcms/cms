@@ -636,7 +636,7 @@ return [
     'Files in this filesystem have public URLs' => 'У файлов в этой файловой системе публичные URL-адреса',
     'Filesystem saved.' => 'Файловая система сохранена.',
     'Filesystems' => 'Файловые системы',
-    'Filesystem Type' => 'Filesystem Type',
+    'Filesystem Type' => 'Тип файловой системы',
     'Filter results' => 'Фильтровать результаты',
     'Find Text' => 'Найти текст',
     'Find an official Craft Partner' => 'Найти официального Craft-партнера',
