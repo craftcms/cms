@@ -155,7 +155,7 @@ Craft.AddressesInput = Garnish.Base.extend(
     destroy: function () {
       this.$container.removeData('addresses');
       this.base();
-    }
+    },
   },
   {
     ownerId: null,
