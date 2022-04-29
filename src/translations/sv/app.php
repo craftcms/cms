@@ -636,7 +636,7 @@ return [
     'Files in this filesystem have public URLs' => 'Filer i det här filsystemet har offentliga URL:er',
     'Filesystem saved.' => 'Filsystemet har sparats.',
     'Filesystems' => 'Filsystem',
-    'Filesytem Type' => 'Typ av filsystem',
+    'Filesystem Type' => 'Filesystem Type',
     'Filter results' => 'Filtrera resultat',
     'Find Text' => 'Hitta text',
     'Find an official Craft Partner' => 'Hitta en officiell Craft-partner',
