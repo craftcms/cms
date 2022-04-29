@@ -636,7 +636,7 @@ return [
     'Files in this filesystem have public URLs' => 'Soubory v tomto systému souborů mají veřejné adresy URL',
     'Filesystem saved.' => 'Systém souborů byl uložen.',
     'Filesystems' => 'Systémy souborů',
-    'Filesystem Type' => 'Filesystem Type',
+    'Filesystem Type' => 'Typ systému souborů',
     'Filter results' => 'Filtrovat výsledky',
     'Find Text' => 'Najít text',
     'Find an official Craft Partner' => 'Najít oficiálního partnera Craft',
