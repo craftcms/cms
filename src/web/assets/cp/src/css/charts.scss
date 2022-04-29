@@ -16,7 +16,7 @@
 .cp-chart .axis path,
 .cp-chart .axis line {
   fill: none;
-  stroke: $hairlineColor;
+  stroke: var(--hairline-color);
   shape-rendering: crispEdges;
 }
 
@@ -28,7 +28,7 @@
 }
 
 .cp-chart .ticks-axis g.tick text {
-  fill: $black;
+  fill: var(--black);
   font-size: 11px;
 }
 
@@ -55,7 +55,7 @@
 .tooltip {
   border-radius: 3px;
   padding: 7px 10px;
-  background: transparentize($white, 0.1);
+  background: transparentize(var(--white), 0.1);
   position: absolute;
   z-index: 1000000;
   @include shadow;

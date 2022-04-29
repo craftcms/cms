@@ -13,7 +13,7 @@ body,
   justify-content: center;
   font-size: 14px;
   line-height: 20px;
-  color: $textColor;
+  color: var(--text-color);
   -webkit-font-smoothing: subpixel-antialiased;
 
   svg {
@@ -21,9 +21,9 @@ body,
   }
 
   select {
-    color: $textColor !important;
-    background-color: transparentize($inputColor, 0.75);
-    border-radius: $largeBorderRadius;
+    color: var(--text-color) !important;
+    background-color: transparentize(var(--input-color), 0.75);
+    border-radius: var(--large-border-radius);
     padding: 4px;
   }
 
@@ -56,8 +56,8 @@ body,
 
   .graphiql-container .history-contents > p:hover,
   .graphiql-container .history-contents > p:active {
-    color: $textColor;
-    background-color: $grey050;
+    color: var(--text-color);
+    background-color: var(--gray-050);
 
     span:not(.history-label) {
       font-size: 14px;
@@ -81,7 +81,7 @@ body,
         font-size: 18px;
         font-weight: bold;
         line-height: 1.2;
-        color: $textColor;
+        color: var(--text-color);
       }
     }
 
@@ -92,7 +92,7 @@ body,
 
   .doc-explorer-title-bar,
   .history-title-bar {
-    background: $white;
+    background: var(--white);
     box-sizing: content-box;
   }
 
@@ -109,25 +109,26 @@ body,
 
   .queryWrap {
     margin: 0 0 24px 24px;
-    border-radius: $largeBorderRadius;
+    border-radius: var(--large-border-radius);
 
     .CodeMirror-gutters {
-      background: $grey050;
-      box-shadow: inset -1px 0 0 $hairlineColor;
+      background: var(--gray-050);
+      box-shadow: inset -1px 0 0 var(--hairline-color);
     }
 
     .CodeMirror-linenumber {
-      color: $lightTextColor;
+      color: var(--light-text-color);
     }
 
     .variable-editor {
       height: 28px;
 
       .variable-editor-title {
-        background: $grey050;
-        box-shadow: 0 -1px 0 $hairlineColor, 0 1px 0 $hairlineColor;
+        background: var(--gray-050);
+        box-shadow: 0 -1px 0 var(--hairline-color),
+          0 1px 0 var(--hairline-color);
         z-index: 4;
-        color: $lightTextColor;
+        color: var(--light-text-color);
       }
     }
   }
@@ -138,8 +139,8 @@ body,
     }
     .toolbar-button {
       display: inline-block;
-      background-color: $grey200;
-      border-radius: $largeBorderRadius;
+      background-color: var(--gray-200);
+      border-radius: var(--large-border-radius);
       padding: 7px 14px;
       border: none;
       text-align: center;
@@ -148,14 +149,14 @@ body,
       cursor: pointer;
       box-sizing: border-box;
       appearance: none;
-      color: $textColor;
+      color: var(--text-color);
       height: 34px;
       max-width: 100%;
       box-shadow: none;
 
       &:focus,
       &:hover {
-        background-color: darken($grey200, 5%);
+        background-color: darken(var(--gray-200), 5%);
       }
 
       svg {
@@ -189,11 +190,11 @@ body,
             @include floatleft;
             @include margin(3px, 0, 0, -17px);
             font-size: 14px;
-            color: $lightTextColor;
+            color: var(--light-text-color);
           }
 
           &:hover {
-            background-color: $white;
+            background-color: var(--white);
           }
         }
       }

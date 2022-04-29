@@ -1,0 +1,53 @@
+:root {
+  // submit button colors
+  --primary-color: $primaryColor;
+  --secondary-color: $secondaryColor;
+
+  --input-color: $inputColor;
+
+  // text colors
+  --text-color: $textColor;
+  --medium-dark-text-color: $mediumDarkTextColor;
+  --medium-text-color: $mediumTextColor;
+  --light-text-color: $lightTextColor;
+  --link-color: $linkColor;
+
+  // menu colors
+  --menu-option-color: $menuOptionColor;
+  --menu-option-active-color: $menuOptionActiveColor;
+  --menu-option-active-background-color: $menuOptionActiveBackgroundColor;
+
+  // hairline colors
+  --hairline-color: $hairlineColor;
+  --medium-hairline-color: $mediumHairlineColor;
+  --dark-hairline-color: $darkHairlineColor;
+
+  // focus colors
+  --light-focus-color: $lightFocusColor;
+  --medium-focus-color: $mediumFocusColor;
+  --dark-focus-color: $darkFocusColor;
+
+  // focus rings
+  --light-focus-ring: $lightFocusRing;
+  --medium-focus-ring: $mediumFocusRing;
+  --dark-focus-ring: $darkFocusRing;
+
+  // selection colors
+  --light-sel-color: $lightSelColor;
+  --dark-sel-color: $darkSelColor;
+
+  // alert/notice colors
+  --error-color: $errorColor;
+  --warning-color: $warningColor;
+  --success-color: $successColor;
+  --notice-color: $noticeColor;
+
+  // UI element styles
+  --small-border-radius: $smallBorderRadius;
+  --medium-border-radius: $mediumBorderRadius;
+  --large-border-radius: $largeBorderRadius;
+
+  --menu-border-radius: $menuBorderRadius;
+  --checkbox-size: $checkboxSize;
+  --radio-size: $radioSize;
+}

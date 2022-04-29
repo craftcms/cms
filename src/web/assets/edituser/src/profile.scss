@@ -19,15 +19,15 @@ div.user-photo #current-photo:after {
   font-size: 0;
   width: 100%;
   height: 100%;
-  border-radius: $largeBorderRadius;
-  box-shadow: inset 0 0 0 1px $hairlineColor;
+  border-radius: var(--large-border-radius);
+  box-shadow: inset 0 0 0 1px var(--hairline-color);
 }
 
 div.user-photo #current-photo img {
   max-width: 100px;
   max-height: 100px;
   display: block;
-  border-radius: $largeBorderRadius;
+  border-radius: var(--large-border-radius);
 }
 
 div.user-photo div.user-photo-controls {
@@ -37,7 +37,7 @@ div.user-photo div.user-photo-controls {
 }
 
 div.user-photo-controls .progress-shade {
-  background: transparentize($white, 0.2);
+  background: transparentize(var(--white), 0.2);
   width: 100%;
   height: 100%;
   position: absolute;

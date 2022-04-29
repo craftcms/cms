@@ -18,8 +18,13 @@ a {
 
   .ps-sidebar {
     @apply tw-px-6 tw-py-6 tw-w-full;
-    background-color: $grey050;
-    @include border-radius($largeBorderRadius, 0, 0, $largeBorderRadius);
+    background-color: var(--gray-050);
+    @include border-radius(
+      var(--large-border-radius),
+      0,
+      0,
+      var(--large-border-radius)
+    );
     @apply lg:tw-border-b-0 lg:tw-border-r lg:tw-overflow-auto lg:tw-w-64;
 
     .categories {

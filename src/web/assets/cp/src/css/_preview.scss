@@ -6,13 +6,13 @@
   position: fixed;
   top: 0;
   height: 100%;
-  background-color: $white;
+  background-color: var(--white);
   z-index: 100;
 
   header {
     padding: 8px 24px;
-    background-color: $grey100;
-    box-shadow: 0 1px 0 transparentize($grey700, 0.8);
+    background-color: var(--gray-100);
+    box-shadow: 0 1px 0 transparentize(var(--gray-700), 0.8);
     box-sizing: border-box;
 
     @supports (backdrop-filter: blur(10px)) {
@@ -22,7 +22,7 @@
         top: 0;
         left: 0;
         width: 100%;
-        background-color: transparentize($grey100, 0.25);
+        background-color: transparentize(var(--gray-100), 0.25);
         backdrop-filter: blur(10px);
 
         & + .lp-editor {
@@ -81,7 +81,7 @@
 .lp-preview-container {
   display: flex;
   flex-direction: column;
-  box-shadow: -1px 0 0 transparentize($grey700, 0.8);
+  box-shadow: -1px 0 0 transparentize(var(--gray-700), 0.8);
 
   &.dragging:after {
     position: absolute;
@@ -97,7 +97,7 @@
     display: flex;
 
     @supports (-moz-appearance: none) {
-      background-color: transparentize($grey100, 0.25);
+      background-color: transparentize(var(--gray-100), 0.25);
     }
 
     .buttons {
@@ -219,7 +219,7 @@
       top: 50px;
       height: calc(100% - 50px);
       width: 100%;
-      background-color: $grey100;
+      background-color: var(--gray-100);
 
       @supports (-moz-appearance: none) {
         top: 0;

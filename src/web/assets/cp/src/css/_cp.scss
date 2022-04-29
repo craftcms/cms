@@ -19,8 +19,8 @@ $minXlUiWidth: 1536px;
 $minHorizontalUiWidth: $minFullUiWidth - $sidebarWidth;
 
 // Colors
-$badgeBackgroundColor: $grey200;
-$badgeColor: $grey800;
+$badgeBackgroundColor: var(--gray-200);
+$badgeColor: var(--gray-800);
 
 html {
   -webkit-text-size-adjust: 100%;
@@ -64,7 +64,7 @@ body {
     @include left(0);
     width: auto;
     height: auto;
-    background-color: $grey100 !important;
+    background-color: var(--gray-100) !important;
   }
 }
 
@@ -87,8 +87,8 @@ body {
 }
 
 /* global sidebar */
-$sidebarLinkStaticColor: $grey100;
-$sidebarLinkSecondaryColor: $grey200;
+$sidebarLinkStaticColor: var(--gray-100);
+$sidebarLinkSecondaryColor: var(--gray-200);
 
 #global-sidebar {
   --is-always-visible: true;
@@ -102,7 +102,7 @@ $sidebarLinkSecondaryColor: $grey200;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
   @include light-on-dark-text;
-  background-color: $grey800;
+  background-color: var(--gray-800);
   --focus-ring: 0 0 0 1px hsl(var(--light-focus-hsl)),
     0 0 0 3px hsla(var(--light-focus-hsl), 0.7);
 
@@ -120,11 +120,11 @@ $sidebarLinkSecondaryColor: $grey200;
       &:hover,
       &.active,
       &:active {
-        color: $white;
+        color: var(--white);
       }
 
       &:not(.sel):hover {
-        background-color: darken($grey800, 5%);
+        background-color: darken(var(--gray-800), 5%);
         transition: none;
 
         .icon {
@@ -134,7 +134,7 @@ $sidebarLinkSecondaryColor: $grey200;
 
       &.active,
       &:active {
-        background-color: darken($grey800, 10%);
+        background-color: darken(var(--gray-800), 10%);
       }
     }
 
@@ -149,7 +149,7 @@ $sidebarLinkSecondaryColor: $grey200;
   }
 
   .light {
-    color: $grey400;
+    color: var(--gray-400);
   }
 
   @media only screen and (max-width: $minFullUiWidth - 1px) {
@@ -157,8 +157,8 @@ $sidebarLinkSecondaryColor: $grey200;
   }
 }
 
-$systemInfoBgColor: darken($grey800, 5%);
-$systemInfoHoverBgColor: darken($grey800, 10%);
+$systemInfoBgColor: darken(var(--gray-800), 5%);
+$systemInfoHoverBgColor: darken(var(--gray-800), 10%);
 
 #system-info {
   display: grid;
@@ -194,7 +194,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   }
 
   svg {
-    @include svg-mask($mediumTextColor);
+    @include svg-mask(var(--medium-text-color));
   }
 }
 
@@ -269,7 +269,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
   .progress-label {
     display: block;
-    color: $grey300;
+    color: var(--gray-300);
     font-size: 11px;
     line-height: 1.5;
   }
@@ -283,8 +283,8 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
   li {
     &:not(.has-subnav) > a.sel {
-      color: $white;
-      background-color: $grey900;
+      color: var(--white);
+      background-color: var(--gray-900);
       opacity: 1;
 
       .icon {
@@ -320,11 +320,11 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
         &.icon-mask {
           svg {
-            @include svg-mask($white);
+            @include svg-mask(var(--white));
           }
 
           span[data-icon] {
-            color: $white;
+            color: var(--white);
           }
         }
       }
@@ -341,7 +341,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
       .badge {
         @include margin-right(0);
         background-color: $badgeBackgroundColor;
-        color: $badgeColor;
+        color: var(--badge-color);
       }
     }
 
@@ -374,17 +374,17 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   align-items: center;
   justify-content: center;
   font-size: 12px;
-  color: $grey600;
+  color: var(--gray-600);
   text-align: center;
   gap: var(--s);
 
   li {
     a {
-      color: $grey600;
+      color: var(--gray-600);
       text-decoration: underline;
 
       &.go:hover:after {
-        color: $grey600;
+        color: var(--gray-600);
       }
     }
   }
@@ -392,7 +392,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
 #edition-logo {
   user-select: none;
-  border: 1px solid $grey600;
+  border: 1px solid var(--gray-600);
   border-radius: 3px;
   display: inline-flex;
   height: 20px;
@@ -418,8 +418,8 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
     position: relative;
     @include margin-left(5px);
     @include padding-left(5px);
-    background-color: $grey600;
-    color: $grey200;
+    background-color: var(--gray-600);
+    color: var(--gray-200);
     border-radius: 0 1px 1px 0;
     letter-spacing: 1px;
     @include padding-right(7px);
@@ -440,13 +440,13 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
       body.ltr & {
         left: -10px;
         border-width: 0 10px 20px 0;
-        border-color: transparent $grey600 transparent transparent;
+        border-color: transparent var(--gray-600) transparent transparent;
       }
 
       body.rtl & {
         right: -10px;
         border-width: 0 0 20px 10px;
-        border-color: transparent transparent transparent $grey600;
+        border-color: transparent transparent transparent var(--gray-600);
       }
     }
   }
@@ -469,33 +469,33 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
 #alerts {
   position: relative; // to keep it above #global-header's shadow
-  background-color: $red050;
-  border-left: 5px solid $errorColor;
+  background-color: var(--red-050);
+  border-left: 5px solid var(--error-color);
   padding: 11px 0;
   text-align: center;
-  color: $errorColor;
+  color: var(--error-color);
 
   li {
     padding: 4px var(--xl);
 
     a {
-      color: $errorColor;
+      color: var(--error-color);
       text-decoration: underline;
 
       &.go {
         text-decoration: none;
         white-space: nowrap;
-        border: 1px solid transparentize($errorColor, 0.5);
-        border-radius: $mediumBorderRadius;
+        border: 1px solid transparentize(var(--error-color), 0.5);
+        border-radius: var(--medium-border-radius);
         padding: 3px 5px;
         margin: 0 2px;
 
         &:after {
-          color: $errorColor;
+          color: var(--error-color);
         }
 
         &:hover {
-          border-color: $errorColor;
+          border-color: var(--error-color);
           transition: border-color linear 100ms;
         }
       }
@@ -507,16 +507,16 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   width: 100%;
   margin-bottom: var(--m);
   @include pane;
-  background: $grey050;
+  background: var(--gray-050);
 
   .flex {
     align-items: center;
   }
 
   .btn {
-    --ui-control-color: #{$grey400};
-    --ui-control-hover-color: #{$grey500};
-    --ui-control-active-color: #{$grey600};
+    --ui-control-color: #{var(--gray-400)};
+    --ui-control-hover-color: #{var(--gray-500)};
+    --ui-control-active-color: #{var(--gray-600)};
   }
 }
 
@@ -533,11 +533,11 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
   a,
   button {
-    color: $lightTextColor;
+    color: var(--light-text-color);
     transition: color linear 100ms;
 
     &:hover {
-      color: $linkColor;
+      color: var(--link-color);
       text-decoration: none;
     }
   }
@@ -568,7 +568,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
     &:after {
       margin: 0 var(--s);
-      @include angle(right, $mediumHairlineColor);
+      @include angle(right, var(--medium-hairline-color));
     }
   }
 
@@ -617,7 +617,7 @@ li.breadcrumb-toggle-wrapper {
     width: 7px;
     height: 7px;
     border-radius: 4px;
-    background-color: $blue600;
+    background-color: var(--blue-600);
   }
 
   svg {
@@ -630,7 +630,7 @@ li.breadcrumb-toggle-wrapper {
   &:active,
   &.active {
     svg {
-      @include svg-mask($linkColor);
+      @include svg-mask(var(--link-color));
     }
   }
 }
@@ -658,7 +658,7 @@ li.breadcrumb-toggle-wrapper {
       .announcement-label {
         margin-left: 5px;
         font-size: 12px;
-        color: $lightTextColor;
+        color: var(--light-text-color);
       }
     }
 
@@ -676,7 +676,7 @@ li.breadcrumb-toggle-wrapper {
       width: 7px;
       height: 7px;
       border-radius: 4px;
-      background-color: $blue600;
+      background-color: var(--blue-600);
     }
 
     p {
@@ -719,13 +719,13 @@ li.breadcrumb-toggle-wrapper {
     height: 30px;
     max-width: none;
     border-radius: 50%;
-    box-shadow: 0 0 0 1px transparentize($grey900, 0.95),
-      0 0 0 transparentize($grey900, 1);
+    box-shadow: 0 0 0 1px transparentize(var(--gray-900), 0.95),
+      0 0 0 transparentize(var(--gray-900), 1);
     transition: box-shadow linear 150ms;
 
     #user-info:hover & {
-      box-shadow: 0 0 0 1px transparentize($grey900, 0.95),
-        0 2px 10px -2px transparentize($grey900, 0.7);
+      box-shadow: 0 0 0 1px transparentize(var(--gray-900), 0.95),
+        0 2px 10px -2px transparentize(var(--gray-900), 0.7);
     }
   }
 }
@@ -755,14 +755,14 @@ li.breadcrumb-toggle-wrapper {
     padding: 5px 10px;
     border-radius: 0 0 3px 3px;
     border-width: 0 1px 1px;
-    color: $white !important;
+    color: var(--white) !important;
     pointer-events: auto;
     @include light-on-dark-text;
     @include shadow;
-    background-color: $noticeColor;
+    background-color: var(--notice-color);
 
     &.error {
-      background-color: $primaryColor;
+      background-color: var(--primary-color);
     }
   }
 }
@@ -802,16 +802,16 @@ li.breadcrumb-toggle-wrapper {
   z-index: 2;
   width: calc(100vw - #{$sidebarWidth});
   box-sizing: border-box;
-  background-color: transparentize($grey300, 1);
-  box-shadow: 0 1px 0 transparentize($grey800, 1);
+  background-color: transparentize(var(--gray-300), 1);
+  box-shadow: 0 1px 0 transparentize(var(--gray-800), 1);
   transition: background-color linear 100ms, box-shadow linear 100ms;
 
   body.fixed-header & {
     position: fixed;
     z-index: 12;
     top: 0;
-    background-color: $grey100;
-    box-shadow: inset 0 -1px 0 transparentize($grey700, 0.9);
+    background-color: var(--gray-100);
+    box-shadow: inset 0 -1px 0 transparentize(var(--gray-700), 0.9);
   }
 
   @supports (backdrop-filter: blur(10px)) {
@@ -820,7 +820,7 @@ li.breadcrumb-toggle-wrapper {
         backdrop-filter linear 100ms;
 
       body.fixed-header & {
-        background-color: transparentize($grey100, 0.25);
+        background-color: transparentize(var(--gray-100), 0.25);
         backdrop-filter: blur(10px);
       }
     }
@@ -856,7 +856,7 @@ li.breadcrumb-toggle-wrapper {
 
   .btn,
   .text {
-    color: darken($inputColor, 20%);
+    color: darken(var(--input-color), 20%);
   }
 
   .icon:before,
@@ -869,30 +869,30 @@ li.breadcrumb-toggle-wrapper {
   }
 
   .text {
-    border-radius: $largeBorderRadius;
+    border-radius: var(--large-border-radius);
 
     &::-webkit-input-placeholder {
-      color: $lightTextColor;
+      color: var(--light-text-color);
     }
 
     &:-ms-input-placeholder {
-      color: $lightTextColor;
+      color: var(--light-text-color);
     }
 
     &::-ms-input-placeholder {
-      color: $lightTextColor;
+      color: var(--light-text-color);
     }
 
     &:-moz-placeholder {
-      color: $lightTextColor;
+      color: var(--light-text-color);
     }
 
     &::-moz-placeholder {
-      color: $lightTextColor;
+      color: var(--light-text-color);
     }
 
     &::placeholder {
-      color: $lightTextColor;
+      color: var(--light-text-color);
     }
 
     &:not(:focus) {
@@ -956,12 +956,12 @@ li.breadcrumb-toggle-wrapper {
         }
         &:not(.sel) {
           &:hover {
-            background-color: $grey200;
+            background-color: var(--gray-200);
           }
         }
         &.sel {
           @include pane;
-          background-color: $grey050;
+          background-color: var(--gray-050);
         }
       }
     }
@@ -994,7 +994,7 @@ li.breadcrumb-toggle-wrapper {
 
 .content-pane {
   @include pane;
-  border-radius: $largeBorderRadius;
+  border-radius: var(--large-border-radius);
   position: relative;
   background-clip: padding-box;
   padding: var(--xl);
@@ -1010,8 +1010,8 @@ li.breadcrumb-toggle-wrapper {
   z-index: 1;
   margin: 25px calc(var(--xl) * -1) calc(var(--xl) * -1); // 1px extra on top is intentional
   padding: var(--s) var(--xl);
-  background-color: $grey050;
-  border-radius: 0 0 $largeBorderRadius $largeBorderRadius;
+  background-color: var(--gray-050);
+  border-radius: 0 0 var(--large-border-radius) var(--large-border-radius);
   box-sizing: border-box;
   min-height: 50px;
 
@@ -1046,14 +1046,14 @@ li.breadcrumb-toggle-wrapper {
 
   .details {
     .meta {
-      border-radius: $largeBorderRadius;
+      border-radius: var(--large-border-radius);
 
       &:not(.read-only):not(.warning) {
         @include pane;
       }
 
       &.read-only {
-        color: $mediumTextColor;
+        color: var(--medium-text-color);
         background-color: transparent !important;
       }
 
@@ -1062,17 +1062,17 @@ li.breadcrumb-toggle-wrapper {
         &:first-child {
           &,
           & > .status-badge {
-            border-top-left-radius: $largeBorderRadius;
+            border-top-left-radius: var(--large-border-radius);
           }
-          border-top-right-radius: $largeBorderRadius;
+          border-top-right-radius: var(--large-border-radius);
         }
 
         &:last-child {
           &,
           & > .status-badge {
-            border-bottom-left-radius: $largeBorderRadius;
+            border-bottom-left-radius: var(--large-border-radius);
           }
-          border-bottom-right-radius: $largeBorderRadius;
+          border-bottom-right-radius: var(--large-border-radius);
         }
       }
     }
@@ -1121,7 +1121,7 @@ li.breadcrumb-toggle-wrapper {
     width: 36px;
     height: 50px;
     line-height: 26px;
-    color: $grey300;
+    color: var(--gray-300);
     text-align: center;
     @include margin-left(-10px);
 
@@ -1133,7 +1133,7 @@ li.breadcrumb-toggle-wrapper {
     }
 
     &:hover {
-      color: $grey400;
+      color: var(--gray-400);
     }
   }
 
@@ -1175,7 +1175,7 @@ li.breadcrumb-toggle-wrapper {
 
   #sidebar-toggle {
     body.showing-sidebar & {
-      background-color: darken($grey200, 10%) !important;
+      background-color: darken(var(--gray-200), 10%) !important;
 
       &:after {
         transform: rotate(225deg);
@@ -1288,7 +1288,7 @@ li.breadcrumb-toggle-wrapper {
 
   &:not(.drag-helper) {
     padding: var(--m) 0;
-    background-color: $grey050;
+    background-color: var(--gray-050);
   }
 
   .heading {
@@ -1302,7 +1302,7 @@ li.breadcrumb-toggle-wrapper {
       padding: 0 5px;
       margin: 0 -5px;
       text-transform: uppercase;
-      color: $lightTextColor;
+      color: var(--light-text-color);
       font-size: 11px;
       font-weight: bold;
     }
@@ -1345,12 +1345,12 @@ li.breadcrumb-toggle-wrapper {
 
         &:hover {
           text-decoration: none;
-          background-color: $grey100;
+          background-color: var(--gray-100);
         }
 
         &.sel {
           cursor: default;
-          background-color: $grey200;
+          background-color: var(--gray-200);
         }
       }
 
@@ -1363,9 +1363,9 @@ li.breadcrumb-toggle-wrapper {
         padding: 7px var(--xl);
         min-height: var(--xl);
         box-sizing: border-box;
-        color: $textColor;
+        color: var(--text-color);
         user-select: none;
-        border-radius: $largeBorderRadius;
+        border-radius: var(--large-border-radius);
         word-break: break-word;
 
         .status {
@@ -1415,8 +1415,8 @@ li.breadcrumb-toggle-wrapper {
           font-size: 11px;
           line-height: 16px;
           border-radius: var(--s);
-          background-color: $mediumTextColor;
-          color: $white;
+          background-color: var(--medium-text-color);
+          color: var(--white);
         }
       }
 
@@ -1452,7 +1452,7 @@ li.breadcrumb-toggle-wrapper {
 
   &:not(:last-child) {
     padding-bottom: var(--s);
-    border-bottom: 1px solid $hairlineColor;
+    border-bottom: 1px solid var(--hairline-color);
     margin-bottom: var(--s);
   }
 }
@@ -1480,7 +1480,7 @@ li.breadcrumb-toggle-wrapper {
 
     &:not(:first-child) {
       padding-top: var(--xl);
-      border-top: 1px solid $hairlineColor;
+      border-top: 1px solid var(--hairline-color);
     }
   }
 
@@ -1502,7 +1502,7 @@ li.breadcrumb-toggle-wrapper {
         height: 100%;
         content: '';
         // same BG color as the hairline around the content pane’s 1px shadow
-        background-color: transparentize($grey200, 0.5);
+        background-color: transparentize(var(--gray-200), 0.5);
       }
     }
   }

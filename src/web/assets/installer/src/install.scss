@@ -8,7 +8,7 @@ body {
 
 body {
   overflow: hidden;
-  background: $grey100 url(images/installer-bg.png) no-repeat 50% 50%;
+  background: var(--gray-100) url(images/installer-bg.png) no-repeat 50% 50%;
   background-size: cover;
 }
 
@@ -22,7 +22,7 @@ body {
 
 #beginbtn {
   display: inline-block;
-  border-radius: $largeBorderRadius;
+  border-radius: var(--large-border-radius);
   font-size: 19px;
   height: 50px;
   padding: 0 24px;
@@ -94,7 +94,7 @@ body {
     & > div {
       display: inline-block;
       border-radius: 4px;
-      border: 1px solid $hairlineColor;
+      border: 1px solid var(--hairline-color);
       width: 6px;
       height: 6px;
 
@@ -103,8 +103,8 @@ body {
       }
 
       &.sel {
-        border-color: $primaryColor;
-        background: $primaryColor;
+        border-color: var(--primary-color);
+        background: var(--primary-color);
       }
     }
   }
