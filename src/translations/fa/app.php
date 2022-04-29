@@ -636,7 +636,7 @@ return [
     'Files in this filesystem have public URLs' => 'فایل‌ها در این سیستم‌فایل دارای آدرس‌های اینترنتی عمومی هستند',
     'Filesystem saved.' => 'سیستم‌فایل ذخیره شد.',
     'Filesystems' => 'سیستم‌فایل‌ها',
-    'Filesytem Type' => 'نوع سیستم‌فایل',
+    'Filesystem Type' => 'Filesystem Type',
     'Filter results' => 'فیلتر نتیجه‌ها',
     'Find Text' => 'پیدا کردن متن',
     'Find an official Craft Partner' => 'پیدا کردن یک همکار رسمی Craft',
