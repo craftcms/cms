@@ -113,11 +113,11 @@ html.noscroll body {
 }
 
 .modal.imageeditor .body .tabs ul li:hover {
-  background-color: darken(var(--gray-900), 2%);
+  background-color: darken($grey900, 2%);
 }
 
 .modal.imageeditor .body .tabs ul li.selected {
-  background-color: darken(var(--gray-900), 5%);
+  background-color: darken($grey900, 5%);
 }
 
 .modal.imageeditor .body .tabs ul li:hover {
@@ -459,8 +459,8 @@ html.noscroll body {
   background-image: linear-gradient(
     to right,
     var(--gray-900) 0%,
-    transparentize(var(--gray-900), 1) 15%,
-    transparentize(var(--gray-900), 1) 85%,
+    transparentize($grey900, 1) 15%,
+    transparentize($grey900, 1) 85%,
     var(--gray-900) 100%
   );
 }

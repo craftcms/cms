@@ -165,7 +165,7 @@ input.error {
     }
 
     &:hover svg {
-      @include svg-mask(darken(var(--secondary-color), 5%));
+      @include svg-mask(darken($secondaryColor, 5%));
     }
 
     .badge {

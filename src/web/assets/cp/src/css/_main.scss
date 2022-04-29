@@ -9,19 +9,18 @@
     linear-gradient(45deg, transparent 75%, var(--gray-100) 75%),
     linear-gradient(135deg, transparent 75%, var(--gray-100) 75%);
   background-size: $size $size;
-  background-position: 0 0, var(--half-size) 0,
-    var(--half-size) -#{var(--half-size)}, 0 var(--half-size);
+  background-position: 0 0, $halfSize 0, $halfSize -#{$halfSize}, 0 $halfSize;
 }
 
-@mixin striped-bg($size, $color: var(--gray-100)) {
+@mixin striped-bg($size, $color: $grey100) {
   // h/t https://css-tricks.com/stripes-css/
   $halfSize: $size * 0.5;
   body.ltr & {
     background: repeating-linear-gradient(
       135deg,
       var(--white),
-      var(--white) var(--half-size),
-      $color var(--half-size),
+      var(--white) $halfSize,
+      $color $halfSize,
       $color $size
     );
   }
@@ -29,8 +28,8 @@
     background: repeating-linear-gradient(
       45deg,
       var(--white),
-      var(--white) var(--half-size),
-      $color var(--half-size),
+      var(--white) $halfSize,
+      $color $halfSize,
       $color $size
     );
   }
@@ -50,21 +49,15 @@
 /* ----------------------------------------*/
 
 :root {
-  --text-color: #{var(--text-color)};
-  --light-text-color: #{var(--light-text-color)};
-  --hairline-color: #{var(--hairline-color)};
-  --ui-control-color: #{var(--gray-400)};
-  --ui-control-hover-color: #{var(--gray-500)};
-  --ui-control-active-color: #{var(--gray-600)};
-  --light-focus-hsl: #{hue(var(--light-focus-color))},
-    #{saturation(var(--light-focus-color))},
-    #{lightness(var(--light-focus-color))};
-  --medium-focus-hsl: #{hue(var(--medium-focus-color))},
-    #{saturation(var(--medium-focus-color))},
-    #{lightness(var(--medium-focus-color))};
-  --dark-focus-hsl: #{hue(var(--dark-focus-color))},
-    #{saturation(var(--dark-focus-color))},
-    #{lightness(var(--dark-focus-color))};
+  --ui-control-color: var(--gray-400);
+  --ui-control-hover-color: var(--gray-500);
+  --ui-control-active-color: var(--gray-600);
+  --light-focus-hsl: #{hue($lightFocusColor)}, #{saturation($lightFocusColor)},
+    #{lightness($lightFocusColor)};
+  --medium-focus-hsl: #{hue($mediumFocusColor)},
+    #{saturation($mediumFocusColor)}, #{lightness($mediumFocusColor)};
+  --dark-focus-hsl: #{hue($darkFocusColor)}, #{saturation($darkFocusColor)},
+    #{lightness($darkFocusColor)};
   --focus-ring: 0 0 0 1px hsl(var(--dark-focus-hsl)),
     0 0 0 3px hsla(var(--dark-focus-hsl), 0.7);
   --touch-target-size: 44px; /* Minimum recommended touch target size */
@@ -441,7 +434,7 @@ button {
 .context-btn.disabled {
   opacity: 1;
   color: var(--medium-dark-text-color);
-  background-color: transparentize(var(--gray-200), 0.5) !important;
+  background-color: transparentize($grey200, 0.5) !important;
 }
 
 /* status icons */
@@ -564,15 +557,15 @@ button {
     body.ltr & {
       background-image: linear-gradient(
         to bottom right,
-        transparentize(var(--blue-600), 0.8),
-        transparentize(var(--blue-600), 1) 50%
+        transparentize($blue600, 0.8),
+        transparentize($blue600, 1) 50%
       );
     }
     body.rtl & {
       background-image: linear-gradient(
         to left,
-        transparentize(var(--blue-600), 0.8),
-        transparentize(var(--blue-600), 1)
+        transparentize($blue600, 0.8),
+        transparentize($blue600, 1)
       );
     }
   }
@@ -591,7 +584,7 @@ button {
     justify-content: center;
     align-items: center;
     border-radius: 100%;
-    border: 2px solid transparentize(var(--blue-800), 0.8);
+    border: 2px solid transparentize($blue800, 0.8);
     box-sizing: border-box;
     box-shadow: 0 1px 1px 1px var(--white);
 
@@ -611,7 +604,7 @@ button {
       right: -2px;
       bottom: -2px;
       border-radius: 100%;
-      box-shadow: inset 0 2px 0 transparentize(var(--blue-900), 0.8);
+      box-shadow: inset 0 2px 0 transparentize($blue900, 0.8);
     }
   }
 
@@ -623,11 +616,11 @@ button {
 
     &:hover,
     &:focus {
-      border-color: darken(var(--blue-600), 5%);
+      border-color: darken($blue600, 5%);
     }
 
     &:active {
-      border-color: darken(var(--blue-600), 10%);
+      border-color: darken($blue600, 10%);
     }
   }
 }
@@ -1386,7 +1379,7 @@ ul.icons {
   appearance: none;
   color: currentColor;
   font-size: inherit;
-  background-color: transparentize(var(--input-color), 0.75);
+  background-color: transparentize($inputColor, 0.75);
 
   &.chromeless {
     background-color: transparent;
@@ -1409,17 +1402,17 @@ ul.icons {
     &:focus,
     &.focus,
     &:hover {
-      background-color: transparentize(var(--input-color), 0.7);
+      background-color: transparentize($inputColor, 0.7);
     }
 
     &:active,
     &.active {
-      background-color: transparentize(var(--input-color), 0.5);
+      background-color: transparentize($inputColor, 0.5);
 
       &:focus,
       &.focus,
       .btngroup:focus & {
-        background-color: transparentize(var(--input-color), 0.4);
+        background-color: transparentize($inputColor, 0.4);
       }
     }
   }
@@ -1806,12 +1799,12 @@ ul.icons {
       &:hover,
       &.hover,
       &:focus {
-        background-color: darken(var(--primary-color), 5%) !important;
+        background-color: darken($primaryColor, 5%) !important;
       }
 
       &:active,
       &.active {
-        background-color: darken(var(--primary-color), 10%) !important;
+        background-color: darken($primaryColor, 10%) !important;
       }
     }
   }
@@ -1823,7 +1816,7 @@ ul.icons {
     &:hover,
     &.hover,
     &:focus {
-      background-color: darken(var(--red-050), 5%) !important;
+      background-color: darken($red050, 5%) !important;
     }
 
     &:active,
@@ -1847,7 +1840,7 @@ ul.icons {
 .btn.secondary:not(.disabled):not(.inactive):not(.loading):hover,
 .btn.secondary:not(.disabled):not(.inactive):not(.loading).hover,
 .btn.secondary:not(.disabled):not(.inactive):not(.loading):focus {
-  background-color: darken(var(--secondary-color), 5%) !important;
+  background-color: darken($secondaryColor, 5%) !important;
 }
 
 .secondary-buttons
@@ -1856,7 +1849,7 @@ ul.icons {
   .btn.submit:not(.disabled):not(.inactive):not(.loading).active,
 .btn.secondary:not(.disabled):not(.inactive):not(.loading):active,
 .btn.secondary:not(.disabled):not(.inactive):not(.loading).active {
-  background-color: darken(var(--secondary-color), 10%) !important;
+  background-color: darken($secondaryColor, 10%) !important;
 }
 
 div.btn.submit {
@@ -1880,7 +1873,7 @@ div.btn.submit input {
   }
 
   &:focus {
-    background-color: transparentize(var(--gray-200), 0.9);
+    background-color: transparentize($grey200, 0.9);
     border-color: transparent;
 
     .reduce-focus-visibility &:not(.focus-visible) {
@@ -1891,7 +1884,7 @@ div.btn.submit input {
   &:not(.disabled) {
     &:active,
     &.active {
-      background-color: transparentize(var(--gray-200), 0.75);
+      background-color: transparentize($grey200, 0.75);
     }
   }
 }
@@ -1946,7 +1939,7 @@ div.btn.submit input {
     width: 100%;
     height: 100%;
     border-radius: 17px;
-    box-shadow: inset 0 0 0 1px transparentize(var(--black), 0.85);
+    box-shadow: inset 0 0 0 1px transparentize($black, 0.85);
 
     &:focus-within {
       @include input-focused-styles;
@@ -2513,14 +2506,14 @@ $elementInnerSpacing: 5px;
     cursor: default;
 
     &:focus {
-      background-color: darken(var(--light-sel-color), 5%) !important;
+      background-color: darken($lightSelColor, 5%) !important;
     }
 
     &.hasthumb {
       .elementthumb {
         img {
-          box-shadow: 0 0 0 1px transparentize(var(--dark-sel-color), 0.9),
-            0 6px 4px -4px transparentize(var(--dark-sel-color), 0.8);
+          box-shadow: 0 0 0 1px transparentize($darkSelColor, 0.9),
+            0 6px 4px -4px transparentize($darkSelColor, 0.8);
         }
       }
     }
@@ -2576,7 +2569,7 @@ $elementInnerSpacing: 5px;
 
     &.hasstatus {
       @include padding-left(
-        $baseElementSidePadding + var(--status-size) + $elementInnerSpacing
+        $baseElementSidePadding + $statusSize + $elementInnerSpacing
       );
 
       .status {
@@ -2608,7 +2601,7 @@ $elementInnerSpacing: 5px;
 
       &.hasstatus {
         @include padding-left(
-          $smallThumbSize + $elementInnerSpacing * 2 + var(--status-size)
+          $smallThumbSize + $elementInnerSpacing * 2 + $statusSize
         );
 
         .status {
@@ -2627,7 +2620,7 @@ $elementInnerSpacing: 5px;
 
     &.hasstatus {
       @include padding-left(
-        $baseElementSidePadding + var(--status-size) + $elementInnerSpacing
+        $baseElementSidePadding + $statusSize + $elementInnerSpacing
       );
 
       .status {
@@ -2691,7 +2684,7 @@ $elementInnerSpacing: 5px;
   }
 }
 
-$checkboxPadding: var(--checkbox-size) + 4;
+$checkboxPadding: $checkboxSize + 4;
 
 .elements {
   position: relative;
@@ -2714,7 +2707,7 @@ $checkboxPadding: var(--checkbox-size) + 4;
       left: -24px;
       width: calc(100% + #{24 + 24}px);
       height: 100%;
-      background: transparentize(var(--white), 0.25);
+      background: transparentize($white, 0.25);
       border-radius: var(--large-border-radius);
     }
 
@@ -2795,21 +2788,19 @@ $checkboxPadding: var(--checkbox-size) + 4;
         .element.hasthumb {
           &:not(.hasstatus) {
             @include padding-left(
-              $baseElementSidePadding + var(--checkbox-size) +
-                $elementInnerSpacing
+              $baseElementSidePadding + $checkboxSize + $elementInnerSpacing
             );
           }
 
           &.hasstatus {
             @include padding-left(
-              $baseElementSidePadding + var(--checkbox-size) +
-                $elementInnerSpacing + var(--status-size) + $elementInnerSpacing
+              $baseElementSidePadding + $checkboxSize + $elementInnerSpacing +
+                $statusSize + $elementInnerSpacing
             );
 
             .status {
               @include left(
-                $baseElementSidePadding + var(--checkbox-size) +
-                  $elementInnerSpacing
+                $baseElementSidePadding + $checkboxSize + $elementInnerSpacing
               );
             }
           }
@@ -2818,7 +2809,7 @@ $checkboxPadding: var(--checkbox-size) + 4;
         .checkbox {
           position: absolute;
           top: $baseElementSidePadding + $largeThumbSize + $elementInnerSpacing +
-            (20px - var(--checkbox-size)) * 0.5;
+            (20px - $checkboxSize) * 0.5;
           @include left($baseElementSidePadding);
         }
       }
@@ -3161,7 +3152,7 @@ table.editable {
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: transparentize(var(--gray-050), 0.25);
+            background-color: transparentize($grey050, 0.25);
             user-select: none;
           }
         }
@@ -3473,7 +3464,7 @@ ul.tree,
 }
 
 .elementselect .progress-shade {
-  background-color: transparentize(var(--white), 0.2);
+  background-color: transparentize($white, 0.2);
   width: 100%;
   height: 100%;
   position: absolute;
@@ -3575,7 +3566,7 @@ ul.tree,
   min-height: 50px;
   box-sizing: border-box;
   background: var(--gray-050);
-  box-shadow: inset 0 -1px 0 0 transparentize(var(--gray-300), 0.75);
+  box-shadow: inset 0 -1px 0 0 transparentize($grey300, 0.75);
   border-radius: var(--large-border-radius) var(--large-border-radius) 0 0;
 
   .header-btn {
@@ -3646,7 +3637,7 @@ ul.tree,
 
       &:not(.sel) {
         &:hover {
-          background-color: transparentize(var(--gray-300), 0.85);
+          background-color: transparentize($grey300, 0.85);
         }
       }
 
@@ -3720,7 +3711,7 @@ ul.tree,
       color: var(--text-color) !important;
       background-color: var(--yellow-050) !important;
       box-shadow: 0 0 0 1px var(--yellow-300),
-        0 2px 12px transparentize(var(--gray-200), 0.5);
+        0 2px 12px transparentize($grey200, 0.5);
 
       p {
         margin-bottom: 5px;
@@ -3731,11 +3722,11 @@ ul.tree,
 
         &:hover,
         &:focus {
-          background-color: darken(var(--yellow-300), 10%);
+          background-color: darken($yellow300, 10%);
         }
 
         &:active {
-          background-color: darken(var(--yellow-300), 15%);
+          background-color: darken($yellow300, 15%);
         }
       }
     }
@@ -3814,7 +3805,7 @@ ul.tree,
     margin-bottom: var(--spacing);
 
     &:not(:focus) {
-      border-color: transparentize(var(--input-color), 0.6);
+      border-color: transparentize($inputColor, 0.6);
     }
   }
 }
@@ -3843,7 +3834,7 @@ ul.tree,
       }
 
       &.add {
-        background-color: darken(var(--gray-050), 2%);
+        background-color: darken($grey050, 2%);
 
         &:before {
           position: absolute;
@@ -4017,7 +4008,7 @@ ul.tree,
     blockquote.note {
       margin: 0 -24px !important;
       padding: 14px 24px;
-      background-color: darken(var(--gray-050), 2%);
+      background-color: darken($grey050, 2%);
     }
 
     blockquote.note {
@@ -4095,8 +4086,8 @@ ul.tree,
 .slideout {
   position: absolute;
   background-color: var(--white);
-  box-shadow: 0 0 0 1px transparentize(var(--gray-400), 0.75),
-    0 25px 100px transparentize(var(--gray-900), 0.5);
+  box-shadow: 0 0 0 1px transparentize($grey400, 0.75),
+    0 25px 100px transparentize($grey900, 0.5);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -4365,11 +4356,11 @@ ul.tree,
 .slideout-shade,
 .modal-shade {
   &:not(.dark) {
-    background-color: transparentize(var(--gray-400), 0.65) !important;
+    background-color: transparentize($grey400, 0.65) !important;
   }
 
   &.dark {
-    background-color: transparentize(var(--gray-900), 0.5) !important;
+    background-color: transparentize($grey900, 0.5) !important;
   }
 }
 
@@ -4508,7 +4499,7 @@ ul.tree,
   ::-webkit-scrollbar-thumb {
     border-radius: 8px;
     border: 2px solid transparent;
-    background-color: transparentize(var(--black), 0.5);
+    background-color: transparentize($black, 0.5);
     background-clip: content-box;
   }
 
@@ -4547,7 +4538,7 @@ ul.tree,
       height: 100%;
       left: 0;
       top: 0;
-      background-color: transparentize(var(--gray-900), 0.2);
+      background-color: transparentize($grey900, 0.2);
     }
 
     .spinner {
@@ -4594,7 +4585,7 @@ ul.tree,
 
       @supports (backdrop-filter: blur(10px)) {
         & {
-          background-color: transparentize(var(--gray-600), 0.6);
+          background-color: transparentize($grey600, 0.6);
           backdrop-filter: blur(10px);
           transition: opacity linear 100ms, backdrop-filter linear 100ms;
         }
@@ -4605,7 +4596,7 @@ ul.tree,
 
         @supports (backdrop-filter: blur(10px)) {
           & {
-            background-color: transparentize(var(--gray-500), 0.3);
+            background-color: transparentize($grey500, 0.3);
           }
         }
       }
@@ -4971,8 +4962,8 @@ ul.tree,
           @include margin-left(14px);
           padding: 0 4px;
           border-radius: var(--medium-border-radius);
-          box-shadow: 0 0 0 1px transparentize(var(--gray-600), 0.75),
-            0 1px 3px -1px transparentize(var(--gray-600), 0.5);
+          box-shadow: 0 0 0 1px transparentize($grey600, 0.75),
+            0 1px 3px -1px transparentize($grey600, 0.5);
         }
       }
     }
@@ -5022,11 +5013,11 @@ ul.tree,
 .menu:not(.menu--disclosure):not(:hover) ul li a:not(.disabled).hover {
   @include menu-option-active-styles;
 
-  --text-color: #{var(--white)};
-  --light-text-color: #{var(--gray-100)};
-  --ui-control-color: #{var(--gray-050)};
-  --ui-control-hover-color: #{var(--gray-100)};
-  --ui-control-active-color: #{var(--gray-100)};
+  --text-color: var(--white);
+  --light-text-color: var(--gray-100);
+  --ui-control-color: var(--gray-050);
+  --ui-control-hover-color: var(--gray-100);
+  --ui-control-active-color: var(--gray-100);
 
   span.icon,
   &:before {
@@ -5467,7 +5458,7 @@ div.checkbox {
   display: inline-block;
   clear: none;
   position: relative;
-  @include padding-left(var(--checkbox-size) + 5);
+  @include padding-left($checkboxSize + 5);
   line-height: 16px;
   height: 16px;
   cursor: pointer;
@@ -5506,7 +5497,7 @@ div.checkbox:before {
   content: '';
   font-size: 0;
   background-color: hsl(212, 50%, 99%);
-  border: 1px solid transparentize(var(--input-color), 0.6);
+  border: 1px solid transparentize($inputColor, 0.6);
   background-clip: padding-box;
   border-radius: var(--small-border-radius);
 }
@@ -5573,7 +5564,7 @@ fieldset {
   .notice,
   .warning {
     margin-top: 2px;
-    @include padding-left(var(--checkbox-size) + 5);
+    @include padding-left($checkboxSize + 5);
   }
 }
 
@@ -5590,7 +5581,7 @@ div.radio {
   display: inline-block;
   clear: none;
   position: relative;
-  @include padding-left(var(--radio-size) + 5);
+  @include padding-left($radioSize + 5);
   height: 16px;
   cursor: pointer;
 }
@@ -5625,7 +5616,7 @@ div.radio:before {
   width: var(--radio-size);
   height: var(--radio-size);
   background-color: hsl(212, 50%, 99%);
-  border: 1px solid transparentize(var(--input-color), 0.6);
+  border: 1px solid transparentize($inputColor, 0.6);
 }
 
 input.radio + label:after,
@@ -6323,7 +6314,7 @@ ul.errors li {
   height: 100%;
 
   &.no-access {
-    background-color: transparentize(var(--gray-900), 0.5);
+    background-color: transparentize($grey900, 0.5);
   }
 
   .pane {
@@ -6332,7 +6323,7 @@ ul.errors li {
     margin-left: auto;
     margin-right: auto;
     width: 320px;
-    box-shadow: 0 25px 100px transparentize(var(--gray-900), 0.5);
+    box-shadow: 0 25px 100px transparentize($grey900, 0.5);
   }
 }
 
@@ -6418,8 +6409,8 @@ ul.errors li {
       width: 240px;
       z-index: 1;
       background: #fff;
-      box-shadow: -1px 0 0 0 transparentize(var(--gray-900), 0.9),
-        1px 0 0 0 transparentize(var(--gray-900), 0.9);
+      box-shadow: -1px 0 0 0 transparentize($grey900, 0.9),
+        1px 0 0 0 transparentize($grey900, 0.9);
 
       .mc-col-items {
         padding: 14px;
@@ -6439,8 +6430,8 @@ ul.errors li {
       border-bottom: 1px solid var(--hairline-color);
       background-color: var(--gray-050);
       background-image: linear-gradient(
-        transparentize(var(--gray-800), 1),
-        transparentize(var(--gray-800), 0.95)
+        transparentize($grey800, 1),
+        transparentize($grey800, 0.95)
       );
     }
   }
@@ -6496,7 +6487,7 @@ ul.errors li {
       background-color: var(--gray-200);
 
       .slide-picker:focus a.active {
-        background-color: darken(var(--light-text-color), 0.5%);
+        background-color: darken($lightTextColor, 0.5%);
       }
     }
 
@@ -6602,7 +6593,7 @@ $titlebarBorderRadius: var(--large-border-radius) - 1;
     cursor: default;
     user-select: none;
     position: relative;
-    background-color: darken(var(--gray-050), 2%);
+    background-color: darken($grey050, 2%);
 
     &:after {
       display: block;

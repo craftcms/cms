@@ -22,7 +22,7 @@ body,
 
   select {
     color: var(--text-color) !important;
-    background-color: transparentize(var(--input-color), 0.75);
+    background-color: transparentize($inputColor, 0.75);
     border-radius: var(--large-border-radius);
     padding: 4px;
   }
@@ -156,7 +156,7 @@ body,
 
       &:focus,
       &:hover {
-        background-color: darken(var(--gray-200), 5%);
+        background-color: darken($grey200, 5%);
       }
 
       svg {

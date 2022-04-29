@@ -37,7 +37,7 @@ div.user-photo div.user-photo-controls {
 }
 
 div.user-photo-controls .progress-shade {
-  background: transparentize(var(--white), 0.2);
+  background: transparentize($white, 0.2);
   width: 100%;
   height: 100%;
   position: absolute;

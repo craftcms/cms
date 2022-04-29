@@ -112,7 +112,7 @@
     margin-top: 10px;
     border-radius: var(--large-border-radius);
     padding: 15px 25px;
-    box-shadow: inset 0 1px 3px -1px darken(var(--gray-100), 10%);
+    box-shadow: inset 0 1px 3px -1px darken($grey100, 10%);
 
     h4 {
       margin-bottom: 5px;
