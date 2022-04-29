@@ -636,7 +636,7 @@ return [
     'Files in this filesystem have public URLs' => 'Les fichiers de ce système de fichier ont des URL publiques',
     'Filesystem saved.' => 'Système de fichiers enregistré.',
     'Filesystems' => 'Systèmes de fichiers',
-    'Filesytem Type' => 'Type de système de fichiers',
+    'Filesystem Type' => 'Filesystem Type',
     'Filter results' => 'Filtrer les résultats',
     'Find Text' => 'Rechercher ce texte',
     'Find an official Craft Partner' => 'Trouver un partenaire Craft officiel',
