@@ -636,7 +636,7 @@ return [
     'Files in this filesystem have public URLs' => 'ไฟล์ในระบบไฟล์นี้มี URL สาธารณะ',
     'Filesystem saved.' => 'บันทึกระบบไฟล์แล้ว',
     'Filesystems' => 'ระบบไฟล์',
-    'Filesytem Type' => 'ประเภทระบบไฟล์',
+    'Filesystem Type' => 'Filesystem Type',
     'Filter results' => 'ผลลัพธ์การกรอง',
     'Find Text' => 'Find Text',
     'Find an official Craft Partner' => 'Find an official Craft Partner',
