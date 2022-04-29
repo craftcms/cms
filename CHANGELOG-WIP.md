@@ -551,6 +551,7 @@
 - `craft\helpers\App::env()` now returns `null` if a value couldn’t be found, rather than `false`.
 - `craft\helpers\App::env()` now returns a boolean if the original value was `'true'` or `'false'`.
 - `craft\helpers\App::env()` now returns an integer or float if the original value was numeric.
+- `craft\helpers\ArrayHelper::getValue()` now supports keys in square bracket syntax, e.g. `foo[bar][baz]`.
 - `craft\helpers\Assets::generateUrl()` no longer accepts a transform index for date modified comparisons. A `DateTime` object is expected instead.
 - `craft\helpers\Assets::urlAppendix()` no longer accepts a transform index for date modified comparisons. A `DateTime` object is expected instead.
 - `craft\helpers\Component::createComponent()` now automatically typecasts values that map to properties with `int`, `float`, `int|float`, `string`, `bool`, `array`, or `DateTime` type declarations. ([#10706](https://github.com/craftcms/cms/pull/10706))

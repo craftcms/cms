@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- `craft\helpers\ArrayHelper::getValue()` now supports keys in square bracket syntax, e.g. `foo[bar][baz]`.
+
 ### Fixed
 - Fixed a bug where `Craft.cp.$tabs` was returning an empty collection.
 
