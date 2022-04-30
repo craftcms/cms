@@ -9,7 +9,6 @@ namespace craft\utilities;
 
 use Craft;
 use craft\base\Utility;
-use craft\helpers\App;
 use craft\web\assets\upgrade\UpgradeAsset;
 
 /**
