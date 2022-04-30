@@ -18,7 +18,7 @@ import './upgrade.scss';
       this.$status = $('#status');
 
       Craft.sendApiRequest('GET', `upgrade-info?cmsConstraint=^${version}.0`)
-        .then(data => {
+        .then((data) => {
           if (data.cms.latestVersion) {
             this.showUpgradeInfo(data);
           } else {
@@ -30,7 +30,7 @@ import './upgrade.scss';
         });
     },
 
-    showUpgradeInfo: function(data) {
+    showUpgradeInfo: function (data) {
       console.log(data);
       this.$graphic.remove();
       this.$status.remove();
@@ -46,13 +46,19 @@ import './upgrade.scss';
       if (data.plugins.length) {
         $pluginIntro.append(
           $('<p/>', {
-            text: Craft.t('app', 'All plugins must be compatible with Craft {version} before you can upgrade.', {
-              version: this.version,
-            }),
+            text: Craft.t(
+              'app',
+              'All plugins must be compatible with Craft {version} before you can upgrade.',
+              {
+                version: this.version,
+              }
+            ),
           })
         );
 
-        const $table = $('<table id="plugins" class="data fullwidth"/>').appendTo(this.$body);
+        const $table = $(
+          '<table id="plugins" class="data fullwidth"/>'
+        ).appendTo(this.$body);
         $(`
           <thead>
             <tr>
@@ -75,7 +81,9 @@ import './upgrade.scss';
             class: 'plugin-name',
             text: plugin.name,
           }).appendTo($th);
-          const $devContainer = $('<div class="plugin-developer"/>').appendTo($th);
+          const $devContainer = $('<div class="plugin-developer"/>').appendTo(
+            $th
+          );
           if (plugin.developerUrl) {
             $('<a/>', {
               href: plugin.developerUrl,
@@ -94,10 +102,14 @@ import './upgrade.scss';
               text: Craft.t('app', 'Abandoned'),
             }).appendTo($tdStatus);
             if (plugin.replacement) {
-              noteHtml = Craft.t('app', 'The developer recommends using <a href="{url}">{name}</a> instead.', {
-                url: `https://plugins.craftcms.com/${plugin.replacement.handle}`,
-                name: plugin.replacement.name,
-              });
+              noteHtml = Craft.t(
+                'app',
+                'The developer recommends using <a href="{url}">{name}</a> instead.',
+                {
+                  url: `https://plugins.craftcms.com/${plugin.replacement.handle}`,
+                  name: plugin.replacement.name,
+                }
+              );
             }
           } else if (plugin.latestVersion) {
             $('<div/>', {
@@ -108,7 +120,10 @@ import './upgrade.scss';
               class: 'plugin-status',
               text: plugin.latestVersion,
             }).appendTo($tdStatus);
-            if (plugin.phpConstraint && plugin.phpConstraint != data.cms.phpConstraint) {
+            if (
+              plugin.phpConstraint &&
+              plugin.phpConstraint != data.cms.phpConstraint
+            ) {
               noteHtml = Craft.t('app', 'Requires PHP {version}', {
                 version: plugin.phpConstraint,
               });
@@ -145,17 +160,23 @@ import './upgrade.scss';
         )
         .append(
           $('<p/>', {
-            html: Craft.t('app', 'Read the <a href="{url}">upgrade guide</a> for instructions on upgrading your site.', {
-              url: `https://craftcms.com/docs/${this.version}.x/upgrade.html`,
-            }),
+            html: Craft.t(
+              'app',
+              'Read the <a href="{url}">upgrade guide</a> for instructions on upgrading your site.',
+              {
+                url: `https://craftcms.com/docs/${this.version}.x/upgrade.html`,
+              }
+            ),
           })
         )
-        .appendTo(this.$body)
+        .appendTo(this.$body);
     },
 
-    displayError: function() {
+    displayError: function () {
       this.$graphic.addClass('error');
-      this.$status.text(Craft.t('app', 'Unable to fetch upgrade info at this time.'));
+      this.$status.text(
+        Craft.t('app', 'Unable to fetch upgrade info at this time.')
+      );
     },
   });
 })(jQuery);
