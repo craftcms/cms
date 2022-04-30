@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Added
+- Added the “Craft 4 Upgrade” utility.
+- Added `craft\utilities\Upgrade`.
+- Added `craft\web\assets\upgrade\UpgradeAsset`.
+
 ### Changed
 - `craft\services\Fields::getLayoutsByType()` now memoizes its results. ([#11037](https://github.com/craftcms/cms/pull/11037))
 
