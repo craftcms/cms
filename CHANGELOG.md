@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Added
+- Added the “Craft 4 Upgrade” utility.
+- Added `craft\utilities\Upgrade`.
+- Added `craft\web\assets\upgrade\UpgradeAsset`.
+
 ### Changed
 - `craft\helpers\ArrayHelper::getValue()` now supports keys in square bracket syntax, e.g. `foo[bar][baz]`.
 
