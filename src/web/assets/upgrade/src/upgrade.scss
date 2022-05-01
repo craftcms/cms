@@ -85,6 +85,9 @@ $iconSize: 46px;
         }
 
         &.plugin-not-ready {
+          border-color: $yellow600;
+          color: $yellow600;
+          background-color: transparentize($yellow600, 0.95);
         }
 
         &.plugin-abandoned {

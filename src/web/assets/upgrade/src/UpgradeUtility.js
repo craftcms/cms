@@ -31,7 +31,6 @@ import './upgrade.scss';
     },
 
     showUpgradeInfo: function (data) {
-      console.log(data);
       this.$graphic.remove();
       this.$status.remove();
 
@@ -77,8 +76,9 @@ import './upgrade.scss';
           if (plugin.icon) {
             $(`<div class="plugin-icon">${plugin.icon}</div>`).appendTo($th);
           }
-          $('<div/>', {
+          $('<a/>', {
             class: 'plugin-name',
+            href: `https://plugins.craftcms.com/${plugin.handle}`,
             text: plugin.name,
           }).appendTo($th);
           const $devContainer = $('<div class="plugin-developer"/>').appendTo(
@@ -170,6 +170,8 @@ import './upgrade.scss';
           })
         )
         .appendTo(this.$body);
+
+      Craft.initUiElements(this.$body);
     },
 
     displayError: function () {
