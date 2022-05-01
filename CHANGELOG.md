@@ -4,10 +4,12 @@
 
 ### Added
 - Added the “Craft 4 Upgrade” utility.
+- Added `craft\base\conditions\ConditionRuleInterface::getGroupLabel()`.
 - Added `craft\utilities\Upgrade`.
 - Added `craft\web\assets\upgrade\UpgradeAsset`.
 
 ### Changed
+- Custom field condition rules are now listed under a “Fields” optgroup.
 - `craft\helpers\ArrayHelper::getValue()` now supports keys in square bracket syntax, e.g. `foo[bar][baz]`.
 
 ### Fixed

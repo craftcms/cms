@@ -33,6 +33,13 @@ interface ConditionRuleInterface extends ComponentInterface
     public function getLabel(): string;
 
     /**
+     * Returns the optgroup label the condition rule should be grouped under.
+     *
+     * @return string|null
+     */
+    public function getGroupLabel(): ?string;
+
+    /**
      * Returns the rule’s portable config.
      *
      * @return array

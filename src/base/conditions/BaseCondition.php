@@ -297,7 +297,13 @@ abstract class BaseCondition extends Component implements ConditionInterface
 
                     $ruleValue = Json::encode($rule->getConfig());
                     $ruleLabel = $rule->getLabel();
-                    $ruleTypeOptions = [];
+                    $ruleGroupLabel = $rule->getGroupLabel() ?? '__UNGROUPED__';
+
+                    $groupedRuleTypeOptions = [
+                        $ruleGroupLabel => [
+                            ['value' => $ruleValue, 'label' => $ruleLabel],
+                        ],
+                    ];
                     $labels = [
                         $ruleLabel => true,
                     ];
@@ -305,13 +311,29 @@ abstract class BaseCondition extends Component implements ConditionInterface
                         /** @var ConditionRuleInterface $selectableRule */
                         $label = $selectableRule->getLabel();
                         if (!isset($labels[$label])) {
-                            $ruleTypeOptions[] = compact('value', 'label');
+                            $groupLabel = $selectableRule->getGroupLabel() ?? '__UNGROUPED__';
+                            $groupedRuleTypeOptions[$groupLabel][] = compact('value', 'label');
                             $labels[$label] = true;
                         }
                     }
-                    $ruleTypeOptions[] = ['value' => $ruleValue, 'label' => $ruleLabel];
 
-                    ArrayHelper::multisort($ruleTypeOptions, 'label');
+                    // Sort by group label, and then option label
+                    ksort($groupedRuleTypeOptions);
+                    if (isset($groupedRuleTypeOptions['__UNGROUPED__']) && count($groupedRuleTypeOptions) > 1) {
+                        $ungroupedRuleTypeOptions = ArrayHelper::remove($groupedRuleTypeOptions, '__UNGROUPED__');
+                        $groupedRuleTypeOptions = array_merge(['__UNGROUPED__' => $ungroupedRuleTypeOptions], $groupedRuleTypeOptions);
+                    }
+
+                    $ruleTypeOptions = [];
+
+                    foreach ($groupedRuleTypeOptions as $groupLabel => $groupRuleTypeOptions) {
+                        ArrayHelper::multisort($groupRuleTypeOptions, 'label');
+                        if ($groupLabel !== '__UNGROUPED__') {
+                            $ruleTypeOptions[] = ['optgroup' => $groupLabel];
+                        }
+                        array_push($ruleTypeOptions, ...$groupRuleTypeOptions);
+                    }
+
 
                     $ruleHtml .=
                         // Rule type selector
