@@ -58,13 +58,13 @@ class UpgradeAsset extends AssetBundle
                 'Not ready',
                 'Plugin',
                 'Plugins',
-                'Read the <a href="{url}">upgrade guide</a> for instructions on upgrading your site.',
                 'Ready to upgrade?',
                 'Ready',
                 'Requires PHP {version}',
                 'Status',
                 'The developer recommends using <a href="{url}">{name}</a> instead.',
                 'Unable to fetch upgrade info at this time.',
+                'View the <a>upgrade guide</a>',
             ]);
         }
     }

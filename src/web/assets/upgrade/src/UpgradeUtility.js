@@ -160,12 +160,9 @@ import './upgrade.scss';
         )
         .append(
           $('<p/>', {
-            html: Craft.t(
-              'app',
-              'Read the <a href="{url}">upgrade guide</a> for instructions on upgrading your site.',
-              {
-                url: `https://craftcms.com/docs/${this.version}.x/upgrade.html`,
-              }
+            html: Craft.t('app', 'View the <a>upgrade guide</a>').replace(
+              '<a>',
+              `<a class="go" href="https://craftcms.com/docs/${this.version}.x/upgrade.html">`
             ),
           })
         )
