@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Changed
+- Options passed to the `_includes/forms/select` control panel template can now specify a `hidden` key. ([#11053](https://github.com/craftcms/cms/pull/11053))
 - `craft\services\Fields::getLayoutsByType()` now memoizes its results. ([#11037](https://github.com/craftcms/cms/pull/11037))
 
 ## 3.7.39 - 2022-04-26
