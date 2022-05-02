@@ -719,7 +719,7 @@ class Db
     public static function normalizeModelParam(&$value, string $modelClass, string $idAttribute = 'id'): bool
     {
         if ($value instanceof $modelClass) {
-            $value = $value->$idAttribute;
+            $value = [$value->$idAttribute];
             return true;
         }
 

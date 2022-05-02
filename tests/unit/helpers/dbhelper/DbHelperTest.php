@@ -121,7 +121,7 @@ class DbHelperTest extends Unit
 
         $value = $group1;
         self::assertEquals(true, Db::normalizeModelParam($value, UserGroup::class));
-        self::assertEquals(1, $value);
+        self::assertEquals([1], $value);
 
         $value = ['and', $group1, $group2];
         self::assertEquals(true, Db::normalizeModelParam($value, UserGroup::class));
