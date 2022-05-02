@@ -323,14 +323,9 @@ class UserQuery extends ElementQuery
             $value = $group;
         }
 
-        if ($value === null) {
-            $this->groupId = null;
-            return $this;
-        }
-
         if (Db::normalizeModelParam($value, UserGroup::class)) {
             $this->groupId = $value;
-        } else {
+        } elseif ($value !== null) {
             $glue = Db::extractGlue($value);
             $this->groupId = (new Query())
                 ->select(['id'])
@@ -340,6 +335,8 @@ class UserQuery extends ElementQuery
             if ($this->groupId && $glue !== null) {
                 array_unshift($this->groupId, $glue);
             }
+        } else {
+            $this->groupId = null;
         }
 
         return $this;
