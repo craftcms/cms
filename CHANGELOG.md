@@ -10,6 +10,12 @@
 - Added `craft\web\assets\upgrade\UpgradeAsset`.
 
 ### Changed
+- Asset queries’ `volume` params now support passing an array of `craft\base\VolumeInterface` objects.
+- Category queries’ `group` params now support passing an array of `craft\models\CategoryGroup` objects.
+- Entry queries’ `section` params now support passing an array of `craft\models\Section` objects.
+- Entry queries’ `type` params now support passing an array of `craft\models\EntryType` objects. ([#11057](https://github.com/craftcms/cms/issues/11057))
+- Matrix block queries’ `field` params now support passing an array of `craft\fields\Matrix` objects.
+- Tag queries’ `group` params now support passing an array of `craft\models\TagGroup` objects.
 - Options passed to the `_includes/forms/select` control panel template can now specify a `hidden` key. ([#11053](https://github.com/craftcms/cms/pull/11053))
 - `craft\services\Fields::getLayoutsByType()` now memoizes its results. ([#11037](https://github.com/craftcms/cms/pull/11037))
 
