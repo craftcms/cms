@@ -34,6 +34,13 @@ class Db
     const SIMPLE_TYPE_NUMERIC = 'numeric';
     const SIMPLE_TYPE_TEXTUAL = 'textual';
 
+    /** @since 3.7.40 */
+    const GLUE_AND = 'and';
+    /** @since 3.7.40 */
+    const GLUE_OR = 'or';
+    /** @since 3.7.40 */
+    const GLUE_NOT = 'not';
+
     /**
      * @var array
      */
@@ -438,8 +445,9 @@ class Db
      * string (via [[ArrayHelper::toArray()]]). If that is not desired behavior, you can escape the comma
      * with a backslash before it.
      *
-     * The first value can be set to either `'and'` or `'or'` to define whether *all* of the values must match, or
-     * *any*. If it’s neither `'and'` nor `'or'`, then `'or'` will be assumed.
+     * The first value can be set to either `and`, `or`, or `not` to define whether *all*, *any*, or *none* of the values must match.
+     * (`or` will be assumed by default.)
+     *
      * Values can begin with the operators `'not '`, `'!='`, `'<='`, `'>='`, `'<'`, `'>'`, or `'='`. If they don’t,
      * `'='` will be assumed.
      *
@@ -468,22 +476,12 @@ class Db
 
         $parsedColumnType = $columnType ? static::parseColumnType($columnType) : null;
 
-        $firstVal = strtolower(reset($value));
-        $negate = false;
-
-        switch ($firstVal) {
-            case 'and':
-            case 'or':
-                $glue = $firstVal;
-                array_shift($value);
-                break;
-            case 'not':
-                $glue = 'and';
-                $negate = true;
-                array_shift($value);
-                break;
-            default:
-                $glue = 'or';
+        $glue = static::extractGlue($value) ?? self::GLUE_OR;
+        if ($glue === self::GLUE_NOT) {
+            $glue = self::GLUE_AND;
+            $negate = true;
+        } else {
+            $negate = false;
         }
 
         $condition = [$glue];
@@ -565,13 +563,13 @@ class Db
             }
 
             // ['or', 1, 2, 3] => IN (1, 2, 3)
-            if ($glue == 'or' && $operator === '=') {
+            if ($glue == self::GLUE_OR && $operator === '=') {
                 $inVals[] = $val;
                 continue;
             }
 
             // ['and', '!=1', '!=2', '!=3'] => NOT IN (1, 2, 3)
-            if ($glue == 'and' && $operator === '!=') {
+            if ($glue == self::GLUE_AND && $operator === '!=') {
                 $notInVals[] = $val;
                 continue;
             }
@@ -610,14 +608,14 @@ class Db
         $normalizedValues = [];
 
         $value = self::_toArray($value);
+        $glue = static::extractGlue($value);
 
-        if (!count($value)) {
+        if (empty($value)) {
             return '';
         }
 
-        if (in_array($value[0], ['and', 'or', 'not'], true)) {
-            $normalizedValues[] = $value[0];
-            array_shift($value);
+        if ($glue !== null) {
+            $normalizedValues[] = $glue;
         }
 
         foreach ($value as $val) {
@@ -675,6 +673,76 @@ class Db
             $condition = ['or', $condition, [$column => null]];
         }
         return $condition;
+    }
+
+    /**
+     * Extracts a “glue” param from an a param value.
+     *
+     * Supported glue values are `and`, `or`, and `not`.
+     *
+     * @param mixed $value
+     * @return string|null
+     * @since 3.7.40
+     */
+    public static function extractGlue(&$value): ?string
+    {
+        if (!is_array($value)) {
+            return null;
+        }
+
+        $firstVal = reset($value);
+
+        if (!is_string($firstVal)) {
+            return null;
+        }
+
+        $firstVal = strtolower($firstVal);
+
+        if (!in_array($firstVal, [self::GLUE_AND, self::GLUE_OR, self::GLUE_NOT], true)) {
+            return null;
+        }
+
+        array_shift($value);
+        return $firstVal;
+    }
+
+    /**
+     * Normalizes a param value that can contain one or more models into an array of their IDs,
+     * while maintaining an `and`, `or`, or `not` prefix, if set.
+     *
+     * @param mixed $value The param value to be normalized
+     * @param string $modelClass The model class the param may be set to
+     * @param string $idAttribute The ID attribute on the models, which should be used in place of the models
+     * @return bool Whether the value was normalized
+     * @since 3.7.40
+     */
+    public static function normalizeModelParam(&$value, string $modelClass, string $idAttribute = 'id'): bool
+    {
+        if ($value instanceof $modelClass) {
+            $value = $value->$idAttribute;
+            return true;
+        }
+
+        if (!is_array($value)) {
+            return false;
+        }
+
+        $glue = static::extractGlue($value);
+
+        // See if it's exclusively made up of user group models
+        $onlyModels = ArrayHelper::onlyContains($value, function($value) use ($modelClass) {
+            return $value instanceof $modelClass;
+        });
+
+        if ($onlyModels) {
+            $value = ArrayHelper::getColumn($value, $idAttribute);
+        }
+
+        if ($glue !== null) {
+            array_unshift($value, $glue);
+        }
+
+        return $onlyModels;
     }
 
     /**

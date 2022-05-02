@@ -4,6 +4,8 @@
 
 ### Added
 - Added the “Craft 4 Upgrade” utility.
+- Added `craft\helpers\Db::extractGlue()`.
+- Added `craft\helpers\Db::normalizeModelParam()`.
 - Added `craft\utilities\Upgrade`.
 - Added `craft\web\assets\upgrade\UpgradeAsset`.
 
@@ -15,6 +17,8 @@
 
 ### Fixed
 - Fixed a bug where “Name” and “Handle” were not getting translated properly in field, volume, and global set validation errors. ([#11029](https://github.com/craftcms/cms/issues/11029))
+- Fixed a bug where passing an array of `craft\models\UserGroup` objects to a user query’s `group` param had no effect.
+- Fixed a bug where passing an array that began with `not` into a user query’s `group` param wouldn’t return users that had no user groups.
 
 ## 3.7.39 - 2022-04-26
 
