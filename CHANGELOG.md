@@ -10,6 +10,7 @@
 - Added `craft\web\assets\upgrade\UpgradeAsset`.
 
 ### Changed
+- Options passed to the `_includes/forms/select` control panel template can now specify a `hidden` key. ([#11053](https://github.com/craftcms/cms/pull/11053))
 - `craft\services\Fields::getLayoutsByType()` now memoizes its results. ([#11037](https://github.com/craftcms/cms/pull/11037))
 
 ### Removed

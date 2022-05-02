@@ -49,6 +49,7 @@
                     value: optionValue ?? '',
                     selected: (optionValue~'') is same as (value~''),
                     disabled: option.disabled ?? false,
+                    hidden: option.hidden ?? false,
                     text: option.label is defined ? option.label : option,
                     data: option.data ?? false,
                 }) }}
