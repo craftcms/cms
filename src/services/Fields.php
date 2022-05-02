@@ -202,6 +202,11 @@ class Fields extends Component
     private array $_layoutsByType = [];
 
     /**
+     * @var FieldLayout[][]
+     */
+    private array $_allLayoutsByType = [];
+
+    /**
      * @var array
      */
     private array $_savingFields = [];
@@ -1069,14 +1074,12 @@ class Fields extends Component
         $response = [];
 
         // Don't re-fetch any layouts we've already memoized
-        if (isset($this->_layoutsById)) {
-            foreach ($layoutIds as $key => $id) {
-                if (array_key_exists($id, $this->_layoutsById)) {
-                    if ($this->_layoutsById[$id] !== null) {
-                        $response[$id] = $this->_layoutsById[$id];
-                    }
-                    unset($layoutIds[$key]);
+        foreach ($layoutIds as $key => $id) {
+            if (array_key_exists($id, $this->_layoutsById)) {
+                if ($this->_layoutsById[$id] !== null) {
+                    $response[$id] = $this->_layoutsById[$id];
                 }
+                unset($layoutIds[$key]);
             }
         }
 
@@ -1139,17 +1142,19 @@ class Fields extends Component
      */
     public function getLayoutsByType(string $type): array
     {
-        $results = $this->_createLayoutQuery()
-            ->andWhere(['type' => $type])
-            ->all();
+        if (!isset($this->_allLayoutsByType[$type])) {
+            $results = $this->_createLayoutQuery()
+                ->andWhere(['type' => $type])
+                ->all();
 
-        $layouts = [];
+            $this->_allLayoutsByType[$type] = [];
 
-        foreach ($results as $result) {
-            $layouts[] = new FieldLayout($result);
+            foreach ($results as $result) {
+                $this->_allLayoutsByType[$type][] = new FieldLayout($result);
+            }
         }
 
-        return $layouts;
+        return $this->_allLayoutsByType[$type];
     }
 
     /**
@@ -1428,6 +1433,9 @@ class Fields extends Component
 
         $this->_layoutsByType[$layout->type] = $this->_layoutsById[$layout->id] = $layout;
 
+        // Clear caches
+        unset($this->_allLayoutsByType[$layout->type]);
+
         return true;
     }
 
@@ -1479,6 +1487,11 @@ class Fields extends Component
             ]));
         }
 
+        // Clear caches
+        unset($this->_layoutsById[$layout->id]);
+        unset($this->_layoutsByType[$layout->type]);
+        unset($this->_allLayoutsByType[$layout->type]);
+
         return true;
     }
 
@@ -1495,6 +1508,11 @@ class Fields extends Component
             ->softDelete(Table::FIELDLAYOUTS, ['type' => $type])
             ->execute();
 
+        // Clear caches
+        $this->_layoutsById = [];
+        $this->_layoutsByType = [];
+        $this->_allLayoutsByType = [];
+
         return (bool)$affectedRows;
     }
 
@@ -1510,6 +1528,11 @@ class Fields extends Component
         $affectedRows = Craft::$app->getDb()->createCommand()
             ->restore(Table::FIELDLAYOUTS, ['id' => $id])
             ->execute();
+
+        // Clear caches
+        $this->_layoutsById = [];
+        $this->_layoutsByType = [];
+        $this->_allLayoutsByType = [];
 
         return (bool)$affectedRows;
     }
@@ -1576,6 +1599,10 @@ class Fields extends Component
 
             $class = $data['type'];
 
+            // Track whether we should remove the field’s search indexes after save
+            $searchable = $data['searchable'] ?? false;
+            $deleteSearchIndexes = !$isNewField && !$searchable && $fieldRecord->searchable;
+
             // Create/alter the content table column(s)
             $contentService = Craft::$app->getContent();
             $oldHandle = !$isNewField ? $fieldRecord->getOldHandle() : null;
@@ -1590,13 +1617,13 @@ class Fields extends Component
                         [$key, $type] = explode(':', $type, 2);
                         $oldColumn = !$isNewField ? ElementHelper::fieldColumn($this->oldFieldColumnPrefix, $oldHandle, $oldColumnSuffix, $i !== 0 ? $key : null) : null;
                         $newColumn = ElementHelper::fieldColumn(null, $data['handle'], $data['columnSuffix'] ?? null, $i !== 0 ? $key : null);
-                        $this->_updateColumn($db, $transaction, $contentService->contentTable, $oldColumn, $newColumn, $type);
+                        $this->updateColumn($db, $transaction, $contentService->contentTable, $oldColumn, $newColumn, $type);
                         $newColumns[$newColumn] = true;
                     }
                 } else {
                     $oldColumn = !$isNewField ? ElementHelper::fieldColumn($this->oldFieldColumnPrefix, $oldHandle, $oldColumnSuffix) : null;
                     $newColumn = ElementHelper::fieldColumn(null, $data['handle'], $data['columnSuffix'] ?? null);
-                    $this->_updateColumn($db, $transaction, $contentService->contentTable, $oldColumn, $newColumn, $columnType);
+                    $this->updateColumn($db, $transaction, $contentService->contentTable, $oldColumn, $newColumn, $columnType);
                     $newColumns[$newColumn] = true;
                 }
             }
@@ -1628,7 +1655,7 @@ class Fields extends Component
             $fieldRecord->context = $context;
             $fieldRecord->columnSuffix = $data['columnSuffix'] ?? null;
             $fieldRecord->instructions = $data['instructions'];
-            $fieldRecord->searchable = $data['searchable'] ?? false;
+            $fieldRecord->searchable = $searchable;
             $fieldRecord->translationMethod = $data['translationMethod'];
             $fieldRecord->translationKeyFormat = $data['translationKeyFormat'];
             $fieldRecord->type = $data['type'];
@@ -1639,7 +1666,6 @@ class Fields extends Component
             $transaction->commit();
         } catch (Throwable $e) {
             $transaction->rollBack();
-
             throw $e;
         }
 
@@ -1676,19 +1702,30 @@ class Fields extends Component
             ]));
         }
 
+        // If we just dropped `searchable`, delete the field’s search indexes immediately.
+        if ($deleteSearchIndexes) {
+            Db::delete(Table::SEARCHINDEX, [
+                'attribute' => 'field',
+                'fieldId' => $field->id,
+            ]);
+        }
+
         // Invalidate all element caches
         Craft::$app->getElements()->invalidateAllCaches();
     }
 
     /**
+     * Adds/updates a field’s content table column.
+     *
      * @param Connection $db
      * @param Transaction $transaction
      * @param string $table
      * @param string|null $oldName
      * @param string $newName
      * @param string $type
+     * @since 3.7.39
      */
-    private function _updateColumn(Connection $db, Transaction &$transaction, string $table, ?string $oldName, string $newName, string $type): void
+    protected function updateColumn(Connection $db, Transaction &$transaction, string $table, ?string $oldName, string $newName, string $type): void
     {
         // Clear the schema cache
         $db->getSchema()->refresh();

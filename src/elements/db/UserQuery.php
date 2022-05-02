@@ -913,14 +913,23 @@ class UserQuery extends ElementQuery
         }
 
         if ($fullNameColumnExists && $this->fullName) {
+            if (is_string($this->fullName)) {
+                $this->fullName = Db::escapeCommas($this->fullName);
+            }
             $this->subQuery->andWhere(Db::parseParam('users.fullName', $this->fullName, '=', true));
         }
 
         if ($this->firstName) {
+            if (is_string($this->firstName)) {
+                $this->firstName = Db::escapeCommas($this->firstName);
+            }
             $this->subQuery->andWhere(Db::parseParam('users.firstName', $this->firstName, '=', true));
         }
 
         if ($this->lastName) {
+            if (is_string($this->lastName)) {
+                $this->lastName = Db::escapeCommas($this->lastName);
+            }
             $this->subQuery->andWhere(Db::parseParam('users.lastName', $this->lastName, '=', true));
         }
 

@@ -312,7 +312,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     public function getElementValidationRules(): array
     {
         $rules = [
-            ['validateRelationCount', 'on' => [Element::SCENARIO_LIVE]],
+            ['validateRelationCount', 'on' => [Element::SCENARIO_LIVE], 'skipOnEmpty' => false],
         ];
 
         if ($this->validateRelatedElements) {
@@ -336,14 +336,14 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
             $arrayValidator = new NumberValidator([
                 'min' => $this->minRelations,
                 'max' => $this->maxRelations,
-                'tooSmall' => Craft::t('app', '{attribute} should contain at least {min, number} {min, plural, one{selection} other{selections}}.', [
+                'tooSmall' => $this->minRelations ? Craft::t('app', '{attribute} should contain at least {min, number} {min, plural, one{selection} other{selections}}.', [
                     'attribute' => Craft::t('site', $this->name),
                     'min' => $this->minRelations, // Need to pass this in now
-                ]),
-                'tooBig' => Craft::t('app', '{attribute} should contain at most {max, number} {max, plural, one{selection} other{selections}}.', [
+                ]) : null,
+                'tooBig' => $this->maxRelations ? Craft::t('app', '{attribute} should contain at most {max, number} {max, plural, one{selection} other{selections}}.', [
                     'attribute' => Craft::t('site', $this->name),
                     'max' => $this->maxRelations, // Need to pass this in now
-                ]),
+                ]) : null,
                 'skipOnEmpty' => false,
             ]);
 
@@ -686,7 +686,7 @@ JS;
     public function getTableAttributeHtml(mixed $value, ElementInterface $element): string
     {
         if ($value instanceof ElementQueryInterface) {
-            $value = $this->_all($value, $element)->all();
+            $value = $this->_all($value, $element)->collect();
         }
 
         return $this->tableAttributeHtml($value);

@@ -7,11 +7,10 @@
 
 namespace craft\gql\resolvers\elements;
 
-use craft\db\Table;
+use Craft;
 use craft\elements\Asset as AssetElement;
 use craft\elements\db\ElementQuery;
 use craft\gql\base\ElementResolver;
-use craft\helpers\Db;
 use craft\helpers\Gql as GqlHelper;
 
 /**
@@ -50,7 +49,13 @@ class Asset extends ElementResolver
             return [];
         }
 
-        $query->andWhere(['in', 'assets.volumeId', array_values(Db::idsByUids(Table::VOLUMES, $pairs['volumes']))]);
+        $volumesService = Craft::$app->getVolumes();
+        $volumeIds = array_filter(array_map(function(string $uid) use ($volumesService) {
+            $volume = $volumesService->getVolumeByUid($uid);
+            return $volume->id ?? null;
+        }, $pairs['volumes']));
+
+        $query->andWhere(['in', 'assets.volumeId', $volumeIds]);
 
         return $query;
     }

@@ -1,6 +1,4 @@
 <?php
-
-declare(strict_types=1);
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -9,6 +7,7 @@ declare(strict_types=1);
 
 namespace craft\base;
 
+use Craft;
 use craft\helpers\App;
 use craft\validators\HandleValidator;
 
@@ -43,6 +42,17 @@ abstract class Fs extends SavableComponent implements FsInterface
 
         $url = App::parseEnv($this->url);
         return $url ? rtrim($url, '/') . '/' : null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function attributeLabels(): array
+    {
+        return [
+            'handle' => Craft::t('app', 'Handle'),
+            'name' => Craft::t('app', 'Name'),
+        ];
     }
 
     /**

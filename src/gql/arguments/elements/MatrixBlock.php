@@ -33,7 +33,7 @@ class MatrixBlock extends ElementArguments
             'primaryOwnerId' => [
                 'name' => 'primaryOwnerId',
                 'type' => Type::listOf(QueryArgument::getType()),
-                'description' => ' Narrows the query results based on the primary owner element of the Matrix blocks, per the owners’ IDs.',
+                'description' => 'Narrows the query results based on the primary owner element of the Matrix blocks, per the owners’ IDs.',
             ],
             'typeId' => Type::listOf(QueryArgument::getType()),
             'type' => [

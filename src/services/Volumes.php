@@ -209,6 +209,17 @@ class Volumes extends Component
     }
 
     /**
+     * Get the user photo volume.
+     *
+     * @return Volume|null
+     */
+    public function getUserPhotoVolume(): ?Volume
+    {
+        $uid = Craft::$app->getProjectConfig()->get('users.photoVolumeUid') ?? '';
+        return $this->getVolumeByUid($uid);
+    }
+
+    /**
      * Returns a volume by its UID.
      *
      * @param string $volumeUid

@@ -4,9 +4,11 @@ html {
   @apply tw-box-border;
 }
 
-*, :after, :before {
+*,
+:after,
+:before {
   -moz-box-sizing: inherit;
-  box-sizing: inherit
+  box-sizing: inherit;
 }
 
 img {

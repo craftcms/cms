@@ -13,7 +13,6 @@ use craft\services\Sites;
 use craft\test\TestCase;
 use craft\web\Request;
 use crafttests\fixtures\SitesFixture;
-use ReflectionClass;
 use ReflectionException;
 use UnitTester;
 use yii\web\BadRequestHttpException;
@@ -388,16 +387,6 @@ class RequestTest extends TestCase
     }
 
     /**
-     * @dataProvider normalizeParamDataProvider
-     */
-    public function testNormalizeParam(string $expected, string $name): void
-    {
-        $method = (new ReflectionClass(Request::class))->getMethod('_normalizeParam');
-        $method->setAccessible(true);
-        $this->assertSame($expected, $method->invokeArgs(Craft::$app->getRequest(), [$name]));
-    }
-
-    /**
      * https://deviceatlas.com/blog/list-of-user-agent-strings
      *
      * @return array
@@ -551,18 +540,5 @@ class RequestTest extends TestCase
         Craft::$app->getUser()->setIdentity(
             Craft::$app->getUsers()->getUserById(1)
         );
-    }
-
-    public function normalizeParamDataProvider(): array
-    {
-        return [
-            ['foo', 'foo'],
-            ['foo.bar', 'foo[bar]'],
-            ['foo.bar.baz', 'foo[bar][baz]'],
-            ['foo[bar', 'foo[bar'],
-            ['foo[bar][]', 'foo[bar][]'],
-            ['foo.bar:baz.qux', 'foo[bar:baz][qux]'],
-            ['foo-bar.baz.qux', 'foo-bar[baz][qux]'],
-        ];
     }
 }

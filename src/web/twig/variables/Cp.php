@@ -19,6 +19,7 @@ use craft\helpers\Cp as CpHelper;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
+use craft\models\Volume;
 use craft\web\twig\TemplateLoaderException;
 use DateTime;
 use DateTimeZone;
@@ -491,18 +492,24 @@ class Cp extends Component
      *
      * @param bool $includeAliases Whether aliases should be included in the list
      * (only enable this if the setting defines a URL or file path)
+     * @param callable|null $filter A function that returns whether a given value should be included
+     * @phpstan-param callable(scalar):bool|null $filter
      * @return array[]
      * @phpstan-return array{label:string,data:array}[]
      * @since 3.1.0
      */
-    public function getEnvSuggestions(bool $includeAliases = false): array
+    public function getEnvSuggestions(bool $includeAliases = false, ?callable $filter = null): array
     {
         $suggestions = [];
         $security = Craft::$app->getSecurity();
 
         $envSuggestions = [];
         foreach (array_keys($_SERVER) as $var) {
-            if (is_string($var) && is_scalar($env = App::env($var))) {
+            if (
+                is_string($var) &&
+                is_scalar($env = App::env($var)) &&
+                (!$filter || $filter($env))
+            ) {
                 $envSuggestions[] = [
                     'name' => '$' . $var,
                     'hint' => $security->redactIfSensitive($var, Craft::getAlias((string)$env, false)),
@@ -519,13 +526,16 @@ class Cp extends Component
             $aliasSuggestions = [];
             foreach (Craft::$aliases as $alias => $path) {
                 if (is_array($path)) {
-                    if (isset($path[$alias])) {
+                    if (
+                        isset($path[$alias]) &&
+                        (!$filter || $filter($path[$alias]))
+                    ) {
                         $aliasSuggestions[] = [
                             'name' => $alias,
                             'hint' => $path[$alias],
                         ];
                     }
-                } else {
+                } elseif (!$filter || $filter($path)) {
                     $aliasSuggestions[] = [
                         'name' => $alias,
                         'hint' => $path,
@@ -697,7 +707,7 @@ class Cp extends Component
     }
 
     /**
-     * Returns all filesystems for a time zone input.
+     * Returns all options for a filesystem input.
      *
      * @return array
      * @since 4.0.0
@@ -708,6 +718,24 @@ class Cp extends Component
             'label' => $fs->name,
             'value' => $fs->handle,
         ], Craft::$app->getFs()->getAllFilesystems());
+
+        ArrayHelper::multisort($options, 'label');
+
+        return $options;
+    }
+
+    /**
+     * Returns all options for a volume input.
+     *
+     * @return array
+     * @since 4.0.0
+     */
+    public function getVolumeOptions(): array
+    {
+        $options = array_map(fn(Volume $volume) => [
+            'label' => $volume->name,
+            'value' => $volume->id,
+        ], Craft::$app->getVolumes()->getAllVolumes());
 
         ArrayHelper::multisort($options, 'label');
 

@@ -134,7 +134,11 @@ class AssetIndexesController extends Controller
                 $indexingSession->missingEntries = $assetIndexer->getMissingEntriesForSession($indexingSession);
 
                 // If nothing out of ordinary, just end it.
-                if (empty($indexingSession->skippedEntries) && empty($indexingSession->missingEntries)) {
+                if (
+                    empty($indexingSession->skippedEntries) &&
+                    empty($indexingSession->missingEntries['folders']) &&
+                    empty($indexingSession->missingEntries['files'])
+                ) {
                     $assetIndexer->stopIndexingSession($indexingSession);
                     return $this->asSuccess(data: ['stop' => $sessionId]);
                 }

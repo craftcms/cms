@@ -138,6 +138,11 @@
 {% endmacro %}
 
 
+{% macro volume(config) %}
+    {% include "_includes/forms/volume" with config only %}
+{% endmacro %}
+
+
 {% macro booleanMenu(config) %}
     {% include "_includes/forms/booleanMenu" with config only %}
 {% endmacro %}
@@ -356,6 +361,17 @@
         }) %}
     {% endif %}
     {{ _self.field(config, 'template:_includes/forms/fs') }}
+{% endmacro %}
+
+
+{% macro volumeField(config) %}
+    {% set config = config|merge({id: config.id ?? "volume#{random()}"}) %}
+    {% if (config.includeEnvVars ?? false) and config.tip is not defined and (config.value ?? '')[0:1] != '$' %}
+        {% set config = config|merge({
+            tip: 'This can be set to an environment variable matching one of the option values.'|t('app'),
+        }) %}
+    {% endif %}
+    {{ _self.field(config, 'template:_includes/forms/volume') }}
 {% endmacro %}
 
 

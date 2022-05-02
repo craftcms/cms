@@ -1,5 +1,5 @@
 @charset "UTF-8";
-@import "@craftcms/sass/mixins";
+@import '@craftcms/sass/mixins';
 
 /* widgets */
 .widget {
@@ -75,7 +75,7 @@
     width: 100%;
 
     & > .pane {
-      background: $grey050;
+      background: var(--gray-050);
 
       & > .errors {
         margin-top: 24px;
@@ -127,7 +127,7 @@
 }
 
 /* Recent Entries widget */
-.craft\\widgets\\recententries .body .table  {
+.craft\\widgets\\recententries .body .table {
   table-layout: fixed;
 }
 

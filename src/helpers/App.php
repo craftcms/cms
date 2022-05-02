@@ -639,7 +639,7 @@ class App
 
     /**
      * Sets PHP’s memory limit to the maximum specified by the
-     * <config3:phpMaxMemoryLimit> config setting, and gives the script an
+     * <config4:phpMaxMemoryLimit> config setting, and gives the script an
      * unlimited amount of time to execute.
      *
      */
@@ -811,8 +811,8 @@ class App
             'password' => $dbConfig->password,
             'charset' => $dbConfig->charset,
             'tablePrefix' => $dbConfig->tablePrefix,
-            'enableLogging' => $dbConfig->enableLogging,
-            'enableProfiling' => $dbConfig->enableProfiling,
+            'enableLogging' => static::devMode(),
+            'enableProfiling' => static::devMode(),
             'schemaMap' => [
                 $driver => $schemaConfig,
             ],

@@ -117,7 +117,7 @@
             height: 30,
             sizes: '30px',
             srcset: "#{currentUser.getThumbUrl(30)} 30w, #{currentUser.getThumbUrl(60)} 60w",
-            alt: currentUser.getName(),
+            alt: currentUser.getThumbAlt(),
         }) }}
     </div>
 {% endset %}
@@ -145,7 +145,7 @@
                     </button>
 
                     {# New account dropdown #}
-                    <div class="account-toggle-wrapper" data-wrapper>
+                    <div class="account-toggle-wrapper">
                         <button
                             id="user-info"
                             aria-controls="account-menu"

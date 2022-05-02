@@ -1054,6 +1054,18 @@ class Sections extends Component
     }
 
     /**
+     * Returns an entry type by its UID.
+     *
+     * @param string $uid
+     * @return EntryType|null
+     * @since 3.7.39
+     */
+    public function getEntryTypeByUid(string $uid): ?EntryType
+    {
+        return $this->_entryTypes()->firstWhere('uid', $uid);
+    }
+
+    /**
      * Returns entry types that have a given handle.
      *
      * ---

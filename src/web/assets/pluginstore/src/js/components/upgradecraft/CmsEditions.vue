@@ -10,33 +10,34 @@
       class="md:tw-flex-1 md:tw-mx-4 md:tw-max-w-xs"
       v-for="(edition, key) in cmsEditions"
       :edition="edition"
-      :key="key"></cms-edition>
+      :key="key"
+    ></cms-edition>
   </div>
 </template>
 
 <script>
-import {mapState} from 'vuex'
-import CmsEdition from './CmsEdition'
+  import {mapState} from 'vuex';
+  import CmsEdition from './CmsEdition';
 
-export default {
-  components: {
-    CmsEdition,
-  },
+  export default {
+    components: {
+      CmsEdition,
+    },
 
-  data() {
-    return {
-      loading: false,
-    }
-  },
+    data() {
+      return {
+        loading: false,
+      };
+    },
 
-  computed: {
-    ...mapState({
-      cmsEditions: state => state.pluginStore.cmsEditions,
-    }),
-  },
+    computed: {
+      ...mapState({
+        cmsEditions: (state) => state.pluginStore.cmsEditions,
+      }),
+    },
 
-  beforeDestroy() {
-    this.$store.dispatch('pluginStore/cancelRequests')
-  }
-}
+    beforeDestroy() {
+      this.$store.dispatch('pluginStore/cancelRequests');
+    },
+  };
 </script>

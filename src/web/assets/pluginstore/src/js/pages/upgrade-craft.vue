@@ -1,13 +1,11 @@
 <template>
   <div class="ps-container">
-    <h1>{{ "Upgrade Craft CMS"|t('app') }}</h1>
-    <hr>
+    <h1>{{ 'Upgrade Craft CMS' | t('app') }}</h1>
+    <hr />
 
     <template v-if="!loading">
       <template v-if="errorMsg">
-        <div
-          v-if="errorMsg"
-          class="error">
+        <div v-if="errorMsg" class="error">
           {{ errorMsg }}
         </div>
       </template>
@@ -16,35 +14,39 @@
       </template>
     </template>
     <template v-else>
-      <c-spinner/>
+      <c-spinner />
     </template>
   </div>
 </template>
 
 <script>
-import CmsEditions from '../components/upgradecraft/CmsEditions'
+  import CmsEditions from '../components/upgradecraft/CmsEditions';
 
-export default {
-  components: {
-    CmsEditions
-  },
+  export default {
+    components: {
+      CmsEditions,
+    },
 
-  data() {
-    return {
-      errorMsg: null,
-      loading: true,
-    }
-  },
+    data() {
+      return {
+        errorMsg: null,
+        loading: true,
+      };
+    },
 
-  mounted() {
-    this.$store.dispatch('pluginStore/getCmsEditions')
-      .then(() => {
-        this.loading = false
-      })
-      .catch(() => {
-        this.loading = false
-        this.errorMsg = this.$options.filters.t("Couldn’t load CMS editions.", 'app')
-      })
-  }
-}
+    mounted() {
+      this.$store
+        .dispatch('pluginStore/getCmsEditions')
+        .then(() => {
+          this.loading = false;
+        })
+        .catch(() => {
+          this.loading = false;
+          this.errorMsg = this.$options.filters.t(
+            'Couldn’t load CMS editions.',
+            'app'
+          );
+        });
+    },
+  };
 </script>

@@ -4,12 +4,11 @@
       <slot name="header" />
     </div>
 
-    <div class="tw-grid-plugins tw-grid tw-grid-cols-1 sm:tw-grid-cols-2 lg:tw-grid-cols-3 tw-gap-x-8">
+    <div
+      class="tw-grid-plugins tw-grid tw-grid-cols-1 sm:tw-grid-cols-2 lg:tw-grid-cols-3 tw-gap-x-8"
+    >
       <template v-for="(developer, developerKey) in developers">
-        <div
-          :key="developerKey"
-          class="tw-grid-box tw-border-b"
-        >
+        <div :key="developerKey" class="tw-grid-box tw-border-b">
           <div class="tw-flex tw-items-center tw-py-6">
             <div class="tw-bg-red-500 tw-rounded-full tw-w-16 tw-h-16 tw-mr-4">
               <!-- Developer icon -->
@@ -32,38 +31,38 @@
 </template>
 
 <script>
-import {mapState} from 'vuex';
+  import {mapState} from 'vuex';
 
-export default {
-  props: {
-    requestData: {
-      type: Object,
-      required: true,
+  export default {
+    props: {
+      requestData: {
+        type: Object,
+        required: true,
+      },
     },
-  },
 
-  data() {
-    return {
-      nbDevelopers: 24,
-    }
-  },
-
-  computed: {
-    ...mapState({
-      developers: state => state.developerIndex.developers,
-    }),
-  },
-
-  mounted() {
-    this.requestDevelopers()
-  },
-
-  methods: {
-    requestDevelopers() {
-      this.$store.dispatch('developerIndex/searchDevelopers', {
-        ...this.requestData
-      })
+    data() {
+      return {
+        nbDevelopers: 24,
+      };
     },
-  },
-}
+
+    computed: {
+      ...mapState({
+        developers: (state) => state.developerIndex.developers,
+      }),
+    },
+
+    mounted() {
+      this.requestDevelopers();
+    },
+
+    methods: {
+      requestDevelopers() {
+        this.$store.dispatch('developerIndex/searchDevelopers', {
+          ...this.requestData,
+        });
+      },
+    },
+  };
 </script>

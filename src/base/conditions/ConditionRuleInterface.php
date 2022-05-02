@@ -19,7 +19,7 @@ use craft\base\ComponentInterface;
 interface ConditionRuleInterface extends ComponentInterface
 {
     /**
-     * Returns whether the rule is safe to include in conditions that are stared in the project config.
+     * Returns whether the rule is safe to include in conditions that are stored in the project config.
      *
      * @return bool
      */

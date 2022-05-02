@@ -446,7 +446,7 @@ class Db
      */
     public static function escapeParam(string $value): string
     {
-        $value = str_replace([',', '*'], ['\,', '\*'], $value);
+        $value = preg_replace('/(?<!\\\)[,*]/', '\\\$0', $value);
 
         // If the value starts with an operator, escape that too.
         foreach (self::$_operators as $operator) {
@@ -457,6 +457,18 @@ class Db
         }
 
         return $value;
+    }
+
+    /**
+     * Escapes commas in a string so the value doesn’t get interpreted as an array by [[Db::parseParam()]].
+     *
+     * @param string $value The param value.
+     * @return string The escaped param value.
+     * @since 4.0.0
+     */
+    public static function escapeCommas(string $value): string
+    {
+        return preg_replace('/(?<!\\\),/', '\\\$0', $value);
     }
 
     /**
@@ -1351,7 +1363,7 @@ class Db
      * This can be used from `config/db.php`:
      * ---
      * ```php
-     * $url = craft\helpers\App::env('DB_URL');
+     * $url = craft\helpers\App::env('CRAFT_DB_URL');
      * return craft\helpers\Db::url2config($url);
      * ```
      *
@@ -1398,6 +1410,11 @@ class Db
         }
 
         $config['dsn'] = "$driver:" . implode(';', $dsnParams);
+
+        // Append any query params to the DSN
+        if (isset($parsed['query'])) {
+            $config['dsn'] .= ';' . $parsed['query'];
+        }
 
         return $config;
     }

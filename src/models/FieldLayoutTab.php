@@ -193,15 +193,11 @@ class FieldLayoutTab extends FieldLayoutComponent
     /**
      * Returns the field layout tab’s config.
      *
-     * @return array|null
+     * @return array
      * @since 3.5.0
      */
-    public function getConfig(): ?array
+    public function getConfig(): array
     {
-        if (empty($this->_elements)) {
-            return null;
-        }
-
         if (!isset($this->uid)) {
             $this->uid = StringHelper::UUID();
         }
@@ -308,7 +304,8 @@ class FieldLayoutTab extends FieldLayoutComponent
      */
     public function getHtmlId(): string
     {
-        return 'tab-' . StringHelper::toKebabCase($this->name);
+        // Use two dashes here in case a tab name starts with “Tab”
+        return 'tab--' . StringHelper::toKebabCase($this->name);
     }
 
     /**

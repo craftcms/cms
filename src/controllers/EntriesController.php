@@ -39,28 +39,41 @@ class EntriesController extends BaseEntriesController
     /**
      * Creates a new unpublished draft and redirects to its edit page.
      *
-     * @param string $section The section’s handle
-     * @return Response
+     * @param string|null $section The section’s handle
+     * @return Response|null
      * @throws BadRequestHttpException
      * @throws ForbiddenHttpException
      * @throws ServerErrorHttpException
      */
-    public function actionCreate(string $section): Response
+    public function actionCreate(?string $section = null): ?Response
     {
-        $sectionHandle = $section;
+        if ($section) {
+            $sectionHandle = $section;
+        } else {
+            $sectionHandle = $this->request->getRequiredBodyParam('section');
+        }
+
         $section = Craft::$app->getSections()->getSectionByHandle($sectionHandle);
         if (!$section) {
             throw new BadRequestHttpException("Invalid section handle: $sectionHandle");
         }
 
-        $site = Cp::requestedSite();
+        $sitesService = Craft::$app->getSites();
+        $siteId = $this->request->getBodyParam('siteId');
 
-        if (!$site) {
-            throw new ForbiddenHttpException('User not authorized to edit content in any sites.');
+        if ($siteId) {
+            $site = $sitesService->getSiteById($siteId);
+            if (!$site) {
+                throw new BadRequestHttpException("Invalid site ID: $siteId");
+            }
+        } else {
+            $site = Cp::requestedSite();
+            if (!$site) {
+                throw new ForbiddenHttpException('User not authorized to edit content in any sites.');
+            }
         }
 
         $editableSiteIds = $this->editableSiteIds($section);
-        $sitesService = Craft::$app->getSites();
 
         if (!in_array($site->id, $editableSiteIds)) {
             // If there’s more than one possibility and entries doesn’t propagate to all sites, let the user choose
@@ -153,7 +166,9 @@ class EntriesController extends BaseEntriesController
         // Save it
         $entry->setScenario(Element::SCENARIO_ESSENTIALS);
         if (!Craft::$app->getDrafts()->saveElementAsDraft($entry, Craft::$app->getUser()->getId(), null, null, false)) {
-            throw new ServerErrorHttpException(sprintf('Unable to save entry as a draft: %s', implode(', ', $entry->getErrorSummary(true))));
+            return $this->asModelFailure($entry, Craft::t('app', 'Couldn’t create {type}.', [
+                'type' => Entry::lowerDisplayName(),
+            ]), 'entry');
         }
 
         // Set its position in the structure if a before/after param was passed
@@ -171,10 +186,21 @@ class EntriesController extends BaseEntriesController
             }
         }
 
-        // Redirect to its edit page
-        return $this->redirect(UrlHelper::urlWithParams($entry->getCpEditUrl(), [
-            'fresh' => 1,
+        $editUrl = $entry->getCpEditUrl();
+
+        $response = $this->asModelSuccess($entry, Craft::t('app', '{type} created.', [
+            'type' => Entry::displayName(),
+        ]), 'entry', array_filter([
+            'cpEditUrl' => $this->request->isCpRequest ? $editUrl : null,
         ]));
+
+        if (!$this->request->getAcceptsJson()) {
+            $response->redirect(UrlHelper::urlWithParams($editUrl, [
+                'fresh' => 1,
+            ]));
+        }
+
+        return $response;
     }
 
     /**

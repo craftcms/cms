@@ -28,18 +28,6 @@ use yii\web\HttpException;
 class MonologTarget extends PsrTarget
 {
     /**
-     * @var bool|null $addTimestampToContext Defaults to `true` if `addTimestampToMessage` is `false`.
-     * @see addTimestampToMessage
-     * @inheritdoc
-     */
-    public $addTimestampToContext;
-
-    /**
-     * @var bool
-     */
-    public bool $allowLineBreaks;
-
-    /**
      * @inheritdoc
      */
     public $except = [
@@ -48,34 +36,26 @@ class MonologTarget extends PsrTarget
     ];
 
     /**
-     * @var array Properties used to configure the Logger.
+     * @var bool Whether to log request context
      */
-    public const LOGGER_PROPS = [
-        'name',
-        'maxFiles',
-        'level',
-        'processor',
-        'formatter',
-        'addTimestampToMessage',
-    ];
+    public bool $logContext = true;
 
     /**
-     * @var string|null The PSR-3 log level to use.
-     * Defaults to `LogLevel::DEBUG` if `devMode` is set to `true, otherwise `LogLevel::WARNING`.
+     * @var bool
      */
-    protected ?string $level = null;
-
-    /**
-     * @var bool|null Whether to prepend a timestamp to the log message.
-     * Defaults to `true` unless `CRAFT_STREAM_LOG` is set to `true`.
-     */
-    protected ?bool $addTimestampToMessage;
+    protected bool $allowLineBreaks;
 
     /**
      * @var string
      * @see Logger::$name
      */
-    public string $name;
+    protected string $name;
+
+    /**
+     * @var string The PSR-3 log level to use.
+     * @phpstan-var LogLevel::*
+     */
+    protected string $level = LogLevel::WARNING;
 
     /**
      * @var int The maximum number of files to keep in rotation.
@@ -84,12 +64,18 @@ class MonologTarget extends PsrTarget
     protected int $maxFiles = 5;
 
     /**
+     * @see Logger::useMicrosecondTimestamps
+     * @var bool
+     */
+    protected bool $useMicrosecondTimestamps = false;
+
+    /**
      * @var FormatterInterface|null The Monolog formatter to use. Defaults to `LineFormatter`.
      */
     protected ?FormatterInterface $formatter = null;
 
     /**
-     * @var ProcessorInterface|null The Monolog processor to use. Defaults to `LogProcessor`.
+     * @var ProcessorInterface|null The Monolog processor to use. Defaults to `PsrLogMessageProcessor`.
      */
     protected ?ProcessorInterface $processor = null;
 
@@ -99,82 +85,87 @@ class MonologTarget extends PsrTarget
     protected $logger;
 
     /**
-     * @inheritDoc
-     * @throws InvalidConfigException
-     */
-    public function __set($name, $value): void
-    {
-        // Disallow setting logger props after logger is created.
-        if (in_array($name, static::LOGGER_PROPS, true)) {
-            if ($this->logger) {
-                throw new InvalidConfigException("The property \"$name\" must be set before \"logger\".");
-            }
-
-            $this->$name = $value;
-
-            return;
-        }
-
-        parent::__set($name, $value);
-    }
-
-    public function __get($name)
-    {
-        if (in_array($name, static::LOGGER_PROPS, true)) {
-            return $this->$name;
-        }
-
-        return parent::__get($name);
-    }
-
-    /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function init(): void
     {
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
-        $this->level = $this->level ?? (App::devMode() ? LogLevel::DEBUG : LogLevel::WARNING);
-        $this->addTimestampToMessage = $this->addTimestampToMessage ?? !App::isStreamLog();
-        $this->addTimestampToContext = $this->addTimestampToContext ?? !$this->addTimestampToMessage;
         $this->formatter = $this->formatter ?? new LineFormatter(
-            format: $this->addTimestampToMessage ? null : "%channel%.%level_name%: %message% %context% %extra%\n",
+            format: "%datetime% [%channel%.%level_name%] [%extra.yii_category%] %message% %context% %extra%\n",
+            dateFormat: 'Y-m-d H:i:s',
             allowInlineLineBreaks: $this->allowLineBreaks,
             ignoreEmptyContextAndExtra: true,
         );
-
-        $this->processor = $this->processor ?? new LogProcessor(
-            includeUserIp: $generalConfig->storeUserIps,
-            contextVars: $this->logVars,
-        );
-
         $this->logger = $this->_createLogger($this->name);
     }
 
     /**
-     * @throws InvalidConfigException
-     * @inheritDoc
+     * @return Logger
      */
-    public function setLogger(LoggerInterface $logger): void
+    public function getLogger(): Logger
+    {
+        return $this->logger;
+    }
+
+    /**
+     * @inheritdoc
+     * @throws InvalidConfigException
+     */
+    public function setLogger(Logger|LoggerInterface $logger): void
     {
         throw new InvalidConfigException('Logger may not be configured directly.');
     }
 
     /**
-     * Vars are logged to context, not in the message.
-     * @inheritDoc
+     * Log additional request context.
+     * @inheritdoc
+     */
+    public function export(): void
+    {
+        parent::export();
+
+        if (!$this->logContext) {
+            return;
+        }
+
+        $message = 'Request context:';
+        $vars = [];
+
+        if ($this->allowLineBreaks) {
+            $message .= "\n" . trim(parent::getContextMessage());
+        } else {
+            $vars = $this->logVars;
+        }
+
+        $this->logger->pushProcessor(new ContextProcessor(
+            vars: $vars,
+        ));
+
+        // Log at default level, so it doesn't get filtered
+        $this->logger->log($this->level, $message);
+        $this->logger->popProcessor();
+    }
+
+    /**
+     * Context is logged via {@see self::export} method, so it can be added using Monolog.
+     * @inheritdoc
      */
     protected function getContextMessage(): string
     {
         return '';
     }
 
-
     private function _createLogger(string $name): Logger
     {
         $generalConfig = Craft::$app->getConfig()->getGeneral();
-        $logger = (new Logger($name))
-            ->pushProcessor(new PsrLogMessageProcessor())
-            ->pushProcessor($this->processor);
+        $logger = (new Logger($name))->useMicrosecondTimestamps($this->useMicrosecondTimestamps);
+
+        if ($this->processor) {
+            $logger->pushProcessor($this->processor);
+        } else {
+            $logger
+                ->pushProcessor(new PsrLogMessageProcessor())
+                ->pushProcessor(new MessageProcessor());
+        }
 
         if (App::isStreamLog()) {
             $logger->pushHandler((new StreamHandler(
@@ -187,7 +178,6 @@ class MonologTarget extends PsrTarget
             if (!Craft::$app->getRequest()->getIsConsoleRequest()) {
                 $logger->pushHandler((new StreamHandler(
                     'php://stdout',
-                    /** @phpstan-ignore-next-line */
                     $this->level,
                 ))->setFormatter($this->formatter));
             }
@@ -195,12 +185,86 @@ class MonologTarget extends PsrTarget
             $logger->pushHandler((new RotatingFileHandler(
                 App::parseEnv(sprintf('@storage/logs/%s.log', $name)),
                 $this->maxFiles,
-                /** @phpstan-ignore-next-line */
                 $this->level,
                 filePermission: $generalConfig->defaultFileMode,
             ))->setFormatter($this->formatter));
         }
 
         return $logger;
+    }
+
+    /**
+     * @param string $name
+     * @throws InvalidConfigException
+     */
+    public function setName(string $name): void
+    {
+        $this->_setLoggerProperty('name', $name);
+    }
+
+    /**
+     * @param bool $allowLineBreaks
+     * @throws InvalidConfigException
+     */
+    public function setAllowLineBreaks(bool $allowLineBreaks): void
+    {
+        $this->_setLoggerProperty('allowLineBreaks', $allowLineBreaks);
+    }
+
+    /**
+     * @param string|null $level
+     * @throws InvalidConfigException
+     */
+    public function setLevel(?string $level): void
+    {
+        $this->_setLoggerProperty('level', $level);
+    }
+
+    /**
+     * @param int $maxFiles
+     * @throws InvalidConfigException
+     */
+    public function setMaxFiles(int $maxFiles): void
+    {
+        $this->_setLoggerProperty('maxFiles', $maxFiles);
+    }
+
+    /**
+     * @param bool $useMicrosecondTimestamps
+     * @throws InvalidConfigException
+     */
+    public function setUseMicrosecondTimestamps(bool $useMicrosecondTimestamps): void
+    {
+        $this->_setLoggerProperty('useMicrosecondTimestamps', $useMicrosecondTimestamps);
+    }
+
+    /**
+     * @param FormatterInterface|null $formatter
+     * @throws InvalidConfigException
+     */
+    public function setFormatter(?FormatterInterface $formatter): void
+    {
+        $this->_setLoggerProperty('formatter', $formatter);
+    }
+
+    /**
+     * @param ProcessorInterface|null $processor
+     * @throws InvalidConfigException
+     */
+    public function setProcessor(?ProcessorInterface $processor): void
+    {
+        $this->_setLoggerProperty('processor', $processor);
+    }
+
+    /**
+     * @throws InvalidConfigException
+     */
+    private function _setLoggerProperty(string $property, mixed $value): void
+    {
+        if (isset($this->logger)) {
+            throw new InvalidConfigException("The property “{$property}” may not be set after logger is initialized.");
+        }
+
+        $this->$property = $value;
     }
 }

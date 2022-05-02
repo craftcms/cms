@@ -13,17 +13,21 @@ use craft\db\Table;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\Json;
+use craft\helpers\Queue as QueueHelper;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\i18n\Translation;
+use craft\queue\jobs\Proxy;
 use DateTime;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
+use yii\base\InvalidConfigException;
 use yii\db\Expression;
 use yii\db\Query;
 use yii\di\Instance;
 use yii\mutex\Mutex;
 use yii\queue\ExecEvent;
+use yii\queue\Queue as BaseQueue;
 use yii\web\Response;
 
 /**
@@ -64,15 +68,26 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     public string $tableName = Table::QUEUE;
 
     /**
-     * @var string The `channel` column value to the queue should use.
+     * @var string|null The `channel` column value to the queue should use. If null, the queue’s application component ID will be used.
      * @since 3.4.0
      */
-    public string $channel = 'queue';
+    public ?string $channel = null;
 
     /**
      * @inheritdoc
      */
     public $commandClass = Command::class;
+
+    /**
+     * @var BaseQueue|array|string|null An external queue that proxy jobs should be sent to.
+     *
+     * If this is set, [[push()]] will send [[Proxy]] jobs to it that reference the internal job IDs.
+     * When executed, those jobs will cause the referenced internal jobs to be executed, unless they’ve
+     * already been run directly.
+     *
+     * @since 4.0.0
+     */
+    public BaseQueue|array|string|null $proxyQueue = null;
 
     /**
      * @var string|null The description of the job being pushed into the queue
@@ -101,6 +116,12 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     private bool $_locked = false;
 
     /**
+     * @var string|null The application component ID
+     * @see componentId()
+     */
+    private ?string $_componentId = null;
+
+    /**
      * @inheritdoc
      */
     public function init(): void
@@ -109,6 +130,10 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
 
         $this->db = Instance::ensure($this->db, Connection::class);
         $this->mutex = Instance::ensure($this->mutex, Mutex::class);
+
+        if (isset($this->proxyQueue)) {
+            $this->proxyQueue = Instance::ensure($this->proxyQueue, BaseQueue::class);
+        }
 
         $this->on(self::EVENT_BEFORE_EXEC, function(ExecEvent $e) {
             $this->_executingJobId = $e->id;
@@ -123,30 +148,49 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
      * @inheritdoc
      * @param bool $repeat Whether to continue listening when the queue is empty.
      * @param int $timeout The number of seconds to wait between cycles
-     * @retrun int|null the exit code
+     * @return int|null the exit code
      */
     public function run(bool $repeat = false, int $timeout = 0): ?int
     {
         return $this->runWorker(function(callable $canContinue) use ($repeat, $timeout) {
             while ($canContinue()) {
-                if ($payload = $this->reserve()) {
-                    if ($this->handleMessage($payload['id'], $payload['job'], $payload['ttr'], $payload['attempt'])) {
-                        $this->release($payload['id']);
+                if (!$this->executeJob()) {
+                    if (!$repeat) {
+                        break;
+                    } elseif ($timeout) {
+                        sleep($timeout);
                     }
-                } elseif (!$repeat) {
-                    break;
-                } elseif ($timeout) {
-                    sleep($timeout);
                 }
             }
         });
     }
 
     /**
+     * Executes a single job.
+     *
+     * @param string|null $id The job ID, if a specific job should be run
+     * @return bool Whether a job was found
+     */
+    public function executeJob(?string $id = null): bool
+    {
+        $payload = $this->reserve($id);
+
+        if (!$payload) {
+            return false;
+        }
+
+        if ($this->handleMessage($payload['id'], $payload['job'], $payload['ttr'], $payload['attempt'])) {
+            $this->release($payload['id']);
+        }
+
+        return true;
+    }
+
+    /**
      * Listens to the queue and runs new jobs.
      *
      * @param int $timeout The number of seconds to wait between cycles
-     * @retrun int|null the exit code
+     * @return int|null the exit code
      * @deprecated in 3.6.11. Use [[run()]] instead.
      */
     public function listen(int $timeout = 0): ?int
@@ -155,7 +199,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     }
 
     /**
-     * @param string $id of a job message
+     * @param string $id The job ID.
      * @return bool
      */
     public function isFailed(string $id): bool
@@ -226,6 +270,19 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
                 'id' => $id,
             ], [], false, $this->db);
         });
+
+        // If there's a proxy queue, send a new job to that as well
+        if ($this->proxyQueue) {
+            $job = (new Query())
+                ->select(['priority', 'delay', 'ttr'])
+                ->from($this->tableName)
+                ->where(['id' => $id])
+                ->one();
+
+            if ($job) {
+                $this->pushProxyJob($id, $job['priority'], $job['delay'], $job['ttr']);
+            }
+        }
     }
 
     /**
@@ -247,7 +304,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
                 'dateFailed' => null,
                 'error' => null,
             ], [
-                'channel' => $this->channel,
+                'channel' => $this->channel(),
                 'fail' => true,
             ], [], false, $this->db);
         });
@@ -272,7 +329,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
     {
         $this->_lock(function() {
             Db::delete($this->tableName, [
-                'channel' => $this->channel,
+                'channel' => $this->channel(),
             ], [], $this->db);
         });
     }
@@ -562,11 +619,12 @@ EOD;
 
     /**
      * @inheritdoc
+     * @throws InvalidConfigException
      */
     protected function pushMessage($message, $ttr, $delay, $priority): string
     {
         Db::insert($this->tableName, [
-            'channel' => $this->channel,
+            'channel' => $this->channel(),
             'job' => $message,
             'description' => $this->_jobDescription,
             'timePushed' => time(),
@@ -575,30 +633,81 @@ EOD;
             'priority' => $priority ?: 1024,
         ], $this->db);
 
-        return $this->db->getLastInsertID($this->tableName);
+        $id = $this->db->getLastInsertID($this->tableName);
+
+        // If there's a proxy queue, send a job to that as well
+        if ($this->proxyQueue) {
+            $this->pushProxyJob($id, $priority, $delay, $ttr);
+        }
+
+        return $id;
     }
 
     /**
+     * Pushes a new job to the proxy queue.
+     *
+     * @param string $id
+     * @param int|null $priority
+     * @param int|null $delay
+     * @param int|null $ttr
+     */
+    private function pushProxyJob(string $id, ?int $priority, ?int $delay, ?int $ttr)
+    {
+        $job = new Proxy([
+            'queue' => $this->componentId(),
+            'jobId' => $id,
+        ]);
+        QueueHelper::push($job, $priority, $delay, $ttr, $this->proxyQueue);
+    }
+
+    /**
+     * @return string The component ID
+     * @throws InvalidConfigException
+     */
+    private function componentId(): string
+    {
+        if (!isset($this->_componentId)) {
+            foreach (Craft::$app->getComponents(false) as $id => $component) {
+                if ($component === $this) {
+                    $this->_componentId = $id;
+                    break;
+                }
+            }
+            if (!isset($this->_componentId)) {
+                throw new InvalidConfigException('Queue must be an application component.');
+            }
+        }
+
+        return $this->_componentId;
+    }
+
+    /**
+     * @param string|null $id The job ID
      * @return array|null The payload, or null if there aren't any jobs to reserve
      * @throws Exception in case it hasn't waited the lock
      */
-    protected function reserve(): ?array
+    protected function reserve(?string $id = null): ?array
     {
         $payload = null;
 
-        $this->_lock(function() use (&$payload) {
+        $this->_lock(function() use (&$payload, $id) {
             // Move expired messages into waiting list
             $this->_moveExpired();
 
             // Reserve one message
             /** @var array|null $payload */
-            $payload = $this->db->usePrimary(function() {
-                return $this->_createJobQuery()
+            $payload = $this->db->usePrimary(function() use ($id) {
+                $query = $this->_createJobQuery()
                     ->andWhere(['fail' => false, 'timeUpdated' => null])
                     ->andWhere('[[timePushed]] + [[delay]] <= :time', ['time' => time()])
                     ->orderBy(['priority' => SORT_ASC, 'id' => SORT_ASC])
-                    ->limit(1)
-                    ->one($this->db) ?: null;
+                    ->limit(1);
+
+                if ($id) {
+                    $query->andWhere(['id' => $id]);
+                }
+
+                return $query->one($this->db) ?: null;
             });
 
             if (is_array($payload)) {
@@ -661,7 +770,7 @@ EOD;
                         ->where([
                             'and',
                             [
-                                'channel' => $this->channel,
+                                'channel' => $this->channel(),
                                 'fail' => false,
                             ],
                             '[[timeUpdated]] < :time - [[ttr]]',
@@ -692,7 +801,18 @@ EOD;
     {
         return (new Query())
             ->from($this->tableName)
-            ->where(['channel' => $this->channel]);
+            ->where(['channel' => $this->channel()]);
+    }
+
+    /**
+     * Returns the `channel` value to use.
+     *
+     * @return string
+     * @throws InvalidConfigException
+     */
+    private function channel(): string
+    {
+        return $this->channel ?? $this->componentId();
     }
 
     /**
@@ -772,9 +892,12 @@ EOD;
      */
     private function _lock(callable $callback): void
     {
-        if ($acquireLock = !$this->_locked) {
-            if (!$this->mutex->acquire(__CLASS__ . "::$this->channel", $this->mutexTimeout)) {
-                throw new Exception("Could not acquire a mutex lock for the queue ($this->channel).");
+        $acquireLock = !$this->_locked;
+
+        if ($acquireLock) {
+            $channel = $this->channel();
+            if (!$this->mutex->acquire(__CLASS__ . "::$channel", $this->mutexTimeout)) {
+                throw new Exception("Could not acquire a mutex lock for the queue ($channel).");
             }
             $this->_locked = true;
         }
@@ -782,7 +905,7 @@ EOD;
         $callback();
 
         if ($acquireLock) {
-            $this->mutex->release(__CLASS__ . "::$this->channel");
+            $this->mutex->release(__CLASS__ . "::$channel");
             $this->_locked = false;
         }
     }

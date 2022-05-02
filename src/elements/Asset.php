@@ -1,6 +1,4 @@
 <?php
-
-declare(strict_types=1);
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -887,7 +885,7 @@ class Asset extends Element
         $rules[] = [['volumeId', 'folderId', 'width', 'height', 'size'], 'number', 'integerOnly' => true];
         $rules[] = [['dateModified'], DateTimeValidator::class];
         $rules[] = [['filename', 'kind'], 'required'];
-        $rules[] = [['filename', 'alt'], 'safe'];
+        $rules[] = [['filename', 'newFilename', 'alt'], 'safe'];
         $rules[] = [['kind'], 'string', 'max' => 50];
         $rules[] = [['newLocation'], 'required', 'on' => [self::SCENARIO_CREATE, self::SCENARIO_MOVE, self::SCENARIO_FILEOPS]];
         $rules[] = [['tempFilePath'], 'required', 'on' => [self::SCENARIO_CREATE, self::SCENARIO_REPLACE]];
@@ -1645,7 +1643,7 @@ JS;
         return Html::tag('img', '', [
             'sizes' => "{$thumbSizes[0][0]}px",
             'srcset' => implode(', ', $srcsets),
-            'alt' => $this->title,
+            'alt' => $this->alt ?? $this->title,
         ]);
     }
 
@@ -2119,10 +2117,8 @@ Craft.sendActionRequest('POST', 'assets/preview-thumb', {
         width: 350,
         height: 190,
     },
-}).then((response, textStatus) => {
-    if (textStatus === 'success') {
-        $('#$thumbContainerId').find('img').replaceWith(response.img);
-    }
+}).then(({data}) => {
+    $('#$thumbContainerId').find('img').replaceWith(data.img);
 }).finally(() => {
     $('#$thumbContainerId').removeClass('loading')
         .find('.spinner').remove();
@@ -2271,7 +2267,7 @@ JS;
     public function beforeSave(bool $isNew): bool
     {
         // newFolderId/newFilename => newLocation.
-        if ($this->newFilename === '') {
+        if ($this->newFilename === '' || $this->newFilename === $this->filename) {
             $this->newFilename = null;
         }
         if (isset($this->newFolderId) || isset($this->newFilename)) {

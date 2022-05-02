@@ -1,6 +1,4 @@
 <?php
-
-declare(strict_types=1);
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -341,7 +339,7 @@ class AssetIndexer extends Component
      * Get skipped items for an indexing session.
      *
      * @param AssetIndexingSession $session
-     * @return array
+     * @return string[]
      * @since 4.0.0
      */
     public function getSkippedItemsForSession(AssetIndexingSession $session): array
@@ -368,6 +366,7 @@ class AssetIndexer extends Component
      *
      * @param AssetIndexingSession $session
      * @return array with `files` and `folders` keys, containing missing entries.
+     * @phpstan-return array{folders:array<int,string>,files:array<int,string>}
      * @throws AssetException
      * @since 4.0.0
      */
@@ -377,11 +376,16 @@ class AssetIndexer extends Component
             throw new AssetException('A session must be finished before missing entries can be fetched');
         }
 
+        $missing = [
+            'folders' => [],
+            'files' => [],
+        ];
+
         $cutoff = Db::prepareDateForDb($session->dateCreated);
 
         $volumeList = Json::decodeIfJson($session->indexedVolumes);
         if (!$volumeList || !is_array($volumeList)) {
-            return [];
+            return $missing;
         }
 
         $volumeList = array_keys($volumeList);
@@ -394,9 +398,7 @@ class AssetIndexer extends Component
             ->where(['<', 'folders.dateCreated', $cutoff])
             ->andWhere(['folders.volumeId' => $volumeList])
             ->andWhere(['not', ['folders.parentId' => null]])
-            ->andWhere(['indexData.id' => null]);
-
-        $missingFolders = $missingFolders
+            ->andWhere(['indexData.id' => null])
             ->all();
 
         $missingFiles = (new Query())
@@ -411,11 +413,6 @@ class AssetIndexer extends Component
             ->andWhere(['elements.dateDeleted' => null])
             ->andWhere(['indexData.id' => null])
             ->all();
-
-        $missing = [
-            'folders' => [],
-            'files' => [],
-        ];
 
         foreach ($missingFolders as ['folderId' => $folderId, 'path' => $path, 'volumeName' => $volumeName]) {
             $missing['folders'][$folderId] = $volumeName . '/' . $path;

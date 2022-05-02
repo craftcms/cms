@@ -1,6 +1,7 @@
 parameters:
     level: 5
     paths:
+        - bootstrap
         - src
         - tests
     excludePaths:
@@ -36,6 +37,7 @@ parameters:
         - stubs/yii/db/BaseActiveRecord.stub
         - stubs/yii/db/Migration.stub
         - stubs/yii/db/Query.stub
+        - stubs/yii/di/ServiceLocator.stub
         - stubs/yii/helpers/BaseArrayHelper.stub
         - stubs/yii/validators/UniqueValidator.stub
         - stubs/yii/validators/UrlValidator.stub

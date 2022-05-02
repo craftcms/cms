@@ -6,43 +6,43 @@ const state = {
   showingScreenshotModal: false,
   screenshotModalImages: null,
   screenshotModalImageKey: 0,
-}
+};
 
 /**
  * Getters
  */
-const getters = {}
+const getters = {};
 
 /**
  * Actions
  */
-const actions = {}
+const actions = {};
 
 /**
  * Mutations
  */
 const mutations = {
   updateSearchQuery(state, searchQuery) {
-    state.searchQuery = searchQuery
+    state.searchQuery = searchQuery;
   },
 
   updateShowingScreenshotModal(state, show) {
-    state.showingScreenshotModal = show
+    state.showingScreenshotModal = show;
   },
 
   updateScreenshotModalImages(state, images) {
-    state.screenshotModalImages = images
+    state.screenshotModalImages = images;
   },
 
   updateScreenshotModalImageKey(state, key) {
-    state.screenshotModalImageKey = key
+    state.screenshotModalImageKey = key;
   },
-}
+};
 
 export default {
   namespaced: true,
   state,
   getters,
   actions,
-  mutations
-}
+  mutations,
+};

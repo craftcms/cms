@@ -24,6 +24,52 @@ use yii\base\Module;
 interface PluginInterface
 {
     /**
+     * Returns the base config that the plugin should be instantiated with.
+     *
+     * It is recommended that plugins define their internal components from here:
+     *
+     * ```php
+     * public static function config(): array
+     * {
+     *     return [
+     *         'components' => [
+     *             'myComponent' => ['class' => MyComponent::class],
+     *             // ...
+     *         ],
+     *     ];
+     * }
+     * ```
+     *
+     * Doing that enables projects to customize the components as needed, by
+     * overriding `\craft\services\Plugins::$pluginConfigs` in `config/app.php`:
+     *
+     * ```php
+     * return [
+     *     'components' => [
+     *         'plugins' => [
+     *             'pluginConfigs' => [
+     *                 'my-plugin' => [
+     *                     'components' => [
+     *                         'myComponent' => [
+     *                             'myProperty' => 'foo',
+     *                             // ...
+     *                         ],
+     *                     ],
+     *                 ],
+     *             ],
+     *         ],
+     *     ],
+     * ];
+     * ```
+     *
+     * The resulting config will be passed to `\Craft::createObject()` to instantiate the plugin.
+     *
+     * @return array
+     * @since 4.0.0
+     */
+    public static function config(): array;
+
+    /**
      * Returns supported plugin editions (lowest to highest).
      *
      * @return string[]

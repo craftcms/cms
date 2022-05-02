@@ -5,7 +5,6 @@ namespace craft\debug;
 use craft\errors\FsException;
 use craft\models\FsListing;
 use Illuminate\Support\Collection;
-use Opis\Closure;
 use yii\base\InvalidConfigException;
 use yii\debug\FlattenException;
 
@@ -23,7 +22,7 @@ class LogTarget extends \yii\debug\LogTarget
     public $module;
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function export(): void
     {
@@ -44,7 +43,7 @@ class LogTarget extends \yii\debug\LogTarget
                     $summary['peakMemory'] = $panelData['memory'];
                     $summary['processingTime'] = $panelData['time'];
                 }
-                $data[$id] = Closure\serialize($panelData);
+                $data[$id] = serialize($panelData);
             } catch (\Exception $exception) {
                 $exceptions[$id] = new FlattenException($exception);
             }
@@ -55,14 +54,58 @@ class LogTarget extends \yii\debug\LogTarget
 
         $this->module->fs->write(
             "$path/{$this->tag}.data",
-            Closure\serialize($data),
+            serialize($data),
         );
 
         $this->_updateIndexFile("$path/index.data", $summary);
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
+     */
+    public function loadManifest(): array
+    {
+        if (!$this->module->fs) {
+            return parent::loadManifest();
+        }
+
+        $indexFile = $this->module->dataPath . '/index.data';
+        $content = $this->module->fs->read($indexFile);
+
+        if ($content !== '') {
+            return array_reverse(unserialize($content), true);
+        }
+
+        return [];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function loadTagToPanels($tag): array
+    {
+        if (!$this->module->fs) {
+            return parent::loadTagToPanels($tag);
+        }
+
+        $dataFile = $this->module->dataPath . "/$tag.data";
+        $data = unserialize($this->module->fs->read($dataFile));
+        $exceptions = $data['exceptions'];
+        foreach ($this->module->panels as $id => $panel) {
+            if (isset($data[$id])) {
+                $panel->tag = $tag;
+                $panel->load(unserialize($data[$id]));
+            }
+            if (isset($exceptions[$id])) {
+                $panel->setError($exceptions[$id]);
+            }
+        }
+
+        return $data;
+    }
+
+    /**
+     * @inheritdoc
      */
     protected function gc(&$manifest): void
     {
@@ -92,7 +135,7 @@ class LogTarget extends \yii\debug\LogTarget
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     protected function removeStaleDataFiles($manifest): void
     {
@@ -125,7 +168,7 @@ class LogTarget extends \yii\debug\LogTarget
     private function _updateIndexFile(string $indexFile, array $summary): void
     {
         try {
-            $manifest = Closure\unserialize($this->module->fs->read($indexFile));
+            $manifest = unserialize($this->module->fs->read($indexFile));
         } catch (FsException $e) {
             $manifest = [];
         }
@@ -135,7 +178,7 @@ class LogTarget extends \yii\debug\LogTarget
 
         $this->module->fs->write(
             $indexFile,
-            Closure\serialize($manifest),
+            serialize($manifest),
         );
     }
 }

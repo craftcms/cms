@@ -187,7 +187,7 @@ class UrlHelper
         }
 
         if (static::isRootRelativeUrl($url)) {
-            // Prepend the current request's scheme and host name
+            // Prepend the current request’s scheme and hostname
             $url = static::siteHost() . $url;
         }
 
@@ -596,7 +596,7 @@ class UrlHelper
 
         if ($cpUrl) {
             // site param
-            if (!isset($params['site']) && Craft::$app->getIsMultiSite() && Cp::requestedSite() !== null) {
+            if (!isset($params['site']) && Craft::$app->getIsInitialized() && Craft::$app->getIsMultiSite() && Cp::requestedSite() !== null) {
                 $params['site'] = Cp::requestedSite()->handle;
             }
         } else {

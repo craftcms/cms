@@ -34,6 +34,7 @@ use craft\gql\directives\Transform;
 use craft\gql\ElementQueryConditionBuilder;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\Element as ElementInterface;
+use craft\gql\interfaces\elements\Address as AddressInterface;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
 use craft\gql\interfaces\elements\Category as CategoryInterface;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
@@ -47,6 +48,7 @@ use craft\gql\mutations\Entry as EntryMutation;
 use craft\gql\mutations\GlobalSet as GlobalSetMutation;
 use craft\gql\mutations\Ping as PingMutation;
 use craft\gql\mutations\Tag as TagMutation;
+use craft\gql\queries\Address as AddressQuery;
 use craft\gql\queries\Asset as AssetQuery;
 use craft\gql\queries\Category as CategoryQuery;
 use craft\gql\queries\Entry as EntryQuery;
@@ -1296,6 +1298,7 @@ class Gql extends Component
             QueryArgument::class,
 
             // Interfaces
+            AddressInterface::class,
             ElementInterface::class,
             EntryInterface::class,
             MatrixBlockInterface::class,
@@ -1328,6 +1331,7 @@ class Gql extends Component
     {
         $queryList = [
             // Queries
+            AddressQuery::getQueries(),
             PingQuery::getQueries(),
             EntryQuery::getQueries(),
             AssetQuery::getQueries(),

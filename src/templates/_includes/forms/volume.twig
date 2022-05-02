@@ -1,0 +1,21 @@
+{% set id = id ?? "volume#{random()}" %}
+
+{% set addOptionFn %}
+(createOption, selectize) => {
+    const slideout = new Craft.CpScreenSlideout('volumes/edit-volume');
+    slideout.on('submit', ev => {
+        createOption({
+            text: ev.data.name,
+            value: ev.data.id,
+        });
+    });
+    slideout.on('close', () => {
+        selectize.focus();
+    });
+}
+{% endset %}
+
+{% include '_includes/forms/selectize' with {
+    options: options ?? craft.cp.getVolumeOptions(),
+    addOptionLabel: 'Create a new volume…'|t('app'),
+} %}

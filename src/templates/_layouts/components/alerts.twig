@@ -9,6 +9,8 @@
     {% endif %}
 {% else %}
     {% js %}
-        Craft.cp.fetchAlerts();
+        Craft.cp.fetchAlerts().then(alerts => {
+          Craft.cp.displayAlerts(alerts);
+        });
     {% endjs %}
 {% endif %}

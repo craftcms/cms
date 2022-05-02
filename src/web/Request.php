@@ -418,8 +418,8 @@ class Request extends \yii\web\Request
      * Returns the segments of the requested path.
      *
      * ::: tip
-     * Note that the segments will not include the [control panel trigger](config3:cpTrigger)
-     * if it’s a control panel request, or the [page trigger](config3:pageTrigger)
+     * Note that the segments will not include the [control panel trigger](config4:cpTrigger)
+     * if it’s a control panel request, or the [page trigger](config4:pageTrigger)
      * or page number if it’s a paginated request.
      * :::
      *
@@ -512,7 +512,7 @@ class Request extends \yii\web\Request
     /**
      * Returns the token submitted with the request, if there is one.
      *
-     * Tokens must be sent either as a query string param named after the <config3:tokenParam> config setting (`token` by
+     * Tokens must be sent either as a query string param named after the <config4:tokenParam> config setting (`token` by
      * default), or an `X-Craft-Token` HTTP header on the request.
      *
      * @return string|null The token, or `null` if there isn’t one.
@@ -568,7 +568,7 @@ class Request extends \yii\web\Request
     /**
      * Returns the site token submitted with the request, if there is one.
      *
-     * Tokens must be sent either as a query string param named after the <config3:siteToken> config setting
+     * Tokens must be sent either as a query string param named after the <config4:siteToken> config setting
      * (`siteToken` by default), or an `X-Craft-Site-Token` HTTP header on the request.
      *
      * @return string|null The token, or `null` if there isn’t one.
@@ -583,7 +583,7 @@ class Request extends \yii\web\Request
      * Returns whether the control panel was requested.
      *
      * The result depends on whether the first segment in the URI matches the
-     * [control panel trigger](config3:cpTrigger).
+     * [control panel trigger](config4:cpTrigger).
      *
      * @return bool Whether the current request should be routed to the control panel.
      */
@@ -620,7 +620,7 @@ class Request extends \yii\web\Request
      *
      * There are several ways that this method could return `true`:
      *
-     * - If the first segment in the Craft path matches the [action trigger](config3:actionTrigger)
+     * - If the first segment in the Craft path matches the [action trigger](config4:actionTrigger)
      * - If there is an `action` param in either the POST data or query string
      * - If the Craft path matches the Login path, the Logout path, or the Set Password path
      *
@@ -1725,45 +1725,7 @@ class Request extends \yii\web\Request
             return $this->_utf8AllTheThings($params);
         }
 
-        // Looking for a specific value?
-        if (isset($params[$name])) {
-            return $this->_utf8Value($params[$name]);
-        }
-
-        // Normalize foo[bar][baz] => foo.bar.baz
-        $name = $this->_normalizeParam($name);
-
-        // Maybe they're looking for a nested param?
-        if (StringHelper::contains($name, '.')) {
-            $path = explode('.', $name);
-            $param = $params;
-
-            foreach ($path as $step) {
-                if (is_array($param) && isset($param[$step])) {
-                    $param = $param[$step];
-                } else {
-                    return $defaultValue;
-                }
-            }
-
-            return $this->_utf8Value($param);
-        }
-
-        return $defaultValue;
-    }
-
-    /**
-     * Normalizes a nested param name into dot notation.
-     *
-     * @param string $name
-     * @return string
-     */
-    private function _normalizeParam(string $name): string
-    {
-        if (preg_match('/^[\w\-]+(?:\[[^\[\]]+\])+$/', $name)) {
-            $name = rtrim(preg_replace('/[\[\]]+/', '.', $name), '.');
-        }
-        return $name;
+        return ArrayHelper::getValue($params, $name, $defaultValue);
     }
 
     /**

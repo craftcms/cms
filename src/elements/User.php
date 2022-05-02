@@ -958,9 +958,12 @@ class User extends Element implements IdentityInterface
                 return [];
             }
 
-            $this->_addresses = Address::find()
+            /** @var Address[] $addresses */
+            $addresses = Address::find()
                 ->ownerId($this->id)
+                ->orderBy(['id' => SORT_ASC])
                 ->all();
+            $this->_addresses = $addresses;
         }
 
         return $this->_addresses;
@@ -1252,10 +1255,18 @@ class User extends Element implements IdentityInterface
         $photo = $this->getPhoto();
 
         if ($photo) {
-            return $photo->getThumbUrl($size);
+            return Craft::$app->getAssets()->getThumbUrl($photo, $size);
         }
 
         return Craft::$app->getAssetManager()->getPublishedUrl('@app/web/assets/cp/dist', true, 'images/user.svg');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getThumbAlt(): ?string
+    {
+        return $this->getPhoto()?->alt ?? $this->getName();
     }
 
     /**
@@ -1676,6 +1687,7 @@ class User extends Element implements IdentityInterface
         // Get the user record
         if (!$isNew) {
             $record = UserRecord::findOne($this->id);
+            $isInactive = $record->active || $record->pending;
 
             if (!$record) {
                 throw new InvalidConfigException("Invalid user ID: $this->id");
@@ -1686,7 +1698,10 @@ class User extends Element implements IdentityInterface
             }
 
             if ($this->pending != $record->pending) {
-                throw new Exception('Unable to change a user’s pending state like this.');
+                if ($isInactive) {
+                    throw new Exception('Unable to change a user’s pending state like this.');
+                }
+                $record->pending = $this->pending;
             }
 
             if ($this->locked != $record->locked) {

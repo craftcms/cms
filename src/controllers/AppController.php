@@ -8,6 +8,7 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\base\ElementInterface;
 use craft\base\UtilityInterface;
 use craft\enums\LicenseKeyStatus;
 use craft\errors\BusyResourceException;
@@ -345,10 +346,9 @@ class AppController extends Controller
 
         $path = $this->request->getRequiredBodyParam('path');
 
-        // Fetch 'em and send 'em
-        $alerts = Cp::alerts($path, true);
-
-        return $this->asJson($alerts);
+        return $this->asJson([
+            'alerts' => Cp::alerts($path, true),
+        ]);
     }
 
     /**
@@ -632,5 +632,67 @@ class AppController extends Controller
         return $this->response
             ->sendFile($imagePath, null, ['inline' => true])
             ->setStatusCode($statusCode);
+    }
+
+    /**
+     * Renders an element for the control panel.
+     *
+     * @return Response
+     * @throws BadRequestHttpException
+     * @since 4.0.0
+     */
+    public function actionRenderElement(): Response
+    {
+        $this->requireCpRequest();
+        $this->requireAcceptsJson();
+
+        /** @var string|ElementInterface $elementType */
+        $elementType = $this->request->getRequiredBodyParam('type');
+        $id = $this->request->getRequiredBodyParam('id');
+        $draftId = $this->request->getBodyParam('draftId');
+        $revisionId = $this->request->getBodyParam('revisionId');
+        $instances = $this->request->getRequiredBodyParam('instances');
+
+        if (!$id || !is_numeric($id)) {
+            throw new BadRequestHttpException("Invalid element ID: $id");
+        }
+
+        $siteIds = [];
+        foreach ($instances as $instance) {
+            $siteIds[$instance['siteId']] = true;
+        }
+
+        $elements = $elementType::find()
+            ->id($id)
+            ->drafts(null)
+            ->provisionalDrafts(null)
+            ->revisions(null)
+            ->siteId(array_keys($siteIds))
+            ->status(null)
+            ->indexBy('siteId')
+            ->all();
+
+        $elementHtml = [];
+
+        foreach ($instances as $instance) {
+            if (isset($elements[$instance['siteId']])) {
+                $elementHtml[] = Cp::elementHtml(
+                    $elements[$instance['siteId']],
+                    $instance['context'],
+                    $instance['size'],
+                    null,
+                    $instance['showStatus'],
+                    $instance['showThumb'],
+                    $instance['showLabel'],
+                    $instance['showDraftName'],
+                );
+            } else {
+                $elementHtml[] = null;
+            }
+        }
+
+        return $this->asJson([
+            'elementHtml' => $elementHtml,
+        ]);
     }
 }

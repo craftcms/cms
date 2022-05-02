@@ -1,6 +1,4 @@
 <?php
-
-declare(strict_types=1);
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -26,6 +24,11 @@ trait FsTrait
      * @var string|null Handle
      */
     public ?string $handle = null;
+
+    /**
+     * @var string|null Old handle
+     */
+    public ?string $oldHandle = null;
 
     /**
      * @var bool Whether the volume has a public URL

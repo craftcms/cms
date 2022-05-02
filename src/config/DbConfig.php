@@ -56,7 +56,7 @@ class DbConfig extends BaseObject
      * You can change the character set and collation across all existing database tables using this terminal command:
      *
      * ```bash
-     * > php craft db/convert-charset
+     * php craft db/convert-charset
      * ```
      * :::
      */
@@ -76,7 +76,7 @@ class DbConfig extends BaseObject
      * You can change the character set and collation across all existing database tables using this terminal command:
      *
      * ```bash
-     * > php craft db/convert-charset
+     * php craft db/convert-charset
      * ```
      * :::
      *
@@ -146,20 +146,6 @@ class DbConfig extends BaseObject
      * @since 3.7.0
      */
     public bool $useUnbufferedConnections = false;
-
-    /**
-     * @var bool Whether to enable logging of database queries.
-     * @since 4.0.0
-     * @see Connection::$enableLogging
-     */
-    public bool $enableLogging = YII_DEBUG;
-
-    /**
-     * @var bool Whether to enable profiling of opening database connection and database queries.
-     * @since 4.0.0
-     * @see Connection::$enableLogging
-     */
-    public bool $enableProfiling = YII_DEBUG;
 
     /**
      * @var string|null The database connection URL, if one was provided by your hosting environment.

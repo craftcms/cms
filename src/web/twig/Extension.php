@@ -1260,7 +1260,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function collectFunction(mixed $var): Collection
     {
-        return new Collection($var);
+        return Collection::make($var);
     }
 
     /**

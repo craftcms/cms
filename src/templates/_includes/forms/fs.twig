@@ -17,6 +17,6 @@
 {% endset %}
 
 {% include '_includes/forms/selectize' with {
-    options: options|default(craft.cp.getFsOptions()),
+    options: options ?? craft.cp.getFsOptions(),
     addOptionLabel: 'Create a new filesystem…'|t('app'),
 } %}

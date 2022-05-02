@@ -344,11 +344,11 @@ JS;
     /**
      * Deletes a field.
      *
-     * @return Response
+     * @return Response|null
      * @throws BadRequestHttpException
      * @throws ServerErrorHttpException
      */
-    public function actionDeleteField(): Response
+    public function actionDeleteField(): ?Response
     {
         $this->requirePostRequest();
 
@@ -420,6 +420,6 @@ JS;
         $settingsNamespace = $this->request->getRequiredBodyParam('settingsNamespace');
         $settingsStr = $this->request->getRequiredBodyParam('settings');
         parse_str($settingsStr, $settings);
-        return array_merge($config, $settings[$settingsNamespace]);
+        return array_merge($config, ArrayHelper::getValue($settings, $settingsNamespace, []));
     }
 }

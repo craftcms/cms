@@ -936,6 +936,7 @@ abstract class Element extends Component implements ElementInterface
             'disabledElementIds' => $disabledElementIds,
             'collapsedElementIds' => Craft::$app->getRequest()->getParam('collapsedElementIds'),
             'showCheckboxes' => $showCheckboxes,
+            'tableName' => static::pluralDisplayName(),
         ];
 
         if (!empty($viewState['order'])) {
@@ -3669,6 +3670,10 @@ abstract class Element extends Component implements ElementInterface
         if ($this->_initialized) {
             $this->_dirtyFields[$fieldHandle] = true;
         }
+
+        // If the field value was previously eager-loaded, undo that
+        unset($this->_eagerLoadedElements[$fieldHandle]);
+        unset($this->_eagerLoadedElementCounts[$fieldHandle]);
     }
 
     /**
@@ -3942,7 +3947,7 @@ abstract class Element extends Component implements ElementInterface
                 $this->trigger(self::EVENT_SET_EAGER_LOADED_ELEMENTS, $event);
                 if (!$event->handled) {
                     // No takers. Just store it in the internal array then.
-                    $this->_eagerLoadedElements[$handle] = new Collection($elements);
+                    $this->_eagerLoadedElements[$handle] = Collection::make($elements);
                 }
         }
     }

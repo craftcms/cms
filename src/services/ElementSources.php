@@ -160,7 +160,7 @@ class ElementSources extends Component
     }
 
     /**
-     * Returns all the available attributes that can be shown for a given element type source.
+     * Returns the common table attributes that are available for a given element type, across all its sources.
      *
      * @param string $elementType The element type class
      * @phpstan-param class-string<ElementInterface> $elementType
@@ -238,6 +238,11 @@ class ElementSources extends Component
      */
     public function getFieldLayoutsForSource(string $elementType, string $sourceKey): array
     {
+        // Don't bother the element type for custom sources
+        if (str_starts_with($sourceKey, 'custom:')) {
+            return Craft::$app->getFields()->getLayoutsByType($elementType);
+        }
+
         if (!isset($this->_fieldLayouts[$elementType][$sourceKey])) {
             /** @var string|ElementInterface $elementType */
             /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
@@ -285,7 +290,7 @@ class ElementSources extends Component
     }
 
     /**
-     * Returns additional table attributes that should be available for a given source.
+     * Returns any table attributes that should be available for a given source, in addition to the [[getAvailableTableAttributes()|common attributes]].
      *
      * @param string $elementType The element type class
      * @phpstan-param class-string<ElementInterface> $elementType

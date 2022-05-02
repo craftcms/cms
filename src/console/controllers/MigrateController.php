@@ -255,7 +255,7 @@ class MigrateController extends BaseMigrateController
 
         $file = $this->migrationPath . DIRECTORY_SEPARATOR . $name . '.php';
 
-        if ($this->confirm("Create new migration '$file'?")) {
+        if ($this->confirm("Create new migration '$file'?", true)) {
             $templateFile = Craft::getAlias($this->templateFile);
 
             if ($templateFile === false) {

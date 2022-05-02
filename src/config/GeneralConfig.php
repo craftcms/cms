@@ -136,7 +136,7 @@ class GeneralConfig extends BaseObject
     /**
      * @var bool Whether Craft should allow system and plugin updates in the control panel, and plugin installation from the Plugin Store.
      *
-     * This setting will automatically be disabled if <config3:allowAdminChanges> is disabled.
+     * This setting will automatically be disabled if <config4:allowAdminChanges> is disabled.
      *
      * @group System
      */
@@ -268,6 +268,7 @@ class GeneralConfig extends BaseObject
      * Note that drafts *will* be autosaved while Live Preview is open, regardless of this setting.
      *
      * @since 3.5.6
+     * @deprecated in 4.0.0
      * @group System
      */
     public bool $autosaveDrafts = true;
@@ -289,7 +290,7 @@ class GeneralConfig extends BaseObject
      *
      * - `{path}` - the target backup file path
      * - `{port}` - the current database port
-     * - `{server}` - the current database host name
+     * - `{server}` - the current database hostname
      * - `{user}` - the user to connect to the database
      * - `{database}` - the current database name
      * - `{schema}` - the current database schema (if any)
@@ -306,7 +307,7 @@ class GeneralConfig extends BaseObject
      * It will be determined automatically if left blank.
      *
      * ::: tip
-     * The base control panel URL should **not** include the [control panel trigger word](config3:cpTrigger) (e.g. `/admin`).
+     * The base control panel URL should **not** include the [control panel trigger word](config4:cpTrigger) (e.g. `/admin`).
      * :::
      *
      * @group Routing
@@ -414,15 +415,15 @@ class GeneralConfig extends BaseObject
      * @var string|null The URI segment Craft should look for when determining if the current request should route to the control panel rather than
      * the front-end website.
      *
-     * This can be set to `null` if you have a dedicated host name for the control panel (e.g. `cms.example.com`), or you are running Craft in
-     * [Headless Mode](config3:headlessMode). If you do that, you will need to ensure that the control panel is being served from its own web root
+     * This can be set to `null` if you have a dedicated hostname for the control panel (e.g. `cms.example.com`), or you are running Craft in
+     * [Headless Mode](config4:headlessMode). If you do that, you will need to ensure that the control panel is being served from its own web root
      * directory on your server, with an `index.php` file that defines the `CRAFT_CP` PHP constant.
      *
      * ```php
      * define('CRAFT_CP', true);
      * ```
      *
-     * Alternatively, you can set the <config3:baseCpUrl> config setting, but then you will run the risk of losing access to portions of your
+     * Alternatively, you can set the <config4:baseCpUrl> config setting, but then you will run the risk of losing access to portions of your
      * control panel due to URI conflicts with actual folders/files in your main web root.
      *
      * (For example, if you have an `assets/` folder, that would conflict with the `/assets` page in the control panel.)
@@ -432,7 +433,7 @@ class GeneralConfig extends BaseObject
     public ?string $cpTrigger = 'admin';
 
     /**
-     * @var string The name of CSRF token used for CSRF validation if <config3:enableCsrfProtection> is set to `true`.
+     * @var string The name of CSRF token used for CSRF validation if <config4:enableCsrfProtection> is set to `true`.
      * @see enableCsrfProtection
      * @group Security
      */
@@ -457,7 +458,7 @@ class GeneralConfig extends BaseObject
      * @var string|null The default locale the control panel should use for date/number formatting, for users who haven’t set
      * a preferred language or formatting locale.
      *
-     * If this is `null`, the <config3:defaultCpLanguage> config setting will determine which locale is used for date/number formatting by default.
+     * If this is `null`, the <config4:defaultCpLanguage> config setting will determine which locale is used for date/number formatting by default.
      *
      * @since 3.5.0
      * @group System
@@ -609,7 +610,7 @@ class GeneralConfig extends BaseObject
     public bool $enableBasicHttpAuth = false;
 
     /**
-     * @var bool Whether to use a cookie to persist the CSRF token if <config3:enableCsrfProtection> is enabled. If false, the CSRF token will be
+     * @var bool Whether to use a cookie to persist the CSRF token if <config4:enableCsrfProtection> is enabled. If false, the CSRF token will be
      * stored in session under the `csrfTokenName` config setting name. Note that while storing CSRF tokens in session increases security,
      * it requires starting a session for every page that a CSRF token is needed, which may degrade site performance.
      * @see enableCsrfProtection
@@ -692,7 +693,7 @@ class GeneralConfig extends BaseObject
     public string $errorTemplatePrefix = '';
 
     /**
-     * @var string[]|null List of file extensions that will be merged into the <config3:allowedFileExtensions> config setting.
+     * @var string[]|null List of file extensions that will be merged into the <config4:allowedFileExtensions> config setting.
      * @see allowedFileExtensions
      * @group System
      */
@@ -725,7 +726,7 @@ class GeneralConfig extends BaseObject
      *
      * ::: tip
      * File extensions listed here won’t immediately be allowed to be uploaded. You will also need to list them with
-     * the <config3:extraAllowedFileExtensions> config setting.
+     * the <config4:extraAllowedFileExtensions> config setting.
      * :::
      *
      * @since 3.0.37
@@ -776,11 +777,11 @@ class GeneralConfig extends BaseObject
      * - Front-end routing will skip checks for element and template requests.
      * - Front-end responses will be JSON-formatted rather than HTML by default.
      * - Twig will be configured to escape unsafe strings for JavaScript/JSON rather than HTML by default for front-end requests.
-     * - The <config3:loginPath>, <config3:logoutPath>, <config3:setPasswordPath>, and <config3:verifyEmailPath> settings will be ignored.
+     * - The <config4:loginPath>, <config4:logoutPath>, <config4:setPasswordPath>, and <config4:verifyEmailPath> settings will be ignored.
      *
      * ::: tip
      * With Headless Mode enabled, users may only set passwords and verify email addresses via the control panel. Be sure to grant “Access the control
-     * panel” permission to all content editors and administrators. You’ll also need to set the <config3:baseCpUrl> config setting if the control
+     * panel” permission to all content editors and administrators. You’ll also need to set the <config4:baseCpUrl> config setting if the control
      * panel is located on a different domain than your front end.
      * :::
      *
@@ -885,7 +886,7 @@ class GeneralConfig extends BaseObject
      *
      * This can be set to `false` to disable front-end login.
      *
-     * Note that this config setting is ignored when <config3:headlessMode> is enabled.
+     * Note that this config setting is ignored when <config4:headlessMode> is enabled.
      *
      * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
      *
@@ -899,7 +900,7 @@ class GeneralConfig extends BaseObject
      *
      * This can be set to `false` to disable front-end logout.
      *
-     * Note that this config setting is ignored when <config3:headlessMode> is enabled.
+     * Note that this config setting is ignored when <config4:headlessMode> is enabled.
      *
      * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
      *
@@ -1010,7 +1011,7 @@ class GeneralConfig extends BaseObject
      * `?page` | `/news?page=5`
      *
      * ::: tip
-     * If you want to set this to `?p` (e.g. `/news?p=5`), you’ll also need to change your <config3:pathParam> setting which defaults to `p`.
+     * If you want to set this to `?p` (e.g. `/news?p=5`), you’ll also need to change your <config4:pathParam> setting which defaults to `p`.
      * If your server is running Apache, you’ll need to update the redirect code in your `.htaccess` file to match your new `pathParam` value.
      * :::
      *
@@ -1073,7 +1074,7 @@ class GeneralConfig extends BaseObject
     /**
      * @var mixed The path users should be redirected to after logging in from the front-end site.
      *
-     * This setting will also come into effect if the user visits the login page (as specified by the <config3:loginPath> config setting) when
+     * This setting will also come into effect if the user visits the login page (as specified by the <config4:loginPath> config setting) when
      * they are already logged in.
      *
      * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
@@ -1094,7 +1095,7 @@ class GeneralConfig extends BaseObject
     public mixed $postLogoutRedirect = '';
 
     /**
-     * @var bool Whether the <config3:gqlTypePrefix> config setting should have an impact on `query`, `mutation`, and `subscription` types.
+     * @var bool Whether the <config4:gqlTypePrefix> config setting should have an impact on `query`, `mutation`, and `subscription` types.
      * @since 3.6.6
      * @group GraphQL
      */
@@ -1224,7 +1225,7 @@ class GeneralConfig extends BaseObject
     /**
      * @var bool Whether SVG thumbnails should be rasterized.
      *
-     * Note this will only work if ImageMagick is installed, and <config3:imageDriver> is set to either `auto` or `imagick`.
+     * Note this will only work if ImageMagick is installed, and <config4:imageDriver> is set to either `auto` or `imagick`.
      *
      * @since 3.6.0
      * @group Image Handling
@@ -1288,7 +1289,7 @@ class GeneralConfig extends BaseObject
      *
      * - `{path}` - the backup file path
      * - `{port}` - the current database port
-     * - `{server}` - the current database host name
+     * - `{server}` - the current database hostname
      * - `{user}` - the user to connect to the database
      * - `{database}` - the current database name
      * - `{schema}` - the current database schema (if any)
@@ -1383,12 +1384,12 @@ class GeneralConfig extends BaseObject
     /**
      * @var mixed The URI or URL that Craft should use for Set Password forms on the front end.
      *
-     * Note that this config setting is ignored when <config3:headlessMode> is enabled, unless it’s set to an absolute URL.
+     * Note that this config setting is ignored when <config4:headlessMode> is enabled, unless it’s set to an absolute URL.
      *
      * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
      *
      * ::: tip
-     * You might also want to set <config3:invalidUserTokenPath> in case a user clicks on an expired password reset link.
+     * You might also want to set <config4:invalidUserTokenPath> in case a user clicks on an expired password reset link.
      * :::
      *
      * @see getSetPasswordPath()
@@ -1404,7 +1405,7 @@ class GeneralConfig extends BaseObject
      * If this is set, Craft will redirect [.well-known/change-password requests](https://w3c.github.io/webappsec-change-password-url/) to this URI.
      *
      * ::: tip
-     * You’ll also need to set [setPasswordPath](config3:setPasswordPath), which determines the URI and template path for the Set Password form
+     * You’ll also need to set [setPasswordPath](config4:setPasswordPath), which determines the URI and template path for the Set Password form
      * where the user resets their password after following the link in the Password Reset email.
      * :::
      *
@@ -1572,7 +1573,7 @@ class GeneralConfig extends BaseObject
      * `x-craft-live-preview` query string parameter.
      *
      * ::: tip
-     * You can customize the behavior of iFrame Resizer via the <config3:previewIframeResizerOptions> config setting.
+     * You can customize the behavior of iFrame Resizer via the <config4:previewIframeResizerOptions> config setting.
      * :::
      *
      * @since 3.5.5
@@ -1583,7 +1584,7 @@ class GeneralConfig extends BaseObject
     /**
      * @var bool Whether Craft should specify the path using `PATH_INFO` or as a query string parameter when generating URLs.
      *
-     * Note that this setting only takes effect if <config3:omitScriptNameInUrls> is set to `false`.
+     * Note that this setting only takes effect if <config4:omitScriptNameInUrls> is set to `false`.
      *
      * @group Routing
      */
@@ -1647,7 +1648,7 @@ class GeneralConfig extends BaseObject
     /**
      * @var mixed The URI or URL that Craft should use for email verification links on the front end.
      *
-     * Note that this config setting is ignored when <config3:headlessMode> is enabled, unless it’s set to an absolute URL.
+     * Note that this config setting is ignored when <config4:headlessMode> is enabled, unless it’s set to an absolute URL.
      *
      * See [[ConfigHelper::localizedValue()]] for a list of supported value types.
      *

@@ -13,6 +13,7 @@ use craft\config\GeneralConfig;
 use craft\elements\User;
 use craft\helpers\Assets;
 use craft\helpers\Cp;
+use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
@@ -194,15 +195,15 @@ JS;
             'Keep me logged in',
             'Keep them',
             'Label',
+            'Landscape',
             'License transferred.',
             'Limit',
             'Loading',
-            'Log out now',
-            'Login',
             'Make not required',
             'Make required',
             'Matrix block could not be added. Maximum number of blocks reached.',
             'Merge the folder (any conflicting files will be replaced)',
+            'Mobile',
             'More',
             'More…',
             'Move down',
@@ -234,6 +235,10 @@ JS;
             'Pay {price}',
             'Pending',
             'Phone',
+            'Portrait',
+            'Preview',
+            'Previewing {type} device in {orientation}',
+            'Previewing {type} device',
             'Previous Page',
             'Really delete folder “{folder}”?',
             'Refresh',
@@ -262,6 +267,9 @@ JS;
             'Show',
             'Show/hide children',
             'Showing your unsaved changes.',
+            'Sign in',
+            'Sign out now',
+            'Skip to {title}',
             'Sort by {attribute}',
             'Source settings saved',
             'Structure',
@@ -280,6 +288,7 @@ JS;
             'To {date}',
             'To',
             'Today',
+            'Top of preview',
             'Transfer it to:',
             'Try again',
             'Update {type}',
@@ -361,6 +370,7 @@ JS;
             'canAccessQueueManager' => $userSession->checkPermission('utility:queue-manager'),
             'clientOs' => $request->getClientOs(),
             'cpTrigger' => $generalConfig->cpTrigger,
+            'dataAttributes' => Html::$dataAttributes,
             'datepickerOptions' => $this->_datepickerOptions($formattingLocale, $locale, $currentUser, $generalConfig),
             'defaultCookieOptions' => $this->_defaultCookieOptions(),
             'defaultIndexCriteria' => [],

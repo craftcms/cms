@@ -1,6 +1,4 @@
 <?php
-
-declare(strict_types=1);
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -15,6 +13,7 @@ use craft\base\FsInterface;
 use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\elements\Asset;
+use craft\fs\MissingFs;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\records\Volume as VolumeRecord;
@@ -80,11 +79,11 @@ class Volume extends Model
     public string $transformSubpath = '';
 
     /**
-     * @var FsInterface
+     * @var FsInterface|null
      * @see getFs()
      * @see setFs()
      */
-    private FsInterface $_fs;
+    private ?FsInterface $_fs = null;
 
     /**
      * @var string|null
@@ -98,7 +97,7 @@ class Volume extends Model
      * @see getTransformFs()
      * @see setTransformFs()
      */
-    private ?FsInterface $_transformFs;
+    private ?FsInterface $_transformFs = null;
 
     /**
      * @var string|null
@@ -144,6 +143,8 @@ class Volume extends Model
     public function attributeLabels(): array
     {
         return [
+            'handle' => Craft::t('app', 'Handle'),
+            'name' => Craft::t('app', 'Name'),
             'url' => Craft::t('app', 'URL'),
         ];
     }
@@ -216,7 +217,8 @@ class Volume extends Model
             }
             $fs = Craft::$app->getFs()->getFilesystemByHandle($handle);
             if (!$fs) {
-                throw new InvalidConfigException("Invalid filesystem handle: $this->_fsHandle");
+                Craft::error("Invalid filesystem handle: $this->_fsHandle for the $this->name volume.");
+                return new MissingFs(['handle' => $this->_fsHandle]);
             }
             $this->_fs = $fs;
         }
@@ -257,6 +259,7 @@ class Volume extends Model
     public function setFsHandle(string $handle): void
     {
         $this->_fsHandle = $handle;
+        $this->_fs = null;
     }
 
 
@@ -314,11 +317,12 @@ class Volume extends Model
     /**
      * Sets the transform filesystem handle.
      *
-     * @param string $handle
+     * @param string|null $handle
      */
-    public function setTransformFsHandle(string $handle): void
+    public function setTransformFsHandle(?string $handle): void
     {
         $this->_transformFsHandle = $handle;
+        $this->_transformFs = null;
     }
 
     /**

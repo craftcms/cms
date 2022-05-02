@@ -5,7 +5,7 @@
         {{ activeInstallsDate | formatDate }}
       </template>
       <template v-else>
-        {{ "Active Installs"|t('app') }}
+        {{ 'Active Installs' | t('app') }}
       </template>
     </template>
     <template #content>
@@ -27,45 +27,45 @@
 </template>
 
 <script>
-import MetaStat from './MetaStat';
-import ActiveInstallsChart from './ActiveInstallsChart';
-export default {
-  components: {ActiveInstallsChart, MetaStat},
+  import MetaStat from './MetaStat';
+  import ActiveInstallsChart from './ActiveInstallsChart';
+  export default {
+    components: {ActiveInstallsChart, MetaStat},
 
-  props: {
-    plugin: {
-      type: Object,
-      required: true,
+    props: {
+      plugin: {
+        type: Object,
+        required: true,
+      },
     },
-  },
 
-  data() {
-    return {
-      activeInstallsValue: null,
-      activeInstallsDate: null,
-    }
-  },
-
-  computed: {
-    activeInstalls() {
-      if (this.activeInstallsValue !== null) {
-        return this.activeInstallsValue;
-      }
-
-      return this.plugin.activeInstalls
+    data() {
+      return {
+        activeInstallsValue: null,
+        activeInstallsDate: null,
+      };
     },
-  },
 
-  methods: {
-    updateActiveInstallsDataPoint(dataPoint) {
-      if (dataPoint) {
-        this.activeInstallsValue = dataPoint.value
-        this.activeInstallsDate = dataPoint.date
-      } else {
-        this.activeInstallsValue = null
-        this.activeInstallsDate = null
-      }
-    }
-  },
-}
+    computed: {
+      activeInstalls() {
+        if (this.activeInstallsValue !== null) {
+          return this.activeInstallsValue;
+        }
+
+        return this.plugin.activeInstalls;
+      },
+    },
+
+    methods: {
+      updateActiveInstallsDataPoint(dataPoint) {
+        if (dataPoint) {
+          this.activeInstallsValue = dataPoint.value;
+          this.activeInstallsDate = dataPoint.date;
+        } else {
+          this.activeInstallsValue = null;
+          this.activeInstallsDate = null;
+        }
+      },
+    },
+  };
 </script>

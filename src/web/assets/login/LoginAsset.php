@@ -56,7 +56,7 @@ class LoginAsset extends AssetBundle
                 'Check your email for instructions to reset your password.',
                 'Invalid email.',
                 'Invalid username or email.',
-                'Login',
+                'Sign in',
                 'Password',
                 'Reset Password',
             ]);

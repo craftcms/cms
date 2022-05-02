@@ -92,11 +92,6 @@ class ResaveController extends Controller
     public ?int $limit = null;
 
     /**
-     * @var bool Whether to save the elements across all their enabled sites.
-     */
-    public bool $propagate = true;
-
-    /**
      * @var bool Whether to update the search indexes for the resaved elements.
      */
     public bool $updateSearchIndex = false;
@@ -166,7 +161,6 @@ class ResaveController extends Controller
         $options[] = 'status';
         $options[] = 'offset';
         $options[] = 'limit';
-        $options[] = 'propagate';
         $options[] = 'updateSearchIndex';
 
         switch ($actionID) {

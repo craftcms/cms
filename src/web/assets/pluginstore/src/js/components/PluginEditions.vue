@@ -11,19 +11,19 @@
       class="md:tw-flex-1 md:tw-mx-4 md:tw-max-w-xs"
       :plugin="plugin"
       :edition="edition"
-      :key="key"></plugin-edition>
+      :key="key"
+    ></plugin-edition>
   </div>
 </template>
 
 <script>
-import PluginEdition from './PluginEdition'
+  import PluginEdition from './PluginEdition';
 
-export default {
-  props: ['plugin'],
+  export default {
+    props: ['plugin'],
 
-  components: {
-    PluginEdition
-  }
-}
+    components: {
+      PluginEdition,
+    },
+  };
 </script>
-

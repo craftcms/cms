@@ -19,8 +19,6 @@ use craft\web\View;
  */
 class Module extends \yii\debug\Module
 {
-    public $controllerNamespace = 'craft\debug\controllers';
-
     /**
      * @var FsInterface|null The filesystem that debug cache files should be stored in.
      * @since 4.0.0
@@ -28,7 +26,7 @@ class Module extends \yii\debug\Module
     public ?FsInterface $fs = null;
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function bootstrap($app): void
     {

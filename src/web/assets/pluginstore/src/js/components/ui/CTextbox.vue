@@ -10,30 +10,30 @@
     @keydown="$emit('keydown', $event)"
     @keypress="$emit('keypress', $event)"
     @keyup="$emit('keyup', $event)"
-  >
+  />
 </template>
 
 <script>
-export default {
-  name: 'TextboxComponent',
-  props: {
-    type: {
-      type: String,
-      default: 'text'
+  export default {
+    name: 'TextboxComponent',
+    props: {
+      type: {
+        type: String,
+        default: 'text',
+      },
+      value: {
+        type: [String, Number],
+        default: '',
+      },
     },
-    value: {
-      type: [String, Number],
-      default: ''
-    },
-  },
 
-  computed: {
-    computedType() {
-      if (this.type === 'textarea') {
-        return null
-      }
-      return this.type
+    computed: {
+      computedType() {
+        if (this.type === 'textarea') {
+          return null;
+        }
+        return this.type;
+      },
     },
-  }
-}
+  };
 </script>

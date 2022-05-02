@@ -2,20 +2,29 @@
   <div>
     <meta-stat>
       <template #title>
-        {{ "Installation Instructions"|t('app') }}
+        {{ 'Installation Instructions' | t('app') }}
       </template>
       <template #content>
         <!-- Install Modes -->
         <div>
           <ul class="tw-flex tw-space-x-4 tw-text-sm">
-            <li v-for="(installMode, installModeKey) in installModes" :key="installModeKey" class="tw-py-1">
+            <li
+              v-for="(installMode, installModeKey) in installModes"
+              :key="installModeKey"
+              class="tw-py-1"
+            >
               <button
                 :class="{
-                            'tw-text-gray-700 dark:tw-text-gray-400': !(installMode.handle === currentInstallModeHandle),
-                            'tw-font-medium tw-text-black dark:tw-text-white tw-border-b-2 tw-border-orange-500': installMode.handle === currentInstallModeHandle
-                        }"
+                  'tw-text-gray-700 dark:tw-text-gray-400': !(
+                    installMode.handle === currentInstallModeHandle
+                  ),
+                  'tw-font-medium tw-text-black dark:tw-text-white tw-border-b-2 tw-border-orange-500':
+                    installMode.handle === currentInstallModeHandle,
+                }"
                 @click="changeInstallMode(installMode.handle)"
-              >{{ installMode.name }}</button>
+              >
+                {{ installMode.name }}
+              </button>
             </li>
           </ul>
         </div>
@@ -34,29 +43,28 @@
             <c-btn
               class="tw--ml-px tw-w-14 tw-rounded-l-none"
               :class="{
-          'tw-border-green-500 hover:tw-border-green-500 active:tw-border-green-500': showSuccess,
-        }"
+                'tw-border-green-500 hover:tw-border-green-500 active:tw-border-green-500':
+                  showSuccess,
+              }"
               :disable-shadow="true"
               @click="copy"
             >
               <template v-if="showSuccess">
-                <c-icon
-                  class="tw-text-green-500"
-                  icon="check"
-                />
+                <c-icon class="tw-text-green-500" icon="check" />
               </template>
               <template v-else>
-                <c-icon
-                  class="tw-text-black"
-                  icon="clipboard-copy"
-                />
+                <c-icon class="tw-text-black" icon="clipboard-copy" />
               </template>
             </c-btn>
           </div>
 
-
           <div class="tw-mt-4 tw-text-sm tw-text-gray-500">
-            <p>{{ "To install this plugin with composer, copy the command above to your terminal."|t('app') }}</p>
+            <p>
+              {{
+                'To install this plugin with composer, copy the command above to your terminal.'
+                  | t('app')
+              }}
+            </p>
           </div>
         </div>
       </template>
@@ -65,74 +73,76 @@
 </template>
 
 <script>
-import MetaStat from './MetaStat';
-export default {
-  components: {
-    MetaStat,
-  },
-
-  props: {
-    plugin: {
-      type: Object,
-      required: true,
-    },
-  },
-
-  data() {
-    return {
-      copyTimeout: null,
-      showSuccess: false,
-      currentInstallModeHandle: 'shell',
-    }
-  },
-
-  computed: {
-    currentInstallMode() {
-      return this.installModes.find(mode => mode.handle === this.currentInstallModeHandle);
-    },
-    installModes() {
-      return [
-        {
-          name: 'Shell',
-          handle: 'shell',
-          copyValue: `composer require ${this.plugin.packageName} && php craft plugin/install ${this.plugin.handle}`,
-        },
-        {
-          name: 'Nitro',
-          handle: 'nitro',
-          copyValue: `nitro composer require ${this.plugin.packageName} && nitro craft plugin/install ${this.plugin.handle}`,
-        },
-      ]
-    },
-  },
-
-  methods: {
-    select() {
-      this.$refs.input.$el.select()
+  import MetaStat from './MetaStat';
+  export default {
+    components: {
+      MetaStat,
     },
 
-    copy() {
-      if (this.showSuccess) {
-        return
-      }
+    props: {
+      plugin: {
+        type: Object,
+        required: true,
+      },
+    },
 
-      this.select();
+    data() {
+      return {
+        copyTimeout: null,
+        showSuccess: false,
+        currentInstallModeHandle: 'shell',
+      };
+    },
 
-      window.document.execCommand('copy');
+    computed: {
+      currentInstallMode() {
+        return this.installModes.find(
+          (mode) => mode.handle === this.currentInstallModeHandle
+        );
+      },
+      installModes() {
+        return [
+          {
+            name: 'Shell',
+            handle: 'shell',
+            copyValue: `composer require ${this.plugin.packageName} && php craft plugin/install ${this.plugin.handle}`,
+          },
+          {
+            name: 'Nitro',
+            handle: 'nitro',
+            copyValue: `nitro composer require ${this.plugin.packageName} && nitro craft plugin/install ${this.plugin.handle}`,
+          },
+        ];
+      },
+    },
 
-      this.showSuccess = true;
+    methods: {
+      select() {
+        this.$refs.input.$el.select();
+      },
 
-      setTimeout(() => {
+      copy() {
+        if (this.showSuccess) {
+          return;
+        }
+
+        this.select();
+
+        window.document.execCommand('copy');
+
+        this.showSuccess = true;
+
+        setTimeout(() => {
+          this.showSuccess = false;
+        }, 3000);
+      },
+
+      changeInstallMode(installMode) {
+        clearTimeout(this.copyTimeout);
         this.showSuccess = false;
-      }, 3000);
+
+        this.currentInstallModeHandle = installMode;
+      },
     },
-
-    changeInstallMode(installMode) {
-      clearTimeout(this.copyTimeout)
-      this.showSuccess = false
-
-      this.currentInstallModeHandle = installMode
-    }
-  }
-};
+  };
 </script>

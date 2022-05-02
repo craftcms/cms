@@ -915,6 +915,9 @@ class Plugins extends Component
             return null;
         }
 
+        // Merge in the plugin’s dynamic config
+        $config = ArrayHelper::merge($config, $class::config());
+
         // Is it installed?
         if ($info !== null) {
             $config['isInstalled'] = true;

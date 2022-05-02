@@ -1,5 +1,4 @@
 <?php
-
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -195,6 +194,9 @@ class UserPermissions extends Component
 
         // Filter out any orphaned permissions
         $permissions = $this->_filterOrphanedPermissions($permissions);
+
+        // Sort ascending
+        sort($permissions);
 
         /** @var UserGroup $group */
         $group = Craft::$app->getUserGroups()->getGroupById($groupId);
@@ -621,11 +623,6 @@ class UserPermissions extends Component
                         'nested' => [
                             "saveAssets:$volume->uid" => [
                                 'label' => Craft::t('app', 'Save {type}', ['type' => $type]),
-                                'nested' => [
-                                    "savePeerAssets:$volume->uid" => [
-                                        'label' => Craft::t('app', 'Save assets uploaded by other users'),
-                                    ],
-                                ],
                             ],
                             "deleteAssets:$volume->uid" => [
                                 'label' => Craft::t('app', 'Delete {type}', ['type' => $type]),

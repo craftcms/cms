@@ -13,6 +13,7 @@ use craft\base\FieldLayoutElement;
 use craft\behaviors\DraftBehavior;
 use craft\elements\Address;
 use craft\enums\LicenseKeyStatus;
+use craft\events\DefineElementInnerHtmlEvent;
 use craft\events\RegisterCpAlertsEvent;
 use craft\fieldlayoutelements\BaseField;
 use craft\models\FieldLayout;
@@ -36,6 +37,12 @@ class Cp
      * @event RegisterCpAlertsEvent The event that is triggered when registering control panel alerts.
      */
     public const EVENT_REGISTER_ALERTS = 'registerAlerts';
+
+    /**
+     * @event DefineElementInnerHtmlEvent The event that is triggered when defining an element’s inner HTML.
+     * @since 4.0.0
+     */
+    public const EVENT_DEFINE_ELEMENT_INNER_HTML = 'defineElementInnerHtml';
 
     /**
      * @since 3.5.8
@@ -239,26 +246,28 @@ class Cp
      *
      * @param ElementInterface $element The element to be rendered
      * @param string $context The context the element is going to be shown in (`index`, `field`, etc.)
-     * @param string $thumbSize The size of the element (`small` or `large`)
+     * @param string $size The size of the element (`small` or `large`)
      * @param string|null $inputName The `name` attribute that should be set on the hidden input, if `$context` is set to `field`
      * @param bool $showStatus Whether the element status should be shown (if the element type has statuses)
      * @param bool $showThumb Whether the element thumb should be shown (if the element has one)
      * @param bool $showLabel Whether the element label should be shown
      * @param bool $showDraftName Whether to show the draft name beside the label if the element is a draft of a published element
      * @param bool $single Whether the input name should omit the trailing `[]`
+     * @param bool $autoReload Whether the element should auto-reload itself when it’s saved
      * @return string
      * @since 3.5.8
      */
     public static function elementHtml(
         ElementInterface $element,
         string $context = 'index',
-        string $thumbSize = self::ELEMENT_SIZE_SMALL,
+        string $size = self::ELEMENT_SIZE_SMALL,
         ?string $inputName = null,
         bool $showStatus = true,
         bool $showThumb = true,
         bool $showLabel = true,
         bool $showDraftName = true,
         bool $single = false,
+        bool $autoReload = true,
     ): string {
         $isDraft = $element->getIsDraft();
         $isRevision = !$isDraft && $element->getIsRevision();
@@ -267,7 +276,7 @@ class Cp
 
         // Create the thumb/icon image, if there is one
         if ($showThumb) {
-            $thumbSizePx = $thumbSize === self::ELEMENT_SIZE_SMALL ? 34 : 120;
+            $thumbSizePx = $size === self::ELEMENT_SIZE_SMALL ? 34 : 120;
             $thumbUrl = $element->getThumbUrl($thumbSizePx);
         } else {
             $thumbSizePx = $thumbUrl = null;
@@ -287,7 +296,7 @@ class Cp
                 'class' => array_filter([
                     'elementthumb',
                     $element->getHasCheckeredThumb() ? 'checkered' : null,
-                    $thumbSize === self::ELEMENT_SIZE_SMALL && $element->getHasRoundedThumb() ? 'rounded' : null,
+                    $size === self::ELEMENT_SIZE_SMALL && $element->getHasRoundedThumb() ? 'rounded' : null,
                 ]),
                 'data' => [
                     'sizes' => $sizesHtml,
@@ -302,7 +311,7 @@ class Cp
         $attributes = ArrayHelper::merge(
             Html::normalizeTagAttributes($element->getHtmlAttributes($context)),
             [
-                'class' => ['element', $thumbSize],
+                'class' => ['element', $size],
                 'title' => $label . (Craft::$app->getIsMultiSite() ? ' – ' . Craft::t('site', $element->getSite()->getName()) : ''),
                 'data' => array_filter([
                     'type' => get_class($element),
@@ -314,6 +323,14 @@ class Cp
                     'label' => (string)$element,
                     'url' => $element->getUrl(),
                     'level' => $element->level,
+                    'settings' => $autoReload ? compact(
+                        'context',
+                        'size',
+                        'showStatus',
+                        'showThumb',
+                        'showLabel',
+                        'showDraftName',
+                    ) : false,
                 ]),
             ]
         );
@@ -352,10 +369,9 @@ class Cp
 
         if ($context === 'field' && $inputName !== null) {
             $innerHtml .= Html::hiddenInput($inputName . ($single ? '' : '[]'), (string)$element->id) .
-                Html::tag('button', '', [
+                Html::button('', [
                     'class' => ['delete', 'icon'],
                     'title' => Craft::t('app', 'Remove'),
-                    'type' => 'button',
                     'aria' => [
                         'label' => Craft::t('app', 'Remove {label}', [
                             'label' => $label,
@@ -416,7 +432,20 @@ class Cp
             $innerHtml .= '</span></div>';
         }
 
-        return Html::tag('div', $innerHtml, $attributes);
+        // Allow plugins to modify the inner HTML
+        $event = new DefineElementInnerHtmlEvent(compact(
+            'element',
+            'context',
+            'size',
+            'showStatus',
+            'showThumb',
+            'showLabel',
+            'showDraftName',
+            'innerHtml',
+        ));
+        Event::trigger(self::class, self::EVENT_DEFINE_ELEMENT_INNER_HTML, $event);
+
+        return Html::tag('div', $event->innerHtml, $attributes);
     }
 
     /**
@@ -1360,10 +1389,13 @@ JS, [
             'customizableUi' => true,
         ];
 
-        $tabs = $fieldLayout->getTabs();
+        $tabs = array_filter($fieldLayout->getTabs(), fn(FieldLayoutTab $tab) => !empty($tab->getElements()));
 
         if (!$config['customizableTabs']) {
-            $tab = array_shift($tabs) ?? new FieldLayoutTab();
+            $tab = array_shift($tabs) ?? new FieldLayoutTab([
+                    'uid' => StringHelper::UUID(),
+                    'layout' => $fieldLayout,
+                ]);
             $tab->name = $config['pretendTabName'] ?? Craft::t('app', 'Content');
 
             // Any extra tabs?
@@ -1416,8 +1448,12 @@ JS;
         self::_setLayoutOnElements($availableNativeFields, $fieldLayout);
         self::_setLayoutOnElements($availableUiElements, $fieldLayout);
 
-        $fieldLayoutConfig = $fieldLayout->getConfig();
-        $fieldLayoutConfig['uid'] = $fieldLayout->uid;
+        // Don't call FieldLayout::getConfig() here because we want to include *all* tabs, not just non-empty ones
+        $fieldLayoutConfig = [
+            'uid' => $fieldLayout->uid,
+            'tabs' => array_map(fn(FieldLayoutTab $tab) => $tab->getConfig(), $tabs),
+        ];
+
         if ($fieldLayout->id) {
             $fieldLayoutConfig['id'] = $fieldLayout->id;
         }
@@ -1559,11 +1595,14 @@ JS;
      */
     private static function _fldTabSettingsData(FieldLayoutTab $tab): array
     {
-        $namespace = "tab-$tab->uid";
         $view = Craft::$app->getView();
+        $oldNamespace = $view->getNamespace();
+        $namespace = $view->namespaceInputName("tab-$tab->uid");
+        $view->setNamespace($namespace);
         $view->startJsBuffer();
-        $settingsHtml = $view->namespaceInputs(fn() => $tab->getSettingsHtml(), $namespace);
+        $settingsHtml = $view->namespaceInputs($tab->getSettingsHtml());
         $settingsJs = $view->clearJsBuffer(false);
+        $view->setNamespace($oldNamespace);
 
         return [
             'settings-namespace' => $namespace,
@@ -1589,11 +1628,14 @@ JS;
             ]);
         }
 
-        $settingsNamespace = 'element-' . ($forLibrary ? 'ELEMENT_UID' : $element->uid);
         $view = Craft::$app->getView();
+        $oldNamespace = $view->getNamespace();
+        $namespace = $view->namespaceInputName('element-' . ($forLibrary ? 'ELEMENT_UID' : $element->uid));
+        $view->setNamespace($namespace);
         $view->startJsBuffer();
-        $settingsHtml = $view->namespaceInputs(fn() => $element->getSettingsHtml(), $settingsNamespace);
+        $settingsHtml = $view->namespaceInputs($element->getSettingsHtml());
         $settingsJs = $view->clearJsBuffer(false);
+        $view->setNamespace($oldNamespace);
 
         $attr = ArrayHelper::merge($attr, [
             'class' => array_filter([
@@ -1603,10 +1645,9 @@ JS;
             ]),
             'data' => [
                 'uid' => !$forLibrary ? $element->uid : false,
-                'type' => $forLibrary ? str_replace('\\', '-', get_class($element)) : false,
                 'config' => $forLibrary ? ['type' => get_class($element)] + $element->toArray() : false,
                 'has-custom-width' => $element->hasCustomWidth(),
-                'settings-namespace' => $settingsNamespace,
+                'settings-namespace' => $namespace,
                 'settings-html' => $settingsHtml ?: false,
                 'settings-js' => $settingsJs ?: false,
             ],
@@ -1690,8 +1731,10 @@ JS;
             $editableSiteIds = $sitesService->getEditableSiteIds();
 
             if (!empty($editableSiteIds)) {
+                $request = Craft::$app->getRequest();
                 if (
-                    ($handle = Craft::$app->getRequest()->getQueryParam('site')) !== null &&
+                    !$request->getIsConsoleRequest() &&
+                    ($handle = $request->getQueryParam('site')) !== null &&
                     ($site = $sitesService->getSiteByHandle($handle, true)) !== null &&
                     in_array($site->id, $editableSiteIds, false)
                 ) {

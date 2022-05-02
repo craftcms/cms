@@ -14,56 +14,62 @@ use yii\web\Request;
 use yii\web\Session;
 
 /**
- * Class LogProcessor
+ * Class ContextProcessor
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class LogProcessor implements ProcessorInterface
+class ContextProcessor implements ProcessorInterface
 {
+    /**
+     * @param array $vars The global variables to include {@see \yii\log\Target::$logVars}
+     * @param string $key The key in the record to push context data
+     */
     public function __construct(
-        protected bool $includeUserIp = false,
-        protected array $contextVars = [],
+        protected array $vars = [],
+        protected string $key = 'context',
     ) {
     }
 
     /**
-     * {@inheritDoc}
+     * @inheritdoc
      */
     public function __invoke(array $record): array
     {
-        if ($this->includeUserIp) {
+        if (Craft::$app->getConfig()->getGeneral()->storeUserIps) {
             $request = Craft::$app->getRequest();
 
             if ($request instanceof Request) {
-                $record['extra']['ip'] = $request->getUserIP();
+                $record[$this->key]['ip'] = $request->getUserIP();
             }
         }
 
         $user = Craft::$app->has('user', true) ? Craft::$app->getUser() : null;
         if ($user && ($identity = $user->getIdentity(false))) {
-            $record['extra']['userId'] = $identity->getId();
+            $record[$this->key]['userId'] = $identity->getId();
         }
 
         /** @var Session|null $session */
         $session = Craft::$app->has('session', true) ? Craft::$app->get('session') : null;
 
         if ($session && $session->getIsActive()) {
-            $record['extra']['sessionId'] = $session->getId();
+            $record[$this->key]['sessionId'] = $session->getId();
         }
 
         if (
-            ($postPos = array_search('_POST', $this->contextVars)) !== false &&
+            ($postPos = array_search('_POST', $this->vars, true)) !== false &&
             empty($GLOBALS['_POST']) &&
             !empty($body = file_get_contents('php://input'))
         ) {
             // Log the raw request body instead
-            $this->contextVars = array_merge($this->contextVars);
-            array_splice($this->contextVars, $postPos, 1);
-            $record['extra']['body'] = $body;
+            $this->vars = array_merge($this->vars);
+            array_splice($this->vars, $postPos, 1);
+            $record[$this->key]['body'] = $body;
         }
 
-        $record['extra']['vars'] = $this->filterVars($this->contextVars);
+        if ($vars = $this->filterVars($this->vars)) {
+            $record[$this->key]['vars'] = $vars;
+        }
 
         return $record;
     }

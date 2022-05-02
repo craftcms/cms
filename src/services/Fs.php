@@ -11,6 +11,7 @@ use Craft;
 use craft\base\FsInterface;
 use craft\base\MemoizableArray;
 use craft\errors\MissingComponentException;
+use craft\events\FsEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\fs\Local;
 use craft\fs\MissingFs;
@@ -36,6 +37,11 @@ class Fs extends Component
      * @event RegisterComponentTypesEvent The event that is triggered when registering filesystem types.
      */
     public const EVENT_REGISTER_FILESYSTEM_TYPES = 'registerFilesystemTypes';
+
+    /**
+     * @event FsEvent The event that is triggered after a filesystem is renamed.
+     */
+    public const EVENT_RENAME_FILESYSTEM = 'renameFs';
 
     /**
      * @var MemoizableArray<FsInterface>|null
@@ -161,6 +167,40 @@ class Fs extends Component
         $configData = $this->createFilesystemConfig($fs);
         $projectConfig->set($configPath, $configData, "Save the “{$fs->handle}” filesystem");
 
+        // Remove the old one?
+        if ($fs->oldHandle && $fs->oldHandle !== $fs->handle) {
+            $existingFilesystem = $this->getFilesystemByHandle($fs->oldHandle);
+            if ($existingFilesystem) {
+                $this->removeFilesystem($existingFilesystem);
+
+                // Update any volumes that were pointing to the old handle, but only if the handle was hard-coded
+                $volumesService = Craft::$app->getVolumes();
+                $volumes = $volumesService->getAllVolumes();
+                foreach ($volumes as $volume) {
+                    $changed = false;
+                    if ($volume->getFsHandle(false) === $fs->oldHandle) {
+                        $volume->setFsHandle($fs->handle);
+                        $changed = true;
+                    }
+                    if ($volume->getTransformFsHandle(false) === $fs->oldHandle) {
+                        $volume->setTransformFsHandle($fs->handle);
+                        $changed = true;
+                    }
+                    if ($changed) {
+                        $volumesService->saveVolume($volume);
+                    }
+                }
+
+                // Trigger a 'renameFs' event
+                if ($this->hasEventHandlers(self::EVENT_RENAME_FILESYSTEM)) {
+                    $this->trigger(self::EVENT_RENAME_FILESYSTEM, new FsEvent($fs));
+                }
+            }
+        }
+
+        // Clear caches
+        $this->_filesystems = null;
+
         return true;
     }
 
@@ -200,6 +240,9 @@ class Fs extends Component
         }
 
         Craft::$app->getProjectConfig()->remove(sprintf('%s.%s', ProjectConfig::PATH_FS, $fs->handle), "Remove the “{$fs->handle}” filesystem");
+
+        // Clear caches
+        $this->_filesystems = null;
 
         return true;
     }

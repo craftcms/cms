@@ -1,6 +1,4 @@
 <?php
-
-declare(strict_types=1);
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -290,7 +288,7 @@ class Assets extends Component
         $folders = [];
 
         foreach ((array)$folderIds as $folderId) {
-            $folder = $this->getFolderById($folderId);
+            $folder = $this->getFolderById((int)$folderId);
             $folders[] = $folder;
 
             if ($folder && $deleteDir) {
@@ -431,9 +429,9 @@ class Assets extends Component
      * @param mixed $criteria
      * @return VolumeFolder[]
      */
-    public function findFolders(mixed $criteria = null): array
+    public function findFolders(mixed $criteria = []): array
     {
-        if (!($criteria instanceof FolderCriteria)) {
+        if (!$criteria instanceof FolderCriteria) {
             $criteria = new FolderCriteria($criteria);
         }
 
@@ -504,9 +502,9 @@ class Assets extends Component
      * @param mixed $criteria
      * @return VolumeFolder|null
      */
-    public function findFolder(mixed $criteria = null): ?VolumeFolder
+    public function findFolder(mixed $criteria = []): ?VolumeFolder
     {
-        if (!($criteria instanceof FolderCriteria)) {
+        if (!$criteria instanceof FolderCriteria) {
             $criteria = new FolderCriteria($criteria);
         }
 
@@ -585,6 +583,10 @@ class Assets extends Component
             $height = $width;
         }
 
+        $params = [
+            'v' => $asset->dateModified->getTimestamp(),
+        ];
+
         // Maybe a plugin wants to do something here
         if ($this->hasEventHandlers(self::EVENT_DEFINE_THUMB_URL)) {
             $event = new DefineAssetThumbUrlEvent([
@@ -596,7 +598,7 @@ class Assets extends Component
 
             // If a plugin set the url, we'll just use that.
             if ($event->url !== null) {
-                return $event->url;
+                return UrlHelper::urlWithParams($event->url, $params);
             }
         }
 
@@ -614,9 +616,7 @@ class Assets extends Component
 
         $transformUrl = $asset->getUrl($transform, false);
 
-        return UrlHelper::urlWithParams($transformUrl, [
-            'v' => $asset->dateModified->getTimestamp(),
-        ]);
+        return UrlHelper::urlWithParams($transformUrl, $params);
     }
 
     /**
@@ -648,7 +648,11 @@ class Assets extends Component
             $transform = null;
         }
 
-        return $asset->getUrl($transform, true);
+        $url = $asset->getUrl($transform, true);
+
+        return UrlHelper::urlWithParams($url, [
+            'v' => $asset->dateModified->getTimestamp(),
+        ]);
     }
 
     /**
@@ -828,6 +832,56 @@ class Assets extends Component
     }
 
     /**
+     * Returns the temporary volume and subpath, if set.
+     *
+     * @return array
+     * @phpstan-return array{Volume|null,string|null}
+     * @throws InvalidConfigException If the temp volume is invalid
+     * @since 3.7.39
+     */
+    public function getTempVolumeAndSubpath(): array
+    {
+        $assetSettings = Craft::$app->getProjectConfig()->get('assets');
+        if (empty($assetSettings['tempVolumeUid'])) {
+            return [null, null];
+        }
+
+        $volume = Craft::$app->getVolumes()->getVolumeByUid($assetSettings['tempVolumeUid']);
+
+        if (!$volume) {
+            throw new InvalidConfigException("The Temp Uploads Location is set to an invalid volume UID: {$assetSettings['tempVolumeUid']}");
+        }
+
+        /** @var string|null $subpath */
+        $subpath = ($assetSettings['tempSubpath'] ?? null) ?: null;
+        return [$volume, $subpath];
+    }
+
+    /**
+     * Creates an asset query that is configured to return assets in the temporary upload location.
+     *
+     * @return AssetQuery
+     * @throws InvalidConfigException If the temp volume is invalid
+     * @since 3.7.39
+     */
+    public function createTempAssetQuery(): AssetQuery
+    {
+        /** @var Volume|null $volume */
+        /** @var string|null $subpath */
+        [$volume, $subpath] = $this->getTempVolumeAndSubpath();
+        $query = Asset::find();
+        if ($volume) {
+            $query->volumeId($volume->id);
+            if ($subpath) {
+                $query->folderPath("$subpath/*");
+            }
+        } else {
+            $query->volumeId(':empty:');
+        }
+        return $query;
+    }
+
+    /**
      * Returns the given user’s temporary upload folder.
      *
      * If no user is provided, the currently-logged in user will be used (if there is one), or a folder named after
@@ -855,15 +909,17 @@ class Assets extends Component
         }
 
         // Is there a designated temp uploads volume?
-        $assetSettings = Craft::$app->getProjectConfig()->get('assets');
-        if (isset($assetSettings['tempVolumeUid'])) {
-            $volume = Craft::$app->getVolumes()->getVolumeByUid($assetSettings['tempVolumeUid']);
-            if (!$volume) {
-                throw new VolumeException(Craft::t('app', 'The volume set for temp asset storage is not valid.'));
-            }
-            $path = (isset($assetSettings['tempSubpath']) ? $assetSettings['tempSubpath'] . '/' : '') .
-                $folderName;
-            return $this->ensureFolderByFullPathAndVolume($path, $volume, false);
+        try {
+            /** @var Volume|null $tempVolume */
+            /** @var string|null $tempSubpath */
+            [$tempVolume, $tempSubpath] = $this->getTempVolumeAndSubpath();
+        } catch (InvalidConfigException $e) {
+            throw new VolumeException($e->getMessage(), 0, $e);
+        }
+
+        if ($tempVolume) {
+            $path = ($tempSubpath ? "$tempSubpath/" : '') . $folderName;
+            return $this->ensureFolderByFullPathAndVolume($path, $tempVolume, false);
         }
 
         $volumeTopFolder = $this->findFolder([

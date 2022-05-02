@@ -52,6 +52,8 @@ class TemplateResponseFormatter extends Component implements ResponseFormatterIn
             $response->content = $view->renderPageTemplate($behavior->template, $behavior->variables, $behavior->templateMode);
         } catch (RuntimeError $e) {
             if (!$e->getPrevious() instanceof ExitException) {
+                // Bail on the template response
+                $response->format = Response::FORMAT_HTML;
                 throw $e;
             }
 

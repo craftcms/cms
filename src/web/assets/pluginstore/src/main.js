@@ -2,43 +2,43 @@
 /* global Garnish */
 /* global $ */
 
-import Vue from 'vue'
-import axios from 'axios'
-import {currency} from './js/filters/currency'
-import {escapeHtml, formatDate, formatNumber, t} from './js/filters/craft'
-import router from './js/router'
-import store from './js/store'
-import {mapState} from 'vuex'
-import Modal from './js/components/modal/Modal'
-import StatusMessage from './js/components/StatusMessage'
-import App from './App'
-import './js/plugins/vue-awesome-swiper'
-import './js/plugins/vue-apex-charts'
-import CBtn from './js/components/ui/CBtn'
-import CDropdown from './js/components/ui/CDropdown'
-import CIcon from './js/components/ui/CIcon'
-import CSpinner from './js/components/ui/CSpinner'
-import CTextbox from './js/components/ui/CTextbox'
+import Vue from 'vue';
+import axios from 'axios';
+import {currency} from './js/filters/currency';
+import {escapeHtml, formatDate, formatNumber, t} from './js/filters/craft';
+import router from './js/router';
+import store from './js/store';
+import {mapState} from 'vuex';
+import Modal from './js/components/modal/Modal';
+import StatusMessage from './js/components/StatusMessage';
+import App from './App';
+import './js/plugins/vue-awesome-swiper';
+import './js/plugins/vue-apex-charts';
+import CBtn from './js/components/ui/CBtn';
+import CDropdown from './js/components/ui/CDropdown';
+import CIcon from './js/components/ui/CIcon';
+import CSpinner from './js/components/ui/CSpinner';
+import CTextbox from './js/components/ui/CTextbox';
 
-Vue.filter('currency', currency)
-Vue.filter('escapeHtml', escapeHtml)
-Vue.filter('formatDate', formatDate)
-Vue.filter('formatNumber', formatNumber)
-Vue.filter('t', t)
+Vue.filter('currency', currency);
+Vue.filter('escapeHtml', escapeHtml);
+Vue.filter('formatDate', formatDate);
+Vue.filter('formatNumber', formatNumber);
+Vue.filter('t', t);
 
-Vue.component('c-btn', CBtn)
-Vue.component('c-dropdown', CDropdown)
-Vue.component('c-icon', CIcon)
-Vue.component('c-spinner', CSpinner)
-Vue.component('c-textbox', CTextbox)
+Vue.component('c-btn', CBtn);
+Vue.component('c-dropdown', CDropdown);
+Vue.component('c-icon', CIcon);
+Vue.component('c-spinner', CSpinner);
+Vue.component('c-textbox', CTextbox);
 
-Garnish.$doc.ready(function() {
-  Craft.initUiElements()
+Garnish.$doc.ready(function () {
+  Craft.initUiElements();
 
   window.pluginStoreApp = new Vue({
     router,
     store,
-    render: h => h(App),
+    render: (h) => h(App),
 
     components: {
       Modal,
@@ -61,13 +61,13 @@ Garnish.$doc.ready(function() {
         pluginStoreDataError: false,
         showModal: false,
         statusMessage: null,
-      }
+      };
     },
 
     computed: {
       ...mapState({
-        cart: state => state.cart.cart,
-        craftId: state => state.craft.craftId,
+        cart: (state) => state.cart.cart,
+        craftId: (state) => state.craft.craftId,
       }),
 
       /**
@@ -76,18 +76,18 @@ Garnish.$doc.ready(function() {
        * @returns {boolean}
        */
       pluginStoreDataLoaded() {
-        return this.coreDataLoaded && this.pluginLicenseInfoLoaded
+        return this.coreDataLoaded && this.pluginLicenseInfoLoaded;
       },
     },
 
     watch: {
       cart(cart) {
-        this.$emit('cartChange', cart)
+        this.$emit('cartChange', cart);
       },
 
       craftId() {
-        this.$emit('craftIdChange')
-      }
+        this.$emit('craftIdChange');
+      },
     },
 
     methods: {
@@ -97,7 +97,7 @@ Garnish.$doc.ready(function() {
        * @param message
        */
       displayNotice(message) {
-        Craft.cp.displayNotice(message)
+        Craft.cp.displayNotice(message);
       },
 
       /**
@@ -106,7 +106,7 @@ Garnish.$doc.ready(function() {
        * @param message
        */
       displayError(message) {
-        Craft.cp.displayError(message)
+        Craft.cp.displayError(message);
       },
 
       /**
@@ -115,16 +115,16 @@ Garnish.$doc.ready(function() {
        * @param modalStep
        */
       openModal(modalStep) {
-        this.modalStep = modalStep
+        this.modalStep = modalStep;
 
-        this.showModal = true
+        this.showModal = true;
       },
 
       /**
        * Closes the modal.
        */
       closeModal() {
-        this.showModal = false
+        this.showModal = false;
       },
 
       /**
@@ -133,36 +133,37 @@ Garnish.$doc.ready(function() {
        * @param craftIdJson
        */
       updateCraftId(craftId, callback) {
-        this.$store.commit('craft/updateCraftId', craftId)
+        this.$store.commit('craft/updateCraftId', craftId);
 
         if (this.craftId && this.craftId.email !== this.cart.email) {
           // Update the cart’s email with the one from the Craft ID account
           let data = {
             email: this.craftId.email,
-          }
+          };
 
-          this.$store.dispatch('cart/saveCart', data)
+          this.$store
+            .dispatch('cart/saveCart', data)
             .then(() => {
-              this.$emit('craftIdUpdated')
+              this.$emit('craftIdUpdated');
 
               if (callback) {
-                callback()
+                callback();
               }
             })
             .catch((error) => {
-              this.$root.displayError("Couldn’t update cart’s email.")
+              this.$root.displayError('Couldn’t update cart’s email.');
 
               if (callback) {
-                callback()
+                callback();
               }
 
-              throw error
-            })
+              throw error;
+            });
         } else {
-          this.$emit('craftIdUpdated')
+          this.$emit('craftIdUpdated');
 
           if (callback) {
-            callback()
+            callback();
           }
         }
       },
@@ -172,80 +173,87 @@ Garnish.$doc.ready(function() {
        */
       initializeOuterComponents() {
         // Header Title
-        const $headerTitle = $('#header h1')
+        const $headerTitle = $('#header h1');
 
         $headerTitle.on('click', () => {
-          this.$router.push({path: '/'})
+          this.$router.push({path: '/'});
         });
 
         // Cart button
-        const $cartButton = $('#cart-button')
+        const $cartButton = $('#cart-button');
 
-        $cartButton.on('click', e => {
-          e.preventDefault()
-          this.openModal('cart')
+        $cartButton.on('click', (e) => {
+          e.preventDefault();
+          this.openModal('cart');
         });
 
-        $cartButton.keydown(e => {
+        $cartButton.keydown((e) => {
           switch (e.which) {
             case 13: // Enter
             case 32: // Space
-              e.preventDefault()
-              this.openModal('cart')
-              break
+              e.preventDefault();
+              this.openModal('cart');
+              break;
           }
         });
 
-        this.$on('cartChange', function(cart) {
-          let totalQty = 0
+        this.$on('cartChange', function (cart) {
+          let totalQty = 0;
 
           if (cart) {
-            totalQty = cart.totalQty
+            totalQty = cart.totalQty;
           }
 
-          $('.badge', $cartButton).html(totalQty)
-        })
+          $('.badge', $cartButton).html(totalQty);
+        });
 
         // Plugin Store actions
-        const $pluginStoreActions = $('#pluginstore-actions')
-        const $pluginStoreActionsSpinner = $('#pluginstore-actions-spinner')
+        const $pluginStoreActions = $('#pluginstore-actions');
+        const $pluginStoreActionsSpinner = $('#pluginstore-actions-spinner');
 
         // Show actions spinner when Plugin Store data has finished loading but Craft data has not.
         this.$on('dataLoaded', () => {
-          if (this.pluginStoreDataLoaded && !(this.craftDataLoaded && this.cartDataLoaded && this.craftIdDataLoaded)) {
-            $pluginStoreActionsSpinner.removeClass('hidden')
+          if (
+            this.pluginStoreDataLoaded &&
+            !(
+              this.craftDataLoaded &&
+              this.cartDataLoaded &&
+              this.craftIdDataLoaded
+            )
+          ) {
+            $pluginStoreActionsSpinner.removeClass('hidden');
           }
         });
 
         // Hide actions spinner when Plugin Store data and Craft data have finished loading.
-        this.$on('allDataLoaded', function() {
-          $pluginStoreActions.removeClass('hidden')
-          $pluginStoreActionsSpinner.addClass('hidden')
-        })
+        this.$on('allDataLoaded', function () {
+          $pluginStoreActions.removeClass('hidden');
+          $pluginStoreActionsSpinner.addClass('hidden');
+        });
 
         // Craft ID
-        const $craftId = $('#craftid-account')
-        const $craftIdConnectForm = $('#craftid-connect-form')
-        const $craftIdDisconnectForm = $('#craftid-disconnect-form')
+        const $craftId = $('#craftid-account');
+        const $craftIdConnectForm = $('#craftid-connect-form');
+        const $craftIdDisconnectForm = $('#craftid-disconnect-form');
 
-        this.$on('craftIdChange', function() {
+        this.$on('craftIdChange', function () {
           if (this.craftId) {
-            $('.label', $craftId).text(this.craftId.username)
+            $('.label', $craftId).text(this.craftId.username);
 
-            $craftId.removeClass('hidden')
-            $craftIdConnectForm.addClass('hidden')
-            $craftIdDisconnectForm.removeClass('hidden')
+            $craftId.removeClass('hidden');
+            $craftIdConnectForm.addClass('hidden');
+            $craftIdDisconnectForm.removeClass('hidden');
           } else {
-            $craftId.addClass('hidden')
-            $craftIdConnectForm.removeClass('hidden')
-            $craftIdDisconnectForm.addClass('hidden')
+            $craftId.addClass('hidden');
+            $craftIdConnectForm.removeClass('hidden');
+            $craftIdDisconnectForm.addClass('hidden');
           }
-        })
+        });
 
         // Cancel ajax requests when an outbound link gets clicked
         $('a[href]').on('click', () => {
-          this.$store.dispatch('craft/cancelRequests')
-          this.$store.dispatch('pluginStore/cancelRequests')
+          this.$store.dispatch('craft/cancelRequests');
+          this.$store.dispatch('pluginStore/cancelRequests');
         });
       },
 
@@ -253,43 +261,44 @@ Garnish.$doc.ready(function() {
        * Loads the cart data.
        */
       loadCartData() {
-        this.$store.dispatch('cart/getCart')
-          .then(() => {
-            this.cartDataLoaded = true
-            this.$emit('dataLoaded')
-          })
+        this.$store.dispatch('cart/getCart').then(() => {
+          this.cartDataLoaded = true;
+          this.$emit('dataLoaded');
+        });
       },
 
       /**
        * Loads Craft data.
        */
       loadCraftData(afterSuccess) {
-        this.$store.dispatch('craft/getCraftData')
+        this.$store
+          .dispatch('craft/getCraftData')
           .then(() => {
-            this.craftDataLoaded = true
-            this.$emit('dataLoaded')
+            this.craftDataLoaded = true;
+            this.$emit('dataLoaded');
 
             if (typeof afterSuccess === 'function') {
-              afterSuccess()
+              afterSuccess();
             }
           })
           .catch(() => {
-            this.craftDataLoaded = true
-          })
+            this.craftDataLoaded = true;
+          });
       },
 
       loadCraftIdData() {
         if (window.craftIdAccessToken) {
-          const accessToken = window.craftIdAccessToken
+          const accessToken = window.craftIdAccessToken;
 
-          this.$store.dispatch('craft/getCraftIdData', {accessToken})
+          this.$store
+            .dispatch('craft/getCraftIdData', {accessToken})
             .then(() => {
-              this.craftIdDataLoaded = true
-              this.$emit('dataLoaded')
-            })
+              this.craftIdDataLoaded = true;
+              this.$emit('dataLoaded');
+            });
         } else {
-          this.craftIdDataLoaded = true
-          this.$emit('dataLoaded')
+          this.craftIdDataLoaded = true;
+          this.$emit('dataLoaded');
         }
       },
 
@@ -297,11 +306,11 @@ Garnish.$doc.ready(function() {
        * Loads all the data required for the Plugin Store and cart to work.
        */
       loadData() {
-        this.loadPluginStoreData()
+        this.loadPluginStoreData();
 
         this.loadCraftData(() => {
-          this.loadCraftIdData()
-          this.loadCartData()
+          this.loadCraftIdData();
+          this.loadCartData();
         });
       },
 
@@ -310,34 +319,39 @@ Garnish.$doc.ready(function() {
        */
       loadPluginStoreData() {
         // core data
-        this.$store.dispatch('pluginStore/getCoreData')
+        this.$store
+          .dispatch('pluginStore/getCoreData')
           .then(() => {
-            this.coreDataLoaded = true
-            this.$emit('dataLoaded')
+            this.coreDataLoaded = true;
+            this.$emit('dataLoaded');
           })
           .catch((error) => {
             if (axios.isCancel(error)) {
               // Request canceled
             } else {
-              this.pluginStoreDataError = true
-              this.statusMessage = this.$options.filters.t('The Plugin Store is not available, please try again later.', 'app')
-              throw error
+              this.pluginStoreDataError = true;
+              this.statusMessage = this.$options.filters.t(
+                'The Plugin Store is not available, please try again later.',
+                'app'
+              );
+              throw error;
             }
-          })
+          });
 
         // plugin license info
-        this.$store.dispatch('craft/getPluginLicenseInfo')
+        this.$store
+          .dispatch('craft/getPluginLicenseInfo')
           .then(() => {
-            this.pluginLicenseInfoLoaded = true
-            this.$emit('dataLoaded')
+            this.pluginLicenseInfoLoaded = true;
+            this.$emit('dataLoaded');
           })
           .catch((error) => {
             if (axios.isCancel(error)) {
               // Request canceled
             } else {
-              throw error
+              throw error;
             }
-          })
+          });
       },
 
       /**
@@ -347,41 +361,44 @@ Garnish.$doc.ready(function() {
        */
       onDataLoaded() {
         if (!this.pluginStoreDataLoaded) {
-          return null
+          return null;
         }
 
         if (!this.craftDataLoaded) {
-          return null
+          return null;
         }
 
         if (!this.cartDataLoaded) {
-          return null
+          return null;
         }
 
         if (!this.craftIdDataLoaded) {
-          return null
+          return null;
         }
 
-        this.allDataLoaded = true
-        this.$emit('allDataLoaded')
+        this.allDataLoaded = true;
+        this.$emit('allDataLoaded');
       },
     },
 
     created() {
       // Page Title
-      this.pageTitle = this.$options.filters.t("Plugin Store", 'app')
+      this.pageTitle = this.$options.filters.t('Plugin Store', 'app');
 
       // Status message
-      this.statusMessage = this.$options.filters.t("Loading Plugin Store…", 'app')
+      this.statusMessage = this.$options.filters.t(
+        'Loading Plugin Store…',
+        'app'
+      );
 
       // Initialize outer components
-      this.initializeOuterComponents()
+      this.initializeOuterComponents();
 
       // On data loaded
-      this.$on('dataLoaded', this.onDataLoaded)
+      this.$on('dataLoaded', this.onDataLoaded);
 
       // Load data
-      this.loadData()
+      this.loadData();
     },
-  }).$mount('#app')
-})
+  }).$mount('#app');
+});

@@ -23,6 +23,7 @@ use craft\events\RegisterUserActionsEvent;
 use craft\events\UserEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Assets;
+use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Html;
 use craft\helpers\Image;
@@ -363,9 +364,9 @@ class UsersController extends Controller
     /**
      * Starts an elevated user session.
      *
-     * @return Response
+     * @return Response|null
      */
-    public function actionStartElevatedSession(): Response
+    public function actionStartElevatedSession(): ?Response
     {
         $password = $this->request->getBodyParam('currentPassword') ?? $this->request->getBodyParam('password');
 
@@ -744,10 +745,12 @@ class UsersController extends Controller
                     $statusLabel = $user->pending ? Craft::t('app', 'Pending') : Craft::t('app', 'Inactive');
                     // Only provide activation actions if they have an email address
                     if ($user->email) {
-                        $statusActions[] = [
-                            'action' => 'users/send-activation-email',
-                            'label' => Craft::t('app', 'Send activation email'),
-                        ];
+                        if ($user->pending || $canAdministrateUsers) {
+                            $statusActions[] = [
+                                'action' => 'users/send-activation-email',
+                                'label' => Craft::t('app', 'Send activation email'),
+                            ];
+                        }
                         if ($canAdministrateUsers) {
                             // Only need to show the "Copy activation URL" option if they don't have a password
                             if (!$user->password) {
@@ -813,8 +816,8 @@ class UsersController extends Controller
                     $sessionActions[] = [
                         'action' => 'users/impersonate',
                         'label' => $name
-                            ? Craft::t('app', 'Login as {user}', ['user' => $user->getName()])
-                            : Craft::t('app', 'Login as user'),
+                            ? Craft::t('app', 'Sign in as {user}', ['user' => $user->getName()])
+                            : Craft::t('app', 'Sign in as user'),
                     ];
                     $sessionActions[] = [
                         'id' => 'copy-impersonation-url',
@@ -1094,6 +1097,8 @@ JS,
 
         $userId = $this->request->getBodyParam('userId');
         $isNewUser = !$userId;
+        $newEmail = trim($this->request->getBodyParam('email') ?? '') ?: null;
+
         $isPublicRegistration = false;
 
         // Are we editing an existing user?
@@ -1130,9 +1135,17 @@ JS,
                 }
 
                 $isPublicRegistration = true;
+
+                // See if there's an inactive user with the same email
+                if ($newEmail) {
+                    $user = User::find()
+                        ->email(Db::escapeParam($newEmail))
+                        ->status(User::STATUS_INACTIVE)
+                        ->one();
+                }
             }
 
-            $user = new User();
+            $user = $user ?? new User();
         }
 
         $isCurrentUser = $user->getIsCurrent();
@@ -1149,10 +1162,8 @@ JS,
 
         // Are they allowed to set the email address?
         if ($isNewUser || $isCurrentUser || $canAdministrateUsers) {
-            $newEmail = $this->request->getBodyParam('email');
-
             // Make sure it actually changed
-            if ($newEmail && $newEmail === $user->email) {
+            if (!$isNewUser && $newEmail && $newEmail === $user->email) {
                 $newEmail = null;
             }
 
@@ -1192,6 +1203,9 @@ JS,
                     $user->email = $newEmail;
                 }
             }
+        } else {
+            // Discard the new email if it was posted
+            $newEmail = null;
         }
 
         // Are they allowed to set a new password?
@@ -1418,6 +1432,14 @@ JS,
             return $this->_redirectUserToCp($user) ?? $this->_redirectUserAfterAccountActivation($user);
         }
 
+        if (!$this->request->getAcceptsJson()) {
+            // Tell all browser windows about the draft deletion
+            Craft::$app->getSession()->broadcastToJs([
+                'event' => 'saveElement',
+                'id' => $user->id,
+            ]);
+        }
+
         return $this->redirectToPostedUrl($user);
     }
 
@@ -1503,10 +1525,10 @@ JS,
     /**
      * Sends a new activation email to a user.
      *
-     * @return Response
+     * @return Response|null
      * @throws BadRequestHttpException if the user is not pending
      */
-    public function actionSendActivationEmail(): Response
+    public function actionSendActivationEmail(): ?Response
     {
         $this->requirePostRequest();
 
@@ -1523,10 +1545,15 @@ JS,
             $this->_noUserExists();
         }
 
-        // Only allow activation emails to be send to pending users.
+        // Only allow activation emails to be sent to inactive/pending users.
         /** @var User $user */
-        if ($user->getStatus() !== User::STATUS_PENDING) {
-            throw new BadRequestHttpException('Activation emails can only be sent to pending users');
+        $status = $user->getStatus();
+        if (!in_array($status, [User::STATUS_INACTIVE, User::STATUS_PENDING])) {
+            throw new BadRequestHttpException('Activation emails can only be sent to inactive or pending users');
+        }
+
+        if (!$user->pending) {
+            $this->requirePermission('administrateUsers');
         }
 
         $emailSent = Craft::$app->getUsers()->sendActivationEmail($user);
@@ -1807,12 +1834,14 @@ JS,
         $this->populateNameAttributes($address);
 
         // All safe attributes
+        $safeAttributes = [];
         foreach ($address->safeAttributes() as $name) {
             $value = $this->request->getBodyParam($name);
             if ($value !== null) {
-                $address->$name = $value;
+                $safeAttributes[$name] = $value;
             }
         }
+        $address->setAttributes($safeAttributes);
 
         // Custom fields
         $fieldsLocation = $this->request->getParam('fieldsLocation') ?? 'fields';
@@ -1896,9 +1925,9 @@ JS,
     /**
      * Verifies a password for a user.
      *
-     * @return Response
+     * @return Response|null
      */
-    public function actionVerifyPassword(): Response
+    public function actionVerifyPassword(): ?Response
     {
         $this->requireAcceptsJson();
 
@@ -2298,7 +2327,7 @@ JS,
             return $this->redirect(UrlHelper::siteUrl($url));
         }
 
-        throw new BadRequestHttpException(Craft::t('app', 'Invalid verification code. Please login or reset your password.'));
+        throw new BadRequestHttpException(Craft::t('app', 'Invalid verification code. Please sign in or reset your password.'));
     }
 
     /**

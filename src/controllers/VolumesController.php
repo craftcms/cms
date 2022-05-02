@@ -9,11 +9,12 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\Field;
+use craft\base\FsInterface;
 use craft\elements\Asset;
 use craft\helpers\Json;
-use craft\helpers\UrlHelper;
 use craft\models\Volume;
 use craft\web\Controller;
+use Illuminate\Support\Collection;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
@@ -66,11 +67,11 @@ class VolumesController extends Controller
     {
         $this->requireAdmin();
 
-        $volumes = Craft::$app->getVolumes();
+        $volumesServices = Craft::$app->getVolumes();
 
         if ($volume === null) {
             if ($volumeId !== null) {
-                $volume = $volumes->getVolumeById($volumeId);
+                $volume = $volumesServices->getVolumeById($volumeId);
 
                 if ($volume === null) {
                     throw new NotFoundHttpException('Volume not found');
@@ -88,30 +89,43 @@ class VolumesController extends Controller
             $title = trim($volume->name) ?: Craft::t('app', 'Edit Volume');
         }
 
-        $crumbs = [
-            [
-                'label' => Craft::t('app', 'Settings'),
-                'url' => UrlHelper::url('settings'),
-            ],
-            [
-                'label' => Craft::t('app', 'Assets'),
-                'url' => UrlHelper::url('settings/assets'),
-            ],
-            [
-                'label' => Craft::t('app', 'Volumes'),
-                'url' => UrlHelper::url('settings/assets'),
-            ],
-        ];
+        $fsHandle = $volume->getFsHandle();
+        $allVolumes = $volumesServices->getAllVolumes();
+        /** @var Collection<string> $takenFsHandles */
+        $takenFsHandles = Collection::make($allVolumes)
+            ->map(fn(Volume $volume) => $volume->getFsHandle());
+        $fsOptions = Collection::make(Craft::$app->getFs()->getAllFilesystems())
+            ->filter(fn(FsInterface $fs) => $fs->handle === $fsHandle || !$takenFsHandles->contains($fs->handle))
+            ->sortBy(fn(FsInterface $fs) => $fs->name)
+            ->map(fn(FsInterface $fs) => [
+                'label' => $fs->name,
+                'value' => $fs->handle,
+            ])
+            ->all();
 
-        return $this->renderTemplate('settings/assets/volumes/_edit', [
-            'volumeId' => $volumeId,
-            'volume' => $volume,
-            'isNewVolume' => $isNewVolume,
-            'title' => $title,
-            'crumbs' => $crumbs,
-            'typeName' => Asset::displayName(),
-            'lowerTypeName' => Asset::lowerDisplayName(),
-        ]);
+        if (empty($fsOptions)) {
+            $fsOptions = [
+
+            ];
+        }
+
+        return $this->asCpScreen()
+            ->title($title)
+            ->addCrumb(Craft::t('app', 'Settings'), 'settings')
+            ->addCrumb(Craft::t('app', 'Assets'), 'settings/assets')
+            ->addCrumb(Craft::t('app', 'Volumes'), 'settings/assets')
+            ->action('volumes/save-volume')
+            ->redirectUrl('settings/assets')
+            ->saveShortcutRedirectUrl('settings/assets/volumes/{id}')
+            ->editUrl($volume->id ? "settings/assets/volumes/$volume->id" : null)
+            ->contentTemplate('settings/assets/volumes/_edit', [
+                'volumeId' => $volumeId,
+                'volume' => $volume,
+                'isNewVolume' => $isNewVolume,
+                'typeName' => Asset::displayName(),
+                'lowerTypeName' => Asset::lowerDisplayName(),
+                'fsOptions' => $fsOptions,
+            ]);
     }
 
     /**
@@ -153,18 +167,10 @@ class VolumesController extends Controller
         $volume->setFieldLayout($fieldLayout);
 
         if (!$volumesService->saveVolume($volume)) {
-            $this->setFailFlash(Craft::t('app', 'Couldn’t save volume.'));
-
-            // Send the volume back to the template
-            Craft::$app->getUrlManager()->setRouteParams([
-                'volume' => $volume,
-            ]);
-
-            return null;
+            return $this->asModelFailure($volume, Craft::t('app', 'Couldn’t save volume.'), 'volume');
         }
 
-        $this->setSuccessFlash(Craft::t('app', 'Volume saved.'));
-        return $this->redirectToPostedUrl();
+        return $this->asModelSuccess($volume, Craft::t('app', 'Volume saved.'), 'volume');
     }
 
     /**

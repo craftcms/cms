@@ -1,7 +1,6 @@
 <?php
 
 /** @noinspection PhpInconsistentReturnPointsInspection */
-declare(strict_types=1);
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -94,7 +93,7 @@ class MissingFs extends Fs implements MissingComponentInterface
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function read(string $path): string
     {
@@ -102,7 +101,7 @@ class MissingFs extends Fs implements MissingComponentInterface
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function write(string $path, string $contents, array $config = []): void
     {

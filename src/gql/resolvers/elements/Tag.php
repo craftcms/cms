@@ -7,11 +7,10 @@
 
 namespace craft\gql\resolvers\elements;
 
-use craft\db\Table;
+use Craft;
 use craft\elements\db\ElementQuery;
 use craft\elements\Tag as TagElement;
 use craft\gql\base\ElementResolver;
-use craft\helpers\Db;
 use craft\helpers\Gql as GqlHelper;
 
 /**
@@ -50,7 +49,13 @@ class Tag extends ElementResolver
             return [];
         }
 
-        $query->andWhere(['in', 'tags.groupId', array_values(Db::idsByUids(Table::TAGGROUPS, $pairs['taggroups']))]);
+        $tagsService = Craft::$app->getTags();
+        $tagGroupIds = array_filter(array_map(function(string $uid) use ($tagsService) {
+            $tagGroup = $tagsService->getTagGroupByUid($uid);
+            return $tagGroup->id ?? null;
+        }, $pairs['taggroups']));
+
+        $query->andWhere(['in', 'tags.groupId', $tagGroupIds]);
 
         return $query;
     }

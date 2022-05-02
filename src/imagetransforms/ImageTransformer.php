@@ -1,6 +1,4 @@
 <?php
-
-declare(strict_types=1);
 /**
  * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
@@ -87,7 +85,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
 
         if ($imageTransformIndex->fileExists) {
             $fs = $asset->getVolume()->getTransformFs();
-            $uri = $this->getTransformBasePath($asset) . $this->getTransformUri($asset, $imageTransformIndex);
+            $uri = str_replace('\\', '/', $this->getTransformBasePath($asset)) . $this->getTransformUri($asset, $imageTransformIndex);
 
             // Check if it really exists
             if ($fs instanceof LocalFsInterface && !$fs->fileExists($uri)) {
@@ -287,12 +285,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
     protected function getTransformUri(Asset $asset, ImageTransformIndex $index): string
     {
         $uri = $this->getTransformSubpath($asset, $index);
-
-        if (DIRECTORY_SEPARATOR !== '/') {
-            $uri = str_replace(DIRECTORY_SEPARATOR, '/', $uri);
-        }
-
-        return $uri;
+        return str_replace('\\', '/', $uri);
     }
 
     /**

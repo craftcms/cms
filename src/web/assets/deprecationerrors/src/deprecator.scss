@@ -1,5 +1,5 @@
 @charset "UTF-8";
-@import "@craftcms/sass/mixins";
+@import '@craftcms/sass/mixins';
 
 #traces {
   .body {
@@ -8,7 +8,7 @@
     overflow: auto;
 
     strong {
-      color: $mediumTextColor;
+      color: var(--medium-text-color);
     }
   }
 }

@@ -89,7 +89,7 @@ class RelationalFieldConditionRule extends BaseElementSelectConditionRule implem
         return array_filter([
             self::OPERATOR_NOT_EMPTY,
             self::OPERATOR_EMPTY,
-            !$this->getCondition()->forProjectConfig ? self::OPERATOR_RELATED_TO : null,
+            self::OPERATOR_RELATED_TO,
         ]);
     }
 

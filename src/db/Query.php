@@ -166,7 +166,7 @@ class Query extends \yii\db\Query
      */
     public function collect(?YiiConnection $db = null): Collection
     {
-        return new Collection($this->all($db));
+        return Collection::make($this->all($db));
     }
 
     /**
