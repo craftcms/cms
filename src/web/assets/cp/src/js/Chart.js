@@ -1,5 +1,5 @@
-import * as d3 from 'd3';
 import $ from 'jquery';
+import * as d3 from 'd3';
 
 /** global: Craft, Garnish */
 
