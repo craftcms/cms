@@ -119,24 +119,28 @@ class DbHelperTest extends Unit
         $group1 = new UserGroup(['id' => 1]);
         $group2 = new UserGroup(['id' => 2]);
 
+        $normalizeUserGroup = function($item) {
+            return $item instanceof UserGroup ? $item->id : null;
+        };
+
         $value = $group1;
-        self::assertEquals(true, Db::normalizeModelParam($value, UserGroup::class));
+        self::assertEquals(true, Db::normalizeParam($value, $normalizeUserGroup));
         self::assertEquals([1], $value);
 
         $value = ['and', $group1, $group2];
-        self::assertEquals(true, Db::normalizeModelParam($value, UserGroup::class));
+        self::assertEquals(true, Db::normalizeParam($value, $normalizeUserGroup));
         self::assertEquals(['and', 1, 2], $value);
 
         $value = null;
-        self::assertEquals(false, Db::normalizeModelParam($value, UserGroup::class));
+        self::assertEquals(true, Db::normalizeParam($value, $normalizeUserGroup));
         self::assertNull($value);
 
         $value = 'foo';
-        self::assertEquals(false, Db::normalizeModelParam($value, UserGroup::class));
+        self::assertEquals(false, Db::normalizeParam($value, $normalizeUserGroup));
         self::assertEquals('foo', $value);
 
         $value = ['foo'];
-        self::assertEquals(false, Db::normalizeModelParam($value, UserGroup::class));
+        self::assertEquals(false, Db::normalizeParam($value, $normalizeUserGroup));
         self::assertEquals(['foo'], $value);
     }
 

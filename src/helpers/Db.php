@@ -707,42 +707,54 @@ class Db
     }
 
     /**
-     * Normalizes a param value that can contain one or more models into an array of their IDs,
-     * while maintaining an `and`, `or`, or `not` prefix, if set.
+     * Normalizes a param value with a provided resolver function, unless the resolver function ever returns
+     * an empty value.
+     *
+     * If the original param value began with `and`, `or`, or `not`, that will be preserved.
      *
      * @param mixed $value The param value to be normalized
-     * @param string $modelClass The model class the param may be set to
-     * @param string $idAttribute The ID attribute on the models, which should be used in place of the models
+     * @param callable $resolver Method to resolve non-model values to models
      * @return bool Whether the value was normalized
      * @since 3.7.40
      */
-    public static function normalizeModelParam(&$value, string $modelClass, string $idAttribute = 'id'): bool
+    public static function normalizeParam(&$value, callable $resolver): bool
     {
-        if ($value instanceof $modelClass) {
-            $value = [$value->$idAttribute];
+        if ($value === null) {
             return true;
         }
 
         if (!is_array($value)) {
+            $testValue = [$value];
+            if (static::normalizeParam($testValue, $resolver)) {
+                $value = $testValue;
+                return true;
+            }
             return false;
         }
 
-        $glue = static::extractGlue($value);
+        $normalized = [];
 
-        // See if it's exclusively made up of user group models
-        $onlyModels = ArrayHelper::onlyContains($value, function($value) use ($modelClass) {
-            return $value instanceof $modelClass;
-        });
+        foreach ($value as $item) {
+            if (
+                empty($normalized) &&
+                is_string($item) &&
+                in_array(strtolower($item), [Db::GLUE_OR, Db::GLUE_AND, Db::GLUE_NOT], true)
+            ) {
+                $normalized[] = strtolower($item);
+                continue;
+            }
 
-        if ($onlyModels) {
-            $value = ArrayHelper::getColumn($value, $idAttribute);
+            $item = $resolver($item);
+            if (!$item) {
+                // The value couldn't be normalized in full, so bail
+                return false;
+            }
+
+            $normalized[] = $item;
         }
 
-        if ($glue !== null) {
-            array_unshift($value, $glue);
-        }
-
-        return $onlyModels;
+        $value = $normalized;
+        return true;
     }
 
     /**

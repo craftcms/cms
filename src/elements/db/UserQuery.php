@@ -12,7 +12,6 @@ use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\db\Table;
 use craft\elements\User;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\models\UserGroup;
 use yii\db\Connection;
@@ -323,9 +322,11 @@ class UserQuery extends ElementQuery
             $value = $group;
         }
 
-        if (Db::normalizeModelParam($value, UserGroup::class)) {
+        if (Db::normalizeParam($value, function($item) {
+            return $item instanceof UserGroup ? $item->id : null;
+        })) {
             $this->groupId = $value;
-        } elseif ($value !== null) {
+        } else {
             $glue = Db::extractGlue($value);
             $this->groupId = (new Query())
                 ->select(['id'])
@@ -335,8 +336,6 @@ class UserQuery extends ElementQuery
             if ($this->groupId && $glue !== null) {
                 array_unshift($this->groupId, $glue);
             }
-        } else {
-            $this->groupId = null;
         }
 
         return $this;

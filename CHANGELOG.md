@@ -5,7 +5,7 @@
 ### Added
 - Added the “Craft 4 Upgrade” utility.
 - Added `craft\helpers\Db::extractGlue()`.
-- Added `craft\helpers\Db::normalizeModelParam()`.
+- Added `craft\helpers\Db::normalizeParam()`.
 - Added `craft\utilities\Upgrade`.
 - Added `craft\web\assets\upgrade\UpgradeAsset`.
 
