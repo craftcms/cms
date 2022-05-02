@@ -10,6 +10,7 @@
 - Added `craft\web\assets\upgrade\UpgradeAsset`.
 
 ### Changed
+- Improved database performance for concurrent requests. ([#10662](https://github.com/craftcms/cms/issues/10662))
 - Asset queries’ `volume` params now support passing an array of `craft\base\VolumeInterface` objects.
 - Category queries’ `group` params now support passing an array of `craft\models\CategoryGroup` objects.
 - Entry queries’ `section` params now support passing an array of `craft\models\Section` objects.
