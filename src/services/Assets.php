@@ -35,7 +35,6 @@ use craft\helpers\FileHelper;
 use craft\helpers\Image;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
-use craft\helpers\UrlHelper;
 use craft\models\FolderCriteria;
 use craft\models\ImageTransform;
 use craft\models\Volume;
@@ -583,10 +582,6 @@ class Assets extends Component
             $height = $width;
         }
 
-        $params = [
-            'v' => $asset->dateModified->getTimestamp(),
-        ];
-
         // Maybe a plugin wants to do something here
         if ($this->hasEventHandlers(self::EVENT_DEFINE_THUMB_URL)) {
             $event = new DefineAssetThumbUrlEvent([
@@ -598,7 +593,7 @@ class Assets extends Component
 
             // If a plugin set the url, we'll just use that.
             if ($event->url !== null) {
-                return UrlHelper::urlWithParams($event->url, $params);
+                return $event->url;
             }
         }
 
@@ -614,9 +609,7 @@ class Assets extends Component
             'mode' => 'crop',
         ]);
 
-        $transformUrl = $asset->getUrl($transform, false);
-
-        return UrlHelper::urlWithParams($transformUrl, $params);
+        return $asset->getUrl($transform, false);
     }
 
     /**
@@ -648,11 +641,7 @@ class Assets extends Component
             $transform = null;
         }
 
-        $url = $asset->getUrl($transform, true);
-
-        return UrlHelper::urlWithParams($url, [
-            'v' => $asset->dateModified->getTimestamp(),
-        ]);
+        return $asset->getUrl($transform, true);
     }
 
     /**
