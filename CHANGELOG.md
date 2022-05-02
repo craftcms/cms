@@ -15,6 +15,7 @@
 ### Fixed
 - Fixed a bug where `Craft.cp.$tabs` was returning an empty collection.
 - Fixed a JavaScript error that occurred when working with a condition builder within a namespaced field layout designer. ([#11026](https://github.com/craftcms/cms/issues/11026))
+- Fixed a bug where it wasn’t possible to sort custom fields by clicking on their table headers. ([#11051](https://github.com/craftcms/cms/issues/11051))
 
 ## 4.0.0-RC2 - 2022-04-28
 

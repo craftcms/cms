@@ -577,7 +577,7 @@ abstract class Field extends SavableComponent implements FieldInterface
         return [
             'label' => Craft::t('site', $this->name),
             'orderBy' => [$column, 'elements.id'],
-            'attribute' => 'field:' . $this->id,
+            'attribute' => "field:$this->uid",
         ];
     }
 
