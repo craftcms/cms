@@ -63,11 +63,15 @@ Craft.Preview = Garnish.Base.extend(
     dragger: null,
     dragStartEditorWidth: null,
 
+    _updateIframeProxy: null,
+
     _editorWidth: null,
     _editorWidthInPx: null,
 
     init: function (elementEditor) {
       this.elementEditor = elementEditor;
+
+      this._updateIframeProxy = this.updateIframe.bind(this);
 
       this.$tempInput = $('<input/>', {
         type: 'hidden',
@@ -343,6 +347,8 @@ Craft.Preview = Garnish.Base.extend(
 
       this.updateIframe();
 
+      this.elementEditor.on('update', this._updateIframeProxy);
+
       Craft.ElementThumbLoader.retryAll();
 
       this.trigger('open');
@@ -585,6 +591,8 @@ Craft.Preview = Garnish.Base.extend(
           this.$iframeContainer.removeClass('lp-iframe-container--rotating');
           this.$previewContainer.hide();
         });
+
+      this.elementEditor.off('update', this._updateIframeProxy);
 
       Craft.ElementThumbLoader.retryAll();
 
