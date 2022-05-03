@@ -91,9 +91,10 @@ class Assets
         $baseUrl = $fs->getRootUrl();
         $folderPath = $asset->folderPath;
         $revisionParams = self::_getRevisionParams($asset, $dateUpdated);
-        $url = $baseUrl . rawurlencode($folderPath . ($uri ?? $asset->getFilename()));
+        $pathParts = explode('/', $folderPath . ($uri ?? $asset->getFilename()));
+        $path = implode('/', array_map('urlencode', $pathParts));
 
-        return UrlHelper::urlWithParams($url, $revisionParams);
+        return UrlHelper::urlWithParams($baseUrl . $path, $revisionParams);
     }
 
     private static function _getRevisionParams(Asset $asset, ?DateTime $dateUpdated = null): array
