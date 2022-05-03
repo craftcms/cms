@@ -163,6 +163,9 @@ export class FocalPoint {
       this.shouldSave = false;
       this.$button.parents('.buttons').css({opacity: ''});
       this.renderButton();
+
+      // Refresh Live Preview
+      Craft.Preview.refresh();
     });
   }
 
