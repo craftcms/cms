@@ -92,7 +92,7 @@ class Assets
         $folderPath = $asset->folderPath;
         $revisionParams = self::_getRevisionParams($asset, $dateUpdated);
         $pathParts = explode('/', $folderPath . ($uri ?? $asset->getFilename()));
-        $path = implode('/', array_map('urlencode', $pathParts));
+        $path = implode('/', array_map('rawurlencode', $pathParts));
 
         return UrlHelper::urlWithParams($baseUrl . $path, $revisionParams);
     }
