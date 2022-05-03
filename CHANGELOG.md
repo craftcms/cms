@@ -3,7 +3,6 @@
 ## 4.0.0-RC3 - 2022-05-03
 
 ### Added
-- Added the “Craft 4 Upgrade” utility.
 - Added `craft\base\conditions\ConditionRuleInterface::getGroupLabel()`.
 - Added `craft\utilities\Upgrade`.
 - Added `craft\web\assets\upgrade\UpgradeAsset`.
