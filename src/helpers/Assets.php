@@ -90,9 +90,30 @@ class Assets
     {
         $baseUrl = $fs->getRootUrl();
         $folderPath = $asset->folderPath;
-        $appendix = static::urlAppendix($asset, $dateUpdated);
+        $revisionParams = self::_getRevisionParams($asset, $dateUpdated);
+        $url = $baseUrl . rawurlencode($folderPath . ($uri ?? $asset->getFilename()));
 
-        return $baseUrl . str_replace(' ', '%20', $folderPath . ($uri ?? $asset->getFilename()) . $appendix);
+        return UrlHelper::urlWithParams($url, $revisionParams);
+    }
+
+    private static function _getRevisionParams(Asset $asset, ?DateTime $dateUpdated = null): array
+    {
+        if (!Craft::$app->getConfig()->getGeneral()->revAssetUrls) {
+            return [];
+        }
+
+        /** @var DateTime $dateModified */
+        $dateModified = max($asset->dateModified, $dateUpdated ?? null);
+        $params = [
+            'v' => $dateModified->getTimestamp(),
+        ];
+
+        if ($asset->getHasFocalPoint()) {
+            $fp = $asset->getFocalPoint();
+            $params['v'] .= ",{$fp['x']},{$fp['y']}";
+        }
+
+        return $params;
     }
 
     /**
@@ -101,23 +122,21 @@ class Assets
      * @param Asset $asset
      * @param DateTime|null $dateUpdated last datetime the target of the url was updated, if known
      * @return string
+     * @throws \craft\errors\DeprecationException
+     * @deprecated in 4.0.0. [[generateUrl()]] should be used instead.
      */
     public static function urlAppendix(Asset $asset, ?DateTime $dateUpdated = null): string
     {
-        if (!Craft::$app->getConfig()->getGeneral()->revAssetUrls) {
+        Craft::$app->getDeprecator()->log('craft\helpers\Assets::urlAppendix()', '`craft\helpers\Assets::urlAppendix()` has been deprecated. Use `craft\helpers\Assets::generateUrl()` instead.');
+
+        $params = self::_getRevisionParams($asset, $dateUpdated);
+        $query = UrlHelper::buildQuery($params);
+
+        if (!$query) {
             return '';
         }
 
-        /** @var DateTime $dateModified */
-        $dateModified = max($asset->dateModified, $dateUpdated ?? null);
-        $v = $dateModified->getTimestamp();
-
-        if ($asset->getHasFocalPoint()) {
-            $fp = $asset->getFocalPoint();
-            $v .= ",{$fp['x']},{$fp['y']}";
-        }
-
-        return "?v=$v";
+        return "?$query";
     }
 
     /**
