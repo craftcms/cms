@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+> {warning} If you are currently running Craft 3.7.39, you will need to perform this update with Composer.
+
 ### Added
 - Added the “Craft 4 Upgrade” utility.
 - Added `craft\helpers\Db::extractGlue()`.
@@ -19,6 +21,7 @@
 - Tag queries’ `group` params now support passing an array of `craft\models\TagGroup` objects.
 - Options passed to the `_includes/forms/select` control panel template can now specify a `hidden` key. ([#11053](https://github.com/craftcms/cms/pull/11053))
 - `craft\services\Fields::getLayoutsByType()` now memoizes its results. ([#11037](https://github.com/craftcms/cms/pull/11037))
+- Downgraded Composer to 2.2.12, fixing an error that occurred when updating Craft or installing/updating/uninstalling plugins.
 
 ### Removed
 - Removed the `--propagate` option from `resave/*` commands, which didn’t have any effect. ([#11032](https://github.com/craftcms/cms/discussions/11032))
