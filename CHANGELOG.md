@@ -11,6 +11,7 @@
 
 ### Changed
 - Custom field condition rules are now listed under a “Fields” optgroup.
+- Column definitions passed to the `_includes/forms/editableTable` control panel template can now specify a `width` key. ([#11062](https://github.com/craftcms/cms/pull/11062))
 - `craft\helpers\ArrayHelper::getValue()` now supports keys in square bracket syntax, e.g. `foo[bar][baz]`.
 
 ### Fixed
