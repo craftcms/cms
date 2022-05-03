@@ -238,8 +238,17 @@ class Money extends Field implements PreviewableFieldInterface, SortableFieldInt
      */
     protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
     {
-        $id = Html::id($this->handle);
         $view = Craft::$app->getView();
+
+        if ($value === null) {
+            // Override the initial value being set to null by _includes/forms/field
+            $view->setInitialDeltaValue($this->handle, [
+                'locale' => Craft::$app->getFormattingLocale()->id,
+                'value' => '',
+            ]);
+        }
+
+        $id = Html::id($this->handle);
         $namespacedId = $view->namespaceInputId($id);
 
         $js = <<<JS

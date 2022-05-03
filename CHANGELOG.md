@@ -21,6 +21,7 @@
 - Fixed a bug where it wasn’t possible to sort custom fields by clicking on their table headers. ([#11051](https://github.com/craftcms/cms/issues/11051))
 - Fixed a bug where long entry titles would push the action buttons off-screen. ([#11061](https://github.com/craftcms/cms/issues/11061))
 - Fixed a bug where Live Preview wasn’t getting refreshed automatically when an image’s focal point was changed via the asset preview modal. ([#11060](https://github.com/craftcms/cms/issues/11060))
+- Fixed a bug where empty Money fields would be marked as changed, even when no change was made to them. ([#10804](https://github.com/craftcms/cms/issues/10804))
 
 ## 4.0.0-RC2 - 2022-04-28
 
