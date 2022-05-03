@@ -406,6 +406,7 @@
 - Added the `Craft.getQueryParams()` JavaScript method.
 - Added the `Craft.namespaceId()` JavaScript method.
 - Added the `Craft.namespaceInputName()` JavaScript method.
+- Added the `Craft.Preview.refresh()` JavaScript method.
 - Added the `Craft.Queue` JavaScript class.
 - Added the `Craft.setElementAttributes()` JavaScript method.
 - Added the `Craft.setPath()` JavaScript method.

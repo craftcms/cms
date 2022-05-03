@@ -1499,6 +1499,9 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
           }
           this.hide();
           Craft.cp.runQueue();
+
+          // Refresh Live Preview
+          Craft.Preview.refresh();
         })
         .catch(({response}) => {
           alert(response.data.message);

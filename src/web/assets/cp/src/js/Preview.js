@@ -63,15 +63,11 @@ Craft.Preview = Garnish.Base.extend(
     dragger: null,
     dragStartEditorWidth: null,
 
-    _updateIframeProxy: null,
-
     _editorWidth: null,
     _editorWidthInPx: null,
 
     init: function (elementEditor) {
       this.elementEditor = elementEditor;
-
-      this._updateIframeProxy = this.updateIframe.bind(this);
 
       this.$tempInput = $('<input/>', {
         type: 'hidden',
@@ -86,6 +82,8 @@ Craft.Preview = Garnish.Base.extend(
         Craft.Preview.defaultEditorWidth
       );
       this.setAnimationDuration();
+
+      Craft.Preview.instances.push(this);
     },
 
     get editorWidth() {
@@ -345,14 +343,6 @@ Craft.Preview = Garnish.Base.extend(
 
       this.updateIframe();
 
-      this.elementEditor.on('update', this._updateIframeProxy);
-      Garnish.on(
-        Craft.ElementEditorSlideout,
-        'submit',
-        this._updateIframeProxy
-      );
-      Garnish.on(Craft.AssetImageEditor, 'save', this._updateIframeProxy);
-
       Craft.ElementThumbLoader.retryAll();
 
       this.trigger('open');
@@ -595,14 +585,6 @@ Craft.Preview = Garnish.Base.extend(
           this.$iframeContainer.removeClass('lp-iframe-container--rotating');
           this.$previewContainer.hide();
         });
-
-      this.elementEditor.off('update', this._updateIframeProxy);
-      Garnish.off(
-        Craft.ElementEditorSlideout,
-        'submit',
-        this._updateIframeProxy
-      );
-      Garnish.off(Craft.AssetImageEditor, 'save', this._updateIframeProxy);
 
       Craft.ElementThumbLoader.retryAll();
 
@@ -1005,9 +987,26 @@ Craft.Preview = Garnish.Base.extend(
       this.$previewContainer.removeClass('dragging');
       Craft.setLocalStorage('LivePreview.editorWidth', this.editorWidth);
     },
+
+    destroy: function () {
+      Craft.Preview.instances = Craft.Preview.instances.filter(
+        (o) => o !== this
+      );
+      this.base();
+    },
   },
   {
     defaultEditorWidth: 0.33,
     minEditorWidthInPx: 320,
+    instances: [],
+
+    refresh: function () {
+      for (preview of Craft.Preview.instances) {
+        preview.updateIframe();
+      }
+      for (preview of Craft.LivePreview.instances) {
+        preview.forceUpdateIframe();
+      }
+    },
   }
 );
