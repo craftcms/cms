@@ -1165,11 +1165,32 @@ $.extend(Craft, {
     }
 
     if (initialValues) {
+      const serializeParam = (name, value) => {
+        if ($.isArray(value) || $.isPlainObject(value)) {
+          value = $.param(value);
+        } else {
+          value = encodeURIComponent(value);
+        }
+        return `${encodeURIComponent(name)}=${value}`;
+      };
+
       for (let name in initialValues) {
         if (initialValues.hasOwnProperty(name)) {
-          grouped[name] = [
-            encodeURIComponent(name) + '=' + $.param(initialValues[name]),
-          ];
+          if ($.isPlainObject(initialValues[name])) {
+            grouped[name] = [];
+            for (let subName in initialValues[name]) {
+              if (initialValues[name].hasOwnProperty(subName)) {
+                grouped[name].push(
+                  serializeParam(
+                    `${name}[${subName}]`,
+                    initialValues[name][subName]
+                  )
+                );
+              }
+            }
+          } else {
+            grouped[name] = [serializeParam(name, initialValues[name])];
+          }
         }
       }
     }
