@@ -77,6 +77,10 @@ html.noscroll body {
   padding: 0;
 }
 
+.modal.imageeditor input {
+  color: var(--text-color);
+}
+
 .modal.imageeditor .body .tabs {
   border-right: 1px solid var(--gray-1000);
 }
