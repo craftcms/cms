@@ -4228,8 +4228,12 @@ ul.tree,
 
     .btn {
       background-color: $grey600;
-      color: $white;
-      @include light-on-dark-text;
+
+      &,
+      &:before {
+        color: $white !important;
+        @include light-on-dark-text;
+      }
 
       @supports (backdrop-filter: blur(10px)) {
         & {

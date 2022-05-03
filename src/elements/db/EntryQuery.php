@@ -283,7 +283,7 @@ class EntryQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param string|string[]|Section|null $value The property value
+     * @param string|string[]|Section|Section[]|null $value The property value
      * @return static self reference
      * @uses $sectionId
      */
@@ -295,20 +295,26 @@ class EntryQuery extends ElementQuery
         }
 
         if ($value instanceof Section) {
+            // Special case for a single section, since we also want to capture the structure ID
             $this->sectionId = [$value->id];
             if ($value->structureId) {
                 $this->structureId = $value->structureId;
             } else {
                 $this->withStructure = false;
             }
-        } elseif ($value !== null) {
+        } elseif (Db::normalizeParam($value, function($item) {
+            if (is_string($item)) {
+                $item = Craft::$app->getSections()->getSectionByHandle($item);
+            }
+            return $item instanceof Section ? $item->id : null;
+        })) {
+            $this->sectionId = $value;
+        } else {
             $this->sectionId = (new Query())
                 ->select(['id'])
                 ->from([Table::SECTIONS])
                 ->where(Db::parseParam('handle', $value))
                 ->column();
-        } else {
-            $this->sectionId = null;
         }
 
         return $this;
@@ -383,22 +389,25 @@ class EntryQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param string|string[]|EntryType|null $value The property value
+     * @param string|string[]|EntryType|EntryType[]|null $value The property value
      * @return static self reference
      * @uses $typeId
      */
     public function type($value)
     {
-        if ($value instanceof EntryType) {
-            $this->typeId = [$value->id];
-        } elseif ($value !== null) {
+        if (Db::normalizeParam($value, function($item) {
+            if (is_string($item)) {
+                $item = Craft::$app->getSections()->getEntryTypesByHandle($item);
+            }
+            return $item instanceof EntryType ? $item->id : null;
+        })) {
+            $this->typeId = $value;
+        } else {
             $this->typeId = (new Query())
                 ->select(['id'])
                 ->from([Table::ENTRYTYPES])
                 ->where(Db::parseParam('handle', $value))
                 ->column();
-        } else {
-            $this->typeId = null;
         }
 
         return $this;
