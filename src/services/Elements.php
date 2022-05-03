@@ -2803,7 +2803,7 @@ class Elements extends Component
                 $userId = Craft::$app->getUser()->getId();
                 $timestamp = Db::prepareDateForDb(new DateTime());
 
-                foreach ($element->getDirtyAttributes() as $attributeName) {
+                foreach ($dirtyAttributes as $attributeName) {
                     Db::upsert(Table::CHANGEDATTRIBUTES, [
                         'elementId' => $element->id,
                         'siteId' => $element->siteId,
