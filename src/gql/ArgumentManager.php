@@ -122,8 +122,8 @@ class ArgumentManager extends Component
         $orderBy = $arguments['orderBy'] ?? null;
         if ($orderBy) {
             foreach (StringHelper::split($orderBy) as $chunk) {
-                // Special case for `RAND()`
-                if (strtolower($chunk) === 'rand()') {
+                // Special case for rand()/random()
+                if (in_array(strtolower($chunk), ['rand()', 'random()'], true)) {
                     continue;
                 }
                 if (
