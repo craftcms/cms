@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.7.40 - 2022-05-03
 
 > {warning} If you are currently running Craft 3.7.39, you will need to perform this update with Composer.
 
