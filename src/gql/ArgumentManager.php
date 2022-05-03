@@ -124,8 +124,9 @@ class ArgumentManager extends Component
         $orderBy = $arguments['orderBy'] ?? null;
         if ($orderBy) {
             foreach (StringHelper::split($orderBy) as $chunk) {
-                // Special case for `RAND()`
-                if (strtolower($chunk) === 'rand()') {
+                // Special case for `RAND()`, and `random()` in PostgreSQL
+                $chunkLower = strtolower($chunk);
+                if ($chunkLower === 'rand()' || $chunkLower === 'random()') {
                     continue;
                 }
                 if (
