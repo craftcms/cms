@@ -266,6 +266,7 @@ export default Base.extend(
      * Destroy
      */
     destroy: function () {
+      this.menu.destroy();
       this.$btn.removeData('menubtn');
       this.base();
     },

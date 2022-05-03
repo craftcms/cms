@@ -13,6 +13,7 @@ use craft\errors\DbConnectException;
 use craft\helpers\App;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
+use yii\base\Application;
 use yii\db\Exception as DbException;
 
 /**
@@ -97,15 +98,19 @@ class AssetManager extends \yii\web\AssetManager
         $hash = sprintf('%x', crc32($alias . '|' . FileHelper::lastModifiedTime($path) . '|' . $this->linkAssets));
 
         // Store the hash for later
-        try {
-            Db::upsert(Table::RESOURCEPATHS, [
-                'hash' => $hash,
-            ], [
-                'path' => $alias,
-            ], [], false);
-        } catch (DbException | DbConnectException $e) {
-            // Craft is either not installed or not updated to 3.0.3+ yet
-        }
+        Craft::$app->on(Application::EVENT_AFTER_REQUEST, function() use ($hash, $alias) {
+            try {
+                Db::upsert(
+                    Table::RESOURCEPATHS,
+                    ['hash' => $hash],
+                    ['path' => $alias],
+                    [],
+                    false
+                );
+            } catch (DbException | DbConnectException $e) {
+                // Craft is either not installed or not updated to 3.0.3+ yet
+            }
+        });
 
         return $hash;
     }

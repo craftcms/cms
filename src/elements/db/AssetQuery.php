@@ -275,14 +275,19 @@ class AssetQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param string|string[]|VolumeInterface|null $value The property value
+     * @param string|string[]|VolumeInterface|VolumeInterface[]|null $value The property value
      * @return static self reference
      * @uses $volumeId
      */
     public function volume($value)
     {
-        if ($value instanceof VolumeInterface) {
-            $this->volumeId = [$value->id];
+        if (Db::normalizeParam($value, function($item) {
+            if (is_string($item)) {
+                $item = Craft::$app->getVolumes()->getVolumeByHandle($item);
+            }
+            return $item instanceof VolumeInterface ? $item->id : null;
+        })) {
+            $this->volumeId = $value;
         } elseif ($value !== null) {
             $this->volumeId = (new Query())
                 ->select(['id'])

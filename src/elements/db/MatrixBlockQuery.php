@@ -159,34 +159,27 @@ class MatrixBlockQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param string|string[]|MatrixField|null $value The property value
+     * @param string|string[]|MatrixField|MatrixField[]|null $value The property value
      * @return static self reference
      * @uses $fieldId
      * @since 3.4.0
      */
     public function field($value)
     {
-        if ($value instanceof MatrixField) {
-            $this->fieldId = [$value->id];
-        } elseif (is_string($value) || (is_array($value) && count($value) === 1)) {
-            if (!is_string($value)) {
-                $value = reset($value);
+        if (Db::normalizeParam($value, function($item) {
+            if (is_string($item)) {
+                $item = Craft::$app->getFields()->getFieldByHandle($item);
             }
-            $field = Craft::$app->getFields()->getFieldByHandle($value);
-            if ($field && $field instanceof MatrixField) {
-                $this->fieldId = [$field->id];
-            } else {
-                $this->fieldId = false;
-            }
-        } elseif ($value !== null) {
+            return $item instanceof MatrixField ? $item->id : null;
+        })) {
+            $this->fieldId = $value;
+        } else {
             $this->fieldId = (new Query())
                 ->select(['id'])
                 ->from([Table::FIELDS])
                 ->where(Db::parseParam('handle', $value))
                 ->andWhere(['type' => MatrixField::class])
                 ->column();
-        } else {
-            $this->fieldId = null;
         }
 
         return $this;

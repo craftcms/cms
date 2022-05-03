@@ -1,5 +1,39 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.7.40 - 2022-05-03
+
+> {warning} If you are currently running Craft 3.7.39, you will need to perform this update with Composer.
+
+### Added
+- Added the “Craft 4 Upgrade” utility.
+- Added `craft\helpers\Db::extractGlue()`.
+- Added `craft\helpers\Db::normalizeParam()`.
+- Added `craft\utilities\Upgrade`.
+- Added `craft\web\assets\upgrade\UpgradeAsset`.
+
+### Changed
+- Improved database performance for concurrent requests. ([#10662](https://github.com/craftcms/cms/issues/10662))
+- The Crop tool in the image editor no longer displays the (incorrect) crop dimensions. ([#11046](https://github.com/craftcms/cms/issues/11046))
+- Asset queries’ `volume` params now support passing an array of `craft\base\VolumeInterface` objects.
+- Category queries’ `group` params now support passing an array of `craft\models\CategoryGroup` objects.
+- Entry queries’ `section` params now support passing an array of `craft\models\Section` objects.
+- Entry queries’ `type` params now support passing an array of `craft\models\EntryType` objects. ([#11057](https://github.com/craftcms/cms/issues/11057))
+- Matrix block queries’ `field` params now support passing an array of `craft\fields\Matrix` objects.
+- Tag queries’ `group` params now support passing an array of `craft\models\TagGroup` objects.
+- Options passed to the `_includes/forms/select` control panel template can now specify a `hidden` key. ([#11053](https://github.com/craftcms/cms/pull/11053))
+- `craft\services\Fields::getLayoutsByType()` now memoizes its results. ([#11037](https://github.com/craftcms/cms/pull/11037))
+- Downgraded Composer to 2.2.12, fixing an error that occurred when updating Craft or installing/updating/uninstalling plugins.
+
+### Removed
+- Removed the `--propagate` option from `resave/*` commands, which didn’t have any effect. ([#11032](https://github.com/craftcms/cms/discussions/11032))
+
+### Fixed
+- Fixed a bug where “Name” and “Handle” were not getting translated properly in field, volume, and global set validation errors. ([#11029](https://github.com/craftcms/cms/issues/11029))
+- Fixed a bug where passing an array of `craft\models\UserGroup` objects to a user query’s `group` param had no effect.
+- Fixed a bug where passing an array that began with `not` into a user query’s `group` param wouldn’t return users that had no user groups.
+- Fixed a bug where it wasn’t possible to order elements by `rand()`/`random()` via GraphQL. ([#11063](https://github.com/craftcms/cms/issues/11063))
+- Fixed a bug where empty Date and Number fields would be marked as changed, even when no change was made to them. ([#10804](https://github.com/craftcms/cms/issues/10804))
+
 ## 3.7.39 - 2022-04-26
 
 ### Added

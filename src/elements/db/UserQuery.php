@@ -12,7 +12,6 @@ use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\db\Table;
 use craft\elements\User;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\models\UserGroup;
 use yii\db\Connection;
@@ -312,58 +311,31 @@ class UserQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param string|string[]|UserGroup|null $value The property value
+     * @param string|string[]|UserGroup|UserGroup[]|null $value The property value
      * @return static self reference
      * @uses $groupId
      */
     public function group($value)
     {
-        // If the value is a group handle, swap it with the section
+        // If the value is a group handle, swap it with the user group
         if (is_string($value) && ($group = Craft::$app->getUserGroups()->getGroupByHandle($value))) {
             $value = $group;
         }
 
-        if ($value instanceof UserGroup) {
-            $this->groupId = $value->id;
-            return $this;
-        }
-
-        if ($value === null) {
-            $this->groupId = null;
-            return $this;
-        }
-
-        if (is_array($value)) {
-            // See if it's exclusively made up of user group models, except possibly for the first value
-            $firstVal = reset($value);
-            if (is_string($firstVal) && in_array(strtolower($firstVal), ['and', 'or', 'not'])) {
-                $glue = $firstVal;
-                array_shift($value);
-            } else {
-                $glue = 'or';
+        if (Db::normalizeParam($value, function($item) {
+            return $item instanceof UserGroup ? $item->id : null;
+        })) {
+            $this->groupId = $value;
+        } else {
+            $glue = Db::extractGlue($value);
+            $this->groupId = (new Query())
+                ->select(['id'])
+                ->from([Table::USERGROUPS])
+                ->where(Db::parseParam('handle', $value))
+                ->column();
+            if ($this->groupId && $glue !== null) {
+                array_unshift($this->groupId, $glue);
             }
-
-            if (
-                ArrayHelper::onlyContains($value, function($value) {
-                    return $value instanceof UserQuery;
-                })
-            ) {
-                $value = array_map(function(UserGroup $group) {
-                    return $group->id;
-                }, $value);
-                array_unshift($value, $glue);
-                return $this;
-            }
-        }
-
-        $this->groupId = (new Query())
-            ->select(['id'])
-            ->from([Table::USERGROUPS])
-            ->where(Db::parseParam('handle', $value))
-            ->column();
-
-        if ($this->groupId && isset($glue)) {
-            array_unshift($this->groupId, $glue);
         }
 
         return $this;
@@ -752,8 +724,22 @@ class UserQuery extends ElementQuery
             }
 
             foreach ($groupIdChecks as $i => $groupIdCheck) {
+                if (
+                    is_array($groupIdCheck) &&
+                    is_string(reset($groupIdCheck)) &&
+                    strtolower(reset($groupIdCheck)) === 'not'
+                ) {
+                    $groupIdOperator = 'not exists';
+                    array_shift($groupIdCheck);
+                    if (empty($groupIdCheck)) {
+                        continue;
+                    }
+                } else {
+                    $groupIdOperator = 'exists';
+                }
+
                 $this->subQuery->andWhere([
-                    'exists', (new Query())
+                    $groupIdOperator, (new Query())
                         ->from(["ugu$i" => Table::USERGROUPS_USERS])
                         ->where("[[elements.id]] = [[ugu$i.userId]]")
                         ->andWhere(Db::parseParam('groupId', $groupIdCheck)),

@@ -1042,7 +1042,6 @@ $.extend(Craft, {
 
     // Figure out which of the new params should actually be posted
     var params = groupedNewParams.__root__;
-    var modifiedDeltaNames = [];
     for (var n = 0; n < deltaNames.length; n++) {
       if (
         Craft.inArray(deltaNames[n], Craft.modifiedDeltaNames) ||
@@ -1111,11 +1110,32 @@ $.extend(Craft, {
     }
 
     if (initialValues) {
+      const serializeParam = (name, value) => {
+        if ($.isArray(value) || $.isPlainObject(value)) {
+          value = $.param(value);
+        } else {
+          value = encodeURIComponent(value);
+        }
+        return `${encodeURIComponent(name)}=${value}`;
+      };
+
       for (let name in initialValues) {
         if (initialValues.hasOwnProperty(name)) {
-          grouped[name] = [
-            encodeURIComponent(name) + '=' + $.param(initialValues[name]),
-          ];
+          if ($.isPlainObject(initialValues[name])) {
+            grouped[name] = [];
+            for (let subName in initialValues[name]) {
+              if (initialValues[name].hasOwnProperty(subName)) {
+                grouped[name].push(
+                  serializeParam(
+                    `${name}[${subName}]`,
+                    initialValues[name][subName]
+                  )
+                );
+              }
+            }
+          } else {
+            grouped[name] = [serializeParam(name, initialValues[name])];
+          }
         }
       }
     }

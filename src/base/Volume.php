@@ -45,6 +45,8 @@ abstract class Volume extends SavableComponent implements VolumeInterface
     public function attributeLabels()
     {
         return [
+            'handle' => Craft::t('app', 'Handle'),
+            'name' => Craft::t('app', 'Name'),
             'url' => Craft::t('app', 'URL'),
         ];
     }
