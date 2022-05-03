@@ -13,6 +13,7 @@
 
 ### Changed
 - Improved database performance for concurrent requests. ([#10662](https://github.com/craftcms/cms/issues/10662))
+- The Crop tool in the image editor no longer displays the (incorrect) crop dimensions. ([#11046](https://github.com/craftcms/cms/issues/11046))
 - Asset queries’ `volume` params now support passing an array of `craft\base\VolumeInterface` objects.
 - Category queries’ `group` params now support passing an array of `craft\models\CategoryGroup` objects.
 - Entry queries’ `section` params now support passing an array of `craft\models\Section` objects.
