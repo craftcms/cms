@@ -88,16 +88,13 @@ class Assets
      */
     public static function generateUrl(FsInterface $fs, Asset $asset, ?string $uri = null, ?DateTime $dateUpdated = null): string
     {
-        $baseUrl = $fs->getRootUrl();
-        $folderPath = $asset->folderPath;
-        $revisionParams = self::_getRevisionParams($asset, $dateUpdated);
-        $pathParts = explode('/', $folderPath . ($uri ?? $asset->getFilename()));
+        $revParams = self::_revParams($asset, $dateUpdated);
+        $pathParts = explode('/', $asset->folderPath . ($uri ?? $asset->getFilename()));
         $path = implode('/', array_map('rawurlencode', $pathParts));
-
-        return UrlHelper::urlWithParams($baseUrl . $path, $revisionParams);
+        return UrlHelper::urlWithParams($fs->getRootUrl() . $path, $revParams);
     }
 
-    private static function _getRevisionParams(Asset $asset, ?DateTime $dateUpdated = null): array
+    private static function _revParams(Asset $asset, ?DateTime $dateUpdated = null): array
     {
         if (!Craft::$app->getConfig()->getGeneral()->revAssetUrls) {
             return [];
@@ -105,16 +102,14 @@ class Assets
 
         /** @var DateTime $dateModified */
         $dateModified = max($asset->dateModified, $dateUpdated ?? null);
-        $params = [
-            'v' => $dateModified->getTimestamp(),
-        ];
+        $v = $dateModified->getTimestamp();
 
         if ($asset->getHasFocalPoint()) {
             $fp = $asset->getFocalPoint();
-            $params['v'] .= ",{$fp['x']},{$fp['y']}";
+            $v .= ",{$fp['x']},{$fp['y']}";
         }
 
-        return $params;
+        return compact('v');
     }
 
     /**
@@ -123,21 +118,12 @@ class Assets
      * @param Asset $asset
      * @param DateTime|null $dateUpdated last datetime the target of the url was updated, if known
      * @return string
-     * @throws \craft\errors\DeprecationException
      * @deprecated in 4.0.0. [[generateUrl()]] should be used instead.
      */
     public static function urlAppendix(Asset $asset, ?DateTime $dateUpdated = null): string
     {
-        Craft::$app->getDeprecator()->log('craft\helpers\Assets::urlAppendix()', '`craft\helpers\Assets::urlAppendix()` has been deprecated. Use `craft\helpers\Assets::generateUrl()` instead.');
-
-        $params = self::_getRevisionParams($asset, $dateUpdated);
-        $query = UrlHelper::buildQuery($params);
-
-        if (!$query) {
-            return '';
-        }
-
-        return "?$query";
+        $revParams = self::_revParams($asset, $dateUpdated);
+        return $revParams ? sprintf('?%s', UrlHelper::buildQuery($revParams)) : '';
     }
 
     /**
