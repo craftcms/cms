@@ -31,6 +31,7 @@
 - Fixed a bug where passing an array of `craft\models\UserGroup` objects to a user query’s `group` param had no effect.
 - Fixed a bug where passing an array that began with `not` into a user query’s `group` param wouldn’t return users that had no user groups.
 - Fixed a bug where it wasn’t possible to order elements by `RAND()` via GraphQL. ([#11063](https://github.com/craftcms/cms/issues/11063))
+- Fixed a bug where empty Date and Number fields would be marked as changed, even when no change was made to them. ([#10804](https://github.com/craftcms/cms/issues/10804))
 
 ## 3.7.39 - 2022-04-26
 
