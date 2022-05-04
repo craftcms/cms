@@ -31,16 +31,16 @@ class Api extends Component
     /**
      * @var Client
      */
-    public $client;
+    public Client $client;
 
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
-        if ($this->client === null) {
+        if (!isset($this->client)) {
             $this->client = Craft::createGuzzleClient([
                 'base_uri' => Craft::$app->baseApiUrl,
             ]);
@@ -66,9 +66,8 @@ class Api extends Component
     /**
      * Checks for Craft and plugin updates.
      *
-     * @param string[] The maximum versions that should be allowed
+     * @param string[] $maxVersions The maximum versions that should be allowed
      * @return array
-     * @throws RequestException if the API gave a non-2xx response
      */
     public function getUpdates(array $maxVersions = []): array
     {

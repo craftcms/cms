@@ -17,7 +17,8 @@ use yii\db\ActiveQueryInterface;
  * @property int $id ID
  * @property int $layoutId Layout ID
  * @property string $name Name
- * @property string|null $elements Layout elements
+ * @property array|null $settings Settings
+ * @property array|null $elements Layout elements
  * @property int $sortOrder Sort order
  * @property FieldLayout $layout Layout
  * @property FieldLayoutField[] $fields Fields
@@ -29,7 +30,7 @@ class FieldLayoutTab extends ActiveRecord
     /**
      * @inheritdoc
      */
-    public function rules()
+    public function rules(): array
     {
         return [
             [['name'], 'required'],

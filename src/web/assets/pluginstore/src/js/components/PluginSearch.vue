@@ -1,9 +1,15 @@
 <template>
-  <div class="mb-4">
+  <div class="tw-mb-4">
     <form @submit.prevent="search()">
-      <div class="ps-search">
-        <icon icon="search" />
-        <textbox
+      <div class="ps-search tw-relative tw-flex tw-w-full">
+        <div
+          class="tw-absolute tw-inset-y-0 tw-flex tw-items-center tw-pl-3 tw-z-10 tw-text-gray-500"
+        >
+          <c-icon icon="search" />
+        </div>
+        <c-textbox
+          type="text"
+          class="tw-flex-1 tw-w-full tw-pl-9"
           id="searchQuery"
           v-model="searchQuery"
           :placeholder="'Search plugins' | t('app')"
@@ -32,21 +38,3 @@
     },
   };
 </script>
-
-<style lang="scss">
-  .ps-search {
-    @apply .relative;
-
-    .c-icon {
-      @apply .absolute .z-10 .text-grey;
-      top: 9px;
-      left: 10px;
-    }
-
-    .c-textbox {
-      input {
-        padding-left: 32px;
-      }
-    }
-  }
-</style>

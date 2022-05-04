@@ -17,6 +17,8 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
       this._attachUploader();
     }
 
+    this.updateAddElementsBtn();
+
     this.addListener(
       this.$elementsContainer,
       'keydown',
@@ -31,19 +33,33 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
    */
   _onKeyDown: function (ev) {
     if (ev.keyCode === Garnish.SPACE_KEY && ev.shiftKey) {
-      if (Craft.PreviewFileModal.openInstance) {
-        Craft.PreviewFileModal.openInstance.selfDestruct();
-      } else {
-        var $element = this.elementSelect.$focusedItem;
-
-        if ($element.length) {
-          this._loadPreview($element);
-        }
-      }
-
+      this.openPreview();
       ev.stopPropagation();
-
       return false;
+    }
+  },
+
+  onAddElements: function () {
+    this.$elements
+      .find('.elementthumb')
+      .addClass('open-preview')
+      .on('mousedown touchstart', (ev) => {
+        this.elementSelect.focusItem($(ev.target).parent());
+        this.openPreview();
+        ev.stopPropagation();
+      });
+    this.base();
+  },
+
+  openPreview: function () {
+    if (Craft.PreviewFileModal.openInstance) {
+      Craft.PreviewFileModal.openInstance.selfDestruct();
+    } else {
+      var $element = this.elementSelect.$focusedItem;
+
+      if ($element.length) {
+        this._loadPreview($element);
+      }
     }
   },
 
@@ -64,7 +80,9 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
    * @private
    */
   _loadPreview: function ($element) {
-    var settings = {};
+    var settings = {
+      minGutter: 50,
+    };
 
     if ($element.data('image-width')) {
       settings.startingWidth = $element.data('image-width');
@@ -76,18 +94,6 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
       this.elementSelect,
       settings
     );
-  },
-
-  /**
-   * Create the element editor
-   */
-  createElementEditor: function ($element) {
-    return this.base($element, {
-      params: {
-        defaultFieldLayoutId: this.settings.defaultFieldLayoutId,
-      },
-      input: this,
-    });
   },
 
   /**
@@ -170,24 +176,20 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
     }
   },
 
-  refreshThumbnail: function (elementId) {
-    var parameters = {
-      elementId: elementId,
-      siteId: this.settings.criteria.siteId,
-      size: this.settings.viewMode,
-    };
+  enableAddElementsBtn: function () {
+    if (this.$uploadBtn) {
+      this.$uploadBtn.removeClass('hidden');
+    }
 
-    Craft.postActionRequest('elements/get-element-html', parameters, (data) => {
-      if (data.error) {
-        alert(data.error);
-      } else {
-        var $existing = this.$elements.filter('[data-id="' + elementId + '"]');
-        $existing
-          .find('.elementthumb')
-          .replaceWith($(data.html).find('.elementthumb'));
-        this.thumbLoader.load($existing);
-      }
-    });
+    this.base();
+  },
+
+  disableAddElementsBtn: function () {
+    if (this.$uploadBtn) {
+      this.$uploadBtn.addClass('hidden');
+    }
+
+    this.base();
   },
 
   /**
@@ -260,32 +262,27 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
       var parameters = {
         elementId: data.result.assetId,
         siteId: this.settings.criteria.siteId,
-        size: this.settings.viewMode,
+        thumbSize: this.settings.viewMode,
       };
 
-      Craft.postActionRequest(
-        'elements/get-element-html',
-        parameters,
-        (data) => {
-          if (data.error) {
-            alert(data.error);
-          } else {
-            var html = $(data.html);
-            Craft.appendHeadHtml(data.headHtml);
-            this.selectUploadedFile(Craft.getElementInfo(html));
-          }
+      Craft.sendActionRequest('POST', 'elements/get-element-html', {
+        data: parameters,
+      })
+        .then((response) => {
+          var html = $(response.data.html);
+          Craft.appendHeadHtml(response.data.headHtml);
+          this.selectUploadedFile(Craft.getElementInfo(html));
 
           // Last file
           if (this.uploader.isLastUpload()) {
             this.progressBar.hideProgressBar();
             this.$container.removeClass('uploading');
-
-            if (window.draftEditor) {
-              window.draftEditor.checkForm();
-            }
+            this.$container.trigger('change');
           }
-        }
-      );
+        })
+        .catch(({response}) => {
+          alert(response.data.message);
+        });
 
       Craft.cp.runQueue();
     }

@@ -1,0 +1,33 @@
+/* Readable overrides */
+
+.readable {
+  /* Tables */
+  table {
+    display: block;
+    overflow: auto;
+    width: 100%;
+
+    th {
+      font-weight: 600;
+    }
+
+    td,
+    th {
+      border: 1px solid #dfe2e5;
+      padding: 6px 13px;
+    }
+
+    tr {
+      background-color: var(--white);
+      border-top: 1px solid #c6cbd1;
+    }
+
+    tr:nth-child(2n) {
+      background-color: var(--gray-050);
+    }
+
+    img {
+      background-color: transparent;
+    }
+  }
+}

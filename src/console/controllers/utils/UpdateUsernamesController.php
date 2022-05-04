@@ -38,7 +38,7 @@ class UpdateUsernamesController extends Controller
         $affected = Craft::$app->getDb()->createCommand()
             ->update(Table::USERS, [
                 'username' => new Expression('[[email]]'),
-            ], new Expression('[[username]] <> [[email]]'), [], false)
+            ], new Expression('[[username]] <> [[email]]'), updateTimestamp: false)
             ->execute();
 
         $this->stdout("$affected usernames updated." . PHP_EOL);

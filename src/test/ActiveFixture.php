@@ -1,14 +1,15 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\test;
 
 use Craft;
 use yii\base\InvalidArgumentException;
+use yii\db\ActiveRecord;
 use yii\db\TableSchema;
 use yii\test\ActiveFixture as BaseActiveFixture;
 
@@ -17,23 +18,23 @@ use yii\test\ActiveFixture as BaseActiveFixture;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since  3.6.0
+ * @since 3.6.0
  */
 class ActiveFixture extends BaseActiveFixture
 {
     /**
      * @var array
      */
-    protected $ids = [];
+    protected array $ids = [];
 
     /**
      * @inheritdoc
      */
-    public function load()
+    public function load(): void
     {
         $tableSchema = $this->getTableSchema();
         $this->data = [];
-        foreach ($this->getData() as $alias => $row) {
+        foreach ($this->getData() as $row) {
             $modelClass = $this->modelClass;
 
             // Fixture data may pass in props that are not for the db. We thus run an extra check to ensure
@@ -46,7 +47,7 @@ class ActiveFixture extends BaseActiveFixture
                 unset($row['fieldLayoutType']);
 
                 $fieldLayout = Craft::$app->getFields()->getLayoutByType($fieldLayoutType);
-                if ($fieldLayout) {
+                if ($fieldLayout->id) {
                     $row['fieldLayoutId'] = $fieldLayout->id;
                 } else {
                     codecept_debug("Field layout with type: $fieldLayoutType could not be found");
@@ -69,8 +70,9 @@ class ActiveFixture extends BaseActiveFixture
     /**
      * @inheritdoc
      */
-    public function unload()
+    public function unload(): void
     {
+        /** @var ActiveRecord $modelClass */
         $modelClass = $this->modelClass;
         foreach ($this->ids as $id) {
             $arInstance = $modelClass::find()

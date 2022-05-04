@@ -4,17 +4,18 @@
       <div
         v-for="(featuredSection, key) in featuredSections"
         :key="'featuredSection-' + key"
+        class="featured-section"
       >
         <div
-          class="flex items-baseline justify-between"
-          :class="{'mt-8': key > 0}"
+          class="tw-flex tw-items-baseline tw-justify-between"
+          :class="{'tw-mt-8': key > 0}"
         >
           <h2>{{ featuredSection.title }}</h2>
           <router-link
-            class="right"
+            class="tw-right"
             :to="'/featured/' + featuredSection.slug"
-            >{{ 'See all' | t('app') }}</router-link
-          >
+            >{{ 'See all' | t('app') }}
+          </router-link>
         </div>
 
         <plugin-grid
@@ -34,7 +35,7 @@
         </template>
 
         <template v-if="activeTrialsError">
-          <div class="mb-8">
+          <div class="tw-mb-8">
             <p class="error">{{ activeTrialsError }}</p>
           </div>
         </template>
@@ -42,7 +43,7 @@
     </template>
 
     <template v-else>
-      <spinner></spinner>
+      <c-spinner />
     </template>
   </div>
 </template>
@@ -118,6 +119,10 @@
 
         this.loading = false;
       });
+    },
+
+    beforeDestroy() {
+      this.$store.dispatch('pluginStore/cancelRequests');
     },
   };
 </script>

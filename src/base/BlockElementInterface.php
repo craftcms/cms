@@ -20,10 +20,10 @@ use yii\base\InvalidConfigException;
 interface BlockElementInterface
 {
     /**
-     * Returns the owner element.
+     * Returns the owner element, if the element has one.
      *
-     * @return ElementInterface
-     * @throws InvalidConfigException if the element is unable to determine its owner
+     * @return ElementInterface|null
+     * @throws InvalidConfigException if the element is misconfigured
      */
-    public function getOwner(): ElementInterface;
+    public function getOwner(): ?ElementInterface;
 }

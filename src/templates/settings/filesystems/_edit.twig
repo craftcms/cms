@@ -1,0 +1,85 @@
+{% import "_includes/forms" as forms %}
+
+{% if oldHandle %}{{ hiddenInput('oldHandle', oldHandle) }}{% endif %}
+
+{{ forms.textField({
+    first: true,
+    label: "Name"|t('app'),
+    id: 'name',
+    name: 'name',
+    value: (filesystem is defined ? filesystem.name : null),
+    errors: (filesystem is defined ? filesystem.getErrors('name') : null),
+    autofocus: true,
+    required: true,
+}) }}
+
+{{ forms.textField({
+    first: true,
+    label: "Handle"|t('app'),
+    id: 'handle',
+    name: 'handle',
+    class: 'code',
+    autocorrect: false,
+    autocapitalize: false,
+    value: (filesystem is defined ? filesystem.handle : null),
+    errors: (filesystem is defined ? filesystem.getErrors('handle') : null),
+    required: true,
+}) }}
+
+{{ forms.lightswitchField({
+    label: 'Files in this filesystem have public URLs'|t('app'),
+    name: 'hasUrls',
+    on:   filesystem.hasUrls,
+    toggle: "url-field"
+}) }}
+
+<div id="url-field" class="{% if not filesystem.hasUrls %}hidden{% endif %}">
+    {{ forms.autosuggestField({
+        label: "Base URL"|t('app'),
+        instructions: "The base URL to the files in this filesystem."|t('app'),
+        id: 'url',
+        class: ['ltr', 'fs-url'],
+        name: 'url',
+        suggestEnvVars: true,
+        suggestAliases: true,
+        value: (filesystem is defined ? filesystem.url : null),
+        errors: (filesystem is defined ? filesystem.getErrors('url') : null),
+        required: true,
+        placeholder: "//example.com/path/to/folder"
+    }) }}
+</div>
+
+<hr>
+
+{% if fsOptions|length %}
+    {{ forms.selectField({
+        label: 'Filesystem Type'|t('app'),
+        instructions: "What type of filesystem is this?"|t('app'),
+        id: 'type',
+        name: 'type',
+        options: fsOptions,
+        value: className(filesystem),
+        toggle: true
+    }) }}
+{% endif %}
+
+{% for fsType in fsTypes %}
+    {% set isCurrent = (fsType == className(filesystem)) %}
+
+    <div id="{{ fsType|id }}"{% if not isCurrent %} class="hidden"{% endif %}>
+        {% namespace 'types['~fsType~']' %}
+            {% if isCurrent %}
+                {{ filesystem.getSettingsHtml()|raw }}
+            {% else %}
+                {{ fsInstances[fsType].getSettingsHtml()|raw }}
+            {% endif %}
+        {% endnamespace %}
+    </div>
+{% endfor %}
+
+
+{% if filesystem is not defined or not filesystem.handle %}
+    {% js %}
+        new Craft.HandleGenerator("#{{ 'name'|namespaceInputId }}", "#{{ 'handle'|namespaceInputId }}");
+    {% endjs %}
+{% endif %}

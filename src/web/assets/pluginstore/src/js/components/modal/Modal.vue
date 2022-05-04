@@ -1,5 +1,5 @@
 <template>
-  <div class="hidden">
+  <div class="tw-hidden">
     <div
       ref="pluginstoremodal"
       id="pluginstore-modal"
@@ -64,34 +64,34 @@
 </script>
 
 <style lang="scss">
-  @import '../../../../../../../../packages/craftcms-sass/mixins';
+  @import '@craftcms/sass/mixins';
 
   #pluginstore-modal {
-    @apply .absolute .pin-t .pin-l;
+    @apply tw-absolute tw-top-0 tw-left-0;
     max-width: 850px;
     max-height: 650px;
-    z-index: 20000;
+    z-index: 100;
 
     .pluginstore-modal-flex {
-      @apply .absolute .pin .flex .flex-col;
+      @apply tw-absolute tw-inset-0 tw-flex tw-flex-col;
 
       header {
         .btn-left {
-          @apply .absolute;
+          @apply tw-absolute;
           top: 28px;
           @include left(24px);
         }
 
         h1 {
-          @apply .text-center;
+          @apply tw-text-center;
         }
       }
 
       .pluginstore-modal-main {
-        @apply .relative .flex .flex-grow .mb-0 .min-h-0;
+        @apply tw-relative tw-flex tw-flex-grow tw-mb-0 tw-min-h-0;
 
         .pluginstore-modal-content {
-          @apply .overflow-auto .flex-grow;
+          @apply tw-overflow-auto tw-flex-grow;
           padding: 24px;
         }
       }

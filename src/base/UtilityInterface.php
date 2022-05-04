@@ -29,7 +29,7 @@ interface UtilityInterface extends ComponentInterface
      *
      * @return string|null
      */
-    public static function iconPath();
+    public static function iconPath(): ?string;
 
     /**
      * Returns the number that should be shown in the utility’s nav item badge.

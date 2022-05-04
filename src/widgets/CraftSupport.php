@@ -48,7 +48,7 @@ class CraftSupport extends Widget
     /**
      * @inheritdoc
      */
-    public static function icon()
+    public static function icon(): ?string
     {
         return Craft::getAlias('@appicons/buoey.svg');
     }
@@ -56,19 +56,19 @@ class CraftSupport extends Widget
     /**
      * @inheritdoc
      */
-    public function getTitle(): string
+    public function getTitle(): ?string
     {
-        return '';
+        return null;
     }
 
     /**
      * @inheritdoc
      */
-    public function getBodyHtml()
+    public function getBodyHtml(): ?string
     {
         // Only admins get the Craft Support widget.
         if (!Craft::$app->getUser()->getIsAdmin()) {
-            return false;
+            return null;
         }
 
         $view = Craft::$app->getView();

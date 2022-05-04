@@ -16,6 +16,7 @@ use craft\base\FieldInterface;
 use craft\db\Query;
 use craft\db\Table;
 use craft\errors\OperationAbortedException;
+use craft\services\ElementSources;
 use yii\base\Exception;
 
 /**
@@ -48,7 +49,7 @@ class ElementHelper
      */
     public static function isTempSlug(string $slug): bool
     {
-        return strpos($slug, '__temp_') === 0;
+        return str_starts_with($slug, '__temp_');
     }
 
     /**
@@ -61,7 +62,7 @@ class ElementHelper
      *
      * @param string $str The string
      * @param bool|null $ascii Whether the slug should be converted to ASCII. If null, it will depend on
-     * the <config3:limitAutoSlugsToAscii> config setting value.
+     * the <config4:limitAutoSlugsToAscii> config setting value.
      * @param string|null $language The language to pull ASCII character mappings for, if needed
      * @return string
      * @since 3.5.0
@@ -77,18 +78,6 @@ class ElementHelper
         }
 
         return static::normalizeSlug($slug);
-    }
-
-    /**
-     * Creates a slug based on a given string.
-     *
-     * @param string $str
-     * @return string
-     * @deprecated in 3.5.0. Use [[normalizeSlug()]] instead.
-     */
-    public static function createSlug(string $str): string
-    {
-        return static::normalizeSlug($str);
     }
 
     /**
@@ -130,7 +119,7 @@ class ElementHelper
      * @param ElementInterface $element
      * @throws OperationAbortedException if a unique URI could not be found
      */
-    public static function setUniqueUri(ElementInterface $element)
+    public static function setUniqueUri(ElementInterface $element): void
     {
         $uriFormat = $element->getUriFormat();
 
@@ -213,14 +202,14 @@ class ElementHelper
         // If the URI format contains {id}/{canonicalId}/{sourceId} but the element doesn't have one yet, preserve the tag
         if (!$element->id) {
             $element->tempId = 'id-' . StringHelper::randomString(10);
-            if (strpos($uriFormat, '{id') !== false) {
+            if (str_contains($uriFormat, '{id')) {
                 $variables['id'] = $element->tempId;
             }
             if (!$element->getCanonicalId()) {
-                if (strpos($uriFormat, '{canonicalId') !== false) {
+                if (str_contains($uriFormat, '{canonicalId')) {
                     $variables['canonicalId'] = $element->tempId;
                 }
-                if (strpos($uriFormat, '{sourceId') !== false) {
+                if (str_contains($uriFormat, '{sourceId')) {
                     $variables['sourceId'] = $element->tempId;
                 }
             }
@@ -229,9 +218,7 @@ class ElementHelper
         $uri = Craft::$app->getView()->renderObjectTemplate($uriFormat, $element, $variables);
 
         // Remove any leading/trailing/double slashes
-        $uri = preg_replace('/^\/+|(?<=\/)\/+|\/+$/', '', $uri);
-
-        return $uri;
+        return preg_replace('/^\/+|(?<=\/)\/+|\/+$/', '', $uri);
     }
 
     /**
@@ -294,9 +281,9 @@ class ElementHelper
      * @param ElementInterface $element The element to return supported site info for
      * @param bool $withUnpropagatedSites Whether to include sites the element is currently not being propagated to
      * @return array
-     * @throws Exception if any of the element's supported sites are invalid
+     * @throws Exception if any of the element’s supported sites are invalid
      */
-    public static function supportedSitesForElement(ElementInterface $element, $withUnpropagatedSites = false): array
+    public static function supportedSitesForElement(ElementInterface $element, bool $withUnpropagatedSites = false): array
     {
         $sites = [];
         $siteUidMap = ArrayHelper::map(Craft::$app->getSites()->getAllSites(true), 'id', 'uid');
@@ -341,14 +328,12 @@ class ElementHelper
      */
     public static function shouldTrackChanges(ElementInterface $element): bool
     {
-        // todo: remove the tableExists condition after the next breakpoint
         return (
             $element->id &&
             $element->siteSettingsId &&
             $element->duplicateOf === null &&
             $element::trackChanges() &&
-            !$element->mergingCanonicalChanges &&
-            Craft::$app->getDb()->tableExists(Table::CHANGEDATTRIBUTES)
+            !$element->mergingCanonicalChanges
         );
     }
 
@@ -360,15 +345,17 @@ class ElementHelper
      */
     public static function isElementEditable(ElementInterface $element): bool
     {
-        if ($element->getIsEditable()) {
-            if (Craft::$app->getIsMultiSite()) {
-                foreach (static::supportedSitesForElement($element) as $siteInfo) {
-                    if (Craft::$app->getUser()->checkPermission('editSite:' . $siteInfo['siteUid'])) {
-                        return true;
-                    }
-                }
-            } else {
+        $user = Craft::$app->getUser()->getIdentity();
+
+        if ($element->canView($user)) {
+            if (!Craft::$app->getIsMultiSite()) {
                 return true;
+            }
+
+            foreach (static::supportedSitesForElement($element) as $siteInfo) {
+                if ($user->can(sprintf('editSite:%s', $siteInfo['siteUid']))) {
+                    return true;
+                }
             }
         }
 
@@ -384,11 +371,12 @@ class ElementHelper
     public static function editableSiteIdsForElement(ElementInterface $element): array
     {
         $siteIds = [];
+        $user = Craft::$app->getUser()->getIdentity();
 
-        if ($element->getIsEditable()) {
+        if ($element->canView($user)) {
             if (Craft::$app->getIsMultiSite()) {
                 foreach (static::supportedSitesForElement($element) as $siteInfo) {
-                    if (Craft::$app->getUser()->checkPermission('editSite:' . $siteInfo['siteUid'])) {
+                    if ($user->can(sprintf('editSite:%s', $siteInfo['siteUid']))) {
                         $siteIds[] = $siteInfo['siteId'];
                     }
                 }
@@ -410,7 +398,10 @@ class ElementHelper
     public static function rootElement(ElementInterface $element): ElementInterface
     {
         if ($element instanceof BlockElementInterface) {
-            return static::rootElement($element->getOwner());
+            $owner = $element->getOwner();
+            if ($owner) {
+                return static::rootElement($owner);
+            }
         }
         return $element;
     }
@@ -522,14 +513,14 @@ class ElementHelper
      * Given an array of elements, will go through and set the appropriate "next"
      * and "prev" elements on them.
      *
-     * @param ElementInterface[] $elements The array of elements.
+     * @param iterable|ElementInterface[] $elements The array of elements.
      */
-    public static function setNextPrevOnElements(array $elements)
+    public static function setNextPrevOnElements(iterable $elements): void
     {
-        /** @var ElementInterface $lastElement */
+        /** @var ElementInterface|null $lastElement */
         $lastElement = null;
 
-        foreach ($elements as $i => $element) {
+        foreach ($elements as $element) {
             if ($lastElement) {
                 $lastElement->setNext($element);
                 $element->setPrev($lastElement);
@@ -540,9 +531,7 @@ class ElementHelper
             $lastElement = $element;
         }
 
-        if ($lastElement) {
-            $lastElement->setNext(false);
-        }
+        $lastElement?->setNext(false);
     }
 
     /**
@@ -562,17 +551,18 @@ class ElementHelper
      * Returns an element type's source definition based on a given source key/path and context.
      *
      * @param string $elementType The element type class
+     * @phpstan-param class-string<ElementInterface> $elementType
      * @param string $sourceKey The source key/path
-     * @param string|null $context The context
+     * @param string $context The context
      * @return array|null The source definition, or null if it cannot be found
      */
-    public static function findSource(string $elementType, string $sourceKey, ?string $context = null)
+    public static function findSource(string $elementType, string $sourceKey, string $context = ElementSources::CONTEXT_INDEX): ?array
     {
-        /** @var string|ElementInterface $elementType */
         $path = explode('/', $sourceKey);
-        $sources = $elementType::sources($context);
+        $sources = Craft::$app->getElementSources()->getSources($elementType, $context);
+        $rootSource = null;
 
-        while (!empty($path)) {
+        while ($path) {
             $key = array_shift($path);
             $source = null;
 
@@ -584,13 +574,14 @@ class ElementHelper
             }
 
             if ($source === null) {
-                return null;
+                break;
             }
 
             // Is that the end of the path?
             if (empty($path)) {
-                // If this is a nested source, set the full path on it so we don't forget it
-                if ($source['key'] !== $sourceKey) {
+                // Is this a nested source?
+                if (isset($rootSource)) {
+                    $source['type'] = $rootSource['type'];
                     $source['keyPath'] = $sourceKey;
                 }
 
@@ -598,6 +589,9 @@ class ElementHelper
             }
 
             // Prepare for searching nested sources
+            if ($rootSource === null) {
+                $rootSource = $source;
+            }
             $sources = $source['nested'] ?? [];
         }
 
@@ -611,18 +605,14 @@ class ElementHelper
      * @return string|null
      * @since 3.5.0
      */
-    public static function translationDescription(string $translationMethod)
+    public static function translationDescription(string $translationMethod): ?string
     {
-        switch ($translationMethod) {
-            case Field::TRANSLATION_METHOD_SITE:
-                return Craft::t('app', 'This field is translated for each site.');
-            case Field::TRANSLATION_METHOD_SITE_GROUP:
-                return Craft::t('app', 'This field is translated for each site group.');
-            case Field::TRANSLATION_METHOD_LANGUAGE:
-                return Craft::t('app', 'This field is translated for each language.');
-            default:
-                return null;
-        }
+        return match ($translationMethod) {
+            Field::TRANSLATION_METHOD_SITE => Craft::t('app', 'This field is translated for each site.'),
+            Field::TRANSLATION_METHOD_SITE_GROUP => Craft::t('app', 'This field is translated for each site group.'),
+            Field::TRANSLATION_METHOD_LANGUAGE => Craft::t('app', 'This field is translated for each language.'),
+            default => null,
+        };
     }
 
     /**

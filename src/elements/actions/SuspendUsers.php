@@ -12,6 +12,7 @@ use craft\base\ElementAction;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\User;
+use Throwable;
 
 /**
  * SuspendUsers represents a Suspend Users element action.
@@ -32,7 +33,7 @@ class SuspendUsers extends ElementAction
     /**
      * @inheritdoc
      */
-    public function getTriggerHtml()
+    public function getTriggerHtml(): ?string
     {
         Craft::$app->getView()->registerJsWithVars(function($type, $userId) {
             return <<<JS
@@ -85,17 +86,17 @@ JS;
         $successCount = count(array_filter($users, function(User $user) use ($usersService, $currentUser) {
             try {
                 return $usersService->canSuspend($currentUser, $user) && $usersService->suspendUser($user);
-            } catch (\Throwable $e) {
+            } catch (Throwable) {
                 return false;
             }
         }));
 
         if ($successCount !== count($users)) {
-            $this->setMessage(Craft::t('app', 'Could not suspend all users.'));
+            $this->setMessage(Craft::t('app', 'Couldn’t suspend all users.'));
             return false;
         }
 
-        $this->setMessage(Craft::t('app', 'Users Suspended.'));
+        $this->setMessage(Craft::t('app', 'Users suspended.'));
         return true;
     }
 }

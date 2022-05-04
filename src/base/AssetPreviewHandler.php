@@ -20,7 +20,7 @@ abstract class AssetPreviewHandler extends Component implements AssetPreviewHand
     /**
      * @var Asset
      */
-    public $asset;
+    public Asset $asset;
 
     /**
      * Constructor.

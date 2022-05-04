@@ -8,7 +8,6 @@
 namespace craft\web\twig\tokenparsers;
 
 use craft\web\twig\nodes\CacheNode;
-use Twig\Parser;
 use Twig\Token;
 use Twig\TokenParser\AbstractTokenParser;
 
@@ -31,10 +30,9 @@ class CacheTokenParser extends AbstractTokenParser
     /**
      * @inheritdoc
      */
-    public function parse(Token $token)
+    public function parse(Token $token): CacheNode
     {
         $lineno = $token->getLine();
-        /** @var Parser $parser */
         $parser = $this->parser;
         $stream = $parser->getStream();
 

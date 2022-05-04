@@ -30,23 +30,23 @@ class Delete extends ElementAction implements DeleteActionInterface
      * @var bool Whether to delete the element’s descendants as well.
      * @since 3.5.0
      */
-    public $withDescendants = false;
+    public bool $withDescendants = false;
 
     /**
      * @var bool Whether to permanently delete the elements.
      * @since 3.5.0
      */
-    public $hard = false;
+    public bool $hard = false;
 
     /**
      * @var string|null The confirmation message that should be shown before the elements get deleted
      */
-    public $confirmationMessage;
+    public ?string $confirmationMessage = null;
 
     /**
      * @var string|null The message that should be shown after the elements get deleted
      */
-    public $successMessage;
+    public ?string $successMessage = null;
 
     /**
      * @inheritdoc
@@ -68,14 +68,14 @@ class Delete extends ElementAction implements DeleteActionInterface
      * @inheritdoc
      * @since 3.5.0
      */
-    public function getTriggerHtml()
+    public function getTriggerHtml(): ?string
     {
         // Only enable for deletable elements, per getIsDeletable()
         $type = Json::encode(static::class);
         $js = <<<JS
 (() => {
     new Craft.ElementActionTrigger({
-        type: {$type},
+        type: $type,
         validateSelection: function(\$selectedItems)
         {
             for (let i = 0; i < \$selectedItems.length; i++) {
@@ -123,9 +123,9 @@ JS;
     /**
      * @inheritdoc
      */
-    public function getConfirmationMessage()
+    public function getConfirmationMessage(): ?string
     {
-        if ($this->confirmationMessage !== null) {
+        if (isset($this->confirmationMessage)) {
             return $this->confirmationMessage;
         }
 
@@ -171,15 +171,16 @@ JS;
         }
 
         $deletedElementIds = [];
+        $user = Craft::$app->getUser()->getIdentity();
 
         foreach ($query->all() as $element) {
-            if (!$element->getIsDeletable()) {
+            if (!$element->canDelete($user)) {
                 continue;
             }
             if (!isset($deletedElementIds[$element->id])) {
                 if ($withDescendants) {
-                    foreach ($element->getDescendants() as $descendant) {
-                        if (!isset($deletedElementIds[$descendant->id]) && $descendant->getIsDeletable()) {
+                    foreach ($element->getDescendants()->all() as $descendant) {
+                        if (!isset($deletedElementIds[$descendant->id]) && $descendant->canDelete($user)) {
                             $elementsService->deleteElement($descendant);
                             $deletedElementIds[$descendant->id] = true;
                         }
@@ -201,7 +202,7 @@ JS;
             }
         }
 
-        if ($this->successMessage !== null) {
+        if (isset($this->successMessage)) {
             $this->setMessage($this->successMessage);
         } else {
             /** @var ElementInterface|string $elementType */

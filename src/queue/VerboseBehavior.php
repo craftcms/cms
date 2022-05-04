@@ -18,9 +18,9 @@ use yii\queue\ExecEvent;
 class VerboseBehavior extends \yii\queue\cli\VerboseBehavior
 {
     /**
-     *
+     * @inheritdoc
      */
-    protected function jobTitle(ExecEvent $event)
+    protected function jobTitle(ExecEvent $event): string
     {
         if (!$event->job instanceof JobInterface) {
             return parent::jobTitle($event);
@@ -33,6 +33,6 @@ class VerboseBehavior extends \yii\queue\cli\VerboseBehavior
             $extra .= ', pid: ' . $pid;
         }
 
-        return " [{$event->id}] {$description} ({$extra})";
+        return " [$event->id] $description ($extra)";
     }
 }

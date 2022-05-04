@@ -14,6 +14,7 @@ use craft\base\PreviewableFieldInterface;
 use craft\base\SortableFieldInterface;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
+use craft\fields\conditions\DateFieldConditionRule;
 use craft\gql\directives\FormatDateTime;
 use craft\gql\types\DateTime as DateTimeType;
 use craft\helpers\DateTimeHelper;
@@ -26,6 +27,7 @@ use craft\validators\DateTimeValidator;
 use DateTime;
 use DateTimeZone;
 use GraphQL\Type\Definition\ResolveInfo;
+use GraphQL\Type\Definition\Type;
 use yii\db\Schema;
 
 /**
@@ -55,36 +57,36 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
     /**
      * @var bool Whether a datepicker should be shown as part of the input
      */
-    public $showDate = true;
+    public bool $showDate = true;
 
     /**
      * @var bool Whether a timepicker should be shown as part of the input
      */
-    public $showTime = false;
+    public bool $showTime = false;
 
     /**
      * @var bool Whether the selected time zone should be stored with the field data. Otherwise the system
      * time zone will always be used.
      * @since 3.7.0
      */
-    public $showTimeZone = false;
+    public bool $showTimeZone = false;
 
     /**
      * @var DateTime|null The minimum allowed date
      * @since 3.5.0
      */
-    public $min;
+    public ?DateTime $min = null;
 
     /**
      * @var DateTime|null The maximum allowed date
      * @since 3.5.0
      */
-    public $max;
+    public ?DateTime $max = null;
 
     /**
      * @var int The number of minutes that the timepicker options should increment by
      */
-    public $minuteIncrement = 30;
+    public int $minuteIncrement = 30;
 
     /**
      * @inheritdoc
@@ -125,18 +127,7 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
     /**
      * @inheritdoc
      */
-    public function datetimeAttributes(): array
-    {
-        $attributes = parent::datetimeAttributes();
-        $attributes[] = 'min';
-        $attributes[] = 'max';
-        return $attributes;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -153,7 +144,7 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
     /**
      * @inheritdoc
      */
-    public function attributeLabels()
+    public function attributeLabels(): array
     {
         return [
             'min' => Craft::t('app', 'Min Date'),
@@ -176,7 +167,7 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
     /**
      * @inheritdoc
      */
-    public function getContentColumnType()
+    public function getContentColumnType(): array|string
     {
         if ($this->showTimeZone) {
             return [
@@ -191,7 +182,7 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
     /**
      * @inheritdoc
      */
-    public function getSettingsHtml()
+    public function getSettingsHtml(): ?string
     {
         if ($this->showDate && !$this->showTime) {
             $dateTimeValue = 'showDate';
@@ -243,7 +234,7 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
     /**
      * @inheritdoc
      */
-    protected function inputHtml($value, ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
     {
         /** @var DateTime|null $value */
         $view = Craft::$app->getView();
@@ -306,8 +297,8 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
         return [
             [
                 DateTimeValidator::class,
-                'min' => $this->min ? $this->min->setTime(0, 0, 0) : null,
-                'max' => $this->max ? $this->max->setTime(23, 59, 59) : null,
+                'min' => $this->min?->setTime(0, 0, 0),
+                'max' => $this->max?->setTime(23, 59, 59),
             ],
         ];
     }
@@ -315,7 +306,7 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
     /**
      * @inheritdoc
      */
-    protected function searchKeywords($value, ElementInterface $element): string
+    protected function searchKeywords(mixed $value, ElementInterface $element): string
     {
         return '';
     }
@@ -323,7 +314,7 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
     /**
      * @inheritdoc
      */
-    public function getTableAttributeHtml($value, ElementInterface $element): string
+    public function getTableAttributeHtml(mixed $value, ElementInterface $element): string
     {
         if (!$value) {
             return '';
@@ -351,7 +342,7 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
     /**
      * @inheritdoc
      */
-    public function normalizeValue($value, ElementInterface $element = null)
+    public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
         if ($value instanceof DateTime) {
             return $value;
@@ -386,7 +377,7 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
     /**
      * @inheritdoc
      */
-    public function serializeValue($value, ElementInterface $element = null)
+    public function serializeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
         if (!$value) {
             return null;
@@ -406,7 +397,15 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
     /**
      * @inheritdoc
      */
-    public function modifyElementsQuery(ElementQueryInterface $query, $value)
+    public function getElementConditionRuleType(): array|string|null
+    {
+        return DateFieldConditionRule::class;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function modifyElementsQuery(ElementQueryInterface $query, mixed $value): void
     {
         /** @var ElementQuery $query */
         if ($value !== null) {
@@ -418,7 +417,7 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
     /**
      * @inheritdoc
      */
-    public function getContentGqlType()
+    public function getContentGqlType(): Type|array
     {
         return [
             'name' => $this->handle,
@@ -441,7 +440,7 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
      * @inheritdoc
      * @since 3.5.0
      */
-    public function getContentGqlMutationArgumentType()
+    public function getContentGqlMutationArgumentType(): Type|array
     {
         return [
             'name' => $this->handle,

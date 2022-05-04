@@ -41,7 +41,7 @@ class Tags extends BaseRelationField
     /**
      * @inheritdoc
      */
-    protected static function elementType(): string
+    public static function elementType(): string
     {
         return Tag::class;
     }
@@ -65,30 +65,31 @@ class Tags extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public $allowMultipleSources = false;
+    public bool $allowMultipleSources = false;
 
     /**
      * @inheritdoc
      */
-    public $allowLimit = false;
+    public bool $allowLimit = false;
 
     /**
-     * @var
+     * @var string|false
+     * @see _getTagGroupUid()
      */
-    private $_tagGroupId;
+    private string|false $_tagGroupUid;
 
     /**
      * @inheritdoc
      */
-    protected function inputHtml($value, ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
     {
         if ($element !== null && $element->hasEagerLoadedElements($this->handle)) {
-            $value = $element->getEagerLoadedElements($this->handle);
+            $value = $element->getEagerLoadedElements($this->handle)->all();
         }
 
         if ($value instanceof ElementQueryInterface) {
             $value = $value
-                ->anyStatus()
+                ->status(null)
                 ->all();
         } elseif (!is_array($value)) {
             $value = [];
@@ -105,7 +106,7 @@ class Tags extends BaseRelationField
                     'elements' => $value,
                     'tagGroupId' => $tagGroup->id,
                     'targetSiteId' => $this->targetSiteId($element),
-                    'sourceElementId' => $element !== null ? $element->id : null,
+                    'sourceElementId' => $element?->id,
                     'selectionLabel' => $this->selectionLabel ? Craft::t('site', $this->selectionLabel) : static::defaultSelectionLabel(),
                 ]);
         }
@@ -125,11 +126,11 @@ class Tags extends BaseRelationField
      * @inheritdoc
      * @since 3.3.0
      */
-    public function getContentGqlType()
+    public function getContentGqlType(): Type|array
     {
         return [
             'name' => $this->handle,
-            'type' => Type::listOf(TagInterface::getType()),
+            'type' => Type::nonNull(Type::listOf(TagInterface::getType())),
             'args' => TagArguments::getArguments(),
             'resolve' => TagResolver::class . '::resolve',
             'complexity' => GqlHelper::relatedArgumentComplexity(GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD),
@@ -140,13 +141,13 @@ class Tags extends BaseRelationField
      * @inheritdoc
      * @since 3.3.0
      */
-    public function getEagerLoadingGqlConditions()
+    public function getEagerLoadingGqlConditions(): ?array
     {
         $allowedEntities = Gql::extractAllowedEntitiesFromSchema();
         $tagGroupUids = $allowedEntities['taggroups'] ?? [];
 
         if (empty($tagGroupUids)) {
-            return false;
+            return null;
         }
 
         $tagsService = Craft::$app->getTags();
@@ -165,32 +166,27 @@ class Tags extends BaseRelationField
      *
      * @return TagGroup|null
      */
-    private function _getTagGroup()
+    private function _getTagGroup(): ?TagGroup
     {
-        $tagGroupId = $this->_getTagGroupId();
-
-        if ($tagGroupId !== false) {
-            return Craft::$app->getTags()->getTagGroupByUid($tagGroupId);
-        }
-
-        return null;
+        $groupUid = $this->_getTagGroupUid();
+        return $groupUid ? Craft::$app->getTags()->getTagGroupByUid($groupUid) : null;
     }
 
     /**
      * Returns the tag group ID this field is associated with.
      *
-     * @return int|false
+     * @return string|null
      */
-    private function _getTagGroupId()
+    private function _getTagGroupUid(): ?string
     {
-        if ($this->_tagGroupId !== null) {
-            return $this->_tagGroupId;
+        if (!isset($this->_tagGroupUid)) {
+            if (preg_match('/^taggroup:([0-9a-f\-]+)$/', $this->source, $matches)) {
+                $this->_tagGroupUid = $matches[1];
+            } else {
+                $this->_tagGroupUid = false;
+            }
         }
 
-        if (!preg_match('/^taggroup:([0-9a-f\-]+)$/', $this->source, $matches)) {
-            return $this->_tagGroupId = false;
-        }
-
-        return $this->_tagGroupId = $matches[1];
+        return $this->_tagGroupUid ?: null;
     }
 }

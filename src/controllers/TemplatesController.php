@@ -13,10 +13,13 @@ use craft\helpers\App;
 use craft\helpers\Db;
 use craft\helpers\Path;
 use craft\helpers\Template;
+use craft\web\Application;
 use craft\web\Controller;
 use craft\web\View;
 use ErrorException;
+use RequirementsChecker;
 use yii\base\UserException;
+use yii\web\ErrorHandler;
 use yii\web\ForbiddenHttpException;
 use yii\web\HttpException;
 use yii\web\NotFoundHttpException;
@@ -38,7 +41,7 @@ class TemplatesController extends Controller
     /**
      * @inheritdoc
      */
-    public $allowAnonymous = [
+    protected array|bool|int $allowAnonymous = [
         'offline' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'manual-update-notification' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
         'requirements-check' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
@@ -53,7 +56,7 @@ class TemplatesController extends Controller
     /**
      * @inheritdoc
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         $actionSegments = $this->request->getActionSegments();
         if (isset($actionSegments[0]) && strtolower($actionSegments[0]) === 'templates') {
@@ -95,7 +98,9 @@ class TemplatesController extends Controller
         }
 
         // Merge any additional route params
-        $routeParams = Craft::$app->getUrlManager()->getRouteParams();
+        /** @var Application $app */
+        $app = Craft::$app;
+        $routeParams = $app->getUrlManager()->getRouteParams();
         unset($routeParams['template'], $routeParams['template']);
         $variables = array_merge($variables, $routeParams);
 
@@ -132,10 +137,10 @@ class TemplatesController extends Controller
      * @return Response|null
      * @throws ServerErrorHttpException if it's an Ajax request and the server doesn’t meet Craft’s requirements
      */
-    public function actionRequirementsCheck()
+    public function actionRequirementsCheck(): ?Response
     {
         // Run the requirements checker
-        $reqCheck = new \RequirementsChecker();
+        $reqCheck = new RequirementsChecker();
         $dbConfig = Craft::$app->getConfig()->getDb();
         $reqCheck->dsn = $dbConfig->dsn;
         $reqCheck->dbDriver = $dbConfig->dsn ? Db::parseDsn($dbConfig->dsn, 'driver') : Connection::DRIVER_MYSQL;
@@ -176,7 +181,7 @@ class TemplatesController extends Controller
      */
     public function actionRenderError(): Response
     {
-        /** @var \yii\web\ErrorHandler $errorHandler */
+        /** @var ErrorHandler $errorHandler */
         $errorHandler = Craft::$app->getErrorHandler();
         $exception = $errorHandler->exception;
 

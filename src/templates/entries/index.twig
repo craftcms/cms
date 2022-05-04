@@ -1,0 +1,15 @@
+{% extends "_layouts/elementindex" %}
+{% set title = "Entries"|t('app') %}
+{% set elementType = 'craft\\elements\\Entry' %}
+{% set canHaveDrafts = true %}
+
+{% do view.registerTranslations('app', [
+    'New entry',
+]) %}
+
+{% if sectionHandle is defined %}
+    {% js %}
+        window.defaultSectionHandle = "{{ sectionHandle|e('js') }}";
+    {% endjs %}
+{% endif %}
+

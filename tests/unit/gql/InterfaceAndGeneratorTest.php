@@ -5,9 +5,8 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craftunit\gql;
+namespace crafttests\unit\gql;
 
-use Codeception\Test\Unit;
 use Craft;
 use craft\base\Element as BaseElement;
 use craft\elements\Asset as AssetElement;
@@ -17,9 +16,12 @@ use craft\elements\GlobalSet as GlobalSetElement;
 use craft\elements\MatrixBlock as MatrixBlockElement;
 use craft\elements\Tag as TagElement;
 use craft\elements\User as UserElement;
+use craft\errors\GqlException;
 use craft\fields\Matrix as MatrixField;
 use craft\fields\PlainText;
 use craft\fields\Table;
+use craft\fs\Local;
+use craft\gql\base\SingularTypeInterface;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\Element as ElementInterface;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
@@ -37,17 +39,19 @@ use craft\models\GqlSchema;
 use craft\models\MatrixBlockType;
 use craft\models\Section;
 use craft\models\TagGroup;
-use craft\volumes\Local;
+use craft\test\TestCase;
+use Exception;
 use GraphQL\Type\Definition\ObjectType;
+use UnitTester;
 
-class InterfaceAndGeneratorTest extends Unit
+class InterfaceAndGeneratorTest extends TestCase
 {
     /**
-     * @var \UnitTester
+     * @var UnitTester
      */
-    protected $tester;
+    protected UnitTester $tester;
 
-    protected function _before()
+    protected function _before(): void
     {
         // Mock the GQL token
         $this->tester->mockMethods(
@@ -133,7 +137,7 @@ class InterfaceAndGeneratorTest extends Unit
         );
     }
 
-    protected function _after()
+    protected function _after(): void
     {
         Craft::$app->getGql()->flushCaches();
     }
@@ -142,13 +146,14 @@ class InterfaceAndGeneratorTest extends Unit
      * Test interfaces running type generators.
      *
      * @dataProvider interfaceDataProvider
-     *
      * @param string $gqlInterfaceClass The interface class being tested
+     * @phpstan-param class-string<SingularTypeInterface> $gqlInterfaceClass
      * @param callable $getAllContexts The callback that provides an array of all contexts for generated types
      * @param callable $getTypeNameByContext The callback to generate the GQL type name by context
      */
-    public function testInterfacesGeneratingTypes(string $gqlInterfaceClass, callable $getAllContexts, callable $getTypeNameByContext)
+    public function testInterfacesGeneratingTypes(string $gqlInterfaceClass, callable $getAllContexts, callable $getTypeNameByContext): void
     {
+        /** @var string|SingularTypeInterface $gqlInterfaceClass */
         $gqlInterfaceClass::getType();
 
         foreach ($getAllContexts() as $context) {
@@ -165,9 +170,9 @@ class InterfaceAndGeneratorTest extends Unit
     /**
      * Test table row generator
      *
-     * @throws \craft\errors\GqlException
+     * @throws GqlException
      */
-    public function testTableRowTypeGenerator()
+    public function testTableRowTypeGenerator(): void
     {
         $tableField = $this->make(Table::class, [
             'columns' => [
@@ -226,7 +231,7 @@ class InterfaceAndGeneratorTest extends Unit
      * Mock the volumes for tests.
      *
      * @return array
-     * @throws \Exception
+     * @throws Exception
      */
     public function mockVolumes(): array
     {
@@ -235,14 +240,16 @@ class InterfaceAndGeneratorTest extends Unit
                 'uid' => 'volume-uid-1',
                 'handle' => 'mockVolume1',
                 '__call' => function($name, $params) {
-                    return $name == 'getFields' ? [] : parent::__get($name, $params);
+                    /** @phpstan-ignore-next-line */
+                    return $name === 'getCustomFields' ? [] : parent::__get($name, $params);
                 },
             ]),
             $this->make(Local::class, [
                 'uid' => 'volume-uid-2',
                 'handle' => 'mockVolume2',
                 '__call' => function($name, $params) {
-                    return $name == 'getFields' ? [$this->make(PlainText::class, ['name' => 'Mock Field', 'handle' => 'mockField'])] : parent::__get($name, $params);
+                    /** @phpstan-ignore-next-line */
+                    return $name === 'getCustomFields' ? [$this->make(PlainText::class, ['name' => 'Mock Field', 'handle' => 'mockField'])] : parent::__get($name, $params);
                 },
             ]),
         ];
@@ -252,7 +259,7 @@ class InterfaceAndGeneratorTest extends Unit
      * Mock the entry types for tests.
      *
      * @return array
-     * @throws \Exception
+     * @throws Exception
      */
     public function mockEntryTypes(): array
     {
@@ -262,7 +269,8 @@ class InterfaceAndGeneratorTest extends Unit
                 'handle' => 'mockType1',
                 'getSection' => $this->make(Section::class, ['uid' => 'section-uid-1', 'handle' => 'mockSection1']),
                 '__call' => function($name, $params) {
-                    return $name == 'getFields' ? [] : parent::__get($name, $params);
+                    /** @phpstan-ignore-next-line */
+                    return $name === 'getCustomFields' ? [] : parent::__get($name, $params);
                 },
             ]),
             $this->make(EntryType::class, [
@@ -270,7 +278,8 @@ class InterfaceAndGeneratorTest extends Unit
                 'handle' => 'mockType2',
                 'getSection' => $this->make(Section::class, ['uid' => 'section-uid-1', 'handle' => 'mockSection2']),
                 '__call' => function($name, $params) {
-                    return $name == 'getFields' ? [$this->make(PlainText::class, ['name' => 'Mock field', 'handle' => 'mockField'])] : parent::__get($name, $params);
+                    /** @phpstan-ignore-next-line */
+                    return $name === 'getCustomFields' ? [$this->make(PlainText::class, ['name' => 'Mock field', 'handle' => 'mockField'])] : parent::__get($name, $params);
                 },
             ]),
         ];
@@ -280,7 +289,7 @@ class InterfaceAndGeneratorTest extends Unit
      * Mock the global sets for tests.
      *
      * @return array
-     * @throws \Exception
+     * @throws Exception
      */
     public function mockGlobalSets(): array
     {
@@ -289,7 +298,8 @@ class InterfaceAndGeneratorTest extends Unit
                 'uid' => 'globalset-uid-1',
                 'handle' => 'mockGlobal',
                 '__call' => function($name, $params) {
-                    return $name == 'getFields' ? [$this->make(PlainText::class, ['name' => 'Mock Field', 'handle' => 'mockField'])] : parent::__get($name, $params);
+                    /** @phpstan-ignore-next-line */
+                    return $name === 'getCustomFields' ? [$this->make(PlainText::class, ['name' => 'Mock Field', 'handle' => 'mockField'])] : parent::__get($name, $params);
                 },
             ]),
         ];
@@ -299,7 +309,7 @@ class InterfaceAndGeneratorTest extends Unit
      * Mock a category group for tests.
      *
      * @return array
-     * @throws \Exception
+     * @throws Exception
      */
     public function mockCategoryGroups(): array
     {
@@ -308,7 +318,8 @@ class InterfaceAndGeneratorTest extends Unit
                 'uid' => 'categoyGroup-uid-1',
                 'handle' => 'mockCategoryGroup',
                 '__call' => function($name, $params) {
-                    return $name == 'getFields' ? [$this->make(PlainText::class, ['name' => 'Mock Field', 'handle' => 'mockField'])] : parent::__get($name, $params);
+                    /** @phpstan-ignore-next-line */
+                    return $name === 'getCustomFields' ? [$this->make(PlainText::class, ['name' => 'Mock Field', 'handle' => 'mockField'])] : parent::__get($name, $params);
                 },
             ]),
         ];
@@ -318,7 +329,7 @@ class InterfaceAndGeneratorTest extends Unit
      * Mock a tag group for tests.
      *
      * @return array
-     * @throws \Exception
+     * @throws Exception
      */
     public function mockTagGroups(): array
     {
@@ -327,7 +338,8 @@ class InterfaceAndGeneratorTest extends Unit
                 'uid' => 'tagGroup-uid-1',
                 'handle' => 'mockTagGroup',
                 '__call' => function($name, $params) {
-                    return $name == 'getFields' ? [$this->make(PlainText::class, ['name' => 'Mock Field', 'handle' => 'mockField'])] : parent::__get($name, $params);
+                    /** @phpstan-ignore-next-line */
+                    return $name === 'getCustomFields' ? [$this->make(PlainText::class, ['name' => 'Mock Field', 'handle' => 'mockField'])] : parent::__get($name, $params);
                 },
             ]),
         ];
@@ -337,7 +349,7 @@ class InterfaceAndGeneratorTest extends Unit
      * Mock matrix blocks.
      *
      * @return array
-     * @throws \Exception
+     * @throws Exception
      */
     public function mockMatrixBlocks(): array
     {
@@ -346,7 +358,8 @@ class InterfaceAndGeneratorTest extends Unit
                 'uid' => 'matrixBlock-uid-1',
                 'handle' => 'mockMatrixBlock',
                 '__call' => function($name, $params) {
-                    return $name == 'getFields' ? [$this->make(PlainText::class, ['name' => 'Mock Field', 'handle' => 'mockField'])] : parent::__get($name, $params);
+                    /** @phpstan-ignore-next-line */
+                    return $name === 'getCustomFields' ? [$this->make(PlainText::class, ['name' => 'Mock Field', 'handle' => 'mockField'])] : parent::__get($name, $params);
                 },
                 'getField' => $this->makeEmpty(MatrixField::class, ['handle' => 'matrixField']),
             ]),

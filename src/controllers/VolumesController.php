@@ -8,14 +8,13 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\base\VolumeInterface;
+use craft\base\Field;
+use craft\base\FsInterface;
 use craft\elements\Asset;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
-use craft\helpers\UrlHelper;
-use craft\volumes\Local;
-use craft\volumes\MissingVolume;
+use craft\models\Volume;
 use craft\web\Controller;
+use Illuminate\Support\Collection;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\NotFoundHttpException;
@@ -34,7 +33,7 @@ class VolumesController extends Controller
     /**
      * @inheritdoc
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         // All asset volume actions require an admin
         $this->requireAdmin();
@@ -59,60 +58,28 @@ class VolumesController extends Controller
      * Edit an asset volume.
      *
      * @param int|null $volumeId The volume’s ID, if editing an existing volume.
-     * @param VolumeInterface|null $volume The volume being edited, if there were any validation errors.
+     * @param Volume|null $volume The volume being edited, if there were any validation errors.
      * @return Response
      * @throws ForbiddenHttpException if the user is not an admin
      * @throws NotFoundHttpException if the requested volume cannot be found
      */
-    public function actionEditVolume(int $volumeId = null, VolumeInterface $volume = null): Response
+    public function actionEditVolume(?int $volumeId = null, ?Volume $volume = null): Response
     {
         $this->requireAdmin();
 
-        $volumes = Craft::$app->getVolumes();
-
-        $missingVolumePlaceholder = null;
+        $volumesServices = Craft::$app->getVolumes();
 
         if ($volume === null) {
             if ($volumeId !== null) {
-                $volume = $volumes->getVolumeById($volumeId);
+                $volume = $volumesServices->getVolumeById($volumeId);
 
                 if ($volume === null) {
                     throw new NotFoundHttpException('Volume not found');
                 }
-
-                if ($volume instanceof MissingVolume) {
-                    $missingVolumePlaceholder = $volume->getPlaceholderHtml();
-                    $volume = $volume->createFallback(Local::class);
-                }
             } else {
-                $volume = $volumes->createVolume(Local::class);
+                $volume = Craft::createObject(Volume::class);
             }
         }
-
-        /** @var string[]|VolumeInterface[] $allVolumeTypes */
-        $allVolumeTypes = $volumes->getAllVolumeTypes();
-
-        // Make sure the selected volume class is in there
-        if (!in_array(get_class($volume), $allVolumeTypes, true)) {
-            $allVolumeTypes[] = get_class($volume);
-        }
-
-        $volumeInstances = [];
-        $volumeTypeOptions = [];
-
-        foreach ($allVolumeTypes as $class) {
-            if ($class === get_class($volume) || $class::isSelectable()) {
-                $volumeInstances[$class] = $volumes->createVolume($class);
-
-                $volumeTypeOptions[] = [
-                    'value' => $class,
-                    'label' => $class::displayName(),
-                ];
-            }
-        }
-
-        // Sort them by name
-        ArrayHelper::multisort($volumeTypeOptions, 'label');
 
         $isNewVolume = !$volume->id;
 
@@ -122,34 +89,43 @@ class VolumesController extends Controller
             $title = trim($volume->name) ?: Craft::t('app', 'Edit Volume');
         }
 
-        $crumbs = [
-            [
-                'label' => Craft::t('app', 'Settings'),
-                'url' => UrlHelper::url('settings'),
-            ],
-            [
-                'label' => Craft::t('app', 'Assets'),
-                'url' => UrlHelper::url('settings/assets'),
-            ],
-            [
-                'label' => Craft::t('app', 'Volumes'),
-                'url' => UrlHelper::url('settings/assets'),
-            ],
-        ];
+        $fsHandle = $volume->getFsHandle();
+        $allVolumes = $volumesServices->getAllVolumes();
+        /** @var Collection<string> $takenFsHandles */
+        $takenFsHandles = Collection::make($allVolumes)
+            ->map(fn(Volume $volume) => $volume->getFsHandle());
+        $fsOptions = Collection::make(Craft::$app->getFs()->getAllFilesystems())
+            ->filter(fn(FsInterface $fs) => $fs->handle === $fsHandle || !$takenFsHandles->contains($fs->handle))
+            ->sortBy(fn(FsInterface $fs) => $fs->name)
+            ->map(fn(FsInterface $fs) => [
+                'label' => $fs->name,
+                'value' => $fs->handle,
+            ])
+            ->all();
 
-        return $this->renderTemplate('settings/assets/volumes/_edit', [
-            'volumeId' => $volumeId,
-            'volume' => $volume,
-            'isNewVolume' => $isNewVolume,
-            'volumeTypes' => $allVolumeTypes,
-            'volumeTypeOptions' => $volumeTypeOptions,
-            'missingVolumePlaceholder' => $missingVolumePlaceholder,
-            'volumeInstances' => $volumeInstances,
-            'title' => $title,
-            'crumbs' => $crumbs,
-            'typeName' => Asset::displayName(),
-            'lowerTypeName' => Asset::lowerDisplayName(),
-        ]);
+        if (empty($fsOptions)) {
+            $fsOptions = [
+
+            ];
+        }
+
+        return $this->asCpScreen()
+            ->title($title)
+            ->addCrumb(Craft::t('app', 'Settings'), 'settings')
+            ->addCrumb(Craft::t('app', 'Assets'), 'settings/assets')
+            ->addCrumb(Craft::t('app', 'Volumes'), 'settings/assets')
+            ->action('volumes/save-volume')
+            ->redirectUrl('settings/assets')
+            ->saveShortcutRedirectUrl('settings/assets/volumes/{id}')
+            ->editUrl($volume->id ? "settings/assets/volumes/$volume->id" : null)
+            ->contentTemplate('settings/assets/volumes/_edit', [
+                'volumeId' => $volumeId,
+                'volume' => $volume,
+                'isNewVolume' => $isNewVolume,
+                'typeName' => Asset::displayName(),
+                'lowerTypeName' => Asset::lowerDisplayName(),
+                'fsOptions' => $fsOptions,
+            ]);
     }
 
     /**
@@ -158,12 +134,11 @@ class VolumesController extends Controller
      * @return Response|null
      * @throws BadRequestHttpException
      */
-    public function actionSaveVolume()
+    public function actionSaveVolume(): ?Response
     {
         $this->requirePostRequest();
 
         $volumesService = Craft::$app->getVolumes();
-        $type = $this->request->getBodyParam('type');
         $volumeId = $this->request->getBodyParam('volumeId') ?: null;
 
         if ($volumeId) {
@@ -173,18 +148,17 @@ class VolumesController extends Controller
             }
         }
 
-        $volume = $volumesService->createVolume([
+        $volume = new Volume([
             'id' => $volumeId,
             'uid' => $oldVolume->uid ?? null,
             'sortOrder' => $oldVolume->sortOrder ?? null,
-            'type' => $type,
             'name' => $this->request->getBodyParam('name'),
             'handle' => $this->request->getBodyParam('handle'),
-            'hasUrls' => (bool)$this->request->getBodyParam('hasUrls'),
-            'url' => $this->request->getBodyParam('url'),
-            'titleTranslationMethod' => $this->request->getBodyParam('titleTranslationMethod'),
+            'fsHandle' => $this->request->getBodyParam('fsHandle'),
+            'transformFsHandle' => $this->request->getBodyParam('transformFsHandle'),
+            'transformSubpath' => $this->request->getBodyParam('transformSubpath', ""),
+            'titleTranslationMethod' => $this->request->getBodyParam('titleTranslationMethod', Field::TRANSLATION_METHOD_SITE),
             'titleTranslationKeyFormat' => $this->request->getBodyParam('titleTranslationKeyFormat'),
-            'settings' => $this->request->getBodyParam('types.' . $type),
         ]);
 
         // Set the field layout
@@ -193,18 +167,10 @@ class VolumesController extends Controller
         $volume->setFieldLayout($fieldLayout);
 
         if (!$volumesService->saveVolume($volume)) {
-            $this->setFailFlash(Craft::t('app', 'Couldn’t save volume.'));
-
-            // Send the volume back to the template
-            Craft::$app->getUrlManager()->setRouteParams([
-                'volume' => $volume,
-            ]);
-
-            return null;
+            return $this->asModelFailure($volume, Craft::t('app', 'Couldn’t save volume.'), 'volume');
         }
 
-        $this->setSuccessFlash(Craft::t('app', 'Volume saved.'));
-        return $this->redirectToPostedUrl();
+        return $this->asModelSuccess($volume, Craft::t('app', 'Volume saved.'), 'volume');
     }
 
     /**
@@ -220,7 +186,7 @@ class VolumesController extends Controller
         $volumeIds = Json::decode($this->request->getRequiredBodyParam('ids'));
         Craft::$app->getVolumes()->reorderVolumes($volumeIds);
 
-        return $this->asJson(['success' => true]);
+        return $this->asSuccess();
     }
 
     /**
@@ -237,6 +203,6 @@ class VolumesController extends Controller
 
         Craft::$app->getVolumes()->deleteVolumeById($volumeId);
 
-        return $this->asJson(['success' => true]);
+        return $this->asSuccess();
     }
 }

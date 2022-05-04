@@ -28,10 +28,10 @@ class NavItem_Node extends Node
      * @param Node|null $indent
      * @param Node|null $outdent
      * @param Node|null $lowerBody
-     * @param $lineno
-     * @param $tag
+     * @param int $lineno
+     * @param string|null $tag
      */
-    public function __construct(AssignNameExpression $valueTarget, ?Node $indent, ?Node $outdent, ?Node $lowerBody, $lineno, $tag = null)
+    public function __construct(AssignNameExpression $valueTarget, ?Node $indent, ?Node $outdent, ?Node $lowerBody, int $lineno, string $tag = null)
     {
         parent::__construct([
             'value_target' => $valueTarget,
@@ -44,7 +44,7 @@ class NavItem_Node extends Node
     /**
      * @inheritdoc
      */
-    public function compile(Compiler $compiler)
+    public function compile(Compiler $compiler): void
     {
         $compiler
             // Get this item's level

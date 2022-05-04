@@ -5,29 +5,23 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craftunit\helpers;
+namespace crafttests\unit\helpers;
 
-use Codeception\Test\Unit;
 use Craft;
 use craft\helpers\FileHelper;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
 use craft\services\ProjectConfig;
+use craft\test\TestCase;
 
-class ProjectConfigHelperTest extends Unit
+class ProjectConfigHelperTest extends TestCase
 {
     /**
-     * @var \UnitTester
-     */
-    protected $tester;
-
-    /**
      * @dataProvider packedUnpackedDataProvider
-     *
-     * @param array $field
-     * @param array $expectedResult
+     * @param array $unpackedData
+     * @param array $packedData
      */
-    public function testAssociativeArrayConfigTransforms($unpackedData, $packedData)
+    public function testAssociativeArrayConfigTransforms(array $unpackedData, array $packedData): void
     {
         self::assertSame($packedData, ProjectConfigHelper::packAssociativeArrays($unpackedData));
         self::assertSame($unpackedData, ProjectConfigHelper::unpackAssociativeArrays($packedData));
@@ -35,20 +29,20 @@ class ProjectConfigHelperTest extends Unit
 
     /**
      * @dataProvider cleanupConfigDataProvider
-     * @param $inputData
-     * @param $expectedResult
+     * @param array $inputData
+     * @param array $expectedResult
      */
-    public function testCleanupConfig($inputData, $expectedResult)
+    public function testCleanupConfig(array $inputData, array $expectedResult): void
     {
         self::assertSame($expectedResult, ProjectConfigHelper::cleanupConfig($inputData));
     }
 
     /**
      * @dataProvider splitIntoComponentsProvider
-     * @param $inputData
-     * @param $expectedResult
+     * @param array $inputData
+     * @param array $expectedResult
      */
-    public function testSplitIntoComponents($inputData, $expectedResult)
+    public function testSplitIntoComponents(array $inputData, array $expectedResult): void
     {
         self::assertSame($expectedResult, ProjectConfigHelper::splitConfigIntoComponents($inputData));
     }
@@ -58,7 +52,7 @@ class ProjectConfigHelperTest extends Unit
      * @param string $input
      * @param string $expected
      */
-    public function testTouch(string $input, string $expected)
+    public function testTouch(string $input, string $expected): void
     {
         // Make sure they both end in a newline
         $input = StringHelper::ensureRight($input, "\n");
@@ -74,13 +68,23 @@ class ProjectConfigHelperTest extends Unit
 
         // Test
         $timestamp = time();
-        $expected = str_replace('__TIMESTAMP__', $timestamp, $expected);
+        $expected = str_replace('__TIMESTAMP__', (string)$timestamp, $expected);
         ProjectConfigHelper::touch($timestamp);
         self::assertSame($expected, file_get_contents($path));
 
         // Put the old project.yaml back
         FileHelper::unlink($path);
         rename($backup, $path);
+    }
+
+    /**
+     * @param mixed $incomingData
+     * @param string $expectedResult
+     * @dataProvider encodeTestDataProvider
+     */
+    public function testEncodeData(mixed $incomingData, string $expectedResult): void
+    {
+        self::assertSame($expectedResult, ProjectConfigHelper::encodeValueAsString($incomingData));
     }
 
     /**
@@ -101,7 +105,7 @@ class ProjectConfigHelperTest extends Unit
                 [
                     'plainSettings' => 'plain',
                     'associativeSettings' => [
-                        ProjectConfig::CONFIG_ASSOC_KEY => [
+                        ProjectConfig::ASSOC_KEY => [
                             ['some', 'thing'],
                             ['foo', ['bar', 'baz']],
                         ],
@@ -122,11 +126,11 @@ class ProjectConfigHelperTest extends Unit
                 ],
                 [
                     'test' => [
-                        ProjectConfig::CONFIG_ASSOC_KEY => [
+                        ProjectConfig::ASSOC_KEY => [
                             [
                                 'rootA',
                                 [
-                                    ProjectConfig::CONFIG_ASSOC_KEY => [
+                                    ProjectConfig::ASSOC_KEY => [
                                         ['label', 'childA'],
                                     ],
                                 ],
@@ -134,7 +138,7 @@ class ProjectConfigHelperTest extends Unit
                             [
                                 'rootB',
                                 [
-                                    ProjectConfig::CONFIG_ASSOC_KEY => [
+                                    ProjectConfig::ASSOC_KEY => [
                                         ['label', 'childB'],
                                     ],
                                 ],
@@ -146,7 +150,7 @@ class ProjectConfigHelperTest extends Unit
         ];
     }
 
-    public function cleanupConfigDataProvider()
+    public function cleanupConfigDataProvider(): array
     {
         return [
             [
@@ -185,14 +189,14 @@ class ProjectConfigHelperTest extends Unit
             [
                 [
                     'a' => [
-                        ProjectConfig::CONFIG_ASSOC_KEY => [
+                        ProjectConfig::ASSOC_KEY => [
                             ['foo', []],
                             ['bar'],
                             ['baz', 0],
                         ],
                     ],
                     'b' => [
-                        ProjectConfig::CONFIG_ASSOC_KEY => [
+                        ProjectConfig::ASSOC_KEY => [
                             ['foo', []],
                             ['bar'],
                         ],
@@ -200,7 +204,7 @@ class ProjectConfigHelperTest extends Unit
                 ],
                 [
                     'a' => [
-                        ProjectConfig::CONFIG_ASSOC_KEY => [
+                        ProjectConfig::ASSOC_KEY => [
                             2 => ['baz', 0],
                         ],
                     ],
@@ -209,7 +213,7 @@ class ProjectConfigHelperTest extends Unit
         ];
     }
 
-    public function splitIntoComponentsProvider()
+    public function splitIntoComponentsProvider(): array
     {
         return [
             [
@@ -361,7 +365,45 @@ class ProjectConfigHelperTest extends Unit
         ];
     }
 
-    public function touchDataProvider()
+    public function encodeTestDataProvider(): array
+    {
+        return [
+            [
+                'foo',
+                '"foo"',
+            ],
+            [
+                true,
+                'true',
+            ],
+            [
+                null,
+                'null',
+            ],
+            [
+                false,
+                'false',
+            ],
+            [
+                2.5,
+                '2.5',
+            ],
+            [
+                0,
+                '0',
+            ],
+            [
+                2,
+                '2',
+            ],
+            [
+                2.0,
+                '2.0',
+            ],
+        ];
+    }
+
+    public function touchDataProvider(): array
     {
         $input1 = <<<EOL
 dateModified: 1603054241

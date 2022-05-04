@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace crafttests\fixtures;
@@ -39,7 +39,7 @@ class VolumesFolderFixture extends ActiveFixture
     /**
      * @inheritdoc
      */
-    public function load()
+    public function load(): void
     {
         parent::load();
 

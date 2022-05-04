@@ -4,7 +4,7 @@
 .tooltip {
   display: block !important;
   z-index: 10000;
-  background: $white;
+  background: var(--white);
   box-shadow: 0 25px 100px rgba(0, 0, 0, 0.5);
   padding: 24px;
 

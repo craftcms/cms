@@ -18,6 +18,7 @@ use craft\helpers\StringHelper;
 use craft\helpers\Template;
 use craft\models\DeprecationError;
 use craft\web\twig\Extension;
+use DateTime;
 use Twig\Template as TwigTemplate;
 use yii\base\Application;
 use yii\base\Component;
@@ -36,7 +37,7 @@ class Deprecator extends Component
      * @var bool Whether deprecation warnings should throw exceptions rather than being logged.
      * @since 3.1.18
      */
-    public $throwExceptions = false;
+    public bool $throwExceptions = false;
 
     /**
      * @var string|false Whether deprecation errors should be logged in the database ('db'),
@@ -47,25 +48,30 @@ class Deprecator extends Component
      *
      * @since 3.0.7
      */
-    public $logTarget = 'db';
+    public string|false $logTarget = 'db';
 
     /**
      * @var DeprecationError[] The deprecation errors that were logged in the current request
      */
-    private $_requestLogs = [];
+    private array $_requestLogs = [];
+
+    /**
+     * @var DeprecationError[] The deprecation errors that still need to be stored in the DB
+     */
+    private array $_pendingRequestLogs = [];
 
     /**
      * @var DeprecationError[]|null All the unique deprecation errors that have been logged
      */
-    private $_allLogs;
+    private ?array $_allLogs = null;
 
     /**
      * @inheritdoc
      * @since 3.4.12
      */
-    public function init()
+    public function init(): void
     {
-        if (!$this->throwExceptions && $this->logTarget === 'db') {
+        if ($this->_storeLogsInDb()) {
             Craft::$app->on(Application::EVENT_AFTER_REQUEST, [$this, 'storeLogs'], null, false);
         }
 
@@ -81,7 +87,7 @@ class Deprecator extends Component
      * @param int|null $line
      * @throws DeprecationException
      */
-    public function log(string $key, string $message, string $file = null, int $line = null)
+    public function log(string $key, string $message, ?string $file = null, ?int $line = null): void
     {
         if ($this->logTarget === false) {
             return;
@@ -105,15 +111,24 @@ class Deprecator extends Component
         $fingerprint = $file . ($line ? ':' . $line : '');
 
         // Don't log the same key/fingerprint twice in the same request
-        $this->_requestLogs["$key-$fingerprint"] = new DeprecationError([
+        $this->_requestLogs["$key-$fingerprint"] = $this->_pendingRequestLogs["$key-$fingerprint"] = new DeprecationError([
             'key' => $key,
             'fingerprint' => $fingerprint,
-            'lastOccurrence' => new \DateTime(),
+            'lastOccurrence' => new DateTime(),
             'file' => $file,
             'line' => $line,
             'message' => $message,
             'traces' => $this->_cleanTraces($traces),
         ]);
+
+        if ($this->_storeLogsInDb() && Craft::$app->state >= Application::STATE_AFTER_REQUEST) {
+            $this->storeLogs();
+        }
+    }
+
+    private function _storeLogsInDb(): bool
+    {
+        return !$this->throwExceptions && $this->logTarget === 'db';
     }
 
     /**
@@ -121,29 +136,30 @@ class Deprecator extends Component
      *
      * @since 3.4.12
      */
-    public function storeLogs()
+    public function storeLogs(): void
     {
         $db = Craft::$app->getDb();
 
-        foreach ($this->_requestLogs as $log) {
+        foreach ($this->_pendingRequestLogs as $log) {
             try {
                 Db::upsert(Table::DEPRECATIONERRORS, [
                     'key' => $log->key,
                     'fingerprint' => $log->fingerprint,
-                ], [
                     'lastOccurrence' => Db::prepareDateForDb($log->lastOccurrence),
                     'file' => $log->file,
                     'line' => $log->line,
                     'message' => $log->message,
                     'traces' => Json::encode($log->traces),
                 ]);
-                $log->id = $db->getLastInsertID();
+                $log->id = (int)$db->getLastInsertID();
             } catch (Exception $e) {
                 Craft::warning("Couldn't save deprecation warning: {$e->getMessage()}", __METHOD__);
                 // Craft probably isn’t installed yet
                 break;
             }
         }
+
+        $this->_pendingRequestLogs = [];
     }
 
     /**
@@ -174,9 +190,9 @@ class Deprecator extends Component
      * @param int|null $limit
      * @return DeprecationError[]
      */
-    public function getLogs(int $limit = null): array
+    public function getLogs(?int $limit = null): array
     {
-        if ($this->_allLogs !== null) {
+        if (isset($this->_allLogs)) {
             return $this->_allLogs;
         }
 
@@ -200,7 +216,7 @@ class Deprecator extends Component
      * @param int $logId
      * @return DeprecationError|null
      */
-    public function getLogById(int $logId)
+    public function getLogById(int $logId): ?DeprecationError
     {
         $log = $this->_createDeprecationErrorQuery()
             ->where(['id' => $logId])
@@ -352,7 +368,7 @@ class Deprecator extends Component
     {
         $logTraces = [];
 
-        foreach ($traces as $i => $trace) {
+        foreach ($traces as $trace) {
             $logTraces[] = [
                 'objectClass' => !empty($trace['object']) ? get_class($trace['object']) : null,
                 'file' => !empty($trace['file']) ? $trace['file'] : null,
@@ -373,7 +389,7 @@ class Deprecator extends Component
      * @param int|null $actualCodeLine
      * @return int|null
      */
-    private function _findTemplateLine(TwigTemplate $template, int $actualCodeLine = null)
+    private function _findTemplateLine(TwigTemplate $template, ?int $actualCodeLine = null): ?int
     {
         if ($actualCodeLine === null) {
             return null;
@@ -406,9 +422,7 @@ class Deprecator extends Component
 
         foreach ($args as $key => $value) {
             // Cap it off at 5
-            $count++;
-
-            if ($count == 5) {
+            if (++$count === 5) {
                 $strArgs[] = '...';
                 break;
             }
@@ -439,10 +453,6 @@ class Deprecator extends Component
                 $strArgs[] = $key . ' => ' . $strValue;
             } else {
                 $strArgs[] = $strValue;
-            }
-
-            if ($count == 5) {
-                break;
             }
         }
 

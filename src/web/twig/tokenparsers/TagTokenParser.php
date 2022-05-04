@@ -22,7 +22,7 @@ class TagTokenParser extends AbstractTokenParser
     /**
      * @inheritdoc
      */
-    public function getTag()
+    public function getTag(): string
     {
         return 'tag';
     }
@@ -30,7 +30,7 @@ class TagTokenParser extends AbstractTokenParser
     /**
      * @inheritdoc
      */
-    public function parse(Token $token)
+    public function parse(Token $token): TagNode
     {
         $lineno = $token->getLine();
         $expressionParser = $this->parser->getExpressionParser();

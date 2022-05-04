@@ -20,6 +20,7 @@ use craft\gql\handlers\RelatedUsers;
 use craft\gql\handlers\Site;
 use craft\gql\handlers\SiteId;
 use craft\helpers\StringHelper;
+use yii\base\InvalidConfigException;
 
 /**
  * Class ArgumentManager
@@ -48,13 +49,13 @@ class ArgumentManager extends Component
      * });
      * ```
      */
-    const EVENT_DEFINE_GQL_ARGUMENT_HANDLERS = 'defineGqlArgumentHandlers';
+    public const EVENT_DEFINE_GQL_ARGUMENT_HANDLERS = 'defineGqlArgumentHandlers';
 
-    private $_argumentHandlers = [];
+    private array $_argumentHandlers = [];
 
-    private $_handlersCreated = false;
+    private bool $_handlersCreated = false;
 
-    public function init()
+    public function init(): void
     {
         $handlers = [
             'relatedToEntries' => RelatedEntries::class,
@@ -101,7 +102,7 @@ class ArgumentManager extends Component
      * @param string $argumentName
      * @param string|ArgumentHandlerInterface $handler
      */
-    public function setHandler(string $argumentName, $handler): void
+    public function setHandler(string $argumentName, ArgumentHandlerInterface|string $handler): void
     {
         if (is_string($handler)) {
             $handler = $this->createHandler($handler);
@@ -113,11 +114,12 @@ class ArgumentManager extends Component
     /**
      * Prepare GraphQL arguments according to the registered argument handlers.
      *
-     * @param $arguments
+     * @param array $arguments
      * @return array
      * @throws GqlException
+     * @throws InvalidConfigException
      */
-    public function prepareArguments($arguments): array
+    public function prepareArguments(array $arguments): array
     {
         $orderBy = $arguments['orderBy'] ?? null;
         if ($orderBy) {
@@ -161,7 +163,7 @@ class ArgumentManager extends Component
      * @param string $handler
      * @return ArgumentHandlerInterface|string
      */
-    protected function createHandler(string $handler)
+    protected function createHandler(string $handler): ArgumentHandlerInterface|string
     {
         if (is_a($handler, ArgumentHandlerInterface::class, true)) {
             /** @var ArgumentHandlerInterface $handler */

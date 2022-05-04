@@ -19,7 +19,8 @@ use yii\base\Event;
 class DefineFieldLayoutFieldsEvent extends Event
 {
     /**
-     * @var BaseField[]|string[]|array[] The fields that should be available to the field layout designer.
+     * @var array The fields that should be available to the field layout designer.
+     * @phpstan-var array<BaseField|class-string<BaseField>|array{class:class-string<BaseField>}>
      */
-    public $fields = [];
+    public array $fields = [];
 }

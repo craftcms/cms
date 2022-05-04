@@ -9,7 +9,6 @@ Craft.ElevatedSessionManager = Garnish.Base.extend(
 
     passwordModal: null,
     $passwordInput: null,
-    $passwordSpinner: null,
     $submitBtn: null,
     $errorPara: null,
 
@@ -23,29 +22,26 @@ Craft.ElevatedSessionManager = Garnish.Base.extend(
     requireElevatedSession: function (callback) {
       this.callback = callback;
 
-      // Check the time remaining on the user's elevated session (if any)
+      // Check the time remaining on the user’s elevated session (if any)
       this.fetchingTimeout = true;
 
-      Craft.postActionRequest(
-        'users/get-elevated-session-timeout',
-        (response, textStatus) => {
+      Craft.sendActionRequest('POST', 'users/get-elevated-session-timeout')
+        .then((response) => {
           this.fetchingTimeout = false;
-
-          if (textStatus === 'success') {
-            // Is there still enough time left or has it been disabled?
-            if (
-              response.timeout === false ||
-              response.timeout >=
-                Craft.ElevatedSessionManager.minSafeElevatedSessionTimeout
-            ) {
-              this.callback();
-            } else {
-              // Show the password modal
-              this.showPasswordModal();
-            }
+          if (
+            response.data.timeout === false ||
+            response.data.timeout >=
+              Craft.ElevatedSessionManager.minSafeElevatedSessionTimeout
+          ) {
+            this.callback();
+          } else {
+            // Show the password modal
+            this.showPasswordModal();
           }
-        }
-      );
+        })
+        .catch(() => {
+          this.fetchingTimeout = false;
+        });
     },
 
     showPasswordModal: function () {
@@ -75,14 +71,13 @@ Craft.ElevatedSessionManager = Garnish.Base.extend(
             Craft.t('app', 'Password') +
             '" autocomplete="current-password"/>'
         ).appendTo($passwordWrapper);
-        this.$passwordSpinner = $('<div class="spinner hidden"/>').appendTo(
-          $inputContainer
-        );
-        this.$submitBtn = $('<button/>', {
-          type: 'submit',
-          class: 'btn submit disabled',
-          text: Craft.t('app', 'Submit'),
-        }).appendTo($buttonContainer);
+        this.$submitBtn = Craft.ui
+          .createSubmitButton({
+            class: 'disabled',
+            label: Craft.t('app', 'Submit'),
+            spinner: true,
+          })
+          .appendTo($buttonContainer);
         this.$errorPara = $('<p class="error"/>').appendTo($body);
 
         this.passwordModal = new Garnish.Modal($passwordModal, {
@@ -133,35 +128,27 @@ Craft.ElevatedSessionManager = Garnish.Base.extend(
         return;
       }
 
-      this.$passwordSpinner.removeClass('hidden');
+      this.$submitBtn.addClass('loading');
       this.clearLoginError();
 
       var data = {
         currentPassword: this.$passwordInput.val(),
       };
 
-      Craft.postActionRequest(
-        'users/start-elevated-session',
-        data,
-        (response, textStatus) => {
-          this.$passwordSpinner.addClass('hidden');
-
-          if (textStatus === 'success') {
-            if (response.success) {
-              this.passwordModal.hide();
-              this.callback();
-            } else {
-              this.showPasswordError(
-                response.message || Craft.t('app', 'Incorrect password.')
-              );
-              Garnish.shake(this.passwordModal.$container);
-              this.focusPasswordInput();
-            }
-          } else {
-            this.showPasswordError();
-          }
-        }
-      );
+      Craft.sendActionRequest('POST', 'users/start-elevated-session', {data})
+        .then((response) => {
+          this.$submitBtn.removeClass('loading');
+          this.passwordModal.hide();
+          this.callback();
+        })
+        .catch(({response}) => {
+          this.$submitBtn.removeClass('loading');
+          this.showPasswordError(
+            response.data.message || Craft.t('app', 'Incorrect password.')
+          );
+          Garnish.shake(this.passwordModal.$container);
+          this.focusPasswordInput();
+        });
     },
 
     showPasswordError: function (error) {

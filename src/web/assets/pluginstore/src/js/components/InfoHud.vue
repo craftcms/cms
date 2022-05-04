@@ -1,7 +1,7 @@
 <template>
   <div class="info-hud">
     <v-popover placement="right">
-      <icon icon="info-circle" />
+      <c-icon icon="info-circle" />
 
       <template slot="popover">
         <slot></slot>
@@ -21,19 +21,19 @@
 </script>
 
 <style lang="scss">
-  @import '../../../../../../../packages/craftcms-sass/mixins';
+  @import '@craftcms/sass/mixins';
 
   .info-hud {
-    @apply .inline-block;
+    @apply tw-inline-block;
 
     .v-popover {
-      @apply .text-grey;
+      @apply tw-text-gray-400;
       display: inline-block;
       line-height: 0;
 
       &:hover,
       &.open {
-        @apply .cursor-pointer .text-blue;
+        @apply tw-cursor-pointer tw-text-blue-600;
       }
 
       & > span {

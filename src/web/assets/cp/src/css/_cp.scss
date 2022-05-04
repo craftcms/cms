@@ -2,8 +2,13 @@
 @import '@craftcms/sass/mixins';
 
 :root {
-  --padding: 24px;
-  --neg-padding: -24px;
+  --xs: 4px;
+  --s: 8px;
+  --m: 14px;
+  --l: 18px;
+  --xl: 24px;
+  --padding: var(--xl);
+  --neg-padding: calc(var(--padding) * -1);
 }
 
 $sidebarWidth: 226px;
@@ -14,8 +19,8 @@ $minXlUiWidth: 1536px;
 $minHorizontalUiWidth: $minFullUiWidth - $sidebarWidth;
 
 // Colors
-$badgeBackgroundColor: $grey200;
-$badgeColor: $grey800;
+$badgeBackgroundColor: var(--gray-200);
+$badgeColor: var(--gray-800);
 
 html {
   -webkit-text-size-adjust: 100%;
@@ -46,6 +51,7 @@ body {
 
 .skip-link {
   position: absolute;
+  margin: 5px;
   left: -10000px;
   top: auto;
   width: 1px;
@@ -54,10 +60,11 @@ body {
   z-index: $sidebarZIndex + 1;
 
   &:focus {
-    left: 0;
+    left: unset;
+    @include left(0);
     width: auto;
     height: auto;
-    background-color: $grey100 !important;
+    background-color: var(--gray-100) !important;
   }
 }
 
@@ -80,8 +87,8 @@ body {
 }
 
 /* global sidebar */
-$sidebarLinkStaticColor: $grey100;
-$sidebarLinkSecondaryColor: $grey200;
+$sidebarLinkStaticColor: var(--gray-100);
+$sidebarLinkSecondaryColor: var(--gray-200);
 
 #global-sidebar {
   --is-always-visible: true;
@@ -95,7 +102,7 @@ $sidebarLinkSecondaryColor: $grey200;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
   @include light-on-dark-text;
-  background-color: $grey800;
+  background-color: var(--gray-800);
   --focus-ring: 0 0 0 1px hsl(var(--light-focus-hsl)),
     0 0 0 3px hsla(var(--light-focus-hsl), 0.7);
 
@@ -113,7 +120,7 @@ $sidebarLinkSecondaryColor: $grey200;
       &:hover,
       &.active,
       &:active {
-        color: $white;
+        color: var(--white);
       }
 
       &:not(.sel):hover {
@@ -142,7 +149,7 @@ $sidebarLinkSecondaryColor: $grey200;
   }
 
   .light {
-    color: $grey400;
+    color: var(--gray-400);
   }
 
   @media only screen and (max-width: $minFullUiWidth - 1px) {
@@ -187,7 +194,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   }
 
   svg {
-    @include svg-mask($mediumTextColor);
+    @include svg-mask(var(--medium-text-color));
   }
 }
 
@@ -213,7 +220,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
       position: absolute;
       top: 0;
       @include right(0);
-      width: 14px;
+      width: var(--m);
       background-image: linear-gradient(
         to right,
         transparentize($systemInfoBgColor, 1),
@@ -262,7 +269,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
   .progress-label {
     display: block;
-    color: $grey300;
+    color: var(--gray-300);
     font-size: 11px;
     line-height: 1.5;
   }
@@ -270,14 +277,14 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
 #nav {
   flex: 1;
-  margin: 27px 0 0;
-  padding-bottom: 24px;
+  margin: 22px 0 0;
+  padding-bottom: var(--xl);
   overflow: visible;
 
   li {
     &:not(.has-subnav) > a.sel {
-      color: $white;
-      background-color: $grey900;
+      color: var(--white);
+      background-color: var(--gray-900);
       opacity: 1;
 
       .icon {
@@ -287,8 +294,8 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
     a {
       position: relative;
-      padding-left: 14px;
-      padding-right: 14px;
+      padding-left: var(--m);
+      padding-right: var(--m);
 
       &:focus {
         z-index: 1;
@@ -313,11 +320,11 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
         &.icon-mask {
           svg {
-            @include svg-mask($white);
+            @include svg-mask(var(--white));
           }
 
           span[data-icon] {
-            color: $white;
+            color: var(--white);
           }
         }
       }
@@ -343,7 +350,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
       margin-bottom: 10px;
 
       li a {
-        @include padding(3px, 14px, 3px, 42px, !important);
+        @include padding(3px, var(--m), 3px, 42px, !important);
         font-size: 12px;
 
         &:not(.active) {
@@ -358,27 +365,26 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 14px 14px 24px;
+  padding: var(--m) var(--m) var(--xl);
 }
 
 #app-info {
-  margin-top: 7px;
+  margin-top: var(--xs);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 12px;
-  color: $grey600;
+  color: var(--gray-600);
   text-align: center;
+  gap: var(--s);
 
   li {
-    margin: 0 7px;
-
     a {
-      color: $grey600;
+      color: var(--gray-600);
       text-decoration: underline;
 
       &.go:hover:after {
-        color: $grey600;
+        color: var(--gray-600);
       }
     }
   }
@@ -386,7 +392,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
 #edition-logo {
   user-select: none;
-  border: 1px solid $grey600;
+  border: 1px solid var(--gray-600);
   border-radius: 3px;
   display: inline-flex;
   height: 20px;
@@ -396,7 +402,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   & > .edition-name,
   & > .edition-trial {
     padding: 6px 7px 5px;
-    line-height: 8px;
+    line-height: var(--s);
   }
 
   & > .edition-name {
@@ -412,8 +418,8 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
     position: relative;
     @include margin-left(5px);
     @include padding-left(5px);
-    background-color: $grey600;
-    color: $grey200;
+    background-color: var(--gray-600);
+    color: var(--gray-200);
     border-radius: 0 1px 1px 0;
     letter-spacing: 1px;
     @include padding-right(7px);
@@ -434,13 +440,13 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
       body.ltr & {
         left: -10px;
         border-width: 0 10px 20px 0;
-        border-color: transparent $grey600 transparent transparent;
+        border-color: transparent var(--gray-600) transparent transparent;
       }
 
       body.rtl & {
         right: -10px;
         border-width: 0 0 20px 10px;
-        border-color: transparent transparent transparent $grey600;
+        border-color: transparent transparent transparent var(--gray-600);
       }
     }
   }
@@ -463,33 +469,33 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
 #alerts {
   position: relative; // to keep it above #global-header's shadow
-  background-color: $red050;
-  border-left: 5px solid $errorColor;
+  background-color: var(--red-050);
+  border-left: 5px solid var(--error-color);
   padding: 11px 0;
   text-align: center;
-  color: $errorColor;
+  color: var(--error-color);
 
   li {
-    padding: 4px 24px;
+    padding: 4px var(--xl);
 
     a {
-      color: $errorColor;
+      color: var(--error-color);
       text-decoration: underline;
 
       &.go {
         text-decoration: none;
         white-space: nowrap;
         border: 1px solid transparentize($errorColor, 0.5);
-        border-radius: $mediumBorderRadius;
+        border-radius: var(--medium-border-radius);
         padding: 3px 5px;
         margin: 0 2px;
 
         &:after {
-          color: $errorColor;
+          color: var(--error-color);
         }
 
         &:hover {
-          border-color: $errorColor;
+          border-color: var(--error-color);
           transition: border-color linear 100ms;
         }
       }
@@ -499,18 +505,18 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
 #global-header {
   width: 100%;
-  margin-bottom: 14px;
+  margin-bottom: var(--m);
   @include pane;
-  background: $grey050;
+  background: var(--gray-050);
 
   .flex {
     align-items: center;
   }
 
   .btn {
-    --ui-control-color: #{$grey400};
-    --ui-control-hover-color: #{$grey500};
-    --ui-control-active-color: #{$grey600};
+    --ui-control-color: var(--gray-400);
+    --ui-control-hover-color: var(--gray-500);
+    --ui-control-active-color: var(--gray-600);
   }
 }
 
@@ -527,11 +533,11 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
   a,
   button {
-    color: $lightTextColor;
+    color: var(--light-text-color);
     transition: color linear 100ms;
 
     &:hover {
-      color: $linkColor;
+      color: var(--link-color);
       text-decoration: none;
     }
   }
@@ -561,8 +567,8 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
     }
 
     &:after {
-      margin: 0 7px;
-      @include angle(right, $mediumHairlineColor);
+      margin: 0 var(--s);
+      @include angle(right, var(--medium-hairline-color));
     }
   }
 
@@ -587,6 +593,16 @@ li.breadcrumb-toggle-wrapper {
   display: none;
 }
 
+#account-menu {
+  ul {
+    li {
+      a {
+        max-width: calc(100% + 28px) !important;
+      }
+    }
+  }
+}
+
 #announcements-btn {
   @include header-btn;
   width: 40px;
@@ -601,7 +617,7 @@ li.breadcrumb-toggle-wrapper {
     width: 7px;
     height: 7px;
     border-radius: 4px;
-    background-color: $blue600;
+    background-color: var(--blue-600);
   }
 
   svg {
@@ -614,7 +630,7 @@ li.breadcrumb-toggle-wrapper {
   &:active,
   &.active {
     svg {
-      @include svg-mask($linkColor);
+      @include svg-mask(var(--link-color));
     }
   }
 }
@@ -627,11 +643,23 @@ li.breadcrumb-toggle-wrapper {
       margin-top: 20px;
     }
 
-    .timestamp {
+    .announcement-label-container {
       margin-top: -3px;
-      font-size: 12px;
-      color: $lightTextColor;
+      display: flex;
+      align-items: center;
       margin-bottom: 3px;
+
+      .announcement-icon svg {
+        display: block;
+        width: 15px;
+        height: 15px;
+      }
+
+      .announcement-label {
+        margin-left: 5px;
+        font-size: 12px;
+        color: var(--light-text-color);
+      }
     }
 
     h2 {
@@ -648,7 +676,7 @@ li.breadcrumb-toggle-wrapper {
       width: 7px;
       height: 7px;
       border-radius: 4px;
-      background-color: $blue600;
+      background-color: var(--blue-600);
     }
 
     p {
@@ -727,26 +755,26 @@ li.breadcrumb-toggle-wrapper {
     padding: 5px 10px;
     border-radius: 0 0 3px 3px;
     border-width: 0 1px 1px;
-    color: $white !important;
+    color: var(--white) !important;
     pointer-events: auto;
     @include light-on-dark-text;
     @include shadow;
-    background-color: $noticeColor;
+    background-color: var(--notice-color);
 
     &.error {
-      background-color: $primaryColor;
+      background-color: var(--primary-color);
     }
   }
 }
 
 #header-container {
-  margin-bottom: 14px;
+  margin-bottom: var(--m);
 }
 
 #crumbs,
 #header {
-  @include padding-left(30px);
-  @include padding-right(24px);
+  padding-left: var(--xl);
+  padding-right: var(--xl);
 }
 
 #global-header,
@@ -758,10 +786,6 @@ li.breadcrumb-toggle-wrapper {
     &.flex-nowrap {
       min-width: 0;
     }
-
-    & > * {
-      margin-bottom: 0;
-    }
   }
 }
 
@@ -771,8 +795,9 @@ li.breadcrumb-toggle-wrapper {
   align-content: stretch;
   flex-wrap: nowrap;
   justify-content: space-between;
-  padding-top: 8px;
-  padding-bottom: 8px;
+  gap: var(--s);
+  padding-top: var(--s);
+  padding-bottom: var(--s);
   position: relative;
   z-index: 2;
   width: calc(100vw - #{$sidebarWidth});
@@ -785,7 +810,7 @@ li.breadcrumb-toggle-wrapper {
     position: fixed;
     z-index: 12;
     top: 0;
-    background-color: $grey100;
+    background-color: var(--gray-100);
     box-shadow: inset 0 -1px 0 transparentize($grey700, 0.9);
   }
 
@@ -801,14 +826,6 @@ li.breadcrumb-toggle-wrapper {
     }
   }
 
-  .flex {
-    &:not(:last-child) {
-      @media only screen and (min-width: $minHorizontalUiWidth) {
-        @include margin-right(7px);
-      }
-    }
-  }
-
   h1 {
     line-height: 34px;
     margin-top: 0;
@@ -817,10 +834,6 @@ li.breadcrumb-toggle-wrapper {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-
-    &:not(:last-child) {
-      @include margin-right(14px !important);
-    }
   }
 
   .buttons,
@@ -832,7 +845,7 @@ li.breadcrumb-toggle-wrapper {
 #page-title {
   &.has-toolbar {
     @media only screen and (min-width: $minHorizontalUiWidth) {
-      min-width: #{$sidebarWidth - 30 - 7} !important;
+      min-width: calc(#{$sidebarWidth} - var(--xl) - var(--s)) !important;
     }
   }
 }
@@ -851,47 +864,44 @@ li.breadcrumb-toggle-wrapper {
   .menubtn:after,
   [data-icon]:before,
   [data-icon-after]:after {
-    color: var(--ui-control-color);
+    color: currentColor;
+    opacity: 0.8;
   }
 
   .text {
-    border-radius: $largeBorderRadius;
+    border-radius: var(--large-border-radius);
 
     &::-webkit-input-placeholder {
-      color: $lightTextColor;
+      color: var(--light-text-color);
     }
 
     &:-ms-input-placeholder {
-      color: $lightTextColor;
+      color: var(--light-text-color);
     }
 
     &::-ms-input-placeholder {
-      color: $lightTextColor;
+      color: var(--light-text-color);
     }
 
     &:-moz-placeholder {
-      color: $lightTextColor;
+      color: var(--light-text-color);
     }
 
     &::-moz-placeholder {
-      color: $lightTextColor;
+      color: var(--light-text-color);
     }
 
     &::placeholder {
-      color: $lightTextColor;
+      color: var(--light-text-color);
     }
 
     &:not(:focus) {
       background-clip: border-box;
     }
   }
-
-  .spinner {
-    background-image: url(../images/spinner_toolbar.gif);
-  }
 }
 
-#action-button {
+#action-buttons {
   height: 34px;
 }
 
@@ -900,7 +910,7 @@ li.breadcrumb-toggle-wrapper {
   flex-direction: row;
   align-items: flex-start;
   width: calc(100vw - #{$sidebarWidth});
-  padding: 0 24px 48px;
+  padding: 0 var(--xl) 48px;
   box-sizing: border-box;
 
   // for the Dashboard and any other full-page grids:
@@ -917,7 +927,7 @@ li.breadcrumb-toggle-wrapper {
   flex: 0 0 $sidebarWidth;
   width: $sidebarWidth;
   box-sizing: border-box;
-  @include margin-left(-24px);
+  @include margin-left(calc(var(--xl) * -1));
 }
 
 #sidebar {
@@ -929,8 +939,8 @@ li.breadcrumb-toggle-wrapper {
   &.fixed {
     position: fixed;
     overflow-y: auto;
-    padding-top: 14px;
-    padding-bottom: 14px;
+    padding-top: var(--m);
+    padding-bottom: var(--m);
   }
 
   nav {
@@ -946,12 +956,12 @@ li.breadcrumb-toggle-wrapper {
         }
         &:not(.sel) {
           &:hover {
-            background-color: $grey200;
+            background-color: var(--gray-200);
           }
         }
         &.sel {
           @include pane;
-          background-color: $grey050;
+          background-color: var(--gray-050);
         }
       }
     }
@@ -972,8 +982,8 @@ li.breadcrumb-toggle-wrapper {
   }
 
   #main-content.has-details & {
-    width: calc(100% - #{$detailsWidth} - 14px);
-    max-width: calc(100% - #{$detailsWidth} - 14px);
+    width: calc(100% - #{$detailsWidth} - var(--m));
+    max-width: calc(100% - #{$detailsWidth} - var(--m));
   }
 
   #main-content.has-sidebar.has-details {
@@ -984,24 +994,26 @@ li.breadcrumb-toggle-wrapper {
 
 .content-pane {
   @include pane;
-  border-radius: $largeBorderRadius;
+  border-radius: var(--large-border-radius);
   position: relative;
   background-clip: padding-box;
-  padding: 24px;
+  padding: var(--xl);
   word-wrap: break-word;
 
   & > hr {
-    margin-left: -24px;
-    margin-right: -24px;
+    margin-left: calc(var(--xl) * -1);
+    margin-right: calc(var(--xl) * -1);
   }
 }
 
 #footer {
   z-index: 1;
-  margin: 25px -24px -24px; // 1px extra on top is intentional
-  padding: 10px 24px;
-  background-color: $grey050;
-  border-radius: 0 0 $largeBorderRadius $largeBorderRadius;
+  margin: 25px calc(var(--xl) * -1) calc(var(--xl) * -1); // 1px extra on top is intentional
+  padding: var(--s) var(--xl);
+  background-color: var(--gray-050);
+  border-radius: 0 0 var(--large-border-radius) var(--large-border-radius);
+  box-sizing: border-box;
+  min-height: 50px;
 
   &:empty {
     display: none;
@@ -1016,130 +1028,65 @@ li.breadcrumb-toggle-wrapper {
 #details-container {
   flex: 0 0 #{$detailsWidth + 38};
   width: $detailsWidth + 38;
-  @include margin-right(-24px);
+  @include margin-right(calc(var(--xl) * -1));
   box-sizing: border-box;
 }
 
 #details {
   box-sizing: border-box;
-  padding-bottom: 24px;
-  @include padding-right(24px);
-  @include padding-left(14px);
+  @include padding-right(var(--xl));
+  @include padding-left(var(--m));
   width: $detailsWidth + 38;
 
   &.fixed {
     position: fixed;
     overflow-y: auto;
-    padding-top: 14px;
+    padding-top: var(--m);
   }
 
-  .meta {
-    margin-bottom: 14px;
-    border-radius: $largeBorderRadius;
-    padding: 0 24px;
+  .details {
+    .meta {
+      border-radius: var(--large-border-radius);
 
-    &:not(.warning) {
-      @include pane;
-    }
-
-    &:not(.read-only):not(.warning) {
-      background-color: $grey050;
-    }
-
-    &.read-only {
-      padding-top: 8px;
-      padding-bottom: 8px;
-      color: $mediumTextColor;
-      background-color: transparent;
-    }
-
-    &.warning {
-      border: 2px solid $yellow300;
-      padding: 19px 22px;
-      background: $white;
-      color: $textColor !important;
-
-      p {
-        margin-bottom: 5px;
+      &:not(.read-only):not(.warning) {
+        @include pane;
       }
 
-      .btn {
-        background-color: $yellow300;
+      &.read-only {
+        color: var(--medium-text-color);
+        background-color: transparent !important;
+      }
 
-        &:hover,
-        &:focus {
-          background-color: darken($yellow300, 10%);
+      & > .field,
+      & > .data {
+        &:first-child {
+          &,
+          & > .status-badge {
+            border-top-left-radius: var(--large-border-radius);
+          }
+          border-top-right-radius: var(--large-border-radius);
         }
 
-        &:active {
-          background-color: darken($yellow300, 15%);
+        &:last-child {
+          &,
+          & > .status-badge {
+            border-bottom-left-radius: var(--large-border-radius);
+          }
+          border-bottom-right-radius: var(--large-border-radius);
         }
       }
     }
 
-    & > .field,
-    & > .data {
-      margin: 0 -24px !important;
-
-      &:first-child {
-        &,
-        & > .status-badge {
-          border-top-left-radius: $largeBorderRadius;
-        }
-        border-top-right-radius: $largeBorderRadius;
-      }
-
-      &:last-child {
-        &,
-        & > .status-badge {
-          border-bottom-left-radius: $largeBorderRadius;
-        }
-        border-bottom-right-radius: $largeBorderRadius;
-      }
-
-      & > .heading > label,
-      & > .heading {
-        color: $grey600;
+    & > .field {
+      & > .input > .text.fullwidth {
+        @include pane;
       }
     }
 
-    & > .field > .status-badge {
-      @include left(-1px);
-    }
-
-    .text::placeholder,
-    .datewrapper .text + div[data-icon],
-    .timewrapper .text + div[data-icon] {
-      color: $grey500;
-    }
-
-    .ui-datepicker {
-      @include margin(0, 0, 0, -8px);
-    }
-  }
-
-  hr {
-    margin: 14px 0;
-    border-top-color: $hairlineColor;
-  }
-
-  .spinner {
-    background-image: url(../images/spinner_details.gif);
-  }
-
-  @include placeholder-styles($grey500);
-
-  .text {
-    background-color: transparent;
-    resize: none;
-  }
-
-  & > .text {
-    border-radius: $largeBorderRadius;
-    margin-bottom: 14px;
-
-    &:not(:focus) {
-      border-color: transparentize($inputColor, 0.6);
+    .notes {
+      border-radius: 5px;
+      padding-top: 15px;
+      padding-bottom: 15px;
     }
   }
 }
@@ -1174,7 +1121,7 @@ li.breadcrumb-toggle-wrapper {
     width: 36px;
     height: 50px;
     line-height: 26px;
-    color: $grey300;
+    color: var(--gray-300);
     text-align: center;
     @include margin-left(-10px);
 
@@ -1186,7 +1133,7 @@ li.breadcrumb-toggle-wrapper {
     }
 
     &:hover {
-      color: $grey400;
+      color: var(--gray-400);
     }
   }
 
@@ -1223,7 +1170,7 @@ li.breadcrumb-toggle-wrapper {
 
   #sidebar-toggle-container {
     display: block;
-    margin-bottom: 14px;
+    margin-bottom: var(--m);
   }
 
   #sidebar-toggle {
@@ -1255,7 +1202,7 @@ li.breadcrumb-toggle-wrapper {
   }
 
   #sidebar {
-    margin-bottom: 14px;
+    margin-bottom: var(--m);
 
     body:not(.showing-sidebar) & {
       display: none;
@@ -1273,7 +1220,7 @@ li.breadcrumb-toggle-wrapper {
 
   #details {
     padding: 0 !important;
-    margin-top: 14px;
+    margin-top: var(--m);
   }
 }
 
@@ -1288,8 +1235,8 @@ li.breadcrumb-toggle-wrapper {
 
   #tabs ul li {
     a {
-      padding-left: 14px;
-      padding-right: 14px;
+      padding-left: var(--m);
+      padding-right: var(--m);
     }
 
     & + li {
@@ -1340,13 +1287,13 @@ li.breadcrumb-toggle-wrapper {
   font-size: 13px;
 
   &:not(.drag-helper) {
-    padding: 14px 0;
-    background-color: $grey050;
+    padding: var(--m) 0;
+    background-color: var(--gray-050);
   }
 
   .heading {
     position: relative;
-    margin: 14px 24px 2px;
+    margin: var(--m) var(--xl) 2px;
 
     span {
       display: inline-block;
@@ -1355,7 +1302,7 @@ li.breadcrumb-toggle-wrapper {
       padding: 0 5px;
       margin: 0 -5px;
       text-transform: uppercase;
-      color: $mediumTextColor;
+      color: var(--light-text-color);
       font-size: 11px;
       font-weight: bold;
     }
@@ -1367,12 +1314,12 @@ li.breadcrumb-toggle-wrapper {
     }
 
     & > .toggle {
-      @include left(14px * $level);
+      @include left(calc(var(--m) * #{$level}));
     }
   }
 
   nav {
-    padding: 0 7px;
+    padding: 0 var(--s);
 
     & > ul > li {
       @include nav-level(0);
@@ -1398,12 +1345,12 @@ li.breadcrumb-toggle-wrapper {
 
         &:hover {
           text-decoration: none;
-          background-color: $grey100;
+          background-color: var(--gray-100);
         }
 
         &.sel {
           cursor: default;
-          background-color: $grey200;
+          background-color: var(--gray-200);
         }
       }
 
@@ -1413,12 +1360,12 @@ li.breadcrumb-toggle-wrapper {
         display: flex;
         flex-direction: row;
         align-items: center;
-        padding: 7px 24px;
-        min-height: 24px;
+        padding: 7px var(--xl);
+        min-height: var(--xl);
         box-sizing: border-box;
-        color: $textColor;
+        color: var(--text-color);
         user-select: none;
-        border-radius: $largeBorderRadius;
+        border-radius: var(--large-border-radius);
         word-break: break-word;
 
         .status {
@@ -1467,9 +1414,9 @@ li.breadcrumb-toggle-wrapper {
           padding: 0 6px;
           font-size: 11px;
           line-height: 16px;
-          border-radius: 8px;
-          background-color: $mediumTextColor;
-          color: $white;
+          border-radius: var(--s);
+          background-color: var(--medium-text-color);
+          color: var(--white);
         }
       }
 
@@ -1478,7 +1425,7 @@ li.breadcrumb-toggle-wrapper {
         z-index: 1;
         height: 34px;
         top: 0;
-        width: 24px;
+        width: var(--xl);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -1499,63 +1446,58 @@ li.breadcrumb-toggle-wrapper {
   @include margin-left($sidebarWidth);
 }
 
+#content-notice {
+  margin: 0 calc(var(--xl) * -1);
+  padding: 0 var(--xl);
+
+  &:not(:last-child) {
+    padding-bottom: var(--s);
+    border-bottom: 1px solid var(--hairline-color);
+    margin-bottom: var(--s);
+  }
+}
+
 /* flexbox field layouts */
-#content :not(.meta) > .flex-fields {
+#content :not(.meta) > .flex-fields,
+#content > .flex-fields,
+.so-content .flex-fields {
+  --row-gap: var(--xl);
   display: flex;
+  gap: var(--row-gap) 0;
   flex-wrap: wrap;
   align-content: flex-start;
-  margin: 0 -24px -24px;
-  width: calc(100% + 48px);
+  margin: 0 calc(var(--row-gap) * -1);
+  width: calc(100% + var(--row-gap) * 2);
+
+  & > * {
+    margin: 0 !important;
+    padding: 0 var(--row-gap);
+    box-sizing: border-box;
+  }
 
   & > h2 {
-    margin: 0 0 24px !important;
-    padding: 0 24px;
-    width: 100%;
+    flex: 4 0 100%;
 
     &:not(:first-child) {
-      padding-top: 24px;
-      border-top: 1px solid $hairlineColor;
+      padding-top: var(--xl);
+      border-top: 1px solid var(--hairline-color);
     }
   }
 
   & > hr {
-    margin: 0 0 24px;
-    width: calc(100% + 48px);
+    flex: 4 0 100%;
   }
 
   & > :not(h2):not(hr) {
     &,
     &:last-child {
       position: relative;
-      margin: 0 24px 24px !important;
-      width: calc(100% - 48px);
-      box-sizing: border-box;
-
-      // 4 cols for >= 1536px
-      @media only screen and (min-width: $minXlUiWidth) {
-        &.width-25 {
-          width: calc(25% - 48px);
-        }
-        &.width-50 {
-          width: calc(50% - 48px);
-        }
-        &.width-75 {
-          width: calc(75% - 48px);
-        }
-      }
-
-      // 2 cols fol 712 - 1536px
-      @media only screen and (min-width: 500px) and (max-width: $minXlUiWidth - 1px) {
-        &.width-25,
-        &.width-50 {
-          width: calc(50% - 48px);
-        }
-      }
+      width: 100%;
 
       &:before {
         position: absolute;
         top: 0;
-        @include left(-25px);
+        @include left(-1px);
         width: 1px;
         height: 100%;
         content: '';
@@ -1566,32 +1508,46 @@ li.breadcrumb-toggle-wrapper {
   }
 }
 
-/* retina */
-@media only screen and (-webkit-min-device-pixel-ratio: 1.5),
-  only screen and (-moz-min-device-pixel-ratio: 1.5),
-  only screen and (-o-min-device-pixel-ratio: 3/2),
-  only screen and (min-device-pixel-ratio: 1.5),
-  only screen and (min-resolution: 1.5dppx) {
-  #details {
-    .spinner {
-      background-image: url(../images/spinner_details_2x.gif);
-      background-size: 20px;
+#content :not(.meta) > .flex-fields,
+#content > .flex-fields {
+  & > :not(h2):not(hr) {
+    &,
+    &:last-child {
+      // 4 cols for >= 1536px
+      @media only screen and (min-width: $minXlUiWidth) {
+        &.width-25 {
+          width: 25%;
+        }
+        &.width-50 {
+          width: 50%;
+        }
+        &.width-75 {
+          width: 75%;
+        }
+      }
+
+      // 2 cols for 712 - 1536px
+      @media only screen and (min-width: 500px) and (max-width: $minXlUiWidth - 1px) {
+        &.width-25,
+        &.width-50 {
+          width: 50%;
+        }
+      }
     }
   }
-  #toolbar {
-    .spinner {
-      background-image: url(../images/spinner_toolbar_2x.gif);
-      background-size: 20px;
-    }
-  }
-  #upgrademodal.loading {
-    background-image: url(../images/spinner_big_2x.gif);
-    background-size: 48px;
-  }
-  #upgrademodal-success {
-    .message {
-      background-image: url(../images/success_2x.png);
-      background-size: 48px;
+}
+
+.so-content .flex-fields {
+  & > :not(h2):not(hr) {
+    &,
+    &:last-child {
+      // 2 cols for >= 712px
+      @media only screen and (min-width: $minXlUiWidth) {
+        &.width-25,
+        &.width-50 {
+          width: 50%;
+        }
+      }
     }
   }
 }

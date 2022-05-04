@@ -32,7 +32,7 @@ import './update.scss';
     },
 
     showError: function (error) {
-      this.$graphic.addClass('error');
+      this.$graphic.removeClass('spinner').addClass('error');
       this.showStatus(error);
     },
 
@@ -50,24 +50,17 @@ import './update.scss';
         data: this.data,
       };
 
-      Craft.postActionRequest(
-        this.actionPrefix + '/' + action,
-        data,
-        (response, textStatus, jqXHR) => {
-          if (textStatus === 'success') {
-            this.setState(response);
-          } else {
-            this.handleFatalError(jqXHR);
-          }
-        },
-        {
-          complete: $.noop,
-        }
-      );
+      Craft.sendActionRequest('POST', `${this.actionPrefix}/${action}`, {data})
+        .then((response) => {
+          this.setState(response.data);
+        })
+        .catch(({response}) => {
+          this.handleFatalError(response.data);
+        });
     },
 
     setState: function (state) {
-      this.$graphic.removeClass('error');
+      this.$graphic.addClass('spinner').removeClass('error');
 
       // Data probably won't be set if this is coming from an option
       if (state.data) {
@@ -144,7 +137,7 @@ import './update.scss';
     },
 
     onFinish: function (returnUrl) {
-      this.$graphic.addClass('success');
+      this.$graphic.removeClass('spinner').addClass('success');
 
       // Redirect in a moment
       setTimeout(function () {
@@ -156,15 +149,15 @@ import './update.scss';
       }, 750);
     },
 
-    handleFatalError: function (jqXHR) {
+    handleFatalError: function (data) {
       var details =
         Craft.t('app', 'Status:') +
         ' ' +
-        jqXHR.statusText +
+        data.statusText +
         '\n\n' +
         Craft.t('app', 'Response:') +
         ' ' +
-        jqXHR.responseText +
+        data.responseText +
         '\n\n';
 
       this.setState({
@@ -183,7 +176,9 @@ import './update.scss';
       });
 
       // Tell Craft to disable maintenance mode
-      Craft.postActionRequest(this.actionPrefix + '/finish', {data: this.data});
+      Craft.sendActionRequest('POST', this.actionPrefix + '/finish', {
+        data: this.data,
+      });
     },
   });
 })(jQuery);

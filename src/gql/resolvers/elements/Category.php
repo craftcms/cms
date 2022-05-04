@@ -9,6 +9,7 @@ namespace craft\gql\resolvers\elements;
 
 use Craft;
 use craft\elements\Category as CategoryElement;
+use craft\elements\db\ElementQuery;
 use craft\gql\base\ElementResolver;
 use craft\helpers\Gql as GqlHelper;
 
@@ -23,7 +24,7 @@ class Category extends ElementResolver
     /**
      * @inheritdoc
      */
-    public static function prepareQuery($source, array $arguments, $fieldName = null)
+    public static function prepareQuery(mixed $source, array $arguments, ?string $fieldName = null): mixed
     {
         // If this is the beginning of a resolver chain, start fresh
         if ($source === null) {
@@ -34,7 +35,7 @@ class Category extends ElementResolver
         }
 
         // If it's preloaded, it's preloaded.
-        if (is_array($query)) {
+        if (!$query instanceof ElementQuery) {
             return $query;
         }
 

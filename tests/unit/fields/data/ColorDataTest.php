@@ -9,7 +9,7 @@ namespace crafttests\unit\fields\data;
 
 use Codeception\Test\Unit;
 use craft\fields\data\ColorData;
-use UnitTester;
+use craft\test\TestCase;
 
 /**
  * Unit tests for the ColorData class.
@@ -17,22 +17,16 @@ use UnitTester;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.7.26
  */
-class ColorDataTest extends Unit
+class ColorDataTest extends TestCase
 {
     /**
-     * @var UnitTester
-     */
-    protected $tester;
-
-    /**
      * @dataProvider rgbDataProvider
-     *
      * @param int $r
      * @param int $g
      * @param int $b
      * @param string $hex
      */
-    public function testRgb(int $r, int $g, int $b, string $hex)
+    public function testRgb(int $r, int $g, int $b, string $hex): void
     {
         $color = new ColorData($hex);
         self::assertSame($r, $color->getRed());
@@ -46,13 +40,12 @@ class ColorDataTest extends Unit
 
     /**
      * @dataProvider hslDataProvider
-     *
      * @param int $h
      * @param int $s
      * @param int $l
      * @param string $hex
      */
-    public function testHsl(int $h, int $s, int $l, string $hex)
+    public function testHsl(int $h, int $s, int $l, string $hex): void
     {
         $color = new ColorData($hex);
         self::assertSame($h, $color->getHue());

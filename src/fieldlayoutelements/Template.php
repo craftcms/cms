@@ -12,6 +12,7 @@ use craft\base\ElementInterface;
 use craft\helpers\Cp;
 use craft\helpers\Html;
 use craft\web\View;
+use Throwable;
 
 /**
  * Template represents a UI element based on a custom template that can be included in field layouts.
@@ -24,7 +25,7 @@ class Template extends BaseUiElement
     /**
      * @var string The template path
      */
-    public $template;
+    public string $template = '';
 
     /**
      * @inheritdoc
@@ -37,7 +38,7 @@ class Template extends BaseUiElement
     /**
      * @inheritdoc
      */
-    protected function selectorIcon()
+    protected function selectorIcon(): ?string
     {
         return '@appicons/template.svg';
     }
@@ -65,7 +66,7 @@ class Template extends BaseUiElement
     /**
      * @inheritdoc
      */
-    public function settingsHtml()
+    protected function settingsHtml(): ?string
     {
         return Cp::textFieldHtml([
             'label' => Craft::t('app', 'Template'),
@@ -81,7 +82,7 @@ class Template extends BaseUiElement
     /**
      * @inheritdoc
      */
-    public function formHtml(ElementInterface $element = null, bool $static = false)
+    public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
         if (!$this->template) {
             return $this->_error(Craft::t('app', 'No template path has been chosen yet.'), 'warning');
@@ -92,7 +93,7 @@ class Template extends BaseUiElement
                 'element' => $element,
                 'static' => $static,
             ], View::TEMPLATE_MODE_SITE));
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             return $this->_error($e->getMessage(), 'error');
         }
 

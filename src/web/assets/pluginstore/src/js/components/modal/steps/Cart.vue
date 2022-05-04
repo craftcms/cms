@@ -10,163 +10,123 @@
 
         <template v-if="cart">
           <template v-if="cartItems.length">
-            <table class="cart-data fullwidth">
-              <thead>
-                <tr>
-                  <th></th>
-                  <th>{{ 'Item' | t('app') }}</th>
-                  <th>{{ 'Updates' | t('app') }}</th>
-                  <th class="w-10"></th>
-                </tr>
-              </thead>
-              <tbody
+            <!-- Cart data -->
+            <div
+              class="cart-data tw-border-t tw-border-solid tw-border-gray-200"
+            >
+              <!-- Line Item -->
+              <div
                 v-for="(item, itemKey) in cartItems"
                 :key="'item' + itemKey"
+                class="tw-border-b tw-border-solid tw-border-gray-200 md:tw-flex"
               >
-                <tr class="item-details">
-                  <template
-                    v-if="item.lineItem.purchasable.type === 'cms-edition'"
+                <div class="md:tw-mr-6 tw-pt-4 md:tw-pb-4 md:tw-px-4">
+                  <item-icon :item="item" />
+                </div>
+
+                <div class="tw-flex-1">
+                  <div class="tw-flex tw-py-4">
+                    <!-- Item name -->
+                    <item-name class="tw-flex-1" :item="item" />
+
+                    <!-- Price -->
+                    <div class="price tw-w-24 tw-text-right">
+                      <strong>{{ item.lineItem.price | currency }}</strong>
+                    </div>
+                  </div>
+
+                  <!-- Expiry date -->
+                  <div
+                    class="tw-border-t tw-border-solid tw-border-gray-200 tw-flex tw-justify-between tw-py-4"
                   >
-                    <td class="thin">
-                      <div class="plugin-icon">
-                        <img :src="craftLogo" width="40" height="40" />
-                      </div>
-                    </td>
-                    <td class="item-name">
-                      <strong>Craft CMS</strong>
-                      <edition-badge
-                        :name="item.lineItem.purchasable.name"
-                      ></edition-badge>
-                    </td>
-                  </template>
-
-                  <template
-                    v-else-if="
-                      item.lineItem.purchasable.type === 'plugin-edition'
-                    "
-                  >
-                    <td class="thin">
-                      <div class="plugin-icon">
-                        <img
-                          v-if="item.plugin.iconUrl"
-                          :src="item.plugin.iconUrl"
-                          width="40"
-                          height="40"
-                        />
-                      </div>
-                    </td>
-                    <td>
-                      <div class="item-name">
-                        <strong>{{ item.plugin.name }}</strong>
-                        <edition-badge
-                          v-if="item.plugin.editions > 1"
-                          :name="item.lineItem.purchasable.name"
-                        ></edition-badge>
-                      </div>
-                    </td>
-                  </template>
-
-                  <td class="expiry-date">
-                    <template
-                      v-if="
-                        item.lineItem.purchasable.type === 'cms-edition' ||
-                        (item.lineItem.purchasable.type === 'plugin-edition' &&
-                          (item.lineItem.options.licenseKey.substr(0, 4) ===
-                            'new:' ||
-                            (pluginLicenseInfo(item.plugin.handle) &&
-                              pluginLicenseInfo(item.plugin.handle).isTrial)))
-                      "
-                    >
-                      <dropdown
-                        v-model="selectedExpiryDates[itemKey]"
-                        :options="itemExpiryDateOptions(itemKey)"
-                        @input="onSelectedExpiryDateChange(itemKey)"
-                      />
-                    </template>
-
-                    <spinner v-if="itemLoading(itemKey)"></spinner>
-                  </td>
-                  <td class="price">
-                    <strong>{{ item.lineItem.price | currency }}</strong>
-                  </td>
-                </tr>
-
-                <template
-                  v-for="(adjustment, adjustmentKey) in item.lineItem
-                    .adjustments"
-                >
-                  <tr
-                    :key="itemKey + 'adjustment-' + adjustmentKey"
-                    class="sub-item"
-                  >
-                    <td class="blank-cell"></td>
-                    <td class="blank-cell"></td>
-                    <td>
+                    <div class="expiry-date">
                       <template
                         v-if="
-                          adjustment.sourceSnapshot.type === 'extendedUpdates'
+                          item.lineItem.purchasable.type === 'cms-edition' ||
+                          (item.lineItem.purchasable.type ===
+                            'plugin-edition' &&
+                            (item.lineItem.options.licenseKey.substring(
+                              0,
+                              4
+                            ) === 'new:' ||
+                              (pluginLicenseInfo(item.plugin.handle) &&
+                                pluginLicenseInfo(item.plugin.handle).isTrial)))
                         "
                       >
-                        {{
-                          'Updates until {date}'
-                            | t('app', {
-                              date: $options.filters.formatDate(
-                                adjustment.sourceSnapshot.expiryDate
-                              ),
-                            })
-                        }}
+                        <c-dropdown
+                          v-model="selectedExpiryDates[itemKey]"
+                          :options="itemExpiryDateOptions(itemKey)"
+                          @input="onSelectedExpiryDateChange(itemKey)"
+                        />
                       </template>
-                      <template v-else>
-                        {{ adjustment.name }}
-                      </template>
-                    </td>
-                    <td class="price">
-                      {{ adjustment.amount | currency }}
-                    </td>
-                  </tr>
-                </template>
 
-                <tr class="sub-item">
-                  <td class="blank-cell"></td>
-                  <td class="blank-cell"></td>
-                  <td class="empty-cell"></td>
-                  <td class="price">
-                    <div class="w-16">
-                      <template v-if="!removeFromCartLoading(itemKey)">
-                        <a role="button" @click="removeFromCart(itemKey)">{{
-                          'Remove' | t('app')
-                        }}</a>
-                      </template>
-                      <template v-else>
-                        <spinner class="sm"></spinner>
-                      </template>
+                      <c-spinner v-if="itemLoading(itemKey)" />
                     </div>
-                  </td>
-                </tr>
-              </tbody>
 
-              <tbody>
-                <tr>
-                  <th class="total-price" colspan="3">
+                    <template
+                      v-for="(
+                        adjustment, adjustmentKey
+                      ) in item.lineItem.adjustments.filter(
+                        (lineItemAdustment) =>
+                          lineItemAdustment.sourceSnapshot.type ===
+                          'extendedUpdates'
+                      )"
+                    >
+                      <div :key="itemKey + 'adjustment-' + adjustmentKey">
+                        {{ adjustment.amount | currency }}
+                      </div>
+                    </template>
+                  </div>
+
+                  <!-- Adjustments -->
+                  <item-adjustments :item="item" />
+
+                  <!-- Remove button-->
+                  <div
+                    class="tw-py-4 tw-text-right tw-border-t tw-border-solid tw-border-gray-200"
+                  >
+                    <template v-if="!removeFromCartLoading(itemKey)">
+                      <a role="button" @click="removeFromCart(itemKey)">{{
+                        'Remove' | t('app')
+                      }}</a>
+                    </template>
+                    <template v-else>
+                      <c-spinner class="sm" />
+                    </template>
+                  </div>
+                  <!-- /Remove button-->
+                </div>
+              </div>
+              <!-- /Line Item -->
+
+              <!-- Total price -->
+              <div class="tw-flex tw-mt-4 tw-text-lg">
+                <div class="tw-w-14 tw-mr-14"></div>
+                <div class="tw-flex-1 tw-flex tw-justify-between">
+                  <div>
                     <strong>{{ 'Total Price' | t('app') }}</strong>
-                  </th>
-                  <td class="total-price">
+                  </div>
+                  <div>
                     <strong>{{ cart.totalPrice | currency }}</strong>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+                  </div>
+                </div>
+              </div>
+              <!-- /Total price -->
+            </div>
+            <!-- /Cart data -->
 
-            <div class="py-4 flex">
-              <btn
+            <!-- Checkout button -->
+            <div class="tw-mt-4 tw-py-4 tw-text-right">
+              <c-btn
                 kind="primary"
                 @click="payment()"
                 :loading="loadingCheckout"
-                >{{ 'Checkout' | t('app') }}</btn
-              >
+                >{{ 'Checkout' | t('app') }}
+              </c-btn>
             </div>
           </template>
 
+          <!-- Empty cart -->
           <div v-else>
             <p>
               {{ 'Your cart is empty.' | t('app') }}
@@ -177,10 +137,11 @@
           </div>
         </template>
 
+        <!-- Active trials -->
         <active-trials></active-trials>
       </template>
       <template v-else>
-        <spinner></spinner>
+        <c-spinner />
       </template>
     </template>
   </step>
@@ -191,8 +152,10 @@
 
   import {mapState, mapGetters, mapActions} from 'vuex';
   import Step from '../Step';
-  import EditionBadge from '../../EditionBadge';
   import ActiveTrials from './cart/ActiveTrials';
+  import ItemIcon from './cart/ItemIcon';
+  import ItemName from './cart/ItemName';
+  import ItemAdjustments from './cart/ItemAdjustments';
 
   export default {
     data() {
@@ -205,8 +168,10 @@
     },
 
     components: {
+      ItemAdjustments,
+      ItemName,
+      ItemIcon,
       ActiveTrials,
-      EditionBadge,
       Step,
     },
 
@@ -214,7 +179,6 @@
       ...mapState({
         activeTrialPlugins: (state) => state.cart.activeTrialPlugins,
         cart: (state) => state.cart.cart,
-        craftLogo: (state) => state.craft.craftLogo,
         expiryDateOptions: (state) => state.pluginStore.expiryDateOptions,
       }),
 
@@ -356,107 +320,3 @@
     },
   };
 </script>
-
-<style lang="scss">
-  @import '../../../../../../../../../packages/craftcms-sass/mixins';
-
-  table.cart-data {
-    border-top: 1px solid #eee;
-
-    thead,
-    tbody {
-      border-bottom: 1px solid #eee;
-    }
-
-    tr {
-      th,
-      td {
-        padding: 7px 0;
-      }
-
-      td.expiry-date {
-        & > div {
-          display: inline-block;
-          margin-bottom: 0;
-        }
-
-        .c-spinner {
-          @apply .relative .ml-4;
-          top: 6px;
-        }
-      }
-
-      td.thin {
-        .c-btn {
-          white-space: nowrap;
-        }
-      }
-    }
-
-    .item-name {
-      .edition-badge {
-        @apply .ml-2;
-      }
-    }
-
-    .plugin-icon {
-      margin-right: 10px !important;
-
-      img {
-        max-width: none;
-      }
-    }
-  }
-
-  @media (max-width: 991px) {
-    table.cart-data {
-      thead {
-        display: none;
-      }
-
-      tr,
-      td,
-      th {
-        display: block;
-      }
-
-      tr {
-        &.sub-item {
-          td.blank-cell,
-          td.empty-cell {
-            display: none;
-          }
-        }
-      }
-    }
-  }
-
-  @media (min-width: 992px) {
-    table.cart-data {
-      tr {
-        &.sub-item {
-          td:not(.blank-cell) {
-            border-top: 1px dotted #eee;
-          }
-        }
-
-        th,
-        td {
-          padding: 10px 0;
-
-          &.price {
-            text-align: right;
-          }
-
-          &.total-price {
-            text-align: right;
-          }
-        }
-
-        td.expiry-date {
-          @apply .w-3/5;
-        }
-      }
-    }
-  }
-</style>

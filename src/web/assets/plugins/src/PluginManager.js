@@ -7,7 +7,7 @@ import './plugins.scss';
     {
       init: function () {
         this.getPluginLicenseInfo().then((response) => {
-          for (var handle in response) {
+          for (let handle in response) {
             if (response.hasOwnProperty(handle)) {
               if (!response[handle].isComposerInstalled) {
                 this.addUninstalledPluginRow(handle, response[handle]);
@@ -28,30 +28,26 @@ import './plugins.scss';
               include: 'plugins',
             },
           })
-            .then(function (response) {
-              Craft.postActionRequest(
-                'app/get-plugin-license-info',
-                {
-                  pluginLicenses: response.license.pluginLicenses || [],
-                },
-                function (response, textStatus) {
-                  if (textStatus === 'success') {
-                    resolve(response);
-                  } else {
-                    reject();
-                  }
-                },
-                {
-                  contentType: 'json',
-                }
-              );
+            .then((response) => {
+              let data = {
+                pluginLicenses: response.license.pluginLicenses || [],
+              };
+              Craft.sendActionRequest('POST', 'app/get-plugin-license-info', {
+                data,
+              })
+                .then((response) => {
+                  resolve(response.data);
+                })
+                .catch(() => {
+                  reject();
+                });
             })
             .catch(reject);
         });
       },
 
       addUninstalledPluginRow: function (handle, info) {
-        var $table = $('#plugins');
+        const $table = $('#plugins');
         if (!$table.length) {
           $table = $('<table/>', {
             id: 'plugins',
@@ -61,7 +57,7 @@ import './plugins.scss';
           $('#no-plugins').replaceWith($table);
         }
 
-        var $row = $('<tr/>', {
+        const $row = $('<tr/>', {
           data: {
             handle: handle,
           },
@@ -222,12 +218,12 @@ import './plugins.scss';
         if (key[0] === '$') {
           return key;
         }
-        return key.replace(/.{4}/g, '$&-').substr(0, 29).toUpperCase();
+        return key.replace(/.{4}/g, '$&-').substring(0, 29).toUpperCase();
       },
     }
   );
 
-  var Plugin = Garnish.Base.extend({
+  const Plugin = Garnish.Base.extend({
     manager: null,
     $row: null,
     $details: null,
@@ -265,14 +261,14 @@ import './plugins.scss';
       if (this.updateTimeout) {
         clearTimeout(this.updateTimeout);
       }
-      var key = this.getKey();
+      const key = this.getKey();
       if (
         key.length === 0 ||
         key.length === 24 ||
         (key.length > 1 && key[0] === '$')
       ) {
         // normalize
-        var userKey = Craft.PluginManager.normalizeUserKey(key);
+        const userKey = Craft.PluginManager.normalizeUserKey(key);
         this.$keyInput.val(userKey);
         this.updateTimeout = setTimeout(
           this.updateLicenseStatus.bind(this),
@@ -283,25 +279,23 @@ import './plugins.scss';
 
     updateLicenseStatus: function () {
       this.$spinner.removeClass('hidden');
-      Craft.postActionRequest(
-        'app/update-plugin-license',
-        {handle: this.handle, key: this.getKey()},
-        (response, textStatus) => {
-          if (textStatus === 'success') {
-            this.manager.getPluginLicenseInfo().then((response) => {
-              this.$spinner.addClass('hidden');
-              this.update(response[this.handle]);
-            });
-          }
+
+      let data = {handle: this.handle, key: this.getKey()};
+      Craft.sendActionRequest('POST', 'app/update-plugin-license', {data}).then(
+        () => {
+          this.manager.getPluginLicenseInfo().then((response) => {
+            this.$spinner.addClass('hidden');
+            this.update(response[this.handle]);
+          });
         }
       );
     },
 
     update: function (info) {
       // update the status icon
-      var $oldIcon = this.$row.find('.license-key-status');
+      const $oldIcon = this.$row.find('.license-key-status');
       if (info.licenseKeyStatus == 'valid' || info.licenseIssues.length) {
-        var $newIcon = $('<span/>', {
+        const $newIcon = $('<span/>', {
           class:
             'license-key-status ' +
             (info.licenseIssues.length === 0 ? 'valid' : ''),
@@ -316,9 +310,9 @@ import './plugins.scss';
       }
 
       // add the edition/trial badge
-      var $oldEdition = this.$row.find('.edition');
+      const $oldEdition = this.$row.find('.edition');
       if (info.hasMultipleEditions || info.isTrial) {
-        var $newEdition = info.upgradeAvailable
+        const $newEdition = info.upgradeAvailable
           ? $('<a/>', {
               href: Craft.getUrl('plugin-store/' + this.handle),
               class: 'edition',
@@ -345,7 +339,7 @@ import './plugins.scss';
       }
 
       // show the license key?
-      var showLicenseKey =
+      const showLicenseKey =
         info.licenseKey || info.licenseKeyStatus !== 'unknown';
       if (showLicenseKey) {
         this.$keyContainer.removeClass('hidden');
@@ -368,9 +362,9 @@ import './plugins.scss';
       // add the error message
       this.$row.find('p.error').remove();
       if (info.licenseIssues.length) {
-        var $issues = $();
-        var $p, $form, message;
-        for (var i = 0; i < info.licenseIssues.length; i++) {
+        let $issues = $();
+        for (let i = 0; i < info.licenseIssues.length; i++) {
+          let message;
           switch (info.licenseIssues[i]) {
             case 'no_trials':
               message = Craft.t(
@@ -418,9 +412,9 @@ import './plugins.scss';
               message = Craft.t('app', 'Your license key is invalid.');
           }
 
-          $p = $('<p/>', {class: 'error', html: message});
+          const $p = $('<p/>', {class: 'error', html: message});
           if (info.licenseIssues[i] === 'wrong_edition') {
-            $form = $('<form/>', {
+            const $form = $('<form/>', {
               method: 'post',
               'accept-charset': 'UTF-8',
             })

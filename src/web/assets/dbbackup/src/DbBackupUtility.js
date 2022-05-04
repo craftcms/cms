@@ -49,23 +49,24 @@
                     this.onComplete(false);
                   });
               } else {
-                Craft.postActionRequest(
-                  'utilities/db-backup-perform-action',
-                  (response, textStatus) => {
+                Craft.sendActionRequest(
+                  'POST',
+                  'utilities/db-backup-perform-action'
+                )
+                  .then((response) => {
                     this.updateProgressBar();
-                    if (textStatus === 'success') {
-                      setTimeout(this.onComplete.bind(this), 300);
-                    } else {
-                      Craft.cp.displayError(
-                        Craft.t(
-                          'app',
-                          'There was a problem backing up your database. Please check the Craft logs.'
-                        )
-                      );
-                      this.onComplete(false);
-                    }
-                  }
-                );
+                    setTimeout(this.onComplete.bind(this), 300);
+                  })
+                  .catch(({response}) => {
+                    this.updateProgressBar();
+                    Craft.cp.displayError(
+                      Craft.t(
+                        'app',
+                        'There was a problem backing up your database. Please check the Craft logs.'
+                      )
+                    );
+                    this.onComplete(false);
+                  });
               }
             },
           }

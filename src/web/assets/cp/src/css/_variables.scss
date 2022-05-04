@@ -1,0 +1,59 @@
+@charset "UTF-8";
+@import '@craftcms/sass/mixins';
+
+:root {
+  // submit button colors
+  --primary-color: var(--red-500);
+  --secondary-color: var(--gray-500);
+
+  --input-color: hsl(212, 25%, 50%);
+
+  // text colors
+  --text-color: var(--gray-700);
+  --medium-dark-text-color: var(--gray-550);
+  --medium-text-color: var(--gray-550);
+  --light-text-color: var(--gray-500);
+  --link-color: #2563eb;
+
+  // menu colors
+  --menu-option-color: var(--text-color);
+  --menu-option-active-color: var(--white);
+  --menu-option-active-background-color: var(--gray-350);
+
+  // hairline colors
+  --hairline-color: #{transparentize(hsl(209, 20%, 25%), 0.9)};
+  --medium-hairline-color: #{transparentize(hsl(209, 14%, 37%), 0.75)};
+  --dark-hairline-color: #{transparentize(hsl(210, 10%, 53%), 0.5)};
+
+  // focus colors
+  --light-focus-color: var(--blue-300);
+  --medium-focus-color: var(--blue-500);
+  --dark-focus-color: #0f74b1;
+
+  // focus rings
+  --light-focus-ring: 0 0 0 1px #5ed0fa,
+    0 0 0 3px #{transparentize(#5ed0fa, 0.3)};
+  --medium-focus-ring: 0 0 0 1px #2bb0ed,
+    0 0 0 3px #{transparentize(#2bb0ed, 0.3)};
+  --dark-focus-ring: 0 0 0 1px #0f74b1,
+    0 0 0 3px #{transparentize(#0f74b1, 0.3)};
+
+  // selection colors
+  --light-sel-color: var(--gray-200);
+  --dark-sel-color: var(--gray-600);
+
+  // alert/notice colors
+  --error-color: var(--red-600);
+  --warning-color: var(--yellow-800);
+  --success-color: var(--teal-500);
+  --notice-color: var(--blue-800);
+
+  // UI element styles
+  --small-border-radius: 3px;
+  --medium-border-radius: 4px;
+  --large-border-radius: 5px;
+
+  --menu-border-radius: var(--medium-border-radius);
+  --checkbox-size: 16px;
+  --radio-size: 16px;
+}

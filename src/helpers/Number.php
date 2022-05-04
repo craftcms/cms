@@ -8,6 +8,7 @@
 namespace craft\helpers;
 
 use Craft;
+use yii\base\InvalidArgumentException;
 
 /**
  * Class Number
@@ -135,9 +136,9 @@ class Number
      * returned.
      *
      * @param mixed $var
-     * @return mixed
+     * @return float|int|string
      */
-    public static function makeNumeric($var)
+    public static function makeNumeric(mixed $var): float|int|string
     {
         if (is_numeric($var)) {
             return $var;
@@ -148,5 +149,35 @@ class Number
         }
 
         return (int)!empty($var);
+    }
+
+    /**
+     * Returns whether the given number lacks decimal points when typecast to a float.
+     *
+     * @param float|int|string $value
+     * @return bool
+     * @throws InvalidArgumentException if $value isn’t numeric
+     * @since 4.0.0
+     */
+    public static function isInt(float|int|string $value): bool
+    {
+        if (!is_numeric($value)) {
+            throw new InvalidArgumentException('Only numeric values can be typecast to an integer or float.');
+        }
+
+        return (float)(int)$value === (float)$value;
+    }
+
+    /**
+     * Typecasts the given number into an integer or a float.
+     *
+     * @param float|int|string $value
+     * @return int|float
+     * @throws InvalidArgumentException if $value isn’t numeric
+     * @since 4.0.0
+     */
+    public static function toIntOrFloat(float|int|string $value): float|int
+    {
+        return static::isInt($value) ? (int)$value : (float)$value;
     }
 }

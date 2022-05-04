@@ -52,16 +52,10 @@
         {
           complete: () => {
             let postData = Garnish.getPostData($form);
-            let params = Craft.expandPostArray(postData);
+            let data = Craft.expandPostArray(postData);
 
-            Craft.postActionRequest(
-              params.action,
-              params,
-              (response, textStatus) => {
-                if (response && response.error) {
-                  alert(response.error);
-                }
-
+            Craft.sendActionRequest('POST', data.action, {data})
+              .then((response) => {
                 progressBar.setProgressPercentage(100);
 
                 setTimeout(() => {
@@ -85,11 +79,10 @@
                     }
                   );
                 }, 300);
-              },
-              {
-                complete: $.noop,
-              }
-            );
+              })
+              .catch(({response}) => {
+                alert(response.data.message);
+              });
           },
         }
       );

@@ -7,9 +7,8 @@
 
 namespace craft\db;
 
-use Craft;
 use craft\helpers\Db;
-use yii\db\ActiveQuery as YiiActiveQuery;
+use DateTime;
 use yii2tech\ar\softdelete\SoftDeleteBehavior;
 
 /**
@@ -46,7 +45,7 @@ use yii2tech\ar\softdelete\SoftDeleteBehavior;
  *     behaviors as softDeleteBehaviors;
  * }
  *
- * public function behaviors()
+ * public function behaviors(): array
  * {
  *     $behaviors = $this->softDeleteBehaviors();
  *     $behaviors['myBehavior'] = MyBehavior::class;
@@ -58,7 +57,7 @@ use yii2tech\ar\softdelete\SoftDeleteBehavior;
  * add a condition to exclude soft-deleted rows.
  *
  * ```php
- * public static function find()
+ * public static function find(): ElementQueryInterface
  * {
  *     // @var MyActiveQuery $query
  *     $query = Craft::createObject(MyActiveQuery::class, [static::class]);
@@ -67,8 +66,8 @@ use yii2tech\ar\softdelete\SoftDeleteBehavior;
  * }
  * ```
  *
- * @property ActiveRecord $this
  * @property string|null $dateDeleted Date deleted
+ * @mixin ActiveRecord
  * @mixin SoftDeleteBehavior
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.1.0
@@ -76,39 +75,27 @@ use yii2tech\ar\softdelete\SoftDeleteBehavior;
 trait SoftDeleteTrait
 {
     /**
-     * @return YiiActiveQuery
+     * @return ActiveQuery
      */
-    public static function find()
+    public static function find(): ActiveQuery
     {
         $query = parent::find();
-
-        // todo: remove schema version condition after next beakpoint
-        $schemaVersion = Craft::$app->getInstalledSchemaVersion();
-        if (version_compare($schemaVersion, '3.1.19', '>=')) {
-            if ($query instanceof ActiveQuery) {
-                $alias = $query->getAlias();
-                $column = "$alias.dateDeleted";
-            } else {
-                $column = 'dateDeleted';
-            }
-            $query->where([$column => null]);
-        }
-
-        return $query;
+        $column = sprintf('%s.dateDeleted', $query->getAlias());
+        return $query->where([$column => null]);
     }
 
     /**
-     * @return YiiActiveQuery
+     * @return ActiveQuery
      */
-    public static function findWithTrashed(): YiiActiveQuery
+    public static function findWithTrashed(): ActiveQuery
     {
         return static::find()->where([]);
     }
 
     /**
-     * @return YiiActiveQuery
+     * @return ActiveQuery
      */
-    public static function findTrashed(): YiiActiveQuery
+    public static function findTrashed(): ActiveQuery
     {
         return static::find()->where(['not', ['dateDeleted' => null]]);
     }
@@ -116,14 +103,14 @@ trait SoftDeleteTrait
     /**
      * @inheritdoc
      */
-    public function behaviors()
+    public function behaviors(): array
     {
         $behaviors = parent::behaviors();
         $behaviors['softDelete'] = [
             'class' => SoftDeleteBehavior::class,
             'softDeleteAttributeValues' => [
                 'dateDeleted' => function() {
-                    return Db::prepareDateForDb(new \DateTime());
+                    return Db::prepareDateForDb(new DateTime());
                 },
             ],
         ];

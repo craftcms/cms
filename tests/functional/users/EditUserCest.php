@@ -23,12 +23,12 @@ class EditUserCest
     /**
      * @var string
      */
-    public $cpTrigger;
+    public string $cpTrigger;
 
     /**
-     * @var
+     * @var User|null
      */
-    public $currentUser;
+    public ?User $currentUser;
 
     /**
      * @param FunctionalTester $I
@@ -48,25 +48,28 @@ class EditUserCest
     /**
      * @param FunctionalTester $I
      */
-    public function testMyAccountPage(FunctionalTester $I)
+    public function testMyAccountPage(FunctionalTester $I): void
     {
         $I->amOnPage('/' . $this->cpTrigger . '/myaccount');
 
         $I->see('My Account');
 
         $I->submitForm('#userform', [
-            'firstName' => 'IM A CHANGED FIRSTNAME',
+            'fullName' => 'IM A CHANGED FULLNAME',
         ]);
 
         $I->see('User saved');
         $I->seeInTitle('Users');
 
+        /** @var User $user */
+        $user = User::find()
+            ->id($this->currentUser->id)
+            ->one();
+
         // Check that the Db was updated.
         $I->assertSame(
-            'IM A CHANGED FIRSTNAME',
-            User::find()
-                ->id($this->currentUser->id)
-                ->one()->firstName
+            'IM A CHANGED FULLNAME',
+            $user->fullName
         );
     }
 }

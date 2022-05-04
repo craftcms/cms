@@ -20,7 +20,7 @@ class StructuredElementQuery extends ActiveQuery
     /**
      * @inheritdoc
      */
-    public function behaviors()
+    public function behaviors(): array
     {
         return [
             NestedSetsQueryBehavior::class,

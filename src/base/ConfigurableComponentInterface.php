@@ -24,7 +24,7 @@ interface ConfigurableComponentInterface extends ComponentInterface
      * By default, this method returns all public non-static properties that were defined on the called class.
      * You may override this method to change the default behavior.
      *
-     * @return array The list of settings attribute names
+     * @return string[] The list of settings attribute names
      * @see getSettings()
      */
     public function settingsAttributes(): array;
@@ -90,7 +90,7 @@ interface ConfigurableComponentInterface extends ComponentInterface
      * So here’s what a getSettingsHtml() method that includes field-targeting JavaScript code might look like:
      *
      * ```php
-     * public function getSettingsHtml()
+     * public function getSettingsHtml(): ?string
      * {
      *     // Figure out what the ID is going to be namespaced into
      *     $id = 'foo';
@@ -118,5 +118,5 @@ interface ConfigurableComponentInterface extends ComponentInterface
      *
      * @return string|null
      */
-    public function getSettingsHtml();
+    public function getSettingsHtml(): ?string;
 }

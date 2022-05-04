@@ -7,11 +7,9 @@
 
 namespace craft\test\console;
 
-use Closure;
 use Codeception\Stub;
 use Craft;
 use craft\console\Controller;
-use Traversable;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 
@@ -24,73 +22,72 @@ use yii\base\InvalidConfigException;
  */
 class CommandTest
 {
-    const STD_OUT = 'stdOut';
-    const STD_ERR = 'stderr';
-    const PROMPT = 'prompt';
-    const CONFIRM = 'confirm';
-    const SELECT = 'select';
-    const OUTPUT_COMMAND = 'outputCommand';
+    public const STD_OUT = 'stdOut';
+    public const STD_ERR = 'stderr';
+    public const PROMPT = 'prompt';
+    public const CONFIRM = 'confirm';
+    public const SELECT = 'select';
+    public const OUTPUT_COMMAND = 'outputCommand';
 
     /**
      * @var ConsoleTest
      */
-    protected $test;
+    protected ConsoleTest $test;
 
     /**
      * @var string
      */
-    protected $command;
+    protected string $command;
 
     /**
      * @var array
      */
-    protected $parameters;
+    protected array $parameters;
 
     /**
      * @var bool
-     * @todo rename to ignoreStdout in 4.0
      */
-    protected $ignoreStdOut = false;
+    protected bool $ignoreStdout = false;
 
     /**
      * @var int
      */
-    protected $expectedExitCode;
+    protected int $expectedExitCode;
 
     /**
      * @var bool
      */
-    protected $hasExecuted = false;
+    protected bool $hasExecuted = false;
 
     /**
      * @var array|CommandTestItem
      */
-    protected $eventChain = [];
+    protected CommandTestItem|array $eventChain = [];
 
     /**
-     * @var integer
+     * @var int
      */
-    protected $currentIndex;
+    protected int $currentIndex;
 
     /**
      * @var Controller
      */
-    protected $controller;
+    protected Controller $controller;
 
     /**
      * @var string
      */
-    protected $actionId;
+    protected string $actionId;
 
     /**
      * @var int
      */
-    protected $desiredExitCode;
+    protected int $desiredExitCode;
 
     /**
      * @var int
      */
-    protected $eventChainItemsHandled = 0;
+    protected int $eventChainItemsHandled = 0;
 
     /**
      * CommandTest constructor.
@@ -105,7 +102,7 @@ class CommandTest
     {
         $this->command = $command;
         $this->parameters = $parameters;
-        $this->ignoreStdOut = $ignoreStdOut;
+        $this->ignoreStdout = $ignoreStdOut;
         $this->test = $consoleTest;
         $this->setupController();
     }
@@ -113,7 +110,7 @@ class CommandTest
     /**
      * @throws InvalidArgumentException
      */
-    public function run()
+    public function run(): void
     {
         if (!isset($this->desiredExitCode)) {
             throw new InvalidArgumentException('Please enter a desired exit code');
@@ -125,21 +122,20 @@ class CommandTest
     }
 
     /**
-     * @param $value
+     * @param int $value
      * @return CommandTest
      */
-    public function exitCode($value): CommandTest
+    public function exitCode(int $value): CommandTest
     {
         $this->desiredExitCode = $value;
         return $this;
     }
 
     /**
-     * @param string|string[]|Traversable $desiredOutput
+     * @param iterable|string $desiredOutput
      * @return CommandTest
-     * @todo rename to stdout() in 4.0
      */
-    public function stdOut($desiredOutput): CommandTest
+    public function stdout(iterable|string $desiredOutput): CommandTest
     {
         return $this->addEventChainItem([
             'type' => self::STD_OUT,
@@ -148,11 +144,11 @@ class CommandTest
     }
 
     /**
-     * @param string|string[]|Traversable $desiredOutput
+     * @param iterable|string $desiredOutput
      * @param bool $withScriptName
      * @return CommandTest
      */
-    public function outputCommand($desiredOutput, bool $withScriptName = true): CommandTest
+    public function outputCommand(iterable|string $desiredOutput, bool $withScriptName = true): CommandTest
     {
         return $this->addEventChainItem([
             'type' => self::OUTPUT_COMMAND,
@@ -162,10 +158,10 @@ class CommandTest
     }
 
     /**
-     * @param string|string[]|Traversable $desiredOutput
+     * @param iterable|string $desiredOutput
      * @return CommandTest
      */
-    public function stderr($desiredOutput): CommandTest
+    public function stderr(iterable|string $desiredOutput): CommandTest
     {
         return $this->addEventChainItem([
             'type' => self::STD_ERR,
@@ -175,11 +171,11 @@ class CommandTest
 
     /**
      * @param string $prompt
-     * @param $returnValue
+     * @param mixed $returnValue
      * @param array $options
      * @return CommandTest
      */
-    public function prompt(string $prompt, $returnValue, array $options = []): CommandTest
+    public function prompt(string $prompt, mixed $returnValue, array $options = []): CommandTest
     {
         return $this->addEventChainItem([
             'type' => self::PROMPT,
@@ -191,11 +187,11 @@ class CommandTest
 
     /**
      * @param string $message
-     * @param $returnValue
+     * @param mixed $returnValue
      * @param bool $default
      * @return CommandTest
      */
-    public function confirm(string $message, $returnValue, bool $default = false): CommandTest
+    public function confirm(string $message, mixed $returnValue, bool $default = false): CommandTest
     {
         return $this->addEventChainItem([
             'type' => self::CONFIRM,
@@ -206,12 +202,12 @@ class CommandTest
     }
 
     /**
-     * @param $prompt
-     * @param $returnValue
+     * @param string $prompt
+     * @param mixed $returnValue
      * @param array $options
      * @return CommandTest
      */
-    public function select(string $prompt, $returnValue, $options = []): CommandTest
+    public function select(string $prompt, mixed $returnValue, array $options = []): CommandTest
     {
         return $this->addEventChainItem([
             'type' => self::SELECT,
@@ -224,7 +220,7 @@ class CommandTest
     /**
      * @throws InvalidConfigException
      */
-    protected function setupController()
+    protected function setupController(): void
     {
         $controllerArray = Craft::$app->createController($this->command);
         if (!$controllerArray) {
@@ -241,7 +237,7 @@ class CommandTest
         $actionId = $controllerArray[1];
 
         $stubController = Stub::construct(get_class($controller), [$controller->id, Craft::$app], [
-            'stdOut' => $this->stdOutHandler(),
+            'stdOut' => $this->stdoutHandler(),
             'stderr' => $this->stderrHandler(),
             'prompt' => $this->promptHandler(),
             'confirm' => $this->confirmHandler(),
@@ -254,9 +250,9 @@ class CommandTest
     }
 
     /**
-     * @return Closure
+     * @return callable
      */
-    protected function outputCommandHandler(): Closure
+    protected function outputCommandHandler(): callable
     {
         return function($out, $withScriptName = true) {
             $nextItem = $this->runHandlerCheck($out, self::OUTPUT_COMMAND);
@@ -270,13 +266,12 @@ class CommandTest
     }
 
     /**
-     * @return Closure
-     * @todo rename to stdoutHandler in 4.0
+     * @return callable
      */
-    protected function stdOutHandler(): Closure
+    protected function stdoutHandler(): callable
     {
         return function($out) {
-            if (!$this->ignoreStdOut) {
+            if (!$this->ignoreStdout) {
                 $nextItem = $this->runHandlerCheck($out, self::STD_OUT);
                 if (is_string($nextItem->desiredOutput)) {
                     $this->test::assertSame($nextItem->desiredOutput, $out);
@@ -288,9 +283,9 @@ class CommandTest
     }
 
     /**
-     * @return Closure
+     * @return callable
      */
-    protected function stderrHandler(): Closure
+    protected function stderrHandler(): callable
     {
         return function($out) {
             $nextItem = $this->runHandlerCheck($out, self::STD_ERR);
@@ -303,9 +298,9 @@ class CommandTest
     }
 
     /**
-     * @return Closure
+     * @return callable
      */
-    protected function promptHandler(): Closure
+    protected function promptHandler(): callable
     {
         return function($text, $options = []) {
             $nextItem = $this->runHandlerCheck('A prompt with value: ' . $text, self::PROMPT);
@@ -316,9 +311,9 @@ class CommandTest
     }
 
     /**
-     * @return Closure
+     * @return callable
      */
-    protected function confirmHandler(): Closure
+    protected function confirmHandler(): callable
     {
         return function($message, $default = false) {
             $nextItem = $this->runHandlerCheck('A confirm with value: ' . $message, self::CONFIRM);
@@ -329,9 +324,9 @@ class CommandTest
     }
 
     /**
-     * @return Closure
+     * @return callable
      */
-    protected function selectHandler(): Closure
+    protected function selectHandler(): callable
     {
         return function($prompt, $options = []) {
             $nextItem = $this->runHandlerCheck('A select with value: ' . $prompt, self::SELECT);
@@ -342,11 +337,11 @@ class CommandTest
     }
 
     /**
-     * @param $out
-     * @param $type
+     * @param string $out
+     * @param string $type
      * @return CommandTestItem
      */
-    protected function runHandlerCheck($out, $type): CommandTestItem
+    protected function runHandlerCheck(string $out, string $type): CommandTestItem
     {
         $nextItem = $this->getNextItem();
         if (!$nextItem) {
@@ -362,9 +357,9 @@ class CommandTest
     /**
      * @return CommandTestItem|null
      */
-    protected function getNextItem()
+    protected function getNextItem(): ?CommandTestItem
     {
-        if ($this->currentIndex === null) {
+        if (!isset($this->currentIndex)) {
             $this->currentIndex = 0;
         }
 
@@ -379,7 +374,6 @@ class CommandTest
 
     /**
      * @param array $config
-     *
      * @return CommandTest
      */
     protected function addEventChainItem(array $config): CommandTest

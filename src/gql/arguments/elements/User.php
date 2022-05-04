@@ -38,6 +38,11 @@ class User extends ElementArguments
                 'type' => Type::listOf(Type::string()),
                 'description' => 'Narrows the query results based on the users’ usernames.',
             ],
+            'fullName' => [
+                'name' => 'fullName',
+                'type' => Type::listOf(Type::string()),
+                'description' => 'Narrows the query results based on the users’ full names.',
+            ],
             'firstName' => [
                 'name' => 'firstName',
                 'type' => Type::listOf(Type::string()),
@@ -52,6 +57,16 @@ class User extends ElementArguments
                 'name' => 'hasPhoto',
                 'type' => Type::boolean(),
                 'description' => 'Narrows the query results to only users that have (or don’t have) a user photo.',
+            ],
+            'assetUploaders' => [
+                'name' => 'assetUploaders',
+                'type' => Type::boolean(),
+                'description' => 'Narrows the query results based on whether the users have uploaded any assets.',
+            ],
+            'authors' => [
+                'name' => 'authors',
+                'type' => Type::boolean(),
+                'description' => 'Narrows the query results based on whether the users are listed as the author of any entries.',
             ],
             'groupId' => [
                 'name' => 'groupId',
@@ -73,7 +88,7 @@ class User extends ElementArguments
     {
         $contentArguments = [];
 
-        $contentFields = Craft::$app->getFields()->getLayoutByType(UserElement::class)->getFields();
+        $contentFields = Craft::$app->getFields()->getLayoutByType(UserElement::class)->getCustomFields();
 
         foreach ($contentFields as $contentField) {
             if (!$contentField instanceof GqlInlineFragmentFieldInterface) {

@@ -9,6 +9,7 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend({
   $newCategoryBtn: null,
 
   init: function (elementType, $container, settings) {
+    this.editableGroups = [];
     this.on('selectSource', this.updateButton.bind(this));
     this.on('selectSite', this.updateButton.bind(this));
     this.base(elementType, $container, settings);
@@ -16,15 +17,9 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend({
 
   afterInit: function () {
     // Find which of the visible groups the user has permission to create new categories in
-    this.editableGroups = [];
-
-    for (var i = 0; i < Craft.editableCategoryGroups.length; i++) {
-      var group = Craft.editableCategoryGroups[i];
-
-      if (this.getSourceByKey('group:' + group.uid)) {
-        this.editableGroups.push(group);
-      }
-    }
+    this.editableGroups = Craft.editableCategoryGroups.filter(
+      (g) => !!this.getSourceByKey(`group:${g.uid}`)
+    );
 
     this.base();
   },
@@ -35,9 +30,8 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend({
       this.settings.context === 'index' &&
       typeof defaultGroupHandle !== 'undefined'
     ) {
-      for (var i = 0; i < this.$sources.length; i++) {
-        var $source = $(this.$sources[i]);
-
+      for (let i = 0; i < this.$sources.length; i++) {
+        const $source = $(this.$sources[i]);
         if ($source.data('handle') === defaultGroupHandle) {
           return $source.data('key');
         }
@@ -53,9 +47,7 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend({
     }
 
     // Get the handle of the selected source
-    var selectedSourceHandle = this.$source.data('handle');
-
-    var i, href, label;
+    const selectedSourceHandle = this.$source.data('handle');
 
     // Update the New Category button
     // ---------------------------------------------------------------------
@@ -67,164 +59,151 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend({
       }
 
       // Determine if they are viewing a group that they have permission to create categories in
-      var selectedGroup;
+      const selectedGroup = this.editableGroups.find(
+        (g) => g.handle === selectedSourceHandle
+      );
 
-      if (selectedSourceHandle) {
-        for (i = 0; i < this.editableGroups.length; i++) {
-          if (this.editableGroups[i].handle === selectedSourceHandle) {
-            selectedGroup = this.editableGroups[i];
-            break;
-          }
-        }
-      }
-
-      this.$newCategoryBtnGroup = $('<div class="btngroup submit"/>');
-      var $menuBtn;
+      this.$newCategoryBtnGroup = $(
+        '<div class="btngroup submit" data-wrapper/>'
+      );
+      let $menuBtn;
+      const menuId = 'new-category-menu-' + Craft.randomString(10);
 
       // If they are, show a primary "New category" button, and a dropdown of the other groups (if any).
       // Otherwise only show a menu button
       if (selectedGroup) {
-        href = this._getGroupTriggerHref(selectedGroup);
-        label =
-          this.settings.context === 'index'
-            ? Craft.t('app', 'New category')
-            : Craft.t('app', 'New {group} category', {
-                group: selectedGroup.name,
-              });
-        this.$newCategoryBtn = $(
-          '<a class="btn submit add icon" ' +
-            href +
-            ' role="button">' +
-            Craft.escapeHtml(label) +
-            '</a>'
-        ).appendTo(this.$newCategoryBtnGroup);
+        this.$newCategoryBtn = Craft.ui
+          .createButton({
+            label:
+              this.settings.context === 'index'
+                ? Craft.t('app', 'New category')
+                : Craft.t('app', 'New {group} category', {
+                    group: selectedGroup.name,
+                  }),
+            spinner: true,
+          })
+          .addClass('submit add icon')
+          .appendTo(this.$newCategoryBtnGroup);
 
-        if (this.settings.context !== 'index') {
-          this.addListener(this.$newCategoryBtn, 'click', function (ev) {
-            this._openCreateCategoryModal(
-              ev.currentTarget.getAttribute('data-id')
-            );
-          });
-        }
+        this.addListener(this.$newCategoryBtn, 'click', () => {
+          this._createCategory(selectedGroup.id);
+        });
 
         if (this.editableGroups.length > 1) {
           $menuBtn = $('<button/>', {
             type: 'button',
-            class: 'btn submit menubtn',
+            class: 'btn submit menubtn btngroup-btn-last',
+            'aria-controls': menuId,
+            'data-disclosure-trigger': '',
           }).appendTo(this.$newCategoryBtnGroup);
         }
       } else {
-        this.$newCategoryBtn = $menuBtn = $('<button/>', {
-          type: 'button',
-          class: 'btn submit add icon menubtn',
-          text: Craft.t('app', 'New category'),
-        }).appendTo(this.$newCategoryBtnGroup);
-      }
-
-      if ($menuBtn) {
-        var menuHtml = '<div class="menu"><ul>';
-
-        for (i = 0; i < this.editableGroups.length; i++) {
-          var group = this.editableGroups[i];
-
-          if (this.settings.context === 'index' || group !== selectedGroup) {
-            href = this._getGroupTriggerHref(group);
-            label =
-              this.settings.context === 'index'
-                ? group.name
-                : Craft.t('app', 'New {group} category', {group: group.name});
-            menuHtml +=
-              '<li><a ' + href + '>' + Craft.escapeHtml(label) + '</a></li>';
-          }
-        }
-
-        menuHtml += '</ul></div>';
-
-        $(menuHtml).appendTo(this.$newCategoryBtnGroup);
-        var menuBtn = new Garnish.MenuBtn($menuBtn);
-
-        if (this.settings.context !== 'index') {
-          menuBtn.on('optionSelect', (ev) => {
-            this._openCreateCategoryModal(ev.option.getAttribute('data-id'));
-          });
-        }
+        this.$newCategoryBtn = $menuBtn = Craft.ui
+          .createButton({
+            label: Craft.t('app', 'New category'),
+            spinner: true,
+          })
+          .addClass('submit add icon menubtn btngroup-btn-last')
+          .attr('aria-controls', menuId)
+          .attr('data-disclosure-trigger', '')
+          .appendTo(this.$newCategoryBtnGroup);
       }
 
       this.addButton(this.$newCategoryBtnGroup);
+
+      if ($menuBtn) {
+        const $menuContainer = $('<div/>', {
+          id: menuId,
+          class: 'menu menu--disclosure',
+        }).appendTo(this.$newCategoryBtnGroup);
+        const $ul = $('<ul/>').appendTo($menuContainer);
+
+        for (const group of this.editableGroups) {
+          if (this.settings.context === 'index' || group !== selectedGroup) {
+            const $li = $('<li/>').appendTo($ul);
+            const $a = $('<a/>', {
+              role: 'button',
+              tabindex: '0',
+              text: Craft.t('app', 'New {group} category', {
+                group: group.name,
+              }),
+            }).appendTo($li);
+            this.addListener($a, 'click', () => {
+              $menuBtn.data('trigger').hide();
+              this._createCategory(group.id);
+            });
+          }
+        }
+
+        new Garnish.DisclosureMenu($menuBtn);
+      }
     }
 
     // Update the URL if we're on the Categories index
     // ---------------------------------------------------------------------
 
-    if (this.settings.context === 'index' && typeof history !== 'undefined') {
-      var uri = 'categories';
+    if (this.settings.context === 'index') {
+      let uri = 'categories';
 
       if (selectedSourceHandle) {
         uri += '/' + selectedSourceHandle;
       }
 
-      history.replaceState({}, '', Craft.getUrl(uri));
+      Craft.setPath(uri);
     }
   },
 
-  _getGroupTriggerHref: function (group) {
-    if (this.settings.context === 'index') {
-      const uri = `categories/${group.handle}/new`;
-      const site = this.getSite();
-      const params = site ? {site: site.handle} : undefined;
-      return `href="${Craft.getUrl(uri, params)}"`;
-    }
-
-    return `data-id="${group.id}"`;
-  },
-
-  _openCreateCategoryModal: function (groupId) {
+  _createCategory: function (groupId) {
     if (this.$newCategoryBtn.hasClass('loading')) {
+      console.warn('New category creation already in progress.');
       return;
     }
 
     // Find the group
-    var group;
-
-    for (var i = 0; i < this.editableGroups.length; i++) {
-      if (this.editableGroups[i].id == groupId) {
-        group = this.editableGroups[i];
-        break;
-      }
-    }
+    const group = this.editableGroups.find((s) => s.id === groupId);
 
     if (!group) {
-      return;
+      throw `Invalid category group ID: ${groupId}`;
     }
 
-    this.$newCategoryBtn.addClass('inactive');
-    var newCategoryBtnText = this.$newCategoryBtn.text();
-    this.$newCategoryBtn.text(
-      Craft.t('app', 'New {group} category', {group: group.name})
-    );
+    this.$newCategoryBtn.addClass('loading');
 
-    Craft.createElementEditor(this.elementType, {
-      hudTrigger: this.$newCategoryBtnGroup,
-      siteId: this.siteId,
-      attributes: {
+    Craft.sendActionRequest('POST', 'elements/create', {
+      data: {
+        elementType: this.elementType,
+        siteId: this.siteId,
         groupId: groupId,
       },
-      onHideHud: () => {
-        this.$newCategoryBtn.removeClass('inactive').text(newCategoryBtnText);
-      },
-      onSaveElement: (response) => {
-        // Make sure the right group is selected
-        var groupSourceKey = 'group:' + group.uid;
+    })
+      .then((ev) => {
+        if (this.settings.context === 'index') {
+          document.location.href = Craft.getUrl(ev.data.cpEditUrl, {fresh: 1});
+        } else {
+          const slideout = Craft.createElementEditor(this.elementType, {
+            siteId: this.siteId,
+            elementId: ev.data.element.id,
+            draftId: ev.data.element.draftId,
+            params: {
+              fresh: 1,
+            },
+          });
+          slideout.on('submit', () => {
+            // Make sure the right group is selected
+            const groupSourceKey = `group:${group.uid}`;
 
-        if (this.sourceKey !== groupSourceKey) {
-          this.selectSourceByKey(groupSourceKey);
+            if (this.sourceKey !== groupSourceKey) {
+              this.selectSourceByKey(groupSourceKey);
+            }
+
+            this.clearSearch();
+            this.selectElementAfterUpdate(ev.data.element.id);
+            this.updateElements();
+          });
         }
-
-        this.clearSearch();
-        this.selectElementAfterUpdate(response.id);
-        this.updateElements();
-      },
-    });
+      })
+      .finally(() => {
+        this.$newCategoryBtn.removeClass('loading');
+      });
   },
 });
 

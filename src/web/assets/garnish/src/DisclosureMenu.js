@@ -68,7 +68,7 @@ export default Base.extend(
     },
 
     addDisclosureMenuEventListeners: function () {
-      this.addListener(this.$trigger, 'click', function () {
+      this.addListener(this.$trigger, 'click', () => {
         this.handleTriggerClick();
       });
 

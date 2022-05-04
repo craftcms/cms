@@ -20,5 +20,5 @@ class RegisterPreviewTargetsEvent extends Event
     /**
      * @var array The additional locations that should be available for previewing the element.
      */
-    public $previewTargets;
+    public array $previewTargets;
 }

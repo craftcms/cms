@@ -1,0 +1,76 @@
+{% extends "_layouts/cp" %}
+
+{% set elementInstance = craft.app.elements.createElement(elementType) %}
+{% set context = 'index' %}
+
+{% if not elementInstance %}
+    {% exit 404 %}
+{% endif %}
+
+{% set sources = craft.app.elementSources.getSources(elementType, 'index', true) %}
+
+{% set showSiteMenu = (craft.app.getIsMultiSite() ? (showSiteMenu ?? 'auto') : false) %}
+{% if showSiteMenu == 'auto' %}
+    {% set showSiteMenu = elementInstance.isLocalized() %}
+{% endif %}
+
+
+{% block contextMenu %}
+    {% if showSiteMenu %}
+        {% include "_elements/sitemenu" %}
+    {% endif %}
+{% endblock %}
+
+
+{% block sidebar %}
+    {% if sources is not empty %}
+        <nav aria-label="{{ 'Sources'|t('app') }}">
+            {% include "_elements/sources" %}
+        </nav>
+
+        {% if currentUser.admin and craft.app.config.general.allowAdminChanges %}
+            <button class="customize-sources" type="button">
+                <span class="settings icon"></span>
+                <span class="label">{{ 'Customize'|t('app') }}</span>
+            </button>
+        {% endif %}
+    {% endif %}
+{% endblock %}
+
+
+{% block toolbar %}
+    {% include '_elements/toolbar' with {
+        showSiteMenu: false,
+    } %}
+{% endblock %}
+
+
+{% block content %}
+    <div class="main">
+        <div class="elements busy">
+            <div class="update-spinner spinner spinner-absolute"></div>
+        </div>
+    </div>
+{% endblock %}
+
+
+{% block footer %}
+    <div id="count-spinner" class="spinner small hidden"></div>
+    <div id="count-container" class="light flex-grow">&nbsp;</div>
+    <button type="button" id="export-btn" class="btn hidden">{{ 'Export…'|t('app') }}</button>
+{% endblock %}
+
+
+{% block initJs %}
+    Craft.elementIndex = Craft.createElementIndex('{{ elementType|e("js") }}', $('#page-container'), {
+        elementTypeName: '{{ elementInstance.displayName()|e("js") }}',
+        elementTypePluralName: '{{ elementInstance.pluralDisplayName()|e("js") }}',
+        context: '{{ context }}',
+        storageKey: 'elementindex.{{ elementType|e("js") }}',
+        criteria: Craft.defaultIndexCriteria,
+        toolbarSelector: '#toolbar',
+        canHaveDrafts: {{ (canHaveDrafts ?? false) ? 'true' : 'false' }},
+    });
+{% endblock %}
+
+{% js block('initJs') %}
