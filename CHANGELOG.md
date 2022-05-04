@@ -1,5 +1,11 @@
 # Release Notes for Craft CMS 4
 
+## 4.0.0.1 - 2022-05-04
+
+### Changed
+- The `setup` command now writes the application ID to a `CRAFT_APP_ID` environment variable.
+- The `setup` command now writes the security key to a `CRAFT_SECURITY_KEY` environment variable.
+
 ## 4.0.0 - 2022-05-04
 
 ### Added
