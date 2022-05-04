@@ -15,10 +15,10 @@
             >
               <button
                 :class="{
-                  'tw-text-gray-700 dark:tw-text-gray-400': !(
+                  'tw-text-gray-700': !(
                     installMode.handle === currentInstallModeHandle
                   ),
-                  'tw-font-medium tw-text-black dark:tw-text-white tw-border-b-2 tw-border-orange-500':
+                  'tw-font-medium tw-text-black tw-border-b-2 tw-border-orange-500':
                     installMode.handle === currentInstallModeHandle,
                 }"
                 @click="changeInstallMode(installMode.handle)"
