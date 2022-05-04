@@ -14,6 +14,7 @@ use craft\base\ElementExporterInterface;
 use craft\base\ElementInterface;
 use craft\behaviors\DraftBehavior;
 use craft\behaviors\RevisionBehavior;
+use craft\db\Paginator;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\db\Table;
@@ -54,13 +55,13 @@ use craft\records\StructureElement as StructureElementRecord;
 use craft\validators\HandleValidator;
 use craft\validators\SlugValidator;
 use DateTime;
-use yii\base\Application;
 use yii\base\Behavior;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidCallException;
 use yii\caching\TagDependency;
+use yii\data\ActiveDataProvider;
 use yii\db\Exception as DbException;
 
 /**
@@ -956,62 +957,89 @@ class Elements extends Component
         $position = 0;
 
         try {
-            foreach (Db::each($query) as $element) {
-                /** @var ElementInterface $element */
-                $position++;
+            $pageSize = 100;
+            $provider = new ActiveDataProvider([
+                'query' => $query,
+                'pagination' => [
+                    'pageSize' => $pageSize
+                ]
+            ]);
+            $paginator = new Paginator($query, [
+                'pageSize' => $pageSize,
+                'currentPage' => 1,
+            ]);
+            $currentElement = 0;
+            $totalElements = $paginator->getTotalResults();
 
-                $element->setScenario(Element::SCENARIO_ESSENTIALS);
-                $element->resaving = true;
+            $provider->prepare(true);
+            $elements = $provider->getModels();
+            $elements = $paginator->getPageResults();
+            // foreach (Db::each($query) as $element) {
+            while ($currentElement < $totalElements) {
+                $provider->prepare(true);
+                $elements = $provider->getModels();
+                $elements = $paginator->getPageResults();
 
-                // Fire a 'beforeResaveElement' event
-                if ($this->hasEventHandlers(self::EVENT_BEFORE_RESAVE_ELEMENT)) {
-                    $this->trigger(self::EVENT_BEFORE_RESAVE_ELEMENT, new BatchElementActionEvent([
-                        'query' => $query,
-                        'element' => $element,
-                        'position' => $position,
-                    ]));
-                }
+                foreach ($elements as $element) {
+                    /** @var ElementInterface $element */
+                    $position++;
+                    $currentElement++;
 
-                $e = null;
-                try {
-                    // Make sure the element was queried with its content
-                    if ($element::hasContent() && $element->contentId === null) {
-                        throw new InvalidElementException($element, "Skipped resaving {$element} ({$element->id}) because it wasn’t loaded with its content.");
+                    $element->setScenario(Element::SCENARIO_ESSENTIALS);
+                    $element->resaving = true;
+
+                    // Fire a 'beforeResaveElement' event
+                    if ($this->hasEventHandlers(self::EVENT_BEFORE_RESAVE_ELEMENT)) {
+                        $this->trigger(self::EVENT_BEFORE_RESAVE_ELEMENT, new BatchElementActionEvent([
+                            'query' => $query,
+                            'element' => $element,
+                            'position' => $position,
+                        ]));
                     }
 
-                    // Make sure this isn't a revision
-                    if ($skipRevisions) {
-                        try {
-                            if (ElementHelper::isRevision($element)) {
-                                throw new InvalidElementException($element, "Skipped resaving {$element} ({$element->id}) because it's a revision.");
-                            }
-                        } catch (\Throwable $rootException) {
-                            throw new InvalidElementException($element, "Skipped resaving {$element} ({$element->id}) due to an error obtaining its root element: " . $rootException->getMessage());
-                        }
-                    }
-                } catch (InvalidElementException $e) {
-                }
+                    $e = null;
 
-                if ($e === null) {
                     try {
-                        $this->_saveElementInternal($element, true, true, $updateSearchIndex);
-                    } catch (\Throwable $e) {
-                        if (!$continueOnError) {
-                            throw $e;
+                        // Make sure the element was queried with its content
+                        if ($element::hasContent() && $element->contentId === null) {
+                            throw new InvalidElementException($element, "Skipped resaving {$element} ({$element->id}) because it wasn’t loaded with its content.");
                         }
-                        Craft::$app->getErrorHandler()->logException($e);
+
+                        // Make sure this isn't a revision
+                        if ($skipRevisions) {
+                            try {
+                                if (ElementHelper::isRevision($element)) {
+                                    throw new InvalidElementException($element, "Skipped resaving {$element} ({$element->id}) because it's a revision.");
+                                }
+                            } catch (\Throwable $rootException) {
+                                throw new InvalidElementException($element, "Skipped resaving {$element} ({$element->id}) due to an error obtaining its root element: " . $rootException->getMessage());
+                            }
+                        }
+                    } catch (InvalidElementException $e) {
+                    }
+
+                    if ($e === null) {
+                        try {
+                            $this->_saveElementInternal($element, true, true, $updateSearchIndex);
+                        } catch (\Throwable $e) {
+                            if (!$continueOnError) {
+                                throw $e;
+                            }
+                            Craft::$app->getErrorHandler()->logException($e);
+                        }
+                    }
+
+                    // Fire an 'afterResaveElement' event
+                    if ($this->hasEventHandlers(self::EVENT_AFTER_RESAVE_ELEMENT)) {
+                        $this->trigger(self::EVENT_AFTER_RESAVE_ELEMENT, new BatchElementActionEvent([
+                            'query' => $query,
+                            'element' => $element,
+                            'position' => $position,
+                            'exception' => $e,
+                        ]));
                     }
                 }
-
-                // Fire an 'afterResaveElement' event
-                if ($this->hasEventHandlers(self::EVENT_AFTER_RESAVE_ELEMENT)) {
-                    $this->trigger(self::EVENT_AFTER_RESAVE_ELEMENT, new BatchElementActionEvent([
-                        'query' => $query,
-                        'element' => $element,
-                        'position' => $position,
-                        'exception' => $e,
-                    ]));
-                }
+                $paginator->currentPage++;
             }
         } catch (QueryAbortedException $e) {
             // Fail silently
