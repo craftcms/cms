@@ -1,11 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## 3.7.40.1 - 2022-05-04
-
-### Fixed
-- Fixed a bug where empty fields could be marked as changed, even when no change was made to them. ([#11078](https://github.com/craftcms/cms/issues/11078))
-
-## 3.7.40 - 2022-05-03
+## Unreleased
 
 ### Added
 - Added `craft\helpers\Assets::revParams()`.
