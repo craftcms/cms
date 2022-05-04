@@ -2,6 +2,9 @@
 
 ## 4.0.1 (WIP)
 
+### Fixed
+- Fixed a bug where element edit pages could reload themselves immediately after saving the element. ([#11083](https://github.com/craftcms/cms/issues/11083))
+
 ## 4.0.0.1 - 2022-05-04
 
 ### Changed
