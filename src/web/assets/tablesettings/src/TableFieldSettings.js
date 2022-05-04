@@ -63,6 +63,9 @@
           defaultValues: {
             type: 'singleline',
           },
+          allowAdd: true,
+          allowReorder: true,
+          allowDelete: true,
           onAddRow: this.onAddColumn.bind(this),
           onDeleteRow: this.reconstructDefaultsTable.bind(this),
         }
@@ -76,6 +79,9 @@
         this.columnsData,
         {
           rowIdPrefix: 'row',
+          allowAdd: true,
+          allowReorder: true,
+          allowDelete: true,
         }
       );
     },
@@ -279,6 +285,9 @@
           '__NAME__',
           this.table.fieldSettings.dropdownSettingsCols,
           {
+            allowAdd: true,
+            allowDelete: true,
+            allowReorder: true,
             onAddRow: this.handleOptionsRowChange.bind(this),
             onDeleteRow: this.handleOptionsRowChange.bind(this),
           }

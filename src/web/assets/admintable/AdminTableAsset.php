@@ -19,17 +19,17 @@ class AdminTableAsset extends AssetBundle
     /**
      * @var bool
      */
-    private $useDevServer = false;
+    private bool $useDevServer = false;
 
     /**
-     * @var bool
+     * @var string
      */
-    private $devServerBaseUrl = 'http://localhost:8082/';
+    private string $devServerBaseUrl = 'http://localhost:8082/';
 
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         $this->sourcePath = __DIR__ . '/dist/';
 

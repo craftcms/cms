@@ -17,7 +17,7 @@ use yii\base\Behavior;
  *
  * @property ElementInterface $owner
  * @property User|null $creator
- * @property-read $sourceId
+ * @property-read int $sourceId
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.0
  */
@@ -26,30 +26,31 @@ abstract class BaseRevisionBehavior extends Behavior
     /**
      * @var int|null The creator’s ID
      */
-    public $creatorId;
+    public ?int $creatorId = null;
 
     /**
      * @var User|null|false The creator
      */
-    private $_creator;
+    private User|false|null $_creator = null;
 
     /**
      * Returns the draft’s creator.
      *
      * @return User|null
      */
-    public function getCreator()
+    public function getCreator(): ?User
     {
-        if ($this->_creator === null) {
+        if (!isset($this->_creator)) {
             if (!$this->creatorId) {
                 return null;
             }
 
-            $this->_creator = User::find()
-                    ->id($this->creatorId)
-                    ->anyStatus()
-                    ->one()
-                ?? false;
+            /** @var User|null $creator */
+            $creator = User::find()
+                ->id($this->creatorId)
+                ->status(null)
+                ->one();
+            $this->_creator = $creator ?? false;
         }
 
         return $this->_creator ?: null;
@@ -61,7 +62,7 @@ abstract class BaseRevisionBehavior extends Behavior
      * @param User|null $creator
      * @since 3.5.0
      */
-    public function setCreator(User $creator = null)
+    public function setCreator(?User $creator = null): void
     {
         $this->_creator = $creator ?? false;
     }
@@ -72,7 +73,7 @@ abstract class BaseRevisionBehavior extends Behavior
      * @return ElementInterface|null
      * @deprecated in 3.2.9. Use [[ElementInterface::getCanonical()]] instead.
      */
-    public function getSource()
+    public function getSource(): ?ElementInterface
     {
         Craft::$app->getDeprecator()->log(__METHOD__, 'Elements’ `getSource()` method has been deprecated. Use `getCanonical()` instead.');
         if ($this->owner->getIsCanonical()) {

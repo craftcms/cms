@@ -37,7 +37,7 @@ Craft.InfoIcon = Garnish.Base.extend({
         const m = this.$icon[0].previousSibling.nodeValue.match(/[^\s\-]+\s*$/);
         if (m) {
           this.$icon[0].previousSibling.nodeValue =
-            this.$icon[0].previousSibling.nodeValue.substr(0, m.index);
+            this.$icon[0].previousSibling.nodeValue.substring(0, m.index);
           $('<span/>', {
             class: 'nowrap',
             html: m[0].replace(/\s+$/, '') + ' ',

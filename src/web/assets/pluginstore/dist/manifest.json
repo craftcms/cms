@@ -1,10 +1,7 @@
 {
   "app.css": "/css/app.css",
   "app.js": "/js/app.js",
-  "images/powered_by_stripe.svg": "/images/powered_by_stripe.svg",
-  "images/default-plugin.svg": "/images/default-plugin.svg",
   "images/craft.svg": "/images/craft.svg",
-  "images/alert.svg": "/images/alert.svg",
   "app.css.map": "/css/app.css.map",
   "app.js.map": "/js/app.js.map"
 }

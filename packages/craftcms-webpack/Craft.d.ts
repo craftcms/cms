@@ -17,13 +17,10 @@ interface ProgressBarInterface {
 declare var Craft: {
   ProgressBar: ProgressBarInterface;
   t(category: string, message: string, params?: object): string;
-  postActionRequest(
-    action: string,
-    data?: object,
-    callback?: (response: object, textStatus: string) => void
-  ): void;
+  sendActionRequest(method: string, action: string, options?: object): Promise;
   initUiElements($container: JQuery): void;
   expandPostArray(arr: object): any;
+  Preview: any;
 };
 
 declare var Garnish: any;

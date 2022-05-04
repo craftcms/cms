@@ -11,10 +11,10 @@ use Craft;
 use craft\db\Query;
 use craft\db\Table;
 use craft\helpers\ArrayHelper;
-use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\Html;
 use craft\helpers\Queue;
+use craft\i18n\Translation;
 use craft\queue\jobs\Announcement;
 use DateTime;
 use yii\base\Component;
@@ -33,25 +33,17 @@ class Announcements extends Component
     /**
      * Pushes a new announcement out to all control panel users.
      *
-     * @param string|callable $heading The announcement heading. Set to a callable if the heading text should be translated with `Craft::t()`.
-     * @param string|callable $body The announcement body. Set to a callable if the heading text should be translated with `Craft::t()`.
+     * ::: tip
+     * Run the heading and body through [[\craft\i18n\Translation::prep()]] rather than [[\yii\BaseYii::t()|Craft::t()]]
+     * so they can be lazy-translated for users’ preferred languages rather that the current app language.
+     * :::
+     *
+     * @param string $heading The announcement heading.
+     * @param string $body The announcement body.
      * @param string|null $pluginHandle The plugin handle, if this announcement belongs to a plugin
-     * @return void
      */
-    public function push($heading, $body, ?string $pluginHandle = null): void
+    public function push(string $heading, string $body, ?string $pluginHandle = null): void
     {
-        if (is_callable($heading) || is_callable($body)) {
-            $t9nHeading = [];
-            $t9nBody = [];
-            // Translate the announcement into each of the supported languages
-            foreach (Craft::$app->getI18n()->getAppLocaleIds() as $language) {
-                $t9nHeading[$language] = (string)$heading($language);
-                $t9nBody[$language] = (string)$body($language);
-            }
-            $heading = $t9nHeading;
-            $body = $t9nBody;
-        }
-
         Queue::push(new Announcement([
             'heading' => $heading,
             'body' => $body,
@@ -73,7 +65,7 @@ class Announcements extends Component
         }
 
         $query = (new Query())
-            ->select(['a.id', 'a.heading', 'a.body', 'a.unread', 'a.dateCreated'])
+            ->select(['a.id', 'a.heading', 'a.body', 'a.unread'])
             ->from(['a' => Table::ANNOUNCEMENTS])
             ->orderBy(['a.dateCreated' => SORT_DESC])
             ->where(['userId' => $userId])
@@ -88,6 +80,7 @@ class Announcements extends Component
         $enabledPluginHandles = ArrayHelper::getColumn($pluginsService->getAllPlugins(), 'id');
         if (!empty($enabledPluginHandles)) {
             $query
+                ->addSelect(['pluginHandle' => 'p.handle'])
                 ->leftJoin(['p' => Table::PLUGINS], '[[p.id]] = [[a.pluginId]]')
                 ->andWhere([
                     'or',
@@ -98,14 +91,21 @@ class Announcements extends Component
             $query->andWhere(['a.pluginId' => null]);
         }
 
-        $formatter = Craft::$app->getFormatter();
-
-        return array_map(function(array $result) use ($formatter, $pluginsService) {
+        return array_map(function(array $result) use ($pluginsService) {
+            $plugin = !empty($result['pluginHandle']) ? $pluginsService->getPlugin($result['pluginHandle']) : null;
+            if ($plugin) {
+                $icon = $pluginsService->getPluginIconSvg($plugin->getHandle());
+                $label = $plugin->name;
+            } else {
+                $icon = file_get_contents(Craft::getAlias('@app/icons/craft-cms.svg'));
+                $label = 'Craft CMS';
+            }
             return [
                 'id' => (int)$result['id'],
-                'heading' => Html::widont(Html::encode($result['heading'])),
-                'body' => Html::widont(Markdown::processParagraph(Html::encode($result['body']))),
-                'timestamp' => $formatter->asTimestamp(DateTimeHelper::toDateTime($result['dateCreated'])->format('Y-m-d')),
+                'icon' => $icon,
+                'label' => $label,
+                'heading' => Html::widont(Html::encode(Translation::translate($result['heading']))),
+                'body' => Html::widont(Markdown::processParagraph(Html::encode(Translation::translate($result['body'])))),
                 'unread' => (bool)$result['unread'],
             ];
         }, $query->all());
@@ -115,7 +115,6 @@ class Announcements extends Component
      * Marks the user’s announcements as read.
      *
      * @param int[] $ids
-     * @return void
      */
     public function markAsRead(array $ids): void
     {
@@ -132,7 +131,7 @@ class Announcements extends Component
             ->update(Table::ANNOUNCEMENTS, [
                 'unread' => false,
                 'dateRead' => Db::prepareDateForDb(new DateTime()),
-            ], ['id' => $ids, 'userId' => $userId], [], false)
+            ], ['id' => $ids, 'userId' => $userId])
             ->execute();
     }
 }

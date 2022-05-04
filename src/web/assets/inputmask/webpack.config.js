@@ -16,7 +16,8 @@ module.exports = getConfig({
               pkgDir.sync(require.resolve('inputmask')),
               'dist'
             ),
-            from: './jquery.inputmask.bundle.js*',
+            from: './jquery.inputmask.js',
+            to: './jquery.inputmask.bundle.js',
           },
         ],
       }),

@@ -1,0 +1,52 @@
+{% extends "settings/assets/_layout" %}
+{% set selectedNavItem = 'volumes' %}
+
+{% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
+
+{% do view.registerTranslations('app', [
+    "Name",
+    "Handle",
+    "Type",
+    "No volumes exist yet."
+]) %}
+
+{% block content %}
+    <div id="volumes-vue-admin-table"></div>
+
+    <div class="buttons">
+        <a class="btn submit add icon" href="{{ url('settings/assets/volumes/new') }}">{{ "New volume"|t('app') }}</a>
+    </div>
+{% endblock %}
+
+{% set tableData = [] %}
+{% for volume in volumes %}
+    {% set volumeIsMissing = false %}
+
+    {% if volume is missing %}
+        {% set volumeIsMissing = true %}
+    {% endif %}
+
+    {% set tableData = tableData|merge([{
+        id: volume.id,
+        title: volume.name|t('site'),
+        url: url('settings/assets/volumes/' ~ volume.id),
+        name: volume.name|t('site')|e,
+        handle: volume.handle,
+    }]) %}
+{% endfor %}
+
+{% js %}
+var columns = [
+    { name: '__slot:title', title: Craft.t('app', 'Name') },
+    { name: '__slot:handle', title: Craft.t('app', 'Handle') },
+];
+
+new Craft.VueAdminTable({
+    columns: columns,
+    container: '#volumes-vue-admin-table',
+    deleteAction: 'volumes/delete-volume',
+    emptyMessage: Craft.t('app', 'No volumes exist yet.'),
+    reorderAction: '{{ volumes|length > 1 ? 'volumes/reorder-volumes' : ''}}',
+    tableData: {{ tableData|json_encode|raw }}
+});
+{% endjs %}

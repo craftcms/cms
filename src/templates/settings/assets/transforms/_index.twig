@@ -1,0 +1,59 @@
+{% extends "settings/assets/_layout" %}
+{% set selectedNavItem = 'transforms' %}
+
+{% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
+
+{% do view.registerTranslations('app', [
+    "Name",
+    "Handle",
+    "Mode",
+    "Dimensions",
+    "Interlace",
+    "Format",
+    "No image transforms exist yet.",
+]) %}
+
+{% block content %}
+    <div id="transforms-vue-admin-table"></div>
+
+    <div class="buttons">
+        <a class="btn submit add icon" href="{{ url('settings/assets/transforms/new') }}">{{ "New image transform"|t('app') }}</a>
+    </div>
+{% endblock %}
+
+{% set tableData = [] %}
+{% for transform in transforms %}
+    {% if transform.mode %}
+        {% set mode = modes[transform.mode] %}
+    {%  endif %}
+
+    {% set tableData = tableData|merge([{
+        id: transform.id,
+        title: transform.name|t('site'),
+        url: url('settings/assets/transforms/' ~ transform.handle),
+        handle: transform.handle,
+        mode: mode ?? null,
+        dimensions: (transform.width ? transform.width : 'Auto'|t('app')|e) ~ " × " ~ (transform.height ? transform.height : 'Auto'|t('app')|e),
+        interlace: transform.interlace ? transform.interlace|capitalize : 'None'|t('app')|e,
+        format: transform.format ? transform.format|capitalize : 'Auto'|t('app')|e,
+    }]) %}
+{% endfor %}
+
+{% js %}
+var columns = [
+    { name: '__slot:title', title: Craft.t('app', 'Name') },
+    { name: '__slot:handle', title: Craft.t('app', 'Handle') },
+    { name: 'mode', title: Craft.t('app', 'Mode'), },
+    { name: 'dimensions', title: Craft.t('app', 'Dimensions'), },
+    { name: 'interlace', title: Craft.t('app', 'Interlace'), },
+    { name: 'format', title: Craft.t('app', 'Format'), }
+];
+
+new Craft.VueAdminTable({
+    columns: columns,
+    container: '#transforms-vue-admin-table',
+    deleteAction: 'image-transforms/delete',
+    emptyMessage: Craft.t('app', 'No image transforms exist yet.'),
+    tableData: {{ tableData|json_encode|raw }},
+    });
+{% endjs %}

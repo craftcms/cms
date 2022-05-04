@@ -11,6 +11,8 @@ import Tests from '../pages/tests';
 import NotFound from '../pages/_not-found';
 import Search from '../pages/search';
 import PluginsHandle from '../pages/_handle';
+import PluginsHandleEditions from '../pages/_handle/editions';
+import PluginsHandleChangelog from '../pages/_handle/changelog';
 
 Vue.use(VueRouter);
 
@@ -78,6 +80,16 @@ export default new VueRouter({
       path: '/:handle',
       name: 'PluginsHandle',
       component: PluginsHandle,
+    },
+    {
+      path: '/:handle/editions',
+      name: 'PluginsHandleEditions',
+      component: PluginsHandleEditions,
+    },
+    {
+      path: '/:handle/changelog',
+      name: 'PluginsHandleChangelog',
+      component: PluginsHandleChangelog,
     },
     {
       path: '*',

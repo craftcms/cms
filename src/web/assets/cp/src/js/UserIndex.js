@@ -27,13 +27,13 @@ Craft.UserIndex = Craft.BaseElementIndex.extend({
   },
 
   updateUrl: function () {
-    if (this.settings.context === 'index' && typeof history !== 'undefined') {
+    if (this.settings.context === 'index') {
       let uri = 'users';
       const slug = this.$source.data('slug');
       if (slug) {
         uri += `/${slug}`;
       }
-      history.replaceState({}, '', Craft.getUrl(uri));
+      Craft.setPath(uri);
     }
   },
 });

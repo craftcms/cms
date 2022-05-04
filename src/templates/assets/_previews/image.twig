@@ -1,0 +1,87 @@
+<div class="button-fade asset-image-preview">
+    <div class="buttons">
+        <div class="btn" id="toggle-focal">
+        </div>
+    </div>
+    {{ tag('img', {
+        src: url,
+        width: asset.width,
+        height: asset.height,
+        alt: asset.alt,
+        data: {
+            uid: asset.uid,
+            focal: asset.focalPoint|join(';'),
+            maxWidth: asset.width,
+            maxHeight: asset.height,
+        },
+        onload: 'resizePreviewImage()',
+    }) }}
+</div>
+
+{% do view.registerAssetBundle("craft\\web\\assets\\focalpoint\\FocalPointAsset") %}
+{% do view.registerTranslations('app', [
+    'Enable focal point',
+    'Disable focal point',
+    'Saving…',
+]) %}
+
+{% js %}
+if (window.imageFocalPoint) {
+    delete window.imageFocalPoint;
+}
+window.imageFocalPoint = new Craft.FocalPoint(Craft.PreviewFileModal.openInstance.$container.find('.asset-image-preview'), $('#toggle-focal'), {{ editFocal|default(false) }});
+
+function resizePreviewImage() {
+    var instance = Craft.PreviewFileModal.openInstance;
+    var containerHeight = Garnish.$win.height() * 0.66;
+
+    var containerWidth = Math.min(containerHeight / 3 * 4, Garnish.$win.width() - instance.settings.minGutter * 2);
+    containerHeight = containerWidth / 4 * 3;
+
+    var $img = instance.$container.find('img');
+
+    $img.css({
+        width: containerWidth,
+        height: containerHeight
+    });
+
+    if (instance.loaded && $img.length) {
+        // Make sure we maintain the ratio
+
+        var maxWidth = $img.data('maxwidth'),
+            maxHeight = $img.data('maxheight'),
+            imageRatio = maxWidth / maxHeight,
+            desiredWidth = instance.desiredWidth ? instance.desiredWidth : instance.getWidth(),
+            desiredHeight = instance.desiredHeight ? instance.desiredHeight : instance.getHeight(),
+            width = Math.min(desiredWidth, maxWidth),
+            height = Math.round(Math.min(maxHeight, width / imageRatio));
+
+        width = Math.round(height * imageRatio);
+
+        $img.css({'width': width, 'height': height});
+        instance._resizeContainer(width, height);
+
+        instance.desiredWidth = width;
+        instance.desiredHeight = height;
+    }
+
+    instance.base();
+
+    if (instance.loaded && $img.length) {
+        // Correct anomalities
+        var containerWidth = Math.round(Math.min(Math.max($img.height() * imageRatio), Garnish.$win.width() - (instance.settings.minGutter * 2))),
+            containerHeight = Math.round(Math.min(Math.max(containerWidth / imageRatio), Garnish.$win.height() - (instance.settings.minGutter * 2)));
+        containerWidth = Math.round(containerHeight * imageRatio);
+
+        // This might actually have put width over the viewport limits, so doublecheck that
+        if (containerWidth > Math.min(containerWidth, Garnish.$win.width() - instance.settings.minGutter * 2)) {
+            containerWidth =  Math.min(containerWidth, Garnish.$win.width() - instance.settings.minGutter * 2);
+            containerHeight = containerWidth / imageRatio;
+        }
+
+        instance._resizeContainer(containerWidth, containerHeight);
+        $img.css({'width': containerWidth, 'height': containerHeight});
+        window.imageFocalPoint.renderFocal();
+    }
+}
+{% endjs %}

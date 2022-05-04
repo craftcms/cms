@@ -23,15 +23,15 @@ use yii\base\Exception;
 class DeleteUsers extends ElementAction implements DeleteActionInterface
 {
     /**
-     * @var int|null The user ID that the deleted user’s content should be transferred to
+     * @var int|int[]|null The user ID that the deleted user’s content should be transferred to
      */
-    public $transferContentTo;
+    public int|array|null $transferContentTo = null;
 
     /**
      * @var bool Whether to permanently delete the elements.
      * @since 3.6.5
      */
-    public $hard = false;
+    public bool $hard = false;
 
     /**
      * @inheritdoc
@@ -72,7 +72,7 @@ class DeleteUsers extends ElementAction implements DeleteActionInterface
     /**
      * @inheritdoc
      */
-    public function getTriggerHtml()
+    public function getTriggerHtml(): ?string
     {
         if ($this->hard) {
             return '<div class="btn formsubmit">' . $this->getTriggerLabel() . '</div>';
@@ -85,7 +85,7 @@ class DeleteUsers extends ElementAction implements DeleteActionInterface
         $js = <<<JS
 (() => {
     new Craft.ElementActionTrigger({
-        type: {$type},
+        type: $type,
         batch: true,
         validateSelection: function(\$selectedItems)
         {
@@ -102,23 +102,26 @@ class DeleteUsers extends ElementAction implements DeleteActionInterface
         activate: function(\$selectedItems)
         {
             Craft.elementIndex.setIndexBusy();
-            var ids = Craft.elementIndex.getSelectedElementIds();
-            Craft.postActionRequest('users/user-content-summary', {userId: ids}, function(response, textStatus) {
-                Craft.elementIndex.setIndexAvailable();
-                if (textStatus === 'success') {
-                    var modal = new Craft.DeleteUserModal(ids, {
-                        contentSummary: response,
+            const ids = Craft.elementIndex.getSelectedElementIds();
+            const data = {userId: ids};
+            Craft.sendActionRequest('POST', 'users/user-content-summary', {data})
+                .then((response) => {
+                    Craft.elementIndex.setIndexAvailable();
+                    const modal = new Craft.DeleteUserModal(ids, {
+                        contentSummary: response.data,
                         onSubmit: function()
                         {
-                            Craft.elementIndex.submitAction({$type}, Garnish.getPostData(modal.\$container));
+                            Craft.elementIndex.submitAction($type, Garnish.getPostData(modal.\$container));
                             modal.hide();
         
                             return false;
                         },
-                        redirect: {$redirect}
+                        redirect: $redirect
                     });                    
-                }
-            });
+                })
+                .catch(() => {
+                    Craft.elementIndex.setIndexAvailable();
+                });
         }
     });
 })();
@@ -131,7 +134,7 @@ JS;
     /**
      * @inheritdoc
      */
-    public function getConfirmationMessage()
+    public function getConfirmationMessage(): ?string
     {
         if ($this->hard) {
             return Craft::t('app', 'Are you sure you want to permanently delete the selected {type}?', [
@@ -151,12 +154,12 @@ JS;
         $users = $query->all();
         $undeletableIds = $this->_getUndeletableUserIds();
 
-        // Are we transferring the user's content to a different user?
-        if (is_array($this->transferContentTo) && isset($this->transferContentTo[0])) {
-            $this->transferContentTo = $this->transferContentTo[0];
+        // Are we transferring the user’s content to a different user?
+        if (is_array($this->transferContentTo)) {
+            $this->transferContentTo = reset($this->transferContentTo) ?: null;
         }
 
-        if (!empty($this->transferContentTo)) {
+        if ($this->transferContentTo) {
             $transferContentTo = Craft::$app->getUsers()->getUserById($this->transferContentTo);
 
             if (!$transferContentTo) {

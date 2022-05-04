@@ -37,28 +37,24 @@ import './routes.scss';
     },
 
     updateRouteOrder: function () {
-      var $routes = this.getRoutes(),
-        data = {};
+      const $routes = this.getRoutes();
+      const data = {
+        routeUids: [],
+      };
 
-      for (var i = 0; i < $routes.length; i++) {
-        data['routeUids[' + i + ']'] = $($routes[i]).attr('data-uid');
+      for (let i = 0; i < $routes.length; i++) {
+        data.routeUids.push($($routes[i]).attr('data-uid'));
       }
 
-      Craft.postActionRequest(
-        'routes/update-route-order',
-        data,
-        (response, textStatus) => {
-          if (textStatus === 'success') {
-            if (response.success) {
-              Craft.cp.displayNotice(Craft.t('app', 'New route order saved.'));
-            } else {
-              Craft.cp.displayError(
-                Craft.t('app', 'Couldn’t save new route order.')
-              );
-            }
-          }
-        }
-      );
+      Craft.sendActionRequest('POST', 'routes/update-route-order', {data})
+        .then(() => {
+          Craft.cp.displayNotice(Craft.t('app', 'New route order saved.'));
+        })
+        .catch(() => {
+          Craft.cp.displayError(
+            Craft.t('app', 'Couldn’t save new route order.')
+          );
+        });
     },
 
     addRoute: function () {
@@ -376,27 +372,26 @@ import './routes.scss';
         this.$uriErrors = null;
       }
 
-      var data = {
+      const data = {
         siteUid: this.$siteInput.val(),
+        uriParts: [],
       };
 
       if (this.route) {
         data.routeUid = this.route.uid;
       }
 
-      var $elem, val;
-
-      for (var i = 0; i < this.uriInput.elements.length; i++) {
-        $elem = this.uriInput.elements[i];
+      for (let i = 0; i < this.uriInput.elements.length; i++) {
+        const $elem = this.uriInput.elements[i];
 
         if (this.uriInput.isText($elem)) {
-          val = $elem.val();
+          let val = $elem.val();
 
           if (i === 0) {
             // Remove any leading slashes
             val = Craft.ltrim(val, '/');
 
-            // Make sure the first element isn't using the action/CP trigger
+            // Make sure the first element isn’t using the action/control panel trigger
             if (Craft.startsWith(val, Craft.actionTrigger + '/')) {
               this.addUriError(
                 Craft.t(
@@ -425,10 +420,12 @@ import './routes.scss';
             }
           }
 
-          data['uriParts[' + i + ']'] = val;
+          data.uriParts.push(val);
         } else {
-          data['uriParts[' + i + '][0]'] = $elem.attr('data-name');
-          data['uriParts[' + i + '][1]'] = $elem.attr('data-value');
+          data.uriParts.push([
+            $elem.attr('data-name'),
+            $elem.attr('data-value'),
+          ]);
         }
       }
 
@@ -438,67 +435,59 @@ import './routes.scss';
       this.$saveBtn.addClass('active');
       this.$spinner.show();
 
-      Craft.postActionRequest(
-        'routes/save-route',
-        data,
-        (response, textStatus) => {
+      Craft.sendActionRequest('POST', 'routes/save-route', {data})
+        .then((response) => {
+          // Is this a new route?
+          if (!this.route) {
+            var routeHtml =
+              '<div class="route" data-uid="' +
+              response.data.routeUid +
+              '"' +
+              (response.data.siteUid
+                ? ' data-site-uid="' + response.data.siteUid + '"'
+                : '') +
+              '>' +
+              '<div class="uri-container">';
+
+            if (Craft.isMultiSite) {
+              routeHtml += '<span class="site"></span>';
+            }
+
+            routeHtml +=
+              '<span class="uri" dir="ltr"></span>' +
+              '</div>' +
+              '<div class="template" dir="ltr"></div>' +
+              '</div>';
+
+            var $route = $(routeHtml);
+
+            $route.appendTo('#routes');
+
+            this.route = new Route($route);
+            this.route.modal = this;
+
+            Craft.routes.sorter.addItems($route);
+
+            // Was this the first one?
+            if (Craft.routes.sorter.$items.length === 1) {
+              $('#noroutes').addClass('hidden');
+            }
+          }
+
+          this.route.siteUid = response.data.siteUid;
+          this.route.updateHtmlFromModal();
+          this.hide();
+
+          Craft.cp.displayNotice(Craft.t('app', 'Route saved.'));
+        })
+        .catch(() => {
+          Craft.cp.displayError(Craft.t('app', 'Couldn’t save route.'));
+        })
+        .finally(() => {
           this.$saveBtn.removeClass('active');
           this.$spinner.hide();
           this.loading = false;
-
-          if (textStatus === 'success') {
-            if (response.success) {
-              // Is this a new route?
-              if (!this.route) {
-                var routeHtml =
-                  '<div class="route" data-uid="' +
-                  response.routeUid +
-                  '"' +
-                  (response.siteUid
-                    ? ' data-site-uid="' + response.siteUid + '"'
-                    : '') +
-                  '>' +
-                  '<div class="uri-container">';
-
-                if (Craft.isMultiSite) {
-                  routeHtml += '<span class="site"></span>';
-                }
-
-                routeHtml +=
-                  '<span class="uri" dir="ltr"></span>' +
-                  '</div>' +
-                  '<div class="template" dir="ltr"></div>' +
-                  '</div>';
-
-                var $route = $(routeHtml);
-
-                $route.appendTo('#routes');
-
-                this.route = new Route($route);
-                this.route.modal = this;
-
-                Craft.routes.sorter.addItems($route);
-
-                // Was this the first one?
-                if (Craft.routes.sorter.$items.length === 1) {
-                  $('#noroutes').addClass('hidden');
-                }
-              }
-
-              this.route.siteUid = response.siteUid;
-              this.route.updateHtmlFromModal();
-              this.hide();
-
-              Craft.cp.displayNotice(Craft.t('app', 'Route saved.'));
-            } else if (response.errors) {
-              if (response.errors.uri) {
-              }
-            } else {
-              Craft.cp.displayError(Craft.t('app', 'Couldn’t save route.'));
-            }
-          }
-        }
-      );
+        });
     },
 
     addUriError: function (error) {
@@ -523,15 +512,11 @@ import './routes.scss';
       if (
         confirm(Craft.t('app', 'Are you sure you want to delete this route?'))
       ) {
-        Craft.postActionRequest(
-          'routes/delete-route',
-          {routeUid: this.route.uid},
-          function (response, textStatus) {
-            if (textStatus === 'success') {
-              Craft.cp.displayNotice(Craft.t('app', 'Route deleted.'));
-            }
-          }
-        );
+        Craft.sendActionRequest('POST', 'routes/delete-route', {
+          data: {routeUid: this.route.uid},
+        }).then((response) => {
+          Craft.cp.displayNotice(Craft.t('app', 'Route deleted.'));
+        });
 
         Craft.routes.sorter.removeItems(this.route.$container);
         this.route.$container.remove();

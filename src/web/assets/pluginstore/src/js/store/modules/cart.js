@@ -130,6 +130,7 @@ const getters = {
         editionName: 'Pro',
         price: cmsProEdition.price,
         navigateTo: '/upgrade-craft',
+        showEditionBadge: true,
       });
     }
 
@@ -595,8 +596,8 @@ const actions = {
           ) {
             let licenseKey = lineItem.options.licenseKey;
 
-            if (licenseKey.substr(0, 4) === 'new:') {
-              licenseKey = licenseKey.substr(4);
+            if (licenseKey.substring(0, 4) === 'new:') {
+              licenseKey = licenseKey.substring(4);
             }
 
             pluginLicenseKeys.push({
@@ -775,7 +776,7 @@ const utils = {
 
           let licenseKey = lineItem.options.licenseKey;
 
-          if (licenseKey && licenseKey.substr(0, 3) !== 'new') {
+          if (licenseKey && licenseKey.substring(0, 3) !== 'new') {
             item.licenseKey = licenseKey;
           }
 
@@ -794,7 +795,7 @@ const utils = {
 
           let licenseKey = lineItem.options.licenseKey;
 
-          if (licenseKey && licenseKey.substr(0, 3) !== 'new') {
+          if (licenseKey && licenseKey.substring(0, 3) !== 'new') {
             item.licenseKey = licenseKey;
           }
 

@@ -5,12 +5,16 @@
  */
 Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
   $table: null,
+  $tableCaption: null,
   $selectedSortHeader: null,
+  $statusMessage: null,
 
   structureTableSort: null,
 
   _totalVisiblePostStructureTableDraggee: null,
   _morePendingPostStructureTableDraggee: false,
+
+  _broadcastListener: null,
 
   getElementContainer: function () {
     // Save a reference to the table
@@ -19,8 +23,18 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
   },
 
   afterInit: function () {
+    // Set table caption
+    this.$tableCaption = this.$table.find('caption');
+
+    this.$statusMessage = this.$table.parent().find('[data-status-message]');
+
     // Set the sort header
     this.initTableHeaders();
+
+    // Add callback for after elements are updated
+    this.elementIndex.on('updateElements', () => {
+      this._updateScreenReaderStatus();
+    });
 
     // Create the Structure Table Sorter
     if (
@@ -48,38 +62,109 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
         }
       });
     }
+
+    // Set up the broadcast listener
+    if (Craft.messageReceiver) {
+      this._broadcastListener = (ev) => {
+        if (ev.data.event === 'saveElement') {
+          const $rows = this.$table.find(
+            `> tbody > tr[data-id="${ev.data.id}"]`
+          );
+          if ($rows.length) {
+            const data = {
+              elementType: this.elementIndex.elementType,
+              source: this.elementIndex.sourceKey,
+              id: ev.data.id,
+              siteId: this.elementIndex.siteId,
+            };
+            Craft.sendActionRequest(
+              'POST',
+              'element-indexes/element-table-html',
+              {data}
+            ).then(({data}) => {
+              for (let i = 0; i < $rows.length; i++) {
+                const $row = $rows.eq(i);
+                $row
+                  .find('> th[data-titlecell] .element')
+                  .replaceWith(data.elementHtml);
+                for (let attribute in data.attributeHtml) {
+                  if (data.attributeHtml.hasOwnProperty(attribute)) {
+                    $row
+                      .find(`> td[data-attr="${attribute}"]`)
+                      .html(data.attributeHtml[attribute]);
+                  }
+                }
+              }
+              new Craft.ElementThumbLoader().load($rows);
+            });
+          }
+        }
+      };
+
+      Craft.messageReceiver.addEventListener(
+        'message',
+        this._broadcastListener
+      );
+    }
   },
 
   initTableHeaders: function () {
-    var selectedSortAttr = this.elementIndex.getSelectedSortAttribute(),
-      $tableHeaders = this.$table
-        .children('thead')
-        .children()
-        .children('[data-attribute]');
+    const selectedSortAttr = this.elementIndex.getSelectedSortAttribute();
+    const $tableHeaders = this.$table
+      .children('thead')
+      .children()
+      .children('[data-attribute]');
 
-    for (var i = 0; i < $tableHeaders.length; i++) {
-      var $header = $tableHeaders.eq(i),
-        attr = $header.attr('data-attribute');
+    for (let i = 0; i < $tableHeaders.length; i++) {
+      const $header = $tableHeaders.eq(i);
+      const attr = $header.attr('data-attribute');
+      let sortValue = 'none';
 
       // Is this the selected sort attribute?
       if (attr === selectedSortAttr) {
         this.$selectedSortHeader = $header;
-        var selectedSortDir = this.elementIndex.getSelectedSortDirection();
-
-        $header
-          .addClass('ordered ' + selectedSortDir)
-          .on('click', this._handleSelectedSortHeaderClick.bind(this));
+        const selectedSortDir = this.elementIndex.getSelectedSortDirection();
+        sortValue = selectedSortDir === 'asc' ? 'ascending' : 'descending';
+        $header.addClass('ordered ' + selectedSortDir);
+        this.makeColumnSortable($header, true);
       } else {
         // Is this attribute sortable?
-        var $sortAttribute = this.elementIndex.getSortAttributeOption(attr);
-
+        const $sortAttribute = this.elementIndex.getSortAttributeOption(attr);
         if ($sortAttribute.length) {
-          $header
-            .addClass('orderable')
-            .on('click', this._handleUnselectedSortHeaderClick.bind(this));
+          this.makeColumnSortable($header);
         }
       }
+
+      $header.attr('aria-sort', sortValue);
     }
+  },
+
+  makeColumnSortable: function ($header, sorted = false) {
+    $header.addClass('orderable');
+
+    const headerHtml = $header.html();
+    const $instructions = this.$tableCaption.find('[data-sort-instructions]');
+    const $headerButton = $('<button/>', {
+      id: `${this.elementIndex.idPrefix}-${$header.attr('data-attribute')}`,
+      type: 'button',
+      'aria-pressed': 'false',
+    }).html(headerHtml);
+
+    if ($instructions.length) {
+      $headerButton.attr('aria-describedby', $instructions.attr('id'));
+    }
+
+    if (sorted) {
+      $headerButton.attr('aria-pressed', 'true');
+      $headerButton.on('click', this._handleSelectedSortHeaderClick.bind(this));
+    } else {
+      $headerButton.on(
+        'click',
+        this._handleUnselectedSortHeaderClick.bind(this)
+      );
+    }
+
+    $header.empty().append($headerButton);
   },
 
   isVerticalList: function () {
@@ -140,20 +225,6 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
     }
 
     Craft.cp.updateResponsiveTables();
-  },
-
-  createElementEditor: function ($element) {
-    Craft.createElementEditor($element.data('type'), $element, {
-      params: {
-        includeTableAttributesForSource: this.elementIndex.sourceKey,
-      },
-      onSaveElement: (response) => {
-        if (response.tableAttributes) {
-          this._updateTableAttributes($element, response.tableAttributes);
-        }
-      },
-      elementIndex: this.elementIndex,
-    });
   },
 
   _collapseElement: function ($toggle, force) {
@@ -287,7 +358,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
             }
 
             Craft.appendHeadHtml(response.data.headHtml);
-            Craft.appendFootHtml(response.data.footHtml);
+            Craft.appendBodyHtml(response.data.bodyHtml);
             Craft.cp.updateResponsiveTables();
 
             this.setTotalVisible(totalVisible);
@@ -327,7 +398,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
   },
 
   _handleSelectedSortHeaderClick: function (ev) {
-    var $header = $(ev.currentTarget);
+    var $header = $(ev.currentTarget).closest('th');
 
     if ($header.hasClass('loading')) {
       return;
@@ -342,7 +413,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
   },
 
   _handleUnselectedSortHeaderClick: function (ev) {
-    var $header = $(ev.currentTarget);
+    var $header = $(ev.currentTarget).closest('th');
 
     if ($header.hasClass('loading')) {
       return;
@@ -359,12 +430,36 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
       this.$selectedSortHeader.removeClass('ordered asc desc');
     }
 
-    $header.removeClass('orderable').addClass('ordered loading');
+    $header.addClass('ordered loading');
     this.elementIndex.storeSortAttributeAndDirection();
     this.elementIndex.updateElements();
 
     // No need for two spinners
     this.elementIndex.setIndexAvailable();
+  },
+
+  _updateScreenReaderStatus: function () {
+    const attribute = this.elementIndex.getSelectedSortAttribute();
+    const direction =
+      this.elementIndex.getSelectedSortDirection() === 'asc'
+        ? Craft.t('app', 'Ascending')
+        : Craft.t('app', 'Descending');
+    const label = this.elementIndex.getSortLabel(attribute);
+
+    if (!attribute && !direction && !label) return;
+
+    const message = Craft.t(
+      'app',
+      'Table {name} sorted by {attribute}, {direction}',
+      {
+        name: this.$table.attr('data-name'),
+        attribute: label,
+        direction: direction,
+      }
+    );
+
+    this.$statusMessage.empty();
+    this.$statusMessage.text(message);
   },
 
   _updateTableAttributes: function ($element, tableAttributes) {
@@ -379,5 +474,17 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
         .children('[data-attr="' + attr + '"]:first')
         .html(tableAttributes[attr]);
     }
+  },
+
+  destroy: function () {
+    if (this._broadcastListener) {
+      Craft.messageReceiver.removeEventListener(
+        'message',
+        this._broadcastListener
+      );
+      delete this._broadcastListener;
+    }
+
+    this.base();
   },
 });

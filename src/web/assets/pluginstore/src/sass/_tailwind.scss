@@ -1,5 +1,16 @@
-/* Tailwind Alternative Classes */
+/* Add stuff that’s missing because we’re not using preflight */
 
-.tw-flex {
-  display: flex;
+html {
+  @apply tw-box-border;
+}
+
+*,
+:after,
+:before {
+  -moz-box-sizing: inherit;
+  box-sizing: inherit;
+}
+
+img {
+  @apply tw-max-w-full tw-h-auto;
 }

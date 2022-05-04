@@ -212,6 +212,17 @@ Craft.CP = Garnish.Base.extend(
 
       this.initTabs();
 
+      if (this.tabManager) {
+        if (window.LOCATION_HASH) {
+          const $tab = this.tabManager.$tabs.filter(
+            `[href="#${window.LOCATION_HASH}"]`
+          );
+          if ($tab.length) {
+            this.tabManager.selectTab($tab);
+          }
+        }
+      }
+
       // Should we match the previous scroll position?
       let scrollY = Craft.getLocalStorage('scrollY');
       if (typeof scrollY !== 'undefined') {
@@ -247,20 +258,17 @@ Craft.CP = Garnish.Base.extend(
         this.addListener($btn, 'click', () => {
           if (!hud) {
             let contents = '';
-            Craft.group(Craft.announcements, 'timestamp').forEach(
-              ([announcements, timestamp]) => {
-                announcements.forEach((a, i) => {
-                  contents +=
-                    `<div class="announcement ${a.unread ? 'unread' : ''}">` +
-                    (i === 0
-                      ? `<div class="timestamp">${a.timestamp}</div>`
-                      : '') +
-                    `<h2>${a.heading}</h2>` +
-                    `<p>${a.body}</p>` +
-                    '</div>';
-                });
-              }
-            );
+            Craft.announcements.forEach((a) => {
+              contents +=
+                `<div class="announcement ${a.unread ? 'unread' : ''}">` +
+                '<div class="announcement-label-container">' +
+                `<div class="announcement-icon">${a.icon}</div>` +
+                `<div class="announcement-label">${a.label}</div>` +
+                '</div>' +
+                `<h2>${a.heading}</h2>` +
+                `<p>${a.body}</p>` +
+                '</div>';
+            });
             hud = new Garnish.HUD(
               $btn,
               `<div id="announcements">${contents}</div>`,
@@ -304,6 +312,25 @@ Craft.CP = Garnish.Base.extend(
       }
     },
 
+    get $contentHeader() {
+      const $contentHeader = $('#content-header');
+      if ($contentHeader.length) {
+        return $contentHeader;
+      }
+      return $('<header/>', {
+        id: 'content-header',
+        class: 'pane-header',
+      }).prependTo($('#content'));
+    },
+
+    get $noticeContainer() {
+      const $noticeContainer = $('#content-notice');
+      if ($noticeContainer.length) {
+        return $noticeContainer;
+      }
+      return $('<div id="content-notice"/>').prependTo(this.$contentHeader);
+    },
+
     initSpecialForms: function () {
       // Look for forms that we should watch for changes on
       this.$confirmUnloadForms = $('form[data-confirm-unload]');
@@ -313,11 +340,11 @@ Craft.CP = Garnish.Base.extend(
         return;
       }
 
-      var $forms = this.$confirmUnloadForms.add(this.$deltaForms);
-      var $form, serialized;
+      const $forms = this.$confirmUnloadForms.add(this.$deltaForms);
 
-      for (var i = 0; i < $forms.length; i++) {
-        $form = $forms.eq(i);
+      for (let i = 0; i < $forms.length; i++) {
+        const $form = $forms.eq(i);
+        let serialized;
         if (!$form.data('initialSerializedValue')) {
           if (typeof $form.data('serializer') === 'function') {
             serialized = $form.data('serializer')();
@@ -332,16 +359,19 @@ Craft.CP = Garnish.Base.extend(
           }
           if (Garnish.hasAttr($form, 'data-delta')) {
             ev.preventDefault();
-            var serialized;
+            let serialized;
             if (typeof $form.data('serializer') === 'function') {
               serialized = $form.data('serializer')();
             } else {
               serialized = $form.serialize();
             }
-            var data = Craft.findDeltaData(
+            const data = Craft.findDeltaData(
               $form.data('initialSerializedValue'),
               serialized,
-              Craft.deltaNames
+              $form.data('delta-names'),
+              null,
+              $form.data('initial-delta-values'),
+              $form.data('modified-delta-names')
             );
             Craft.createForm(data).appendTo(Garnish.$bod).submit();
           }
@@ -349,16 +379,16 @@ Craft.CP = Garnish.Base.extend(
       }
 
       this.addListener(Garnish.$win, 'beforeunload', function (ev) {
-        var confirmUnload = false;
-        var $form, serialized;
+        let confirmUnload = false;
         if (
           typeof Craft.livePreview !== 'undefined' &&
           Craft.livePreview.inPreviewMode
         ) {
           confirmUnload = true;
         } else {
-          for (var i = 0; i < this.$confirmUnloadForms.length; i++) {
-            $form = this.$confirmUnloadForms.eq(i);
+          for (let i = 0; i < this.$confirmUnloadForms.length; i++) {
+            const $form = this.$confirmUnloadForms.eq(i);
+            let serialized;
             if (typeof $form.data('serializer') === 'function') {
               serialized = $form.data('serializer')();
             } else {
@@ -552,14 +582,25 @@ Craft.CP = Garnish.Base.extend(
           $(ev.$tab.attr('href')).addClass('hidden');
         }
       });
+    },
 
-      if (window.LOCATION_HASH) {
-        const $tab = this.tabManager.$tabs.filter(
-          `[href="#${window.LOCATION_HASH}"]`
-        );
-        if ($tab.length) {
-          this.tabManager.selectTab($tab);
+    updateTabs: function (tabs) {
+      if (tabs) {
+        const $tabContainer = $(tabs).attr('id', 'tabs');
+        if (this.tabManager) {
+          this.tabManager.$container.replaceWith($tabContainer);
+        } else {
+          $tabContainer.appendTo(this.$contentHeader);
         }
+        this.initTabs();
+      } else if (this.tabManager) {
+        if (this.tabManager.$container.siblings().length) {
+          this.tabManager.$container.remove();
+        } else {
+          this.tabManager.$container.parent().remove();
+        }
+        this.tabManager.destroy();
+        this.tabManager = null;
       }
     },
 
@@ -573,13 +614,13 @@ Craft.CP = Garnish.Base.extend(
      * @deprecated in 3.7.0
      */
     get $tabsList() {
-      return this.tabManager ? this.tabManager.$ul : undefined;
+      return this.tabManager ? this.tabManager.$tablist : undefined;
     },
     /**
      * @deprecated in 3.7.0
      */
     get $tabs() {
-      return this.tabManager ? this.tabManager.$ul.find('> li') : undefined;
+      return this.tabManager ? this.tabManager.$tablist.find('> a') : undefined;
     },
     /**
      * @deprecated in 3.7.0
@@ -887,14 +928,18 @@ Craft.CP = Garnish.Base.extend(
     },
 
     fetchAlerts: function () {
-      var data = {
-        path: Craft.path,
-      };
-
-      Craft.queueActionRequest(
-        'app/get-cp-alerts',
-        data,
-        this.displayAlerts.bind(this)
+      return Craft.queue.push(
+        () =>
+          new Promise((resolve, reject) => {
+            const data = {
+              path: Craft.path,
+            };
+            Craft.sendActionRequest('POST', 'app/get-cp-alerts', {data})
+              .then(({data}) => {
+                resolve(data.alerts);
+              })
+              .catch(reject);
+          })
       );
     },
 
@@ -930,24 +975,23 @@ Craft.CP = Garnish.Base.extend(
         this.addListener($shunnableAlerts[i], 'click', (ev) => {
           ev.preventDefault();
 
-          var $link = $(ev.currentTarget);
-
-          var data = {
-            message: $link.prop('className').substr(5),
-          };
-
-          Craft.queueActionRequest(
-            'app/shun-cp-alert',
-            data,
-            (response, textStatus) => {
-              if (textStatus === 'success') {
-                if (response.success) {
-                  $link.parent().remove();
-                } else {
-                  this.displayError(response.error);
-                }
-              }
-            }
+          Craft.queue.push(
+            () =>
+              new Promise((resolve, reject) => {
+                const $link = $(ev.currentTarget);
+                const data = {
+                  message: $link.prop('className').substring(5),
+                };
+                Craft.sendActionRequest('POST', 'app/shun-cp-alert', {data})
+                  .then(() => {
+                    $link.parent().remove();
+                    resolve();
+                  })
+                  .catch(({response}) => {
+                    this.displayError(response.data.message);
+                    reject();
+                  });
+              })
           );
         });
       }
@@ -1033,17 +1077,10 @@ Craft.CP = Garnish.Base.extend(
           onlyIfCached: true,
           includeDetails: includeDetails,
         };
-        Craft.postActionRequest(
-          'app/check-for-updates',
-          data,
-          function (info, textStatus) {
-            if (textStatus === 'success') {
-              resolve(info);
-            } else {
-              resolve({cached: false});
-            }
-          }
-        );
+
+        Craft.sendActionRequest('POST', 'app/check-for-updates', {data})
+          .then((response) => resolve(response.data))
+          .catch(({response}) => resolve({cached: false}));
       });
     },
 
@@ -1060,25 +1097,12 @@ Craft.CP = Garnish.Base.extend(
     },
 
     _cacheUpdates: function (updates, includeDetails) {
-      return new Promise(function (resolve, reject) {
-        Craft.postActionRequest(
-          'app/cache-updates',
-          {
-            updates: updates,
-            includeDetails: includeDetails,
-          },
-          function (info, textStatus) {
-            if (textStatus === 'success') {
-              resolve(info);
-            } else {
-              reject();
-            }
-          },
-          {
-            contentType: 'json',
-          }
-        );
-      });
+      const data = {
+        updates,
+        includeDetails,
+      };
+
+      return Craft.sendActionRequest('POST', 'app/cache-updates', {data});
     },
 
     updateUtilitiesBadge: function () {
@@ -1089,19 +1113,29 @@ Craft.CP = Garnish.Base.extend(
         return;
       }
 
-      Craft.queueActionRequest('app/get-utilities-badge-count', (response) => {
-        // Get the existing utility nav badge, if any
-        var $badge = $utilitiesLink.children('.badge');
+      Craft.queue.push(
+        () =>
+          new Promise((resolve, reject) => {
+            Craft.sendActionRequest('POST', 'app/get-utilities-badge-count')
+              .then(({data}) => {
+                // Get the existing utility nav badge, if any
+                let $badge = $utilitiesLink.children('.badge');
 
-        if (response.badgeCount) {
-          if (!$badge.length) {
-            $badge = $('<span class="badge"/>').appendTo($utilitiesLink);
-          }
-          $badge.text(response.badgeCount);
-        } else if ($badge.length) {
-          $badge.remove();
-        }
-      });
+                if (data.badgeCount) {
+                  if (!$badge.length) {
+                    $badge = $('<span class="badge"/>').appendTo(
+                      $utilitiesLink
+                    );
+                  }
+                  $badge.text(data.badgeCount);
+                } else if ($badge.length) {
+                  $badge.remove();
+                }
+                resolve();
+              })
+              .catch(reject);
+          })
+      );
     },
 
     runQueue: function () {
@@ -1110,11 +1144,17 @@ Craft.CP = Garnish.Base.extend(
       }
 
       if (Craft.runQueueAutomatically) {
-        Craft.queueActionRequest('queue/run', (response, textStatus) => {
-          if (textStatus === 'success') {
-            this.trackJobProgress(false, true);
-          }
-        });
+        Craft.queue.push(
+          () =>
+            new Promise((resolve, reject) => {
+              Craft.sendActionRequest('POST', 'queue/run')
+                .then(() => {
+                  this.trackJobProgress(false, true);
+                  resolve();
+                })
+                .catch(reject);
+            })
+        );
       } else {
         this.trackJobProgress(false, true);
       }
@@ -1144,20 +1184,25 @@ Craft.CP = Garnish.Base.extend(
     },
 
     _trackJobProgressInternal: function () {
-      Craft.queueActionRequest(
-        'queue/get-job-info?limit=50&dontExtendSession=1',
-        (response, textStatus) => {
-          if (textStatus === 'success') {
-            this.trackJobProgressTimeout = null;
-            this.totalJobs = response.total;
-            this.setJobInfo(response.jobs);
-
-            if (this.jobInfo.length) {
-              // Check again after a delay
-              this.trackJobProgress(true);
-            }
-          }
-        }
+      Craft.queue.push(
+        () =>
+          new Promise((resolve, reject) => {
+            Craft.sendActionRequest(
+              'POST',
+              'queue/get-job-info?limit=50&dontExtendSession=1'
+            )
+              .then(({data}) => {
+                this.trackJobProgressTimeout = null;
+                this.totalJobs = data.total;
+                this.setJobInfo(data.jobs);
+                if (this.jobInfo.length) {
+                  // Check again after a delay
+                  this.trackJobProgress(true);
+                }
+                resolve();
+              })
+              .catch(reject);
+          })
       );
     },
 
@@ -1194,7 +1239,7 @@ Craft.CP = Garnish.Base.extend(
     },
 
     /**
-     * Returns info for the job that should be displayed in the CP sidebar
+     * Returns info for the job that should be displayed in the control panel sidebar
      */
     getDisplayedJobInfo: function () {
       if (!this.enableQueue) {
@@ -1270,7 +1315,7 @@ Craft.CP = Garnish.Base.extend(
         this.setSiteId(siteId);
         return siteId;
       }
-      return Craft.getCookie('siteId');
+      return Craft.siteId;
     },
 
     /**
@@ -1278,9 +1323,23 @@ Craft.CP = Garnish.Base.extend(
      * @param {number} siteId
      */
     setSiteId: function (siteId) {
-      Craft.setCookie('siteId', siteId, {
-        maxAge: 31536000, // 1 year
-      });
+      const site = Craft.sites.find((s) => s.id === siteId);
+      if (site) {
+        // update the current URL
+        const url = Craft.getUrl(document.location.href, {site: site.handle});
+        history.replaceState({}, '', url);
+
+        // update other URLs on the page
+        $('a').each(function () {
+          if (
+            this.hostname.length &&
+            this.hostname === location.hostname &&
+            this.href.indexOf(Craft.cpTrigger) !== -1
+          ) {
+            this.href = Craft.getUrl(this.href, {site: site.handle});
+          }
+        });
+      }
     },
   },
   {

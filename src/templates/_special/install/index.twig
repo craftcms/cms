@@ -1,0 +1,27 @@
+{% extends "_layouts/basecp" %}
+{% set title = "Install Craft CMS"|t('app') %}
+
+{% do view.registerTranslations('app', [
+    "All done!",
+    "Go to Craft CMS",
+]) %}
+
+{% block body %}
+    <div class="beginbtncontainer">
+        <button type="button" id="beginbtn" class="btn big submit" data-icon-after="rarr">{{ "Install Craft CMS"|t('app') }}</button>
+    </div>
+
+    <div id="install-modal" class="modal hidden">
+        <div id="screens">
+            {% include "_special/install/license" %}
+            {% if showDbScreen %}
+                {% include "_special/install/db" %}
+            {% endif %}
+            {% include "_special/install/account" %}
+            {% include "_special/install/site" %}
+            {% include "_special/install/installing" %}
+        </div>
+
+        <div id="dots"></div>
+    </div>
+{% endblock %}

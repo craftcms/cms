@@ -16,7 +16,7 @@
 .cp-chart .axis path,
 .cp-chart .axis line {
   fill: none;
-  stroke: $hairlineColor;
+  stroke: var(--hairline-color);
   shape-rendering: crispEdges;
 }
 
@@ -28,7 +28,7 @@
 }
 
 .cp-chart .ticks-axis g.tick text {
-  fill: $black;
+  fill: var(--black);
   font-size: 11px;
 }
 

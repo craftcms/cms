@@ -178,55 +178,53 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
           excludeIds: excludeIds,
         };
 
-        Craft.postActionRequest(
-          'tags/search-for-tags',
-          data,
-          (response, textStatus) => {
+        Craft.sendActionRequest('POST', 'tags/search-for-tags', {data})
+          .then((response) => {
+            if (this.searchMenu) {
+              this.killSearchMenu();
+            }
+            this.$spinner.addClass('hidden');
+            var $menu = $('<div class="menu tagmenu"/>').appendTo(Garnish.$bod),
+              $ul = $('<ul/>').appendTo($menu);
+
+            var $li;
+
+            for (var i = 0; i < response.data.tags.length; i++) {
+              $li = $('<li/>').appendTo($ul);
+
+              $('<a data-icon="tag"/>')
+                .appendTo($li)
+                .text(response.data.tags[i].title)
+                .data('id', response.data.tags[i].id)
+                .addClass(response.data.tags[i].exclude ? 'disabled' : '');
+            }
+
+            if (!response.data.exactMatch) {
+              $li = $('<li/>').appendTo($ul);
+              $('<a data-icon="plus"/>').appendTo($li).text(data.search);
+            }
+
+            $ul.find('a:not(.disabled):first').addClass('hover');
+
+            this.searchMenu = new Garnish.Menu($menu, {
+              attachToElement: this.$addTagInput,
+              onOptionSelect: this.selectTag.bind(this),
+            });
+
+            this.addListener($menu, 'mousedown', () => {
+              this._ignoreBlur = true;
+            });
+
+            this.searchMenu.show();
+          })
+          .catch(({response}) => {
             // Just in case
             if (this.searchMenu) {
               this.killSearchMenu();
             }
 
             this.$spinner.addClass('hidden');
-
-            if (textStatus === 'success') {
-              var $menu = $('<div class="menu tagmenu"/>').appendTo(
-                  Garnish.$bod
-                ),
-                $ul = $('<ul/>').appendTo($menu);
-
-              var $li;
-
-              for (var i = 0; i < response.tags.length; i++) {
-                $li = $('<li/>').appendTo($ul);
-
-                $('<a data-icon="tag"/>')
-                  .appendTo($li)
-                  .text(response.tags[i].title)
-                  .data('id', response.tags[i].id)
-                  .addClass(response.tags[i].exclude ? 'disabled' : '');
-              }
-
-              if (!response.exactMatch) {
-                $li = $('<li/>').appendTo($ul);
-                $('<a data-icon="plus"/>').appendTo($li).text(data.search);
-              }
-
-              $ul.find('a:not(.disabled):first').addClass('hover');
-
-              this.searchMenu = new Garnish.Menu($menu, {
-                attachToElement: this.$addTagInput,
-                onOptionSelect: this.selectTag.bind(this),
-              });
-
-              this.addListener($menu, 'mousedown', () => {
-                this._ignoreBlur = true;
-              });
-
-              this.searchMenu.show();
-            }
-          }
-        );
+          });
       } else {
         this.$spinner.addClass('hidden');
       }
@@ -256,9 +254,13 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
         value: id,
       }).appendTo($element);
 
-      $('<a/>', {
+      $('<button/>', {
         class: 'delete icon',
         title: Craft.t('app', 'Remove'),
+        type: 'button',
+        'aria-label': Craft.t('app', 'Remove {label}', {
+          label: title,
+        }),
       }).appendTo($element);
 
       var $titleContainer = $('<div/>', {
@@ -294,27 +296,17 @@ Craft.TagSelectInput = Craft.BaseElementSelectInput.extend(
           title: title,
         };
 
-        Craft.postActionRequest(
-          'tags/create-tag',
-          data,
-          (response, textStatus) => {
-            if (textStatus === 'success' && response.success) {
-              $element.attr('data-id', response.id);
-              $input.val(response.id);
+        Craft.sendActionRequest('POST', 'tags/create-tag', {data})
+          .then((response) => {
+            $element.attr('data-id', response.data.id);
+            $input.val(response.data.id);
 
-              $element.removeClass('loading disabled');
-            } else {
-              this.removeElement($element);
-
-              if (textStatus === 'success') {
-                // Some sort of validation error that still resulted in  a 200 response. Shouldn't be possible though.
-                Craft.cp.displayError(
-                  Craft.t('app', 'A server error occurred.')
-                );
-              }
-            }
-          }
-        );
+            $element.removeClass('loading disabled');
+          })
+          .catch(({response}) => {
+            this.removeElement($element);
+            Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
+          });
       }
     },
 

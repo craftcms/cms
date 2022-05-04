@@ -35,17 +35,17 @@ class Field extends ActiveRecord
     /**
      * @var string|null
      */
-    private $_oldHandle;
+    private ?string $_oldHandle = null;
 
     /**
      * @var string|null
      */
-    private $_oldColumnSuffix;
+    private ?string $_oldColumnSuffix = null;
 
     /**
-     * Initializes the application component.
+     * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -56,7 +56,7 @@ class Field extends ActiveRecord
     /**
      * Store the old handle.
      */
-    public function storeOldData()
+    public function storeOldData(): void
     {
         $this->_oldHandle = $this->handle;
         $this->_oldColumnSuffix = $this->columnSuffix;
@@ -67,7 +67,7 @@ class Field extends ActiveRecord
      *
      * @return string|null
      */
-    public function getOldHandle()
+    public function getOldHandle(): ?string
     {
         return $this->_oldHandle;
     }

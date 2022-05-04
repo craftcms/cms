@@ -5,9 +5,8 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craftunit\gql;
+namespace crafttests\unit\gql;
 
-use Codeception\Test\Unit;
 use Craft;
 use craft\gql\resolvers\elements\Asset as AssetResolver;
 use craft\gql\resolvers\elements\Category as CategoryResolver;
@@ -27,39 +26,31 @@ use craft\records\Structure;
 use craft\records\TagGroup;
 use craft\records\UserGroup;
 use craft\records\Volume;
-use craft\volumes\Local;
+use craft\test\TestCase;
+use UnitTester;
 
-class PrepareQueryTest extends Unit
+class PrepareQueryTest extends TestCase
 {
     /**
-     * @var \UnitTester
+     * @var UnitTester
      */
-    protected $tester;
+    protected UnitTester $tester;
 
-    /**
-     * @var Volume
-     */
-    private $_volume;
-    private $_structure;
-    /**
-     * @var CategoryGroup
-     */
-    private $_categoryGroup;
-    private $_section;
-    private $_entryType;
-    private $_element;
-    private $_globalSet;
-    /**
-     * @var TagGroup
-     */
-    private $_tagGroup;
-    private $_userGroup;
+    private Volume $_volume;
+    private Structure $_structure;
+    private CategoryGroup $_categoryGroup;
+    private Section $_section;
+    private EntryType $_entryType;
+    private Element $_element;
+    private GlobalSet $_globalSet;
+    private TagGroup $_tagGroup;
+    private UserGroup $_userGroup;
 
 
     /**
      * @inheritdoc
      */
-    protected function _before()
+    protected function _before(): void
     {
         // Mock the GQL token
         $this->tester->mockMethods(
@@ -91,7 +82,7 @@ class PrepareQueryTest extends Unit
     /**
      * @inheritdoc
      */
-    protected function _after()
+    protected function _after(): void
     {
         $this->_volume->delete();
         $this->_structure->delete();
@@ -104,25 +95,25 @@ class PrepareQueryTest extends Unit
         $this->_userGroup->delete();
     }
 
-    const VOLUME_UID = 'volume-uid';
-    const CATEGORY_GROUP_UID = 'categoryGroup-uid';
-    const SECTION_UID = 'section-uid';
-    const ENTRY_TYPE_UID = 'entryType-uid';
-    const GLOBAL_SET_UID = 'globalSet-uid';
-    const TAG_GROUP_UID = 'tagGroup-uid';
-    const USER_GROUP_UID = 'userGroup-uid';
+    public const VOLUME_UID = 'volume-uid';
+    public const CATEGORY_GROUP_UID = 'categoryGroup-uid';
+    public const SECTION_UID = 'section-uid';
+    public const ENTRY_TYPE_UID = 'entryType-uid';
+    public const GLOBAL_SET_UID = 'globalSet-uid';
+    public const TAG_GROUP_UID = 'tagGroup-uid';
+    public const USER_GROUP_UID = 'userGroup-uid';
 
     /**
      * Test relational field query preparation
      *
      * @param string $resolverClass The resolver class to test
+     * @phpstan-param class-string $resolverClass
      * @param array $preparationArguments The arguments to pass to the `prepareQuery` method
      * @param callable $testFunction The test function to determine the result.
      * @param callable|null $testLoader The callable that will set up the test conditions
-     *
      * @dataProvider relationalFieldQueryPreparationProvider
      */
-    public function testRelationalFieldQueryPreparation(string $resolverClass, array $preparationArguments, callable $testFunction, callable $testLoader = null)
+    public function testRelationalFieldQueryPreparation(string $resolverClass, array $preparationArguments, callable $testFunction, callable $testLoader = null): void
     {
         // Set up the test
         if ($testLoader) {
@@ -136,7 +127,7 @@ class PrepareQueryTest extends Unit
         self::assertTrue($testFunction($result));
     }
 
-    public function relationalFieldQueryPreparationProvider()
+    public function relationalFieldQueryPreparationProvider(): array
     {
         /**
          * Tests:
@@ -259,8 +250,7 @@ class PrepareQueryTest extends Unit
             'uid' => self::VOLUME_UID,
             'name' => StringHelper::randomString(),
             'handle' => StringHelper::randomString(),
-            'type' => StringHelper::randomString(),
-            'hasUrls' => false,
+            'fs' => 'fake',
         ]);
 
         $this->_volume->save();
@@ -270,12 +260,11 @@ class PrepareQueryTest extends Unit
         $this->tester->mockCraftMethods('volumes', [
             'getVolumeByUid' => function($uid) use ($volumesService) {
                 if ($uid === self::VOLUME_UID) {
-                    return new Local([
+                    return new \craft\models\Volume([
                         'id' => $this->_volume->id,
                         'uid' => self::VOLUME_UID,
                         'name' => $this->_volume->name,
                         'handle' => $this->_volume->handle,
-                        'hasUrls' => false,
                     ]);
                 }
                 return $volumesService->getVolumeByUid($uid);

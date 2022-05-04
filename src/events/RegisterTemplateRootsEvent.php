@@ -21,5 +21,5 @@ class RegisterTemplateRootsEvent extends Event
      * @var array The registered template roots. Each key should be a root template path, and values should be the
      * corresponding directory path, or an array of directory paths.
      */
-    public $roots = [];
+    public array $roots = [];
 }

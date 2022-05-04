@@ -215,7 +215,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
           var $source = this.$sources.eq(i),
             key = $source.data('key');
 
-          if (!this._getFolderUidFromSourceKey(key)) {
+          if (!this._getVolumeOrFolderUidFromSourceKey(key)) {
             continue;
           }
 
@@ -425,7 +425,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
         var $a = this._folderDrag.$draggee.eq(i).children('a'),
           folderId = $a.data('folder-id');
 
-        // Make sure it's not already in the target folder and use this single folder Id.
+        // Make sure it’s not already in the target folder and use this single folder Id.
         if (folderId != targetFolderId) {
           folderIds.push(folderId);
           break;
@@ -612,11 +612,11 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
       var counter = 0;
       var limit = folderDeleteList.length;
       for (var i = 0; i < folderDeleteList.length; i++) {
+        let data = {folderId: folderDeleteList[i]};
+
         // When all folders are deleted, reload the sources.
-        Craft.postActionRequest(
-          'assets/delete-folder',
-          {folderId: folderDeleteList[i]},
-          () => {
+        Craft.sendActionRequest('POST', 'assets/delete-folder', {data}).then(
+          (response) => {
             if (++counter === limit) {
               this.setIndexAvailable();
               this.progressBar.hideProgressBar();
@@ -728,6 +728,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
       fileuploadstart: this._onUploadStart.bind(this),
       fileuploadprogressall: this._onUploadProgress.bind(this),
       fileuploaddone: this._onUploadComplete.bind(this),
+      fileuploadfail: this._onUploadFailure.bind(this),
     };
 
     if (
@@ -812,10 +813,6 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
   },
 
   _updateUrl: function ($source) {
-    if (typeof history === 'undefined') {
-      return;
-    }
-
     // Find all the subfolder sources. At the end, $thisSource will be the root volume source
     let nestedSources = [];
     let $thisSource = $source;
@@ -833,11 +830,11 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
       });
     }
 
-    history.replaceState({}, '', Craft.getUrl(uri));
+    Craft.setPath(uri);
   },
 
-  _getFolderUidFromSourceKey: function (sourceKey) {
-    var m = sourceKey.match(/\bfolder:([0-9a-f\-]+)$/);
+  _getVolumeOrFolderUidFromSourceKey: function (sourceKey) {
+    var m = sourceKey.match(/\b(?:folder|volume):([0-9a-f\-]+)$/);
 
     return m ? m[1] : null;
   },
@@ -949,42 +946,41 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
   },
 
   /**
+   * On Upload Failure.
+   */
+  _onUploadFailure: function (event, data) {
+    const {result} = data;
+    const {message, filename} = result;
+    if (message) {
+      alert(
+        Craft.t('app', 'Upload failed. The error message was: “{message}”', {
+          message,
+        })
+      );
+    } else {
+      alert(Craft.t('app', 'Upload failed for {filename}.', {filename}));
+    }
+  },
+  /**
    * On Upload Complete.
    */
   _onUploadComplete: function (event, data) {
-    var response = data.result;
-    var filename = data.files[0].name;
+    const {result} = data;
 
-    var doReload = true;
+    // Add the uploaded file to the selected ones, if appropriate
+    this.selectElementAfterUpdate(result.assetId);
 
-    if (response.success || response.conflict) {
-      // Add the uploaded file to the selected ones, if appropriate
-      this.selectElementAfterUpdate(response.assetId);
+    // If there is a prompt, add it to the queue
+    if (result.conflict) {
+      result.prompt = {
+        message: Craft.t('app', result.conflict, {file: result.filename}),
+        choices: this._fileConflictTemplate.choices,
+      };
 
-      // If there is a prompt, add it to the queue
-      if (response.conflict) {
-        response.prompt = {
-          message: Craft.t('app', response.conflict, {file: response.filename}),
-          choices: this._fileConflictTemplate.choices,
-        };
-
-        this.promptHandler.addPrompt(response);
-      }
-
-      Craft.cp.runQueue();
-    } else {
-      if (response.error) {
-        alert(
-          Craft.t('app', 'Upload failed. The error message was: “{error}”', {
-            error: response.error,
-          })
-        );
-      } else {
-        alert(Craft.t('app', 'Upload failed for {filename}.', {filename}));
-      }
-
-      doReload = false;
+      this.promptHandler.addPrompt(result);
     }
+
+    Craft.cp.runQueue();
 
     // For the last file, display prompts, if any. If not - just update the element view.
     if (this.uploader.isLastUpload()) {
@@ -994,9 +990,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
       if (this.promptHandler.getPromptCount()) {
         this.promptHandler.showBatchPrompts(this._uploadFollowup.bind(this));
       } else {
-        if (doReload) {
-          this._updateAfterUpload();
-        }
+        this._updateAfterUpload();
       }
     }
   },
@@ -1036,15 +1030,10 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
     this.progressBar.setItemCount(returnData.length);
 
     var doFollowup = (parameterArray, parameterIndex, callback) => {
-      var postData = {};
+      var data = {};
       var action = null;
 
-      var followupCallback = (data, textStatus) => {
-        if (textStatus === 'success' && data.assetId) {
-          this.selectElementAfterUpdate(data.assetId);
-        } else if (data.error) {
-          alert(data.error);
-        }
+      const followupAlways = () => {
         parameterIndex++;
         this.progressBar.incrementProcessedItemCount(1);
         this.progressBar.updateProgressBar();
@@ -1055,29 +1044,41 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
           doFollowup(parameterArray, parameterIndex, callback);
         }
       };
+      const followupSuccess = (data) => {
+        if (data.assetId) {
+          this.selectElementAfterUpdate(data.assetId);
+        }
+
+        followupAlways();
+      };
+      const followupFailure = (data) => {
+        alert(data.message);
+        followupAlways();
+      };
 
       if (parameterArray[parameterIndex].choice === 'replace') {
         action = 'assets/replace-file';
-        postData.sourceAssetId = parameterArray[parameterIndex].assetId;
+        data.sourceAssetId = parameterArray[parameterIndex].assetId;
 
         if (parameterArray[parameterIndex].conflictingAssetId) {
-          postData.assetId = parameterArray[parameterIndex].conflictingAssetId;
+          data.assetId = parameterArray[parameterIndex].conflictingAssetId;
         } else {
-          postData.targetFilename = parameterArray[parameterIndex].filename;
+          data.targetFilename = parameterArray[parameterIndex].filename;
         }
       } else if (parameterArray[parameterIndex].choice === 'cancel') {
         action = 'assets/delete-asset';
-        postData.assetId = parameterArray[parameterIndex].assetId;
+        data.assetId = parameterArray[parameterIndex].assetId;
       }
 
       if (!action) {
         // We don't really need to do another request, so let's pretend that already happened
-        followupCallback(
-          {assetId: parameterArray[parameterIndex].assetId},
-          'success'
-        );
+        followupSuccess({
+          assetId: parameterArray[parameterIndex].assetId,
+        });
       } else {
-        Craft.postActionRequest(action, postData, followupCallback);
+        Craft.sendActionRequest('POST', action, {data})
+          .then((response) => followupSuccess(response.data))
+          .catch(({response}) => followupFailure(response.data));
       }
     };
 
@@ -1336,7 +1337,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 
   _createFolderContextMenu: function ($source) {
     // Make sure it's a volume folder
-    if (!this._getFolderUidFromSourceKey($source.data('key'))) {
+    if (!this._getVolumeOrFolderUidFromSourceKey($source.data('key'))) {
       return;
     }
 
@@ -1375,60 +1376,54 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
     var subfolderName = prompt(Craft.t('app', 'Enter the name of the folder'));
 
     if (subfolderName) {
-      var params = {
+      var data = {
         parentId: $parentFolder.data('folder-id'),
         folderName: subfolderName,
       };
 
       this.setIndexBusy();
 
-      Craft.postActionRequest(
-        'assets/create-folder',
-        params,
-        (data, textStatus) => {
+      Craft.sendActionRequest('POST', 'assets/create-folder', {data})
+        .then((response) => {
+          const data = response.data;
           this.setIndexAvailable();
+          this._prepareParentForChildren($parentFolder);
+          var $subfolder = $(
+            '<li>' +
+              '<a data-key="' +
+              $parentFolder.data('key') +
+              '/folder:' +
+              data.folderUid +
+              '"' +
+              (Garnish.hasAttr($parentFolder, 'data-has-thumbs')
+                ? ' data-has-thumbs'
+                : '') +
+              ' data-folder-id="' +
+              data.folderId +
+              '"' +
+              (Garnish.hasAttr($parentFolder, 'data-can-upload')
+                ? ' data-can-upload'
+                : '') +
+              (Garnish.hasAttr($parentFolder, 'data-can-move-to')
+                ? ' data-can-move-to'
+                : '') +
+              (Garnish.hasAttr($parentFolder, 'data-can-move-peer-files-to')
+                ? ' data-can-move-peer-files-to'
+                : '') +
+              '>' +
+              data.folderName +
+              '</a>' +
+              '</li>'
+          );
 
-          if (textStatus === 'success' && data.success) {
-            this._prepareParentForChildren($parentFolder);
-
-            var $subfolder = $(
-              '<li>' +
-                '<a data-key="' +
-                $parentFolder.data('key') +
-                '/folder:' +
-                data.folderUid +
-                '"' +
-                (Garnish.hasAttr($parentFolder, 'data-has-thumbs')
-                  ? ' data-has-thumbs'
-                  : '') +
-                ' data-folder-id="' +
-                data.folderId +
-                '"' +
-                (Garnish.hasAttr($parentFolder, 'data-can-upload')
-                  ? ' data-can-upload'
-                  : '') +
-                (Garnish.hasAttr($parentFolder, 'data-can-move-to')
-                  ? ' data-can-move-to'
-                  : '') +
-                (Garnish.hasAttr($parentFolder, 'data-can-move-peer-files-to')
-                  ? ' data-can-move-peer-files-to'
-                  : '') +
-                '>' +
-                data.folderName +
-                '</a>' +
-                '</li>'
-            );
-
-            var $a = $subfolder.children('a:first');
-            this._appendSubfolder($parentFolder, $subfolder);
-            this.initSource($a);
-          }
-
-          if (textStatus === 'success' && data.error) {
-            alert(data.error);
-          }
-        }
-      );
+          var $a = $subfolder.children('a:first');
+          this._appendSubfolder($parentFolder, $subfolder);
+          this.initSource($a);
+        })
+        .catch(({response}) => {
+          this.setIndexAvailable();
+          alert(response.data.message);
+        });
     }
   },
 
@@ -1440,33 +1435,27 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
         })
       )
     ) {
-      var params = {
+      var data = {
         folderId: $targetFolder.data('folder-id'),
       };
 
       this.setIndexBusy();
 
-      Craft.postActionRequest(
-        'assets/delete-folder',
-        params,
-        (data, textStatus) => {
+      Craft.sendActionRequest('POST', 'assets/delete-folder', {data})
+        .then((response) => {
           this.setIndexAvailable();
+          var $parentFolder = this._getParentSource($targetFolder);
 
-          if (textStatus === 'success' && data.success) {
-            var $parentFolder = this._getParentSource($targetFolder);
+          // Remove folder and any trace from its parent, if needed
+          this.deinitSource($targetFolder);
 
-            // Remove folder and any trace from its parent, if needed
-            this.deinitSource($targetFolder);
-
-            $targetFolder.parent().remove();
-            this._cleanUpTree($parentFolder);
-          }
-
-          if (textStatus === 'success' && data.error) {
-            alert(data.error);
-          }
-        }
-      );
+          $targetFolder.parent().remove();
+          this._cleanUpTree($parentFolder);
+        })
+        .catch(({response}) => {
+          this.setIndexAvailable();
+          alert(response.data.message);
+        });
     }
   },
 
@@ -1491,24 +1480,21 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
       },
     })
       .then((response) => {
-        if (response.data.success) {
-          $label.text(response.data.newName);
+        $label.text(response.data.newName);
 
-          // Is this the selected source?
-          if ($source.data('key') === this.$source.data('key')) {
-            this.updateElements();
+        // Is this the selected source?
+        if ($source.data('key') === this.$source.data('key')) {
+          this.updateElements();
 
-            // Update the URL if we're on the Assets index
-            if (this.settings.context === 'index') {
-              this._updateUrl($source);
-            }
+          // Update the URL if we're on the Assets index
+          if (this.settings.context === 'index') {
+            this._updateUrl($source);
           }
-        } else if (response.data.error) {
-          alert(response.data.error);
         }
       })
-      .finally(() => {
+      .catch(({response}) => {
         this.setIndexAvailable();
+        alert(response.data.message);
       });
   },
 

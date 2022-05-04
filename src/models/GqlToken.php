@@ -12,6 +12,7 @@ use craft\base\Model;
 use craft\helpers\DateTimeHelper;
 use craft\records\GqlToken as GqlSchemaRecord;
 use craft\validators\UniqueValidator;
+use DateTime;
 
 /**
  * GraphQL token class
@@ -25,68 +26,68 @@ class GqlToken extends Model
     /**
      * The public access token value.
      */
-    const PUBLIC_TOKEN = '__PUBLIC__';
+    public const PUBLIC_TOKEN = '__PUBLIC__';
 
     /**
      * @var int|null ID
      */
-    public $id;
+    public ?int $id = null;
 
     /**
-     * @var string Token name
+     * @var string|null Token name
      */
-    public $name;
+    public ?string $name = null;
 
     /**
      * @var int|null ID of the associated schema.
      * @since 3.4.0
      */
-    public $schemaId;
+    public ?int $schemaId = null;
 
     /**
      * @var string The access token
      */
-    public $accessToken;
+    public string $accessToken;
 
     /**
      * @var bool Is the token enabled
      */
-    public $enabled = true;
+    public bool $enabled = true;
 
     /**
-     * @var \DateTime|null Date expires
+     * @var DateTime|null Date expires
      */
-    public $expiryDate;
+    public ?DateTime $expiryDate = null;
 
     /**
-     * @var \DateTime|null Date last used
+     * @var DateTime|null Date last used
      */
-    public $lastUsed;
+    public ?DateTime $lastUsed = null;
 
     /**
-     * @var \DateTime|null Date created
+     * @var DateTime|null Date created
      */
-    public $dateCreated;
+    public ?DateTime $dateCreated = null;
 
     /**
-     * @var string $uid
+     * @var string|null $uid
      */
-    public $uid;
+    public ?string $uid = null;
 
     /**
-     * @var array The allowed scope for the token.
+     * @var array|null The allowed scope for the token.
      */
-    private $_scope = [];
+    private ?array $_scope = null;
 
     /**
      * @var GqlSchema The schema for this token.
      */
-    private $_schema;
+    private GqlSchema $_schema;
 
     /**
      * @var bool Whether this is a temporary token
      */
-    public $isTemporary = false;
+    public bool $isTemporary = false;
 
     public function __construct($config = [])
     {
@@ -100,17 +101,6 @@ class GqlToken extends Model
 
         unset($config['schema']);
         parent::__construct($config);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function datetimeAttributes(): array
-    {
-        $attributes = parent::datetimeAttributes();
-        $attributes[] = 'expiryDate';
-        $attributes[] = 'lastUsed';
-        return $attributes;
     }
 
     /**
@@ -176,7 +166,7 @@ class GqlToken extends Model
      *
      * @return GqlSchema|null
      */
-    public function getSchema()
+    public function getSchema(): ?GqlSchema
     {
         if (empty($this->_schema) && !empty($this->schemaId)) {
             $this->_schema = Craft::$app->getGql()->getSchemaById($this->schemaId);
@@ -191,7 +181,7 @@ class GqlToken extends Model
      * @param GqlSchema $schema
      * @since 3.5.0
      */
-    public function setSchema(GqlSchema $schema)
+    public function setSchema(GqlSchema $schema): void
     {
         $this->_schema = $schema;
         $this->schemaId = $schema->id;
@@ -200,11 +190,11 @@ class GqlToken extends Model
     /**
      * Return the schema's scope for this token.
      *
-     * @return array|mixed
+     * @return mixed
      */
-    public function getScope()
+    public function getScope(): mixed
     {
-        if (empty($this->_scope)) {
+        if (!isset($this->_scope)) {
             $schema = $this->getSchema();
             $this->_scope = $schema->scope ?? null;
         }

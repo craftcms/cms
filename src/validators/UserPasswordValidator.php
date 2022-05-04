@@ -8,7 +8,6 @@
 namespace craft\validators;
 
 use Craft;
-use yii\base\Model;
 use yii\validators\StringValidator;
 
 /**
@@ -22,27 +21,27 @@ class UserPasswordValidator extends StringValidator
     /**
      * @since 3.5.18
      */
-    const MIN_PASSWORD_LENGTH = 6;
+    public const MIN_PASSWORD_LENGTH = 6;
 
     /**
      * @since 3.5.18
      */
-    const MAX_PASSWORD_LENGTH = 160;
+    public const MAX_PASSWORD_LENGTH = 160;
 
     /**
      * @var bool Whether the password must be different from the existing password.
      */
-    public $forceDifferent = false;
+    public bool $forceDifferent = false;
 
     /**
-     * @var string|null The user's current (hashed) password.
+     * @var string|null The user’s current (hashed) password.
      */
-    public $currentPassword;
+    public ?string $currentPassword = null;
 
     /**
      * @var string|null User-defined error message used when the new password is the same as [[currentPassword]].
      */
-    public $sameAsCurrent;
+    public ?string $sameAsCurrent = null;
 
     /**
      * @inheritdoc
@@ -65,11 +64,11 @@ class UserPasswordValidator extends StringValidator
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
-        if ($this->forceDifferent && $this->sameAsCurrent === null) {
+        if ($this->forceDifferent && !isset($this->sameAsCurrent)) {
             $this->sameAsCurrent = Craft::t('app', '{attribute} must be set to a new password.');
         }
     }
@@ -77,9 +76,8 @@ class UserPasswordValidator extends StringValidator
     /**
      * @inheritdoc
      */
-    public function validateAttribute($model, $attribute)
+    public function validateAttribute($model, $attribute): void
     {
-        /** @var Model $model */
         parent::validateAttribute($model, $attribute);
 
         if ($model->hasErrors($attribute)) {
@@ -98,9 +96,9 @@ class UserPasswordValidator extends StringValidator
     /**
      * @inheritdoc
      */
-    public function isEmpty($value)
+    public function isEmpty($value): bool
     {
-        if ($this->isEmpty !== null) {
+        if (isset($this->isEmpty)) {
             return call_user_func($this->isEmpty, $value);
         }
 

@@ -1,0 +1,139 @@
+{% extends "_layouts/cp" %}
+
+{% set fullPageForm = true %}
+
+{% import "_includes/forms" as forms %}
+
+{% set headlessMode = craft.app.config.general.headlessMode %}
+
+
+{% block content %}
+    {{ actionInput('categories/save-group') }}
+    {{ redirectInput('settings/categories') }}
+
+    {% if categoryGroup.id %}{{ hiddenInput('groupId', categoryGroup.id) }}{% endif %}
+
+    {{ forms.textField({
+        first: true,
+        label: "Name"|t('app'),
+        instructions: "What this category group will be called in the control panel."|t('app'),
+        id: 'name',
+        name: 'name',
+        value: categoryGroup.name,
+        errors: categoryGroup.getErrors('name'),
+        autofocus: true,
+        required: true,
+    }) }}
+
+    {{ forms.textField({
+        label: "Handle"|t('app'),
+        instructions: "How you’ll refer to this category group in the templates."|t('app'),
+        id: 'handle',
+        name: 'handle',
+        class: 'code',
+        autocorrect: false,
+        autocapitalize: false,
+        value: categoryGroup.handle,
+        errors: categoryGroup.getErrors('handle'),
+        required: true
+    }) }}
+
+    {{ forms.textField({
+        label: "Max Levels"|t('app'),
+        instructions: "The maximum number of levels this category group can have. Leave blank if you don’t care."|t('app'),
+        id: 'maxLevels',
+        name: 'maxLevels',
+        value: categoryGroup.maxLevels,
+        size: 5,
+        errors: categoryGroup.getErrors('maxLevels')
+    }) }}
+
+    {{ forms.selectField({
+        label: 'Default {type} Placement'|t('app', {type: 'Category'|t('app')}),
+        instructions: 'Where new {type} should be placed by default in the structure.'|t('app', {type: 'categories'|t('app')}),
+        id: 'default-placement',
+        name: 'defaultPlacement',
+        options: [
+            {label: 'Before other {type}'|t('app', {type: 'categories'|t('app')}), value: 'beginning'},
+            {label: 'After other {type}'|t('app', {type: 'categories'|t('app')}), value: 'end'},
+        ],
+        value: categoryGroup.defaultPlacement,
+    }) }}
+
+    <hr>
+
+    {% set siteRows = [] %}
+    {% set siteErrors = categoryGroup.getErrors('siteSettings') %}
+
+    {% for site in craft.app.sites.getAllSites() %}
+        {% set siteSettings = categoryGroup.siteSettings[site.id] ?? null %}
+        {% if siteSettings %}
+            {% for attribute, errors in siteSettings.getErrors() %}
+                {% set siteErrors = siteErrors|merge(errors) %}
+            {% endfor %}
+        {% endif %}
+        {% set siteRows = siteRows|merge({
+            (site.handle): {
+                heading: site.name|t('site')|e,
+                uriFormat: {
+                    value: siteSettings.uriFormat ?? null,
+                    hasErrors: siteSettings.hasErrors('uriFormat') ?? false
+                },
+                template: not headlessMode ? {
+                    value: siteSettings.template ?? null,
+                    hasErrors: siteSettings.hasErrors('template') ?? false,
+                }
+            }
+        }) %}
+    {% endfor %}
+
+    {{ forms.editableTableField({
+        label: "Site Settings"|t('app'),
+        instructions: "Configure the category group’s site-specific settings."|t('app'),
+        id: 'sites',
+        name: 'sites',
+        cols: {
+            heading: {
+                type: 'heading',
+                heading: "Site"|t('app'),
+                class: 'thin'
+            },
+            uriFormat: {
+                type: 'singleline',
+                heading: "Category URI Format"|t('app'),
+                info: "What category URIs should look like for the site."|t('app'),
+                placeholder: "Leave blank if categories don’t have URLs"|t('app'),
+                code: true
+            },
+            template: not headlessMode ? {
+                type: 'template',
+                heading: "Template"|t('app'),
+                info: "Which template should be loaded when a category’s URL is requested."|t('app'),
+                code: true
+            },
+        }|filter,
+        rows: siteRows,
+        allowAdd: false,
+        allowDelete: false,
+        allowReorder: false,
+        errors: siteErrors|unique
+    }) }}
+
+    <hr>
+
+    {{ forms.fieldLayoutDesignerField({
+        fieldLayout: categoryGroup.getFieldLayout(),
+    }) }}
+{% endblock %}
+
+
+{% if brandNewGroup %}
+    {% js %}
+        new Craft.HandleGenerator('#name', '#handle');
+
+        {% for site in craft.app.sites.getAllSites() %}
+            new Craft.UriFormatGenerator('#name', '#sites tr[data-id="{{ site.handle }}"] textarea[name$="[uriFormat]"]', { suffix: '/{slug}' });
+            new Craft.UriFormatGenerator('#name', '#sites tr[data-id="{{ site.handle }}"] textarea[name$="[template]"]', { suffix: '/_category' });
+        {% endfor %}
+    {% endjs %}
+{% endif %}

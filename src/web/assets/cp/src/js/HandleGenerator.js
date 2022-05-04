@@ -35,7 +35,7 @@ Craft.HandleGenerator = Craft.BaseInputGenerator.extend({
       if (Craft.handleCasing !== 'pascal' && i === 0) {
         handle += words[i];
       } else {
-        handle += words[i].charAt(0).toUpperCase() + words[i].substr(1);
+        handle += words[i].charAt(0).toUpperCase() + words[i].substring(1);
       }
     }
 

@@ -10,8 +10,9 @@ namespace crafttests\unit\services;
 use Codeception\Test\Unit;
 use Craft;
 use craft\helpers\StringHelper;
+use craft\services\ProjectConfig;
 use craft\services\Routes;
-use UnitTester;
+use craft\test\TestCase;
 
 /**
  * Unit tests for routes service.
@@ -21,33 +22,26 @@ use UnitTester;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class RoutesTest extends Unit
+class RoutesTest extends TestCase
 {
-    /**
-     * @var UnitTester
-     */
-    protected $tester;
-
     /**
      * @var Routes
      */
-    protected $routes;
-
+    protected Routes $routes;
 
     /**
      * @dataProvider saveRouteDataProvider
-     *
      * @param array $expected
      * @param array $uriParts
      * @param string $template
      * @param string|null $siteUid
      * @param string|null $routeUid
      */
-    public function testSaveRoute(array $expected, array $uriParts, string $template, ?string $siteUid = null, ?string $routeUid = null)
+    public function testSaveRoute(array $expected, array $uriParts, string $template, ?string $siteUid = null, ?string $routeUid = null): void
     {
         $uid = $this->routes->saveRoute($uriParts, $template, $siteUid, $routeUid);
         self::assertTrue(StringHelper::isUUID($uid));
-        self::assertSame($expected, Craft::$app->getProjectConfig()->get(Routes::CONFIG_ROUTES_KEY . '.' . $uid));
+        self::assertSame($expected, Craft::$app->getProjectConfig()->get(ProjectConfig::PATH_ROUTES . '.' . $uid));
     }
 
     /**
@@ -133,7 +127,7 @@ class RoutesTest extends Unit
     /**
      * @inheritdoc
      */
-    protected function _before()
+    protected function _before(): void
     {
         parent::_before();
         $this->routes = Craft::$app->getRoutes();

@@ -32,7 +32,7 @@ class Tokens extends Component
     /**
      * @var bool
      */
-    private $_deletedExpiredTokens = false;
+    private bool $_deletedExpiredTokens = false;
 
     /**
      * Creates a new token and returns it.
@@ -50,7 +50,7 @@ class Tokens extends Component
      * Craft::$app->tokens->createToken(['template' => 'template/path']);
      * ```
      *
-     * @param mixed $route Where matching requests should be routed to.
+     * @param array|string $route Where matching requests should be routed to.
      * @param int|null $usageLimit The maximum number of times this token can be
      * used. Defaults to no limit.
      * @param DateTime|null $expiryDate The date that the token expires.
@@ -58,7 +58,7 @@ class Tokens extends Component
      * @param string|null $token The token to use, if it was pre-generated. Must be exactly 32 characters.
      * @return string|false The generated token, or `false` if there was an error.
      */
-    public function createToken($route, ?int $usageLimit = null, ?DateTime $expiryDate = null, ?string $token = null)
+    public function createToken(array|string $route, ?int $usageLimit = null, ?DateTime $expiryDate = null, ?string $token = null): string|false
     {
         if ($token !== null && strlen($token) !== 32) {
             throw new InvalidArgumentException("Invalid token: $token");
@@ -80,7 +80,7 @@ class Tokens extends Component
             $tokenRecord->usageLimit = $usageLimit;
         }
 
-        $tokenRecord->expiryDate = $expiryDate;
+        $tokenRecord->expiryDate = Db::prepareDateForDb($expiryDate);
         $success = $tokenRecord->save();
 
         if ($success) {
@@ -91,7 +91,7 @@ class Tokens extends Component
     }
 
     /**
-     * Creates a new token for previewing content, using the <config3:previewTokenDuration> to determine the duration, if set.
+     * Creates a new token for previewing content, using the <config4:previewTokenDuration> to determine the duration, if set.
      *
      * @param mixed $route Where matching requests should be routed to.
      * @param int|null $usageLimit The maximum number of times this token can be
@@ -100,7 +100,7 @@ class Tokens extends Component
      * @return string|false The generated token, or `false` if there was an error.
      * @since 3.7.0
      */
-    public function createPreviewToken($route, ?int $usageLimit = null, ?string $token = null)
+    public function createPreviewToken(mixed $route, ?int $usageLimit = null, ?string $token = null): string|false
     {
         $interval = DateTimeHelper::secondsToInterval(Craft::$app->getConfig()->getGeneral()->previewTokenDuration);
         $expiryDate = DateTimeHelper::currentUTCDateTime()->add($interval);
@@ -113,7 +113,7 @@ class Tokens extends Component
      * @param string $token
      * @return array|false
      */
-    public function getTokenRoute(string $token)
+    public function getTokenRoute(string $token): array|false
     {
         // Take the opportunity to delete any expired tokens
         $this->deleteExpiredTokens();
@@ -145,13 +145,7 @@ class Tokens extends Component
             }
         }
 
-        // Figure out where we should route the request
-        $route = $result['route'];
-
-        // Might be JSON, might not be
-        $route = Json::decodeIfJson($route);
-
-        return (array)$route;
+        return (array)Json::decodeIfJson($result['route']);
     }
 
     /**

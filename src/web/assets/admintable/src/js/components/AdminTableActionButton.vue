@@ -120,15 +120,15 @@
           };
           data[param] = value;
 
-          Craft.postActionRequest(action, data, (response) => {
-            if (response.success) {
+          Craft.sendActionRequest('POST', action, {data})
+            .then((response) => {
               Craft.cp.displayNotice(
                 Craft.escapeHtml(Craft.t('app', 'Updated.'))
               );
-            }
-
-            this.$emit('reload');
-          });
+            })
+            .finally(() => {
+              this.$emit('reload');
+            });
         } else {
           this.action = action;
           this.param = param;

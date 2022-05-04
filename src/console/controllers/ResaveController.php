@@ -41,92 +41,92 @@ class ResaveController extends Controller
      * @var bool Whether the elements should be resaved via a queue job.
      * @since 3.7.0
      */
-    public $queue = false;
+    public bool $queue = false;
 
     /**
      * @var bool Whether to resave element drafts.
      * @since 3.6.5
      */
-    public $drafts = false;
+    public bool $drafts = false;
 
     /**
      * @var bool Whether to resave provisional element drafts.
      * @since 3.7.0
      */
-    public $provisionalDrafts = false;
+    public bool $provisionalDrafts = false;
 
     /**
      * @var bool Whether to resave element revisions.
      * @since 3.7.35
      */
-    public $revisions = false;
+    public bool $revisions = false;
 
     /**
-     * @var int|string The ID(s) of the elements to resave.
+     * @var int|string|null The ID(s) of the elements to resave.
      */
-    public $elementId;
+    public string|int|null $elementId = null;
 
     /**
-     * @var string The UUID(s) of the elements to resave.
+     * @var string|null The UUID(s) of the elements to resave.
      */
-    public $uid;
+    public ?string $uid = null;
 
     /**
      * @var string|null The site handle to save elements from.
      */
-    public $site;
+    public ?string $site = null;
 
     /**
      * @var string The status(es) of elements to resave. Can be set to multiple comma-separated statuses.
      */
-    public $status = 'any';
+    public string $status = 'any';
 
     /**
      * @var int|null The number of elements to skip.
      */
-    public $offset;
+    public ?int $offset = null;
 
     /**
      * @var int|null The number of elements to resave.
      */
-    public $limit;
+    public ?int $limit = null;
 
     /**
      * @var bool Whether to update the search indexes for the resaved elements.
      */
-    public $updateSearchIndex = false;
+    public bool $updateSearchIndex = false;
 
     /**
      * @var string|null The group handle(s) to save categories/tags/users from. Can be set to multiple comma-separated groups.
      */
-    public $group;
+    public ?string $group = null;
 
     /**
      * @var string|null The section handle(s) to save entries from. Can be set to multiple comma-separated sections.
      */
-    public $section;
+    public ?string $section = null;
 
     /**
      * @var string|null The type handle(s) of the elements to resave.
      * @since 3.1.16
      */
-    public $type;
+    public ?string $type = null;
 
     /**
      * @var string|null The volume handle(s) to save assets from. Can be set to multiple comma-separated volumes.
      */
-    public $volume;
+    public ?string $volume = null;
 
     /**
      * @var string|null The field handle to save Matrix blocks for.
      */
-    public $field;
+    public ?string $field = null;
 
     /**
      * @var string|null An attribute name that should be set for each of the elements. The value will be determined by --to.
      * @since 3.7.29
      */
-    public $set;
+    public ?string $set = null;
 
     /**
      * @var string|null The value that should be set on the --set attribute.
@@ -140,18 +140,18 @@ class ResaveController extends Controller
      *
      * @since 3.7.29
      */
-    public $to;
+    public ?string $to = null;
 
     /**
      * @var bool Whether the `--set` attribute should only be set if it doesn’t have a value.
      * @since 3.7.29
      */
-    public $ifEmpty = false;
+    public bool $ifEmpty = false;
 
     /**
      * @inheritdoc
      */
-    public function options($actionID)
+    public function options($actionID): array
     {
         $options = parent::options($actionID);
         $options[] = 'queue';
@@ -195,13 +195,13 @@ class ResaveController extends Controller
     /**
      * @inheritdoc
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         if (!parent::beforeAction($action)) {
             return false;
         }
 
-        if ($this->set && !isset($this->to)) {
+        if (isset($this->set) && !isset($this->to)) {
             $this->stderr('--to is required when using --set.' . PHP_EOL, Console::FG_RED);
             return false;
         }
@@ -217,7 +217,7 @@ class ResaveController extends Controller
     public function actionAssets(): int
     {
         $criteria = [];
-        if ($this->volume !== null) {
+        if (isset($this->volume)) {
             $criteria['volume'] = explode(',', $this->volume);
         }
         return $this->resaveElements(Asset::class, $criteria);
@@ -231,7 +231,7 @@ class ResaveController extends Controller
     public function actionCategories(): int
     {
         $criteria = [];
-        if ($this->group !== null) {
+        if (isset($this->group)) {
             $criteria['group'] = explode(',', $this->group);
         }
         return $this->resaveElements(Category::class, $criteria);
@@ -245,10 +245,10 @@ class ResaveController extends Controller
     public function actionEntries(): int
     {
         $criteria = [];
-        if ($this->section !== null) {
+        if (isset($this->section)) {
             $criteria['section'] = explode(',', $this->section);
         }
-        if ($this->type !== null) {
+        if (isset($this->type)) {
             $criteria['type'] = explode(',', $this->type);
         }
         return $this->resaveElements(Entry::class, $criteria);
@@ -265,10 +265,10 @@ class ResaveController extends Controller
     public function actionMatrixBlocks(): int
     {
         $criteria = [];
-        if ($this->field !== null) {
+        if (isset($this->field)) {
             $criteria['field'] = explode(',', $this->field);
         }
-        if ($this->type !== null) {
+        if (isset($this->type)) {
             $criteria['type'] = explode(',', $this->type);
         }
         return $this->resaveElements(MatrixBlock::class, $criteria);
@@ -282,7 +282,7 @@ class ResaveController extends Controller
     public function actionTags(): int
     {
         $criteria = [];
-        if ($this->group !== null) {
+        if (isset($this->group)) {
             $criteria['group'] = explode(',', $this->group);
         }
         return $this->resaveElements(Tag::class, $criteria);
@@ -296,20 +296,23 @@ class ResaveController extends Controller
     public function actionUsers(): int
     {
         $criteria = [];
-        if ($this->group !== null) {
+        if (isset($this->group)) {
             $criteria['group'] = explode(',', $this->group);
         }
         return $this->resaveElements(User::class, $criteria);
     }
 
     /**
-     * @param string|ElementInterface $elementType The element type that should be resaved
+     * @param string $elementType The element type that should be resaved
+     * @phpstan-param class-string<ElementInterface> $elementType
      * @param array $criteria The element criteria that determines which elements should be resaved
      * @return int
      * @since 3.7.0
      */
     public function resaveElements(string $elementType, array $criteria = []): int
     {
+        /** @var string|ElementInterface $elementType */
+        /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
         $criteria += $this->_baseCriteria();
 
         if ($this->queue) {
@@ -382,11 +385,11 @@ class ResaveController extends Controller
             $criteria['status'] = explode(',', $this->status);
         }
 
-        if ($this->offset !== null) {
+        if (isset($this->offset)) {
             $criteria['offset'] = $this->offset;
         }
 
-        if ($this->limit !== null) {
+        if (isset($this->limit)) {
             $criteria['limit'] = $this->limit;
         }
 
@@ -412,10 +415,10 @@ class ResaveController extends Controller
             $count = min($count, (int)$query->limit);
         }
 
-        $to = $this->set ? $this->_normalizeTo() : null;
+        $to = isset($this->set) ? $this->_normalizeTo() : null;
 
         $elementsText = $count === 1 ? $elementType::lowerDisplayName() : $elementType::pluralLowerDisplayName();
-        $this->stdout("Resaving {$count} {$elementsText} ..." . PHP_EOL, Console::FG_YELLOW);
+        $this->stdout("Resaving $count $elementsText ..." . PHP_EOL, Console::FG_YELLOW);
 
         $elementsService = Craft::$app->getElements();
         $fail = false;
@@ -423,7 +426,7 @@ class ResaveController extends Controller
         $beforeCallback = function(BatchElementActionEvent $e) use ($query, $count, $to) {
             if ($e->query === $query) {
                 $element = $e->element;
-                $this->stdout("    - [{$e->position}/{$count}] Resaving {$element} ({$element->id}) ... ");
+                $this->stdout("    - [$e->position/$count] Resaving $element ($element->id) ... ");
 
                 if ($this->set && (!$this->ifEmpty || $this->_isSetAttributeEmpty($element))) {
                     $element->{$this->set} = $to($element);
@@ -454,7 +457,7 @@ class ResaveController extends Controller
         $elementsService->off(Elements::EVENT_BEFORE_RESAVE_ELEMENT, $beforeCallback);
         $elementsService->off(Elements::EVENT_AFTER_RESAVE_ELEMENT, $afterCallback);
 
-        $this->stdout("Done resaving {$elementsText}." . PHP_EOL . PHP_EOL, Console::FG_YELLOW);
+        $this->stdout("Done resaving $elementsText." . PHP_EOL . PHP_EOL, Console::FG_YELLOW);
         return $fail ? ExitCode::UNSPECIFIED_ERROR : ExitCode::OK;
     }
 
@@ -473,7 +476,7 @@ class ResaveController extends Controller
         }
 
         // object template
-        if (StringHelper::startsWith($this->to, '=')) {
+        if (str_starts_with($this->to, '=')) {
             $template = substr($this->to, 1);
             $view = Craft::$app->getView();
             return function(ElementInterface $element) use ($template, $view) {

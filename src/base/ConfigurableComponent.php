@@ -9,6 +9,9 @@ namespace craft\base;
 
 use craft\events\DefineValueEvent;
 use craft\helpers\DateTimeHelper;
+use DateTime;
+use ReflectionClass;
+use ReflectionProperty;
 
 /**
  * Component is the base class for classes representing Craft components that are configurable.
@@ -22,7 +25,7 @@ abstract class ConfigurableComponent extends Component implements ConfigurableCo
      * @event DefineValueEvent The event that is triggered when defining the component’s settings attributes, as returned by [[settingsAttributes()]].
      * @since 3.7.0
      */
-    const EVENT_DEFINE_SETTINGS_ATTRIBUTES = 'defineSettingsAttributes';
+    public const EVENT_DEFINE_SETTINGS_ATTRIBUTES = 'defineSettingsAttributes';
 
     /**
      * @inheritdoc
@@ -30,10 +33,10 @@ abstract class ConfigurableComponent extends Component implements ConfigurableCo
     public function settingsAttributes(): array
     {
         // By default, include all public, non-static properties that were not defined in an abstract class
-        $class = new \ReflectionClass($this);
+        $class = new ReflectionClass($this);
         $names = [];
 
-        foreach ($class->getProperties(\ReflectionProperty::IS_PUBLIC) as $property) {
+        foreach ($class->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
             if (!$property->isStatic() && !$property->getDeclaringClass()->isAbstract()) {
                 $names[] = $property->getName();
             }
@@ -59,11 +62,11 @@ abstract class ConfigurableComponent extends Component implements ConfigurableCo
         $datetimeAttributes = array_flip($this->datetimeAttributes());
 
         foreach ($this->settingsAttributes() as $attribute) {
-            if (isset($datetimeAttributes[$attribute])) {
-                $settings[$attribute] = DateTimeHelper::toIso8601($this->$attribute) ?: null;
-            } else {
-                $settings[$attribute] = $this->$attribute;
+            $value = $this->$attribute;
+            if ($value instanceof DateTime || isset($datetimeAttributes[$attribute])) {
+                $value = DateTimeHelper::toIso8601($value) ?: null;
             }
+            $settings[$attribute] = $value;
         }
 
         return $settings;
@@ -72,7 +75,7 @@ abstract class ConfigurableComponent extends Component implements ConfigurableCo
     /**
      * @inheritdoc
      */
-    public function getSettingsHtml()
+    public function getSettingsHtml(): ?string
     {
         return null;
     }

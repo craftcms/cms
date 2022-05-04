@@ -28,7 +28,7 @@ class Profiler implements NodeVisitorInterface
     /**
      * @inheritdoc
      */
-    public function enterNode(Node $node, Environment $env)
+    public function enterNode(Node $node, Environment $env): Node
     {
         return $node;
     }
@@ -36,7 +36,7 @@ class Profiler implements NodeVisitorInterface
     /**
      * @inheritdoc
      */
-    public function leaveNode(Node $node, Environment $env)
+    public function leaveNode(Node $node, Environment $env): ?Node
     {
         if ($node instanceof ModuleNode) {
             $name = $node->getTemplateName();
@@ -70,7 +70,7 @@ class Profiler implements NodeVisitorInterface
     /**
      * @inheritdoc
      */
-    public function getPriority()
+    public function getPriority(): int
     {
         return 0;
     }

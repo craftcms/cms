@@ -8,6 +8,7 @@
 namespace craft\fields;
 
 use Craft;
+use craft\elements\conditions\ElementCondition;
 use craft\elements\db\EntryQuery;
 use craft\elements\Entry;
 use craft\gql\arguments\elements\Entry as EntryArguments;
@@ -38,7 +39,7 @@ class Entries extends BaseRelationField
     /**
      * @inheritdoc
      */
-    protected static function elementType(): string
+    public static function elementType(): string
     {
         return Entry::class;
     }
@@ -71,11 +72,11 @@ class Entries extends BaseRelationField
      * @inheritdoc
      * @since 3.3.0
      */
-    public function getContentGqlType()
+    public function getContentGqlType(): Type|array
     {
         return [
             'name' => $this->handle,
-            'type' => Type::listOf(EntryInterface::getType()),
+            'type' => Type::nonNull(Type::listOf(EntryInterface::getType())),
             'args' => EntryArguments::getArguments(),
             'resolve' => EntryResolver::class . '::resolve',
             'complexity' => GqlHelper::relatedArgumentComplexity(GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD),
@@ -86,14 +87,14 @@ class Entries extends BaseRelationField
      * @inheritdoc
      * @since 3.3.0
      */
-    public function getEagerLoadingGqlConditions()
+    public function getEagerLoadingGqlConditions(): ?array
     {
         $allowedEntities = Gql::extractAllowedEntitiesFromSchema();
         $sectionUids = $allowedEntities['sections'] ?? [];
         $entryTypeUids = $allowedEntities['entrytypes'] ?? [];
 
         if (empty($sectionUids) || empty($entryTypeUids)) {
-            return false;
+            return null;
         }
 
         $sectionsService = Craft::$app->getSections();
@@ -110,5 +111,15 @@ class Entries extends BaseRelationField
             'sectionId' => $sectionIds,
             'typeId' => $entryTypeIds,
         ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function createSelectionCondition(): ?ElementCondition
+    {
+        $condition = Entry::createCondition();
+        $condition->queryParams = ['section', 'sectionId'];
+        return $condition;
     }
 }

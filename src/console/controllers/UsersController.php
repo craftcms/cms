@@ -16,6 +16,7 @@ use craft\helpers\Console;
 use craft\helpers\Db;
 use craft\helpers\UrlHelper;
 use DateTime;
+use Throwable;
 use yii\base\InvalidArgumentException;
 use yii\console\ExitCode;
 
@@ -31,59 +32,59 @@ class UsersController extends Controller
      * @var string|null The user’s email address.
      * @since 3.7.0
      */
-    public $email;
+    public ?string $email = null;
 
     /**
      * @var string|null The user’s username.
      * @since 3.7.0
      */
-    public $username;
+    public ?string $username = null;
 
     /**
      * @var string|null The user’s new password.
      */
-    public $password;
+    public ?string $password = null;
 
     /**
      * @var bool|null Whether the user should be an admin.
      * @since 3.7.0
      */
-    public $admin;
+    public ?bool $admin = null;
 
     /**
      * @var string[] The group handles to assign the created user to.
      * @since 3.7.0
      */
-    public $groups = [];
+    public array $groups = [];
 
     /**
      * @var int[] The group IDs to assign the user to the created user to.
      * @since 3.7.0
      */
-    public $groupIds = [];
+    public array $groupIds = [];
 
     /**
      * @var string|null The email or username of the user to inherit content when deleting a user.
      * @since 3.7.0
      */
-    public $inheritor;
+    public ?string $inheritor = null;
 
     /**
      * @var bool Whether to delete the user’s content if no inheritor is specified.
      * @since 3.7.0
      */
-    public $deleteContent = false;
+    public bool $deleteContent = false;
 
     /**
      * @var bool Whether the user should be hard-deleted immediately, instead of soft-deleted.
      * @since 3.7.0
      */
-    public $hard = false;
+    public bool $hard = false;
 
     /**
      * @inheritdoc
      */
-    public function options($actionID)
+    public function options($actionID): array
     {
         $options = parent::options($actionID);
 
@@ -116,9 +117,10 @@ class UsersController extends Controller
      */
     public function actionListAdmins(): int
     {
+        /** @var User[] $users */
         $users = User::find()
             ->admin()
-            ->anyStatus()
+            ->status(null)
             ->orderBy(['username' => SORT_ASC])
             ->all();
         $total = count($users);
@@ -224,7 +226,7 @@ class UsersController extends Controller
         // Most likely an invalid group ID will throw…
         try {
             Craft::$app->getUsers()->assignUserToGroups($user->id, $groupIds);
-        } catch (\Throwable $e) {
+        } catch (Throwable) {
             $this->stderr('failed: Couldn’t assign user to specified groups.' . PHP_EOL, Console::FG_RED);
             return ExitCode::UNSPECIFIED_ERROR;
         }
@@ -447,7 +449,7 @@ class UsersController extends Controller
     private function _user(string $value): User
     {
         if (is_numeric($value)) {
-            $user = Craft::$app->getUsers()->getUserById($value);
+            $user = Craft::$app->getUsers()->getUserById((int)$value);
             if (!$user) {
                 throw new InvalidArgumentException("No user exists with the ID: $value");
             }

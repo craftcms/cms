@@ -5,7 +5,7 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craftunit\gql\mutations;
+namespace crafttests\unit\gql\mutations;
 
 use Codeception\Stub\Expected;
 use Craft;
@@ -15,6 +15,7 @@ use craft\elements\Entry;
 use craft\fields\Matrix;
 use craft\gql\base\ElementMutationResolver;
 use craft\gql\base\Mutation;
+use craft\gql\base\MutationResolver;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\resolvers\mutations\Entry as EntryMutationResolver;
 use craft\helpers\StringHelper;
@@ -26,30 +27,35 @@ use GraphQL\Error\UserError;
 use GraphQL\Type\Definition\InputObjectType;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
+use ReflectionException;
+use UnitTester;
+use yii\base\InvalidConfigException;
 
 class GeneralMutationResolverTest extends TestCase
 {
     /**
-     * @var \UnitTester
+     * @var UnitTester
      */
-    protected $tester;
-    protected $resolver;
+    protected UnitTester $tester;
 
-    protected function _before()
+    /**
+     * @var MutationResolver
+     */
+    protected MutationResolver $resolver;
+
+    protected function _before(): void
     {
         $this->resolver = new EntryMutationResolver();
     }
 
-    protected function _after()
+    protected function _after(): void
     {
     }
 
     /**
      * Test whether data and value normalizes is stored on the resolver correctly.
-     *
-     * @param $data
      */
-    public function testStoringResolverData()
+    public function testStoringResolverData(): void
     {
         $testKey = 'someKey';
         $testString = StringHelper::randomString();
@@ -96,7 +102,7 @@ class GeneralMutationResolverTest extends TestCase
     /**
      * Test whether schemas are enforced correctly
      */
-    public function testSchemaActionRequirements()
+    public function testSchemaActionRequirements(): void
     {
         $this->resolver = new EntryMutationResolver();
 
@@ -115,12 +121,12 @@ class GeneralMutationResolverTest extends TestCase
     /**
      * Test whether populating an element with data behaves as expected.
      *
-     * @param $contentFields
-     * @param $arguments
-     * @throws \ReflectionException
+     * @param array $contentFields
+     * @param array $arguments
+     * @throws ReflectionException
      * @dataProvider populatingElementWithDataProvider
      */
-    public function testPopulatingElementWithData($contentFields, $arguments)
+    public function testPopulatingElementWithData(array $contentFields, array $arguments): void
     {
         $entry = $this->make(Entry::class, [
             'setFieldValue' => Expected::exactly(count($contentFields)),
@@ -140,9 +146,9 @@ class GeneralMutationResolverTest extends TestCase
     /**
      * Tests whether immutable attributes are immutable indeed.
      *
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
-    public function testImmutableAttributes()
+    public function testImmutableAttributes(): void
     {
         $testId = random_int(1, 9999);
         $testUid = StringHelper::UUID();
@@ -172,7 +178,7 @@ class GeneralMutationResolverTest extends TestCase
         self::assertNotSame($entry->title, $arguments['title']);
     }
 
-    public function populatingElementWithDataProvider()
+    public function populatingElementWithDataProvider(): array
     {
         return [
             [
@@ -198,10 +204,10 @@ class GeneralMutationResolverTest extends TestCase
     /**
      * Test whether saving an element with validation errors throws the right exception.
      *
-     * @throws \ReflectionException
-     * @throws \yii\base\InvalidConfigException
+     * @throws ReflectionException
+     * @throws InvalidConfigException
      */
-    public function testSavingElementWithValidationError()
+    public function testSavingElementWithValidationError(): void
     {
         $elementService = $this->make(Elements::class, [
             'saveElement' => Expected::once(false),
@@ -224,10 +230,10 @@ class GeneralMutationResolverTest extends TestCase
     /**
      * Test whether saving an element that is enabled correctly changes the scenario before saving.
      *
-     * @throws \ReflectionException
-     * @throws \yii\base\InvalidConfigException
+     * @throws ReflectionException
+     * @throws InvalidConfigException
      */
-    public function testSavingElementWithoutValidationError()
+    public function testSavingElementWithoutValidationError(): void
     {
         $elementService = $this->make(Elements::class, [
             'saveElement' => false,
@@ -252,7 +258,7 @@ class GeneralMutationResolverTest extends TestCase
         self::assertNotSame($scenario, $entry->getScenario());
     }
 
-    public function testNestedNormalizers()
+    public function testNestedNormalizers(): void
     {
         $values = [];
 
@@ -292,6 +298,15 @@ class GeneralMutationResolverTest extends TestCase
             'normalizeValue' => $normalizer,
         ]));
 
+        $query = $this->make(EntryQuery::class, [
+            'one' => $entry,
+        ]);
+
+        Craft::$app->set('elements', $this->make(Elements::class, [
+            'saveElement' => true,
+            'createElementQuery' => $query,
+        ]));
+
         // Set up the mutation resolve to return our mock entry and pretend to save the entry, when asked to
         // Also mock our input type definitions
         $mutationResolver = $this->make(EntryMutationResolver::class, [
@@ -303,9 +318,7 @@ class GeneralMutationResolverTest extends TestCase
             'argumentTypeDefsByName' => [
                 'parentField' => $parentObjectType,
             ],
-            'identifyEntry' => $this->make(EntryQuery::class, [
-                'one' => $entry,
-            ]),
+            'identifyEntry' => $query,
         ]);
 
         // Finish setting up for the test

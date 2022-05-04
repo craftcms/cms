@@ -1,0 +1,92 @@
+{% requireEdition CraftPro %}
+{% requireAdmin %}
+
+{% extends "_layouts/cp" %}
+{% import "_includes/forms" as forms %}
+{% set fullPageForm = true %}
+
+{% set crumbs = [
+    { label: "Settings"|t('app'), url: url('settings') },
+    { label: "Users"|t('app'), url: url('settings/users') },
+    { label: "User Groups"|t('app'), url: url('settings/users') }
+] %}
+
+
+{% if group is not defined and groupId is defined %}
+    {% set group = craft.app.userGroups.getGroupById(groupId) %}
+    {% if not group %}{% exit 404 %}{% endif %}
+{% endif %}
+
+
+{% set isNewGroup = (group is not defined or groupId is not defined) %}
+
+
+{% if isNewGroup %}
+    {% set title = "Create a new user group"|t('app') %}
+{% else %}
+    {% set title = group.name|trim ?: 'Edit User Group'|t('app') %}
+{% endif %}
+
+
+{% block content %}
+    {{ actionInput('user-settings/save-group') }}
+    {{ redirectInput('settings/users/groups/{id}') }}
+
+    {% if not isNewGroup %}{{ hiddenInput('groupId', group.id) }}{% endif %}
+
+    {{ forms.textField({
+        first: true,
+        label: "Name"|t('app'),
+        id: 'name',
+        name: 'name',
+        value: (group is defined ? group.name : null),
+        errors: (group is defined ? group.getErrors('name') : null),
+        autofocus: true,
+        required: true,
+    }) }}
+
+    {{ forms.textField({
+        label: "Handle"|t('app'),
+        id: 'handle',
+        name: 'handle',
+        class: 'code',
+        autocorrect: false,
+        autocapitalize: false,
+        value: (group is defined ? group.handle : null),
+        errors: (group is defined ? group.getErrors('handle') : null),
+        required: true
+    }) }}
+
+    {{ forms.textareaField({
+        label: 'Description'|t('app'),
+        id: 'description',
+        class: 'nicetext',
+        name: 'description',
+        value: group.description ?? null,
+        errors: (group is defined ? group.getErrors('description') : null),
+    }) }}
+
+    <hr>
+
+    <h2>{{ "Permissions"|t('app') }}</h2>
+
+    <div id="permissions">
+        {% include "_includes/permissions" with {
+            subject: group ?? null,
+            permissions: craft.app.userPermissions.getAllPermissions(),
+            includeGroupPlaceholder: isNewGroup
+        } only %}
+    </div>
+{% endblock %}
+
+{% js %}
+    {% if group is not defined or not group.handle %}
+        new Craft.HandleGenerator('#name', '#handle');
+    {% endif %}
+
+    {% if not isNewGroup %}
+        new Craft.ElevatedSessionForm('#main-form', [
+            '#permissions input[type="checkbox"]:not(:checked)'
+        ]);
+    {% endif %}
+{% endjs %}

@@ -34,22 +34,27 @@ class UserElementTest extends TestCase
     /**
      * @var Users
      */
-    public $users;
+    public Users $users;
 
     /**
      * @var UnitTester
      */
-    public $tester;
+    protected UnitTester $tester;
 
     /**
      * @var User
      */
-    protected $activeUser;
+    protected User $activeUser;
+
+    /**
+     * @var User
+     */
+    protected User $inactiveUser;
 
     /**
      *
      */
-    public function testValidateUnverifiedEmail()
+    public function testValidateUnverifiedEmail(): void
     {
         $validator = new InlineValidator();
 
@@ -59,6 +64,7 @@ class UserElementTest extends TestCase
         self::assertSame([], $this->activeUser->getErrors());
 
         $user = new User([
+            'active' => true,
             'email' => 'unverifemail@email.com',
             'username' => 'unverifusername',
             'unverifiedEmail' => 'unverifemail@email.com',
@@ -78,7 +84,7 @@ class UserElementTest extends TestCase
     /**
      * @throws Exception
      */
-    public function testGetAuthKey()
+    public function testGetAuthKey(): void
     {
         Session::reset();
 
@@ -108,7 +114,7 @@ class UserElementTest extends TestCase
     /**
      *
      */
-    public function testGetAuthKeyException()
+    public function testGetAuthKeyException(): void
     {
         $this->tester->mockCraftMethods('session', [
             'get' => null,
@@ -122,7 +128,7 @@ class UserElementTest extends TestCase
     /**
      * @throws \yii\db\Exception
      */
-    public function testValidateAuthKey()
+    public function testValidateAuthKey(): void
     {
         $validUserAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36';
         Craft::$app->getDb()->createCommand()
@@ -160,7 +166,7 @@ class UserElementTest extends TestCase
     /**
      * @throws \yii\db\Exception
      */
-    public function testValidateAuthKeyWithConfigDisabled()
+    public function testValidateAuthKeyWithConfigDisabled(): void
     {
         $validUserAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/74.0.3729.169 Safari/537.36';
 
@@ -185,7 +191,7 @@ class UserElementTest extends TestCase
     /**
      * @throws \Exception
      */
-    public function testGetCooldownEndTime()
+    public function testGetCooldownEndTime(): void
     {
         $this->activeUser->locked = false;
         self::assertNull($this->activeUser->getCooldownEndTime());
@@ -214,7 +220,7 @@ class UserElementTest extends TestCase
     /**
      * @throws \Exception
      */
-    public function testGetRemainingCooldownTime()
+    public function testGetRemainingCooldownTime(): void
     {
         self::assertNull($this->activeUser->getRemainingCooldownTime());
 
@@ -232,7 +238,7 @@ class UserElementTest extends TestCase
     /**
      *
      */
-    public function testChangePasswordNukesSessions()
+    public function testChangePasswordNukesSessions(): void
     {
         Craft::$app->getDb()->createCommand()
             ->batchInsert(Table::SESSIONS, [
@@ -258,7 +264,7 @@ class UserElementTest extends TestCase
     /**
      *
      */
-    public function testNotAllowedToSwitchStatusValues()
+    public function testNotAllowedToSwitchStatusValues(): void
     {
         // Change locked
         $this->activeUser->locked = true;
@@ -283,33 +289,67 @@ class UserElementTest extends TestCase
     }
 
     /**
+     *
+     */
+    public function testAuthenticate(): void
+    {
+        $this->assertTrue($this->activeUser->authenticate('password'));
+        $this->assertFalse($this->inactiveUser->authenticate('password'));
+        $this->assertEquals($this->inactiveUser->authError, User::AUTH_INVALID_CREDENTIALS);
+        $this->inactiveUser->authError = null;
+    }
+
+    /**
+     *
+     */
+    public function testIsCredentialed(): void
+    {
+        $this->assertTrue($this->activeUser->getIsCredentialed());
+        $this->assertFalse($this->inactiveUser->getIsCredentialed());
+    }
+
+    /**
      * @inheritdoc
      */
-    protected function _before()
+    protected function _before(): void
     {
         parent::_before();
 
         $this->activeUser = new User(
             [
+                'active' => true,
                 'firstName' => 'active',
                 'lastName' => 'user',
                 'username' => 'activeUser',
                 'email' => 'active@user.com',
+                'password' => '$2a$13$5j8bSRoKQZipjtIg6FXWR.kGRR3UfCL.QeMIt2yTRH1.hCNHLQKtq',
+            ]
+        );
+
+        $this->inactiveUser = new User(
+            [
+                'firstName' => 'inactive',
+                'lastName' => 'user',
+                'username' => 'inactiveUser',
+                'email' => 'inactive@user.com',
+                'password' => '$2a$13$5j8bSRoKQZipjtIg6FXWR.kGRR3UfCL.QeMIt2yTRH1.hCNHLQKtq',
             ]
         );
 
         $this->users = Craft::$app->getUsers();
 
         $this->tester->saveElement($this->activeUser);
+        $this->tester->saveElement($this->inactiveUser);
     }
 
     /**
      * @inheritdoc
      */
-    protected function _after()
+    protected function _after(): void
     {
         parent::_after();
 
         $this->tester->deleteElement($this->activeUser);
+        $this->tester->deleteElement($this->inactiveUser);
     }
 }

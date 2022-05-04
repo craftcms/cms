@@ -463,13 +463,13 @@
                 : 0) + 1,
           };
 
-          Craft.postActionRequest(this.reorderAction, data, (response) => {
-            if (response && response.success) {
+          Craft.sendActionRequest('POST', this.reorderAction, {data}).then(
+            (response) => {
               Craft.cp.displayNotice(
                 Craft.escapeHtml(this.reorderSuccessMessage)
               );
             }
-          });
+          );
         } else {
           Craft.cp.displayError(Craft.escapeHtml(this.reorderFailMessage));
         }
@@ -555,7 +555,7 @@
           this.deleteCallback &&
           {}.toString.call(this.deleteCallback) === '[object Function]'
         ) {
-          this.deleteCallback();
+          this.deleteCallback(id);
         }
 
         this.isLoading = false;

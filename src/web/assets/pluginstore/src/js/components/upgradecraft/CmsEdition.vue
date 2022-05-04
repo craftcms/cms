@@ -1,7 +1,7 @@
 <template>
   <div class="cms-editions-edition">
     <div class="description">
-      <edition-badge :name="edition.name" block big></edition-badge>
+      <edition-badge :name="edition.name" :block="true" :big="true" />
       <p class="edition-description">{{ editionDescription }}</p>
       <div class="price">
         <template v-if="edition.price && edition.price > 0">
@@ -14,7 +14,7 @@
 
       <p
         v-if="edition.price && edition.price > 0"
-        class="-mt-8 py-6 text-grey-dark"
+        class="tw--mt-8 tw-py-6 tw-text-gray-700"
       >
         {{ 'Price includes 1 year of updates.' | t('app') }}<br />
         {{
@@ -27,7 +27,7 @@
 
       <ul>
         <li v-for="(feature, key) in features" :key="key">
-          <icon icon="check" />
+          <c-icon icon="check" />
           {{ feature.name }}
 
           <info-hud v-if="feature.description">
@@ -101,31 +101,31 @@
 
 <style lang="scss">
   .cms-editions-edition {
-    @apply .border .border-grey-light .border-solid .p-8 .rounded .text-center .flex .flex-col;
+    @apply tw-border tw-border-gray-200 tw-border-solid tw-p-8 tw-rounded tw-text-center tw-flex tw-flex-col;
 
     .description {
-      @apply .flex-1;
+      @apply tw-flex-1;
 
       .edition-name {
-        @apply .border-b .border-grey-light .border-solid .text-grey-dark .inline-block .py-1 .uppercase .text-lg .font-bold;
+        @apply tw-border-b tw-border-gray-200 tw-border-solid tw-text-gray-700 tw-inline-block tw-py-1 tw-uppercase tw-text-lg tw-font-bold;
       }
 
       .edition-description {
-        @apply .text-lg .my-6 .leading-normal;
+        @apply tw-text-lg tw-my-6 tw-leading-normal;
       }
 
       .price {
-        @apply .text-3xl .font-bold .my-8;
+        @apply tw-text-3xl tw-font-bold tw-my-8;
       }
 
       ul {
-        @apply .text-left .mb-8;
+        @apply tw-text-left tw-mb-8;
 
         li {
-          @apply .py-2 .border-b .border-grey-lighter .border-solid;
+          @apply tw-py-2 tw-border-b tw-border-gray-200 tw-border-solid;
 
           &:first-child {
-            @apply .border-t;
+            @apply tw-border-t;
           }
         }
       }
@@ -133,6 +133,7 @@
 
     .cms-edition-actions {
       position: relative;
+
       .c-spinner {
         position: absolute;
         bottom: -30px;
@@ -141,7 +142,7 @@
       }
 
       .c-btn {
-        @apply .mt-3;
+        @apply tw-mt-3;
       }
     }
   }

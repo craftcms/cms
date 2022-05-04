@@ -18,12 +18,12 @@ use yii\base\Event;
 class MergeElementsEvent extends Event
 {
     /**
-     * @var int|null The ID of the element that just got merged into the other.
+     * @var int The ID of the element that just got merged into the other.
      */
-    public $mergedElementId;
+    public int $mergedElementId;
 
     /**
-     * @var int|null The ID of the element that prevailed in the merge.
+     * @var int The ID of the element that prevailed in the merge.
      */
-    public $prevailingElementId;
+    public int $prevailingElementId;
 }

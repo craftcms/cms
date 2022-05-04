@@ -13,6 +13,7 @@ const state = {
   featuredSections: [],
   plugin: null,
   pluginChangelog: null,
+  pluginChangelogPluginId: null,
 
   // plugin index
   plugins: [],
@@ -36,6 +37,12 @@ const getters = {
     };
   },
 
+  getPluginEditions() {
+    return (plugin) => {
+      return plugin.editions;
+    };
+  },
+
   getPluginIndexParams() {
     return (context) => {
       const perPage = context.perPage ? context.perPage : null;
@@ -55,6 +62,12 @@ const getters = {
   isPluginEditionFree() {
     return (edition) => {
       return edition.price === null;
+    };
+  },
+
+  isCommercial() {
+    return (plugin) => {
+      return !!plugin.editions.find((edition) => edition.price > 0);
     };
   },
 };
@@ -127,7 +140,10 @@ const actions = {
       api
         .getPluginChangelog(pluginId)
         .then((responseData) => {
-          commit('updatePluginChangelog', responseData);
+          commit('updatePluginChangelog', {
+            pluginId,
+            changelog: responseData,
+          });
           resolve(responseData);
         })
         .catch((error) => {
@@ -262,7 +278,8 @@ const mutations = {
     state.featuredSections = featuredSections;
   },
 
-  updatePluginChangelog(state, changelog) {
+  updatePluginChangelog(state, {pluginId, changelog}) {
+    state.pluginChangelogPluginId = pluginId;
     state.pluginChangelog = changelog;
   },
 

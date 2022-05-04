@@ -42,41 +42,41 @@ Craft.CategorySelectInput = Craft.BaseElementSelectInput.extend({
       selectionLabel: this.settings.selectionLabel,
     };
 
-    Craft.postActionRequest(
-      'elements/get-categories-input-html',
-      data,
-      (response, textStatus) => {
-        this.modal.enable();
-        this.modal.enableCancelBtn();
-        this.modal.enableSelectBtn();
-        this.modal.hideFooterSpinner();
+    const onResponse = () => {
+      this.modal.enable();
+      this.modal.enableCancelBtn();
+      this.modal.enableSelectBtn();
+      this.modal.hideFooterSpinner();
+    };
+    Craft.sendActionRequest('POST', 'categories/input-html', {data})
+      .then((response) => {
+        onResponse();
+        var $newInput = $(response.data.html),
+          $newElementsContainer = $newInput.children('.elements');
 
-        if (textStatus === 'success') {
-          var $newInput = $(response.html),
-            $newElementsContainer = $newInput.children('.elements');
+        this.$elementsContainer.replaceWith($newElementsContainer);
+        this.$elementsContainer = $newElementsContainer;
+        this.resetElements();
 
-          this.$elementsContainer.replaceWith($newElementsContainer);
-          this.$elementsContainer = $newElementsContainer;
-          this.resetElements();
+        var filteredElements = [];
 
-          var filteredElements = [];
+        for (var i = 0; i < elements.length; i++) {
+          var element = elements[i],
+            $element = this.getElementById(element.id);
 
-          for (var i = 0; i < elements.length; i++) {
-            var element = elements[i],
-              $element = this.getElementById(element.id);
-
-            if ($element) {
-              this.animateElementIntoPlace(element.$element, $element);
-              filteredElements.push(element);
-            }
+          if ($element) {
+            this.animateElementIntoPlace(element.$element, $element);
+            filteredElements.push(element);
           }
-
-          this.updateDisabledElementsInModal();
-          this.modal.hide();
-          this.onSelectElements(filteredElements);
         }
-      }
-    );
+
+        this.updateDisabledElementsInModal();
+        this.modal.hide();
+        this.onSelectElements(filteredElements);
+      })
+      .catch(({response}) => {
+        onResponse();
+      });
   },
 
   removeElement: function ($element) {

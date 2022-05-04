@@ -44,7 +44,7 @@ class QueueManagerAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public function registerAssetFiles($view)
+    public function registerAssetFiles($view): void
     {
         parent::registerAssetFiles($view);
 

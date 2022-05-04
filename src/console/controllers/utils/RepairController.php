@@ -22,6 +22,7 @@ use craft\models\Section;
 use craft\records\StructureElement;
 use craft\services\ProjectConfig;
 use craft\services\Structures;
+use Throwable;
 use yii\console\ExitCode;
 use yii\db\Expression;
 
@@ -36,12 +37,12 @@ class RepairController extends Controller
     /**
      * @var bool Whether to only do a dry run of the repair process.
      */
-    public $dryRun = false;
+    public bool $dryRun = false;
 
     /**
      * @inheritdoc
      */
-    public function options($actionID)
+    public function options($actionID): array
     {
         $options = parent::options($actionID);
         $options[] = 'dryRun';
@@ -112,7 +113,7 @@ class RepairController extends Controller
             ->unique()
             ->drafts(null)
             ->provisionalDrafts(null)
-            ->anyStatus()
+            ->status(null)
             ->withStructure(false)
             ->addSelect([
                 'structureelements.root',
@@ -140,6 +141,7 @@ class RepairController extends Controller
             ->all();
 
         /** @var string|ElementInterface $elementType */
+        /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
         $elementType = $query->elementType;
         $displayName = $elementType::pluralLowerDisplayName();
 
@@ -262,7 +264,7 @@ class RepairController extends Controller
             if (isset($transaction)) {
                 $transaction->commit();
             }
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             if (isset($transaction)) {
                 $transaction->rollBack();
             }
@@ -300,17 +302,17 @@ class RepairController extends Controller
      * @param mixed $value
      * @return mixed
      */
-    private function _repairProjectConfigItem(ProjectConfig $projectConfigService, string $path, $value)
+    private function _repairProjectConfigItem(ProjectConfig $projectConfigService, string $path, mixed $value): mixed
     {
         if (is_array($value)) {
             // Is this a packed array?
-            if (isset($value[ProjectConfig::CONFIG_ASSOC_KEY])) {
+            if (isset($value[ProjectConfig::ASSOC_KEY])) {
                 $double = false;
                 while (
-                    isset($value[ProjectConfig::CONFIG_ASSOC_KEY][0][0]) &&
-                    $value[ProjectConfig::CONFIG_ASSOC_KEY][0][0] === ProjectConfig::CONFIG_ASSOC_KEY
+                    isset($value[ProjectConfig::ASSOC_KEY][0][0]) &&
+                    $value[ProjectConfig::ASSOC_KEY][0][0] === ProjectConfig::ASSOC_KEY
                 ) {
-                    $value[ProjectConfig::CONFIG_ASSOC_KEY] = $value[ProjectConfig::CONFIG_ASSOC_KEY][0][1] ?? [];
+                    $value[ProjectConfig::ASSOC_KEY] = $value[ProjectConfig::ASSOC_KEY][0][1] ?? [];
                     $double = true;
                 }
 

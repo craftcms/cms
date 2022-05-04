@@ -23,7 +23,7 @@ class RedirectController extends Controller
     /**
      * @inheritdoc
      */
-    public $allowAnonymous = true;
+    public array|bool|int $allowAnonymous = true;
 
     /**
      * Handles control panel logo and site icon uploads.

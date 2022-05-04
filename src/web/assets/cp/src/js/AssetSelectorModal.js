@@ -153,18 +153,16 @@ Craft.AssetSelectorModal = Craft.BaseElementSelectorModal.extend(
         handle: transform,
       };
 
-      Craft.postActionRequest(
-        'assets/generate-transform',
-        data,
-        (response, textStatus) => {
+      Craft.sendActionRequest('POST', 'assets/generate-transform', {data})
+        .then((response) => {
           Craft.AssetSelectorModal.transformUrls[transform][elementId] = false;
-
-          if (textStatus === 'success') {
-            if (response.url) {
-              Craft.AssetSelectorModal.transformUrls[transform][elementId] =
-                response.url;
-            }
+          if (response.data.url) {
+            Craft.AssetSelectorModal.transformUrls[transform][elementId] =
+              response.data.url;
           }
+        })
+        .catch(({response}) => {
+          Craft.AssetSelectorModal.transformUrls[transform][elementId] = false;
 
           // More to load?
           if (imageIdsWithMissingUrls.length) {
@@ -176,8 +174,7 @@ Craft.AssetSelectorModal = Craft.BaseElementSelectorModal.extend(
           } else {
             callback();
           }
-        }
-      );
+        });
     },
 
     getElementInfo: function ($selectedElements) {

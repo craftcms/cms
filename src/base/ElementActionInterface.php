@@ -42,8 +42,9 @@ interface ElementActionInterface extends ConfigurableComponentInterface
      * Sets the element type on the action.
      *
      * @param string $elementType
+     * @phpstan-param class-string<ElementInterface> $elementType
      */
-    public function setElementType(string $elementType);
+    public function setElementType(string $elementType): void;
 
     /**
      * Returns the action’s trigger label.
@@ -57,14 +58,14 @@ interface ElementActionInterface extends ConfigurableComponentInterface
      *
      * @return string|null The action’s trigger HTML.
      */
-    public function getTriggerHtml();
+    public function getTriggerHtml(): ?string;
 
     /**
      * Returns a confirmation message that should be displayed before the action is performed.
      *
      * @return string|null The confirmation message, if any.
      */
-    public function getConfirmationMessage();
+    public function getConfirmationMessage(): ?string;
 
     /**
      * Performs the action on any elements that match the given criteria.
@@ -79,5 +80,5 @@ interface ElementActionInterface extends ConfigurableComponentInterface
      *
      * @return string|null The message that should be displayed to the user.
      */
-    public function getMessage();
+    public function getMessage(): ?string;
 }

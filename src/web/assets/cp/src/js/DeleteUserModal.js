@@ -9,7 +9,7 @@ Craft.DeleteUserModal = Garnish.Modal.extend(
     userId: null,
 
     $deleteActionRadios: null,
-    $deleteSpinner: null,
+    $deleteSubmitBtn: null,
 
     userSelect: null,
     _deleting: false,
@@ -79,14 +79,13 @@ Craft.DeleteUserModal = Garnish.Modal.extend(
       }
 
       this.$deleteActionRadios = $body.find('input[type=radio]');
-      this.$deleteSubmitBtn = $('<button/>', {
-        type: 'submit',
-        class: 'btn submit disabled',
-        text: this._submitBtnLabel(false),
-      }).appendTo($buttons);
-      this.$deleteSpinner = $('<div class="spinner hidden"/>').appendTo(
-        $buttons
-      );
+      this.$deleteSubmitBtn = Craft.ui
+        .createSubmitButton({
+          class: 'disabled',
+          label: this._submitBtnLabel(false),
+          spinner: true,
+        })
+        .appendTo($buttons);
 
       var idParam;
 
@@ -152,9 +151,9 @@ Craft.DeleteUserModal = Garnish.Modal.extend(
 
       if (this.$deleteActionRadios.eq(1).prop('checked')) {
         validates = true;
-        this.$deleteSubmitBtn.text(this._submitBtnLabel(true));
+        this.$deleteSubmitBtn.find('.label').text(this._submitBtnLabel(true));
       } else {
-        this.$deleteSubmitBtn.text(this._submitBtnLabel(false));
+        this.$deleteSubmitBtn.find('.label').text(this._submitBtnLabel(false));
         if (this.$deleteActionRadios.eq(0).prop('checked')) {
           validates = !!this.userSelect.totalSelected;
         }
@@ -177,8 +176,7 @@ Craft.DeleteUserModal = Garnish.Modal.extend(
         return;
       }
 
-      this.$deleteSubmitBtn.addClass('active');
-      this.$deleteSpinner.removeClass('hidden');
+      this.$deleteSubmitBtn.addClass('loading');
       this.disable();
       this.userSelect.disable();
       this._deleting = true;
@@ -190,7 +188,7 @@ Craft.DeleteUserModal = Garnish.Modal.extend(
         }
       } catch (e) {
         ev.preventDefault();
-        this.$deleteSpinner.addClass('hidden');
+        this.$deleteSubmitBtn.removeClass('loading');
         throw e;
       }
     },

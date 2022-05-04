@@ -68,15 +68,12 @@ Craft.ImageUpload = Garnish.Base.extend(
             $(ev.currentTarget)
               .parent()
               .append('<div class="blocking-modal"></div>');
-            Craft.postActionRequest(
-              this.settings.deleteAction,
-              this.settings.postParameters,
-              (response, textStatus) => {
-                if (textStatus === 'success') {
-                  this.refreshImage(response);
-                }
-              }
-            );
+
+            Craft.sendActionRequest('POST', this.settings.deleteAction, {
+              data: this.settings.postParameters,
+            }).then((response) => {
+              this.refreshImage(response);
+            });
           }
         });
     },

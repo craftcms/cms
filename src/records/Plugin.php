@@ -18,7 +18,7 @@ use craft\validators\DateTimeValidator;
  * @property string $class Class
  * @property string $version Version
  * @property bool $enabled Enabled
- * @property \DateTime $installDate Install date
+ * @property string $installDate Install date
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
@@ -27,7 +27,7 @@ class Plugin extends ActiveRecord
     /**
      * @inheritdoc
      */
-    public function rules()
+    public function rules(): array
     {
         return [
             [['installDate'], DateTimeValidator::class],

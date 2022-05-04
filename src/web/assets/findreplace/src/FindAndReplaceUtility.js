@@ -36,22 +36,14 @@
                 params: params,
               };
 
-              Craft.postActionRequest(
-                params.action,
-                data,
-                (response, textStatus) => {
-                  if (response && response.error) {
-                    alert(response.error);
-                  }
-
+              Craft.sendActionRequest('POST', params.action, {data})
+                .then((response) => {
                   this.updateProgressBar();
-
                   setTimeout(this.onComplete.bind(this), 300);
-                },
-                {
-                  complete: $.noop,
-                }
-              );
+                })
+                .catch(({response}) => {
+                  alert(response.data.message);
+                });
             },
           }
         );

@@ -17,6 +17,7 @@
       addBlockBtnContainerWidth: null,
 
       $container: null,
+      $form: null,
       $blockContainer: null,
       $addBlockBtnContainer: null,
       $addBlockBtnGroup: null,
@@ -40,6 +41,7 @@
         this.setSettings(settings, Craft.MatrixInput.defaults);
 
         this.$container = $('#' + this.id);
+        this.$form = this.$container.closest('form');
         this.$blockContainer = this.$container.children('.blocks');
         this.$addBlockBtnContainer = this.$container.children('.buttons');
         this.$addBlockBtnGroup =
@@ -378,8 +380,8 @@
         var $block = $(html);
 
         // Pause the draft editor
-        if (window.draftEditor) {
-          window.draftEditor.pause();
+        if (this.$form.data('elementEditor')) {
+          this.$form.data('elementEditor').pause();
         }
 
         if ($insertBefore) {
@@ -393,10 +395,7 @@
             this.blockTypesByHandle[type].bodyHtml,
             id
           ),
-          footHtml = this.getParsedBlockHtml(
-            this.blockTypesByHandle[type].footHtml,
-            id
-          );
+          js = this.getParsedBlockHtml(this.blockTypesByHandle[type].js, id);
 
         $(bodyHtml).appendTo($fieldsContainer);
 
@@ -413,14 +412,14 @@
           'fast',
           () => {
             $block.css('margin-bottom', '');
-            Garnish.$bod.append(footHtml);
+            Garnish.$bod.append(js);
             Craft.initUiElements($fieldsContainer);
             new MatrixBlock(this, $block);
             this.blockSort.addItems($block);
             this.blockSelect.addItems($block);
             this.updateAddBlockBtn();
 
-            Garnish.requestAnimationFrame(function () {
+            Garnish.requestAnimationFrame(() => {
               if (typeof autofocus === 'undefined' || autofocus) {
                 // Scroll to the block
                 Garnish.scrollContainerToElement($block);
@@ -429,8 +428,8 @@
               }
 
               // Resume the draft editor
-              if (window.draftEditor) {
-                window.draftEditor.resume();
+              if (this.$form.data('elementEditor')) {
+                this.$form.data('elementEditor').resume();
               }
             });
           }
@@ -574,7 +573,7 @@
       this.id = this.$container.data('id');
       this.isNew =
         !this.id ||
-        (typeof this.id === 'string' && this.id.substr(0, 3) === 'new');
+        (typeof this.id === 'string' && this.id.substring(0, 3) === 'new');
 
       const $actionMenuBtn = this.$container.find(
         '> .actions [data-disclosure-trigger]'
@@ -717,13 +716,13 @@
       this.$fieldsContainer.velocity('stop');
       this.$container.velocity('stop');
 
-      if (animate) {
+      if (animate && !Garnish.prefersReducedMotion()) {
         this.$fieldsContainer.velocity('fadeOut', {duration: 'fast'});
-        this.$container.velocity({height: 16}, 'fast');
+        this.$container.velocity({height: 32}, 'fast');
       } else {
         this.$previewContainer.show();
         this.$fieldsContainer.hide();
-        this.$container.css({height: 16});
+        this.$container.css({height: 32});
       }
 
       setTimeout(() => {
@@ -776,9 +775,11 @@
       this.$fieldsContainer
         .hide()
         .velocity('fadeIn', {duration: 'fast', display: displayValue});
+
+      const animationDuration = Garnish.prefersReducedMotion() ? 0 : 'fast';
       this.$container.velocity(
         {height: expandedContainerHeight},
-        'fast',
+        animationDuration,
         () => {
           this.$previewContainer.html('');
           this.$container.height('auto');
@@ -969,8 +970,8 @@
 
     selfDestruct: function () {
       // Pause the draft editor
-      if (window.draftEditor) {
-        window.draftEditor.pause();
+      if (this.matrix.$form.data('elementEditor')) {
+        this.matrix.$form.data('elementEditor').pause();
       }
 
       this.$container.velocity(
@@ -981,8 +982,8 @@
           this.matrix.updateAddBlockBtn();
 
           // Resume the draft editor
-          if (window.draftEditor) {
-            window.draftEditor.resume();
+          if (this.matrix.$form.data('elementEditor')) {
+            this.matrix.$form.data('elementEditor').resume();
           }
 
           this.matrix.trigger('blockDeleted', {

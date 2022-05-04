@@ -1,12 +1,13 @@
 <template>
   <div>
     <div
-      class="border-b border-solid border-grey-light py-2 flex justify-between"
+      class="tw-border-b tw-border-solid tw-border-gray-200 tw-space-y-4 md:tw-space-y-0 md:tw-flex tw-justify-between tw-items-center"
     >
       <slot name="header"></slot>
 
       <template v-if="!disableSorting">
         <plugin-index-sort
+          class="tw-pb-4"
           :loading="loading"
           :orderBy.sync="orderBy"
           :direction.sync="direction"
@@ -17,16 +18,19 @@
 
     <plugin-grid :plugins="plugins"></plugin-grid>
 
-    <div v-if="plugins.length === 0 && !loadingBottom && !loading" class="mt-4">
+    <div
+      v-if="plugins.length === 0 && !loadingBottom && !loading"
+      class="tw-mt-4"
+    >
       <p>{{ 'No results.' | t('app') }}</p>
     </div>
 
-    <div v-if="error" class="my-4 text-red">{{ error }}</div>
+    <div v-if="error" class="tw-my-4 tw-text-red-600">{{ error }}</div>
 
-    <spinner
+    <c-spinner
       v-if="loadingBottom || (disableSorting && loading)"
-      class="my-4"
-    ></spinner>
+      class="tw-my-4"
+    />
   </div>
 </template>
 

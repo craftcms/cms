@@ -109,21 +109,16 @@ import './install.scss';
           $.extend(data, this.getInputData($screen.attr('id'), inputs, true));
         }
 
-        Craft.postActionRequest(
-          'install/install',
-          data,
-          this.allDone.bind(this),
-          {
-            complete: $.noop,
-          }
-        );
+        Craft.sendActionRequest('POST', 'install/install', {data})
+          .then((response) => this.allDone(response))
+          .catch((response) => this.allDone(response));
       },
 
-      allDone: function (response, textStatus) {
+      allDone: function (response) {
         $('#spinner').remove();
         var $h1 = this.$currentScreen.find('h1:first');
 
-        if (textStatus === 'success' && response.success) {
+        if (response.status === 200) {
           $h1.text(Craft.t('app', 'Craft is installed! 🎉'));
 
           setTimeout(function () {
@@ -195,30 +190,28 @@ import './install.scss';
         this.$currentScreen.find('ul.errors').remove();
 
         var $submitBtn = this.$currentScreen.find('.btn.submit');
-        $submitBtn.addClass('sel loading');
+        $submitBtn.addClass('loading');
 
         var action = 'install/validate-' + what;
         var data = this.getInputData(what, inputs, false);
 
-        Craft.postActionRequest(action, data, (response, textStatus) => {
-          this.loading = false;
-          $submitBtn.removeClass('sel loading');
-
-          if (textStatus === 'success') {
-            if (response.validates) {
-              this.gotoNextScreen();
-            } else {
-              var $errors = $('<ul/>', {class: 'errors'}).insertBefore(
+        Craft.sendActionRequest('POST', action, {data})
+          .then(() => {
+            this.gotoNextScreen();
+          })
+          .catch(({response}) => {
+            if (response.status === 400) {
+              const $errors = $('<ul/>', {class: 'errors'}).insertBefore(
                 $('#' + what).find('.buttons')
               );
 
-              for (var input in response.errors) {
-                if (!response.errors.hasOwnProperty(input)) {
+              for (let input in response.data.errors) {
+                if (!response.data.errors.hasOwnProperty(input)) {
                   continue;
                 }
 
-                for (var i = 0; i < response.errors[input].length; i++) {
-                  $('<li>' + response.errors[input][i] + '</li>').appendTo(
+                for (var i = 0; i < response.data.errors[input].length; i++) {
+                  $('<li>' + response.data.errors[input][i] + '</li>').appendTo(
                     $errors
                   );
                 }
@@ -243,10 +236,15 @@ import './install.scss';
                 })($input);
               }
 
-              Garnish.shake(this.$currentScreen);
+              Garnish.shake(this.modal.$container);
+            } else {
+              console.warn('Unexpected response:', response);
             }
-          }
-        });
+          })
+          .finally(() => {
+            this.loading = false;
+            $submitBtn.removeClass('loading');
+          });
       },
     },
     {

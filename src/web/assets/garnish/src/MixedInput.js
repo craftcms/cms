@@ -62,7 +62,7 @@ export default Base.extend({
             selectionEnd = focussedElement.prop('selectionEnd'),
             val = focussedElement.val(),
             preVal = val.substring(0, selectionStart),
-            postVal = val.substr(selectionEnd);
+            postVal = val.substring(selectionEnd);
 
           if (preVal && postVal) {
             // Split the input into two

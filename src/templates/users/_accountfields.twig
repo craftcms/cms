@@ -1,0 +1,34 @@
+{% import "_includes/forms" as forms %}
+{% set static = static ?? false %}
+
+{% if not craft.app.config.general.useEmailAsUsername %}
+    {{ forms.textField({
+        first: true,
+        label: "Username"|t('app'),
+        id: 'username',
+        name: 'username',
+        value: (user is defined ? user.username : null),
+        autofocus: true,
+        autocomplete: false,
+        autocapitalize: false,
+        disabled: static or (isNewUser or (currentUser.admin or user.getIsCurrent()) ? false : true),
+        errors: (user is defined ? user.getErrors('username') : null),
+        inputAttributes: {
+            data: {lpignore: 'true'},
+        },
+    }) }}
+{% endif %}
+
+{{ forms.textField({
+    label: "Full Name"|t('app'),
+    id: 'fullName',
+    name: 'fullName',
+    value: user.fullName,
+    autocomplete: false,
+    errors: user.getErrors('fullName'),
+    autofocus: craft.app.config.general.useEmailAsUsername,
+    inputAttributes: {
+        data: {lpignore: 'true'},
+    },
+    disabled: static,
+}) }}

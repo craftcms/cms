@@ -12,7 +12,8 @@ use craft\errors\BusyResourceException;
 use craft\errors\InvalidPluginException;
 use craft\errors\StaleResourceException;
 use craft\helpers\ArrayHelper;
-use craft\services\Plugins;
+use craft\services\ProjectConfig;
+use Throwable;
 use yii\base\NotSupportedException;
 use yii\web\Response;
 
@@ -25,11 +26,11 @@ use yii\web\Response;
  */
 class ConfigSyncController extends BaseUpdaterController
 {
-    const ACTION_RETRY = 'retry';
-    const ACTION_APPLY_YAML_CHANGES = 'apply-yaml-changes';
-    const ACTION_REGENERATE_YAML = 'regenerate-yaml';
-    const ACTION_UNINSTALL_PLUGIN = 'uninstall-plugin';
-    const ACTION_INSTALL_PLUGIN = 'install-plugin';
+    public const ACTION_RETRY = 'retry';
+    public const ACTION_APPLY_YAML_CHANGES = 'apply-yaml-changes';
+    public const ACTION_REGENERATE_YAML = 'regenerate-yaml';
+    public const ACTION_UNINSTALL_PLUGIN = 'uninstall-plugin';
+    public const ACTION_INSTALL_PLUGIN = 'install-plugin';
 
     /**
      * Re-kicks off the sync, after the user has had a chance to run `composer install`
@@ -45,7 +46,7 @@ class ConfigSyncController extends BaseUpdaterController
      * Applies changes in `project.yaml` to the project config.
      *
      * @return Response
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function actionApplyYamlChanges(): Response
     {
@@ -56,7 +57,7 @@ class ConfigSyncController extends BaseUpdaterController
         }
 
         try {
-            $projectConfig->applyYamlChanges();
+            $projectConfig->applyExternalChanges();
         } catch (BusyResourceException|StaleResourceException $e) {
             return $this->send([
                 'error' => $e->getMessage(),
@@ -66,6 +67,7 @@ class ConfigSyncController extends BaseUpdaterController
                 ],
             ]);
         }
+
         return $this->sendFinished();
     }
 
@@ -73,11 +75,11 @@ class ConfigSyncController extends BaseUpdaterController
      * Regenerates `project.yaml` based on the loaded project config.
      *
      * @return Response
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function actionRegenerateYaml(): Response
     {
-        Craft::$app->getProjectConfig()->regenerateYamlFromConfig();
+        Craft::$app->getProjectConfig()->regenerateExternalConfig();
 
         return $this->sendFinished();
     }
@@ -106,7 +108,7 @@ class ConfigSyncController extends BaseUpdaterController
 
         if (!$success) {
             $info = Craft::$app->getPlugins()->getComposerPluginInfo($handle);
-            $pluginName = $info['name'] ?? "`{$handle}`";
+            $pluginName = $info['name'] ?? "`$handle`";
             $email = $info['developerEmail'] ?? 'support@craftcms.com';
 
             return $this->send([
@@ -145,8 +147,8 @@ class ConfigSyncController extends BaseUpdaterController
 
         // Any plugins need to be installed/uninstalled?
         $projectConfig = Craft::$app->getProjectConfig();
-        $loadedConfigPlugins = array_keys($projectConfig->get(Plugins::CONFIG_PLUGINS_KEY) ?? []);
-        $yamlPlugins = array_keys($projectConfig->get(Plugins::CONFIG_PLUGINS_KEY, true) ?? []);
+        $loadedConfigPlugins = array_keys($projectConfig->get(ProjectConfig::PATH_PLUGINS) ?? []);
+        $yamlPlugins = array_keys($projectConfig->get(ProjectConfig::PATH_PLUGINS, true) ?? []);
         $data['installPlugins'] = array_diff($yamlPlugins, $loadedConfigPlugins);
         $data['uninstallPlugins'] = array_diff($loadedConfigPlugins, $yamlPlugins);
 
@@ -161,7 +163,7 @@ class ConfigSyncController extends BaseUpdaterController
     /**
      * @inheritdoc
      */
-    protected function initialState(): array
+    protected function initialState(bool $force = false): array
     {
         $projectConfig = Craft::$app->getProjectConfig();
 
@@ -186,13 +188,13 @@ class ConfigSyncController extends BaseUpdaterController
             foreach ($this->data['installPlugins'] as $handle) {
                 try {
                     $plugin = $pluginsService->createPlugin($handle);
-                } catch (InvalidPluginException $e) {
+                } catch (InvalidPluginException) {
                     $plugin = null;
                 }
 
                 if (!$plugin) {
                     $missingPlugins[] = "`$handle`";
-                } elseif ($plugin->schemaVersion != $projectConfig->get(Plugins::CONFIG_PLUGINS_KEY . '.' . $handle . '.schemaVersion', true)) {
+                } elseif ($plugin->schemaVersion != $projectConfig->get(ProjectConfig::PATH_PLUGINS . '.' . $handle . '.schemaVersion', true)) {
                     $incompatibilities[] = $plugin->name;
                 }
             }

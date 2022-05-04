@@ -8,6 +8,14 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\base\ElementInterface;
+use craft\base\PreviewableFieldInterface;
+use craft\elements\conditions\ElementConditionInterface;
+use craft\helpers\ArrayHelper;
+use craft\models\UserGroup;
+use craft\services\ElementSources;
+use craft\services\ProjectConfig;
+use Illuminate\Support\Collection;
 use yii\web\Response;
 
 /**
@@ -22,13 +30,14 @@ class ElementIndexSettingsController extends BaseElementsController
     /**
      * @inheritdoc
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         if (!parent::beforeAction($action)) {
             return false;
         }
 
         $this->requireAcceptsJson();
+        $this->requireAdmin();
 
         return true;
     }
@@ -40,45 +49,50 @@ class ElementIndexSettingsController extends BaseElementsController
      */
     public function actionGetCustomizeSourcesModalData(): Response
     {
-        $this->requirePermission('customizeSources');
-
+        /** @var string|ElementInterface $elementType */
+        /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
         $elementType = $this->elementType();
+        $conditionsService = Craft::$app->getConditions();
+        $view = Craft::$app->getView();
 
         // Get the source info
-        $elementIndexesService = Craft::$app->getElementIndexes();
-        $sources = $elementIndexesService->getSources($elementType);
+        $sourcesService = Craft::$app->getElementSources();
+        $sources = $sourcesService->getSources($elementType, ElementSources::CONTEXT_INDEX, true);
 
         foreach ($sources as &$source) {
-            if (array_key_exists('heading', $source)) {
+            if ($source['type'] === ElementSources::TYPE_HEADING) {
                 continue;
             }
 
             // Available custom field attributes
             $source['availableTableAttributes'] = [];
-            foreach ($elementIndexesService->getSourceTableAttributes($elementType, $source['key']) as $key => $labelInfo) {
+            foreach ($sourcesService->getSourceTableAttributes($elementType, $source['key']) as $key => $labelInfo) {
                 $source['availableTableAttributes'][] = [$key, $labelInfo['label']];
             }
 
             // Selected table attributes
-            $tableAttributes = $elementIndexesService->getTableAttributes($elementType, $source['key']);
-            $source['tableAttributes'] = [];
+            $tableAttributes = $sourcesService->getTableAttributes($elementType, $source['key']);
+            array_shift($tableAttributes);
+            $source['tableAttributes'] = array_map(fn($a) => [$a[0], $a[1]['label']], $tableAttributes);
 
-            foreach ($tableAttributes as $attribute) {
-                $source['tableAttributes'][] = [
-                    $attribute[0],
-                    $attribute[1]['label'],
-                ];
-            }
+            if ($source['type'] === ElementSources::TYPE_CUSTOM) {
+                if (isset($source['condition'])) {
+                    /** @var ElementConditionInterface $condition */
+                    $condition = $conditionsService->createCondition(ArrayHelper::remove($source, 'condition'));
+                    $condition->mainTag = 'div';
+                    $condition->name = "sources[{$source['key']}][condition]";
+                    $condition->forProjectConfig = true;
+                    $condition->queryParams = ['site', 'status'];
+                    $condition->addRuleLabel = Craft::t('app', 'Add a filter');
 
-            // Header column info
-            if ($firstAttribute = reset($tableAttributes)) {
-                [, $attributeInfo] = $firstAttribute;
-                // Is there a custom header col heading?
-                if (isset($attributeInfo['defaultLabel'])) {
-                    $source['headerColHeading'] = $attributeInfo['label'];
-                    $source['defaultHeaderColHeading'] = $attributeInfo['defaultLabel'];
-                } else {
-                    $source['defaultHeaderColHeading'] = $attributeInfo['label'];
+                    $view->startJsBuffer();
+                    $conditionBuilderHtml = $condition->getBuilderHtml();
+                    $conditionBuilderJs = $view->clearJsBuffer();
+                    $source += compact('conditionBuilderHtml', 'conditionBuilderJs');
+                }
+
+                if (isset($source['userGroups']) && $source['userGroups'] === false) {
+                    $source['userGroups'] = [];
                 }
             }
         }
@@ -87,13 +101,50 @@ class ElementIndexSettingsController extends BaseElementsController
         // Get the available table attributes
         $availableTableAttributes = [];
 
-        foreach ($elementIndexesService->getAvailableTableAttributes($elementType) as $key => $labelInfo) {
+        foreach ($sourcesService->getAvailableTableAttributes($elementType) as $key => $labelInfo) {
             $availableTableAttributes[] = [$key, $labelInfo['label']];
         }
+
+        // Get previewable custom fields that should be available for all custom sources
+        $customFieldAttributes = [];
+
+        foreach (Craft::$app->getFields()->getLayoutsByType($elementType) as $fieldLayout) {
+            foreach ($fieldLayout->getCustomFields() as $field) {
+                if ($field instanceof PreviewableFieldInterface) {
+                    $customFieldAttributes[] = ["field:$field->uid", Craft::t('site', $field->name)];
+                }
+            }
+        }
+
+        $condition = $elementType::createCondition();
+        $condition->id = '__ID__';
+        $condition->name = 'sources[__SOURCE_KEY__][condition]';
+        $condition->mainTag = 'div';
+        $condition->forProjectConfig = true;
+        $condition->queryParams = ['site', 'status'];
+        $condition->addRuleLabel = Craft::t('app', 'Add a filter');
+
+        $view->startJsBuffer();
+        $conditionBuilderHtml = $condition->getBuilderHtml();
+        $conditionBuilderJs = $view->clearJsBuffer();
+
+        $userGroups = Collection::make(Craft::$app->getUserGroups()->getAllGroups())
+            ->map(fn(UserGroup $group) => [
+                'label' => Craft::t('site', $group->name),
+                'value' => $group->uid,
+            ])
+            ->all();
 
         return $this->asJson([
             'sources' => $sources,
             'availableTableAttributes' => $availableTableAttributes,
+            'customFieldAttributes' => $customFieldAttributes,
+            'elementTypeName' => $elementType::displayName(),
+            'conditionBuilderHtml' => $conditionBuilderHtml,
+            'conditionBuilderJs' => $conditionBuilderJs,
+            'userGroups' => $userGroups,
+            'headHtml' => $view->getHeadHtml(),
+            'bodyHtml' => $view->getBodyHtml(),
         ]);
     }
 
@@ -104,37 +155,71 @@ class ElementIndexSettingsController extends BaseElementsController
      */
     public function actionSaveCustomizeSourcesModalSettings(): Response
     {
-        $this->requirePermission('customizeSources');
-
         $elementType = $this->elementType();
 
+        // Get the old source configs
+        $projectConfig = Craft::$app->getProjectConfig();
+        $oldSourceConfigs = $projectConfig->get(ProjectConfig::PATH_ELEMENT_SOURCES . ".$elementType") ?? [];
+        $oldSourceConfigs = ArrayHelper::index(array_filter($oldSourceConfigs, fn($s) => $s['type'] !== ElementSources::TYPE_HEADING), 'key');
+
+        $conditionsService = Craft::$app->getConditions();
+
         $sourceOrder = $this->request->getBodyParam('sourceOrder', []);
-        $sources = $this->request->getBodyParam('sources', []);
+        $sourceSettings = $this->request->getBodyParam('sources', []);
+        $newSourceConfigs = [];
+        $disabledSourceKeys = [];
 
         // Normalize to the way it's stored in the DB
-        foreach ($sourceOrder as $i => $source) {
+        foreach ($sourceOrder as $source) {
             if (isset($source['heading'])) {
-                $sourceOrder[$i] = ['heading', $source['heading']];
-            } else {
-                $sourceOrder[$i] = ['key', $source['key']];
+                $newSourceConfigs[] = [
+                    'type' => ElementSources::TYPE_HEADING,
+                    'heading' => $source['heading'],
+                ];
+            } elseif (isset($source['key'])) {
+                $isCustom = str_starts_with($source['key'], 'custom:');
+                $sourceConfig = [
+                    'type' => $isCustom ? ElementSources::TYPE_CUSTOM : ElementSources::TYPE_NATIVE,
+                    'key' => $source['key'],
+                ];
+
+                // Were new settings posted?
+                if (isset($sourceSettings[$source['key']])) {
+                    $postedSettings = $sourceSettings[$source['key']];
+                    $sourceConfig['tableAttributes'] = array_values(array_filter($postedSettings['tableAttributes'] ?? []));
+
+                    if ($isCustom) {
+                        $sourceConfig += [
+                            'label' => $postedSettings['label'],
+                            'condition' => $conditionsService->createCondition($postedSettings['condition'])->getConfig(),
+                        ];
+
+                        if (isset($postedSettings['userGroups']) && $postedSettings['userGroups'] !== '*') {
+                            $sourceConfig['userGroups'] = is_array($postedSettings['userGroups']) ? $postedSettings['userGroups'] : false;
+                        }
+                    } elseif (isset($postedSettings['enabled'])) {
+                        $sourceConfig['disabled'] = !$postedSettings['enabled'];
+                        if ($sourceConfig['disabled']) {
+                            $disabledSourceKeys[] = $source['key'];
+                        }
+                    }
+                } elseif (isset($oldSourceConfigs[$source['key']])) {
+                    $sourceConfig += $oldSourceConfigs[$source['key']];
+                    if (!empty($sourceConfig['disabled'])) {
+                        $disabledSourceKeys[] = $source['key'];
+                    }
+                } elseif ($isCustom) {
+                    // Ignore it
+                    continue;
+                }
+
+                $newSourceConfigs[] = $sourceConfig;
             }
         }
 
-        // Remove the blank table attributes
-        foreach ($sources as &$source) {
-            $source['tableAttributes'] = array_filter($source['tableAttributes']);
-        }
-        unset($source);
-
-        $settings = [
-            'sourceOrder' => $sourceOrder,
-            'sources' => $sources,
-        ];
-
-        if (Craft::$app->getElementIndexes()->saveSettings($elementType, $settings)) {
-            return $this->asJson(['success' => true]);
-        }
-
-        return $this->asErrorJson(Craft::t('app', 'A server error occurred.'));
+        $projectConfig->set(ProjectConfig::PATH_ELEMENT_SOURCES . ".$elementType", $newSourceConfigs);
+        return $this->asSuccess(data: [
+            'disabledSourceKeys' => $disabledSourceKeys,
+        ]);
     }
 }

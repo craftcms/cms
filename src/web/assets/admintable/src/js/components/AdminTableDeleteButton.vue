@@ -11,7 +11,6 @@
 
 <script>
   /* global Craft */
-  import axios from 'axios';
   export default {
     name: 'AdminTableDeleteButton',
 
@@ -70,30 +69,17 @@
         _this.$emit('loading');
 
         _this.before(_this.id).then((continueDelete) => {
-          console.log('continue delete', continueDelete);
           if (continueDelete && _this.confirmDelete()) {
-            axios
-              .post(
-                Craft.getActionUrl(_this.actionUrl),
-                {id: _this.id},
-                {
-                  headers: {
-                    'X-CSRF-Token': Craft.csrfTokenValue,
-                  },
-                }
-              )
-              .then((response) => {
-                if (
-                  response.data &&
-                  response.data.success !== undefined &&
-                  response.data.success
-                ) {
-                  Craft.cp.displayNotice(_this.success);
-                  _this.$emit('reload');
-                } else {
-                  Craft.cp.displayError(_this.failed);
-                  _this.$emit('finishloading');
-                }
+            Craft.sendActionRequest('POST', _this.actionUrl, {
+              data: {id: _this.id},
+            })
+              .then(() => {
+                Craft.cp.displayNotice(_this.success);
+                _this.$emit('reload');
+              })
+              .catch(() => {
+                Craft.cp.displayError(_this.failed);
+                _this.$emit('finishloading');
               });
           } else {
             _this.$emit('finishloading');

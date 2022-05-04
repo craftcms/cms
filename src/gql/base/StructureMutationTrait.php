@@ -20,7 +20,11 @@ use GraphQL\Error\Error;
  */
 trait StructureMutationTrait
 {
-    protected function performStructureOperations(ElementInterface $element, array $arguments)
+    /**
+     * @param ElementInterface $element
+     * @param array $arguments
+     */
+    protected function performStructureOperations(ElementInterface $element, array $arguments): void
     {
         /** @var Element $element */
         $structureId = $element->structureId;
@@ -49,10 +53,10 @@ trait StructureMutationTrait
     /**
      * Get the related element.
      *
-     * @param $elementId
+     * @param int $elementId
      * @return ElementInterface
      */
-    protected function getRelatedElement($elementId)
+    protected function getRelatedElement(int $elementId): ElementInterface
     {
         $relatedElement = Craft::$app->getElements()->getElementById($elementId);
 

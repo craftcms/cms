@@ -9,8 +9,8 @@ namespace crafttests\unit\helpers;
 
 use Codeception\Test\Unit;
 use craft\helpers\ArrayHelper;
+use craft\test\TestCase;
 use stdClass;
-use UnitTester;
 
 /**
  * Unit tests for the Array Helper class.
@@ -19,32 +19,25 @@ use UnitTester;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class ArrayHelperTest extends Unit
+class ArrayHelperTest extends TestCase
 {
     /**
-     * @var UnitTester
-     */
-    protected $tester;
-
-    /**
      * @dataProvider toArrayDataProvider
-     *
      * @param array $expected
      * @param mixed $object
      */
-    public function testToArray(array $expected, $object)
+    public function testToArray(array $expected, mixed $object): void
     {
         self::assertSame($expected, ArrayHelper::toArray($object));
     }
 
     /**
      * @dataProvider prependDataProvider
-     *
      * @param array $expected
      * @param array $array
      * @param array $values
      */
-    public function testPrepend(array $expected, array $array, array $values)
+    public function testPrepend(array $expected, array $array, array $values): void
     {
         ArrayHelper::prepend($array, ...$values);
         self::assertSame($expected, $array);
@@ -52,12 +45,11 @@ class ArrayHelperTest extends Unit
 
     /**
      * @dataProvider appendDataProvider
-     *
      * @param array $expected
      * @param array $array
      * @param array $values
      */
-    public function testAppend(array $expected, array $array, array $values)
+    public function testAppend(array $expected, array $array, array $values): void
     {
         ArrayHelper::append($array, ...$values);
         self::assertSame($expected, $array);
@@ -65,13 +57,12 @@ class ArrayHelperTest extends Unit
 
     /**
      * @dataProvider prependOrAppendDataProvider
-     *
      * @param array $expected
      * @param array $array
      * @param mixed $appendable
      * @param bool $prepend
      */
-    public function testPrependOrAppend(array $expected, array $array, $appendable, bool $prepend)
+    public function testPrependOrAppend(array $expected, array $array, mixed $appendable, bool $prepend): void
     {
         ArrayHelper::prependOrAppend($array, $appendable, $prepend);
         self::assertSame($expected, $array);
@@ -80,7 +71,7 @@ class ArrayHelperTest extends Unit
     /**
      *
      */
-    public function testWhere()
+    public function testWhere(): void
     {
         $array = [
             [
@@ -93,31 +84,31 @@ class ArrayHelperTest extends Unit
             ],
         ];
 
-        $filtered = ArrayHelper::filterByValue($array, 'name', 'array 1');
+        $filtered = ArrayHelper::where($array, 'name', 'array 1');
         self::assertCount(1, $filtered);
         self::assertSame('the first array', $filtered[0]['description']);
 
         // Set the name to empty and see if we can filter by keys with an empty value
         $array[0]['name'] = '';
-        $filtered = ArrayHelper::filterByValue($array, 'name', '');
+        $filtered = ArrayHelper::where($array, 'name', '');
         self::assertCount(1, $filtered);
         self::assertSame('the first array', $filtered[0]['description']);
 
         // Add a new key to the array that it empty and with an empty value. Make sure that when filtering empty by empty  it returns everything.
         $array[0][''] = '';
-        $filtered = ArrayHelper::filterByValue($array, '', '');
+        $filtered = ArrayHelper::where($array, '', '');
         self::assertCount(count($array), $filtered);
         self::assertSame($array, $filtered);
 
         // Filter by emojis?
         $array[0]['😀'] = '😘';
-        $filtered = ArrayHelper::filterByValue($array, '😀', '😘');
+        $filtered = ArrayHelper::where($array, '😀', '😘');
         self::assertCount(1, $filtered);
         self::assertSame('the first array', $filtered[0]['description']);
 
         // See if we can filter by an array as a value.
         self::assertSame([['name' => ['testname' => true]]],
-            ArrayHelper::filterByValue(
+            ArrayHelper::where(
                 [
                     ['name' => ['testname' => true]],
                     ['name' => '22'],
@@ -128,7 +119,7 @@ class ArrayHelperTest extends Unit
 
         // Strict will only return 1. Non strict will typecast integer to string and thus find 2.
         self::assertCount(2,
-            ArrayHelper::filterByValue(
+            ArrayHelper::where(
                 [
                     ['name' => 22],
                     ['name' => '22'],
@@ -139,7 +130,7 @@ class ArrayHelperTest extends Unit
             )
         );
         self::assertCount(1,
-            ArrayHelper::filterByValue(
+            ArrayHelper::where(
                 [
                     ['name' => 22],
                     ['name' => '22'],
@@ -152,7 +143,7 @@ class ArrayHelperTest extends Unit
 
         self::assertSame(
             [['name' => 'john']],
-            ArrayHelper::filterByValue(
+            ArrayHelper::where(
                 [
                     ['name' => 'john'],
                     ['name' => 'michael'],
@@ -164,7 +155,7 @@ class ArrayHelperTest extends Unit
 
         self::assertSame(
             [['name' => 'john']],
-            ArrayHelper::filterByValue(
+            ArrayHelper::where(
                 [
                     ['name' => 'john'],
                     ['name' => 'michael'],
@@ -213,7 +204,7 @@ class ArrayHelperTest extends Unit
     /**
      * Test `whereIn()`
      */
-    public function testWhereIn()
+    public function testWhereIn(): void
     {
         $array = [
             'foo' => [
@@ -249,7 +240,7 @@ class ArrayHelperTest extends Unit
     /**
      * Test `whereMultiple` func
      */
-    public function testWhereMultiple()
+    public function testWhereMultiple(): void
     {
         $array = [
             [
@@ -338,14 +329,13 @@ class ArrayHelperTest extends Unit
 
     /**
      * @dataProvider containsDataProvider
-     *
      * @param bool $expected
      * @param array $array
-     * @param string|\Closure $key
+     * @param callable|string $key
      * @param mixed $value
      * @param bool $strict
      */
-    public function testContains(bool $expected, array $array, $key, $value = true, bool $strict = false)
+    public function testContains(bool $expected, array $array, callable|string $key, mixed $value = true, bool $strict = false): void
     {
         self::assertSame($expected, ArrayHelper::contains($array, $key, $value, $strict));
     }
@@ -355,11 +345,11 @@ class ArrayHelperTest extends Unit
      *
      * @param bool $expected
      * @param array $array
-     * @param string|\Closure $key
+     * @param callable|string $key
      * @param mixed $value
      * @param bool $strict
      */
-    public function testOnlyContains(bool $expected, array $array, $key, $value = true, bool $strict = false)
+    public function testOnlyContains(bool $expected, array $array, callable|string $key, mixed $value = true, bool $strict = false): void
     {
         self::assertSame($expected, ArrayHelper::onlyContains($array, $key, $value, $strict));
     }
@@ -367,7 +357,7 @@ class ArrayHelperTest extends Unit
     /**
      *
      */
-    public function testFilterEmptyStringsFromArray()
+    public function testFilterEmptyStringsFromArray(): void
     {
         self::assertSame([0 => 1, 1 => 2, 4 => null, 5 => 5], ArrayHelper::filterEmptyStringsFromArray([0 => 1, 1 => 2, 3 => '', 4 => null, 5 => 5]));
     }
@@ -375,7 +365,7 @@ class ArrayHelperTest extends Unit
     /**
      *
      */
-    public function testFirstKey()
+    public function testFirstKey(): void
     {
         self::assertNull(ArrayHelper::firstKey([]));
         self::assertEquals(0, ArrayHelper::firstKey([1]));
@@ -385,25 +375,23 @@ class ArrayHelperTest extends Unit
 
     /**
      * @dataProvider firstValueDataProvider
-     *
      * @param mixed $expected
      * @param array $array
      */
-    public function testFirstValue($expected, array $array)
+    public function testFirstValue(mixed $expected, array $array): void
     {
         self::assertSame($expected, ArrayHelper::firstValue($array));
     }
 
     /**
      * @dataProvider renameDataProvider
-     *
      * @param array $expected
      * @param array $array
      * @param string $oldKey
      * @param string $newKey
      * @param mixed $default
      */
-    public function testRename(array $expected, array $array, string $oldKey, string $newKey, $default = null)
+    public function testRename(array $expected, array $array, string $oldKey, string $newKey, mixed $default = null): void
     {
         ArrayHelper::rename($array, $oldKey, $newKey, $default);
         self::assertSame($expected, $array);
@@ -411,35 +399,32 @@ class ArrayHelperTest extends Unit
 
     /**
      * @dataProvider withoutDataProvider
-     *
      * @param array $expected
      * @param array $array
      * @param string $key
      */
-    public function testWithout(array $expected, array $array, string $key)
+    public function testWithout(array $expected, array $array, string $key): void
     {
         self::assertSame($expected, ArrayHelper::without($array, $key));
     }
 
     /**
      * @dataProvider withoutValueDataProvider
-     *
      * @param array $expected
      * @param array $array
      * @param mixed $value
      */
-    public function testWithoutValue(array $expected, array $array, $value)
+    public function testWithoutValue(array $expected, array $array, mixed $value): void
     {
         self::assertSame($expected, ArrayHelper::withoutValue($array, $value));
     }
 
     /**
      * @dataProvider ensureNonAssociativeDataProvider
-     *
      * @param array $expected
      * @param array $array
      */
-    public function testEnsureNonAssociative(array $expected, array $array)
+    public function testEnsureNonAssociative(array $expected, array $array): void
     {
         ArrayHelper::ensureNonAssociative($array);
         self::assertSame($expected, $array);
@@ -447,24 +432,33 @@ class ArrayHelperTest extends Unit
 
     /**
      * @dataProvider isOrderedDataProvider
-     *
      * @param bool $expected
      * @param array $array
      */
-    public function testIsOrdered(bool $expected, array $array)
+    public function testIsOrdered(bool $expected, array $array): void
     {
         self::assertSame($expected, ArrayHelper::isOrdered($array));
     }
 
     /**
      * @dataProvider isNumericDataProvider
-     *
      * @param bool $expected
      * @param array $array
      */
-    public function testIsNumeric(bool $expected, array $array)
+    public function testIsNumeric(bool $expected, array $array): void
     {
         self::assertSame($expected, ArrayHelper::isNumeric($array));
+    }
+
+    /**
+     * @dataProvider getValueDataProvider
+     * @param string $expected
+     * @param array $array
+     * @param string $key
+     */
+    public function testGetValue(string $expected, array $array, string $key): void
+    {
+        $this->assertSame($expected, ArrayHelper::getValue($array, $key));
     }
 
     /**
@@ -472,10 +466,10 @@ class ArrayHelperTest extends Unit
      */
     public function toArrayDataProvider(): array
     {
-        $stdClass2 = new StdClass();
+        $stdClass2 = new stdClass();
         $stdClass2->subProp = 'value';
 
-        $stdClass = new StdClass();
+        $stdClass = new stdClass();
         $stdClass->prop1 = '11';
         $stdClass->prop2 = '22';
         $stdClass->prop3 = $stdClass2;
@@ -630,6 +624,19 @@ class ArrayHelperTest extends Unit
         return [
             [true, [0, 1, 2, '3']],
             [false, [0, 1, 2, '3a']],
+        ];
+    }
+
+    public function getValueDataProvider(): array
+    {
+        return [
+            ['foo', ['foo' => 'foo'], 'foo'],
+            ['foo.bar', ['foo' => ['bar' => 'foo.bar']], 'foo[bar]'],
+            ['foo.bar.baz', ['foo' => ['bar' => ['baz' => 'foo.bar.baz']]], 'foo[bar][baz]'],
+            ['foo[bar', ['foo[bar' => 'foo[bar'], 'foo[bar'],
+            ['foo[bar][]', ['foo[bar][]' => 'foo[bar][]'], 'foo[bar][]'],
+            ['foo.bar:baz.qux', ['foo' => ['bar:baz' => ['qux' => 'foo.bar:baz.qux']]], 'foo[bar:baz][qux]'],
+            ['foo-bar.baz.qux', ['foo-bar' => ['baz' => ['qux' => 'foo-bar.baz.qux']]], 'foo-bar[baz][qux]'],
         ];
     }
 }

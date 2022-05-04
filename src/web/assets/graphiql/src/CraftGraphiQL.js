@@ -12,7 +12,7 @@ var search = window.location.search;
 var parameters = {};
 
 search
-  .substr(1)
+  .substring(1)
   .split('&')
   .forEach(function (entry) {
     var eq = entry.indexOf('=');

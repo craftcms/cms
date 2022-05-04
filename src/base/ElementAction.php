@@ -34,21 +34,21 @@ abstract class ElementAction extends ConfigurableComponent implements ElementAct
     }
 
     /**
-     * @var string|ElementInterface
-     *
+     * @var string
+     * @phpstan-var class-string<ElementInterface>
      * @since 3.0.30
      */
-    protected $elementType;
+    protected string $elementType;
 
     /**
-     * @var
+     * @var string|null
      */
-    private $_message;
+    private ?string $_message = null;
 
     /**
      * @inheritdoc
      */
-    public function setElementType(string $elementType)
+    public function setElementType(string $elementType): void
     {
         $this->elementType = $elementType;
     }
@@ -64,7 +64,7 @@ abstract class ElementAction extends ConfigurableComponent implements ElementAct
     /**
      * @inheritdoc
      */
-    public function getTriggerHtml()
+    public function getTriggerHtml(): ?string
     {
         return null;
     }
@@ -72,7 +72,7 @@ abstract class ElementAction extends ConfigurableComponent implements ElementAct
     /**
      * @inheritdoc
      */
-    public function getConfirmationMessage()
+    public function getConfirmationMessage(): ?string
     {
         return null;
     }
@@ -88,7 +88,7 @@ abstract class ElementAction extends ConfigurableComponent implements ElementAct
     /**
      * @inheritdoc
      */
-    public function getMessage()
+    public function getMessage(): ?string
     {
         return $this->_message;
     }
@@ -98,7 +98,7 @@ abstract class ElementAction extends ConfigurableComponent implements ElementAct
      *
      * @param string $message The message that should be displayed to the user after the action is performed.
      */
-    protected function setMessage(string $message)
+    protected function setMessage(string $message): void
     {
         $this->_message = $message;
     }

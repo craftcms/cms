@@ -1,15 +1,16 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\test\fixtures;
 
 use Craft;
+use craft\base\Field;
 use craft\base\FieldInterface;
-use craft\base\Model;
+use craft\base\ModelInterface;
 use craft\fieldlayoutelements\CustomField;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Component;
@@ -28,7 +29,7 @@ use yii\test\FileFixtureTrait;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since  3.2
+ * @since 3.2
  */
 abstract class FieldLayoutFixture extends DbFixture
 {
@@ -38,18 +39,18 @@ abstract class FieldLayoutFixture extends DbFixture
     /**
      * @var FieldLayout[]
      */
-    private $_layouts = [];
+    private array $_layouts = [];
 
     /**
      * @var FieldInterface[]
      */
-    private $_fields = [];
+    private array $_fields = [];
 
     /**
      * @throws Throwable
      * @throws YiiBaseException
      */
-    public function load()
+    public function load(): void
     {
         $fieldsService = Craft::$app->getFields();
 
@@ -63,9 +64,9 @@ abstract class FieldLayoutFixture extends DbFixture
             foreach ($tabConfigs as $tabIndex => $tabConfig) {
                 $fieldConfigs = ArrayHelper::remove($tabConfig, 'fields') ?? [];
 
-                $tab = $tabs[] = new FieldLayoutTab($tabConfig);
+                $tab = $tabs[] = new FieldLayoutTab(['layout' => $layout] + $tabConfig);
                 $tab->sortOrder = $tabIndex + 1;
-                $tab->elements = [];
+                $layoutElements = [];
 
                 foreach ($fieldConfigs as $fieldConfig) {
                     // config[field] + config[layout-link] -> config
@@ -79,17 +80,19 @@ abstract class FieldLayoutFixture extends DbFixture
                     }
 
                     $required = ArrayHelper::remove($fieldConfig, 'required') ?? false;
-                    /** @var FieldInterface $field */
+                    /** @var FieldInterface|Field $field */
                     $field = $this->_fields[] = Component::createComponent($fieldConfig, FieldInterface::class);
 
                     if (!$fieldsService->saveField($field)) {
                         $this->throwModelError($field);
                     }
 
-                    $tab->elements[] = new CustomField($field, [
+                    $layoutElements[] = new CustomField($field, [
                         'required' => $required,
                     ]);
                 }
+
+                $tab->setElements($layoutElements);
             }
 
             $layout->setTabs($tabs);
@@ -107,7 +110,7 @@ abstract class FieldLayoutFixture extends DbFixture
      *
      * @return array the data rows to be inserted into the database table.
      */
-    protected function getData()
+    protected function getData(): array
     {
         return $this->loadData($this->dataFile);
     }
@@ -115,13 +118,14 @@ abstract class FieldLayoutFixture extends DbFixture
     /**
      * @inheritdoc
      */
-    public function unload()
+    public function unload(): void
     {
         $this->checkIntegrity(true);
 
         $fieldsService = Craft::$app->getFields();
 
         foreach ($this->_fields as $field) {
+            /** @var FieldInterface|Field $field */
             if (!$fieldsService->deleteField($field)) {
                 $this->throwModelError($field);
             }
@@ -146,16 +150,16 @@ abstract class FieldLayoutFixture extends DbFixture
      *
      * @throws NotSupportedException
      */
-    public function afterUnload()
+    public function afterUnload(): void
     {
         $this->db->getSchema()->refresh();
     }
 
     /**
-     * @param Model $model
+     * @param ModelInterface $model
      * @throws InvalidArgumentException
      */
-    protected function throwModelError(Model $model)
+    protected function throwModelError(ModelInterface $model): void
     {
         throw new InvalidArgumentException(
             implode(

@@ -18,12 +18,12 @@ use craft\gql\base\RelationArgumentHandler;
  */
 class RelatedUsers extends RelationArgumentHandler
 {
-    protected $argumentName = 'relatedToUsers';
+    protected string $argumentName = 'relatedToUsers';
 
     /**
      * @inheritdoc
      */
-    protected function handleArgument($argumentValue)
+    protected function handleArgument($argumentValue): mixed
     {
         $argumentValue = parent::handleArgument($argumentValue);
         return $this->getIds(User::class, $argumentValue);

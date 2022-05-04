@@ -30,14 +30,14 @@ class DownloadAssetFile extends ElementAction
     /**
      * @inheritdoc
      */
-    public function getTriggerHtml()
+    public function getTriggerHtml(): ?string
     {
         $type = Json::encode(static::class);
 
         $js = <<<JS
 (() => {
     new Craft.ElementActionTrigger({
-        type: {$type},
+        type: $type,
         activate: function(\$selectedItems)
         {
             var \$form = Craft.createForm().appendTo(Garnish.\$bod);

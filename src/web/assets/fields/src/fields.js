@@ -40,28 +40,24 @@
           name: name,
         };
 
-        Craft.postActionRequest(
-          'fields/save-group',
-          data,
-          (response, textStatus) => {
-            if (textStatus === 'success') {
-              if (response.success) {
-                location.href = Craft.getUrl(
-                  'settings/fields/' + response.group.id
-                );
-              } else if (response.errors) {
-                var errors = this.flattenErrors(response.errors);
-                alert(
-                  Craft.t('app', 'Could not create the group:') +
-                    '\n\n' +
-                    errors.join('\n')
-                );
-              } else {
-                Craft.cp.displayError();
-              }
+        Craft.sendActionRequest('POST', 'fields/save-group', {data})
+          .then((response) => {
+            location.href = Craft.getUrl(
+              'settings/fields/' + response.data.group.id
+            );
+          })
+          .catch(({response}) => {
+            if (response.data.errors) {
+              var errors = this.flattenErrors(response.data.errors);
+              alert(
+                Craft.t('app', 'Could not create the group:') +
+                  '\n\n' +
+                  errors.join('\n')
+              );
+            } else {
+              Craft.cp.displayError();
             }
-          }
-        );
+          });
       }
     },
 
@@ -75,27 +71,23 @@
           name: newName,
         };
 
-        Craft.postActionRequest(
-          'fields/save-group',
-          data,
-          (response, textStatus) => {
-            if (textStatus === 'success') {
-              if (response.success) {
-                this.$selectedGroup.text(response.group.name);
-                Craft.cp.displayNotice(Craft.t('app', 'Group renamed.'));
-              } else if (response.errors) {
-                var errors = this.flattenErrors(response.errors);
-                alert(
-                  Craft.t('app', 'Could not rename the group:') +
-                    '\n\n' +
-                    errors.join('\n')
-                );
-              } else {
-                Craft.cp.displayError();
-              }
+        Craft.sendActionRequest('POST', 'fields/save-group', {data})
+          .then((response) => {
+            this.$selectedGroup.text(response.data.group.name);
+            Craft.cp.displayNotice(Craft.t('app', 'Group renamed.'));
+          })
+          .catch(({response}) => {
+            if (response.data.errors) {
+              var errors = this.flattenErrors(response.data.errors);
+              alert(
+                Craft.t('app', 'Could not rename the group:') +
+                  '\n\n' +
+                  errors.join('\n')
+              );
+            } else {
+              Craft.cp.displayError();
             }
-          }
-        );
+          });
       }
     },
 
@@ -119,19 +111,13 @@
           id: this.$selectedGroup.data('id'),
         };
 
-        Craft.postActionRequest(
-          'fields/delete-group',
-          data,
-          (response, textStatus) => {
-            if (textStatus === 'success') {
-              if (response.success) {
-                location.href = Craft.getUrl('settings/fields');
-              } else {
-                Craft.cp.displayError();
-              }
-            }
-          }
-        );
+        Craft.sendActionRequest('POST', 'fields/delete-group', {data})
+          .then((response) => {
+            location.href = Craft.getUrl('settings/fields');
+          })
+          .catch(({response}) => {
+            Craft.cp.displayError();
+          });
       }
     },
 

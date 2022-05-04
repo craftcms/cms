@@ -1,23 +1,23 @@
 <template>
-  <div v-if="plugin" class="plugin-actions">
+  <div v-if="plugin" class="plugin-actions tw-relative tw-space-y-2">
     <template v-if="!isPluginEditionFree">
       <template v-if="isInCart(plugin, edition)">
         <!-- Already in cart -->
-        <btn
+        <c-btn
           v-if="allowUpdates"
           kind="primary"
           icon="check"
           block
           large
-          outline
+          disabled
           @click="$root.openModal('cart')"
-          >{{ 'Already in your cart' | t('app') }}</btn
-        >
+          >{{ 'Already in your cart' | t('app') }}
+        </c-btn>
       </template>
 
       <template v-else>
         <!-- Add to cart / Upgrade (from lower edition) -->
-        <btn
+        <c-btn
           v-if="allowUpdates && isEditionMoreExpensiveThanLicensed"
           kind="primary"
           @click="addEditionToCart(edition.handle)"
@@ -31,18 +31,19 @@
           "
           block
           large
-          >{{ 'Add to cart' | t('app') }}</btn
         >
+          <plugin-edition-price :edition="edition" />
+        </c-btn>
 
         <!-- Licensed -->
-        <btn
+        <c-btn
           v-else-if="licensedEdition === edition.handle"
           kind="primary"
           block
           large
           disabled
-          >{{ 'Licensed' | t('app') }}</btn
-        >
+          >{{ 'Licensed' | t('app') }}
+        </c-btn>
       </template>
     </template>
 
@@ -76,7 +77,7 @@
 
         <!-- Install (Free) -->
         <template v-if="isPluginEditionFree">
-          <btn
+          <c-btn
             kind="primary"
             type="submit"
             :loading="loading"
@@ -85,8 +86,8 @@
             "
             block
             large
-            >{{ 'Install' | t('app') }}</btn
-          >
+            >{{ 'Install' | t('app') }}
+          </c-btn>
         </template>
 
         <template v-else>
@@ -98,7 +99,7 @@
             "
           >
             <!-- Install (Commercial) -->
-            <btn
+            <c-btn
               type="submit"
               :loading="loading"
               :disabled="
@@ -106,8 +107,8 @@
               "
               block
               large
-              >{{ 'Install' | t('app') }}</btn
-            >
+              >{{ 'Install' | t('app') }}
+            </c-btn>
           </template>
 
           <template
@@ -117,7 +118,7 @@
             "
           >
             <!-- Try -->
-            <btn
+            <c-btn
               type="submit"
               :disabled="
                 !(
@@ -132,8 +133,8 @@
               :loading="loading"
               block
               large
-              >{{ 'Try' | t('app') }}</btn
-            >
+              >{{ 'Try' | t('app') }}
+            </c-btn>
           </template>
 
           <template
@@ -144,9 +145,9 @@
             "
           >
             <!-- Reactivate -->
-            <btn type="submit" :loading="loading" block large>{{
-              'Reactivate' | t('app')
-            }}</btn>
+            <c-btn type="submit" :loading="loading" block large
+              >{{ 'Reactivate' | t('app') }}
+            </c-btn>
           </template>
         </template>
       </form>
@@ -157,16 +158,16 @@
         v-if="currentEdition !== licensedEdition && !isPluginEditionFree"
       >
         <!-- Installed as a trial -->
-        <btn icon="check" :disabled="true" large block>
-          {{ 'Installed as a trial' | t('app') }}</btn
-        >
+        <c-btn icon="check" :disabled="true" large block>
+          {{ 'Installed as a trial' | t('app') }}
+        </c-btn>
       </template>
 
       <template v-else>
         <!-- Installed -->
-        <btn icon="check" :disabled="true" block large>
-          {{ 'Installed' | t('app') }}</btn
-        >
+        <c-btn icon="check" :disabled="true" block large>
+          {{ 'Installed' | t('app') }}
+        </c-btn>
       </template>
     </template>
 
@@ -176,7 +177,7 @@
         plugin.latestCompatibleVersion != plugin.version
       "
     >
-      <div class="text-grey mt-4 px-8">
+      <div class="tw-text-gray-600 tw-mt-4">
         <p>
           {{
             'Only up to {version} is compatible with your version of Craft.'
@@ -186,7 +187,7 @@
       </div>
     </template>
     <template v-else-if="!plugin.latestCompatibleVersion">
-      <div class="text-grey mt-4 px-8">
+      <div class="tw-text-gray-600 tw-mt-4">
         <p>
           {{
             'This plugin isn’t compatible with your version of Craft.'
@@ -196,7 +197,7 @@
       </div>
     </template>
     <template v-else-if="!plugin.phpVersionCompatible">
-      <div class="text-grey mt-4 px-8">
+      <div class="tw-text-gray-600 tw-mt-4">
         <p v-if="plugin.incompatiblePhpVersion === 'php'">
           {{
             'This plugin requires PHP {v1}, but your environment is currently running {v2}.'
@@ -218,7 +219,7 @@
       </div>
     </template>
     <template v-else-if="!isPluginEditionFree && plugin.abandoned">
-      <div class="text-grey mt-4 px-8">
+      <div class="tw-text-gray-600 tw-mt-4">
         <p>{{ 'This plugin is no longer maintained.' | t('app') }}</p>
       </div>
     </template>
@@ -230,11 +231,22 @@
 
   import {mapGetters} from 'vuex';
   import licensesMixin from '../mixins/licenses';
+  import PluginEditionPrice from './PluginEditionPrice';
 
   export default {
+    components: {PluginEditionPrice},
     mixins: [licensesMixin],
 
-    props: ['plugin', 'edition'],
+    props: {
+      edition: {
+        type: Object,
+        required: true,
+      },
+      plugin: {
+        type: Object,
+        required: true,
+      },
+    },
 
     data() {
       return {
@@ -376,15 +388,9 @@
 
 <style lang="scss">
   .plugin-actions {
-    position: relative;
     .c-spinner {
-      position: absolute;
+      @apply tw-absolute tw-left-1/2;
       bottom: -32px;
-      left: 50%;
-    }
-
-    .c-btn {
-      @apply .mt-3;
     }
   }
 </style>

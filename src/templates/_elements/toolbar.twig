@@ -1,0 +1,101 @@
+{% from "_includes/forms" import text -%}
+
+{% macro sortOptionLabel(sortOption) %}
+    {{ sortOption.label ?? sortOption }}
+{% endmacro %}
+
+{% from _self import sortOptionLabel %}
+{% do view.registerTranslations('app', [
+    "Sort by {attribute}",
+    "Score",
+    "Structure",
+    "Display in a table",
+    "Display hierarchically",
+    "Display as thumbnails",
+]) %}
+
+{% set elementInstance = craft.app.elements.createElement(elementType) %}
+{% set context = context is defined ? context : 'index' %}
+{% set showStatusMenu = (showStatusMenu is defined and showStatusMenu != 'auto' ? showStatusMenu : elementInstance.hasStatuses()) %}
+{% set showSiteMenu = (craft.app.getIsMultiSite() ? (showSiteMenu ?? 'auto') : false) %}
+{% if showSiteMenu == 'auto' %}
+    {% set showSiteMenu = elementInstance.isLocalized() %}
+{% endif %}
+{% set sortOptions = elementInstance.sortOptions() %}
+{% set idPrefix = "elementtoolbar#{random()}-" %}
+
+{% if showStatusMenu or context == 'index' %}
+    <div>
+        <label id="{{ idPrefix }}status-label" class="visually-hidden">{{ "Status"|t('app') }}</label>
+        <button id="{{ idPrefix }}status-button" aria-labelledby="{{ idPrefix }}status-label {{ idPrefix }}status-button" type="button" class="btn menubtn statusmenubtn"><span class="status"></span>{{ "All"|t('app') }}</button>
+        <div class="menu">
+            <ul class="padded">
+                <li><a data-status="" class="sel"><span class="status"></span>{{ "All"|t('app') }}</a></li>
+                {% if showStatusMenu %}
+                    {% for status, info in elementInstance.statuses() %}
+                        {% set label = info.label ?? info %}
+                        {% set color = info.color ?? '' %}
+                        <li><a data-status="{{ status }}"><span class="status {{ status }} {{ color }}"></span>{{ label }}</a></li>
+                    {% endfor %}
+                {% endif %}
+            </ul>
+            {% if context == 'index' %}
+                {% if showStatusMenu %}<hr class="padded">{% endif %}
+                <ul class="padded">
+                    {% if canHaveDrafts ?? false %}
+                        <li><a data-drafts><span class="icon" data-icon="draft" aria-hidden="true"></span>{{ 'Drafts'|t('app') }}</a></li>
+                    {% endif %}
+                    <li><a data-trashed><span class="icon" data-icon="trash" aria-hidden="true"></span>{{ "Trashed"|t('app') }}</a></li>
+                </ul>
+            {% endif %}
+        </div>
+    </div>
+{% endif %}
+{% if showSiteMenu %}
+    {% include "_elements/sitemenu" %}
+{% endif %}
+<div class="flex-grow texticon search icon has-filter-btn">
+    {{ text({
+        class: 'clearable',
+        placeholder: "Search"|t('app'),
+        inputAttributes: {
+            aria: {
+                label: 'Search'|t('app'),
+            },
+        },
+    }) }}
+    {{ tag('button', {
+        role: 'button',
+        class: 'clear-btn hidden',
+        title: 'Clear search'|t('app'),
+        aria: {
+            label: 'Clear search'|t('app'),
+        },
+    }) }}
+    <button class="filter-btn" title="{{ 'Filter results'|t('app') }}" aria-label="{{ 'Filter results'|t('app') }}"></button>
+</div>
+<div>
+    <label id="{{ idPrefix }}sort-by-label" class="visually-hidden">{{ 'Sort by'|t('app') }}</label>
+    <button id="{{ idPrefix }}sort-by-btn" aria-labelledby="{{ idPrefix }}sort-by-label {{ idPrefix }}sort-by-btn" type="button" class="btn menubtn sortmenubtn" {% if sortOptions %} title="{{ 'Sort by {attribute}'|t('app', { attribute: sortOptionLabel(sortOptions|first) }) }}"{% endif %} data-icon="asc">{{ sortOptions ? sortOptionLabel(sortOptions|first) }}</button>
+    <div class="menu">
+        <ul class="padded sort-attributes">
+            {% for key, sortOption in sortOptions %}
+                <li>
+                    {{ tag('a', {
+                        class: loop.first ? 'sel',
+                        text: sortOptionLabel(sortOption),
+                        data: {
+                            attr: sortOption.attribute ?? sortOption.orderBy ?? key,
+                            'default-dir': sortOption.defaultDir ?? false,
+                        }
+                    }) }}
+                </li>
+            {% endfor %}
+        </ul>
+        <hr>
+        <ul class="padded sort-directions">
+            <li><a data-dir="asc" class="sel">{{ "Ascending"|t('app') }}</a></li>
+            <li><a data-dir="desc">{{ "Descending"|t('app') }}</a></li>
+        </ul>
+    </div>
+</div>

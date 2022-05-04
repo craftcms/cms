@@ -8,14 +8,14 @@
           | t('app', {price: $root.$options.filters.currency(somePrice)})
       }}
     </p>
-    <p>{{ "Go to {link}"|t('app', { link: '<a href="#">test</a>' }) }}</p>
+    <p>{{ "Go to {link}"|t('app', {link: '<a href="#">test</a>' }) }}</p>
     <p v-html="craftTranslation"></p>
 
     <h2>Modal</h2>
 
     <p><a @click="openModal()">Open Garnish Modal</a></p>
 
-    <div class="hidden">
+    <div class="tw-hidden">
       <div ref="garnishmodalcontent" class="modal">
         <div class="body">Hello World</div>
       </div>

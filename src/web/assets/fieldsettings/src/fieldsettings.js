@@ -76,7 +76,7 @@
             this.$container.html('').append($settings);
             Craft.initUiElements(this.$container);
             Craft.appendHeadHtml(response.data.headHtml);
-            Craft.appendFootHtml(response.data.footHtml);
+            Craft.appendBodyHtml(response.data.bodyHtml);
           })
           .catch(() => {
             if (!this._ignoreFailedRequest) {

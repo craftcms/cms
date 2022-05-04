@@ -97,20 +97,16 @@ Craft.StructureTableSorter = Garnish.DragSort.extend(
 
         var data = this._getAjaxBaseData(this.$targetItem);
 
-        Craft.postActionRequest(
-          'structures/get-element-level-delta',
+        Craft.sendActionRequest('POST', 'structures/get-element-level-delta', {
           data,
-          (response, textStatus) => {
-            if (textStatus === 'success') {
-              this._loadingDraggeeLevelDelta = false;
+        }).then((response) => {
+          this._loadingDraggeeLevelDelta = false;
 
-              if (this.dragging) {
-                this._draggeeLevelDelta = response.delta;
-                this.drag(false);
-              }
-            }
+          if (this.dragging) {
+            this._draggeeLevelDelta = response.data.delta;
+            this.drag(false);
           }
-        );
+        });
       }
 
       return $draggee;
@@ -304,32 +300,25 @@ Craft.StructureTableSorter = Garnish.DragSort.extend(
           $prevRow = $prevRow.prev();
         }
 
-        Craft.postActionRequest(
-          'structures/move-element',
-          data,
-          (response, textStatus) => {
-            if (textStatus === 'success') {
-              if (!response.success) {
-                Craft.cp.displayError(
-                  Craft.t('app', 'A server error occurred.')
-                );
-                this.tableView.elementIndex.updateElements();
-                return;
-              }
-              Craft.cp.displayNotice(Craft.t('app', 'New position saved.'));
-              this.onPositionChange();
+        Craft.sendActionRequest('POST', 'structures/move-element', {data})
+          .then((response) => {
+            Craft.cp.displayNotice(Craft.t('app', 'New position saved.'));
+            this.onPositionChange();
 
-              // Were we waiting on this to complete so we can expand the new parent?
-              if ($spinnerRow && $spinnerRow.parent().length) {
-                $spinnerRow.remove();
-                this.tableView._expandElement($toggle, true);
-              }
-
-              // See if we should run any pending tasks
-              Craft.cp.runQueue();
+            // Were we waiting on this to complete so we can expand the new parent?
+            if ($spinnerRow && $spinnerRow.parent().length) {
+              $spinnerRow.remove();
+              this.tableView._expandElement($toggle, true);
             }
-          }
-        );
+
+            // See if we should run any pending tasks
+            Craft.cp.runQueue();
+          })
+          .catch(({response}) => {
+            Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
+            this.tableView.elementIndex.updateElements();
+            return;
+          });
       }
     },
 

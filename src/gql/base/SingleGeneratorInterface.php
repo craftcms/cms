@@ -8,7 +8,8 @@
 namespace craft\gql\base;
 
 /**
- * Class SingleGeneratorInterface
+ * SingleGeneratorInterface defines the common interface to be implemented by generator classes that support generating
+ * a single GraphQL type at a time.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.0
@@ -19,8 +20,8 @@ interface SingleGeneratorInterface
      * Generate a single GraphQL type based on a context.
      *
      * @param mixed $context Context for generated types
-     * @return mixed|null
+     * @return mixed
      * @since 3.5.0
      */
-    public static function generateType($context);
+    public static function generateType(mixed $context): mixed;
 }
