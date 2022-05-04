@@ -117,7 +117,7 @@ import './upgrade.scss';
               text: Craft.t('app', 'Ready'),
             }).appendTo($tdStatus);
             $('<div/>', {
-              class: 'plugin-status',
+              class: 'plugin-version',
               text: plugin.latestVersion,
             }).appendTo($tdStatus);
             if (
