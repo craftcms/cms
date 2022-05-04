@@ -145,10 +145,10 @@ class Connection extends \yii\db\Connection
             }
 
             Craft::error($e->getMessage(), __METHOD__);
-            throw new DbConnectException('Craft CMS can’t connect to the database with the credentials in config/db.php.', 0, $e);
+            throw new DbConnectException('Craft CMS can’t connect to the database.', 0, $e);
         } catch (Throwable $e) {
             Craft::error($e->getMessage(), __METHOD__);
-            throw new DbConnectException('Craft CMS can’t connect to the database with the credentials in config/db.php.', 0, $e);
+            throw new DbConnectException('Craft CMS can’t connect to the database.', 0, $e);
         }
     }
 
