@@ -3,11 +3,11 @@
     <template v-if="!isPluginEditionFree(edition)">
       <template
         v-if="
-              licensedEdition &&
-              licensedEdition.handle !== edition.handle &&
-              licensedEdition.price > 0 &&
-              licenseValidOrAstray
-            "
+          licensedEdition &&
+          licensedEdition.handle !== edition.handle &&
+          licensedEdition.price > 0 &&
+          licenseValidOrAstray
+        "
       >
         <del>{{ edition.price | currency }}</del>
         {{ (edition.price - licensedEdition.price) | currency }}
@@ -23,44 +23,44 @@
 </template>
 
 <script>
-import {mapGetters} from 'vuex';
-import licensesMixin from '../mixins/licenses';
+  import {mapGetters} from 'vuex';
+  import licensesMixin from '../mixins/licenses';
 
-export default {
-  mixins: [licensesMixin],
+  export default {
+    mixins: [licensesMixin],
 
-  props: {
-    edition: {
-      type: Object,
-      required: true,
-    },
-  },
-
-  computed: {
-    ...mapGetters({
-      isPluginEditionFree: 'pluginStore/isPluginEditionFree',
-      getPluginEdition: 'pluginStore/getPluginEdition',
-      getPluginLicenseInfo: 'craft/getPluginLicenseInfo',
-    }),
-
-    pluginLicenseInfo() {
-      if (!this.plugin) {
-        return null;
-      }
-
-      return this.getPluginLicenseInfo(this.plugin.handle);
+    props: {
+      edition: {
+        type: Object,
+        required: true,
+      },
     },
 
-    licensedEdition() {
-      if (!this.pluginLicenseInfo) {
-        return null;
-      }
+    computed: {
+      ...mapGetters({
+        isPluginEditionFree: 'pluginStore/isPluginEditionFree',
+        getPluginEdition: 'pluginStore/getPluginEdition',
+        getPluginLicenseInfo: 'craft/getPluginLicenseInfo',
+      }),
 
-      return this.getPluginEdition(
-        this.plugin,
-        this.pluginLicenseInfo.licensedEdition
-      );
+      pluginLicenseInfo() {
+        if (!this.plugin) {
+          return null;
+        }
+
+        return this.getPluginLicenseInfo(this.plugin.handle);
+      },
+
+      licensedEdition() {
+        if (!this.pluginLicenseInfo) {
+          return null;
+        }
+
+        return this.getPluginEdition(
+          this.plugin,
+          this.pluginLicenseInfo.licensedEdition
+        );
+      },
     },
-  }
-}
+  };
 </script>

@@ -9,16 +9,16 @@
     props: {
       name: {
         type: String,
-        required: true
+        required: true,
       },
       block: {
         type: Boolean,
-        default: false
+        default: false,
       },
       big: {
         type: Boolean,
-        default: false
-      }
+        default: false,
+      },
     },
 
     computed: {

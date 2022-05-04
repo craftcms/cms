@@ -5,15 +5,9 @@
       'tw-space-y-4 tw-mb-4': !isPluginFree(plugin),
     }"
   >
-    <template
-      v-for="(edition, key) in plugin.editions"
-    >
+    <template v-for="(edition, key) in plugin.editions">
       <div :key="key">
-        <plugin-edition
-          :plugin="plugin"
-          :edition="edition"
-          context="meta"
-        />
+        <plugin-edition :plugin="plugin" :edition="edition" context="meta" />
       </div>
     </template>
   </div>

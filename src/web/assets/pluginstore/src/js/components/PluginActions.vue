@@ -31,10 +31,8 @@
           "
           block
           large
-          >
-          <plugin-edition-price
-            :edition="edition"
-          />
+        >
+          <plugin-edition-price :edition="edition" />
         </c-btn>
 
         <!-- Licensed -->

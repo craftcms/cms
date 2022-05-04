@@ -3,9 +3,14 @@
     class="plugin-editions-edition"
     :class="{
       'tw-flex tw-flex-col': true,
-      'tw-border tw-border-gray-200 tw-border-solid tw-rounded-md': context !== 'meta' || plugin.editions.length > 1 || !isPluginEditionFree(edition),
+      'tw-border tw-border-gray-200 tw-border-solid tw-rounded-md':
+        context !== 'meta' ||
+        plugin.editions.length > 1 ||
+        !isPluginEditionFree(edition),
       'tw-p-8 tw-text-center': context !== 'meta',
-      'tw-p-4': context === 'meta' && (plugin.editions.length > 1 || !isPluginEditionFree(edition)),
+      'tw-p-4':
+        context === 'meta' &&
+        (plugin.editions.length > 1 || !isPluginEditionFree(edition)),
     }"
   >
     <div class="description tw-flex-1">
@@ -43,21 +48,15 @@
       </template>
     </div>
 
-    <plugin-actions
-      :plugin="plugin"
-      :edition="edition"
-    />
+    <plugin-actions :plugin="plugin" :edition="edition" />
 
-    <p
-      v-if="!isPluginEditionFree(edition)"
-      class="tw-text-gray-700"
-    >
+    <p v-if="!isPluginEditionFree(edition)" class="tw-text-gray-700">
       {{ 'Price includes 1 year of updates.' | t('app') }}
       {{
-      '{renewalPrice}/year per site for updates after that.'
-      | t('app', {
-      renewalPrice: $options.filters.currency(edition.renewalPrice),
-      })
+        '{renewalPrice}/year per site for updates after that.'
+          | t('app', {
+            renewalPrice: $options.filters.currency(edition.renewalPrice),
+          })
       }}
     </p>
   </div>
