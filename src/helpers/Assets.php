@@ -95,11 +95,12 @@ class Assets
     }
 
     /**
-     * Get revision query parameters to append to assets
+     * Revisions the query parameters that should be appended to asset URLs, per the `revAssetUrls` config setting.
      *
      * @param Asset $asset
      * @param DateTime|null $dateUpdated
      * @return array
+     * @since 4.0.0
      */
     public static function revParams(Asset $asset, ?DateTime $dateUpdated = null): array
     {
