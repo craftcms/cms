@@ -1168,8 +1168,10 @@ $.extend(Craft, {
       const serializeParam = (name, value) => {
         if ($.isArray(value) || $.isPlainObject(value)) {
           value = $.param(value);
-        } else {
+        } else if (typeof value === 'string') {
           value = encodeURIComponent(value);
+        } else if (value === null) {
+          value = '';
         }
         return `${encodeURIComponent(name)}=${value}`;
       };
