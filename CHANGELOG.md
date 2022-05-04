@@ -1,5 +1,13 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+### Added
+- Added `craft\helpers\Assets::revParams()`.
+
+### Fixed
+- Fixed a bug where user photos were 404ing if the User Photo Location setting contained a subpath.
+
 ## 4.0.0-RC3 - 2022-05-03
 
 ### Added

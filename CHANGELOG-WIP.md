@@ -263,6 +263,7 @@
 - Added `craft\helpers\Assets::downloadFile()`.
 - Added `craft\helpers\Assets::iconPath()`.
 - Added `craft\helpers\Assets::iconUrl()`.
+- Added `craft\helpers\Assets::revParams()`.
 - Added `craft\helpers\Cp::addressCardHtml()`.
 - Added `craft\helpers\Cp::addressCardsHtml()`.
 - Added `craft\helpers\Cp::addressFieldsHtml()`.
