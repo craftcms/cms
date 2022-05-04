@@ -68,15 +68,16 @@ $iconSize: 46px;
         }
       }
 
-      .plugin-status {
+      .plugin-status,
+      .plugin-version {
         display: inline-block;
-        text-transform: uppercase;
         border: 1px solid $grey600;
         border-radius: $smallBorderRadius;
         padding: 0 7px 1px;
+      }
+      .plugin-status {
         @include margin-right(5px);
-        color: $grey600;
-        background-color: transparentize($grey600, 0.95);
+        text-transform: uppercase;
 
         &.plugin-ready {
           border-color: $teal600;
@@ -95,6 +96,11 @@ $iconSize: 46px;
           color: $red600;
           background-color: transparentize($red600, 0.95);
         }
+      }
+
+      .plugin-version {
+        color: $grey600;
+        background-color: transparentize($grey600, 0.95);
       }
 
       .plugin-note {
