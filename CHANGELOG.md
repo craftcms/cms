@@ -3,7 +3,14 @@
 ## Unreleased
 
 ### Added
-- Added the “Craft 4 Upgrade” utility.
+- Added `craft\helpers\Assets::revParams()`.
+
+### Fixed
+- Fixed a bug where user photos were 404ing if the User Photo Location setting contained a subpath.
+
+## 4.0.0-RC3 - 2022-05-03
+
+### Added
 - Added `craft\base\conditions\ConditionRuleInterface::getGroupLabel()`.
 - Added `craft\utilities\Upgrade`.
 - Added `craft\web\assets\upgrade\UpgradeAsset`.
@@ -11,7 +18,9 @@
 
 ### Changed
 - Custom field condition rules are now listed under a “Fields” optgroup.
+- Column definitions passed to the `_includes/forms/editableTable` control panel template can now specify a `width` key. ([#11062](https://github.com/craftcms/cms/pull/11062))
 - `craft\helpers\ArrayHelper::getValue()` now supports keys in square bracket syntax, e.g. `foo[bar][baz]`.
+- `craft\services\Assets::getThumbUrl()` and `getImagePreviewUrl()` no longer add a `v` query string param to returned URLs. ([#11065](https://github.com/craftcms/cms/pull/11065))
 
 ### Fixed
 - Fixed a bug where `Craft.cp.$tabs` was returning an empty collection.
@@ -19,6 +28,7 @@
 - Fixed a bug where it wasn’t possible to sort custom fields by clicking on their table headers. ([#11051](https://github.com/craftcms/cms/issues/11051))
 - Fixed a bug where long entry titles would push the action buttons off-screen. ([#11061](https://github.com/craftcms/cms/issues/11061))
 - Fixed a bug where Live Preview wasn’t getting refreshed automatically when an image’s focal point was changed via the asset preview modal. ([#11060](https://github.com/craftcms/cms/issues/11060))
+- Fixed a bug where empty Money fields would be marked as changed, even when no change was made to them. ([#10804](https://github.com/craftcms/cms/issues/10804))
 
 ## 4.0.0-RC2 - 2022-04-28
 

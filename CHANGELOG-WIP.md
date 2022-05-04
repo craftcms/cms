@@ -263,6 +263,7 @@
 - Added `craft\helpers\Assets::downloadFile()`.
 - Added `craft\helpers\Assets::iconPath()`.
 - Added `craft\helpers\Assets::iconUrl()`.
+- Added `craft\helpers\Assets::revParams()`.
 - Added `craft\helpers\Cp::addressCardHtml()`.
 - Added `craft\helpers\Cp::addressCardsHtml()`.
 - Added `craft\helpers\Cp::addressFieldsHtml()`.
@@ -476,6 +477,7 @@
 - When using GraphQL to mutate entries, the `enabled` status is now affected on a per-site basis when specifying both the `enabled` and `siteId` parameters. ([#9771](https://github.com/craftcms/cms/issues/9771))
 - The `forms/selectize` control panel template now supports `addOptionFn` and `addOptionLabel` params, which can be set to add new options to the list.
 - Editable tables now support `allowAdd`, `allowDelete`, and `allowReorder` settings, replacing `staticRows`. ([#10163](https://github.com/craftcms/cms/pull/10163))
+- Column definitions passed to the `_includes/forms/editableTable` control panel template can now specify a `width` key. ([#11062](https://github.com/craftcms/cms/pull/11062))
 - The `limitField` macro in the `_components/fieldtypes/elementfieldsettings` control panel template has been renamed to `limitFields`.
 - Renamed the `elements/get-categories-input-html` action to `categories/input-html`.
 - Renamed the `elements/get-modal-body` action to `element-selector-modals/body`.

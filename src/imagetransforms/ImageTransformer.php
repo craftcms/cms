@@ -92,7 +92,10 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
                 $imageTransformIndex->fileExists = false;
                 $this->storeTransformIndexData($imageTransformIndex);
             } else {
-                return $fs->getRootUrl() . $uri . AssetsHelper::urlAppendix($asset, $imageTransformIndex->dateUpdated);
+                return UrlHelper::urlWithParams(
+                    $fs->getRootUrl() . $uri,
+                    AssetsHelper::revParams($asset, $imageTransformIndex->dateUpdated),
+                );
             }
         }
 

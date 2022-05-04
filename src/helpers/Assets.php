@@ -88,24 +88,24 @@ class Assets
      */
     public static function generateUrl(FsInterface $fs, Asset $asset, ?string $uri = null, ?DateTime $dateUpdated = null): string
     {
-        $baseUrl = $fs->getRootUrl();
-        $folderPath = $asset->folderPath;
-        $appendix = static::urlAppendix($asset, $dateUpdated);
-
-        return $baseUrl . str_replace(' ', '%20', $folderPath . ($uri ?? $asset->getFilename()) . $appendix);
+        $revParams = self::revParams($asset, $dateUpdated);
+        $pathParts = explode('/', $asset->folderPath . ($uri ?? $asset->getFilename()));
+        $path = implode('/', array_map('rawurlencode', $pathParts));
+        return UrlHelper::urlWithParams($fs->getRootUrl() . $path, $revParams);
     }
 
     /**
-     * Get appendix for a URL based on its Source caching settings.
+     * Revisions the query parameters that should be appended to asset URLs, per the `revAssetUrls` config setting.
      *
      * @param Asset $asset
-     * @param DateTime|null $dateUpdated last datetime the target of the url was updated, if known
-     * @return string
+     * @param DateTime|null $dateUpdated
+     * @return array
+     * @since 4.0.0
      */
-    public static function urlAppendix(Asset $asset, ?DateTime $dateUpdated = null): string
+    public static function revParams(Asset $asset, ?DateTime $dateUpdated = null): array
     {
         if (!Craft::$app->getConfig()->getGeneral()->revAssetUrls) {
-            return '';
+            return [];
         }
 
         /** @var DateTime $dateModified */
@@ -117,7 +117,21 @@ class Assets
             $v .= ",{$fp['x']},{$fp['y']}";
         }
 
-        return "?v=$v";
+        return compact('v');
+    }
+
+    /**
+     * Get appendix for a URL based on its Source caching settings.
+     *
+     * @param Asset $asset
+     * @param DateTime|null $dateUpdated last datetime the target of the url was updated, if known
+     * @return string
+     * @deprecated in 4.0.0. [[generateUrl()]] should be used instead.
+     */
+    public static function urlAppendix(Asset $asset, ?DateTime $dateUpdated = null): string
+    {
+        $revParams = self::revParams($asset, $dateUpdated);
+        return $revParams ? sprintf('?%s', UrlHelper::buildQuery($revParams)) : '';
     }
 
     /**

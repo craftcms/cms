@@ -3012,7 +3012,7 @@ $checkboxPadding: $checkboxSize + 4;
   }
 
   .flex {
-    margin-top: 7px;
+    padding-top: 7px;
     float: none !important;
   }
 }
@@ -5624,8 +5624,8 @@ input.radio + label:after,
 div.radio:after {
   top: 4px;
   left: 4px;
-  width: var(--radio-size) - 8;
-  height: var(--radio-size) - 8;
+  width: calc(var(--radio-size) - 8px);
+  height: calc(var(--radio-size) - 8px);
 }
 
 input.radio:disabled + label,
@@ -6583,8 +6583,7 @@ $titlebarBorderRadius: var(--large-border-radius) - 1;
     margin: 0 -14px;
     width: calc(100% + 28px);
     box-sizing: border-box;
-    border-radius: var(--titlebar-border-radius) var(--titlebar-border-radius) 0
-      0;
+    border-radius: $titlebarBorderRadius $titlebarBorderRadius 0 0;
     @include padding(5px, 70px, 5px, 35px);
     color: var(--light-text-color);
     overflow: hidden;
