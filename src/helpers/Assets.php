@@ -88,13 +88,20 @@ class Assets
      */
     public static function generateUrl(FsInterface $fs, Asset $asset, ?string $uri = null, ?DateTime $dateUpdated = null): string
     {
-        $revParams = self::_revParams($asset, $dateUpdated);
+        $revParams = self::revParams($asset, $dateUpdated);
         $pathParts = explode('/', $asset->folderPath . ($uri ?? $asset->getFilename()));
         $path = implode('/', array_map('rawurlencode', $pathParts));
         return UrlHelper::urlWithParams($fs->getRootUrl() . $path, $revParams);
     }
 
-    private static function _revParams(Asset $asset, ?DateTime $dateUpdated = null): array
+    /**
+     * Get revision query parameters to append to assets
+     *
+     * @param Asset $asset
+     * @param DateTime|null $dateUpdated
+     * @return array
+     */
+    public static function revParams(Asset $asset, ?DateTime $dateUpdated = null): array
     {
         if (!Craft::$app->getConfig()->getGeneral()->revAssetUrls) {
             return [];
@@ -122,7 +129,7 @@ class Assets
      */
     public static function urlAppendix(Asset $asset, ?DateTime $dateUpdated = null): string
     {
-        $revParams = self::_revParams($asset, $dateUpdated);
+        $revParams = self::revParams($asset, $dateUpdated);
         return $revParams ? sprintf('?%s', UrlHelper::buildQuery($revParams)) : '';
     }
 
