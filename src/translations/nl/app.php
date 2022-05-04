@@ -1887,7 +1887,7 @@ return [
     '{num, number} {num, plural, =1{week} other{weeks}}' => '{num, number} {num, plural, =1{week} other{weken}}',
     '{num, number} {num, plural, =1{year} other{years}}' => '{num, number} {num, plural, =1{jaar} other{jaar}}',
     '{num, number} {section} {num, plural, =1{entry} other{entries}}' => '{num, number} {section} {num, plural, one {} =1{record} other{records}}',
-    '{num} plugins have licensing issues.' => 'Er zijn problemen met de licentie voor {num} invoegtoepassingen.',
+    '{num} plugins have licensing issues.' => 'Er zijn problemen met de licenties van {num} plugins.',
     '{pct} width' => '{pct} breedte',
     '{renewalPrice}/year per site for updates after that.' => '{renewalPrice} per jaar per site voor updates daarna.',
     '{section} Entry Types' => '{section} berichttypes',
