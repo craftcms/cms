@@ -11,7 +11,7 @@ import Tests from '../pages/tests';
 import NotFound from '../pages/_not-found';
 import Search from '../pages/search';
 import PluginsHandle from '../pages/_handle';
-import PluginsHandlePricing from '../pages/_handle/pricing';
+import PluginsHandleEditions from '../pages/_handle/editions';
 import PluginsHandleChangelog from '../pages/_handle/changelog';
 
 Vue.use(VueRouter);
@@ -82,9 +82,9 @@ export default new VueRouter({
       component: PluginsHandle,
     },
     {
-      path: '/:handle/pricing',
-      name: 'PluginsHandlePricing',
-      component: PluginsHandlePricing,
+      path: '/:handle/editions',
+      name: 'PluginsHandleEditions',
+      component: PluginsHandleEditions,
     },
     {
       path: '/:handle/changelog',
