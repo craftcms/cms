@@ -620,7 +620,7 @@ return [
     'Failed to save the image.' => 'Kan de afbeelding niet opslaan.',
     'Failed' => 'Gefaald',
     'Feed' => 'Feed',
-    'Fetching upgrade info…' => 'Upgrde info wordt opgehaald…',
+    'Fetching upgrade info…' => 'Upgrade info wordt opgehaald…',
     'Field Layout' => 'Veldopmaak',
     'Field Limit is too big for your chosen Column Type.' => 'De veldlimiet is te groot voor het gekozen type kolom.',
     'Field Limit' => 'Veldlimiet',
