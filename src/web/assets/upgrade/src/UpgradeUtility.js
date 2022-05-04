@@ -78,7 +78,7 @@ import './upgrade.scss';
           }
           $('<a/>', {
             class: 'plugin-name',
-            href: `https://plugins.craftcms.com/${plugin.handle}`,
+            href: `https://plugins.craftcms.com/${plugin.handle}?cmsConstraint=^${this.version}.0`,
             text: plugin.name,
           }).appendTo($th);
           const $devContainer = $('<div class="plugin-developer"/>').appendTo(
