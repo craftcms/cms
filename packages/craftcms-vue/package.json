@@ -1,0 +1,16 @@
+{
+  "name": "@craftcms/vue",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Pixel & Tonic, Inc. <support@pixelandtonic.com>",
+  "license": "MIT",
+  "dependencies": {
+    "lodash": "^4.17.21",
+    "sortablejs": "^1.15.0",
+    "vuetable-2": "^1.7.5"
+  }
+}
