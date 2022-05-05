@@ -41,7 +41,7 @@ class AuthorGroupConditionRule extends BaseMultiSelectConditionRule implements E
      */
     public static function isSelectable(): bool
     {
-        return (bool)count(Craft::$app->getUserGroups()->getAllGroups());
+        return !empty(Craft::$app->getUserGroups()->getAllGroups());
     }
 
     /**
