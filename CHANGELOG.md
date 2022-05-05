@@ -2,6 +2,9 @@
 
 ## 3.7.40 (WIP)
 
+### Fixed
+- Fixed an error that occurred when attempting to delete a global set. ([#11100](https://github.com/craftcms/cms/issues/11100))
+
 ## 3.7.40.1 - 2022-05-04
 
 ### Fixed

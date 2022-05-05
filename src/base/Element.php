@@ -4351,7 +4351,11 @@ abstract class Element extends Component implements ElementInterface
      */
     protected function fieldLayoutFields(): array
     {
-        $fieldLayout = $this->getFieldLayout();
+        try {
+            $fieldLayout = $this->getFieldLayout();
+        } catch (InvalidConfigException $e) {
+            return [];
+        }
 
         if ($fieldLayout) {
             return $fieldLayout->getFields();
