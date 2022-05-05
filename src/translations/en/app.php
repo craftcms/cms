@@ -1031,6 +1031,7 @@ return [
     'PHP' => 'PHP',
     'Page Not Found' => 'Page Not Found',
     'Page not found.' => 'Page not found.',
+    'Pagination' => 'Pagination',
     'Parent' => 'Parent',
     'Parish' => 'Parish',
     'Partition' => 'Partition',
