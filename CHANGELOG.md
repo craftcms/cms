@@ -3,6 +3,8 @@
 ## 4.0.1 (WIP)
 
 ### Fixed
+- Fixed a bug where Money field labels’ `for` attributes weren’t referencing the correct input ID. ([#11016](https://github.com/craftcms/cms/pull/11016))
+- Fixed a bug where Money field inputs weren’t getting `aria-describedby` attributes. ([#11016](https://github.com/craftcms/cms/pull/11016))
 - Fixed a bug where element edit pages could reload themselves immediately after saving the element. ([#11083](https://github.com/craftcms/cms/issues/11083))
 
 ## 4.0.0.1 - 2022-05-04
