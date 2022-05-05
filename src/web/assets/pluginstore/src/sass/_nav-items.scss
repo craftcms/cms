@@ -29,15 +29,11 @@
 
         &:hover {
           @apply tw-no-underline tw-z-10;
-          background-color: $grey100;
-
-          &:not(.router-link-active) {
-            color: $linkColor;
-          }
+          background-color: var(--gray-100);
         }
 
         &.router-link-exact-active {
-          background-color: $grey200;
+          background-color: var(--gray-200);
         }
       }
     }

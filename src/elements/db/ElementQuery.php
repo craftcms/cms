@@ -1199,6 +1199,11 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public function prepare($builder): Query
     {
+        // Log a warning if the app isn't fully initialized yet
+        if (!Craft::$app->getIsInitialized()) {
+            Craft::warning('Element query executed before Craft is fully initialized.', __METHOD__);
+        }
+
         // Is the query already doomed?
         if (isset($this->id) && empty($this->id)) {
             throw new QueryAbortedException();

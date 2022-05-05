@@ -18,12 +18,12 @@
     }
 
     tr {
-      background-color: $white;
+      background-color: var(--white);
       border-top: 1px solid #c6cbd1;
     }
 
     tr:nth-child(2n) {
-      background-color: $grey050;
+      background-color: var(--gray-050);
     }
 
     img {

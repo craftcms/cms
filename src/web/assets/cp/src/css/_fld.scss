@@ -7,7 +7,7 @@ $tabWidth: $base * 10;
 $gridColor: hsl(212, 50%, 95%);
 
 @mixin workspaceBg {
-  background-color: $grey050;
+  background-color: var(--gray-050);
   background-image: linear-gradient(to right, $gridColor 1px, transparent 0px),
     linear-gradient(to bottom, $gridColor 1px, transparent 1px);
   background-size: $base $base;
@@ -24,12 +24,17 @@ $gridColor: hsl(212, 50%, 95%);
   min-height: 500px;
 
   .errors > & {
-    border: 1px solid $errorColor !important;
+    border: 1px solid var(--error-color) !important;
   }
 
   .fld-workspace {
     flex: 1;
-    @include border-radius($smallBorderRadius, 0, 0, $smallBorderRadius);
+    @include border-radius(
+      var(--small-border-radius),
+      0,
+      0,
+      var(--small-border-radius)
+    );
     @include padding($base, 0, $base, $base);
     @include workspaceBg;
     background-position: -1px -1px;
@@ -72,7 +77,7 @@ $gridColor: hsl(212, 50%, 95%);
   }
 
   .fld-new-tab-btn:active {
-    background-color: $grey050;
+    background-color: var(--gray-050);
   }
 }
 
@@ -81,7 +86,7 @@ $gridColor: hsl(212, 50%, 95%);
 .fld-tab .fld-tabcontent,
 .fld-new-tab-btn,
 .fld-new-tab-btn:hover {
-  background-color: $white;
+  background-color: var(--white);
   box-shadow: 0 0 0 1px transparentize($grey900, 0.9),
     0 2px 5px -2px transparentize($grey900, 0.8);
 }
@@ -122,7 +127,7 @@ $gridColor: hsl(212, 50%, 95%);
       max-width: calc(100% - 10px);
       box-sizing: border-box;
       padding: 8px $tabPadding;
-      border-radius: $mediumBorderRadius $mediumBorderRadius 0 0;
+      border-radius: var(--medium-border-radius) var(--medium-border-radius) 0 0;
 
       body:not(.dragging) &.draggable {
         cursor: move;
@@ -141,9 +146,9 @@ $gridColor: hsl(212, 50%, 95%);
     padding: $tabPadding;
     @include border-radius(
       0,
-      $mediumBorderRadius,
-      $mediumBorderRadius,
-      $mediumBorderRadius
+      var(--medium-border-radius),
+      var(--medium-border-radius),
+      var(--medium-border-radius)
     );
   }
 
@@ -151,7 +156,7 @@ $gridColor: hsl(212, 50%, 95%);
     .tabs .tab,
     .fld-tabcontent {
       margin: -2px;
-      border: 2px dashed $hairlineColor;
+      border: 2px dashed var(--hairline-color);
       box-shadow: none;
       @include workspaceBg;
     }
@@ -171,7 +176,7 @@ $gridColor: hsl(212, 50%, 95%);
 .fld-required-indicator {
   display: inline-flex;
   font-size: 9px;
-  color: $linkColor;
+  color: var(--link-color);
   @include margin-left(4px);
 }
 
@@ -187,12 +192,12 @@ $gridColor: hsl(212, 50%, 95%);
     left: 2px;
     z-index: -1;
     border: 2px solid transparent;
-    border-radius: $mediumBorderRadius;
+    border-radius: var(--medium-border-radius);
     background-image: linear-gradient($color, $color),
       repeating-linear-gradient(
         -45deg,
-        $white,
-        $white 5px,
+        var(--white),
+        var(--white) 5px,
         transparent 5px,
         transparent 10px
       );
@@ -207,9 +212,9 @@ $gridColor: hsl(212, 50%, 95%);
   display: flex;
   align-items: center;
   padding: 7px 10px;
-  box-shadow: inset 0 0 0 1px $hairlineColor;
-  border-radius: $mediumBorderRadius;
-  @include striped-bg($white);
+  box-shadow: inset 0 0 0 1px var(--hairline-color);
+  border-radius: var(--medium-border-radius);
+  @include striped-bg(var(--white));
 
   body:not(.dragging) & {
     cursor: move;
@@ -222,8 +227,8 @@ $gridColor: hsl(212, 50%, 95%);
 
   &.fld-insertion {
     box-sizing: border-box;
-    border: 2px dashed $hairlineColor;
-    border-radius: $mediumBorderRadius;
+    border: 2px dashed var(--hairline-color);
+    border-radius: var(--medium-border-radius);
     background: none;
     box-shadow: none;
   }
@@ -233,8 +238,8 @@ $gridColor: hsl(212, 50%, 95%);
   }
 
   &.fld-field {
-    color: $mediumTextColor;
-    @include striped-bg($grey100);
+    color: var(--medium-text-color);
+    @include striped-bg(var(--gray-100));
 
     &:not(.draghelper) {
       box-shadow: none;
@@ -292,7 +297,7 @@ $gridColor: hsl(212, 50%, 95%);
 
     .fld-element-label h4 {
       font-weight: normal;
-      color: $textColor;
+      color: var(--text-color);
       margin: 0;
     }
   }
@@ -317,13 +322,13 @@ body.dragging {
     height: 4px;
     content: '';
     font-size: 0;
-    background-color: $grey100;
+    background-color: var(--gray-100);
     border-radius: 2px;
   }
 
   .smalltext {
     position: relative;
-    background-color: $grey100;
+    background-color: var(--gray-100);
     border-radius: 8px;
     padding: 1px 7px;
   }
@@ -344,7 +349,7 @@ body.dragging {
   margin: 0 var(--neg-padding) -24px;
   padding: var(--padding);
   @include pane;
-  background-color: $grey050;
+  background-color: var(--gray-050);
   z-index: 3;
 
   & > .ee-site-select {

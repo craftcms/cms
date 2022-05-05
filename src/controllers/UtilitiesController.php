@@ -15,6 +15,7 @@ use craft\helpers\Queue;
 use craft\queue\jobs\FindAndReplace;
 use craft\utilities\ClearCaches;
 use craft\utilities\Updates;
+use craft\utilities\Upgrade;
 use craft\web\assets\utilities\UtilitiesAsset;
 use craft\web\Controller;
 use Throwable;
@@ -42,14 +43,18 @@ class UtilitiesController extends Controller
             throw new ForbiddenHttpException('User not permitted to view Utilities');
         }
 
-        // Don't go to the Updates utility by default if there are any others
-        if (($key = array_search(Updates::class, $utilities, true)) !== false && count($utilities) > 1) {
-            array_splice($utilities, $key, 1);
+        // Don't go to the Updates or Upgrade utilities by default if there are any others
+        $firstUtility = null;
+        foreach ($utilities as $utility) {
+            if (!in_array($utility, [Updates::class, Upgrade::class])) {
+                $firstUtility = $utility;
+                break;
+            }
         }
 
-        /** @var string|UtilityInterface $firstUtility */
-        /** @phpstan-var class-string<UtilityInterface>|UtilityInterface $firstUtility */
-        $firstUtility = reset($utilities);
+        if (!$firstUtility) {
+            $firstUtility = reset($utilities);
+        }
 
         return $this->redirect('utilities/' . $firstUtility::id());
     }

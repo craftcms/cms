@@ -2,7 +2,7 @@
   <div
     class="tw-border-t tw-border-solid tw-border-gray-200 md:tw-flex md:tw-justify-between md:tw-items-center tw-py-4 md:tw-py-2 tw-space-y-2 md:tw-space-y-0"
   >
-    <div class="tw-flex tw-items-center">
+    <div class="tw-flex tw-items-center tw-w-3/5">
       <!-- Icon -->
       <div class="tw-mr-4 tw-leading-3">
         <img
@@ -15,9 +15,13 @@
 
       <!-- Item name -->
       <div class="item-name">
-        <a :title="activeTrial.name" @click.prevent="navigateToPlugin"
-          ><strong>{{ activeTrial.name }}</strong></a
+        <a
+          :title="activeTrial.name"
+          class="tw-mr-2"
+          @click.prevent="navigateToPlugin"
         >
+          <strong>{{ activeTrial.name }}</strong>
+        </a>
 
         <edition-badge
           v-if="activeTrial.editionName && activeTrial.showEditionBadge"
@@ -27,7 +31,7 @@
     </div>
 
     <!-- Price -->
-    <div>
+    <div class="tw-flex-1">
       <template v-if="activeTrial.price">
         <template v-if="activeTrial.discountPrice">
           <del class="tw-mr-1">{{ activeTrial.price | currency }}</del>
@@ -48,6 +52,7 @@
             :loading="addToCartLoading"
             :disabled="loading"
             :class="{
+              'tw-text-blue-600 hover:tw-underline': true,
               'disabled hover:tw-no-underline': activeTrial.licenseMismatched,
             }"
           >

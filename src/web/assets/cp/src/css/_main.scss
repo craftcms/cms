@@ -4,10 +4,10 @@
 @mixin checkered-bg($size) {
   // h/t https://gist.github.com/dfrankland/f6fed3e3ccc42e3de482b324126f9542
   $halfSize: $size * 0.5;
-  background-image: linear-gradient(45deg, $grey100 25%, transparent 25%),
-    linear-gradient(135deg, $grey100 25%, transparent 25%),
-    linear-gradient(45deg, transparent 75%, $grey100 75%),
-    linear-gradient(135deg, transparent 75%, $grey100 75%);
+  background-image: linear-gradient(45deg, var(--gray-100) 25%, transparent 25%),
+    linear-gradient(135deg, var(--gray-100) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, var(--gray-100) 75%),
+    linear-gradient(135deg, transparent 75%, var(--gray-100) 75%);
   background-size: $size $size;
   background-position: 0 0, $halfSize 0, $halfSize -#{$halfSize}, 0 $halfSize;
 }
@@ -18,8 +18,8 @@
   body.ltr & {
     background: repeating-linear-gradient(
       135deg,
-      $white,
-      $white $halfSize,
+      var(--white),
+      var(--white) $halfSize,
       $color $halfSize,
       $color $size
     );
@@ -27,8 +27,8 @@
   body.rtl & {
     background: repeating-linear-gradient(
       45deg,
-      $white,
-      $white $halfSize,
+      var(--white),
+      var(--white) $halfSize,
       $color $halfSize,
       $color $size
     );
@@ -49,12 +49,9 @@
 /* ----------------------------------------*/
 
 :root {
-  --text-color: #{$textColor};
-  --light-text-color: #{$lightTextColor};
-  --hairline-color: #{$hairlineColor};
-  --ui-control-color: #{$grey400};
-  --ui-control-hover-color: #{$grey500};
-  --ui-control-active-color: #{$grey600};
+  --ui-control-color: var(--gray-400);
+  --ui-control-hover-color: var(--gray-500);
+  --ui-control-active-color: var(--gray-600);
   --light-focus-hsl: #{hue($lightFocusColor)}, #{saturation($lightFocusColor)},
     #{lightness($lightFocusColor)};
   --medium-focus-hsl: #{hue($mediumFocusColor)},
@@ -68,8 +65,8 @@
 
 body,
 html {
-  box-shadow: $lightFocusRing;
-  background-color: $grey100;
+  box-shadow: var(--light-focus-ring);
+  background-color: var(--gray-100);
 }
 
 html.noscroll,
@@ -82,7 +79,7 @@ body {
   overflow-x: hidden;
   font-size: 14px;
   line-height: 20px;
-  color: $textColor;
+  color: var(--text-color);
   -webkit-font-smoothing: subpixel-antialiased;
 }
 
@@ -187,9 +184,9 @@ table.editable textarea {
   width: 17px;
   height: 17px;
   box-sizing: border-box;
-  border: 1px solid $yellow500;
-  border-radius: $smallBorderRadius;
-  color: $yellow500;
+  border: 1px solid var(--yellow-500);
+  border-radius: var(--small-border-radius);
+  color: var(--yellow-500);
   font-size: 9px;
 }
 
@@ -251,7 +248,7 @@ body.rtl [data-icon-after='structure']:after {
 
 .help:before {
   content: 'help';
-  color: $pink400;
+  color: var(--pink-400);
 }
 
 .preview-btn,
@@ -304,14 +301,14 @@ h4,
   margin: 14px 0;
   font-weight: bold;
   line-height: 1.2;
-  color: $mediumTextColor;
+  color: var(--medium-text-color);
 }
 
 h5,
 .h5 {
   margin: 14px 0 3px;
   line-height: 1.2;
-  color: $mediumTextColor;
+  color: var(--medium-text-color);
 }
 
 h6,
@@ -332,7 +329,7 @@ h2[data-icon]:before {
 hr {
   margin: 24px 0;
   border: none;
-  border-top: 1px solid $hairlineColor;
+  border-top: 1px solid var(--hairline-color);
   height: 0;
   color: transparent;
 }
@@ -394,7 +391,7 @@ pre code {
 
 /* links */
 a {
-  color: $linkColor;
+  color: var(--link-color);
   cursor: pointer;
 
   body.underline-links & {
@@ -426,7 +423,7 @@ li.sel a {
 }
 
 .go:hover:after {
-  color: $linkColor;
+  color: var(--link-color);
 }
 
 button {
@@ -436,7 +433,7 @@ button {
 /* revision button */
 .context-btn.disabled {
   opacity: 1;
-  color: $mediumDarkTextColor;
+  color: var(--medium-dark-text-color);
   background-color: transparentize($grey200, 0.5) !important;
 }
 
@@ -459,20 +456,20 @@ button {
     display: inline-block;
   }
 
-  background-color: $grey200;
+  background-color: var(--gray-200);
 
   &:before {
     content: 'check';
-    color: $successColor;
+    color: var(--success-color);
   }
 }
 
 .alert-icon {
-  background-color: $grey200;
+  background-color: var(--gray-200);
 
   &:before {
     content: 'alert';
-    color: $errorColor;
+    color: var(--error-color);
   }
 }
 
@@ -488,16 +485,16 @@ button {
       &.sel {
         margin: 0 -14px;
         padding: 0 14px;
-        background: $grey050;
-        border-radius: $largeBorderRadius;
+        background: var(--gray-050);
+        border-radius: var(--large-border-radius);
 
         .edited-desc {
           display: flex;
           align-items: center;
           @include margin-left(10px);
-          border-top: 1px solid $hairlineColor;
+          border-top: 1px solid var(--hairline-color);
           padding: 10px 0;
-          color: $lightTextColor;
+          color: var(--light-text-color);
           white-space: normal;
 
           p {
@@ -512,7 +509,7 @@ button {
 
       a {
         padding-top: 7px;
-        border-radius: $largeBorderRadius;
+        border-radius: var(--large-border-radius);
       }
     }
   }
@@ -526,10 +523,10 @@ button {
   max-width: 400px;
 
   .http-error {
-    border-radius: $mediumBorderRadius;
-    border: 1px solid $hairlineColor;
-    color: $lightTextColor;
-    background-color: $grey050;
+    border-radius: var(--medium-border-radius);
+    border: 1px solid var(--hairline-color);
+    color: var(--light-text-color);
+    background-color: var(--gray-050);
     padding: 7px 14px;
   }
 }
@@ -540,7 +537,7 @@ button {
   align-content: stretch;
   justify-content: center;
   gap: var(--s);
-  color: $blue800;
+  color: var(--blue-800);
 
   #content-notice & {
     display: inline-flex;
@@ -555,7 +552,7 @@ button {
       calc(var(--xl) * -1)
     );
     @include padding(var(--s), 0, var(--s), var(--xl));
-    @include border-bottom-left-radius($largeBorderRadius);
+    @include border-bottom-left-radius(var(--large-border-radius));
 
     body.ltr & {
       background-image: linear-gradient(
@@ -589,12 +586,12 @@ button {
     border-radius: 100%;
     border: 2px solid transparentize($blue800, 0.8);
     box-sizing: border-box;
-    box-shadow: 0 1px 1px 1px $white;
+    box-shadow: 0 1px 1px 1px var(--white);
 
     &:before {
       position: relative;
       left: 1px;
-      color: $blue800 !important;
+      color: var(--blue-800) !important;
       font-size: 18px;
     }
 
@@ -614,8 +611,8 @@ button {
   .discard-changes-btn {
     @include margin-left(var(--xs));
     background-color: transparent !important;
-    color: $blue800 !important;
-    border: 2px solid $blue600;
+    color: var(--blue-800) !important;
+    border: 2px solid var(--blue-600);
 
     &:hover,
     &:focus {
@@ -655,7 +652,7 @@ a.fieldtoggle {
   position: relative;
   margin: 14px 0;
   @include padding-left(12px);
-  color: $textColor;
+  color: var(--text-color);
   text-decoration: none;
 }
 
@@ -709,12 +706,12 @@ i em {
 }
 
 .light {
-  color: $mediumTextColor !important;
+  color: var(--medium-text-color) !important;
   font-weight: normal;
 }
 
 .extralight {
-  color: $lightTextColor !important;
+  color: var(--light-text-color) !important;
 }
 
 .smalltext {
@@ -732,7 +729,7 @@ i em {
   text-align: center;
   font-size: 20px;
   line-height: 24px;
-  color: $lightTextColor;
+  color: var(--light-text-color);
 
   &.small {
     padding: 24px 0;
@@ -748,7 +745,7 @@ input.checkbox + label.smalltext {
   content: 'asterisk';
   @include margin(-2px, 0, 0, 5px);
   font-size: 7px;
-  color: $errorColor;
+  color: var(--error-color);
 }
 
 .scrollpane {
@@ -855,7 +852,7 @@ td.right {
 }
 
 .success {
-  color: $successColor !important;
+  color: var(--success-color) !important;
 }
 
 .notice,
@@ -881,7 +878,7 @@ td.right {
 }
 
 .notice {
-  color: $noticeColor !important;
+  color: var(--notice-color) !important;
   a {
     text-decoration: underline;
   }
@@ -895,7 +892,7 @@ td.right {
 }
 
 .warning {
-  color: $warningColor !important;
+  color: var(--warning-color) !important;
 
   &.with-icon,
   .icon {
@@ -906,7 +903,7 @@ td.right {
 }
 
 .error {
-  color: $errorColor !important;
+  color: var(--error-color) !important;
 }
 
 .icon.move {
@@ -923,7 +920,7 @@ td.right {
 }
 
 .icon.move:not(.disabled):hover:before {
-  color: $linkColor;
+  color: var(--link-color);
 }
 
 .icon.delete {
@@ -939,11 +936,11 @@ td.right {
     cursor: pointer;
 
     &:hover:before {
-      color: $red600;
+      color: var(--red-600);
     }
 
     &:active:before {
-      color: $red800;
+      color: var(--red-800);
     }
   }
 }
@@ -994,7 +991,7 @@ td.right {
       content: 'info';
     }
     &:hover:before {
-      color: $linkColor;
+      color: var(--link-color);
     }
   }
 
@@ -1003,7 +1000,7 @@ td.right {
       content: 'alert';
     }
     &:hover:before {
-      color: $warningColor;
+      color: var(--warning-color);
     }
   }
 }
@@ -1047,7 +1044,7 @@ td.right {
     display: block;
     margin: 14px -24px 4px;
     @include padding(7px, 14px, 7px, 24px);
-    color: $lightTextColor !important;
+    color: var(--light-text-color) !important;
     transition: color linear 100ms;
     cursor: pointer;
 
@@ -1063,7 +1060,7 @@ td.right {
 
     &:hover,
     &:focus {
-      color: $mediumTextColor !important;
+      color: var(--medium-text-color) !important;
       text-decoration: none;
 
       .label {
@@ -1074,7 +1071,7 @@ td.right {
 }
 
 .sidebar .customize-sources:hover {
-  color: $linkColor;
+  color: var(--link-color);
 }
 
 .customize-sources-modal {
@@ -1091,10 +1088,10 @@ td.right {
     width: 200px;
     height: calc(100% - 50px);
     box-sizing: border-box;
-    background-color: $grey050;
+    background-color: var(--gray-050);
     overflow: auto;
-    box-shadow: inset -1px 0 0 $hairlineColor;
-    @include border-top-left-radius($largeBorderRadius);
+    box-shadow: inset -1px 0 0 var(--hairline-color);
+    @include border-top-left-radius(var(--large-border-radius));
 
     & > .btn {
       @include margin(10px, 0, 0, 14px);
@@ -1127,8 +1124,8 @@ td.right {
   position: relative;
   margin-top: -1px;
   padding: 8px 14px;
-  background-color: $grey100;
-  border: solid $hairlineColor;
+  background-color: var(--gray-100);
+  border: solid var(--hairline-color);
   border-width: 1px 0;
   user-select: none;
   cursor: default;
@@ -1139,12 +1136,12 @@ td.right {
     }
 
     &:not(.heading) {
-      border-top: 1px solid $hairlineColor;
+      border-top: 1px solid var(--hairline-color);
     }
   }
 
   &.sel {
-    background-color: $grey200;
+    background-color: var(--gray-200);
     z-index: 1;
   }
 
@@ -1158,7 +1155,7 @@ td.right {
   &.heading {
     .label {
       text-transform: uppercase;
-      color: $lightTextColor;
+      color: var(--light-text-color);
       font-size: 12px;
       font-weight: bold;
     }
@@ -1191,9 +1188,9 @@ ul.icons {
       padding: 60px 5px 10px;
       width: 110px;
       text-align: center;
-      color: $textColor;
+      color: var(--text-color);
       border-radius: 4px;
-      border: 1px solid $white;
+      border: 1px solid var(--white);
 
       &:before {
         display: block;
@@ -1216,17 +1213,17 @@ ul.icons {
         }
 
         &.icon-mask svg {
-          @include svg-mask($textColor);
+          @include svg-mask(var(--text-color));
         }
       }
 
       &:hover {
         text-decoration: none;
-        background-color: $grey050;
-        border-color: $grey100;
+        background-color: var(--gray-050);
+        border-color: var(--gray-100);
 
         .icon.icon-mask svg {
-          @include svg-mask($linkColor);
+          @include svg-mask(var(--link-color));
         }
       }
     }
@@ -1260,7 +1257,7 @@ ul.icons {
   }
 
   .text {
-    border-radius: $largeBorderRadius !important;
+    border-radius: var(--large-border-radius) !important;
     box-shadow: none !important;
   }
 }
@@ -1371,7 +1368,7 @@ ul.icons {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: $largeBorderRadius;
+  border-radius: var(--large-border-radius);
   padding: 7px 14px;
   border: none;
   text-align: center;
@@ -1578,11 +1575,11 @@ ul.icons {
   display: inline-flex;
   flex-wrap: nowrap;
   align-items: center;
-  border: 1px solid $hairlineColor;
-  border-radius: $smallBorderRadius;
+  border: 1px solid var(--hairline-color);
+  border-radius: var(--small-border-radius);
   padding: 0 9px;
   cursor: pointer;
-  color: $mediumTextColor;
+  color: var(--medium-text-color);
 
   input {
     border: 0;
@@ -1592,7 +1589,7 @@ ul.icons {
     background-color: transparent;
     border: none;
     cursor: pointer;
-    color: $mediumTextColor;
+    color: var(--medium-text-color);
     text-align: center;
   }
 
@@ -1602,16 +1599,16 @@ ul.icons {
     background: none;
     margin-top: -3px;
     @include margin-left(5px);
-    color: $lightTextColor;
+    color: var(--light-text-color);
   }
 
   &:hover,
   &:focus {
-    border-color: $mediumHairlineColor;
-    color: $textColor;
+    border-color: var(--medium-hairline-color);
+    color: var(--text-color);
 
     input {
-      color: $textColor;
+      color: var(--text-color);
     }
   }
 
@@ -1653,7 +1650,7 @@ ul.icons {
 
     &.submit {
       &:after {
-        border-color: $white !important;
+        border-color: var(--white) !important;
         opacity: 0.8;
       }
 
@@ -1674,7 +1671,7 @@ ul.icons {
     height: 17px;
     &:after {
       top: -2px;
-      border-color: $linkColor;
+      border-color: var(--link-color);
     }
   }
 
@@ -1791,12 +1788,12 @@ ul.icons {
 .btn {
   &.submit,
   &.secondary {
-    color: $white !important;
+    color: var(--white) !important;
     @include light-on-dark-text;
   }
 
   &.submit {
-    background-color: $primaryColor !important;
+    background-color: var(--primary-color) !important;
 
     &:not(.disabled):not(.inactive):not(.loading) {
       &:hover,
@@ -1813,8 +1810,8 @@ ul.icons {
   }
 
   &.caution {
-    background-color: $red050 !important;
-    color: $errorColor;
+    background-color: var(--red-050) !important;
+    color: var(--error-color);
 
     &:hover,
     &.hover,
@@ -1824,14 +1821,14 @@ ul.icons {
 
     &:active,
     &.active {
-      background-color: $red100 !important;
+      background-color: var(--red-100) !important;
     }
   }
 }
 
 .secondary-buttons .btn.submit,
 .btn.secondary {
-  background-color: $secondaryColor !important;
+  background-color: var(--secondary-color) !important;
 }
 
 .secondary-buttons
@@ -1867,7 +1864,7 @@ div.btn.submit input {
 
 /* dashed buttons */
 .btn.dashed {
-  border: 1px dashed $mediumHairlineColor;
+  border: 1px dashed var(--medium-hairline-color);
   background-color: transparent;
 
   .btngroup &:not(:last-child):not(.btngroup-btn-last) {
@@ -1880,7 +1877,7 @@ div.btn.submit input {
     border-color: transparent;
 
     .reduce-focus-visibility &:not(.focus-visible) {
-      border: 1px dashed $mediumHairlineColor;
+      border: 1px dashed var(--medium-hairline-color);
     }
   }
 
@@ -1965,7 +1962,7 @@ div.btn.submit input {
   display: inline-block;
   margin-left: 5px;
   vertical-align: middle;
-  color: $mediumTextColor;
+  color: var(--medium-text-color);
 }
 
 /* lightswitch */
@@ -1973,14 +1970,14 @@ div.btn.submit input {
   display: flex;
 
   .lightswitch-inner-container {
-    border: 1px solid $hairlineColor;
-    border-radius: $smallBorderRadius;
+    border: 1px solid var(--hairline-color);
+    border-radius: var(--small-border-radius);
     display: flex;
     align-items: center;
 
     span {
       padding: 7px 0;
-      color: $mediumTextColor;
+      color: var(--medium-text-color);
       cursor: default;
 
       &[data-toggle='on'] {
@@ -2003,15 +2000,23 @@ div.btn.submit input {
   overflow: hidden;
   cursor: pointer;
   user-select: none;
-  background-image: linear-gradient(to right, $grey300, $grey300);
+  background-image: linear-gradient(to right, var(--gray-300), var(--gray-300));
   transition: background-image linear 100ms;
 
   &.on {
-    background-image: linear-gradient(to right, $successColor, $successColor);
+    background-image: linear-gradient(
+      to right,
+      var(--success-color),
+      var(--success-color)
+    );
   }
 
   &.indeterminate {
-    background-image: linear-gradient(to right, $successColor, $grey300);
+    background-image: linear-gradient(
+      to right,
+      var(--success-color),
+      var(--gray-300)
+    );
   }
 
   .lightswitch-container {
@@ -2021,7 +2026,7 @@ div.btn.submit input {
     .handle {
       position: absolute;
       top: 1px;
-      background-color: $white;
+      background-color: var(--white);
     }
   }
 
@@ -2069,7 +2074,7 @@ div.btn.submit input {
   &:focus {
     .lightswitch-container {
       .handle {
-        background-color: $lightSelColor;
+        background-color: var(--light-sel-color);
       }
     }
   }
@@ -2106,7 +2111,7 @@ div.btn.submit input {
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: $mediumBorderRadius;
+    border-radius: var(--medium-border-radius);
 
     &:after {
       position: relative;
@@ -2114,26 +2119,26 @@ div.btn.submit input {
     }
 
     &.prev-page:after {
-      @include angle(left, $lightTextColor);
+      @include angle(left, var(--light-text-color));
       @include right(-1px);
     }
 
     &.next-page:after {
-      @include angle(right, $lightTextColor);
+      @include angle(right, var(--light-text-color));
       @include left(-1px);
     }
 
     &:not(.disabled) {
       transition: box-shadow linear 100ms;
-      box-shadow: inset 0 0 0 1px $hairlineColor;
+      box-shadow: inset 0 0 0 1px var(--hairline-color);
       cursor: pointer;
 
       &:hover {
         text-decoration: none;
-        box-shadow: inset 0 0 0 1px $linkColor;
+        box-shadow: inset 0 0 0 1px var(--link-color);
 
         &:after {
-          border-color: $linkColor;
+          border-color: var(--link-color);
         }
       }
     }
@@ -2141,7 +2146,7 @@ div.btn.submit input {
     &.disabled {
       opacity: 1;
       &:after {
-        border-color: $hairlineColor;
+        border-color: var(--hairline-color);
       }
     }
   }
@@ -2234,8 +2239,8 @@ table {
       box-sizing: border-box;
 
       &.checkbox-cell {
-        width: $checkboxSize !important;
-        min-width: $checkboxSize;
+        width: var(--checkbox-size) !important;
+        min-width: var(--checkbox-size);
         box-sizing: content-box;
         position: relative;
 
@@ -2261,10 +2266,10 @@ table {
         th,
         td {
           &:first-child {
-            @include border-top-left-radius($largeBorderRadius);
+            @include border-top-left-radius(var(--large-border-radius));
           }
           &:last-child {
-            @include border-top-right-radius($largeBorderRadius);
+            @include border-top-right-radius(var(--large-border-radius));
           }
         }
       }
@@ -2274,7 +2279,7 @@ table {
       th,
       td {
         width: auto;
-        background-color: $grey050;
+        background-color: var(--gray-050);
         cursor: default;
       }
 
@@ -2294,11 +2299,11 @@ table {
           padding-right: 0;
 
           &:not(.ordered):hover {
-            background-color: $grey100;
+            background-color: var(--gray-100);
           }
 
           &.ordered {
-            background-color: $lightSelColor;
+            background-color: var(--light-sel-color);
 
             &:not(.loading) {
               button:after {
@@ -2349,7 +2354,7 @@ table {
           &:hover {
             th,
             td {
-              background-color: $grey050;
+              background-color: var(--gray-050);
             }
           }
 
@@ -2361,7 +2366,7 @@ table {
           &.sel {
             th,
             td {
-              background-color: $lightSelColor;
+              background-color: var(--light-sel-color);
             }
           }
         }
@@ -2379,7 +2384,7 @@ table {
           @include alignright;
           vertical-align: bottom;
           white-space: nowrap;
-          color: $lightTextColor;
+          color: var(--light-text-color);
         }
       }
     }
@@ -2418,7 +2423,7 @@ table {
     tbody {
       tr {
         padding: 6px 0;
-        border-bottom: 1px dotted $hairlineColor;
+        border-bottom: 1px dotted var(--hairline-color);
 
         &:after {
           @include clearafter;
@@ -2456,7 +2461,7 @@ table {
 .datatablesorthelper,
 .editabletablesorthelper,
 .thumbviewhelper {
-  background-color: $white;
+  background-color: var(--white);
   @include shadow;
 }
 
@@ -2488,16 +2493,16 @@ $elementInnerSpacing: 5px;
   cursor: default;
   user-select: none;
   font-weight: normal;
-  border-radius: $smallBorderRadius;
+  border-radius: var(--small-border-radius);
 
   &:focus,
   li:focus & {
-    background-color: $grey050;
+    background-color: var(--gray-050);
   }
 
   &.sel,
   li.sel & {
-    background-color: $lightSelColor !important;
+    background-color: var(--light-sel-color) !important;
     cursor: default;
 
     &:focus {
@@ -2527,7 +2532,7 @@ $elementInnerSpacing: 5px;
         display: block;
         flex-shrink: 0;
         pointer-events: none;
-        border-radius: $smallBorderRadius;
+        border-radius: var(--small-border-radius);
         max-width: 100%;
         max-height: 100%;
       }
@@ -2550,9 +2555,9 @@ $elementInnerSpacing: 5px;
       padding: 1px 5px;
       font-weight: normal;
       text-decoration: none !important;
-      color: $lightTextColor;
-      background: $grey100;
-      border-radius: $largeBorderRadius;
+      color: var(--light-text-color);
+      background: var(--gray-100);
+      border-radius: var(--large-border-radius);
     }
   }
 
@@ -2703,7 +2708,7 @@ $checkboxPadding: $checkboxSize + 4;
       width: calc(100% + #{24 + 24}px);
       height: 100%;
       background: transparentize($white, 0.25);
-      border-radius: $largeBorderRadius;
+      border-radius: var(--large-border-radius);
     }
 
     .update-spinner {
@@ -2714,7 +2719,7 @@ $checkboxPadding: $checkboxSize + 4;
   .header {
     margin: -24px -24px 24px;
     padding: 14px 24px;
-    background-color: $grey050;
+    background-color: var(--gray-050);
     box-shadow: none;
 
     &:after {
@@ -2775,7 +2780,7 @@ $checkboxPadding: $checkboxSize + 4;
 
       &:hover {
         .element {
-          background-color: $grey050;
+          background-color: var(--gray-050);
         }
       }
 
@@ -2858,7 +2863,7 @@ $checkboxPadding: $checkboxSize + 4;
         }
 
         .move:before {
-          color: $linkColor;
+          color: var(--link-color);
         }
       }
     }
@@ -2868,7 +2873,7 @@ $checkboxPadding: $checkboxSize + 4;
       @include margin(-1px, 0, -1px, 8px);
       @include padding-left(0);
       height: 2px;
-      background-color: $linkColor !important;
+      background-color: var(--link-color) !important;
       @include border-left(none);
       border-radius: 1px;
     }
@@ -2897,12 +2902,12 @@ $checkboxPadding: $checkboxSize + 4;
 
       &:before {
         content: 'downangle';
-        color: $darkHairlineColor;
+        color: var(--dark-hairline-color);
       }
 
       &:not(.disabled):hover:before,
       &.active:before {
-        color: $linkColor;
+        color: var(--link-color);
       }
     }
 
@@ -2931,7 +2936,7 @@ $checkboxPadding: $checkboxSize + 4;
 
       &:not(:last-child):not(.last) {
         @include padding-left(37px);
-        @include border-left(1px solid $hairlineColor);
+        @include border-left(1px solid var(--hairline-color));
 
         body.ltr & {
           background-position: -1px 0;
@@ -2953,13 +2958,13 @@ $checkboxPadding: $checkboxSize + 4;
       .element {
         z-index: 2;
         border-radius: 15px;
-        box-shadow: inset 0 0 0 2px $linkColor;
+        box-shadow: inset 0 0 0 2px var(--link-color);
       }
     }
 
     &.droptarget {
       border-radius: 5px;
-      box-shadow: inset 0 0 0 2px $linkColor;
+      box-shadow: inset 0 0 0 2px var(--link-color);
     }
   }
 }
@@ -3007,21 +3012,21 @@ $checkboxPadding: $checkboxSize + 4;
   }
 
   .flex {
-    margin-top: 7px;
+    padding-top: 7px;
     float: none !important;
   }
 }
 
 /* editable tables */
 table.editable {
-  border-radius: $largeBorderRadius;
-  border: 1px solid $grey200;
+  border-radius: var(--large-border-radius);
+  border: 1px solid var(--gray-200);
 
   th,
   td.action {
-    color: $mediumTextColor;
+    color: var(--medium-text-color);
     font-weight: normal;
-    background-color: $grey050;
+    background-color: var(--gray-050);
   }
 
   thead,
@@ -3036,7 +3041,7 @@ table.editable {
   thead {
     tr {
       th {
-        border-bottom: 1px solid $hairlineColor;
+        border-bottom: 1px solid var(--hairline-color);
 
         &.has-info {
           @include padding-right(calc(15px + 1em));
@@ -3055,24 +3060,24 @@ table.editable {
       &:not(:first-child) {
         th,
         td {
-          border-top: 1px solid $hairlineColor;
+          border-top: 1px solid var(--hairline-color);
         }
       }
 
       &:last-child {
         td:first-child {
-          @include border-bottom-left-radius($largeBorderRadius);
+          @include border-bottom-left-radius(var(--large-border-radius));
 
           textarea,
           input.text {
-            @include border-bottom-left-radius($largeBorderRadius - 1);
+            @include border-bottom-left-radius(var(--large-border-radius) - 1);
           }
         }
       }
 
       td:not(:first-child),
       th ~ td:not(.hidden) ~ td {
-        @include border-left(1px solid $hairlineColor);
+        @include border-left(1px solid var(--hairline-color));
       }
 
       th {
@@ -3088,12 +3093,12 @@ table.editable {
       td {
         vertical-align: top;
         text-align: center;
-        background-color: $white;
+        background-color: var(--white);
         padding: 4px 10px;
 
         &.focus {
           position: relative;
-          box-shadow: inset 0 0 0 1px $hairlineColor;
+          box-shadow: inset 0 0 0 1px var(--hairline-color);
         }
 
         &.textual {
@@ -3132,7 +3137,7 @@ table.editable {
         }
 
         &.error {
-          box-shadow: inset 0 0 0 1px $errorColor;
+          box-shadow: inset 0 0 0 1px var(--error-color);
         }
 
         &.disabled {
@@ -3233,7 +3238,7 @@ table.editable {
 
   &:not(.hidden) + .btn.add {
     border-top-width: 0;
-    border-radius: 0 0 $mediumBorderRadius $mediumBorderRadius;
+    border-radius: 0 0 var(--medium-border-radius) var(--medium-border-radius);
   }
 }
 
@@ -3272,7 +3277,7 @@ ul.tree,
       background-color: transparent;
       border-style: solid;
       border-width: 0 5px 10px 5px;
-      border-color: transparent transparent $yellow700 transparent;
+      border-color: transparent transparent var(--yellow-700) transparent;
       border-radius: 1px;
     }
 
@@ -3293,14 +3298,14 @@ ul.tree,
 .status.live,
 .status.active,
 .status.enabled {
-  background-color: $teal500;
+  background-color: var(--teal-500);
 }
 
 /* green */
 
 .orange,
 .status.pending {
-  background-color: $yellow700;
+  background-color: var(--yellow-700);
 }
 
 /* orange */
@@ -3309,17 +3314,17 @@ ul.tree,
 .status.off,
 .status.suspended,
 .status.expired {
-  background-color: $red600;
+  background-color: var(--red-600);
 }
 
 /* red */
 
 .yellow {
-  background-color: $yellow300;
+  background-color: var(--yellow-300);
 }
 
 .pink {
-  background-color: $pink400;
+  background-color: var(--pink-400);
 }
 
 .purple {
@@ -3327,23 +3332,23 @@ ul.tree,
 }
 
 .blue {
-  background-color: $blue600;
+  background-color: var(--blue-600);
 }
 
 .turquoise {
-  background-color: $teal300;
+  background-color: var(--teal-300);
 }
 
 .status.light {
-  background-color: $grey100;
+  background-color: var(--gray-100);
 }
 
 .grey {
-  background-color: $grey300;
+  background-color: var(--gray-300);
 }
 
 .black {
-  background-color: $grey800;
+  background-color: var(--gray-800);
 }
 
 .status.white,
@@ -3378,26 +3383,28 @@ ul.tree,
 .condition-rule {
   margin: 0;
   padding: 7px;
-  border: 1px solid $hairlineColor;
-  background-color: $grey050;
+  border: 1px solid var(--hairline-color);
+  background-color: var(--gray-050);
 
   &:first-child {
-    border-top-left-radius: $largeBorderRadius;
-    border-top-right-radius: $largeBorderRadius;
+    border-top-left-radius: var(--large-border-radius);
+    border-top-right-radius: var(--large-border-radius);
   }
 
   & + .condition-rule {
     border-top-width: 0;
   }
 
-  .rule-body {
-    .lightswitch {
-      display: block;
-    }
+  & > .rule-move,
+  & > .rule-actions {
+    margin-top: 5px;
   }
 
-  .rule-actions {
-    margin: 7px 0;
+  & > .rule-body {
+    .lightswitch {
+      margin-top: 6px;
+      display: block;
+    }
   }
 }
 
@@ -3407,7 +3414,7 @@ ul.tree,
 
 .progressbar {
   border-radius: 6px;
-  border: 2px solid $grey700;
+  border: 2px solid var(--gray-700);
   padding: 2px;
   position: absolute;
   left: 20%;
@@ -3418,7 +3425,7 @@ ul.tree,
 .progressbar-inner {
   border-radius: 2px;
   height: 4px;
-  background-color: $grey700;
+  background-color: var(--gray-700);
 }
 
 .progressbar:not(.pending) .progressbar-inner {
@@ -3427,7 +3434,7 @@ ul.tree,
 }
 
 .progressbar.pending .progressbar-inner {
-  @include striped-bg(17.6776695297px, $grey700); // sqrt(25^2 / 2);
+  @include striped-bg(17.6776695297px, var(--gray-700)); // sqrt(25^2 / 2);
   body.ltr & {
     animation-name: pendingprogress-ltr;
   }
@@ -3481,7 +3488,7 @@ ul.tree,
 .missing-component {
   padding: 7px 10px !important;
   max-width: 400px;
-  background-color: $grey050 !important;
+  background-color: var(--gray-050) !important;
 
   .error {
     margin: 0;
@@ -3489,7 +3496,7 @@ ul.tree,
 
   .install-plugin {
     margin: 7px 0 -7px;
-    border-top: 1px solid $hairlineColor;
+    border-top: 1px solid var(--hairline-color);
     position: relative;
     @include padding(10px, 0, 10px, 40px);
 
@@ -3527,14 +3534,14 @@ ul.tree,
   position: relative;
   margin: 14px 0;
   padding: 24px;
-  border-radius: $largeBorderRadius;
+  border-radius: var(--large-border-radius);
   word-wrap: break-word;
   box-sizing: border-box;
 
   .pane &,
   #content & {
-    background-color: $grey050;
-    border: 1px solid $hairlineColor;
+    background-color: var(--gray-050);
+    border: 1px solid var(--hairline-color);
     box-shadow: none;
   }
 
@@ -3559,9 +3566,9 @@ ul.tree,
   padding: var(--s) var(--xl);
   min-height: 50px;
   box-sizing: border-box;
-  background: $grey050;
+  background: var(--gray-050);
   box-shadow: inset 0 -1px 0 0 transparentize($grey300, 0.75);
-  border-radius: $largeBorderRadius $largeBorderRadius 0 0;
+  border-radius: var(--large-border-radius) var(--large-border-radius) 0 0;
 
   .header-btn {
     margin: 5px 0;
@@ -3615,10 +3622,10 @@ ul.tree,
       flex-direction: row;
       align-items: center;
       position: relative;
-      border-radius: $mediumBorderRadius $mediumBorderRadius 0 0;
+      border-radius: var(--medium-border-radius) var(--medium-border-radius) 0 0;
       padding: 0 12px;
       white-space: nowrap;
-      color: $lightTextColor;
+      color: var(--light-text-color);
       height: 42px;
 
       &:not(:first-child) {
@@ -3637,7 +3644,7 @@ ul.tree,
 
       &.sel {
         cursor: default;
-        color: $textColor;
+        color: var(--text-color);
         @include pane;
       }
 
@@ -3668,11 +3675,11 @@ ul.tree,
     margin-bottom: var(--spacing);
 
     &:not(.read-only) {
-      background-color: $grey050 !important;
+      background-color: var(--gray-050) !important;
     }
 
     &.read-only {
-      color: $mediumTextColor;
+      color: var(--medium-text-color);
 
       & > .data {
         align-items: baseline;
@@ -3702,16 +3709,17 @@ ul.tree,
     &.warning {
       padding-top: var(--m);
       padding-bottom: var(--m);
-      color: $textColor !important;
-      background-color: $yellow050 !important;
-      box-shadow: 0 0 0 1px $yellow300, 0 2px 12px transparentize($grey200, 0.5);
+      color: var(--text-color) !important;
+      background-color: var(--yellow-050) !important;
+      box-shadow: 0 0 0 1px var(--yellow-300),
+        0 2px 12px transparentize($grey200, 0.5);
 
       p {
         margin-bottom: 5px;
       }
 
       .btn {
-        background-color: $yellow300;
+        background-color: var(--yellow-300);
 
         &:hover,
         &:focus {
@@ -3730,7 +3738,7 @@ ul.tree,
 
       & > .heading > label,
       & > .heading {
-        color: $grey600;
+        color: var(--gray-600);
       }
     }
 
@@ -3741,7 +3749,7 @@ ul.tree,
     .text::placeholder,
     .datewrapper .text + div[data-icon],
     .timewrapper .text + div[data-icon] {
-      color: $grey500;
+      color: var(--gray-500);
     }
 
     .ui-datepicker {
@@ -3751,10 +3759,10 @@ ul.tree,
 
   hr {
     margin: var(--spacing) 0;
-    border-top-color: $hairlineColor;
+    border-top-color: var(--hairline-color);
   }
 
-  @include placeholder-styles($grey500);
+  @include placeholder-styles(var(--gray-500));
 
   .text {
     background-color: transparent !important;
@@ -3765,7 +3773,7 @@ ul.tree,
   & > fieldset > legend {
     margin-top: 0;
     font-weight: normal;
-    color: $grey600;
+    color: var(--gray-600);
   }
 
   & > fieldset {
@@ -3788,13 +3796,13 @@ ul.tree,
       padding-left: var(--padding);
       padding-right: var(--padding);
       border: none;
-      background-color: $grey050 !important;
+      background-color: var(--gray-050) !important;
       width: calc(100% + var(--padding) + var(--padding));
     }
   }
 
   & > .text {
-    border-radius: $largeBorderRadius;
+    border-radius: var(--large-border-radius);
     margin-bottom: var(--spacing);
 
     &:not(:focus) {
@@ -3836,7 +3844,7 @@ ul.tree,
           @include alignright;
           @include icon;
           content: 'plus';
-          color: $lightTextColor;
+          color: var(--light-text-color);
         }
 
         .input {
@@ -3879,7 +3887,7 @@ ul.tree,
 
     & > .field > .heading > label,
     & > .data > .heading {
-      color: $mediumTextColor;
+      color: var(--medium-text-color);
     }
 
     & > .field > .input,
@@ -3905,16 +3913,16 @@ ul.tree,
 
     & > .field {
       &.has-errors {
-        border: 1px solid $errorColor !important;
+        border: 1px solid var(--error-color) !important;
 
         &:first-child {
-          border-top-left-radius: $largeBorderRadius;
-          border-top-right-radius: $largeBorderRadius;
+          border-top-left-radius: var(--large-border-radius);
+          border-top-right-radius: var(--large-border-radius);
         }
 
         &:last-child {
-          border-bottom-left-radius: $largeBorderRadius;
-          border-bottom-right-radius: $largeBorderRadius;
+          border-bottom-left-radius: var(--large-border-radius);
+          border-bottom-right-radius: var(--large-border-radius);
         }
 
         & + .field {
@@ -3993,7 +4001,7 @@ ul.tree,
 
   & > .field:not(:first-child),
   & > .flex-fields + .field {
-    border-top: 1px solid $hairlineColor;
+    border-top: 1px solid var(--hairline-color);
   }
 
   & > .flex-fields {
@@ -4078,7 +4086,7 @@ ul.tree,
 
 .slideout {
   position: absolute;
-  background-color: $white;
+  background-color: var(--white);
   box-shadow: 0 0 0 1px transparentize($grey400, 0.75),
     0 25px 100px transparentize($grey900, 0.5);
   display: flex;
@@ -4101,7 +4109,7 @@ ul.tree,
     top: 8px;
     width: calc(50% - 8px);
     height: calc(100% - 16px);
-    border-radius: $largeBorderRadius;
+    border-radius: var(--large-border-radius);
 
     @media screen and (prefers-reduced-motion: no-preference) {
       body.ltr & {
@@ -4156,7 +4164,7 @@ ul.tree,
       max-width: 100%;
       box-sizing: border-box;
       padding: 0 var(--padding) var(--spacing);
-      background-color: $grey100;
+      background-color: var(--gray-100);
       overflow: hidden auto;
       z-index: 1;
 
@@ -4183,7 +4191,7 @@ ul.tree,
 
       & > .meta.warning {
         box-shadow: none;
-        border-bottom: 1px solid $yellow300;
+        border-bottom: 1px solid var(--yellow-300);
       }
 
       & > .field {
@@ -4203,14 +4211,14 @@ ul.tree,
     margin: 0 var(--neg-padding) -24px;
     padding: 8px var(--padding);
     @include pane;
-    background-color: $grey050;
+    background-color: var(--gray-050);
     z-index: 3;
 
     & > .so-extra {
       flex: 0 0 100%;
       margin: 0 var(--neg-padding);
       padding: 0 var(--padding) 8px;
-      border-bottom: 1px solid $hairlineColor;
+      border-bottom: 1px solid var(--hairline-color);
     }
   }
 }
@@ -4239,7 +4247,7 @@ ul.tree,
           width: calc(100% - 350px);
           height: 100%;
           box-sizing: border-box;
-          @include border-right(1px solid $grey200);
+          @include border-right(1px solid var(--gray-200));
           overflow: hidden auto;
         }
 
@@ -4289,14 +4297,14 @@ ul.tree,
 .hud-header,
 .footer,
 .hud-footer {
-  background-color: $grey100;
+  background-color: var(--gray-100);
 }
 
 .header,
 .hud-header {
-  border-radius: $largeBorderRadius $largeBorderRadius 0 0;
+  border-radius: var(--large-border-radius) var(--large-border-radius) 0 0;
   padding: 24px;
-  box-shadow: inset 0 -1px 0 $hairlineColor;
+  box-shadow: inset 0 -1px 0 var(--hairline-color);
 
   h1 {
     margin: 0;
@@ -4305,9 +4313,9 @@ ul.tree,
 
 .footer,
 .hud-footer {
-  border-radius: 0 0 $largeBorderRadius $largeBorderRadius;
+  border-radius: 0 0 var(--large-border-radius) var(--large-border-radius);
   padding: var(--s) var(--xl);
-  box-shadow: inset 0 1px 0 $hairlineColor;
+  box-shadow: inset 0 1px 0 var(--hairline-color);
 
   &.flex {
     & > * {
@@ -4390,7 +4398,7 @@ ul.tree,
       @include floatleft;
       content: 'alert';
       font-size: 40px;
-      color: $lightTextColor;
+      color: var(--light-text-color);
     }
   }
 
@@ -4403,7 +4411,7 @@ ul.tree,
       @include floatleft;
       content: 'secure';
       font-size: 58px;
-      color: $lightTextColor;
+      color: var(--light-text-color);
     }
   }
 
@@ -4497,7 +4505,7 @@ ul.tree,
   }
 
   ::-webkit-scrollbar-track {
-    background-color: $grey050;
+    background-color: var(--gray-050);
   }
 }
 
@@ -4509,11 +4517,11 @@ ul.tree,
   flex-direction: row;
   align-items: center;
   height: 190px;
-  background-color: $grey900;
+  background-color: var(--gray-900);
   margin: 0 var(--neg-padding) var(--spacing);
 
   &.checkered img {
-    background-color: $white;
+    background-color: var(--white);
     @include checkered-bg(17px);
   }
 
@@ -4535,13 +4543,13 @@ ul.tree,
     }
 
     .spinner {
-      color: $white;
+      color: var(--white);
       z-index: 1;
     }
   }
 
   #details & {
-    border-radius: $largeBorderRadius;
+    border-radius: var(--large-border-radius);
     overflow: hidden;
   }
 
@@ -4569,11 +4577,11 @@ ul.tree,
     transition: opacity linear 100ms;
 
     .btn {
-      --ui-control-color: $white;
-      --ui-control-hover-color: $white;
-      --ui-control-active-color: $white;
-      background-color: $grey600;
-      color: $white;
+      --ui-control-color: var(--white);
+      --ui-control-hover-color: var(--white);
+      --ui-control-active-color: var(--white);
+      background-color: var(--gray-600);
+      color: var(--white);
       @include light-on-dark-text;
 
       @supports (backdrop-filter: blur(10px)) {
@@ -4585,11 +4593,11 @@ ul.tree,
       }
 
       &:hover {
-        background-color: $grey500;
+        background-color: var(--gray-500) !important;
 
         @supports (backdrop-filter: blur(10px)) {
           & {
-            background-color: transparentize($grey500, 0.3);
+            background-color: transparentize($grey500, 0.3) !important;
           }
         }
       }
@@ -4652,7 +4660,7 @@ ul.tree,
             tr {
               &.disabled {
                 opacity: 1;
-                color: $grey200;
+                color: var(--gray-200);
 
                 .element {
                   opacity: 0.25;
@@ -4833,7 +4841,7 @@ ul.tree,
   .content-summary {
     margin: -24px -24px 24px;
     padding: 24px;
-    background-color: $grey050;
+    background-color: var(--gray-050);
   }
 
   .options {
@@ -4920,7 +4928,7 @@ ul.tree,
             }
 
             &.error:before {
-              color: $errorColor;
+              color: var(--error-color);
             }
           }
 
@@ -4954,7 +4962,7 @@ ul.tree,
           @include floatright;
           @include margin-left(14px);
           padding: 0 4px;
-          border-radius: $mediumBorderRadius;
+          border-radius: var(--medium-border-radius);
           box-shadow: 0 0 0 1px transparentize($grey600, 0.75),
             0 1px 3px -1px transparentize($grey600, 0.5);
         }
@@ -4978,7 +4986,7 @@ ul.tree,
           @include left(7px);
           content: 'check';
           font-size: 14px;
-          color: $lightTextColor;
+          color: var(--light-text-color);
         }
       }
     }
@@ -5006,19 +5014,19 @@ ul.tree,
 .menu:not(.menu--disclosure):not(:hover) ul li a:not(.disabled).hover {
   @include menu-option-active-styles;
 
-  --text-color: #{$white};
-  --light-text-color: #{$grey100};
-  --ui-control-color: #{$grey050};
-  --ui-control-hover-color: #{$grey100};
-  --ui-control-active-color: #{$grey100};
+  --text-color: var(--white);
+  --light-text-color: var(--gray-100);
+  --ui-control-color: var(--gray-050);
+  --ui-control-hover-color: var(--gray-100);
+  --ui-control-active-color: var(--gray-100);
 
   span.icon,
   &:before {
-    color: $menuOptionActiveColor;
+    color: var(--menu-option-active-color);
   }
 
   &.error {
-    color: $menuOptionActiveColor !important;
+    color: var(--menu-option-active-color) !important;
   }
 }
 
@@ -5103,8 +5111,8 @@ ul.tree,
 /* ----------------------------------------*/
 
 .shadow-box {
-  border-radius: $largeBorderRadius;
-  border: 1px solid $grey200;
+  border-radius: var(--large-border-radius);
+  border: 1px solid var(--gray-200);
   @include shadow;
 }
 
@@ -5121,14 +5129,14 @@ table.editable {
       td:first-child {
         &,
         &.disabled:after {
-          border-top-left-radius: $mediumBorderRadius;
+          border-top-left-radius: var(--medium-border-radius);
         }
       }
       th:last-child,
       td:last-child {
         &,
         &.disabled:after {
-          border-top-right-radius: $mediumBorderRadius;
+          border-top-right-radius: var(--medium-border-radius);
         }
       }
     }
@@ -5140,14 +5148,14 @@ table.editable {
       td:first-child {
         &,
         &.disabled:after {
-          border-bottom-left-radius: $largeBorderRadius - 1;
+          border-bottom-left-radius: var(--large-border-radius) - 1;
         }
       }
       th:last-child,
       td:last-child {
         &,
         &.disabled:after {
-          border-bottom-right-radius: $largeBorderRadius - 1;
+          border-bottom-right-radius: var(--large-border-radius) - 1;
         }
       }
     }
@@ -5188,7 +5196,7 @@ table.editable textarea,
 .selectize.multiselect .selectize-control.multi .selectize-input {
   font-size: 14px;
   line-height: 20px;
-  color: $textColor;
+  color: var(--text-color);
   min-height: 3px;
   box-sizing: border-box;
   appearance: none;
@@ -5210,21 +5218,21 @@ textarea.text.fullwidth {
 
   &:first-child .text {
     &:first-child {
-      @include border-top-left-radius($mediumBorderRadius);
+      @include border-top-left-radius(var(--medium-border-radius));
     }
 
     &:last-child {
-      @include border-top-right-radius($mediumBorderRadius);
+      @include border-top-right-radius(var(--medium-border-radius));
     }
   }
 
   &:last-child .text {
     &:first-child {
-      @include border-bottom-left-radius($mediumBorderRadius);
+      @include border-bottom-left-radius(var(--medium-border-radius));
     }
 
     &:last-child {
-      @include border-bottom-right-radius($mediumBorderRadius);
+      @include border-bottom-right-radius(var(--medium-border-radius));
     }
   }
 
@@ -5273,7 +5281,7 @@ textarea.text.fullwidth {
   position: relative;
   @include floatright;
   @include margin(-27px, 7px, 0, 0);
-  color: $lightTextColor;
+  color: var(--light-text-color);
 
   .input.ltr > & {
     float: right !important;
@@ -5286,7 +5294,7 @@ textarea.text.fullwidth {
   }
 
   &.negative-chars-left {
-    color: $errorColor;
+    color: var(--error-color);
   }
 }
 
@@ -5314,11 +5322,11 @@ fieldset {
     cursor: help;
 
     &.modified {
-      background-color: $blue600;
+      background-color: var(--blue-600);
     }
 
     &.outdated {
-      background-color: $yellow700;
+      background-color: var(--yellow-700);
     }
   }
 
@@ -5333,7 +5341,7 @@ fieldset {
     & > label,
     & > legend {
       font-weight: bold;
-      color: $mediumDarkTextColor;
+      color: var(--medium-dark-text-color);
 
       code {
         font-size: 1em !important;
@@ -5346,7 +5354,7 @@ fieldset {
 
     & > .t9n-indicator {
       @include margin-left(7px);
-      color: $lightTextColor;
+      color: var(--light-text-color);
     }
 
     & + .instructions {
@@ -5385,7 +5393,7 @@ fieldset {
 // BC
 .field > .heading > .instructions,
 .checkboxfield .instructions {
-  color: $mediumTextColor;
+  color: var(--medium-text-color);
 
   img,
   video,
@@ -5415,8 +5423,8 @@ fieldset {
   height: 17px;
   padding: 0;
   line-height: 16px;
-  border-radius: $smallBorderRadius;
-  color: $mediumDarkTextColor;
+  border-radius: var(--small-border-radius);
+  color: var(--medium-dark-text-color);
 
   &:before {
     margin: 0;
@@ -5442,8 +5450,8 @@ fieldset {
 input.checkbox {
   opacity: 0;
   position: absolute;
-  width: $checkboxSize;
-  height: $checkboxSize;
+  width: var(--checkbox-size);
+  height: var(--checkbox-size);
 }
 
 input.checkbox + label,
@@ -5468,7 +5476,7 @@ input.checkbox:disabled + label,
 
 input.checkbox + label:empty,
 div.checkbox:empty {
-  @include padding-left($checkboxSize);
+  @include padding-left(var(--checkbox-size));
 }
 
 input.checkbox + label:empty:after,
@@ -5484,15 +5492,15 @@ div.checkbox:before {
   position: absolute;
   @include left(0);
   top: 0;
-  width: $checkboxSize !important;
-  height: $checkboxSize;
+  width: var(--checkbox-size) !important;
+  height: var(--checkbox-size);
   box-sizing: border-box;
   content: '';
   font-size: 0;
   background-color: hsl(212, 50%, 99%);
   border: 1px solid transparentize($inputColor, 0.6);
   background-clip: padding-box;
-  border-radius: $smallBorderRadius;
+  border-radius: var(--small-border-radius);
 }
 
 input.checkbox:disabled + label,
@@ -5507,8 +5515,8 @@ div.checkbox.checked:before,
 input.checkbox:indeterminate + label:before,
 div.checkbox.indeterminate:before {
   @include icon;
-  line-height: $checkboxSize;
-  color: $grey900;
+  line-height: var(--checkbox-size);
+  color: var(--gray-900);
 }
 
 input.checkbox:checked:not(:indeterminate) + label:before,
@@ -5565,8 +5573,8 @@ fieldset {
 input.radio {
   opacity: 0;
   position: absolute;
-  width: $radioSize;
-  height: $radioSize;
+  width: var(--radio-size);
+  height: var(--radio-size);
 }
 
 input.radio + label,
@@ -5586,7 +5594,7 @@ input.radio:disabled + label,
 
 input.radio + label:empty,
 div.radio:empty {
-  @include padding-left($radioSize);
+  @include padding-left(var(--radio-size));
 }
 
 /* fixes a RTL bug */
@@ -5606,8 +5614,8 @@ input.radio + label:before,
 div.radio:before {
   top: 0;
   left: 0;
-  width: $radioSize;
-  height: $radioSize;
+  width: var(--radio-size);
+  height: var(--radio-size);
   background-color: hsl(212, 50%, 99%);
   border: 1px solid transparentize($inputColor, 0.6);
 }
@@ -5616,8 +5624,8 @@ input.radio + label:after,
 div.radio:after {
   top: 4px;
   left: 4px;
-  width: $radioSize - 8;
-  height: $radioSize - 8;
+  width: calc(var(--radio-size) - 8px);
+  height: calc(var(--radio-size) - 8px);
 }
 
 input.radio:disabled + label,
@@ -5629,7 +5637,7 @@ div.radio.disabled + label {
 input.radio:checked + label:after,
 div.radio.checked:after,
 .sel div.radio:after {
-  background: $grey900;
+  background: var(--gray-900);
 }
 
 body:not(.reduce-focus-visibility) {
@@ -5648,7 +5656,7 @@ body.reduce-focus-visibility {
 
 /* multiselect */
 .multiselect > select {
-  color: $textColor;
+  color: var(--text-color);
   font-size: 14px;
   appearance: none;
 
@@ -5669,7 +5677,7 @@ body.reduce-focus-visibility {
 }
 
 .text {
-  background-color: $white;
+  background-color: var(--white);
 
   &:not(.small) {
     box-sizing: border-box;
@@ -5707,7 +5715,7 @@ body.reduce-focus-visibility {
 .input.errors > .passwordwrapper,
 .input.errors > .autosuggest-container .text,
 .text.error {
-  border: 1px solid $errorColor !important;
+  border: 1px solid var(--error-color) !important;
 }
 
 .texticon {
@@ -5756,19 +5764,19 @@ body.reduce-focus-visibility {
       &:before {
         @include icon;
         content: 'sliders';
-        color: $mediumTextColor;
+        color: var(--medium-text-color);
       }
 
       &:hover {
-        background-color: $grey100;
+        background-color: var(--gray-100);
       }
 
       &:active,
       &.active {
-        background-color: $grey350;
+        background-color: var(--gray-350);
 
         &:before {
-          color: $white;
+          color: var(--white);
         }
       }
     }
@@ -5796,7 +5804,7 @@ body.reduce-focus-visibility {
   position: absolute;
   top: -1px;
   width: 100%;
-  color: $lightTextColor;
+  color: var(--light-text-color);
   cursor: text;
 }
 
@@ -5811,7 +5819,7 @@ body.reduce-focus-visibility {
   }
 
   .password-toggle {
-    color: $linkColor;
+    color: var(--link-color);
     position: absolute;
     top: 0;
     @include right(9px);
@@ -5883,7 +5891,7 @@ body.reduce-focus-visibility {
         top: calc(50% - 12px);
         @include left(14px);
         z-index: 0;
-        color: $lightTextColor;
+        color: var(--light-text-color);
 
         &,
         &:before {
@@ -5904,7 +5912,7 @@ body.reduce-focus-visibility {
   width: 7em;
 }
 
-@include placeholder-styles($grey400);
+@include placeholder-styles(var(--gray-400));
 
 /* Kill IE's special text features */
 ::-ms-reveal,
@@ -6147,7 +6155,7 @@ body .selectize-dropdown .active {
   justify-content: center;
 
   &:hover:after {
-    border-color: $linkColor;
+    border-color: var(--link-color);
   }
 }
 
@@ -6174,11 +6182,11 @@ body .selectize-dropdown .active {
   width: 26px;
   line-height: 26px;
   text-align: center;
-  color: $textColor;
+  color: var(--text-color);
 }
 
 .ui-datepicker-calendar th span {
-  color: $mediumTextColor;
+  color: var(--medium-text-color);
   font-weight: normal;
 }
 
@@ -6187,20 +6195,20 @@ body .selectize-dropdown .active {
 }
 
 .ui-datepicker-calendar td a:hover {
-  background-color: $lightSelColor;
+  background-color: var(--light-sel-color);
   text-decoration: none;
 }
 
 .ui-datepicker-calendar td a.ui-state-active {
-  background-color: $darkSelColor;
-  color: $white;
+  background-color: var(--dark-sel-color);
+  color: var(--white);
   @include light-on-dark-text;
   cursor: default;
 }
 
 .ui-datepicker-calendar td.ui-datepicker-today a {
   border-radius: 13px;
-  box-shadow: inset 0 0 0 2px $lightSelColor;
+  box-shadow: inset 0 0 0 2px var(--light-sel-color);
 }
 
 /* timepicker */
@@ -6223,12 +6231,12 @@ body .selectize-dropdown .active {
 }
 
 .ui-timepicker-list li:hover {
-  background-color: $lightSelColor;
+  background-color: var(--light-sel-color);
 }
 
 .ui-timepicker-list li.ui-timepicker-selected {
-  background-color: $darkSelColor;
-  color: $white;
+  background-color: var(--dark-sel-color);
+  color: var(--white);
   @include light-on-dark-text;
   cursor: default;
 }
@@ -6240,7 +6248,7 @@ body .selectize-dropdown .active {
   white-space: nowrap;
 
   a {
-    border: 1px solid $hairlineColor;
+    border: 1px solid var(--hairline-color);
     @include border-left(none);
     background-image: none;
     width: 7px;
@@ -6253,35 +6261,35 @@ body .selectize-dropdown .active {
 
     &:first-child {
       width: 8px;
-      @include border-left(1px solid $grey400 !important);
+      @include border-left(1px solid var(--gray-400) !important);
     }
   }
 
   &:not(:hover) a.active,
   &:hover a.active-hover {
-    border-top-color: $grey400;
-    border-bottom-color: $grey400;
+    border-top-color: var(--gray-400);
+    border-bottom-color: var(--gray-400);
     height: 15px;
     margin-top: 0;
     margin-bottom: 0;
 
     &:first-child {
-      @include border-left(1px solid $grey400);
-      @include border-top-left-radius($smallBorderRadius);
-      @include border-bottom-left-radius($smallBorderRadius);
+      @include border-left(1px solid var(--gray-400));
+      @include border-top-left-radius(var(--small-border-radius));
+      @include border-bottom-left-radius(var(--small-border-radius));
     }
   }
 
   &:not(:hover) a.last-active,
   &:hover a.last-active-hover {
-    @include border-right(1px solid $grey400);
-    @include border-top-right-radius($smallBorderRadius);
-    @include border-bottom-right-radius($smallBorderRadius);
+    @include border-right(1px solid var(--gray-400));
+    @include border-top-right-radius(var(--small-border-radius));
+    @include border-bottom-right-radius(var(--small-border-radius));
   }
 
   &:focus {
     a.active {
-      background-color: $lightSelColor;
+      background-color: var(--light-sel-color);
     }
   }
 }
@@ -6294,7 +6302,7 @@ ul.errors {
 }
 
 ul.errors li {
-  color: $errorColor;
+  color: var(--error-color);
 }
 
 /* message pages */
@@ -6329,8 +6337,8 @@ ul.errors li {
   position: absolute;
   z-index: 2;
   width: 100%;
-  border-radius: $largeBorderRadius;
-  background-color: $white;
+  border-radius: var(--large-border-radius);
+  background-color: var(--white);
   @include shadow;
   box-sizing: border-box;
   padding: 0 14px;
@@ -6367,7 +6375,7 @@ ul.errors li {
     & > .input {
       display: flex;
       align-items: stretch;
-      background-color: $grey050;
+      background-color: var(--gray-050);
       box-shadow: none;
     }
   }
@@ -6382,12 +6390,12 @@ ul.errors li {
 
     &.block-types {
       width: 200px;
-      @include border-top-left-radius($smallBorderRadius);
-      @include border-bottom-left-radius($smallBorderRadius);
+      @include border-top-left-radius(var(--small-border-radius));
+      @include border-bottom-left-radius(var(--small-border-radius));
 
       & > .mc-col-inner-container {
         & > .mc-col-heading {
-          @include border-top-left-radius($smallBorderRadius);
+          @include border-top-left-radius(var(--small-border-radius));
         }
 
         & > .mc-col-items {
@@ -6420,8 +6428,8 @@ ul.errors li {
     & > .mc-col-inner-container > .mc-col-heading {
       margin: 0;
       padding: 7px 14px 6px;
-      border-bottom: 1px solid $hairlineColor;
-      background-color: $grey050;
+      border-bottom: 1px solid var(--hairline-color);
+      background-color: var(--gray-050);
       background-image: linear-gradient(
         transparentize($grey800, 1),
         transparentize($grey800, 0.95)
@@ -6432,14 +6440,14 @@ ul.errors li {
   .mc-field-settings {
     flex: 1;
     position: relative;
-    @include border-top-right-radius($smallBorderRadius);
-    @include border-bottom-right-radius($smallBorderRadius);
+    @include border-top-right-radius(var(--small-border-radius));
+    @include border-bottom-right-radius(var(--small-border-radius));
 
     & > .mc-col-inner-container {
       & > .mc-col-heading {
         padding-left: 24px;
         padding-right: 24px;
-        @include border-top-right-radius($smallBorderRadius);
+        @include border-top-right-radius(var(--small-border-radius));
       }
 
       & > .mc-col-items {
@@ -6461,23 +6469,23 @@ ul.errors li {
   &.mci-blocktype {
     margin-top: -1px;
     padding: 8px 14px;
-    border: solid $hairlineColor;
+    border: solid var(--hairline-color);
     border-width: 1px 0;
-    background-color: $grey100;
+    background-color: var(--gray-100);
 
     &.sel {
       z-index: 1;
-      background-color: $grey200;
+      background-color: var(--gray-200);
     }
   }
 
   &.mci-field {
-    border-radius: $mediumBorderRadius;
+    border-radius: var(--medium-border-radius);
     padding: 7px 10px;
-    background-color: $grey100;
+    background-color: var(--gray-100);
 
     &.sel {
-      background-color: $grey200;
+      background-color: var(--gray-200);
 
       .slide-picker:focus a.active {
         background-color: darken($lightTextColor, 0.5%);
@@ -6503,7 +6511,7 @@ ul.errors li {
     h4 {
       margin-bottom: 2px;
       font-weight: normal;
-      color: $textColor;
+      color: var(--text-color);
 
       &.mci-required:after {
         @include icon;
@@ -6515,7 +6523,7 @@ ul.errors li {
   }
 
   &.error .mci-name h4 {
-    color: $errorColor;
+    color: var(--error-color);
   }
 
   .slide-picker,
@@ -6541,7 +6549,7 @@ ul.errors li {
     }
 
     &.error:before {
-      color: $errorColor;
+      color: var(--error-color);
     }
   }
 }
@@ -6553,15 +6561,15 @@ ul.errors li {
   }
 }
 
-$titlebarBorderRadius: $largeBorderRadius - 1;
+$titlebarBorderRadius: var(--large-border-radius) - 1;
 
 .matrixblock {
   position: relative;
   margin-bottom: 10px;
   padding: 0 var(--m) var(--m);
-  border-radius: $largeBorderRadius;
-  border: 1px solid $hairlineColor;
-  background-color: $grey050;
+  border-radius: var(--large-border-radius);
+  border: 1px solid var(--hairline-color);
+  background-color: var(--gray-050);
 
   &.static {
     padding-top: 14px;
@@ -6577,7 +6585,7 @@ $titlebarBorderRadius: $largeBorderRadius - 1;
     box-sizing: border-box;
     border-radius: $titlebarBorderRadius $titlebarBorderRadius 0 0;
     @include padding(5px, 70px, 5px, 35px);
-    color: $lightTextColor;
+    color: var(--light-text-color);
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
@@ -6595,12 +6603,12 @@ $titlebarBorderRadius: $largeBorderRadius - 1;
       left: 14px;
       width: calc(100% - 28px);
       height: 1px;
-      background-color: $hairlineColor;
+      background-color: var(--hairline-color);
     }
 
     & > .blocktype {
       display: inline;
-      color: $mediumTextColor;
+      color: var(--medium-text-color);
     }
 
     & > .preview {
@@ -6633,7 +6641,7 @@ $titlebarBorderRadius: $largeBorderRadius - 1;
 
   &.collapsed {
     & > .titlebar {
-      border-radius: $titlebarBorderRadius;
+      border-radius: var(--titlebar-border-radius);
       border-bottom: none;
 
       & > .preview {
@@ -6688,20 +6696,20 @@ $titlebarBorderRadius: $largeBorderRadius - 1;
       padding: 0;
       height: 20px;
       text-align: center;
-      color: $darkHairlineColor;
+      color: var(--dark-hairline-color);
       transform: color linear 100ms;
 
       &.settings:after {
         @include margin-left(3px);
-        border-color: $darkHairlineColor;
+        border-color: var(--dark-hairline-color);
         transform: border-color linear 100ms;
       }
 
       &:hover {
-        color: $linkColor;
+        color: var(--link-color);
 
         &.settings:after {
-          border-color: $linkColor;
+          border-color: var(--link-color);
         }
       }
     }
@@ -6796,8 +6804,8 @@ body.sitepicker {
       text-align: left;
       width: 100%;
       box-sizing: border-box;
-      border: 1px solid $hairlineColor;
-      border-radius: $mediumBorderRadius;
+      border: 1px solid var(--hairline-color);
+      border-radius: var(--medium-border-radius);
       @include padding(9px, 42px, 9px, 15px);
       font-size: 16px;
       line-height: 1.4;
@@ -6812,7 +6820,7 @@ body.sitepicker {
       }
 
       &:hover {
-        border-color: $linkColor;
+        border-color: var(--link-color);
         text-decoration: none;
         z-index: 1;
       }

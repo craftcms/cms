@@ -1,7 +1,7 @@
 <template>
   <div class="cms-editions-edition">
     <div class="description">
-      <edition-badge :name="edition.name" block big></edition-badge>
+      <edition-badge :name="edition.name" :block="true" :big="true" />
       <p class="edition-description">{{ editionDescription }}</p>
       <div class="price">
         <template v-if="edition.price && edition.price > 0">

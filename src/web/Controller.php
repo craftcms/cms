@@ -264,7 +264,7 @@ abstract class Controller extends \yii\web\Controller
 
         $this->setSuccessFlash($message);
 
-        if ($redirect) {
+        if ($redirect !== null) {
             return $this->redirect($redirect);
         }
 

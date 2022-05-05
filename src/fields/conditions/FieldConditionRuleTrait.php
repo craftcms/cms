@@ -37,6 +37,14 @@ trait FieldConditionRuleTrait
     /**
      * @inheritdoc
      */
+    public function getGroupLabel(): ?string
+    {
+        return Craft::t('app', 'Fields');
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function setFieldUid(string $uid): void
     {
         $this->_fieldUid = $uid;

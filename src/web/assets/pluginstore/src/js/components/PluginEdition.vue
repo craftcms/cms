@@ -2,89 +2,63 @@
   <div
     class="plugin-editions-edition"
     :class="{
-      'tw-border tw-border-gray-200 tw-border-solid tw-rounded-md tw-flex tw-flex-col': true,
+      'tw-flex tw-flex-col': true,
+      'tw-border tw-border-gray-200 tw-border-solid tw-rounded-md':
+        context !== 'meta' ||
+        plugin.editions.length > 1 ||
+        !isPluginEditionFree(edition),
       'tw-p-8 tw-text-center': context !== 'meta',
-      'tw-p-4': context === 'meta',
+      'tw-p-4':
+        context === 'meta' &&
+        (plugin.editions.length > 1 || !isPluginEditionFree(edition)),
     }"
   >
     <div class="description tw-flex-1">
-      <edition-badge
-        v-if="plugin.editions.length > 1"
-        :name="edition.name"
-        block
-        big
-      ></edition-badge>
-      <div
-        class="price tw-font-bold"
-        :class="{
-          'tw-my-8 tw-text-3xl': context !== 'meta',
-          'tw-mb-4 tw-text-2xl': context === 'meta',
-        }"
-      >
-        <template v-if="!isPluginEditionFree(edition)">
-          <template
-            v-if="
-              licensedEdition &&
-              licensedEdition.handle !== edition.handle &&
-              licensedEdition.price > 0 &&
-              licenseValidOrAstray
-            "
-          >
-            <del>{{ edition.price | currency }}</del>
-            {{ (edition.price - licensedEdition.price) | currency }}
-          </template>
-          <template v-else>
-            {{ edition.price | currency }}
-          </template>
-        </template>
-        <template v-else>
-          {{ 'Free' | t('app') }}
-        </template>
-      </div>
-      <p
-        v-if="!isPluginEditionFree(edition)"
-        class="tw--mt-8 tw-text-gray-700"
-        :class="{
-          'tw-py-6': context !== 'meta',
-          'tw-pt-6 tw-pb-2': context === 'meta',
-        }"
-      >
-        {{ 'Price includes 1 year of updates.' | t('app') }}
-        {{
-          '{renewalPrice}/year per site for updates after that.'
-            | t('app', {
-              renewalPrice: $options.filters.currency(edition.renewalPrice),
-            })
-        }}
-      </p>
+      <template v-if="plugin.editions.length > 1">
+        <div class="tw-text-xl tw-font-bold tw-mb-4">
+          {{ edition.name }}
+        </div>
+      </template>
 
-      <ul
-        v-if="
-          plugin.editions.length > 1 &&
-          edition.features &&
-          edition.features.length > 0
-        "
-        class="tw-text-left tw-mb-8"
-      >
-        <li
-          v-for="(feature, key) in edition.features"
-          :key="key"
-          class="tw-py-2 tw-border-b tw-border-gray-200 tw-border-solid"
-          :class="{
-            'tw-border-t': key === 0,
-          }"
+      <template v-if="context !== 'meta'">
+        <ul
+          v-if="
+            plugin.editions.length > 1 &&
+            edition.features &&
+            edition.features.length > 0
+          "
+          class="tw-text-left tw-mt-8 tw-mb-8"
         >
-          <c-icon icon="check" />
-          {{ feature.name }}
+          <li
+            v-for="(feature, key) in edition.features"
+            :key="key"
+            class="tw-py-2 tw-border-b tw-border-gray-200 tw-border-solid"
+            :class="{
+              'tw-border-t': key === 0,
+            }"
+          >
+            <c-icon icon="check" />
+            {{ feature.name }}
 
-          <info-hud v-if="feature.description">
-            {{ feature.description }}
-          </info-hud>
-        </li>
-      </ul>
+            <info-hud v-if="feature.description">
+              {{ feature.description }}
+            </info-hud>
+          </li>
+        </ul>
+      </template>
     </div>
 
-    <plugin-actions :plugin="plugin" :edition="edition"></plugin-actions>
+    <plugin-actions :plugin="plugin" :edition="edition" />
+
+    <p v-if="!isPluginEditionFree(edition)" class="tw-text-gray-700">
+      {{ 'Price includes 1 year of updates.' | t('app') }}
+      {{
+        '{renewalPrice}/year per site for updates after that.'
+          | t('app', {
+            renewalPrice: $options.filters.currency(edition.renewalPrice),
+          })
+      }}
+    </p>
   </div>
 </template>
 
@@ -92,7 +66,6 @@
   import {mapState, mapGetters} from 'vuex';
   import PluginActions from './PluginActions';
   import InfoHud from './InfoHud';
-  import EditionBadge from './EditionBadge';
   import licensesMixin from '../mixins/licenses';
 
   export default {
@@ -115,7 +88,6 @@
     components: {
       PluginActions,
       InfoHud,
-      EditionBadge,
     },
 
     computed: {
@@ -125,28 +97,8 @@
 
       ...mapGetters({
         isPluginEditionFree: 'pluginStore/isPluginEditionFree',
-        getPluginEdition: 'pluginStore/getPluginEdition',
         getPluginLicenseInfo: 'craft/getPluginLicenseInfo',
       }),
-
-      pluginLicenseInfo() {
-        if (!this.plugin) {
-          return null;
-        }
-
-        return this.getPluginLicenseInfo(this.plugin.handle);
-      },
-
-      licensedEdition() {
-        if (!this.pluginLicenseInfo) {
-          return null;
-        }
-
-        return this.getPluginEdition(
-          this.plugin,
-          this.pluginLicenseInfo.licensedEdition
-        );
-      },
     },
   };
 </script>

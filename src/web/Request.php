@@ -1725,45 +1725,7 @@ class Request extends \yii\web\Request
             return $this->_utf8AllTheThings($params);
         }
 
-        // Looking for a specific value?
-        if (isset($params[$name])) {
-            return $this->_utf8Value($params[$name]);
-        }
-
-        // Normalize foo[bar][baz] => foo.bar.baz
-        $name = $this->_normalizeParam($name);
-
-        // Maybe they're looking for a nested param?
-        if (StringHelper::contains($name, '.')) {
-            $path = explode('.', $name);
-            $param = $params;
-
-            foreach ($path as $step) {
-                if (is_array($param) && isset($param[$step])) {
-                    $param = $param[$step];
-                } else {
-                    return $defaultValue;
-                }
-            }
-
-            return $this->_utf8Value($param);
-        }
-
-        return $defaultValue;
-    }
-
-    /**
-     * Normalizes a nested param name into dot notation.
-     *
-     * @param string $name
-     * @return string
-     */
-    private function _normalizeParam(string $name): string
-    {
-        if (preg_match('/^[\w\-]+(?:\[[^\[\]]+\])+$/', $name)) {
-            $name = rtrim(preg_replace('/[\[\]]+/', '.', $name), '.');
-        }
-        return $name;
+        return ArrayHelper::getValue($params, $name, $defaultValue);
     }
 
     /**

@@ -143,6 +143,8 @@ class Volume extends Model
     public function attributeLabels(): array
     {
         return [
+            'handle' => Craft::t('app', 'Handle'),
+            'name' => Craft::t('app', 'Name'),
             'url' => Craft::t('app', 'URL'),
         ];
     }

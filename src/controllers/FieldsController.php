@@ -420,6 +420,6 @@ JS;
         $settingsNamespace = $this->request->getRequiredBodyParam('settingsNamespace');
         $settingsStr = $this->request->getRequiredBodyParam('settings');
         parse_str($settingsStr, $settings);
-        return array_merge($config, $settings[$settingsNamespace]);
+        return array_merge($config, ArrayHelper::getValue($settings, $settingsNamespace, []));
     }
 }

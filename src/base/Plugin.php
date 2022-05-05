@@ -50,6 +50,14 @@ class Plugin extends Module implements PluginInterface
     /**
      * @inheritdoc
      */
+    public static function config(): array
+    {
+        return [];
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function editions(): array
     {
         return [

@@ -751,38 +751,6 @@ $.extend(Craft, {
     return jqXHR;
   },
 
-  _waitingOnAjax: false,
-  _ajaxQueue: [],
-
-  /**
-   * Queues up an action request to be posted to the server.
-   */
-  queueActionRequest: function (callback) {
-    Craft._ajaxQueue.push(callback);
-
-    if (!Craft._waitingOnAjax) {
-      Craft._postNextActionRequestInQueue();
-    }
-  },
-
-  _postNextActionRequestInQueue: function () {
-    Craft._waitingOnAjax = true;
-
-    var callback = Craft._ajaxQueue.shift();
-
-    callback().then((response) => {
-      if (callback && typeof callback === 'function') {
-        callback(response ? response.data : null);
-      }
-
-      if (Craft._ajaxQueue.length) {
-        Craft._postNextActionRequestInQueue();
-      } else {
-        Craft._waitingOnAjax = false;
-      }
-    });
-  },
-
   _actionHeaders: function () {
     let headers = {
       'X-Registered-Asset-Bundles': Object.keys(
@@ -1197,11 +1165,34 @@ $.extend(Craft, {
     }
 
     if (initialValues) {
+      const serializeParam = (name, value) => {
+        if ($.isArray(value) || $.isPlainObject(value)) {
+          value = $.param(value);
+        } else if (typeof value === 'string') {
+          value = encodeURIComponent(value);
+        } else if (value === null) {
+          value = '';
+        }
+        return `${encodeURIComponent(name)}=${value}`;
+      };
+
       for (let name in initialValues) {
         if (initialValues.hasOwnProperty(name)) {
-          grouped[name] = [
-            encodeURIComponent(name) + '=' + $.param(initialValues[name]),
-          ];
+          if ($.isPlainObject(initialValues[name])) {
+            grouped[name] = [];
+            for (let subName in initialValues[name]) {
+              if (initialValues[name].hasOwnProperty(subName)) {
+                grouped[name].push(
+                  serializeParam(
+                    `${name}[${subName}]`,
+                    initialValues[name][subName]
+                  )
+                );
+              }
+            }
+          } else {
+            grouped[name] = [serializeParam(name, initialValues[name])];
+          }
         }
       }
     }

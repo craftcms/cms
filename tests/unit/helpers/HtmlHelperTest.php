@@ -211,6 +211,51 @@ class HtmlHelperTest extends TestCase
     }
 
     /**
+     *
+     */
+    public function testUnwrapCondition(): void
+    {
+        // No condition
+        $jsFile = Html::jsFile('foo.js');
+        self::assertSame([$jsFile, null], Html::unwrapCondition($jsFile));
+
+        // Positive condition
+        $condition = 'lt IE 9';
+        $conditionalJsFile = Html::jsFile('foo.js', ['condition' => $condition]);
+        self::assertSame([$jsFile, $condition], Html::unwrapCondition($conditionalJsFile));
+
+        // Negative condition
+        $condition = '!IE 9';
+        $conditionalJsFile = Html::jsFile('foo.js', ['condition' => $condition]);
+        self::assertSame([$jsFile, $condition], Html::unwrapCondition($conditionalJsFile));
+
+        // Content with newlines
+        $condition = 'lt IE 9';
+        $content = "foo\nbar\nbaz";
+        $conditionalContent = str_replace($jsFile, $content, Html::jsFile('foo.js', ['condition' => $condition]));
+        self::assertSame([$content, $condition], Html::unwrapCondition($conditionalContent));
+    }
+
+    /**
+     *
+     */
+    public function testUnwrapNoscript(): void
+    {
+        // Without <noscript>>
+        $cssFile = Html::cssFile('foo.css');
+        self::assertSame([$cssFile, false], Html::unwrapNoscript($cssFile));
+
+        // With <noscript>
+        $noscriptCssFile = Html::cssFile('foo.css', ['noscript' => true]);
+        self::assertSame([$cssFile, true], Html::unwrapNoscript($noscriptCssFile));
+
+        // Content with newlines
+        $content = "foo\nbar\nbaz";
+        $noscriptContent = str_replace($cssFile, $content, Html::cssFile('foo.css', ['noscript' => true]));
+        self::assertSame([$content, true], Html::unwrapNoscript($noscriptContent));
+    }
+
+    /**
      * @return array
      */
     public function encodeParamsDataProvider(): array

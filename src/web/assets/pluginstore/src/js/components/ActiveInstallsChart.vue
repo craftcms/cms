@@ -10,7 +10,7 @@
         />
         <div
           v-if="chartMounted"
-          class="tw-h-3 tw-bg-gradient-to-b tw-from-blue-100/100 tw-to-blue-100/0 dark:tw-from-blue-900/100 dark:tw-to-blue-900/0"
+          class="tw-h-3 tw-bg-gradient-to-b tw-from-blue-100/100 tw-to-blue-100/0"
         />
       </div>
     </ClientOnly>

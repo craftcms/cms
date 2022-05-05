@@ -451,6 +451,17 @@ class ArrayHelperTest extends TestCase
     }
 
     /**
+     * @dataProvider getValueDataProvider
+     * @param string $expected
+     * @param array $array
+     * @param string $key
+     */
+    public function testGetValue(string $expected, array $array, string $key): void
+    {
+        $this->assertSame($expected, ArrayHelper::getValue($array, $key));
+    }
+
+    /**
      * @return array
      */
     public function toArrayDataProvider(): array
@@ -613,6 +624,19 @@ class ArrayHelperTest extends TestCase
         return [
             [true, [0, 1, 2, '3']],
             [false, [0, 1, 2, '3a']],
+        ];
+    }
+
+    public function getValueDataProvider(): array
+    {
+        return [
+            ['foo', ['foo' => 'foo'], 'foo'],
+            ['foo.bar', ['foo' => ['bar' => 'foo.bar']], 'foo[bar]'],
+            ['foo.bar.baz', ['foo' => ['bar' => ['baz' => 'foo.bar.baz']]], 'foo[bar][baz]'],
+            ['foo[bar', ['foo[bar' => 'foo[bar'], 'foo[bar'],
+            ['foo[bar][]', ['foo[bar][]' => 'foo[bar][]'], 'foo[bar][]'],
+            ['foo.bar:baz.qux', ['foo' => ['bar:baz' => ['qux' => 'foo.bar:baz.qux']]], 'foo[bar:baz][qux]'],
+            ['foo-bar.baz.qux', ['foo-bar' => ['baz' => ['qux' => 'foo-bar.baz.qux']]], 'foo-bar[baz][qux]'],
         ];
     }
 }

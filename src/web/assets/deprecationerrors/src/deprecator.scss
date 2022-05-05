@@ -8,7 +8,7 @@
     overflow: auto;
 
     strong {
-      color: $mediumTextColor;
+      color: var(--medium-text-color);
     }
   }
 }

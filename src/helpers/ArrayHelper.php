@@ -437,4 +437,20 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
     {
         return Collection::make($array)->every(fn($v) => is_numeric($v));
     }
+
+    /**
+     * @inheritdoc
+     *
+     * If the key is specified in square bracket notation (e.g. `x[y][z]`), it will automatically be converted
+     * to dot notation (`x.y.z`).
+     */
+    public static function getValue($array, $key, $default = null)
+    {
+        // Normalize the key into dot notation
+        if (is_string($key) && preg_match('/^[\w\-]+(?:\[[^\[\]]+\])+$/', $key)) {
+            $key = rtrim(preg_replace('/[\[\]]+/', '.', $key), '.');
+        }
+
+        return parent::getValue($array, $key, $default);
+    }
 }

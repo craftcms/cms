@@ -23,6 +23,7 @@ use craft\events\RegisterUserActionsEvent;
 use craft\events\UserEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Assets;
+use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Html;
 use craft\helpers\Image;
@@ -1096,6 +1097,8 @@ JS,
 
         $userId = $this->request->getBodyParam('userId');
         $isNewUser = !$userId;
+        $newEmail = trim($this->request->getBodyParam('email') ?? '') ?: null;
+
         $isPublicRegistration = false;
 
         // Are we editing an existing user?
@@ -1132,9 +1135,17 @@ JS,
                 }
 
                 $isPublicRegistration = true;
+
+                // See if there's an inactive user with the same email
+                if ($newEmail) {
+                    $user = User::find()
+                        ->email(Db::escapeParam($newEmail))
+                        ->status(User::STATUS_INACTIVE)
+                        ->one();
+                }
             }
 
-            $user = new User();
+            $user = $user ?? new User();
         }
 
         $isCurrentUser = $user->getIsCurrent();
@@ -1151,10 +1162,8 @@ JS,
 
         // Are they allowed to set the email address?
         if ($isNewUser || $isCurrentUser || $canAdministrateUsers) {
-            $newEmail = $this->request->getBodyParam('email');
-
             // Make sure it actually changed
-            if ($newEmail && $newEmail === $user->email) {
+            if (!$isNewUser && $newEmail && $newEmail === $user->email) {
                 $newEmail = null;
             }
 
@@ -1194,6 +1203,9 @@ JS,
                     $user->email = $newEmail;
                 }
             }
+        } else {
+            // Discard the new email if it was posted
+            $newEmail = null;
         }
 
         // Are they allowed to set a new password?

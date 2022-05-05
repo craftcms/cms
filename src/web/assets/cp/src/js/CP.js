@@ -614,13 +614,13 @@ Craft.CP = Garnish.Base.extend(
      * @deprecated in 3.7.0
      */
     get $tabsList() {
-      return this.tabManager ? this.tabManager.$ul : undefined;
+      return this.tabManager ? this.tabManager.$tablist : undefined;
     },
     /**
      * @deprecated in 3.7.0
      */
     get $tabs() {
-      return this.tabManager ? this.tabManager.$ul.find('> li') : undefined;
+      return this.tabManager ? this.tabManager.$tablist.find('> a') : undefined;
     },
     /**
      * @deprecated in 3.7.0
@@ -928,15 +928,19 @@ Craft.CP = Garnish.Base.extend(
     },
 
     fetchAlerts: function () {
-      var data = {
-        path: Craft.path,
-      };
-
-      Craft.queueActionRequest(() => {
-        return Craft.sendActionRequest('POST', 'app/get-cp-alerts', {
-          data,
-        }).then(() => this.displayAlerts.bind(this));
-      });
+      return Craft.queue.push(
+        () =>
+          new Promise((resolve, reject) => {
+            const data = {
+              path: Craft.path,
+            };
+            Craft.sendActionRequest('POST', 'app/get-cp-alerts', {data})
+              .then(({data}) => {
+                resolve(data.alerts);
+              })
+              .catch(reject);
+          })
+      );
     },
 
     displayAlerts: function (alerts) {
@@ -971,16 +975,24 @@ Craft.CP = Garnish.Base.extend(
         this.addListener($shunnableAlerts[i], 'click', (ev) => {
           ev.preventDefault();
 
-          var $link = $(ev.currentTarget);
-
-          var data = {
-            message: $link.prop('className').substring(5),
-          };
-          Craft.queueActionRequest(() => {
-            return Craft.sendActionRequest('POST', 'app/shun-cp-alert', {data})
-              .then((response) => $link.parent().remove())
-              .catch(({response}) => this.displayError(response.data.message));
-          });
+          Craft.queue.push(
+            () =>
+              new Promise((resolve, reject) => {
+                const $link = $(ev.currentTarget);
+                const data = {
+                  message: $link.prop('className').substring(5),
+                };
+                Craft.sendActionRequest('POST', 'app/shun-cp-alert', {data})
+                  .then(() => {
+                    $link.parent().remove();
+                    resolve();
+                  })
+                  .catch(({response}) => {
+                    this.displayError(response.data.message);
+                    reject();
+                  });
+              })
+          );
         });
       }
     },
@@ -1101,24 +1113,29 @@ Craft.CP = Garnish.Base.extend(
         return;
       }
 
-      Craft.queueActionRequest(() => {
-        return Craft.sendActionRequest(
-          'POST',
-          'app/get-utilities-badge-count'
-        ).then((response) => {
-          // Get the existing utility nav badge, if any
-          var $badge = $utilitiesLink.children('.badge');
+      Craft.queue.push(
+        () =>
+          new Promise((resolve, reject) => {
+            Craft.sendActionRequest('POST', 'app/get-utilities-badge-count')
+              .then(({data}) => {
+                // Get the existing utility nav badge, if any
+                let $badge = $utilitiesLink.children('.badge');
 
-          if (response.data.badgeCount) {
-            if (!$badge.length) {
-              $badge = $('<span class="badge"/>').appendTo($utilitiesLink);
-            }
-            $badge.text(response.data.badgeCount);
-          } else if ($badge.length) {
-            $badge.remove();
-          }
-        });
-      });
+                if (data.badgeCount) {
+                  if (!$badge.length) {
+                    $badge = $('<span class="badge"/>').appendTo(
+                      $utilitiesLink
+                    );
+                  }
+                  $badge.text(data.badgeCount);
+                } else if ($badge.length) {
+                  $badge.remove();
+                }
+                resolve();
+              })
+              .catch(reject);
+          })
+      );
     },
 
     runQueue: function () {
@@ -1127,11 +1144,17 @@ Craft.CP = Garnish.Base.extend(
       }
 
       if (Craft.runQueueAutomatically) {
-        Craft.queueActionRequest(() => {
-          return Craft.sendActionRequest('POST', 'queue/run').then(() =>
-            this.trackJobProgress(false, true)
-          );
-        });
+        Craft.queue.push(
+          () =>
+            new Promise((resolve, reject) => {
+              Craft.sendActionRequest('POST', 'queue/run')
+                .then(() => {
+                  this.trackJobProgress(false, true);
+                  resolve();
+                })
+                .catch(reject);
+            })
+        );
       } else {
         this.trackJobProgress(false, true);
       }
@@ -1161,21 +1184,26 @@ Craft.CP = Garnish.Base.extend(
     },
 
     _trackJobProgressInternal: function () {
-      Craft.queueActionRequest(() => {
-        return Craft.sendActionRequest(
-          'POST',
-          'queue/get-job-info?limit=50&dontExtendSession=1'
-        ).then((response) => {
-          this.trackJobProgressTimeout = null;
-          this.totalJobs = response.data.total;
-          this.setJobInfo(response.data.jobs);
-
-          if (this.jobInfo.length) {
-            // Check again after a delay
-            this.trackJobProgress(true);
-          }
-        });
-      });
+      Craft.queue.push(
+        () =>
+          new Promise((resolve, reject) => {
+            Craft.sendActionRequest(
+              'POST',
+              'queue/get-job-info?limit=50&dontExtendSession=1'
+            )
+              .then(({data}) => {
+                this.trackJobProgressTimeout = null;
+                this.totalJobs = data.total;
+                this.setJobInfo(data.jobs);
+                if (this.jobInfo.length) {
+                  // Check again after a delay
+                  this.trackJobProgress(true);
+                }
+                resolve();
+              })
+              .catch(reject);
+          })
+      );
     },
 
     setJobInfo: function (jobInfo) {

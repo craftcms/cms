@@ -6,17 +6,30 @@
 
 <script>
   export default {
-    props: ['name', 'block', 'big'],
+    props: {
+      name: {
+        type: String,
+        required: true,
+      },
+      block: {
+        type: Boolean,
+        default: false,
+      },
+      big: {
+        type: Boolean,
+        default: false,
+      },
+    },
 
     computed: {
       cssClass() {
         const cssClasses = {};
 
-        if (typeof this.block !== 'undefined') {
+        if (this.block) {
           cssClasses['is-block'] = true;
         }
 
-        if (typeof this.big !== 'undefined') {
+        if (this.big) {
           cssClasses['is-big'] = true;
         }
 
@@ -38,7 +51,6 @@
 
     &:not(.is-block) {
       @apply tw-relative;
-      top: -1px;
     }
 
     &.is-big {
@@ -48,7 +60,7 @@
     }
 
     .edition-badge-name {
-      @apply tw-inline-block tw-uppercase tw-border tw-border-solid tw-border-gray-400 tw-px-2 tw-py-0 tw-text-gray-500 tw-rounded tw-text-xs;
+      @apply tw-inline-block tw-uppercase tw-border tw-border-solid tw-border-gray-400 tw-px-2 tw-py-1 tw-text-gray-500 tw-rounded tw-text-xs;
       letter-spacing: 1.5px;
     }
   }

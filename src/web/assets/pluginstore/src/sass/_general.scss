@@ -99,11 +99,11 @@ code {
 }
 
 .input.success input {
-  border-color: $successColor;
+  border-color: var(--success-color);
 }
 
 .input.errors .select:not(.selectize) select {
-  box-shadow: inset 0 0 0 1px transparent, 0 0 0 1px $errorColor,
+  box-shadow: inset 0 0 0 1px transparent, 0 0 0 1px var(--error-color),
     0 1px 1px rgba(0, 0, 0, 0.1);
 }
 
@@ -161,7 +161,7 @@ input.error {
     }
 
     svg {
-      @include svg-mask($secondaryColor);
+      @include svg-mask(var(--secondary-color));
     }
 
     &:hover svg {
@@ -176,7 +176,7 @@ input.error {
       font-size: 11px;
       line-height: 16px;
       border-radius: 1em;
-      background: $primaryColor;
+      background: var(--primary-color);
     }
   }
 
