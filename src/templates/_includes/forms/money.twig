@@ -1,7 +1,7 @@
 {% import '_includes/forms' as forms %}
 {% do view.registerAssetBundle("craft\\web\\assets\\money\\MoneyAsset") %}
 
-{% set id = (id ?? "money#{random()}") ~ '-money' -%}
+{% set id = id ?? "money#{random()}" -%}
 {% set decimals = decimals ?? 2 %}
 {% set name = name ?? null -%}
 {% set value = not (value ?? false) ? null : value -%}
