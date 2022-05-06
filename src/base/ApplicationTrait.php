@@ -854,7 +854,7 @@ trait ApplicationTrait
      *
      * @return self
      */
-    public function timetravel($now = 'now'): self
+    public function timetravel($now = null): self
     {
         $this->_now = $now;
         
