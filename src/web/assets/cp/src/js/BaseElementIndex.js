@@ -708,6 +708,14 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     /**
+     * Manages focus for keyboard users
+     */
+    manageFocus: function() {
+      console.log('in focus fxn');
+
+    },
+
+    /**
      * Sets the page number.
      */
     setPage: function (page) {
@@ -1973,6 +1981,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                   this.removeListener($nextBtn, 'click');
                   this.setPage(this.page - 1);
                   this.updateElements(true);
+                  this.manageFocus();
                 });
               }
 
@@ -1982,6 +1991,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                   this.removeListener($nextBtn, 'click');
                   this.setPage(this.page + 1);
                   this.updateElements(true);
+                  this.manageFocus();
                 });
               }
             }
