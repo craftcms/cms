@@ -1943,7 +1943,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
               const $paginationNav = $('<nav/>', {
                 class: 'flex',
-                'aria-label': Craft.t('app', 'Pagination'),
+                'aria-label': Craft.t('app', '{element} pagination', {element: itemLabel}),
               }).appendTo($paginationContainer);
 
               let $prevBtn = $('<button/>', {
