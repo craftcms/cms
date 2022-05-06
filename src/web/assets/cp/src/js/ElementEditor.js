@@ -178,12 +178,8 @@ Craft.ElementEditor = Garnish.Base.extend(
       });
 
       if (this.isFullPage && Craft.messageReceiver) {
-        Craft.messageReceiver.addEventListener('message', (ev) => {
-          // Ignore broadcasts from this page
-          if (ev.data.pageId === Craft.pageId) {
-            return;
-          }
-
+        // Listen on Craft.broadcaster to ignore any messages sent by this very page
+        Craft.broadcaster.addEventListener('message', (ev) => {
           if (
             (ev.data.event === 'saveDraft' &&
               ev.data.canonicalId === this.settings.canonicalId &&
