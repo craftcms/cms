@@ -72,7 +72,7 @@ class Upgrade extends Utility
 window.upgardeUtility = new Craft.UpgradeUtility(...$args);
 JS;
         }, [
-            [$version, $allPlugins]
+            [$version, $allPlugins],
         ]);
 
         return $view->renderTemplate('_components/utilities/Upgrade');
