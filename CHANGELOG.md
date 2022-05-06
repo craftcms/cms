@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## 3.7.40 (WIP)
+## 3.7.41 (WIP)
 
 ### Fixed
 - Fixed an error that occurred when attempting to delete a global set. ([#11100](https://github.com/craftcms/cms/issues/11100))
