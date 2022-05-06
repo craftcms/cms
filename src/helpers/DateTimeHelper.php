@@ -256,7 +256,8 @@ class DateTimeHelper
      */
     public static function currentUTCDateTime(): DateTime
     {
-        return new DateTime(null, new DateTimeZone('UTC'));
+        $now = \Craft::$app->getNow();
+        return new DateTime($now, new DateTimeZone('UTC'));
     }
 
     /**
