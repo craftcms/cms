@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## 3.7.41 (WIP)
+## 3.7.41 - 2022-05-06
 
 ### Changed
 - The Upgrade utility now lists any uninstalled and unknown plugins. ([#11101](https://github.com/craftcms/cms/discussions/11101))
