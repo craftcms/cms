@@ -576,7 +576,7 @@ SQL;
 
             if (!empty($fieldId)) {
                 $attr = 'fieldId';
-                $val = (string)$fieldId;
+                $val = $fieldId;
             } else {
                 $attr = 'attribute';
                 $val = strtolower($term->attribute);
