@@ -1354,9 +1354,10 @@ class ElementQuery extends Query implements ElementQueryInterface
         if (!$this->_joinedElementTable && $this->elementType) {
             try {
                 $ref = new ReflectionClass($this->elementType);
-            } catch (ReflectionException $e) {
+            } catch (ReflectionException) {
                 $ref = null;
             }
+            /** @var ReflectionClass|null $ref */
             if ($ref && !$ref->isAbstract()) {
                 $this->subQuery->andWhere(['elements.type' => $this->elementType]);
             }
