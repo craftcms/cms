@@ -78,6 +78,8 @@ $iconSize: 46px;
       .plugin-status {
         @include margin-right(5px);
         text-transform: uppercase;
+        color: $grey600;
+        background-color: transparentize($grey600, 0.95);
 
         &.plugin-ready {
           border-color: $teal600;
@@ -96,11 +98,6 @@ $iconSize: 46px;
           color: $red600;
           background-color: transparentize($red600, 0.95);
         }
-      }
-
-      .plugin-version {
-        color: $grey600;
-        background-color: transparentize($grey600, 0.95);
       }
 
       .plugin-note {
