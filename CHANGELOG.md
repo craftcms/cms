@@ -2,6 +2,9 @@
 
 ## 3.7.41 (WIP)
 
+### Changed
+- The Upgrade utility now lists any uninstalled and unknown plugins. ([#11101](https://github.com/craftcms/cms/discussions/11101))
+
 ### Fixed
 - Fixed an error that occurred when attempting to delete a global set. ([#11100](https://github.com/craftcms/cms/issues/11100))
 
