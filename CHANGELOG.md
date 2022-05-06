@@ -2,6 +2,9 @@
 
 ## 3.7.42 (WIP)
 
+### Changed
+- Improved entry save performance, for sections whose Propagation Method was set to “Let each entry choose which sites it should be saved to”. ([#11113](https://github.com/craftcms/cms/issues/11113))
+
 ## 3.7.41 - 2022-05-06
 
 ### Changed
