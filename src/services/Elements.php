@@ -2789,38 +2789,36 @@ class Elements extends Component
             $fieldLayout = $element->getFieldLayout();
             $dirtyFields = $fieldLayout ? $element->getDirtyFields() : null;
 
-            Craft::$app->on(Application::EVENT_AFTER_REQUEST, function() use ($element, $fieldLayout, $dirtyAttributes, $dirtyFields) {
-                $userId = Craft::$app->getUser()->getId();
-                $timestamp = Db::prepareDateForDb(new \DateTime());
+            $userId = Craft::$app->getUser()->getId();
+            $timestamp = Db::prepareDateForDb(new \DateTime());
 
-                foreach ($dirtyAttributes as $attributeName) {
-                    Db::upsert(Table::CHANGEDATTRIBUTES, [
-                        'elementId' => $element->id,
-                        'siteId' => $element->siteId,
-                        'attribute' => $attributeName,
-                    ], [
-                        'dateUpdated' => $timestamp,
-                        'propagated' => $element->propagating,
-                        'userId' => $userId,
-                    ], [], false);
-                }
+            foreach ($dirtyAttributes as $attributeName) {
+                Db::upsert(Table::CHANGEDATTRIBUTES, [
+                    'elementId' => $element->id,
+                    'siteId' => $element->siteId,
+                    'attribute' => $attributeName,
+                ], [
+                    'dateUpdated' => $timestamp,
+                    'propagated' => $element->propagating,
+                    'userId' => $userId,
+                ], [], false);
+            }
 
-                if ($fieldLayout) {
-                    foreach ($dirtyFields as $fieldHandle) {
-                        if (($field = $fieldLayout->getFieldByHandle($fieldHandle)) !== null) {
-                            Db::upsert(Table::CHANGEDFIELDS, [
-                                'elementId' => $element->id,
-                                'siteId' => $element->siteId,
-                                'fieldId' => $field->id,
-                            ], [
-                                'dateUpdated' => $timestamp,
-                                'propagated' => $element->propagating,
-                                'userId' => $userId,
-                            ], [], false);
-                        }
+            if ($fieldLayout) {
+                foreach ($dirtyFields as $fieldHandle) {
+                    if (($field = $fieldLayout->getFieldByHandle($fieldHandle)) !== null) {
+                        Db::upsert(Table::CHANGEDFIELDS, [
+                            'elementId' => $element->id,
+                            'siteId' => $element->siteId,
+                            'fieldId' => $field->id,
+                        ], [
+                            'dateUpdated' => $timestamp,
+                            'propagated' => $element->propagating,
+                            'userId' => $userId,
+                        ], [], false);
                     }
                 }
-            });
+            }
         }
 
         // Fire an 'afterSaveElement' event

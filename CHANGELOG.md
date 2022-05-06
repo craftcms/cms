@@ -7,6 +7,7 @@
 
 ### Fixed
 - Fixed an error that occurred when attempting to delete a global set. ([#11100](https://github.com/craftcms/cms/issues/11100))
+- Fixed an error that could occur when applying a draft. ([#11083](https://github.com/craftcms/cms/issues/11083))
 
 ## 3.7.40.1 - 2022-05-04
 
