@@ -4,6 +4,7 @@
 {% macro sourceLink(key, source, isTopLevel, elementType) %}
     {% from _self import sourceInnerHtml %}
     {{ tag('a', {
+        href: '#',
         data: {
             key: key,
             'has-thumbs': (source.hasThumbs ?? false) ? true : false,

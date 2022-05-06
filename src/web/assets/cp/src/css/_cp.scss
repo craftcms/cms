@@ -993,6 +993,8 @@ li.breadcrumb-toggle-wrapper {
 }
 
 #content-heading {
+  margin-top: var(--xl) !important;
+
   @media only screen and (min-width: $minHorizontalUiWidth) {
     @include visually-hidden;
   }
