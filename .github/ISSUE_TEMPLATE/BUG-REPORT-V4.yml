@@ -1,5 +1,5 @@
-name: Bug Report – Craft 4 Beta
-description: Report an issue or unexpected behavior pertaining to Craft 4 Beta
+name: Bug Report – Craft 4
+description: Report an issue or unexpected behavior pertaining to Craft 4
 title: '[4.x]: '
 labels:
   - bug
