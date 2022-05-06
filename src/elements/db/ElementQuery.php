@@ -29,6 +29,7 @@ use craft\helpers\ElementHelper;
 use craft\helpers\StringHelper;
 use craft\models\Site;
 use ReflectionClass;
+use ReflectionException;
 use ReflectionProperty;
 use yii\base\ArrayableTrait;
 use yii\base\Exception;
@@ -1351,7 +1352,14 @@ class ElementQuery extends Query implements ElementQueryInterface
 
         // If an element table was never joined in, explicitly filter based on the element type
         if (!$this->_joinedElementTable && $this->elementType) {
-            $this->subQuery->andWhere(['elements.type' => $this->elementType]);
+            try {
+                $ref = new ReflectionClass($this->elementType);
+            } catch (ReflectionException $e) {
+                $ref = null;
+            }
+            if ($ref && !$ref->isAbstract()) {
+                $this->subQuery->andWhere(['elements.type' => $this->elementType]);
+            }
         }
 
         $this->_applyUniqueParam($builder->db);
