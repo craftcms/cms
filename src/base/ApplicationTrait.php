@@ -227,6 +227,12 @@ trait ApplicationTrait
      * @see saveInfoAfterRequest()
      */
     private $_waitingToSaveInfo = false;
+    
+    /**
+     * @var string The current time that Craft's time helpers will respond with. Usefull for time traveling
+     *             during unit tests
+     */
+    private $_now = 'now';
 
     /**
      * Sets the target application language.
@@ -841,6 +847,20 @@ trait ApplicationTrait
         }
 
         return true;
+    }
+    
+    public function timetravel($now = 'now'): self
+    {
+        $this->_now = $now;
+        
+        return $this;
+    }
+    
+    public function timetravelBack(): self
+    {
+        $this->_now = 'now';
+        
+        return $this;
     }
 
     // Service Getters
