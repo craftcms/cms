@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## 4.0.1 (WIP)
+## 4.0.1 - 2022-05-06
 
 ### Fixed
 - Fixed a bug where Money field labels’ `for` attributes weren’t referencing the correct input ID. ([#11016](https://github.com/craftcms/cms/pull/11016))
