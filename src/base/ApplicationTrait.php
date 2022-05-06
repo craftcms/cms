@@ -232,7 +232,7 @@ trait ApplicationTrait
      * @var string The current time that Craft's time helpers will respond with. Usefull for time traveling
      *             during unit tests
      */
-    private $_now = 'now';
+    private $_now = null;
 
     /**
      * Sets the target application language.
@@ -849,6 +849,11 @@ trait ApplicationTrait
         return true;
     }
     
+    /**
+     * Time travel forward or backwards by passing in `+1 month` or `-1 month`
+     *
+     * @return self
+     */
     public function timetravel($now = 'now'): self
     {
         $this->_now = $now;
@@ -856,11 +861,26 @@ trait ApplicationTrait
         return $this;
     }
     
+    /**
+     * Time travel back to the current time (null, by default)
+     *
+     * @return self
+     */
     public function timetravelBack(): self
     {
-        $this->_now = 'now';
+        $this->_now = null;
         
         return $this;
+    }
+    
+    /**
+     * Get the current time
+     *
+     * @return ?string
+     */
+    public function getNow(): ?string
+    {
+        return $this->_now;
     }
 
     // Service Getters
