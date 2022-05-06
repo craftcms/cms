@@ -992,6 +992,12 @@ li.breadcrumb-toggle-wrapper {
   }
 }
 
+#content-heading {
+  @media only screen and (min-width: $minHorizontalUiWidth) {
+    @include visually-hidden;
+  }
+}
+
 .content-pane {
   @include pane;
   border-radius: var(--large-border-radius);
@@ -1174,12 +1180,15 @@ li.breadcrumb-toggle-wrapper {
   }
 
   #sidebar-toggle {
+    &:after {
+      transform: rotate(-45deg);
+    }
+
     body.showing-sidebar & {
       background-color: darken($grey200, 10%) !important;
 
       &:after {
-        transform: rotate(225deg);
-        top: 1px;
+        transform: rotate(45deg);
       }
     }
   }

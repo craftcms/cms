@@ -1138,7 +1138,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.setInstanceState('selectedSource', this.sourceKey);
       this.sourceSelect.selectItem($source);
 
-      Craft.cp.updateSidebarMenuLabel();
+      Craft.cp.updateContentHeading();
 
       if (this.searching) {
         // Clear the search value without causing it to update elements
