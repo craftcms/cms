@@ -1181,7 +1181,12 @@ li.breadcrumb-toggle-wrapper {
 
   #sidebar-toggle {
     &:after {
+      top: 0;
       transform: rotate(-45deg);
+
+      body.rtl & {
+        transform: rotate(135deg);
+      }
     }
 
     body.showing-sidebar & {
