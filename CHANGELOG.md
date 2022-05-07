@@ -7,9 +7,6 @@
 
 ## 4.0.1 - 2022-05-06
 
-### Changed
-- Entry Type condition rules now all the selection of multiple entry types.
-
 ### Fixed
 - Fixed a bug where Money field labels’ `for` attributes weren’t referencing the correct input ID. ([#11016](https://github.com/craftcms/cms/pull/11016))
 - Fixed a bug where Money field inputs weren’t getting `aria-describedby` attributes. ([#11016](https://github.com/craftcms/cms/pull/11016))
@@ -18,10 +15,6 @@
 - Fixed a bug where element edit pages could reload themselves immediately after saving the element. ([#11084](https://github.com/craftcms/cms/issues/11084))
 - Fixed a bug where tabs weren’t interactive after changing an entry’s type. ([#11093](https://github.com/craftcms/cms/issues/11093))
 - Fixed a bug where Twig syntax errors weren’t being handled properly. ([#11108](https://github.com/craftcms/cms/issues/11108))
-
-### Deprecated
-- Deprecated `craft\elements\conditions\entries\EntryTypeCondition::$sectionUid`.
-- Deprecated `craft\elements\conditions\entries\EntryTypeCondition::$entryTypeUid`.
 
 ## 4.0.0.1 - 2022-05-04
 
