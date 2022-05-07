@@ -684,7 +684,6 @@ return [
     'GraphQL Schemas' => 'GraphQL sémák',
     'GraphQL Tokens' => 'GraphQL tokenek',
     'GraphQL queries' => 'GraphQL lekérdezések',
-    'GraphQL' => 'GraphQL',
     'Group Name' => 'Csoport neve',
     'Group deleted.' => 'Csoport törölve.',
     'Group renamed.' => 'Csoport átnevezve.',
