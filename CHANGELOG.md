@@ -3,6 +3,7 @@
 ## 4.0.2 (WIP)
 
 ### Fixed
+- Fixed an error that occurred when exporting elements with relational fields using the “Expanded” export type. ([#11127](https://github.com/craftcms/cms/issues/11127))
 - Fixed a PHP deprecation warning that occurred if the `tablePrefix` database connection setting was `null`.
 
 ## 4.0.1 - 2022-05-06

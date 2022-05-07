@@ -505,7 +505,11 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      */
     public function serializeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
-        /** @var ElementQueryInterface $value */
+        /** @var ElementQueryInterface|Collection $value */
+        if ($value instanceof Collection) {
+            return $value->map(fn(ElementInterface $element) => $element->id)->all();
+        }
+
         return $this->_all($value, $element)->ids();
     }
 
