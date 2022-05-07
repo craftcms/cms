@@ -275,7 +275,7 @@ class Cp extends Component
                 ];
 
                 $navItems[] = [
-                    'label' => Craft::t('app', 'GraphQL'),
+                    'label' => 'GraphQL',
                     'url' => 'graphql',
                     'icon' => '@appicons/graphql.svg',
                     'subnav' => $subNavItems,
