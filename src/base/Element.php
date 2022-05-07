@@ -4721,7 +4721,11 @@ JS,
      */
     protected function fieldLayoutFields(bool $visibleOnly = false): array
     {
-        $fieldLayout = $this->getFieldLayout();
+        try {
+            $fieldLayout = $this->getFieldLayout();
+        } catch (InvalidConfigException $e) {
+            return [];
+        }
 
         if ($fieldLayout) {
             return $visibleOnly ? $fieldLayout->getVisibleCustomFields($this) : $fieldLayout->getCustomFields();

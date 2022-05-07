@@ -719,7 +719,7 @@ class ElementsController extends Controller
 
         /** @var Response|CpScreenResponseBehavior $response */
         $response
-            ->tabs($form?->getTabMenu())
+            ->tabs($form?->getTabMenu() ?? [])
             ->content($contentFn($form))
             ->sidebar($sidebarFn($form));
 

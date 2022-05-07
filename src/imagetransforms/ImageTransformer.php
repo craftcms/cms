@@ -340,7 +340,8 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
         $quality = $transform->quality ?: Craft::$app->getConfig()->getGeneral()->defaultImageQuality;
 
         if (strtolower($asset->getExtension()) === 'svg' && $index->detectedFormat !== 'svg') {
-            $image = $images->loadImage($imageSource, true, max($transform->width, $transform->height));
+            $size = max($transform->width, $transform->height) ?? 1000;
+            $image = $images->loadImage($imageSource, true, $size);
         } else {
             $image = $images->loadImage($imageSource);
         }

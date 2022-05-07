@@ -1,12 +1,10 @@
+/* jshint esversion: 6, strict: false */
 /* global Craft */
 /* global Garnish */
 /* global $ */
 
 import Vue from 'vue';
-import App from './App';
-import {t} from '../../pluginstore/src/js/filters/craft';
-
-Vue.filter('t', t);
+import AdminTable from '@craftcms/vue/admintable/App';
 
 Craft.VueAdminTable = Garnish.Base.extend(
   {
@@ -17,13 +15,13 @@ Craft.VueAdminTable = Garnish.Base.extend(
 
       return new Vue({
         components: {
-          App,
+          AdminTable,
         },
         data() {
           return {};
         },
         render: (h) => {
-          return h(App, {
+          return h(AdminTable, {
             props: props,
           });
         },
