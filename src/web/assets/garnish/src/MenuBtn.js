@@ -1,3 +1,4 @@
+/* jshint esversion: 6, strict: false */
 import Garnish from './Garnish.js';
 import Base from './Base.js';
 import $ from 'jquery';
@@ -11,6 +12,7 @@ export default Base.extend(
     menu: null,
     showingMenu: false,
     disabled: true,
+    observer: null,
 
     /**
      * Constructor
@@ -63,7 +65,21 @@ export default Base.extend(
       this.addListener(this.$btn, 'mousedown', 'onMouseDown');
       this.addListener(this.$btn, 'keydown', 'onKeyDown');
       this.addListener(this.$btn, 'blur', 'onBlur');
-      this.enable();
+
+      this.observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          if (
+            mutation.type === 'attributes' &&
+            mutation.attributeName === 'disabled'
+          ) {
+            this.handleStatusChange();
+          }
+        });
+      });
+
+      this.observer.observe(this.$btn[0], {attributes: true});
+
+      this.handleStatusChange();
     },
 
     onBlur: function () {
@@ -262,12 +278,25 @@ export default Base.extend(
       this.disabled = true;
     },
 
+    handleStatusChange: function () {
+      if (!this.$btn) {
+        return;
+      }
+
+      if (this.$btn.attr('disabled') === 'disabled') {
+        this.disable();
+      } else {
+        this.enable();
+      }
+    },
+
     /**
      * Destroy
      */
     destroy: function () {
       this.menu.destroy();
       this.$btn.removeData('menubtn');
+      this.observer = null;
       this.base();
     },
   },

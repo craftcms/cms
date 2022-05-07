@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+### Changed
+- Garnish menu buttons are now aware of the `disabled` attribute. ([#11128](https://github.com/craftcms/cms/issues/11128))
+
 ## 4.0.1 - 2022-05-06
 
 ### Fixed
