@@ -1225,7 +1225,7 @@ return [
     'Settings' => 'Indstillinger',
     'Setup your site' => 'Opsætning af din hjemmeside',
     'Share query' => 'Share query',
-    'Share' => 'Share',
+    'Share' => 'Del',
     'Should new email addresses be verified before getting saved to user accounts? (This also affects new user registration.)' => 'Skal nye e-mailadresser bekræftes før de bliver gemt i brugerkonti? (Dette påvirker også ny brugerregistrering.)',
     'Should users who register their own accounts be suspended by default? This will prevent them from receiving an activation email.' => 'Skal brugere, som tilmelder deres egne konti, suspenderes som standard? Dette forhindrer dem i at modtage en aktiverings-e-mail.',
     'Show Time Zone' => 'Vis tidszone',
