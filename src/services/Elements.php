@@ -1259,20 +1259,20 @@ class Elements extends Component
             // Propagate it
             $otherSiteIds = ArrayHelper::withoutValue(array_keys($supportedSites), $mainClone->siteId);
             if ($element->id && !empty($otherSiteIds)) {
-                $siteQuery = $this->createElementQuery(get_class($element))
+                $siteElementQuery = $this->createElementQuery(get_class($element))
                     ->id($element->id)
                     ->siteId($otherSiteIds)
                     ->anyStatus();
 
                 if ($element->getIsDraft()) {
-                    $siteQuery
+                    $siteElementQuery
                         ->drafts()
                         ->provisionalDrafts(null);
                 } elseif ($element->getIsRevision()) {
-                    $siteQuery->revisions();
+                    $siteElementQuery->revisions();
                 }
 
-                $siteElements = $siteQuery->all();
+                $siteElements = $siteElementQuery->all();
 
                 foreach ($siteElements as $siteElement) {
                     // Ensure all fields have been normalized
