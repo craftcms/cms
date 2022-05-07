@@ -1224,7 +1224,7 @@ return [
     'Settings' => '설정',
     'Setup your site' => '사이트 설정',
     'Share query' => 'Share query',
-    'Share' => 'Share',
+    'Share' => '공유',
     'Should new email addresses be verified before getting saved to user accounts? (This also affects new user registration.)' => '사용자 계정에 저장되기 전에 새로운 이메일 주소를 검증해야 할까요? (이 설정은 새로운 사용자 등록에도 영향이 있습니다.)',
     'Should users who register their own accounts be suspended by default? This will prevent them from receiving an activation email.' => '계정을 등록하는 사용자는 기본적으로 사용 중지되어야 합니까? 사용 중지하는 경우에는 사용자가 활성화 이메일을 받을 수 없습니다.',
     'Show Time Zone' => '시간대 표시',
