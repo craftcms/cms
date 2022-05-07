@@ -1271,7 +1271,7 @@ return [
     'Settings' => 'Beállítások',
     'Setup your site' => 'Állítsd be az oldaladat',
     'Share query' => 'Share query',
-    'Share' => 'Share',
+    'Share' => 'Megoszt',
     'Should new email addresses be verified before getting saved to user accounts? (This also affects new user registration.)' => 'Szükséges az új email cím megerősítése mielőtt mentésre kerül a felhasználói fiók? (Ez új felhasználó regisztrációjára is hatással van.)',
     'Should users who register their own accounts be deactivated by default? This will prevent them from receiving an activation email or logging in.' => 'Legyenek a saját fiókot regisztráló felhasználók alapértelmezés szerint deaktiválva? Ez gátolni fogja, hogy aktivációs e-mailt kaphassanak, vagy bejelentkezzenek.',
     'Show Currency' => 'Pénznem megjelenítése',
