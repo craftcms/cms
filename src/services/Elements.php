@@ -808,9 +808,8 @@ class Elements extends Component
         }
 
         // Make sure the derivative element actually supports its own site ID
-        $supportedSites = ElementHelper::supportedSitesForElement($element);
-        $supportedSiteIds = ArrayHelper::getColumn($supportedSites, 'siteId');
-        if (!in_array($element->siteId, $supportedSiteIds, false)) {
+        $supportedSites = ArrayHelper::index(ElementHelper::supportedSitesForElement($element), 'siteId');
+        if (!isset($supportedSites[$element->siteId])) {
             throw new Exception('Attempting to merge source changes for a draft in an unsupported site.');
         }
 
@@ -821,27 +820,35 @@ class Elements extends Component
             ]));
         }
 
-        Craft::$app->getDb()->transaction(function() use ($element, $supportedSiteIds) {
+        Craft::$app->getDb()->transaction(function() use ($element, $supportedSites) {
             // Start with the other sites (if any), so we don't update dateLastMerged until the end
-            $siteElements = $element::find()
-                ->drafts(null)
-                ->provisionalDrafts(null)
-                ->id($element->id)
-                ->siteId(ArrayHelper::withoutValue($supportedSiteIds, $element->siteId))
-                ->status(null)
-                ->all();
+            $otherSiteIds = ArrayHelper::withoutValue(array_keys($supportedSites), $element->siteId);
+            if (!empty($otherSiteIds)) {
+                $siteElements = $element::find()
+                    ->drafts(null)
+                    ->provisionalDrafts(null)
+                    ->id($element->id)
+                    ->siteId($otherSiteIds)
+                    ->status(null)
+                    ->all();
+            } else {
+                $siteElements = [];
+            }
 
             foreach ($siteElements as $siteElement) {
                 $siteElement->mergeCanonicalChanges();
                 $siteElement->mergingCanonicalChanges = true;
-                $this->saveElement($siteElement, false, false);
+                $this->_saveElementInternal($siteElement, false, false, null, $supportedSites);
             }
 
             // Now the $element’s site
             $element->mergeCanonicalChanges();
+            $duplicateOf = $element->duplicateOf;
+            $element->duplicateOf = null;
             $element->dateLastMerged = new DateTime();
             $element->mergingCanonicalChanges = true;
-            $this->saveElement($element, false, false);
+            $this->_saveElementInternal($element, false, false, null, $supportedSites);
+            $element->duplicateOf = $duplicateOf;
 
             // It's now fully merged and propagated
             $element->afterPropagate(false);
@@ -1049,7 +1056,10 @@ class Elements extends Component
         }
 
         if ($siteIds !== null) {
-            $siteIds = (array)$siteIds;
+            // Typecast to integers
+            $siteIds = array_map(function($siteId) {
+                return (int)$siteId;
+            }, (array)$siteIds);
         }
 
         $position = 0;
@@ -1060,7 +1070,10 @@ class Elements extends Component
                 $position++;
 
                 $element->setScenario(Element::SCENARIO_ESSENTIALS);
-                $elementSiteIds = $siteIds ?? ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($element), 'siteId');
+                $supportedSites = ArrayHelper::index(ElementHelper::supportedSitesForElement($element), 'siteId');
+                $supportedSiteIds = array_keys($supportedSites);
+                $elementSiteIds = $siteIds !== null ? array_intersect($siteIds, $supportedSiteIds) : $supportedSiteIds;
+                /** @var string|ElementInterface $elementType */
                 $elementType = get_class($element);
 
                 // Fire a 'beforePropagateElement' event
@@ -1081,7 +1094,7 @@ class Elements extends Component
                             // Make sure the site element wasn't updated more recently than the main one
                             $siteElement = $this->getElementById($element->id, $elementType, $siteId);
                             if ($siteElement === null || $siteElement->dateUpdated < $element->dateUpdated) {
-                                $this->propagateElement($element, $siteId, $siteElement ?? false);
+                                $this->_propagateElement($element, $supportedSites, $siteId, $siteElement ?? false);
                             }
                         }
                     }
@@ -1173,9 +1186,8 @@ class Elements extends Component
         }
 
         // Make sure the element actually supports its own site ID
-        $supportedSites = ElementHelper::supportedSitesForElement($mainClone);
-        $supportedSiteIds = ArrayHelper::getColumn($supportedSites, 'siteId');
-        if (!in_array($mainClone->siteId, $supportedSiteIds, false)) {
+        $supportedSites = ArrayHelper::index(ElementHelper::supportedSitesForElement($mainClone), 'siteId');
+        if (!isset($supportedSites[$mainClone->siteId])) {
             throw new UnsupportedSiteException($element, $mainClone->siteId, 'Attempting to duplicate an element in an unsupported site.');
         }
 
@@ -1226,7 +1238,7 @@ class Elements extends Component
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             // Start with $element’s site
-            if (!$this->_saveElementInternal($mainClone, false, false)) {
+            if (!$this->_saveElementInternal($mainClone, false, false, null, $supportedSites)) {
                 throw new InvalidElementException($mainClone, 'Element ' . $element->id . ' could not be duplicated for site ' . $element->siteId);
             }
 
@@ -1250,29 +1262,24 @@ class Elements extends Component
             $mainClone->newSiteIds = [];
 
             // Propagate it
-            foreach ($supportedSites as $siteInfo) {
-                if ($siteInfo['siteId'] != $mainClone->siteId) {
-                    $siteQuery = $this->createElementQuery(get_class($element))
-                        ->id($element->id ?: false)
-                        ->siteId($siteInfo['siteId'])
-                        ->status(null);
+            $otherSiteIds = ArrayHelper::withoutValue(array_keys($supportedSites), $mainClone->siteId);
+            if ($element->id && !empty($otherSiteIds)) {
+                $siteQuery = $this->createElementQuery(get_class($element))
+                    ->id($element->id)
+                    ->siteId($otherSiteIds)
+                    ->status(null);
 
-                    if ($element->getIsDraft()) {
-                        $siteQuery
-                            ->drafts()
-                            ->provisionalDrafts(null);
-                    } elseif ($element->getIsRevision()) {
-                        $siteQuery->revisions();
-                    }
+                if ($element->getIsDraft()) {
+                    $siteQuery
+                        ->drafts()
+                        ->provisionalDrafts(null);
+                } elseif ($element->getIsRevision()) {
+                    $siteQuery->revisions();
+                }
 
-                    /** @var ElementInterface|null $siteElement */
-                    $siteElement = $siteQuery->one();
+                $siteElements = $siteQuery->all();
 
-                    if ($siteElement === null) {
-                        Craft::warning('Element ' . $element->id . ' doesn’t exist in the site ' . $siteInfo['siteId']);
-                        continue;
-                    }
-
+                foreach ($siteElements as $siteElement) {
                     // Ensure all fields have been normalized
                     $siteElement->getFieldValues();
 
@@ -1305,7 +1312,7 @@ class Elements extends Component
                     // Note: must use Craft::configure() rather than setAttributes() here,
                     // so we're not limited to whatever attributes() returns
                     Craft::configure($siteClone, $newAttributes);
-                    $siteClone->siteId = $siteInfo['siteId'];
+                    $siteClone->siteId = $siteElement->siteId;
 
                     // Clone any field values that are objects
                     foreach ($siteClone->getFieldValues() as $handle => $value) {
@@ -1318,7 +1325,7 @@ class Elements extends Component
                         // Make sure it has a valid slug
                         (new SlugValidator())->validateAttribute($siteClone, 'slug');
                         if ($siteClone->hasErrors('slug')) {
-                            throw new InvalidElementException($siteClone, "Element $element->id could not be duplicated for site {$siteInfo['siteId']}: " . $siteClone->getFirstError('slug'));
+                            throw new InvalidElementException($siteClone, "Element $element->id could not be duplicated for site $siteElement->siteId: " . $siteClone->getFirstError('slug'));
                         }
 
                         // Set a unique URI on the site clone
@@ -1330,7 +1337,7 @@ class Elements extends Component
                     }
 
                     if (!$this->_saveElementInternal($siteClone, false, false)) {
-                        throw new InvalidElementException($siteClone, "Element $element->id could not be duplicated for site {$siteInfo['siteId']}: " . implode(', ', $siteClone->getFirstErrors()));
+                        throw new InvalidElementException($siteClone, "Element $element->id could not be duplicated for site $siteElement->siteId: " . implode(', ', $siteClone->getFirstErrors()));
                     }
 
                     if ($siteClone->isNewForSite) {
@@ -1783,32 +1790,28 @@ class Elements extends Component
             // Restore the elements
             foreach ($elements as $element) {
                 // Get the sites supported by this element
-                if (empty($supportedSites = ElementHelper::supportedSitesForElement($element))) {
+                $supportedSites = ArrayHelper::index(ElementHelper::supportedSitesForElement($element), 'siteId');
+                if (empty($supportedSites)) {
                     throw new UnsupportedSiteException($element, $element->siteId, "Element $element->id has no supported sites.");
                 }
 
                 // Make sure the element actually supports the site it's being saved in
-                $supportedSiteIds = ArrayHelper::getColumn($supportedSites, 'siteId');
-                if (!in_array($element->siteId, $supportedSiteIds, false)) {
+                if (!isset($supportedSites[$element->siteId])) {
                     throw new UnsupportedSiteException($element, $element->siteId, 'Attempting to restore an element in an unsupported site.');
                 }
 
                 // Get the element in each supported site
-                $siteElements = [];
-                $class = get_class($element);
-                foreach ($supportedSites as $siteInfo) {
-                    $siteId = $siteInfo['siteId'];
-                    if ($siteId != $element->siteId) {
-                        $siteElement = $this->createElementQuery($class)
-                            ->id($element->id)
-                            ->siteId($siteId)
-                            ->status(null)
-                            ->trashed(null)
-                            ->one();
-                        if ($siteElement) {
-                            $siteElements[] = $siteElement;
-                        }
-                    }
+                $otherSiteIds = ArrayHelper::withoutValue(array_keys($supportedSites), $element->siteId);
+
+                if (!empty($otherSiteIds)) {
+                    $siteElements = $this->createElementQuery(get_class($element))
+                        ->id($element->id)
+                        ->siteId($otherSiteIds)
+                        ->status(null)
+                        ->trashed(null)
+                        ->all();
+                } else {
+                    $siteElements = [];
                 }
 
                 // Make sure it still passes essential validation
@@ -2444,19 +2447,8 @@ class Elements extends Component
      */
     public function propagateElement(ElementInterface $element, int $siteId, ElementInterface|false|null $siteElement = null): void
     {
-        // Get the sites supported by this element
-        if (empty($supportedSites = ElementHelper::supportedSitesForElement($element))) {
-            throw new Exception('All elements must have at least one site associated with them.');
-        }
-
-        // Make sure the element actually supports the site it's being saved in
-        $supportedSites = ArrayHelper::index($supportedSites, 'siteId');
-        $siteInfo = $supportedSites[(string)$siteId] ?? null;
-        if ($siteInfo === null) {
-            throw new UnsupportedSiteException($element, $siteId, 'Attempting to propagate an element to an unsupported site.');
-        }
-
-        $this->_propagateElement($element, $siteInfo, $siteElement);
+        $supportedSites = ArrayHelper::index(ElementHelper::supportedSitesForElement($element), 'siteId');
+        $this->_propagateElement($element, $supportedSites, $siteId, $siteElement);
     }
 
     /**
@@ -2467,14 +2459,20 @@ class Elements extends Component
      * @param bool $propagate Whether the element should be saved across all of its supported sites
      * @param bool|null $updateSearchIndex Whether to update the element search index for the element
      * (this will happen via a background job if this is a web request)
+     * @param array|null $supportedSites The element’s supported site info, indexed by site ID
      * @return bool
      * @throws ElementNotFoundException if $element has an invalid $id
      * @throws UnsupportedSiteException if the element is being saved for a site it doesn’t support
      * @throws Throwable if reasons
      */
-    private function _saveElementInternal(ElementInterface $element, bool $runValidation = true, bool $propagate = true, ?bool $updateSearchIndex = null): bool
-    {
-        /** @var Element|DraftBehavior|RevisionBehavior $element */
+    private function _saveElementInternal(
+        ElementInterface $element,
+        bool $runValidation = true,
+        bool $propagate = true,
+        ?bool $updateSearchIndex = null,
+        ?array $supportedSites = null,
+    ): bool {
+        /** @var ElementInterface|DraftBehavior|RevisionBehavior $element */
         $isNewElement = !$element->id;
 
         // Are we tracking changes?
@@ -2519,15 +2517,10 @@ class Elements extends Component
         }
 
         // Get the sites supported by this element
-        if (empty($supportedSites = ElementHelper::supportedSitesForElement($element))) {
-            $element->firstSave = $originalFirstSave;
-            $element->propagateAll = $originalPropagateAll;
-            throw new UnsupportedSiteException($element, $element->siteId, 'All elements must have at least one site associated with them.');
-        }
+        $supportedSites = $supportedSites ?? ArrayHelper::index(ElementHelper::supportedSitesForElement($element), 'siteId');
 
         // Make sure the element actually supports the site it's being saved in
-        $supportedSiteIds = ArrayHelper::getColumn($supportedSites, 'siteId');
-        if (!in_array($element->siteId, $supportedSiteIds, false)) {
+        if (!isset($supportedSites[$element->siteId])) {
             $element->firstSave = $originalFirstSave;
             $element->propagateAll = $originalPropagateAll;
             throw new UnsupportedSiteException($element, $element->siteId, 'Attempting to save an element in an unsupported site.');
@@ -2717,10 +2710,10 @@ class Elements extends Component
 
             // Update the element across the other sites?
             if ($propagate) {
-                foreach ($supportedSites as $siteInfo) {
+                foreach (array_keys($supportedSites) as $siteId) {
                     // Skip the initial site
-                    if ($siteInfo['siteId'] != $element->siteId) {
-                        $this->_propagateElement($element, $siteInfo, $isNewElement ? false : null);
+                    if ($siteId != $element->siteId) {
+                        $this->_propagateElement($element, $supportedSites, $siteId, $isNewElement ? false : null);
                     }
                 }
             }
@@ -2753,7 +2746,7 @@ class Elements extends Component
                     [
                         'and',
                         ['elementId' => $element->id],
-                        ['not', ['siteId' => $supportedSiteIds]],
+                        ['not', ['siteId' => array_keys($supportedSites)]],
                     ]
                 );
 
@@ -2763,7 +2756,7 @@ class Elements extends Component
                         [
                             'and',
                             ['elementId' => $element->id],
-                            ['not', ['siteId' => $supportedSiteIds]],
+                            ['not', ['siteId' => array_keys($supportedSites)]],
                         ]
                     );
                 }
@@ -2849,12 +2842,24 @@ class Elements extends Component
      * Propagates an element to a different site
      *
      * @param ElementInterface $element
-     * @param array $siteInfo
+     * @param array $supportedSites The element’s supported site info, indexed by site ID
+     * @param int $siteId The site ID being propagated to
      * @param ElementInterface|false|null $siteElement The element loaded for the propagated site
      * @throws Exception if the element couldn't be propagated
      */
-    private function _propagateElement(ElementInterface $element, array $siteInfo, ElementInterface|false|null $siteElement = null): void
-    {
+    private function _propagateElement(
+        ElementInterface $element,
+        array $supportedSites,
+        int $siteId,
+        ElementInterface|false|null $siteElement = null,
+    ) {
+        // Make sure the element actually supports the site it's being saved in
+        if (!isset($supportedSites[$siteId])) {
+            throw new UnsupportedSiteException($element, $siteId, 'Attempting to propagate an element to an unsupported site.');
+        }
+
+        $siteInfo = $supportedSites[$siteId];
+
         // Try to fetch the element in this site
         if ($siteElement === null && $element->id) {
             $siteElement = $this->getElementById($element->id, get_class($element), $siteInfo['siteId']);
@@ -2930,7 +2935,7 @@ class Elements extends Component
         $siteElement->setScenario(Element::SCENARIO_ESSENTIALS);
         $siteElement->propagating = true;
 
-        if ($this->_saveElementInternal($siteElement, true, false) === false) {
+        if ($this->_saveElementInternal($siteElement, true, false, null, $supportedSites) === false) {
             // Log the errors
             $error = 'Couldn’t propagate element to other site due to validation errors:';
             foreach ($siteElement->getFirstErrors() as $attributeError) {
