@@ -668,7 +668,6 @@ return [
     'GraphQL Schemas' => 'סכימות GraphQL',
     'GraphQL Tokens' => 'אסימוני GraphQL',
     'GraphQL queries' => 'שאילתות GraphQL',
-    'GraphQL' => 'GraphQL',
     'Group Name' => 'שם הקבוצה',
     'Group deleted.' => 'הקבוצה נמחקה.',
     'Group renamed.' => 'שם הקבוצה שונה.',
