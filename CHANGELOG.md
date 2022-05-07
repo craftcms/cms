@@ -2,6 +2,10 @@
 
 ## 3.7.42 (WIP)
 
+### Added
+- Added `craft\events\LocateUploadedFilesEvent`.
+- Added `craft\fields\Assets::EVENT_LOCATE_UPLOADED_FILES`. ([#11123](https://github.com/craftcms/cms/discussions/11123))
+
 ### Changed
 - Improved save performance for multi-site elements ([#11113](https://github.com/craftcms/cms/issues/11113))
 

@@ -16,6 +16,7 @@ use craft\elements\db\ElementQuery;
 use craft\errors\InvalidSubpathException;
 use craft\errors\InvalidVolumeException;
 use craft\errors\VolumeObjectNotFoundException;
+use craft\events\LocateUploadedFilesEvent;
 use craft\gql\arguments\elements\Asset as AssetArguments;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
 use craft\gql\resolvers\elements\Asset as AssetResolver;
@@ -50,6 +51,13 @@ class Assets extends BaseRelationField
      * @since 3.5.11
      */
     const PREVIEW_MODE_THUMBS = 'thumbs';
+
+    /**
+     * @event LocateUploadedFilesEvent The event that is triggered when identifying any uploaded files that
+     * should be stored as assets and related by the field.
+     * @since 3.7.72
+     */
+    const EVENT_LOCATE_UPLOADED_FILES = 'locateUploadedFiles';
 
     /**
      * @inheritdoc
@@ -377,6 +385,7 @@ class Assets extends BaseRelationField
                         $filenames[] = $file['filename'];
                     }
                     break;
+                case 'file':
                 case 'upload':
                     if (file_exists($file['path']) && (filesize($file['path']) > $maxSize)) {
                         $filenames[] = $file['filename'];
@@ -518,6 +527,9 @@ class Assets extends BaseRelationField
                     switch ($file['type']) {
                         case 'data':
                             FileHelper::writeToFile($tempPath, $file['data']);
+                            break;
+                        case 'file':
+                            rename($file['path'], $tempPath);
                             break;
                         case 'upload':
                             move_uploaded_file($file['path'], $tempPath);
@@ -780,7 +792,12 @@ class Assets extends BaseRelationField
             }
         }
 
-        return $files;
+        $event = new LocateUploadedFilesEvent([
+            'element' => $element,
+            'files' => $files,
+        ]);
+        $this->trigger(self::EVENT_LOCATE_UPLOADED_FILES, $event);
+        return $event->files;
     }
 
     /**
