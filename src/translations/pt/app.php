@@ -684,7 +684,6 @@ return [
     'GraphQL Schemas' => 'Esquemas GraphQL',
     'GraphQL Tokens' => 'Tokens GraphQL',
     'GraphQL queries' => 'Consultas GraphQL',
-    'GraphQL' => 'GraphQL',
     'Group Name' => 'Nome do grupo',
     'Group deleted.' => 'Grupo excluido.',
     'Group renamed.' => 'Grupo renomeado.',
