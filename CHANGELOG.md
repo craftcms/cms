@@ -5,6 +5,9 @@
 ### Changed
 - Improved save performance for multi-site elements ([#11113](https://github.com/craftcms/cms/issues/11113))
 
+### Fixed
+- Fixed a bug where soft-deleted drafts’ search keywords weren’t getting re-indexed if they were restored.
+
 ## 3.7.41 - 2022-05-06
 
 ### Changed

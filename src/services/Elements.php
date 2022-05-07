@@ -1800,6 +1800,8 @@ class Elements extends Component
                     $siteElements = $this->createElementQuery(get_class($element))
                         ->id($element->id)
                         ->siteId($otherSiteIds)
+                        ->drafts(null)
+                        ->provisionalDrafts(null)
                         ->anyStatus()
                         ->trashed(null)
                         ->all();
