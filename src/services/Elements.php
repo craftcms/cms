@@ -2687,21 +2687,15 @@ class Elements extends Component
 
                 if (!empty($otherSiteIds)) {
                     if (!$isNewElement) {
-                        $siteElementQuery = $this->createElementQuery(get_class($element))
+                        $siteElements = $this->createElementQuery(get_class($element))
                             ->id($element->id)
                             ->siteId($otherSiteIds)
+                            ->drafts(null)
+                            ->provisionalDrafts(null)
+                            ->revisions(null)
                             ->status(null)
-                            ->indexBy('siteId');
-
-                        if ($element->getIsDraft()) {
-                            $siteElementQuery
-                                ->drafts()
-                                ->provisionalDrafts(null);
-                        } elseif ($element->getIsRevision()) {
-                            $siteElementQuery->revisions();
-                        }
-
-                        $siteElements = $siteElementQuery->all();
+                            ->indexBy('siteId')
+                            ->all();
                     } else {
                         $siteElements = [];
                     }
