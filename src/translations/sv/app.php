@@ -1271,7 +1271,7 @@ return [
     'Settings' => 'Inställningar',
     'Setup your site' => 'Installera din sajt',
     'Share query' => 'Share query',
-    'Share' => 'Share',
+    'Share' => 'Dela',
     'Should new email addresses be verified before getting saved to user accounts? (This also affects new user registration.)' => 'Ska nya e-postadresser verifieras innan de sparas till ett användarkonto? (Detta påverkar även registrering av ny användare.)',
     'Should users who register their own accounts be deactivated by default? This will prevent them from receiving an activation email or logging in.' => 'Ska användare som registrerar sina egna konton inaktiveras av som standard? Detta kommer att förhindra att de får ett e-postmeddelande för aktivering eller loggar in.',
     'Show Currency' => 'Visa valuta',
