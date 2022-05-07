@@ -668,7 +668,6 @@ return [
     'GraphQL Schemas' => 'اسکیماهای GraphQL',
     'GraphQL Tokens' => 'توکن GraphQL',
     'GraphQL queries' => 'پرسش های GraphQL',
-    'GraphQL' => 'GraphQL',
     'Group Name' => 'نام گروه',
     'Group deleted.' => 'گروه حذف شد.',
     'Group renamed.' => 'گروه تغییر نام پیدا کرد.',
