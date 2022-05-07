@@ -810,7 +810,7 @@ class App
             'username' => $dbConfig->user,
             'password' => $dbConfig->password,
             'charset' => $dbConfig->charset,
-            'tablePrefix' => $dbConfig->tablePrefix,
+            'tablePrefix' => $dbConfig->tablePrefix ?? '',
             'enableLogging' => static::devMode(),
             'enableProfiling' => static::devMode(),
             'schemaMap' => [

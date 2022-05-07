@@ -150,10 +150,15 @@ abstract class BaseCondition extends Component implements ConditionInterface
      */
     protected function isConditionRuleSelectable(ConditionRuleInterface $rule): bool
     {
-        return (
-            $rule->isSelectable() &&
-            !$this->forProjectConfig || $rule::supportsProjectConfig()
-        );
+        if (!$rule->isSelectable()) {
+            return false;
+        }
+
+        if ($this->forProjectConfig && !$rule::supportsProjectConfig()) {
+            return false;
+        }
+
+        return true;
     }
 
     /**
