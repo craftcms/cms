@@ -1224,7 +1224,7 @@ return [
     'Settings' => 'Opciones',
     'Setup your site' => 'Configurar tu sitio',
     'Share query' => 'Share query',
-    'Share' => 'Share',
+    'Share' => 'Compartir',
     'Should new email addresses be verified before getting saved to user accounts? (This also affects new user registration.)' => '¿Hay que verificar las nuevas direcciones de correo electrónico antes de grabar las cuentas de usuario? (Esto también afecta a las nuevas altas de usuario).',
     'Should users who register their own accounts be suspended by default? This will prevent them from receiving an activation email.' => '¿Deberían suspenderse por defecto los usuarios que registraron sus propias cuentas? Ello evitaría que reciban un correo electrónico de activación.',
     'Show Time Zone' => 'Mostrar zona horaria',
