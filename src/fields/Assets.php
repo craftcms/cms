@@ -376,7 +376,7 @@ class Assets extends BaseRelationField
                     $filenames[] = $file['filename'];
                 }
             } else {
-                if (file_exists($file['location']) && (filesize($file['location']) > $maxSize)) {
+                if (file_exists($file['path']) && (filesize($file['path']) > $maxSize)) {
                     $filenames[] = $file['filename'];
                 }
             }
@@ -513,7 +513,7 @@ class Assets extends BaseRelationField
                 foreach ($uploadedFiles as $file) {
                     $tempPath = AssetsHelper::tempFilePath($file['filename']);
                     if ($file['type'] === 'upload') {
-                        move_uploaded_file($file['location'], $tempPath);
+                        move_uploaded_file($file['path'], $tempPath);
                     }
                     if ($file['type'] === 'data') {
                         FileHelper::writeToFile($tempPath, $file['data']);
@@ -769,7 +769,7 @@ class Assets extends BaseRelationField
             foreach ($files as $file) {
                 $uploadedFiles[] = [
                     'filename' => $file->name,
-                    'location' => $file->tempName,
+                    'path' => $file->tempName,
                     'type' => 'upload',
                 ];
             }
