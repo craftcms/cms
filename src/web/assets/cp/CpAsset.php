@@ -317,6 +317,7 @@ JS;
             'week',
             'weeks',
             '{ctrl}C to copy.',
+            '{element} pagination',
             '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}',
             '{first}-{last} of {total}',
             '{num, number} {num, plural, =1{Available Update} other{Available Updates}}',
