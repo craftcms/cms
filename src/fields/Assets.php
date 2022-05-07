@@ -16,6 +16,7 @@ use craft\elements\db\ElementQueryInterface;
 use craft\errors\FsObjectNotFoundException;
 use craft\errors\InvalidFsException;
 use craft\errors\InvalidSubpathException;
+use craft\events\LocateUploadedFilesEvent;
 use craft\gql\arguments\elements\Asset as AssetArguments;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
 use craft\gql\resolvers\elements\Asset as AssetResolver;
@@ -54,6 +55,13 @@ class Assets extends BaseRelationField
      * @since 3.5.11
      */
     public const PREVIEW_MODE_THUMBS = 'thumbs';
+
+    /**
+     * @event LocateUploadedFilesEvent The event that is triggered when identifying any uploaded files that
+     * should be stored as assets and related by the field.
+     * @since 3.7.72
+     */
+    public const EVENT_LOCATE_UPLOADED_FILES = 'locateUploadedFiles';
 
     /**
      * @inheritdoc
@@ -358,14 +366,18 @@ class Assets extends BaseRelationField
         // Get any uploaded filenames
         $uploadedFiles = $this->_getUploadedFiles($element);
         foreach ($uploadedFiles as $file) {
-            if ($file['type'] === 'data') {
-                if (strlen($file['data']) > $maxSize) {
-                    $filenames[] = $file['filename'];
-                }
-            } else {
-                if (file_exists($file['location']) && (filesize($file['location']) > $maxSize)) {
-                    $filenames[] = $file['filename'];
-                }
+            switch ($file['type']) {
+                case 'data':
+                    if (strlen($file['data']) > $maxSize) {
+                        $filenames[] = $file['filename'];
+                    }
+                    break;
+                case 'file':
+                case 'upload':
+                    if (file_exists($file['path']) && (filesize($file['path']) > $maxSize)) {
+                        $filenames[] = $file['filename'];
+                    }
+                    break;
             }
         }
 
@@ -497,11 +509,16 @@ class Assets extends BaseRelationField
 
                 foreach ($uploadedFiles as $file) {
                     $tempPath = AssetsHelper::tempFilePath($file['filename']);
-                    if ($file['type'] === 'upload') {
-                        move_uploaded_file($file['location'], $tempPath);
-                    }
-                    if ($file['type'] === 'data') {
-                        FileHelper::writeToFile($tempPath, $file['data']);
+                    switch ($file['type']) {
+                        case 'data':
+                            FileHelper::writeToFile($tempPath, $file['data']);
+                            break;
+                        case 'file':
+                            rename($file['path'], $tempPath);
+                            break;
+                        case 'upload':
+                            move_uploaded_file($file['path'], $tempPath);
+                            break;
                     }
 
                     $uploadFolder = $assetsService->getFolderById($uploadFolderId);
@@ -733,10 +750,10 @@ class Assets extends BaseRelationField
      */
     private function _getUploadedFiles(ElementInterface $element): array
     {
-        $uploadedFiles = [];
+        $files = [];
 
         if (ElementHelper::isRevision($element)) {
-            return $uploadedFiles;
+            return $files;
         }
 
         // Grab data strings
@@ -762,7 +779,7 @@ class Assets extends BaseRelationField
                         $filename = 'Uploaded_file.' . reset($extensions);
                     }
 
-                    $uploadedFiles[] = [
+                    $files[] = [
                         'filename' => $filename,
                         'data' => $data,
                         'type' => 'data',
@@ -775,18 +792,23 @@ class Assets extends BaseRelationField
         $paramName = $this->requestParamName($element);
 
         if ($paramName !== null) {
-            $files = UploadedFile::getInstancesByName($paramName);
+            $uploadedFiles = UploadedFile::getInstancesByName($paramName);
 
-            foreach ($files as $file) {
-                $uploadedFiles[] = [
-                    'filename' => $file->name,
-                    'location' => $file->tempName,
+            foreach ($uploadedFiles as $uploadedFile) {
+                $files[] = [
+                    'filename' => $uploadedFile->name,
+                    'path' => $uploadedFile->tempName,
                     'type' => 'upload',
                 ];
             }
         }
 
-        return $uploadedFiles;
+        $event = new LocateUploadedFilesEvent([
+            'element' => $element,
+            'files' => $files,
+        ]);
+        $this->trigger(self::EVENT_LOCATE_UPLOADED_FILES, $event);
+        return $event->files;
     }
 
     /**
