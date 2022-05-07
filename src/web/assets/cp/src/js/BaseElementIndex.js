@@ -1941,17 +1941,28 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 1
               );
 
-              let $prevBtn = $('<div/>', {
+              const $paginationNav = $('<nav/>', {
+                class: 'flex',
+                'aria-label': Craft.t('app', '{element} pagination', {
+                  element: itemLabel,
+                }),
+              }).appendTo($paginationContainer);
+
+              let $prevBtn = $('<button/>', {
+                role: 'button',
                 class:
                   'page-link prev-page' + (this.page > 1 ? '' : ' disabled'),
+                disabled: this.page === 1,
                 title: Craft.t('app', 'Previous Page'),
-              }).appendTo($paginationContainer);
-              let $nextBtn = $('<div/>', {
+              }).appendTo($paginationNav);
+              let $nextBtn = $('<button/>', {
+                role: 'button',
                 class:
                   'page-link next-page' +
                   (this.page < totalPages ? '' : ' disabled'),
+                disabled: this.page === totalPages,
                 title: Craft.t('app', 'Next Page'),
-              }).appendTo($paginationContainer);
+              }).appendTo($paginationNav);
 
               $('<div/>', {
                 class: 'page-info',
