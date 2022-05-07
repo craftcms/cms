@@ -686,7 +686,6 @@ return [
     'GraphQL Schemas' => 'GraphQL-skemaer',
     'GraphQL Tokens' => 'GraphQL-tokens',
     'GraphQL queries' => 'GraphQL-forespørgsler',
-    'GraphQL' => 'GraphQL',
     'Group Name' => 'Gruppenavn',
     'Group deleted.' => 'Gruppe slettet',
     'Group renamed.' => 'Gruppe er nu omdøbt.',
