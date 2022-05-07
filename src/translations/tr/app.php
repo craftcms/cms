@@ -685,7 +685,6 @@ return [
     'GraphQL Schemas' => 'GraphQL Şemaları',
     'GraphQL Tokens' => 'GraphQL Belirteçleri',
     'GraphQL queries' => 'GraphQL sorguları',
-    'GraphQL' => 'GraphQL',
     'Group Name' => 'Grup Adı',
     'Group deleted.' => 'Grup silindi.',
     'Group renamed.' => 'Grup tekrar adlandırıldı.',

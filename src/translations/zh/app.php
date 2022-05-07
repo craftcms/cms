@@ -685,7 +685,6 @@ return [
     'GraphQL Schemas' => 'GraphQL 架构',
     'GraphQL Tokens' => 'GraphQL 令牌',
     'GraphQL queries' => 'GraphQL 查询',
-    'GraphQL' => 'GraphQL',
     'Group Name' => '组名称',
     'Group deleted.' => '群组已删除。',
     'Group renamed.' => '群组已重命名。',
