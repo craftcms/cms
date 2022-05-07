@@ -685,7 +685,6 @@ return [
     'GraphQL Schemas' => 'GraphQL 스키마',
     'GraphQL Tokens' => 'GraphQL 토큰',
     'GraphQL queries' => 'GraphQL 쿼리',
-    'GraphQL' => 'GraphQL',
     'Group Name' => '그룹 이름',
     'Group deleted.' => '그룹이 삭제됨.',
     'Group renamed.' => '그룹의 이름이 변경됨.',
