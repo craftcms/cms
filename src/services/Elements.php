@@ -65,7 +65,6 @@ use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidCallException;
 use yii\caching\TagDependency;
-use yii\db\Exception as DbException;
 
 /**
  * The Elements service provides APIs for managing elements.
@@ -533,46 +532,24 @@ class Elements extends Component
             return null;
         }
 
-        try {
-            $data = (new Query())
-                ->select(['draftId', 'revisionId', 'type'])
-                ->from([Table::ELEMENTS])
-                ->where([$property => $elementId])
-                ->one();
-
-            if (!$data) {
-                return null;
-            }
-
-            if ($elementType === null) {
-                $elementType = $data['type'];
-            }
-        } catch (DbException) {
-            // Not on schema 3.2.6+ yet
-            if ($elementType === null) {
-                $elementType = $this->_elementTypeById($property, $elementId);
-            }
+        if ($elementType === null) {
+            $elementType = $this->_elementTypeById($property, $elementId);
         }
 
         if ($elementType === null || !class_exists($elementType)) {
             return null;
         }
 
-        $query = $this->createElementQuery($elementType);
+        $query = $this->createElementQuery($elementType)
+            ->siteId($siteId)
+            ->status(null)
+            ->drafts(null)
+            ->provisionalDrafts(null)
+            ->revisions(null);
+
         $query->$property = $elementId;
-        $query->siteId = $siteId;
-        $query->status(null);
-
-        // Is this a draft/revision?
-        if (!empty($data['draftId'])) {
-            $query
-                ->draftId($data['draftId'])
-                ->provisionalDrafts(null);
-        } elseif (!empty($data['revisionId'])) {
-            $query->revisionId($data['revisionId']);
-        }
-
         Craft::configure($query, $criteria);
+
         return $query->one();
     }
 
@@ -1264,20 +1241,14 @@ class Elements extends Component
             // Propagate it
             $otherSiteIds = ArrayHelper::withoutValue(array_keys($supportedSites), $mainClone->siteId);
             if ($element->id && !empty($otherSiteIds)) {
-                $siteQuery = $this->createElementQuery(get_class($element))
+                $siteElements = $this->createElementQuery(get_class($element))
                     ->id($element->id)
                     ->siteId($otherSiteIds)
-                    ->status(null);
-
-                if ($element->getIsDraft()) {
-                    $siteQuery
-                        ->drafts()
-                        ->provisionalDrafts(null);
-                } elseif ($element->getIsRevision()) {
-                    $siteQuery->revisions();
-                }
-
-                $siteElements = $siteQuery->all();
+                    ->status(null)
+                    ->drafts(null)
+                    ->provisionalDrafts(null)
+                    ->revisions(null)
+                    ->all();
 
                 foreach ($siteElements as $siteElement) {
                     // Ensure all fields have been normalized
