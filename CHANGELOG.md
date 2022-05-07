@@ -5,6 +5,7 @@
 ### Fixed
 - Fixed an error that occurred when exporting elements with relational fields using the “Expanded” export type. ([#11127](https://github.com/craftcms/cms/issues/11127))
 - Fixed a PHP deprecation warning that occurred if the `tablePrefix` database connection setting was `null`.
+- Fixed a bug where category groups were being identified as “{name}” in user permission lists. ([#11132](https://github.com/craftcms/cms/issues/11132))
 
 ## 4.0.1 - 2022-05-06
 
