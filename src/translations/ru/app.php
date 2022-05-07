@@ -685,7 +685,6 @@ return [
     'GraphQL Schemas' => 'Схемы GraphQL',
     'GraphQL Tokens' => 'Токены GraphQL',
     'GraphQL queries' => 'Запросы GraphQL',
-    'GraphQL' => 'GraphQL',
     'Group Name' => 'Имя группы',
     'Group deleted.' => 'Группа удалена.',
     'Group renamed.' => 'Группа переименована.',
