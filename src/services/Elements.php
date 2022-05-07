@@ -2701,10 +2701,35 @@ class Elements extends Component
 
             // Update the element across the other sites?
             if ($propagate) {
-                foreach (array_keys($supportedSites) as $siteId) {
-                    // Skip the initial site
-                    if ($siteId != $element->siteId) {
-                        $this->_propagateElement($element, $supportedSites, $siteId, $isNewElement ? false : null);
+                $otherSiteIds = ArrayHelper::withoutValue(array_keys($supportedSites), $element->siteId);
+
+                if (!empty($otherSiteIds)) {
+                    if (!$isNewElement) {
+                        $siteElementQuery = $this->createElementQuery(get_class($element))
+                            ->id($element->id)
+                            ->siteId($otherSiteIds)
+                            ->anyStatus()
+                            ->indexBy('siteId');
+
+                        if ($element->getIsDraft()) {
+                            $siteElementQuery
+                                ->drafts()
+                                ->provisionalDrafts(null);
+                        } elseif ($element->getIsRevision()) {
+                            $siteElementQuery->revisions();
+                        }
+
+                        $siteElements = $siteElementQuery->all();
+                    } else {
+                        $siteElements = [];
+                    }
+
+                    foreach (array_keys($supportedSites) as $siteId) {
+                        // Skip the initial site
+                        if ($siteId != $element->siteId) {
+                            $siteElement = $siteElements[$siteId] ?? false;
+                            $this->_propagateElement($element, $supportedSites, $siteId, $siteElement);
+                        }
                     }
                 }
             }
