@@ -1269,7 +1269,7 @@ return [
     'Settings' => 'Nastavení',
     'Setup your site' => 'Nastavte Váš web',
     'Share query' => 'Share query',
-    'Share' => 'Share',
+    'Share' => 'Sdílet',
     'Should new email addresses be verified before getting saved to user accounts? (This also affects new user registration.)' => 'Mají být emailové adresy ověřeny před tím, než se uloží k uživatelským účtům? (Toto ovlivní i registraci uživatelů).',
     'Should users who register their own accounts be deactivated by default? This will prevent them from receiving an activation email or logging in.' => 'Měli by uživatelé, kteří registrují své vlastní účty, být ve výchozím nastavení deaktivováni? Tím se zabrání zaslání aktivačního e-mailu těmto uživatelům nebo jejich přihlášení.',
     'Show Currency' => 'Zobrazit měnu',
