@@ -1080,7 +1080,7 @@ return [
     'Post Town' => 'Post Town',
     'Post a new {section} entry' => 'Nouvelle publication dans {section}',
     'Post on GitHub' => 'Postez sur GitHub',
-    'Postal Code' => 'Postal Code',
+    'Postal Code' => 'Code postal',
     'PowerPoint' => 'PowerPoint',
     'Powered by Craft CMS' => 'Optimisé par Craft CMS',
     'Prefecture' => 'Prefecture',
