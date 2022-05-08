@@ -69,7 +69,7 @@ return [
     'All jobs released.' => 'すべてのジョブを解放しました。',
     'All option labels must be unique.' => 'どのオプションのラベルも重複してはなりません。',
     'All option values must be unique.' => 'どのオプションの値も重複してはなりません。',
-    'All plugins must be compatible with Craft {version} before you can upgrade.' => 'All plugins must be compatible with Craft {version} before you can upgrade.',
+    'All plugins must be compatible with Craft {version} before you can upgrade.' => '更新する前に、すべてのプラグインが Craft {version} に対応している必要があります。',
     'All targets must have a label.' => 'すべてのターゲットはラベルを持つ必要があります。',
     'All users' => 'すべてのユーザ',
     'All' => 'すべて',
