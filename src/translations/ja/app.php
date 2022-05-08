@@ -964,7 +964,7 @@ return [
     'No pending content migrations.' => '保留中のコンテンツマイグレーションはありません。',
     'No pending jobs.' => '保留中のジョブはありません。',
     'No plugins are enabled.' => '有効なプラグインはありません。',
-    'No plugins are installed.' => 'No plugins are installed.',
+    'No plugins are installed.' => 'プラグインはインストールされていません。',
     'No results' => '見つかりません',
     'No results.' => '見つかりません。',
     'No routes exist yet.' => 'ルートがまだありません。',
