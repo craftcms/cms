@@ -271,11 +271,19 @@ export default Base.extend(
     },
 
     enable: function () {
-      this.disabled = false;
+      if (!this.$btn) {
+        return;
+      }
+
+      this.$btn.removeAttr('disabled');
     },
 
     disable: function () {
-      this.disabled = true;
+      if (!this.$btn) {
+        return;
+      }
+      console.log('disable this');
+      this.$btn.attr('disabled', 'disabled');
     },
 
     handleStatusChange: function () {
@@ -284,9 +292,11 @@ export default Base.extend(
       }
 
       if (this.$btn.attr('disabled') === 'disabled') {
-        this.disable();
+        this.disabled = true;
+        this.$btn.addClass('disabled');
       } else {
-        this.enable();
+        this.disabled = false;
+        this.$btn.removeClass('disabled');
       }
     },
 
