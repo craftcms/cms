@@ -5,6 +5,5 @@ CHANGELOG.md @brandonkelly
 codeception.yml @angrybrad
 crowdin.yml @angrybrad
 /packages/craftcms-webpack/ @nfourtythree @timkelty
-/src/gql/ @andris-sevcenko
 /src/web/assets/admintable/ @nfourtythree
 /src/web/assets/pluginstore/ @benjamindavid
