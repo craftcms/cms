@@ -12,5 +12,8 @@
     "lodash": "^4.17.21",
     "sortablejs": "^1.15.0",
     "vuetable-2": "^1.7.5"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
