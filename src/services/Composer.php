@@ -378,6 +378,10 @@ class Composer extends Component
         $json = new JsonFile($jsonPath);
         $config = $json->read();
 
+        if ($config['allow-plugins'] ?? null === true) {
+            return;
+        }
+
         $config = ArrayHelper::merge($config, [
             'config' => [
                 'allow-plugins' => [
