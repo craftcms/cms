@@ -53,6 +53,10 @@ class TypeConditionRule extends BaseMultiSelectConditionRule implements ElementC
     {
         $this->_sections = Craft::$app->getSections()->getAllSections();
 
+        if (empty($this->getValues()) && $this->entryTypeUid !== null && $entryType = Craft::$app->getSections()->getEntryTypeByUid($this->entryTypeUid)) {
+            $this->setValues([$entryType->uid]);
+        }
+
         parent::init();
     }
 
