@@ -119,8 +119,10 @@ class Conditions extends Component
         }
 
         /** @var ConditionRuleInterface $rule */
-        $rule = Craft::createObject($class);
-        $rule->setAttributes($config);
+        $rule = Craft::createObject([
+            'class' => $class,
+            'attributes' => $config,
+        ]);
         return $rule;
     }
 }
