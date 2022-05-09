@@ -18,8 +18,11 @@
             {% if loop.first %}
                 <th data-title="{{ attribute[1].label }}"{% if structure %} style="padding-{{ padding }}: {{ basePadding + (element.level - 1) * 44 }}px;"{% endif %} data-titlecell="">
                     {%- if structureEditable %}<a class="move icon" title="{{ 'Reorder'|t('app') }}" aria-label="{{ 'Reorder'|t('app') }}" role="button">&nbsp;</a>{% endif %}
-                    {%- if structure and totalDescendants %}<span class="toggle{% if element.id not in collapsedElementIds %} expanded{% endif
-                    %}" title="{{ 'Show/hide children'|t('app') }}" aria-label="{{ 'Show/hide children'|t('app') }}"></span>{% endif %}
+                    {%- if structure and totalDescendants %}
+                        <button role="button" class="toggle{% if element.id not in collapsedElementIds %} expanded{% endif
+                        %}" title="{{ 'Show/hide children'|t('app') }}" aria-label="{{ 'Show/hide children'|t('app') }}"
+                        aria-expanded="{{  element.id not in collapsedElementIds ? 'true' : 'false' }}"></button>
+                    {% endif %}
                     {%- include '_elements/element' with {
                         autoReload: false,
                     } -%}
