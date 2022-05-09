@@ -20,6 +20,7 @@ use Composer\Util\Platform;
 use Craft;
 use craft\composer\Factory;
 use craft\helpers\App;
+use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
 use Seld\JsonLint\DuplicateKeyException;
@@ -148,6 +149,9 @@ class Composer extends Component
         // Create a backup of composer.json in case something goes wrong
         $backup = file_get_contents($jsonPath);
 
+        // Ensure craftcms/plugin-installer is allowed
+        $this->ensurePluginInstallerIsAllowed($jsonPath);
+
         // Update composer.json
         if ($requirements !== null) {
             $this->updateRequirements($io, $jsonPath, $requirements);
@@ -241,6 +245,9 @@ class Composer extends Component
 
         // Ensure there's a home var
         $this->_ensureHomeVar();
+
+        // Ensure craftcms/plugin-installer is allowed
+        $this->ensurePluginInstallerIsAllowed($jsonPath);
 
         try {
             $jsonFile = new JsonFile($jsonPath);
@@ -358,6 +365,28 @@ class Composer extends Component
             FileHelper::createDirectory($path);
             putenv("COMPOSER_HOME=$path");
         }
+    }
+
+    /**
+     * Ensures composer.json has the craftcms/plugin-installer plugin marked as allowed.
+     *
+     * @param string $jsonPath
+     * @since 3.7.42
+     */
+    protected function ensurePluginInstallerIsAllowed(string $jsonPath): void
+    {
+        $json = new JsonFile($jsonPath);
+        $config = $json->read();
+
+        $config = ArrayHelper::merge($config, [
+            'config' => [
+                'allow-plugins' => [
+                    'craftcms/plugin-installer' => true,
+                ],
+            ],
+        ]);
+
+        $json->write($config);
     }
 
     /**

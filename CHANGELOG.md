@@ -8,6 +8,7 @@
 
 ### Changed
 - Improved save performance for multi-site elements ([#11113](https://github.com/craftcms/cms/issues/11113))
+- Built-in Composer actions now ensure that `composer.json` allows the `craftcms/plugin-installer` Composer plugin.
 
 ### Fixed
 - Fixed a bug where soft-deleted drafts’ search keywords weren’t getting re-indexed if they were restored.
