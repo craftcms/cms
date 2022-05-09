@@ -1,11 +1,8 @@
 {
   "name": "@craftcms/vue",
-  "version": "0.0.1",
-  "description": "",
+  "version": "1.0.0",
+  "description": "Vue components for Craft CMS",
   "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
   "author": "Pixel & Tonic, Inc. <support@pixelandtonic.com>",
   "license": "MIT",
   "dependencies": {
