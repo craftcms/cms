@@ -11,6 +11,7 @@
 - Fixed a bug where category groups were being identified as “{name}” in user permission lists. ([#11132](https://github.com/craftcms/cms/issues/11132))
 - Fixed a bug where Assets fields’ “Upload files” buttons weren’t wrapping when there wasn’t enough space to show them alongside “Add an asset”. ([#11133](https://github.com/craftcms/cms/issues/11133))
 - Fixed an error that occurred when searching for elements by a custom field. ([#11120](https://github.com/craftcms/cms/pull/11120))
+- Fixed a bug where `Craft.getUrl()` was appending empty query strings to URLs when they weren’t needed. ([#11159](https://github.com/craftcms/cms/issues/11159))
 
 ## 4.0.1 - 2022-05-06
 

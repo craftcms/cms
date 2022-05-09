@@ -419,9 +419,11 @@ $.extend(Craft, {
 
     // Normalize the params
     let anchor = null;
-    if ($.isPlainObject(params) && typeof params['#'] !== 'undefined') {
-      anchor = params['#'];
-      delete params['#'];
+    if ($.isPlainObject(params)) {
+      if (typeof params['#'] !== 'undefined') {
+        anchor = params['#'];
+        delete params['#'];
+      }
     } else if (typeof params === 'string') {
       let anchorPos = params.indexOf('#');
       if (anchorPos !== -1) {
@@ -429,6 +431,8 @@ $.extend(Craft, {
         params = params.substring(0, anchorPos);
       }
       params = Object.fromEntries(new URLSearchParams(params).entries());
+    } else {
+      params = {};
     }
 
     // Was there already an anchor on the path?
@@ -457,8 +461,8 @@ $.extend(Craft, {
     if (path.search('://') !== -1 || path[0] === '/') {
       return (
         path +
-        (params ? '?' + $.param(params) : '') +
-        (anchor ? '#' + anchor : '')
+        (!$.isEmptyObject(params) ? `?${$.param(params)}` : '') +
+        (anchor ? `#${anchor}` : '')
       );
     }
 
@@ -509,14 +513,9 @@ $.extend(Craft, {
         // Move the path into the query string params
 
         // Is the path param already set?
-        if (params && typeof params[Craft.pathParam] !== 'undefined') {
+        if (typeof params[Craft.pathParam] !== 'undefined') {
           let basePath = Craft.rtrim(params[Craft.pathParam]);
           path = basePath + (path ? '/' + path : '');
-        }
-
-        // Now move the path into the params
-        if (typeof params !== 'object') {
-          params = {};
         }
 
         params[Craft.pathParam] = path;
@@ -528,12 +527,12 @@ $.extend(Craft, {
       url = Craft.rtrim(url, '/') + '/' + path;
     }
 
-    if (params) {
-      url += '?' + $.param(params);
+    if (!$.isEmptyObject(params)) {
+      url += `?${$.param(params)}`;
     }
 
     if (anchor) {
-      url += '#' + anchor;
+      url += `#${anchor}`;
     }
 
     return url;
