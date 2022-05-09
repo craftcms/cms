@@ -2,6 +2,9 @@
 
 ## 4.0.2 (WIP)
 
+### Changed
+- `elements/*` actions no longer include custom field values in the response data, improving performance.
+
 ### Fixed
 - Fixed an error that occurred when exporting elements with relational fields using the “Expanded” export type. ([#11127](https://github.com/craftcms/cms/issues/11127))
 - Fixed a PHP deprecation warning that occurred if the `tablePrefix` database connection setting was `null`.
