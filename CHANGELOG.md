@@ -1,5 +1,8 @@
 # Release Notes for Craft CMS 4
 
+### Fixed
+- Fixed a bug where doing a search query throws an error. ([#11120](https://github.com/craftcms/cms/pull/11120))
+
 ## 4.0.1 - 2022-05-06
 
 ### Fixed
