@@ -3,7 +3,10 @@
 ## 4.0.2 (WIP)
 
 ### Fixed
+- Fixed an error that occurred when exporting elements with relational fields using the “Expanded” export type. ([#11127](https://github.com/craftcms/cms/issues/11127))
 - Fixed a PHP deprecation warning that occurred if the `tablePrefix` database connection setting was `null`.
+- Fixed a bug where category groups were being identified as “{name}” in user permission lists. ([#11132](https://github.com/craftcms/cms/issues/11132))
+- Fixed a bug where Assets fields’ “Upload files” buttons weren’t wrapping when there wasn’t enough space to show them alongside “Add an asset”. ([#11133](https://github.com/craftcms/cms/issues/11133))
 
 ## 4.0.1 - 2022-05-06
 
