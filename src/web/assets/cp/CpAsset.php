@@ -269,6 +269,7 @@ JS;
             'Show nested sources',
             'Show sidebar',
             'Show',
+            'Show {title} children',
             'Show/hide children',
             'Showing your unsaved changes.',
             'Sign in',
