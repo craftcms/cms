@@ -67,14 +67,15 @@ export default Base.extend(
       this.addListener(this.$btn, 'blur', 'onBlur');
 
       this.observer = new MutationObserver((mutations) => {
-        mutations.forEach((mutation) => {
+        for (const mutation of mutations) {
           if (
             mutation.type === 'attributes' &&
             mutation.attributeName === 'disabled'
           ) {
             this.handleStatusChange();
+            break;
           }
-        });
+        }
       });
 
       this.observer.observe(this.$btn[0], {attributes: true});
@@ -282,7 +283,7 @@ export default Base.extend(
       if (!this.$btn) {
         return;
       }
-      console.log('disable this');
+
       this.$btn.attr('disabled', 'disabled');
     },
 
@@ -291,7 +292,7 @@ export default Base.extend(
         return;
       }
 
-      if (this.$btn.attr('disabled') === 'disabled') {
+      if (Garnish.hasAttr(this.$btn[0], 'disabled')) {
         this.disabled = true;
         this.$btn.addClass('disabled');
       } else {
@@ -306,6 +307,7 @@ export default Base.extend(
     destroy: function () {
       this.menu.destroy();
       this.$btn.removeData('menubtn');
+      this.obsserver.disconnect();
       this.observer = null;
       this.base();
     },
