@@ -576,7 +576,7 @@ SQL;
 
             if (!empty($fieldId)) {
                 $attr = 'fieldId';
-                $val = (string)$fieldId;
+                $val = $fieldId;
             } else {
                 $attr = 'attribute';
                 $val = strtolower($term->attribute);
@@ -720,10 +720,10 @@ SQL;
      *
      * @param string $key The attribute.
      * @param string $oper The operator.
-     * @param string $val The value.
+     * @param string|int $val The value.
      * @return string
      */
-    private function _sqlWhere(string $key, string $oper, string $val): string
+    private function _sqlWhere(string $key, string $oper, string|int $val): string
     {
         $key = Craft::$app->getDb()->quoteColumnName($key);
 
