@@ -253,8 +253,10 @@ import './CraftSupportWidget.scss';
               }
             }
             this.$searchSubmit.removeClass('disabled');
+            this.$searchSubmit.removeAttr('aria-disabled');
           } else {
             this.$searchSubmit.addClass('disabled');
+            this.$searchSubmit.attr('aria-disabled', true);
           }
         } else {
           if (text) {
