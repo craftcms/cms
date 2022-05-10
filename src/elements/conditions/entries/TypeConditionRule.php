@@ -43,24 +43,24 @@ class TypeConditionRule extends BaseMultiSelectConditionRule implements ElementC
     /**
      * @inheritdoc
      */
-    public function __construct($config = [])
-    {
-        if (array_key_exists('entryTypeUid', $config)) {
-            $config['values'] = array_filter([$config['entryTypeUid']]);
-            unset($config['entryTypeUid'], $config['sectionUid']);
-        }
-
-        parent::__construct($config);
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function init(): void
     {
         $this->_sections = Craft::$app->getSections()->getAllSections();
 
         parent::init();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function setAttributes($values, $safeOnly = true): void
+    {
+        if (array_key_exists('entryTypeUid', $values)) {
+            $values['values'] = array_filter([$values['entryTypeUid']]);
+            unset($values['entryTypeUid'], $values['sectionUid']);
+        }
+
+        parent::setAttributes($values, $safeOnly);
     }
 
     /**
