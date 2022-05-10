@@ -1668,7 +1668,12 @@ JS, [
     private function _asSuccess(string $message, ElementInterface $element, array $data = [], bool $addAnother = false): Response
     {
         /** @var Element $element */
-        $response = $this->asModelSuccess($element, $message, 'element', $data);
+        // Don't call asModelSuccess() here so we can avoid including custom fields in the element data
+        $data += [
+            'modelName' => 'element',
+            'element' => $element->toArray($element->attributes()),
+        ];
+        $response = $this->asSuccess($message, $data, $this->getPostedRedirectUrl($element));
 
         if ($addAnother && $this->_addAnother) {
             $user = Craft::$app->getUser()->getIdentity();
