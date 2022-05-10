@@ -6,3 +6,4 @@
 
 ### Changed
 - Improved pagination UI accessibility. ([#11126](https://github.com/craftcms/cms/pull/11126))
+- Live Preview now always shows a “Refresh” button, regardless of whether the preview target has auto-refresh enabled. ([#11160](https://github.com/craftcms/cms/discussions/11160)) 
