@@ -95,7 +95,7 @@ JS;
             return false;
         }
 
-        $this->setMessage(Craft::t('app', 'Users Suspended.'));
+        $this->setMessage(Craft::t('app', 'Users suspended.'));
         return true;
     }
 }

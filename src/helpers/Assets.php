@@ -377,7 +377,7 @@ class Assets
         if (self::$_fileKinds === null) {
             self::$_fileKinds = [
                 Asset::KIND_ACCESS => [
-                    'label' => Craft::t('app', 'Access'),
+                    'label' => 'Access',
                     'extensions' => [
                         'accdb',
                         'accde',
@@ -463,7 +463,7 @@ class Assets
                     ],
                 ],
                 Asset::KIND_EXCEL => [
-                    'label' => Craft::t('app', 'Excel'),
+                    'label' => 'Excel',
                     'extensions' => [
                         'xls',
                         'xlsm',
@@ -473,14 +473,14 @@ class Assets
                     ],
                 ],
                 Asset::KIND_HTML => [
-                    'label' => Craft::t('app', 'HTML'),
+                    'label' => 'HTML',
                     'extensions' => [
                         'htm',
                         'html',
                     ],
                 ],
                 Asset::KIND_ILLUSTRATOR => [
-                    'label' => Craft::t('app', 'Illustrator'),
+                    'label' => 'Illustrator',
                     'extensions' => [
                         'ai',
                     ],
@@ -510,38 +510,38 @@ class Assets
                     ],
                 ],
                 Asset::KIND_JAVASCRIPT => [
-                    'label' => Craft::t('app', 'JavaScript'),
+                    'label' => 'JavaScript',
                     'extensions' => [
                         'js',
                     ],
                 ],
                 Asset::KIND_JSON => [
-                    'label' => Craft::t('app', 'JSON'),
+                    'label' => 'JSON',
                     'extensions' => [
                         'json',
                     ],
                 ],
                 Asset::KIND_PDF => [
-                    'label' => Craft::t('app', 'PDF'),
+                    'label' => 'PDF',
                     'extensions' => [
                         'pdf',
                     ],
                 ],
                 Asset::KIND_PHOTOSHOP => [
-                    'label' => Craft::t('app', 'Photoshop'),
+                    'label' => 'Photoshop',
                     'extensions' => [
                         'psb',
                         'psd',
                     ],
                 ],
                 Asset::KIND_PHP => [
-                    'label' => Craft::t('app', 'PHP'),
+                    'label' => 'PHP',
                     'extensions' => [
                         'php',
                     ],
                 ],
                 Asset::KIND_POWERPOINT => [
-                    'label' => Craft::t('app', 'PowerPoint'),
+                    'label' => 'PowerPoint',
                     'extensions' => [
                         'potx',
                         'pps',
@@ -590,7 +590,7 @@ class Assets
                     ],
                 ],
                 Asset::KIND_WORD => [
-                    'label' => Craft::t('app', 'Word'),
+                    'label' => 'Word',
                     'extensions' => [
                         'doc',
                         'docm',
@@ -601,7 +601,7 @@ class Assets
                     ],
                 ],
                 Asset::KIND_XML => [
-                    'label' => Craft::t('app', 'XML'),
+                    'label' => 'XML',
                     'extensions' => [
                         'xml',
                     ],
