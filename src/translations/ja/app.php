@@ -16,7 +16,7 @@ return [
     'A folder with the name “{folderName}” already exists in the volume.' => 'このボリュームには、名前が「{folderName}」のフォルダーがすでに存在しています。',
     'A license key is required.' => 'ライセンスキーは必須です。',
     'A server error occurred.' => 'サーバーエラーが発生しました。',
-    'A template name cannot contain NUL bytes.' => 'テンプレート名は NULL バイト (空) にできません。',
+    'A template name cannot contain NUL bytes.' => 'テンプレート名に NUL バイトを含めることはできません。',
     'Abandoned' => '破棄済み',
     'Abort the update' => 'アップデートを中止',
     'Access the control panel when the system is offline' => 'システムがオフラインの場合にコントロールパネルにアクセスする',
