@@ -1599,7 +1599,7 @@ return [
     'Upgrade to Craft Pro' => 'Craft Pro로 업그레이드',
     'Upload a file' => '파일 업로드',
     'Upload a photo' => '사진을 업로드하기',
-    'Upload failed for “{filename}”.' => 'Upload failed for “{filename}”.',
+    'Upload failed for “{filename}”.' => '“{filename}” 업로드 실패.',
     'Upload failed.' => 'Upload failed.',
     'Upload files' => '파일 업로드하기',
     'Upload icon' => '아이콘 업데이트',
