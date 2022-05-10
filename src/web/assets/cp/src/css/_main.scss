@@ -2749,19 +2749,18 @@ $checkboxPadding: $checkboxSize + 4;
       align-items: center;
       top: 50%;
       transform: translateY(-50%);
+      @include margin-left(calc(var(--touch-target-size) * -1));
       width: var(--touch-target-size);
       height: var(--touch-target-size);
     }
 
     .move {
-      @include margin-left(calc(var(--touch-target-size) * -1));
       font-size: 11px;
       text-decoration: none;
     }
 
     .toggle {
       text-align: center;
-      @include margin-left(calc(var(--touch-target-size) * -1));
       padding: 4px;
     }
 
