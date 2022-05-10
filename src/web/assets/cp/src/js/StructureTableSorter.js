@@ -626,7 +626,8 @@ Craft.StructureTableSorter = Garnish.DragSort.extend(
           $(
             '<button class="toggle expanded" role="button" aria-expanded="true" title="' +
               Craft.t('app', 'Show/hide children') +
-              '" aria-label="' + Craft.t('app', 'Show {title} children', {title: ancestorTitle}) +
+              '" aria-label="' +
+              Craft.t('app', 'Show {title} children', {title: ancestorTitle}) +
               '"></button>'
           ).insertAfter(
             this._updateAncestors._$ancestor.find('> th .move:first')
