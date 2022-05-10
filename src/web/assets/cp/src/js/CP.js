@@ -24,6 +24,7 @@ Craft.CP = Garnish.Base.extend(
     $mainContent: null,
     $details: null,
     $sidebarContainer: null,
+    $sidebarToggle: null,
     $sidebar: null,
     $contentContainer: null,
     $edition: null,
@@ -82,6 +83,7 @@ Craft.CP = Garnish.Base.extend(
       this.$mainContent = $('#main-content');
       this.$details = $('#details');
       this.$sidebarContainer = $('#sidebar-container');
+      this.$sidebarToggle = $('#sidebar-toggle');
       this.$sidebar = $('#sidebar');
       this.$contentContainer = $('#content-container');
       this.$collapsibleTables = $('table.collapsible');
@@ -152,7 +154,7 @@ Craft.CP = Garnish.Base.extend(
 
       // Toggles
       this.addListener(this.$navToggle, 'click', 'toggleNav');
-      this.addListener($('#sidebar-toggle'), 'click', 'toggleSidebar');
+      this.addListener($(this.$sidebarToggle), 'click', 'toggleSidebar');
 
       // Does this page have a primary form?
       if (!this.$primaryForm.length) {
@@ -526,10 +528,10 @@ Craft.CP = Garnish.Base.extend(
       );
     },
 
-    toggleSidebar: function ({target}) {
-      const expanded = target.getAttribute('aria-expanded') === 'true';
+    toggleSidebar: function () {
+      const expanded = this.$sidebarToggle.attr('aria-expanded') === 'true';
       const newState = expanded ? 'false' : 'true';
-      target.setAttribute('aria-expanded', newState);
+      this.$sidebarToggle.attr('aria-expanded', newState);
       Garnish.$bod.toggleClass('showing-sidebar');
     },
 
