@@ -727,7 +727,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
     options.events = {
       fileuploadstart: this._onUploadStart.bind(this),
       fileuploadprogressall: this._onUploadProgress.bind(this),
-      fileuploaddone: this._onUploadComplete.bind(this),
+      fileuploadalways: this._onUploadComplete.bind(this),
       fileuploadfail: this._onUploadFailure.bind(this),
     };
 
@@ -949,29 +949,31 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
    * On Upload Failure.
    */
   _onUploadFailure: function (event, data) {
-    const {result} = data;
-    const {message, filename} = result;
-    if (message) {
-      alert(
-        Craft.t('app', 'Upload failed. The error message was: “{message}”', {
-          message,
-        })
-      );
-    } else {
-      alert(Craft.t('app', 'Upload failed for {filename}.', {filename}));
+    const response = data.response();
+    let {message, filename} = response?.jqXHR?.responseJSON || {};
+
+    if (!message) {
+      message = filename
+        ? Craft.t('app', 'Upload failed for “{filename}”.', {filename})
+        : Craft.t('app', 'Upload failed.');
     }
+
+    alert(message);
   },
   /**
    * On Upload Complete.
    */
   _onUploadComplete: function (event, data) {
-    const {result} = data;
+    const {result} = data || {};
+    const assetId = result?.assetId;
 
     // Add the uploaded file to the selected ones, if appropriate
-    this.selectElementAfterUpdate(result.assetId);
+    if (assetId) {
+      this.selectElementAfterUpdate(assetId);
+    }
 
     // If there is a prompt, add it to the queue
-    if (result.conflict) {
+    if (result?.conflict) {
       result.prompt = {
         message: Craft.t('app', result.conflict, {file: result.filename}),
         choices: this._fileConflictTemplate.choices,
@@ -989,7 +991,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 
       if (this.promptHandler.getPromptCount()) {
         this.promptHandler.showBatchPrompts(this._uploadFollowup.bind(this));
-      } else {
+      } else if (assetId) {
         this._updateAfterUpload();
       }
     }
