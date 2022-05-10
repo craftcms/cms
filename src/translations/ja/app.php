@@ -1599,7 +1599,7 @@ return [
     'Upgrade to Craft Pro' => 'Craft Proにアップグレード',
     'Upload a file' => 'ファイルをアップロード',
     'Upload a photo' => '写真をアップロードする',
-    'Upload failed for “{filename}”.' => 'Upload failed for “{filename}”.',
+    'Upload failed for “{filename}”.' => '“{filename}” のアップロードに失敗しました.',
     'Upload failed.' => 'Upload failed.',
     'Upload files' => 'アップロード',
     'Upload icon' => 'アイコンをアップロード',
