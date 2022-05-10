@@ -63,11 +63,11 @@ class Conditions extends Component
         $rules = ArrayHelper::remove($config, 'conditionRules', []);
 
         /** @var ConditionInterface */
-        return Craft::createObject(array_merge(
-            ['class' => $class],
-            $config,
-            ['conditionRules' => $rules],
-        ));
+        return Craft::createObject([
+            'class' => $class,
+            'attributes' => $config,
+            'conditionRules' => $rules,
+        ]);
     }
 
     /**
@@ -120,9 +120,9 @@ class Conditions extends Component
         }
 
         /** @var ConditionRuleInterface */
-        return Craft::createObject(array_merge(
-            ['class' => $class],
-            $config,
-        ));
+        return Craft::createObject([
+            'class' => $class,
+            'attributes' => $config,
+        ]);
     }
 }
