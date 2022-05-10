@@ -1166,10 +1166,15 @@ JS, [
             }
 
             $tabs = $form->getTabMenu();
-            $tabHtml = count($tabs) > 1 ? $view->namespaceInputs(fn() => $view->renderTemplate('_includes/tabs', [
-                'tabs' => $tabs,
-                'selectedTab' => $this->_selectedTab,
-            ], View::TEMPLATE_MODE_CP), $namespace) : null;
+            if (count($tabs) > 1) {
+                $selectedTab = isset($tabs[$this->_selectedTab]) ? $this->_selectedTab : null;
+                $tabHtml = $view->namespaceInputs(fn() => $view->renderTemplate('_includes/tabs', [
+                    'tabs' => $tabs,
+                    'selectedTab' => $selectedTab,
+                ], View::TEMPLATE_MODE_CP), $namespace);
+            } else {
+                $tabHtml = null;
+            }
 
             // Make sure the user is authorized to preview the draft
             Craft::$app->getSession()->authorize("previewDraft:$element->draftId");
@@ -1668,7 +1673,12 @@ JS, [
     private function _asSuccess(string $message, ElementInterface $element, array $data = [], bool $addAnother = false): Response
     {
         /** @var Element $element */
-        $response = $this->asModelSuccess($element, $message, 'element', $data);
+        // Don't call asModelSuccess() here so we can avoid including custom fields in the element data
+        $data += [
+            'modelName' => 'element',
+            'element' => $element->toArray($element->attributes()),
+        ];
+        $response = $this->asSuccess($message, $data, $this->getPostedRedirectUrl($element));
 
         if ($addAnother && $this->_addAnother) {
             $user = Craft::$app->getUser()->getIdentity();

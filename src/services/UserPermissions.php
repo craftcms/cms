@@ -566,7 +566,7 @@ class UserPermissions extends Component
         foreach ($categoryGroups as $group) {
             $permissions[] = [
                 'heading' => Craft::t('app', 'Category Group - {name}', [
-                    'section' => Craft::t('site', $group->name),
+                    'name' => Craft::t('site', $group->name),
                 ]),
                 'permissions' => [
                     "viewCategories:$group->uid" => [

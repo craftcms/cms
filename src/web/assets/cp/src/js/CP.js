@@ -545,7 +545,7 @@ Craft.CP = Garnish.Base.extend(
         const href = ev.$tab.attr('href');
 
         // Show its content area
-        if (href.charAt(0) === '#') {
+        if (href && href.charAt(0) === '#') {
           $(href).removeClass('hidden');
         }
 
@@ -577,7 +577,8 @@ Craft.CP = Garnish.Base.extend(
       });
 
       this.tabManager.on('deselectTab', (ev) => {
-        if (ev.$tab.attr('href').charAt(0) === '#') {
+        const href = ev.$tab.attr('href');
+        if (href && href.charAt(0) === '#') {
           // Hide its content area
           $(ev.$tab.attr('href')).addClass('hidden');
         }
