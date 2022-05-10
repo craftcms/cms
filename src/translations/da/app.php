@@ -1600,7 +1600,7 @@ return [
     'Upgrade to Craft Pro' => 'Opgrader Craft Pro',
     'Upload a file' => 'Upload en fil',
     'Upload a photo' => 'Upload et billede',
-    'Upload failed for “{filename}”.' => 'Upload failed for “{filename}”.',
+    'Upload failed for “{filename}”.' => 'Överföringen misslyckades för “{filename}”.',
     'Upload failed.' => 'Upload failed.',
     'Upload files' => 'Upload filer',
     'Upload icon' => 'Upload ikon',
