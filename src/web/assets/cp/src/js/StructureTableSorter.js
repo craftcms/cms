@@ -152,7 +152,6 @@ Craft.StructureTableSorter = Garnish.DragSort.extend(
         // Is this the title cell?
         if (Garnish.hasAttr($firstRowCell, 'data-titlecell')) {
           this._$titleHelperCell = $helperCell;
-
           var padding = parseInt($firstRowCell.css('padding-' + Craft.left));
           this._titleHelperCellOuterWidth = width;
 
@@ -623,10 +622,12 @@ Craft.StructureTableSorter = Garnish.DragSort.extend(
         // Is this its first child?
         if (this._updateAncestors._$ancestor.data('descendants') == 1) {
           // Create its toggle
+          const ancestorTitle = this._updateAncestors._$ancestor.data('title');
           $(
-            '<span class="toggle expanded" title="' +
+            '<button class="toggle expanded" role="button" aria-expanded="true" title="' +
               Craft.t('app', 'Show/hide children') +
-              '"></span>'
+              '" aria-label="' + Craft.t('app', 'Show {title} children', {title: ancestorTitle}) +
+              '"></button>'
           ).insertAfter(
             this._updateAncestors._$ancestor.find('> th .move:first')
           );
