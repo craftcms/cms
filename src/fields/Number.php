@@ -257,7 +257,12 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
     {
         $view = Craft::$app->getView();
         $formatter = Craft::$app->getFormatter();
-        $formatNumber = !$formatter->willBeMisrepresented($value);
+
+        try {
+            $formatNumber = !$formatter->willBeMisrepresented($value);
+        } catch (InvalidArgumentException $e) {
+            $formatNumber = false;
+        }
 
         if ($formatNumber) {
             if ($value !== null) {

@@ -13,6 +13,7 @@
 ### Fixed
 - Fixed a bug where soft-deleted drafts’ search keywords weren’t getting re-indexed if they were restored.
 - Fixed an error that occurred when transforming an SVG image without specifying a width or height. ([#11122](https://github.com/craftcms/cms/issues/11122))
+- Fixed an error that occurred when saving a Number field with a non-numeric value. ([#11164](https://github.com/craftcms/cms/issues/11164))
 
 ## 3.7.41 - 2022-05-06
 
