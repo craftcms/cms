@@ -456,6 +456,10 @@ Craft.CP = Garnish.Base.extend(
       Craft.submitForm(this.$primaryForm, options);
     },
 
+    updateSidebarMenuLabel: function () {
+      this.updateContentHeading();
+    },
+
     updateContentHeading: function () {
       const $item = this.$sidebar.find('a.sel:first');
       const $label = $item.children('.label');
