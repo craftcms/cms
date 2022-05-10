@@ -10,7 +10,7 @@
 
 ### Fixed
 - Fixed an error that occurred when searching for elements by a custom field. ([#11120](https://github.com/craftcms/cms/pull/11120))
-- Fixed a bug where asset upload failures weren’t being caught properly. ([#11156](https://github.com/craftcms/cms/issues/11156))
+- Fixed a bug where asset upload failures weren’t being handled properly. ([#11156](https://github.com/craftcms/cms/issues/11156))
 - Fixed an error that occurred when exporting elements with relational fields using the “Expanded” export type. ([#11127](https://github.com/craftcms/cms/issues/11127))
 - Fixed a PHP deprecation warning that occurred if the `tablePrefix` database connection setting was `null`.
 - Fixed a bug where category groups were being identified as “{name}” in user permission lists. ([#11132](https://github.com/craftcms/cms/issues/11132))
