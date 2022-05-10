@@ -40,11 +40,18 @@ class TypeConditionRule extends BaseMultiSelectConditionRule implements ElementC
      */
     private array $_sections = [];
 
-    /** @deprecated in 4.0.1.  */
-    public ?string $sectionUid = null;
+    /**
+     * @inheritdoc
+     */
+    public function __construct($config = [])
+    {
+        if (empty($config['values']) && (isset($config['entryTypeUid']) && $config['entryTypeUid'])) {
+            $config['values'] = [$config['entryTypeUid']];
+            unset($config['entryTypeUid'], $config['sectionUid']);
+        }
 
-    /** @deprecated in 4.0.1.  */
-    public ?string $entryTypeUid = null;
+        parent::__construct($config);
+    }
 
     /**
      * @inheritdoc
@@ -52,10 +59,6 @@ class TypeConditionRule extends BaseMultiSelectConditionRule implements ElementC
     public function init(): void
     {
         $this->_sections = Craft::$app->getSections()->getAllSections();
-
-        if (empty($this->getValues()) && $this->entryTypeUid !== null && $entryType = Craft::$app->getSections()->getEntryTypeByUid($this->entryTypeUid)) {
-            $this->setValues([$entryType->uid]);
-        }
 
         parent::init();
     }

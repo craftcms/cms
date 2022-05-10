@@ -9,6 +9,6 @@
 - Live Preview now always shows a “Refresh” button, regardless of whether the preview target has auto-refresh enabled. ([#11160](https://github.com/craftcms/cms/discussions/11160)) 
 - Entry Type condition rules now allow multiple selections.
 
-### Deprecated
-- Deprecated `craft\elements\conditions\entries\EntryTypeCondition::$sectionUid`.
-- Deprecated `craft\elements\conditions\entries\EntryTypeCondition::$entryTypeUid`.
+### Removed
+- Removed `craft\elements\conditions\entries\EntryTypeCondition::$sectionUid`.
+- Removed `craft\elements\conditions\entries\EntryTypeCondition::$entryTypeUid`.
