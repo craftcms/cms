@@ -12,6 +12,7 @@
 - Fixed a bug where Assets fields’ “Upload files” buttons weren’t wrapping when there wasn’t enough space to show them alongside “Add an asset”. ([#11133](https://github.com/craftcms/cms/issues/11133))
 - Fixed an error that occurred when searching for elements by a custom field. ([#11120](https://github.com/craftcms/cms/pull/11120))
 - Fixed a bug where `Craft.getUrl()` was appending empty query strings to URLs when they weren’t needed. ([#11159](https://github.com/craftcms/cms/issues/11159))
+- Fixed a bug where addresses could validate the wrong set of required fields, if the validation rules were invoked before the country code was set. ([#11162](https://github.com/craftcms/cms/issues/11162))
 
 ## 4.0.1 - 2022-05-06
 
