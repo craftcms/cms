@@ -1599,7 +1599,7 @@ return [
     'Upgrade to Craft Pro' => 'Craft Pro\'ya yükseltin',
     'Upload a file' => 'Dosya yükle',
     'Upload a photo' => 'Fotoğraf yükle',
-    'Upload failed for “{filename}”.' => 'Upload failed for “{filename}”.',
+    'Upload failed for “{filename}”.' => '“{filename}” karşıya yüklenemedi.',
     'Upload failed.' => 'Upload failed.',
     'Upload files' => 'Dosya yükleme',
     'Upload icon' => 'Simge yükle',
