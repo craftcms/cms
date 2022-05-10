@@ -1599,7 +1599,7 @@ return [
     'Upgrade to Craft Pro' => 'Обновить до Craft Pro',
     'Upload a file' => 'Загрузить файл',
     'Upload a photo' => 'Загрузить фото',
-    'Upload failed for “{filename}”.' => 'Upload failed for “{filename}”.',
+    'Upload failed for “{filename}”.' => 'Сбой загрузки для «{filename}».',
     'Upload failed.' => 'Upload failed.',
     'Upload files' => 'Загрузить файлы',
     'Upload icon' => 'Загрузить значок',
