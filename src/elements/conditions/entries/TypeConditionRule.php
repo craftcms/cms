@@ -45,8 +45,8 @@ class TypeConditionRule extends BaseMultiSelectConditionRule implements ElementC
      */
     public function __construct($config = [])
     {
-        if (empty($config['values']) && (isset($config['entryTypeUid']) && $config['entryTypeUid'])) {
-            $config['values'] = [$config['entryTypeUid']];
+        if (array_key_exists('entryTypeUid', $config)) {
+            $config['values'] = array_filter([$config['entryTypeUid']]);
             unset($config['entryTypeUid'], $config['sectionUid']);
         }
 
@@ -86,17 +86,6 @@ class TypeConditionRule extends BaseMultiSelectConditionRule implements ElementC
         /** @var EntryQuery $query */
         $sections = Craft::$app->getSections();
         $query->typeId($this->paramValue(fn($uid) => $sections->getEntryTypeByUid($uid)->id ?? null));
-    }
-
-    /**
-     * @inheritdoc
-     * @TODO Remove when `sectionUid` and `entryTypeUid` are removed.
-     */
-    protected function defineRules(): array
-    {
-        return array_merge(parent::defineRules(), [
-            [['sectionUid', 'entryTypeUid'], 'safe'],
-        ]);
     }
 
     /**
