@@ -1599,7 +1599,7 @@ return [
     'Upgrade to Craft Pro' => 'Passer à Craft Pro',
     'Upload a file' => 'Téléverser un fichier',
     'Upload a photo' => 'Télécharger une photo',
-    'Upload failed for “{filename}”.' => 'Upload failed for “{filename}”.',
+    'Upload failed for “{filename}”.' => 'Le téléchargement de « {filename} » a échoué.',
     'Upload failed.' => 'Upload failed.',
     'Upload files' => 'Télécharger des fichiers',
     'Upload icon' => 'Télécharger l’icône',
