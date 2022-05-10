@@ -1599,7 +1599,7 @@ return [
     'Upgrade to Craft Pro' => 'Frissítés Craft Pro verzióra',
     'Upload a file' => 'Fájl feltöltése',
     'Upload a photo' => 'Fotó feltöltése',
-    'Upload failed for “{filename}”.' => 'Upload failed for “{filename}”.',
+    'Upload failed for “{filename}”.' => 'A(z) “{filename}” feltöltése nem sikerült.',
     'Upload failed.' => 'Upload failed.',
     'Upload files' => 'Fájl feltöltése',
     'Upload icon' => 'Ikon feltöltése',
