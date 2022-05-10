@@ -1599,7 +1599,7 @@ return [
     'Upgrade to Craft Pro' => '升级到 Craft Pro',
     'Upload a file' => '上传文件',
     'Upload a photo' => '上传照片',
-    'Upload failed for “{filename}”.' => 'Upload failed for “{filename}”.',
+    'Upload failed for “{filename}”.' => '“{filename}” 上传失败.',
     'Upload failed.' => 'Upload failed.',
     'Upload files' => '上传文件',
     'Upload icon' => '上传图标',
