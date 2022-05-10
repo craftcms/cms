@@ -952,21 +952,13 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
     const response = data.response();
     let {message, filename} = response?.jqXHR?.responseJSON || {};
 
-    if (message) {
-      alert(
-        Craft.t('app', 'Upload failed:\n{message}', {
-          message,
-        })
-      );
-    } else {
-      message = filename ? 'Upload failed for “{filename}”.' : 'Upload failed.';
-
-      alert(
-        Craft.t('app', message, {
-          filename,
-        })
-      );
+    if (!message) {
+      message = filename
+        ? Craft.t('app', 'Upload failed for “{filename}”.', {filename})
+        : Craft.t('app', 'Upload failed.');
     }
+
+    alert(message);
   },
   /**
    * On Upload Complete.
