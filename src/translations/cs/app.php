@@ -1599,7 +1599,7 @@ return [
     'Upgrade to Craft Pro' => 'Upgrade na Craft Pro',
     'Upload a file' => 'Nahrát soubor',
     'Upload a photo' => 'Nahrát fotku',
-    'Upload failed for “{filename}”.' => 'Upload failed for “{filename}”.',
+    'Upload failed for “{filename}”.' => 'Nahrávání souboru “{filename}” se nezdařilo.',
     'Upload failed.' => 'Upload failed.',
     'Upload files' => 'Nahrát soubory',
     'Upload icon' => 'Nahrát ikonu',
