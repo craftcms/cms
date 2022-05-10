@@ -959,7 +959,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
         })
       );
     } else {
-      message = filename ? 'Upload failed for {filename}.' : 'Upload failed.';
+      message = filename ? 'Upload failed for “{filename}”.' : 'Upload failed.';
 
       alert(
         Craft.t('app', message, {
