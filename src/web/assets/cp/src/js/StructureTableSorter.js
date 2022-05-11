@@ -35,7 +35,7 @@ Craft.StructureTableSorter = Garnish.DragSort.extend(
       this.structureId = this.tableView.$table.data('structure-id');
       this.maxLevels = parseInt(this.tableView.$table.attr('data-max-levels'));
 
-      this._basePadding = 14 + (this.tableView.elementIndex.actions ? 14 : 24); // see _elements/tableview/elements.html
+      this._basePadding = 14 + (this.tableView.elementIndex.actions ? 34 : 24); // see _elements/tableview/elements.html
       this._helperMargin = this.tableView.elementIndex.actions ? 54 : 0;
 
       settings = $.extend({}, Craft.StructureTableSorter.defaults, settings, {
