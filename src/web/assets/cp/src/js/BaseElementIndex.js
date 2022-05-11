@@ -1115,7 +1115,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     selectSource: function (source) {
-      console.log('in select source');
       const $source = $(source);
 
       if (!$source || !$source.length) {
