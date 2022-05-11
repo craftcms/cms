@@ -171,7 +171,7 @@ class MonologTarget extends PsrTarget
             $logger->pushHandler((new StreamHandler(
                 'php://stderr',
                 Logger::WARNING,
-                bubble: false
+                bubble: false,
             ))->setFormatter($this->formatter));
 
             // Don't pollute console request output
@@ -179,6 +179,7 @@ class MonologTarget extends PsrTarget
                 $logger->pushHandler((new StreamHandler(
                     'php://stdout',
                     $this->level,
+                    bubble: false,
                 ))->setFormatter($this->formatter));
             }
         } else {
