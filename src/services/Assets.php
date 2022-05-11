@@ -599,7 +599,18 @@ class Assets extends Component
 
         // If it’s not an image, return a generic file extension icon
         $extension = $asset->getExtension();
-        if (!Image::canManipulateAsImage($extension) || !$asset->getVolume()->getTransformFs()->hasUrls) {
+        if (!Image::canManipulateAsImage($extension)) {
+            return AssetsHelper::iconUrl($extension);
+        }
+
+        $volume = $asset->getVolume();
+        try {
+            $transformFs = $volume->getTransformFs();
+        } catch (InvalidConfigException) {
+            $transformFs = null;
+        }
+
+        if (!$transformFs?->hasUrls) {
             return AssetsHelper::iconUrl($extension);
         }
 
@@ -609,7 +620,7 @@ class Assets extends Component
             'mode' => 'crop',
         ]);
 
-        return $asset->getUrl($transform, false);
+        return $asset->getUrl($transform, false) ?? AssetsHelper::iconUrl($extension);
     }
 
     /**

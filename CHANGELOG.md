@@ -1,5 +1,26 @@
 # Release Notes for Craft CMS 4
 
+## 4.0.2 - 2022-05-11
+
+### Changed
+- `elements/*` actions no longer include custom field values in the response data, improving performance.
+
+### Changed
+- Garnish menu buttons are now aware of the `disabled` attribute. ([#11128](https://github.com/craftcms/cms/issues/11128))
+
+### Fixed
+- Fixed an error that occurred when searching for elements by a custom field. ([#11120](https://github.com/craftcms/cms/pull/11120))
+- Fixed a bug where asset upload failures weren’t being handled properly. ([#11156](https://github.com/craftcms/cms/issues/11156))
+- Fixed a bug where warning and error logs were being sent to both `stdout` and `stderr` when `CRAFT_STREAM_LOG` was enabled. ([#11189](https://github.com/craftcms/cms/issues/11189))
+- Fixed an error that occurred when exporting elements with relational fields using the “Expanded” export type. ([#11127](https://github.com/craftcms/cms/issues/11127))
+- Fixed a PHP deprecation warning that occurred if the `tablePrefix` database connection setting was `null`.
+- Fixed a bug where category groups were being identified as “{name}” in user permission lists. ([#11132](https://github.com/craftcms/cms/issues/11132))
+- Fixed a bug where Assets fields’ “Upload files” buttons weren’t wrapping when there wasn’t enough space to show them alongside “Add an asset”. ([#11133](https://github.com/craftcms/cms/issues/11133))
+- Fixed a bug where `Craft.getUrl()` was appending empty query strings to URLs when they weren’t needed. ([#11159](https://github.com/craftcms/cms/issues/11159))
+- Fixed a bug where addresses could validate the wrong set of required fields, if the validation rules were invoked before the country code was set. ([#11162](https://github.com/craftcms/cms/issues/11162))
+- Fixed an error that could occur when viewing the Temporary Uploads volume, if the Temp Uploads Location asset setting was set to “In the local temp folder”. ([#11192](https://github.com/craftcms/cms/issues/11192))
+- Fixed an error that could occur when deleting a volume, if its filesystem had been deleted.
+
 ## 4.0.1 - 2022-05-06
 
 ### Fixed
@@ -8,7 +29,7 @@
 - Fixed an error that occurred when loading an edit screen for an element type that didn’t have a field layout. ([#11110](https://github.com/craftcms/cms/pull/11110))
 - Fixed a bug where condition rules they weren’t selectable (per `isSelectable()`) were still visible in the rule dropdown menu. ([#11104](https://github.com/craftcms/cms/pull/11104))
 - Fixed a bug where element edit pages could reload themselves immediately after saving the element. ([#11084](https://github.com/craftcms/cms/issues/11084))
-- Fixed a bug where tabs weren’t interactive after changing an entry’s type. ([#11093](https://github.com/craftcms/cms/issues/11093))
+- Fixed a bug where tabs weren’t interactive after changing an entry’s type, if the new entry type didn’t have a tab of the same name as the previously-selected tab. ([#11093](https://github.com/craftcms/cms/issues/11093))
 - Fixed a bug where Twig syntax errors weren’t being handled properly. ([#11108](https://github.com/craftcms/cms/issues/11108))
 
 ## 4.0.0.1 - 2022-05-04

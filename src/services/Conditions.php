@@ -62,11 +62,12 @@ class Conditions extends Component
         // Set condition rules last, in case any available rules are dependent on the condition config
         $rules = ArrayHelper::remove($config, 'conditionRules', []);
 
-        /** @var ConditionInterface $condition */
-        $condition = Craft::createObject($class);
-        $condition->setAttributes($config);
-        $condition->setConditionRules($rules);
-        return $condition;
+        /** @var ConditionInterface */
+        return Craft::createObject([
+            'class' => $class,
+            'attributes' => $config,
+            'conditionRules' => $rules,
+        ]);
     }
 
     /**
@@ -118,9 +119,10 @@ class Conditions extends Component
             throw new InvalidArgumentException("Invalid condition rule class: $class");
         }
 
-        /** @var ConditionRuleInterface $rule */
-        $rule = Craft::createObject($class);
-        $rule->setAttributes($config);
-        return $rule;
+        /** @var ConditionRuleInterface */
+        return Craft::createObject([
+            'class' => $class,
+            'attributes' => $config,
+        ]);
     }
 }

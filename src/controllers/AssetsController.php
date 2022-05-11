@@ -237,7 +237,7 @@ class AssetsController extends Controller
             if (!$result) {
                 $errors = $asset->getFirstErrors();
                 // TODO: use asModelFailure, output errors in js
-                return $this->asFailure(Craft::t('app', 'Failed to save the asset:') . ' ' . implode(";\n", $errors));
+                return $this->asFailure(implode("\n", $errors));
             }
 
             if ($asset->conflictingFilename !== null) {

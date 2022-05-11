@@ -485,20 +485,25 @@ class Address extends Element implements AddressInterface, BlockElementInterface
     public function defineRules(): array
     {
         $rules = parent::defineRules();
-
         $rules[] = [['ownerId'], 'number'];
         $rules[] = [['countryCode'], 'required'];
         $rules[] = [['longitude', 'latitude'], 'safe'];
         $rules[] = [self::_addressAttributes(), 'safe'];
+        return $rules;
+    }
 
-        $formatter = Craft::$app->getAddresses()->getAddressFormatRepository()->get($this->countryCode);
-        $requiredAddressFields = array_filter(
-            $formatter->getRequiredFields(),
-            fn(string $attribute) => !in_array($attribute, ['givenName', 'familyName', 'additionalName']),
-        );
-        $rules[] = [$requiredAddressFields, 'required', 'on' => self::SCENARIO_LIVE];
-
+    /**
+     * @inheritdoc
+     */
+    public function afterValidate(): void
+    {
         if ($this->getScenario() === self::SCENARIO_LIVE) {
+            $formatter = Craft::$app->getAddresses()->getAddressFormatRepository()->get($this->countryCode);
+            $requiredAttributes = array_filter(
+                $formatter->getRequiredFields(),
+                fn(string $attribute) => !in_array($attribute, ['givenName', 'familyName', 'additionalName']),
+            );
+
             $requirableNativeFields = [
                 OrganizationField::class,
                 OrganizationTaxIdField::class,
@@ -512,18 +517,19 @@ class Address extends Element implements AddressInterface, BlockElementInterface
                 /** @var BaseNativeField|null $field */
                 $field = $fieldLayout->getFirstVisibleElementByType($class, $this);
                 if ($field && $field->required) {
-                    $attributes = match ($field->attribute()) {
+                    array_push($requiredAttributes, ...match ($field->attribute()) {
                         'latLong' => ['latitude', 'longitude'],
                         default => [$field->attribute()],
-                    };
-                    foreach ($attributes as $attribute) {
-                        (new RequiredValidator())->validateAttribute($this, $attribute);
-                    }
+                    });
                 }
+            }
+
+            foreach ($requiredAttributes as $attribute) {
+                (new RequiredValidator())->validateAttribute($this, $attribute);
             }
         }
 
-        return $rules;
+        parent::afterValidate();
     }
 
     /**
