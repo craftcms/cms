@@ -2247,6 +2247,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
     _showExportHud: function () {
       this.$exportBtn.addClass('active');
+      this.$exportBtn.attr('aria-expanded', 'true');
 
       var $form = $('<form/>', {
         class: 'export-form',
@@ -2316,6 +2317,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
       hud.on('hide', () => {
         this.$exportBtn.removeClass('active');
+        this.$exportBtn.attr('aria-expanded', 'false');
       });
 
       var submitting = false;
