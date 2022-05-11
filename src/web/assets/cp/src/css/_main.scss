@@ -951,14 +951,7 @@ td.right {
 
 // Visually hide without hiding from screen readers
 .visually-hidden {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: 0;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  border: 0;
+  @include visually-hidden;
 }
 
 .invisible {
