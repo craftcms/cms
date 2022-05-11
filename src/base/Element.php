@@ -4338,6 +4338,9 @@ JS,
                     'data' => [
                         'icon' => 'ellipsis',
                     ],
+                    'aria' => [
+                        'expanded' => 'false',
+                    ],
                 ])
                 : '';
             $statusField = Cp::lightswitchFieldHtml([
