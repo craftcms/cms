@@ -474,19 +474,21 @@ class AssetTransforms extends Component
                 } else {
                     $transform['width'] = (int)ceil($refTransform->width * $sizeValue);
                 }
-
-                // Only set the height if the reference transform has a height set on it
-                if ($refTransform && $refTransform->height) {
-                    if ($sizeUnit === 'w') {
-                        $transform['height'] = (int)ceil($refTransform->height * $transform['width'] / $refTransform->width);
-                    } else {
-                        $transform['height'] = (int)ceil($refTransform->height * $sizeValue);
-                    }
-                }
                 
-                // Only maintain format if the reference transform had a specific format set
-                if ($refTransform && $refTransform->format) {
-                    $transform['format'] = $refTransform->format;
+                if ($refTransform) {
+                    // Only set the height if the reference transform has a height set on it
+                    if ($refTransform->height) {
+                        if ($sizeUnit === 'w') {
+                            $transform['height'] = (int)ceil($refTransform->height * $transform['width'] / $refTransform->width);
+                        } else {
+                            $transform['height'] = (int)ceil($refTransform->height * $sizeValue);
+                        }
+                    }
+
+                    // Only maintain format if the reference transform had a specific format set
+                    if ($refTransform->format) {
+                        $transform['format'] = $refTransform->format;
+                    }
                 }
             }
 
