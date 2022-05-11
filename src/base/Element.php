@@ -4340,6 +4340,7 @@ JS,
                     ],
                     'aria' => [
                         'expanded' => 'false',
+                        'label' => Craft::t('app', 'Update status for individual sites'),
                     ],
                 ])
                 : '';
