@@ -4,8 +4,6 @@
 
 ### Changed
 - `elements/*` actions no longer include custom field values in the response data, improving performance.
-
-### Changed
 - Garnish menu buttons are now aware of the `disabled` attribute. ([#11128](https://github.com/craftcms/cms/issues/11128))
 
 ### Fixed
