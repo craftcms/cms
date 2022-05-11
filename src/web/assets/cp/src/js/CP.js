@@ -154,7 +154,7 @@ Craft.CP = Garnish.Base.extend(
 
       // Toggles
       this.addListener(this.$navToggle, 'click', 'toggleNav');
-      this.addListener($(this.$sidebarToggle), 'click', 'toggleSidebar');
+      this.addListener(this.$sidebarToggle, 'click', 'toggleSidebar');
 
       // Does this page have a primary form?
       if (!this.$primaryForm.length) {
