@@ -609,7 +609,7 @@ class Assets extends Component
             'mode' => 'crop',
         ]);
 
-        return $asset->getUrl($transform, false);
+        return $asset->getUrl($transform, false) ?? AssetsHelper::iconUrl($extension);
     }
 
     /**
