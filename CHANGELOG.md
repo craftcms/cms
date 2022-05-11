@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## 3.7.42 (WIP)
+## 3.7.42 - 2022-05-11
 
 ### Added
 - Added `craft\events\LocateUploadedFilesEvent`.
