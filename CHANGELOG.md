@@ -7,6 +7,7 @@
 
 ### Fixed
 - Fixed an error that occurred when searching for elements by a custom field. ([#11120](https://github.com/craftcms/cms/pull/11120))
+- Fixed a bug where asset upload failures weren’t being handled properly. ([#11156](https://github.com/craftcms/cms/issues/11156))
 
 ## 4.0.1 - 2022-05-06
 
