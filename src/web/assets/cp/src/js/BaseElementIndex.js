@@ -1115,6 +1115,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     selectSource: function (source) {
+      console.log('in select source');
       const $source = $(source);
 
       if (!$source || !$source.length) {
@@ -2419,7 +2420,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           this.$filterBtn.addClass('active');
         }
       } else {
-        this.$filterBtn.attr('aria-controls', null).attr('aria-expanded', null);
+        this.$filterBtn.attr('aria-controls', null);
       }
     },
   },
