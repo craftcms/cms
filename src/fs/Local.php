@@ -73,7 +73,7 @@ class Local extends Fs implements LocalFsInterface
         // Config normalization
         if (isset($config['path'])) {
             $config['path'] = FileHelper::normalizePath($config['path']);
-            if ($config['path'] === '' || $config['path'] === '.')   {
+            if ($config['path'] === '' || $config['path'] === '.') {
                 unset($config['path']);
             }
         }
