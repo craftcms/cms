@@ -4,8 +4,6 @@
 
 ### Changed
 - `elements/*` actions no longer include custom field values in the response data, improving performance.
-
-### Changed
 - Garnish menu buttons are now aware of the `disabled` attribute. ([#11128](https://github.com/craftcms/cms/issues/11128))
 
 ### Fixed
@@ -20,6 +18,7 @@
 - Fixed a bug where addresses could validate the wrong set of required fields, if the validation rules were invoked before the country code was set. ([#11162](https://github.com/craftcms/cms/issues/11162))
 - Fixed an error that could occur when viewing the Temporary Uploads volume, if the Temp Uploads Location asset setting was set to “In the local temp folder”. ([#11192](https://github.com/craftcms/cms/issues/11192))
 - Fixed an error that could occur when deleting a volume, if its filesystem had been deleted.
+- Fixed an error that could occur when rendering the thumbnail preview for an asset, if its file was missing. ([#11196](https://github.com/craftcms/cms/issues/11196))
 
 ## 4.0.1 - 2022-05-06
 
