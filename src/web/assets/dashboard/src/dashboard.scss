@@ -32,7 +32,11 @@
     }
 
     &:hover > .front > .pane > .icon.settings {
-      opacity: 0.3;
+      opacity: 0.8;
+    }
+
+    & .front > .pane > .icon.settings:focus {
+      opacity: 0.8;
     }
   }
 
@@ -53,13 +57,17 @@
   & > .front {
     & > .pane {
       & > .icon.settings {
-        display: block;
+        display: flex;
+        justify-content: center;
+        align-items: center;
         opacity: 0;
         cursor: pointer;
-        @include right(24px);
-        top: 24px;
+        @include right(12px);
+        top: 12px;
         transition: opacity linear 200ms;
         position: absolute;
+        height: var(--touch-target-size);
+        width: var(--touch-target-size);
       }
 
       & > .spinner.body-loading {

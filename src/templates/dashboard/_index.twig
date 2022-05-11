@@ -32,6 +32,7 @@
                 <div id="widget{{ widget.id }}" class="widget {{ widget.type|lower }}" data-id="{{ widget.id }}" data-type="{{ widget.type }}" data-title="{{ widget.title }}">
                     <div class="front">
                         <div class="pane">
+                            <button role="button" class="settings icon hidden"></button>
                             <div class="spinner body-loading"></div>
                             {% if widget.title or widget.subtitle %}
                                 <div class="widget-heading">
@@ -46,7 +47,6 @@
                             <div class="body">
                                 {{ widget.bodyHtml|raw }}
                             </div>
-                            <div class="settings icon hidden"></div>
                         </div>
                     </div>
                     <div class="back hidden">
