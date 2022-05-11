@@ -483,6 +483,11 @@ class AssetTransforms extends Component
                         $transform['height'] = (int)ceil($refTransform->height * $sizeValue);
                     }
                 }
+                
+                // Only maintain format if the reference transform had a specific format set
+                if ($refTransform && $refTransform->format) {
+                    $transform['format'] = $refTransform->format;
+                }
             }
 
             $transform = $this->normalizeTransform($transform);
@@ -508,6 +513,8 @@ class AssetTransforms extends Component
                 // Use this as the reference transform in case any srcset-style transforms follow it
                 $refTransform = $transform;
             }
+            
+            unset($sizeValue, $sizeUnit);
         }
 
         unset($refTransform);
