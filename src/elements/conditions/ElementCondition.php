@@ -6,6 +6,7 @@ use Craft;
 use craft\base\conditions\BaseCondition;
 use craft\base\conditions\ConditionRuleInterface;
 use craft\base\ElementInterface;
+use craft\base\PreviewableFieldInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\errors\InvalidTypeException;
 use craft\fields\conditions\FieldConditionRuleInterface;
@@ -28,6 +29,12 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
      * @phpstan-var class-string<ElementInterface>|null
      */
     public ?string $elementType = null;
+
+    /**
+     * @var string|null The selected element source key.
+     * @since 4.1.0
+     */
+    public ?string $sourceKey = null;
 
     /**
      * @var string The field context that should be used when fetching custom fields’ condition rule types.
@@ -118,9 +125,23 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
             if ($elementType::hasStatuses()) {
                 $types[] = StatusConditionRule::class;
             }
+
+            // If we have a source key, we can fetch just the fields that belong to it
+            if ($this->sourceKey) {
+                $fields = [];
+                $fieldLayouts = Craft::$app->getElementSources()->getFieldLayoutsForSource($elementType, $this->sourceKey);
+                foreach ($fieldLayouts as $fieldLayout) {
+                    array_push($fields, ...$fieldLayout->getCustomFields());
+                }
+            }
         }
 
-        foreach (Craft::$app->getFields()->getAllFields($this->fieldContext) as $field) {
+        if (!isset($fields)) {
+            // Default to all custom fields
+            $fields = Craft::$app->getFields()->getAllFields($this->fieldContext);
+        }
+
+        foreach ($fields as $field) {
             if (($type = $field->getElementConditionRuleType()) !== null) {
                 if (is_string($type)) {
                     $type = ['class' => $type];
