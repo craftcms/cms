@@ -220,7 +220,9 @@
                         {# sidebar #}
                         {% if sidebar %}
                             <div id="sidebar-toggle-container">
-                                <button type="button" id="sidebar-toggle" class="btn menubtn"><span id="selected-sidebar-item-label"></span></button>
+                                <button type="button" id="sidebar-toggle" class="btn menubtn" aria-controls="sidebar-container" aria-expanded="false">
+                                    {{ 'Show sidebar'|t('app') }}
+                                </button>
                             </div>
                             <div id="sidebar-container">
                                 <div id="sidebar" class="sidebar">
@@ -231,6 +233,9 @@
 
                         {# content-container #}
                         <div id="content-container">
+                            {% if sidebar %}
+                                <h2 id="content-heading"></h2>
+                            {% endif %}
                             {% block main %}
                                 <div id="content" class="content-pane">
                                     {% if contentNotice or tabs %}
