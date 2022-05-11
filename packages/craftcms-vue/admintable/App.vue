@@ -765,6 +765,16 @@
           }
         }
       },
+
+      dragging(newVal) {
+        // Update pointer events while dragging to allow sortable JS to drag to top
+        let $contentHeader = document.querySelector('header#header');
+        if (newVal) {
+          $contentHeader.style.pointerEvents = 'none';
+        } else {
+          $contentHeader.style.pointerEvents = '';
+        }
+      },
     },
   };
 </script>
