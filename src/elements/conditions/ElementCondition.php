@@ -6,7 +6,6 @@ use Craft;
 use craft\base\conditions\BaseCondition;
 use craft\base\conditions\ConditionRuleInterface;
 use craft\base\ElementInterface;
-use craft\base\PreviewableFieldInterface;
 use craft\elements\db\ElementQueryInterface;
 use craft\errors\InvalidTypeException;
 use craft\fields\conditions\FieldConditionRuleInterface;
