@@ -85,7 +85,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
 
         if ($imageTransformIndex->fileExists) {
             $fs = $asset->getVolume()->getTransformFs();
-            $uri = FileHelper::normalizePath($this->getTransformBasePath($asset)) . $this->getTransformUri($asset, $imageTransformIndex);
+            $uri = str_replace('\\', '/', $this->getTransformBasePath($asset)) . $this->getTransformUri($asset, $imageTransformIndex);
 
             // Check if it really exists
             if ($fs instanceof LocalFsInterface && !$fs->fileExists($uri)) {
