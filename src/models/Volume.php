@@ -273,6 +273,11 @@ class Volume extends Model
     {
         if (!isset($this->_transformFs)) {
             $handle = $this->getTransformFsHandle() ?? $this->getFsHandle();
+
+            if ($handle === null) {
+                throw new InvalidConfigException('Missing filesystem handle');
+            }
+
             $fs = Craft::$app->getFs()->getFilesystemByHandle($handle);
 
             if (!$fs) {
