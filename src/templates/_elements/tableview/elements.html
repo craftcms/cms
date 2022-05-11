@@ -9,7 +9,13 @@
 {% endif -%}
 
 {% for element in elements %}
-    {% set totalDescendants = structure ? element.getDescendants().anyStatus().count() %}
+    {% set totalDescendants = structure
+        ? element.getDescendants()
+            .anyStatus()
+            .drafts(null)
+            .draftOf(false)
+            .count()
+        : 0 %}
     <tr data-id="{{ element.id }}"{% if structure %} data-level="{{ element.level }}" data-descendants="{{ totalDescendants ?? 0 }}"{% endif %}{% if element.id in disabledElementIds %} class="disabled"{% endif %}>
         {% if showCheckboxes %}
             <td class="checkbox-cell"><div class="checkbox" title="{{ 'Select'|t('app') }}" aria-label="{{ 'Select'|t('app') }}"></div></td>
