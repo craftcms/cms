@@ -257,11 +257,10 @@ Craft.Preview = Garnish.Base.extend(
           // Refresh button
           this.$refreshBtn = $('<button/>', {
             type: 'button',
-            class: 'btn hidden',
+            class: 'btn',
             text: Craft.t('app', 'Refresh'),
             'data-icon': 'refresh',
           }).appendTo($buttonContainer);
-          this._updateRefreshBtn();
           this.addListener(this.$refreshBtn, 'click', () => {
             this.updateIframe(false, true);
           });
@@ -490,21 +489,12 @@ Craft.Preview = Garnish.Base.extend(
       return typeof typeof target.refresh === 'undefined' || !!target.refresh;
     },
 
-    _updateRefreshBtn: function () {
-      if (!this._autoRefresh()) {
-        this.$refreshBtn.removeClass('hidden');
-      } else {
-        this.$refreshBtn.addClass('hidden');
-      }
-    },
-
     switchTarget: function (i) {
       this.activeTarget = i;
       this.$targetBtn.text(this.elementEditor.settings.previewTargets[i].label);
       this.$targetMenu.find('a.sel').removeClass('sel');
       this.$targetMenu.find('a').eq(i).addClass('sel');
       this.updateIframe(true);
-      this._updateRefreshBtn();
       this.trigger('switchTarget', {
         previewTarget: this.elementEditor.settings.previewTargets[i],
       });

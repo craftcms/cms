@@ -307,7 +307,7 @@ export default Base.extend(
     destroy: function () {
       this.menu.destroy();
       this.$btn.removeData('menubtn');
-      this.obsserver.disconnect();
+      this.observer.disconnect();
       this.observer = null;
       this.base();
     },
