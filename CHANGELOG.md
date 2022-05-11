@@ -16,6 +16,7 @@
 - Fixed an error that occurred when saving a Number field with a non-numeric value. ([#11164](https://github.com/craftcms/cms/issues/11164))
 - Fixed a bug where it wasn’t possible to drag an item to the top in admin tables. ([#10781](https://github.com/craftcms/cms/issues/10781))
 - Fixed a bug where entries within Structure sections weren’t expandable if their only descendants were unpublished drafts.
+- Fixed a bug where expanding a collapsed Structure section entry wouldn’t reveal its descendants, if the parent was a draft. ([#11186](https://github.com/craftcms/cms/issues/11186))
 
 ## 3.7.41 - 2022-05-06
 

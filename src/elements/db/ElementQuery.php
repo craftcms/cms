@@ -2839,12 +2839,9 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         if (!$element instanceof ElementInterface) {
-            $element = $class::find()
-                ->id($element)
-                ->siteId($this->siteId)
-                ->structureId($this->structureId)
-                ->anyStatus()
-                ->one();
+            $element = Craft::$app->getElements()->getElementById($element, $class, $this->siteId, [
+                'structureId' => $this->structureId,
+            ]);
 
             if ($element === null) {
                 $this->$property = false;
