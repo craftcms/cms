@@ -271,7 +271,8 @@ class SitesController extends Controller
                 'value' => $locale->id,
                 'data' => [
                     'data' => [
-                        'hint' => $locale->getLanguageID() !== $languageId ? $locale->getDisplayName() : false,
+                        'hint' => $locale->id,
+                        'keywords' => $locale->getLanguageID() !== $languageId ? $locale->getDisplayName() : false,
                     ],
                 ],
             ];

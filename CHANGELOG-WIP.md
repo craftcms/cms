@@ -11,6 +11,9 @@
 - Live Preview now always shows a “Refresh” button, regardless of whether the preview target has auto-refresh enabled. ([#11160](https://github.com/craftcms/cms/discussions/11160)) 
 - Entry Type condition rules now allow multiple selections. ([#11124](https://github.com/craftcms/cms/pull/11124))
 - Element index filters now only show condition rules for the custom fields that are used by the field layouts in the selected source, if a native source is selected. ([#11187](https://github.com/craftcms/cms/discussions/11187))
+- Sites’ Language settings now display the locale IDs as option hints, rather than the languages’ native names. ([#11195](https://github.com/craftcms/cms/discussions/11195))
+- Selectize options can now specify searchable `keywords` that won’t be visible in the UI.
+- Selectize inputs will now include their options’ values as search keywords.
 
 ### Removed
 - Removed `craft\elements\conditions\entries\EntryTypeCondition::$sectionUid`.
