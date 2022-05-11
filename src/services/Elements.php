@@ -1114,6 +1114,9 @@ class Elements extends Component
                         'exception' => $e,
                     ]));
                 }
+
+                // Clear caches
+                $this->invalidateCachesForElement($element);
             }
         } catch (QueryAbortedException $e) {
             // Fail silently
@@ -2436,6 +2439,9 @@ class Elements extends Component
     {
         $supportedSites = ArrayHelper::index(ElementHelper::supportedSitesForElement($element), 'siteId');
         $this->_propagateElement($element, $supportedSites, $siteId, $siteElement);
+
+        // Clear caches
+        $this->invalidateCachesForElement($element);
     }
 
     /**

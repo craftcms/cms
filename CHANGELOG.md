@@ -17,6 +17,7 @@
 - Fixed a bug where it wasn’t possible to drag an item to the top in admin tables. ([#10781](https://github.com/craftcms/cms/issues/10781))
 - Fixed a bug where entries within Structure sections weren’t expandable if their only descendants were unpublished drafts.
 - Fixed a bug where expanding a collapsed Structure section entry wouldn’t reveal its descendants, if the parent was a draft. ([#11186](https://github.com/craftcms/cms/issues/11186))
+- Fixed a bug where element caches weren’t getting cleared for elements when they were propagated to a newly-created site.
 
 ## 3.7.41 - 2022-05-06
 
