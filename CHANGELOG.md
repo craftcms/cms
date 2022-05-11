@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## 4.0.2 (WIP)
+## 4.0.2 - 2022-05-11
 
 ### Changed
 - `elements/*` actions no longer include custom field values in the response data, improving performance.
