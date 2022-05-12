@@ -402,6 +402,7 @@ import './dashboard.scss';
             complete: this.onShowFront.bind(this),
           }
         );
+        this.$settingsToggle.focus();
       }, 100);
     },
 
@@ -543,7 +544,6 @@ import './dashboard.scss';
       if (this.$back) {
         this.$back.addClass('hidden');
       }
-      this.$settingsToggle.focus();
     },
 
     onShowBack: function () {
