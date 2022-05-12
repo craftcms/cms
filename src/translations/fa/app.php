@@ -1648,7 +1648,7 @@ return [
     'Where assets should be stored when they are uploaded directly to the field, or via a front-end form.' => 'محل ذخیره فایل‌های پروژه هنگامی که مستقیماً در فیلد، یا از طریق یک فرم سایت بارگذاری می‌شوند.',
     'Where do you want to store temporary asset uploads?' => 'کجا می خواهید آپلودهای فایل پروژه موقت را ذخیره نمایید؟',
     'Where do you want to store user photos? Note that the subfolder path can contain variables like <code>{username}</code>.' => 'تصاویر کاربران را کجا می خواهید آپلود نمایید؟ توجه نمایید که مسیر زیر پوشه می تواند شامل متغیرهایی مانند <code>{username}</code> باشد.',
-    'Where new {type} should be placed by default in the structure.' => 'Where new {type} should be placed by default in the structure.',
+    'Where new {type} should be placed by default in the structure.' => '{type} جدید به طور پیش فرض در ساختار کجا باید قرار بگیرد.',
     'Where selected assets should be stored.' => 'جایی که فایل‌های پروژه باید ذخیره شوند.',
     'Whether authors should be able to choose which time zone the time is in.' => 'این که نویسندگان باید بتوانند منطقه زمانی که در آن هستند را انتخاب نمایند.',
     'Whether authors should be able to upload files directly to the field, rather than requiring them to select/upload assets via the selection modal.' => 'آیا نویسندگان باید بتوانند فایل‌ها را مستقیماً در فیلد بارگذاری کنند، به جای آنکه موظف باشند فایل‌های پروژه را از طریق مودال انتخاب، انتخاب/بارگذاری کنند.',
