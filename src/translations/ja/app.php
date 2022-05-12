@@ -1506,7 +1506,7 @@ return [
     'URL' => 'URL',
     'Unable to fetch upgrade info at this time.' => '現在、アップグレード情報は取得できません。',
     'Unable to find the template “{template}”.' => '「{template}」と言うテンプレートが見つけられません。',
-    'Unable to use the selected directory for the volume.' => 'ボリュームに対して選択されたディレクトリは使用できません。',
+    'Unable to use the selected directory for the volume.' => 'ボリュームに対して選択されたディレクトリを使用できません。',
     'Unauthorized' => '不許可',
     'Uncheck for {offLabel}.' => '{offLabel}をオフにします。',
     'Underline links' => 'リンクに下線を付ける',
