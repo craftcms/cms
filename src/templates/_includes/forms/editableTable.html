@@ -5,8 +5,9 @@
 {%- set initJs = not static and (initJs ?? true) -%}
 {%- set minRows = minRows ?? null %}
 {%- set maxRows = maxRows ?? null %}
-{%- set staticRows = static or (staticRows ?? false) or (minRows == 1 and maxRows == 1 and rows|length == 1) %}
-{%- set fixedRows = not staticRows and (minRows and minRows == maxRows and minRows == rows|length) %}
+{%- set totalRows = rows|length %}
+{%- set staticRows = static or (staticRows ?? false) or (minRows == 1 and maxRows == 1 and totalRows == 1) %}
+{%- set fixedRows = not staticRows and (minRows and minRows == maxRows and minRows == totalRows) %}
 {%- set describedBy = describedBy ?? null %}
 
 {% if not static %}
@@ -184,11 +185,26 @@
                     {% endif %}
                 {% endfor %}
                 {% if not staticRows %}
-                    {% set deleteButtonText = 'Delete row {index}'|t('app', {
-                      index: rowNumber,
-                    }) %}
                     <td class="thin action"><a class="move icon" title="{{ 'Reorder'|t('app') }}" aria-label="{{ 'Reorder'|t('app') }}"></a></td>
-                    {% if not fixedRows %}<td class="thin action"><button class="delete icon" type="button" title="{{ 'Delete'|t('app') }}" aria-label="{{ deleteButtonText }}"></button></td>{% endif %}
+                    {% if not fixedRows %}
+                        <td class="thin action">
+                            {{ tag('button', {
+                                class: [
+                                    'delete',
+                                    'icon',
+                                    minRows and totalRows <= minRows ? 'disabled' : null,
+                                ]|filter,
+                                type: 'button',
+                                disabled: minRows and totalRows <= minRows,
+                                title: 'Delete'|t('app'),
+                                aria: {
+                                    label: 'Delete row {index}'|t('app', {
+                                        index: rowNumber,
+                                    }),
+                                }
+                            }) }}
+                        </td>
+                    {% endif %}
                 {% endif %}
             </tr>
         {% endfor %}
