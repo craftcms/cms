@@ -41,13 +41,22 @@ export default Base.extend(
       this.$button = $(button);
 
       // Get listbox ID from button
-      const listboxId = this.$button.data('controls');
-      this.listboxId = `#${listboxId}`;
-      this.$listbox = $(this.listboxId);
-      this.$listbox.find('li').attr('role', 'option');
+      this.listboxId = this.$button.data('controls');
+      this.$listbox = $(`#${this.listboxId}`);
+      this.initializeOptions();
+      this.setActiveDescendant();
 
       this.addListener(this.$button, 'click', this.handleClick);
       this.addListener(this.$listbox, 'keydown', this.handleKeypress);
+    },
+
+    initializeOptions: function () {
+      this.$listbox.find('li').attr('role', 'option');
+      const {listboxId} = this;
+
+      this.getOptions().each(function (index) {
+        $(this).attr('id', `${listboxId}-option-${index}`);
+      });
     },
 
     handleClick: function () {
@@ -67,7 +76,7 @@ export default Base.extend(
 
       // Find index of option in relation to its siblings
       const $selectedOption = this.getSelectedOption();
-      const optionSelector = `${this.listboxId} [role="option"]`;
+      const optionSelector = `#${this.listboxId} [role="option"]`;
       const currentIndex = $selectedOption.index(optionSelector);
 
       switch (key) {
@@ -100,6 +109,7 @@ export default Base.extend(
         case Garnish.RETURN_KEY:
         case Garnish.ESC_KEY: {
           this.close();
+          this.$button.focus();
           break;
         }
       }
@@ -113,17 +123,27 @@ export default Base.extend(
       const $options = this.getOptions();
       const $selected = $options.eq(index);
 
-      $options.each(function() {
+      $options.each(function () {
         $(this).removeAttr('aria-selected');
       });
 
       $selected.attr('aria-selected', 'true');
+      this.setActiveDescendant();
       const optionHtml = $selected.html();
       this.$button.html(optionHtml);
     },
 
+    setActiveDescendant: function () {
+      const selectedOptionId = this.getSelectedOptionId();
+      this.$listbox.attr('aria-activedescendant', selectedOptionId);
+    },
+
     getSelectedOption: function () {
       return this.$listbox.find('[aria-selected="true"]');
+    },
+
+    getSelectedOptionId: function () {
+      return this.getSelectedOption().attr('id');
     },
 
     open: function () {
