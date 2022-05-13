@@ -2576,7 +2576,6 @@ $.extend($.fn, {
 
   dropdownListbox: function () {
     return this.each(function () {
-      console.log('hello');
       const $btn = $(this);
       new Garnish.DropdownListbox($btn);
     });

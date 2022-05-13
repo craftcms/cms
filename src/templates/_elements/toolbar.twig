@@ -52,17 +52,19 @@
         </div>
 
         {# This is the new dropdown listbox component #}
+        {% set labelId = "#{newIdPrefix}status-label" %}
+        {% set listboxId = "#{newIdPrefix}listbox" %}
         <div>
-            <span id="{{ newIdPrefix }}status-label">Status</span>
+            <span id="{{ labelId }}">Status</span>
             <div id="exp_wrapper">
-                <button aria-haspopup="listbox" aria-labelledby="{{ newIdPrefix }}status-label {{ newIdPrefix }}status-button" id="{{ newIdPrefix }}status-button" data-dropdown-listbox-btn>
+                <button class="btn" aria-haspopup="listbox" data-controls="{{ listboxId }}" aria-labelledby="{{ labelId }} {{ newIdPrefix }}status-button" id="{{ newIdPrefix }}status-button" data-dropdown-listbox-btn>
                     <span class="status"></span>{{ "All"|t('app') }}
                 </button>
-                <ul id="exp_elem_list"
+                <ul id="{{ listboxId }}"
+                    class="padded hidden"
                     tabindex="-1"
                     role="listbox"
-                    aria-labelledby="{{ newIdPrefix }}status-label"
-                    class="hidden">
+                    aria-labelledby="{{ labelId }}">
                     <li data-status=""><span class="status"></span>{{ "All"|t('app') }}</li>
                     {% if showStatusMenu %}
                         {% for status, info in elementInstance.statuses() %}

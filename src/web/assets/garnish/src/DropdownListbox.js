@@ -11,6 +11,8 @@ export default Base.extend(
     visible: false,
 
     $container: null,
+    $button: null,
+    $listbox: null,
     $options: null,
     $anchor: null,
 
@@ -33,45 +35,38 @@ export default Base.extend(
     /**
      * Constructor
      */
-    init: function (container, settings) {
-      console.log('initializing dropdown listbox');
+    init: function (button, settings) {
+
       // this.setSettings(settings, Garnish.CustomSelect.defaults);
-      //
-      // this.$container = $(container);
-      //
-      // this.$options = $();
-      // this.addOptions(this.$container.find('a'));
-      //
-      // // Menu List
-      // this.menuId = 'menu' + this._namespace;
-      // this.$menuList = $('ul', this.$container);
-      // this.$menuList.attr({
-      //   role: 'listbox',
-      //   id: this.menuId,
-      //   'aria-hidden': 'true',
-      // });
-      //
-      // // Deprecated
-      // if (this.settings.attachToElement) {
-      //   this.settings.anchor = this.settings.attachToElement;
-      //   console.warn(
-      //     "The 'attachToElement' setting is deprecated. Use 'anchor' instead."
-      //   );
-      // }
-      //
-      // if (this.settings.anchor) {
-      //   this.$anchor = $(this.settings.anchor);
-      // }
-      //
-      // // Prevent clicking on the container from hiding the menu
-      // this.addListener(this.$container, 'mousedown', function (ev) {
-      //   ev.stopPropagation();
-      //
-      //   if (ev.target.nodeName !== 'INPUT') {
-      //     // Prevent this from causing the menu button to blur
-      //     ev.preventDefault();
-      //   }
-      // });
+
+      this.$button = $(button);
+
+      // Get listbox ID from button
+      const listboxId = this.$button.data('controls');
+      this.$listbox = $('#' + listboxId);
+
+      this.addListener(this.$button, 'click', this.handleClick);
+    },
+
+    handleClick: function () {
+      const isExpanded = this.$button.attr('aria-expanded') === 'true';
+
+      if (!isExpanded) {
+        this.open();
+      } else {
+        this.close();
+      }
+    },
+
+    open: function () {
+      this.$listbox.removeClass('hidden');
+      this.$button.attr('aria-expanded', 'true');
+      this.$listbox.focus();
+    },
+
+    close: function () {
+      this.$listbox.addClass('hidden');
+      this.$button.attr('aria-expanded', 'false');
     },
 
     addOptions: function ($options) {
