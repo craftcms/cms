@@ -61,11 +61,11 @@
                     <span class="status"></span>{{ "All"|t('app') }}
                 </button>
                 <ul id="{{ listboxId }}"
-                    class="padded hidden"
+                    class="dropdown-listbox padded hidden"
                     tabindex="-1"
                     role="listbox"
                     aria-labelledby="{{ labelId }}">
-                    <li data-status=""><span class="status"></span>{{ "All"|t('app') }}</li>
+                    <li data-status="" aria-selected="true"><span class="status"></span>{{ "All"|t('app') }}</li>
                     {% if showStatusMenu %}
                         {% for status, info in elementInstance.statuses() %}
                             {% set label = info.label ?? info %}

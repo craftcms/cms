@@ -36,7 +36,6 @@ export default Base.extend(
      * Constructor
      */
     init: function (button, settings) {
-
       // this.setSettings(settings, Garnish.CustomSelect.defaults);
 
       this.$button = $(button);
@@ -46,6 +45,7 @@ export default Base.extend(
       this.$listbox = $('#' + listboxId);
 
       this.addListener(this.$button, 'click', this.handleClick);
+      this.addListener(this.$listbox, 'keydown', this.handleKeypress);
     },
 
     handleClick: function () {
@@ -55,6 +55,18 @@ export default Base.extend(
         this.open();
       } else {
         this.close();
+      }
+    },
+
+    handleKeypress: function (event) {
+      event.preventDefault();
+      const key = event.keyCode;
+
+      switch (key) {
+        case Garnish.DOWN_KEY: {
+          console.log('down');
+          break;
+        }
       }
     },
 
