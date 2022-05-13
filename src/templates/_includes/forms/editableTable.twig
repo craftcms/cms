@@ -5,22 +5,15 @@
 {%- set initJs = not static and (initJs ?? true) -%}
 {%- set minRows = minRows ?? null %}
 {%- set maxRows = maxRows ?? null %}
-{%- set allowAdd = allowAdd ?? false %}
-{%- set allowDelete = allowDelete ?? false %}
-{%- set allowReorder = allowReorder ?? false %}
 {%- set describedBy = describedBy ?? null %}
 
 {%- set totalRows = rows|length %}
-{%- set allowAdd = allowAdd and (maxRows and maxRows == rows|length) ? false : allowAdd %}
-{%- set allowReorder = allowReorder and (minRows == 1 and maxRows == 1 and rows|length == 1) ? false : allowReorder %}
-{%- set allowDelete = allowReorder and (minRows and minRows == maxRows and minRows == rows|length) ? false : allowDelete %}
+{%- set staticRows = static or (staticRows ?? false) or (minRows == 1 and maxRows == 1 and totalRows == 1) %}
+{%- set allowAdd = (allowAdd ?? false) and not staticRows %}
+{%- set allowReorder = (allowReorder ?? false) and not staticRows %}
+{%- set allowDelete = (allowDelete ?? false) and not staticRows %}
 
-{% if static %}
-    {# disable functionality for static field #}
-    {% set allowAdd = false %}
-    {% set allowReorder = false %}
-    {% set allowDelete = false %}
-{% else %}
+{% if not static %}
     {{ hiddenInput(name, '') }}
 {% endif %}
 
