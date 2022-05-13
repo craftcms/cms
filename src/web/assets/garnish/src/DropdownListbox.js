@@ -42,7 +42,9 @@ export default Base.extend(
 
       // Get listbox ID from button
       const listboxId = this.$button.data('controls');
-      this.$listbox = $('#' + listboxId);
+      this.listboxId = `#${listboxId}`;
+      this.$listbox = $(this.listboxId);
+      this.$listbox.find('li').attr('role', 'option');
 
       this.addListener(this.$button, 'click', this.handleClick);
       this.addListener(this.$listbox, 'keydown', this.handleKeypress);
@@ -61,13 +63,67 @@ export default Base.extend(
     handleKeypress: function (event) {
       event.preventDefault();
       const key = event.keyCode;
+      const numberOfOptions = this.getOptions().length;
+
+      // Find index of option in relation to its siblings
+      const $selectedOption = this.getSelectedOption();
+      const optionSelector = `${this.listboxId} [role="option"]`;
+      const currentIndex = $selectedOption.index(optionSelector);
 
       switch (key) {
         case Garnish.DOWN_KEY: {
-          console.log('down');
+          const newIndex = currentIndex + 1;
+          if (newIndex < numberOfOptions) {
+            this.selectOption(newIndex);
+          }
+          break;
+        }
+
+        case Garnish.UP_KEY: {
+          const newIndex = currentIndex - 1;
+          if (newIndex >= 0) {
+            this.selectOption(newIndex);
+          }
+          break;
+        }
+
+        case Garnish.HOME_KEY: {
+          this.selectOption(0);
+          break;
+        }
+
+        case Garnish.END_KEY: {
+          this.selectOption(numberOfOptions - 1);
+          break;
+        }
+
+        case Garnish.RETURN_KEY:
+        case Garnish.ESC_KEY: {
+          this.close();
           break;
         }
       }
+    },
+
+    getOptions: function () {
+      return this.$listbox.find('[role="option"]');
+    },
+
+    selectOption: function (index) {
+      const $options = this.getOptions();
+      const $selected = $options.eq(index);
+
+      $options.each(function() {
+        $(this).removeAttr('aria-selected');
+      });
+
+      $selected.attr('aria-selected', 'true');
+      const optionHtml = $selected.html();
+      this.$button.html(optionHtml);
+    },
+
+    getSelectedOption: function () {
+      return this.$listbox.find('[aria-selected="true"]');
     },
 
     open: function () {
@@ -240,11 +296,11 @@ export default Base.extend(
       this.trigger('hide');
     },
 
-    selectOption: function (option) {
-      this.settings.onOptionSelect(option);
-      this.trigger('optionselect', {selectedOption: option});
-      this.hide();
-    },
+    // selectOption: function (option) {
+    //   this.settings.onOptionSelect(option);
+    //   this.trigger('optionselect', {selectedOption: option});
+    //   this.hide();
+    // },
 
     _alignLeft: function () {
       this.$container.css({
