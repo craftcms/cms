@@ -46,8 +46,11 @@ export default Base.extend(
       this.initializeOptions();
       this.setActiveDescendant();
 
-      this.addListener(this.$button, 'click', this.handleClick);
-      this.addListener(this.$listbox, 'keydown', this.handleKeypress);
+      this.addListener(this.$button, 'click', this.handleButtonClick);
+      this.addListener(this.$button, 'keydown', this.handleButtonKeypress);
+
+      this.addListener(this.$listbox, 'click', this.handleListboxClick);
+      this.addListener(this.$listbox, 'keydown', this.handleListboxKeypress);
     },
 
     initializeOptions: function () {
@@ -59,7 +62,7 @@ export default Base.extend(
       });
     },
 
-    handleClick: function () {
+    handleButtonClick: function () {
       const isExpanded = this.$button.attr('aria-expanded') === 'true';
 
       if (!isExpanded) {
@@ -69,15 +72,30 @@ export default Base.extend(
       }
     },
 
-    handleKeypress: function (event) {
+    handleButtonKeypress: function (event) {
+      const key = event.keyCode;
+
+      if (key === Garnish.DOWN_KEY || key === Garnish.UP_KEY) {
+        event.preventDefault();
+        this.open();
+      }
+    },
+
+    handleListboxClick: function (event) {
+      const { target } = event;
+      const index = this.getOptionIndex($(target));
+      this.selectOption(index);
+      this.close();
+    },
+
+    handleListboxKeypress: function (event) {
       event.preventDefault();
       const key = event.keyCode;
       const numberOfOptions = this.getOptions().length;
 
       // Find index of option in relation to its siblings
       const $selectedOption = this.getSelectedOption();
-      const optionSelector = `#${this.listboxId} [role="option"]`;
-      const currentIndex = $selectedOption.index(optionSelector);
+      const currentIndex = this.getOptionIndex($selectedOption);
 
       switch (key) {
         case Garnish.DOWN_KEY: {
@@ -117,6 +135,11 @@ export default Base.extend(
 
     getOptions: function () {
       return this.$listbox.find('[role="option"]');
+    },
+
+    getOptionIndex: function ($option) {
+      const optionSelector = `#${this.listboxId} [role="option"]`;
+      return $option.index(optionSelector);
     },
 
     selectOption: function (index) {
