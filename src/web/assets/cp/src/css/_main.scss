@@ -4899,8 +4899,15 @@ ul.tree,
 }
 
 .dropdown-listbox {
+  @include menu-styles;
+  padding: 0;
+
+  [role="option"] {
+    padding: 10px 14px;
+  }
+
   [aria-selected] {
-    border: 1px solid red;
+    @include menu-option-active-styles;
   }
 }
 
