@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+- Fixed a bug where editable tables’ delete buttons’ `aria-label` attributes weren’t getting updated when table rows were reordered or deleted.
+- Fixed a bug where editable tables’ delete buttons weren’t visually disabled when the minimum number of rows had been reached.
+
 ## 3.7.42 - 2022-05-11
 
 ### Added
