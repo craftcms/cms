@@ -9,6 +9,7 @@ import Drag from './Drag.js';
 import DragDrop from './DragDrop.js';
 import DragMove from './DragMove.js';
 import DragSort from './DragSort.js';
+import DropdownListbox from './DropdownListbox.js';
 import EscManager from './EscManager.js';
 import HUD from './HUD.js';
 import MenuBtn from './MenuBtn.js';
@@ -816,6 +817,7 @@ Object.assign(Garnish, {
   DragDrop,
   DragMove,
   DragSort,
+  DropdownListbox,
   EscManager,
   HUD,
   MenuBtn,

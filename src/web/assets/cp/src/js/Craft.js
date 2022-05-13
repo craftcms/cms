@@ -1853,6 +1853,7 @@ $.extend(Craft, {
     $('.formsubmit', $container).formsubmit();
     $('.menubtn:not([data-disclosure-trigger])', $container).menubtn();
     $('[data-disclosure-trigger]', $container).disclosureMenu();
+    $('[data-dropdown-listbox-btn]', $container).dropdownListbox();
     $('.datetimewrapper', $container).datetime();
     $(
       '.datewrapper > input[type="date"], .timewrapper > input[type="time"]',
@@ -2570,6 +2571,14 @@ $.extend($.fn, {
       if (!$trigger.data('trigger') && $trigger.attr('aria-controls')) {
         new Garnish.DisclosureMenu($trigger);
       }
+    });
+  },
+
+  dropdownListbox: function () {
+    return this.each(function () {
+      console.log('hello');
+      const $btn = $(this);
+      new Garnish.DropdownListbox($btn);
     });
   },
 
