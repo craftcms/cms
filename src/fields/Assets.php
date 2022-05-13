@@ -28,7 +28,6 @@ use craft\helpers\FileHelper;
 use craft\helpers\Gql;
 use craft\helpers\Gql as GqlHelper;
 use craft\helpers\Html;
-use craft\helpers\StringHelper;
 use craft\models\GqlSchema;
 use craft\models\Volume;
 use craft\services\ElementSources;
