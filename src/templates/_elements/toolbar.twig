@@ -23,6 +23,7 @@
 {% endif %}
 {% set sortOptions = elementInstance.sortOptions() %}
 {% set idPrefix = "elementtoolbar#{random()}-" %}
+{% set newIdPrefix = "elementtoolbar#{random()}-" %}
 
 {% if showStatusMenu or context == 'index' %}
     <div>
@@ -48,6 +49,37 @@
                     <li><a data-trashed><span class="icon" data-icon="trash" aria-hidden="true"></span>{{ "Trashed"|t('app') }}</a></li>
                 </ul>
             {% endif %}
+        </div>
+
+        {# This is the new dropdown listbox component #}
+        <div>
+            <span id="{{ newIdPrefix }}status-label">Status</span>
+            <div id="exp_wrapper">
+                <button aria-haspopup="listbox" aria-labelledby="{{ newIdPrefix }}status-label {{ newIdPrefix }}status-button" id="{{ newIdPrefix }}status-button">
+                    <span class="status"></span>{{ "All"|t('app') }}
+                </button>
+                <ul id="exp_elem_list"
+                    tabindex="-1"
+                    role="listbox"
+                    aria-labelledby="{{ newIdPrefix }}status-label"
+                    class="hidden">
+                    <li data-status=""><span class="status"></span>{{ "All"|t('app') }}</li>
+                    {% if showStatusMenu %}
+                        {% for status, info in elementInstance.statuses() %}
+                            {% set label = info.label ?? info %}
+                            {% set color = info.color ?? '' %}
+                            <li data-status="{{ status }}"><span class="status {{ status }} {{ color }}"></span>{{ label }}</li>
+                        {% endfor %}
+                    {% endif %}
+                    {% if context == 'index' %}
+                        {% if showStatusMenu %}<hr class="padded">{% endif %}
+                        {% if canHaveDrafts ?? false %}
+                            <li data-drafts><span class="icon" data-icon="draft" aria-hidden="true"></span>{{ 'Drafts'|t('app') }}</li>
+                        {% endif %}
+                        <li data-trashed><span class="icon" data-icon="trash" aria-hidden="true"></span>{{ "Trashed"|t('app') }}</li>
+                    {% endif %}
+                </ul>
+            </div>
         </div>
     </div>
 {% endif %}
