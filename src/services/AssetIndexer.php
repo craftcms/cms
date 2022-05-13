@@ -725,9 +725,11 @@ class AssetIndexer extends Component
      */
     public function indexFolderByEntry(AssetIndexData $indexEntry, bool $createIfMissing = true): VolumeFolder
     {
-        foreach (explode('/', $indexEntry->uri) as $part) {
-            if ($part[0] === '_') {
-                throw new AssetNotIndexableException("The directory “{$indexEntry->uri}” cannot be indexed.");
+        if ($indexEntry->uri !== null) {
+            foreach (explode('/', $indexEntry->uri) as $part) {
+                if ($part[0] === '_') {
+                    throw new AssetNotIndexableException("The directory “{$indexEntry->uri}” cannot be indexed.");
+                }
             }
         }
 
@@ -740,7 +742,7 @@ class AssetIndexer extends Component
             throw new MissingVolumeFolderException($indexEntry, $volume, $indexEntry->uri);
         }
 
-        return Craft::$app->getAssets()->ensureFolderByFullPathAndVolume($indexEntry->uri, $volume);
+        return Craft::$app->getAssets()->ensureFolderByFullPathAndVolume($indexEntry->uri ?? '', $volume);
     }
 
     /**

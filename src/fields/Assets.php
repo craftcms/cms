@@ -932,7 +932,10 @@ class Assets extends BaseRelationField
             $subpath = $this->restrictedLocationSubpath;
 
             if ($this->allowSubfolders && $resolveSubtreeDefaultLocation) {
-                $subpath = StringHelper::ensureRight($subpath, '/') . $this->restrictedDefaultUploadSubpath;
+                $subpath = implode('/', ArrayHelper::filterEmptyStringsFromArray(array_map(fn($segment) => trim($segment, '/'), [
+                    $subpath ?? '',
+                    $this->restrictedDefaultUploadSubpath ?? '',
+                ])));
                 $settingName = Craft::t('app', 'Default Upload Location');
             } else {
                 $settingName = Craft::t('app', 'Asset Location');
@@ -958,9 +961,9 @@ class Assets extends BaseRelationField
             ]), 0, $e);
         } catch (InvalidSubpathException $e) {
             // If this is a static path, go ahead and create it
-            if (!preg_match('/\{|\}/', $subpath)) {
+            if ($subpath === null || !preg_match('/\{|\}/', $subpath)) {
                 $volumeId = $this->_volumeIdBySourceKey($uploadVolume);
-                $folderId = $assets->ensureFolderByFullPathAndVolume($subpath, Craft::$app->getVolumes()->getVolumeById($volumeId), false)->id;
+                $folderId = $assets->ensureFolderByFullPathAndVolume($subpath ?? '', Craft::$app->getVolumes()->getVolumeById($volumeId), false)->id;
             }
 
             // If this is a new/disabled/draft element, the subpath probably just contained a token that returned null, like {id}
