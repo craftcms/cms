@@ -3,6 +3,7 @@
 ### Added
 - The `AdminTable` Vue component can now be included into other Vue apps, in addition to being used as a standalone app. ([#11107](https://github.com/craftcms/cms/pull/11107))
 - Added a `one()` alias for `first()` to collections. ([#11134](https://github.com/craftcms/cms/discussions/11134))
+- Added `craft\console\controllers\UsersController::$activate`.
 - Added `craft\elements\conditions\ElementCondition::$sourceKey`.
 
 ### Changed
@@ -14,6 +15,7 @@
 - Sites’ Language settings now display the locale IDs as option hints, rather than the languages’ native names. ([#11195](https://github.com/craftcms/cms/discussions/11195))
 - Selectize options can now specify searchable `keywords` that won’t be visible in the UI.
 - Selectize inputs will now include their options’ values as search keywords.
+- The `users/create` command now asks whether the user should be activated when saved.
 
 ### Removed
 - Removed `craft\elements\conditions\entries\EntryTypeCondition::$sectionUid`.
