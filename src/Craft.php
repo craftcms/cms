@@ -275,7 +275,7 @@ class Craft extends Yii
 
         foreach ($fieldHandles as $handle => $types) {
             $methods[] = <<<EOD
- * @method \$this $handle(mixed \$value) Sets the [[$handle]] property
+ * @method static $handle(mixed \$value) Sets the [[$handle]] property
 EOD;
 
             $handles[] = <<<EOD
