@@ -87,19 +87,6 @@ class MonologTarget extends PsrTarget
     protected $logger;
 
     /**
-     * @var array
-     */
-    private const LEVEL_MAP = [
-        YiiLogger::LEVEL_ERROR => LogLevel::ERROR,
-        YiiLogger::LEVEL_WARNING => LogLevel::WARNING,
-        YiiLogger::LEVEL_INFO => LogLevel::INFO,
-        YiiLogger::LEVEL_TRACE => LogLevel::DEBUG,
-        YiiLogger::LEVEL_PROFILE => LogLevel::DEBUG,
-        YiiLogger::LEVEL_PROFILE_BEGIN => LogLevel::DEBUG,
-        YiiLogger::LEVEL_PROFILE_END => LogLevel::DEBUG,
-    ];
-
-    /**
      * @inheritdoc
      */
     public function init(): void
@@ -136,8 +123,8 @@ class MonologTarget extends PsrTarget
      */
     public function export(): void
     {
-        parent::export();
         $this->messages = $this->_filterMessagesByPsrLevel($this->messages, $this->level);
+        parent::export();
 
         if (!$this->logContext || empty($this->messages)) {
             return;
@@ -177,12 +164,17 @@ class MonologTarget extends PsrTarget
      */
     private function _filterMessagesByPsrLevel(array $messages, string $level): array
     {
-        $yiiLevels = Collection::make($this::LEVEL_MAP)
-            ->filter(fn($psrLevel, $yiiLevel) => is_int($yiiLevel) && $psrLevel === $level)
-            ->keys();
-
+        $levelMap = Collection::make((array) $this->getLevels());
+        $monologLevel = Logger::toMonologLevel($level);
         $messages = Collection::make($messages)
-            ->filter(fn($message) => $message[1] <= $yiiLevels->max());
+            ->filter(function($message) use($levelMap, $monologLevel) {
+                $level = $message[1];
+
+                /** @phpstan-var LogLevel::* $psrLevel */
+                $psrLevel = is_int($level) ? $levelMap->get($level) : $level;
+
+                return Logger::toMonologLevel($psrLevel) >= $monologLevel;
+            });
 
         return $messages->all();
     }
