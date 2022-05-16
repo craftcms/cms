@@ -4,6 +4,7 @@ namespace craft\log;
 
 use Craft;
 use craft\helpers\App;
+use Illuminate\Support\Collection;
 use Monolog\Formatter\FormatterInterface;
 use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\RotatingFileHandler;
@@ -122,8 +123,9 @@ class MonologTarget extends PsrTarget
     public function export(): void
     {
         parent::export();
+        $this->messages = $this->_filterMessagesByPsrLevel($this->messages, $this->level);
 
-        if (!$this->logContext) {
+        if (!$this->logContext || empty($this->messages)) {
             return;
         }
 
@@ -152,6 +154,25 @@ class MonologTarget extends PsrTarget
     protected function getContextMessage(): string
     {
         return '';
+    }
+
+    /**
+     * @param array $messages
+     * @param string $level
+     * @return array
+     */
+    private function _filterMessagesByPsrLevel(array $messages, string $level): array
+    {
+        /** @var array $levelMap */
+        $levelMap = $this->getLevels();
+        $yiiLevels = Collection::make($levelMap)
+            ->filter(fn($psrLevel, $yiiLevel) => is_int($yiiLevel) && $psrLevel === $level)
+            ->keys();
+
+        $messages = Collection::make($messages)
+            ->filter(fn($message) => $message[1] <= $yiiLevels->max());
+
+        return $messages->all();
     }
 
     private function _createLogger(string $name): Logger
