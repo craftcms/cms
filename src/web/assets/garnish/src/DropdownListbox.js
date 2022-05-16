@@ -382,8 +382,8 @@ export default Base.extend(
     },
 
     selectOption: function (option) {
-      const index = this.getOptionIndex(option)
-      this.updateOption(index)
+      const index = this.getOptionIndex(option);
+      this.updateOption(index);
       this.close();
     },
 
