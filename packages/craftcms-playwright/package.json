@@ -1,0 +1,14 @@
+{
+  "name": "@craftcms/playwright",
+  "version": "1.0.0",
+  "description": "Playwright testing for Craft CMS",
+  "main": "index.js",
+  "author": "Pixel & Tonic, Inc. <support@pixelandtonic.com>",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "dependencies": {
+    "@playwright/test": "^1.21.1"
+  }
+}
