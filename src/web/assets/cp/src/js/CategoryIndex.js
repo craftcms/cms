@@ -75,14 +75,15 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend({
       // If they are, show a primary "New category" button, and a dropdown of the other groups (if any).
       // Otherwise only show a menu button
       if (selectedGroup) {
+        const label = this.settings.context === 'index'
+            ? Craft.t('app', 'New category')
+            : Craft.t('app', 'New {group} category', {
+              group: selectedGroup.name,
+            });
         this.$newCategoryBtn = Craft.ui
           .createButton({
-            label:
-              this.settings.context === 'index'
-                ? Craft.t('app', 'New category')
-                : Craft.t('app', 'New {group} category', {
-                    group: selectedGroup.name,
-                  }),
+            label: label,
+            ariaLabel: label,
             spinner: true,
           })
           .addClass('submit add icon')
@@ -102,9 +103,11 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend({
           }).appendTo(this.$newCategoryBtnGroup);
         }
       } else {
+        const label = Craft.t('app', 'New category');
         this.$newCategoryBtn = $menuBtn = Craft.ui
           .createButton({
-            label: Craft.t('app', 'New category'),
+            label: label,
+            ariaLabel: label,
             spinner: true,
           })
           .addClass('submit add icon menubtn btngroup-btn-last')

@@ -2,6 +2,7 @@
 /** global: Garnish */
 Craft.ui = {
   createButton: function (config) {
+    console.log('in thing');
     const $btn = $('<button/>', {
       type: config.type || 'button',
       class: 'btn',
@@ -11,6 +12,9 @@ Craft.ui = {
     }
     if (config.class) {
       $btn.addClass(config.class);
+    }
+    if (config.ariaLabel) {
+      $btn.attr('aria-label', config.ariaLabel);
     }
     if (config.html) {
       $btn.html(html);

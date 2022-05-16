@@ -80,14 +80,16 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
       // If they are, show a primary "New entry" button, and a dropdown of the other sections (if any).
       // Otherwise only show a menu button
       if (selectedSection) {
+        const label = this.settings.context === 'index'
+            ? Craft.t('app', 'New entry')
+            : Craft.t('app', 'New {section} entry', {
+              section: selectedSection.name,
+            });
+
         this.$newEntryBtn = Craft.ui
           .createButton({
-            label:
-              this.settings.context === 'index'
-                ? Craft.t('app', 'New entry')
-                : Craft.t('app', 'New {section} entry', {
-                    section: selectedSection.name,
-                  }),
+            label: label,
+            ariaLabel: label,
             spinner: true,
           })
           .addClass('submit add icon')
@@ -103,12 +105,15 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
             class: 'btn submit menubtn btngroup-btn-last',
             'aria-controls': menuId,
             'data-disclosure-trigger': '',
+            'aria-label': Craft.t('app', 'Specify new entry type'),
           }).appendTo(this.$newEntryBtnGroup);
         }
       } else {
+        const label = Craft.t('app', 'New entry');
         this.$newEntryBtn = $menuBtn = Craft.ui
           .createButton({
-            label: Craft.t('app', 'New entry'),
+            label: label,
+            ariaLabel: label,
             spinner: true,
           })
           .addClass('submit add icon menubtn btngroup-btn-last')
