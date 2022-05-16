@@ -1,7 +1,7 @@
 const {test, expect} = require('@playwright/test');
 
 test('Should show developer details', async ({page, baseURL}) => {
-  await page.goto(baseURL + '/plugin-store/developer/610');
+  await page.goto('./plugin-store/developer/610');
 
   // Wait for developer request to be done
   await page.waitForResponse((response) =>

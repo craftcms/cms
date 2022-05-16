@@ -8,7 +8,7 @@ test('Should search plugins and get results', async ({
   context,
   baseURL,
 }) => {
-  await page.goto(baseURL + '/plugin-store');
+  await page.goto('./plugin-store');
 
   // Search for “commerce” plugins
   await page.fill('#searchQuery', 'commerce');
@@ -33,7 +33,7 @@ test('Should search plugins and get no results', async ({
   context,
   baseURL,
 }) => {
-  await page.goto(baseURL + '/plugin-store');
+  await page.goto('./plugin-store');
 
   // Search for “commerce” plugins
   await page.fill('#searchQuery', 'query-with-no-results');

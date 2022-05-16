@@ -1,8 +1,9 @@
-const {test, expect} = require('@playwright/test');
+const {expect} = require('@playwright/test');
+const {test} = require('@craftcms/playwright');
 test.describe.configure({mode: 'serial'});
 
 test('Install the plugin', async ({page, baseURL}) => {
-  await page.goto(baseURL + '/plugin-store/seomatic');
+  await page.goto('./plugin-store/seomatic');
 
   // Wait plugin request to be done
   await page.waitForResponse((response) =>
@@ -36,7 +37,7 @@ test('Install the plugin', async ({page, baseURL}) => {
 });
 
 test('Uninstall and remove the plugin', async ({page, baseURL}) => {
-  page.goto(baseURL + '/settings/plugins');
+  page.goto('./settings/plugins');
 
   // Uninstall the plugin
   const menuBtnSelector = 'tr[data-handle="seomatic"] button.menubtn';

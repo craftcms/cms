@@ -1,7 +1,7 @@
 const {test, expect} = require('@playwright/test');
 
 test('Should show plugin details', async ({page, baseURL}) => {
-  await page.goto(baseURL + '/plugin-store/sherlock');
+  await page.goto('./plugin-store/sherlock');
 
   // Wait plugin request to be done
   await page.waitForResponse((response) =>
@@ -34,7 +34,7 @@ test('Plugin details should have links to categories', async ({
   page,
   baseURL,
 }) => {
-  await page.goto(baseURL + '/plugin-store/sherlock');
+  await page.goto('./plugin-store/sherlock');
 
   // Wait plugin request to be done
   await page.waitForResponse((response) =>
