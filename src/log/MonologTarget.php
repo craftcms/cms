@@ -159,6 +159,7 @@ class MonologTarget extends PsrTarget
     /**
      * @param array $messages
      * @param string $level
+     * @phpstan-param LogLevel::* $level
      * @return array
      */
     private function _filterMessagesByPsrLevel(array $messages, string $level): array
@@ -168,8 +169,6 @@ class MonologTarget extends PsrTarget
         $messages = Collection::make($messages)
             ->filter(function($message) use ($levelMap, $monologLevel) {
                 $level = $message[1];
-
-                /** @phpstan-var LogLevel::* $psrLevel */
                 $psrLevel = is_int($level) ? $levelMap->get($level) : $level;
 
                 return Logger::toMonologLevel($psrLevel) >= $monologLevel;
