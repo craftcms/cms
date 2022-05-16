@@ -100,7 +100,7 @@
   },
   "autoload-dev": {
     "psr-4": {
-      "crafttests\\": "tests/"
+      "crafttests\\": "tests/codeception/"
     }
   },
   "scripts": {
