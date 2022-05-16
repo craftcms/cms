@@ -132,6 +132,7 @@ class SectionsController extends Controller
         // Main section settings
         $section->name = $this->request->getBodyParam('name');
         $section->handle = $this->request->getBodyParam('handle');
+        $section->description = $this->request->getBodyParam('description');
         $section->type = $this->request->getBodyParam('type');
         $section->enableVersioning = $this->request->getBodyParam('enableVersioning', true);
         $section->propagationMethod = $this->request->getBodyParam('propagationMethod', Section::PROPAGATION_METHOD_ALL);
@@ -331,6 +332,7 @@ class SectionsController extends Controller
         $entryType->sectionId = $this->request->getRequiredBodyParam('sectionId');
         $entryType->name = $this->request->getBodyParam('name', $entryType->name);
         $entryType->handle = $this->request->getBodyParam('handle', $entryType->handle);
+        $entryType->description = $this->request->getBodyParam('description', $entryType->description);
         $entryType->hasTitleField = (bool)$this->request->getBodyParam('hasTitleField', $entryType->hasTitleField);
         $entryType->titleTranslationMethod = $this->request->getBodyParam('titleTranslationMethod', $entryType->titleTranslationMethod);
         $entryType->titleTranslationKeyFormat = $this->request->getBodyParam('titleTranslationKeyFormat', $entryType->titleTranslationKeyFormat);

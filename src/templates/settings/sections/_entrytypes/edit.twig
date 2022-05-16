@@ -49,6 +49,15 @@
             required: true
         }) }}
 
+        {{ forms.textareaField({
+            label: 'Description'|t('app'),
+            id: 'description',
+            class: 'nicetext',
+            name: 'description',
+            value: entryType.description ?? null,
+            errors: (entryType is defined ? entryType.getErrors('description') : null),
+        }) }}
+
         <hr>
 
     {% endif %}

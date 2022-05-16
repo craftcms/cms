@@ -68,6 +68,11 @@ class Section extends Model
     public ?string $handle = null;
 
     /**
+     * @var string|null Description
+      */
+    public ?string $description = null;
+
+    /**
      * @var string|null Type
      */
     public ?string $type = null;
@@ -152,6 +157,7 @@ class Section extends Model
             'handle' => Craft::t('app', 'Handle'),
             'name' => Craft::t('app', 'Name'),
             'type' => Craft::t('app', 'Section Type'),
+            'description' => Craft::t('app', 'Description'),
         ];
     }
 
@@ -365,6 +371,7 @@ class Section extends Model
         $config = [
             'name' => $this->name,
             'handle' => $this->handle,
+            'description' => $this->description,
             'type' => $this->type,
             'enableVersioning' => $this->enableVersioning,
             'propagationMethod' => $this->propagationMethod,

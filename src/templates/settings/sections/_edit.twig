@@ -55,6 +55,15 @@
         required: true
     }) }}
 
+    {{ forms.textareaField({
+        label: 'Description'|t('app'),
+        id: 'description',
+        class: 'nicetext',
+        name: 'description',
+        value: section.description ?? null,
+        errors: (section is defined ? section.getErrors('description') : null),
+    }) }}
+
     {{ forms.checkboxField({
         label: 'Enable versioning for entries in this section'|t('app'),
         id: 'enableVersioning',

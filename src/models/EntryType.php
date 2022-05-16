@@ -53,6 +53,11 @@ class EntryType extends Model
     public ?string $handle = null;
 
     /**
+     * @var string|null Description
+     */
+    public ?string $description = null;
+
+    /**
      * @var int|null Sort order
      * @since 3.5.0
      */
@@ -107,6 +112,7 @@ class EntryType extends Model
         return [
             'handle' => Craft::t('app', 'Handle'),
             'name' => Craft::t('app', 'Name'),
+            'description' => Craft::t('app', 'Description'),
             'titleFormat' => Craft::t('app', 'Title Format'),
         ];
     }
@@ -217,6 +223,7 @@ class EntryType extends Model
         $config = [
             'name' => $this->name,
             'handle' => $this->handle,
+            'description' => $this->description,
             'hasTitleField' => $this->hasTitleField,
             'titleTranslationMethod' => $this->titleTranslationMethod,
             'titleTranslationKeyFormat' => $this->titleTranslationKeyFormat ?: null,

@@ -5,6 +5,8 @@
 - Added a `one()` alias for `first()` to collections. ([#11134](https://github.com/craftcms/cms/discussions/11134))
 - Added `craft\console\controllers\UsersController::$activate`.
 - Added `craft\elements\conditions\ElementCondition::$sourceKey`.
+- Added `craft\models\Section::description`
+- Added `craft\models\EntryTypes::description`
 
 ### Changed
 - Improved pagination UI accessibility. ([#11126](https://github.com/craftcms/cms/pull/11126))

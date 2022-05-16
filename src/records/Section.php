@@ -20,6 +20,7 @@ use yii2tech\ar\softdelete\SoftDeleteBehavior;
  * @property int|null $structureId Structure ID
  * @property string $name Name
  * @property string $handle Handle
+ * @property string $description Description
  * @property string $type Type
  * @property bool $enableVersioning Enable versioning
  * @property bool $propagationMethod Propagation method

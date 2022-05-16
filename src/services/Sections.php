@@ -517,6 +517,7 @@ class Sections extends Component
                 if ($section->type === Section::TYPE_SINGLE) {
                     $entryType->name = $section->name;
                     $entryType->handle = $section->handle;
+                    $entryType->description = $section->description;
                     $entryType->hasTitleField = false;
                     $entryType->titleFormat = '{section.name|raw}';
                 } else {
@@ -545,6 +546,7 @@ class Sections extends Component
                             if ($entryType->name !== $section->name || $entryType->handle !== $section->handle) {
                                 $entryType->name = $section->name;
                                 $entryType->handle = $section->handle;
+                                $entryType->description = $section->description;
                                 $this->saveEntryType($entryType);
                             }
 
@@ -590,6 +592,7 @@ class Sections extends Component
             $sectionRecord->uid = $sectionUid;
             $sectionRecord->name = $data['name'];
             $sectionRecord->handle = $data['handle'];
+            $sectionRecord->description = $data['description'];
             $sectionRecord->type = $data['type'];
             $sectionRecord->enableVersioning = (bool)$data['enableVersioning'];
             $sectionRecord->propagationMethod = $data['propagationMethod'] ?? Section::PROPAGATION_METHOD_ALL;
@@ -1162,6 +1165,7 @@ class Sections extends Component
 
             $entryTypeRecord->name = $data['name'];
             $entryTypeRecord->handle = $data['handle'];
+            $entryTypeRecord->description = $data['description'];
             $entryTypeRecord->hasTitleField = $data['hasTitleField'];
             $entryTypeRecord->titleTranslationMethod = $data['titleTranslationMethod'] ?? '';
             $entryTypeRecord->titleTranslationKeyFormat = $data['titleTranslationKeyFormat'] ?? null;
@@ -1429,6 +1433,7 @@ class Sections extends Component
                 'sections.structureId',
                 'sections.name',
                 'sections.handle',
+                'sections.description',
                 'sections.type',
                 'sections.enableVersioning',
                 'sections.defaultPlacement',
@@ -1609,6 +1614,7 @@ class Sections extends Component
                 'fieldLayoutId',
                 'name',
                 'handle',
+                'description',
                 'sortOrder',
                 'hasTitleField',
                 'titleTranslationMethod',
