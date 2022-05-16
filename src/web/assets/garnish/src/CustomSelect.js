@@ -233,6 +233,7 @@ export default Base.extend(
     },
 
     selectOption: function (option) {
+      console.log(option);
       this.settings.onOptionSelect(option);
       this.trigger('optionselect', {selectedOption: option});
       this.hide();

@@ -86,7 +86,7 @@ export default Base.extend(
     handleListboxClick: function (event) {
       const {target} = event;
       const index = this.getOptionIndex($(target));
-      this.selectOption(index);
+      this.updateOption(index);
       this.close();
     },
 
@@ -103,7 +103,7 @@ export default Base.extend(
         case Garnish.DOWN_KEY: {
           const newIndex = currentIndex + 1;
           if (newIndex < numberOfOptions) {
-            this.selectOption(newIndex);
+            this.updateOption(newIndex);
           }
           break;
         }
@@ -111,23 +111,24 @@ export default Base.extend(
         case Garnish.UP_KEY: {
           const newIndex = currentIndex - 1;
           if (newIndex >= 0) {
-            this.selectOption(newIndex);
+            this.updateOption(newIndex);
           }
           break;
         }
 
         case Garnish.HOME_KEY: {
-          this.selectOption(0);
+          this.updateOption(0);
           break;
         }
 
         case Garnish.END_KEY: {
-          this.selectOption(numberOfOptions - 1);
+          this.updateOption(numberOfOptions - 1);
           break;
         }
 
         case Garnish.RETURN_KEY:
         case Garnish.ESC_KEY: {
+          this.selectOption($selectedOption);
           this.close();
           this.$button.focus();
           break;
@@ -156,18 +157,18 @@ export default Base.extend(
 
     searchOptions: function () {
       const {searchString} = this;
-      let selectedIndex;
+      let matchIndex;
 
       this.getOptions().each(function (index) {
         const compareTo = $(this).text().toLowerCase();
         if (compareTo.startsWith(searchString)) {
-          selectedIndex = index;
+          matchIndex = index;
           return false;
         }
       });
 
-      if (selectedIndex) {
-        this.selectOption(selectedIndex);
+      if (matchIndex) {
+        this.updateOption(matchIndex);
       }
     },
 
@@ -185,7 +186,7 @@ export default Base.extend(
       return $option.index(optionSelector);
     },
 
-    selectOption: function (index) {
+    updateOption: function (index) {
       const $options = this.getOptions();
       const $selected = $options.eq(index);
 
@@ -240,7 +241,7 @@ export default Base.extend(
 
       this.removeAllListeners($options);
       this.addListener($options, 'click', function (ev) {
-        this.selectOption(ev.currentTarget);
+        this.updateOption(ev.currentTarget);
       });
     },
 
@@ -381,6 +382,12 @@ export default Base.extend(
       this.removeListener(Garnish.$scrollContainer, 'scroll');
       this.visible = false;
       this.trigger('hide');
+    },
+
+    selectOption: function (option) {
+      console.log(option);
+      this.trigger('optionselect', {selectedOption: option});
+      this.close();
     },
 
     // selectOption: function (option) {
