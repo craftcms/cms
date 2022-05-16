@@ -3,6 +3,11 @@
 ## Unreleased
 
 ### Fixed
+- Fixed a bug where dynamically-defined image transforms weren’t respecting the `format` param, unless the `generateTransformsBeforePageLoad` config setting was enabled.
+- Fixed a bug where Table fields with Min Rows and Max Rows set to `1` were still showing a delete button. ([#11211](https://github.com/craftcms/cms/issues/11211))
+- Fixed an error that could occur when saving an Assets field that was restricted to a single location, at the root of a volume. ([#11212](https://github.com/craftcms/cms/issues/11212))
+- Fixed an error that could occur after a queue job execution had finished. ([#11213](https://github.com/craftcms/cms/issues/11213))
+- Fixed an error that could occur when saving an entry with Matrix blocks. ([#11155](https://github.com/craftcms/cms/issues/11155))
 - Fixed a bug where request context logs could appear when nothing else was logged. [#11141](https://github.com/craftcms/cms/issues/11141)
 - Fixed a bug where stack traces could be erroneously filtered from logs.  
 
