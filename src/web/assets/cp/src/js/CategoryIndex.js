@@ -13,6 +13,7 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend({
     this.on('selectSource', this.updateButton.bind(this));
     this.on('selectSite', this.updateButton.bind(this));
     this.base(elementType, $container, settings);
+    console.log('hello');
   },
 
   afterInit: function () {
@@ -45,6 +46,8 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend({
     if (!this.$source) {
       return;
     }
+
+    console.log('in update button fxn');
 
     // Get the handle of the selected source
     const selectedSourceHandle = this.$source.data('handle');
@@ -95,6 +98,7 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend({
             class: 'btn submit menubtn btngroup-btn-last',
             'aria-controls': menuId,
             'data-disclosure-trigger': '',
+            'aria-label': Craft.t('app', 'Specify new category type'),
           }).appendTo(this.$newCategoryBtnGroup);
         }
       } else {

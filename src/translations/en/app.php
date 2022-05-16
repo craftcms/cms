@@ -1330,6 +1330,8 @@ return [
     'Source settings saved' => 'Source settings saved',
     'Source' => 'Source',
     'Sources' => 'Sources',
+    'Specify new category type' => 'Specify new category type',
+    'Specify new entry type' => 'Specify new entry type',
     'Square SVG file recommended. The logo will be displayed at {size} by {size}.' => 'Square SVG file recommended. The logo will be displayed at {size} by {size}.',
     'Stack Trace' => 'Stack Trace',
     'State' => 'State',
