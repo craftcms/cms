@@ -17,6 +17,8 @@ export default Base.extend(
     $anchor: null,
 
     menuId: null,
+    searchString: '',
+    searchTimeout: null,
 
     _windowWidth: null,
     _windowHeight: null,
@@ -82,7 +84,7 @@ export default Base.extend(
     },
 
     handleListboxClick: function (event) {
-      const { target } = event;
+      const {target} = event;
       const index = this.getOptionIndex($(target));
       this.selectOption(index);
       this.close();
@@ -131,6 +133,47 @@ export default Base.extend(
           break;
         }
       }
+
+      if (String.fromCharCode(key).match(/(\w|\s)/g)) {
+        const character = String.fromCharCode(key).toLowerCase();
+        this.searchString += character;
+        this.startSearch();
+        return;
+      }
+    },
+
+    startSearch: function () {
+      if (!this.searchTimeout) {
+        this.searchTimeout = setTimeout(
+          function () {
+            this.searchOptions();
+            this.clearSearch();
+          }.bind(this),
+          250
+        );
+      }
+    },
+
+    searchOptions: function () {
+      const {searchString} = this;
+      let selectedIndex;
+
+      this.getOptions().each(function (index) {
+        const compareTo = $(this).text().toLowerCase();
+        if (compareTo.startsWith(searchString)) {
+          selectedIndex = index;
+          return false;
+        }
+      });
+
+      if (selectedIndex) {
+        this.selectOption(selectedIndex);
+      }
+    },
+
+    clearSearch: function () {
+      this.searchTimeout = null;
+      this.searchString = '';
     },
 
     getOptions: function () {
@@ -178,6 +221,7 @@ export default Base.extend(
     close: function () {
       this.$listbox.addClass('hidden');
       this.$button.attr('aria-expanded', 'false');
+      this.clearSearch();
     },
 
     addOptions: function ($options) {
