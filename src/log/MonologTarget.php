@@ -17,7 +17,6 @@ use Psr\Log\LogLevel;
 use samdark\log\PsrTarget;
 use yii\base\InvalidConfigException;
 use yii\i18n\PhpMessageSource;
-use yii\log\Logger as YiiLogger;
 use yii\web\HttpException;
 
 /**
@@ -167,7 +166,7 @@ class MonologTarget extends PsrTarget
         $levelMap = Collection::make((array) $this->getLevels());
         $monologLevel = Logger::toMonologLevel($level);
         $messages = Collection::make($messages)
-            ->filter(function($message) use($levelMap, $monologLevel) {
+            ->filter(function($message) use ($levelMap, $monologLevel) {
                 $level = $message[1];
 
                 /** @phpstan-var LogLevel::* $psrLevel */
