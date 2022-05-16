@@ -84,10 +84,8 @@ export default Base.extend(
     },
 
     handleListboxClick: function (event) {
-      const {target} = event;
-      const index = this.getOptionIndex($(target));
-      this.updateOption(index);
-      this.close();
+      const $option = $(event.target.closest('[role="option"]'));
+      this.selectOption($option);
     },
 
     handleListboxKeypress: function (event) {
@@ -129,7 +127,6 @@ export default Base.extend(
         case Garnish.RETURN_KEY:
         case Garnish.ESC_KEY: {
           this.selectOption($selectedOption);
-          this.close();
           this.$button.focus();
           break;
         }
@@ -385,8 +382,8 @@ export default Base.extend(
     },
 
     selectOption: function (option) {
-      console.log(option);
-      this.trigger('optionselect', {selectedOption: option});
+      const index = this.getOptionIndex(option)
+      this.updateOption(index)
       this.close();
     },
 
