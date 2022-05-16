@@ -17,6 +17,7 @@ use Psr\Log\LogLevel;
 use samdark\log\PsrTarget;
 use yii\base\InvalidConfigException;
 use yii\i18n\PhpMessageSource;
+use yii\log\Logger as YiiLogger;
 use yii\web\HttpException;
 
 /**
@@ -84,6 +85,19 @@ class MonologTarget extends PsrTarget
      * @var Logger|null $logger
      */
     protected $logger;
+
+    /**
+     * @var array
+     */
+    private const LEVEL_MAP = [
+        YiiLogger::LEVEL_ERROR => LogLevel::ERROR,
+        YiiLogger::LEVEL_WARNING => LogLevel::WARNING,
+        YiiLogger::LEVEL_INFO => LogLevel::INFO,
+        YiiLogger::LEVEL_TRACE => LogLevel::DEBUG,
+        YiiLogger::LEVEL_PROFILE => LogLevel::DEBUG,
+        YiiLogger::LEVEL_PROFILE_BEGIN => LogLevel::DEBUG,
+        YiiLogger::LEVEL_PROFILE_END => LogLevel::DEBUG,
+    ];
 
     /**
      * @inheritdoc
@@ -163,9 +177,7 @@ class MonologTarget extends PsrTarget
      */
     private function _filterMessagesByPsrLevel(array $messages, string $level): array
     {
-        /** @var array $levelMap */
-        $levelMap = $this->getLevels();
-        $yiiLevels = Collection::make($levelMap)
+        $yiiLevels = Collection::make($this::LEVEL_MAP)
             ->filter(fn($psrLevel, $yiiLevel) => is_int($yiiLevel) && $psrLevel === $level)
             ->keys();
 
