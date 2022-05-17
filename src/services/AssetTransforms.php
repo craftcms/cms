@@ -461,6 +461,7 @@ class AssetTransforms extends Component
                 [$sizeValue, $sizeUnit] = AssetsHelper::parseSrcsetSize($transform);
             } catch (InvalidArgumentException $e) {
                 // All good.
+                $sizeValue = $sizeUnit = null;
             }
 
             if (isset($sizeValue, $sizeUnit)) {
