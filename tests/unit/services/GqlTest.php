@@ -44,7 +44,6 @@ use GraphQL\Type\Definition\ObjectType;
 use UnitTester;
 use yii\base\Event;
 use yii\base\Exception;
-use yii\base\InvalidArgumentException;
 
 class GqlTest extends TestCase
 {
