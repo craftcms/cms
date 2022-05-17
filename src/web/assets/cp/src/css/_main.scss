@@ -4900,6 +4900,7 @@ ul.tree,
 
 .dropdown-listbox {
   @include menu-styles;
+  position: absolute;
   padding: 0;
 
   [role='option'] {

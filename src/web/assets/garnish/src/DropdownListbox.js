@@ -9,12 +9,11 @@ export default Base.extend(
   {
     settings: null,
     visible: false,
+    selectedOption: null,
 
-    $container: null,
     $button: null,
     $listbox: null,
     $options: null,
-    $anchor: null,
 
     menuId: null,
     searchString: '',
@@ -125,8 +124,14 @@ export default Base.extend(
         }
 
         case Garnish.RETURN_KEY:
-        case Garnish.ESC_KEY: {
+        case Garnish.SPACE_KEY: {
           this.selectOption($selectedOption);
+          this.$button.focus();
+          break;
+        }
+
+        case Garnish.ESC_KEY: {
+          // Reset initial value then close
           this.$button.focus();
           break;
         }
@@ -261,8 +266,7 @@ export default Base.extend(
       this.$listbox.css('minWidth', 0);
       this.$listbox.css(
         'minWidth',
-        this._buttonWidth -
-          (this.$listbox.outerWidth() - this.$listbox.width())
+        this._buttonWidth - (this.$listbox.outerWidth() - this.$listbox.width())
       );
 
       this._listboxWidth = this.$listbox.outerWidth();
