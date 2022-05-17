@@ -438,11 +438,6 @@ class GqlTest extends TestCase
         $allSchemas = $gql->getTokens();
         self::assertNotEmpty($allSchemas);
 
-        // Test public token doesn't exists
-        $this->tester->expectThrowable(InvalidArgumentException::class, function() use ($gql) {
-            $gql->getTokenByAccessToken(GqlToken::PUBLIC_TOKEN);
-        });
-
         // Test fetching public schema creates public token
         $publicToken = $gql->getPublicToken();
         self::assertEquals($publicToken->accessToken, GqlToken::PUBLIC_TOKEN);
