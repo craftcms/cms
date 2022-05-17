@@ -583,7 +583,7 @@ class GraphqlController extends Controller
 
         $gqlService = Craft::$app->getGql();
         $schema = $gqlService->getPublicSchema();
-        $schema->scope = $this->request->getBodyParam('permissions');
+        $schema->scope = $this->request->getBodyParam('permissions') ?? [];
 
         if (!$gqlService->saveSchema($schema)) {
             $this->setFailFlash(Craft::t('app', 'Couldn’t save schema.'));
@@ -642,7 +642,7 @@ class GraphqlController extends Controller
         }
 
         $schema->name = $this->request->getBodyParam('name') ?? $schema->name;
-        $schema->scope = $this->request->getBodyParam('permissions');
+        $schema->scope = $this->request->getBodyParam('permissions') ?? [];
 
         if (!$gqlService->saveSchema($schema)) {
             $this->setFailFlash(Craft::t('app', 'Couldn’t save schema.'));
