@@ -559,7 +559,7 @@ class GraphqlController extends Controller
             $schema = $gqlService->getPublicSchema();
         }
 
-        $token = $gqlService->getTokenByAccessToken(GqlToken::PUBLIC_TOKEN);
+        $token = $gqlService->getPublicToken();
         $title = Craft::t('app', 'Edit the public GraphQL schema');
 
         return $this->renderTemplate('graphql/schemas/_edit', compact(
@@ -596,7 +596,7 @@ class GraphqlController extends Controller
             return null;
         }
 
-        $token = $gqlService->getTokenByAccessToken(GqlToken::PUBLIC_TOKEN);
+        $token = $gqlService->getPublicToken();
         $token->enabled = (bool)$this->request->getRequiredBodyParam('enabled');
 
         if (($expiryDate = $this->request->getBodyParam('expiryDate')) !== null) {
