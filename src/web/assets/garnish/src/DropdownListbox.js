@@ -25,20 +25,20 @@ export default Base.extend(
     _windowScrollLeft: null,
     _windowScrollTop: null,
 
-    _anchorOffset: null,
-    _anchorWidth: null,
-    _anchorHeight: null,
-    _anchorOffsetRight: null,
-    _anchorOffsetBottom: null,
+    _buttonOffset: null,
+    _buttonWidth: null,
+    _buttonHeight: null,
+    _buttonOffsetRight: null,
+    _buttonOffsetBottom: null,
 
-    _menuWidth: null,
-    _menuHeight: null,
+    _listboxWidth: null,
+    _listboxHeight: null,
 
     /**
      * Constructor
      */
     init: function (button, settings) {
-      // this.setSettings(settings, Garnish.CustomSelect.defaults);
+      this.setSettings(settings, Garnish.CustomSelect.defaults);
 
       this.$button = $(button);
 
@@ -214,6 +214,10 @@ export default Base.extend(
       this.$listbox.removeClass('hidden');
       this.$button.attr('aria-expanded', 'true');
       this.$listbox.focus();
+
+      if (this.$button) {
+        this.setPositionRelativeToButton();
+      }
     },
 
     close: function () {
@@ -242,47 +246,47 @@ export default Base.extend(
       });
     },
 
-    setPositionRelativeToAnchor: function () {
+    setPositionRelativeToButton: function () {
       this._windowWidth = Garnish.$win.width();
       this._windowHeight = Garnish.$win.height();
       this._windowScrollLeft = Garnish.$win.scrollLeft();
       this._windowScrollTop = Garnish.$win.scrollTop();
 
-      this._anchorOffset = this.$anchor.offset();
-      this._anchorWidth = this.$anchor.outerWidth();
-      this._anchorHeight = this.$anchor.outerHeight();
-      this._anchorOffsetRight = this._anchorOffset.left + this._anchorHeight;
-      this._anchorOffsetBottom = this._anchorOffset.top + this._anchorHeight;
+      this._buttonOffset = this.$button.offset();
+      this._buttonWidth = this.$button.outerWidth();
+      this._buttonHeight = this.$button.outerHeight();
+      this._buttonOffsetRight = this._buttonOffset.left + this._buttonHeight;
+      this._buttonOffsetBottom = this._buttonOffset.top + this._buttonHeight;
 
-      this.$container.css('minWidth', 0);
-      this.$container.css(
+      this.$listbox.css('minWidth', 0);
+      this.$listbox.css(
         'minWidth',
-        this._anchorWidth -
-          (this.$container.outerWidth() - this.$container.width())
+        this._buttonWidth -
+          (this.$listbox.outerWidth() - this.$listbox.width())
       );
 
-      this._menuWidth = this.$container.outerWidth();
-      this._menuHeight = this.$container.outerHeight();
+      this._listboxWidth = this.$listbox.outerWidth();
+      this._listboxHeight = this.$listbox.outerHeight();
 
       // Is there room for the menu below the anchor?
-      var topClearance = this._anchorOffset.top - this._windowScrollTop,
+      var topClearance = this._buttonOffset.top - this._windowScrollTop,
         bottomClearance =
-          this._windowHeight + this._windowScrollTop - this._anchorOffsetBottom;
+          this._windowHeight + this._windowScrollTop - this._buttonOffsetBottom;
 
       if (
-        bottomClearance >= this._menuHeight ||
-        (topClearance < this._menuHeight && bottomClearance >= topClearance)
+        bottomClearance >= this._listboxHeight ||
+        (topClearance < this._listboxHeight && bottomClearance >= topClearance)
       ) {
-        this.$container.css({
-          top: this._anchorOffsetBottom,
+        this.$listbox.css({
+          top: this._buttonOffsetBottom,
           maxHeight: bottomClearance - this.settings.windowSpacing,
         });
       } else {
-        this.$container.css({
+        this.$listbox.css({
           top:
-            this._anchorOffset.top -
+            this._buttonOffset.top -
             Math.min(
-              this._menuHeight,
+              this._listboxHeight,
               topClearance - this.settings.windowSpacing
             ),
           maxHeight: topClearance - this.settings.windowSpacing,
@@ -290,7 +294,7 @@ export default Base.extend(
       }
 
       // Figure out how we're aliging it
-      var align = this.$container.data('align');
+      var align = this.$listbox.data('align');
 
       if (align !== 'left' && align !== 'center' && align !== 'right') {
         align = 'left';
@@ -303,8 +307,8 @@ export default Base.extend(
         var rightClearance =
             this._windowWidth +
             this._windowScrollLeft -
-            (this._anchorOffset.left + this._menuWidth),
-          leftClearance = this._anchorOffsetRight - this._menuWidth;
+            (this._buttonOffset.left + this._menuWidth),
+          leftClearance = this._buttonOffsetRight - this._listboxWidth;
 
         if ((align === 'right' && leftClearance >= 0) || rightClearance < 0) {
           this._alignRight();
@@ -317,13 +321,13 @@ export default Base.extend(
       delete this._windowHeight;
       delete this._windowScrollLeft;
       delete this._windowScrollTop;
-      delete this._anchorOffset;
-      delete this._anchorWidth;
-      delete this._anchorHeight;
-      delete this._anchorOffsetRight;
-      delete this._anchorOffsetBottom;
-      delete this._menuWidth;
-      delete this._menuHeight;
+      delete this._buttonOffset;
+      delete this._buttonWidth;
+      delete this._buttonHeight;
+      delete this._buttonOffsetRight;
+      delete this._buttonOffsetBottom;
+      delete this._listboxWidth;
+      delete this._listboxHeight;
     },
 
     show: function () {
@@ -394,30 +398,30 @@ export default Base.extend(
     // },
 
     _alignLeft: function () {
-      this.$container.css({
-        left: this._anchorOffset.left,
+      this.$listbox.css({
+        left: this._buttonOffset.left,
         right: 'auto',
       });
     },
 
     _alignRight: function () {
-      this.$container.css({
+      this.$listbox.css({
         right:
-          this._windowWidth - (this._anchorOffset.left + this._anchorWidth),
+          this._windowWidth - (this._buttonOffset.left + this._buttonWidth),
         left: 'auto',
       });
     },
 
     _alignCenter: function () {
       var left = Math.round(
-        this._anchorOffset.left + this._anchorWidth / 2 - this._menuWidth / 2
+        this._buttonOffset.left + this._buttonWidth / 2 - this._listboxWidth / 2
       );
 
       if (left < 0) {
         left = 0;
       }
 
-      this.$container.css('left', left);
+      this.$listbox.css('left', left);
     },
   },
   {
