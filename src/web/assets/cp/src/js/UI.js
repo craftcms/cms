@@ -2,7 +2,6 @@
 /** global: Garnish */
 Craft.ui = {
   createButton: function (config) {
-    console.log('in thing');
     const $btn = $('<button/>', {
       type: config.type || 'button',
       class: 'btn',

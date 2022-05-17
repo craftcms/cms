@@ -13,7 +13,6 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend({
     this.on('selectSource', this.updateButton.bind(this));
     this.on('selectSite', this.updateButton.bind(this));
     this.base(elementType, $container, settings);
-    console.log('hello');
   },
 
   afterInit: function () {
@@ -46,8 +45,6 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend({
     if (!this.$source) {
       return;
     }
-
-    console.log('in update button fxn');
 
     // Get the handle of the selected source
     const selectedSourceHandle = this.$source.data('handle');
