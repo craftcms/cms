@@ -231,7 +231,7 @@ export default Base.extend(
       this.$listbox.focus();
 
       if (this.$combobox) {
-        this.setPositionRelativeToButton();
+        this.setPositionRelativeToCombobox();
       }
     },
 
@@ -261,7 +261,7 @@ export default Base.extend(
       });
     },
 
-    setPositionRelativeToButton: function () {
+    setPositionRelativeToCombobox: function () {
       this._windowWidth = Garnish.$win.width();
       this._windowHeight = Garnish.$win.height();
       this._windowScrollLeft = Garnish.$win.scrollLeft();
