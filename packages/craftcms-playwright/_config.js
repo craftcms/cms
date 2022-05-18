@@ -9,6 +9,9 @@ const storageStateFilename = '.authentication.json';
 
 module.exports = {
   globalSetup: require.resolve(path.join(__dirname, './_global-setup.js')),
+  globalTeardown: require.resolve(
+    path.join(__dirname, './_global-teardown.js')
+  ),
   testDir: testDir,
   use: {
     baseURL: new URL(cpTrigger, process.env.PW_TEST_DOMAIN).href,
@@ -19,7 +22,7 @@ module.exports = {
     ignoreHTTPSErrors: true,
     storageState: path.join(testDir, storageStateFilename),
   },
-  timeout: 30 * 1000,
+  timeout: 120 * 1000,
   expect: {
     timeout: 5000,
   },
