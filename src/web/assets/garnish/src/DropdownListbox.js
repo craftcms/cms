@@ -11,7 +11,7 @@ export default Base.extend(
     visible: false,
     selectedOption: null,
 
-    $button: null,
+    $combobox: null,
     $listbox: null,
     $options: null,
 
@@ -24,11 +24,11 @@ export default Base.extend(
     _windowScrollLeft: null,
     _windowScrollTop: null,
 
-    _buttonOffset: null,
-    _buttonWidth: null,
-    _buttonHeight: null,
-    _buttonOffsetRight: null,
-    _buttonOffsetBottom: null,
+    _comboboxOffset: null,
+    _comboboxWidth: null,
+    _comboboxHeight: null,
+    _comboboxOffsetRight: null,
+    _comboboxOffsetBottom: null,
 
     _listboxWidth: null,
     _listboxHeight: null,
@@ -39,16 +39,16 @@ export default Base.extend(
     init: function (button, settings) {
       this.setSettings(settings, Garnish.CustomSelect.defaults);
 
-      this.$button = $(button);
+      this.$combobox = $(button);
 
       // Get listbox ID from button
-      this.listboxId = this.$button.data('controls');
+      this.listboxId = this.$combobox.data('controls');
       this.$listbox = $(`#${this.listboxId}`);
       this.initializeOptions();
       this.setActiveDescendant();
 
-      this.addListener(this.$button, 'click', this.handleButtonClick);
-      this.addListener(this.$button, 'keydown', this.handleButtonKeypress);
+      this.addListener(this.$combobox, 'click', this.handleButtonClick);
+      this.addListener(this.$combobox, 'keydown', this.handleButtonKeypress);
 
       this.addListener(this.$listbox, 'click', this.handleListboxClick);
       this.addListener(this.$listbox, 'keydown', this.handleListboxKeypress);
@@ -64,7 +64,7 @@ export default Base.extend(
     },
 
     handleButtonClick: function () {
-      const isExpanded = this.$button.attr('aria-expanded') === 'true';
+      const isExpanded = this.$combobox.attr('aria-expanded') === 'true';
 
       if (!isExpanded) {
         this.open();
@@ -126,13 +126,13 @@ export default Base.extend(
         case Garnish.RETURN_KEY:
         case Garnish.SPACE_KEY: {
           this.selectOption($selectedOption);
-          this.$button.focus();
+          this.$combobox.focus();
           break;
         }
 
         case Garnish.ESC_KEY: {
           // Reset initial value then close
-          this.$button.focus();
+          this.$combobox.focus();
           break;
         }
       }
@@ -199,7 +199,7 @@ export default Base.extend(
       $selected.attr('aria-selected', 'true');
       this.setActiveDescendant();
       const optionHtml = $selected.html();
-      this.$button.html(optionHtml);
+      this.$combobox.html(optionHtml);
     },
 
     setActiveDescendant: function () {
@@ -216,18 +216,21 @@ export default Base.extend(
     },
 
     open: function () {
+      // Move the menu to the end of the DOM
+      this.$listbox.appendTo(Garnish.$bod);
+
       this.$listbox.removeClass('hidden');
-      this.$button.attr('aria-expanded', 'true');
+      this.$combobox.attr('aria-expanded', 'true');
       this.$listbox.focus();
 
-      if (this.$button) {
+      if (this.$combobox) {
         this.setPositionRelativeToButton();
       }
     },
 
     close: function () {
       this.$listbox.addClass('hidden');
-      this.$button.attr('aria-expanded', 'false');
+      this.$combobox.attr('aria-expanded', 'false');
       this.clearSearch();
     },
 
@@ -257,38 +260,38 @@ export default Base.extend(
       this._windowScrollLeft = Garnish.$win.scrollLeft();
       this._windowScrollTop = Garnish.$win.scrollTop();
 
-      this._buttonOffset = this.$button.offset();
-      this._buttonWidth = this.$button.outerWidth();
-      this._buttonHeight = this.$button.outerHeight();
-      this._buttonOffsetRight = this._buttonOffset.left + this._buttonHeight;
-      this._buttonOffsetBottom = this._buttonOffset.top + this._buttonHeight;
+      this._comboboxOffset = this.$combobox.offset();
+      this._comboboxWidth = this.$combobox.outerWidth();
+      this._comboboxHeight = this.$combobox.outerHeight();
+      this._comboboxOffsetRight = this._comboboxOffset.left + this._comboboxHeight;
+      this._comboboxOffsetBottom = this._comboboxOffset.top + this._comboboxHeight;
 
       this.$listbox.css('minWidth', 0);
       this.$listbox.css(
         'minWidth',
-        this._buttonWidth - (this.$listbox.outerWidth() - this.$listbox.width())
+        this._comboboxWidth - (this.$listbox.outerWidth() - this.$listbox.width())
       );
 
       this._listboxWidth = this.$listbox.outerWidth();
       this._listboxHeight = this.$listbox.outerHeight();
 
       // Is there room for the menu below the anchor?
-      var topClearance = this._buttonOffset.top - this._windowScrollTop,
+      var topClearance = this._comboboxOffset.top - this._windowScrollTop,
         bottomClearance =
-          this._windowHeight + this._windowScrollTop - this._buttonOffsetBottom;
+          this._windowHeight + this._windowScrollTop - this._comboboxOffsetBottom;
 
       if (
         bottomClearance >= this._listboxHeight ||
         (topClearance < this._listboxHeight && bottomClearance >= topClearance)
       ) {
         this.$listbox.css({
-          top: this._buttonOffsetBottom,
+          top: this._comboboxOffsetBottom,
           maxHeight: bottomClearance - this.settings.windowSpacing,
         });
       } else {
         this.$listbox.css({
           top:
-            this._buttonOffset.top -
+            this._comboboxOffset.top -
             Math.min(
               this._listboxHeight,
               topClearance - this.settings.windowSpacing
@@ -311,8 +314,8 @@ export default Base.extend(
         var rightClearance =
             this._windowWidth +
             this._windowScrollLeft -
-            (this._buttonOffset.left + this._menuWidth),
-          leftClearance = this._buttonOffsetRight - this._listboxWidth;
+            (this._comboboxOffset.left + this._menuWidth),
+          leftClearance = this._comboboxOffsetRight - this._listboxWidth;
 
         if ((align === 'right' && leftClearance >= 0) || rightClearance < 0) {
           this._alignRight();
@@ -325,11 +328,11 @@ export default Base.extend(
       delete this._windowHeight;
       delete this._windowScrollLeft;
       delete this._windowScrollTop;
-      delete this._buttonOffset;
-      delete this._buttonWidth;
-      delete this._buttonHeight;
-      delete this._buttonOffsetRight;
-      delete this._buttonOffsetBottom;
+      delete this._comboboxOffset;
+      delete this._comboboxWidth;
+      delete this._comboboxHeight;
+      delete this._comboboxOffsetRight;
+      delete this._comboboxOffsetBottom;
       delete this._listboxWidth;
       delete this._listboxHeight;
     },
@@ -403,7 +406,7 @@ export default Base.extend(
 
     _alignLeft: function () {
       this.$listbox.css({
-        left: this._buttonOffset.left,
+        left: this._comboboxOffset.left,
         right: 'auto',
       });
     },
@@ -411,14 +414,14 @@ export default Base.extend(
     _alignRight: function () {
       this.$listbox.css({
         right:
-          this._windowWidth - (this._buttonOffset.left + this._buttonWidth),
+          this._windowWidth - (this._comboboxOffset.left + this._comboboxWidth),
         left: 'auto',
       });
     },
 
     _alignCenter: function () {
       var left = Math.round(
-        this._buttonOffset.left + this._buttonWidth / 2 - this._listboxWidth / 2
+        this._comboboxOffset.left + this._comboboxWidth / 2 - this._listboxWidth / 2
       );
 
       if (left < 0) {
