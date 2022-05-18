@@ -38,6 +38,14 @@ class GroupConditionRule extends BaseMultiSelectConditionRule implements Element
     /**
      * @inheritdoc
      */
+    public static function isSelectable(): bool
+    {
+        return !empty(Craft::$app->getUserGroups()->getAllGroups());
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function options(): array
     {
         $groups = Craft::$app->getUserGroups()->getAllGroups();

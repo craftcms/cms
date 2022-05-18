@@ -19,6 +19,7 @@
 - Fixed a JavaScript error that broke Matrix fields with Min Blocks and Max Blocks both set to `1`. ([#11233](https://github.com/craftcms/cms/issues/11233))
 - Fixed a bug where request context logs could appear when nothing else was logged. ([#11141](https://github.com/craftcms/cms/issues/11141))
 - Fixed a bug where stack traces could be erroneously filtered from logs.
+- Fixed a bug where the user group condition rule was incorrectly visible in the rule dropdown menu. ([#11252](https://github.com/craftcms/cms/issues/11252)) 
 
 ## 4.0.2 - 2022-05-11
 
