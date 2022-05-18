@@ -16,6 +16,7 @@
 - Fixed some bugs with inconsistent asset indexing on Windows. ([#11174](https://github.com/craftcms/cms/issues/11174)), ([#11219](https://github.com/craftcms/cms/issues/11219))
 - Fixed a bug where custom fields weren’t available to be included as table attributes. ([#11222](https://github.com/craftcms/cms/issues/11222))
 - Fixed a bug where Alternative Text wasn’t available to be included as a table attribute. ([#11222](https://github.com/craftcms/cms/issues/11222))`immediately`
+- Fixed a JavaScript error that broke Matrix fields with Min Blocks and Max Blocks both set to `1`. ([#11233](https://github.com/craftcms/cms/issues/11233))
 
 ## 4.0.2 - 2022-05-11
 
