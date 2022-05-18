@@ -850,6 +850,7 @@
 - Removed `craft\services\AssetIndexer::getMissingFiles()`.
 - Removed `craft\services\AssetIndexer::prepareIndexList()`.
 - Removed `craft\services\AssetIndexer::processIndexForVolume()`.
+- Removed `craft\services\Assets::$generatePendingTransformsViaQueue`.
 - Removed `craft\services\Assets::EVENT_GET_ASSET_THUMB_URL`.
 - Removed `craft\services\Assets::EVENT_GET_THUMB_PATH`.
 - Removed `craft\services\Assets::getThumbPath()`.
