@@ -163,7 +163,7 @@ class Local extends Fs implements LocalFsInterface
                 continue;
             }
 
-            $filePath = str_replace('\\', '/', FileHelper::normalizePath((StringHelper::removeLeft($listing->getRealPath(), $this->prefixPath()))));
+            $filePath = FileHelper::normalizePath(StringHelper::removeLeft($listing->getRealPath(), $this->prefixPath()), '/');
             $dirname = pathinfo($filePath, PATHINFO_DIRNAME);
             $basename = $listing->getFilename();
 
