@@ -636,44 +636,58 @@ class ElementsController extends Controller
     ): string {
         $components = [];
 
-        if ($canSave) {
-            if ($previewTargets) {
-                // Preview (View will be added later by JS)
-                $components[] =
-                    Html::beginTag('div', [
-                        'class' => ['preview-btn-container', 'btngroup'],
-                    ]) .
-                    ($enablePreview
-                        ? Html::button(Craft::t('app', 'Preview'), [
-                            'class' => ['preview-btn', 'btn'],
-                        ])
-                        : '') .
-                    Html::endTag('div');
-            }
+        // Preview (View will be added later by JS)
+        if ($canSave && $previewTargets) {
+            $components[] =
+                Html::beginTag('div', [
+                    'class' => ['preview-btn-container', 'btngroup'],
+                ]) .
+                ($enablePreview
+                    ? Html::button(Craft::t('app', 'Preview'), [
+                        'class' => ['preview-btn', 'btn'],
+                    ])
+                    : '') .
+                Html::endTag('div');
+        }
 
-            if ($isCurrent) {
-                if (!$isUnpublishedDraft && $canCreateDrafts) {
-                    // Create a draft
-                    $components[] = Html::button(Craft::t('app', 'Create a draft'), [
-                        'class' => ['btn', 'formsubmit'],
-                        'data' => [
-                            'action' => 'elements/save-draft',
-                            'redirect' => Craft::$app->getSecurity()->hashData('{cpEditUrl}'),
-                            'params' => ['dropProvisional' => 1],
-                        ],
-                    ]);
-                }
-            } elseif ($isDraft && $canSaveCanonical) {
-                // Apply draft
-                $components[] = Html::button(Craft::t('app', 'Apply draft'), [
-                    'class' => ['btn', 'secondary', 'formsubmit'],
+        // Create a draft
+        if ($isCurrent && !$isUnpublishedDraft && $canCreateDrafts) {
+            if ($canSave) {
+                $components[] = Html::button(Craft::t('app', 'Create a draft'), [
+                    'class' => ['btn', 'formsubmit'],
                     'data' => [
-                        'action' => 'elements/apply-draft',
+                        'action' => 'elements/save-draft',
                         'redirect' => Craft::$app->getSecurity()->hashData('{cpEditUrl}'),
+                        'params' => ['dropProvisional' => 1],
                     ],
                 ]);
+            } else {
+                $components[] = Html::beginForm() .
+                    Html::actionInput('elements/save-draft') .
+                    Html::redirectInput('{cpEditUrl}') .
+                    Html::hiddenInput('elementId', (string)$canonical->id) .
+                    Html::beginTag('div', ['class' => 'secondary-buttons']) .
+                    Html::button(Craft::t('app', 'Create a draft'), [
+                        'class' => ['btn', 'secondary', 'formsubmit'],
+                    ]) .
+                    Html::endTag('div') .
+                    Html::endForm();
             }
-        } elseif ($isRevision && $canSaveCanonical) {
+        }
+
+        // Apply draft
+        if ($isDraft && !$isCurrent && $canSave && $canSaveCanonical) {
+            $components[] = Html::button(Craft::t('app', 'Apply draft'), [
+                'class' => ['btn', 'secondary', 'formsubmit'],
+                'data' => [
+                    'action' => 'elements/apply-draft',
+                    'redirect' => Craft::$app->getSecurity()->hashData('{cpEditUrl}'),
+                ],
+            ]);
+        }
+
+        // Revert content from this revision
+        if ($isRevision && $canSaveCanonical) {
             $components[] = Html::beginForm() .
                 Html::actionInput('elements/revert') .
                 Html::redirectInput('{cpEditUrl}') .
@@ -1068,7 +1082,11 @@ JS, [
 
         $user = Craft::$app->getUser()->getIdentity();
 
-        if (!$this->_canSave($element, $user)) {
+        if (!$element->getIsDraft() && !$this->_provisional) {
+            if (!$element->canCreateDrafts($user)) {
+                throw new ForbiddenHttpException('User not authorized to create drafts for this element.');
+            }
+        } elseif (!$this->_canSave($element, $user)) {
             throw new ForbiddenHttpException('User not authorized to save this element.');
         }
 
