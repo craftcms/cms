@@ -1046,6 +1046,7 @@ Craft.ElementEditor = Garnish.Base.extend(
               !this.settings.canCreateDrafts
             ) {
               resolve();
+              return;
             }
 
             clearTimeout(this.timeout);
