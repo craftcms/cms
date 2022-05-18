@@ -40,11 +40,6 @@ class FsListing extends Model
     private string $type;
 
     /**
-     * @var string The URI of the listing
-     */
-    private string $uri;
-
-    /**
      * @var int|null The filesize.
      */
     private ?int $fileSize = null;
@@ -114,7 +109,7 @@ class FsListing extends Model
      */
     public function getUri(): string
     {
-        return $this->uri ?? $this->dirname . ($this->dirname ? DIRECTORY_SEPARATOR : '') . $this->basename;
+        return ($this->dirname ? "$this->dirname/" : '') . $this->basename;
     }
 
     /**

@@ -169,7 +169,6 @@ class Local extends Fs implements LocalFsInterface
 
             yield new FsListing([
                 'dirname' => $dirname,
-                'uri' => $dirname !== '.' ? $dirname . '/' . $basename : $basename,
                 'basename' => $basename,
                 'type' => $listing->isDir() ? 'dir' : 'file',
                 'dateModified' => filemtime($listing->getRealPath()),
