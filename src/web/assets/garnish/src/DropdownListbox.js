@@ -9,8 +9,8 @@ export default Base.extend(
   {
     settings: null,
     visible: false,
-    selectedOption: null,
 
+    $selectedOption: null,
     $combobox: null,
     $listbox: null,
     $options: null,
@@ -46,6 +46,9 @@ export default Base.extend(
       this.$listbox = $(`#${this.listboxId}`);
       this.initializeOptions();
       this.setActiveDescendant();
+
+      // Set active item
+      this.$selectedOption = this.getSelectedOption();
 
       this.addListener(this.$combobox, 'click', this.handleButtonClick);
       this.addListener(this.$combobox, 'keydown', this.handleButtonKeypress);
@@ -94,13 +97,13 @@ export default Base.extend(
 
       // Find index of option in relation to its siblings
       const $selectedOption = this.getSelectedOption();
-      const currentIndex = this.getOptionIndex($selectedOption);
+      const currentIndex = this.getSelectedOptionIndex();
 
       switch (key) {
         case Garnish.DOWN_KEY: {
           const newIndex = currentIndex + 1;
           if (newIndex < numberOfOptions) {
-            this.updateOption(newIndex);
+            this.updateVisualFocus(newIndex);
           }
           break;
         }
@@ -108,18 +111,18 @@ export default Base.extend(
         case Garnish.UP_KEY: {
           const newIndex = currentIndex - 1;
           if (newIndex >= 0) {
-            this.updateOption(newIndex);
+            this.updateVisualFocus(newIndex);
           }
           break;
         }
 
         case Garnish.HOME_KEY: {
-          this.updateOption(0);
+          this.updateVisualFocus(0);
           break;
         }
 
         case Garnish.END_KEY: {
-          this.updateOption(numberOfOptions - 1);
+          this.updateVisualFocus(numberOfOptions - 1);
           break;
         }
 
@@ -132,6 +135,7 @@ export default Base.extend(
 
         case Garnish.ESC_KEY: {
           // Reset initial value then close
+          this.selectOption(this.$selectedOption);
           this.$combobox.focus();
           break;
         }
@@ -158,19 +162,19 @@ export default Base.extend(
     },
 
     searchOptions: function () {
-      const {searchString} = this;
       let matchIndex;
 
-      this.getOptions().each(function (index) {
-        const compareTo = $(this).text().toLowerCase();
-        if (compareTo.startsWith(searchString)) {
+      this.getOptions().each(function (index, option) {
+        const compareTo = $(option).text().toLowerCase();
+
+        if (compareTo.startsWith(this.searchString)) {
           matchIndex = index;
           return false;
         }
-      });
+      }.bind(this));
 
-      if (matchIndex) {
-        this.updateOption(matchIndex);
+      if (matchIndex >= 0) {
+        this.updateVisualFocus(matchIndex);
       }
     },
 
@@ -188,7 +192,7 @@ export default Base.extend(
       return $option.index(optionSelector);
     },
 
-    updateOption: function (index) {
+    updateVisualFocus: function (index) {
       const $options = this.getOptions();
       const $selected = $options.eq(index);
 
@@ -198,8 +202,6 @@ export default Base.extend(
 
       $selected.attr('aria-selected', 'true');
       this.setActiveDescendant();
-      const optionHtml = $selected.html();
-      this.$combobox.html(optionHtml);
     },
 
     setActiveDescendant: function () {
@@ -208,7 +210,12 @@ export default Base.extend(
     },
 
     getSelectedOption: function () {
-      return this.$listbox.find('[aria-selected="true"]');
+      return this.$listbox.find('[aria-selected="true"]').first();
+    },
+
+    getSelectedOptionIndex: function() {
+      const $selectedOption = this.getSelectedOption();
+      return this.getOptionIndex($selectedOption);
     },
 
     getSelectedOptionId: function () {
@@ -250,7 +257,7 @@ export default Base.extend(
 
       this.removeAllListeners($options);
       this.addListener($options, 'click', function (ev) {
-        this.updateOption(ev.currentTarget);
+        this.updateVisualFocus(ev.currentTarget);
       });
     },
 
@@ -392,10 +399,20 @@ export default Base.extend(
       this.trigger('hide');
     },
 
-    selectOption: function (option) {
-      const index = this.getOptionIndex(option);
-      this.updateOption(index);
+    selectOption: function ($option) {
+      const previousOption = this.$selectedOption;
+      const index = this.getOptionIndex($option);
+
+      this.$selectedOption = $option;
+      this.updateVisualFocus(index);
+
+      // Update combobox text
+      const optionHtml = $option.html();
+      this.$combobox.html(optionHtml);
+
+      // Close
       this.close();
+      // If new selected is different from last, trigger change
     },
 
     // selectOption: function (option) {
