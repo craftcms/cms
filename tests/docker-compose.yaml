@@ -1,0 +1,48 @@
+version: '3.6'
+services:
+  mysql:
+    image: mysql:5.7
+    ports:
+      - 33069:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: craft
+      MYSQL_DATABASE: craft_test
+      MYSQL_USER: craft
+      MYSQL_PASSWORD: craft
+    healthcheck:
+      test: ['CMD', 'mysqladmin', 'ping']
+      interval: 10s
+      retries: 5
+  postgres:
+    image: postgres:11-alpine
+    ports:
+      - 54329:5432
+    environment:
+      POSTGRES_PASSWORD: craft
+      POSTGRES_USER: craft
+      POSTGRES_DB: craft_test
+    healthcheck:
+      test: ['CMD', 'pg_isready', '-U', 'craft', '-d', 'craft_test']
+      interval: 5s
+      retries: 3
+  web:
+    image: craftcms/nginx:8.0-dev
+    restart: 'on-failure'
+    ports:
+      - 8089:8080
+    env_file: .env
+    environment:
+      CRAFT_DB_DATABASE: craft_test
+      CRAFT_DB_DRIVER: mysql
+      CRAFT_DB_USERNAME: craft
+      CRAFT_DB_PASSWORD: craft
+      CRAFT_DB_PORT: 3306
+      CRAFT_DB_SERVER: mysql
+      PRIMARY_SITE_URL: http://localhost:8089/
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+    volumes:
+      - ../.:/repo
