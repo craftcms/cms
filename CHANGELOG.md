@@ -11,7 +11,7 @@
 - Fixed an error that could occur when saving an Assets field that was restricted to a single location, at the root of a volume. ([#11212](https://github.com/craftcms/cms/issues/11212))
 - Fixed an error that could occur after a queue job execution had finished. ([#11213](https://github.com/craftcms/cms/issues/11213))
 - Fixed an error that could occur when saving an entry with Matrix blocks. ([#11155](https://github.com/craftcms/cms/issues/11155))
-- Fixed an error that occurred when saving a GraphQL schema without a scope.
+- Fixed an error that occurred when saving a GraphQL schema without a scope. ([#11240](https://github.com/craftcms/cms/issues/11240))
 - Fixed an error that could occur when editing the public GraphQL schema, if a public token existed in the project config, but not the database. ([#11218](https://github.com/craftcms/cms/issues/11218))
 - Fixed some bugs with inconsistent asset indexing on Windows. ([#11174](https://github.com/craftcms/cms/issues/11174)), ([#11219](https://github.com/craftcms/cms/issues/11219))
 - Fixed a bug where custom fields weren’t available to be included as table attributes. ([#11222](https://github.com/craftcms/cms/issues/11222))
