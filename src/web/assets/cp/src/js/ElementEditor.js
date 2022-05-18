@@ -104,7 +104,7 @@ Craft.ElementEditor = Garnish.Base.extend(
       // If on mobile, hide thumbnail buttons
       if (Garnish.isMobileBrowser(true)) {
         this.$thumbnailBtnContainer.addClass('hidden');
-      };
+      }
 
       const $spinnerContainer = this.isFullPage
         ? $('#page-title')
