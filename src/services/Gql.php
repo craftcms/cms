@@ -342,6 +342,12 @@ class Gql extends Component
     private array $_typeDefinitions = [];
 
     /**
+     * @var GqlToken|null
+     * @see getPublicToken()
+     */
+    private ?GqlToken $_publicToken = null;
+
+    /**
      * Returns the GraphQL schema.
      *
      * @param GqlSchema|null $schema
@@ -784,6 +790,16 @@ class Gql extends Component
      */
     public function getTokenByAccessToken(string $token): GqlToken
     {
+        if ($token === GqlToken::PUBLIC_TOKEN) {
+            $publicToken = $this->getPublicToken();
+
+            if (!$publicToken) {
+                throw new InvalidArgumentException('Invalid access token');
+            }
+
+            return $publicToken;
+        }
+
         $result = $this->_createTokenQuery()
             ->where(['accessToken' => $token])
             ->one();
@@ -803,48 +819,39 @@ class Gql extends Component
      */
     public function getPublicToken(): ?GqlToken
     {
-        $result = $this->_createTokenQuery()
-            ->where(['accessToken' => GqlToken::PUBLIC_TOKEN])
-            ->one();
+        if (!isset($this->_publicToken)) {
+            $config = Craft::$app->getProjectConfig()->get(ProjectConfig::PATH_GRAPHQL_PUBLIC_TOKEN) ?? [];
+            $this->_publicToken = $this->_createPublicToken($config);
+        }
 
-        // If we don't have it and admin changes aren't currently supported, return null
-        if (!Craft::$app->getConfig()->getGeneral()->allowAdminChanges) {
-            // Can't adjust for a missing token entirely
-            if (!$result) {
+        return $this->_publicToken;
+    }
+
+    /**
+     * Creates a public token with the given config.
+     *
+     * @param array $config
+     * @return GqlToken|null
+     */
+    private function _createPublicToken(array $config): ?GqlToken
+    {
+        $schema = $this->_getPublicSchema();
+
+        if (!$schema) {
+            if (!Craft::$app->getConfig()->getGeneral()->allowAdminChanges) {
                 return null;
             }
 
-            // Existing token but missing schema link
-            if (!$result['schemaId']) {
-                $schema = $this->_getPublicSchema();
-
-                // If we actually have a public schema, re-link it and bypass project-config, since the link is not stored there.
-                if ($schema) {
-                    $token = new GqlToken($result);
-                    $token->setSchema($schema);
-                    $this->_saveTokenInternal($token);
-                    return $token;
-                }
-            }
+            $schema = $this->_createPublicSchema();
         }
 
-        // If we got here, either admin changes are allowed or the token-schema link is fine and dandy.
-        $token = $result ? new GqlToken($result) : new GqlToken([
+        return new GqlToken([
             'name' => 'Public Token',
             'accessToken' => GqlToken::PUBLIC_TOKEN,
-            'enabled' => true,
+            'schema' => $schema,
+            'enabled' => $config['enabled'] ?? false,
+            'expiryDate' => DateTimeHelper::toDateTime($config['expiryDate'] ?? false) ?: null,
         ]);
-
-        if (!$token->schemaId) {
-            $schema = $this->_getPublicSchema() ?: $this->_createPublicSchema();
-            $token->setSchema($schema);
-
-            if (!$this->saveToken($token)) {
-                throw new Exception('Couldn’t save the public token.');
-            }
-        }
-
-        return $token;
     }
 
     /**
@@ -892,29 +899,10 @@ class Gql extends Component
      */
     public function handleChangedPublicToken(ConfigEvent $event): void
     {
-        $data = $event->newValue;
-
         // If we're just adding a public schema, ensure it makes it in.
         ProjectConfigHelper::ensureAllGqlSchemasProcessed();
 
-        try {
-            $token = $this->getTokenByAccessToken(GqlToken::PUBLIC_TOKEN);
-        } catch (InvalidArgumentException) {
-            $token = new GqlToken([
-                'name' => 'Public Token',
-                'accessToken' => GqlToken::PUBLIC_TOKEN,
-            ]);
-        }
-
-        $publicSchema = $this->_createSchemaQuery()
-            ->where(['isPublic' => true])
-            ->one();
-
-        $token->schemaId = $publicSchema ? $publicSchema['id'] : null;
-        $token->expiryDate = $data['expiryDate'] ? DateTimeHelper::toDateTime($data['expiryDate']) : null;
-        $token->enabled = $data['enabled'] ?: false;
-
-        $this->_saveTokenInternal($token);
+        $this->_publicToken = $this->_createPublicToken($event->newValue);
     }
 
     /**

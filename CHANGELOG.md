@@ -3,6 +3,13 @@
 ## Unreleased
 
 ### Fixed
+- Fixed a bug where dynamically-defined image transforms weren’t respecting the `format` param, unless the `generateTransformsBeforePageLoad` config setting was enabled.
+- Fixed a bug where Table fields with Min Rows and Max Rows set to `1` were still showing a delete button. ([#11211](https://github.com/craftcms/cms/issues/11211))
+- Fixed an error that could occur when saving an Assets field that was restricted to a single location, at the root of a volume. ([#11212](https://github.com/craftcms/cms/issues/11212))
+- Fixed an error that could occur after a queue job execution had finished. ([#11213](https://github.com/craftcms/cms/issues/11213))
+- Fixed an error that could occur when saving an entry with Matrix blocks. ([#11155](https://github.com/craftcms/cms/issues/11155))
+- Fixed an error that occurred when saving a GraphQL schema without a scope.
+- Fixed an error that could occur when editing the public GraphQL schema, if a public token existed in the project config, but not the database. ([#11218](https://github.com/craftcms/cms/issues/11218))
 - Fixed some bugs with inconsistent asset indexing on Windows. ([#11174](https://github.com/craftcms/cms/issues/11174)), ([#11219](https://github.com/craftcms/cms/issues/11219))
 
 ## 4.0.2 - 2022-05-11

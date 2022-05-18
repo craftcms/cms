@@ -61,8 +61,11 @@ class QueueLogBehavior extends VerboseBehavior
      */
     public function afterExec(ExecEvent $event): void
     {
-        $duration = $this->_formattedDuration();
-        Craft::info(sprintf('%s - Done (time: %s)', parent::jobTitle($event), $duration), __METHOD__);
+        if (isset($this->_jobStartedAt)) {
+            Craft::info(sprintf('%s - Done (time: %s)', parent::jobTitle($event), $this->_formattedDuration()), __METHOD__);
+        } else {
+            Craft::info(sprintf('%s - Done', parent::jobTitle($event)), __METHOD__);
+        }
     }
 
     /**
