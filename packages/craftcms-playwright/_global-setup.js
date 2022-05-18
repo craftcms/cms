@@ -1,20 +1,23 @@
 const {exec} = require('child_process');
 const path = require('path');
 const {chromium, expect} = require('@playwright/test');
+const docker = require('./_docker');
+const craft = require('./_craft');
 
 module.exports = async (config) => {
+  console.log('Setting up');
   const {baseURL, db, password, projectPath, storageState, testDir, username} =
     config.projects[0].use;
 
-  // Install Craft
-  // await exec(`${projectPath}/craft install/craft`, (error, stdout, stderr) => {
-  //   console.log(stdout);
-  // });
+  const dockerComposeYaml = path.join(testDir, '../docker-compose.yaml');
 
-  // Create admin user
-  // await exec(`${projectPath}/craft users/create --admin=1 --email=playwright@craftcms.com --username=${username} --password=${password}`, (error, stdout, stderr) => {
-  //   console.log(stdout);
-  // });
+  await docker.up();
+
+  await craft.createProject();
+
+  await craft.install(username, password);
+
+  // await craft.createUser(username, password);
 
   // Backup DB for quick restores
   // const dbBackupPath = path.resolve(path.join(testDir, '.backup.sql'));
