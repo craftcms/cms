@@ -486,9 +486,7 @@ class ElementsController extends Controller
                         ]
                     );
                 }
-            }
 
-            if ($isCurrent) {
                 if ($canSaveCanonical) {
                     if ($isUnpublishedDraft) {
                         $response->addAltAction(Craft::t('app', 'Save {type}', [
