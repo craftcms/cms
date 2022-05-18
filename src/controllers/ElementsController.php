@@ -529,37 +529,28 @@ class ElementsController extends Controller
                         ]),
                     ]);
                 }
-            } elseif ($isDraft) {
-                $response->addAltAction(Craft::t('app', 'Save and continue editing'), [
-                    'redirect' => '{cpEditUrl}',
-                    'action' => 'elements/save-draft',
-                    'shortcut' => true,
-                    'retainScroll' => true,
-                ]);
-
-                if ($canDeleteDraft) {
-                    if ($canDeleteForSite) {
-                        $response->addAltAction(Craft::t('app', 'Delete {type} for this site', [
-                            'type' => Craft::t('app', 'draft'),
-                        ]), [
-                            'destructive' => true,
-                            'action' => 'elements/delete-for-site',
-                            'redirect' => "$redirectUrl#",
-                            'confirm' => Craft::t('app', 'Are you sure you want to delete the {type} for this site?', compact('type')),
-                        ]);
-                    }
-
-                    $response->addAltAction(Craft::t('app', 'Delete {type}', [
+            } elseif ($isDraft && $canDeleteDraft) {
+                if ($canDeleteForSite) {
+                    $response->addAltAction(Craft::t('app', 'Delete {type} for this site', [
                         'type' => Craft::t('app', 'draft'),
                     ]), [
                         'destructive' => true,
-                        'action' => 'elements/delete-draft',
-                        'redirect' => $canonical->getCpEditUrl(),
-                        'confirm' => Craft::t('app', 'Are you sure you want to delete this {type}?', [
-                            'type' => Craft::t('app', 'draft'),
-                        ]),
+                        'action' => 'elements/delete-for-site',
+                        'redirect' => "$redirectUrl#",
+                        'confirm' => Craft::t('app', 'Are you sure you want to delete the {type} for this site?', compact('type')),
                     ]);
                 }
+
+                $response->addAltAction(Craft::t('app', 'Delete {type}', [
+                    'type' => Craft::t('app', 'draft'),
+                ]), [
+                    'destructive' => true,
+                    'action' => 'elements/delete-draft',
+                    'redirect' => $canonical->getCpEditUrl(),
+                    'confirm' => Craft::t('app', 'Are you sure you want to delete this {type}?', [
+                        'type' => Craft::t('app', 'draft'),
+                    ]),
+                ]);
             }
         }
 

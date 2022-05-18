@@ -23,6 +23,7 @@
 - Fixed a bug where request context logs could appear when nothing else was logged. ([#11141](https://github.com/craftcms/cms/issues/11141))
 - Fixed a bug where stack traces could be erroneously filtered from logs.
 - Fixed a bug where removing an element from a relational field within an element editor could cause the editor to create a provisional draft, even if the element type didn’t support drafts. ([#11242](https://github.com/craftcms/cms/issues/11242))
+- Fixed a bug where draft editor pages had two identical “Save and continue editing” alternate form actions.
 
 ## 4.0.2 - 2022-05-11
 
