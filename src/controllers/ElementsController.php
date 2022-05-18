@@ -712,7 +712,7 @@ class ElementsController extends Controller
             ->content($contentFn($form))
             ->sidebar($sidebarFn($form));
 
-        if (!$element->getIsRevision()) {
+        if ($canSave && !$element->getIsRevision()) {
             $this->view->registerJsWithVars(fn($settingsJs) => <<<JS
 new Craft.ElementEditor($('#$containerId'), $settingsJs);
 JS, [
