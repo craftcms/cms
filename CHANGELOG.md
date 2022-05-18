@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- Element edit pages now disable pointer events on the content container for 300 milliseconds after the “Showing your unsaved changes” notice is displayed. ([#11229](https://github.com/craftcms/cms/issues/11229))
+
 ### Fixed
 - Fixed a bug where dynamically-defined image transforms weren’t respecting the `format` param, unless the `generateTransformsBeforePageLoad` config setting was enabled.
 - Fixed a bug where Table fields with Min Rows and Max Rows set to `1` were still showing a delete button. ([#11211](https://github.com/craftcms/cms/issues/11211))
@@ -12,7 +15,7 @@
 - Fixed an error that could occur when editing the public GraphQL schema, if a public token existed in the project config, but not the database. ([#11218](https://github.com/craftcms/cms/issues/11218))
 - Fixed some bugs with inconsistent asset indexing on Windows. ([#11174](https://github.com/craftcms/cms/issues/11174)), ([#11219](https://github.com/craftcms/cms/issues/11219))
 - Fixed a bug where custom fields weren’t available to be included as table attributes. ([#11222](https://github.com/craftcms/cms/issues/11222))
-- Fixed a bug where Alternative Text wasn’t available to be included as a table attribute. ([#11222](https://github.com/craftcms/cms/issues/11222))
+- Fixed a bug where Alternative Text wasn’t available to be included as a table attribute. ([#11222](https://github.com/craftcms/cms/issues/11222))`immediately`
 
 ## 4.0.2 - 2022-05-11
 
