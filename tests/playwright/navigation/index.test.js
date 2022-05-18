@@ -14,16 +14,18 @@ test.describe('Navigation', () => {
       ['Utilities', 'System Report'],
       'Settings',
     ];
+
     await expect(page.locator('#global-sidebar nav ul li a')).toContainText(
-      navItems.map((item) => item)
+      navItems.map((item) => (Array.isArray(item) ? item[0] : item))
     );
 
     for (let i = 0; i < navItems.length; i++) {
-      await page.click(
-        '#global-sidebar nav ul li a:has-text("' + navItems[i] + '")'
-      );
-      await expect(page.locator('h1')).toHaveText(navItems[i]);
       await page.goto('./dashboard');
+      let text = Array.isArray(navItems[i]) ? navItems[i][0] : navItems[i];
+      let title = Array.isArray(navItems[i]) ? navItems[i][1] : text;
+
+      await page.click('#global-sidebar nav ul li a:has-text("' + text + '")');
+      await expect(page.locator('h1')).toHaveText(title);
     }
   });
 });
