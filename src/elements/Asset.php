@@ -377,9 +377,9 @@ class Asset extends Element
     {
         $fieldLayouts = [];
         if (
-            preg_match('/^folder:(.+)$/', $source, $matches) &&
-            ($folder = Craft::$app->getAssets()->getFolderByUid($matches[1])) &&
-            $fieldLayout = $folder->getVolume()->getFieldLayout()
+            preg_match('/^volume:(.+)$/', $source, $matches) &&
+            ($volume = Craft::$app->getVolumes()->getVolumeByUid($matches[1])) &&
+            $fieldLayout = $volume->getFieldLayout()
         ) {
             $fieldLayouts[] = $fieldLayout;
         }
