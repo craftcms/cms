@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\elements\db\ElementQuery::prepareSubquery()`.
+
 ### Changed
 - Element edit pages now disable pointer events on the content container for 300 milliseconds after the “Showing your unsaved changes” notice is displayed. ([#11229](https://github.com/craftcms/cms/issues/11229))
 
