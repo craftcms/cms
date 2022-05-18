@@ -22,7 +22,7 @@ class MessageProcessor implements ProcessorInterface
     {
         $record = Collection::make($record);
         $record = $this->_extractCategory($record);
-        $record = $this->_filterEmpty($record, 'context.trace');
+        $record = $this->_filterEmptyContext($record, 'trace');
 
         return $record->all();
     }
@@ -30,18 +30,19 @@ class MessageProcessor implements ProcessorInterface
     private function _extractCategory(Collection $record): Collection
     {
         $category = $record->pull('context.category');
-        $extra = Collection::make($record['extra']);
+        $extra = Collection::make($record->get('extra'));
         $extra->put('yii_category', $category ?? self::DEFAULT_CATEGORY);
         $record->put('extra', $extra->all());
 
         return $record;
     }
 
-    private function _filterEmpty(Collection $record, string $key): Collection
+    private function _filterEmptyContext(Collection $record, string $key = null): Collection
     {
-        if (empty($record->get($key))) {
-            $record->pull($key);
-        }
+        $context = Collection::make($record->get('context'))
+            ->reject(fn($v, $k) => ($key === null || $k === $key) && empty($v));
+
+        $record->put('context', $context->all());
 
         return $record;
     }
