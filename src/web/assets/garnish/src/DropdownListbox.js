@@ -164,14 +164,16 @@ export default Base.extend(
     searchOptions: function () {
       let matchIndex;
 
-      this.getOptions().each(function (index, option) {
-        const compareTo = $(option).text().toLowerCase();
+      this.getOptions().each(
+        function (index, option) {
+          const compareTo = $(option).text().toLowerCase();
 
-        if (compareTo.startsWith(this.searchString)) {
-          matchIndex = index;
-          return false;
-        }
-      }.bind(this));
+          if (compareTo.startsWith(this.searchString)) {
+            matchIndex = index;
+            return false;
+          }
+        }.bind(this)
+      );
 
       if (matchIndex >= 0) {
         this.updateVisualFocus(matchIndex);
@@ -213,7 +215,7 @@ export default Base.extend(
       return this.$listbox.find('[aria-selected="true"]').first();
     },
 
-    getSelectedOptionIndex: function() {
+    getSelectedOptionIndex: function () {
       const $selectedOption = this.getSelectedOption();
       return this.getOptionIndex($selectedOption);
     },
@@ -270,13 +272,16 @@ export default Base.extend(
       this._comboboxOffset = this.$combobox.offset();
       this._comboboxWidth = this.$combobox.outerWidth();
       this._comboboxHeight = this.$combobox.outerHeight();
-      this._comboboxOffsetRight = this._comboboxOffset.left + this._comboboxHeight;
-      this._comboboxOffsetBottom = this._comboboxOffset.top + this._comboboxHeight;
+      this._comboboxOffsetRight =
+        this._comboboxOffset.left + this._comboboxHeight;
+      this._comboboxOffsetBottom =
+        this._comboboxOffset.top + this._comboboxHeight;
 
       this.$listbox.css('minWidth', 0);
       this.$listbox.css(
         'minWidth',
-        this._comboboxWidth - (this.$listbox.outerWidth() - this.$listbox.width())
+        this._comboboxWidth -
+          (this.$listbox.outerWidth() - this.$listbox.width())
       );
 
       this._listboxWidth = this.$listbox.outerWidth();
@@ -285,7 +290,9 @@ export default Base.extend(
       // Is there room for the menu below the anchor?
       var topClearance = this._comboboxOffset.top - this._windowScrollTop,
         bottomClearance =
-          this._windowHeight + this._windowScrollTop - this._comboboxOffsetBottom;
+          this._windowHeight +
+          this._windowScrollTop -
+          this._comboboxOffsetBottom;
 
       if (
         bottomClearance >= this._listboxHeight ||
@@ -438,7 +445,9 @@ export default Base.extend(
 
     _alignCenter: function () {
       var left = Math.round(
-        this._comboboxOffset.left + this._comboboxWidth / 2 - this._listboxWidth / 2
+        this._comboboxOffset.left +
+          this._comboboxWidth / 2 -
+          this._listboxWidth / 2
       );
 
       if (left < 0) {
