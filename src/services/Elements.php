@@ -57,7 +57,6 @@ use craft\records\StructureElement as StructureElementRecord;
 use craft\validators\HandleValidator;
 use craft\validators\SlugValidator;
 use craft\web\Application;
-use DateTime;
 use Throwable;
 use yii\base\Behavior;
 use yii\base\Component;

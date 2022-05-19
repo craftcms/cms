@@ -12,7 +12,6 @@ use craft\events\DefineBehaviorsEvent;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
-use DateTime;
 
 /**
  * Active Record base class.
