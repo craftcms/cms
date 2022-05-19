@@ -947,7 +947,7 @@ return [
     'No blocks.' => 'Žiadne bloky.',
     'No category groups exist yet.' => 'Žiadne skupiny kategórií zatiaľ neexistujú.',
     'No content migrations.' => 'Žiadne migrácie obsahu.',
-    'No deprecation errors to report!' => 'Žiadne zaznamenané chyby!',
+    'No deprecation warnings to report!' => 'No deprecation warnings to report!',
     'No entries exist yet.' => 'Žiadne záznamy zatiaľ neexistujú.',
     'No entry types exist for this section.' => 'Pre túto sekciu neexistujú žiadne typy záznamov.',
     'No fields exist yet.' => 'Žiadne polia zatiaľ neexistujú.',

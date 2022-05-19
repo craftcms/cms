@@ -947,7 +947,7 @@ return [
     'No blocks.' => 'Блоков нет.',
     'No category groups exist yet.' => 'Пока что не существует ни одной группы категорий.',
     'No content migrations.' => 'Нет переносов контента.',
-    'No deprecation errors to report!' => 'Ошибок устаревания не обнаружено!',
+    'No deprecation warnings to report!' => 'No deprecation warnings to report!',
     'No entries exist yet.' => 'Пока что не существует ни одной записи.',
     'No entry types exist for this section.' => 'В этом разделе нет типов записей.',
     'No fields exist yet.' => 'Пока что не существует ни одного поля.',

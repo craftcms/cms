@@ -947,7 +947,7 @@ return [
     'No blocks.' => 'Nenhum bloco.',
     'No category groups exist yet.' => 'Nenhum grupo de categorias existe ainda.',
     'No content migrations.' => 'Não há migrações de conteúdo.',
-    'No deprecation errors to report!' => 'Sem erros de descontinuação para relatar!',
+    'No deprecation warnings to report!' => 'No deprecation warnings to report!',
     'No entries exist yet.' => 'Nenhuma entrada existe ainda.',
     'No entry types exist for this section.' => 'Não existem tipos de entrada para esta seção.',
     'No fields exist yet.' => 'Nenhum campo existe.',

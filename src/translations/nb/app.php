@@ -947,7 +947,7 @@ return [
     'No blocks.' => 'Ingen blokkeringer.',
     'No category groups exist yet.' => 'Det finnes ingen grupper for kategorier enda.',
     'No content migrations.' => 'Ingen innholdsoverføringer.',
-    'No deprecation errors to report!' => 'Ingen utfasingsfeil å rapportere!',
+    'No deprecation warnings to report!' => 'No deprecation warnings to report!',
     'No entries exist yet.' => 'Det finnes ingen artikler enda.',
     'No entry types exist for this section.' => 'Det finnes ingen artikkeltyper for denne seksjonen.',
     'No fields exist yet.' => 'Det finnes ingen felter enda.',

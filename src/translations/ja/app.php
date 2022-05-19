@@ -947,7 +947,7 @@ return [
     'No blocks.' => 'ブロックなし。',
     'No category groups exist yet.' => 'カテゴリグループがまだありません。',
     'No content migrations.' => 'コンテンツマイグレーションはありません。',
-    'No deprecation errors to report!' => '報告する非推奨エラーはありません!',
+    'No deprecation warnings to report!' => 'No deprecation warnings to report!',
     'No entries exist yet.' => 'エントリがまだありません。',
     'No entry types exist for this section.' => 'このセクションには新規エントリタイプが存在しません。',
     'No fields exist yet.' => 'フィールドがまだありません。',

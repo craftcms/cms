@@ -947,7 +947,7 @@ return [
     'No blocks.' => 'Inga block.',
     'No category groups exist yet.' => 'Inga kategorigrupper existerar än.',
     'No content migrations.' => 'Inga innehållsmigreringar.',
-    'No deprecation errors to report!' => 'Inga utfasningsfel att rapportera!',
+    'No deprecation warnings to report!' => 'No deprecation warnings to report!',
     'No entries exist yet.' => 'Inga poster finns ännu.',
     'No entry types exist for this section.' => 'Det finns inte några inläggstyper för den här sektionen.',
     'No fields exist yet.' => 'Inga fält existerar än.',

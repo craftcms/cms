@@ -948,7 +948,7 @@ return [
     'No blocks.' => 'Ingen blokke.',
     'No category groups exist yet.' => 'Ingen kategori-grupper eksisterer endnu.',
     'No content migrations.' => 'Ingen indholdsmigrering.',
-    'No deprecation errors to report!' => 'Ingen forældet (deprecated) kode fejl at rapportere!',
+    'No deprecation warnings to report!' => 'No deprecation warnings to report!',
     'No entries exist yet.' => 'Ingen indgange oprettet endnu.',
     'No entry types exist for this section.' => 'Ingen indgangstyper findes for denne sektion.',
     'No fields exist yet.' => 'Ikke felter oprettet endnu',

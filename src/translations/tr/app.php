@@ -947,7 +947,7 @@ return [
     'No blocks.' => 'Blok yok.',
     'No category groups exist yet.' => 'Daha kategori grubu yok.',
     'No content migrations.' => 'İçerik geçişi yok.',
-    'No deprecation errors to report!' => 'Raporlanacak kullanım dışı hata yok!',
+    'No deprecation warnings to report!' => 'No deprecation warnings to report!',
     'No entries exist yet.' => 'Daha hiç bir kayıt yok.',
     'No entry types exist for this section.' => 'Bu bölüm için hiçbir kayıt tipi bulunamadı.',
     'No fields exist yet.' => 'Daha hiçbir alan yok.',
