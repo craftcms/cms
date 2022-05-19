@@ -1725,7 +1725,7 @@ EOD;
                 'label' => Craft::t('app', 'Post Date'),
                 'id' => 'postDate',
                 'name' => 'postDate',
-                'value' => $this->postDate,
+                'value' => $this->_userPostDate(),
                 'errors' => $this->getErrors('postDate'),
                 'disabled' => $static,
             ]);
@@ -1810,6 +1810,21 @@ EOD;
         }
     }
 
+    /**
+     * Returns the Post Date value that should be shown on the edit form.
+     *
+     * @return DateTime|null
+     */
+    private function _userPostDate(): ?DateTime
+    {
+        if (!$this->postDate || ($this->getIsUnpublishedDraft() && $this->postDate == $this->dateCreated)) {
+            // Pretend the post date hasn't been set yet, even if it has
+            return null;
+        }
+
+        return $this->postDate;
+    }
+
     // Events
     // -------------------------------------------------------------------------
 
@@ -1823,7 +1838,7 @@ EOD;
         }
 
         if (
-            !$this->postDate &&
+            !$this->_userPostDate() &&
             (
                 in_array($this->scenario, [self::SCENARIO_LIVE, self::SCENARIO_DEFAULT]) ||
                 (!$this->getIsDraft() && !$this->getIsRevision())

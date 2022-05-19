@@ -20,6 +20,7 @@
 - Sites’ Language settings now display the locale IDs as option hints, rather than the languages’ native names. ([#11195](https://github.com/craftcms/cms/discussions/11195))
 - Selectize options can now specify searchable `keywords` that won’t be visible in the UI.
 - Selectize inputs will now include their options’ values as search keywords.
+- Newly-created entries now get placeholder Post Date set on them, so they get sorted appropriately when querying for entries ordered by `postDate`. ([#11272](https://github.com/craftcms/cms/issues/11272)) 
 - The `users/create` command now asks whether the user should be activated when saved.
 - Deprecation messages are now consistently referred to as “deprecation warnings” in the control panel.
 

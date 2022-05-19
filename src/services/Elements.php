@@ -822,7 +822,7 @@ class Elements extends Component
             $element->mergeCanonicalChanges();
             $duplicateOf = $element->duplicateOf;
             $element->duplicateOf = null;
-            $element->dateLastMerged = new DateTime();
+            $element->dateLastMerged = DateTimeHelper::now();
             $element->mergingCanonicalChanges = true;
             $this->_saveElementInternal($element, false, false, null, $supportedSites);
             $element->duplicateOf = $duplicateOf;
@@ -2583,7 +2583,7 @@ class Elements extends Component
                     $elementRecord->markAttributeDirty('dateUpdated');
                 } else {
                     // Force a new dateUpdated value
-                    $elementRecord->dateUpdated = Db::prepareValueForDb(new DateTime());
+                    $elementRecord->dateUpdated = Db::prepareValueForDb(DateTimeHelper::now());
                 }
 
                 // Update our list of dirty attributes
@@ -2791,7 +2791,7 @@ class Elements extends Component
             $dirtyFields = $fieldLayout ? $element->getDirtyFields() : null;
 
             $userId = Craft::$app->getUser()->getId();
-            $timestamp = Db::prepareDateForDb(new DateTime());
+            $timestamp = Db::prepareDateForDb(DateTimeHelper::now());
 
             foreach ($dirtyAttributes as $attributeName) {
                 Db::upsert(Table::CHANGEDATTRIBUTES, [
@@ -2953,7 +2953,7 @@ class Elements extends Component
     private function _cascadeDeleteDraftsAndRevisions(int $canonicalId, bool $delete = true): void
     {
         $params = [
-            'dateDeleted' => $delete ? Db::prepareDateForDb(new DateTime()) : null,
+            'dateDeleted' => $delete ? Db::prepareDateForDb(DateTimeHelper::now()) : null,
             'canonicalId' => $canonicalId,
         ];
 
