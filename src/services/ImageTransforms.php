@@ -430,19 +430,26 @@ class ImageTransforms extends Component
                     throw new InvalidArgumentException("Can’t eager-load transform “{$transform}” without a prior transform that specifies the base width");
                 }
 
-                $transform = [];
+                $transform = new ImageTransform($refTransform->toArray([
+                    'format',
+                    'interlace',
+                    'mode',
+                    'position',
+                    'quality',
+                ]));
+
                 if ($sizeUnit === 'w') {
-                    $transform['width'] = (int)$sizeValue;
+                    $transform->width = (int)$sizeValue;
                 } else {
-                    $transform['width'] = (int)ceil($refTransform->width * $sizeValue);
+                    $transform->width = (int)ceil($refTransform->width * $sizeValue);
                 }
 
                 // Only set the height if the reference transform has a height set on it
                 if ($refTransform->height) {
                     if ($sizeUnit === 'w') {
-                        $transform['height'] = (int)ceil($refTransform->height * $transform['width'] / $refTransform->width);
+                        $transform->height = (int)ceil($refTransform->height * $transform->width / $refTransform->width);
                     } else {
-                        $transform['height'] = (int)ceil($refTransform->height * $sizeValue);
+                        $transform->height = (int)ceil($refTransform->height * $sizeValue);
                     }
                 }
             }
