@@ -947,7 +947,7 @@ return [
     'No blocks.' => 'אין בלוקים.',
     'No category groups exist yet.' => 'עדיין לא קיימות קבוצות קטגוריות.',
     'No content migrations.' => 'אין העברות תוכן.',
-    'No deprecation errors to report!' => 'אין שגיאות דפריקציה לדיווח!',
+    'No deprecation warnings to report!' => 'No deprecation warnings to report!',
     'No entries exist yet.' => 'טרם הוזנו רשומות.',
     'No entry types exist for this section.' => 'לא קיימים סוגי רשימות לסקשן הזה.',
     'No fields exist yet.' => 'טרם נוצרו שדות.',
