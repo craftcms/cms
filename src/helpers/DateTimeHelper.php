@@ -56,6 +56,20 @@ class DateTimeHelper
     public const SECONDS_YEAR = 31556874;
 
     /**
+     * @var DateTime|null
+     * @see pause()
+     * @see resume()
+     */
+    private static DateTime|null $_now = null;
+
+    /**
+     * @var int
+     * @see pause()
+     * @see resume()
+     */
+    private static int $_pauseLevel = 0;
+
+    /**
      * Converts a value into a DateTime object.
      *
      * `$value` can be in the following formats:
@@ -116,7 +130,7 @@ class DateTimeHelper
                 } else {
                     // Default to the current date
                     $format = 'Y-m-d';
-                    $date = (new DateTime('now', new DateTimeZone($timeZone)))->format($format);
+                    $date = static::now(new DateTimeZone($timeZone))->format($format);
                 }
 
                 // Did they specify a time?
@@ -249,14 +263,72 @@ class DateTimeHelper
     }
 
     /**
+     * Pauses time for any subsequent calls to other `DateTimeHelper` methods, until [[resume()]] is called.
+     *
+     * If this method is called multiple times, [[resume()]] will need to be called an equal number of times before
+     * time is actually resumed.
+     *
+     * @since 4.1.0
+     */
+    public static function pause(): void
+    {
+        self::$_pauseLevel++;
+
+        if (self::$_pauseLevel === 1) {
+            self::$_now = new DateTime('now');
+        }
+    }
+
+    /**
+     * Resumes time, if it was paused via [[pause()]].
+     *
+     * @since 4.1.0
+     */
+    public static function resume(): void
+    {
+        if (self::$_pauseLevel === 0) {
+            return;
+        }
+
+        self::$_pauseLevel--;
+
+        if (self::$_pauseLevel === 0) {
+            self::$_now = null;
+        }
+    }
+
+    /**
+     * Returns a [[DateTime]] object set to the current time (factoring in whether time is [[pause()|paused]]).
+     *
+     * @param DateTimeZone|null $timeZone The time zone to return the `DateTime` object in. (Defaults to the system time zone.)
+     * @return DateTime
+     * @since 4.1.0
+     */
+    public static function now(?DateTimeZone $timeZone = null): DateTime
+    {
+        // Is time paused?
+        if (isset(self::$_now)) {
+            $date = clone self::$_now;
+            $date->setTimezone($timeZone ?? new DateTimeZone(Craft::$app->getTimeZone()));
+            return $date;
+        }
+
+        return new DateTime('now', $timeZone);
+    }
+
+    /**
+     * Returns a [[DateTime]] object set to the current time (factoring in whether time is [[pause()|paused]]), in the UTC time zone.
+     *
      * @return DateTime
      */
     public static function currentUTCDateTime(): DateTime
     {
-        return new DateTime('now', new DateTimeZone('UTC'));
+        return static::now(new DateTimeZone('UTC'));
     }
 
     /**
+     * Returns the current Unix time stamp (factoring in whether time is [[pause()|paused]]).
+     *
      * @return int
      */
     public static function currentTimeStamp(): int
@@ -344,7 +416,7 @@ class DateTimeHelper
     public static function isToday(mixed $date): bool
     {
         $date = static::toDateTime($date);
-        $now = new DateTime();
+        $now = static::now();
 
         return $date->format('Y-m-d') == $now->format('Y-m-d');
     }
@@ -358,7 +430,7 @@ class DateTimeHelper
     public static function isYesterday(mixed $date): bool
     {
         $date = static::toDateTime($date);
-        $yesterday = new DateTime('yesterday', new DateTimeZone(Craft::$app->getTimeZone()));
+        $yesterday = static::now()->modify('-1 day');
 
         return $date->format('Y-m-d') == $yesterday->format('Y-m-d');
     }
@@ -372,7 +444,7 @@ class DateTimeHelper
     public static function isThisYear(mixed $date): bool
     {
         $date = static::toDateTime($date);
-        $now = new DateTime();
+        $now = static::now();
 
         return $date->format('Y') == $now->format('Y');
     }
@@ -386,7 +458,7 @@ class DateTimeHelper
     public static function isThisWeek(mixed $date): bool
     {
         $date = static::toDateTime($date);
-        $now = new DateTime();
+        $now = static::now();
 
         return $date->format('W Y') == $now->format('W Y');
     }
@@ -400,7 +472,7 @@ class DateTimeHelper
     public static function isThisMonth(mixed $date): bool
     {
         $date = static::toDateTime($date);
-        $now = new DateTime();
+        $now = static::now();
 
         return $date->format('m Y') == $now->format('m Y');
     }
@@ -423,7 +495,7 @@ class DateTimeHelper
         }
 
         $timestamp = $date->getTimestamp();
-        $now = new DateTime();
+        $now = static::now();
 
         // Bail early if it's in the future
         if ($timestamp > $now->getTimestamp()) {
@@ -651,7 +723,7 @@ class DateTimeHelper
         $value = trim($value);
 
         if ($value === 'now') {
-            return new DateTime();
+            return static::now();
         }
 
         if (preg_match('/^

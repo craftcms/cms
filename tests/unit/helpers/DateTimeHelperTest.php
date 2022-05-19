@@ -57,6 +57,22 @@ class DateTimeHelperTest extends TestCase
     }
 
     /**
+     *
+     */
+    public function testPause(): void
+    {
+        $timestamp = DateTimeHelper::currentTimeStamp();
+        DateTimeHelper::pause();
+        sleep(1);
+        self::assertEquals($timestamp, DateTimeHelper::currentTimeStamp());
+        DateTimeHelper::pause();
+        DateTimeHelper::resume();
+        self::assertEquals($timestamp, DateTimeHelper::currentTimeStamp());
+        DateTimeHelper::resume();
+        self::assertNotEquals($timestamp, DateTimeHelper::currentTimeStamp());
+    }
+
+    /**
      * @throws Exception
      */
     public function testCurrentUtcDateTime(): void
