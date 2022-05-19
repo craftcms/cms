@@ -2,8 +2,12 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\elements\db\ElementQuery::prepareSubquery()`.
+
 ### Changed
 - Element edit pages now disable pointer events on the content container for 300 milliseconds after the “Showing your unsaved changes” notice is displayed. ([#11229](https://github.com/craftcms/cms/issues/11229))
+- Users can now create drafts for entries they have permission to view, but not save. ([#11249](https://github.com/craftcms/cms/issues/11249))
 
 ### Fixed
 - Fixed a bug where dynamically-defined image transforms weren’t respecting the `format` param, unless the `generateTransformsBeforePageLoad` config setting was enabled.
@@ -19,6 +23,10 @@
 - Fixed a JavaScript error that broke Matrix fields with Min Blocks and Max Blocks both set to `1`. ([#11233](https://github.com/craftcms/cms/issues/11233))
 - Fixed a bug where request context logs could appear when nothing else was logged. ([#11141](https://github.com/craftcms/cms/issues/11141))
 - Fixed a bug where stack traces could be erroneously filtered from logs.
+- Fixed a bug where removing an element from a relational field within an element editor could cause the editor to create a provisional draft, even if the element type didn’t support drafts. ([#11242](https://github.com/craftcms/cms/issues/11242))
+- Fixed a bug where draft editor pages had two identical “Save and continue editing” alternate form actions.
+- Fixed a JavaScript warning that occurred when viewing an element edit page, if the user didn’t have permission to edit it.
+- Fixed a bug where asset selector modals weren’t fully initializing for Assets fields, if they were targeting the user’s temp folder. ([#11254](https://github.com/craftcms/cms/issues/11254))
 - Fixed a bug where the user group condition rule was incorrectly visible in the rule dropdown menu. ([#11252](https://github.com/craftcms/cms/issues/11252)) 
 
 ## 4.0.2 - 2022-05-11
@@ -47,7 +55,7 @@
 - Fixed a bug where Money field labels’ `for` attributes weren’t referencing the correct input ID. ([#11016](https://github.com/craftcms/cms/pull/11016))
 - Fixed a bug where Money field inputs weren’t getting `aria-describedby` attributes. ([#11016](https://github.com/craftcms/cms/pull/11016))
 - Fixed an error that occurred when loading an edit screen for an element type that didn’t have a field layout. ([#11110](https://github.com/craftcms/cms/pull/11110))
-- Fixed a bug where condition rules they weren’t selectable (per `isSelectable()`) were still visible in the rule dropdown menu. ([#11104](https://github.com/craftcms/cms/pull/11104))
+- Fixed a bug where condition rules that weren’t selectable (per `isSelectable()`) were still visible in the rule dropdown menu. ([#11104](https://github.com/craftcms/cms/pull/11104))
 - Fixed a bug where element edit pages could reload themselves immediately after saving the element. ([#11084](https://github.com/craftcms/cms/issues/11084))
 - Fixed a bug where tabs weren’t interactive after changing an entry’s type, if the new entry type didn’t have a tab of the same name as the previously-selected tab. ([#11093](https://github.com/craftcms/cms/issues/11093))
 - Fixed a bug where Twig syntax errors weren’t being handled properly. ([#11108](https://github.com/craftcms/cms/issues/11108))
@@ -850,6 +858,7 @@
 - Removed `craft\services\AssetIndexer::getMissingFiles()`.
 - Removed `craft\services\AssetIndexer::prepareIndexList()`.
 - Removed `craft\services\AssetIndexer::processIndexForVolume()`.
+- Removed `craft\services\Assets::$generatePendingTransformsViaQueue`.
 - Removed `craft\services\Assets::EVENT_GET_ASSET_THUMB_URL`.
 - Removed `craft\services\Assets::EVENT_GET_THUMB_PATH`.
 - Removed `craft\services\Assets::getThumbPath()`.
