@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Changed
+- Reversed the order of Lightswitch fields’ “ON Label” and “OFF Label” settings. ([#11259](https://github.com/craftcms/cms/issues/11259))
+
+### Fixed
 - Fixed a bug where editable tables’ delete buttons’ `aria-label` attributes weren’t getting updated when table rows were reordered or deleted.
 - Fixed a bug where editable tables’ delete buttons weren’t visually disabled when the minimum number of rows had been reached.
 - Fixed a bug where all eager-loaded `srcset`-style transform sizes were relative to the first eager-loaded transform, rather than the prior one. ([#11209](https://github.com/craftcms/cms/issues/11209))
