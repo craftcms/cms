@@ -23,6 +23,7 @@ use craft\elements\User;
 use craft\errors\SiteNotFoundException;
 use craft\events\CancelableEvent;
 use craft\events\PopulateElementEvent;
+use craft\events\PopulateElementsEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
@@ -68,6 +69,13 @@ class ElementQuery extends Query implements ElementQueryInterface
      * If [[PopulateElementEvent::$element]] is replaced by an event handler, the replacement will be returned by [[createElement()]] instead.
      */
     public const EVENT_AFTER_POPULATE_ELEMENT = 'afterPopulateElement';
+
+    /**
+     * @event PopulateElementEvent The event that is triggered after an element is populated.
+     *
+     * If [[PopulateElementEvent::$element]] is replaced by an event handler, the replacement will be returned by [[createElement()]] instead.
+     */
+    public const EVENT_AFTER_POPULATE_ELEMENTS = 'afterPopulateElements';
 
     /**
      * @var string The name of the [[ElementInterface]] class.
@@ -2880,6 +2888,16 @@ class ElementQuery extends Query implements ElementQueryInterface
             // Should we eager-load some elements onto these?
             if ($this->with) {
                 Craft::$app->getElements()->eagerLoadElements($this->elementType, $elements, $this->with);
+            }
+
+            // Fire an 'afterPopulateElements' event
+            if ($this->hasEventHandlers(self::EVENT_AFTER_POPULATE_ELEMENTS)) {
+                $event = new PopulateElementsEvent([
+                    'elements' => $elements,
+                    'rows' => $rows,
+                ]);
+                $this->trigger(self::EVENT_AFTER_POPULATE_ELEMENTS, $event);
+                $elements = $event->elements;
             }
         }
 

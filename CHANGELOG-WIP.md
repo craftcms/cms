@@ -5,6 +5,8 @@
 - Added a `one()` alias for `first()` to collections. ([#11134](https://github.com/craftcms/cms/discussions/11134))
 - Added `craft\console\controllers\UsersController::$activate`.
 - Added `craft\elements\conditions\ElementCondition::$sourceKey`.
+- Added `craft\elements\db\ElementQuery::EVENT_AFTER_POPULATE_ELEMENTS`. ([#11262](https://github.com/craftcms/cms/discussions/11262))
+- Added `craft\events\PopulateElementsEvent`.
 
 ### Changed
 - Improved pagination UI accessibility. ([#11126](https://github.com/craftcms/cms/pull/11126))
