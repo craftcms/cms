@@ -7,14 +7,34 @@ import Garnish from '../../../garnish/src';
  */
 Craft.Queue = Garnish.Base.extend({
   running: false,
+  paused: false,
   jobs: null,
 
   get length() {
     return this.jobs.length;
   },
 
+  /**
+   * @private
+   */
+  get _isVisible() {
+    if (typeof document.visibilityState === 'undefined') {
+      return true;
+    }
+
+    return document.visibilityState === 'visible';
+  },
+
   init: function () {
     this.jobs = [];
+
+    Garnish.$doc.on('visibilitychange', () => {
+      if (this.paused && this._isVisible) {
+        this.paused = false;
+        this.trigger('resume');
+        this._exec();
+      }
+    });
   },
 
   /**
@@ -80,6 +100,15 @@ Craft.Queue = Garnish.Base.extend({
     if (!this.jobs.length) {
       this.running = false;
       this.trigger('afterRun');
+      return;
+    }
+
+    if (!this.paused && !this._isVisible) {
+      this.paused = true;
+      this.trigger('pause');
+    }
+
+    if (this.paused) {
       return;
     }
 
