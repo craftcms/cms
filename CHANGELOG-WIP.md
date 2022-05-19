@@ -18,6 +18,7 @@
 - Selectize options can now specify searchable `keywords` that won’t be visible in the UI.
 - Selectize inputs will now include their options’ values as search keywords.
 - The `users/create` command now asks whether the user should be activated when saved.
+- Deprecation messages are now consistently referred to as “deprecation warnings” in the control panel.
 
 ### Removed
 - Removed `craft\elements\conditions\entries\EntryTypeCondition::$sectionUid`.
