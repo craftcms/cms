@@ -343,7 +343,7 @@ class DateTimeHelper
      */
     public static function isToday(mixed $date): bool
     {
-        $date = self::toDateTime($date);
+        $date = static::toDateTime($date);
         $now = new DateTime();
 
         return $date->format('Y-m-d') == $now->format('Y-m-d');
@@ -357,7 +357,7 @@ class DateTimeHelper
      */
     public static function isYesterday(mixed $date): bool
     {
-        $date = self::toDateTime($date);
+        $date = static::toDateTime($date);
         $yesterday = new DateTime('yesterday', new DateTimeZone(Craft::$app->getTimeZone()));
 
         return $date->format('Y-m-d') == $yesterday->format('Y-m-d');
@@ -371,7 +371,7 @@ class DateTimeHelper
      */
     public static function isThisYear(mixed $date): bool
     {
-        $date = self::toDateTime($date);
+        $date = static::toDateTime($date);
         $now = new DateTime();
 
         return $date->format('Y') == $now->format('Y');
@@ -385,7 +385,7 @@ class DateTimeHelper
      */
     public static function isThisWeek(mixed $date): bool
     {
-        $date = self::toDateTime($date);
+        $date = static::toDateTime($date);
         $now = new DateTime();
 
         return $date->format('W Y') == $now->format('W Y');
@@ -399,7 +399,7 @@ class DateTimeHelper
      */
     public static function isThisMonth(mixed $date): bool
     {
-        $date = self::toDateTime($date);
+        $date = static::toDateTime($date);
         $now = new DateTime();
 
         return $date->format('m Y') == $now->format('m Y');
@@ -451,7 +451,7 @@ class DateTimeHelper
      */
     public static function isInThePast(mixed $date): bool
     {
-        $date = self::toDateTime($date);
+        $date = static::toDateTime($date);
 
         return $date->getTimestamp() < time();
     }
