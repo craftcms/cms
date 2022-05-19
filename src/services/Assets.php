@@ -769,9 +769,9 @@ class Assets extends Component
         $folderModel = $parentFolder;
         $parentId = $parentFolder->id;
 
-        if ($fullPath) {
+        if ($fullPath !== '') {
             // If we don't have a folder matching these, create a new one
-            $parts = explode('/', trim($fullPath, '/'));
+            $parts = preg_split('/\\\\|\//', trim($fullPath, '/\\'));
 
             // creep up the folder path
             $path = '';

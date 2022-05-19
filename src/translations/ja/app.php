@@ -259,7 +259,7 @@ return [
     'Choose how the field should look for authors.' => 'フィールドで著者を探す方法を選択してください。',
     'Choose the available content for querying with this schema:' => 'このスキーマのクエリで使用可能にするコンテンツを選択してください:',
     'Choose the available mutations for this schema:' => 'このスキーマで使用可能にするミューテーションを選択してください:',
-    'Choose which filesystem assets should be stored in.' => 'どのファイルシステムのアセットに保管するのか選択してください。',
+    'Choose which filesystem assets should be stored in.' => 'アセットを保存するファイルシステムを選択してください。',
     'Choose which filesystem image transforms should be stored in.' => 'どのファイルシステムの画像変換に保管するのかを選択してください。',
     'Choose which sites this section should be available in, and configure the site-specific settings.' => 'このセクションを表示可能にするサイトを選択して、サイト固有の設定を行ってください。',
     'Choose which table columns should be visible for this source, and in which order.' => 'このソースに対して表示可能なテーブルの列と、その順序を選択してください。',

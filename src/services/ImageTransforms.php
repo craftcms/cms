@@ -422,6 +422,7 @@ class ImageTransforms extends Component
                 [$sizeValue, $sizeUnit] = AssetsHelper::parseSrcsetSize($transform);
             } catch (InvalidArgumentException) {
                 // All good.
+                $sizeValue = $sizeUnit = null;
             }
 
             if (isset($sizeValue, $sizeUnit)) {

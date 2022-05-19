@@ -117,11 +117,13 @@
           this.addBlock(type);
         });
 
-        new Garnish.MenuBtn(this.$addBlockMenuBtn, {
-          onOptionSelect: (option) => {
-            this.addBlock($(option).data('type'));
-          },
-        });
+        if (this.$addBlockMenuBtn.length) {
+          new Garnish.MenuBtn(this.$addBlockMenuBtn, {
+            onOptionSelect: (option) => {
+              this.addBlock($(option).data('type'));
+            },
+          });
+        }
 
         this.updateAddBlockBtn();
 
@@ -380,8 +382,9 @@
         var $block = $(html);
 
         // Pause the draft editor
-        if (this.$form.data('elementEditor')) {
-          this.$form.data('elementEditor').pause();
+        const elementEditor = this.$form.data('elementEditor');
+        if (elementEditor) {
+          elementEditor.pause();
         }
 
         if ($insertBefore) {
@@ -428,8 +431,8 @@
               }
 
               // Resume the draft editor
-              if (this.$form.data('elementEditor')) {
-                this.$form.data('elementEditor').resume();
+              if (elementEditor) {
+                elementEditor.resume();
               }
             });
           }

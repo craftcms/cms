@@ -48,6 +48,9 @@ Craft.EditableTable = Garnish.Base.extend(
       this.sorter = new Craft.DataTableSorter(this.$table, {
         helperClass: 'editabletablesorthelper',
         copyDraggeeInputValuesToHelper: true,
+        onSortChange: () => {
+          this.updateAllRows();
+        },
       });
 
       if (this.isVisible()) {
@@ -112,17 +115,41 @@ Craft.EditableTable = Garnish.Base.extend(
         this.$addRowBtn.attr('aria-disabled', 'false');
       }
     },
-    updateDeleteRowButton: function (rowId) {
-      const rowSelector = `[data-id="${rowId}"]`;
-      const $row = this.$table.find(rowSelector);
+    updateAllRows: function () {
+      if (this.settings.staticRows) {
+        return;
+      }
+      const $rows = this.$table.find('> tbody > tr');
+      for (let i = 0; i < $rows.length; i++) {
+        this.updateRow($rows.eq(i));
+      }
+    },
+    updateRow: function ($row) {
+      if (this.settings.staticRows) {
+        return;
+      }
+
       const $deleteBtn = $row.find('button.delete');
 
-      if (!$deleteBtn || !$row) return;
-
-      const label = Craft.t('app', 'Delete row {index}', {
-        index: this.rowCount,
-      });
-      $deleteBtn.attr('aria-label', label);
+      if ($deleteBtn.length) {
+        $deleteBtn.attr(
+          'aria-label',
+          Craft.t('app', 'Delete row {index}', {
+            index: $row.index() + 1,
+          })
+        );
+        if (this.canDeleteRow()) {
+          $deleteBtn.removeAttr('disabled').removeClass('disabled');
+        } else {
+          $deleteBtn.attr('disabled', 'disabled').addClass('disabled');
+        }
+      }
+    },
+    /**
+     * @deprecated
+     */
+    updateDeleteRowButton: function (rowId) {
+      this.updateRow(this.$table.find(`tr[data-id="${rowId}"]`));
     },
     updateStatusMessage: function () {
       this.$statusMessage.empty();
@@ -162,7 +189,9 @@ Craft.EditableTable = Garnish.Base.extend(
 
       this.rowCount--;
 
+      this.updateAllRows();
       this.updateAddRowButton();
+
       if (this.rowCount === 0) {
         this.$table.addClass('hidden');
       }
@@ -215,7 +244,7 @@ Craft.EditableTable = Garnish.Base.extend(
       }
 
       this.rowCount++;
-      this.updateDeleteRowButton(rowId);
+      this.updateAllRows();
       this.updateAddRowButton();
       this.$table.removeClass('hidden');
 

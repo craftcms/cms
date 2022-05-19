@@ -109,7 +109,7 @@ class FsListing extends Model
      */
     public function getUri(): string
     {
-        return $this->dirname . ($this->dirname ? DIRECTORY_SEPARATOR : '') . $this->basename;
+        return ($this->dirname ? "$this->dirname/" : '') . $this->basename;
     }
 
     /**
