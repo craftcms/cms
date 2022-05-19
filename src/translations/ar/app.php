@@ -947,7 +947,7 @@ return [
     'No blocks.' => 'لا توجد كتل.',
     'No category groups exist yet.' => 'لا توجد مجموعات فئات بعد.',
     'No content migrations.' => 'لا توجد أية ترحيلات محتويات.',
-    'No deprecation errors to report!' => 'لا توجد أخطاء برمجة مهجورة للإبلاغ عنها!',
+    'No deprecation warnings to report!' => 'No deprecation warnings to report!',
     'No entries exist yet.' => 'لا توجد إدخالات بعد.',
     'No entry types exist for this section.' => 'لا توجد أنواع إدخال لهذا القسم.',
     'No fields exist yet.' => 'لا توجد حقول بعد.',
