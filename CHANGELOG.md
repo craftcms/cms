@@ -10,6 +10,7 @@
 - Fixed a bug where editable tables’ delete buttons weren’t visually disabled when the minimum number of rows had been reached.
 - Fixed a bug where all eager-loaded `srcset`-style transform sizes were relative to the first eager-loaded transform, rather than the prior one. ([#11209](https://github.com/craftcms/cms/issues/11209))
 - Fixed a bug where eager-loaded `srcset`-style transform sizes didn’t reference the prior eager-loaded transform’s `format`, `interlace`, `mode`, `position`, or `quality` settings. ([#11264](https://github.com/craftcms/cms/issues/11264))
+- Fixed a bug where the web-based installation wizard wouldn’t show the database connection screen if a connection could be established but no database was selected. ([#11245](https://github.com/craftcms/cms/issues/11245))
 
 ## 3.7.42 - 2022-05-11
 
