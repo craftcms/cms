@@ -13,8 +13,7 @@ use craft\elements\User;
 use FunctionalTester;
 
 /**
- * Test that most pages within Craft are rendered successfully and that we can - some a minor degree -
- * establish that the correct content is loaded on those pages.
+ * Test that most pages within Craft are rendered successfully and the correct content is loaded on those pages.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
@@ -203,7 +202,7 @@ class PageRenderChecksCest
             ],
             [
                 'url' => '/utilities/deprecation-errors', 'title' => 'Deprecation Warnings', 'extraContent' => [
-                ['rendered' => 'No deprecation errors to report!'],
+                ['rendered' => 'No deprecation warnings to report!'],
             ],
             ],
             [
