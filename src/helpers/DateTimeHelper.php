@@ -56,11 +56,6 @@ class DateTimeHelper
     public const SECONDS_YEAR = 31556874;
 
     /**
-     * @var array Translation pairs for [[translateDate()]]
-     */
-    private static array $_translationPairs;
-
-    /**
      * Converts a value into a DateTime object.
      *
      * `$value` can be in the following formats:
@@ -714,38 +709,5 @@ class DateTimeHelper
         }
 
         return null;
-    }
-
-    /**
-     * Returns translation pairs for [[translateDate()]].
-     *
-     * @param string $language The target language
-     * @return array The translation pairs
-     */
-    private static function _getDateTranslations(string $language): array
-    {
-        if (!isset(self::$_translationPairs[$language])) {
-            $i18n = Craft::$app->getI18n();
-            $sourceLocale = $i18n->getLocaleById('en-US');
-            $targetLocale = $i18n->getLocaleById($language);
-
-            $amName = $targetLocale->getAMName();
-            $pmName = $targetLocale->getPMName();
-
-            self::$_translationPairs[$language] = array_merge(
-                array_combine($sourceLocale->getMonthNames(Locale::LENGTH_FULL), $targetLocale->getMonthNames(Locale::LENGTH_FULL)),
-                array_combine($sourceLocale->getWeekDayNames(Locale::LENGTH_FULL), $targetLocale->getWeekDayNames(Locale::LENGTH_FULL)),
-                array_combine($sourceLocale->getMonthNames(Locale::LENGTH_MEDIUM), $targetLocale->getMonthNames(Locale::LENGTH_MEDIUM)),
-                array_combine($sourceLocale->getWeekDayNames(Locale::LENGTH_MEDIUM), $targetLocale->getWeekDayNames(Locale::LENGTH_MEDIUM)),
-                [
-                    'AM' => mb_strtoupper($amName),
-                    'PM' => mb_strtoupper($pmName),
-                    'am' => mb_strtolower($amName),
-                    'pm' => mb_strtolower($pmName),
-                ]
-            );
-        }
-
-        return self::$_translationPairs[$language];
     }
 }
