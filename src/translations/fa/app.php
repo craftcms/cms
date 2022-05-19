@@ -947,7 +947,7 @@ return [
     'No blocks.' => 'بلوکی وجود ندارد.',
     'No category groups exist yet.' => 'گروه دسته بندی ای وجود ندارد.',
     'No content migrations.' => 'تغییر ساختاری برای محتوا وجود ندارد.',
-    'No deprecation errors to report!' => 'خطای قدیمی بودنی برای گزارش وجود ندارد!',
+    'No deprecation warnings to report!' => 'No deprecation warnings to report!',
     'No entries exist yet.' => 'محتوایی وجود ندارد.',
     'No entry types exist for this section.' => 'نوع محتوایی برای این بخش وجود ندارد.',
     'No fields exist yet.' => 'فیلدی وجود ندارد.',
