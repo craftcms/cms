@@ -88,7 +88,12 @@ export default Base.extend({
     for (i = 0; i < Garnish._eventHandlers.length; i++) {
       handler = Garnish._eventHandlers[i];
 
-      if (this instanceof handler.target && handler.type === type) {
+      if (
+        handler &&
+        handler.target &&
+        this instanceof handler.target &&
+        handler.type === type
+      ) {
         _ev = $.extend({data: handler.data}, data, ev);
         handler.handler(_ev);
       }
