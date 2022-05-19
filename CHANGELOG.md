@@ -28,6 +28,7 @@
 - Fixed a bug where draft editor pages had two identical “Save and continue editing” alternate form actions.
 - Fixed a JavaScript warning that occurred when viewing an element edit page, if the user didn’t have permission to edit it.
 - Fixed a bug where asset selector modals weren’t fully initializing for Assets fields, if they were targeting the user’s temp folder. ([#11254](https://github.com/craftcms/cms/issues/11254))
+- Fixed an error that occurred when saving an entry via a GraphQL mutation. ([#11258](https://github.com/craftcms/cms/issues/11258))
 
 ## 4.0.2 - 2022-05-11
 
