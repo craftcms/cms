@@ -31,7 +31,6 @@ use craft\helpers\StringHelper;
 use craft\queue\jobs\LocalizeRelations;
 use craft\services\Elements;
 use GraphQL\Type\Definition\Type;
-use yii\base\Application;
 use yii\base\Event;
 use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
@@ -778,22 +777,20 @@ JS;
                 $siteIds = ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($element), 'siteId');
                 $siteIds = ArrayHelper::withoutValue($siteIds, $element->siteId);
                 if (!empty($siteIds)) {
-                    Craft::$app->on(Application::EVENT_AFTER_REQUEST, function() use ($siteIds, $element) {
-                        $userId = Craft::$app->getUser()->getId();
-                        $timestamp = Db::prepareDateForDb(new \DateTime());
+                    $userId = Craft::$app->getUser()->getId();
+                    $timestamp = Db::prepareDateForDb(new \DateTime());
 
-                        foreach ($siteIds as $siteId) {
-                            Db::upsert(DbTable::CHANGEDFIELDS, [
-                                'elementId' => $element->id,
-                                'siteId' => $siteId,
-                                'fieldId' => $this->id,
-                            ], [
-                                'dateUpdated' => $timestamp,
-                                'propagated' => $element->propagating,
-                                'userId' => $userId,
-                            ], [], false);
-                        }
-                    });
+                    foreach ($siteIds as $siteId) {
+                        Db::upsert(DbTable::CHANGEDFIELDS, [
+                            'elementId' => $element->id,
+                            'siteId' => $siteId,
+                            'fieldId' => $this->id,
+                        ], [
+                            'dateUpdated' => $timestamp,
+                            'propagated' => $element->propagating,
+                            'userId' => $userId,
+                        ], [], false);
+                    }
                 }
             }
         }
