@@ -314,7 +314,7 @@ class Config extends Component
         FileHelper::writeToFile($path, $contents);
 
         // Now actually set the environment variable
-        putenv("$name=$value");
+        $_SERVER[$name] = $value;
     }
 
     /**
