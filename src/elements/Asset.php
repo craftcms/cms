@@ -377,9 +377,9 @@ class Asset extends Element
     {
         $fieldLayouts = [];
         if (
-            preg_match('/^folder:(.+)$/', $source, $matches) &&
-            ($folder = Craft::$app->getAssets()->getFolderByUid($matches[1])) &&
-            $fieldLayout = $folder->getVolume()->getFieldLayout()
+            preg_match('/^volume:(.+)$/', $source, $matches) &&
+            ($volume = Craft::$app->getVolumes()->getVolumeByUid($matches[1])) &&
+            $fieldLayout = $volume->getFieldLayout()
         ) {
             $fieldLayouts[] = $fieldLayout;
         }
@@ -497,6 +497,7 @@ class Asset extends Element
             'imageSize' => ['label' => Craft::t('app', 'Dimensions')],
             'width' => ['label' => Craft::t('app', 'Image Width')],
             'height' => ['label' => Craft::t('app', 'Image Height')],
+            'alt' => ['label' => Craft::t('app', 'Alternative Text')],
             'link' => ['label' => Craft::t('app', 'Link'), 'icon' => 'world'],
             'id' => ['label' => Craft::t('app', 'ID')],
             'uid' => ['label' => Craft::t('app', 'UID')],
@@ -1325,10 +1326,15 @@ JS;
 
             [$value, $unit] = Assets::parseSrcsetSize($size);
 
-            $sizeTransform = $transform ? $transform->toArray() : [];
-
-            // Having handle or name here will override dimensions, so we don't want that.
-            unset($sizeTransform['handle'], $sizeTransform['name']);
+            $sizeTransform = $transform ? $transform->toArray([
+                'format',
+                'height',
+                'interlace',
+                'mode',
+                'position',
+                'quality',
+                'width',
+            ]) : [];
 
             if ($unit === 'w') {
                 $sizeTransform['width'] = (int)$value;

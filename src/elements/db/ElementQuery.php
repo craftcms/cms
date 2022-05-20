@@ -38,6 +38,7 @@ use yii\base\NotSupportedException;
 use yii\db\Connection;
 use yii\db\Expression;
 use yii\db\ExpressionInterface;
+use yii\db\QueryBuilder;
 
 /**
  * ElementQuery represents a SELECT SQL statement for elements in a way that is independent of DBMS.
@@ -1611,6 +1612,23 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         return $names;
+    }
+
+    /**
+     * Prepares the element query and returns its subquery (which determines what elements will be returned).
+     *
+     * @param QueryBuilder|null $builder
+     * @return Query
+     * @since 4.0.3
+     */
+    public function prepareSubquery(?QueryBuilder $builder = null): Query
+    {
+        if ($builder === null) {
+            $builder = Craft::$app->getDb()->getQueryBuilder();
+        }
+
+        /** @var Query */
+        return $this->prepare($builder)->from['subquery'];
     }
 
     // Arrayable methods
