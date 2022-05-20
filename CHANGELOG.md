@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.0.3 - 2022-05-20
 
 ### Added
 - Added `craft\elements\db\ElementQuery::prepareSubquery()`.
