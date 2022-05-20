@@ -24,6 +24,7 @@ use craft\web\Controller;
 use PDOException;
 use Throwable;
 use yii\base\Exception;
+use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
 
@@ -72,9 +73,9 @@ class InstallController extends Controller
 
         // Can we establish a DB connection?
         try {
-            Craft::$app->getDb()->open();
+            $this->_checkDbConfig();
             $showDbScreen = false;
-        } catch (DbConnectException $e) {
+        } catch (InvalidConfigException $e) {
             // Can we control the settings?
             if ($this->_canControlDbConfig()) {
                 $showDbScreen = true;
@@ -314,6 +315,24 @@ class InstallController extends Controller
         }
 
         return $this->asSuccess();
+    }
+
+    /**
+     * @throws InvalidConfigException
+     */
+    private function _checkDbConfig(): void
+    {
+        // If no database is set yet, definitely show it
+        if (!Craft::$app->getConfig()->getDb()->database) {
+            throw new InvalidConfigException('No database has been selected yet.');
+        }
+
+        // Can we establish a DB connection?
+        try {
+            Craft::$app->getDb()->open();
+        } catch (DbConnectException $e) {
+            throw new InvalidConfigException('A database connection couldn’t be established.', 0, $e);
+        }
     }
 
     /**
