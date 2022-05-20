@@ -4,6 +4,8 @@
 
 ### Changed
 - Reversed the order of Lightswitch fields’ “ON Label” and “OFF Label” settings. ([#11259](https://github.com/craftcms/cms/issues/11259))
+- `craft\services\Elements::duplicateElement()` now has a `$trackDuplication` argument.
+- `craft\services\Matrix::duplicateBlocks()` now has a `$trackDuplications` argument.
 
 ### Fixed
 - Fixed a bug where editable tables’ delete buttons’ `aria-label` attributes weren’t getting updated when table rows were reordered or deleted.
@@ -12,6 +14,7 @@
 - Fixed a bug where eager-loaded `srcset`-style transform sizes didn’t reference the prior eager-loaded transform’s `format`, `interlace`, `mode`, `position`, or `quality` settings. ([#11264](https://github.com/craftcms/cms/issues/11264))
 - Fixed a bug where the web-based installation wizard wouldn’t show the database connection screen if a connection could be established but no database was selected. ([#11245](https://github.com/craftcms/cms/issues/11245))
 - Fixed an error that could occur when applying a multi-site draft with relational fields. ([#11220](https://github.com/craftcms/cms/issues/11220))
+- Fixed a bug where Matrix blocks could be deleted from newly-created multi-site entries, if the edit page was reloaded. ([#10906](https://github.com/craftcms/cms/issues/10906))
 
 ## 3.7.42 - 2022-05-11
 

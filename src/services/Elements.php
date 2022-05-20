@@ -1137,13 +1137,19 @@ class Elements extends Component
      * @param array $newAttributes any attributes to apply to the duplicate
      * @param bool $placeInStructure whether to position the cloned element after the original one in its structure.
      * (This will only happen if the duplicated element is canonical.)
+     * @param bool $trackDuplication whether to keep track of the duplication from [[Elements::$duplicatedElementIds]]
+     * and [[Elements::$duplicatedElementSourceIds]]
      * @return ElementInterface the duplicated element
      * @throws UnsupportedSiteException if the element is being duplicated into a site it doesn’t support
      * @throws InvalidElementException if saveElement() returns false for any of the sites
      * @throws \Throwable if reasons
      */
-    public function duplicateElement(ElementInterface $element, array $newAttributes = [], bool $placeInStructure = true): ElementInterface
-    {
+    public function duplicateElement(
+        ElementInterface $element,
+        array $newAttributes = [],
+        bool $placeInStructure = true,
+        bool $trackDuplication = true
+    ): ElementInterface {
         // Make sure the element exists
         if (!$element->id) {
             throw new Exception('Attempting to duplicate an unsaved element.');
@@ -1254,8 +1260,10 @@ class Elements extends Component
             }
 
             // Map it
-            static::$duplicatedElementIds[$element->id] = $mainClone->id;
-            static::$duplicatedElementSourceIds[$mainClone->id] = $element->id;
+            if ($trackDuplication) {
+                static::$duplicatedElementIds[$element->id] = $mainClone->id;
+                static::$duplicatedElementSourceIds[$mainClone->id] = $element->id;
+            }
 
             $mainClone->newSiteIds = [];
 
