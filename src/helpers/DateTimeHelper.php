@@ -56,18 +56,11 @@ class DateTimeHelper
     public const SECONDS_YEAR = 31556874;
 
     /**
-     * @var DateTime|null
+     * @var DateTime[]
      * @see pause()
      * @see resume()
      */
-    private static DateTime|null $_now = null;
-
-    /**
-     * @var int
-     * @see pause()
-     * @see resume()
-     */
-    private static int $_pauseLevel = 0;
+    private static array $_now = [];
 
     /**
      * Converts a value into a DateTime object.
@@ -268,15 +261,12 @@ class DateTimeHelper
      * If this method is called multiple times, [[resume()]] will need to be called an equal number of times before
      * time is actually resumed.
      *
+     * @param DateTime|null $now A `DateTime` object that should represent the current time for the duration of the pause
      * @since 4.1.0
      */
-    public static function pause(): void
+    public static function pause(?DateTime $now = null): void
     {
-        self::$_pauseLevel++;
-
-        if (self::$_pauseLevel === 1) {
-            self::$_now = new DateTime('now');
-        }
+        array_unshift(self::$_now, $now ?? self::$_now[0] ?? new DateTime('now'));
     }
 
     /**
@@ -286,15 +276,7 @@ class DateTimeHelper
      */
     public static function resume(): void
     {
-        if (self::$_pauseLevel === 0) {
-            return;
-        }
-
-        self::$_pauseLevel--;
-
-        if (self::$_pauseLevel === 0) {
-            self::$_now = null;
-        }
+        array_shift(self::$_now);
     }
 
     /**
@@ -307,8 +289,8 @@ class DateTimeHelper
     public static function now(?DateTimeZone $timeZone = null): DateTime
     {
         // Is time paused?
-        if (isset(self::$_now)) {
-            $date = clone self::$_now;
+        if (!empty(self::$_now)) {
+            $date = clone self::$_now[0];
             $date->setTimezone($timeZone ?? new DateTimeZone(Craft::$app->getTimeZone()));
             return $date;
         }

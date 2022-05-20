@@ -61,11 +61,13 @@ class DateTimeHelperTest extends TestCase
      */
     public function testPause(): void
     {
-        $timestamp = DateTimeHelper::currentTimeStamp();
-        DateTimeHelper::pause();
-        sleep(1);
+        // Use a slightly-off time so we don't have to sleep()
+        $now = (new DateTime('now'))->modify('-1 minute');
+        $timestamp = $now->getTimestamp();
+        DateTimeHelper::pause($now);
         self::assertEquals($timestamp, DateTimeHelper::currentTimeStamp());
         DateTimeHelper::pause();
+        self::assertEquals($timestamp, DateTimeHelper::currentTimeStamp());
         DateTimeHelper::resume();
         self::assertEquals($timestamp, DateTimeHelper::currentTimeStamp());
         DateTimeHelper::resume();
