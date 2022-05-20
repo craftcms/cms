@@ -352,53 +352,7 @@ class InstallController extends Controller
             return false;
         }
 
-        // Map the DB settings we definitely care about to their environment variable names
-        $vars = [
-            'user' => 'CRAFT_DB_USER',
-            'password' => 'CRAFT_DB_PASSWORD',
-        ];
-
-        // If there's a CRAFT_DB_DSN environment variable, go with that
-        if (App::env('CRAFT_DB_DSN') !== null) {
-            $vars['dsn'] = 'CRAFT_DB_DSN';
-        } else {
-            $vars['driver'] = 'CRAFT_DB_DRIVER';
-            $vars['server'] = 'CRAFT_DB_SERVER';
-            $vars['port'] = 'CRAFT_DB_PORT';
-            $vars['database'] = 'CRAFT_DB_DATABASE';
-        }
-
-        // Save the current environment variable values, and set temporary ones
-        $realValues = [];
-        $tempValues = [];
-
-        foreach ($vars as $setting => $var) {
-            $realValues[$setting] = App::env($var);
-            $tempValues[$setting] = $_SERVER[$var] = StringHelper::randomString();
-            putenv("$var=$tempValues[$setting]");
-        }
-
-        // Grab the new DB config. Maybe it will contain our temporary values
-        $config = Craft::$app->getConfig()->getConfigFromFile('db');
-
-        // Put the old values back
-        foreach ($vars as $setting => $var) {
-            if ($realValues[$setting] === false) {
-                unset($_SERVER[$var]);
-                putenv($var);
-            } else {
-                $_SERVER[$var] = $realValues[$setting];
-                putenv("$var=$realValues[$setting]");
-            }
-        }
-
-        // Now see if our temp values made it in
-        foreach ($vars as $setting => $var) {
-            if (!isset($config[$setting]) || $config[$setting] !== $tempValues[$setting]) {
-                return false;
-            }
-        }
-
+        // Nothing else to worry about, thanks to `CRAFT_X` environment variable overrides
         return true;
     }
 
