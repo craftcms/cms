@@ -12,7 +12,13 @@
                         <span class="icon icon-mask" aria-hidden="true">{{ svg(utility.iconSvg, sanitize=false) }}</span>
                         <span class="label">{{ utility.displayName }}</span>
                         {% if not selected and utility.badgeCount %}
-                            <span class="badge">{{ utility.badgeCount|number(decimals=0) }}</span>
+                            <span class="badge">
+                                {{ utility.badgeCount|number(decimals=0) }}
+                                {{ tag('span', {
+                                    class: 'visually-hidden',
+                                    text: utility.badgeCount == 1 ? 'Notification'|t('app') : 'Notifications'|t('app')
+                                }) }}
+                            </span>
                         {% endif %}
                     </a>
                 </li>
