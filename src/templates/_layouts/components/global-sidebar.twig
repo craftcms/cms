@@ -38,7 +38,13 @@
                         <span class="label">{{ item.label }}</span>
 
                         {%- if not item.sel and item.badgeCount -%}
-                            <span class="badge">{{ item.badgeCount|number(decimals=0) }}</span>
+                            <span class="badge">
+                                {{ item.badgeCount|number(decimals=0) }}
+                                {{ tag('span', {
+                                    class: 'visually-hidden',
+                                    text: item.badgeCount == 1 ? 'Notification'|t('app') : 'Notifications'|t('app')
+                                }) }}
+                            </span>
                         {%- endif -%}
                     </a>
                     {% if item.subnav %}
@@ -62,7 +68,13 @@
                                         {{ item.label }}
 
                                         {%- if not itemIsSelected and item.badgeCount is defined -%}
-                                            <span class="badge">{{ item.badgeCount|number(decimals=0) }}</span>
+                                            <span class="badge">
+                                                {{ item.badgeCount|number(decimals=0) }}
+                                                {{ tag('span', {
+                                                    class: 'visually-hidden',
+                                                    text: item.badgeCount == 1 ? 'Notification'|t('app') : 'Notifications'|t('app')
+                                                }) }}
+                                            </span>
                                         {%- endif -%}
                                     </a>
                                 </li>

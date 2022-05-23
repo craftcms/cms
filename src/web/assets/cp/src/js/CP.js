@@ -1130,12 +1130,15 @@ Craft.CP = Garnish.Base.extend(
                 let $badge = $utilitiesLink.children('.badge');
 
                 if (data.badgeCount) {
+                  const notificationText = $badge.length === 1 ? Craft.t('app', 'Notification') : Craft.t('app', 'Notifications');
+
                   if (!$badge.length) {
                     $badge = $('<span class="badge"/>').appendTo(
                       $utilitiesLink
                     );
                   }
                   $badge.text(data.badgeCount);
+                  $badge.append('<span class="visually-hidden"> ' + notificationText + '</span>');
                 } else if ($badge.length) {
                   $badge.remove();
                 }

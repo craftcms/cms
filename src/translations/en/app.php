@@ -994,6 +994,8 @@ return [
     'Nothing to index.' => 'Nothing to index.',
     'Nothing to update.' => 'Nothing to update.',
     'Notice' => 'Notice',
+    'Notification' => 'Notification',
+    'Notifications' => 'Notifications',
     'Number' => 'Number',
     'OFF Label' => 'OFF Label',
     'OK' => 'OK',
