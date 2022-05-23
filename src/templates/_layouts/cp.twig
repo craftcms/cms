@@ -300,8 +300,9 @@
                 <div id="app-info">
                     <span>Craft CMS {{ craft.app.version }}</span>
                     {% if canUpgradeEdition %}
+                        {% set linkText = isTrial ? 'Buy Craft Pro'|t('app') : 'Upgrade to Craft Pro'|t('app') %}
                         <span>
-                            <a class="go" href="{{ url('plugin-store/upgrade-craft') }}">{{ isTrial ? 'Buy Craft Pro'|t('app') : 'Upgrade to Craft Pro'|t('app') }}</a>
+                            <a class="go" href="{{ url('plugin-store/upgrade-craft') }}" aria-label="{{ linkText }}">{{ linkText }}</a>
                         </span>
                     {% endif %}
                 </div>
