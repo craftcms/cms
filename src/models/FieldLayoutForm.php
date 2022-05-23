@@ -10,7 +10,6 @@ namespace craft\models;
 use craft\base\FieldLayoutComponent;
 use craft\base\Model;
 use craft\helpers\Html;
-use phpDocumentor\Reflection\Types\Boolean;
 
 /**
  * FieldLayoutForm model class.
