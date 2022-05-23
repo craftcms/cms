@@ -12,7 +12,7 @@
         </div>
     </a>
 
-    <nav id="nav">
+    <nav id="nav" aria-label="{{ 'Primary'|t('app') }}">
         <ul>
             {% for item in craft.cp.nav() %}
                 {% set itemAttributes = {
