@@ -74,7 +74,6 @@ class FieldLayoutForm extends Model
                     'layout-tab' => $tab->getUid() ?? true,
                 ],
                 'role' => $hasMultipleTabs ? 'tabpanel' : false,
-                'tabindex' => $hasMultipleTabs ? '0' : false,
                 'aria' => [
                     'labelledBy' => $hasMultipleTabs ? $tab->getTabId() : false,
                 ],
