@@ -3615,6 +3615,8 @@ ul.tree,
     }
 
     [role='tab'] {
+      --indicator-height: 4px;
+      --indicator-color: var(--blue-700);
       display: flex;
       flex-direction: row;
       align-items: center;
@@ -3642,6 +3644,8 @@ ul.tree,
       &.sel {
         cursor: default;
         color: var(--text-color);
+        border-top: var(--indicator-height) solid var(--indicator-color);
+        padding-bottom: var(--indicator-height);
         @include pane;
       }
 
