@@ -26,7 +26,7 @@
                     {%- if structureEditable %}<a class="move icon" title="{{ 'Reorder'|t('app') }}" aria-label="{{ 'Reorder'|t('app') }}" role="button">&nbsp;</a>{% endif %}
                     {%- if structure and totalDescendants %}
                         {% set toggleLabel = 'Show {title} children'|t('app', {title: elementTitle}) %}
-                        <button role="button" class="toggle{% if element.id not in collapsedElementIds %} expanded{% endif
+                        <button type="button" class="toggle{% if element.id not in collapsedElementIds %} expanded{% endif
                         %}" title="{{ 'Show/hide children'|t('app') }}" aria-label="{{ toggleLabel }}"
                         aria-expanded="{{  element.id not in collapsedElementIds ? 'true' : 'false' }}"></button>
                     {% endif %}

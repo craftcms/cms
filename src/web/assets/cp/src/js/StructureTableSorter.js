@@ -624,7 +624,7 @@ Craft.StructureTableSorter = Garnish.DragSort.extend(
           // Create its toggle
           const ancestorTitle = this._updateAncestors._$ancestor.data('title');
           $(
-            '<button class="toggle expanded" role="button" aria-expanded="true" title="' +
+            '<button class="toggle expanded" type="button" aria-expanded="true" title="' +
               Craft.t('app', 'Show/hide children') +
               '" aria-label="' +
               Craft.t('app', 'Show {title} children', {title: ancestorTitle}) +
