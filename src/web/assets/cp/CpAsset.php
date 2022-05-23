@@ -226,6 +226,8 @@ JS;
             'No limit',
             'Notes',
             'Notice',
+            'Notification',
+            'Notifications',
             'OK',
             'Open the full edit page in a new tab',
             'Options',
