@@ -21,7 +21,8 @@
                 } %}
                 {% set linkAttributes = {
                     href: url(item.url),
-                    class: item.sel ? 'sel'
+                    class: item.sel ? 'sel',
+                    'aria-current' : item.sel ? 'page' : false,
                 } %}
                 <li {{ attr(itemAttributes) }}>
                     <a {{ attr(linkAttributes) }}>
