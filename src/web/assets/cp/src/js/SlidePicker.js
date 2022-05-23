@@ -62,6 +62,9 @@
         this.max = this._max();
         this.totalSteps = (this.max - this.min) / this.settings.step;
 
+        // Set label
+        this.label = this.settings.label;
+
         if (!Number.isInteger(this.totalSteps)) {
           throw 'Invalid SlidePicker config';
         }
@@ -72,6 +75,11 @@
 
         this.$container.attr('aria-valuemin', this.min);
         this.$container.attr('aria-valuemax', this.max);
+
+        if (this.label) {
+          this.$container.attr('aria-label', this.label);
+        }
+
         this.$buttons = $();
 
         // Create the buttons
@@ -158,6 +166,7 @@
         min: 0,
         max: 100,
         step: 10,
+        sliderLabel: null,
         valueLabel: null,
         onChange: $.noop,
       },

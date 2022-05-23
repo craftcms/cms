@@ -997,6 +997,7 @@ return [
     'Notification' => 'Notification',
     'Notifications' => 'Notifications',
     'Number' => 'Number',
+    'Number of columns' => 'Number of columns',
     'OFF Label' => 'OFF Label',
     'OK' => 'OK',
     'ON Label' => 'ON Label',

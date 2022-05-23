@@ -591,6 +591,7 @@ import './dashboard.scss';
           return window.dashboard.grid.totalCols;
         },
         step: 1,
+        label: Craft.t('app', 'Number of columns'),
         valueLabel: (colspan) => {
           return Craft.t(
             'app',
