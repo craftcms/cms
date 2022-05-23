@@ -10,6 +10,7 @@ namespace craft\models;
 use craft\base\FieldLayoutComponent;
 use craft\base\Model;
 use craft\helpers\Html;
+use phpDocumentor\Reflection\Types\Boolean;
 
 /**
  * FieldLayoutForm model class.
@@ -58,6 +59,7 @@ class FieldLayoutForm extends Model
     public function render(bool $showFirst = true): string
     {
         $html = [];
+        $hasMultipleTabs = count($this->tabs) > 1;
         foreach ($this->tabs as $i => $tab) {
             $show = $showFirst && $i === 0;
             $id = $this->_tabId($tab->getId());
@@ -71,10 +73,10 @@ class FieldLayoutForm extends Model
                     'id' => $id,
                     'layout-tab' => $tab->getUid() ?? true,
                 ],
-                'role' => 'tabpanel',
-                'tabindex' => '0',
+                'role' => $hasMultipleTabs ? 'tabpanel' : false,
+                'tabindex' => $hasMultipleTabs ? '0' : false,
                 'aria' => [
-                    'labelledBy' => $tab->getTabId(),
+                    'labelledBy' => $hasMultipleTabs ? $tab->getTabId() : false,
                 ],
             ]);
         }
