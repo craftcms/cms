@@ -297,14 +297,14 @@
                         <div class="edition-trial">{{ "Trial"|t('app') }}</div>
                     {% endif %}
                 </div>
-                <ul id="app-info">
-                    <li>Craft CMS {{ craft.app.version }}</li>
+                <div id="app-info">
+                    <span>Craft CMS {{ craft.app.version }}</span>
                     {% if canUpgradeEdition %}
-                        <li>
+                        <span>
                             <a class="go" href="{{ url('plugin-store/upgrade-craft') }}">{{ isTrial ? 'Buy Craft Pro'|t('app') : 'Upgrade to Craft Pro'|t('app') }}</a>
-                        </li>
+                        </span>
                     {% endif %}
-                </ul>
+                </div>
             </footer>
 
         </div><!-- #page-container -->
