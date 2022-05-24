@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where it wasn’t possible to disable all table columns for an element source. ([#11291](https://github.com/craftcms/cms/issues/11291))
+
 ## 4.0.3 - 2022-05-20
 
 ### Added
