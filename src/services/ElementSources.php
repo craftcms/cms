@@ -213,9 +213,11 @@ class ElementSources extends Component
             ['title', ['label' => $elementType::displayName()]],
         ];
 
-        foreach ($attributeKeys as $key) {
-            if (isset($availableAttributes[$key])) {
-                $attributes[] = [$key, $availableAttributes[$key]];
+        if (is_array($attributeKeys)) {
+            foreach ($attributeKeys as $key) {
+                if (isset($availableAttributes[$key])) {
+                    $attributes[] = [$key, $availableAttributes[$key]];
+                }
             }
         }
 

@@ -186,7 +186,7 @@ class ElementIndexSettingsController extends BaseElementsController
                 // Were new settings posted?
                 if (isset($sourceSettings[$source['key']])) {
                     $postedSettings = $sourceSettings[$source['key']];
-                    $sourceConfig['tableAttributes'] = array_values(array_filter($postedSettings['tableAttributes'] ?? []));
+                    $sourceConfig['tableAttributes'] = array_values(array_filter($postedSettings['tableAttributes'] ?? [])) ?: '-';
 
                     if ($isCustom) {
                         $sourceConfig += [

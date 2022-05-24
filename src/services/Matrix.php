@@ -779,7 +779,9 @@ class Matrix extends Component
                             // Just resave Matrix blocks for that one site, and let them propagate over to the new site(s) from there
                             $this->saveField($field, $preexistingLocalizedOwner);
                         } else {
-                            $this->duplicateBlocks($field, $owner, $localizedOwner);
+                            // Duplicate the blocks, but **don't track** the duplications, so the edit page doesn’t think
+                            // its blocks have been replaced by the other sites’ blocks
+                            $this->duplicateBlocks($field, $owner, $localizedOwner, trackDuplications: false);
                         }
 
                         // Make sure we don't duplicate blocks for any of the sites that were just propagated to
@@ -814,11 +816,19 @@ class Matrix extends Component
      * @param ElementInterface $target The target element blocks should be duplicated to
      * @param bool $checkOtherSites Whether to duplicate blocks for the source element’s other supported sites
      * @param bool $deleteOtherBlocks Whether to delete any blocks that belong to the element, which weren’t included in the duplication
+     * @param bool $trackDuplications whether to keep track of the duplications from [[\craft\services\Elements::$duplicatedElementIds]]
+     * and [[\craft\services\Elements::$duplicatedElementSourceIds]]
      * @throws Throwable if reasons
      * @since 3.2.0
      */
-    public function duplicateBlocks(MatrixField $field, ElementInterface $source, ElementInterface $target, bool $checkOtherSites = false, bool $deleteOtherBlocks = true): void
-    {
+    public function duplicateBlocks(
+        MatrixField $field,
+        ElementInterface $source,
+        ElementInterface $target,
+        bool $checkOtherSites = false,
+        bool $deleteOtherBlocks = true,
+        bool $trackDuplications = true,
+    ): void {
         $elementsService = Craft::$app->getElements();
         /** @var MatrixBlockQuery $query */
         $query = $source->getFieldValue($field->handle);
@@ -857,7 +867,7 @@ class Matrix extends Component
                     ], ['blockId' => $block->id, 'ownerId' => $target->id], updateTimestamp: false);
                     $newBlockId = $block->id;
                 } else {
-                    $newBlockId = $elementsService->duplicateElement($block, $newAttributes)->id;
+                    $newBlockId = $elementsService->duplicateElement($block, $newAttributes, trackDuplication: $trackDuplications)->id;
                 }
 
                 $newBlockIds[] = $newBlockId;

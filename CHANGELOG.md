@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+### Changed
+- `temp` is now a reserved volume handle.
+
+### Fixed
+- Fixed a bug where it wasn’t possible to disable all table columns for an element source. ([#11291](https://github.com/craftcms/cms/issues/11291))
+- Fixed a bug where the Assets index page wasn’t allowing any bulk actions for assets in the temporary volume. ([#11293](https://github.com/craftcms/cms/issues/11293))
+
+## 4.0.3 - 2022-05-20
+
 ### Added
 - Added `craft\elements\db\ElementQuery::prepareSubquery()`.
 
