@@ -10,6 +10,8 @@
       max: null,
       totalSteps: null,
       value: null,
+      label: null,
+      describedBy: null,
 
       $container: null,
       $buttons: null,
@@ -64,6 +66,7 @@
 
         // Set label
         this.label = this.settings.label;
+        this.describedBy = this.settings.describedBy;
 
         if (!Number.isInteger(this.totalSteps)) {
           throw 'Invalid SlidePicker config';
@@ -78,6 +81,10 @@
 
         if (this.label) {
           this.$container.attr('aria-label', this.label);
+        }
+
+        if (this.describedBy) {
+          this.$container.attr('aria-describedby', this.describedBy);
         }
 
         this.$buttons = $();
@@ -166,7 +173,6 @@
         min: 0,
         max: 100,
         step: 10,
-        sliderLabel: null,
         valueLabel: null,
         onChange: $.noop,
       },

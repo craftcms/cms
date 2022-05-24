@@ -561,6 +561,10 @@ import './dashboard.scss';
       );
     },
 
+    getWidgetLabelId: function () {
+      return `widget-label-${this.id}`;
+    },
+
     getManagerRow: function () {
       var $row = $(
         '<tr data-id="' +
@@ -571,7 +575,9 @@ import './dashboard.scss';
           '<td class="widgetmanagerhud-icon">' +
           this.getTypeInfo('iconSvg') +
           '</td>' +
-          '<td>' +
+          '<td id="' +
+          this.getWidgetLabelId() +
+          '">' +
           this.getManagerRowLabel() +
           '</td>' +
           '<td class="widgetmanagerhud-col-colspan-picker thin"></td>' +
@@ -592,6 +598,7 @@ import './dashboard.scss';
         },
         step: 1,
         label: Craft.t('app', 'Number of columns'),
+        describedBy: this.getWidgetLabelId(),
         valueLabel: (colspan) => {
           return Craft.t(
             'app',
