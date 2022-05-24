@@ -110,7 +110,7 @@
         <div class="buttons">
             <div class="btngroup">
                 {% for blockType in blockTypes %}
-                    <button type="button" class="btn dashed{% if loop.first %} add icon{% endif %}" data-type="{{ blockType.handle }}" aria-label="{{ blockType.name|t('site') }}">{{ blockType.name|t('site') }}</button>
+                    <button type="button" class="btn dashed{% if loop.first %} add icon{% endif %}" data-type="{{ blockType.handle }}" aria-label="{{ blockType.name|t('site') }}" aria-describedby="{{ labelId }}">{{ blockType.name|t('site') }}</button>
                 {% endfor %}
             </div>
 
