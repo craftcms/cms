@@ -427,8 +427,8 @@
               if (typeof autofocus === 'undefined' || autofocus) {
                 // Scroll to the block
                 Garnish.scrollContainerToElement($block);
-                // Focus on the first text input
-                $block.find('.text,[contenteditable]').first().trigger('focus');
+                // Focus on the first focusable element
+                $block.find('.flex-fields :focusable').first().trigger('focus');
               }
 
               // Resume the draft editor
