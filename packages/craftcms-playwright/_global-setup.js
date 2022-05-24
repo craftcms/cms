@@ -1,7 +1,6 @@
 const {exec} = require('child_process');
 const path = require('path');
 const {chromium, expect} = require('@playwright/test');
-const docker = require('./_docker');
 const craft = require('./_craft');
 
 module.exports = async (config) => {
