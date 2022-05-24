@@ -61,10 +61,10 @@ class DbConfig extends BaseObject
      * :::
      *
      * ::: code
-     * ```php
+     * ```php Static Config
      * 'charset' => 'utf8mb4',
      * ```
-     * ```env
+     * ```env Environment Override
      * CRAFT_DB_CHARSET=utf8mb4
      * ```
      * :::
@@ -90,10 +90,10 @@ class DbConfig extends BaseObject
      * :::
      *
      * ::: code
-     * ```php
+     * ```php Static Config
      * 'collation' => 'utf8mb4_0900_ai_ci',
      * ```
-     * ```env
+     * ```env Environment Override
      * CRAFT_DB_COLLATION=utf8mb4_0900_ai_ci
      * ```
      * :::
@@ -112,10 +112,10 @@ class DbConfig extends BaseObject
      * - PostgreSQL parameters: <https://php.net/manual/en/ref.pdo-pgsql.connection.php>
      *
      * ::: code
-     * ```php
+     * ```php Static Config
      * 'dsn' => 'mysql:host=127.0.0.1;port=3306;dbname=acme_corp',
      * ```
-     * ```env
+     * ```env Environment Override
      * CRAFT_DB_DSN=mysql:host=127.0.0.1;port=3306;dbname=acme_corp
      * ```
      * :::
@@ -126,10 +126,10 @@ class DbConfig extends BaseObject
      * @var string The database password to connect with.
      *
      * ::: code
-     * ```php
+     * ```php Static Config
      * 'password' => 'super-secret',
      * ```
-     * ```env
+     * ```env Environment Override
      * CRAFT_DB_PASSWORD=super-secret
      * ```
      * :::
@@ -145,10 +145,10 @@ class DbConfig extends BaseObject
      * :::
      *
      * ::: code
-     * ```php
+     * ```php Static Config
      * 'schema' => 'myschema,public',
      * ```
-     * ```env
+     * ```env Environment Override
      * CRAFT_DB_SCHEMA=myschema,public
      * ```
      * :::
@@ -166,10 +166,10 @@ class DbConfig extends BaseObject
      * :::
      *
      * ::: code
-     * ```php
+     * ```php Static Config
      * 'setSchemaOnConnect' => true,
      * ```
-     * ```env
+     * ```env Environment Override
      * CRAFT_DB_SET_SCHEMA_ON_CONNECT=1
      * ```
      * :::
@@ -183,10 +183,10 @@ class DbConfig extends BaseObject
      * you can set a table prefix here to avoid per-install table naming conflicts. This can be no more than 5 characters, and must be all lowercase.
      *
      * ::: code
-     * ```php
+     * ```php Static Config
      * 'tablePrefix' => 'craft_',
      * ```
-     * ```env
+     * ```env Environment Override
      * CRAFT_DB_TABLE_PREFIX=craft_
      * ```
      * :::
@@ -197,10 +197,10 @@ class DbConfig extends BaseObject
      * @var string The database username to connect with.
      *
      * ::: code
-     * ```php
+     * ```php Static Config
      * 'user' => 'nitro',
      * ```
-     * ```env
+     * ```env Environment Override
      * CRAFT_DB_USER=nitro
      * ```
      * :::
@@ -218,10 +218,10 @@ class DbConfig extends BaseObject
      * For more on Craft batch queries, see <https://craftcms.com/knowledge-base/query-batching-batch-each>.
      *
      * ::: code
-     * ```php
+     * ```php Static Config
      * 'useUnbufferedConnections' => true,
      * ```
-     * ```env
+     * ```env Environment Override
      * CRAFT_DB_USE_UNBUFFERED_CONNECTIONS=1
      * ```
      * :::
@@ -236,10 +236,10 @@ class DbConfig extends BaseObject
      * If this is set, the values for [[driver]], [[user]], [[database]], [[server]], [[port]], and [[database]] will be extracted from it.
      *
      * ::: code
-     * ```php
+     * ```php Static Config
      * 'url' => 'jdbc:mysql://database.foo:3306/mydb',
      * ```
-     * ```env
+     * ```env Environment Override
      * CRAFT_DB_URL=jdbc:mysql://database.foo:3306/mydb
      * ```
      * :::
@@ -250,10 +250,10 @@ class DbConfig extends BaseObject
      * @var string|null The database driver to use. Either `mysql` for MySQL or `pgsql` for PostgreSQL.
      *
      * ::: code
-     * ```php
+     * ```php Static Config
      * 'driver' => 'mysql',
      * ```
-     * ```env
+     * ```env Environment Override
      * CRAFT_DB_DRIVER=mysql
      * ```
      * :::
@@ -264,10 +264,10 @@ class DbConfig extends BaseObject
      * @var string|null The database server name or IP address. Usually `localhost` or `127.0.0.1`.
      *
      * ::: code
-     * ```php
+     * ```php Static Config
      * 'server' => 'localhost',
      * ```
-     * ```env
+     * ```env Environment Override
      * CRAFT_DB_SERVER=localhost
      * ```
      * :::
@@ -278,10 +278,10 @@ class DbConfig extends BaseObject
      * @var int|null The database server port. Defaults to 3306 for MySQL and 5432 for PostgreSQL.
      *
      * ::: code
-     * ```php
+     * ```php Static Config
      * 'port' => 3306,
      * ```
-     * ```env
+     * ```env Environment Override
      * CRAFT_DB_PORT=3306
      * ```
      * :::
@@ -293,10 +293,10 @@ class DbConfig extends BaseObject
      * the server and port. If this is specified, then `server` and `port` settings are ignored.
      *
      * ::: code
-     * ```php
+     * ```php Static Config
      * 'unixSocket' => '/Applications/MAMP/tmp/mysql/mysql.sock',
      * ```
-     * ```env
+     * ```env Environment Override
      * CRAFT_DB_UNIX_SOCKET=/Applications/MAMP/tmp/mysql/mysql.sock
      * ```
      * :::
@@ -307,10 +307,10 @@ class DbConfig extends BaseObject
      * @var string|null The name of the database to select.
      *
      * ::: code
-     * ```php
+     * ```php Static Config
      * 'database' => 'mydatabase',
      * ```
-     * ```env
+     * ```env Environment Override
      * CRAFT_DB_DATABASE=mydatabase
      * ```
      * :::
