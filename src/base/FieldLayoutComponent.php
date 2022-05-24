@@ -49,7 +49,7 @@ abstract class FieldLayoutComponent extends Model
 
     /**
      * @param string $elementType
-     * @phpstan-param class-string<ElementInterface>
+     * @phpstan-param class-string<ElementInterface> $elementType
      * @return ElementConditionInterface
      */
     private static function defaultElementCondition(string $elementType): ElementConditionInterface
