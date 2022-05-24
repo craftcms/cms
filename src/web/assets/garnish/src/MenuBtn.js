@@ -26,6 +26,12 @@ export default Base.extend(
       }
 
       this.$btn = $(btn);
+
+      if (!this.$btn.length) {
+        console.warn('Menu button instantiated without a DOM element.');
+        return;
+      }
+
       var $menu;
 
       // Is this already a menu button?

@@ -559,7 +559,7 @@ class GraphqlController extends Controller
             $schema = $gqlService->getPublicSchema();
         }
 
-        $token = $gqlService->getTokenByAccessToken(GqlToken::PUBLIC_TOKEN);
+        $token = $gqlService->getPublicToken();
         $title = Craft::t('app', 'Edit the public GraphQL schema');
 
         return $this->renderTemplate('graphql/schemas/_edit', compact(
@@ -583,7 +583,7 @@ class GraphqlController extends Controller
 
         $gqlService = Craft::$app->getGql();
         $schema = $gqlService->getPublicSchema();
-        $schema->scope = $this->request->getBodyParam('permissions');
+        $schema->scope = $this->request->getBodyParam('permissions') ?? [];
 
         if (!$gqlService->saveSchema($schema)) {
             $this->setFailFlash(Craft::t('app', 'Couldn’t save schema.'));
@@ -596,7 +596,7 @@ class GraphqlController extends Controller
             return null;
         }
 
-        $token = $gqlService->getTokenByAccessToken(GqlToken::PUBLIC_TOKEN);
+        $token = $gqlService->getPublicToken();
         $token->enabled = (bool)$this->request->getRequiredBodyParam('enabled');
 
         if (($expiryDate = $this->request->getBodyParam('expiryDate')) !== null) {
@@ -642,7 +642,7 @@ class GraphqlController extends Controller
         }
 
         $schema->name = $this->request->getBodyParam('name') ?? $schema->name;
-        $schema->scope = $this->request->getBodyParam('permissions');
+        $schema->scope = $this->request->getBodyParam('permissions') ?? [];
 
         if (!$gqlService->saveSchema($schema)) {
             $this->setFailFlash(Craft::t('app', 'Couldn’t save schema.'));

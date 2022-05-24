@@ -56,11 +56,6 @@ class DateTimeHelper
     public const SECONDS_YEAR = 31556874;
 
     /**
-     * @var array Translation pairs for [[translateDate()]]
-     */
-    private static array $_translationPairs;
-
-    /**
      * Converts a value into a DateTime object.
      *
      * `$value` can be in the following formats:
@@ -348,7 +343,7 @@ class DateTimeHelper
      */
     public static function isToday(mixed $date): bool
     {
-        $date = self::toDateTime($date);
+        $date = static::toDateTime($date);
         $now = new DateTime();
 
         return $date->format('Y-m-d') == $now->format('Y-m-d');
@@ -362,7 +357,7 @@ class DateTimeHelper
      */
     public static function isYesterday(mixed $date): bool
     {
-        $date = self::toDateTime($date);
+        $date = static::toDateTime($date);
         $yesterday = new DateTime('yesterday', new DateTimeZone(Craft::$app->getTimeZone()));
 
         return $date->format('Y-m-d') == $yesterday->format('Y-m-d');
@@ -376,7 +371,7 @@ class DateTimeHelper
      */
     public static function isThisYear(mixed $date): bool
     {
-        $date = self::toDateTime($date);
+        $date = static::toDateTime($date);
         $now = new DateTime();
 
         return $date->format('Y') == $now->format('Y');
@@ -390,7 +385,7 @@ class DateTimeHelper
      */
     public static function isThisWeek(mixed $date): bool
     {
-        $date = self::toDateTime($date);
+        $date = static::toDateTime($date);
         $now = new DateTime();
 
         return $date->format('W Y') == $now->format('W Y');
@@ -404,7 +399,7 @@ class DateTimeHelper
      */
     public static function isThisMonth(mixed $date): bool
     {
-        $date = self::toDateTime($date);
+        $date = static::toDateTime($date);
         $now = new DateTime();
 
         return $date->format('m Y') == $now->format('m Y');
@@ -456,7 +451,7 @@ class DateTimeHelper
      */
     public static function isInThePast(mixed $date): bool
     {
-        $date = self::toDateTime($date);
+        $date = static::toDateTime($date);
 
         return $date->getTimestamp() < time();
     }
@@ -714,38 +709,5 @@ class DateTimeHelper
         }
 
         return null;
-    }
-
-    /**
-     * Returns translation pairs for [[translateDate()]].
-     *
-     * @param string $language The target language
-     * @return array The translation pairs
-     */
-    private static function _getDateTranslations(string $language): array
-    {
-        if (!isset(self::$_translationPairs[$language])) {
-            $i18n = Craft::$app->getI18n();
-            $sourceLocale = $i18n->getLocaleById('en-US');
-            $targetLocale = $i18n->getLocaleById($language);
-
-            $amName = $targetLocale->getAMName();
-            $pmName = $targetLocale->getPMName();
-
-            self::$_translationPairs[$language] = array_merge(
-                array_combine($sourceLocale->getMonthNames(Locale::LENGTH_FULL), $targetLocale->getMonthNames(Locale::LENGTH_FULL)),
-                array_combine($sourceLocale->getWeekDayNames(Locale::LENGTH_FULL), $targetLocale->getWeekDayNames(Locale::LENGTH_FULL)),
-                array_combine($sourceLocale->getMonthNames(Locale::LENGTH_MEDIUM), $targetLocale->getMonthNames(Locale::LENGTH_MEDIUM)),
-                array_combine($sourceLocale->getWeekDayNames(Locale::LENGTH_MEDIUM), $targetLocale->getWeekDayNames(Locale::LENGTH_MEDIUM)),
-                [
-                    'AM' => mb_strtoupper($amName),
-                    'PM' => mb_strtoupper($pmName),
-                    'am' => mb_strtolower($amName),
-                    'pm' => mb_strtolower($pmName),
-                ]
-            );
-        }
-
-        return self::$_translationPairs[$language];
     }
 }

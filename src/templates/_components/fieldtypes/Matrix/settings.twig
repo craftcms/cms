@@ -73,6 +73,10 @@
                             {% set field = layoutElement.getField() %}
                             <div data-id="{{ fieldId }}" class="hidden">
                                 {% namespace 'blockTypes['~blockTypeId~'][fields]['~fieldId~']' %}
+                                    {% if layoutElement.uid %}
+                                        {{ hiddenInput('uid', layoutElement.uid) }}
+                                    {% endif %}
+
                                     {% if field.columnSuffix %}
                                         {{ hiddenInput('columnSuffix', field.columnSuffix) }}
                                     {% endif %}

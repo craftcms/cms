@@ -69,7 +69,7 @@ class AssetIndexer extends Component
 
         foreach ($fileList as $listing) {
             $path = $listing->getUri();
-            $segments = explode('/', $path);
+            $segments = preg_split('/\\\\|\//', $path);
             $lastSegmentIndex = count($segments) - 1;
 
             foreach ($segments as $i => $segment) {
@@ -582,7 +582,7 @@ class AssetIndexer extends Component
         $dirname = dirname($uriPath);
 
         // Check if in a directory that cannot be indexed
-        foreach (explode('/', $dirname) as $part) {
+        foreach (preg_split('/\\\\|\//', $dirname) as $part) {
             if ($part[0] === '_') {
                 throw new AssetNotIndexableException("File “{$indexEntry->uri}” is in a directory that cannot be indexed.");
             }
@@ -725,9 +725,11 @@ class AssetIndexer extends Component
      */
     public function indexFolderByEntry(AssetIndexData $indexEntry, bool $createIfMissing = true): VolumeFolder
     {
-        foreach (explode('/', $indexEntry->uri) as $part) {
-            if ($part[0] === '_') {
-                throw new AssetNotIndexableException("The directory “{$indexEntry->uri}” cannot be indexed.");
+        if ($indexEntry->uri !== null) {
+            foreach (preg_split('/\\\\|\//', $indexEntry->uri) as $part) {
+                if ($part[0] === '_') {
+                    throw new AssetNotIndexableException("The directory “{$indexEntry->uri}” cannot be indexed.");
+                }
             }
         }
 
@@ -740,7 +742,7 @@ class AssetIndexer extends Component
             throw new MissingVolumeFolderException($indexEntry, $volume, $indexEntry->uri);
         }
 
-        return Craft::$app->getAssets()->ensureFolderByFullPathAndVolume($indexEntry->uri, $volume);
+        return Craft::$app->getAssets()->ensureFolderByFullPathAndVolume($indexEntry->uri ?? '', $volume);
     }
 
     /**

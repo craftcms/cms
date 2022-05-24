@@ -117,11 +117,13 @@
           this.addBlock(type);
         });
 
-        new Garnish.MenuBtn(this.$addBlockMenuBtn, {
-          onOptionSelect: (option) => {
-            this.addBlock($(option).data('type'));
-          },
-        });
+        if (this.$addBlockMenuBtn.length) {
+          new Garnish.MenuBtn(this.$addBlockMenuBtn, {
+            onOptionSelect: (option) => {
+              this.addBlock($(option).data('type'));
+            },
+          });
+        }
 
         this.updateAddBlockBtn();
 
@@ -252,11 +254,12 @@
 
         this.totalNewBlocks++;
 
-        var id = 'new' + this.totalNewBlocks;
+        const id = `new${this.totalNewBlocks}`;
+        const typeName = this.blockTypesByHandle[type].name;
         const actionMenuId = `matrixblock-action-menu-${id}`;
 
         var html = `
-                <div class="matrixblock" data-id="${id}" data-type="${type}">
+                <div class="matrixblock" data-id="${id}" data-type="${type}" data-type-name="${typeName}">
                   <input type="hidden" name="${
                     this.inputNamePrefix
                   }[sortOrder][]" value="${id}"/>
@@ -380,8 +383,9 @@
         var $block = $(html);
 
         // Pause the draft editor
-        if (this.$form.data('elementEditor')) {
-          this.$form.data('elementEditor').pause();
+        const elementEditor = this.$form.data('elementEditor');
+        if (elementEditor) {
+          elementEditor.pause();
         }
 
         if ($insertBefore) {
@@ -428,8 +432,8 @@
               }
 
               // Resume the draft editor
-              if (this.$form.data('elementEditor')) {
-                this.$form.data('elementEditor').resume();
+              if (elementEditor) {
+                elementEditor.resume();
               }
             });
           }
