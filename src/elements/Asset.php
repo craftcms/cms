@@ -2189,9 +2189,6 @@ JS;
                 return Html::tag('div', $size, [
                     'id' => 'file-size-value',
                     'title' => $inBytes,
-                    'aria' => [
-                        'label' => $inBytes,
-                    ],
                 ]);
             },
             Craft::t('app', 'Uploaded by') => function() {
