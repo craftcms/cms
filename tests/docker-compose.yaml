@@ -1,4 +1,4 @@
-version: '3.6'
+version: '3.9'
 services:
   mysql:
     image: mysql:5.7
@@ -26,23 +26,52 @@ services:
       interval: 5s
       retries: 3
   web:
-    image: craftcms/nginx:8.0-dev
-    restart: 'on-failure'
-    ports:
-      - 8089:8080
+    build:
+      context: ../
+      target: craft
+      dockerfile: ./tests/Dockerfile
+    #    ports:
+    #      - 8089:8080
     env_file: .env
     environment:
-      CRAFT_DB_DATABASE: craft_test
+      CRAFT_APP_ID: CraftCMS
+      CRAFT_ENVIRONMENT: dev
+      CRAFT_SECURITY_KEY: 1234567890
       CRAFT_DB_DRIVER: mysql
-      CRAFT_DB_USERNAME: craft
-      CRAFT_DB_PASSWORD: craft
-      CRAFT_DB_PORT: 3306
       CRAFT_DB_SERVER: mysql
-      PRIMARY_SITE_URL: http://localhost:8089/
+      CRAFT_DB_PORT: 3306
+      CRAFT_DB_DATABASE: craft_test
+      CRAFT_DB_USER: craft
+      CRAFT_DB_PASSWORD: craft
+      CRAFT_DB_SCHEMA:
+      CRAFT_DB_TABLE_PREFIX:
+      PRIMARY_SITE_URL: http://localhost:8080/
+      PW_TEST_DOMAIN: http://localhost:8080/
+      PW_AUTHENTICATION_USERNAME: admin
+      PW_AUTHENTICATION_PASSWORD: NewPassword
     depends_on:
       postgres:
         condition: service_healthy
       mysql:
         condition: service_healthy
-    volumes:
-      - ../.:/repo
+#    healthcheck:
+#      test: ["CMD", "nc", "-vz", "-w1", "localhost", "8080"]
+#      interval: 3s
+#      timeout: 1s
+#      retries: 30
+#    volumes:
+#      - ../.:/repo
+#  playwright:
+#    build:
+#      context: ../
+#      target: playwright
+#      dockerfile: ./tests/Dockerfile
+#    environment:
+#      PW_TEST_DOMAIN: http://web:8080/
+#      PW_AUTHENTICATION_USERNAME: admin
+#      PW_AUTHENTICATION_PASSWORD: NewPassword
+#    depends_on:
+#      web:
+#        condition: service_healthy
+#    volumes:
+#      - ./playwright/.:/playwright/tests
