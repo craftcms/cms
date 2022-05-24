@@ -30,8 +30,6 @@ services:
       context: ../
       target: craft
       dockerfile: ./tests/Dockerfile
-    #    ports:
-    #      - 8089:8080
     env_file: .env
     environment:
       CRAFT_APP_ID: CraftCMS
@@ -54,24 +52,3 @@ services:
         condition: service_healthy
       mysql:
         condition: service_healthy
-#    healthcheck:
-#      test: ["CMD", "nc", "-vz", "-w1", "localhost", "8080"]
-#      interval: 3s
-#      timeout: 1s
-#      retries: 30
-#    volumes:
-#      - ../.:/repo
-#  playwright:
-#    build:
-#      context: ../
-#      target: playwright
-#      dockerfile: ./tests/Dockerfile
-#    environment:
-#      PW_TEST_DOMAIN: http://web:8080/
-#      PW_AUTHENTICATION_USERNAME: admin
-#      PW_AUTHENTICATION_PASSWORD: NewPassword
-#    depends_on:
-#      web:
-#        condition: service_healthy
-#    volumes:
-#      - ./playwright/.:/playwright/tests
