@@ -33,7 +33,7 @@ class DbConfig extends BaseObject
     public const DRIVER_PGSQL = 'pgsql';
 
     /**
-     * @var array An array of key => value pairs of PDO attributes to pass into the PDO constructor.
+     * @var array An array of key-value pairs of PDO attributes to pass into the PDO constructor.
      *
      * For example, when using the [MySQL PDO driver](https://php.net/manual/en/ref.pdo-mysql.php), if you wanted to enable a SSL database connection
      * (assuming [SSL is enabled in MySQL](https://dev.mysql.com/doc/mysql-secure-deployment-guide/5.7/en/secure-deployment-secure-connections.html) and `'user'` can connect via SSL,
@@ -59,6 +59,15 @@ class DbConfig extends BaseObject
      * php craft db/convert-charset
      * ```
      * :::
+     *
+     * ::: code
+     * ```php
+     * 'charset' => 'utf8mb4',
+     * ```
+     * ```env
+     * CRAFT_DB_CHARSET=utf8mb4
+     * ```
+     * :::
      */
     public string $charset = 'utf8';
 
@@ -80,6 +89,15 @@ class DbConfig extends BaseObject
      * ```
      * :::
      *
+     * ::: code
+     * ```php
+     * 'collation' => 'utf8mb4_0900_ai_ci',
+     * ```
+     * ```env
+     * CRAFT_DB_COLLATION=utf8mb4_0900_ai_ci
+     * ```
+     * :::
+     *
      * @since 3.6.4
      */
     public ?string $collation = null;
@@ -92,11 +110,29 @@ class DbConfig extends BaseObject
      *
      * - MySQL parameters: <https://php.net/manual/en/ref.pdo-mysql.connection.php>
      * - PostgreSQL parameters: <https://php.net/manual/en/ref.pdo-pgsql.connection.php>
+     *
+     * ::: code
+     * ```php
+     * 'dsn' => 'mysql:host=127.0.0.1;port=3306;dbname=acme_corp',
+     * ```
+     * ```env
+     * CRAFT_DB_DSN=mysql:host=127.0.0.1;port=3306;dbname=acme_corp
+     * ```
+     * :::
      */
     public ?string $dsn = null;
 
     /**
      * @var string The database password to connect with.
+     *
+     * ::: code
+     * ```php
+     * 'password' => 'super-secret',
+     * ```
+     * ```env
+     * CRAFT_DB_PASSWORD=super-secret
+     * ```
+     * :::
      */
     public string $password = '';
 
@@ -106,6 +142,15 @@ class DbConfig extends BaseObject
      * ::: tip
      * To force Craft to use the specified schema regardless of PostgreSQL’s `search_path` setting, you must enable
      * the [[setSchemaOnConnect]] setting.
+     * :::
+     *
+     * ::: code
+     * ```php
+     * 'schema' => 'myschema,public',
+     * ```
+     * ```env
+     * CRAFT_DB_SCHEMA=myschema,public
+     * ```
      * :::
      *
      * @see https://www.postgresql.org/docs/8.2/static/ddl-schemas.html
@@ -120,6 +165,15 @@ class DbConfig extends BaseObject
      * PostgreSQL’s `search_path` setting should be configured to prioritize the desired schema.
      * :::
      *
+     * ::: code
+     * ```php
+     * 'setSchemaOnConnect' => true,
+     * ```
+     * ```env
+     * CRAFT_DB_SET_SCHEMA_ON_CONNECT=1
+     * ```
+     * :::
+     *
      * @since 3.7.27
      */
     public bool $setSchemaOnConnect = false;
@@ -127,11 +181,29 @@ class DbConfig extends BaseObject
     /**
      * @var string|null If you’re sharing Craft installs in a single database (MySQL) or a single database and using a shared schema (PostgreSQL),
      * you can set a table prefix here to avoid per-install table naming conflicts. This can be no more than 5 characters, and must be all lowercase.
+     *
+     * ::: code
+     * ```php
+     * 'tablePrefix' => 'craft_',
+     * ```
+     * ```env
+     * CRAFT_DB_TABLE_PREFIX=craft_
+     * ```
+     * :::
      */
     public ?string $tablePrefix = null;
 
     /**
      * @var string The database username to connect with.
+     *
+     * ::: code
+     * ```php
+     * 'user' => 'nitro',
+     * ```
+     * ```env
+     * CRAFT_DB_USER=nitro
+     * ```
+     * :::
      */
     public string $user = 'root';
 
@@ -143,6 +215,17 @@ class DbConfig extends BaseObject
      * <https://www.yiiframework.com/doc/guide/2.0/en/db-query-builder#batch-query-mysql> for an explanation
      * of MySQL’s batch query limitations.)
      *
+     * For more on Craft batch queries, see <https://craftcms.com/knowledge-base/query-batching-batch-each>.
+     *
+     * ::: code
+     * ```php
+     * 'useUnbufferedConnections' => true,
+     * ```
+     * ```env
+     * CRAFT_DB_USE_UNBUFFERED_CONNECTIONS=1
+     * ```
+     * :::
+     *
      * @since 3.7.0
      */
     public bool $useUnbufferedConnections = false;
@@ -151,32 +234,86 @@ class DbConfig extends BaseObject
      * @var string|null The database connection URL, if one was provided by your hosting environment.
      *
      * If this is set, the values for [[driver]], [[user]], [[database]], [[server]], [[port]], and [[database]] will be extracted from it.
+     *
+     * ::: code
+     * ```php
+     * 'url' => 'jdbc:mysql://database.foo:3306/mydb',
+     * ```
+     * ```env
+     * CRAFT_DB_URL=jdbc:mysql://database.foo:3306/mydb
+     * ```
+     * :::
      */
     public ?string $url = null;
 
     /**
      * @var string|null The database driver to use. Either `mysql` for MySQL or `pgsql` for PostgreSQL.
+     *
+     * ::: code
+     * ```php
+     * 'driver' => 'mysql',
+     * ```
+     * ```env
+     * CRAFT_DB_DRIVER=mysql
+     * ```
+     * :::
      */
     public ?string $driver = null;
 
     /**
      * @var string|null The database server name or IP address. Usually `localhost` or `127.0.0.1`.
+     *
+     * ::: code
+     * ```php
+     * 'server' => 'localhost',
+     * ```
+     * ```env
+     * CRAFT_DB_SERVER=localhost
+     * ```
+     * :::
      */
     public ?string $server = null;
 
     /**
      * @var int|null The database server port. Defaults to 3306 for MySQL and 5432 for PostgreSQL.
+     *
+     * ::: code
+     * ```php
+     * 'port' => 3306,
+     * ```
+     * ```env
+     * CRAFT_DB_PORT=3306
+     * ```
+     * :::
      */
     public ?int $port = null;
 
     /**
      * @var string|null MySQL only. If this is set, the CLI connection string (used for yiic) will connect to the Unix socket instead of
      * the server and port. If this is specified, then `server` and `port` settings are ignored.
+     *
+     * ::: code
+     * ```php
+     * 'unixSocket' => '/Applications/MAMP/tmp/mysql/mysql.sock',
+     * ```
+     * ```env
+     * CRAFT_DB_UNIX_SOCKET=/Applications/MAMP/tmp/mysql/mysql.sock
+     * ```
+     * :::
      */
     public ?string $unixSocket = null;
 
     /**
      * @var string|null The name of the database to select.
+     *
+     * ::: code
+     * ```php
+     * 'database' => 'mydatabase',
+     * ```
+     * ```env
+     * CRAFT_DB_DATABASE=mydatabase
+     * ```
+     * :::
      */
     public ?string $database = null;
 
