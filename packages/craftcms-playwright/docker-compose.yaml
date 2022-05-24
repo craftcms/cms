@@ -13,6 +13,12 @@ services:
       test: ['CMD', 'mysqladmin', 'ping']
       interval: 10s
       retries: 5
+    command:
+      [
+        'mysqld',
+        '--character-set-server=utf8mb4',
+        '--collation-server=utf8mb4_unicode_ci',
+      ]
   postgres:
     image: postgres:11-alpine
     ports:
@@ -27,14 +33,16 @@ services:
       retries: 3
   web:
     build:
-      context: ../
+      context: ../../../
       target: craft
-      dockerfile: ./tests/Dockerfile
-    env_file: .env
+      dockerfile: ./node_modules/@craftcms/playwright/Dockerfile
+    ports:
+      - 8089:80
     environment:
       CRAFT_APP_ID: CraftCMS
       CRAFT_ENVIRONMENT: dev
       CRAFT_SECURITY_KEY: 1234567890
+      CRAFT_CP_TRIGGER: admin
       CRAFT_DB_DRIVER: mysql
       CRAFT_DB_SERVER: mysql
       CRAFT_DB_PORT: 3306
@@ -43,8 +51,8 @@ services:
       CRAFT_DB_PASSWORD: craft
       CRAFT_DB_SCHEMA:
       CRAFT_DB_TABLE_PREFIX:
-      PRIMARY_SITE_URL: http://localhost:8080/
-      PW_TEST_DOMAIN: http://localhost:8080/
+      PRIMARY_SITE_URL: http://127.0.0.1/
+      PW_TEST_DOMAIN: http://127.0.0.1/
       PW_AUTHENTICATION_USERNAME: admin
       PW_AUTHENTICATION_PASSWORD: NewPassword
     depends_on:
