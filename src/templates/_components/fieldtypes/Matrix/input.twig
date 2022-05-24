@@ -45,7 +45,7 @@
                 }
             } %}
 
-            <div {{ attr(blockAttributes) }}>
+            <li {{ attr(blockAttributes) }}>
                 {% if not static %}
                     {{ hiddenInput("#{name}[sortOrder][]", blockId) }}
                     {# only register a delta name for this block if it’s not new #}
@@ -103,7 +103,7 @@
                         {{ block.getFieldLayout().createForm(block, static).render()|raw }}
                     {% endnamespace %}
                 </div>
-            </div>
+            </li>
         {% endfor %}
     </ol>
     {% if not static and not staticBlocks %}
