@@ -1612,12 +1612,13 @@ class Entry extends Element
     public function metaFieldsHtml(bool $static): string
     {
         $fields = [];
+        $view = Craft::$app->getView();
         $section = $this->getSection();
         $user = Craft::$app->getUser()->getIdentity();
 
         if ($section->type !== Section::TYPE_SINGLE) {
             // Type
-            $fields[] = (function() use ($static) {
+            $fields[] = (function() use ($static, $view) {
                 $entryTypes = $this->getAvailableEntryTypes();
                 if (count($entryTypes) <= 1) {
                     return null;
@@ -1635,7 +1636,6 @@ class Entry extends Element
                 }
 
                 if (!$static) {
-                    $view = Craft::$app->getView();
                     $typeInputId = $view->namespaceInputId('entryType');
                     $js = <<<EOD
 (() => {
@@ -1719,6 +1719,12 @@ EOD;
                     ]);
                 })();
             }
+
+            $isDeltaRegistrationActive = $view->getIsDeltaRegistrationActive();
+            $view->setIsDeltaRegistrationActive(true);
+            $view->registerDeltaName('postDate');
+            $view->registerDeltaName('expiryDate');
+            $view->setIsDeltaRegistrationActive($isDeltaRegistrationActive);
 
             // Post Date
             $fields[] = Cp::dateTimeFieldHtml([

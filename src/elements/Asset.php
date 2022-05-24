@@ -393,11 +393,15 @@ class Asset extends Element
     {
         $actions = [];
 
+        if (preg_match('/^volume:([a-z0-9\-]+)/', $source, $matches)) {
+            $volume = Craft::$app->getVolumes()->getVolumeByUid($matches[1]);
+        } elseif (preg_match('/^folder:([a-z0-9\-]+)/', $source, $matches)) {
+            $folder = Craft::$app->getAssets()->getFolderByUid($matches[1]);
+            $volume = $folder?->getVolume();
+        }
+
         // Only match the first folder ID - ignore nested folders
-        if (
-            preg_match('/^volume:([a-z0-9\-]+)/', $source, $matches) &&
-            $volume = Craft::$app->getVolumes()->getVolumeByUid($matches[1])
-        ) {
+        if (isset($volume)) {
             $isTemp = $volume->getFs() instanceof Temp;
 
             $actions[] = [

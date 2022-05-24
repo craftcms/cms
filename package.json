@@ -49,7 +49,7 @@
     "react-dom": "^16.14.0",
     "selectize": "^0.12.6",
     "timepicker": "^1.13.18",
-    "typescript": "^4.2.4",
+    "typescript": "^4.6.4",
     "v-tooltip": "^2.0.3",
     "velocity-animate": "^1.5.0",
     "vue": "^2.6.14",
