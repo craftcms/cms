@@ -166,6 +166,7 @@ class Volume extends Model
                 'dateUpdated',
                 'edit',
                 'id',
+                'temp',
                 'title',
                 'uid',
             ],

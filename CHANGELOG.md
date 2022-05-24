@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- `temp` is now a reserved volume handle.
+
 ### Fixed
 - Fixed a bug where it wasn’t possible to disable all table columns for an element source. ([#11291](https://github.com/craftcms/cms/issues/11291))
 
