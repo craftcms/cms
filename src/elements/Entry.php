@@ -1702,7 +1702,7 @@ EOD;
         if ($section->type !== Section::TYPE_SINGLE) {
             // Author
             if (Craft::$app->getEdition() === Craft::Pro && $user->can("viewPeerEntries:$section->uid")) {
-                $fields[] = (function() use ($static, $view, $section) {
+                $fields[] = (function() use ($static, $section) {
                     $author = $this->getAuthor();
                     return Cp::elementSelectFieldHtml([
                         'label' => Craft::t('app', 'Author'),
