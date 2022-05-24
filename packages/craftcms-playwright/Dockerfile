@@ -31,6 +31,3 @@ COPY --chown=appuser ./. /app/repos/repo
 COPY --from=nodejs --chown=appuser /node_modules /app/repos/repo/node_modules
 
 RUN cp -rvfp /app/repos/repo/node_modules/@craftcms/playwright/init.sh /usr/local/bin/.
-
-#ENTRYPOINT /bin/sh -c "/usr/local/bin/init.sh && /usr/bin/supervisord -c /etc/supervisor/conf.d/supervisor.conf"
-#ENTRYPOINT /bin/sh -c "/usr/local/bin/init.sh && /init"
