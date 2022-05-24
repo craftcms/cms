@@ -27,6 +27,41 @@ use craft\models\FieldLayout;
 abstract class FieldLayoutComponent extends Model
 {
     /**
+     * @var UserCondition
+     */
+    private static UserCondition $defaultUserCondition;
+
+    /**
+     * @var ElementConditionInterface[]
+     */
+    private static array $defaultElementConditions = [];
+
+    /**
+     * @return UserCondition
+     */
+    private static function defaultUserCondition(): UserCondition
+    {
+        if (!isset(self::$defaultUserCondition)) {
+            self::$defaultUserCondition = User::createCondition();
+        }
+        return self::$defaultUserCondition;
+    }
+
+    /**
+     * @param string $elementType
+     * @phpstan-param class-string<ElementInterface>
+     * @return ElementConditionInterface
+     */
+    private static function defaultElementCondition(string $elementType): ElementConditionInterface
+    {
+        if (!isset(self::$defaultElementConditions[$elementType])) {
+            /** @var string|ElementInterface $elementType */
+            self::$defaultElementConditions[$elementType] = $elementType::createCondition();
+        }
+        return self::$defaultElementConditions[$elementType];
+    }
+
+    /**
      * @var string|null The UUID of the layout element.
      */
     public ?string $uid = null;
@@ -193,7 +228,7 @@ abstract class FieldLayoutComponent extends Model
                 $html .= '<hr>';
             }
 
-            $userCondition = $this->_userCondition ?? User::createCondition();
+            $userCondition = $this->_userCondition ?? self::defaultUserCondition();
             $userCondition->mainTag = 'div';
             $userCondition->id = 'user-condition';
             $userCondition->name = 'userCondition';
@@ -209,7 +244,7 @@ abstract class FieldLayoutComponent extends Model
             $elementType = $this->getLayout()->type;
 
             if ($elementType && is_subclass_of($elementType, ElementInterface::class)) {
-                $elementCondition = $this->_elementCondition ?? $elementType::createCondition();
+                $elementCondition = $this->_elementCondition ?? self::defaultElementCondition($elementType);
                 $elementCondition->mainTag = 'div';
                 $elementCondition->id = 'element-condition';
                 $elementCondition->name = 'elementCondition';

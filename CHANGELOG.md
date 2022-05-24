@@ -4,6 +4,7 @@
 
 ### Changed
 - `temp` is now a reserved volume handle.
+- Improved the performance of field layout designers. ([#11298](https://github.com/craftcms/cms/issues/11298))
 
 ### Fixed
 - Fixed a bug where it wasn’t possible to disable all table columns for an element source. ([#11291](https://github.com/craftcms/cms/issues/11291))
