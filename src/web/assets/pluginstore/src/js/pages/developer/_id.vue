@@ -43,7 +43,8 @@
                   >
                     <template
                       v-if="
-                        developer.partnerInfo && developer.partnerInfo.isCraftVerified
+                        developer.partnerInfo &&
+                        developer.partnerInfo.isCraftVerified
                       "
                     >
                       <li class="tw-flex tw-items-center">
@@ -56,7 +57,8 @@
                     </template>
                     <template
                       v-if="
-                        developer.partnerInfo && developer.partnerInfo.isCommerceVerified
+                        developer.partnerInfo &&
+                        developer.partnerInfo.isCommerceVerified
                       "
                     >
                       <li class="tw-flex tw-items-center">
@@ -86,16 +88,21 @@
               </template>
 
               <!-- Developer URL and partner profile URL-->
-              <template v-if="developer.developerUrl || developer.partnerInfo && developer.partnerInfo.profileUrl">
+              <template
+                v-if="
+                  developer.developerUrl ||
+                  (developer.partnerInfo && developer.partnerInfo.profileUrl)
+                "
+              >
                 <div class="tw-mt-4 tw-text-sm">
-                  <ul class="developer-buttons xl:tw-flex tw-space-y-2 xl:tw-space-y-0 xl:tw-space-x-3 tw-text-gray-600 tw-space-y-2">
+                  <ul
+                    class="developer-buttons xl:tw-flex tw-space-y-2 xl:tw-space-y-0 xl:tw-space-x-3 tw-text-gray-600 tw-space-y-2"
+                  >
                     <!-- Developer URL -->
                     <template v-if="developer.developerUrl">
                       <li>
-                        <c-btn
-                          target="_blank"
-                          :href="developer.developerUrl"
-                        >{{ 'Website' | t('app') }}
+                        <c-btn target="_blank" :href="developer.developerUrl"
+                          >{{ 'Website' | t('app') }}
                           <c-icon
                             icon="external-link"
                             class="tw-w-3 tw-h-3 tw-text-grey-dark tw-ml-1"
@@ -106,14 +113,19 @@
                     </template>
 
                     <!-- Partner profile URL -->
-                    <template v-if="developer.partnerInfo && developer.partnerInfo.profileUrl">
+                    <template
+                      v-if="
+                        developer.partnerInfo &&
+                        developer.partnerInfo.profileUrl
+                      "
+                    >
                       <li class="tw-inline-block tw-mr-2">
                         <c-btn
                           class="tw-inline-block"
                           target="_blank"
                           :href="developer.partnerInfo.profileUrl"
                         >
-                          {{ "Partner Profile" }}
+                          {{ 'Partner Profile' }}
                           <c-icon
                             icon="external-link"
                             class="tw-w-3 tw-h-3 tw-text-grey-dark tw-ml-1"
