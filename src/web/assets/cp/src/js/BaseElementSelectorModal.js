@@ -109,7 +109,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 
     sidebarShouldBeHidden: function () {
       const contentWidth = this.$container.outerWidth();
-      return (contentWidth < 550);
+      return contentWidth < 550;
     },
 
     resetView: function () {
