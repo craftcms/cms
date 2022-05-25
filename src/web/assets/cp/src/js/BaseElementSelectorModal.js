@@ -8,7 +8,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
     elementType: null,
     elementIndex: null,
 
-    sidebarToggleIsActive: false,
+    sidebarHasBeenHidden: false,
 
     $body: null,
     $content: null,
@@ -83,22 +83,20 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
     },
 
     updateSidebarView: function () {
-      if (this.sidebarShouldBeHidden()) {
+      if (this.sidebarShouldBeHidden() && !this.sidebarHasBeenHidden) {
         this.enableReflow();
-      } else {
-        this.sidebarToggleIsActive = false;
+      } else if (!this.sidebarShouldBeHidden() && this.sidebarHasBeenHidden) {
         this.resetView();
       }
     },
 
     sidebarShouldBeHidden: function () {
-      const contentWidth = this.$main.outerWidth();
-      console.log(this.$main);
-      return contentWidth < 500;
+      const contentWidth = this.$container.outerWidth();
+      return (contentWidth < 500);
     },
 
     resetView: function () {
-      this.sidebarToggleIsActive = false;
+      this.sidebarHasBeenHidden = false;
 
       if (this.$sourceHeader) {
         this.$sourceHeader.remove();
@@ -109,21 +107,25 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
     },
 
     enableReflow: function () {
-      if (this.sidebarToggleIsActive) return;
+      if (this.sidebarHasBeenHidden) return;
 
       // Create sidebar toggle functionality
       if (this.sidebarShouldBeHidden()) {
-        this.sidebarToggleIsActive = true;
-        this.$sourceHeader = $('<div class="modal-header"/>').prependTo(this.$main);
-        this.$sourceHeading = $(`<h2 class="modal-heading">${this.getActiveSourceName()}</h2>`)
-          .appendTo(this.$sourceHeader);
+        this.sidebarHasBeenHidden = true;
+        this.$sourceHeader = $('<div class="modal-header"/>').prependTo(
+          this.$main
+        );
+        this.$sourceHeading = $(
+          `<h2 class="modal-heading">${this.getActiveSourceName()}</h2>`
+        ).appendTo(this.$sourceHeader);
 
         const buttonConfig = {
           toggle: true,
           controls: 'modal-sidebar',
           class: 'nav-toggle',
-        }
-        this.$sidebarToggleBtn = Craft.ui.createButton(buttonConfig)
+        };
+        this.$sidebarToggleBtn = Craft.ui
+          .createButton(buttonConfig)
           .removeClass('btn')
           .attr('aria-label', Craft.t('app', 'Show sidebar'))
           .appendTo(this.$sourceHeader);
