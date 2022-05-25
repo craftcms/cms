@@ -87,17 +87,18 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
       // Create sidebar toggle functionality
       if (contentWidth < 500) {
         this.hideSidebar();
-        this.$sourceHeader = $('<div class="source-header"/>').prependTo(this.$main);
-        this.$sourceHeading = $(`<h2>${this.getActiveSourceName()}</h2>`)
+        this.$sourceHeader = $('<div class="modal-header"/>').prependTo(this.$main);
+        this.$sourceHeading = $(`<h2 class="modal-heading">${this.getActiveSourceName()}</h2>`)
           .appendTo(this.$sourceHeader);
 
         const buttonConfig = {
           toggle: true,
           controls: 'modal-sidebar',
-          html: 'Choose another source',
           class: 'nav-toggle',
         }
         this.$sidebarToggleBtn = Craft.ui.createButton(buttonConfig)
+          .removeClass('btn')
+          .attr('aria-label', Craft.t('app', 'Show sidebar'))
           .appendTo(this.$sourceHeader);
 
         this.$sidebar.attr('id', 'modal-sidebar');
@@ -112,6 +113,10 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
         });
         this.addListener(this.$main, 'click', () => {
           if (this.sidebarIsOpen()) this.toggleSidebar();
+        });
+
+        this.elementIndex.on('selectSource', () => {
+          this.updateHeading();
         });
       }
     },
@@ -156,7 +161,6 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 
     onSelectionChange: function () {
       this.updateSelectBtnState();
-      this.updateHeading();
     },
 
     updateHeading: function () {
@@ -286,10 +290,6 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
             this.$body.addClass('has-sidebar');
           }
 
-          this.$main = this.$body.find('.main');
-          this.$content = this.$body.find('.content');
-          this.$sidebar = this.$body.find('.sidebar');
-
           // Initialize the element index
           this.elementIndex = Craft.createElementIndex(
             this.elementType,
@@ -313,6 +313,10 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
               this.settings.indexSettings
             )
           );
+
+          this.$main = this.elementIndex.$main;
+          this.$sidebar = this.elementIndex.$sidebar;
+          this.$content = this.$body.find('.content');
 
           this.enableReflow();
 

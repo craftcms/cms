@@ -4614,6 +4614,27 @@ ul.tree,
   padding-bottom: 50px;
   user-select: none;
 
+  .nav-toggle {
+    @include margin-left(4px);
+    height: var(--touch-target-size);
+    width: var(--touch-target-size);
+    color: var(--text-color);
+
+    &:hover {
+      color: var(--gray-500);
+    }
+  }
+
+  .modal-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: var(--s);
+  }
+
+  .modal-heading {
+    margin-bottom: 0;
+  }
+
   .body {
     position: relative;
     height: 100%;
