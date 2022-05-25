@@ -13,6 +13,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 
     $body: null,
     $content: null,
+    $footer: null,
     $selectBtn: null,
     $sidebar: null,
     $sources: null,
@@ -47,8 +48,9 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
         ).appendTo($container),
         $body = $(
           '<div class="body"><div class="spinner big"></div></div>'
-        ).appendTo($container),
-        $footer = $('<div class="footer"/>').appendTo($container);
+        ).appendTo($container);
+
+      this.$footer = $('<div class="footer"/>').appendTo($container);
 
       if (this.settings.fullscreen) {
         $container.addClass('fullscreen');
@@ -59,9 +61,9 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 
       this.$secondaryButtons = $(
         '<div class="buttons left secondary-buttons"/>'
-      ).appendTo($footer);
+      ).appendTo(this.$footer);
       this.$primaryButtons = $('<div class="buttons right"/>').appendTo(
-        $footer
+        this.$footer
       );
       this.$cancelBtn = $('<button/>', {
         type: 'button',
@@ -78,9 +80,21 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 
       this.$body = $body;
 
+      this.updateModalBottomPadding();
+
       this.addListener(this.$cancelBtn, 'activate', 'cancel');
       this.addListener(this.$selectBtn, 'activate', 'selectElements');
-      this.addListener(Garnish.$win, 'resize', 'updateSidebarView');
+      this.addListener(Garnish.$win, 'resize', this.updateSidebarView);
+      this.addListener(Garnish.$win, 'resize', this.updateModalBottomPadding);
+    },
+
+    updateModalBottomPadding: function () {
+      const footerHeight = this.$footer.outerHeight();
+      const bottomPadding = parseInt(this.$container.css('padding-bottom'));
+
+      if (footerHeight !== bottomPadding) {
+        this.$container.css('padding-bottom', footerHeight);
+      }
     },
 
     updateSidebarView: function () {
@@ -95,7 +109,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 
     sidebarShouldBeHidden: function () {
       const contentWidth = this.$container.outerWidth();
-      return (contentWidth < 500);
+      return (contentWidth < 550);
     },
 
     resetView: function () {
@@ -171,7 +185,10 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
     },
 
     closeSidebar: function () {
-      this.$sidebarToggleBtn.attr('aria-expanded', 'false');
+      if (this.sidebarHasBeenHidden) {
+        this.$sidebarToggleBtn.attr('aria-expanded', 'false');
+      }
+
       this.$body.removeClass('has-sidebar');
       this.$content.removeClass('has-sidebar');
     },
@@ -285,7 +302,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
       if (this.enableSidebarToggle) {
         this.closeSidebar();
       }
-      
+
       this.base();
     },
 
@@ -362,6 +379,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
           this.$content = this.$body.find('.content');
 
           this.updateSidebarView();
+          this.updateModalBottomPadding();
 
           // Double-clicking or double-tapping should select the elements
           this.addListener(
