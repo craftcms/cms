@@ -9,10 +9,13 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
     elementIndex: null,
 
     $body: null,
+    $content: null,
     $selectBtn: null,
     $sidebar: null,
     $sources: null,
-    $sourceToggles: null,
+    $sidebarToggles: null,
+    $sidebarToggleBtn: null,
+    $sourceHeading: null,
     $main: null,
     $search: null,
     $elements: null,
@@ -33,11 +36,11 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
             '"></div>'
         ).appendTo(Garnish.$bod),
         $heading = $(
-          '<h2 id="' +
+          '<h1 id="' +
             $headingId +
             '" class="visually-hidden">' +
             this.settings.modalTitle +
-            '</h2>'
+            '</h1>'
         ).appendTo($container),
         $body = $(
           '<div class="body"><div class="spinner big"></div></div>'
@@ -76,6 +79,63 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
       this.addListener(this.$selectBtn, 'activate', 'selectElements');
     },
 
+    enableReflow: function () {
+      const contentWidth = this.$main.outerWidth();
+
+      if (this.$sidebarToggleBtn) return;
+
+      // Create sidebar toggle functionality
+      if (contentWidth < 500) {
+        this.hideSidebar();
+        this.$sourceHeader = $('<div class="source-header"/>').prependTo(this.$main);
+        this.$sourceHeading = $(`<h2>${this.getActiveSourceName()}</h2>`)
+          .appendTo(this.$sourceHeader);
+        this.$sidebarToggleBtn = $('<button class="btn">Choose another source</button>')
+          .appendTo(this.$sourceHeader);
+
+        this.$sidebar.attr('id', 'modal-sidebar');
+        this.$sidebarToggleBtn.attr('aria-expanded', 'false')
+          .attr('aria-controls', 'modal-sidebar');
+
+        // Add toggle listener
+        this.addListener(this.$sidebarToggleBtn, 'click', (event) => {
+          event.stopPropagation();
+          this.toggleSidebar();
+        });
+        this.addListener(this.$main, 'focusin', () => {
+          if (this.sidebarIsOpen()) this.toggleSidebar();
+        });
+        this.addListener(this.$main, 'click', () => {
+          if (this.sidebarIsOpen()) this.toggleSidebar();
+        });
+      }
+    },
+
+    sidebarIsOpen: function () {
+      return this.$sidebarToggleBtn.attr('aria-expanded') === 'true';
+    },
+
+    toggleSidebar: function () {
+      if (this.sidebarIsOpen()) {
+        this.hideSidebar();
+        this.$sidebarToggleBtn.attr('aria-expanded', 'false');
+      } else {
+        this.$body.addClass('has-sidebar');
+        this.$content.addClass('has-sidebar');
+        this.$sidebarToggleBtn.attr('aria-expanded', 'true');
+        this.$sidebar.find(':focusable').first().focus();
+      }
+    },
+
+    hideSidebar: function () {
+      this.$body.removeClass('has-sidebar');
+      this.$content.removeClass('has-sidebar');
+    },
+
+    getActiveSourceName: function () {
+      return this.$sidebar.find('.sel').text();
+    },
+
     onFadeIn: function () {
       if (!this.elementIndex) {
         this._createElementIndex();
@@ -91,6 +151,11 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 
     onSelectionChange: function () {
       this.updateSelectBtnState();
+      this.updateHeading();
+    },
+
+    updateHeading: function () {
+      this.$sourceHeading.text(this.getActiveSourceName());
     },
 
     updateSelectBtnState: function () {
@@ -216,6 +281,10 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
             this.$body.addClass('has-sidebar');
           }
 
+          this.$main = this.$body.find('.main');
+          this.$content = this.$body.find('.content');
+          this.$sidebar = this.$body.find('.sidebar');
+
           // Initialize the element index
           this.elementIndex = Craft.createElementIndex(
             this.elementType,
@@ -239,6 +308,8 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
               this.settings.indexSettings
             )
           );
+
+          this.enableReflow();
 
           // Double-clicking or double-tapping should select the elements
           this.addListener(
