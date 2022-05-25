@@ -86,39 +86,36 @@
               </template>
 
               <!-- Partner profile URL and developer URL -->
-              <template v-if="developer.partnerInfoUrl || developer.developerUrl">
-
+              <template v-if="developer.developerUrl || developer.partnerInfo && developer.partnerInfo.profileUrl">
                 <div class="tw-mt-4 tw-text-sm">
-<!--                  <ul class="xl:flex space-y-2 xl:space-y-0 xl:space-x-6 text-gray-600">-->
                   <ul class="developer-buttons xl:tw-flex tw-space-y-2 xl:tw-space-y-0 xl:tw-space-x-3 tw-text-gray-600 tw-space-y-2">
-                    <template v-if="developer.partnerInfoUrl">
+                    <template v-if="developer.developerUrl">
                       <li>
-                        <c-btn :href="developer.partnerInfoUrl"
-                          >{{ 'Partner Profile' | t('app') }}
+                        <c-btn
+                          target="_blank"
+                          :href="developer.developerUrl"
+                        >{{ 'Website' | t('app') }}
+                          <c-icon
+                            icon="external-link"
+                            class="tw-w-[0.8rem] tw-h-[0.8rem] tw-text-grey-dark tw-ml-1"
+                          />
                         </c-btn>
                       </li>
                     </template>
-                    <template v-if="developer.developerUrl || (developer.partnerInfo && developer.partnerInfo.profileUrl)">
-                      <li>
-                        <c-btn :href="developer.developerUrl"
-                          >{{ 'Website' | t('app') }}
+                    <template v-if="developer.partnerInfo && developer.partnerInfo.profileUrl">
+                      <li class="tw-inline-block tw-mr-2">
+                        <c-btn
+                          class="tw-inline-block"
+                          target="_blank"
+                          :href="developer.partnerInfo.profileUrl"
+                        >
+                          {{ "Partner Profile" }}
+                          <c-icon
+                            icon="external-link"
+                            class="tw-w-[0.8rem] tw-h-[0.8rem] tw-text-grey-dark tw-ml-1"
+                          />
                         </c-btn>
                       </li>
-                      <template v-if="developer.partnerInfo && developer.partnerInfo.profileUrl">
-                        <li class="tw-inline-block tw-mr-2">
-                          <c-btn
-                            class="tw-inline-block"
-                            target="_blank"
-                            :href="developer.partnerInfo.profileUrl"
-                          >
-                            {{ "Partner Profile" }}
-                            <c-icon
-                              icon="external-link"
-                              class="tw-w-3 tw-text-grey-dark tw-ml-1"
-                            />
-                          </c-btn>
-                        </li>
-                      </template>
                     </template>
                   </ul>
                 </div>
