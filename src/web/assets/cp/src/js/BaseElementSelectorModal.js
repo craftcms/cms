@@ -8,6 +8,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
     elementType: null,
     elementIndex: null,
 
+    enableSidebarToggle: false,
     sidebarHasBeenHidden: false,
 
     $body: null,
@@ -83,6 +84,8 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
     },
 
     updateSidebarView: function () {
+      if (!this.enableSidebarToggle) return;
+
       if (this.sidebarShouldBeHidden() && !this.sidebarHasBeenHidden) {
         this.enableReflow();
       } else if (!this.sidebarShouldBeHidden() && this.sidebarHasBeenHidden) {
@@ -279,7 +282,10 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
     },
 
     hide: function () {
-      this.closeSidebar();
+      if (this.enableSidebarToggle) {
+        this.closeSidebar();
+      }
+      
       this.base();
     },
 
@@ -324,6 +330,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 
           if (this.$body.has('.sidebar:not(.hidden)').length) {
             this.$body.addClass('has-sidebar');
+            this.enableSidebarToggle = true;
           }
 
           // Initialize the element index
