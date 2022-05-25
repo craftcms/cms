@@ -86,7 +86,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 
       // Create sidebar toggle functionality
       if (contentWidth < 500) {
-        this.hideSidebar();
+
         this.$sourceHeader = $('<div class="modal-header"/>').prependTo(this.$main);
         this.$sourceHeading = $(`<h2 class="modal-heading">${this.getActiveSourceName()}</h2>`)
           .appendTo(this.$sourceHeader);
@@ -102,6 +102,8 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
           .appendTo(this.$sourceHeader);
 
         this.$sidebar.attr('id', 'modal-sidebar');
+
+        this.closeSidebar();
 
         // Add toggle listener
         this.addListener(this.$sidebarToggleBtn, 'click', (event) => {
@@ -127,8 +129,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 
     toggleSidebar: function () {
       if (this.sidebarIsOpen()) {
-        this.hideSidebar();
-        this.$sidebarToggleBtn.attr('aria-expanded', 'false');
+        this.closeSidebar();
       } else {
         this.$body.addClass('has-sidebar');
         this.$content.addClass('has-sidebar');
@@ -137,7 +138,8 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
       }
     },
 
-    hideSidebar: function () {
+    closeSidebar: function () {
+      this.$sidebarToggleBtn.attr('aria-expanded', 'false');
       this.$body.removeClass('has-sidebar');
       this.$content.removeClass('has-sidebar');
     },
@@ -244,6 +246,11 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 
     show: function () {
       this.updateSelectBtnState();
+      this.base();
+    },
+
+    hide: function () {
+      this.closeSidebar();
       this.base();
     },
 
