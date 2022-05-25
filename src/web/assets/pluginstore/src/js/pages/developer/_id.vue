@@ -31,19 +31,19 @@
               <!-- Partner badges -->
               <template
                 v-if="
-                  developer.partner &&
-                  (developer.partner.craftVerified ||
-                    developer.partner.commerceVerified ||
-                    developer.partner.enterpriseVerified)
+                  developer.partnerInfo &&
+                  (developer.partnerInfo.isCraftVerified ||
+                    developer.partnerInfo.isCommerceVerified ||
+                    developer.partnerInfo.isEnterpriseVerified)
                 "
               >
-                <div class="tw-mt-4">
+                <div class="tw-mt-4 tw-text-sm">
                   <ul
                     class="xl:tw-flex tw-space-y-2 xl:tw-space-y-0 xl:tw-space-x-6 tw-text-gray-600"
                   >
                     <template
                       v-if="
-                        developer.partner && developer.partner.craftVerified
+                        developer.partnerInfo && developer.partnerInfo.isCraftVerified
                       "
                     >
                       <li class="tw-flex tw-items-center">
@@ -56,7 +56,7 @@
                     </template>
                     <template
                       v-if="
-                        developer.partner && developer.partner.commerceVerified
+                        developer.partnerInfo && developer.partnerInfo.isCommerceVerified
                       "
                     >
                       <li class="tw-flex tw-items-center">
@@ -69,8 +69,8 @@
                     </template>
                     <template
                       v-if="
-                        developer.partner &&
-                        developer.partner.enterpriseVerified
+                        developer.partnerInfo &&
+                        developer.partnerInfo.isEnterpriseVerified
                       "
                     >
                       <li class="tw-flex tw-items-center">
@@ -86,23 +86,52 @@
               </template>
 
               <!-- Partner profile URL and developer URL -->
-              <template v-if="developer.partnerUrl || developer.developerUrl">
-                <ul class="developer-buttons tw-mt-4 tw-space-y-2">
-                  <template v-if="developer.partnerUrl">
-                    <li>
-                      <c-btn :href="developer.partnerUrl"
-                        >{{ 'Partner Profile' | t('app') }}
-                      </c-btn>
-                    </li>
-                  </template>
-                  <template v-if="developer.developerUrl">
-                    <li>
-                      <c-btn :href="developer.developerUrl"
-                        >{{ 'Website' | t('app') }}
-                      </c-btn>
-                    </li>
-                  </template>
-                </ul>
+              <template v-if="developer.partnerInfoUrl || developer.developerUrl">
+
+                <div class="tw-mt-4 tw-text-sm">
+<!--                  <ul class="xl:flex space-y-2 xl:space-y-0 xl:space-x-6 text-gray-600">-->
+                  <ul class="developer-buttons xl:tw-flex tw-space-y-2 xl:tw-space-y-0 xl:tw-space-x-3 tw-text-gray-600 tw-space-y-2">
+                    <template v-if="developer.partnerInfoUrl">
+                      <li>
+                        <c-btn :href="developer.partnerInfoUrl"
+                          >{{ 'Partner Profile' | t('app') }}
+                        </c-btn>
+                      </li>
+                    </template>
+                    <template v-if="developer.developerUrl || (developer.partnerInfo && developer.partnerInfo.profileUrl)">
+                      <li>
+                        <c-btn :href="developer.developerUrl"
+                          >{{ 'Website' | t('app') }}
+                        </c-btn>
+                      </li>
+                      <template v-if="developer.partnerInfo && developer.partnerInfo.profileUrl">
+                        <li class="tw-inline-block tw-mr-2">
+                          <c-btn
+                            class="tw-inline-block"
+                            target="_blank"
+                            :href="developer.partnerInfo.profileUrl"
+                          >
+                            {{ "Partner Profile" }}
+                            <svg
+                              class="tw-w-3 tw-text-grey-dark tw-ml-1"
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                stroke-width="2"
+                                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                              />
+                            </svg>
+                          </c-btn>
+                        </li>
+                      </template>
+                    </template>
+                  </ul>
+                </div>
               </template>
             </div>
           </div>
