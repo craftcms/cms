@@ -85,10 +85,11 @@
                 </div>
               </template>
 
-              <!-- Partner profile URL and developer URL -->
+              <!-- Developer URL and partner profile URL-->
               <template v-if="developer.developerUrl || developer.partnerInfo && developer.partnerInfo.profileUrl">
                 <div class="tw-mt-4 tw-text-sm">
                   <ul class="developer-buttons xl:tw-flex tw-space-y-2 xl:tw-space-y-0 xl:tw-space-x-3 tw-text-gray-600 tw-space-y-2">
+                    <!-- Developer URL -->
                     <template v-if="developer.developerUrl">
                       <li>
                         <c-btn
@@ -102,6 +103,8 @@
                         </c-btn>
                       </li>
                     </template>
+
+                    <!-- Partner profile URL -->
                     <template v-if="developer.partnerInfo && developer.partnerInfo.profileUrl">
                       <li class="tw-inline-block tw-mr-2">
                         <c-btn
