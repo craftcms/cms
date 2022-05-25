@@ -162,7 +162,7 @@ class GeneralConfig extends BaseObject
      * 'allowAdminChanges' => false,
      * ```
      * ```shell Environment Override
-     * CRAFT_ALLOW_ADMIN_CHANGES=0
+     * CRAFT_ALLOW_ADMIN_CHANGES=false
      * ```
      * :::
      *
@@ -184,7 +184,7 @@ class GeneralConfig extends BaseObject
      * 'allowedGraphqlOrigins' => false,
      * ```
      * ```shell Environment Override
-     * CRAFT_ALLOW_GRAPHQL_ORIGINS=0
+     * CRAFT_ALLOW_GRAPHQL_ORIGINS=false
      * ```
      * :::
      *
@@ -203,7 +203,7 @@ class GeneralConfig extends BaseObject
      * 'allowUpdates' => false,
      * ```
      * ```shell Environment Override
-     * CRAFT_ALLOW_UPDATES=0
+     * CRAFT_ALLOW_UPDATES=false
      * ```
      * :::
      *
@@ -361,7 +361,7 @@ class GeneralConfig extends BaseObject
      * 'autoLoginAfterAccountActivation' => true,
      * ```
      * ```shell Environment Override
-     * CRAFT_ALLOW_AUTO_LOGIN_AFTER_ACCOUNT_ACTIVATION=1
+     * CRAFT_ALLOW_AUTO_LOGIN_AFTER_ACCOUNT_ACTIVATION=true
      * ```
      * :::
      *
@@ -379,7 +379,7 @@ class GeneralConfig extends BaseObject
      * 'autosaveDrafts' => false,
      * ```
      * ```shell Environment Override
-     * CRAFT_AUTOSAVE_DRAFTS=0
+     * CRAFT_AUTOSAVE_DRAFTS=false
      * ```
      * :::
      *
@@ -397,7 +397,7 @@ class GeneralConfig extends BaseObject
      * 'backupOnUpdate' => false,
      * ```
      * ```shell Environment Override
-     * CRAFT_BACKUP_ON_UPDATE=0
+     * CRAFT_BACKUP_ON_UPDATE=false
      * ```
      * :::
      *
@@ -428,7 +428,7 @@ class GeneralConfig extends BaseObject
      * 'backupCommand' => false,
      * ```
      * ```shell Environment Override
-     * CRAFT_BACKUP_COMMAND=0
+     * CRAFT_BACKUP_COMMAND=false
      * ```
      * :::
      *
@@ -534,7 +534,7 @@ class GeneralConfig extends BaseObject
      * 'cacheDuration' => 0,
      * ```
      * ```shell Environment Override
-     * CRAFT_CACHE_DURATION=0
+     * CRAFT_CACHE_DURATION=false
      * ```
      * :::
      *
@@ -555,7 +555,7 @@ class GeneralConfig extends BaseObject
      * 'convertFilenamesToAscii' => false,
      * ```
      * ```shell Environment Override
-     * CRAFT_CONVERT_FILENAMES_TO_ASCII=0
+     * CRAFT_CONVERT_FILENAMES_TO_ASCII=false
      * ```
      * :::
      *
@@ -576,7 +576,7 @@ class GeneralConfig extends BaseObject
      * 'cooldownDuration' => 0,
      * ```
      * ```shell Environment Override
-     * CRAFT_COOLDOWN_DURATION=0
+     * CRAFT_COOLDOWN_DURATION=false
      * ```
      * :::
      *
@@ -840,7 +840,7 @@ class GeneralConfig extends BaseObject
      * 'defaultWeekStartDay' => 0,
      * ```
      * ```shell Environment Override
-     * CRAFT_DEFAULT_WEEK_START_DAY=0
+     * CRAFT_DEFAULT_WEEK_START_DAY=false
      * ```
      * :::
      *
@@ -861,7 +861,7 @@ class GeneralConfig extends BaseObject
      * 'deferPublicRegistrationPassword' => true,
      * ```
      * ```shell Environment Override
-     * CRAFT_DEFER_PUBLIC_REGISTRATION_PASSWORD=0
+     * CRAFT_DEFER_PUBLIC_REGISTRATION_PASSWORD=false
      * ```
      * :::
      *
@@ -968,7 +968,7 @@ class GeneralConfig extends BaseObject
      * 'enableCsrfCookie' => false,
      * ```
      * ```shell Environment Override
-     * CRAFT_ENABLE_CSRF_COOKIE=0
+     * CRAFT_ENABLE_CSRF_COOKIE=false
      * ```
      * :::
      *
@@ -985,7 +985,7 @@ class GeneralConfig extends BaseObject
      * 'enableGraphqlIntrospection' => false,
      * ```
      * ```shell Environment Override
-     * CRAFT_ENABLE_GRAPHQL_INTROSPECTION=0
+     * CRAFT_ENABLE_GRAPHQL_INTROSPECTION=false
      * ```
      * :::
      *
@@ -1004,7 +1004,7 @@ class GeneralConfig extends BaseObject
      * 'enableGql' => false,
      * ```
      * ```shell Environment Override
-     * CRAFT_ENABLE_GQL=0
+     * CRAFT_ENABLE_GQL=false
      * ```
      * :::
      *
@@ -1025,7 +1025,7 @@ class GeneralConfig extends BaseObject
      * 'elevatedSessionDuration' => 0,
      * ```
      * ```shell Environment Override
-     * CRAFT_ELEVATED_SESSION_DURATION=0
+     * CRAFT_ELEVATED_SESSION_DURATION=false
      * ```
      * :::
      *
@@ -1042,7 +1042,7 @@ class GeneralConfig extends BaseObject
      * 'enableCsrfProtection' => false,
      * ```
      * ```shell Environment Override
-     * CRAFT_ENABLE_CSRF_PROTECTION=0
+     * CRAFT_ENABLE_CSRF_PROTECTION=false
      * ```
      * :::
      *
@@ -1066,7 +1066,7 @@ class GeneralConfig extends BaseObject
      * 'enableGraphqlCaching' => false,
      * ```
      * ```shell Environment Override
-     * CRAFT_ENABLE_GRAPHQL_CACHING=0
+     * CRAFT_ENABLE_GRAPHQL_CACHING=false
      * ```
      * :::
      *
@@ -1101,7 +1101,7 @@ class GeneralConfig extends BaseObject
      * 'enableTemplateCaching' => false,
      * ```
      * ```shell Environment Override
-     * CRAFT_ENABLE_TEMPLATE_CACHING=0
+     * CRAFT_ENABLE_TEMPLATE_CACHING=false
      * ```
      * :::
      *
@@ -1197,7 +1197,7 @@ class GeneralConfig extends BaseObject
      * 'filenameWordSeparator' => false,
      * ```
      * ```shell Environment Override
-     * CRAFT_FILENAME_WORD_SEPARATOR=0
+     * CRAFT_FILENAME_WORD_SEPARATOR=false
      * ```
      * :::
      *
@@ -1488,7 +1488,7 @@ class GeneralConfig extends BaseObject
      * 'loginPath' => false,
      * ```
      * ```shell Environment Override
-     * CRAFT_LOGIN_PATH=0
+     * CRAFT_LOGIN_PATH=false
      * ```
      * :::
      *
@@ -1511,7 +1511,7 @@ class GeneralConfig extends BaseObject
      * 'logoutPath' => false,
      * ```
      * ```shell Environment Override
-     * CRAFT_LOGOUT_PATH=0
+     * CRAFT_LOGOUT_PATH=false
      * ```
      * :::
      *
@@ -1528,7 +1528,7 @@ class GeneralConfig extends BaseObject
      * 'maxCachedCloudImageSize' => 0,
      * ```
      * ```shell Environment Override
-     * CRAFT_MAX_CACHED_CLOUD_IMAGE_SIZE=0
+     * CRAFT_MAX_CACHED_CLOUD_IMAGE_SIZE=false
      * ```
      * :::
      *
@@ -1897,7 +1897,7 @@ class GeneralConfig extends BaseObject
      * 'prefixGqlRootTypes' => false,
      * ```
      * ```shell Environment Override
-     * CRAFT_PREFIX_GQL_ROOT_TYPES=0
+     * CRAFT_PREFIX_GQL_ROOT_TYPES=false
      * ```
      * :::
      *
@@ -1957,7 +1957,7 @@ class GeneralConfig extends BaseObject
      * 'preserveImageColorProfiles' => false,
      * ```
      * ```shell Environment Override
-     * CRAFT_PRESERVE_IMAGE_COLOR_PROFILES=0
+     * CRAFT_PRESERVE_IMAGE_COLOR_PROFILES=false
      * ```
      * :::
      *
@@ -2106,7 +2106,7 @@ class GeneralConfig extends BaseObject
      * 'purgeUnsavedDraftsDuration' => 0,
      * ```
      * ```shell Environment Override
-     * CRAFT_PURGE_UNSAVED_DRAFTS_DURATION=0
+     * CRAFT_PURGE_UNSAVED_DRAFTS_DURATION=false
      * ```
      * :::
      *
@@ -2147,7 +2147,7 @@ class GeneralConfig extends BaseObject
      * 'rememberUsernameDuration' => 0,
      * ```
      * ```shell Environment Override
-     * CRAFT_REMEMBER_USERNAME_DURATION=0
+     * CRAFT_REMEMBER_USERNAME_DURATION=false
      * ```
      * :::
      *
@@ -2168,7 +2168,7 @@ class GeneralConfig extends BaseObject
      * 'rememberedUserSessionDuration' => 0,
      * ```
      * ```shell Environment Override
-     * CRAFT_REMEMBERED_USER_SESSION_DURATION=0
+     * CRAFT_REMEMBERED_USER_SESSION_DURATION=false
      * ```
      * :::
      *
@@ -2185,7 +2185,7 @@ class GeneralConfig extends BaseObject
      * 'requireMatchingUserAgentForSession' => false,
      * ```
      * ```shell Environment Override
-     * CRAFT_REQUIRE_MATCHING_USER_AGENT_FOR_SESSION=0
+     * CRAFT_REQUIRE_MATCHING_USER_AGENT_FOR_SESSION=false
      * ```
      * :::
      *
@@ -2201,7 +2201,7 @@ class GeneralConfig extends BaseObject
      * 'requireUserAgentAndIpForSession' => false,
      * ```
      * ```shell Environment Override
-     * CRAFT_REQUIRE_USER_AGENT_AND_IP_FOR_SESSION=0
+     * CRAFT_REQUIRE_USER_AGENT_AND_IP_FOR_SESSION=false
      * ```
      * :::
      *
@@ -2262,7 +2262,7 @@ class GeneralConfig extends BaseObject
      * 'restoreCommand' => false,
      * ```
      * ```shell Environment Override
-     * CRAFT_RESTORE_COMMAND=0
+     * CRAFT_RESTORE_COMMAND=false
      * ```
      * :::
      *
@@ -2295,7 +2295,7 @@ class GeneralConfig extends BaseObject
      * 'rotateImagesOnUploadByExifData' => false,
      * ```
      * ```shell Environment Override
-     * CRAFT_ROTATE_IMAGES_ON_UPLOAD_BY_EXIF_DATA=0
+     * CRAFT_ROTATE_IMAGES_ON_UPLOAD_BY_EXIF_DATA=false
      * ```
      * :::
      *
@@ -2324,7 +2324,7 @@ class GeneralConfig extends BaseObject
      * 'runQueueAutomatically' => false,
      * ```
      * ```shell Environment Override
-     * CRAFT_RUN_QUEUE_AUTOMATICALLY=0
+     * CRAFT_RUN_QUEUE_AUTOMATICALLY=false
      * ```
      * :::
      *
@@ -2340,7 +2340,7 @@ class GeneralConfig extends BaseObject
      * 'sanitizeCpImageUploads' => false,
      * ```
      * ```shell Environment Override
-     * CRAFT_SANITIZE_CP_IMAGE_UPLOADS=0
+     * CRAFT_SANITIZE_CP_IMAGE_UPLOADS=false
      * ```
      * :::
      *
@@ -2378,7 +2378,7 @@ class GeneralConfig extends BaseObject
      * 'sanitizeSvgUploads' => false,
      * ```
      * ```shell Environment Override
-     * CRAFT_SANITIZE_SVG_UPLOADS=0
+     * CRAFT_SANITIZE_SVG_UPLOADS=false
      * ```
      * :::
      *
@@ -2425,7 +2425,7 @@ class GeneralConfig extends BaseObject
      * 'sendPoweredByHeader' => false,
      * ```
      * ```shell Environment Override
-     * CRAFT_SEND_POWERED_BY_HEADER=0
+     * CRAFT_SEND_POWERED_BY_HEADER=false
      * ```
      * :::
      *
@@ -2601,7 +2601,7 @@ class GeneralConfig extends BaseObject
      * 'softDeleteDuration' => 0,
      * ```
      * ```shell Environment Override
-     * CRAFT_SOFT_DELETE_DURATION=0
+     * CRAFT_SOFT_DELETE_DURATION=false
      * ```
      * :::
      *
@@ -2674,7 +2674,7 @@ class GeneralConfig extends BaseObject
      * 'transformGifs' => false,
      * ```
      * ```shell Environment Override
-     * CRAFT_TRANSFORM_GIFS=0
+     * CRAFT_TRANSFORM_GIFS=false
      * ```
      * :::
      *
@@ -2691,7 +2691,7 @@ class GeneralConfig extends BaseObject
      * 'transformSvgs' => false,
      * ```
      * ```shell Environment Override
-     * CRAFT_TRANSFORM_SVGS=0
+     * CRAFT_TRANSFORM_SVGS=false
      * ```
      * :::
      *
@@ -2761,7 +2761,7 @@ class GeneralConfig extends BaseObject
      * 'upscaleImages' => false,
      * ```
      * ```shell Environment Override
-     * CRAFT_UPSCALE_IMAGES=0
+     * CRAFT_UPSCALE_IMAGES=false
      * ```
      * :::
      *
@@ -2916,7 +2916,7 @@ class GeneralConfig extends BaseObject
      * 'useFileLocks' => false,
      * ```
      * ```shell Environment Override
-     * CRAFT_USE_FILE_LOCKS=0
+     * CRAFT_USE_FILE_LOCKS=false
      * ```
      * :::
      *

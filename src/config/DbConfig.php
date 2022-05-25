@@ -170,7 +170,7 @@ class DbConfig extends BaseObject
      * 'setSchemaOnConnect' => true,
      * ```
      * ```shell Environment Override
-     * CRAFT_DB_SET_SCHEMA_ON_CONNECT=1
+     * CRAFT_DB_SET_SCHEMA_ON_CONNECT=true
      * ```
      * :::
      *
@@ -222,7 +222,7 @@ class DbConfig extends BaseObject
      * 'useUnbufferedConnections' => true,
      * ```
      * ```shell Environment Override
-     * CRAFT_DB_USE_UNBUFFERED_CONNECTIONS=1
+     * CRAFT_DB_USE_UNBUFFERED_CONNECTIONS=true
      * ```
      * :::
      *
