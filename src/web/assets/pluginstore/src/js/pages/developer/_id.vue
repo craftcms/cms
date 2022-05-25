@@ -98,7 +98,8 @@
                         >{{ 'Website' | t('app') }}
                           <c-icon
                             icon="external-link"
-                            class="tw-w-[0.8rem] tw-h-[0.8rem] tw-text-grey-dark tw-ml-1"
+                            class="tw-w-3 tw-h-3 tw-text-grey-dark tw-ml-1"
+                            :size="null"
                           />
                         </c-btn>
                       </li>
@@ -115,7 +116,8 @@
                           {{ "Partner Profile" }}
                           <c-icon
                             icon="external-link"
-                            class="tw-w-[0.8rem] tw-h-[0.8rem] tw-text-grey-dark tw-ml-1"
+                            class="tw-w-3 tw-h-3 tw-text-grey-dark tw-ml-1"
+                            :size="null"
                           />
                         </c-btn>
                       </li>
