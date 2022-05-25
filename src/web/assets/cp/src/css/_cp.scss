@@ -589,7 +589,7 @@ li.breadcrumb-toggle-wrapper {
   }
 }
 
-#nav-toggle {
+.primary-nav-toggle {
   display: none;
 }
 
@@ -1122,7 +1122,7 @@ li.breadcrumb-toggle-wrapper {
     width: 100vw;
   }
 
-  #nav-toggle {
+  .nav-toggle {
     display: flex;
     align-items: center;
     justify-content: center;

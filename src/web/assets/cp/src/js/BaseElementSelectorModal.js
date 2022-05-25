@@ -90,12 +90,17 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
         this.$sourceHeader = $('<div class="source-header"/>').prependTo(this.$main);
         this.$sourceHeading = $(`<h2>${this.getActiveSourceName()}</h2>`)
           .appendTo(this.$sourceHeader);
-        this.$sidebarToggleBtn = $('<button class="btn">Choose another source</button>')
+
+        const buttonConfig = {
+          toggle: true,
+          controls: 'modal-sidebar',
+          html: 'Choose another source',
+          class: 'nav-toggle',
+        }
+        this.$sidebarToggleBtn = Craft.ui.createButton(buttonConfig)
           .appendTo(this.$sourceHeader);
 
         this.$sidebar.attr('id', 'modal-sidebar');
-        this.$sidebarToggleBtn.attr('aria-expanded', 'false')
-          .attr('aria-controls', 'modal-sidebar');
 
         // Add toggle listener
         this.addListener(this.$sidebarToggleBtn, 'click', (event) => {
