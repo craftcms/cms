@@ -580,7 +580,6 @@ return [
     'Enable focal point' => 'Enable focal point',
     'Enable versioning for entries in this section' => 'Enable versioning for entries in this section',
     'Enable' => 'Enable',
-    'Enabled for {site}' => 'Enabled for {site}',
     'Enabled' => 'Enabled',
     'Enabling the plugin…' => 'Enabling the plugin…',
     'Encryption Method' => 'Encryption Method',
