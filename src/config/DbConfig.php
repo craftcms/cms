@@ -64,7 +64,7 @@ class DbConfig extends BaseObject
      * ```php Static Config
      * 'charset' => 'utf8mb4',
      * ```
-     * ```env Environment Override
+     * ```shell Environment Override
      * CRAFT_DB_CHARSET=utf8mb4
      * ```
      * :::
@@ -93,7 +93,7 @@ class DbConfig extends BaseObject
      * ```php Static Config
      * 'collation' => 'utf8mb4_0900_ai_ci',
      * ```
-     * ```env Environment Override
+     * ```shell Environment Override
      * CRAFT_DB_COLLATION=utf8mb4_0900_ai_ci
      * ```
      * :::
@@ -115,7 +115,7 @@ class DbConfig extends BaseObject
      * ```php Static Config
      * 'dsn' => 'mysql:host=127.0.0.1;port=3306;dbname=acme_corp',
      * ```
-     * ```env Environment Override
+     * ```shell Environment Override
      * CRAFT_DB_DSN=mysql:host=127.0.0.1;port=3306;dbname=acme_corp
      * ```
      * :::
@@ -129,7 +129,7 @@ class DbConfig extends BaseObject
      * ```php Static Config
      * 'password' => 'super-secret',
      * ```
-     * ```env Environment Override
+     * ```shell Environment Override
      * CRAFT_DB_PASSWORD=super-secret
      * ```
      * :::
@@ -148,7 +148,7 @@ class DbConfig extends BaseObject
      * ```php Static Config
      * 'schema' => 'myschema,public',
      * ```
-     * ```env Environment Override
+     * ```shell Environment Override
      * CRAFT_DB_SCHEMA=myschema,public
      * ```
      * :::
@@ -169,7 +169,7 @@ class DbConfig extends BaseObject
      * ```php Static Config
      * 'setSchemaOnConnect' => true,
      * ```
-     * ```env Environment Override
+     * ```shell Environment Override
      * CRAFT_DB_SET_SCHEMA_ON_CONNECT=1
      * ```
      * :::
@@ -186,7 +186,7 @@ class DbConfig extends BaseObject
      * ```php Static Config
      * 'tablePrefix' => 'craft_',
      * ```
-     * ```env Environment Override
+     * ```shell Environment Override
      * CRAFT_DB_TABLE_PREFIX=craft_
      * ```
      * :::
@@ -200,7 +200,7 @@ class DbConfig extends BaseObject
      * ```php Static Config
      * 'user' => 'nitro',
      * ```
-     * ```env Environment Override
+     * ```shell Environment Override
      * CRAFT_DB_USER=nitro
      * ```
      * :::
@@ -221,7 +221,7 @@ class DbConfig extends BaseObject
      * ```php Static Config
      * 'useUnbufferedConnections' => true,
      * ```
-     * ```env Environment Override
+     * ```shell Environment Override
      * CRAFT_DB_USE_UNBUFFERED_CONNECTIONS=1
      * ```
      * :::
@@ -239,7 +239,7 @@ class DbConfig extends BaseObject
      * ```php Static Config
      * 'url' => 'jdbc:mysql://database.foo:3306/mydb',
      * ```
-     * ```env Environment Override
+     * ```shell Environment Override
      * CRAFT_DB_URL=jdbc:mysql://database.foo:3306/mydb
      * ```
      * :::
@@ -253,7 +253,7 @@ class DbConfig extends BaseObject
      * ```php Static Config
      * 'driver' => 'mysql',
      * ```
-     * ```env Environment Override
+     * ```shell Environment Override
      * CRAFT_DB_DRIVER=mysql
      * ```
      * :::
@@ -267,7 +267,7 @@ class DbConfig extends BaseObject
      * ```php Static Config
      * 'server' => 'localhost',
      * ```
-     * ```env Environment Override
+     * ```shell Environment Override
      * CRAFT_DB_SERVER=localhost
      * ```
      * :::
@@ -281,7 +281,7 @@ class DbConfig extends BaseObject
      * ```php Static Config
      * 'port' => 3306,
      * ```
-     * ```env Environment Override
+     * ```shell Environment Override
      * CRAFT_DB_PORT=3306
      * ```
      * :::
@@ -296,7 +296,7 @@ class DbConfig extends BaseObject
      * ```php Static Config
      * 'unixSocket' => '/Applications/MAMP/tmp/mysql/mysql.sock',
      * ```
-     * ```env Environment Override
+     * ```shell Environment Override
      * CRAFT_DB_UNIX_SOCKET=/Applications/MAMP/tmp/mysql/mysql.sock
      * ```
      * :::
@@ -310,7 +310,7 @@ class DbConfig extends BaseObject
      * ```php Static Config
      * 'database' => 'mydatabase',
      * ```
-     * ```env Environment Override
+     * ```shell Environment Override
      * CRAFT_DB_DATABASE=mydatabase
      * ```
      * :::
