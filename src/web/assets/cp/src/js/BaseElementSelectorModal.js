@@ -8,6 +8,8 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
     elementType: null,
     elementIndex: null,
 
+    sidebarToggleIsActive: false,
+
     $body: null,
     $content: null,
     $selectBtn: null,
@@ -77,16 +79,41 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 
       this.addListener(this.$cancelBtn, 'activate', 'cancel');
       this.addListener(this.$selectBtn, 'activate', 'selectElements');
+      this.addListener(Garnish.$win, 'resize', 'updateSidebarView');
+    },
+
+    updateSidebarView: function () {
+      if (this.sidebarShouldBeHidden()) {
+        this.enableReflow();
+      } else {
+        this.sidebarToggleIsActive = false;
+        this.resetView();
+      }
+    },
+
+    sidebarShouldBeHidden: function () {
+      const contentWidth = this.$main.outerWidth();
+      console.log(this.$main);
+      return contentWidth < 500;
+    },
+
+    resetView: function () {
+      this.sidebarToggleIsActive = false;
+
+      if (this.$sourceHeader) {
+        this.$sourceHeader.remove();
+      }
+
+      this.$body.addClass('has-sidebar');
+      this.$content.addClass('has-sidebar');
     },
 
     enableReflow: function () {
-      const contentWidth = this.$main.outerWidth();
-
-      if (this.$sidebarToggleBtn) return;
+      if (this.sidebarToggleIsActive) return;
 
       // Create sidebar toggle functionality
-      if (contentWidth < 500) {
-
+      if (this.sidebarShouldBeHidden()) {
+        this.sidebarToggleIsActive = true;
         this.$sourceHeader = $('<div class="modal-header"/>').prependTo(this.$main);
         this.$sourceHeading = $(`<h2 class="modal-heading">${this.getActiveSourceName()}</h2>`)
           .appendTo(this.$sourceHeader);
@@ -325,7 +352,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
           this.$sidebar = this.elementIndex.$sidebar;
           this.$content = this.$body.find('.content');
 
-          this.enableReflow();
+          this.updateSidebarView();
 
           // Double-clicking or double-tapping should select the elements
           this.addListener(
