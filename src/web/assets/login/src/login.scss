@@ -32,12 +32,16 @@ body {
   padding: 1px;
 }
 
-#login-form .field {
-  margin: 0;
-}
+#login-form {
+  position: relative;
 
-#login-form .btn {
-  display: block;
+  .field {
+    margin: 0;
+  }
+
+  .btn {
+    display: block;
+  }
 }
 
 #loginName {
