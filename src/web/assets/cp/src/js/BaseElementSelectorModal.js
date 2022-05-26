@@ -129,20 +129,19 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
     buildSidebarToggleView: function () {
       if (this.$sidebarToggleBtn || !this.sidebarShouldBeHidden()) return;
 
-      this.$sidebarHeader = $('<div class="sidebar-header"/>')
-        .prependTo(this.$sidebar);
+      this.$sidebarHeader = $('<div class="sidebar-header"/>').prependTo(
+        this.$sidebar
+      );
 
       this.$sidebarCloseBtn = Craft.ui
         .createButton({
-          class: 'nav-close clear-btn'
+          class: 'nav-close clear-btn',
         })
         .attr('aria-label', Craft.t('app', 'Close'))
         .removeClass('btn')
         .appendTo(this.$sidebarHeader);
 
-      this.$mainHeader = $('<div class="main-header"/>').prependTo(
-        this.$main
-      );
+      this.$mainHeader = $('<div class="main-header"/>').prependTo(this.$main);
       this.$mainHeading = $(
         `<h2 class="main-heading">${this.getActiveSourceName()}</h2>`
       ).appendTo(this.$mainHeader);
