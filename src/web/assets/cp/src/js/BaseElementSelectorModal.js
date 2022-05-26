@@ -18,7 +18,8 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
     $sources: null,
     $sourceToggles: null,
     $sidebarToggleBtn: null,
-    $sourceHeading: null,
+    $sidebarCloseBtn: null,
+    $mainHeading: null,
     $main: null,
     $search: null,
     $elements: null,
@@ -101,8 +102,10 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 
       if (this.sidebarShouldBeHidden() && !this.$sidebarToggleBtn) {
         this.buildSidebarToggleView();
+        console.log('update yes');
       } else if (!this.sidebarShouldBeHidden() && this.$sidebarToggleBtn) {
         this.resetView();
+        console.log('reset yes');
       }
     },
 
@@ -112,8 +115,13 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
     },
 
     resetView: function () {
-      if (this.$sourceHeader) {
-        this.$sourceHeader.remove();
+      console.log('in reset fxn');
+      if (this.$mainHeader) {
+        this.$mainHeader.remove();
+      }
+
+      if (this.$sidebarHeader) {
+        this.$sidebarHeader.remove();
       }
 
       this.$sidebarToggleBtn = null;
@@ -125,12 +133,23 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
     buildSidebarToggleView: function () {
       if (this.$sidebarToggleBtn || !this.sidebarShouldBeHidden()) return;
 
-      this.$sourceHeader = $('<div class="modal-header"/>').prependTo(
+      this.$sidebarHeader = $('<div class="sidebar-header"/>')
+        .prependTo(this.$sidebar);
+
+      this.$sidebarCloseBtn = Craft.ui
+        .createButton({
+          class: 'nav-close clear-btn'
+        })
+        .attr('aria-label', Craft.t('app', 'Close'))
+        .removeClass('btn')
+        .appendTo(this.$sidebarHeader);
+
+      this.$mainHeader = $('<div class="main-header"/>').prependTo(
         this.$main
       );
-      this.$sourceHeading = $(
-        `<h2 class="modal-heading">${this.getActiveSourceName()}</h2>`
-      ).appendTo(this.$sourceHeader);
+      this.$mainHeading = $(
+        `<h2 class="main-heading">${this.getActiveSourceName()}</h2>`
+      ).appendTo(this.$mainHeader);
 
       const buttonConfig = {
         toggle: true,
@@ -141,7 +160,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
         .createButton(buttonConfig)
         .removeClass('btn')
         .attr('aria-label', Craft.t('app', 'Show sidebar'))
-        .appendTo(this.$sourceHeader);
+        .appendTo(this.$mainHeader);
 
       this.$sidebar.attr('id', 'modal-sidebar');
 
@@ -153,8 +172,8 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
         this.toggleSidebar();
       });
 
-      this.addListener(this.$main, 'click', () => {
-        if (this.sidebarIsOpen()) this.toggleSidebar();
+      this.addListener(this.$sidebarCloseBtn, 'click', () => {
+        this.toggleSidebar();
       });
 
       this.elementIndex.on('selectSource', () => {
@@ -195,8 +214,12 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
     closeSidebar: function () {
       if (!this.$sidebarToggleBtn) return;
 
-      this.$sidebar.addClass('hidden');
-      this.$sidebarToggleBtn.attr('aria-expanded', 'false');
+      if (this.sidebarIsOpen()) {
+        Garnish.uiLayerManager.removeLayer();
+        this.$sidebar.addClass('hidden');
+        this.$sidebarToggleBtn.attr('aria-expanded', 'false');
+      }
+
       this.$body.removeClass('has-sidebar');
       this.$content.removeClass('has-sidebar');
     },
@@ -223,7 +246,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
     },
 
     updateHeading: function () {
-      this.$sourceHeading.text(this.getActiveSourceName());
+      this.$mainHeading.text(this.getActiveSourceName());
     },
 
     updateSelectBtnState: function () {
@@ -309,6 +332,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
     hide: function () {
       this.closeSidebar();
       this.base();
+      console.log(Garnish.uiLayerManager.layers);
     },
 
     onSelect: function (elementInfo) {

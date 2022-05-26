@@ -633,6 +633,11 @@ $radioSize: 16px;
   box-shadow: var(--focus-ring);
 }
 
+@mixin touch-target {
+  height: var(--touch-target-size);
+  width: var(--touch-target-size);
+}
+
 @mixin visually-hidden {
   position: absolute;
   width: 1px;

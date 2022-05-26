@@ -520,6 +520,29 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   }
 }
 
+.nav-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 50px;
+  line-height: 26px;
+  color: var(--gray-300);
+  text-align: center;
+  @include margin-left(-10px);
+
+  &:before {
+    @include icon;
+    content: 'menu';
+    font-size: 16px;
+    line-height: 0;
+  }
+
+  &:hover {
+    color: var(--gray-400);
+  }
+}
+
 #crumbs {
   display: flex;
   flex-direction: row;
@@ -775,6 +798,12 @@ li.breadcrumb-toggle-wrapper {
 #header {
   padding-left: var(--xl);
   padding-right: var(--xl);
+}
+
+#primary-nav-toggle {
+  @media only screen and (min-width: $minFullUiWidth) {
+    display: none;
+  }
 }
 
 #global-header,
@@ -1120,29 +1149,6 @@ li.breadcrumb-toggle-wrapper {
 
   #header {
     width: 100vw;
-  }
-
-  .nav-toggle {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 36px;
-    height: 50px;
-    line-height: 26px;
-    color: var(--gray-300);
-    text-align: center;
-    @include margin-left(-10px);
-
-    &:before {
-      @include icon;
-      content: 'menu';
-      font-size: 16px;
-      line-height: 0;
-    }
-
-    &:hover {
-      color: var(--gray-400);
-    }
   }
 
   #main-content {

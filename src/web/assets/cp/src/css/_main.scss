@@ -4614,10 +4614,19 @@ ul.tree,
   padding-bottom: 50px;
   user-select: none;
 
+  .main-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: var(--s);
+  }
+
+  .main-heading {
+    margin-bottom: 0;
+  }
+
   .nav-toggle {
     @include margin-left(4px);
-    height: var(--touch-target-size);
-    width: var(--touch-target-size);
+    @include touch-target;
     color: var(--text-color);
 
     &:hover {
@@ -4625,14 +4634,14 @@ ul.tree,
     }
   }
 
-  .modal-header {
+  .sidebar-header {
     display: flex;
-    align-items: center;
-    margin-bottom: var(--s);
+    justify-content: flex-end;
   }
 
-  .modal-heading {
-    margin-bottom: 0;
+  .nav-close {
+    @include touch-target;
+    margin: var(--xs);
   }
 
   .body {
