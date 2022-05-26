@@ -26,7 +26,6 @@ test('Should show plugin details', async ({page, baseURL}) => {
 
   const tabs = page.locator('.plugin-details-header .tabs');
   await expect(tabs).toContainText('Overview');
-  await expect(tabs).toContainText('Pricing');
   await expect(tabs).toContainText('Changelog');
 });
 
