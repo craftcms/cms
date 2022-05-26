@@ -1307,6 +1307,10 @@ ul.icons {
   gap: var(--xl);
 }
 
+.flex:not(.flex-nowrap) > * {
+  margin-bottom: 7px;
+}
+
 .flex-grow {
   flex: 1;
 }
