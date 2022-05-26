@@ -187,7 +187,8 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 
         // If the focus is currently inside the sidebar, refocus the toggle
         const $focusedEl = Garnish.getFocusedElement();
-        if ($.contains(this.$sidebar.get(0), $focusedEl.get(0))) this.$sidebarToggleBtn.focus();
+        if ($.contains(this.$sidebar.get(0), $focusedEl.get(0)))
+          this.$sidebarToggleBtn.focus();
       });
     },
 
