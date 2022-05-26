@@ -8,8 +8,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
     elementType: null,
     elementIndex: null,
 
-    enableSidebarToggle: false,
-    sidebarHasBeenHidden: false,
+    supportSidebarToggleView: false,
 
     $body: null,
     $content: null,
@@ -17,7 +16,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
     $selectBtn: null,
     $sidebar: null,
     $sources: null,
-    $sidebarToggles: null,
+    $sourceToggles: null,
     $sidebarToggleBtn: null,
     $sourceHeading: null,
     $main: null,
@@ -98,11 +97,11 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
     },
 
     updateSidebarView: function () {
-      if (!this.enableSidebarToggle) return;
+      if (!this.supportSidebarToggleView) return;
 
-      if (this.sidebarShouldBeHidden() && !this.sidebarHasBeenHidden) {
+      if (this.sidebarShouldBeHidden() && !this.$sidebarToggleBtn) {
         this.buildSidebarToggleView();
-      } else if (!this.sidebarShouldBeHidden() && this.sidebarHasBeenHidden) {
+      } else if (!this.sidebarShouldBeHidden() && this.$sidebarToggleBtn) {
         this.resetView();
       }
     },
@@ -113,60 +112,54 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
     },
 
     resetView: function () {
-      this.sidebarHasBeenHidden = false;
-
       if (this.$sourceHeader) {
         this.$sourceHeader.remove();
       }
 
+      this.$sidebarToggleBtn = null;
       this.$body.addClass('has-sidebar');
       this.$content.addClass('has-sidebar');
+      this.$sidebar.removeClass('hidden');
     },
 
     buildSidebarToggleView: function () {
-      if (this.sidebarHasBeenHidden) return;
+      if (this.$sidebarToggleBtn || !this.sidebarShouldBeHidden()) return;
 
-      // Create sidebar toggle functionality
-      if (this.sidebarShouldBeHidden()) {
-        this.sidebarHasBeenHidden = true;
-        this.$sourceHeader = $('<div class="modal-header"/>').prependTo(
-          this.$main
-        );
-        this.$sourceHeading = $(
-          `<h2 class="modal-heading">${this.getActiveSourceName()}</h2>`
-        ).appendTo(this.$sourceHeader);
+      this.$sourceHeader = $('<div class="modal-header"/>').prependTo(
+        this.$main
+      );
+      this.$sourceHeading = $(
+        `<h2 class="modal-heading">${this.getActiveSourceName()}</h2>`
+      ).appendTo(this.$sourceHeader);
 
-        const buttonConfig = {
-          toggle: true,
-          controls: 'modal-sidebar',
-          class: 'nav-toggle',
-        };
-        this.$sidebarToggleBtn = Craft.ui
-          .createButton(buttonConfig)
-          .removeClass('btn')
-          .attr('aria-label', Craft.t('app', 'Show sidebar'))
-          .appendTo(this.$sourceHeader);
+      const buttonConfig = {
+        toggle: true,
+        controls: 'modal-sidebar',
+        class: 'nav-toggle',
+      };
+      this.$sidebarToggleBtn = Craft.ui
+        .createButton(buttonConfig)
+        .removeClass('btn')
+        .attr('aria-label', Craft.t('app', 'Show sidebar'))
+        .appendTo(this.$sourceHeader);
 
-        this.$sidebar.attr('id', 'modal-sidebar');
+      this.$sidebar.attr('id', 'modal-sidebar');
 
-        this.closeSidebar();
+      this.closeSidebar();
 
-        // Add toggle listener
-        this.addListener(this.$sidebarToggleBtn, 'click', (event) => {
-          event.stopPropagation();
-          this.toggleSidebar();
-        });
-        this.addListener(this.$main, 'focusin', () => {
-          if (this.sidebarIsOpen()) this.toggleSidebar();
-        });
-        this.addListener(this.$main, 'click', () => {
-          if (this.sidebarIsOpen()) this.toggleSidebar();
-        });
+      // Add toggle listener
+      this.addListener(this.$sidebarToggleBtn, 'click', (event) => {
+        event.stopPropagation();
+        this.toggleSidebar();
+      });
 
-        this.elementIndex.on('selectSource', () => {
-          this.updateHeading();
-        });
-      }
+      this.addListener(this.$main, 'click', () => {
+        if (this.sidebarIsOpen()) this.toggleSidebar();
+      });
+
+      this.elementIndex.on('selectSource', () => {
+        this.updateHeading();
+      });
     },
 
     sidebarIsOpen: function () {
@@ -177,18 +170,32 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
       if (this.sidebarIsOpen()) {
         this.closeSidebar();
       } else {
-        this.$body.addClass('has-sidebar');
-        this.$content.addClass('has-sidebar');
-        this.$sidebarToggleBtn.attr('aria-expanded', 'true');
-        this.$sidebar.find(':focusable').first().focus();
+        this.openSidebar();
       }
     },
 
-    closeSidebar: function () {
-      if (this.sidebarHasBeenHidden) {
-        this.$sidebarToggleBtn.attr('aria-expanded', 'false');
-      }
+    openSidebar: function () {
+      this.$body.addClass('has-sidebar');
+      this.$content.addClass('has-sidebar');
+      this.$sidebar.removeClass('hidden');
+      this.$sidebarToggleBtn.attr('aria-expanded', 'true');
+      this.$sidebar.find(':focusable').first().focus();
 
+      Garnish.uiLayerManager.addLayer(this.$sidebar);
+      Garnish.uiLayerManager.registerShortcut(Garnish.ESC_KEY, () => {
+        this.closeSidebar();
+
+        // If the focus is currently inside the sidebar, refocus the toggle
+        const $focusedEl = Garnish.getFocusedElement();
+        if ($.contains(this.$sidebar.get(0), $focusedEl.get(0))) this.$sidebarToggleBtn.focus();
+      });
+    },
+
+    closeSidebar: function () {
+      if (!this.$sidebarToggleBtn) return;
+
+      this.$sidebar.addClass('hidden');
+      this.$sidebarToggleBtn.attr('aria-expanded', 'false');
       this.$body.removeClass('has-sidebar');
       this.$content.removeClass('has-sidebar');
     },
@@ -299,10 +306,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
     },
 
     hide: function () {
-      if (this.enableSidebarToggle) {
-        this.closeSidebar();
-      }
-
+      this.closeSidebar();
       this.base();
     },
 
@@ -347,7 +351,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 
           if (this.$body.has('.sidebar:not(.hidden)').length) {
             this.$body.addClass('has-sidebar');
-            this.enableSidebarToggle = true;
+            this.supportSidebarToggleView = true;
           }
 
           // Initialize the element index
