@@ -16,7 +16,7 @@ RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash -
 
 RUN apt-get update -y
 
-RUN apt install -y nodejs mysql-client
+RUN apt install -y nodejs mysql-client git
 
 RUN apt-get -y install libglib2.0-0 libnss3 libnspr4 libatk1.0-0 libatk-bridge2.0-0 libcups2 libdrm2 libdbus-1-3 libxkbcommon0 libxcomposite1 libxdamage1 libxext6 libxfixes3 libxrandr2 libgbm1 libpango-1.0-0 libcairo2 libasound2 libatspi2.0-0
 
@@ -31,3 +31,5 @@ COPY --chown=appuser ./. /app/repos/repo
 COPY --from=nodejs --chown=appuser /node_modules /app/repos/repo/node_modules
 
 RUN cp -rvfp /app/repos/repo/node_modules/@craftcms/playwright/init.sh /usr/local/bin/.
+
+RUN git config --global --add safe.directory /app/repos/repo
