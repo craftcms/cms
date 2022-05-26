@@ -1,11 +1,17 @@
 const {test, expect} = require('@craftcms/playwright');
 
-// Make sure we start each test on the settings page
-test.beforeEach(async ({page}) => {
-  await page.goto('./settings');
+test('Navigate to settings', async ({page}) => {
+  await page.goto('./dashboard');
+  await page.click('#global-sidebar nav ul li a:has-text("Settings")');
+  await expect(page.locator('h1')).toHaveText('Settings');
 });
 
 test.describe('Settings', () => {
+  // Make sure we start each test on the settings page
+  test.beforeEach(async ({page}) => {
+    await page.goto('./settings');
+  });
+
   // Check page loads
   test('Check Exists', async ({page, baseURL}) => {
     await expect(page).toHaveURL(new URL('./settings', baseURL).href);
@@ -19,7 +25,6 @@ test.describe('Settings', () => {
       'System',
       'Content',
       'Media',
-      'Plugins',
     ]);
 
     const settingsItems = [
