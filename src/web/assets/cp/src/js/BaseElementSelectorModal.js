@@ -101,7 +101,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
       if (!this.enableSidebarToggle) return;
 
       if (this.sidebarShouldBeHidden() && !this.sidebarHasBeenHidden) {
-        this.enableReflow();
+        this.buildSidebarToggleView();
       } else if (!this.sidebarShouldBeHidden() && this.sidebarHasBeenHidden) {
         this.resetView();
       }
@@ -123,7 +123,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
       this.$content.addClass('has-sidebar');
     },
 
-    enableReflow: function () {
+    buildSidebarToggleView: function () {
       if (this.sidebarHasBeenHidden) return;
 
       // Create sidebar toggle functionality
