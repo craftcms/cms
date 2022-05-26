@@ -15,6 +15,7 @@
 - Fixed a bug where the Assets index page wasn’t allowing any bulk actions for assets in the temporary volume. ([#11293](https://github.com/craftcms/cms/issues/11293))
 - Fixed a bug where PHP errors thrown while rendering a template weren’t being handled properly. ([#11108](https://github.com/craftcms/cms/issues/11108))
 - Fixed a bug where site status labels were inconsistent on element edit pages. ([#11307](https://github.com/craftcms/cms/issues/11307))
+- Fixed a bug where addresses’ County fields were mislablled. ([#11314](https://github.com/craftcms/cms/pull/11314))
 
 ## 4.0.3 - 2022-05-20
 
