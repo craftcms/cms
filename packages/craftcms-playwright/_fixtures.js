@@ -1,25 +1,37 @@
-const {exec} = require('child_process');
-const path = require('path');
 const base = require('@playwright/test');
+const craft = require('./_craft');
+
+const cleanAll = [
+  async ({}, use) => {
+    await use();
+    await craft.dbRestore();
+    await craft.projectConfigRestore();
+    await craft.composerRestore();
+  },
+  {timeout: 120000},
+];
+
+const cleanDb = async ({}, use) => {
+  await use();
+  const stuff = await craft.dbRestore();
+};
+
+const cleanProjectConfig = async ({}, use) => {
+  await use();
+  await craft.projectConfigRestore();
+};
+
+const cleanComposer = async ({}, use) => {
+  await use();
+  await craft.composerRestore();
+};
 
 module.exports = {
   test: base.test.extend({
-    setupDb: [
-      async ({}, use) => {
-        console.log('Setup DB');
-        await use();
-      },
-      {auto: true},
-    ],
-
-    cleanseDb: [
-      async ({}, use) => {
-        await use();
-        console.log('Cleanse DB');
-      },
-      {auto: true},
-    ],
+    cleanAll,
+    cleanComposer,
+    cleanDb,
+    cleanProjectConfig,
   }),
-
   expect: base.expect,
 };
