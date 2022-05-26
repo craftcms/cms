@@ -114,6 +114,10 @@ fieldset:first-child,
   margin-top: 0 !important;
 }
 
+.field.no-heading:first-child {
+  margin-top: 7px !important;
+}
+
 .last,
 h1:last-child,
 h2:last-child,
@@ -1305,10 +1309,6 @@ ul.icons {
 
 .gap-xl {
   gap: var(--xl);
-}
-
-.flex:not(.flex-nowrap) > * {
-  margin-bottom: 7px;
 }
 
 .flex-grow {
