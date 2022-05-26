@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Changed
+- Read/write splitting is now disabled for all console requests.
+
 ## 3.7.43 - 2022-05-20
 
 ### Changed
