@@ -80,12 +80,11 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 
       this.$body = $body;
 
+      this.updateSidebarView();
       this.updateModalBottomPadding();
 
       this.addListener(this.$cancelBtn, 'activate', 'cancel');
       this.addListener(this.$selectBtn, 'activate', 'selectElements');
-      this.addListener(Garnish.$win, 'resize', this.updateSidebarView);
-      this.addListener(Garnish.$win, 'resize', this.updateModalBottomPadding);
     },
 
     updateModalBottomPadding: function () {
@@ -100,12 +99,10 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
     updateSidebarView: function () {
       if (!this.supportSidebarToggleView) return;
 
-      if (this.sidebarShouldBeHidden() && !this.$sidebarToggleBtn) {
-        this.buildSidebarToggleView();
-        console.log('update yes');
-      } else if (!this.sidebarShouldBeHidden() && this.$sidebarToggleBtn) {
-        this.resetView();
-        console.log('reset yes');
+      if (this.sidebarShouldBeHidden()) {
+        if (!this.$sidebarToggleBtn) this.buildSidebarToggleView();
+      } else {
+        if (this.$sidebarToggleBtn) this.resetView();
       }
     },
 
@@ -115,7 +112,6 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
     },
 
     resetView: function () {
-      console.log('in reset fxn');
       if (this.$mainHeader) {
         this.$mainHeader.remove();
       }
@@ -326,13 +322,17 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 
     show: function () {
       this.updateSelectBtnState();
+      this.addListener(Garnish.$win, 'resize', this.updateSidebarView);
+      this.addListener(Garnish.$win, 'resize', this.updateModalBottomPadding);
       this.base();
+
+      this.updateSidebarView();
+      this.updateModalBottomPadding();
     },
 
     hide: function () {
       this.closeSidebar();
       this.base();
-      console.log(Garnish.uiLayerManager.layers);
     },
 
     onSelect: function (elementInfo) {
@@ -406,9 +406,6 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
           this.$main = this.elementIndex.$main;
           this.$sidebar = this.elementIndex.$sidebar;
           this.$content = this.$body.find('.content');
-
-          this.updateSidebarView();
-          this.updateModalBottomPadding();
 
           // Double-clicking or double-tapping should select the elements
           this.addListener(
