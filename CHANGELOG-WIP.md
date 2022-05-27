@@ -1,6 +1,7 @@
 # Release Notes for Craft CMS 4.1 (WIP)
 
 ### Added
+- Field layouts can now have “Line Break” UI elements. ([#11328](https://github.com/craftcms/cms/discussions/11328))
 - The `AdminTable` Vue component can now be included into other Vue apps, in addition to being used as a standalone app. ([#11107](https://github.com/craftcms/cms/pull/11107))
 - Added a `one()` alias for `first()` to collections. ([#11134](https://github.com/craftcms/cms/discussions/11134))
 - Added `craft\console\controllers\UsersController::$activate`.
@@ -10,6 +11,7 @@
 - Added `craft\helpers\DateTimeHelper::now()`.
 - Added `craft\helpers\DateTimeHelper::pause()`. ([#11130](https://github.com/craftcms/cms/pull/11130))
 - Added `craft\helpers\DateTimeHelper::resume()`. ([#11130](https://github.com/craftcms/cms/pull/11130))
+- Added `craft\fieldlayoutelements\LineBreak`.
 
 ### Changed
 - Improved pagination UI accessibility. ([#11126](https://github.com/craftcms/cms/pull/11126))

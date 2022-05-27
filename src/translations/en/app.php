@@ -818,6 +818,7 @@ return [
     'Lightswitch' => 'Lightswitch',
     'Limit the number of selectable category branches.' => 'Limit the number of selectable category branches.',
     'Limit' => 'Limit',
+    'Line Break' => 'Line Break',
     'Line' => 'Line',
     'Link' => 'Link',
     'List all tabs' => 'List all tabs',
