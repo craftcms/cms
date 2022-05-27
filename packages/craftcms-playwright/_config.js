@@ -1,11 +1,16 @@
 /* jshint esversion: 9, strict: false */
 const path = require('path');
 const {devices} = require('@playwright/test');
-require('dotenv').config({path: path.resolve('./tests/.env')});
+require('dotenv').config({path: path.resolve('./tests/playwright/.env')});
 
-const cpTrigger = './admin/';
+let cpTrigger = process.env.PLAYWRIGHT_CRAFT_CP_TRIGGER ?? 'admin';
+cpTrigger = `./${cpTrigger}/`;
 const testDir = './tests/playwright';
 const storageStateFilename = '.authentication.json';
+let baseURL = process.env.PLAYWRIGHT_SITE ?? 'http://127.0.0.1:8089/';
+baseURL = new URL(cpTrigger, baseURL).href;
+const username = process.env.PW_AUTH_USERNAME ?? 'admin';
+const password = process.env.PW_AUTH_PASSWORD ?? 'NewPassword';
 
 module.exports = {
   globalSetup: require.resolve(path.join(__dirname, './_global-setup.js')),
@@ -14,10 +19,9 @@ module.exports = {
   ),
   testDir: testDir,
   use: {
-    baseURL: new URL(cpTrigger, process.env.PW_TEST_DOMAIN).href,
-    username: process.env.PW_AUTHENTICATION_USERNAME ?? 'admin',
-    password: process.env.PW_AUTHENTICATION_PASSWORD ?? 'NewPassword',
-    projectPath: process.env.PW_PROJECT_PATH,
+    baseURL,
+    username,
+    password,
     testDir,
     ignoreHTTPSErrors: true,
     storageState: path.join(testDir, storageStateFilename),
