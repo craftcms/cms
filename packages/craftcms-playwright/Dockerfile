@@ -4,12 +4,6 @@ RUN composer create-project -n --ignore-platform-reqs craftcms/craft .
 RUN sed -i "s/];/\'requireMatchingUserAgentForSession\' => false,\n];/g" config/general.php
 RUN rm -f .env
 
-FROM node:16-alpine as nodejs
-
-COPY ./package.json ./package.json
-COPY ./package-lock.json ./package-lock.json
-RUN npm ci
-
 FROM craftcms/base:8.0 AS craft
 
 RUN curl -fsSL https://deb.nodesource.com/setup_16.x | bash -
@@ -25,11 +19,3 @@ RUN curl -sS https://getcomposer.org/installer -o /tmp/composer-setup.php
 RUN php /tmp/composer-setup.php --install-dir=/usr/local/bin --filename=composer
 
 COPY --from=create --chown=appuser /app /app
-
-COPY --chown=appuser ./. /app/repos/repo
-
-COPY --from=nodejs --chown=appuser /node_modules /app/repos/repo/node_modules
-
-RUN cp -rvfp /app/repos/repo/node_modules/@craftcms/playwright/init.sh /usr/local/bin/.
-
-RUN git config --global --add safe.directory /app/repos/repo
