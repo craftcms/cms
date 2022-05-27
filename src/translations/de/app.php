@@ -642,7 +642,7 @@ return [
     'Formatting Locale' => 'Formatierungsgebietschema',
     'Free' => 'Kostenlos',
     'From {date}' => 'Vom {date}',
-    'From' => 'Vom',
+    'From' => 'Von',
     'Full Name' => 'Vollständiger Name',
     'Full Schema' => 'Ganzes Schema',
     'General Settings' => 'Allgemeine Einstellungen',
