@@ -3642,10 +3642,12 @@ ul.tree,
       }
 
       &.sel {
+        position: relative;
         cursor: default;
         color: var(--text-color);
-        border-top: var(--indicator-height) solid var(--indicator-color);
-        padding-bottom: var(--indicator-height);
+        font-weight: var(--font-weight-bold);
+        //border-top: var(--indicator-height) solid var(--indicator-color);
+        //padding-bottom: var(--indicator-height);
         @include pane;
       }
 
