@@ -31,32 +31,31 @@ services:
       test: ['CMD', 'pg_isready', '-U', 'craft', '-d', 'craft_test']
       interval: 5s
       retries: 3
-  web:
+  playwright:
     build:
       context: ../../../
       target: craft
       dockerfile: ./node_modules/@craftcms/playwright/Dockerfile
     ports:
-      - 8089:80
+      - ${PLAYWRIGHT_SITE_PORT:-8089}:80
     environment:
-      CRAFT_APP_ID: CraftCMS
-      CRAFT_ENVIRONMENT: dev
-      CRAFT_SECURITY_KEY: 1234567890
-      CRAFT_CP_TRIGGER: admin
-      CRAFT_DB_DRIVER: mysql
-      CRAFT_DB_SERVER: mysql
-      CRAFT_DB_PORT: 3306
-      CRAFT_DB_DATABASE: craft_test
-      CRAFT_DB_USER: craft
-      CRAFT_DB_PASSWORD: craft
-      CRAFT_DB_SCHEMA:
-      CRAFT_DB_TABLE_PREFIX:
-      PRIMARY_SITE_URL: http://127.0.0.1/
-      PW_TEST_DOMAIN: http://127.0.0.1/
-      PW_AUTHENTICATION_USERNAME: admin
-      PW_AUTHENTICATION_PASSWORD: NewPassword
+      CRAFT_APP_ID: ${PLAYWRIGHT_CRAFT_APP_ID:-CraftCMS}
+      CRAFT_ENVIRONMENT: ${PLAYWRIGHT_CRAFT_ENVIRONMENT:-dev}
+      CRAFT_SECURITY_KEY: ${PLAYWRIGHT_CRAFT_SECURITY_KEY:-1234567890}
+      CRAFT_CP_TRIGGER: ${PLAYWRIGHT_CRAFT_CP_TRIGGER:-admin}
+      CRAFT_DB_DRIVER: ${PLAYWRIGHT_CRAFT_DB_DRIVER:-mysql}
+      CRAFT_DB_SERVER: ${PLAYWRIGHT_CRAFT_DB_SERVER:-mysql}
+      CRAFT_DB_PORT: ${PLAYWRIGHT_CRAFT_DB_PORT:-3306}
+      CRAFT_DB_DATABASE: ${PLAYWRIGHT_CRAFT_DB_DATABASE:-craft_test}
+      CRAFT_DB_USER: ${PLAYWRIGHT_CRAFT_DB_USER:-craft}
+      CRAFT_DB_PASSWORD: ${PLAYWRIGHT_CRAFT_DB_PASSWORD:-craft}
+      CRAFT_DB_SCHEMA: ${PLAYWRIGHT_CRAFT_DB_SCHEMA:-}
+      CRAFT_DB_TABLE_PREFIX: ${PLAYWRIGHT_CRAFT_DB_TABLE_PREFIX:-}
+      PRIMARY_SITE_URL: ${PLAYWRIGHT_SITE_DOMAIN:-http://127.0.0.1/}
     depends_on:
       postgres:
         condition: service_healthy
       mysql:
         condition: service_healthy
+    volumes:
+      - ../../../.:/app/repos/repo/
