@@ -4,6 +4,7 @@
 
 ### Changed
 - Read/write splitting is now disabled for all console requests.
+- The `db/restore` command now prompts to clear data caches after the import is complete. ([#11327](https://github.com/craftcms/cms/issues/11327))
 
 ## 3.7.43 - 2022-05-20
 
