@@ -711,7 +711,7 @@ class UserQuery extends ElementQuery
      *
      * | Value | Fetches users…
      * | - | -
-     * | `'active'` _(default)_ | with active accounts.
+     * | `'active' | with active accounts.
      * | `'suspended'` | with suspended accounts.
      * | `'pending'` | with accounts that are still pending activation.
      * | `'locked'` | with locked accounts (regardless of whether they’re active or suspended).

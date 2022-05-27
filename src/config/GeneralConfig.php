@@ -534,7 +534,7 @@ class GeneralConfig extends BaseObject
      * 'cacheDuration' => 0,
      * ```
      * ```shell Environment Override
-     * CRAFT_CACHE_DURATION=false
+     * CRAFT_CACHE_DURATION=0
      * ```
      * :::
      *
@@ -576,7 +576,7 @@ class GeneralConfig extends BaseObject
      * 'cooldownDuration' => 0,
      * ```
      * ```shell Environment Override
-     * CRAFT_COOLDOWN_DURATION=false
+     * CRAFT_COOLDOWN_DURATION=0
      * ```
      * :::
      *
@@ -840,7 +840,7 @@ class GeneralConfig extends BaseObject
      * 'defaultWeekStartDay' => 0,
      * ```
      * ```shell Environment Override
-     * CRAFT_DEFAULT_WEEK_START_DAY=false
+     * CRAFT_DEFAULT_WEEK_START_DAY=0
      * ```
      * :::
      *
@@ -861,7 +861,7 @@ class GeneralConfig extends BaseObject
      * 'deferPublicRegistrationPassword' => true,
      * ```
      * ```shell Environment Override
-     * CRAFT_DEFER_PUBLIC_REGISTRATION_PASSWORD=false
+     * CRAFT_DEFER_PUBLIC_REGISTRATION_PASSWORD=true
      * ```
      * :::
      *
@@ -1025,7 +1025,7 @@ class GeneralConfig extends BaseObject
      * 'elevatedSessionDuration' => 0,
      * ```
      * ```shell Environment Override
-     * CRAFT_ELEVATED_SESSION_DURATION=false
+     * CRAFT_ELEVATED_SESSION_DURATION=0
      * ```
      * :::
      *
@@ -1528,7 +1528,7 @@ class GeneralConfig extends BaseObject
      * 'maxCachedCloudImageSize' => 0,
      * ```
      * ```shell Environment Override
-     * CRAFT_MAX_CACHED_CLOUD_IMAGE_SIZE=false
+     * CRAFT_MAX_CACHED_CLOUD_IMAGE_SIZE=0
      * ```
      * :::
      *
@@ -2106,7 +2106,7 @@ class GeneralConfig extends BaseObject
      * 'purgeUnsavedDraftsDuration' => 0,
      * ```
      * ```shell Environment Override
-     * CRAFT_PURGE_UNSAVED_DRAFTS_DURATION=false
+     * CRAFT_PURGE_UNSAVED_DRAFTS_DURATION=0
      * ```
      * :::
      *
@@ -2147,7 +2147,7 @@ class GeneralConfig extends BaseObject
      * 'rememberUsernameDuration' => 0,
      * ```
      * ```shell Environment Override
-     * CRAFT_REMEMBER_USERNAME_DURATION=false
+     * CRAFT_REMEMBER_USERNAME_DURATION=0
      * ```
      * :::
      *
@@ -2168,7 +2168,7 @@ class GeneralConfig extends BaseObject
      * 'rememberedUserSessionDuration' => 0,
      * ```
      * ```shell Environment Override
-     * CRAFT_REMEMBERED_USER_SESSION_DURATION=false
+     * CRAFT_REMEMBERED_USER_SESSION_DURATION=0
      * ```
      * :::
      *
@@ -2601,7 +2601,7 @@ class GeneralConfig extends BaseObject
      * 'softDeleteDuration' => 0,
      * ```
      * ```shell Environment Override
-     * CRAFT_SOFT_DELETE_DURATION=false
+     * CRAFT_SOFT_DELETE_DURATION=0
      * ```
      * :::
      *

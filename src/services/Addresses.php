@@ -164,7 +164,7 @@ class Addresses extends Component
         return match ($type) {
             AdministrativeAreaType::AREA => Craft::t('app', 'Area'),
             AdministrativeAreaType::CANTON => Craft::t('app', 'Canton'),
-            AdministrativeAreaType::COUNTY => Craft::t('app', 'Country'),
+            AdministrativeAreaType::COUNTY => Craft::t('app', 'County'),
             AdministrativeAreaType::DEPARTMENT => Craft::t('app', 'Department'),
             AdministrativeAreaType::DISTRICT => Craft::t('app', 'District'),
             AdministrativeAreaType::DO_SI => Craft::t('app', 'Do Si'),
