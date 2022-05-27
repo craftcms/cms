@@ -24,4 +24,7 @@ module.exports = async (config) => {
   await page.context().storageState({path: storageState});
   // await page.close();
   await browser.close();
+
+  // Backup Craft database with saved session
+  await craft.dbBackup();
 };
