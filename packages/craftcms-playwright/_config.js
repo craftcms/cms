@@ -32,4 +32,5 @@ module.exports = {
       use: {...devices['Desktop Chrome']},
     },
   ],
+  workers: 1,
 };
