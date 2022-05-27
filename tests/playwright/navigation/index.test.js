@@ -7,12 +7,11 @@ test.beforeEach(async ({page}) => {
 test.describe('Navigation', () => {
   test('Check Items', async ({page, baseURL}) => {
     const navItems = [
-      'Entries',
-      'Categories',
-      'Assets',
+      'Dashboard',
       'Users',
       ['Utilities', 'System Report'],
       'Settings',
+      'Plugin Store',
     ];
 
     await expect(page.locator('#global-sidebar nav ul li a')).toContainText(
