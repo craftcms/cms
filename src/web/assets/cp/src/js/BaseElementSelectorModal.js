@@ -158,19 +158,12 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 
       this.closeSidebar();
 
-      // Add toggle listener
-      this.addListener(this.$sidebarToggleBtn, 'click', (event) => {
-        event.stopPropagation();
+      this.addListener(this.$sidebarToggleBtn, 'click', () => {
         this.toggleSidebar();
       });
 
       this.addListener(this.$sidebarCloseBtn, 'click', () => {
         this.toggleSidebar();
-      });
-
-      this.elementIndex.on('selectSource', () => {
-        this.updateHeading();
-        this.updateModalBottomPadding();
       });
     },
 
@@ -238,7 +231,14 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
       this.updateSelectBtnState();
     },
 
+    onSelectSource: function () {
+      this.updateHeading();
+      this.updateModalBottomPadding();
+    },
+
     updateHeading: function () {
+      if (!this.$mainHeading) return;
+
       this.$mainHeading.text(this.getActiveSourceName());
     },
 
@@ -394,6 +394,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
                 multiSelect: this.settings.multiSelect,
                 buttonContainer: this.$secondaryButtons,
                 onSelectionChange: this.onSelectionChange.bind(this),
+                onSelectSource: this.onSelectSource.bind(this),
                 hideSidebar: this.settings.hideSidebar,
                 defaultSiteId: this.settings.defaultSiteId,
                 defaultSource: this.settings.defaultSource,
