@@ -13,6 +13,8 @@ use craft\events\ConfigEvent;
 use craft\helpers\Console;
 use craft\helpers\ProjectConfig;
 use craft\services\ProjectConfig as ProjectConfigService;
+use Symfony\Component\Yaml\Exception\ParseException;
+use Symfony\Component\Yaml\Yaml;
 use Throwable;
 use yii\console\ExitCode;
 
@@ -34,6 +36,23 @@ class ProjectConfigController extends Controller
      * @since 3.5.13
      */
     public bool $invert = false;
+
+    /**
+     * @var bool Whether to get values from the loaded config, or directly from file.
+     */
+    public bool $fromFile = false;
+
+    /**
+     * @var string|null A message describing the changes.
+     * @see \craft\services\ProjectConfig::set
+     */
+    public ?string $message = null;
+
+    /**
+     * @var bool Whether the `dateModified` value should be updated
+     * @see \craft\services\ProjectConfig::set
+     */
+    public bool $updateTimestamp = false;
 
     /**
      * @var int Counter of the total paths that have been processed.
@@ -64,9 +83,78 @@ class ProjectConfigController extends Controller
                 break;
             case 'diff':
                 $options[] = 'invert';
+            case 'get':
+                $options[] = 'fromFile';
+            case 'set':
+                $options[] = 'message';
+                $options[] = 'updateTimestamp';
+                $options[] = 'force';
         }
 
         return $options;
+    }
+
+    /**
+     * @param string|null $path The config item path
+     * @return int
+     */
+    public function actionGet(?string $path = null): int
+    {
+        $projectConfig = Craft::$app->getProjectConfig();
+        $value = $projectConfig->get($path, $this->fromFile);
+        $this->stdout(Yaml::dump($value));
+        $this->stdout(PHP_EOL);
+        return ExitCode::OK;
+    }
+
+    /**
+     * @param string $path The config item path
+     * @param string $value The config item value as a valid YAML string
+     * @return int
+     */
+    public function actionSet(string $path, string $value): int
+    {
+        try {
+            $parsedValue = Yaml::parse($value);
+        } catch(ParseException $e) {
+            $this->stderr('Input value must be valid YAML.' . PHP_EOL, Console::FG_RED);
+            return ExitCode::USAGE;
+        }
+
+        $projectConfig = Craft::$app->getProjectConfig();
+        $projectConfig->set(
+            $path,
+            $parsedValue,
+            $this->message,
+            $this->updateTimestamp.
+            $this->force
+        );
+
+        $value = $projectConfig->get($path);
+        $dumpedValue = Yaml::dump($value);
+        $multiline = str_contains($dumpedValue, PHP_EOL);
+
+        $this->stdout('Project config path ');
+        $this->stdout($path, Console::FG_CYAN);
+        $this->stdout(' has been ');
+        if ($value === null) {
+            $this->stdout('removed', Console::FG_BLUE);
+        } else {
+            $this->stdout('set to' . ($multiline ? ':' . PHP_EOL : ' '));
+            $this->stdout($dumpedValue, Console::FG_BLUE);
+        }
+        $this->stdout(($multiline ? '' : '.') . PHP_EOL);
+
+        return ExitCode::OK;
+    }
+
+    /**
+     * @param string $path The config item path
+     * @return int
+     */
+    public function actionRemove(string $path): int
+    {
+        return $this->runAction('set', [$path, 'null']);
     }
 
     /**
