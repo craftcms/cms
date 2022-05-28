@@ -83,8 +83,10 @@ class ProjectConfigController extends Controller
                 break;
             case 'diff':
                 $options[] = 'invert';
+                // no break
             case 'get':
                 $options[] = 'fromFile';
+                // no break
             case 'set':
                 $options[] = 'message';
                 $options[] = 'updateTimestamp';
@@ -116,7 +118,7 @@ class ProjectConfigController extends Controller
     {
         try {
             $parsedValue = Yaml::parse($value);
-        } catch(ParseException $e) {
+        } catch (ParseException $e) {
             $this->stderr('Input value must be valid YAML.' . PHP_EOL, Console::FG_RED);
             return ExitCode::USAGE;
         }
@@ -126,7 +128,7 @@ class ProjectConfigController extends Controller
             $path,
             $parsedValue,
             $this->message,
-            $this->updateTimestamp.
+            $this->updateTimestamp,
             $this->force
         );
 
