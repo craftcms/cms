@@ -170,6 +170,10 @@ class Response extends \yii\web\Response
             $url = UrlHelper::url($url);
         }
 
+        if ($this->format === TemplateResponseFormatter::FORMAT) {
+            $this->format = self::FORMAT_HTML;
+        }
+
         return parent::redirect($url, $statusCode, $checkAjax);
     }
 
