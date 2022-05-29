@@ -3,12 +3,14 @@
 ## Unreleased
 
 ### Added
+- Added `craft\errors\FieldNotFoundException`.
 - Added `craft\web\twig\variables\Cp::getRequestedSite()`. ([#11082](https://github.com/craftcms/cms/discussions/11082))
 
 ### Changed
 - `temp` is now a reserved volume handle.
 - Improved the performance of field layout designers. ([#11298](https://github.com/craftcms/cms/issues/11298))
 - All control panel pages now have a `site--<siteHandle>` class name on the `<body>`, based on the currently-selected site. ([#11303](https://github.com/craftcms/cms/discussions/11303))
+- Warnings are no longer logged when instantiating a field layout that references a deleted custom field. ([#11333](https://github.com/craftcms/cms/issues/11333))
 
 ### Fixed
 - Fixed a bug where it wasn’t possible to disable all table columns for an element source. ([#11291](https://github.com/craftcms/cms/issues/11291))
