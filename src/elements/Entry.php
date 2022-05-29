@@ -14,6 +14,7 @@ use craft\base\Field;
 use craft\behaviors\DraftBehavior;
 use craft\behaviors\RevisionBehavior;
 use craft\controllers\ElementIndexesController;
+use craft\db\Connection;
 use craft\db\FixedOrderExpression;
 use craft\db\Table;
 use craft\elements\actions\Delete;
@@ -55,7 +56,6 @@ use DateTime;
 use Illuminate\Support\Collection;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
-use yii\db\Connection;
 use yii\db\Expression;
 use yii\web\Response;
 

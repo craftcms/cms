@@ -28,7 +28,7 @@
 - The control panel’s JavaScript queue is now paused when the browser tab isn’t visible. ([#10632](https://github.com/craftcms/cms/issues/10632))
 - The `users/create` command now asks whether the user should be activated when saved.
 - Deprecation messages are now consistently referred to as “deprecation warnings” in the control panel.
-- Callback functions returned by elements’ `sortOptions()`/`defineSortOptions()` methods are now passed a `yii\db\Connection` object as a second argument.
+- Callback functions returned by elements’ `sortOptions()`/`defineSortOptions()` methods are now passed a `craft\db\Connection` object as a second argument.
 
 ### Removed
 - Removed `craft\elements\conditions\entries\EntryTypeCondition::$sectionUid`.
