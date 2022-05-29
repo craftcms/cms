@@ -10,6 +10,7 @@ namespace craft\web;
 use Craft;
 use craft\helpers\UrlHelper;
 use Throwable;
+use yii\base\Application as BaseApplication;
 use yii\web\Cookie;
 use yii\web\CookieCollection;
 use yii\web\HttpException;
@@ -174,7 +175,13 @@ class Response extends \yii\web\Response
             $this->format = self::FORMAT_HTML;
         }
 
-        return parent::redirect($url, $statusCode, $checkAjax);
+        parent::redirect($url, $statusCode, $checkAjax);
+
+        if (Craft::$app->state === BaseApplication::STATE_SENDING_RESPONSE) {
+            $this->send();
+        }
+
+        return $this;
     }
 
     /**
