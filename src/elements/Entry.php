@@ -14,6 +14,7 @@ use craft\base\Field;
 use craft\behaviors\DraftBehavior;
 use craft\behaviors\RevisionBehavior;
 use craft\controllers\ElementIndexesController;
+use craft\db\FixedOrderExpression;
 use craft\db\Table;
 use craft\elements\actions\Delete;
 use craft\elements\actions\DeleteForSite;
@@ -51,8 +52,10 @@ use craft\validators\DateCompareValidator;
 use craft\validators\DateTimeValidator;
 use craft\web\CpScreenResponseBehavior;
 use DateTime;
+use Illuminate\Support\Collection;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
+use yii\db\Connection;
 use yii\db\Expression;
 use yii\web\Response;
 
@@ -513,6 +516,19 @@ class Entry extends Element
             'title' => Craft::t('app', 'Title'),
             'slug' => Craft::t('app', 'Slug'),
             'uri' => Craft::t('app', 'URI'),
+            [
+                'label' => Craft::t('app', 'Entry Type'),
+                'orderBy' => function(int $dir, Connection $db) {
+                    $entryTypeIds = Collection::make(Craft::$app->getSections()->getAllEntryTypes())
+                        ->sort(fn(EntryType $a, EntryType $b) => $dir === SORT_ASC
+                            ? $a->name <=> $b->name
+                            : $b->name <=> $a->name)
+                        ->map(fn(EntryType $type) => $type->id)
+                        ->all();
+                    return new FixedOrderExpression('entries.typeId', $entryTypeIds, $db);
+                },
+                'attribute' => 'type',
+            ],
             [
                 'label' => Craft::t('app', 'Post Date'),
                 'orderBy' => function(int $dir) {

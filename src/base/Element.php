@@ -73,6 +73,7 @@ use yii\base\InvalidCallException;
 use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
 use yii\base\UnknownPropertyException;
+use yii\db\Connection;
 use yii\db\ExpressionInterface;
 use yii\validators\BooleanValidator;
 use yii\validators\NumberValidator;
@@ -939,6 +940,8 @@ abstract class Element extends Component implements ElementInterface
             'tableName' => static::pluralDisplayName(),
         ];
 
+        $db = Craft::$app->getDb();
+
         if (!empty($viewState['order'])) {
             // Special case for sorting by structure
             if (isset($viewState['order']) && $viewState['order'] === 'structure') {
@@ -958,12 +961,12 @@ abstract class Element extends Component implements ElementInterface
                 } else {
                     unset($viewState['order']);
                 }
-            } elseif ($orderBy = self::_indexOrderBy($sourceKey, $viewState['order'], $viewState['sort'] ?? 'asc')) {
+            } elseif ($orderBy = self::_indexOrderBy($sourceKey, $viewState['order'], $viewState['sort'] ?? 'asc', $db)) {
                 $elementQuery->orderBy($orderBy);
 
                 if ((!is_array($orderBy) || !isset($orderBy['score'])) && !empty($viewState['orderHistory'])) {
                     foreach ($viewState['orderHistory'] as $order) {
-                        if ($order[0] && $orderBy = self::_indexOrderBy($sourceKey, $order[0], $order[1])) {
+                        if ($order[0] && $orderBy = self::_indexOrderBy($sourceKey, $order[0], $order[1], $db)) {
                             $elementQuery->addOrderBy($orderBy);
                         } else {
                             break;
@@ -992,7 +995,7 @@ abstract class Element extends Component implements ElementInterface
             }
         }
 
-        $variables['elements'] = $elementQuery->cache()->all();
+        $variables['elements'] = $elementQuery->cache()->all($db);
 
         $template = '_elements/' . $viewState['mode'] . 'view/' . ($includeContainer ? 'container' : 'elements');
 
@@ -1554,12 +1557,17 @@ abstract class Element extends Component implements ElementInterface
      * @param string $sourceKey
      * @param string $attribute
      * @param string $dir `asc` or `desc`
+     * @param Connection $db
      * @return array|ExpressionInterface|false
      */
-    private static function _indexOrderBy(string $sourceKey, string $attribute, string $dir): ExpressionInterface|array|false
-    {
+    private static function _indexOrderBy(
+        string $sourceKey,
+        string $attribute,
+        string $dir,
+        Connection $db,
+    ): ExpressionInterface|array|false {
         $dir = strcasecmp($dir, 'desc') === 0 ? SORT_DESC : SORT_ASC;
-        $columns = self::_indexOrderByColumns($sourceKey, $attribute, $dir);
+        $columns = self::_indexOrderByColumns($sourceKey, $attribute, $dir, $db);
 
         if ($columns === false || $columns instanceof ExpressionInterface) {
             return $columns;
@@ -1590,10 +1598,15 @@ abstract class Element extends Component implements ElementInterface
      * @param string $sourceKey
      * @param string $attribute
      * @param int $dir
+     * @param Connection $db
      * @return bool|string|array|ExpressionInterface
      */
-    private static function _indexOrderByColumns(string $sourceKey, string $attribute, int $dir): ExpressionInterface|bool|array|string
-    {
+    private static function _indexOrderByColumns(
+        string $sourceKey,
+        string $attribute,
+        int $dir,
+        Connection $db,
+    ): ExpressionInterface|bool|array|string {
         if (!$attribute) {
             return false;
         }
@@ -1607,7 +1620,7 @@ abstract class Element extends Component implements ElementInterface
                 $a = $sortOption['attribute'] ?? $sortOption['orderBy'];
                 if ($a === $attribute) {
                     if (is_callable($sortOption['orderBy'])) {
-                        return $sortOption['orderBy']($dir);
+                        return $sortOption['orderBy']($dir, $db);
                     }
                     return $sortOption['orderBy'];
                 }
