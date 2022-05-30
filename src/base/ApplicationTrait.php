@@ -1441,7 +1441,7 @@ trait ApplicationTrait
 
         // Load the request before anything else, so everything else can safely check Craft::$app->has('request', true)
         // to avoid possible recursive fatal errors in the request initialization
-        $request =$this->getRequest();
+        $request = $this->getRequest();
         $this->getLog();
 
         // Set the timezone
