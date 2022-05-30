@@ -14,6 +14,7 @@ use craft\db\Query;
 use craft\models\Site;
 use craft\search\SearchQuery;
 use IteratorAggregate;
+use ReturnTypeWillChange;
 use yii\base\Arrayable;
 use yii\db\Connection;
 use yii\db\QueryInterface;
@@ -28,6 +29,12 @@ use yii\db\QueryInterface;
  */
 interface ElementQueryInterface extends QueryInterface, ArrayAccess, Arrayable, Countable, IteratorAggregate
 {
+    /**
+     * @inheritdoc
+     */
+    #[ReturnTypeWillChange]
+    public function count($q = '*', $db = null);
+    
     /**
      * Causes the query results to be returned in reverse order.
      *
