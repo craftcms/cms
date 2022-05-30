@@ -1622,6 +1622,7 @@ class ElementQuery extends Query implements ElementQueryInterface
     /**
      * @inheritdoc
      */
+    #[ReturnTypeWillChange]
     public function count($q = '*', $db = null)
     {
         // Cached?
