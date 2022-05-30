@@ -464,6 +464,7 @@ class Asset extends Element
             'title' => Craft::t('app', 'Title'),
             'filename' => Craft::t('app', 'Filename'),
             'size' => Craft::t('app', 'File Size'),
+            'kind' => Craft::t('app', 'File Kind'),
             [
                 'label' => Craft::t('app', 'File Modification Date'),
                 'orderBy' => 'dateModified',

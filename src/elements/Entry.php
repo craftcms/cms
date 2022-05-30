@@ -517,6 +517,19 @@ class Entry extends Element
             'slug' => Craft::t('app', 'Slug'),
             'uri' => Craft::t('app', 'URI'),
             [
+                'label' => Craft::t('app', 'Section'),
+                'orderBy' => function(int $dir, Connection $db) {
+                    $sectionIds = Collection::make(Craft::$app->getSections()->getAllSections())
+                        ->sort(fn(Section $a, Section $b) => $dir === SORT_ASC
+                            ? $a->name <=> $b->name
+                            : $b->name <=> $a->name)
+                        ->map(fn(Section $section) => $section->id)
+                        ->all();
+                    return new FixedOrderExpression('entries.sectionId', $sectionIds, $db);
+                },
+                'attribute' => 'section',
+            ],
+            [
                 'label' => Craft::t('app', 'Entry Type'),
                 'orderBy' => function(int $dir, Connection $db) {
                     $entryTypeIds = Collection::make(Craft::$app->getSections()->getAllEntryTypes())
