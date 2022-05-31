@@ -387,8 +387,6 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
 
       this.$sidebar.css(this._openedSidebarStyles());
 
-      console.log('in show function');
-
       if (!Garnish.isMobileBrowser()) {
         this.$sidebar.one('transitionend.so', () => {
           Craft.setFocusWithin(this.$sidebar);
