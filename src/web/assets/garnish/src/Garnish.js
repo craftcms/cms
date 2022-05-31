@@ -402,6 +402,8 @@ Garnish = $.extend(Garnish, {
         const $focusableElements = $container.find(':focusable');
         const index = $focusableElements.index(ev.target);
 
+        if ($focusableElements.length === 0) return;
+
         if (index === 0 && ev.shiftKey) {
           ev.preventDefault();
           ev.stopPropagation();
