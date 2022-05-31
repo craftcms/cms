@@ -416,11 +416,18 @@ Garnish = $.extend(Garnish, {
   },
 
   /**
-   * Sets focus to the first focusable element within a container.
+   * Sets focus to the first focusable element within a container, or on the element itself.
    * @param {Object} container The container element. Can be either an actual element or a jQuery collection.
    */
   setFocusWithin: function (container) {
-    $(container).find(':focusable:first').focus();
+    const $container = $(container);
+    const $firstFocusable = $(container).find(':focusable:first');
+
+    if ($firstFocusable.length > 0) {
+      $firstFocusable.trigger('focus');
+    } else {
+      $container.attr('tabindex', '-1').trigger('focus');
+    }
   },
 
   getFocusedElement: function () {
