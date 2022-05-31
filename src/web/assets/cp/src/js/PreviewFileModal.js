@@ -36,6 +36,8 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
         return this.destroy();
       }
 
+      console.log('in preview file init');
+
       Craft.PreviewFileModal.openInstance = this;
       this.elementSelect = elementSelect;
 
@@ -60,6 +62,8 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
 
         this.$shade.velocity('stop');
         this.$shade.show().css('opacity', 1);
+
+        Garnish.setFocusWithin(this.$container);
       }
 
       this.loadAsset(assetId, settings.startingWidth, settings.startingHeight);
