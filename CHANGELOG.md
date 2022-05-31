@@ -5,6 +5,7 @@
 ### Changed
 - Read/write splitting is now disabled for all console requests.
 - The `db/restore` command now prompts to clear data caches after the import is complete. ([#11327](https://github.com/craftcms/cms/issues/11327))
+- Entry queries no longer factor in seconds when looking for currently-live entries, without excluding entries that were published in the past minute. ([#5389](https://github.com/craftcms/cms/issues/5389))
 
 ### Fixed
 - Fixed an error that could occur on PHP 8.1. ([#11345](https://github.com/craftcms/cms/pull/11345))
