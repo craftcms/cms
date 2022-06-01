@@ -402,16 +402,17 @@ Garnish = $.extend(Garnish, {
         const $focusableElements = $container.find(':focusable');
         const index = $focusableElements.index(ev.target);
 
+        // Exit focus trap if no focusable elements are inside
         if ($focusableElements.length === 0) return;
 
         if (index === 0 && ev.shiftKey) {
           ev.preventDefault();
           ev.stopPropagation();
-          $focusableElements.last().focus();
+          $focusableElements.last().trigger('focus');
         } else if (index === $focusableElements.length - 1 && !ev.shiftKey) {
           ev.preventDefault();
           ev.stopPropagation();
-          $focusableElements.first().focus();
+          $focusableElements.first().trigger('focus');
         }
       }
     });

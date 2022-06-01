@@ -36,8 +36,6 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
         return this.destroy();
       }
 
-      console.log('in preview file init');
-
       Craft.PreviewFileModal.openInstance = this;
       this.elementSelect = elementSelect;
 
