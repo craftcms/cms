@@ -952,8 +952,8 @@ class UserQuery extends ElementQuery
             ],
             self::STATUS_CREDENTIALED => [
                 'or',
-                'users.active' => true,
-                'users.pending' => true,
+                ['users.active' => true],
+                ['users.pending' => true],
             ],
             User::STATUS_SUSPENDED => [
                 'users.suspended' => true,
