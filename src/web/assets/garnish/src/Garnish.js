@@ -324,7 +324,9 @@ Garnish = $.extend(Garnish, {
     }
 
     // If no more modals in DOM, loop through hidden elements and un-hide them
-    const hiddenLayerSelector = hiddenLayerClasses.map(name => '.' + name).join(', ');
+    const hiddenLayerSelector = hiddenLayerClasses
+      .map((name) => '.' + name)
+      .join(', ');
     const hiddenElements = $(hiddenLayerSelector);
 
     $(hiddenElements).each(function () {
