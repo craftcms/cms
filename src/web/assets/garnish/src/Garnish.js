@@ -309,29 +309,25 @@ Garnish = $.extend(Garnish, {
    */
   resetModalBackgroundLayerVisibility: function () {
     const highestModalLayer = Garnish.uiLayerManager.highestModalLayer;
+    const hiddenLayerClasses = [
+      Garnish.JS_ARIA_CLASS,
+      Garnish.JS_ARIA_TRUE_CLASS,
+      Garnish.JS_ARIA_FALSE_CLASS,
+    ];
 
     // If there is another modal, make it accessible to AT
     if (highestModalLayer) {
-      highestModalLayer.$container.removeClass([
-        Garnish.JS_ARIA_CLASS,
-        Garnish.JS_ARIA_TRUE_CLASS,
-        Garnish.JS_ARIA_FALSE_CLASS,
-      ]);
-      highestModalLayer.$container.removeAttr('aria-hidden');
+      highestModalLayer.$container
+        .removeClass(hiddenLayerClasses)
+        .removeAttr('aria-hidden');
       return;
     }
 
     // If no more modals in DOM, loop through hidden elements and un-hide them
-    const ariaSelector =
-      '.' +
-      Garnish.JS_ARIA_CLASS +
-      ', .' +
-      Garnish.JS_ARIA_FALSE_CLASS +
-      ', .' +
-      Garnish.JS_ARIA_TRUE_CLASS;
-    const ariaHiddenElements = $(ariaSelector);
+    const hiddenLayerSelector = hiddenLayerClasses.map(name => '.' + name).join(', ');
+    const hiddenElements = $(hiddenLayerSelector);
 
-    $(ariaHiddenElements).each(function () {
+    $(hiddenElements).each(function () {
       if ($(this).hasClass(Garnish.JS_ARIA_CLASS)) {
         $(this).removeClass(Garnish.JS_ARIA_CLASS);
         $(this).removeAttr('aria-hidden');
