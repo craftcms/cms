@@ -268,7 +268,9 @@ class User extends Element implements IdentityInterface
             [
                 'key' => 'credentialed',
                 'label' => Craft::t('app', 'Credentialed'),
-                'criteria' => ['status' => ['active', 'pending']],
+                'criteria' => [
+                    'status' => [self::STATUS_ACTIVE, self::STATUS_PENDING],
+                ],
                 'hasThumbs' => true,
                 'data' => [
                     'slug' => 'credentialed',
@@ -277,7 +279,9 @@ class User extends Element implements IdentityInterface
             [
                 'key' => 'inactive',
                 'label' => Craft::t('app', 'Inactive'),
-                'criteria' => ['status' => 'inactive'],
+                'criteria' => [
+                    'status' => self::STATUS_INACTIVE,
+                ],
                 'hasThumbs' => true,
                 'data' => [
                     'slug' => 'inactive',
