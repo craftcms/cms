@@ -269,7 +269,7 @@ class User extends Element implements IdentityInterface
                 'key' => 'credentialed',
                 'label' => Craft::t('app', 'Credentialed'),
                 'criteria' => [
-                    'status' => [self::STATUS_ACTIVE, self::STATUS_PENDING],
+                    'status' => UserQuery::STATUS_CREDENTIALED,
                 ],
                 'hasThumbs' => true,
                 'data' => [
