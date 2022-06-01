@@ -100,7 +100,7 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
     },
 
     _addBumperButtons: function () {
-      this.container
+      this.$container
         .prepend(this.$bumperButtonStart)
         .append(this.$bumperButtonEnd);
     },
