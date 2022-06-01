@@ -26,6 +26,7 @@
 - Fixed a bug where all web requests were getting no-cache headers. ([#11346](https://github.com/craftcms/cms/issues/11346))
 - Fixed a bug where user caches weren’t getting invalidated when users were changed to a pending or inactive state.
 - Fixed a bug where querying for users with an `active` status was returning suspended users. ([#11370](https://github.com/craftcms/cms/pull/11370))
+- Fixed a bug where it wasn’t possible to drag assets within Assets fields by their thumbnails. ([#11364](https://github.com/craftcms/cms/issues/11364))
 
 ## 4.0.3 - 2022-05-20
 
