@@ -10,5 +10,8 @@
   },
   "dependencies": {
     "@playwright/test": "^1.21.1"
+  },
+  "bin": {
+    "craft-playwright": "./cli.js"
   }
 }

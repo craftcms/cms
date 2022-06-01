@@ -1,7 +1,11 @@
 const util = require('util');
 const nodeExec = util.promisify(require('child_process').exec);
-const dockerCli =
-  'docker compose --file=./node_modules/@craftcms/playwright/docker-compose.yaml exec --user appuser playwright';
+const path = require('path');
+const packagePath =
+  path.basename(__dirname) == 'craftcms-playwright'
+    ? 'packages/craftcms-playwright'
+    : 'node_modules/@craftcms/playwright';
+const dockerCli = `docker compose --file=./${packagePath}/docker-compose.yaml exec --user appuser playwright`;
 const craftCli = '/app/craft';
 
 const dbRestore = async () => {

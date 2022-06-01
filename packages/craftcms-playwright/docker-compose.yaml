@@ -3,7 +3,7 @@ services:
   mysql:
     image: mysql:5.7
     ports:
-      - 33069:3306
+      - ${PLAYWRIGHT_MYSQL_PORT:-33069}:3306
     environment:
       MYSQL_ROOT_PASSWORD: craft
       MYSQL_DATABASE: craft_test
@@ -22,7 +22,7 @@ services:
   postgres:
     image: postgres:11-alpine
     ports:
-      - 54329:5432
+      - ${PLAYWRIGHT_POSTGRES_PORT:-54329}:5432
     environment:
       POSTGRES_PASSWORD: craft
       POSTGRES_USER: craft
@@ -58,4 +58,4 @@ services:
       mysql:
         condition: service_healthy
     volumes:
-      - ../../../.:/app/repos/repo/
+      - ${PLAYWRIGHT_REPO_PATH:-../../../.}:/app/repos/repo/
