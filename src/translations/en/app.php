@@ -387,6 +387,7 @@ return [
     'Couldn’t update password.' => 'Couldn’t update password.',
     'Country' => 'Country',
     'County' => 'County',
+    'Craft CMS' => 'Craft CMS',
     'Craft CMS does not support backtracking to this version. Please update to Craft CMS {version} or later.' => 'Craft CMS does not support backtracking to this version. Please update to Craft CMS {version} or later.',
     'Craft CMS is running in Dev Mode.' => 'Craft CMS is running in Dev Mode.',
     'Craft Support' => 'Craft Support',
