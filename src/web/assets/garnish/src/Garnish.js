@@ -417,7 +417,7 @@ Garnish = $.extend(Garnish, {
   },
 
   /**
-   * Sets focus to the first focusable element within a container, or on the element itself.
+   * Sets focus to the first focusable element within a container, or on the container itself.
    * @param {Object} container The container element. Can be either an actual element or a jQuery collection.
    */
   setFocusWithin: function (container) {
