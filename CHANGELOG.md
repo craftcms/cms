@@ -3,6 +3,8 @@
 ## Unreleased
 
 ### Added
+- Added support for querying for users with a `credentialed` status.
+- Added `craft\elements\db\UserQuery::STATUS_CREDENTIALED`.
 - Added `craft\errors\FieldNotFoundException`.
 - Added `craft\web\twig\variables\Cp::getRequestedSite()`. ([#11082](https://github.com/craftcms/cms/discussions/11082))
 
@@ -23,6 +25,7 @@
 - Fixed an error that occurred when saving an entry via a GraphQL mutation. ([#11312](https://github.com/craftcms/cms/issues/11312))
 - Fixed a bug where all web requests were getting no-cache headers. ([#11346](https://github.com/craftcms/cms/issues/11346))
 - Fixed a bug where user caches weren’t getting invalidated when users were changed to a pending or inactive state.
+- Fixed a bug where querying for users with an `active` status was returning suspended users. ([#11370](https://github.com/craftcms/cms/pull/11370))
 
 ## 4.0.3 - 2022-05-20
 
