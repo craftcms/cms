@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementAction;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
+use craft\elements\db\UserQuery;
 use craft\elements\User;
 use Throwable;
 
@@ -73,10 +74,7 @@ JS;
     {
         /** @var ElementQuery $query */
         // Get the users that aren't already suspended
-        $query->status = [
-            User::STATUS_ACTIVE,
-            User::STATUS_PENDING,
-        ];
+        $query->status = UserQuery::STATUS_CREDENTIALED;
 
         /** @var User[] $users */
         $users = $query->all();
