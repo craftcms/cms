@@ -22,6 +22,7 @@
 - Fixed a bug where it wasn’t possible to use a `{% redirect %}` tag in an error template. ([#11336](https://github.com/craftcms/cms/issues/11336))
 - Fixed an error that occurred when saving an entry via a GraphQL mutation. ([#11312](https://github.com/craftcms/cms/issues/11312))
 - Fixed a bug where all web requests were getting no-cache headers. ([#11346](https://github.com/craftcms/cms/issues/11346))
+- Fixed a bug where user caches weren’t getting invalidated when users were changed to a pending or inactive state.
 
 ## 4.0.3 - 2022-05-20
 

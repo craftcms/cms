@@ -839,6 +839,9 @@ class Users extends Component
             ]));
         }
 
+        // Invalidate caches
+        Craft::$app->getElements()->invalidateCachesForElement($user);
+
         return true;
     }
 
@@ -1112,6 +1115,9 @@ class Users extends Component
         $user->pending = $userRecord->pending;
         $user->verificationCode = $hashedCode;
         $user->verificationCodeIssuedDate = $issueDate;
+
+        // Invalidate caches
+        Craft::$app->getElements()->invalidateCachesForElement($user);
 
         return $unhashedCode;
     }
