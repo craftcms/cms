@@ -711,9 +711,10 @@ class UserQuery extends ElementQuery
      *
      * | Value | Fetches users…
      * | - | -
-     * | `'active' | with active accounts.
-     * | `'suspended'` | with suspended accounts.
+     * | `'inactive'` | with inactive accounts.
+     * | `'active'` | with active accounts.
      * | `'pending'` | with accounts that are still pending activation.
+     * | `'suspended'` | with suspended accounts.
      * | `'locked'` | with locked accounts (regardless of whether they’re active or suspended).
      * | `['active', 'suspended']` | with active or suspended accounts.
      * | `['not', 'active', 'suspended']` | without active or suspended accounts.
@@ -942,11 +943,11 @@ class UserQuery extends ElementQuery
             User::STATUS_PENDING => [
                 'users.pending' => true,
             ],
-            User::STATUS_LOCKED => [
-                'users.locked' => true,
-            ],
             User::STATUS_SUSPENDED => [
                 'users.suspended' => true,
+            ],
+            User::STATUS_LOCKED => [
+                'users.locked' => true,
             ],
             default => parent::statusCondition($status),
         };
