@@ -7,6 +7,9 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
   {
     assetId: null,
     $spinner: null,
+    $triggerElement: null,
+    $bumperButtonStart: null,
+    $bumperButtonEnd: null,
     elementSelect: null,
     type: null,
     loaded: null,
@@ -18,6 +21,7 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
      */
     init: function (assetId, elementSelect, settings) {
       settings = $.extend(this.defaultSettings, settings);
+      this.$triggerElement = Garnish.getFocusedElement();
 
       settings.onHide = this._onHide.bind(this);
 
@@ -64,6 +68,17 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
         Garnish.setFocusWithin(this.$container);
       }
 
+      // Add bumper elements to maintain focus trap
+      this.$bumperButtonStart = Craft.ui.createButton({
+        html: Craft.t('app', 'Close preview'),
+        class: 'skip-link',
+      });
+
+      this.addListener(this.$bumperButtonStart, 'click', () => {
+        this.hide();
+      });
+      this.$bumperButtonEnd = this.$bumperButtonStart.clone(true);
+
       this.loadAsset(assetId, settings.startingWidth, settings.startingHeight);
     },
 
@@ -75,11 +90,19 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
       Craft.PreviewFileModal.openInstance = null;
       if (this.elementSelect) {
         this.elementSelect.focusItem(this.elementSelect.$focusedItem);
+      } else if (this.$triggerElement) {
+        this.$triggerElement.trigger('focus');
       }
 
       this.$shade.remove();
 
       return this.destroy();
+    },
+
+    _addBumperButtons: function () {
+      this.container
+        .prepend(this.$bumperButtonStart)
+        .append(this.$bumperButtonEnd);
     },
 
     /**
@@ -181,11 +204,13 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
             this.$container.append(
               $('<p/>', {text: Craft.t('app', 'No preview available.')})
             );
+            this._addBumperButtons();
             return;
           }
 
           this.$container.removeClass('zilch');
           this.$container.append(response.data.previewHtml);
+          this._addBumperButtons();
           Craft.appendHeadHtml(response.data.headHtml);
           Craft.appendBodyHtml(response.data.bodyHtml);
         })
