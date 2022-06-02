@@ -1193,10 +1193,22 @@ JS, [
                 ]) .
                 Html::beginTag('ul', ['class' => 'padded']) .
                 Html::beginTag('li') .
+                Html::button(Craft::t('app', 'Edit'), [
+                    'class' => 'menu-option',
+                    'type' => 'button',
+                    'aria' => [
+                        'label' => Craft::t('app', 'Edit'),
+                    ],
+                    'data' => [
+                        'icon' => 'edit',
+                        'action' => 'edit',
+                    ],
+                ]) .
+                Html::endTag('li') .
+                Html::beginTag('li') .
                 Html::button(Craft::t('app', 'Delete'), [
                     'class' => 'error menu-option',
                     'type' => 'button',
-                    'role' => 'button',
                     'aria' => [
                         'label' => Craft::t('app', 'Delete'),
                     ],
