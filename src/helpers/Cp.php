@@ -1162,7 +1162,7 @@ JS, [
             ]) .
             ($config['name'] ? Html::hiddenInput("{$config['name']}[]", (string)$address->id) : '') .
             Html::beginTag('div', ['class' => 'address-card-header']) .
-            Html::tag('div', $address->title, [
+            Html::tag('h2', $address->title, [
                 'class' => array_filter([
                     'address-card-label',
                     !$label ? 'hidden' : null,
