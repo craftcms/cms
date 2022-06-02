@@ -1193,8 +1193,8 @@ JS, [
                 ]) .
                 Html::beginTag('ul', ['class' => 'padded']) .
                 Html::beginTag('li') .
-                Html::a(Craft::t('app', 'Delete'), '#', [
-                    'class' => 'error',
+                Html::button(Craft::t('app', 'Delete'), [
+                    'class' => 'error menu-option',
                     'type' => 'button',
                     'role' => 'button',
                     'aria' => [

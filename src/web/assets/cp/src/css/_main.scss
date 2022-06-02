@@ -4908,7 +4908,8 @@ ul.tree,
   ul {
     &.padded {
       li {
-        a {
+        a,
+        .menu-option {
           @include padding-left(24px);
 
           &[data-icon],
