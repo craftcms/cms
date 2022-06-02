@@ -6,6 +6,7 @@
 - Added support for querying for users with a `credentialed` status.
 - Added `craft\elements\db\UserQuery::STATUS_CREDENTIALED`.
 - Added `craft\errors\FieldNotFoundException`.
+- Added `craft\helpers\Html::encodeSpaces()`.
 - Added `craft\web\twig\variables\Cp::getRequestedSite()`. ([#11082](https://github.com/craftcms/cms/discussions/11082))
 
 ### Changed
@@ -13,6 +14,7 @@
 - Improved the performance of field layout designers. ([#11298](https://github.com/craftcms/cms/issues/11298))
 - All control panel pages now have a `site--<siteHandle>` class name on the `<body>`, based on the currently-selected site. ([#11303](https://github.com/craftcms/cms/discussions/11303))
 - Warnings are no longer logged when instantiating a field layout that references a deleted custom field. ([#11333](https://github.com/craftcms/cms/issues/11333))
+- `craft\elements\Asset::getUrl()` now encodes any spaces in the URL as `%20` entities.
 
 ### Fixed
 - Fixed a bug where it wasn’t possible to disable all table columns for an element source. ([#11291](https://github.com/craftcms/cms/issues/11291))
@@ -27,6 +29,7 @@
 - Fixed a bug where user caches weren’t getting invalidated when users were changed to a pending or inactive state.
 - Fixed a bug where querying for users with an `active` status was returning suspended users. ([#11370](https://github.com/craftcms/cms/pull/11370))
 - Fixed a bug where it wasn’t possible to drag assets within Assets fields by their thumbnails. ([#11364](https://github.com/craftcms/cms/issues/11364))
+- Fixed a bug where asset thumbnails weren’t loading if their filename contained a space. ([#11350](https://github.com/craftcms/cms/issues/11350))
 
 ## 4.0.3 - 2022-05-20
 

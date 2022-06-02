@@ -33,6 +33,16 @@ class HtmlHelperTest extends TestCase
     }
 
     /**
+     * @dataProvider encodeSpacesDataProvider
+     * @param string $expected
+     * @param string $str
+     */
+    public function testEncodeSpaces(string $expected, string $str): void
+    {
+        self::assertSame($expected, Html::encodeSpaces($str));
+    }
+
+    /**
      * @dataProvider parseTagDataProvider
      * @param array|false $expected
      * @param string $tag
@@ -279,6 +289,17 @@ class HtmlHelperTest extends TestCase
                 ['whatIsThis' => '!@#$%^&*(){}|::"<><?>/*-~`'],
             ],
             ['😘!@#$%^&amp;*(){}|::&quot;&lt;&gt;&lt;?&gt;/*-~`, {variable2}', $pureVariableString, ['variable1' => '😘!@#$%^&*(){}|::"<><?>/*-~`']],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function encodeSpacesDataProvider(): array
+    {
+        return [
+            ['foo%20bar', 'foo bar'],
+            ['foo%20%20bar', 'foo  bar'],
         ];
     }
 
