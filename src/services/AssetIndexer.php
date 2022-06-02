@@ -490,9 +490,14 @@ class AssetIndexer extends Component
      */
     public function indexFile(Volume $volume, string $path, int $sessionId, bool $cacheImages = false, bool $createIfMissing = true): Asset
     {
+        $dirname = dirname($path);
+        if (in_array($dirname, ['.', '/', '\\'])) {
+            $dirname = '';
+        }
+
         $fs = $volume->getFs();
         $listing = new FsListing([
-            'dirname' => $path,
+            'dirname' => $dirname,
             'basename' => pathinfo($path, PATHINFO_BASENAME),
             'type' => 'file',
             'dateModified' => $fs->getDateModified($path),
