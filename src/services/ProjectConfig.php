@@ -885,7 +885,7 @@ class ProjectConfig extends Component
                             $pathsToInsert[] = $key;
 
                             // Delete parent key, as it cannot hold a value AND be an array at the same time
-                            $additionalCleanupPaths[ProjectConfigHelper::pathWithoutLastSegment($key)] = true;
+                            $additionalCleanupPaths[ProjectConfigHelper::pathWithoutLastSegment($key) ?? $key] = true;
 
                             // Prepare for delta
                             if (!empty($currentSet['removed']) && array_key_exists($key, $currentSet['removed'])) {
@@ -1461,7 +1461,7 @@ class ProjectConfig extends Component
         // Compare and if something is different, mark the immediate parent as changed.
         foreach ($flatConfig as $key => $value) {
             // Drop the last part of path
-            $immediateParent = ProjectConfigHelper::pathWithoutLastSegment($key);
+            $immediateParent = ProjectConfigHelper::pathWithoutLastSegment($key) ?? $key;
 
             if (!array_key_exists($key, $flatCurrent)) {
                 if ($existsOnly) {
@@ -1486,7 +1486,7 @@ class ProjectConfig extends Component
 
         foreach ($removedItems as &$removedItem) {
             // Drop the last part of path
-            $removedItem = ProjectConfigHelper::pathWithoutLastSegment($removedItem);
+            $removedItem = ProjectConfigHelper::pathWithoutLastSegment($removedItem) ?? $removedItem;
         }
 
         // Sort by number of dots to ensure deepest paths listed first
