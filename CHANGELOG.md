@@ -9,6 +9,7 @@
 
 ### Fixed
 - Fixed an error that could occur on PHP 8.1. ([#11345](https://github.com/craftcms/cms/pull/11345))
+- Fixed a bug where project config paths that contained slashes weren’t getting handled properly. ([#10774](https://github.com/craftcms/cms/issues/10774))
 
 ## 3.7.43 - 2022-05-20
 

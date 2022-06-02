@@ -753,9 +753,9 @@ class ProjectConfig extends Component
         $valueChanged = $triggerUpdate || $this->forceUpdate || $this->encodeValueAsString($oldValue) !== $this->encodeValueAsString($newValue);
 
         if ($newValue === null && is_array($oldValue)) {
-            $this->_removeContainedProjectConfigNames(pathinfo($path, PATHINFO_EXTENSION), $oldValue);
+            $this->_removeContainedProjectConfigNames(ProjectConfigHelper::lastPathSegment($path), $oldValue);
         } elseif (is_array($newValue)) {
-            $this->_setContainedProjectConfigNames(pathinfo($path, PATHINFO_EXTENSION), $newValue);
+            $this->_setContainedProjectConfigNames(ProjectConfigHelper::lastPathSegment($path), $newValue);
         }
 
         if ($valueChanged && !$this->muteEvents) {
@@ -885,7 +885,7 @@ class ProjectConfig extends Component
                             $pathsToInsert[] = $key;
 
                             // Delete parent key, as it cannot hold a value AND be an array at the same time
-                            $additionalCleanupPaths[pathinfo($key, PATHINFO_FILENAME)] = true;
+                            $additionalCleanupPaths[ProjectConfigHelper::pathWithoutLastSegment($key)] = true;
 
                             // Prepare for delta
                             if (!empty($currentSet['removed']) && array_key_exists($key, $currentSet['removed'])) {
@@ -1461,7 +1461,7 @@ class ProjectConfig extends Component
         // Compare and if something is different, mark the immediate parent as changed.
         foreach ($flatConfig as $key => $value) {
             // Drop the last part of path
-            $immediateParent = pathinfo($key, PATHINFO_FILENAME);
+            $immediateParent = ProjectConfigHelper::pathWithoutLastSegment($key);
 
             if (!array_key_exists($key, $flatCurrent)) {
                 if ($existsOnly) {
@@ -1486,7 +1486,7 @@ class ProjectConfig extends Component
 
         foreach ($removedItems as &$removedItem) {
             // Drop the last part of path
-            $removedItem = pathinfo($removedItem, PATHINFO_FILENAME);
+            $removedItem = ProjectConfigHelper::pathWithoutLastSegment($removedItem);
         }
 
         // Sort by number of dots to ensure deepest paths listed first

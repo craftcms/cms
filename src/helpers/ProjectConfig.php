@@ -13,6 +13,7 @@ use craft\services\Gql as GqlService;
 use craft\services\ProjectConfig as ProjectConfigService;
 use craft\services\Sites;
 use craft\services\UserGroups;
+use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\caching\ChainedDependency;
 use yii\caching\ExpressionDependency;
@@ -619,5 +620,50 @@ class ProjectConfig
         }
 
         FileHelper::writeToFile($path, $newContents);
+    }
+
+    /**
+     * Returns an array of the individual segments in a given project config path.
+     *
+     * @param string $path
+     * @return string[]
+     * @throws InvalidArgumentException if `$path` is an empty string
+     * @since 3.7.44
+     */
+    public static function pathSegments(string $path): array
+    {
+        if ($path === '') {
+            throw new InvalidArgumentException('No project config path provided.');
+        }
+        return explode('.', $path);
+    }
+
+    /**
+     * Returns the last segment in a given project config path.
+     *
+     * @param string $path
+     * @return string|null
+     * @throws InvalidArgumentException if `$path` is an empty string
+     * @since 3.7.44
+     */
+    public static function lastPathSegment(string $path): ?string
+    {
+        $segments = static::pathSegments($path);
+        return end($segments);
+    }
+
+    /**
+     * Returns the given project config path with all but its last segment, or `null` if the path only had one segment.
+     *
+     * @param string $path
+     * @return string|null
+     * @throws InvalidArgumentException if `$path` is an empty string
+     * @since 3.7.44
+     */
+    public static function pathWithoutLastSegment(string $path): ?string
+    {
+        $segments = static::pathSegments($path);
+        array_pop($segments);
+        return !empty($segments) ? implode('.', $segments) : null;
     }
 }

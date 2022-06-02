@@ -13,6 +13,7 @@ use craft\helpers\FileHelper;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
 use craft\services\ProjectConfig;
+use yii\base\InvalidArgumentException;
 
 class ProjectConfigHelperTest extends Unit
 {
@@ -81,6 +82,54 @@ class ProjectConfigHelperTest extends Unit
         // Put the old project.yaml back
         FileHelper::unlink($path);
         rename($backup, $path);
+    }
+
+    /**
+     * @dataProvider pathSegmentsDataProvider
+     *
+     * @param string[]|false $expected
+     * @param string $path
+     */
+    public function testPathSegments($expected, string $path)
+    {
+        if ($expected === false) {
+            self::expectException(InvalidArgumentException::class);
+            ProjectConfigHelper::pathSegments($path);
+        } else {
+            self::assertEquals($expected, ProjectConfigHelper::pathSegments($path));
+        }
+    }
+
+    /**
+     * @dataProvider lastPathSegmentDataProvider
+     *
+     * @param string|false $expected
+     * @param string $path
+     */
+    public function testLastPathSegment($expected, string $path)
+    {
+        if ($expected === false) {
+            self::expectException(InvalidArgumentException::class);
+            ProjectConfigHelper::lastPathSegment($path);
+        } else {
+            self::assertEquals($expected, ProjectConfigHelper::lastPathSegment($path));
+        }
+    }
+
+    /**
+     * @dataProvider pathWithoutLastSegmentDataProvider
+     *
+     * @param string|null|false $expected
+     * @param string $path
+     */
+    public function testPathWithoutLastSegment($expected, string $path)
+    {
+        if ($expected === false) {
+            self::expectException(InvalidArgumentException::class);
+            ProjectConfigHelper::pathWithoutLastSegment($path);
+        } else {
+            self::assertEquals($expected, ProjectConfigHelper::pathWithoutLastSegment($path));
+        }
     }
 
     /**
@@ -480,6 +529,48 @@ EOL;
             [$input3, $expected3],
             [$input4, $expected4],
             [$input5, $expected5],
+        ];
+    }
+
+    /**
+     * @return array[]
+     */
+    public function pathSegmentsDataProvider(): array
+    {
+        return [
+            [['foo'], 'foo'],
+            [['foo', 'bar'], 'foo.bar'],
+            [['foo', 'bar', 'baz'], 'foo.bar.baz'],
+            [['foo\\bar', 'baz'], 'foo\\bar.baz'],
+            [false, ''],
+        ];
+    }
+
+    /**
+     * @return array[]
+     */
+    public function lastPathSegmentDataProvider(): array
+    {
+        return [
+            ['foo', 'foo'],
+            ['bar', 'foo.bar'],
+            ['baz', 'foo.bar.baz'],
+            ['baz', 'foo\\bar.baz'],
+            [false, ''],
+        ];
+    }
+
+    /**
+     * @return array[]
+     */
+    public function pathWithoutLastSegmentDataProvider(): array
+    {
+        return [
+            [null, 'foo'],
+            ['foo', 'foo.bar'],
+            ['foo.bar', 'foo.bar.baz'],
+            ['foo\\bar', 'foo\\bar.baz'],
+            [false, ''],
         ];
     }
 }
