@@ -479,7 +479,7 @@ class AssetIndexer extends Component
      *
      * @param Volume $volume
      * @param string $path
-     * @param int $sessionId optional indexing session id.
+     * @param int $sessionId indexing session ID
      * @param bool $cacheImages Whether remotely-stored images should be downloaded and stored locally, to speed up transform generation.
      * @param bool $createIfMissing Whether the asset record should be created if it doesn't exist yet
      * @return Asset
