@@ -190,7 +190,7 @@ $radioSize: 16px;
   word-wrap: normal !important;
   user-select: none;
 
-  opacity: 0.8;
+  opacity: var(--icon-opacity);
 }
 
 @mixin angle($dir: down, $color: currentColor) {

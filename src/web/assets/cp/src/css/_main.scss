@@ -52,6 +52,7 @@
   --ui-control-color: var(--gray-400);
   --ui-control-hover-color: var(--gray-500);
   --ui-control-active-color: var(--gray-600);
+  --icon-opacity: 0.8;
   --light-focus-hsl: #{hue($lightFocusColor)}, #{saturation($lightFocusColor)},
     #{lightness($lightFocusColor)};
   --medium-focus-hsl: #{hue($mediumFocusColor)},
@@ -60,7 +61,7 @@
     #{lightness($darkFocusColor)};
   --focus-ring: 0 0 0 1px hsl(var(--dark-focus-hsl)),
     0 0 0 3px hsla(var(--dark-focus-hsl), 0.7);
-  --touch-target-size: 44px; /* Minimum recommended touch target size */
+  --touch-target-size: 24px; /* Minimum recommended touch target size */
 }
 
 body,
@@ -4611,6 +4612,7 @@ ul.tree,
 
 /* element selector modals */
 .elementselectormodal {
+  --content-padding: 24px;
   padding-bottom: 50px;
   user-select: none;
 
@@ -4627,7 +4629,7 @@ ul.tree,
   .nav-toggle {
     @include margin-left(4px);
     @include touch-target;
-    color: var(--text-color);
+    color: var(--ui-control-color);
 
     &:hover {
       color: var(--gray-500);
@@ -4637,11 +4639,12 @@ ul.tree,
   .sidebar-header {
     display: flex;
     justify-content: flex-end;
+    padding: 0 var(--s);
+    margin-bottom: var(--s);
   }
 
   .nav-close {
     @include touch-target;
-    margin: var(--xs);
   }
 
   .body {
@@ -4664,11 +4667,12 @@ ul.tree,
         @include margin-left(-249px);
         height: 100%;
         overflow: auto;
+        padding: var(--content-padding) 0;
       }
 
       .main {
         margin: -24px;
-        padding: 24px;
+        padding: var(--content-padding);
         height: 100%;
         box-sizing: border-box;
         overflow: auto;
@@ -5892,6 +5896,44 @@ body.reduce-focus-visibility {
 
   &:active {
     color: var(--ui-control-active-color);
+  }
+}
+
+.close-btn {
+  position: relative;
+
+  &:before,
+  &:after {
+    position: absolute;
+    content: '';
+    top: 50%;
+    left: 50%;
+    height: 15px;
+    width: 2px;
+    background-color: var(--ui-control-color);
+    opacity: var(--icon-opacity);
+  }
+
+  &:before {
+    transform: translate(-50%, -50%) rotate(-45deg);
+  }
+
+  &:after {
+    transform: translate(-50%, -50%) rotate(45deg);
+  }
+
+  &:hover {
+    &:before,
+    &:after {
+      background-color: var(--ui-control-hover-color);
+    }
+  }
+
+  &:active {
+    &:before,
+    &:after {
+      background-color: var(--ui-control-active-color);
+    }
   }
 }
 

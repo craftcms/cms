@@ -132,7 +132,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
 
       this.$sidebarCloseBtn = Craft.ui
         .createButton({
-          class: 'nav-close clear-btn',
+          class: 'nav-close close-btn',
         })
         .attr('aria-label', Craft.t('app', 'Close'))
         .removeClass('btn')
@@ -317,19 +317,19 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
       return info;
     },
 
-    show: function () {
+    onShow: function () {
       this.updateSelectBtnState();
 
       // Add listeners again since they get removed during modal close
       this.addListener(Garnish.$win, 'resize', this.updateSidebarView);
       this.addListener(Garnish.$win, 'resize', this.updateModalBottomPadding);
-      this.base();
 
       this.updateModalBottomPadding();
       this.updateSidebarView();
+      this.base();
     },
 
-    hide: function () {
+    onHide: function () {
       this.closeSidebar();
       this.base();
     },
