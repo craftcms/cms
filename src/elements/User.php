@@ -106,9 +106,9 @@ class User extends Element implements IdentityInterface
      */
     public const STATUS_INACTIVE = 'inactive';
     public const STATUS_ACTIVE = 'active';
-    public const STATUS_LOCKED = 'locked';
-    public const STATUS_SUSPENDED = 'suspended';
     public const STATUS_PENDING = 'pending';
+    public const STATUS_SUSPENDED = 'suspended';
+    public const STATUS_LOCKED = 'locked';
 
     // Authentication error codes
     // -------------------------------------------------------------------------
@@ -268,7 +268,9 @@ class User extends Element implements IdentityInterface
             [
                 'key' => 'credentialed',
                 'label' => Craft::t('app', 'Credentialed'),
-                'criteria' => ['status' => ['active', 'pending']],
+                'criteria' => [
+                    'status' => UserQuery::STATUS_CREDENTIALED,
+                ],
                 'hasThumbs' => true,
                 'data' => [
                     'slug' => 'credentialed',
@@ -277,7 +279,9 @@ class User extends Element implements IdentityInterface
             [
                 'key' => 'inactive',
                 'label' => Craft::t('app', 'Inactive'),
-                'criteria' => ['status' => 'inactive'],
+                'criteria' => [
+                    'status' => self::STATUS_INACTIVE,
+                ],
                 'hasThumbs' => true,
                 'data' => [
                     'slug' => 'inactive',
