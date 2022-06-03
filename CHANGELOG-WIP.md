@@ -8,10 +8,10 @@
 - Added `craft\elements\conditions\ElementCondition::$sourceKey`.
 - Added `craft\elements\db\ElementQuery::EVENT_AFTER_POPULATE_ELEMENTS`. ([#11262](https://github.com/craftcms/cms/discussions/11262))
 - Added `craft\events\PopulateElementsEvent`.
+- Added `craft\fieldlayoutelements\LineBreak`.
 - Added `craft\helpers\DateTimeHelper::now()`.
 - Added `craft\helpers\DateTimeHelper::pause()`. ([#11130](https://github.com/craftcms/cms/pull/11130))
 - Added `craft\helpers\DateTimeHelper::resume()`. ([#11130](https://github.com/craftcms/cms/pull/11130))
-- Added `craft\fieldlayoutelements\LineBreak`.
 
 ### Changed
 - Improved pagination UI accessibility. ([#11126](https://github.com/craftcms/cms/pull/11126))
