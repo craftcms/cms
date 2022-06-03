@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.0.4 - 2022-06-03
 
 ### Added
 - Added support for querying for users with a `credentialed` status.
