@@ -30,6 +30,7 @@
 - The `users/create` command now asks whether the user should be activated when saved.
 - Deprecation messages are now consistently referred to as “deprecation warnings” in the control panel.
 - Callback functions returned by elements’ `sortOptions()`/`defineSortOptions()` methods are now passed a `craft\db\Connection` object as a second argument.
+- The `searchindex` table is now uses the InnoDB storage engine by default for MySQL installs. ([#11374](https://github.com/craftcms/cms/discussions/11374))
 
 ### Removed
 - Removed `craft\elements\conditions\entries\EntryTypeCondition::$sectionUid`.
