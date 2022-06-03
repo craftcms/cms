@@ -4381,6 +4381,10 @@ JS,
                     'data' => [
                         'icon' => 'ellipsis',
                     ],
+                    'aria' => [
+                        'expanded' => 'false',
+                        'label' => Craft::t('app', 'Update status for individual sites'),
+                    ],
                 ])
                 : '';
             $statusField = Cp::lightswitchFieldHtml([
