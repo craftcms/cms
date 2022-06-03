@@ -31,6 +31,7 @@
 - Fixed a bug where it wasn’t possible to drag assets within Assets fields by their thumbnails. ([#11364](https://github.com/craftcms/cms/issues/11364))
 - Fixed a bug where asset thumbnails weren’t loading if their filename contained a space. ([#11350](https://github.com/craftcms/cms/issues/11350))
 - Fixed a bug where `craft\services\AssetIndexer::indexFile()` wasn’t removing the filename from the file path when setting the directory on the listing. ([#11365](https://github.com/craftcms/cms/issues/11365))
+- Fixed a bug where links within custom field instructions were getting mangled. ([#11377](https://github.com/craftcms/cms/issues/11377))
 
 ## 4.0.3 - 2022-05-20
 
