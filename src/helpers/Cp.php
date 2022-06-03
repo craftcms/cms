@@ -1117,9 +1117,14 @@ JS, [
         return
             Html::beginTag('div', [
                 'id' => $config['id'],
+                'class' => 'address-container',
+            ]) .
+            Html::beginTag('ul', [
+                'id' => $config['id'],
                 'class' => 'address-cards',
             ]) .
             implode("\n", array_map(fn(Address $address) => static::addressCardHtml($address, $config), $addresses)) .
+            Html::endTag('ul').
             Html::beginTag('button', [
                 'type' => 'button',
                 'class' => ['btn', 'dashed', 'add', 'icon'],
@@ -1130,8 +1135,8 @@ JS, [
             Html::tag('div', Craft::t('app', 'Add an address'), [
                 'class' => 'label',
             ]) .
-            Html::endTag('button') .
-            Html::endTag('div'); // .address-cards
+            Html::endTag('button'); // .address-cards
+            Html::endTag('div'); // .address-container
     }
 
     /**
@@ -1153,7 +1158,7 @@ JS, [
         $actionMenuId = sprintf('address-card-action-menu-%s', mt_rand());
 
         return
-            Html::beginTag('div', [
+            Html::beginTag('li', [
                 'class' => 'address-card',
                 'data' => [
                     'id' => $address->id,
@@ -1227,7 +1232,7 @@ JS, [
             Html::tag('div', Craft::$app->getAddresses()->formatAddress($address), [
                 'class' => 'address-card-body',
             ]) .
-            Html::endTag('div'); // .address-card
+            Html::endTag('li'); // .address-card
     }
 
     /**

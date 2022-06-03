@@ -4724,18 +4724,25 @@ ul.tree,
   }
 }
 
-/* Address Cards */
-.address-cards {
+/* Address Container */
+.address-container {
+  --grid-gap: 14px 14px;
   display: grid;
-  gap: 14px 14px;
-  grid-template-columns: repeat(1, minmax(0, 1fr));
-  grid-auto-rows: minmax(0, 1fr);
+  gap: var(--grid-gap);
 
   & > button.add {
     padding: 1rem;
-    min-height: 8rem;
+    min-height: 4rem;
     height: auto;
   }
+}
+
+/* Address Cards */
+.address-cards {
+  display: grid;
+  gap: var(--grid-gap);
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  grid-auto-rows: minmax(0, 1fr);
 }
 
 .address-card.error {
@@ -4789,7 +4796,7 @@ ul.tree,
 }
 
 .address-card .address-card-label {
-  background: #E6F1FE;
+  background: #e6f1fe;
   color: #2563eb;
   padding: 0.125rem 0.5rem;
   border-radius: 0.25rem;

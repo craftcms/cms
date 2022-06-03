@@ -11,6 +11,7 @@ Craft.AddressesInput = Garnish.Base.extend(
 
     init: function (container, settings) {
       this.$container = $(container);
+      console.log(this.$container);
       this.setSettings(settings, Craft.AddressesInput.defaults);
 
       // Is this already an address input?
@@ -22,7 +23,7 @@ Craft.AddressesInput = Garnish.Base.extend(
       this.$container.data('addresses', this);
 
       this.$addBtn = this.$container.find('> .btn.add');
-      this.$cards = this.$container.find('> .address-card');
+      this.$cards = this.$container.find('.address-card');
 
       for (let i = 0; i < this.$cards.length; i++) {
         this.initCard(this.$cards.eq(i));
