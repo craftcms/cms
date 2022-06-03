@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+### Deprecated
+- Deprecated `craft\services\Categories::pruneDeletedField()`. ([#11054](https://github.com/craftcms/cms/discussions/11054))
+- Deprecated `craft\services\Globals::pruneDeletedField()`. ([#11054](https://github.com/craftcms/cms/discussions/11054))
+- Deprecated `craft\services\Sections::pruneDeletedField()`. ([#11054](https://github.com/craftcms/cms/discussions/11054))
+- Deprecated `craft\services\Tags::pruneDeletedField()`. ([#11054](https://github.com/craftcms/cms/discussions/11054))
+- Deprecated `craft\services\Users::pruneDeletedField()`. ([#11054](https://github.com/craftcms/cms/discussions/11054))
+- Deprecated `craft\services\Volumes::pruneDeletedField()`. ([#11054](https://github.com/craftcms/cms/discussions/11054))
+
+## 4.0.4 - 2022-06-03
+
 ### Added
 - Added support for querying for users with a `credentialed` status.
 - Added `craft\elements\db\UserQuery::STATUS_CREDENTIALED`.
