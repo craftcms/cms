@@ -9,6 +9,7 @@
 - `temp` is now a reserved volume handle.
 - Improved the performance of field layout designers. ([#11298](https://github.com/craftcms/cms/issues/11298))
 - All control panel pages now have a `site--<siteHandle>` class name on the `<body>`, based on the currently-selected site. ([#11303](https://github.com/craftcms/cms/discussions/11303))
+- The `searchindex` table is now uses the MySQL InnoDB storage engine by default. ([#11374](https://github.com/craftcms/cms/discussions/11374))
 
 ### Fixed
 - Fixed a bug where it wasn’t possible to disable all table columns for an element source. ([#11291](https://github.com/craftcms/cms/issues/11291))
