@@ -787,8 +787,8 @@ class Html extends \yii\helpers\Html
         // normal HTML attributes
         $html = preg_replace_callback(
             "/(?<=\\s)((for|list|xlink:href|href|aria\\-labelledby|aria\\-describedby|aria\\-controls|data\\-target|data\\-reverse\\-target|data\\-target\\-prefix)=('|\")#?)([^\.'\"]*)\\3/i",
-            function(array $match) use ($html, $namespace, $ids): string {
-                $namespacedIds = array_map(function(string $id) use ($match, $html, $ids, $namespace): string {
+            function(array $match) use ($namespace, $ids): string {
+                $namespacedIds = array_map(function(string $id) use ($match, $ids, $namespace): string {
                     if (
                         isset($ids[$id]) ||
                         $match[2] === 'data-target-prefix' ||
