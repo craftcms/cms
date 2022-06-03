@@ -4,9 +4,12 @@
 - Field layouts can now have “Line Break” UI elements. ([#11328](https://github.com/craftcms/cms/discussions/11328))
 - The `AdminTable` Vue component can now be included into other Vue apps, in addition to being used as a standalone app. ([#11107](https://github.com/craftcms/cms/pull/11107))
 - Added a `one()` alias for `first()` to collections. ([#11134](https://github.com/craftcms/cms/discussions/11134))
+- Added `craft\base\Element::EVENT_DEFINE_CACHE_TAGS`. ([#11171](https://github.com/craftcms/cms/discussions/11171))
+- Added `craft\base\Element::cacheTags()`.
 - Added `craft\console\controllers\UsersController::$activate`.
 - Added `craft\elements\conditions\ElementCondition::$sourceKey`.
 - Added `craft\elements\db\ElementQuery::EVENT_AFTER_POPULATE_ELEMENTS`. ([#11262](https://github.com/craftcms/cms/discussions/11262))
+- Added `craft\elements\db\ElementQuery::EVENT_DEFINE_CACHE_TAGS`. ([#11171](https://github.com/craftcms/cms/discussions/11171))
 - Added `craft\events\PopulateElementsEvent`.
 - Added `craft\fieldlayoutelements\LineBreak`.
 - Added `craft\helpers\DateTimeHelper::now()`.

@@ -963,7 +963,7 @@ class Entry extends Element
      * @inheritdoc
      * @since 3.5.0
      */
-    public function getCacheTags(): array
+    protected function cacheTags(): array
     {
         $tags = [
             sprintf('entryType:%s', $this->getTypeId()),

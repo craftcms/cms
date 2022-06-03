@@ -27,6 +27,7 @@ use craft\events\DefineAttributeKeywordsEvent;
 use craft\events\DefineEagerLoadingMapEvent;
 use craft\events\DefineHtmlEvent;
 use craft\events\DefineMetadataEvent;
+use craft\events\DefineValueEvent;
 use craft\events\ElementIndexTableAttributeEvent;
 use craft\events\ElementStructureEvent;
 use craft\events\ModelEvent;
@@ -489,6 +490,14 @@ abstract class Element extends Component implements ElementInterface
      * ```
      */
     public const EVENT_SET_ROUTE = 'setRoute';
+
+    /**
+     * @event DefineValueEvent The event that is triggered when defining the cache tags that should be cleared when
+     * this element is saved.
+     * @see getCacheTags()
+     * @since 4.1.0
+     */
+    public const EVENT_DEFINE_CACHE_TAGS = 'defineCacheTags';
 
     /**
      * @event DefineAttributeKeywordsEvent The event that is triggered when defining the search keywords for an
@@ -2582,6 +2591,27 @@ abstract class Element extends Component implements ElementInterface
      * @since 3.5.0
      */
     public function getCacheTags(): array
+    {
+        $cacheTags = static::cacheTags();
+
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_CACHE_TAGS)) {
+            $event = new DefineValueEvent([
+                'value' => $cacheTags,
+            ]);
+            $this->trigger(self::EVENT_DEFINE_CACHE_TAGS, $event);
+            return $event->value;
+        }
+
+        return $cacheTags;
+    }
+
+    /**
+     * Returns the cache tags that should be cleared when this element is saved.
+     *
+     * @return string[]
+     * @since 4.1.0
+     */
+    protected function cacheTags(): array
     {
         return [];
     }
