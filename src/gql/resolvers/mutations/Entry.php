@@ -224,12 +224,13 @@ class Entry extends ElementMutationResolver
             throw new Error('Impossible to change the section of an existing entry');
         }
 
+        $entry->sectionId = $section->id;
+
         // Null the field layout id in case the entry type changes.
         if ($entry->getTypeId() !== $entryType->id) {
             $entry->fieldLayoutId = null;
         }
 
-        $entry->sectionId = $section->id;
         $entry->setTypeId($entryType->id);
 
         return $entry;

@@ -56,9 +56,11 @@ class DateTimeHelper
     public const SECONDS_YEAR = 31556874;
 
     /**
-     * @var array Translation pairs for [[translateDate()]]
+     * @var DateTime[]
+     * @see pause()
+     * @see resume()
      */
-    private static array $_translationPairs;
+    private static array $_now = [];
 
     /**
      * Converts a value into a DateTime object.
@@ -121,7 +123,7 @@ class DateTimeHelper
                 } else {
                     // Default to the current date
                     $format = 'Y-m-d';
-                    $date = (new DateTime('now', new DateTimeZone($timeZone)))->format($format);
+                    $date = static::now(new DateTimeZone($timeZone))->format($format);
                 }
 
                 // Did they specify a time?
@@ -254,14 +256,61 @@ class DateTimeHelper
     }
 
     /**
+     * Pauses time for any subsequent calls to other `DateTimeHelper` methods, until [[resume()]] is called.
+     *
+     * If this method is called multiple times, [[resume()]] will need to be called an equal number of times before
+     * time is actually resumed.
+     *
+     * @param DateTime|null $now A `DateTime` object that should represent the current time for the duration of the pause
+     * @since 4.1.0
+     */
+    public static function pause(?DateTime $now = null): void
+    {
+        array_unshift(self::$_now, $now ?? self::$_now[0] ?? new DateTime('now'));
+    }
+
+    /**
+     * Resumes time, if it was paused via [[pause()]].
+     *
+     * @since 4.1.0
+     */
+    public static function resume(): void
+    {
+        array_shift(self::$_now);
+    }
+
+    /**
+     * Returns a [[DateTime]] object set to the current time (factoring in whether time is [[pause()|paused]]).
+     *
+     * @param DateTimeZone|null $timeZone The time zone to return the `DateTime` object in. (Defaults to the system time zone.)
+     * @return DateTime
+     * @since 4.1.0
+     */
+    public static function now(?DateTimeZone $timeZone = null): DateTime
+    {
+        // Is time paused?
+        if (!empty(self::$_now)) {
+            $date = clone self::$_now[0];
+            $date->setTimezone($timeZone ?? new DateTimeZone(Craft::$app->getTimeZone()));
+            return $date;
+        }
+
+        return new DateTime('now', $timeZone);
+    }
+
+    /**
+     * Returns a [[DateTime]] object set to the current time (factoring in whether time is [[pause()|paused]]), in the UTC time zone.
+     *
      * @return DateTime
      */
     public static function currentUTCDateTime(): DateTime
     {
-        return new DateTime('now', new DateTimeZone('UTC'));
+        return static::now(new DateTimeZone('UTC'));
     }
 
     /**
+     * Returns the current Unix time stamp (factoring in whether time is [[pause()|paused]]).
+     *
      * @return int
      */
     public static function currentTimeStamp(): int
@@ -348,8 +397,8 @@ class DateTimeHelper
      */
     public static function isToday(mixed $date): bool
     {
-        $date = self::toDateTime($date);
-        $now = new DateTime();
+        $date = static::toDateTime($date);
+        $now = static::now();
 
         return $date->format('Y-m-d') == $now->format('Y-m-d');
     }
@@ -362,8 +411,8 @@ class DateTimeHelper
      */
     public static function isYesterday(mixed $date): bool
     {
-        $date = self::toDateTime($date);
-        $yesterday = new DateTime('yesterday', new DateTimeZone(Craft::$app->getTimeZone()));
+        $date = static::toDateTime($date);
+        $yesterday = static::now()->modify('-1 day');
 
         return $date->format('Y-m-d') == $yesterday->format('Y-m-d');
     }
@@ -376,8 +425,8 @@ class DateTimeHelper
      */
     public static function isThisYear(mixed $date): bool
     {
-        $date = self::toDateTime($date);
-        $now = new DateTime();
+        $date = static::toDateTime($date);
+        $now = static::now();
 
         return $date->format('Y') == $now->format('Y');
     }
@@ -390,8 +439,8 @@ class DateTimeHelper
      */
     public static function isThisWeek(mixed $date): bool
     {
-        $date = self::toDateTime($date);
-        $now = new DateTime();
+        $date = static::toDateTime($date);
+        $now = static::now();
 
         return $date->format('W Y') == $now->format('W Y');
     }
@@ -404,8 +453,8 @@ class DateTimeHelper
      */
     public static function isThisMonth(mixed $date): bool
     {
-        $date = self::toDateTime($date);
-        $now = new DateTime();
+        $date = static::toDateTime($date);
+        $now = static::now();
 
         return $date->format('m Y') == $now->format('m Y');
     }
@@ -428,7 +477,7 @@ class DateTimeHelper
         }
 
         $timestamp = $date->getTimestamp();
-        $now = new DateTime();
+        $now = static::now();
 
         // Bail early if it's in the future
         if ($timestamp > $now->getTimestamp()) {
@@ -456,7 +505,7 @@ class DateTimeHelper
      */
     public static function isInThePast(mixed $date): bool
     {
-        $date = self::toDateTime($date);
+        $date = static::toDateTime($date);
 
         return $date->getTimestamp() < time();
     }
@@ -656,7 +705,7 @@ class DateTimeHelper
         $value = trim($value);
 
         if ($value === 'now') {
-            return new DateTime();
+            return static::now();
         }
 
         if (preg_match('/^
@@ -714,38 +763,5 @@ class DateTimeHelper
         }
 
         return null;
-    }
-
-    /**
-     * Returns translation pairs for [[translateDate()]].
-     *
-     * @param string $language The target language
-     * @return array The translation pairs
-     */
-    private static function _getDateTranslations(string $language): array
-    {
-        if (!isset(self::$_translationPairs[$language])) {
-            $i18n = Craft::$app->getI18n();
-            $sourceLocale = $i18n->getLocaleById('en-US');
-            $targetLocale = $i18n->getLocaleById($language);
-
-            $amName = $targetLocale->getAMName();
-            $pmName = $targetLocale->getPMName();
-
-            self::$_translationPairs[$language] = array_merge(
-                array_combine($sourceLocale->getMonthNames(Locale::LENGTH_FULL), $targetLocale->getMonthNames(Locale::LENGTH_FULL)),
-                array_combine($sourceLocale->getWeekDayNames(Locale::LENGTH_FULL), $targetLocale->getWeekDayNames(Locale::LENGTH_FULL)),
-                array_combine($sourceLocale->getMonthNames(Locale::LENGTH_MEDIUM), $targetLocale->getMonthNames(Locale::LENGTH_MEDIUM)),
-                array_combine($sourceLocale->getWeekDayNames(Locale::LENGTH_MEDIUM), $targetLocale->getWeekDayNames(Locale::LENGTH_MEDIUM)),
-                [
-                    'AM' => mb_strtoupper($amName),
-                    'PM' => mb_strtoupper($pmName),
-                    'am' => mb_strtolower($amName),
-                    'pm' => mb_strtolower($pmName),
-                ]
-            );
-        }
-
-        return self::$_translationPairs[$language];
     }
 }

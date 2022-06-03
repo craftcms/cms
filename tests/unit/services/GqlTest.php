@@ -44,7 +44,6 @@ use GraphQL\Type\Definition\ObjectType;
 use UnitTester;
 use yii\base\Event;
 use yii\base\Exception;
-use yii\base\InvalidArgumentException;
 
 class GqlTest extends TestCase
 {
@@ -437,11 +436,6 @@ class GqlTest extends TestCase
         // Test fetching all tokens
         $allSchemas = $gql->getTokens();
         self::assertNotEmpty($allSchemas);
-
-        // Test public token doesn't exists
-        $this->tester->expectThrowable(InvalidArgumentException::class, function() use ($gql) {
-            $gql->getTokenByAccessToken(GqlToken::PUBLIC_TOKEN);
-        });
 
         // Test fetching public schema creates public token
         $publicToken = $gql->getPublicToken();

@@ -57,7 +57,6 @@ use craft\records\StructureElement as StructureElementRecord;
 use craft\validators\HandleValidator;
 use craft\validators\SlugValidator;
 use craft\web\Application;
-use DateTime;
 use Throwable;
 use yii\base\Behavior;
 use yii\base\Component;
@@ -822,7 +821,7 @@ class Elements extends Component
             $element->mergeCanonicalChanges();
             $duplicateOf = $element->duplicateOf;
             $element->duplicateOf = null;
-            $element->dateLastMerged = new DateTime();
+            $element->dateLastMerged = DateTimeHelper::now();
             $element->mergingCanonicalChanges = true;
             $this->_saveElementInternal($element, false, false, null, $supportedSites);
             $element->duplicateOf = $duplicateOf;
@@ -1095,6 +1094,9 @@ class Elements extends Component
                         'exception' => $e,
                     ]));
                 }
+
+                // Clear caches
+                $this->invalidateCachesForElement($element);
             }
         } catch (QueryAbortedException) {
             // Fail silently
@@ -1116,13 +1118,19 @@ class Elements extends Component
      * @param array $newAttributes any attributes to apply to the duplicate
      * @param bool $placeInStructure whether to position the cloned element after the original one in its structure.
      * (This will only happen if the duplicated element is canonical.)
+     * @param bool $trackDuplication whether to keep track of the duplication from [[Elements::$duplicatedElementIds]]
+     * and [[Elements::$duplicatedElementSourceIds]]
      * @return T the duplicated element
      * @throws UnsupportedSiteException if the element is being duplicated into a site it doesn’t support
      * @throws InvalidElementException if saveElement() returns false for any of the sites
      * @throws Throwable if reasons
      */
-    public function duplicateElement(ElementInterface $element, array $newAttributes = [], bool $placeInStructure = true): ElementInterface
-    {
+    public function duplicateElement(
+        ElementInterface $element,
+        array $newAttributes = [],
+        bool $placeInStructure = true,
+        bool $trackDuplication = true,
+    ): ElementInterface {
         // Make sure the element exists
         if (!$element->id) {
             throw new Exception('Attempting to duplicate an unsaved element.');
@@ -1233,8 +1241,10 @@ class Elements extends Component
             }
 
             // Map it
-            static::$duplicatedElementIds[$element->id] = $mainClone->id;
-            static::$duplicatedElementSourceIds[$mainClone->id] = $element->id;
+            if ($trackDuplication) {
+                static::$duplicatedElementIds[$element->id] = $mainClone->id;
+                static::$duplicatedElementSourceIds[$mainClone->id] = $element->id;
+            }
 
             $mainClone->newSiteIds = [];
 
@@ -2422,6 +2432,9 @@ class Elements extends Component
     {
         $supportedSites = ArrayHelper::index(ElementHelper::supportedSitesForElement($element), 'siteId');
         $this->_propagateElement($element, $supportedSites, $siteId, $siteElement);
+
+        // Clear caches
+        $this->invalidateCachesForElement($element);
     }
 
     /**
@@ -2577,7 +2590,7 @@ class Elements extends Component
                     $elementRecord->markAttributeDirty('dateUpdated');
                 } else {
                     // Force a new dateUpdated value
-                    $elementRecord->dateUpdated = Db::prepareValueForDb(new DateTime());
+                    $elementRecord->dateUpdated = Db::prepareValueForDb(DateTimeHelper::now());
                 }
 
                 // Update our list of dirty attributes
@@ -2785,7 +2798,7 @@ class Elements extends Component
             $dirtyFields = $fieldLayout ? $element->getDirtyFields() : null;
 
             $userId = Craft::$app->getUser()->getId();
-            $timestamp = Db::prepareDateForDb(new DateTime());
+            $timestamp = Db::prepareDateForDb(DateTimeHelper::now());
 
             foreach ($dirtyAttributes as $attributeName) {
                 Db::upsert(Table::CHANGEDATTRIBUTES, [
@@ -2947,7 +2960,7 @@ class Elements extends Component
     private function _cascadeDeleteDraftsAndRevisions(int $canonicalId, bool $delete = true): void
     {
         $params = [
-            'dateDeleted' => $delete ? Db::prepareDateForDb(new DateTime()) : null,
+            'dateDeleted' => $delete ? Db::prepareDateForDb(DateTimeHelper::now()) : null,
             'canonicalId' => $canonicalId,
         ];
 

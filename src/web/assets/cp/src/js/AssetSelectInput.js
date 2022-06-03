@@ -43,7 +43,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
     this.$elements
       .find('.elementthumb')
       .addClass('open-preview')
-      .on('mousedown touchstart', (ev) => {
+      .on('click', (ev) => {
         this.elementSelect.focusItem($(ev.target).parent());
         this.openPreview();
         ev.stopPropagation();

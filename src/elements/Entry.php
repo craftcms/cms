@@ -14,6 +14,8 @@ use craft\base\Field;
 use craft\behaviors\DraftBehavior;
 use craft\behaviors\RevisionBehavior;
 use craft\controllers\ElementIndexesController;
+use craft\db\Connection;
+use craft\db\FixedOrderExpression;
 use craft\db\Table;
 use craft\elements\actions\Delete;
 use craft\elements\actions\DeleteForSite;
@@ -51,6 +53,7 @@ use craft\validators\DateCompareValidator;
 use craft\validators\DateTimeValidator;
 use craft\web\CpScreenResponseBehavior;
 use DateTime;
+use Illuminate\Support\Collection;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\db\Expression;
@@ -514,6 +517,32 @@ class Entry extends Element
             'slug' => Craft::t('app', 'Slug'),
             'uri' => Craft::t('app', 'URI'),
             [
+                'label' => Craft::t('app', 'Section'),
+                'orderBy' => function(int $dir, Connection $db) {
+                    $sectionIds = Collection::make(Craft::$app->getSections()->getAllSections())
+                        ->sort(fn(Section $a, Section $b) => $dir === SORT_ASC
+                            ? $a->name <=> $b->name
+                            : $b->name <=> $a->name)
+                        ->map(fn(Section $section) => $section->id)
+                        ->all();
+                    return new FixedOrderExpression('entries.sectionId', $sectionIds, $db);
+                },
+                'attribute' => 'section',
+            ],
+            [
+                'label' => Craft::t('app', 'Entry Type'),
+                'orderBy' => function(int $dir, Connection $db) {
+                    $entryTypeIds = Collection::make(Craft::$app->getSections()->getAllEntryTypes())
+                        ->sort(fn(EntryType $a, EntryType $b) => $dir === SORT_ASC
+                            ? $a->name <=> $b->name
+                            : $b->name <=> $a->name)
+                        ->map(fn(EntryType $type) => $type->id)
+                        ->all();
+                    return new FixedOrderExpression('entries.typeId', $entryTypeIds, $db);
+                },
+                'attribute' => 'type',
+            ],
+            [
                 'label' => Craft::t('app', 'Post Date'),
                 'orderBy' => function(int $dir) {
                     if ($dir === SORT_ASC) {
@@ -934,7 +963,7 @@ class Entry extends Element
      * @inheritdoc
      * @since 3.5.0
      */
-    public function getCacheTags(): array
+    protected function cacheTags(): array
     {
         $tags = [
             sprintf('entryType:%s', $this->getTypeId()),
@@ -1612,12 +1641,13 @@ class Entry extends Element
     public function metaFieldsHtml(bool $static): string
     {
         $fields = [];
+        $view = Craft::$app->getView();
         $section = $this->getSection();
         $user = Craft::$app->getUser()->getIdentity();
 
         if ($section->type !== Section::TYPE_SINGLE) {
             // Type
-            $fields[] = (function() use ($static) {
+            $fields[] = (function() use ($static, $view) {
                 $entryTypes = $this->getAvailableEntryTypes();
                 if (count($entryTypes) <= 1) {
                     return null;
@@ -1635,7 +1665,6 @@ class Entry extends Element
                 }
 
                 if (!$static) {
-                    $view = Craft::$app->getView();
                     $typeInputId = $view->namespaceInputId('entryType');
                     $js = <<<EOD
 (() => {
@@ -1720,12 +1749,18 @@ EOD;
                 })();
             }
 
+            $isDeltaRegistrationActive = $view->getIsDeltaRegistrationActive();
+            $view->setIsDeltaRegistrationActive(true);
+            $view->registerDeltaName('postDate');
+            $view->registerDeltaName('expiryDate');
+            $view->setIsDeltaRegistrationActive($isDeltaRegistrationActive);
+
             // Post Date
             $fields[] = Cp::dateTimeFieldHtml([
                 'label' => Craft::t('app', 'Post Date'),
                 'id' => 'postDate',
                 'name' => 'postDate',
-                'value' => $this->postDate,
+                'value' => $this->_userPostDate(),
                 'errors' => $this->getErrors('postDate'),
                 'disabled' => $static,
             ]);
@@ -1810,6 +1845,21 @@ EOD;
         }
     }
 
+    /**
+     * Returns the Post Date value that should be shown on the edit form.
+     *
+     * @return DateTime|null
+     */
+    private function _userPostDate(): ?DateTime
+    {
+        if (!$this->postDate || ($this->getIsUnpublishedDraft() && $this->postDate == $this->dateCreated)) {
+            // Pretend the post date hasn't been set yet, even if it has
+            return null;
+        }
+
+        return $this->postDate;
+    }
+
     // Events
     // -------------------------------------------------------------------------
 
@@ -1823,7 +1873,7 @@ EOD;
         }
 
         if (
-            !$this->postDate &&
+            !$this->_userPostDate() &&
             (
                 in_array($this->scenario, [self::SCENARIO_LIVE, self::SCENARIO_DEFAULT]) ||
                 (!$this->getIsDraft() && !$this->getIsRevision())
