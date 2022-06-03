@@ -111,6 +111,17 @@ class Application extends \yii\console\Application
     }
 
     /**
+     * @inheritdoc
+     */
+    public function handleRequest($request)
+    {
+        // Disable read/write splitting for all console requests
+        $this->getDb()->enableReplicas = false;
+
+        return parent::handleRequest($request);
+    }
+
+    /**
      * Returns the configuration of the built-in commands.
      *
      * @return array The configuration of the built-in commands.

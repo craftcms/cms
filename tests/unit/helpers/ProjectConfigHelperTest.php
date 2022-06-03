@@ -13,6 +13,7 @@ use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
 use craft\services\ProjectConfig;
 use craft\test\TestCase;
+use yii\base\InvalidArgumentException;
 
 class ProjectConfigHelperTest extends TestCase
 {
@@ -85,6 +86,54 @@ class ProjectConfigHelperTest extends TestCase
     public function testEncodeData(mixed $incomingData, string $expectedResult): void
     {
         self::assertSame($expectedResult, ProjectConfigHelper::encodeValueAsString($incomingData));
+    }
+
+    /**
+     * @dataProvider pathSegmentsDataProvider
+     *
+     * @param string[]|false $expected
+     * @param string $path
+     */
+    public function testPathSegments(array|false$expected, string $path): void
+    {
+        if ($expected === false) {
+            self::expectException(InvalidArgumentException::class);
+            ProjectConfigHelper::pathSegments($path);
+        } else {
+            self::assertEquals($expected, ProjectConfigHelper::pathSegments($path));
+        }
+    }
+
+    /**
+     * @dataProvider lastPathSegmentDataProvider
+     *
+     * @param string|false $expected
+     * @param string $path
+     */
+    public function testLastPathSegment(string|false $expected, string $path): void
+    {
+        if ($expected === false) {
+            self::expectException(InvalidArgumentException::class);
+            ProjectConfigHelper::lastPathSegment($path);
+        } else {
+            self::assertEquals($expected, ProjectConfigHelper::lastPathSegment($path));
+        }
+    }
+
+    /**
+     * @dataProvider pathWithoutLastSegmentDataProvider
+     *
+     * @param string|null|false $expected
+     * @param string $path
+     */
+    public function testPathWithoutLastSegment(string|null|false $expected, string $path): void
+    {
+        if ($expected === false) {
+            self::expectException(InvalidArgumentException::class);
+            ProjectConfigHelper::pathWithoutLastSegment($path);
+        } else {
+            self::assertEquals($expected, ProjectConfigHelper::pathWithoutLastSegment($path));
+        }
     }
 
     /**
@@ -522,6 +571,48 @@ EOL;
             [$input3, $expected3],
             [$input4, $expected4],
             [$input5, $expected5],
+        ];
+    }
+
+    /**
+     * @return array[]
+     */
+    public function pathSegmentsDataProvider(): array
+    {
+        return [
+            [['foo'], 'foo'],
+            [['foo', 'bar'], 'foo.bar'],
+            [['foo', 'bar', 'baz'], 'foo.bar.baz'],
+            [['foo\\bar', 'baz'], 'foo\\bar.baz'],
+            [false, ''],
+        ];
+    }
+
+    /**
+     * @return array[]
+     */
+    public function lastPathSegmentDataProvider(): array
+    {
+        return [
+            ['foo', 'foo'],
+            ['bar', 'foo.bar'],
+            ['baz', 'foo.bar.baz'],
+            ['baz', 'foo\\bar.baz'],
+            [false, ''],
+        ];
+    }
+
+    /**
+     * @return array[]
+     */
+    public function pathWithoutLastSegmentDataProvider(): array
+    {
+        return [
+            [null, 'foo'],
+            ['foo', 'foo.bar'],
+            ['foo.bar', 'foo.bar.baz'],
+            ['foo\\bar', 'foo\\bar.baz'],
+            [false, ''],
         ];
     }
 }
