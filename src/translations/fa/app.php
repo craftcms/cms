@@ -1584,6 +1584,7 @@ return [
     'Update aborted.' => 'بروزرسانی ناقص ماند.',
     'Update all' => 'بروزرسانی همه',
     'Update asset indexes' => 'بروزرسانی فهرست های فایل پروژه',
+    'Update status for individual sites' => 'Update status for individual sites',
     'Update your project config YAML files to reflect the latest changes in the loaded project config.' => 'فایل‌های YAML پیکربندی خود را به‌روزرسانی کنید تا آخرین تغییرات را در پیکربندی پروژه بارگذاری شده نشان دهد.',
     'Update {type}' => 'بروزرسانی {type}',
     'Update' => 'بروزرسانی',
