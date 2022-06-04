@@ -1584,6 +1584,7 @@ return [
     'Update aborted.' => 'アップデートが中止されました。',
     'Update all' => 'すべて更新',
     'Update asset indexes' => 'アセットインデックスを更新',
+    'Update status for individual sites' => 'Update status for individual sites',
     'Update your project config YAML files to reflect the latest changes in the loaded project config.' => '読み込まれたプロジェクト構成にある最新の変更を反映するように、プロジェクト構成YAMLファイルを更新します。',
     'Update {type}' => '{type}を更新',
     'Update' => 'アップデート',
