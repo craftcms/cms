@@ -1584,6 +1584,7 @@ return [
     'Update aborted.' => '업데이트가 중단되었습니다.',
     'Update all' => '모두 업데이트',
     'Update asset indexes' => '자산 인덱스 업데이트',
+    'Update status for individual sites' => 'Update status for individual sites',
     'Update your project config YAML files to reflect the latest changes in the loaded project config.' => '프로젝트 구성 YAML 파일을 업데이트하여 로드된 프로젝트 구성에서 최신 변경 사항을 반영하십시오.',
     'Update {type}' => '{type} 업데이트',
     'Update' => '업데이트',
