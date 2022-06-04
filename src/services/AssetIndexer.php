@@ -50,19 +50,19 @@ use yii\base\InvalidConfigException;
  */
 class AssetIndexer extends Component
 {
+
     /**
      * Returns a sorted list of files on a volume.
      *
      * @param Volume $volume The Volume to perform indexing on.
      * @param string $directory Optional path to get index list on a subfolder.
      * @return Generator
-     * @throws FsException
      */
     public function getIndexListOnVolume(Volume $volume, string $directory = ''): Generator
     {
         try {
             $fileList = $volume->getFs()->getFileList($directory);
-        } catch (VolumeException $exception) {
+        } catch (InvalidConfigException|FsException $exception) {
             Craft::$app->getErrorHandler()->logException($exception);
             return;
         }
@@ -165,14 +165,9 @@ class AssetIndexer extends Component
 
         /** @var Volume $volume */
         foreach ($volumeList as $volume) {
-            try {
-                $fileList = $volume->getFs()->getFileList();
-            } catch (FsException) {
-                Craft::warning('Unable to list files in ' . $volume->handle . '.');
-                continue;
+            if ($fileList = $this->getIndexListOnVolume($volume)) {
+                $total += $this->storeIndexList($fileList, $session->id, (int)$volume->id);
             }
-
-            $total += $this->storeIndexList($fileList, $session->id, (int)$volume->id);
         }
 
         $session->totalEntries = $total;
