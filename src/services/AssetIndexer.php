@@ -164,9 +164,8 @@ class AssetIndexer extends Component
 
         /** @var Volume $volume */
         foreach ($volumeList as $volume) {
-            if ($fileList = $this->getIndexListOnVolume($volume)) {
-                $total += $this->storeIndexList($fileList, $session->id, (int)$volume->id);
-            }
+            $fileList = $this->getIndexListOnVolume($volume);
+            $total += $this->storeIndexList($fileList, $session->id, (int)$volume->id);
         }
 
         $session->totalEntries = $total;
