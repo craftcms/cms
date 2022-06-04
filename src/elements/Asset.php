@@ -17,9 +17,7 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\elements\actions\CopyReferenceTag;
 use craft\elements\actions\CopyUrl;
-use craft\elements\actions\DeleteAssets;
 use craft\elements\actions\DownloadAssetFile;
-use craft\elements\actions\Edit;
 use craft\elements\actions\EditImage;
 use craft\elements\actions\PreviewAsset;
 use craft\elements\actions\RenameFile;
@@ -412,12 +410,6 @@ class Asset extends Element
             // Download
             $actions[] = DownloadAssetFile::class;
 
-            // Edit
-            $actions[] = [
-                'type' => Edit::class,
-                'label' => Craft::t('app', 'Edit asset'),
-            ];
-
             $userSession = Craft::$app->getUser();
             if ($isTemp || $userSession->checkPermission("replaceFiles:$volume->uid")) {
                 // Rename/Replace File
@@ -436,11 +428,6 @@ class Asset extends Element
             // Edit Image
             if ($isTemp || $userSession->checkPermission("editImages:$volume->uid")) {
                 $actions[] = EditImage::class;
-            }
-
-            // Delete
-            if ($isTemp || $userSession->checkPermission("deleteAssets:$volume->uid")) {
-                $actions[] = DeleteAssets::class;
             }
         }
 

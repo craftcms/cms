@@ -14,6 +14,11 @@ use craft\behaviors\RevisionBehavior;
 use craft\db\Connection;
 use craft\db\Query;
 use craft\db\Table;
+use craft\elements\actions\Delete;
+use craft\elements\actions\DeleteActionInterface;
+use craft\elements\actions\Edit;
+use craft\elements\actions\SetStatus;
+use craft\elements\actions\View;
 use craft\elements\conditions\ElementCondition;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\ElementQuery;
@@ -848,12 +853,55 @@ abstract class Element extends Component implements ElementInterface
      */
     public static function actions(string $source): array
     {
-        $actions = static::defineActions($source);
+        $actions = Collection::make(static::defineActions($source));
+
+        $hasActionType = fn(string $type) => $actions->contains(
+            fn($action) => (
+                $action === $type ||
+                $action instanceof $type ||
+                is_subclass_of($action, $type) ||
+                (
+                    is_array($action) &&
+                    isset($action['type']) &&
+                    ($action['type'] === $type || is_subclass_of($action['type'], $type))
+                )
+            )
+        );
+
+        // Prepend Edit?
+        if (!$hasActionType(Edit::class)) {
+            $actions->prepend([
+                'type' => Edit::class,
+                'label' => Craft::t('app', 'Edit {type}', [
+                    'type' => static::lowerDisplayName(),
+                ]),
+            ]);
+        }
+
+        // Prepend View?
+        if (static::hasUris() && !$hasActionType(View::class)) {
+            $actions->prepend([
+                'type' => View::class,
+                'label' => Craft::t('app', 'View {type}', [
+                    'type' => static::lowerDisplayName(),
+                ]),
+            ]);
+        }
+
+        // Prepend Set Status?
+        if (static::hasStatuses() && !$hasActionType(SetStatus::class)) {
+            $actions->prepend(SetStatus::class);
+        }
+
+        // Append Delete?
+        if (!$hasActionType(DeleteActionInterface::class)) {
+            $actions->push(Delete::class);
+        }
 
         // Give plugins a chance to modify them
         $event = new RegisterElementActionsEvent([
             'source' => $source,
-            'actions' => $actions,
+            'actions' => $actions->all(),
         ]);
         Event::trigger(static::class, self::EVENT_REGISTER_ACTIONS, $event);
 

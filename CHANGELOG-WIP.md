@@ -34,7 +34,14 @@
 - The `maxBackups` config setting now impacts `.sql.zip` files in addition to `.sql` files. ([#11241](https://github.com/craftcms/cms/issues/11241))
 - Deprecation messages are now consistently referred to as “deprecation warnings” in the control panel.
 - Callback functions returned by elements’ `sortOptions()`/`defineSortOptions()` methods are now passed a `craft\db\Connection` object as a second argument.
+- All element sources now have a “Set Status” action, even if the element type’s `defineActions()` method didn’t include one, if the element type’s `hasStatuses()` method returns `true`. ([#11383](https://github.com/craftcms/cms/discussions/11383))
+- All element sources now have a “View” action, even if the element type’s `defineActions()` method didn’t include one, if the element type’s `hasUris()` method returns `true`. ([#11383](https://github.com/craftcms/cms/discussions/11383))
+- All element sources now have “Edit” and “Delete” actions, even if the element type’s `defineActions()` method didn’t include them. ([#11383](https://github.com/craftcms/cms/discussions/11383))
+- The “Set Status” and “Edit” element actions are now only available for elements whose `getIsSavable()` method returned `true`. 
 - The `searchindex` table is now uses the InnoDB storage engine by default for MySQL installs. ([#11374](https://github.com/craftcms/cms/discussions/11374))
+
+### Deprecated
+- Deprecated `craft\elements\actions\DeleteAssets`. `craft\elements\actions\Delete` should be used instead.
 
 ### Removed
 - Removed `craft\elements\conditions\entries\EntryTypeCondition::$sectionUid`.
