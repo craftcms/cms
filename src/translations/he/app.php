@@ -1584,6 +1584,7 @@ return [
     'Update aborted.' => 'העדכון בוטל.',
     'Update all' => 'עדכן הכול',
     'Update asset indexes' => 'עדכן אינדקסים של נכסים',
+    'Update status for individual sites' => 'Update status for individual sites',
     'Update your project config YAML files to reflect the latest changes in the loaded project config.' => 'עדכן את קובצי ה-YAML של תצורת הפרויקט שלך כך שישקפו את השינויים האחרונים בתצורת הפרויקט שנטענה.',
     'Update {type}' => 'עדכון {type}',
     'Update' => 'עדכן',
