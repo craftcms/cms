@@ -101,7 +101,11 @@ class ElementIndexesController extends BaseElementsController
         $this->paginated = (bool)$this->request->getParam('paginated');
         $this->elementQuery = $this->elementQuery();
 
-        if (in_array($action->id, ['get-elements', 'perform-action']) && $this->includeActions() && $this->sourceKey !== null) {
+        if (
+            in_array($action->id, ['get-elements', 'perform-action', 'export']) &&
+            $this->includeActions() &&
+            $this->sourceKey !== null
+        ) {
             $this->actions = $this->availableActions();
             $this->exporters = $this->availableExporters();
         }
