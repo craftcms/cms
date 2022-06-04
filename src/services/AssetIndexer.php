@@ -50,7 +50,6 @@ use yii\base\InvalidConfigException;
  */
 class AssetIndexer extends Component
 {
-
     /**
      * Returns a sorted list of files on a volume.
      *
