@@ -1584,6 +1584,7 @@ return [
     'Update aborted.' => 'تم إيقاف التحديث.',
     'Update all' => 'تحديث الكل',
     'Update asset indexes' => 'تحديث فهارس الأصول',
+    'Update status for individual sites' => 'Update status for individual sites',
     'Update your project config YAML files to reflect the latest changes in the loaded project config.' => 'قم بتحديث ملفات تهيئة مشروع YAML لتعكس أحدث التغييرات في ملفات تهيئة المشروع التي تم تحميلها.',
     'Update {type}' => 'تحديث {type}',
     'Update' => 'التحديث',
