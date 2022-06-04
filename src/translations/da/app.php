@@ -1585,6 +1585,7 @@ return [
     'Update aborted.' => 'Opdatering afbrudt.',
     'Update all' => 'Opdater alt',
     'Update asset indexes' => 'Opdater aktivindekser',
+    'Update status for individual sites' => 'Update status for individual sites',
     'Update your project config YAML files to reflect the latest changes in the loaded project config.' => 'Opdater dine YAML-projektkonfigurationsfiler til at afspejle de seneste ændringer i de indlæste projektkonfigurationer.',
     'Update {type}' => 'Opdater {type}',
     'Update' => 'Opdater',
