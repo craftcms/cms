@@ -1584,6 +1584,7 @@ return [
     'Update aborted.' => 'Aktualizácia bola zrušená.',
     'Update all' => 'Aktualizovať všetko',
     'Update asset indexes' => 'Aktualizovať indexy prostriedkov',
+    'Update status for individual sites' => 'Update status for individual sites',
     'Update your project config YAML files to reflect the latest changes in the loaded project config.' => 'Aktualizujte súbory YAML nastavenia projektu, aby sa prejavili posledné zmeny nahrané v nastavení projektu.',
     'Update {type}' => 'Aktualizovať {type}',
     'Update' => 'Aktualizovať',
