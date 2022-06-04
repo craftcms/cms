@@ -1584,6 +1584,7 @@ return [
     'Update aborted.' => 'Güncelleme durduruldu.',
     'Update all' => 'Tümünü güncelle',
     'Update asset indexes' => 'Varlık dizinlerini güncelle',
+    'Update status for individual sites' => 'Update status for individual sites',
     'Update your project config YAML files to reflect the latest changes in the loaded project config.' => 'Proje yapılandırma YAML dosyalarınızı, yüklenen proje yapılandırmasındaki en son değişiklikleri yansıtacak şekilde güncelleyin.',
     'Update {type}' => '{type} güncelle',
     'Update' => 'Güncelleme',
