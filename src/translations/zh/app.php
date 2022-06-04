@@ -1584,6 +1584,7 @@ return [
     'Update aborted.' => '更新已中止。',
     'Update all' => '更新全部',
     'Update asset indexes' => '更新资源索引',
+    'Update status for individual sites' => 'Update status for individual sites',
     'Update your project config YAML files to reflect the latest changes in the loaded project config.' => '更新项目配置 YAML 文件以在加载的项目配置中反映最新更改。',
     'Update {type}' => '更新{type}',
     'Update' => '更新',
