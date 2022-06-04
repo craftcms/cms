@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where element types’ `actions()` methods were getting called for all `element-indexes/*` action requests.
+
 ## 3.7.44 - 2022-06-03
 
 ### Changed
