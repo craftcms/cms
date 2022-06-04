@@ -1584,6 +1584,7 @@ return [
     'Update aborted.' => 'A frissítés megszakítva.',
     'Update all' => 'Az összes frissítése',
     'Update asset indexes' => 'Az eszközindexek frissítése',
+    'Update status for individual sites' => 'Update status for individual sites',
     'Update your project config YAML files to reflect the latest changes in the loaded project config.' => 'Frissítse a projektkonfigurációs YAML-fájlokat, hogy tükrözzék a betöltött projektkonfiguráció legutóbbi változásait.',
     'Update {type}' => '{type} frissítése',
     'Update' => 'Frissítés',
