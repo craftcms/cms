@@ -1584,6 +1584,7 @@ return [
     'Update aborted.' => 'Se anuló la actualización.',
     'Update all' => 'Actualizar todo',
     'Update asset indexes' => 'Actualizar índices de activos',
+    'Update status for individual sites' => 'Update status for individual sites',
     'Update your project config YAML files to reflect the latest changes in the loaded project config.' => 'Actualiza tus archivos YAML de configuración de proyecto para reflejar los últimos cambios en la configuración de proyecto cargada.',
     'Update {type}' => 'Actualizar {type}',
     'Update' => 'Actualizar',
