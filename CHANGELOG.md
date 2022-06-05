@@ -13,6 +13,7 @@
 ### Fixed
 - Fixed an error that could occur when saving an element to a disabled site. ([#10499](https://github.com/craftcms/cms/issues/10499))
 - Fixed a bug where newly-added condition rules’ types were still selectable for preexisting condition rules, when they shouldn’t have been.
+- Fixed a bug where Live Preview was available for mobile devices. ([#11266](https://github.com/craftcms/cms/pull/11266))
 
 ## 4.0.4 - 2022-06-03
 
