@@ -2,12 +2,14 @@
 {% set docTitle = docTitle is defined ? docTitle : title|striptags -%}
 {% set orientation = craft.app.locale.getOrientation() -%}
 {% set a11yDefaults = craft.app.config.general.accessibilityDefaults %}
+{% set requestedSite = craft.cp.requestedSite %}
 
 {% set bodyClass = (bodyClass ?? [])|explodeClass|merge([
     orientation,
     not (currentUser.getPreference('alwaysShowFocusRings') ?? a11yDefaults['alwaysShowFocusRings'] ?? false) ? 'reduce-focus-visibility',
     (currentUser.getPreference('useShapes') ?? a11yDefaults['useShapes'] ?? false) ? 'use-shapes',
     (currentUser.getPreference('underlineLinks') ?? a11yDefaults['underlineLinks'] ?? false) ? 'underline-links',
+    requestedSite ? "site--#{requestedSite.handle}",
 ])|filter -%}
 
 {% set bodyAttributes = {
@@ -52,11 +54,6 @@
     {% endblock %}
 </head>
 <body {{ attr(bodyAttributes) }}>
-    {{ tag ('a', {
-        text: 'Skip to content'|t('app'),
-        href: '#main',
-        class: 'skip-link btn',
-    }) }}
     {{ beginBody() }}
     {% block body %}{% endblock %}
     {% block foot %}{% endblock %}

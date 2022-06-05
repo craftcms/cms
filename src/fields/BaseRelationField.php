@@ -35,7 +35,6 @@ use craft\helpers\StringHelper;
 use craft\queue\jobs\LocalizeRelations;
 use craft\services\Elements;
 use craft\services\ElementSources;
-use craft\web\Application;
 use DateTime;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
@@ -824,21 +823,19 @@ JS;
                 $siteIds = ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($element), 'siteId');
                 $siteIds = ArrayHelper::withoutValue($siteIds, $element->siteId);
                 if (!empty($siteIds)) {
-                    Craft::$app->on(Application::EVENT_AFTER_REQUEST, function() use ($siteIds, $element) {
-                        $userId = Craft::$app->getUser()->getId();
-                        $timestamp = Db::prepareDateForDb(new DateTime());
+                    $userId = Craft::$app->getUser()->getId();
+                    $timestamp = Db::prepareDateForDb(new DateTime());
 
-                        foreach ($siteIds as $siteId) {
-                            Db::upsert(DbTable::CHANGEDFIELDS, [
-                                'elementId' => $element->id,
-                                'siteId' => $siteId,
-                                'fieldId' => $this->id,
-                                'dateUpdated' => $timestamp,
-                                'propagated' => $element->propagating,
-                                'userId' => $userId,
-                            ]);
-                        }
-                    });
+                    foreach ($siteIds as $siteId) {
+                        Db::upsert(DbTable::CHANGEDFIELDS, [
+                            'elementId' => $element->id,
+                            'siteId' => $siteId,
+                            'fieldId' => $this->id,
+                            'dateUpdated' => $timestamp,
+                            'propagated' => $element->propagating,
+                            'userId' => $userId,
+                        ]);
+                    }
                 }
             }
         }

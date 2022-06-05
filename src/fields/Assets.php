@@ -1043,6 +1043,12 @@ class Assets extends BaseRelationField
     {
         $segments = [];
         $folder = Craft::$app->getAssets()->getFolderById($folderId);
+
+        if (!$folder->volumeId) {
+            // Probably the user's temp folder
+            return "folder:$folder->uid";
+        }
+
         while (true) {
             $segment = $folder->parentId ? "folder:$folder->uid" : sprintf('volume:%s', $folder->getVolume()->uid);
             array_unshift($segments, $segment);

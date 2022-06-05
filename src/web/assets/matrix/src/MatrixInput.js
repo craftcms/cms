@@ -254,11 +254,12 @@
 
         this.totalNewBlocks++;
 
-        var id = 'new' + this.totalNewBlocks;
+        const id = `new${this.totalNewBlocks}`;
+        const typeName = this.blockTypesByHandle[type].name;
         const actionMenuId = `matrixblock-action-menu-${id}`;
 
         var html = `
-                <div class="matrixblock" data-id="${id}" data-type="${type}">
+                <div class="matrixblock" data-id="${id}" data-type="${type}" data-type-name="${typeName}">
                   <input type="hidden" name="${
                     this.inputNamePrefix
                   }[sortOrder][]" value="${id}"/>

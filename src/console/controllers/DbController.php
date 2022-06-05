@@ -189,6 +189,10 @@ class DbController extends Controller
             $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
         }
 
+        if ($this->interactive && $this->confirm('Clear data caches?', true)) {
+            $this->run('clear-caches/data');
+        }
+
         return ExitCode::OK;
     }
 

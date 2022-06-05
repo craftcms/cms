@@ -595,7 +595,7 @@ Craft.ElementEditor = Garnish.Base.extend(
     _createSiteStatusField: function (site, status) {
       const $field = Craft.ui.createLightswitchField({
         fieldClass: `enabled-for-site-${site.id}-field`,
-        label: Craft.t('app', 'Enabled for {site}', {site: site.name}),
+        label: site.name,
         name: `enabledForSite[${site.id}]`,
         on:
           typeof status != 'undefined'

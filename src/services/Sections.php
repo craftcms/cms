@@ -18,7 +18,6 @@ use craft\errors\SectionNotFoundException;
 use craft\events\ConfigEvent;
 use craft\events\DeleteSiteEvent;
 use craft\events\EntryTypeEvent;
-use craft\events\FieldEvent;
 use craft\events\SectionEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
@@ -927,44 +926,10 @@ class Sections extends Component
     }
 
     /**
-     * Prune a deleted field from entry type layouts.
-     *
-     * @param FieldEvent $event
-     * @since 3.1.20
+     * @deprecated in 4.0.5. Unused fields will be pruned automatically as field layouts are resaved.
      */
-    public function pruneDeletedField(FieldEvent $event): void
+    public function pruneDeletedField(): void
     {
-        $field = $event->field;
-        $fieldUid = $field->uid;
-
-        $projectConfig = Craft::$app->getProjectConfig();
-        $entryTypes = $projectConfig->get(ProjectConfig::PATH_ENTRY_TYPES);
-
-        // Engage stealth mode
-        $projectConfig->muteEvents = true;
-
-        // Loop through the tag groups and prune the UID from field layouts.
-        if (is_array($entryTypes)) {
-            foreach ($entryTypes as $entryTypeUid => $entryType) {
-                if (!empty($entryType['fieldLayouts'])) {
-                    foreach ($entryType['fieldLayouts'] as $layoutUid => $layout) {
-                        if (!empty($layout['tabs'])) {
-                            foreach ($layout['tabs'] as $tabUid => $tab) {
-                                $projectConfig->remove(ProjectConfig::PATH_ENTRY_TYPES . '.' . $entryTypeUid . '.fieldLayouts.' . $layoutUid . '.tabs.' . $tabUid . '.fields.' . $fieldUid, 'Prune deleted field');
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        // Nuke all the layout fields from the DB
-        Db::delete(Table::FIELDLAYOUTFIELDS, [
-            'fieldId' => $field->id,
-        ]);
-
-        // Allow events again
-        $projectConfig->muteEvents = false;
     }
 
     // Entry Types

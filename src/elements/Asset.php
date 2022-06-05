@@ -393,11 +393,15 @@ class Asset extends Element
     {
         $actions = [];
 
+        if (preg_match('/^volume:([a-z0-9\-]+)/', $source, $matches)) {
+            $volume = Craft::$app->getVolumes()->getVolumeByUid($matches[1]);
+        } elseif (preg_match('/^folder:([a-z0-9\-]+)/', $source, $matches)) {
+            $folder = Craft::$app->getAssets()->getFolderByUid($matches[1]);
+            $volume = $folder?->getVolume();
+        }
+
         // Only match the first folder ID - ignore nested folders
-        if (
-            preg_match('/^volume:([a-z0-9\-]+)/', $source, $matches) &&
-            $volume = Craft::$app->getVolumes()->getVolumeByUid($matches[1])
-        ) {
+        if (isset($volume)) {
             $isTemp = $volume->getFs() instanceof Temp;
 
             $actions[] = [
@@ -1326,10 +1330,15 @@ JS;
 
             [$value, $unit] = Assets::parseSrcsetSize($size);
 
-            $sizeTransform = $transform ? $transform->toArray() : [];
-
-            // Having handle or name here will override dimensions, so we don't want that.
-            unset($sizeTransform['handle'], $sizeTransform['name']);
+            $sizeTransform = $transform ? $transform->toArray([
+                'format',
+                'height',
+                'interlace',
+                'mode',
+                'position',
+                'quality',
+                'width',
+            ]) : [];
 
             if ($unit === 'w') {
                 $sizeTransform['width'] = (int)$value;
@@ -1504,7 +1513,7 @@ JS;
 
         // If a plugin set the url, we'll just use that.
         if ($event->url !== null) {
-            return $event->url;
+            return Html::encodeSpaces($event->url);
         }
 
         $volume = $this->getVolume();
@@ -1512,7 +1521,7 @@ JS;
         $transform = $transform ?? $this->_transform;
 
         if ($transform === null || !Image::canManipulateAsImage(pathinfo($this->getFilename(), PATHINFO_EXTENSION))) {
-            return Assets::generateUrl($volume->getFs(), $this);
+            return Html::encodeSpaces(Assets::generateUrl($volume->getFs(), $this));
         }
 
         $fsNoUrls = !$transform && !$volume->getFs()->hasUrls;
@@ -1530,7 +1539,7 @@ JS;
             ($mimeType === 'image/gif' && !$generalConfig->transformGifs) ||
             ($mimeType === 'image/svg+xml' && !$generalConfig->transformSvgs)
         ) {
-            return Assets::generateUrl($volume->getFs(), $this);
+            return Html::encodeSpaces(Assets::generateUrl($volume->getFs(), $this));
         }
 
         if ($transform) {
@@ -1560,12 +1569,12 @@ JS;
 
                     // If a plugin set the url, we'll just use that.
                     if ($event->url !== null) {
-                        return $event->url;
+                        return Html::encodeSpaces($event->url);
                     }
                 }
 
                 $imageTransformer = $transform->getImageTransformer();
-                $url = $imageTransformer->getTransformUrl($this, $transform, $immediately);
+                $url = Html::encodeSpaces($imageTransformer->getTransformUrl($this, $transform, $immediately));
 
                 if ($this->hasEventHandlers(self::EVENT_AFTER_GENERATE_TRANSFORM)) {
                     $event = new GenerateTransformEvent([
@@ -1585,7 +1594,7 @@ JS;
             }
         }
 
-        return Assets::generateUrl($volume->getFs(), $this);
+        return Html::encodeSpaces(Assets::generateUrl($volume->getFs(), $this));
     }
 
     /**

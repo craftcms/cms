@@ -2,8 +2,61 @@
 
 ## Unreleased
 
+### Deprecated
+- Deprecated `craft\services\Categories::pruneDeletedField()`. ([#11054](https://github.com/craftcms/cms/discussions/11054))
+- Deprecated `craft\services\Globals::pruneDeletedField()`. ([#11054](https://github.com/craftcms/cms/discussions/11054))
+- Deprecated `craft\services\Sections::pruneDeletedField()`. ([#11054](https://github.com/craftcms/cms/discussions/11054))
+- Deprecated `craft\services\Tags::pruneDeletedField()`. ([#11054](https://github.com/craftcms/cms/discussions/11054))
+- Deprecated `craft\services\Users::pruneDeletedField()`. ([#11054](https://github.com/craftcms/cms/discussions/11054))
+- Deprecated `craft\services\Volumes::pruneDeletedField()`. ([#11054](https://github.com/craftcms/cms/discussions/11054))
+
+### Fixed
+- Fixed an error that could occur when saving an element to a disabled site. ([#10499](https://github.com/craftcms/cms/issues/10499))
+- Fixed a bug where newly-added condition rules’ types were still selectable for preexisting condition rules, when they shouldn’t have been.
+
+## 4.0.4 - 2022-06-03
+
+### Added
+- Added support for querying for users with a `credentialed` status.
+- Added `craft\elements\db\UserQuery::STATUS_CREDENTIALED`.
+- Added `craft\errors\FieldNotFoundException`.
+- Added `craft\helpers\Html::encodeSpaces()`.
+- Added `craft\web\twig\variables\Cp::getRequestedSite()`. ([#11082](https://github.com/craftcms/cms/discussions/11082))
+
+### Changed
+- `temp` is now a reserved volume handle.
+- Improved the performance of field layout designers. ([#11298](https://github.com/craftcms/cms/issues/11298))
+- All control panel pages now have a `site--<siteHandle>` class name on the `<body>`, based on the currently-selected site. ([#11303](https://github.com/craftcms/cms/discussions/11303))
+- Warnings are no longer logged when instantiating a field layout that references a deleted custom field. ([#11333](https://github.com/craftcms/cms/issues/11333))
+- `craft\elements\Asset::getUrl()` now encodes any spaces in the URL as `%20` entities.
+
+### Fixed
+- Fixed a bug where it wasn’t possible to disable all table columns for an element source. ([#11291](https://github.com/craftcms/cms/issues/11291))
+- Fixed a bug where the Assets index page wasn’t allowing any bulk actions for assets in the temporary volume. ([#11293](https://github.com/craftcms/cms/issues/11293))
+- Fixed a bug where PHP errors thrown while rendering a template weren’t being handled properly. ([#11108](https://github.com/craftcms/cms/issues/11108))
+- Fixed a bug where site status labels were inconsistent on element edit pages. ([#11307](https://github.com/craftcms/cms/issues/11307))
+- Fixed a bug where addresses’ County fields were mislablled. ([#11314](https://github.com/craftcms/cms/pull/11314))
+- Fixed a bug where the control panel’s login form wasn’t handling errors properly. ([#11319](https://github.com/craftcms/cms/pull/11319))
+- Fixed a bug where it wasn’t possible to use a `{% redirect %}` tag in an error template. ([#11336](https://github.com/craftcms/cms/issues/11336))
+- Fixed an error that occurred when saving an entry via a GraphQL mutation. ([#11312](https://github.com/craftcms/cms/issues/11312))
+- Fixed a bug where all web requests were getting no-cache headers. ([#11346](https://github.com/craftcms/cms/issues/11346))
+- Fixed a bug where user caches weren’t getting invalidated when users were changed to a pending or inactive state.
+- Fixed a bug where querying for users with an `active` status was returning suspended users. ([#11370](https://github.com/craftcms/cms/pull/11370))
+- Fixed a bug where it wasn’t possible to drag assets within Assets fields by their thumbnails. ([#11364](https://github.com/craftcms/cms/issues/11364))
+- Fixed a bug where asset thumbnails weren’t loading if their filename contained a space. ([#11350](https://github.com/craftcms/cms/issues/11350))
+- Fixed a bug where `craft\services\AssetIndexer::indexFile()` wasn’t removing the filename from the file path when setting the directory on the listing. ([#11365](https://github.com/craftcms/cms/issues/11365))
+- Fixed a bug where links within custom field instructions were getting mangled. ([#11377](https://github.com/craftcms/cms/issues/11377))
+
+## 4.0.3 - 2022-05-20
+
+### Added
+- Added `craft\elements\db\ElementQuery::prepareSubquery()`.
+
 ### Changed
 - Element edit pages now disable pointer events on the content container for 300 milliseconds after the “Showing your unsaved changes” notice is displayed. ([#11229](https://github.com/craftcms/cms/issues/11229))
+- Users can now create drafts for entries they have permission to view, but not save. ([#11249](https://github.com/craftcms/cms/issues/11249))
+- User Group condition rules are no longer available in element conditions when no user groups exist. ([#11252](https://github.com/craftcms/cms/issues/11252))
+- Matrix blocks now have `data-type-name` attributes. ([#11286](https://github.com/craftcms/cms/pull/11286))
 
 ### Fixed
 - Fixed a bug where dynamically-defined image transforms weren’t respecting the `format` param, unless the `generateTransformsBeforePageLoad` config setting was enabled.
@@ -20,6 +73,12 @@
 - Fixed a bug where request context logs could appear when nothing else was logged. ([#11141](https://github.com/craftcms/cms/issues/11141))
 - Fixed a bug where stack traces could be erroneously filtered from logs.
 - Fixed a bug where removing an element from a relational field within an element editor could cause the editor to create a provisional draft, even if the element type didn’t support drafts. ([#11242](https://github.com/craftcms/cms/issues/11242))
+- Fixed a bug where draft editor pages had two identical “Save and continue editing” alternate form actions.
+- Fixed a JavaScript warning that occurred when viewing an element edit page, if the user didn’t have permission to edit it.
+- Fixed a bug where asset selector modals weren’t fully initializing for Assets fields, if they were targeting the user’s temp folder. ([#11254](https://github.com/craftcms/cms/issues/11254))
+- Fixed an error that occurred when saving an entry via a GraphQL mutation. ([#11258](https://github.com/craftcms/cms/issues/11258))
+- Fixed a bug where Matrix block types’ layout elements were getting new UUIDs assigned each time the Matrix field was edited. ([#11248](https://github.com/craftcms/cms/issues/11248))
+- Fixed a bug where the web-based installation wizard was throwing an exception if a database connection couldn’t be established, and there was no `config/db.php` file. ([#11245](https://github.com/craftcms/cms/issues/11245))
 
 ## 4.0.2 - 2022-05-11
 
@@ -47,7 +106,7 @@
 - Fixed a bug where Money field labels’ `for` attributes weren’t referencing the correct input ID. ([#11016](https://github.com/craftcms/cms/pull/11016))
 - Fixed a bug where Money field inputs weren’t getting `aria-describedby` attributes. ([#11016](https://github.com/craftcms/cms/pull/11016))
 - Fixed an error that occurred when loading an edit screen for an element type that didn’t have a field layout. ([#11110](https://github.com/craftcms/cms/pull/11110))
-- Fixed a bug where condition rules they weren’t selectable (per `isSelectable()`) were still visible in the rule dropdown menu. ([#11104](https://github.com/craftcms/cms/pull/11104))
+- Fixed a bug where condition rules that weren’t selectable (per `isSelectable()`) were still visible in the rule dropdown menu. ([#11104](https://github.com/craftcms/cms/pull/11104))
 - Fixed a bug where element edit pages could reload themselves immediately after saving the element. ([#11084](https://github.com/craftcms/cms/issues/11084))
 - Fixed a bug where tabs weren’t interactive after changing an entry’s type, if the new entry type didn’t have a tab of the same name as the previously-selected tab. ([#11093](https://github.com/craftcms/cms/issues/11093))
 - Fixed a bug where Twig syntax errors weren’t being handled properly. ([#11108](https://github.com/craftcms/cms/issues/11108))
