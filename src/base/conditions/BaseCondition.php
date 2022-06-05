@@ -78,10 +78,10 @@ abstract class BaseCondition extends Component implements ConditionInterface
     private array $_conditionRuleTypes;
 
     /**
-     * @var ConditionRuleInterface[] The selectable condition rules for this condition.
+     * @var ConditionRuleInterface[]|null The selectable condition rules for this condition.
      * @see getSelectableConditionRules()
      */
-    private array $_selectableConditionRules;
+    private ?array $_selectableConditionRules = null;
 
     /**
      * @inheritdoc
@@ -211,6 +211,9 @@ abstract class BaseCondition extends Component implements ConditionInterface
 
         $rule->setCondition($this);
         $this->_conditionRules->add($rule);
+
+        // Clear caches
+        $this->_selectableConditionRules = null;
     }
 
     /**
