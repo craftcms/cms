@@ -13,6 +13,8 @@ export default Base.extend(
     showingMenu: false,
     disabled: true,
     observer: null,
+    searchStr: '',
+    clearSearchStrTimeout: null,
 
     /**
      * Constructor
@@ -59,6 +61,12 @@ export default Base.extend(
           this.onOptionSelect(ev.selectedOption);
         }.bind(this)
       );
+      this.menu.on('hide', () => {
+        this.clearSearchStr();
+      });
+      this.menu.on('show', () => {
+        this.clearSearchStr();
+      });
 
       this.$btn.attr({
         tabindex: 0,
@@ -104,7 +112,38 @@ export default Base.extend(
     },
 
     onKeyDown: function (ev) {
-      var $option;
+      // Searching for an option?
+      if (
+        ev.key &&
+        (ev.key.match(/^[a-zA-Z0-9]$/) ||
+          (this.searchStr.length && ev.key === ' '))
+      ) {
+        if (this.clearSearchStrTimeout) {
+          clearTimeout(this.clearSearchStrTimeout);
+        }
+
+        this.searchStr += ev.key.toLowerCase();
+
+        for (let i = 0; i < this.menu.$options.length; i++) {
+          const $option = this.menu.$options.eq(i);
+          if (
+            Craft.ltrim($option.text().toLowerCase()).startsWith(this.searchStr)
+          ) {
+            if (this.showingMenu) {
+              this.focusOption($option);
+            } else {
+              this.menu.selectOption($option[0]);
+            }
+            break;
+          }
+        }
+
+        this.clearSearchStrTimeout = setTimeout(() => {
+          this.clearSearchStr();
+        }, 1000);
+
+        return;
+      }
 
       switch (ev.keyCode) {
         case Garnish.RETURN_KEY: {
@@ -121,15 +160,10 @@ export default Base.extend(
         case Garnish.SPACE_KEY: {
           ev.preventDefault();
 
-          if (this.showingMenu) {
-            const $currentOption = this.menu.$options.filter('.hover');
-            if ($currentOption.length > 0) {
-              $currentOption.get(0).click();
-            }
-          } else {
+          if (!this.showingMenu) {
             this.showMenu();
 
-            $option = this.menu.$options.filter('.sel:first');
+            let $option = this.menu.$options.filter('.sel:first');
 
             if ($option.length === 0) {
               $option = this.menu.$options.first();
@@ -143,6 +177,7 @@ export default Base.extend(
 
         case Garnish.DOWN_KEY: {
           ev.preventDefault();
+          let $option;
 
           if (this.showingMenu) {
             $.each(
@@ -178,6 +213,7 @@ export default Base.extend(
 
         case Garnish.UP_KEY: {
           ev.preventDefault();
+          let $option;
 
           if (this.showingMenu) {
             $.each(
@@ -210,6 +246,14 @@ export default Base.extend(
 
           break;
         }
+      }
+    },
+
+    clearSearchStr: function () {
+      this.searchStr = '';
+      if (this.clearSearchStrTimeout) {
+        clearTimeout(this.clearSearchStrTimeout);
+        this.clearSearchStrTimeout = null;
       }
     },
 
