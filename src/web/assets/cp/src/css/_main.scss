@@ -3359,24 +3359,30 @@ ul.tree,
 }
 
 .condition:not(:empty) + .condition-footer .btn.add {
-  border-top-width: 0;
-  border-top-left-radius: 0;
-  border-top-right-radius: 0;
+}
+
+.condition-rule,
+.condition-footer {
+  padding: 7px;
 }
 
 .condition-footer {
-  .btn.add {
-    height: 48px;
+  border: 1px dashed var(--medium-hairline-color);
+  border-radius: var(--large-border-radius);
+
+  .condition:not(:empty) + & {
+    border-top-width: 0;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
   }
 
-  .spinner {
-    @include margin-left(7px);
+  .spinner:not(.loading) {
+    display: none;
   }
 }
 
 .condition-rule {
   margin: 0;
-  padding: 7px;
   border: 1px solid var(--hairline-color);
   background-color: var(--gray-050);
 
