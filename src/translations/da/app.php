@@ -1293,6 +1293,7 @@ return [
     'Show unpermitted files' => 'Vis filer uden tilladelse',
     'Show unpermitted volumes' => 'Vis diskenheder uden tilladelse',
     'Show' => 'Vis',
+    'Show {title} children' => 'Show {title} children',
     'Show/hide children' => 'Vis/gem børn',
     'Showing results for “{searchQuery}”' => 'Viser resultater for “{searchQuery}”',
     'Showing your unsaved changes.' => 'Viser dine ikke-gemte ændringer.',
