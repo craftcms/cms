@@ -1292,6 +1292,7 @@ return [
     'Show unpermitted files' => 'Ukázať nepovolené súbory',
     'Show unpermitted volumes' => 'Ukázať nepovolené zväzky',
     'Show' => 'Ukázať',
+    'Show {title} children' => 'Show {title} children',
     'Show/hide children' => 'Zobraziť/skryť dcérske elementy',
     'Showing results for “{searchQuery}”' => 'Zobrazujem výsledky pre „{searchQuery}“',
     'Showing your unsaved changes.' => 'Zobrazujú sa neuložené zmeny.',
