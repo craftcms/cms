@@ -27,7 +27,6 @@ use craft\errors\WrongEditionException;
 use craft\events\DefineFieldLayoutFieldsEvent;
 use craft\events\DeleteSiteEvent;
 use craft\events\EditionChangeEvent;
-use craft\events\FieldEvent;
 use craft\fieldlayoutelements\addresses\AddressField;
 use craft\fieldlayoutelements\addresses\CountryCodeField;
 use craft\fieldlayoutelements\addresses\LabelField;
@@ -1441,7 +1440,7 @@ trait ApplicationTrait
 
         // Load the request before anything else, so everything else can safely check Craft::$app->has('request', true)
         // to avoid possible recursive fatal errors in the request initialization
-        $this->getRequest();
+        $request = $this->getRequest();
         $this->getLog();
 
         // Set the timezone
@@ -1451,7 +1450,7 @@ trait ApplicationTrait
         $this->updateTargetLanguage();
 
         // Prevent browser caching if this is a control panel request
-        if ($this instanceof WebApplication) {
+        if ($this instanceof WebApplication && $request->getIsCpRequest()) {
             $this->getResponse()->setNoCacheHeaders();
         }
     }
@@ -1645,16 +1644,6 @@ trait ApplicationTrait
             // GraphQL public token
             ->onAdd(ProjectConfig::PATH_GRAPHQL_PUBLIC_TOKEN, $this->_proxy('gql', 'handleChangedPublicToken'))
             ->onUpdate(ProjectConfig::PATH_GRAPHQL_PUBLIC_TOKEN, $this->_proxy('gql', 'handleChangedPublicToken'));
-
-        // Prune deleted fields from their layouts
-        Event::on(Fields::class, Fields::EVENT_AFTER_DELETE_FIELD, function(FieldEvent $event) {
-            $this->getVolumes()->pruneDeletedField($event);
-            $this->getTags()->pruneDeletedField($event);
-            $this->getCategories()->pruneDeletedField($event);
-            $this->getUsers()->pruneDeletedField($event);
-            $this->getGlobals()->pruneDeletedField($event);
-            $this->getSections()->pruneDeletedField($event);
-        });
 
         // Prune deleted sites from site settings
         Event::on(Sites::class, Sites::EVENT_AFTER_DELETE_SITE, function(DeleteSiteEvent $event) {

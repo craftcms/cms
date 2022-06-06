@@ -1330,6 +1330,14 @@ Craft.CP = Garnish.Base.extend(
         const url = Craft.getUrl(document.location.href, {site: site.handle});
         history.replaceState({}, '', url);
 
+        // update the site--x body class
+        for (className of document.body.classList) {
+          if (className.match(/^site--/)) {
+            document.body.classList.remove(className);
+          }
+        }
+        document.body.classList.add(`site--${site.handle}`);
+
         // update other URLs on the page
         $('a').each(function () {
           if (
