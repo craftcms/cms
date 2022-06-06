@@ -13,6 +13,7 @@
 ### Fixed
 - Fixed an error that could occur when saving an element to a disabled site. ([#10499](https://github.com/craftcms/cms/issues/10499))
 - Fixed a bug where newly-added condition rules’ types were still selectable for preexisting condition rules, when they shouldn’t have been.
+- Fixed a bug where field layout designers were checking the wrong setting when determining whether to include UI elements (`customizableTabs` instead of `customizableUi`).
 
 ## 4.0.4 - 2022-06-03
 
