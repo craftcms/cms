@@ -60,7 +60,7 @@
     #{lightness($darkFocusColor)};
   --focus-ring: 0 0 0 1px hsl(var(--dark-focus-hsl)),
     0 0 0 3px hsla(var(--dark-focus-hsl), 0.7);
-  --touch-target-size: 44px; /* Minimum recommended touch target size */
+  --touch-target-size: 24px; /* Minimum recommended touch target size */
 }
 
 body,
@@ -2731,25 +2731,32 @@ $checkboxPadding: $checkboxSize + 4;
 
   // table views
   .tableview {
-    .move {
-      display: block;
+    .move,
+    .toggle {
+      display: flex;
       position: absolute;
-      top: calc(50% - 11px);
-      @include margin-left(-14px);
+      justify-content: center;
+      align-items: center;
+      top: 50%;
+      transform: translateY(-50%);
+      @include margin-left(calc(var(--touch-target-size) * -1));
+      width: var(--touch-target-size);
+      height: var(--touch-target-size);
+    }
+
+    .move {
       font-size: 11px;
       text-decoration: none;
     }
 
     .toggle {
-      display: block;
-      position: absolute;
-      top: calc(50% - 7px);
-      @include margin-left(-16px);
+      text-align: center;
       padding: 4px;
+      border-radius: 50%;
     }
 
     .move + .toggle {
-      @include margin-left(-34px);
+      @include margin-left(calc(var(--touch-target-size) * -2));
     }
   }
 
