@@ -1292,6 +1292,7 @@ return [
     'Show unpermitted files' => 'Niet-toegestane bestanden weergeven',
     'Show unpermitted volumes' => 'Niet-toegestane volumes weergeven',
     'Show' => 'Tonen',
+    'Show {title} children' => 'Show {title} children',
     'Show/hide children' => 'Kinderen tonen/verbergen',
     'Showing results for “{searchQuery}”' => 'Resultaten voor “{searchQuery}” worden weergegeven',
     'Showing your unsaved changes.' => 'Jouw niet-opgeslagen wijzigingen worden weergegeven.',
