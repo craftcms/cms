@@ -1292,6 +1292,7 @@ return [
     'Show unpermitted files' => '显示不允许的文件',
     'Show unpermitted volumes' => '显示不允许的存储卷',
     'Show' => '显示',
+    'Show {title} children' => 'Show {title} children',
     'Show/hide children' => '显示/隐藏子条目',
     'Showing results for “{searchQuery}”' => '正在显示“{searchQuery}”的结果',
     'Showing your unsaved changes.' => '显示未保存的更改。',
