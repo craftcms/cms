@@ -1292,6 +1292,7 @@ return [
     'Show unpermitted files' => 'İzin verilmeyen dosyaları göster',
     'Show unpermitted volumes' => 'İzin verilmeyen birimleri göster',
     'Show' => 'Göster',
+    'Show {title} children' => 'Show {title} children',
     'Show/hide children' => 'Alt maddeleri göster/sakla',
     'Showing results for “{searchQuery}”' => '“{searchQuery}” için sonuçlar gösteriliyor',
     'Showing your unsaved changes.' => 'Kaydedilmemiş değişikliklerinizi görüntüleme.',
