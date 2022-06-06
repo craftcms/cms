@@ -859,7 +859,12 @@ class EntryQuery extends ElementQuery
      */
     protected function statusCondition(string $status): mixed
     {
-        $currentTimeDb = Db::prepareDateForDb(new DateTime());
+        // Always consider “now” to be the current time @ 59 seconds into the minute.
+        // This makes entry queries more cacheable, since they only change once every minute (https://github.com/craftcms/cms/issues/5389),
+        // while not excluding any entries that may have just been published in the past minute (https://github.com/craftcms/cms/issues/7853).
+        $now = new DateTime();
+        $now->setTime((int)$now->format('H'), (int)$now->format('i'), 59);
+        $currentTimeDb = Db::prepareDateForDb($now);
 
         return match ($status) {
             Entry::STATUS_LIVE => [

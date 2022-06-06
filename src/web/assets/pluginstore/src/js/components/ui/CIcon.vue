@@ -26,6 +26,7 @@
   import CopyIcon from './icons/CopyIcon';
   import ExclamationCircleIcon from './icons/ExclamationCircleIcon';
   import ExclamationTriangleIcon from './icons/ExclamationTriangleIcon';
+  import ExternalLinkIcon from './icons/ExternalLinkIcon';
   import FlagIcon from './icons/FlagIcon';
   import GithubIcon from './icons/GithubIcon';
   import InfoCircleIcon from './icons/InfoCircleIcon';
@@ -54,6 +55,7 @@
       CopyIcon,
       ExclamationCircleIcon,
       ExclamationTriangleIcon,
+      ExternalLinkIcon,
       FlagIcon,
       GithubIcon,
       InfoCircleIcon,

@@ -353,12 +353,20 @@ class Cp
 
         $user = Craft::$app->getUser()->getIdentity();
 
-        if ($user && $element->canView($user)) {
-            $attributes['data']['editable'] = true;
-        }
+        if ($user) {
+            if ($element->canView($user)) {
+                $attributes['data']['editable'] = true;
+            }
 
-        if ($user && $context === 'index' && $element->canDelete($user)) {
-            $attributes['data']['deletable'] = true;
+            if ($context === 'index') {
+                if ($element->canSave($user)) {
+                    $attributes['data']['savable'] = true;
+                }
+
+                if ($element->canDelete($user)) {
+                    $attributes['data']['deletable'] = true;
+                }
+            }
         }
 
         if ($element->trashed) {

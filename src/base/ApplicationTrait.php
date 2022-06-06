@@ -27,7 +27,6 @@ use craft\errors\WrongEditionException;
 use craft\events\DefineFieldLayoutFieldsEvent;
 use craft\events\DeleteSiteEvent;
 use craft\events\EditionChangeEvent;
-use craft\events\FieldEvent;
 use craft\fieldlayoutelements\addresses\AddressField;
 use craft\fieldlayoutelements\addresses\CountryCodeField;
 use craft\fieldlayoutelements\addresses\LabelField;
@@ -101,6 +100,7 @@ use craft\web\Application as WebApplication;
 use craft\web\AssetManager;
 use craft\web\Request as WebRequest;
 use craft\web\View;
+use Illuminate\Support\Collection;
 use Yii;
 use yii\base\Application;
 use yii\base\ErrorHandler;
@@ -1439,9 +1439,15 @@ trait ApplicationTrait
         ColumnSchemaBuilder::$typeCategoryMap[Schema::TYPE_LONGTEXT] = ColumnSchemaBuilder::CATEGORY_STRING;
         ColumnSchemaBuilder::$typeCategoryMap[Schema::TYPE_ENUM] = ColumnSchemaBuilder::CATEGORY_STRING;
 
+        // Register Collection::one() as an alias of first(), for consistency with yii\db\Query.
+        Collection::macro('one', function() {
+            /** @var Collection $this */
+            return $this->first(...func_get_args());
+        });
+
         // Load the request before anything else, so everything else can safely check Craft::$app->has('request', true)
         // to avoid possible recursive fatal errors in the request initialization
-        $this->getRequest();
+        $request = $this->getRequest();
         $this->getLog();
 
         // Set the timezone
@@ -1451,7 +1457,7 @@ trait ApplicationTrait
         $this->updateTargetLanguage();
 
         // Prevent browser caching if this is a control panel request
-        if ($this instanceof WebApplication) {
+        if ($this instanceof WebApplication && $request->getIsCpRequest()) {
             $this->getResponse()->setNoCacheHeaders();
         }
     }
@@ -1645,16 +1651,6 @@ trait ApplicationTrait
             // GraphQL public token
             ->onAdd(ProjectConfig::PATH_GRAPHQL_PUBLIC_TOKEN, $this->_proxy('gql', 'handleChangedPublicToken'))
             ->onUpdate(ProjectConfig::PATH_GRAPHQL_PUBLIC_TOKEN, $this->_proxy('gql', 'handleChangedPublicToken'));
-
-        // Prune deleted fields from their layouts
-        Event::on(Fields::class, Fields::EVENT_AFTER_DELETE_FIELD, function(FieldEvent $event) {
-            $this->getVolumes()->pruneDeletedField($event);
-            $this->getTags()->pruneDeletedField($event);
-            $this->getCategories()->pruneDeletedField($event);
-            $this->getUsers()->pruneDeletedField($event);
-            $this->getGlobals()->pruneDeletedField($event);
-            $this->getSections()->pruneDeletedField($event);
-        });
 
         // Prune deleted sites from site settings
         Event::on(Sites::class, Sites::EVENT_AFTER_DELETE_SITE, function(DeleteSiteEvent $event) {
