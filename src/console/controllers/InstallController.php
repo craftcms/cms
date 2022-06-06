@@ -106,6 +106,9 @@ class InstallController extends Controller
             return ExitCode::OK;
         }
 
+        $configService = Craft::$app->getConfig();
+        $generalConfig = $configService->getGeneral();
+
         $user = new User();
         $site = new Site([
             'handle' => 'default',
@@ -116,22 +119,41 @@ class InstallController extends Controller
         $errors = [];
         $currentError = null;
 
-        if ($this->username && !$this->createAttributeValidator($user, 'username')($this->username, $currentError)) {
+        if (
+            !$generalConfig->useEmailAsUsername &&
+            ($this->username || !$this->interactive) &&
+            !$this->createAttributeValidator($user, 'username')($this->username ?? '', $currentError)
+        ) {
             $errors[] = $currentError;
         }
-        if ($this->email && !$this->createAttributeValidator($user, 'email')($this->email, $currentError)) {
+        if (
+            ($this->email || !$this->interactive) &&
+            !$this->createAttributeValidator($user, 'email')($this->email ?? '', $currentError)
+        ) {
             $errors[] = $currentError;
         }
-        if ($this->password && !$this->createAttributeValidator($user, 'newPassword')($this->password, $currentError)) {
+        if (
+            ($this->password || !$this->interactive) &&
+            !$this->createAttributeValidator($user, 'newPassword')($this->password ?? '', $currentError)
+        ) {
             $errors[] = $currentError;
         }
-        if ($this->siteName && !$this->createAttributeValidator($site, 'name')($this->siteName, $currentError)) {
+        if (
+            ($this->siteName || !$this->interactive) &&
+            !$this->createAttributeValidator($site, 'name')($this->siteName ?? '', $currentError)
+        ) {
             $errors[] = $currentError;
         }
-        if ($this->siteUrl && !$this->createAttributeValidator($site, 'baseUrl')($this->siteUrl, $currentError)) {
+        if (
+            ($this->siteUrl || !$this->interactive) &&
+            !$this->createAttributeValidator($site, 'baseUrl')($this->siteUrl ?? '', $currentError)
+        ) {
             $errors[] = $currentError;
         }
-        if ($this->language && !$this->createAttributeValidator($site, 'language')($this->language, $currentError)) {
+        if (
+            ($this->language || !$this->interactive) &&
+            !$this->createAttributeValidator($site, 'language')($this->language ?? '', $currentError)
+        ) {
             $errors[] = $currentError;
         }
 
@@ -139,9 +161,6 @@ class InstallController extends Controller
             $this->stderr('Invalid arguments:' . PHP_EOL . '    - ' . implode(PHP_EOL . '    - ', $errors) . PHP_EOL, Console::FG_RED);
             return ExitCode::USAGE;
         }
-
-        $configService = Craft::$app->getConfig();
-        $generalConfig = $configService->getGeneral();
 
         if ($generalConfig->useEmailAsUsername) {
             $username = $email = $this->email ?: $this->prompt('Email:', ['required' => true, 'validator' => $this->createAttributeValidator($user, 'email')]);
