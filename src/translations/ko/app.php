@@ -1292,6 +1292,7 @@ return [
     'Show unpermitted files' => '허용되지 않은 파일 표시',
     'Show unpermitted volumes' => '허용되지 않은 볼륨 표시',
     'Show' => '표시하기',
+    'Show {title} children' => 'Show {title} children',
     'Show/hide children' => '자식 표시하기/숨기기',
     'Showing results for “{searchQuery}”' => '“{searchQuery}”의 결과 표시',
     'Showing your unsaved changes.' => '저장되지 않은 변경 사항을 표시하고 있습니다.',
