@@ -1292,6 +1292,7 @@ return [
     'Show unpermitted files' => '許可されていないファイルを表示',
     'Show unpermitted volumes' => '許可されていないボリュームを表示',
     'Show' => '表示する',
+    'Show {title} children' => 'Show {title} children',
     'Show/hide children' => '子を表示／非表示します',
     'Showing results for “{searchQuery}”' => '「{searchQuery}」の結果を表示しています',
     'Showing your unsaved changes.' => '保存されていない変更を表示しています。',
