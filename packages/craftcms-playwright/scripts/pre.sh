@@ -17,10 +17,12 @@ PLAYWRIGHT_STATUS=$(docker compose ps --services --status=running playwright)
 # Boot docker container if required
 if [ "$PLAYWRIGHT_STATUS" != 'playwright' ]
 then
-  echo "Booting docker"
+  echo "Booting docker…"
   PLAYWRIGHT_REPO_PATH=$REPO_PATH docker compose up -d
 else
+  echo "Container already running, shutting down…"
   docker compose down -v
+  echo "Booting docker…"
   PLAYWRIGHT_REPO_PATH=$REPO_PATH docker compose up -d
 fi
 
@@ -29,8 +31,8 @@ DB_BACKUP_DOESNT_EXIST=$(docker compose exec playwright sh -c "ls -la /app/backu
 
 if [ "$DB_BACKUP_DOESNT_EXIST" ]
 then
-  echo "Running init"
+  echo "Running init scripts…"
   docker compose exec playwright $INIT_SCRIPT_PATH
 fi
 
-echo 'ready.'
+echo "Container ready!"
