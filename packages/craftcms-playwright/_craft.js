@@ -9,7 +9,8 @@ const dockerCli = `docker compose --file=./${packagePath}/docker-compose.yaml ex
 const craftCli = '/app/craft';
 
 const dbRestore = async () => {
-  console.log('Restoring DB');
+  process.stdout.write('Restoring DB');
+  process.stdout.write('\n');
   try {
     const {stdout, stderr} = await nodeExec(
       `${dockerCli} ${craftCli} db/restore --interactive=0 /app/backup/db.sql`
@@ -21,7 +22,8 @@ const dbRestore = async () => {
 };
 
 const dbBackup = async () => {
-  console.log('Backing up DB');
+  process.stdout.write('Backing up DB');
+  process.stdout.write('\n');
   try {
     const {stdout, stderr} = await nodeExec(
       `${dockerCli} ${craftCli} db/backup --interactive=0 --overwrite=1 /app/backup/db.sql`
@@ -33,7 +35,8 @@ const dbBackup = async () => {
 };
 
 const projectConfigRestore = async () => {
-  console.log('Restoring Project Config');
+  process.stdout.write('Restoring Project Config');
+  process.stdout.write('\n');
   try {
     const {stdout, stderr} = await nodeExec(
       `${dockerCli} cp -vfrp /app/backup/project /app/config/.`
@@ -45,7 +48,8 @@ const projectConfigRestore = async () => {
 };
 
 const composerRestore = async () => {
-  console.log('Restoring Composer');
+  process.stdout.write('Restoring Composer');
+  process.stdout.write('\n');
   try {
     let {stdout, stderr} = await nodeExec(
       `${dockerCli} cp -vfrp /app/backup/composer.json /app/.`
