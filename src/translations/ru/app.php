@@ -1292,6 +1292,7 @@ return [
     'Show unpermitted files' => 'Показать файлы, на которые нет разрешения',
     'Show unpermitted volumes' => 'Показать тома, на которые нет разрешения',
     'Show' => 'Показать',
+    'Show {title} children' => 'Show {title} children',
     'Show/hide children' => 'Показать/скрыть дочерние элементы',
     'Showing results for “{searchQuery}”' => 'Отобразить результаты для “{searchQuery}”',
     'Showing your unsaved changes.' => 'Показываются несохраненные изменения.',
