@@ -1292,6 +1292,7 @@ return [
     'Show unpermitted files' => 'عرض الملفات غير المسوح بها',
     'Show unpermitted volumes' => 'عرض وحدات التخزين غير المسوح بها',
     'Show' => 'إظهار',
+    'Show {title} children' => 'Show {title} children',
     'Show/hide children' => 'إظهار/إخفاء العناصر التابعة',
     'Showing results for “{searchQuery}”' => 'إظهار نتائج "{searchQuery}"',
     'Showing your unsaved changes.' => 'يظهر التغييرات الغير محفوظة.',
