@@ -111,6 +111,8 @@ class InstallController extends Controller
         $generalConfig = $configService->getGeneral();
 
         $user = new User();
+        $user->setScenario(User::SCENARIO_REGISTRATION);
+
         $site = new Site([
             'handle' => 'default',
             'hasUrls' => true,
