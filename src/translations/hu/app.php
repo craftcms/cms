@@ -1292,6 +1292,7 @@ return [
     'Show unpermitted files' => 'Mutassa a nem engedélyezett fájlokat',
     'Show unpermitted volumes' => 'Mutassa a nem engedélyezett köteteket',
     'Show' => 'Mutat',
+    'Show {title} children' => 'Show {title} children',
     'Show/hide children' => 'Gyermekek megjelenításe/elrejtése',
     'Showing results for “{searchQuery}”' => 'Találatok megjelenítése: „{searchQuery}”',
     'Showing your unsaved changes.' => 'Az el nem mentett változtatásait mutatja.',
