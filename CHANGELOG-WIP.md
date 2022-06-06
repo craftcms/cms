@@ -2,6 +2,7 @@
 
 ### Added
 - Field layouts can now have “Line Break” UI elements. ([#11328](https://github.com/craftcms/cms/discussions/11328))
+- Added the `db/drop-all-tables` command. ([#11288](https://github.com/craftcms/cms/pull/11288))
 - The `AdminTable` Vue component can now be included into other Vue apps, in addition to being used as a standalone app. ([#11107](https://github.com/craftcms/cms/pull/11107))
 - Added a `one()` alias for `first()` to collections. ([#11134](https://github.com/craftcms/cms/discussions/11134))
 - Added `craft\base\Element::EVENT_DEFINE_CACHE_TAGS`. ([#11171](https://github.com/craftcms/cms/discussions/11171))
@@ -30,6 +31,7 @@
 - Newly-created entries now get placeholder Post Date set on them, so they get sorted appropriately when querying for entries ordered by `postDate`. ([#11272](https://github.com/craftcms/cms/issues/11272)) 
 - Field layout elements within field layout designers now support double-clicking to open their settings slideout. ([#11277](https://github.com/craftcms/cms/discussions/11277))
 - The control panel’s JavaScript queue is now paused when the browser tab isn’t visible. ([#10632](https://github.com/craftcms/cms/issues/10632))
+- The `db/restore` command now asks whether the database should be backed up, and whether all existing database tables should be dropped, prior to restoring the backup. ([#11288](https://github.com/craftcms/cms/pull/11288))
 - The `users/create` command now asks whether the user should be activated when saved.
 - The `maxBackups` config setting now impacts `.sql.zip` files in addition to `.sql` files. ([#11241](https://github.com/craftcms/cms/issues/11241))
 - Deprecation messages are now consistently referred to as “deprecation warnings” in the control panel.
