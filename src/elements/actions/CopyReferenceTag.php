@@ -10,7 +10,6 @@ namespace craft\elements\actions;
 use Craft;
 use craft\base\ElementAction;
 use craft\base\ElementInterface;
-use craft\helpers\Json;
 use yii\base\Exception;
 
 /**
@@ -34,7 +33,6 @@ class CopyReferenceTag extends ElementAction
      */
     public function getTriggerHtml(): ?string
     {
-        $type = Json::encode(static::class);
         /** @var string|ElementInterface $elementType */
         /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
         $elementType = $this->elementType;
@@ -43,25 +41,21 @@ class CopyReferenceTag extends ElementAction
             throw new Exception("Element type \"$elementType\" doesn't have a reference handle.");
         }
 
-        $refHandleJs = Json::encode($refHandle);
-
-        $js = <<<JS
+        Craft::$app->getView()->registerJsWithVars(fn($type, $refHandle) => <<<JS
 (() => {
     new Craft.ElementActionTrigger({
         type: $type,
         batch: false,
-        activate: function(\$selectedItems)
-        {
+        activate: \$selectedItems => {
             Craft.ui.createCopyTextPrompt({
                 label: Craft.t('app', 'Copy the reference tag'),
-                value: '{'+$refHandleJs+':'+\$selectedItems.find('.element').data('id')+'}',
+                value: '{' + $refHandle + ':' + \$selectedItems.find('.element').data('id') + '}',
             });
-        }
+        },
     });
 })();
-JS;
+JS, [static::class, $refHandle]);
 
-        Craft::$app->getView()->registerJs($js);
         return null;
     }
 }

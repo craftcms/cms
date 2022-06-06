@@ -22,6 +22,7 @@ use craft\db\Table;
 use craft\elements\User;
 use craft\errors\SiteNotFoundException;
 use craft\events\CancelableEvent;
+use craft\events\DefineValueEvent;
 use craft\events\PopulateElementEvent;
 use craft\events\PopulateElementsEvent;
 use craft\helpers\ArrayHelper;
@@ -62,6 +63,13 @@ class ElementQuery extends Query implements ElementQueryInterface
      * @event Event An event that is triggered at the end of preparing an element query for the query builder.
      */
     public const EVENT_AFTER_PREPARE = 'afterPrepare';
+
+    /**
+     * @event DefineValueEvent An event that is triggered when defining the cache tags that should be associated with the query.
+     * @see getCacheTags()
+     * @since 4.1.0
+     */
+    public const EVENT_DEFINE_CACHE_TAGS = 'defineCacheTags';
 
     /**
      * @event PopulateElementEvent The event that is triggered after an element is populated.
@@ -1894,6 +1902,15 @@ class ElementQuery extends Query implements ElementQueryInterface
                 $queryTags = (array)$this->id;
             } else {
                 $queryTags = $this->cacheTags();
+
+                if ($this->hasEventHandlers(self::EVENT_DEFINE_CACHE_TAGS)) {
+                    $event = new DefineValueEvent([
+                        'value' => $queryTags,
+                    ]);
+                    $this->trigger(self::EVENT_DEFINE_CACHE_TAGS, $event);
+                    $queryTags = $event->value;
+                }
+
                 if (!empty($queryTags)) {
                     if ($this->drafts !== false) {
                         $queryTags[] = 'drafts';

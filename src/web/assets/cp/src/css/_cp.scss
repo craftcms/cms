@@ -1477,14 +1477,13 @@ li.breadcrumb-toggle-wrapper {
 .so-content .flex-fields {
   --row-gap: var(--xl);
   display: flex;
-  gap: var(--row-gap) 0;
   flex-wrap: wrap;
   align-content: flex-start;
-  margin: 0 calc(var(--row-gap) * -1);
+  margin: 0 calc(var(--row-gap) * -1) calc(var(--row-gap) * -1);
   width: calc(100% + var(--row-gap) * 2);
 
   & > * {
-    margin: 0 !important;
+    margin: 0 0 var(--row-gap) !important;
     padding: 0 var(--row-gap);
     box-sizing: border-box;
   }
@@ -1498,11 +1497,16 @@ li.breadcrumb-toggle-wrapper {
     }
   }
 
-  & > hr {
+  & > hr,
+  & > .line-break {
     flex: 4 0 100%;
   }
 
-  & > :not(h2):not(hr) {
+  & > .line-break:not(:first-child) {
+    margin-bottom: 0 !important;
+  }
+
+  & > :not(h2):not(hr):not(.line-break) {
     &,
     &:last-child {
       position: relative;
@@ -1524,7 +1528,7 @@ li.breadcrumb-toggle-wrapper {
 
 #content :not(.meta) > .flex-fields,
 #content > .flex-fields {
-  & > :not(h2):not(hr) {
+  & > :not(h2):not(hr):not(.line-break) {
     &,
     &:last-child {
       // 4 cols for >= 1536px
@@ -1552,7 +1556,7 @@ li.breadcrumb-toggle-wrapper {
 }
 
 .so-content .flex-fields {
-  & > :not(h2):not(hr) {
+  & > :not(h2):not(hr):not(.line-break) {
     &,
     &:last-child {
       // 2 cols for >= 712px

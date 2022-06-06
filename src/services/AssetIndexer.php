@@ -479,7 +479,7 @@ class AssetIndexer extends Component
      *
      * @param Volume $volume
      * @param string $path
-     * @param int $sessionId optional indexing session id.
+     * @param int $sessionId indexing session ID
      * @param bool $cacheImages Whether remotely-stored images should be downloaded and stored locally, to speed up transform generation.
      * @param bool $createIfMissing Whether the asset record should be created if it doesn't exist yet
      * @return Asset
@@ -490,9 +490,14 @@ class AssetIndexer extends Component
      */
     public function indexFile(Volume $volume, string $path, int $sessionId, bool $cacheImages = false, bool $createIfMissing = true): Asset
     {
+        $dirname = dirname($path);
+        if (in_array($dirname, ['.', '/', '\\'])) {
+            $dirname = '';
+        }
+
         $fs = $volume->getFs();
         $listing = new FsListing([
-            'dirname' => $path,
+            'dirname' => $dirname,
             'basename' => pathinfo($path, PATHINFO_BASENAME),
             'type' => 'file',
             'dateModified' => $fs->getDateModified($path),

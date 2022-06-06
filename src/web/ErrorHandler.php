@@ -129,7 +129,7 @@ class ErrorHandler extends \yii\web\ErrorHandler
             $response->format = Response::FORMAT_JSON;
             if ($this->_showExceptionView()) {
                 $response->data = [
-                    'error' => $exception->getMessage(),
+                    'message' => $exception->getMessage(),
                     'exception' => get_class($exception),
                     'file' => $exception->getFile(),
                     'line' => $exception->getLine(),
@@ -137,10 +137,17 @@ class ErrorHandler extends \yii\web\ErrorHandler
                         unset($step['args']);
                         return $step;
                     }, $exception->getTrace()),
+
+                    // TODO: remove in v5; error message should only be in `message`
+                    'error' => $exception->getMessage(),
                 ];
             } else {
+                $message = $exception instanceof UserException ? $exception->getMessage() : Craft::t('app', 'A server error occurred.');
                 $response->data = [
-                    'error' => $exception instanceof UserException ? $exception->getMessage() : Craft::t('app', 'A server error occurred.'),
+                    'message' => $message,
+
+                    // TODO: remove in v5; error message should only be in `message`
+                    'error' => $message,
                 ];
             }
 
@@ -148,6 +155,8 @@ class ErrorHandler extends \yii\web\ErrorHandler
             if ($exception instanceof ClientException) {
                 $response->setStatusCode($exception->getCode());
                 if (($guzzleResponse = $exception->getResponse()) !== null) {
+
+                    // TODO: review for v5
                     $body = Json::decodeIfJson((string)$guzzleResponse->getBody());
                     if (isset($body['message'])) {
                         $response->data['error'] = $body['message'];
