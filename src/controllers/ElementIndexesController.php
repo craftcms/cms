@@ -108,7 +108,7 @@ class ElementIndexesController extends BaseElementsController
             $this->elementQuery = $this->elementQuery();
 
             if (
-                in_array($action->id, ['get-elements', 'perform-action', 'export']) &&
+                in_array($action->id, ['get-elements', 'get-more-elements', 'perform-action', 'export']) &&
                 $this->includeActions() &&
                 isset($this->sourceKey)
             ) {
