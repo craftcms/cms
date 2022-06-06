@@ -1292,6 +1292,7 @@ return [
     'Show unpermitted files' => 'Vis filer uten tilgang',
     'Show unpermitted volumes' => 'Vis volumer uten tilgang',
     'Show' => 'Vis',
+    'Show {title} children' => 'Show {title} children',
     'Show/hide children' => 'Vis/skjul underelementer',
     'Showing results for “{searchQuery}”' => 'Viser kun resultater for "{searchQuery}"',
     'Showing your unsaved changes.' => 'Viser dine ulagrede endringer.',
