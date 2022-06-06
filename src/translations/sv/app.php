@@ -1292,6 +1292,7 @@ return [
     'Show unpermitted files' => 'Visa obehöriga filer',
     'Show unpermitted volumes' => 'Visa obehöriga volymer',
     'Show' => 'Visa',
+    'Show {title} children' => 'Show {title} children',
     'Show/hide children' => 'Visa/dölj  children',
     'Showing results for “{searchQuery}”' => 'Visar resultat för “{searchQuery}”',
     'Showing your unsaved changes.' => 'Visar dina icke-sparade ändringar.',
