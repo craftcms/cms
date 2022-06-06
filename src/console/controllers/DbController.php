@@ -38,9 +38,10 @@ class DbController extends Controller
     public bool $overwrite = false;
 
     /**
-     * @var bool Whether to clean database tables prior to restoring a backup.
+     * @var bool Whether to drop all preexisting tables in the database prior to restoring the backup.
+     * @since 4.1.0
      */
-    public bool $clean = false;
+    public bool $dropAllTables = false;
 
     /**
      * @inheritdoc
@@ -55,7 +56,7 @@ class DbController extends Controller
                 $options[] = 'overwrite';
                 break;
             case 'restore':
-                $options[] = 'clean';
+                $options[] = 'dropAllTables';
                 break;
         }
 
@@ -67,16 +68,29 @@ class DbController extends Controller
      *
      * Example:
      * ```
-     * php craft db/clean
+     * php craft db/drop-all-tables
      * ```
      *
      * @throws \yii\base\NotSupportedException
      * @throws \yii\db\Exception
+     * @since 4.1.0
      */
-    public function actionClean(): int
+    public function actionDropAllTables(): int
     {
+        if (!$this->_tablesExist()) {
+            $this->stdout('No existing database tables found.' . PHP_EOL, Console::FG_YELLOW);
+            return ExitCode::OK;
+        }
+
+        if (!$this->confirm('Are you sure you want to drop all tables from the database?')) {
+            $this->stdout('Aborted.' . PHP_EOL, Console::FG_YELLOW);
+            return ExitCode::OK;
+        }
+
+        $this->_backupPrompt();
+
         try {
-            $this->_cleanDatabase();
+            $this->_dropAllTables();
         } catch (Throwable $e) {
             Craft::$app->getErrorHandler()->logException($e);
             $this->stderr('error: ' . $e->getMessage() . PHP_EOL, Console::FG_RED);
@@ -87,45 +101,50 @@ class DbController extends Controller
     }
 
     /**
-     * @return bool Whether all tables have been dropped
+     * Returns whether any database tables exist currently.
+     *
+     * @return bool
+     */
+    private function _tablesExist(): bool
+    {
+        return !empty(Craft::$app->getDb()->getSchema()->getTableNames());
+    }
+
+    /**
+     * Prompts for whether the database should be backed up.
+     */
+    private function _backupPrompt(): void
+    {
+        if ($this->interactive && $this->confirm('Backup your database?')) {
+            $this->runAction('backup');
+            $this->stdout(PHP_EOL);
+        }
+    }
+
+    /**
+     * Drops all tables in the database.
+     *
      * @throws NotSupportedException
      * @throws Exception
      */
-    private function _cleanDatabase(): bool
+    private function _dropAllTables(): void
     {
-        $db = Craft::$app->getDb();
-        $schema = $db->getSchema();
-        $tableNames = $schema->getTableNames();
+        $tableNames = Craft::$app->getDb()->getSchema()->getTableNames();
 
-        $this->stdout('Cleaning database ... ' . PHP_EOL);
+        $this->stdout('Dropping all database tables ... ' . PHP_EOL);
 
-        if (empty($tableNames)) {
-            $this->stdout('No tables found to drop.' . PHP_EOL, Console::FG_YELLOW);
-        } else {
-            if ($this->interactive) {
-                Console::outputWarning('This is destructive action. Please backup your database before continuing.');
-            }
-
-            if (!$this->confirm('Drop all tables from database?')) {
-                $this->stdout('Aborting' . PHP_EOL);
-                return false;
-            }
-
-            foreach ($tableNames as $tableName) {
-                $this->stdout("Dropping ");
-                $this->stdout($tableName, Console::FG_CYAN);
-                $this->stdout(' ... ');
-                Db::dropAllForeignKeysToTable($tableName);
-                Craft::$app->getDb()->createCommand()
-                    ->dropTable($tableName)
-                    ->execute();
-                $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
-            }
+        foreach ($tableNames as $tableName) {
+            $this->stdout('    - Dropping ');
+            $this->stdout($tableName, Console::FG_CYAN);
+            $this->stdout(' ... ');
+            Db::dropAllForeignKeysToTable($tableName);
+            Craft::$app->getDb()->createCommand()
+                ->dropTable($tableName)
+                ->execute();
+            $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
         }
 
-        $this->stdout('Done cleaning database.' . PHP_EOL, Console::FG_GREEN);
-
-        return true;
+        $this->stdout('Finished dropping all database tables.' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
     }
 
     /**
@@ -250,14 +269,21 @@ class DbController extends Controller
             $path = reset($files);
         }
 
-        try {
-            if ($this->clean && !$this->_cleanDatabase()) {
-                return ExitCode::OK;
+        if ($this->_tablesExist()) {
+            $this->_backupPrompt();
+
+            if (
+                $this->dropAllTables ||
+                ($this->interactive && $this->confirm('Drop all tables from the database first?'))
+            ) {
+                try {
+                    $this->_dropAllTables();
+                } catch (Throwable $e) {
+                    Craft::$app->getErrorHandler()->logException($e);
+                    $this->stderr('error: ' . $e->getMessage() . PHP_EOL, Console::FG_RED);
+                    return ExitCode::UNSPECIFIED_ERROR;
+                }
             }
-        } catch (Throwable $e) {
-            Craft::$app->getErrorHandler()->logException($e);
-            $this->stderr('error: ' . $e->getMessage() . PHP_EOL, Console::FG_RED);
-            return ExitCode::UNSPECIFIED_ERROR;
         }
 
         $this->stdout('Restoring database backup ... ');
