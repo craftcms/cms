@@ -1292,6 +1292,7 @@ return [
     'Show unpermitted files' => 'הצג קבצים שאינם מותרים',
     'Show unpermitted volumes' => 'הצג אמצעי אחסון שאינם מותרים',
     'Show' => 'הצג',
+    'Show {title} children' => 'Show {title} children',
     'Show/hide children' => 'הצג\הסתר ילדים',
     'Showing results for “{searchQuery}”' => 'מראה תוצאות עבור "{searchQuery}"',
     'Showing your unsaved changes.' => 'מציג את השינויים שלך שלא נשמרו.',
