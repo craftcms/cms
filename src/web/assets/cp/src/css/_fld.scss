@@ -308,7 +308,8 @@ body.dragging {
   cursor: grabbing !important;
 }
 
-.fld-hr {
+.fld-hr,
+.fld-br {
   display: flex;
   justify-content: center;
   padding: 9px 10px;
@@ -322,7 +323,6 @@ body.dragging {
     height: 4px;
     content: '';
     font-size: 0;
-    background-color: var(--gray-100);
     border-radius: 2px;
   }
 
@@ -332,6 +332,21 @@ body.dragging {
     border-radius: 8px;
     padding: 1px 7px;
   }
+}
+
+.fld-hr:before {
+  background-color: var(--gray-100);
+}
+
+.fld-br:before {
+  background-image: repeating-linear-gradient(
+    to right,
+    var(--gray-100),
+    var(--gray-100) calc(100% / 19),
+    transparent calc(100% / 19),
+    transparent calc(100% / 9.5),
+    var(--gray-100) calc(100% / 9.5)
+  );
 }
 
 .fld-element-settings-body {

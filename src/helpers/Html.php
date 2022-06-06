@@ -71,6 +71,18 @@ class Html extends \yii\helpers\Html
     }
 
     /**
+     * Converts spaces into `%20` entities.
+     *
+     * @param string $str
+     * @return string
+     * @since 4.0.4
+     */
+    public static function encodeSpaces(string $str): string
+    {
+        return str_replace(' ', '%20', $str);
+    }
+
+    /**
      * Generates a hidden CSRF input tag.
      *
      * @param array $options The tag options in terms of name-value pairs. These will be rendered as
@@ -777,7 +789,11 @@ class Html extends \yii\helpers\Html
             "/(?<=\\s)((for|list|xlink:href|href|aria\\-labelledby|aria\\-describedby|aria\\-controls|data\\-target|data\\-reverse\\-target|data\\-target\\-prefix)=('|\")#?)([^\.'\"]*)\\3/i",
             function(array $match) use ($namespace, $ids): string {
                 $namespacedIds = array_map(function(string $id) use ($match, $ids, $namespace): string {
-                    if (in_array($match[2], ['href', 'data-target-prefix']) || isset($ids[$id])) {
+                    if (
+                        isset($ids[$id]) ||
+                        $match[2] === 'data-target-prefix' ||
+                        ($match[2] === 'href' && str_ends_with($match[1], '#'))
+                    ) {
                         return sprintf('%s-%s', $namespace, $id);
                     }
                     return $id;

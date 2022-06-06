@@ -169,7 +169,7 @@ JS;
             'Edited',
             'Element',
             'Elements',
-            'Enabled for {site}',
+            'Enabled for all sites',
             'Enabled',
             'Enter the name of the folder',
             'Enter your password to continue.',

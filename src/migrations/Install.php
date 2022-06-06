@@ -945,7 +945,7 @@ class Install extends Migration
                 'fieldId' => $this->integer()->notNull(),
                 'siteId' => $this->integer()->notNull(),
                 'keywords' => $this->text()->notNull(),
-            ], ' ENGINE=MyISAM');
+            ]);
 
             $this->addPrimaryKey(null, Table::SEARCHINDEX, ['elementId', 'attribute', 'fieldId', 'siteId']);
 

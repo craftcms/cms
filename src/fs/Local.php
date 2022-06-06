@@ -163,11 +163,13 @@ class Local extends Fs implements LocalFsInterface
                 continue;
             }
 
-            $filePath = StringHelper::removeLeft($listing->getRealPath(), $this->prefixPath());
+            $filePath = FileHelper::normalizePath(StringHelper::removeLeft($listing->getRealPath(), $this->prefixPath()), '/');
+            $dirname = pathinfo($filePath, PATHINFO_DIRNAME);
+            $basename = $listing->getFilename();
 
             yield new FsListing([
-                'dirname' => pathinfo($filePath, PATHINFO_DIRNAME),
-                'basename' => $listing->getFilename(),
+                'dirname' => $dirname,
+                'basename' => $basename,
                 'type' => $listing->isDir() ? 'dir' : 'file',
                 'dateModified' => filemtime($listing->getRealPath()),
                 'fileSize' => !$listing->isDir() ? filesize($listing->getRealPath()) : null,

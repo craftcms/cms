@@ -18,7 +18,7 @@ $logs = $panel->data;
 ?>
 
 <?php if (empty($logs)): ?>
-    <p>No deprecation errors were logged on this request.</p>
+    <p>No deprecation warnings were logged on this request.</p>
 <?php else: ?>
     <div class="table-responsive">
         <table class="table table-condensed table-bordered table-striped table-hover"
@@ -47,4 +47,4 @@ $logs = $panel->data;
 <?php endif; ?>
 
 <p><a href="<?= UrlHelper::cpUrl('utilities/deprecation-errors') ?>"
-      target="_parent">View all deprecation errors</a></p>
+      target="_parent">View all deprecation warnings</a></p>

@@ -413,17 +413,14 @@ li.sel a {
   font-size: 11px;
   margin-top: -1px;
   @include padding-left(4px);
-  color: var(--ui-control-color);
+  color: var(--link-color);
+  opacity: 0.9;
   body.ltr & {
     content: 'circlerarr';
   }
   body.rtl & {
     content: 'circlelarr';
   }
-}
-
-.go:hover:after {
-  color: var(--link-color);
 }
 
 button {
@@ -5427,7 +5424,7 @@ fieldset {
   padding: 0;
   line-height: 16px;
   border-radius: var(--small-border-radius);
-  color: var(--medium-dark-text-color);
+  color: var(--text-color);
 
   &:before {
     margin: 0;

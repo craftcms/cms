@@ -22,7 +22,9 @@ use craft\db\Table;
 use craft\elements\User;
 use craft\errors\SiteNotFoundException;
 use craft\events\CancelableEvent;
+use craft\events\DefineValueEvent;
 use craft\events\PopulateElementEvent;
+use craft\events\PopulateElementsEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
@@ -38,6 +40,7 @@ use yii\base\NotSupportedException;
 use yii\db\Connection;
 use yii\db\Expression;
 use yii\db\ExpressionInterface;
+use yii\db\QueryBuilder;
 
 /**
  * ElementQuery represents a SELECT SQL statement for elements in a way that is independent of DBMS.
@@ -62,11 +65,25 @@ class ElementQuery extends Query implements ElementQueryInterface
     public const EVENT_AFTER_PREPARE = 'afterPrepare';
 
     /**
+     * @event DefineValueEvent An event that is triggered when defining the cache tags that should be associated with the query.
+     * @see getCacheTags()
+     * @since 4.1.0
+     */
+    public const EVENT_DEFINE_CACHE_TAGS = 'defineCacheTags';
+
+    /**
      * @event PopulateElementEvent The event that is triggered after an element is populated.
      *
      * If [[PopulateElementEvent::$element]] is replaced by an event handler, the replacement will be returned by [[createElement()]] instead.
      */
     public const EVENT_AFTER_POPULATE_ELEMENT = 'afterPopulateElement';
+
+    /**
+     * @event PopulateElementEvent The event that is triggered after an element is populated.
+     *
+     * If [[PopulateElementEvent::$element]] is replaced by an event handler, the replacement will be returned by [[createElement()]] instead.
+     */
+    public const EVENT_AFTER_POPULATE_ELEMENTS = 'afterPopulateElements';
 
     /**
      * @var string The name of the [[ElementInterface]] class.
@@ -1613,6 +1630,23 @@ class ElementQuery extends Query implements ElementQueryInterface
         return $names;
     }
 
+    /**
+     * Prepares the element query and returns its subquery (which determines what elements will be returned).
+     *
+     * @param QueryBuilder|null $builder
+     * @return Query
+     * @since 4.0.3
+     */
+    public function prepareSubquery(?QueryBuilder $builder = null): Query
+    {
+        if ($builder === null) {
+            $builder = Craft::$app->getDb()->getQueryBuilder();
+        }
+
+        /** @var Query */
+        return $this->prepare($builder)->from['subquery'];
+    }
+
     // Arrayable methods
     // -------------------------------------------------------------------------
 
@@ -1868,6 +1902,15 @@ class ElementQuery extends Query implements ElementQueryInterface
                 $queryTags = (array)$this->id;
             } else {
                 $queryTags = $this->cacheTags();
+
+                if ($this->hasEventHandlers(self::EVENT_DEFINE_CACHE_TAGS)) {
+                    $event = new DefineValueEvent([
+                        'value' => $queryTags,
+                    ]);
+                    $this->trigger(self::EVENT_DEFINE_CACHE_TAGS, $event);
+                    $queryTags = $event->value;
+                }
+
                 if (!empty($queryTags)) {
                     if ($this->drafts !== false) {
                         $queryTags[] = 'drafts';
@@ -2862,6 +2905,16 @@ class ElementQuery extends Query implements ElementQueryInterface
             // Should we eager-load some elements onto these?
             if ($this->with) {
                 Craft::$app->getElements()->eagerLoadElements($this->elementType, $elements, $this->with);
+            }
+
+            // Fire an 'afterPopulateElements' event
+            if ($this->hasEventHandlers(self::EVENT_AFTER_POPULATE_ELEMENTS)) {
+                $event = new PopulateElementsEvent([
+                    'elements' => $elements,
+                    'rows' => $rows,
+                ]);
+                $this->trigger(self::EVENT_AFTER_POPULATE_ELEMENTS, $event);
+                $elements = $event->elements;
             }
         }
 
