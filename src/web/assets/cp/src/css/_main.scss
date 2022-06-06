@@ -2752,6 +2752,7 @@ $checkboxPadding: $checkboxSize + 4;
     .toggle {
       text-align: center;
       padding: 4px;
+      border-radius: 50%;
     }
 
     .move + .toggle {
