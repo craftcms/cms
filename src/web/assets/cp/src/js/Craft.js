@@ -1853,7 +1853,7 @@ $.extend(Craft, {
     $('.formsubmit', $container).formsubmit();
     $('.menubtn:not([data-disclosure-trigger])', $container).menubtn();
     $('[data-disclosure-trigger]', $container).disclosureMenu();
-    $('[data-dropdown-listbox-btn]', $container).dropdownListbox();
+    $('[data-select-only-combobox]', $container).selectOnlyCombobox();
     $('.datetimewrapper', $container).datetime();
     $(
       '.datewrapper > input[type="date"], .timewrapper > input[type="time"]',
@@ -2574,10 +2574,10 @@ $.extend($.fn, {
     });
   },
 
-  dropdownListbox: function () {
+  selectOnlyCombobox: function () {
     return this.each(function () {
       const $btn = $(this);
-      new Garnish.DropdownListbox($btn);
+      new Garnish.SelectOnlyCombobox($btn);
     });
   },
 

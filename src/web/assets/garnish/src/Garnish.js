@@ -9,7 +9,6 @@ import Drag from './Drag.js';
 import DragDrop from './DragDrop.js';
 import DragMove from './DragMove.js';
 import DragSort from './DragSort.js';
-import DropdownListbox from './DropdownListbox.js';
 import EscManager from './EscManager.js';
 import HUD from './HUD.js';
 import MenuBtn from './MenuBtn.js';
@@ -18,6 +17,7 @@ import Modal from './Modal.js';
 import NiceText from './NiceText.js';
 import Select from './Select.js';
 import SelectMenu from './SelectMenu.js';
+import SelectOnlyCombobox from './SelectOnlyCombobox.js';
 import UiLayerManager from './UiLayerManager.js';
 
 /**
@@ -817,7 +817,6 @@ Object.assign(Garnish, {
   DragDrop,
   DragMove,
   DragSort,
-  DropdownListbox,
   EscManager,
   HUD,
   MenuBtn,
@@ -826,6 +825,7 @@ Object.assign(Garnish, {
   NiceText,
   Select,
   SelectMenu,
+  SelectOnlyCombobox,
   UiLayerManager,
   /**
    * @deprecated Use UiLayerManager instead.

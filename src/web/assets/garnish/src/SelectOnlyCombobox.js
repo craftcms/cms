@@ -3,7 +3,7 @@ import Base from './Base.js';
 import $ from 'jquery';
 
 /**
- * Dropdown Listbox
+ * Select-Only Combobox
  */
 export default Base.extend(
   {
