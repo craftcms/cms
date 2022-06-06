@@ -1292,6 +1292,7 @@ return [
     'Show unpermitted files' => 'نمایش فایل‌های غیرمجاز',
     'Show unpermitted volumes' => 'نمایش مخزن‌های غیرمجاز',
     'Show' => 'نمایش',
+    'Show {title} children' => 'Show {title} children',
     'Show/hide children' => 'نمایش/مخفی کردن زیرمجموعه',
     'Showing results for “{searchQuery}”' => 'نمایش نتایج برای "{searchQuery}"',
     'Showing your unsaved changes.' => 'در حال نمایش تغییرات ذخیره‌ نشده شما.',
