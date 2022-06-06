@@ -10,7 +10,8 @@ const spawn = require('child_process').spawn;
 
   // If args is not an array or is empty, exit
   if (!Array.isArray(args) || args.length === 0) {
-    console.log('Please provide a command.');
+    process.stdout.write('Please provide a command.');
+    process.stdout.write('\n');
     process.exit(1);
   }
 
@@ -31,7 +32,6 @@ const spawn = require('child_process').spawn;
     );
 
     pre.on('close', (code) => {
-      console.log(code);
       const tests = spawn('npx', ['playwright', 'test'], {
         stdio: 'inherit',
       });
@@ -52,7 +52,6 @@ const spawn = require('child_process').spawn;
       });
     });
   } else if (command == 'boot') {
-    console.log('Boot container');
     const boot = spawn(
       '/bin/bash',
       [path.resolve(__dirname, 'scripts/pre.sh')],
@@ -62,7 +61,6 @@ const spawn = require('child_process').spawn;
       }
     );
   } else if (command == 'down') {
-    console.log('Shutdown container');
     const down = spawn(
       '/bin/bash',
       [path.resolve(__dirname, 'scripts/post.sh')],
@@ -72,9 +70,6 @@ const spawn = require('child_process').spawn;
       }
     );
   }
-
-  console.log({command});
-  console.log({args});
 })().catch((err) => {
   console.log(err);
 });
