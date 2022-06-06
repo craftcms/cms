@@ -1292,6 +1292,7 @@ return [
     'Show unpermitted files' => 'Mostra file non consentiti',
     'Show unpermitted volumes' => 'Mostra volumi non consentiti',
     'Show' => 'Mostra',
+    'Show {title} children' => 'Show {title} children',
     'Show/hide children' => 'Mostra/nascondi figli',
     'Showing results for “{searchQuery}”' => 'Visualizzazione risultati per “{searchQuery}”',
     'Showing your unsaved changes.' => 'Visualizzazione modifiche non salvate.',
