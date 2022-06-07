@@ -589,7 +589,6 @@ class AssetIndexer extends Component
             'completed',
         ]);
         Db::insert(Table::ASSETINDEXDATA, $data);
-
     }
 
     /**
