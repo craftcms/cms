@@ -11,7 +11,6 @@ use Craft;
 use craft\base\ElementAction;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\User;
-use craft\helpers\Json;
 use yii\base\Exception;
 
 /**
@@ -78,56 +77,49 @@ class DeleteUsers extends ElementAction implements DeleteActionInterface
             return '<div class="btn formsubmit">' . $this->getTriggerLabel() . '</div>';
         }
 
-        $type = Json::encode(static::class);
-        $undeletableIds = Json::encode($this->_getUndeletableUserIds());
-        $redirect = Json::encode(Craft::$app->getSecurity()->hashData(Craft::$app->getEdition() === Craft::Pro ? 'users' : 'dashboard'));
-
-        $js = <<<JS
+        Craft::$app->getView()->registerJsWithVars(
+            fn($type, $undeletableIds, $redirect) => <<<JS
 (() => {
     new Craft.ElementActionTrigger({
         type: $type,
         batch: true,
-        validateSelection: function(\$selectedItems)
-        {
-            for (var i = 0; i < \$selectedItems.length; i++)
-            {
-                if ($.inArray(\$selectedItems.eq(i).find('.element').data('id').toString(), $undeletableIds) != -1)
-                {
+        validateSelection: \$selectedItems => {
+            for (let i = 0; i < \$selectedItems.length; i++) {
+                if ($.inArray(\$selectedItems.eq(i).find('.element').data('id').toString(), $undeletableIds) != -1) {
                     return false;
                 }
             }
-
             return true;
         },
-        activate: function(\$selectedItems)
-        {
+        activate: () => {
             Craft.elementIndex.setIndexBusy();
             const ids = Craft.elementIndex.getSelectedElementIds();
             const data = {userId: ids};
             Craft.sendActionRequest('POST', 'users/user-content-summary', {data})
                 .then((response) => {
-                    Craft.elementIndex.setIndexAvailable();
                     const modal = new Craft.DeleteUserModal(ids, {
                         contentSummary: response.data,
-                        onSubmit: function()
-                        {
+                        onSubmit: () => {
                             Craft.elementIndex.submitAction($type, Garnish.getPostData(modal.\$container));
                             modal.hide();
-        
                             return false;
                         },
                         redirect: $redirect
                     });                    
                 })
-                .catch(() => {
+                .finally(() => {
                     Craft.elementIndex.setIndexAvailable();
                 });
-        }
+        },
     });
 })();
-JS;
+JS,
+            [
+                static::class,
+                $this->_getUndeletableUserIds(),
+                Craft::$app->getSecurity()->hashData(Craft::$app->getEdition() === Craft::Pro ? 'users' : 'dashboard'),
+            ]);
 
-        Craft::$app->getView()->registerJs($js);
         return null;
     }
 

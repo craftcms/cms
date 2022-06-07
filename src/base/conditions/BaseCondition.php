@@ -78,6 +78,12 @@ abstract class BaseCondition extends Component implements ConditionInterface
     private array $_conditionRuleTypes;
 
     /**
+     * @var ConditionRuleInterface[]|null The selectable condition rules for this condition.
+     * @see getSelectableConditionRules()
+     */
+    private ?array $_selectableConditionRules = null;
+
+    /**
      * @inheritdoc
      */
     public function init(): void
@@ -135,12 +141,15 @@ abstract class BaseCondition extends Component implements ConditionInterface
      */
     public function getSelectableConditionRules(): array
     {
-        $conditionsService = Craft::$app->getConditions();
-        return Collection::make($this->getConditionRuleTypes())
-            ->keyBy(fn($type) => is_string($type) ? $type : Json::encode($type))
-            ->map(fn($type) => $conditionsService->createConditionRule($type))
-            ->filter(fn(ConditionRuleInterface $rule) => $this->isConditionRuleSelectable($rule))
-            ->all();
+        if (!isset($this->_selectableConditionRules)) {
+            $conditionsService = Craft::$app->getConditions();
+            $this->_selectableConditionRules = Collection::make($this->getConditionRuleTypes())
+                ->keyBy(fn($type) => is_string($type) ? $type : Json::encode($type))
+                ->map(fn($type) => $conditionsService->createConditionRule($type))
+                ->filter(fn(ConditionRuleInterface $rule) => $this->isConditionRuleSelectable($rule))
+                ->all();
+        }
+        return $this->_selectableConditionRules;
     }
 
     /**
@@ -202,6 +211,9 @@ abstract class BaseCondition extends Component implements ConditionInterface
 
         $rule->setCondition($this);
         $this->_conditionRules->add($rule);
+
+        // Clear caches
+        $this->_selectableConditionRules = null;
     }
 
     /**

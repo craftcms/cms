@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - develop
-      - '4.0'
+      - v3
   pull_request:
 concurrency:
   group: ci-${{ github.ref }}
