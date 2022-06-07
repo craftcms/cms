@@ -22,7 +22,9 @@
                 {% set linkAttributes = {
                     href: url(item.url),
                     class: item.sel ? 'sel',
-                    'aria-current' : (item.sel and not item.subnav) ? 'page' : false,
+                    aria: {
+                        current: item.sel and not item.subnav ? 'page' : false,
+                    },
                 } %}
                 <li {{ attr(itemAttributes) }}>
                     <a {{ attr(linkAttributes) }}>
@@ -62,7 +64,9 @@
                                         (item.external ?? false) ? 'external',
                                     ],
                                     target: (item.external ?? false) ? '_blank',
-                                    'aria-current' : itemIsSelected ? 'page' : false,
+                                    aria: {
+                                        current: itemIsSelected ? 'page' : false,
+                                    },
                                 } %}
 
                                 <li>
