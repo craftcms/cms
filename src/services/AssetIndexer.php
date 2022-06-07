@@ -529,7 +529,10 @@ class AssetIndexer extends Component
             'completed' => false,
         ]);
 
-        return $this->indexFileByEntry($indexEntry, $cacheImages, $createIfMissing);
+        $asset = $this->indexFileByEntry($indexEntry, $cacheImages, $createIfMissing);
+        $indexEntry->recordId = $asset->id;
+        $this->storeIndexEntry($indexEntry);
+        return $asset;
     }
 
     /**
@@ -558,7 +561,35 @@ class AssetIndexer extends Component
             'completed' => false,
         ]);
 
-        return $this->indexFolderByEntry($indexEntry, $createIfMissing);
+        $folder = $this->indexFolderByEntry($indexEntry, $createIfMissing);
+        $indexEntry->recordId = $folder->id;
+        $this->storeIndexEntry($indexEntry);
+        return $folder;
+    }
+
+    /**
+     * Store a single index entry.
+     *
+     * @param AssetIndexData $indexEntry
+     * @throws \yii\db\Exception
+     */
+    protected function storeIndexEntry(AssetIndexData $indexEntry)
+    {
+        $data = $indexEntry->toArray([
+            'id',
+            'sessionId',
+            'volumeId',
+            'uri',
+            'size',
+            'timestamp',
+            'isDir',
+            'recordId',
+            'isSkipped',
+            'inProgress',
+            'completed'
+        ]);
+        Db::insert(Table::ASSETINDEXDATA, $data);
+
     }
 
     /**
