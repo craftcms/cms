@@ -1126,28 +1126,34 @@ Craft.CP = Garnish.Base.extend(
           new Promise((resolve, reject) => {
             Craft.sendActionRequest('POST', 'app/get-utilities-badge-count')
               .then(({data}) => {
-                // Get the existing utility nav badge, if any
+                // Get the existing utility nav badge and screen reader text, if any
                 let $badge = $utilitiesLink.children('.badge');
+                let $screenReaderText = $utilitiesLink.children('[data-notification-text]');
 
                 if (data.badgeCount) {
-                  const notificationText =
-                    $badge.length === 1
-                      ? Craft.t('app', 'Notification')
-                      : Craft.t('app', 'Notifications');
-
                   if (!$badge.length) {
-                    $badge = $('<span class="badge"/>').appendTo(
+                    $badge = $('<span class="badge" aria-hidden="true"/>').appendTo(
                       $utilitiesLink
                     );
                   }
+
+                  if (!$screenReaderText.length) {
+                    $screenReaderText = $('<span class="visually-hidden" data-notification-text/>').appendTo(
+                      $utilitiesLink
+                    );
+                  }
+
                   $badge.text(data.badgeCount);
-                  $badge.append(
-                    '<span class="visually-hidden"> ' +
-                      notificationText +
-                      '</span>'
-                  );
-                } else if ($badge.length) {
+                  $screenReaderText.text(Craft.t(
+                    'app',
+                    '{num, number} {num, plural, =1{notification} other{notifications}}',
+                    {
+                      num: data.badgeCount,
+                    }
+                  ));
+                } else if ($badge.length && $screenReaderText.length) {
                   $badge.remove();
+                  $screenReaderText.remove();
                 }
                 resolve();
               })
