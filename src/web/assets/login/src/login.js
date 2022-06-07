@@ -144,7 +144,7 @@ import './login.scss';
           window.location.href = response.data.returnUrl;
         })
         .catch(({response}) => {
-          Garnish.shake(this.$form);
+          Garnish.shake(this.$form, 'left');
           this.onSubmitResponse();
 
           // Add the error message
