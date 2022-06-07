@@ -132,6 +132,8 @@ JS;
             'Are you sure you want to transfer your license to this domain?',
             'Buy {name}',
             'Cancel',
+            'Choose a category group',
+            'Choose a section',
             'Choose a user',
             'Choose which table columns should be visible for this source, and in which order.',
             'Choose which user groups should have access to this source.',

@@ -97,11 +97,11 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend({
             class: 'btn submit menubtn btngroup-btn-last',
             'aria-controls': menuId,
             'data-disclosure-trigger': '',
-            'aria-label': Craft.t('app', 'Specify new category type'),
+            'aria-label': Craft.t('app', 'Choose a category group'),
           }).appendTo(this.$newCategoryBtnGroup);
         }
       } else {
-        const label = Craft.t('app', 'New category');
+        const label = Craft.t('app', 'Choose a category group');
         this.$newCategoryBtn = $menuBtn = Craft.ui
           .createButton({
             label: label,
