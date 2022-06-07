@@ -1128,29 +1128,33 @@ Craft.CP = Garnish.Base.extend(
               .then(({data}) => {
                 // Get the existing utility nav badge and screen reader text, if any
                 let $badge = $utilitiesLink.children('.badge');
-                let $screenReaderText = $utilitiesLink.children('[data-notification-text]');
+                let $screenReaderText = $utilitiesLink.children(
+                  '[data-notification]'
+                );
 
                 if (data.badgeCount) {
                   if (!$badge.length) {
-                    $badge = $('<span class="badge" aria-hidden="true"/>').appendTo(
-                      $utilitiesLink
-                    );
+                    $badge = $(
+                      '<span class="badge" aria-hidden="true"/>'
+                    ).appendTo($utilitiesLink);
                   }
 
                   if (!$screenReaderText.length) {
-                    $screenReaderText = $('<span class="visually-hidden" data-notification-text/>').appendTo(
-                      $utilitiesLink
-                    );
+                    $screenReaderText = $(
+                      '<span class="visually-hidden" data-notification/>'
+                    ).appendTo($utilitiesLink);
                   }
 
                   $badge.text(data.badgeCount);
-                  $screenReaderText.text(Craft.t(
-                    'app',
-                    '{num, number} {num, plural, =1{notification} other{notifications}}',
-                    {
-                      num: data.badgeCount,
-                    }
-                  ));
+                  $screenReaderText.text(
+                    Craft.t(
+                      'app',
+                      '{num, number} {num, plural, =1{notification} other{notifications}}',
+                      {
+                        num: data.badgeCount,
+                      }
+                    )
+                  );
                 } else if ($badge.length && $screenReaderText.length) {
                   $badge.remove();
                   $screenReaderText.remove();
