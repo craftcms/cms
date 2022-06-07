@@ -38,13 +38,13 @@
     {% endif %}
     <span class="label">{{ source.label|trim is not same as('') ? source.label : '(blank)'|t('app') }}</span>
     {% if source.badgeCount is defined %}
-        <span class="badge">
-            {{ source.badgeCount|number(decimals=0) }}
-            {{ tag('span', {
-                class: 'visually-hidden',
-                text: source.badgeCount == 1 ? 'Notification'|t('app') : 'Notifications'|t('app')
-            }) }}
-        </span>
+        <span class="badge" aria-hidden="true">{{ source.badgeCount|number(decimals=0) }}</span>
+        {{ tag('span', {
+            class: 'visually-hidden',
+            text: '{num, number} {num, plural, =1{notification} other{notifications}}'|t('app', {
+                num: source.badgeCount,
+            }),
+        }) }}
     {% endif %}
 {% endmacro %}
 
