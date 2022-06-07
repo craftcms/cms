@@ -290,6 +290,17 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
         ev.stopPropagation();
       });
 
+      $elements.on('keydown', (ev) => {
+        if ([Garnish.BACKSPACE_KEY, Garnish.DELETE_KEY].includes(ev.keyCode)) {
+          ev.stopPropagation();
+          ev.preventDefault();
+          const $elements = this.elementSelect.getSelectedItems();
+          for (let i = 0; i < $elements.length; i++) {
+            this.removeElement($elements.eq(i));
+          }
+        }
+      });
+
       this.$elements = this.$elements.add($elements);
 
       this.updateAddElementsBtn();
