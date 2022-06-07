@@ -434,7 +434,7 @@ abstract class Field extends SavableComponent implements FieldInterface
      */
     public function getLabelId(): string
     {
-        return $this->getInputId() . '-label';
+        return sprintf('%s-label', $this->getInputId());
     }
 
     /**
