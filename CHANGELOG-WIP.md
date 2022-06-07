@@ -41,6 +41,7 @@
 - All element sources now have “Edit” and “Delete” actions, even if the element type’s `defineActions()` method didn’t include them. ([#11383](https://github.com/craftcms/cms/discussions/11383))
 - The “Set Status” and “Edit” element actions are now only available for elements whose `canSave()` method returned `true`. 
 - The `searchindex` table is now uses the InnoDB storage engine by default for MySQL installs. ([#11374](https://github.com/craftcms/cms/discussions/11374))
+- `Garnish.DELETE_KEY` now refers to the actual <kbd>Delete</kbd> key code, and the <kbd>Backspace</kbd> key code is now referenced by `Garnish.BACKSPACE_KEY`.
 
 ### Deprecated
 - Deprecated `craft\elements\actions\DeleteAssets`. `craft\elements\actions\Delete` should be used instead.

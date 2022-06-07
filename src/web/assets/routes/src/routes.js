@@ -327,6 +327,7 @@ import './routes.scss';
 
             break;
           }
+          case Garnish.BACKSPACE_KEY:
           case Garnish.DELETE_KEY: {
             // Delete this element
             setTimeout(() => {
