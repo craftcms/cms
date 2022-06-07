@@ -15,7 +15,7 @@
 - Fixed a bug where newly-added condition rules’ types were still selectable for preexisting condition rules, when they shouldn’t have been.
 - Fixed a bug where field layout designers were checking the wrong setting when determining whether to include UI elements (`customizableTabs` instead of `customizableUi`).
 - Fixed a bug where the Asset Indexes utility was analyzing image transform directories and files. ([#11362](https://github.com/craftcms/cms/issues/11362), [#11384](https://github.com/craftcms/cms/pull/11384))
-- Fixed a bug where running `craft index-assets` command would unexpectedly output messages about missing files. ([#11194](https://github.com/craftcms/cms/issues/11194)).
+- Fixed a bug where running the `craft index-assets` command would unexpectedly output messages about missing files. ([#11194](https://github.com/craftcms/cms/issues/11194)).
 
 ## 4.0.4 - 2022-06-03
 

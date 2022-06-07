@@ -586,7 +586,7 @@ class AssetIndexer extends Component
             'recordId',
             'isSkipped',
             'inProgress',
-            'completed'
+            'completed',
         ]);
         Db::insert(Table::ASSETINDEXDATA, $data);
 
