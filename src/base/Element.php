@@ -2126,7 +2126,7 @@ abstract class Element extends Component implements ElementInterface
         $rules[] = [
             ['siteId'],
             SiteIdValidator::class,
-            'allowDisabled' => $this->propagating ?: null,
+            'allowDisabled' => true,
             'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE, self::SCENARIO_ESSENTIALS],
         ];
         $rules[] = [['dateCreated', 'dateUpdated'], DateTimeValidator::class, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE]];

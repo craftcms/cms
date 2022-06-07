@@ -16,7 +16,6 @@ use craft\errors\CategoryGroupNotFoundException;
 use craft\events\CategoryGroupEvent;
 use craft\events\ConfigEvent;
 use craft\events\DeleteSiteEvent;
-use craft\events\FieldEvent;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
@@ -626,43 +625,10 @@ class Categories extends Component
     }
 
     /**
-     * Prune a deleted field from category group layouts.
-     *
-     * @param FieldEvent $event
+     * @deprecated in 4.0.5. Unused fields will be pruned automatically as field layouts are resaved.
      */
-    public function pruneDeletedField(FieldEvent $event): void
+    public function pruneDeletedField(): void
     {
-        $field = $event->field;
-        $fieldUid = $field->uid;
-
-        $projectConfig = Craft::$app->getProjectConfig();
-        $categoryGroups = $projectConfig->get(ProjectConfig::PATH_CATEGORY_GROUPS);
-
-        // Engage stealth mode
-        $projectConfig->muteEvents = true;
-
-        // Loop through the category groups and prune the UID from field layouts.
-        if (is_array($categoryGroups)) {
-            foreach ($categoryGroups as $categoryGroupUid => $categoryGroup) {
-                if (!empty($categoryGroup['fieldLayouts'])) {
-                    foreach ($categoryGroup['fieldLayouts'] as $layoutUid => $layout) {
-                        if (!empty($layout['tabs'])) {
-                            foreach ($layout['tabs'] as $tabUid => $tab) {
-                                $projectConfig->remove(ProjectConfig::PATH_CATEGORY_GROUPS . '.' . $categoryGroupUid . '.fieldLayouts.' . $layoutUid . '.tabs.' . $tabUid . '.fields.' . $fieldUid, 'Prune deleted field');
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        // Nuke all the layout fields from the DB
-        Db::delete(Table::FIELDLAYOUTFIELDS, [
-            'fieldId' => $field->id,
-        ]);
-
-        // Allow events again
-        $projectConfig->muteEvents = false;
     }
 
     /**
