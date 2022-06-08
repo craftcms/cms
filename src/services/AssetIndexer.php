@@ -577,20 +577,19 @@ class AssetIndexer extends Component
      */
     protected function storeIndexEntry(AssetIndexData $indexEntry)
     {
-        $data = $indexEntry->toArray([
-            'id',
-            'sessionId',
-            'volumeId',
-            'uri',
-            'size',
-            'timestamp',
-            'isDir',
-            'recordId',
-            'isSkipped',
-            'inProgress',
-            'completed',
+        Db::insert(Table::ASSETINDEXDATA, [
+            'id' => $indexEntry->id,
+            'sessionId' => $indexEntry->sessionId,
+            'volumeId' => $indexEntry->volumeId,
+            'uri' => $indexEntry->uri,
+            'size' => $indexEntry->size,
+            'timestamp' => Db::prepareDateForDb($indexEntry->timestamp),
+            'isDir' => $indexEntry->isDir,
+            'recordId' => $indexEntry->recordId,
+            'isSkipped' => $indexEntry->isSkipped,
+            'inProgress' => $indexEntry->inProgress,
+            'completed' => $indexEntry->completed,
         ]);
-        Db::insert(Table::ASSETINDEXDATA, $data);
     }
 
     /**
