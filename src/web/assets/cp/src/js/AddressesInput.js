@@ -46,7 +46,8 @@ Craft.AddressesInput = Garnish.Base.extend(
 
       const $actionBtn = $card.find('.menubtn');
       if ($actionBtn.length) {
-        const $menu = $actionBtn.data('trigger').$container;
+        const menu = $actionBtn.data('trigger');
+        const $menu = menu.$container;
 
         // Activate edit button
         const $editBtn = $menu.find('[data-action="edit"]');
@@ -76,6 +77,8 @@ Craft.AddressesInput = Garnish.Base.extend(
             })
               .then(() => {
                 $card.remove();
+                $menu.remove();
+                menu.destroy();
                 this.$cards = this.$cards.not($card);
                 this.updateAddButton();
 
