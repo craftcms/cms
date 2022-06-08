@@ -1132,7 +1132,7 @@ JS, [
                 'class' => 'address-cards',
             ]) .
             implode("\n", array_map(fn(Address $address) => static::addressCardHtml($address, $config), $addresses)) .
-            Html::endTag('ul').
+            Html::endTag('ul') .
             Html::beginTag('button', [
                 'type' => 'button',
                 'class' => ['btn', 'dashed', 'add', 'icon'],
@@ -1143,7 +1143,7 @@ JS, [
             Html::tag('div', Craft::t('app', 'Add an address'), [
                 'class' => 'label',
             ]) .
-            Html::endTag('button'); // .address-cards
+            Html::endTag('button') . // .address-cards
             Html::endTag('div'); // .address-container
     }
 
