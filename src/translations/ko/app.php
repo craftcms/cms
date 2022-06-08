@@ -1728,6 +1728,7 @@ return [
     'Which template should be loaded when an entry’s URL is requested.' => '입력 항목의 URL을 요청할 때 로드해야 하는 템플릿입니다.',
     'Which type of entries do you want to create?' => '어떤 유형의 항목을 생성하고 싶으신가요?',
     'Widget saved.' => '위젯이 저장됨.',
+    'Widget settings' => 'Widget settings',
     'Width' => '가로',
     'Years' => '년',
     'Yes' => '예',
