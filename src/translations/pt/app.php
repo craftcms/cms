@@ -1728,6 +1728,7 @@ return [
     'Which template should be loaded when an entry’s URL is requested.' => 'Que modelo deverá ser carregado quando o URL de entrada é solicitado.',
     'Which type of entries do you want to create?' => 'Qual o tipo de entrada que quer criar?',
     'Widget saved.' => 'Widget salvo.',
+    'Widget settings' => 'Widget settings',
     'Width' => 'Largura',
     'Years' => 'Anos',
     'Yes' => 'Sim',
