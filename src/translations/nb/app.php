@@ -1728,6 +1728,7 @@ return [
     'Which template should be loaded when an entry’s URL is requested.' => 'Hvilken mal som skal lastes når en artikkels URL etterspørres.',
     'Which type of entries do you want to create?' => 'Hvilke typer oppføringer ønsker du å opprette?',
     'Widget saved.' => 'Modul lagret.',
+    'Widget settings' => 'Widget settings',
     'Width' => 'Bredde',
     'Years' => 'År',
     'Yes' => 'Ja',
