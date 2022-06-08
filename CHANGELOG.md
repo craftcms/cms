@@ -19,6 +19,7 @@
 - Fixed a bug where users’ Formatting Locale preferences weren’t always being respected.
 - Fixed a bug where address card menus would linger around after an address was deleted.
 - Fixed a bug where the `index-assets` command could produce unexpected output. ([#11194](https://github.com/craftcms/cms/issues/11194)).
+- Fixed a bug where video controls within asset preview modals were inaccessible via the keyboard. ([#11371](https://github.com/craftcms/cms/pull/11371))
 
 ## 4.0.4 - 2022-06-03
 
