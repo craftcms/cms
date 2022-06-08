@@ -39,18 +39,21 @@ class ProjectConfigController extends Controller
 
     /**
      * @var bool Whether to get values from the loaded config, or directly from file.
+     * @since 4.1.0
      */
-    public bool $fromFile = false;
+    public bool $external = false;
 
     /**
      * @var string|null A message describing the changes.
      * @see \craft\services\ProjectConfig::set
+     * @since 4.1.0
      */
     public ?string $message = null;
 
     /**
      * @var bool Whether the `dateModified` value should be updated
      * @see \craft\services\ProjectConfig::set
+     * @since 4.1.0
      */
     public bool $updateTimestamp = false;
 
@@ -83,14 +86,15 @@ class ProjectConfigController extends Controller
                 break;
             case 'diff':
                 $options[] = 'invert';
-                // no break
+                break;
             case 'get':
-                $options[] = 'fromFile';
-                // no break
+                $options[] = 'external';
+                break;
             case 'set':
                 $options[] = 'message';
                 $options[] = 'updateTimestamp';
                 $options[] = 'force';
+                break;
         }
 
         return $options;
@@ -99,11 +103,12 @@ class ProjectConfigController extends Controller
     /**
      * @param string|null $path The config item path
      * @return int
+     * @since 4.1.0
      */
     public function actionGet(?string $path = null): int
     {
         $projectConfig = Craft::$app->getProjectConfig();
-        $value = $projectConfig->get($path, $this->fromFile);
+        $value = $projectConfig->get($path, $this->external);
         $this->stdout(Yaml::dump($value));
         $this->stdout(PHP_EOL);
         return ExitCode::OK;
@@ -113,6 +118,7 @@ class ProjectConfigController extends Controller
      * @param string $path The config item path
      * @param string $value The config item value as a valid YAML string
      * @return int
+     * @since 4.1.0
      */
     public function actionSet(string $path, string $value): int
     {
@@ -153,6 +159,7 @@ class ProjectConfigController extends Controller
     /**
      * @param string $path The config item path
      * @return int
+     * @since 4.1.0
      */
     public function actionRemove(string $path): int
     {
