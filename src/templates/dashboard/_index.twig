@@ -28,13 +28,14 @@
 {% block main %}
     <div id="dashboard-grid" class="grid">
         {% for widget in widgets %}
+            {% set widgetHeadingId = "widget-heading-#{widget.id}" %}
             <div class="item" data-colspan="{{ widget.colspan }}">
                 <div id="widget{{ widget.id }}" class="widget {{ widget.type|lower }}" data-id="{{ widget.id }}" data-type="{{ widget.type }}" data-title="{{ widget.title }}">
                     <div class="front">
                         <div class="pane">
                             <div class="spinner body-loading"></div>
                             {% if widget.title or widget.subtitle %}
-                                <div class="widget-heading">
+                                <div id="{{ widgetHeadingId }}" class="widget-heading">
                                     {% if widget.title %}
                                         <h2>{{ widget.title }}</h2>
                                     {% endif %}
@@ -43,10 +44,10 @@
                                     {% endif %}
                                 </div>
                             {% endif %}
+                            <button role="button" class="settings icon hidden" aria-label="{{ 'Widget settings'|t('app') }}" aria-describedby="{{ widgetHeadingId }}" data-settings-toggle></button>
                             <div class="body">
                                 {{ widget.bodyHtml|raw }}
                             </div>
-                            <div class="settings icon hidden"></div>
                         </div>
                     </div>
                     <div class="back hidden">

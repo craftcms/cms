@@ -271,6 +271,7 @@ import './dashboard.scss';
     $back: null,
     $settingsForm: null,
     $settingsContainer: null,
+    $settingsToggle: null,
     $saveBtn: null,
     $settingsErrorList: null,
 
@@ -288,6 +289,7 @@ import './dashboard.scss';
 
     init: function (container, settingsHtml, initSettingsFn) {
       this.$container = $(container);
+      this.$settingsToggle = this.$container.find('[data-settings-toggle]');
       this.$gridItem = this.$container.parent();
 
       // Store a reference to this object on the container element
@@ -400,6 +402,7 @@ import './dashboard.scss';
             complete: this.onShowFront.bind(this),
           }
         );
+        this.$settingsToggle.focus();
       }, 100);
     },
 
