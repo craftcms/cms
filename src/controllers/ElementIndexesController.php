@@ -107,7 +107,11 @@ class ElementIndexesController extends BaseElementsController
             $this->viewState = $this->viewState();
             $this->elementQuery = $this->elementQuery();
 
-            if ($this->includeActions() && isset($this->sourceKey)) {
+            if (
+                in_array($action->id, ['get-elements', 'get-more-elements', 'perform-action', 'export']) &&
+                $this->includeActions() &&
+                isset($this->sourceKey)
+            ) {
                 $this->actions = $this->availableActions();
                 $this->exporters = $this->availableExporters();
             }

@@ -37,6 +37,11 @@ use yii\db\Expression;
 class UserQuery extends ElementQuery
 {
     /**
+     * @since 4.0.4
+     */
+    public const STATUS_CREDENTIALED = 'credentialed';
+
+    /**
      * @inheritdoc
      */
     protected array $defaultOrderBy = ['users.username' => SORT_ASC];
@@ -714,6 +719,7 @@ class UserQuery extends ElementQuery
      * | `'inactive'` | with inactive accounts.
      * | `'active'` | with active accounts.
      * | `'pending'` | with accounts that are still pending activation.
+     * | `'credentialed'` | with either active or pending accounts.
      * | `'suspended'` | with suspended accounts.
      * | `'locked'` | with locked accounts (regardless of whether they’re active or suspended).
      * | `['active', 'suspended']` | with active or suspended accounts.
@@ -939,9 +945,15 @@ class UserQuery extends ElementQuery
             ],
             User::STATUS_ACTIVE => [
                 'users.active' => true,
+                'users.suspended' => false,
             ],
             User::STATUS_PENDING => [
                 'users.pending' => true,
+            ],
+            self::STATUS_CREDENTIALED => [
+                'or',
+                ['users.active' => true],
+                ['users.pending' => true],
             ],
             User::STATUS_SUSPENDED => [
                 'users.suspended' => true,

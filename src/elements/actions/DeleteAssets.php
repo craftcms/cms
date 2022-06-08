@@ -10,7 +10,6 @@ namespace craft\elements\actions;
 use Craft;
 use craft\base\ElementAction;
 use craft\elements\db\ElementQueryInterface;
-use craft\helpers\Json;
 use yii\base\Exception;
 
 /**
@@ -52,13 +51,11 @@ class DeleteAssets extends ElementAction
     public function getTriggerHtml(): ?string
     {
         // Only enable for deletable elements, per getIsDeletable()
-        $type = Json::encode(static::class);
-        $js = <<<JS
+        Craft::$app->getView()->registerJsWithVars(fn($type) => <<<JS
 (() => {
     new Craft.ElementActionTrigger({
         type: $type,
-        validateSelection: function(\$selectedItems)
-        {
+        validateSelection: \$selectedItems => {
             for (let i = 0; i < \$selectedItems.length; i++) {
                 if (!Garnish.hasAttr(\$selectedItems.eq(i).find('.element'), 'data-deletable')) {
                     return false;
@@ -68,8 +65,8 @@ class DeleteAssets extends ElementAction
         },
     });
 })();
-JS;
-        Craft::$app->getView()->registerJs($js);
+JS, [static::class]);
+
         return null;
     }
 

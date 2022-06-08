@@ -992,7 +992,12 @@ abstract class Element extends Component implements ElementInterface
             }
         }
 
-        $variables['elements'] = $elementQuery->cache()->all();
+        // Only cache if there's no search term
+        if (!$elementQuery->search) {
+            $elementQuery->cache();
+        }
+
+        $variables['elements'] = $elementQuery->all();
 
         $template = '_elements/' . $viewState['mode'] . 'view/' . ($includeContainer ? 'container' : 'elements');
 
@@ -2126,7 +2131,7 @@ abstract class Element extends Component implements ElementInterface
         $rules[] = [
             ['siteId'],
             SiteIdValidator::class,
-            'allowDisabled' => $this->propagating ?: null,
+            'allowDisabled' => true,
             'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE, self::SCENARIO_ESSENTIALS],
         ];
         $rules[] = [['dateCreated', 'dateUpdated'], DateTimeValidator::class, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE]];
