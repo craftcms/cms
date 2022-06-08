@@ -543,7 +543,7 @@ class Cp
 
         $fieldset = $config['fieldset'] ?? false;
         $fieldId = $config['fieldId'] ?? "$id-field";
-        $labelId = $config['labelId'] ?? "$id-" . ($fieldset ? 'legend' : 'label');
+        $labelId = $config['labelId'] ?? "$id-label";
         $label = $config['fieldLabel'] ?? $config['label'] ?? null;
 
         if ($label === '__blank__') {

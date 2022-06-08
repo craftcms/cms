@@ -49,9 +49,9 @@
 /* ----------------------------------------*/
 
 :root {
-  --ui-control-color: var(--gray-400);
-  --ui-control-hover-color: var(--gray-500);
-  --ui-control-active-color: var(--gray-600);
+  --ui-control-color: var(--gray-550);
+  --ui-control-hover-color: var(--gray-600);
+  --ui-control-active-color: var(--gray-700);
   --light-focus-hsl: #{hue($lightFocusColor)}, #{saturation($lightFocusColor)},
     #{lightness($lightFocusColor)};
   --medium-focus-hsl: #{hue($mediumFocusColor)},

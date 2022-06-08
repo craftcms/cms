@@ -10,11 +10,13 @@
 - Added a `one()` alias for `first()` to collections. ([#11134](https://github.com/craftcms/cms/discussions/11134))
 - Added `craft\base\Element::EVENT_DEFINE_CACHE_TAGS`. ([#11171](https://github.com/craftcms/cms/discussions/11171))
 - Added `craft\base\Element::cacheTags()`.
+- Added `craft\base\FieldInterface::getLabelId()`.
 - Added `craft\console\controllers\UsersController::$activate`.
 - Added `craft\elements\conditions\ElementCondition::$sourceKey`.
 - Added `craft\elements\db\ElementQuery::EVENT_AFTER_POPULATE_ELEMENTS`. ([#11262](https://github.com/craftcms/cms/discussions/11262))
 - Added `craft\elements\db\ElementQuery::EVENT_DEFINE_CACHE_TAGS`. ([#11171](https://github.com/craftcms/cms/discussions/11171))
 - Added `craft\events\PopulateElementsEvent`.
+- Added `craft\fieldlayoutelements\BaseField::labelId()`.
 - Added `craft\fieldlayoutelements\LineBreak`.
 - Added `craft\helpers\DateTimeHelper::now()`.
 - Added `craft\helpers\DateTimeHelper::pause()`. ([#11130](https://github.com/craftcms/cms/pull/11130))
@@ -26,6 +28,7 @@
 - Improved element index accessibility. ([#11169](https://github.com/craftcms/cms/pull/11169), [#11200](https://github.com/craftcms/cms/pull/11200))
 - Improved Dashboard accessibility. ([#11217](https://github.com/craftcms/cms/pull/11217), [#11297](https://github.com/craftcms/cms/pull/11297))
 - Improved address management accessibility. ([#11397](https://github.com/craftcms/cms/pull/11397))
+- Improved Matrix field accessibility. ([#11306](https://github.com/craftcms/cms/pull/11306))
 - It’s now possible to remove all selected elements from relational fields by pressing <kbd>Backspace</kbd> or <kbd>Delete</kbd> while one of them is focussed.
 - Live Preview now always shows a “Refresh” button, regardless of whether the preview target has auto-refresh enabled. ([#11160](https://github.com/craftcms/cms/discussions/11160)) 
 - Entry Type condition rules now allow multiple selections. ([#11124](https://github.com/craftcms/cms/pull/11124))
