@@ -1728,6 +1728,7 @@ return [
     'Which template should be loaded when an entry’s URL is requested.' => 'Bir girişin URL\'si istendiği zaman yüklenecek olan şablon.',
     'Which type of entries do you want to create?' => 'Ne tür kayıtlar oluşturmak istiyorsunuz?',
     'Widget saved.' => 'Bileşen kaydedildi.',
+    'Widget settings' => 'Widget settings',
     'Width' => 'Genişlik',
     'Years' => 'Yıl',
     'Yes' => 'Evet',
