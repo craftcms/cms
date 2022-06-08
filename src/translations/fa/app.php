@@ -1728,6 +1728,7 @@ return [
     'Which template should be loaded when an entry’s URL is requested.' => 'وقتی که یک نشانی اینترنتی محتوا درخواست می شود کدام قالب باید لود گردد.',
     'Which type of entries do you want to create?' => 'کدام نوع از محتواها را می‌خواهید بسازید؟',
     'Widget saved.' => 'ویجت ذخیره گردید.',
+    'Widget settings' => 'Widget settings',
     'Width' => 'عرض',
     'Years' => 'سال',
     'Yes' => 'بله',
