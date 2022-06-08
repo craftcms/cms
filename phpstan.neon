@@ -11,19 +11,19 @@ parameters:
         - src/services/Images.php
         - src/test/internal/*
         - src/views/debug/*
-        - tests/codeception/_craft/*
-        - tests/codeception/_data/*
-        - tests/codeception/_output/*
-        - tests/codeception/_support/_generated/
+        - tests/_craft/*
+        - tests/_data/*
+        - tests/_output/*
+        - tests/_support/_generated/
     scanFiles:
         - lib/craft/behaviors/CustomFieldBehavior.php
-        - tests/codeception/_support/_generated/AcceptanceTesterActions.php
-        - tests/codeception/_support/_generated/FunctionalTesterActions.php
-        - tests/codeception/_support/_generated/GqlTesterActions.php
-        - tests/codeception/_support/_generated/UnitTesterActions.php
+        - tests/_support/_generated/AcceptanceTesterActions.php
+        - tests/_support/_generated/FunctionalTesterActions.php
+        - tests/_support/_generated/GqlTesterActions.php
+        - tests/_support/_generated/UnitTesterActions.php
         - vendor/twig/twig/src/Extension/CoreExtension.php
     bootstrapFiles:
-        - tests/codeception/_bootstrap.php
+        - tests/_bootstrap.php
     stubFiles:
         - stubs/_generated.stub
         - stubs/GraphQL/Type/Definition/FieldDefinition.stub

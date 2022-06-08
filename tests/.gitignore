@@ -1,3 +1,2 @@
-/codeception/*.env
-/codeception/_craft/config/project
-/playwright/.authentication.json
+/*.env
+/_craft/config/project
