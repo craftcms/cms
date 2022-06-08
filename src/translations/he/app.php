@@ -1728,6 +1728,7 @@ return [
     'Which template should be loaded when an entry’s URL is requested.' => 'איזו תבנית צריך לטעון כאשר נדרשת כתובת URL של ערך.',
     'Which type of entries do you want to create?' => 'איזה סוג של רשומות אתה רוצה ליצור?',
     'Widget saved.' => 'הווידג\'ט נשמר.',
+    'Widget settings' => 'Widget settings',
     'Width' => 'רוחב',
     'Years' => 'שנים',
     'Yes' => 'כן',
