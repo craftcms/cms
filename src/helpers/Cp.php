@@ -1123,14 +1123,15 @@ JS, [
         ]);
 
         return
-            Html::beginTag('div', [
+            Html::beginTag('ul', [
                 'id' => $config['id'],
                 'class' => 'address-cards',
             ]) .
             implode("\n", array_map(fn(Address $address) => static::addressCardHtml($address, $config), $addresses)) .
+            Html::beginTag('li') .
             Html::beginTag('button', [
                 'type' => 'button',
-                'class' => ['btn', 'dashed', 'add', 'icon'],
+                'class' => ['btn', 'dashed', 'add', 'icon', 'address-cards__add-btn'],
             ]) .
             Html::tag('div', '', [
                 'class' => ['spinner', 'spinner-absolute'],
@@ -1138,8 +1139,9 @@ JS, [
             Html::tag('div', Craft::t('app', 'Add an address'), [
                 'class' => 'label',
             ]) .
-            Html::endTag('button') .
-            Html::endTag('div'); // .address-cards
+            Html::endTag('button') . // .add
+            Html::endTag('li') .
+            Html::endTag('ul'); // .address-cards
     }
 
     /**
@@ -1161,7 +1163,7 @@ JS, [
         $actionMenuId = sprintf('address-card-action-menu-%s', mt_rand());
 
         return
-            Html::beginTag('div', [
+            Html::beginTag('li', [
                 'class' => 'address-card',
                 'data' => [
                     'id' => $address->id,
@@ -1170,7 +1172,7 @@ JS, [
             ]) .
             ($config['name'] ? Html::hiddenInput("{$config['name']}[]", (string)$address->id) : '') .
             Html::beginTag('div', ['class' => 'address-card-header']) .
-            Html::tag('div', $address->title, [
+            Html::tag('h2', $address->title, [
                 'class' => array_filter([
                     'address-card-label',
                     !$label ? 'hidden' : null,
@@ -1201,10 +1203,22 @@ JS, [
                 ]) .
                 Html::beginTag('ul', ['class' => 'padded']) .
                 Html::beginTag('li') .
-                Html::a(Craft::t('app', 'Delete'), '#', [
-                    'class' => 'error',
+                Html::button(Craft::t('app', 'Edit'), [
+                    'class' => 'menu-option',
                     'type' => 'button',
-                    'role' => 'button',
+                    'aria' => [
+                        'label' => Craft::t('app', 'Edit'),
+                    ],
+                    'data' => [
+                        'icon' => 'edit',
+                        'action' => 'edit',
+                    ],
+                ]) .
+                Html::endTag('li') .
+                Html::beginTag('li') .
+                Html::button(Craft::t('app', 'Delete'), [
+                    'class' => 'error menu-option',
+                    'type' => 'button',
                     'aria' => [
                         'label' => Craft::t('app', 'Delete'),
                     ],
@@ -1223,7 +1237,7 @@ JS, [
             Html::tag('div', Craft::$app->getAddresses()->formatAddress($address), [
                 'class' => 'address-card-body',
             ]) .
-            Html::endTag('div'); // .address-card
+            Html::endTag('li'); // .address-card
     }
 
     /**
