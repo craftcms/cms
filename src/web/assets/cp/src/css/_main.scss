@@ -2549,7 +2549,7 @@ $elementInnerSpacing: 5px;
       padding: 1px 5px;
       font-weight: normal;
       text-decoration: none !important;
-      color: var(--light-text-color);
+      color: var(--medium-text-color);
       background: var(--gray-100);
       border-radius: var(--large-border-radius);
     }
@@ -3567,12 +3567,11 @@ ul.tree,
   padding: var(--s) var(--xl);
   min-height: 50px;
   box-sizing: border-box;
-  background: var(--gray-050);
   box-shadow: inset 0 -1px 0 0 transparentize($grey300, 0.75);
   border-radius: var(--large-border-radius) var(--large-border-radius) 0 0;
 
   .header-btn {
-    margin: 5px 0;
+    margin: 2px 0;
     @include header-btn;
   }
 
@@ -3582,15 +3581,17 @@ ul.tree,
 }
 
 .pane-tabs {
-  margin-bottom: calc(var(--s) * -1);
   display: flex;
   flex-direction: row;
   align-items: center;
-  max-width: 100%;
+  margin: calc(var(--s) * -1) calc(var(--xl) * -1);
+
+  &:first-child {
+    border-radius: var(--large-border-radius) var(--large-border-radius) 0 0;
+    overflow: hidden;
+  }
 
   [role='tablist'] {
-    margin: calc(var(--s) * -1) var(--neg-padding) 0;
-    padding: var(--s) var(--padding) 0;
     flex: 1;
     display: flex;
     flex-direction: row;
@@ -3623,15 +3624,10 @@ ul.tree,
       flex-direction: row;
       align-items: center;
       position: relative;
-      border-radius: var(--medium-border-radius) var(--medium-border-radius) 0 0;
-      padding: 0 12px;
+      padding: 0 24px;
       white-space: nowrap;
       color: var(--light-text-color);
-      height: 42px;
-
-      &:not(:first-child) {
-        @include margin-left(4px);
-      }
+      height: 50px;
 
       &:hover {
         text-decoration: none;
@@ -3644,9 +3640,11 @@ ul.tree,
       }
 
       &.sel {
+        position: relative;
         cursor: default;
         color: var(--text-color);
-        @include pane;
+        box-shadow: inset 0 -2px 0 var(--gray-500);
+        color: var(--text-color);
       }
 
       span[data-icon] {
@@ -3656,7 +3654,7 @@ ul.tree,
   }
 
   .menubtn {
-    @include margin-left(32px);
+    margin: 0 var(--xl);
   }
 }
 
@@ -4132,14 +4130,13 @@ ul.tree,
       display: flex;
       flex-direction: row;
       align-items: center;
-      margin-bottom: calc(var(--s) * -1);
       gap: var(--s);
-      min-height: 42px;
+      min-height: calc(50px - 16px);
 
       & > .pane-tabs {
         width: 1px; // give other elements in the header plenty of room before the tabs take up whatever's left
         flex: 1;
-        margin-bottom: 0;
+        @include margin-right(0);
       }
     }
   }
