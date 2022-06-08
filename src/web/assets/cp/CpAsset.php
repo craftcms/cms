@@ -226,7 +226,6 @@ JS;
             'No limit',
             'Notes',
             'Notice',
-            'Number of columns',
             'OK',
             'Open the full edit page in a new tab',
             'Options',
