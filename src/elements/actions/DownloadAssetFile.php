@@ -9,7 +9,6 @@ namespace craft\elements\actions;
 
 use Craft;
 use craft\base\ElementAction;
-use craft\helpers\Json;
 
 /**
  * DownloadAssetFile represents a Download Asset element action.
@@ -32,14 +31,11 @@ class DownloadAssetFile extends ElementAction
      */
     public function getTriggerHtml(): ?string
     {
-        $type = Json::encode(static::class);
-
-        $js = <<<JS
+        Craft::$app->getView()->registerJsWithVars(fn($type) => <<<JS
 (() => {
     new Craft.ElementActionTrigger({
         type: $type,
-        activate: function(\$selectedItems)
-        {
+        activate: \$selectedItems => {
             var \$form = Craft.createForm().appendTo(Garnish.\$bod);
             $(Craft.getCsrfInput()).appendTo(\$form);
             $('<input/>', {
@@ -60,21 +56,11 @@ class DownloadAssetFile extends ElementAction
             }).appendTo(\$form);
             \$form.submit();
             \$form.remove();
-        }
+        },
     });
 })();
-JS;
+JS, [static::class]);
 
-        $request = Craft::$app->getRequest();
-        $js = str_replace([
-            '{csrfName}',
-            '{csrfValue}',
-        ], [
-            $request->csrfParam,
-            $request->getCsrfToken(),
-        ], $js);
-
-        Craft::$app->getView()->registerJs($js);
         return null;
     }
 }

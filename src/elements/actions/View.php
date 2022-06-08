@@ -9,7 +9,6 @@ namespace craft\elements\actions;
 
 use Craft;
 use craft\base\ElementAction;
-use craft\helpers\Json;
 
 /**
  * View represents a View element action.
@@ -47,31 +46,25 @@ class View extends ElementAction
      */
     public function getTriggerHtml(): ?string
     {
-        $type = Json::encode(static::class);
-
-        $js = <<<JS
+        Craft::$app->getView()->registerJsWithVars(fn($type) => <<<JS
 (() => {
     new Craft.ElementActionTrigger({
         type: $type,
         batch: false,
-        validateSelection: function(\$selectedItems)
-        {
-            var \$element = \$selectedItems.find('.element');
-
+        validateSelection: \$selectedItems => {
+            const \$element = \$selectedItems.find('.element');
             return (
                 \$element.data('url') &&
                 (\$element.data('status') === 'enabled' || \$element.data('status') === 'live')
             );
         },
-        activate: function(\$selectedItems)
-        {
+        activate: \$selectedItems => {
             window.open(\$selectedItems.find('.element').data('url'));
-        }
+        },
     });
 })();
-JS;
+JS, [static::class]);
 
-        Craft::$app->getView()->registerJs($js);
         return null;
     }
 }
