@@ -5,21 +5,15 @@
 {%- set initJs = not static and (initJs ?? true) -%}
 {%- set minRows = minRows ?? null %}
 {%- set maxRows = maxRows ?? null %}
-{%- set allowAdd = allowAdd ?? false %}
-{%- set allowDelete = allowDelete ?? false %}
-{%- set allowReorder = allowReorder ?? false %}
 {%- set describedBy = describedBy ?? null %}
 
-{%- set allowAdd = allowAdd and (maxRows and maxRows == rows|length) ? false : allowAdd %}
-{%- set allowReorder = allowReorder and (minRows == 1 and maxRows == 1 and rows|length == 1) ? false : allowReorder %}
-{%- set allowDelete = allowReorder and (minRows and minRows == maxRows and minRows == rows|length) ? false : allowDelete %}
+{%- set totalRows = rows|length %}
+{%- set staticRows = static or (staticRows ?? false) or (minRows == 1 and maxRows == 1 and totalRows == 1) %}
+{%- set allowAdd = (allowAdd ?? false) and not staticRows %}
+{%- set allowReorder = (allowReorder ?? false) and not staticRows %}
+{%- set allowDelete = (allowDelete ?? false) and not staticRows %}
 
-{% if static %}
-    {# disable functionality for static field #}
-    {% set allowAdd = false %}
-    {% set allowReorder = false %}
-    {% set allowDelete = false %}
-{% else %}
+{% if not static %}
     {{ hiddenInput(name, '') }}
 {% endif %}
 
@@ -49,7 +43,7 @@
         'editable',
         fullWidth ? 'fullwidth',
         static ? 'static',
-        rows|length == 0 ? 'hidden',
+        totalRows == 0 ? 'hidden',
     ]|filter,
 } %}
 
@@ -198,10 +192,23 @@
                     <td class="thin action"><a class="move icon" title="{{ 'Reorder'|t('app') }}" aria-label="{{ 'Reorder'|t('app') }}"></a></td>
                 {%- endif -%}
                 {%- if allowDelete -%}
-                    {% set deleteButtonText = 'Delete row {index}'|t('app', {
-                        index: rowNumber,
-                    }) %}
-                    <td class="thin action"><button class="delete icon" type="button" title="{{ 'Delete'|t('app') }}" aria-label="{{ deleteButtonText }}"></button></td>
+                    <td class="thin action">
+                        {{ tag('button', {
+                            class: [
+                                'delete',
+                                'icon',
+                                minRows and totalRows <= minRows ? 'disabled' : null,
+                            ]|filter,
+                            type: 'button',
+                            disabled: minRows and totalRows <= minRows,
+                            title: 'Delete'|t('app'),
+                            aria: {
+                                label: 'Delete row {index}'|t('app', {
+                                    index: rowNumber,
+                                }),
+                            }
+                        }) }}
+                    </td>
                 {%- endif -%}
             </tr>
         {% endfor %}

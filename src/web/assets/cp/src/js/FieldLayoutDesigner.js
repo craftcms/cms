@@ -608,13 +608,16 @@ Craft.FieldLayoutDesigner.Element = Garnish.Base.extend({
         title: Craft.t('app', 'Edit'),
       });
 
-      this.$editBtn.on('click', () => {
+      const showSettings = () => {
         if (!this.slideout) {
           this.createSettings(settingsHtml, isRequired);
         } else {
           this.slideout.open();
         }
-      });
+      };
+
+      this.$editBtn.on('click', showSettings);
+      this.$container.on('dblclick', showSettings);
     }
 
     this.initUi();

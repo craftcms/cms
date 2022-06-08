@@ -558,7 +558,7 @@ export default Base.extend(
      * Get Selected Items
      */
     getSelectedItems: function () {
-      return this.$selectedItems;
+      return $(this.$selectedItems.toArray());
     },
 
     /**
