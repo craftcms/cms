@@ -52,6 +52,12 @@ class UsersController extends Controller
     public ?bool $admin = null;
 
     /**
+     * @var bool|null Whether teh user account should be activated.
+     * @since 4.1.0
+     */
+    public ?bool $activate = null;
+
+    /**
      * @var string[] The group handles to assign the created user to.
      * @since 3.7.0
      */
@@ -202,6 +208,8 @@ class UsersController extends Controller
                 ]);
             }
         }
+
+        $user->active = $this->activate ?? $this->confirm('Activate the account?', $user->newPassword !== null);
 
         $this->stdout('Saving the user ... ');
 

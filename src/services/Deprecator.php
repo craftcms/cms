@@ -40,10 +40,10 @@ class Deprecator extends Component
     public bool $throwExceptions = false;
 
     /**
-     * @var string|false Whether deprecation errors should be logged in the database ('db'),
+     * @var string|false Whether deprecation warnings should be logged in the database ('db'),
      * error logs ('logs'), or not at all (false).
      *
-     * Changing this will prevent deprecation errors from showing up in the "Deprecation Warnings" utility
+     * Changing this will prevent deprecation warnings from showing up in the "Deprecation Warnings" utility
      * or in the "Deprecated" panel in the Debug Toolbar.
      *
      * @since 3.0.7
@@ -51,17 +51,17 @@ class Deprecator extends Component
     public string|false $logTarget = 'db';
 
     /**
-     * @var DeprecationError[] The deprecation errors that were logged in the current request
+     * @var DeprecationError[] The deprecation warnings that were logged in the current request
      */
     private array $_requestLogs = [];
 
     /**
-     * @var DeprecationError[] The deprecation errors that still need to be stored in the DB
+     * @var DeprecationError[] The deprecation warnings that still need to be stored in the DB
      */
     private array $_pendingRequestLogs = [];
 
     /**
-     * @var DeprecationError[]|null All the unique deprecation errors that have been logged
+     * @var DeprecationError[]|null All the unique deprecation warnings that have been logged
      */
     private ?array $_allLogs = null;
 
@@ -163,7 +163,7 @@ class Deprecator extends Component
     }
 
     /**
-     * Returns the deprecation errors that were logged in the current request.
+     * Returns the deprecation warnings that were logged in the current request.
      *
      * @return DeprecationError[]
      */
@@ -173,7 +173,7 @@ class Deprecator extends Component
     }
 
     /**
-     * Returns the total number of deprecation errors that have been logged.
+     * Returns the total number of deprecation warnings that have been logged.
      *
      * @return int
      */

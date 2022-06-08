@@ -14,7 +14,6 @@ use craft\base\ElementInterface;
 use craft\db\Table;
 use craft\elements\db\ElementQueryInterface;
 use craft\helpers\Db;
-use craft\helpers\Json;
 
 /**
  * Delete represents a “Delete for site” element action.
@@ -43,13 +42,11 @@ class DeleteForSite extends ElementAction
     public function getTriggerHtml(): ?string
     {
         // Only enable for deletable elements, per getIsDeletable()
-        $type = Json::encode(static::class);
-        $js = <<<JS
+        Craft::$app->getView()->registerJsWithVars(fn($type) => <<<JS
 (() => {
     new Craft.ElementActionTrigger({
         type: $type,
-        validateSelection: function(\$selectedItems)
-        {
+        validateSelection: \$selectedItems => {
             for (let i = 0; i < \$selectedItems.length; i++) {
                 if (!Garnish.hasAttr(\$selectedItems.eq(i).find('.element'), 'data-deletable')) {
                     return false;
@@ -59,8 +56,7 @@ class DeleteForSite extends ElementAction
         },
     });
 })();
-JS;
-        Craft::$app->getView()->registerJs($js);
+JS, [static::class]);
 
         return null;
     }
