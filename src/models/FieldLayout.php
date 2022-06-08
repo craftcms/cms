@@ -19,6 +19,7 @@ use craft\fieldlayoutelements\BaseField;
 use craft\fieldlayoutelements\CustomField;
 use craft\fieldlayoutelements\Heading;
 use craft\fieldlayoutelements\HorizontalRule;
+use craft\fieldlayoutelements\LineBreak;
 use craft\fieldlayoutelements\Template;
 use craft\fieldlayoutelements\Tip;
 use craft\helpers\ArrayHelper;
@@ -397,8 +398,9 @@ class FieldLayout extends Model
 
         $this->trigger(self::EVENT_DEFINE_UI_ELEMENTS, $event);
 
-        // HR should always be last
+        // HR and Line Break should always be last
         $event->elements[] = new HorizontalRule();
+        $event->elements[] = new LineBreak();
 
         // Instantiate them
         foreach ($event->elements as &$element) {

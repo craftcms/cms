@@ -19,6 +19,7 @@ use craft\helpers\Cp as CpHelper;
 use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
+use craft\models\Site;
 use craft\models\Volume;
 use craft\web\twig\TemplateLoaderException;
 use DateTime;
@@ -138,6 +139,17 @@ class Cp extends Component
      * @since 3.1.0
      */
     public const EVENT_REGISTER_CP_SETTINGS = 'registerCpSettings';
+
+    /**
+     * Returns the site the control panel is currently working with, via a `site` query string param if sent.
+     *
+     * @return Site|null The site, or `null` if the user doesn’t have permission to edit any sites.
+     * @since 4.0.4
+     */
+    public function getRequestedSite(): ?Site
+    {
+        return CpHelper::requestedSite();
+    }
 
     /**
      * Returns the Craft ID account URL.

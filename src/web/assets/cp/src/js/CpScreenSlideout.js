@@ -89,7 +89,6 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
       this.$sidebar = $('<div/>', {
         class: 'so-sidebar details hidden',
       }).appendTo(this.$body);
-      Craft.trapFocusWithin(this.$sidebar);
 
       // Footer
       this.$footer = $('<div/>', {class: 'so-footer hidden'});
@@ -394,6 +393,8 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
         });
       }
 
+      Craft.trapFocusWithin(this.$sidebar);
+
       this.$sidebarBtn.addClass('active').attr({
         title: Craft.t('app', 'Hide sidebar'),
         'aria-label': Craft.t('app', 'Hide sidebar'),
@@ -422,6 +423,7 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
         .css(this._closedSidebarStyles())
         .one('transitionend.so', () => {
           this.$sidebar.addClass('hidden');
+          this.$sidebarBtn.focus();
         });
 
       this.$sidebarBtn.removeClass('active').attr({

@@ -15,7 +15,6 @@ use craft\elements\GlobalSet;
 use craft\errors\ElementNotFoundException;
 use craft\errors\GlobalSetNotFoundException;
 use craft\events\ConfigEvent;
-use craft\events\FieldEvent;
 use craft\events\GlobalSetEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
@@ -512,43 +511,10 @@ class Globals extends Component
     }
 
     /**
-     * Prune a deleted field from global set.
-     *
-     * @param FieldEvent $event
+     * @deprecated in 4.0.5. Unused fields will be pruned automatically as field layouts are resaved.
      */
-    public function pruneDeletedField(FieldEvent $event): void
+    public function pruneDeletedField(): void
     {
-        $field = $event->field;
-        $fieldUid = $field->uid;
-
-        $projectConfig = Craft::$app->getProjectConfig();
-        $globalSets = $projectConfig->get(ProjectConfig::PATH_GLOBAL_SETS);
-
-        // Engage stealth mode
-        $projectConfig->muteEvents = true;
-
-        // Loop through the global sets and prune the UID from field layouts.
-        if (is_array($globalSets)) {
-            foreach ($globalSets as $globalSetUid => $globalSet) {
-                if (!empty($globalSet['fieldLayouts'])) {
-                    foreach ($globalSet['fieldLayouts'] as $layoutUid => $layout) {
-                        if (!empty($layout['tabs'])) {
-                            foreach ($layout['tabs'] as $tabUid => $tab) {
-                                $projectConfig->remove(ProjectConfig::PATH_GLOBAL_SETS . '.' . $globalSetUid . '.fieldLayouts.' . $layoutUid . '.tabs.' . $tabUid . '.fields.' . $fieldUid, 'Prune deleted field');
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        // Nuke all the layout fields from the DB
-        Db::delete(Table::FIELDLAYOUTFIELDS, [
-            'fieldId' => $field->id,
-        ]);
-
-        // Allow events again
-        $projectConfig->muteEvents = false;
     }
 
     /**

@@ -414,17 +414,14 @@ li.sel a {
   font-size: 11px;
   margin-top: -1px;
   @include padding-left(4px);
-  color: var(--ui-control-color);
+  color: var(--link-color);
+  opacity: 0.9;
   body.ltr & {
     content: 'circlerarr';
   }
   body.rtl & {
     content: 'circlelarr';
   }
-}
-
-.go:hover:after {
-  color: var(--link-color);
 }
 
 button {
@@ -2553,7 +2550,7 @@ $elementInnerSpacing: 5px;
       padding: 1px 5px;
       font-weight: normal;
       text-decoration: none !important;
-      color: var(--light-text-color);
+      color: var(--medium-text-color);
       background: var(--gray-100);
       border-radius: var(--large-border-radius);
     }
@@ -2735,25 +2732,32 @@ $checkboxPadding: $checkboxSize + 4;
 
   // table views
   .tableview {
-    .move {
-      display: block;
+    .move,
+    .toggle {
+      display: flex;
       position: absolute;
-      top: calc(50% - 11px);
-      @include margin-left(-14px);
+      justify-content: center;
+      align-items: center;
+      top: 50%;
+      transform: translateY(-50%);
+      @include margin-left(calc(var(--touch-target-size) * -1));
+      width: var(--touch-target-size);
+      height: var(--touch-target-size);
+    }
+
+    .move {
       font-size: 11px;
       text-decoration: none;
     }
 
     .toggle {
-      display: block;
-      position: absolute;
-      top: calc(50% - 7px);
-      @include margin-left(-16px);
+      text-align: center;
       padding: 4px;
+      border-radius: 50%;
     }
 
     .move + .toggle {
-      @include margin-left(-34px);
+      @include margin-left(calc(var(--touch-target-size) * -2));
     }
   }
 
@@ -5454,7 +5458,7 @@ fieldset {
   padding: 0;
   line-height: 16px;
   border-radius: var(--small-border-radius);
-  color: var(--medium-dark-text-color);
+  color: var(--text-color);
 
   &:before {
     margin: 0;
