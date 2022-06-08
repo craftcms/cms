@@ -1728,6 +1728,7 @@ return [
     'Which template should be loaded when an entry’s URL is requested.' => 'Welk sjabloon moet worden geladen wanneer de URL van invoer wordt opgevraagd.',
     'Which type of entries do you want to create?' => 'Welk type inhoud wil je maken?',
     'Widget saved.' => 'Widget bewaard.',
+    'Widget settings' => 'Widget settings',
     'Width' => 'Breedte',
     'Years' => 'Jaren',
     'Yes' => 'Ja',
