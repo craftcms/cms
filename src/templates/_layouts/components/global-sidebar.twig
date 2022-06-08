@@ -12,7 +12,7 @@
         </div>
     </a>
 
-    <nav id="nav">
+    <nav id="nav" aria-label="{{ 'Primary'|t('app') }}">
         <ul>
             {% for item in craft.cp.nav() %}
                 {% set itemAttributes = {
@@ -21,7 +21,10 @@
                 } %}
                 {% set linkAttributes = {
                     href: url(item.url),
-                    class: item.sel ? 'sel'
+                    class: item.sel ? 'sel',
+                    aria: {
+                        current: item.sel and not item.subnav ? 'page' : false,
+                    },
                 } %}
                 <li {{ attr(itemAttributes) }}>
                     <a {{ attr(linkAttributes) }}>
@@ -38,7 +41,16 @@
                         <span class="label">{{ item.label }}</span>
 
                         {%- if not item.sel and item.badgeCount -%}
-                            <span class="badge">{{ item.badgeCount|number(decimals=0) }}</span>
+                            <span class="badge" aria-hidden="true">{{ item.badgeCount|number(decimals=0) }}</span>
+                            {{ tag('span', {
+                                class: 'visually-hidden',
+                                data: {
+                                    notification: true,
+                                },
+                                text: '{num, number} {num, plural, =1{notification} other{notifications}}'|t('app', {
+                                    num: item.badgeCount,
+                                }),
+                            }) }}
                         {%- endif -%}
                     </a>
                     {% if item.subnav %}
@@ -55,6 +67,9 @@
                                         (item.external ?? false) ? 'external',
                                     ],
                                     target: (item.external ?? false) ? '_blank',
+                                    aria: {
+                                        current: itemIsSelected ? 'page' : false,
+                                    },
                                 } %}
 
                                 <li>
@@ -62,7 +77,16 @@
                                         {{ item.label }}
 
                                         {%- if not itemIsSelected and item.badgeCount is defined -%}
-                                            <span class="badge">{{ item.badgeCount|number(decimals=0) }}</span>
+                                            <span class="badge" aria-hidden="true">{{ item.badgeCount|number(decimals=0) }}</span>
+                                            {{ tag('span', {
+                                                class: 'visually-hidden',
+                                                data: {
+                                                    notification: true,
+                                                },
+                                                text: '{num, number} {num, plural, =1{notification} other{notifications}}'|t('app', {
+                                                    num: item.badgeCount,
+                                                }),
+                                            }) }}
                                         {%- endif -%}
                                     </a>
                                 </li>
