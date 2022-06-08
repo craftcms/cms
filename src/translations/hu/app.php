@@ -1728,6 +1728,7 @@ return [
     'Which template should be loaded when an entry’s URL is requested.' => 'Ezt a sablont kell betölteni, amikor beviteli URL-t két a rendszer.',
     'Which type of entries do you want to create?' => 'Milyen típusú bejegyzéseket kíván létrehozni?',
     'Widget saved.' => 'Kisalkalmazás elmentve',
+    'Widget settings' => 'Widget settings',
     'Width' => 'Szélesség',
     'Years' => 'Év',
     'Yes' => 'Igen',
