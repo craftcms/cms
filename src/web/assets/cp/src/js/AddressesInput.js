@@ -7,11 +7,11 @@ Craft.AddressesInput = Garnish.Base.extend(
   {
     $container: null,
     $addBtn: null,
+    $addBtnItem: null,
     $cards: null,
 
     init: function (container, settings) {
       this.$container = $(container);
-      console.log(this.$container);
       this.setSettings(settings, Craft.AddressesInput.defaults);
 
       // Is this already an address input?
@@ -22,8 +22,9 @@ Craft.AddressesInput = Garnish.Base.extend(
 
       this.$container.data('addresses', this);
 
-      this.$addBtn = this.$container.find('> .btn.add');
-      this.$cards = this.$container.find('.address-card');
+      this.$addBtn = this.$container.find('.address-cards__add-btn');
+      this.$addBtnItem = this.$addBtn.closest('li');
+      this.$cards = this.$container.find('> .address-card');
 
       for (let i = 0; i < this.$cards.length; i++) {
         this.initCard(this.$cards.eq(i));
@@ -113,7 +114,7 @@ Craft.AddressesInput = Garnish.Base.extend(
             $card.replaceWith($newCard);
             this.$cards = this.$cards.not($card);
           } else {
-            $newCard.insertBefore(this.$addBtn);
+            $newCard.insertBefore(this.$addBtnItem);
           }
           Craft.initUiElements($newCard);
           this.initCard($newCard);

@@ -1123,19 +1123,15 @@ JS, [
         ]);
 
         return
-            Html::beginTag('div', [
-                'id' => $config['id'],
-                'class' => 'address-container',
-            ]) .
             Html::beginTag('ul', [
                 'id' => $config['id'],
                 'class' => 'address-cards',
             ]) .
             implode("\n", array_map(fn(Address $address) => static::addressCardHtml($address, $config), $addresses)) .
-            Html::endTag('ul') .
+            Html::beginTag('li') .
             Html::beginTag('button', [
                 'type' => 'button',
-                'class' => ['btn', 'dashed', 'add', 'icon'],
+                'class' => ['btn', 'dashed', 'add', 'icon', 'address-cards__add-btn'],
             ]) .
             Html::tag('div', '', [
                 'class' => ['spinner', 'spinner-absolute'],
@@ -1143,8 +1139,9 @@ JS, [
             Html::tag('div', Craft::t('app', 'Add an address'), [
                 'class' => 'label',
             ]) .
-            Html::endTag('button') . // .address-cards
-            Html::endTag('div'); // .address-container
+            Html::endTag('button') . // .add
+            Html::endTag('li') .
+            Html::endTag('ul'); // .address-cards
     }
 
     /**

@@ -4728,25 +4728,19 @@ ul.tree,
   }
 }
 
-/* Address Container */
-.address-container {
-  --grid-gap: 14px 14px;
-  display: grid;
-  gap: var(--grid-gap);
-
-  & > button.add {
-    padding: 1rem;
-    min-height: 4rem;
-    height: auto;
-  }
-}
-
 /* Address Cards */
 .address-cards {
   display: grid;
-  gap: var(--grid-gap);
+  gap: var(--m) var(--m);
   grid-template-columns: repeat(1, minmax(0, 1fr));
   grid-auto-rows: minmax(0, 1fr);
+}
+
+.address-cards__add-btn {
+  padding: 1rem;
+  min-height: 8rem;
+  height: auto;
+  width: 100%;
 }
 
 .address-card.error {
