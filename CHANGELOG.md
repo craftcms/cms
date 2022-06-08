@@ -8,6 +8,7 @@
 ### Fixed
 - Fixed a bug where element types’ `actions()` methods were getting called for all `element-indexes/*` action requests.
 - Fixed a bug where the `install` command would run non-interactively even if not all needed options were passed, resulting in an error after the database tables had been added. ([#11305](https://github.com/craftcms/cms/issues/11305))
+- Fixed a viewport clipping bug on the control panel’s Login page. ([#11372](https://github.com/craftcms/cms/pull/11372))
 
 ## 3.7.44 - 2022-06-03
 

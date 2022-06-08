@@ -1,8 +1,7 @@
 @charset "UTF-8";
 @import '@craftcms/sass/mixins';
 
-html,
-body {
+html {
   height: 100%;
 }
 
@@ -11,6 +10,7 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  min-height: 100%;
 }
 
 #login {
