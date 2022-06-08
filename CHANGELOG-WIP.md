@@ -3,6 +3,9 @@
 ### Added
 - Field layouts can now have “Line Break” UI elements. ([#11328](https://github.com/craftcms/cms/discussions/11328))
 - Added the `db/drop-all-tables` command. ([#11288](https://github.com/craftcms/cms/pull/11288))
+- Added the `project-config/get` command. ([#11341](https://github.com/craftcms/cms/pull/11341))
+- Added the `project-config/remove` command. ([#11341](https://github.com/craftcms/cms/pull/11341))
+- Added the `project-config/set` command. ([#11341](https://github.com/craftcms/cms/pull/11341))
 - The `AdminTable` Vue component can now be included into other Vue apps, in addition to being used as a standalone app. ([#11107](https://github.com/craftcms/cms/pull/11107))
 - Added a `one()` alias for `first()` to collections. ([#11134](https://github.com/craftcms/cms/discussions/11134))
 - Added `craft\base\Element::EVENT_DEFINE_CACHE_TAGS`. ([#11171](https://github.com/craftcms/cms/discussions/11171))
