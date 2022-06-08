@@ -259,7 +259,7 @@
         const actionMenuId = `matrixblock-action-menu-${id}`;
 
         var html = `
-                <li class="matrixblock" data-id="${id}" data-type="${type}" data-type-name="${typeName}">
+                <div class="matrixblock" data-id="${id}" data-type="${type}" data-type-name="${typeName}" role="listitem">
                   <input type="hidden" name="${
                     this.inputNamePrefix
                   }[sortOrder][]" value="${id}"/>
@@ -378,7 +378,7 @@
                       'Reorder'
                     )}" role="button"></a>
                   </div>
-                </li>`;
+                </div>`;
 
         var $block = $(html);
 
