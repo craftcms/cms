@@ -38,21 +38,21 @@ class ProjectConfigController extends Controller
     public bool $invert = false;
 
     /**
-     * @var bool Whether to get values from the loaded config, or directly from file.
+     * @var bool Whether to pull values from the project config YAML files instead of the loaded config.
      * @since 4.1.0
      */
     public bool $external = false;
 
     /**
      * @var string|null A message describing the changes.
-     * @see \craft\services\ProjectConfig::set
+     * @see \craft\services\ProjectConfig::set()
      * @since 4.1.0
      */
     public ?string $message = null;
 
     /**
      * @var bool Whether the `dateModified` value should be updated
-     * @see \craft\services\ProjectConfig::set
+     * @see \craft\services\ProjectConfig::set()
      * @since 4.1.0
      */
     public bool $updateTimestamp = false;
@@ -101,11 +101,18 @@ class ProjectConfigController extends Controller
     }
 
     /**
-     * @param string|null $path The config item path
+     * Outputs a project config value.
+     *
+     * Example:
+     * ```
+     * php craft project-config/get system.edition
+     * ```
+     *
+     * @param string $path The config item path
      * @return int
      * @since 4.1.0
      */
-    public function actionGet(?string $path = null): int
+    public function actionGet(string $path): int
     {
         $projectConfig = Craft::$app->getProjectConfig();
         $value = $projectConfig->get($path, $this->external);
@@ -115,6 +122,13 @@ class ProjectConfigController extends Controller
     }
 
     /**
+     * Sets a project config value.
+     *
+     * Example:
+     * ```
+     * php craft project-config/set system.edition pro
+     * ```
+     *
      * @param string $path The config item path
      * @param string $value The config item value as a valid YAML string
      * @return int
@@ -135,7 +149,7 @@ class ProjectConfigController extends Controller
             $parsedValue,
             $this->message,
             $this->updateTimestamp,
-            $this->force
+            $this->force,
         );
 
         $value = $projectConfig->get($path);
@@ -157,6 +171,13 @@ class ProjectConfigController extends Controller
     }
 
     /**
+     * Removes a project config value.
+     *
+     * Example:
+     * ```
+     * php craft project-config/set system.edition pro
+     * ```
+     *
      * @param string $path The config item path
      * @return int
      * @since 4.1.0
@@ -167,7 +188,7 @@ class ProjectConfigController extends Controller
     }
 
     /**
-     * Prints a diff of the pending project config YAML changes.
+     * Outputs a diff of the pending project config YAML changes.
      *
      * @return int
      * @since 3.5.6
