@@ -17,9 +17,7 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\elements\actions\CopyReferenceTag;
 use craft\elements\actions\CopyUrl;
-use craft\elements\actions\DeleteAssets;
 use craft\elements\actions\DownloadAssetFile;
-use craft\elements\actions\Edit;
 use craft\elements\actions\EditImage;
 use craft\elements\actions\PreviewAsset;
 use craft\elements\actions\RenameFile;
@@ -412,12 +410,6 @@ class Asset extends Element
             // Download
             $actions[] = DownloadAssetFile::class;
 
-            // Edit
-            $actions[] = [
-                'type' => Edit::class,
-                'label' => Craft::t('app', 'Edit asset'),
-            ];
-
             $userSession = Craft::$app->getUser();
             if ($isTemp || $userSession->checkPermission("replaceFiles:$volume->uid")) {
                 // Rename/Replace File
@@ -436,11 +428,6 @@ class Asset extends Element
             // Edit Image
             if ($isTemp || $userSession->checkPermission("editImages:$volume->uid")) {
                 $actions[] = EditImage::class;
-            }
-
-            // Delete
-            if ($isTemp || $userSession->checkPermission("deleteAssets:$volume->uid")) {
-                $actions[] = DeleteAssets::class;
             }
         }
 
@@ -929,7 +916,7 @@ class Asset extends Element
      * @inheritdoc
      * @since 3.5.0
      */
-    public function getCacheTags(): array
+    protected function cacheTags(): array
     {
         $tags = [
             "volume:$this->_volumeId",
@@ -1514,7 +1501,7 @@ JS;
 
         // If a plugin set the url, we'll just use that.
         if ($event->url !== null) {
-            return $event->url;
+            return Html::encodeSpaces($event->url);
         }
 
         $volume = $this->getVolume();
@@ -1522,7 +1509,7 @@ JS;
         $transform = $transform ?? $this->_transform;
 
         if ($transform === null || !Image::canManipulateAsImage(pathinfo($this->getFilename(), PATHINFO_EXTENSION))) {
-            return Assets::generateUrl($volume->getFs(), $this);
+            return Html::encodeSpaces(Assets::generateUrl($volume->getFs(), $this));
         }
 
         $fsNoUrls = !$transform && !$volume->getFs()->hasUrls;
@@ -1540,7 +1527,7 @@ JS;
             ($mimeType === 'image/gif' && !$generalConfig->transformGifs) ||
             ($mimeType === 'image/svg+xml' && !$generalConfig->transformSvgs)
         ) {
-            return Assets::generateUrl($volume->getFs(), $this);
+            return Html::encodeSpaces(Assets::generateUrl($volume->getFs(), $this));
         }
 
         if ($transform) {
@@ -1570,12 +1557,12 @@ JS;
 
                     // If a plugin set the url, we'll just use that.
                     if ($event->url !== null) {
-                        return $event->url;
+                        return Html::encodeSpaces($event->url);
                     }
                 }
 
                 $imageTransformer = $transform->getImageTransformer();
-                $url = $imageTransformer->getTransformUrl($this, $transform, $immediately);
+                $url = Html::encodeSpaces($imageTransformer->getTransformUrl($this, $transform, $immediately));
 
                 if ($this->hasEventHandlers(self::EVENT_AFTER_GENERATE_TRANSFORM)) {
                     $event = new GenerateTransformEvent([
@@ -1595,7 +1582,7 @@ JS;
             }
         }
 
-        return Assets::generateUrl($volume->getFs(), $this);
+        return Html::encodeSpaces(Assets::generateUrl($volume->getFs(), $this));
     }
 
     /**
@@ -2194,9 +2181,6 @@ JS;
                 return Html::tag('div', $size, [
                     'id' => 'file-size-value',
                     'title' => $inBytes,
-                    'aria' => [
-                        'label' => $inBytes,
-                    ],
                 ]);
             },
             Craft::t('app', 'Uploaded by') => function() {

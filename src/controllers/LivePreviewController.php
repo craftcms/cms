@@ -8,6 +8,7 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\elements\db\UserQuery;
 use craft\elements\User;
 use craft\web\Controller;
 use yii\base\InvalidRouteException;
@@ -93,7 +94,7 @@ class LivePreviewController extends Controller
         /** @var User|null $user */
         $user = User::find()
             ->id($userId)
-            ->status([User::STATUS_ACTIVE, User::STATUS_PENDING])
+            ->status(UserQuery::STATUS_CREDENTIALED)
             ->one();
 
         if (!$user) {

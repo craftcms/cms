@@ -1554,7 +1554,7 @@ return [
     'Try again' => 'Erneut versuchen',
     'Try for free' => 'Kostenlos testen',
     'Try running `composer install` from your terminal to resolve.' => 'Versuchen Sie, `composer install` auf Ihrem Endgerät zu starten, um das Problem zu beheben.',
-    'Try' => 'Versuch',
+    'Try' => 'Testen',
     'Trying again…' => 'Erneut versuchen…',
     'Type' => 'Typ',
     'UI Elements' => 'UI Elemente',

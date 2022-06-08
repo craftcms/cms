@@ -14,6 +14,11 @@ use craft\behaviors\RevisionBehavior;
 use craft\db\Connection;
 use craft\db\Query;
 use craft\db\Table;
+use craft\elements\actions\Delete;
+use craft\elements\actions\DeleteActionInterface;
+use craft\elements\actions\Edit;
+use craft\elements\actions\SetStatus;
+use craft\elements\actions\View;
 use craft\elements\conditions\ElementCondition;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\ElementQuery;
@@ -27,6 +32,7 @@ use craft\events\DefineAttributeKeywordsEvent;
 use craft\events\DefineEagerLoadingMapEvent;
 use craft\events\DefineHtmlEvent;
 use craft\events\DefineMetadataEvent;
+use craft\events\DefineValueEvent;
 use craft\events\ElementIndexTableAttributeEvent;
 use craft\events\ElementStructureEvent;
 use craft\events\ModelEvent;
@@ -491,6 +497,14 @@ abstract class Element extends Component implements ElementInterface
     public const EVENT_SET_ROUTE = 'setRoute';
 
     /**
+     * @event DefineValueEvent The event that is triggered when defining the cache tags that should be cleared when
+     * this element is saved.
+     * @see getCacheTags()
+     * @since 4.1.0
+     */
+    public const EVENT_DEFINE_CACHE_TAGS = 'defineCacheTags';
+
+    /**
      * @event DefineAttributeKeywordsEvent The event that is triggered when defining the search keywords for an
      * element attribute.
      *
@@ -839,12 +853,55 @@ abstract class Element extends Component implements ElementInterface
      */
     public static function actions(string $source): array
     {
-        $actions = static::defineActions($source);
+        $actions = Collection::make(static::defineActions($source));
+
+        $hasActionType = fn(string $type) => $actions->contains(
+            fn($action) => (
+                $action === $type ||
+                $action instanceof $type ||
+                is_subclass_of($action, $type) ||
+                (
+                    is_array($action) &&
+                    isset($action['type']) &&
+                    ($action['type'] === $type || is_subclass_of($action['type'], $type))
+                )
+            )
+        );
+
+        // Prepend Edit?
+        if (!$hasActionType(Edit::class)) {
+            $actions->prepend([
+                'type' => Edit::class,
+                'label' => Craft::t('app', 'Edit {type}', [
+                    'type' => static::lowerDisplayName(),
+                ]),
+            ]);
+        }
+
+        // Prepend View?
+        if (static::hasUris() && !$hasActionType(View::class)) {
+            $actions->prepend([
+                'type' => View::class,
+                'label' => Craft::t('app', 'View {type}', [
+                    'type' => static::lowerDisplayName(),
+                ]),
+            ]);
+        }
+
+        // Prepend Set Status?
+        if (static::hasStatuses() && !$hasActionType(SetStatus::class)) {
+            $actions->prepend(SetStatus::class);
+        }
+
+        // Append Delete?
+        if (!$hasActionType(DeleteActionInterface::class)) {
+            $actions->push(Delete::class);
+        }
 
         // Give plugins a chance to modify them
         $event = new RegisterElementActionsEvent([
             'source' => $source,
-            'actions' => $actions,
+            'actions' => $actions->all(),
         ]);
         Event::trigger(static::class, self::EVENT_REGISTER_ACTIONS, $event);
 
@@ -995,7 +1052,12 @@ abstract class Element extends Component implements ElementInterface
             }
         }
 
-        $variables['elements'] = $elementQuery->cache()->all($db);
+        // Only cache if there's no search term
+        if (!$elementQuery->search) {
+            $elementQuery->cache();
+        }
+
+        $variables['elements'] = $elementQuery->all($db);
 
         $template = '_elements/' . $viewState['mode'] . 'view/' . ($includeContainer ? 'container' : 'elements');
 
@@ -2139,7 +2201,7 @@ abstract class Element extends Component implements ElementInterface
         $rules[] = [
             ['siteId'],
             SiteIdValidator::class,
-            'allowDisabled' => $this->propagating ?: null,
+            'allowDisabled' => true,
             'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE, self::SCENARIO_ESSENTIALS],
         ];
         $rules[] = [['dateCreated', 'dateUpdated'], DateTimeValidator::class, 'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE]];
@@ -2582,6 +2644,27 @@ abstract class Element extends Component implements ElementInterface
      * @since 3.5.0
      */
     public function getCacheTags(): array
+    {
+        $cacheTags = static::cacheTags();
+
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_CACHE_TAGS)) {
+            $event = new DefineValueEvent([
+                'value' => $cacheTags,
+            ]);
+            $this->trigger(self::EVENT_DEFINE_CACHE_TAGS, $event);
+            return $event->value;
+        }
+
+        return $cacheTags;
+    }
+
+    /**
+     * Returns the cache tags that should be cleared when this element is saved.
+     *
+     * @return string[]
+     * @since 4.1.0
+     */
+    protected function cacheTags(): array
     {
         return [];
     }
@@ -4350,6 +4433,10 @@ JS,
                     'class' => ['expand-status-btn', 'btn'],
                     'data' => [
                         'icon' => 'ellipsis',
+                    ],
+                    'aria' => [
+                        'expanded' => 'false',
+                        'label' => Craft::t('app', 'Update status for individual sites'),
                     ],
                 ])
                 : '';

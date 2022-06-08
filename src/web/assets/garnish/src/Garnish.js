@@ -42,7 +42,8 @@ Garnish = $.extend(Garnish, {
   $scrollContainer: Garnish.$win,
 
   // Key code constants
-  DELETE_KEY: 8,
+  BACKSPACE_KEY: 8,
+  DELETE_KEY: 46,
   SHIFT_KEY: 16,
   TAB_KEY: 9,
   CTRL_KEY: 17,

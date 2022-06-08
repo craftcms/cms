@@ -2,7 +2,9 @@
 
 <form id="asset-indexes" class="utility" method="post" accept-charset="UTF-8">
 
-    <table id="indexing-sessions" class="hidden fullwidth">
+    {{ csrfInput() }}
+
+    <table id="indexing-sessions" class="hidden fullwidth" style="margin-bottom: var(--xl)">
         <thead>
             <tr>
                 <th style="width: 10%">Volumes being indexed</th>
@@ -16,9 +18,7 @@
         </tbody>
     </table>
 
-    {{ csrfInput() }}
-
-    <h2>{{ 'Volumes'|t('app') }} </h2>
+    <h2 class="first">{{ 'Volumes'|t('app') }} </h2>
     {{ checkboxSelectHtml|raw }}
 
     <h2>{{ 'Options'|t('app') }} </h2>
