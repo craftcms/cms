@@ -1,24 +1,5 @@
 version: '3.9'
 services:
-  mysql:
-    image: mysql:5.7
-    ports:
-      - ${PLAYWRIGHT_MYSQL_PORT:-33069}:3306
-    environment:
-      MYSQL_ROOT_PASSWORD: craft
-      MYSQL_DATABASE: craft_test
-      MYSQL_USER: craft
-      MYSQL_PASSWORD: craft
-    healthcheck:
-      test: ['CMD', 'mysqladmin', 'ping']
-      interval: 10s
-      retries: 5
-    command:
-      [
-        'mysqld',
-        '--character-set-server=utf8mb4',
-        '--collation-server=utf8mb4_unicode_ci',
-      ]
   postgres:
     image: postgres:11-alpine
     ports:
@@ -33,7 +14,7 @@ services:
       retries: 3
   playwright:
     build:
-      context: ../../../
+      context: ../../
       target: craft
       dockerfile: ./node_modules/@craftcms/playwright/Dockerfile
     ports:
@@ -55,7 +36,5 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      mysql:
-        condition: service_healthy
     volumes:
-      - ${PLAYWRIGHT_REPO_PATH:-../../../.}:/app/repos/repo/
+      - ${PLAYWRIGHT_REPO_PATH:-../../.}:/app/repos/repo/
