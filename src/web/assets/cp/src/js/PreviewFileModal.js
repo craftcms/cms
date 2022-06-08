@@ -70,7 +70,7 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
 
       // Add bumper elements to maintain focus trap
       this.$bumperButtonStart = Craft.ui.createButton({
-        html: Craft.t('app', 'Close preview'),
+        html: Craft.t('app', 'Close Preview'),
         class: 'skip-link',
       });
 
@@ -90,7 +90,7 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
       Craft.PreviewFileModal.openInstance = null;
       if (this.elementSelect) {
         this.elementSelect.focusItem(this.elementSelect.$focusedItem);
-      } else if (this.$triggerElement) {
+      } else if (this.$triggerElement && this.$triggerElement.length) {
         this.$triggerElement.trigger('focus');
       }
 
