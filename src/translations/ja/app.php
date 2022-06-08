@@ -1728,6 +1728,7 @@ return [
     'Which template should be loaded when an entry’s URL is requested.' => 'エントリーの URL が要求された場合にロードするテンプレート。',
     'Which type of entries do you want to create?' => 'どのエントリタイプを作成しますか？',
     'Widget saved.' => 'ウィジェットを保存しました。',
+    'Widget settings' => 'Widget settings',
     'Width' => '幅',
     'Years' => '年',
     'Yes' => 'はい',
