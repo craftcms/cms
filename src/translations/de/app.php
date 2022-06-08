@@ -445,7 +445,7 @@ return [
     'Date' => 'Datum',
     'Days' => 'Tage',
     'Deactivate users by default' => 'Benutzer standardmäßig deaktivieren',
-    'Deactivate…' => 'Wird deaktiviert…',
+    'Deactivate…' => 'Deaktivieren…',
     'Deactivating a user revokes their ability to sign in. Are you sure you want to continue?' => 'Ein deaktivierter Benutzer kann sich nicht mehr anmelden. Wirklich fortfahren?',
     'Decimal Points' => 'Nachkommastellen',
     'Default Color' => 'Standardfarbe',
