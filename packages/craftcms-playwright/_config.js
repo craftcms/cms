@@ -1,11 +1,11 @@
 /* jshint esversion: 9, strict: false */
 const path = require('path');
 const {devices} = require('@playwright/test');
-require('dotenv').config({path: path.resolve('./tests/playwright/.env')});
+const testDir = './tests-playwright';
+require('dotenv').config({path: path.resolve(path.join(testDir, '.env'))});
 
 let cpTrigger = process.env.PLAYWRIGHT_CRAFT_CP_TRIGGER ?? 'admin';
 cpTrigger = `./${cpTrigger}/`;
-const testDir = './tests/playwright';
 const storageStateFilename = '.authentication.json';
 let baseURL = process.env.PLAYWRIGHT_SITE ?? 'http://127.0.0.1:8089/';
 baseURL = new URL(cpTrigger, baseURL).href;
