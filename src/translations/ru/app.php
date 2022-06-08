@@ -1728,6 +1728,7 @@ return [
     'Which template should be loaded when an entry’s URL is requested.' => 'Какой шаблон следует загружать при запросе URL записи.',
     'Which type of entries do you want to create?' => 'Какой тип записей вы хотите создать?',
     'Widget saved.' => 'Виджет сохранен.',
+    'Widget settings' => 'Widget settings',
     'Width' => 'Ширина',
     'Years' => 'Лет',
     'Yes' => 'Да',
