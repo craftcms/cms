@@ -1728,6 +1728,7 @@ return [
     'Which template should be loaded when an entry’s URL is requested.' => 'Vilken mall ska läsas in när en posts URL efterfrågas.',
     'Which type of entries do you want to create?' => 'Vilken typ av inlägg vill du skapa?',
     'Widget saved.' => 'Widgeten sparades.',
+    'Widget settings' => 'Widget settings',
     'Width' => 'Bredd',
     'Years' => 'År',
     'Yes' => 'Ja',
