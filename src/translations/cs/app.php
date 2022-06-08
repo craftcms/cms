@@ -1728,6 +1728,7 @@ return [
     'Which template should be loaded when an entry’s URL is requested.' => 'Jaká šablona se má načíst, když je vyžádána adresa URL zadávaných údajů.',
     'Which type of entries do you want to create?' => 'Který typ záznamů si přejete vytvořit?',
     'Widget saved.' => 'Widget uložen.',
+    'Widget settings' => 'Widget settings',
     'Width' => 'Šířka',
     'Years' => 'Roky',
     'Yes' => 'Ano',
