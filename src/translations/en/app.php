@@ -1729,6 +1729,7 @@ return [
     'Which template should be loaded when an entry’s URL is requested.' => 'Which template should be loaded when an entry’s URL is requested.',
     'Which type of entries do you want to create?' => 'Which type of entries do you want to create?',
     'Widget saved.' => 'Widget saved.',
+    'Widget settings' => 'Widget settings',
     'Width' => 'Width',
     'Years' => 'Years',
     'Yes' => 'Yes',
