@@ -1729,6 +1729,7 @@ return [
     'Which template should be loaded when an entry’s URL is requested.' => 'Hvilken skabelon der indlæses, når der anmodes om en posts URL.',
     'Which type of entries do you want to create?' => 'Hvilke typer poster vil du oprette?',
     'Widget saved.' => 'Widget gemt.',
+    'Widget settings' => 'Widget settings',
     'Width' => 'Bredde',
     'Years' => 'År',
     'Yes' => 'Ja',
