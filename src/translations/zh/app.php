@@ -1728,6 +1728,7 @@ return [
     'Which template should be loaded when an entry’s URL is requested.' => '当条目URL被访问时，应该加载哪一个模板？',
     'Which type of entries do you want to create?' => '要创建哪种类型的条目？',
     'Widget saved.' => '小部件已保存。',
+    'Widget settings' => 'Widget settings',
     'Width' => '宽度',
     'Years' => '年',
     'Yes' => '是',
