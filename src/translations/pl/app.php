@@ -1728,6 +1728,7 @@ return [
     'Which template should be loaded when an entry’s URL is requested.' => 'Który szablon wczytywać po wywołaniu adresu URL pozycji.',
     'Which type of entries do you want to create?' => 'Jakiego typu wpisy chcesz tworzyć?',
     'Widget saved.' => 'Widżet zapisany.',
+    'Widget settings' => 'Widget settings',
     'Width' => 'Szerokość',
     'Years' => 'Lat(a)',
     'Yes' => 'Tak',
