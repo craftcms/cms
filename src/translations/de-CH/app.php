@@ -1728,6 +1728,7 @@ return [
     'Which template should be loaded when an entry’s URL is requested.' => 'Die Vorlage, die bei Anforderung der URL eines Eintrags geladen werden soll.',
     'Which type of entries do you want to create?' => 'Welche Eintragstypen möchten Sie erstellen?',
     'Widget saved.' => 'Das Widget wurde gespeichert.',
+    'Widget settings' => 'Widget settings',
     'Width' => 'Breite',
     'Years' => 'Jahre',
     'Yes' => 'Ja',
