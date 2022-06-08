@@ -13,7 +13,7 @@ Craft.ui = {
       $btn.addClass(config.class);
     }
     if (config.html) {
-      $btn.html(html);
+      $btn.html(config.html);
     } else if (config.label) {
       $btn.append($('<div class="label"/>').text(config.label));
     } else {
