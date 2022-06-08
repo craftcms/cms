@@ -1728,6 +1728,7 @@ return [
     'Which template should be loaded when an entry’s URL is requested.' => 'ما هو القالب الذي يجب تحميله عندما يتم طلب عنوان URL لإدخال.',
     'Which type of entries do you want to create?' => 'ما نوع الإدخالات التي ترغب في إنشائها؟',
     'Widget saved.' => 'تم حفظ عنصر الواجهة.',
+    'Widget settings' => 'Widget settings',
     'Width' => 'العرض',
     'Years' => 'سنوات',
     'Yes' => 'نعم',
