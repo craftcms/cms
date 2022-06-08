@@ -1728,6 +1728,7 @@ return [
     'Which template should be loaded when an entry’s URL is requested.' => 'Qué plantilla se debe cargar cuando la URL de una entrada es solicitada.',
     'Which type of entries do you want to create?' => '¿Qué tipo de entrada deseas crear?',
     'Widget saved.' => 'Widget guardado.',
+    'Widget settings' => 'Widget settings',
     'Width' => 'Ancho',
     'Years' => 'Años',
     'Yes' => 'Sí',
