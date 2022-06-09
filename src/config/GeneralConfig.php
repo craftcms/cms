@@ -1443,10 +1443,10 @@ class GeneralConfig extends BaseObject
      *
      * ::: code
      * ```php Static Config
-     * 'ipHeaders' => ['X-Forwarded-For', 'CF-Connecting-IP'],
+     * 'isSystemLive' => true,
      * ```
      * ```shell Environment Override
-     * CRAFT_IP_HEADERS=X-Forwarded-For,CF-Connecting-IP
+     * CRAFT_IS_SYSTEM_LIVE=true
      * ```
      * :::
      *
