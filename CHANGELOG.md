@@ -4,6 +4,7 @@
 
 ### Changed
 - Element index queries are no longer cached if they contain a search term.
+- Search inputs within field layout designers now prevent the containing form from being submitted when the <kbd>Return</kbd> key is pressed. ([#11415](https://github.com/craftcms/cms/discussions/11415))
 
 ### Fixed
 - Fixed a bug where element types’ `actions()` methods were getting called for all `element-indexes/*` action requests.
