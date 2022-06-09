@@ -17,9 +17,7 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\elements\actions\CopyReferenceTag;
 use craft\elements\actions\CopyUrl;
-use craft\elements\actions\DeleteAssets;
 use craft\elements\actions\DownloadAssetFile;
-use craft\elements\actions\Edit;
 use craft\elements\actions\EditImage;
 use craft\elements\actions\PreviewAsset;
 use craft\elements\actions\RenameFile;
@@ -377,9 +375,9 @@ class Asset extends Element
     {
         $fieldLayouts = [];
         if (
-            preg_match('/^folder:(.+)$/', $source, $matches) &&
-            ($folder = Craft::$app->getAssets()->getFolderByUid($matches[1])) &&
-            $fieldLayout = $folder->getVolume()->getFieldLayout()
+            preg_match('/^volume:(.+)$/', $source, $matches) &&
+            ($volume = Craft::$app->getVolumes()->getVolumeByUid($matches[1])) &&
+            $fieldLayout = $volume->getFieldLayout()
         ) {
             $fieldLayouts[] = $fieldLayout;
         }
@@ -393,11 +391,15 @@ class Asset extends Element
     {
         $actions = [];
 
+        if (preg_match('/^volume:([a-z0-9\-]+)/', $source, $matches)) {
+            $volume = Craft::$app->getVolumes()->getVolumeByUid($matches[1]);
+        } elseif (preg_match('/^folder:([a-z0-9\-]+)/', $source, $matches)) {
+            $folder = Craft::$app->getAssets()->getFolderByUid($matches[1]);
+            $volume = $folder?->getVolume();
+        }
+
         // Only match the first folder ID - ignore nested folders
-        if (
-            preg_match('/^volume:([a-z0-9\-]+)/', $source, $matches) &&
-            $volume = Craft::$app->getVolumes()->getVolumeByUid($matches[1])
-        ) {
+        if (isset($volume)) {
             $isTemp = $volume->getFs() instanceof Temp;
 
             $actions[] = [
@@ -407,12 +409,6 @@ class Asset extends Element
 
             // Download
             $actions[] = DownloadAssetFile::class;
-
-            // Edit
-            $actions[] = [
-                'type' => Edit::class,
-                'label' => Craft::t('app', 'Edit asset'),
-            ];
 
             $userSession = Craft::$app->getUser();
             if ($isTemp || $userSession->checkPermission("replaceFiles:$volume->uid")) {
@@ -432,11 +428,6 @@ class Asset extends Element
             // Edit Image
             if ($isTemp || $userSession->checkPermission("editImages:$volume->uid")) {
                 $actions[] = EditImage::class;
-            }
-
-            // Delete
-            if ($isTemp || $userSession->checkPermission("deleteAssets:$volume->uid")) {
-                $actions[] = DeleteAssets::class;
             }
         }
 
@@ -460,6 +451,7 @@ class Asset extends Element
             'title' => Craft::t('app', 'Title'),
             'filename' => Craft::t('app', 'Filename'),
             'size' => Craft::t('app', 'File Size'),
+            'kind' => Craft::t('app', 'File Kind'),
             [
                 'label' => Craft::t('app', 'File Modification Date'),
                 'orderBy' => 'dateModified',
@@ -497,6 +489,7 @@ class Asset extends Element
             'imageSize' => ['label' => Craft::t('app', 'Dimensions')],
             'width' => ['label' => Craft::t('app', 'Image Width')],
             'height' => ['label' => Craft::t('app', 'Image Height')],
+            'alt' => ['label' => Craft::t('app', 'Alternative Text')],
             'link' => ['label' => Craft::t('app', 'Link'), 'icon' => 'world'],
             'id' => ['label' => Craft::t('app', 'ID')],
             'uid' => ['label' => Craft::t('app', 'UID')],
@@ -923,7 +916,7 @@ class Asset extends Element
      * @inheritdoc
      * @since 3.5.0
      */
-    public function getCacheTags(): array
+    protected function cacheTags(): array
     {
         $tags = [
             "volume:$this->_volumeId",
@@ -1325,10 +1318,15 @@ JS;
 
             [$value, $unit] = Assets::parseSrcsetSize($size);
 
-            $sizeTransform = $transform ? $transform->toArray() : [];
-
-            // Having handle or name here will override dimensions, so we don't want that.
-            unset($sizeTransform['handle'], $sizeTransform['name']);
+            $sizeTransform = $transform ? $transform->toArray([
+                'format',
+                'height',
+                'interlace',
+                'mode',
+                'position',
+                'quality',
+                'width',
+            ]) : [];
 
             if ($unit === 'w') {
                 $sizeTransform['width'] = (int)$value;
@@ -1503,7 +1501,7 @@ JS;
 
         // If a plugin set the url, we'll just use that.
         if ($event->url !== null) {
-            return $event->url;
+            return Html::encodeSpaces($event->url);
         }
 
         $volume = $this->getVolume();
@@ -1511,7 +1509,7 @@ JS;
         $transform = $transform ?? $this->_transform;
 
         if ($transform === null || !Image::canManipulateAsImage(pathinfo($this->getFilename(), PATHINFO_EXTENSION))) {
-            return Assets::generateUrl($volume->getFs(), $this);
+            return Html::encodeSpaces(Assets::generateUrl($volume->getFs(), $this));
         }
 
         $fsNoUrls = !$transform && !$volume->getFs()->hasUrls;
@@ -1529,7 +1527,7 @@ JS;
             ($mimeType === 'image/gif' && !$generalConfig->transformGifs) ||
             ($mimeType === 'image/svg+xml' && !$generalConfig->transformSvgs)
         ) {
-            return Assets::generateUrl($volume->getFs(), $this);
+            return Html::encodeSpaces(Assets::generateUrl($volume->getFs(), $this));
         }
 
         if ($transform) {
@@ -1559,12 +1557,12 @@ JS;
 
                     // If a plugin set the url, we'll just use that.
                     if ($event->url !== null) {
-                        return $event->url;
+                        return Html::encodeSpaces($event->url);
                     }
                 }
 
                 $imageTransformer = $transform->getImageTransformer();
-                $url = $imageTransformer->getTransformUrl($this, $transform, $immediately);
+                $url = Html::encodeSpaces($imageTransformer->getTransformUrl($this, $transform, $immediately));
 
                 if ($this->hasEventHandlers(self::EVENT_AFTER_GENERATE_TRANSFORM)) {
                     $event = new GenerateTransformEvent([
@@ -1584,7 +1582,7 @@ JS;
             }
         }
 
-        return Assets::generateUrl($volume->getFs(), $this);
+        return Html::encodeSpaces(Assets::generateUrl($volume->getFs(), $this));
     }
 
     /**
@@ -2183,9 +2181,6 @@ JS;
                 return Html::tag('div', $size, [
                     'id' => 'file-size-value',
                     'title' => $inBytes,
-                    'aria' => [
-                        'label' => $inBytes,
-                    ],
                 ]);
             },
             Craft::t('app', 'Uploaded by') => function() {

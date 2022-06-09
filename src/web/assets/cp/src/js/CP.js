@@ -67,7 +67,7 @@ Craft.CP = Garnish.Base.extend(
 
       // Find all the key elements
       this.$nav = $('#nav');
-      this.$navToggle = $('#nav-toggle');
+      this.$navToggle = $('#primary-nav-toggle');
       this.$globalSidebar = $('#global-sidebar');
       this.$globalContainer = $('#global-container');
       this.$mainContainer = $('#main-container');
@@ -1126,18 +1126,38 @@ Craft.CP = Garnish.Base.extend(
           new Promise((resolve, reject) => {
             Craft.sendActionRequest('POST', 'app/get-utilities-badge-count')
               .then(({data}) => {
-                // Get the existing utility nav badge, if any
+                // Get the existing utility nav badge and screen reader text, if any
                 let $badge = $utilitiesLink.children('.badge');
+                let $screenReaderText = $utilitiesLink.children(
+                  '[data-notification]'
+                );
 
                 if (data.badgeCount) {
                   if (!$badge.length) {
-                    $badge = $('<span class="badge"/>').appendTo(
-                      $utilitiesLink
-                    );
+                    $badge = $(
+                      '<span class="badge" aria-hidden="true"/>'
+                    ).appendTo($utilitiesLink);
                   }
+
+                  if (!$screenReaderText.length) {
+                    $screenReaderText = $(
+                      '<span class="visually-hidden" data-notification/>'
+                    ).appendTo($utilitiesLink);
+                  }
+
                   $badge.text(data.badgeCount);
-                } else if ($badge.length) {
+                  $screenReaderText.text(
+                    Craft.t(
+                      'app',
+                      '{num, number} {num, plural, =1{notification} other{notifications}}',
+                      {
+                        num: data.badgeCount,
+                      }
+                    )
+                  );
+                } else if ($badge.length && $screenReaderText.length) {
                   $badge.remove();
+                  $screenReaderText.remove();
                 }
                 resolve();
               })
@@ -1336,6 +1356,14 @@ Craft.CP = Garnish.Base.extend(
         // update the current URL
         const url = Craft.getUrl(document.location.href, {site: site.handle});
         history.replaceState({}, '', url);
+
+        // update the site--x body class
+        for (className of document.body.classList) {
+          if (className.match(/^site--/)) {
+            document.body.classList.remove(className);
+          }
+        }
+        document.body.classList.add(`site--${site.handle}`);
 
         // update other URLs on the page
         $('a').each(function () {

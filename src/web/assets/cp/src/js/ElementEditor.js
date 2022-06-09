@@ -339,6 +339,9 @@ Craft.ElementEditor = Garnish.Base.extend(
         }).appendTo($notice);
 
         if (this.isFullPage) {
+          // Disable pointer events until half a second after the animation is complete
+          Craft.cp.$contentContainer.css('pointer-events', 'none');
+
           $('#content-header').css('min-height', 'auto');
           const height = $noticeContainer.height();
           $noticeContainer
@@ -346,6 +349,10 @@ Craft.ElementEditor = Garnish.Base.extend(
             .velocity({height: height}, 'fast', () => {
               $('#content-header').css('min-height', '');
               $noticeContainer.css({height: '', overflow: ''});
+
+              setTimeout(() => {
+                Craft.cp.$contentContainer.css('pointer-events', '');
+              }, 300);
             });
         }
       }
@@ -440,7 +447,7 @@ Craft.ElementEditor = Garnish.Base.extend(
       $enabledForSiteField.addClass('nested');
       const $globalField = Craft.ui
         .createLightswitchField({
-          label: Craft.t('app', 'Enabled'),
+          label: Craft.t('app', 'Enabled for all sites'),
           name: 'enabled',
         })
         .insertBefore($enabledForSiteField);
@@ -581,7 +588,7 @@ Craft.ElementEditor = Garnish.Base.extend(
     _createSiteStatusField: function (site, status) {
       const $field = Craft.ui.createLightswitchField({
         fieldClass: `enabled-for-site-${site.id}-field`,
-        label: Craft.t('app', 'Enabled for {site}', {site: site.name}),
+        label: site.name,
         name: `enabledForSite[${site.id}]`,
         on:
           typeof status != 'undefined'
@@ -1039,6 +1046,7 @@ Craft.ElementEditor = Garnish.Base.extend(
               !this.settings.canCreateDrafts
             ) {
               resolve();
+              return;
             }
 
             clearTimeout(this.timeout);

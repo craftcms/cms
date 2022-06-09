@@ -10,8 +10,8 @@ namespace craft\fieldlayoutelements;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\FieldInterface;
+use craft\errors\FieldNotFoundException;
 use craft\helpers\ArrayHelper;
-use yii\base\InvalidArgumentException;
 
 /**
  * CustomField represents a custom field that can be included in field layouts.
@@ -98,12 +98,12 @@ class CustomField extends BaseField
      * Sets the UID of the field this layout field is based on.
      *
      * @param string $uid
-     * @throws InvalidArgumentException if $uid is invalid
+     * @throws FieldNotFoundException if $uid is invalid
      */
     public function setFieldUid(string $uid): void
     {
         if (($field = Craft::$app->getFields()->getFieldByUid($uid)) === null) {
-            throw new InvalidArgumentException("Invalid field UID: $uid");
+            throw new FieldNotFoundException($uid);
         }
         $this->_field = $field;
     }
@@ -228,6 +228,14 @@ class CustomField extends BaseField
     protected function id(): string
     {
         return $this->_field->getInputId();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function labelId(): string
+    {
+        return $this->_field->getLabelId();
     }
 
     /**

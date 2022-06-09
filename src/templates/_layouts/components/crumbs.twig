@@ -1,5 +1,5 @@
 <div id="crumbs"{% if not crumbs %} class="empty"{% endif %}>
-    <button id="nav-toggle" title="{{ 'Show nav'|t('app') }}" aria-label="{{ 'Show nav'|t('app') }}" aria-expanded="false" aria-controls="global-sidebar" aria-haspopup="true"></button>
+    <button id="primary-nav-toggle" class="nav-toggle" title="{{ 'Show nav'|t('app') }}" aria-label="{{ 'Show nav'|t('app') }}" aria-expanded="false" aria-controls="global-sidebar" aria-haspopup="true"></button>
     {% if crumbs %}
         <nav aria-label="{{ 'Breadcrumbs'|t('app') }}">
             <ul class="breadcrumb-list">

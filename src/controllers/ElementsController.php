@@ -486,9 +486,7 @@ class ElementsController extends Controller
                         ]
                     );
                 }
-            }
 
-            if ($isCurrent) {
                 if ($canSaveCanonical) {
                     if ($isUnpublishedDraft) {
                         $response->addAltAction(Craft::t('app', 'Save {type}', [
@@ -531,37 +529,28 @@ class ElementsController extends Controller
                         ]),
                     ]);
                 }
-            } elseif ($isDraft) {
-                $response->addAltAction(Craft::t('app', 'Save and continue editing'), [
-                    'redirect' => '{cpEditUrl}',
-                    'action' => 'elements/save-draft',
-                    'shortcut' => true,
-                    'retainScroll' => true,
-                ]);
-
-                if ($canDeleteDraft) {
-                    if ($canDeleteForSite) {
-                        $response->addAltAction(Craft::t('app', 'Delete {type} for this site', [
-                            'type' => Craft::t('app', 'draft'),
-                        ]), [
-                            'destructive' => true,
-                            'action' => 'elements/delete-for-site',
-                            'redirect' => "$redirectUrl#",
-                            'confirm' => Craft::t('app', 'Are you sure you want to delete the {type} for this site?', compact('type')),
-                        ]);
-                    }
-
-                    $response->addAltAction(Craft::t('app', 'Delete {type}', [
+            } elseif ($isDraft && $canDeleteDraft) {
+                if ($canDeleteForSite) {
+                    $response->addAltAction(Craft::t('app', 'Delete {type} for this site', [
                         'type' => Craft::t('app', 'draft'),
                     ]), [
                         'destructive' => true,
-                        'action' => 'elements/delete-draft',
-                        'redirect' => $canonical->getCpEditUrl(),
-                        'confirm' => Craft::t('app', 'Are you sure you want to delete this {type}?', [
-                            'type' => Craft::t('app', 'draft'),
-                        ]),
+                        'action' => 'elements/delete-for-site',
+                        'redirect' => "$redirectUrl#",
+                        'confirm' => Craft::t('app', 'Are you sure you want to delete the {type} for this site?', compact('type')),
                     ]);
                 }
+
+                $response->addAltAction(Craft::t('app', 'Delete {type}', [
+                    'type' => Craft::t('app', 'draft'),
+                ]), [
+                    'destructive' => true,
+                    'action' => 'elements/delete-draft',
+                    'redirect' => $canonical->getCpEditUrl(),
+                    'confirm' => Craft::t('app', 'Are you sure you want to delete this {type}?', [
+                        'type' => Craft::t('app', 'draft'),
+                    ]),
+                ]);
             }
         }
 
@@ -647,44 +636,58 @@ class ElementsController extends Controller
     ): string {
         $components = [];
 
-        if ($canSave) {
-            if ($previewTargets) {
-                // Preview (View will be added later by JS)
-                $components[] =
-                    Html::beginTag('div', [
-                        'class' => ['preview-btn-container', 'btngroup'],
-                    ]) .
-                    ($enablePreview
-                        ? Html::button(Craft::t('app', 'Preview'), [
-                            'class' => ['preview-btn', 'btn'],
-                        ])
-                        : '') .
-                    Html::endTag('div');
-            }
+        // Preview (View will be added later by JS)
+        if ($canSave && $previewTargets) {
+            $components[] =
+                Html::beginTag('div', [
+                    'class' => ['preview-btn-container', 'btngroup'],
+                ]) .
+                ($enablePreview
+                    ? Html::button(Craft::t('app', 'Preview'), [
+                        'class' => ['preview-btn', 'btn'],
+                    ])
+                    : '') .
+                Html::endTag('div');
+        }
 
-            if ($isCurrent) {
-                if (!$isUnpublishedDraft && $canCreateDrafts) {
-                    // Create a draft
-                    $components[] = Html::button(Craft::t('app', 'Create a draft'), [
-                        'class' => ['btn', 'formsubmit'],
-                        'data' => [
-                            'action' => 'elements/save-draft',
-                            'redirect' => Craft::$app->getSecurity()->hashData('{cpEditUrl}'),
-                            'params' => ['dropProvisional' => 1],
-                        ],
-                    ]);
-                }
-            } elseif ($isDraft && $canSaveCanonical) {
-                // Apply draft
-                $components[] = Html::button(Craft::t('app', 'Apply draft'), [
-                    'class' => ['btn', 'secondary', 'formsubmit'],
+        // Create a draft
+        if ($isCurrent && !$isUnpublishedDraft && $canCreateDrafts) {
+            if ($canSave) {
+                $components[] = Html::button(Craft::t('app', 'Create a draft'), [
+                    'class' => ['btn', 'formsubmit'],
                     'data' => [
-                        'action' => 'elements/apply-draft',
+                        'action' => 'elements/save-draft',
                         'redirect' => Craft::$app->getSecurity()->hashData('{cpEditUrl}'),
+                        'params' => ['dropProvisional' => 1],
                     ],
                 ]);
+            } else {
+                $components[] = Html::beginForm() .
+                    Html::actionInput('elements/save-draft') .
+                    Html::redirectInput('{cpEditUrl}') .
+                    Html::hiddenInput('elementId', (string)$canonical->id) .
+                    Html::beginTag('div', ['class' => 'secondary-buttons']) .
+                    Html::button(Craft::t('app', 'Create a draft'), [
+                        'class' => ['btn', 'secondary', 'formsubmit'],
+                    ]) .
+                    Html::endTag('div') .
+                    Html::endForm();
             }
-        } elseif ($isRevision && $canSaveCanonical) {
+        }
+
+        // Apply draft
+        if ($isDraft && !$isCurrent && $canSave && $canSaveCanonical) {
+            $components[] = Html::button(Craft::t('app', 'Apply draft'), [
+                'class' => ['btn', 'secondary', 'formsubmit'],
+                'data' => [
+                    'action' => 'elements/apply-draft',
+                    'redirect' => Craft::$app->getSecurity()->hashData('{cpEditUrl}'),
+                ],
+            ]);
+        }
+
+        // Revert content from this revision
+        if ($isRevision && $canSaveCanonical) {
             $components[] = Html::beginForm() .
                 Html::actionInput('elements/revert') .
                 Html::redirectInput('{cpEditUrl}') .
@@ -723,7 +726,7 @@ class ElementsController extends Controller
             ->content($contentFn($form))
             ->sidebar($sidebarFn($form));
 
-        if (!$element->getIsRevision()) {
+        if ($canSave && !$element->getIsRevision()) {
             $this->view->registerJsWithVars(fn($settingsJs) => <<<JS
 new Craft.ElementEditor($('#$containerId'), $settingsJs);
 JS, [
@@ -1079,7 +1082,11 @@ JS, [
 
         $user = Craft::$app->getUser()->getIdentity();
 
-        if (!$this->_canSave($element, $user)) {
+        if (!$element->getIsDraft() && !$this->_provisional) {
+            if (!$element->canCreateDrafts($user)) {
+                throw new ForbiddenHttpException('User not authorized to create drafts for this element.');
+            }
+        } elseif (!$this->_canSave($element, $user)) {
             throw new ForbiddenHttpException('User not authorized to save this element.');
         }
 

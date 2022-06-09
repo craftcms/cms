@@ -175,7 +175,7 @@ class GlobalsController extends Controller
 
         // Render the template!
         return $this->renderTemplate('globals/_edit', [
-            'bodyClass' => 'edit-global-set site--' . $site->handle,
+            'bodyClass' => 'edit-global-set',
             'editableGlobalSets' => $editableGlobalSets,
             'globalSet' => $globalSet,
             'tabs' => $form->getTabMenu(),

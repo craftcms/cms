@@ -129,6 +129,12 @@
 {% endjs %}
 
 {% block body %}
+    {{ tag ('a', {
+        text: 'Skip to content'|t('app'),
+        href: '#main',
+        class: 'skip-link btn',
+    }) }}
+
     <div id="global-container">
         {% include '_layouts/components/global-sidebar' %}
 
@@ -297,14 +303,15 @@
                         <div class="edition-trial">{{ "Trial"|t('app') }}</div>
                     {% endif %}
                 </div>
-                <ul id="app-info">
-                    <li>Craft CMS {{ craft.app.version }}</li>
+                <div id="app-info">
+                    <span>Craft CMS {{ craft.app.version }}</span>
                     {% if canUpgradeEdition %}
-                        <li>
-                            <a class="go" href="{{ url('plugin-store/upgrade-craft') }}">{{ isTrial ? 'Buy Craft Pro'|t('app') : 'Upgrade to Craft Pro'|t('app') }}</a>
-                        </li>
+                        {% set linkText = isTrial ? 'Buy Craft Pro'|t('app') : 'Upgrade to Craft Pro'|t('app') %}
+                        <span>
+                            <a class="go" href="{{ url('plugin-store/upgrade-craft') }}" aria-label="{{ linkText }}">{{ linkText }}</a>
+                        </span>
                     {% endif %}
-                </ul>
+                </div>
             </footer>
 
         </div><!-- #page-container -->

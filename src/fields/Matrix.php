@@ -344,6 +344,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
 
                         $layoutElements[] = Craft::createObject([
                             'class' => CustomField::class,
+                            'uid' => $fieldConfig['uid'] ?? null,
                             'required' => (bool)$fieldConfig['required'],
                             'width' => (int)($fieldConfig['width'] ?? 0) ?: 100,
                         ], [$field]);
@@ -734,6 +735,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
                 'blocks' => $value,
                 'static' => false,
                 'staticBlocks' => $staticBlocks,
+                'labelId' => $this->getLabelId(),
             ]);
     }
 

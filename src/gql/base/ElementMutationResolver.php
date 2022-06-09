@@ -128,10 +128,8 @@ abstract class ElementMutationResolver extends MutationResolver
                     $value = $this->normalizeValue($argument, $value);
                 }
                 $element->setFieldValue($argument, $value);
-            } else {
-                if (property_exists($element, $argument)) {
-                    $element->{$argument} = $value;
-                }
+            } elseif ($element->canSetProperty($argument)) {
+                $element->{$argument} = $value;
             }
         }
 

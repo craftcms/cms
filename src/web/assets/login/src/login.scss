@@ -1,8 +1,7 @@
 @charset "UTF-8";
 @import '@craftcms/sass/mixins';
 
-html,
-body {
+html {
   height: 100%;
 }
 
@@ -11,6 +10,7 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  min-height: 100%;
 }
 
 #login {
@@ -32,12 +32,16 @@ body {
   padding: 1px;
 }
 
-#login-form .field {
-  margin: 0;
-}
+#login-form {
+  position: relative;
 
-#login-form .btn {
-  display: flex;
+  .field {
+    margin: 0;
+  }
+
+  .btn {
+    display: flex;
+  }
 }
 
 #loginName {

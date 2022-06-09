@@ -2,9 +2,11 @@
 
 <div class="matrix matrix-field" id="{{ id }}">
     <span aria-live="assertive" class="visually-hidden" data-status-message></span>
-    <div class="blocks">
+    <div class="blocks" role="list">
         {% set totalNewBlocks = 0 %}
         {% for block in blocks %}
+            {% set blockType = block.getType() %}
+            {% set blockTypeName = blockType.name|t('site') %}
             {% set blockId = block.id %}
             {% set blockIsNew = blockId is empty %}
             {% if blockIsNew %}
@@ -20,12 +22,14 @@
                 ]|filter,
                 data: {
                     id: blockId,
-                    type: block.getType().handle,
+                    type: blockType.handle,
+                    'type-name': blockTypeName,
                     collapsed: block.collapsed,
                 },
+                role: 'listitem',
             } %}
 
-            {% set actionBtnLabel = "#{block.getType().name} #{'Actions'|t('app')}" %}
+            {% set actionBtnLabel = "#{blockTypeName} #{'Actions'|t('app')}" %}
             {% set actionMenuId = "matrixblock-action-menu-#{blockId}" %}
 
             {% set actionBtnAttributes = {
@@ -49,11 +53,11 @@
                     {% if not blockIsNew %}
                         {% do view.registerDeltaName(baseInputName) %}
                     {% endif %}
-                    {{ hiddenInput("#{baseInputName}[type]", block.getType().handle) }}
+                    {{ hiddenInput("#{baseInputName}[type]", blockType.handle) }}
                     {{ hiddenInput("#{baseInputName}[enabled]", block.enabled ? '1' : '') }}
                     <div class="titlebar">
                         <div class="blocktype{% if block.hasErrors() %} error{% endif %}">
-                            {{ block.getType().name|t('site') }}
+                            {{ blockTypeName }}
                             {% if block.hasErrors() %}<span data-icon="alert" aria-label="{{ 'Error'|t('app') }}"></span>{% endif %}
                         </div>
                         <div class="preview"></div>
@@ -107,7 +111,7 @@
         <div class="buttons">
             <div class="btngroup">
                 {% for blockType in blockTypes %}
-                    <button type="button" class="btn dashed{% if loop.first %} add icon{% endif %}" data-type="{{ blockType.handle }}" aria-label="{{ blockType.name|t('site') }}">{{ blockType.name|t('site') }}</button>
+                    <button type="button" class="btn dashed{% if loop.first %} add icon{% endif %}" data-type="{{ blockType.handle }}" aria-label="{{ blockType.name|t('site') }}" aria-describedby="{{ labelId }}">{{ blockType.name|t('site') }}</button>
                 {% endfor %}
             </div>
 
