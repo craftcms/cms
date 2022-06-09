@@ -39,7 +39,6 @@ export default Base.extend(
       this.$container = $(container);
 
       this.$options = $();
-      this.addOptions(this.$container.find('a'));
 
       // Menu List
       this.menuId = 'menu' + this._namespace;
@@ -49,6 +48,8 @@ export default Base.extend(
         id: this.menuId,
         'aria-hidden': 'true',
       });
+
+      this.addOptions(this.$container.find('a'));
 
       // Deprecated
       if (this.settings.attachToElement) {
