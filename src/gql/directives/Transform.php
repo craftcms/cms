@@ -16,6 +16,7 @@ use GraphQL\Language\DirectiveLocation;
 use GraphQL\Type\Definition\Directive as GqlDirective;
 use GraphQL\Type\Definition\FieldArgument;
 use GraphQL\Type\Definition\ResolveInfo;
+use Illuminate\Support\Collection;
 
 /**
  * Class Transform
@@ -69,7 +70,7 @@ class Transform extends Directive
     public static function apply(mixed $source, mixed $value, array $arguments, ResolveInfo $resolveInfo): mixed
     {
         $onAssetElement = $value instanceof Asset;
-        $onAssetElementList = is_array($value) && !empty($value);
+        $onAssetElementList = $value instanceof Collection && !$value->isEmpty();
         $onApplicableAssetField = $source instanceof Asset && in_array($resolveInfo->fieldName, ['height', 'width', 'url']);
 
         if (!($onAssetElement || $onAssetElementList || $onApplicableAssetField) || empty($arguments)) {

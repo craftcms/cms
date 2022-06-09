@@ -177,6 +177,14 @@ interface FieldInterface extends SavableComponentInterface
     public function getInputId(): string;
 
     /**
+     * Returns the input’s label ID.
+     *
+     * @return string
+     * @since 4.1.0
+     */
+    public function getLabelId(): string;
+
+    /**
      * Returns whether the field should use a `<fieldset>` + `<legend>` instead of a `<div>` + `<label>`.
      *
      * @return bool
