@@ -12,6 +12,12 @@ Craft.ui = {
     if (config.class) {
       $btn.addClass(config.class);
     }
+    if (config.ariaLabel) {
+      $btn.attr('aria-label', config.ariaLabel);
+    }
+    if (config.role) {
+      $btn.attr('role', config.role);
+    }
     if (config.html) {
       $btn.html(config.html);
     } else if (config.label) {
