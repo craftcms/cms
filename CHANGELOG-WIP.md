@@ -25,7 +25,7 @@
 ### Changed
 - Improved overall control panel accessibility. ([#11297](https://github.com/craftcms/cms/pull/11297), [#11296](https://github.com/craftcms/cms/pull/11296))
 - Improved pagination UI accessibility. ([#11126](https://github.com/craftcms/cms/pull/11126))
-- Improved element index accessibility. ([#11169](https://github.com/craftcms/cms/pull/11169), [#11200](https://github.com/craftcms/cms/pull/11200))
+- Improved element index accessibility. ([#11169](https://github.com/craftcms/cms/pull/11169), [#11200](https://github.com/craftcms/cms/pull/11200), [#11251](https://github.com/craftcms/cms/pull/11251))
 - Improved Dashboard accessibility. ([#11217](https://github.com/craftcms/cms/pull/11217), [#11297](https://github.com/craftcms/cms/pull/11297))
 - Improved address management accessibility. ([#11397](https://github.com/craftcms/cms/pull/11397))
 - Improved Matrix field accessibility. ([#11306](https://github.com/craftcms/cms/pull/11306))
