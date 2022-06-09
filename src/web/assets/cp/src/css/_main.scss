@@ -52,6 +52,7 @@
   --ui-control-color: var(--gray-550);
   --ui-control-hover-color: var(--gray-600);
   --ui-control-active-color: var(--gray-700);
+  --icon-opacity: 0.8;
   --light-focus-hsl: #{hue($lightFocusColor)}, #{saturation($lightFocusColor)},
     #{lightness($lightFocusColor)};
   --medium-focus-hsl: #{hue($mediumFocusColor)},
@@ -4612,8 +4613,40 @@ ul.tree,
 
 /* element selector modals */
 .elementselectormodal {
+  --content-padding: 24px;
   padding-bottom: 50px;
   user-select: none;
+
+  .main-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: var(--s);
+  }
+
+  .main-heading {
+    margin-bottom: 0;
+  }
+
+  .nav-toggle {
+    @include margin-left(4px);
+    @include touch-target;
+    color: var(--ui-control-color);
+
+    &:hover {
+      color: var(--gray-500);
+    }
+  }
+
+  .sidebar-header {
+    display: flex;
+    justify-content: flex-end;
+    padding: 0 var(--s);
+    margin-bottom: var(--s);
+  }
+
+  .nav-close {
+    @include touch-target;
+  }
 
   .body {
     position: relative;
@@ -4635,11 +4668,12 @@ ul.tree,
         @include margin-left(-249px);
         height: 100%;
         overflow: auto;
+        padding: var(--content-padding) 0;
       }
 
       .main {
         margin: -24px;
-        padding: 24px;
+        padding: var(--content-padding);
         height: 100%;
         box-sizing: border-box;
         overflow: auto;
@@ -4690,7 +4724,6 @@ ul.tree,
     left: 0;
     width: 100%;
     margin: 0;
-    height: 50px;
     box-sizing: border-box;
 
     .spinner {
@@ -5866,6 +5899,44 @@ body.reduce-focus-visibility {
 
   &:active {
     color: var(--ui-control-active-color);
+  }
+}
+
+.close-btn {
+  position: relative;
+
+  &:before,
+  &:after {
+    position: absolute;
+    content: '';
+    top: 50%;
+    left: 50%;
+    height: 15px;
+    width: 2px;
+    background-color: var(--ui-control-color);
+    opacity: var(--icon-opacity);
+  }
+
+  &:before {
+    transform: translate(-50%, -50%) rotate(-45deg);
+  }
+
+  &:after {
+    transform: translate(-50%, -50%) rotate(45deg);
+  }
+
+  &:hover {
+    &:before,
+    &:after {
+      background-color: var(--ui-control-hover-color);
+    }
+  }
+
+  &:active {
+    &:before,
+    &:after {
+      background-color: var(--ui-control-active-color);
+    }
   }
 }
 
