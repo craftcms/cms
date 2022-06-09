@@ -992,7 +992,12 @@ abstract class Element extends Component implements ElementInterface
             }
         }
 
-        $variables['elements'] = $elementQuery->cache()->all();
+        // Only cache if there's no search term
+        if (!$elementQuery->search) {
+            $elementQuery->cache();
+        }
+
+        $variables['elements'] = $elementQuery->all();
 
         $template = '_elements/' . $viewState['mode'] . 'view/' . ($includeContainer ? 'container' : 'elements');
 

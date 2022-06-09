@@ -1489,7 +1489,7 @@ JS;
                 : '') .
             Html::endTag('div') . // .fld-workspace
             Html::beginTag('div', ['class' => 'fld-sidebar']) .
-            ($config['customizableTabs']
+            ($config['customizableUi']
                 ? Html::beginTag('div', [
                     'role' => 'listbox',
                     'class' => ['btngroup', 'small', 'fullwidth'],

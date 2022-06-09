@@ -44,7 +44,8 @@ Craft.AddressesInput = Garnish.Base.extend(
 
       const $actionBtn = $card.find('.menubtn');
       if ($actionBtn.length) {
-        const $menu = $actionBtn.data('trigger').$container;
+        const menu = $actionBtn.data('trigger');
+        const $menu = menu.$container;
         const $deleteBtn = $menu.find('[data-action="delete"]');
         this.addListener($deleteBtn, 'click', (ev) => {
           ev.preventDefault();
@@ -65,6 +66,8 @@ Craft.AddressesInput = Garnish.Base.extend(
             })
               .then(() => {
                 $card.remove();
+                $menu.remove();
+                menu.destroy();
                 this.$cards = this.$cards.not($card);
                 this.updateAddButton();
 
