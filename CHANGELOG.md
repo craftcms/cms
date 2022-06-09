@@ -20,6 +20,7 @@
 - Fixed a bug where address card menus would linger around after an address was deleted.
 - Fixed a bug where the `index-assets` command could produce unexpected output. ([#11194](https://github.com/craftcms/cms/issues/11194)).
 - Fixed a bug where video controls within asset preview modals were inaccessible via the keyboard. ([#11371](https://github.com/craftcms/cms/pull/11371))
+- Fixed a bug where Transform directives were not applied to custom Asset fields. ([#10299](https://github.com/craftcms/cms/discussions/10299))
 
 ## 4.0.4 - 2022-06-03
 
