@@ -1443,10 +1443,10 @@ class GeneralConfig extends BaseObject
      *
      * ::: code
      * ```php Static Config
-     * 'isSystemLive' => 1,
+     * 'isSystemLive' => true,
      * ```
      * ```shell Environment Override
-     * CRAFT_IS_SYSTEM_LIVE=1
+     * CRAFT_IS_SYSTEM_LIVE=true
      * ```
      * :::
      *
