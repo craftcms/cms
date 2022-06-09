@@ -90,8 +90,8 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
         const ariaLabel =
           this.settings.context === 'index'
             ? Craft.t('app', 'New entry in the {section} section', {
-              section: selectedSection.name,
-            })
+                section: selectedSection.name,
+              })
             : visibleLabel;
 
         // In index contexts, the button functions as a link
@@ -144,6 +144,8 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
         const $ul = $('<ul/>').appendTo($menuContainer);
 
         for (const section of this.publishableSections) {
+          const anchorRole =
+            this.settings.context === 'index' ? 'link' : 'button';
           if (
             (this.settings.context === 'index' &&
               $.inArray(this.siteId, section.sites) !== -1) ||
@@ -151,8 +153,9 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
           ) {
             const $li = $('<li/>').appendTo($ul);
             const $a = $('<a/>', {
-              role: 'button',
-              tabindex: '0',
+              role: anchorRole === 'button' ? 'button' : null,
+              href: '#', // Allows for click listener and tab order
+              type: anchorRole === 'button' ? 'button' : null,
               text: Craft.t('app', 'New {section} entry', {
                 section: section.name,
               }),
@@ -161,6 +164,16 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
               $menuBtn.data('trigger').hide();
               this._createEntry(section.id);
             });
+
+            if (anchorRole === 'button') {
+              this.addListener($a, 'keydown', (event) => {
+                if (event.keyCode === Garnish.SPACE_KEY) {
+                  event.preventDefault();
+                  $menuBtn.data('trigger').hide();
+                  this._createEntry(section.id);
+                }
+              });
+            }
           }
         }
 
