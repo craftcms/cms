@@ -80,18 +80,30 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
       // If they are, show a primary "New entry" button, and a dropdown of the other sections (if any).
       // Otherwise only show a menu button
       if (selectedSection) {
-        const label =
+        const visibleLabel =
           this.settings.context === 'index'
             ? Craft.t('app', 'New entry')
             : Craft.t('app', 'New {section} entry', {
                 section: selectedSection.name,
               });
 
+        const ariaLabel =
+          this.settings.context === 'index'
+            ? Craft.t('app', 'New entry in the {section} section', {
+              section: selectedSection.name,
+            })
+            : visibleLabel;
+
+        // In index contexts, the button functions as a link
+        // In non-index contexts, the button triggers a slideout editor
+        const role = this.settings.context === 'index' ? 'link' : null;
+
         this.$newEntryBtn = Craft.ui
           .createButton({
-            label: label,
-            ariaLabel: label,
+            label: visibleLabel,
+            ariaLabel: ariaLabel,
             spinner: true,
+            role: role,
           })
           .addClass('submit add icon')
           .appendTo(this.$newEntryBtnGroup);
@@ -106,15 +118,14 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
             class: 'btn submit menubtn btngroup-btn-last',
             'aria-controls': menuId,
             'data-disclosure-trigger': '',
-            'aria-label': Craft.t('app', 'Choose a section'),
+            'aria-label': Craft.t('app', 'New entry, choose a section'),
           }).appendTo(this.$newEntryBtnGroup);
         }
       } else {
-        const label = Craft.t('app', 'Choose a section');
         this.$newEntryBtn = $menuBtn = Craft.ui
           .createButton({
-            label: label,
-            ariaLabel: label,
+            label: Craft.t('app', 'New entry'),
+            ariaLabel: Craft.t('app', 'New entry, choose a section'),
             spinner: true,
           })
           .addClass('submit add icon menubtn btngroup-btn-last')
