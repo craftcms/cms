@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\helpers\Number::isIntOrFloat()`.
+
 ### Deprecated
 - Deprecated `craft\services\Categories::pruneDeletedField()`. ([#11054](https://github.com/craftcms/cms/discussions/11054))
 - Deprecated `craft\services\Globals::pruneDeletedField()`. ([#11054](https://github.com/craftcms/cms/discussions/11054))
@@ -22,6 +25,7 @@
 - Fixed a bug where video controls within asset preview modals were inaccessible via the keyboard. ([#11371](https://github.com/craftcms/cms/pull/11371))
 - Fixed a bug where `transform` GraphQL directives weren’t working for Assets fields. ([#10299](https://github.com/craftcms/cms/discussions/10299))
 - Fixed a PHP error that could occur when running the `help` command. ([#11423](https://github.com/craftcms/cms/issues/11423))
+- Fixed a bug where `craft\helpers\App::env()` was converting some values to integers or floats unexpectedly. ([#11422](https://github.com/craftcms/cms/issues/11422))
 
 ## 4.0.4 - 2022-06-03
 
