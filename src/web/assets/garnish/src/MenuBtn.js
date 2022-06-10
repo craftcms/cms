@@ -85,7 +85,7 @@ export default Base.extend(
       this.menu.on('hide', this.onMenuHide.bind(this));
       this.addListener(this.$btn, 'mousedown', 'onMouseDown');
       this.addListener(this.$btn, 'keydown', 'onKeyDown');
-      //this.addListener(this.$btn, 'blur', 'onBlur');
+      this.addListener(this.$btn, 'blur', 'onBlur');
 
       this.observer = new MutationObserver((mutations) => {
         for (const mutation of mutations) {
