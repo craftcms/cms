@@ -21,6 +21,7 @@
 - Fixed a bug where the `index-assets` command could produce unexpected output. ([#11194](https://github.com/craftcms/cms/issues/11194)).
 - Fixed a bug where video controls within asset preview modals were inaccessible via the keyboard. ([#11371](https://github.com/craftcms/cms/pull/11371))
 - Fixed a bug where `transform` GraphQL directives weren’t working for Assets fields. ([#10299](https://github.com/craftcms/cms/discussions/10299))
+- Fixed a PHP error that could occur when running the `help` command. ([#11423](https://github.com/craftcms/cms/issues/11423))
 
 ## 4.0.4 - 2022-06-03
 
