@@ -252,15 +252,19 @@ export default Base.extend(
     },
 
     focusOption: function ($option) {
-      if ($option.hasClass('hover')) {
-        return;
+      const $ariaOption = $option.closest('[role="option"]');
+
+      if ($ariaOption.attr('aria-selected') !== 'true') {
+        this.menu.$ariaOptions.attr('aria-selected', 'false');
+        $ariaOption.attr('aria-selected', 'true');
       }
 
-      this.menu.$options.removeClass('hover');
-      this.menu.$options.attr('aria-selected', 'false');
-      $option.addClass('hover');
-      $option.attr('aria-selected', 'true');
-      this.$btn.attr('aria-activedescendant', $option.attr('id'));
+      if (!$option.hasClass('hover')) {
+        this.menu.$options.removeClass('hover');
+        $option.addClass('hover');
+      }
+
+      this.$btn.attr('aria-activedescendant', $ariaOption.attr('id'));
     },
 
     focusSelectedOption: function () {
@@ -356,7 +360,10 @@ export default Base.extend(
 
     onMenuHide: function () {
       this.$btn.removeClass('active');
-      this.$btn.attr('aria-expanded', 'false');
+      this.$btn.attr({
+        'aria-expanded': 'false',
+        'aria-activedescendant': null,
+      });
       this.showingMenu = false;
 
       this.removeListener(Garnish.$doc, 'mousedown');
