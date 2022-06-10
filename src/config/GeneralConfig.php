@@ -614,7 +614,7 @@ class GeneralConfig extends BaseObject
      * @var string|null The URI segment Craft should look for when determining if the current request should route to the control panel rather than
      * the front-end website.
      *
-     * This can be set to `null` if you have a dedicated hostname for the control panel (e.g. `cms.example.com`), or you are running Craft in
+     * This can be set to `null` if you have a dedicated hostname for the control panel (e.g. `cms.my-project.tld`), or you are running Craft in
      * [Headless Mode](config4:headlessMode). If you do that, you will need to ensure that the control panel is being served from its own web root
      * directory on your server, with an `index.php` file that defines the `CRAFT_CP` PHP constant.
      *
