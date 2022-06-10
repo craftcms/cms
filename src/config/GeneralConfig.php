@@ -447,10 +447,10 @@ class GeneralConfig extends BaseObject
      *
      * ::: code
      * ```php Static Config
-     * 'baseCpUrl' => 'https://manage.mysite.foo/',
+     * 'baseCpUrl' => 'https://cms.my-project.tld/',
      * ```
      * ```shell Environment Override
-     * CRAFT_BASE_CP_URL=https://manage.mysite.foo/
+     * CRAFT_BASE_CP_URL=https://cms.my-project.tld/
      * ```
      * :::
      *
