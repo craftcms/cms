@@ -12,6 +12,7 @@ export default Base.extend(
 
     $container: null,
     $listbox: null,
+    $groups: null,
     $options: null,
     $anchor: null,
 
@@ -48,6 +49,10 @@ export default Base.extend(
         role: 'listbox',
         id: this.menuId,
       });
+
+      // Create groups
+      this.$groups = this.$listbox.find('ul');
+      this.$groups.attr('role', 'group');
 
       this.addOptions(this.$container.find('a'));
 
