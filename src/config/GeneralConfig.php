@@ -1537,7 +1537,7 @@ class GeneralConfig extends BaseObject
      * for testing purposes.
      *
      * By default, the recipient name(s) will be “Test Recipient”, but you can customize that by setting the value with the format
-     * `['email@address.com' => 'Name']`.
+     * `['me@domain.tld' => 'Name']`.
      *
      * @group System
      */
