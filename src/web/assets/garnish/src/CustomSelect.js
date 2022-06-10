@@ -11,6 +11,7 @@ export default Base.extend(
     visible: false,
 
     $container: null,
+    $listbox: null,
     $options: null,
     $anchor: null,
 
