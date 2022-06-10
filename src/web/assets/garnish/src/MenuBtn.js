@@ -75,10 +75,17 @@ export default Base.extend(
         'aria-expanded': 'false',
       });
 
+      // If no label is set on the listbox, set one based on the combobox label
+      const comboboxLabel = this.$btn.attr('aria-labelledby');
+
+      if (!this.menu.$listbox.attr('aria-labelledby') && comboboxLabel) {
+        this.menu.$listbox.attr('aria-labelledby', comboboxLabel);
+      }
+
       this.menu.on('hide', this.onMenuHide.bind(this));
       this.addListener(this.$btn, 'mousedown', 'onMouseDown');
       this.addListener(this.$btn, 'keydown', 'onKeyDown');
-      this.addListener(this.$btn, 'blur', 'onBlur');
+      //this.addListener(this.$btn, 'blur', 'onBlur');
 
       this.observer = new MutationObserver((mutations) => {
         for (const mutation of mutations) {
@@ -253,7 +260,6 @@ export default Base.extend(
       this.menu.$options.attr('aria-selected', 'false');
       $option.addClass('hover');
       $option.attr('aria-selected', 'true');
-      this.menu.$listbox.attr('aria-activedescendant', $option.attr('id'));
       this.$btn.attr('aria-activedescendant', $option.attr('id'));
     },
 
