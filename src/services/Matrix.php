@@ -854,7 +854,7 @@ class Matrix extends Component
                     if (
                         ElementHelper::isRevision($source) ||
                         !empty($target->newSiteIds) ||
-                        $source->isFieldModified($field->handle, true)
+                        (!$source::trackChanges() || $source->isFieldModified($field->handle, true))
                     ) {
                         $newBlockId = $elementsService->updateCanonicalElement($block, $newAttributes)->id;
                     } else {
