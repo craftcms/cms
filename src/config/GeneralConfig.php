@@ -664,10 +664,10 @@ class GeneralConfig extends BaseObject
      *
      * ::: code
      * ```php Static Config
-     * 'defaultCookieDomain' => '.domain.com',
+     * 'defaultCookieDomain' => '.my-project.tld',
      * ```
      * ```shell Environment Override
-     * CRAFT_DEFAULT_COOKIE_DOMAIN=.domain.com
+     * CRAFT_DEFAULT_COOKIE_DOMAIN=.my-project.tld
      * ```
      * :::
      *
@@ -2637,10 +2637,10 @@ class GeneralConfig extends BaseObject
      *
      * ::: code
      * ```php Static Config
-     * 'testToEmailAddress' => 'email@address.com',
+     * 'testToEmailAddress' => 'me@domain.tld',
      * ```
      * ```shell Environment Override
-     * CRAFT_TEST_TO_EMAIL_ADDRESS=email@address.com
+     * CRAFT_TEST_TO_EMAIL_ADDRESS=me@domain.tld
      * ```
      * :::
      *
