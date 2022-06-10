@@ -14,6 +14,7 @@ export default Base.extend(
     $listbox: null,
     $groups: null,
     $options: null,
+    $ariaOptions: null,
     $anchor: null,
 
     menuId: null,
@@ -41,6 +42,7 @@ export default Base.extend(
       this.$container = $(container);
 
       this.$options = $();
+      this.$ariaOptions = $();
 
       // Menu List
       this.menuId = 'menu' + this._namespace;
@@ -52,9 +54,13 @@ export default Base.extend(
 
       // Create groups
       this.$groups = this.$listbox.find('ul');
-      this.$groups.attr('role', 'group');
+
+      if (this.$groups && this.$groups.length) {
+        this.$groups.attr('role', 'group');
+      }
 
       this.addOptions(this.$container.find('a'));
+      this.addAriaOptions(this.$listbox.find('li'));
 
       // Deprecated
       if (this.settings.attachToElement) {
@@ -79,6 +85,21 @@ export default Base.extend(
       });
     },
 
+    addAriaOptions: function ($ariaOptions) {
+      this.$ariaOptions = this.$ariaOptions.add($ariaOptions);
+      $ariaOptions.data('menu', this);
+
+      $ariaOptions.each(
+        function (optionKey, option) {
+          $(option).attr({
+            role: 'option',
+            'aria-selected': 'false',
+            id: this.menuId + '-aria-option-' + optionKey,
+          });
+        }.bind(this)
+      );
+    },
+
     addOptions: function ($options) {
       this.$options = this.$options.add($options);
       $options.data('menu', this);
@@ -86,9 +107,7 @@ export default Base.extend(
       $options.each(
         function (optionKey, option) {
           $(option).attr({
-            role: 'option',
             tabindex: '-1',
-            'aria-selected': 'false',
             id: this.menuId + '-option-' + optionKey,
           });
         }.bind(this)

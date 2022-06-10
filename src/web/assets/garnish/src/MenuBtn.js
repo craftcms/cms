@@ -34,7 +34,7 @@ export default Base.extend(
         return;
       }
 
-      var $menu;
+      let $menu;
 
       // Is this already a menu button?
       if (this.$btn.data('menubtn')) {
