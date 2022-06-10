@@ -69,7 +69,7 @@ export default Base.extend(
       });
 
       this.$btn.attr({
-        tabindex: 0,
+        role: 'combobox',
         'aria-controls': this.menu.menuId,
         'aria-haspopup': 'listbox',
         'aria-expanded': 'false',
@@ -250,8 +250,10 @@ export default Base.extend(
       }
 
       this.menu.$options.removeClass('hover');
+      this.menu.$options.attr('aria-selected', 'false');
       $option.addClass('hover');
-      this.menu.$menuList.attr('aria-activedescendant', $option.attr('id'));
+      $option.attr('aria-selected', 'true');
+      this.menu.$listbox.attr('aria-activedescendant', $option.attr('id'));
       this.$btn.attr('aria-activedescendant', $option.attr('id'));
     },
 

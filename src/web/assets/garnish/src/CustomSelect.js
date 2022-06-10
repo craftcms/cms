@@ -42,11 +42,10 @@ export default Base.extend(
 
       // Menu List
       this.menuId = 'menu' + this._namespace;
-      this.$menuList = $('ul', this.$container);
-      this.$menuList.attr({
+      this.$listbox = this.$container;
+      this.$listbox.attr({
         role: 'listbox',
         id: this.menuId,
-        'aria-hidden': 'true',
       });
 
       this.addOptions(this.$container.find('a'));
@@ -83,6 +82,7 @@ export default Base.extend(
           $(option).attr({
             role: 'option',
             tabindex: '-1',
+            'aria-selected': 'false',
             id: this.menuId + '-option-' + optionKey,
           });
         }.bind(this)
@@ -196,8 +196,6 @@ export default Base.extend(
         display: 'block',
       });
 
-      this.$menuList.attr('aria-hidden', 'false');
-
       Garnish.uiLayerManager
         .addLayer(this.$container)
         .registerShortcut(Garnish.ESC_KEY, this.hide.bind(this));
@@ -216,8 +214,6 @@ export default Base.extend(
       if (!this.visible) {
         return;
       }
-
-      this.$menuList.attr('aria-hidden', 'true');
 
       this.$container.velocity(
         'fadeOut',
