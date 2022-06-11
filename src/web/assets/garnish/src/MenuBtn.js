@@ -78,8 +78,8 @@ export default Base.extend(
       // If no label is set on the listbox, set one based on the combobox label
       const comboboxLabel = this.$btn.attr('aria-labelledby');
 
-      if (!this.menu.$listbox.attr('aria-labelledby') && comboboxLabel) {
-        this.menu.$listbox.attr('aria-labelledby', comboboxLabel);
+      if (!this.menu.$container.attr('aria-labelledby') && comboboxLabel) {
+        this.menu.$container.attr('aria-labelledby', comboboxLabel);
       }
 
       this.menu.on('hide', this.onMenuHide.bind(this));
@@ -252,19 +252,15 @@ export default Base.extend(
     },
 
     focusOption: function ($option) {
-      const $ariaOption = $option.closest('[role="option"]');
-
-      if ($ariaOption.attr('aria-selected') !== 'true') {
-        this.menu.$ariaOptions.attr('aria-selected', 'false');
-        $ariaOption.attr('aria-selected', 'true');
+      if ($option.hasClass('hover')) {
+        return;
       }
 
-      if (!$option.hasClass('hover')) {
-        this.menu.$options.removeClass('hover');
-        $option.addClass('hover');
-      }
+      this.menu.$options.removeClass('hover');
+      this.menu.$ariaOptions.attr('aria-selected', 'false');
 
-      this.$btn.attr('aria-activedescendant', $ariaOption.attr('id'));
+      $option.addClass('hover');
+      this.$btn.attr('aria-activedescendant', $option.parent('li').attr('id'));
     },
 
     focusSelectedOption: function () {

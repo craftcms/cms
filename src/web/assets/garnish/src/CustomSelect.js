@@ -11,8 +11,6 @@ export default Base.extend(
     visible: false,
 
     $container: null,
-    $listbox: null,
-    $groups: null,
     $options: null,
     $ariaOptions: null,
     $anchor: null,
@@ -46,21 +44,13 @@ export default Base.extend(
 
       // Menu List
       this.menuId = 'menu' + this._namespace;
-      this.$listbox = this.$container;
-      this.$listbox.attr({
+      this.$container.attr({
         role: 'listbox',
         id: this.menuId,
       });
 
-      // Create groups
-      this.$groups = this.$listbox.find('ul');
-
-      if (this.$groups && this.$groups.length) {
-        this.$groups.attr('role', 'group');
-      }
-
+      this.$container.find('ul').attr('role', 'group');
       this.addOptions(this.$container.find('a'));
-      this.addAriaOptions(this.$listbox.find('li'));
 
       // Deprecated
       if (this.settings.attachToElement) {
@@ -85,33 +75,50 @@ export default Base.extend(
       });
     },
 
-    addAriaOptions: function ($ariaOptions) {
-      this.$ariaOptions = this.$ariaOptions.add($ariaOptions);
-      $ariaOptions.data('menu', this);
-
-      $ariaOptions.each(
-        function (optionKey, option) {
-          $(option).attr({
-            role: 'option',
-            'aria-selected': 'false',
-            id: this.menuId + '-aria-option-' + optionKey,
-          });
-        }.bind(this)
-      );
-    },
-
     addOptions: function ($options) {
       this.$options = this.$options.add($options);
       $options.data('menu', this);
 
-      $options.each(
-        function (optionKey, option) {
-          $(option).attr({
-            tabindex: '-1',
-            id: this.menuId + '-option-' + optionKey,
-          });
-        }.bind(this)
-      );
+      for (let i = 0; i < $options.length; i++) {
+        const $option = $options.eq(i);
+        const $ariaOption = $option.parent('li');
+        $option.attr({
+          tabindex: '-1',
+          id: $option.attr('id') || `${this.menuId}-option-${i + 1}`,
+        });
+        $ariaOption.attr({
+          role: 'option',
+          'aria-selected': $option.hasClass('sel') ? 'true' : 'false',
+          id: $ariaOption.attr('id') || `${this.menuId}-aria-option-${i + 1}`,
+        });
+        this.$ariaOptions = this.$ariaOptions.add($ariaOption);
+
+        // keep aria-selected in-line with .sel
+        $option.data(
+          'menu-mutationObserver',
+          new MutationObserver((mutations) => {
+            for (const mutation of mutations) {
+              if (
+                mutation.type === 'attributes' &&
+                mutation.attributeName === 'class'
+              ) {
+                const optionHasHover = this.$options.is('.hover');
+                $ariaOption.attr(
+                  'aria-selected',
+                  (!optionHasHover && $option.hasClass('sel')) ||
+                    $option.hasClass('hover')
+                    ? 'true'
+                    : 'false'
+                );
+                break;
+              }
+            }
+          })
+        );
+        $option
+          .data('menu-mutationObserver')
+          .observe($option[0], {attributes: true});
+      }
 
       this.removeAllListeners($options);
       this.addListener($options, 'click', function (ev) {
@@ -240,12 +247,15 @@ export default Base.extend(
         return;
       }
 
+      this.$options.removeClass('hover');
+      this.$options.filter('.sel').parent('li').attr('aria-selected', 'true');
+
       this.$container.velocity(
         'fadeOut',
         {duration: Garnish.FX_DURATION},
-        function () {
+        () => {
           this.$container.detach();
-        }.bind(this)
+        }
       );
 
       Garnish.uiLayerManager.removeLayer();
@@ -285,6 +295,16 @@ export default Base.extend(
       }
 
       this.$container.css('left', left);
+    },
+
+    destroy: function () {
+      for (let i = 0; i < this.$options.length; i++) {
+        const $option = this.$options.eq(i);
+        $option.data('menu-mutationObserver').disconnect();
+        $option.removeData('menu-mutationObserver');
+      }
+
+      this.base();
     },
   },
   {
