@@ -23,13 +23,14 @@
 - Added `craft\helpers\DateTimeHelper::resume()`. ([#11130](https://github.com/craftcms/cms/pull/11130))
 
 ### Changed
-- Improved overall control panel accessibility. ([#11297](https://github.com/craftcms/cms/pull/11297), [#11296](https://github.com/craftcms/cms/pull/11296))
+- Improved overall control panel accessibility. ([#11297](https://github.com/craftcms/cms/pull/11297), [#11296](https://github.com/craftcms/cms/pull/11296), [#11414](https://github.com/craftcms/cms/pull/11414))
 - Improved pagination UI accessibility. ([#11126](https://github.com/craftcms/cms/pull/11126))
 - Improved element index accessibility. ([#11169](https://github.com/craftcms/cms/pull/11169), [#11200](https://github.com/craftcms/cms/pull/11200), [#11251](https://github.com/craftcms/cms/pull/11251))
 - Improved Dashboard accessibility. ([#11217](https://github.com/craftcms/cms/pull/11217), [#11297](https://github.com/craftcms/cms/pull/11297))
 - Improved address management accessibility. ([#11397](https://github.com/craftcms/cms/pull/11397))
 - Improved Matrix field accessibility. ([#11306](https://github.com/craftcms/cms/pull/11306))
 - Improved element selector modals for small screens. ([#11323](https://github.com/craftcms/cms/pull/11323))
+- Improved keyboard support for custom selects. ([#11414](https://github.com/craftcms/cms/pull/11414))
 - It’s now possible to remove all selected elements from relational fields by pressing <kbd>Backspace</kbd> or <kbd>Delete</kbd> while one of them is focussed.
 - Live Preview now always shows a “Refresh” button, regardless of whether the preview target has auto-refresh enabled. ([#11160](https://github.com/craftcms/cms/discussions/11160)) 
 - Entry Type condition rules now allow multiple selections. ([#11124](https://github.com/craftcms/cms/pull/11124))
