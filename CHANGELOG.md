@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\helpers\Number::isIntOrFloat()`.
+
+### Changed
+- Categories now support change tracking.
+
 ### Deprecated
 - Deprecated `craft\services\Categories::pruneDeletedField()`. ([#11054](https://github.com/craftcms/cms/discussions/11054))
 - Deprecated `craft\services\Globals::pruneDeletedField()`. ([#11054](https://github.com/craftcms/cms/discussions/11054))
@@ -20,6 +26,11 @@
 - Fixed a bug where address card menus would linger around after an address was deleted.
 - Fixed a bug where the `index-assets` command could produce unexpected output. ([#11194](https://github.com/craftcms/cms/issues/11194)).
 - Fixed a bug where video controls within asset preview modals were inaccessible via the keyboard. ([#11371](https://github.com/craftcms/cms/pull/11371))
+- Fixed a bug where `transform` GraphQL directives weren’t working for Assets fields. ([#10299](https://github.com/craftcms/cms/discussions/10299))
+- Fixed a PHP error that could occur when running the `help` command. ([#11423](https://github.com/craftcms/cms/issues/11423))
+- Fixed a bug where `craft\helpers\App::env()` was converting some values to integers or floats unexpectedly. ([#11422](https://github.com/craftcms/cms/issues/11422))
+- Fixed a bug where changes to existing Matrix blocks weren’t saving for element types that supported drafts but not change tracking. ([#11419](https://github.com/craftcms/cms/issues/11419))
+- Fixed a bug where double-clicking on a related asset’s thumbnail could open the asset’s preview modal. ([#11424](https://github.com/craftcms/cms/issues/11424))
 
 ## 4.0.4 - 2022-06-03
 

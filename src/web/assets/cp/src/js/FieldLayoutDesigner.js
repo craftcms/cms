@@ -113,8 +113,14 @@ Craft.FieldLayoutDesigner = Garnish.Base.extend(
       });
 
       this.addListener(this.$fieldSearch, 'keydown', (ev) => {
-        if (ev.keyCode === Garnish.ESC_KEY) {
-          this.$fieldSearch.val('').trigger('input');
+        switch (ev.keyCode) {
+          case Garnish.ESC_KEY:
+            this.$fieldSearch.val('').trigger('input');
+            break;
+          case Garnish.RETURN_KEY:
+            // they most likely don't want to submit the form from here
+            ev.preventDefault();
+            break;
         }
       });
 

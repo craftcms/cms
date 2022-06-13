@@ -13,6 +13,7 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Console;
 use craft\helpers\StringHelper;
 use ReflectionFunction;
+use ReflectionFunctionAbstract;
 use ReflectionMethod;
 use Seld\CliPrompt\CliPrompt;
 use yii\base\Action;
@@ -72,7 +73,7 @@ class Controller extends YiiController
     private array $_actions;
 
     /**
-     * @var ReflectionFunction[] Memoized reflection objects
+     * @var ReflectionFunctionAbstract[] Memoized reflection objects
      * @see getActionMethodReflection()
      */
     private array $_reflections = [];
@@ -315,9 +316,9 @@ class Controller extends YiiController
 
     /**
      * @param Action $action
-     * @return ReflectionMethod
+     * @return ReflectionFunctionAbstract
      */
-    protected function getActionMethodReflection($action): ReflectionMethod
+    protected function getActionMethodReflection($action): ReflectionFunctionAbstract
     {
         if ($action instanceof CallableAction) {
             if (!isset($this->_reflections[$action->id])) {

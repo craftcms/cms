@@ -67,7 +67,7 @@ Craft.CP = Garnish.Base.extend(
 
       // Find all the key elements
       this.$nav = $('#nav');
-      this.$navToggle = $('#nav-toggle');
+      this.$navToggle = $('#primary-nav-toggle');
       this.$globalSidebar = $('#global-sidebar');
       this.$globalContainer = $('#global-container');
       this.$mainContainer = $('#main-container');
