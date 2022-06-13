@@ -1323,6 +1323,7 @@ JS,
             'locale' => $this->request->getBodyParam('preferredLocale', $user->getPreference('locale')) ?: null,
             'weekStartDay' => $this->request->getBodyParam('weekStartDay', $user->getPreference('weekStartDay')),
             'alwaysShowFocusRings' => (bool)$this->request->getBodyParam('alwaysShowFocusRings', $user->getPreference('alwaysShowFocusRings')),
+            'italicizeDisabledElements' => (bool)$this->request->getBodyParam('italicizeDisabledElements', $user->getPreference('italicizeDisabledElements')),
             'useShapes' => (bool)$this->request->getBodyParam('useShapes', $user->getPreference('useShapes')),
             'underlineLinks' => (bool)$this->request->getBodyParam('underlineLinks', $user->getPreference('underlineLinks')),
         ];

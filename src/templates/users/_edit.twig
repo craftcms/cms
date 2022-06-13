@@ -265,6 +265,12 @@
                                 id: 'underlineLinks',
                                 checked: user.getPreference('underlineLinks') ?? a11yDefaults['underlineLinks'] ?? false,
                             }) }}
+                            {{ checkboxField({
+                                label: 'Use italicized text to indicate disabled elements'|t('app'),
+                                name: 'italicizeDisabledElements',
+                                id: 'italicizeDisabledElements',
+                                checked: user.getPreference('italicizeDisabledElements') ?? a11yDefaults['italicizeDisabledElements'] ?? false,
+                            }) }}
                         {% endblock %}
                     {% endembed %}
                 </fieldset>

@@ -1616,6 +1616,7 @@ return [
     'Use YAML files' => 'Use YAML files',
     'Use a monospaced font' => 'Use a monospaced font',
     'Use authentication' => 'Use authentication',
+    'Use italicized text to indicate disabled elements' => 'Use italicized text to indicate disabled elements',
     'Use shapes to represent statuses' => 'Use shapes to represent statuses',
     'Use the loaded project config' => 'Use the loaded project config',
     'Use this field’s values as search keywords' => 'Use this field’s values as search keywords',

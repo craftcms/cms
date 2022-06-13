@@ -76,6 +76,7 @@ class GeneralConfig extends BaseObject
      */
     public array $accessibilityDefaults = [
         'alwaysShowFocusRings' => false,
+        'italicizeDisabledElements' => false,
         'useShapes' => false,
         'underlineLinks' => false,
     ];
