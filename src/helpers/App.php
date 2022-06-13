@@ -404,7 +404,7 @@ class App
         return match (is_string($value) ? strtolower($value) : $value) {
             'true' => true,
             'false' => false,
-            default => is_numeric($value) ? Number::toIntOrFloat($value) : $value,
+            default => Number::isIntOrFloat($value) ? Number::toIntOrFloat($value) : $value,
         };
     }
 
@@ -1078,10 +1078,7 @@ class App
             ) {
                 // If they have a preferred locale, use it
                 $usersService = Craft::$app->getUsers();
-                if (
-                    ($locale = $usersService->getUserPreference($id, 'locale')) !== null &&
-                    $i18n->validateAppLocaleId($locale)
-                ) {
+                if (($locale = $usersService->getUserPreference($id, 'locale')) !== null) {
                     return $i18n->getLocaleById($locale);
                 }
 

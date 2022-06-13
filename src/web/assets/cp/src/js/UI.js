@@ -7,17 +7,29 @@ Craft.ui = {
       class: 'btn',
     });
     if (config.id) {
-      $btn.attr('id', id);
+      $btn.attr('id', config.id);
     }
     if (config.class) {
       $btn.addClass(config.class);
     }
+    if (config.ariaLabel) {
+      $btn.attr('aria-label', config.ariaLabel);
+    }
+    if (config.role) {
+      $btn.attr('role', config.role);
+    }
     if (config.html) {
-      $btn.html(html);
+      $btn.html(config.html);
     } else if (config.label) {
       $btn.append($('<div class="label"/>').text(config.label));
     } else {
       $btn.addClass('btn-empty');
+    }
+    if (config.toggle) {
+      $btn.attr('aria-expanded', 'false');
+    }
+    if (config.controls) {
+      $btn.attr('aria-controls', config.controls);
     }
     if (config.spinner) {
       $btn.append($('<div class="spinner spinner-absolute"/>'));

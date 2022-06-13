@@ -190,7 +190,7 @@ $radioSize: 16px;
   word-wrap: normal !important;
   user-select: none;
 
-  opacity: 0.8;
+  opacity: var(--icon-opacity);
 }
 
 @mixin angle($dir: down, $color: currentColor) {
@@ -631,6 +631,11 @@ $radioSize: 16px;
   outline-color: transparent;
   background-color: hsl(212, 25%, 85%);
   box-shadow: var(--focus-ring);
+}
+
+@mixin touch-target {
+  height: var(--touch-target-size);
+  width: var(--touch-target-size);
 }
 
 @mixin visually-hidden {

@@ -10,6 +10,6 @@
 {% else %}
     <p class="centeralign">{{ "Congrats! You’re up to date."|t('app') }}</p>
     <p class="centeralign">
-        <button type="button" class="btn" data-icon="refresh">{{ 'Check again'|t('app') }}</button>
+        <button type="button" class="btn" data-icon="refresh" aria-label="{{ 'Check again'|t('app') }}">{{ 'Check again'|t('app') }}</button>
     </p>
 {% endif %}

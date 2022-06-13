@@ -223,6 +223,7 @@ abstract class BaseField extends FieldLayoutElement
         return Cp::fieldHtml($inputHtml, [
             'fieldset' => $this->useFieldset(),
             'id' => $this->id(),
+            'labelId' => $this->labelId(),
             'instructionsId' => $this->instructionsId(),
             'tipId' => $this->tipId(),
             'warningId' => $this->warningId(),
@@ -278,6 +279,17 @@ abstract class BaseField extends FieldLayoutElement
     protected function id(): string
     {
         return $this->attribute();
+    }
+
+    /**
+     * Returns the `id` of the field label.
+     *
+     * @return string
+     * @since 4.1.0
+     */
+    protected function labelId(): string
+    {
+        return sprintf('%s-label', $this->id());
     }
 
     /**

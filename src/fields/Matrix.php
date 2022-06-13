@@ -735,6 +735,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
                 'blocks' => $value,
                 'static' => false,
                 'staticBlocks' => $staticBlocks,
+                'labelId' => $this->getLabelId(),
             ]);
     }
 

@@ -13,6 +13,8 @@ export default Base.extend(
     showingMenu: false,
     disabled: true,
     observer: null,
+    searchStr: '',
+    clearSearchStrTimeout: null,
 
     /**
      * Constructor
@@ -32,7 +34,7 @@ export default Base.extend(
         return;
       }
 
-      var $menu;
+      let $menu;
 
       // Is this already a menu button?
       if (this.$btn.data('menubtn')) {
@@ -59,13 +61,26 @@ export default Base.extend(
           this.onOptionSelect(ev.selectedOption);
         }.bind(this)
       );
+      this.menu.on('hide', () => {
+        this.clearSearchStr();
+      });
+      this.menu.on('show', () => {
+        this.clearSearchStr();
+      });
 
       this.$btn.attr({
-        tabindex: 0,
+        role: 'combobox',
         'aria-controls': this.menu.menuId,
         'aria-haspopup': 'listbox',
         'aria-expanded': 'false',
       });
+
+      // If no label is set on the listbox, set one based on the combobox label
+      const comboboxLabel = this.$btn.attr('aria-labelledby');
+
+      if (!this.menu.$container.attr('aria-labelledby') && comboboxLabel) {
+        this.menu.$container.attr('aria-labelledby', comboboxLabel);
+      }
 
       this.menu.on('hide', this.onMenuHide.bind(this));
       this.addListener(this.$btn, 'mousedown', 'onMouseDown');
@@ -104,122 +119,197 @@ export default Base.extend(
     },
 
     onKeyDown: function (ev) {
-      var $option;
+      // Searching for an option?
+      if (
+        ev.key &&
+        (ev.key.match(/^[^ ]$/) || (this.searchStr.length && ev.key === ' '))
+      ) {
+        // show the menu and set visual focus to the first matching option
+        let $option;
 
-      switch (ev.keyCode) {
-        case Garnish.RETURN_KEY: {
-          ev.preventDefault();
-
-          const $currentOption = this.menu.$options.filter('.hover');
-          if ($currentOption.length > 0) {
-            $currentOption.get(0).click();
+        if (!this.showingMenu) {
+          this.showMenu();
+          // go with the selected option by default
+          $option = this.menu.$options.filter('.sel:first');
+          if ($option.length === 0) {
+            $option = this.menu.$options.first();
           }
-
-          break;
         }
 
-        case Garnish.SPACE_KEY: {
-          ev.preventDefault();
+        // see if there's a matching option
+        this.searchStr += ev.key.toLowerCase();
+        for (let i = 0; i < this.menu.$options.length; i++) {
+          const $o = this.menu.$options.eq(i);
+          if (Craft.ltrim($o.text().toLowerCase()).startsWith(this.searchStr)) {
+            $option = $o;
+            break;
+          }
+        }
 
-          if (this.showingMenu) {
+        if ($option && $option.length) {
+          this.focusOption($option);
+        }
+
+        // update the timeout
+        if (this.clearSearchStrTimeout) {
+          clearTimeout(this.clearSearchStrTimeout);
+        }
+        this.clearSearchStrTimeout = setTimeout(() => {
+          this.clearSearchStr();
+        }, 1000);
+
+        return;
+      }
+
+      if (this.showingMenu) {
+        switch (ev.keyCode) {
+          case Garnish.RETURN_KEY:
+          case Garnish.SPACE_KEY:
+          case Garnish.TAB_KEY: {
+            // select the visually-focused option and close the menu
+            if (ev.keyCode !== Garnish.TAB_KEY) {
+              ev.preventDefault();
+            }
             const $currentOption = this.menu.$options.filter('.hover');
             if ($currentOption.length > 0) {
               $currentOption.get(0).click();
+            } else {
+              this.hideMenu();
             }
-          } else {
-            this.showMenu();
-
-            $option = this.menu.$options.filter('.sel:first');
-
-            if ($option.length === 0) {
-              $option = this.menu.$options.first();
-            }
-
-            this.focusOption($option);
+            break;
           }
 
-          break;
+          case Garnish.UP_KEY:
+          case Garnish.PAGE_UP_KEY: {
+            // move visual focus up
+            ev.preventDefault();
+            const dist = ev.keyCode === Garnish.UP_KEY ? 1 : 10;
+            this.moveFocusUp(dist);
+            break;
+          }
+
+          case Garnish.DOWN_KEY:
+          case Garnish.PAGE_DOWN_KEY: {
+            // move visual focus down
+            ev.preventDefault();
+            const dist = ev.keyCode === Garnish.DOWN_KEY ? 1 : 10;
+            this.moveFocusDown(dist);
+            break;
+          }
+
+          case Garnish.HOME_KEY: {
+            // move visual focus to the first option
+            ev.preventDefault();
+            this.focusFirstOption();
+            break;
+          }
+
+          case Garnish.END_KEY: {
+            // move visual focus to the last option
+            ev.preventDefault();
+            this.focusLastOption();
+            break;
+          }
         }
-
-        case Garnish.DOWN_KEY: {
-          ev.preventDefault();
-
-          if (this.showingMenu) {
-            $.each(
-              this.menu.$options,
-              function (index, value) {
-                if (!$option) {
-                  if ($(value).hasClass('hover')) {
-                    if (index + 1 < this.menu.$options.length) {
-                      $option = $(this.menu.$options[index + 1]);
-                    }
-                  }
-                }
-              }.bind(this)
-            );
-
-            if (!$option) {
-              $option = $(this.menu.$options[0]);
-            }
-          } else {
+      } else {
+        switch (ev.keyCode) {
+          case Garnish.RETURN_KEY:
+          case Garnish.SPACE_KEY:
+          case Garnish.DOWN_KEY: {
+            // show the menu and set visual focus to the selected option
+            ev.preventDefault();
             this.showMenu();
-
-            $option = this.menu.$options.filter('.sel:first');
-
-            if ($option.length === 0) {
-              $option = this.menu.$options.first();
-            }
+            this.focusSelectedOption();
+            break;
           }
 
-          this.focusOption($option);
-
-          break;
-        }
-
-        case Garnish.UP_KEY: {
-          ev.preventDefault();
-
-          if (this.showingMenu) {
-            $.each(
-              this.menu.$options,
-              function (index, value) {
-                if (!$option) {
-                  if ($(value).hasClass('hover')) {
-                    if (index - 1 >= 0) {
-                      $option = $(this.menu.$options[index - 1]);
-                    }
-                  }
-                }
-              }.bind(this)
-            );
-
-            if (!$option) {
-              $option = $(this.menu.$options[this.menu.$options.length - 1]);
-            }
-          } else {
+          case Garnish.UP_KEY:
+          case Garnish.HOME_KEY: {
+            // show the menu and set visual focus to the first option
+            ev.preventDefault();
             this.showMenu();
-
-            $option = this.menu.$options.filter('.sel:first');
-
-            if ($option.length === 0) {
-              $option = this.menu.$options.last();
-            }
+            this.focusFirstOption();
+            break;
           }
 
-          this.focusOption($option);
-
-          break;
+          case Garnish.END_KEY: {
+            // show the menu and set visual focus to the last option
+            ev.preventDefault();
+            this.showMenu();
+            this.focusLastOption();
+            break;
+          }
         }
       }
     },
 
+    clearSearchStr: function () {
+      this.searchStr = '';
+      if (this.clearSearchStrTimeout) {
+        clearTimeout(this.clearSearchStrTimeout);
+        this.clearSearchStrTimeout = null;
+      }
+    },
+
     focusOption: function ($option) {
+      if ($option.hasClass('hover')) {
+        return;
+      }
+
       this.menu.$options.removeClass('hover');
+      this.menu.$ariaOptions.attr('aria-selected', 'false');
 
       $option.addClass('hover');
+      this.$btn.attr('aria-activedescendant', $option.parent('li').attr('id'));
+    },
 
-      this.menu.$menuList.attr('aria-activedescendant', $option.attr('id'));
-      this.$btn.attr('aria-activedescendant', $option.attr('id'));
+    focusSelectedOption: function () {
+      let $option = this.menu.$options.filter('.sel:first');
+      if ($option.length) {
+        this.focusOption($option);
+      } else {
+        this.focusFirstOption();
+      }
+    },
+
+    focusFirstOption: function () {
+      const $option = this.menu.$options.first();
+      this.focusOption($option);
+    },
+
+    focusLastOption: function () {
+      const $option = this.menu.$options.last();
+      this.focusOption($option);
+    },
+
+    /**
+     * @param {number} [dist=1]
+     */
+    moveFocusUp: function (dist) {
+      const $focusedOption = this.menu.$options.filter('.hover');
+      if ($focusedOption.length) {
+        const index = this.menu.$options.index($focusedOption[0]);
+        const $option = this.menu.$options.eq(Math.max(index - dist, 0));
+        this.focusOption($option);
+      } else {
+        this.focusFirstOption();
+      }
+    },
+
+    /**
+     * @param {number} [dist=1]
+     */
+    moveFocusDown: function (dist) {
+      const $focusedOption = this.menu.$options.filter('.hover');
+      if ($focusedOption.length) {
+        const index = this.menu.$options.index($focusedOption[0]);
+        const $option = this.menu.$options.eq(
+          Math.min(index + dist, this.menu.$options.length - 1)
+        );
+        this.focusOption($option);
+      } else {
+        this.focusFirstOption();
+      }
     },
 
     onMouseDown: function (ev) {
@@ -266,7 +356,10 @@ export default Base.extend(
 
     onMenuHide: function () {
       this.$btn.removeClass('active');
-      this.$btn.attr('aria-expanded', 'false');
+      this.$btn.attr({
+        'aria-expanded': 'false',
+        'aria-activedescendant': null,
+      });
       this.showingMenu = false;
 
       this.removeListener(Garnish.$doc, 'mousedown');

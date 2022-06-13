@@ -7,6 +7,7 @@ Craft.AddressesInput = Garnish.Base.extend(
   {
     $container: null,
     $addBtn: null,
+    $addBtnItem: null,
     $cards: null,
 
     init: function (container, settings) {
@@ -21,7 +22,8 @@ Craft.AddressesInput = Garnish.Base.extend(
 
       this.$container.data('addresses', this);
 
-      this.$addBtn = this.$container.find('> .btn.add');
+      this.$addBtn = this.$container.find('.address-cards__add-btn');
+      this.$addBtnItem = this.$addBtn.closest('li');
       this.$cards = this.$container.find('> .address-card');
 
       for (let i = 0; i < this.$cards.length; i++) {
@@ -44,7 +46,17 @@ Craft.AddressesInput = Garnish.Base.extend(
 
       const $actionBtn = $card.find('.menubtn');
       if ($actionBtn.length) {
-        const $menu = $actionBtn.data('trigger').$container;
+        const menu = $actionBtn.data('trigger');
+        const $menu = menu.$container;
+
+        // Activate edit button
+        const $editBtn = $menu.find('[data-action="edit"]');
+        this.addListener($editBtn, 'click', (ev) => {
+          ev.stopPropagation();
+          this.editAddress($card);
+        });
+
+        // Activate delete button
         const $deleteBtn = $menu.find('[data-action="delete"]');
         this.addListener($deleteBtn, 'click', (ev) => {
           ev.preventDefault();
@@ -65,6 +77,8 @@ Craft.AddressesInput = Garnish.Base.extend(
             })
               .then(() => {
                 $card.remove();
+                $menu.remove();
+                menu.destroy();
                 this.$cards = this.$cards.not($card);
                 this.updateAddButton();
 
@@ -103,7 +117,7 @@ Craft.AddressesInput = Garnish.Base.extend(
             $card.replaceWith($newCard);
             this.$cards = this.$cards.not($card);
           } else {
-            $newCard.insertBefore(this.$addBtn);
+            $newCard.insertBefore(this.$addBtnItem);
           }
           Craft.initUiElements($newCard);
           this.initCard($newCard);

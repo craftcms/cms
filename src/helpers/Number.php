@@ -152,6 +152,22 @@ class Number
     }
 
     /**
+     * Returns whether the given value is an int or float, or a string that represents an int or float.
+     *
+     * @param mixed $value
+     * @return bool
+     * @since 4.0.5
+     */
+    public static function isIntOrFloat(mixed $value): bool
+    {
+        return (
+            is_int($value) ||
+            is_float($value) ||
+            (is_string($value) && preg_match('/^([1-9]\d*|0|([1-9]\d*|0)?\.\d+)$/', $value))
+        );
+    }
+
+    /**
      * Returns whether the given number lacks decimal points when typecast to a float.
      *
      * @param float|int|string $value

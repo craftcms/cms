@@ -42,23 +42,28 @@ Garnish = $.extend(Garnish, {
   $scrollContainer: Garnish.$win,
 
   // Key code constants
-  DELETE_KEY: 8,
-  SHIFT_KEY: 16,
+  BACKSPACE_KEY: 8,
   TAB_KEY: 9,
+  CLEAR_KEY: 12,
+  RETURN_KEY: 13,
+  SHIFT_KEY: 16,
   CTRL_KEY: 17,
   ALT_KEY: 18,
-  RETURN_KEY: 13,
   ESC_KEY: 27,
   SPACE_KEY: 32,
+  PAGE_UP_KEY: 33,
+  PAGE_DOWN_KEY: 34,
   END_KEY: 35,
   HOME_KEY: 36,
   LEFT_KEY: 37,
   UP_KEY: 38,
   RIGHT_KEY: 39,
   DOWN_KEY: 40,
+  DELETE_KEY: 46,
   A_KEY: 65,
   S_KEY: 83,
   CMD_KEY: 91,
+  META_KEY: 224,
 
   // ARIA hidden classes
   JS_ARIA_CLASS: 'garnish-js-aria',
@@ -309,29 +314,27 @@ Garnish = $.extend(Garnish, {
    */
   resetModalBackgroundLayerVisibility: function () {
     const highestModalLayer = Garnish.uiLayerManager.highestModalLayer;
+    const hiddenLayerClasses = [
+      Garnish.JS_ARIA_CLASS,
+      Garnish.JS_ARIA_TRUE_CLASS,
+      Garnish.JS_ARIA_FALSE_CLASS,
+    ];
 
     // If there is another modal, make it accessible to AT
     if (highestModalLayer) {
-      highestModalLayer.$container.removeClass([
-        Garnish.JS_ARIA_CLASS,
-        Garnish.JS_ARIA_TRUE_CLASS,
-        Garnish.JS_ARIA_FALSE_CLASS,
-      ]);
-      highestModalLayer.$container.removeAttr('aria-hidden');
+      highestModalLayer.$container
+        .removeClass(hiddenLayerClasses)
+        .removeAttr('aria-hidden');
       return;
     }
 
     // If no more modals in DOM, loop through hidden elements and un-hide them
-    const ariaSelector =
-      '.' +
-      Garnish.JS_ARIA_CLASS +
-      ', .' +
-      Garnish.JS_ARIA_FALSE_CLASS +
-      ', .' +
-      Garnish.JS_ARIA_TRUE_CLASS;
-    const ariaHiddenElements = $(ariaSelector);
+    const hiddenLayerSelector = hiddenLayerClasses
+      .map((name) => '.' + name)
+      .join(', ');
+    const hiddenElements = $(hiddenLayerSelector);
 
-    $(ariaHiddenElements).each(function () {
+    $(hiddenElements).each(function () {
       if ($(this).hasClass(Garnish.JS_ARIA_CLASS)) {
         $(this).removeClass(Garnish.JS_ARIA_CLASS);
         $(this).removeAttr('aria-hidden');
@@ -402,25 +405,35 @@ Garnish = $.extend(Garnish, {
         const $focusableElements = $container.find(':focusable');
         const index = $focusableElements.index(ev.target);
 
+        // Exit focus trap if no focusable elements are inside
+        if ($focusableElements.length === 0) return;
+
         if (index === 0 && ev.shiftKey) {
           ev.preventDefault();
           ev.stopPropagation();
-          $focusableElements.last().focus();
+          $focusableElements.last().trigger('focus');
         } else if (index === $focusableElements.length - 1 && !ev.shiftKey) {
           ev.preventDefault();
           ev.stopPropagation();
-          $focusableElements.first().focus();
+          $focusableElements.first().trigger('focus');
         }
       }
     });
   },
 
   /**
-   * Sets focus to the first focusable element within a container.
+   * Sets focus to the first focusable element within a container, or on the container itself.
    * @param {Object} container The container element. Can be either an actual element or a jQuery collection.
    */
   setFocusWithin: function (container) {
-    $(container).find(':focusable:first').focus();
+    const $container = $(container);
+    const $firstFocusable = $(container).find(':focusable:first');
+
+    if ($firstFocusable.length > 0) {
+      $firstFocusable.trigger('focus');
+    } else {
+      $container.attr('tabindex', '-1').trigger('focus');
+    }
   },
 
   getFocusedElement: function () {
