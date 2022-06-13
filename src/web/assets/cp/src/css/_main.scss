@@ -4184,6 +4184,12 @@ ul.tree,
         }
       }
 
+      .asset-actions {
+        &.is-mobile {
+          margin: calc(var(--spacing) / 2) 0 var(--spacing);
+        }
+      }
+
       & > .meta.read-only:first-child {
         margin-top: var(--padding);
       }
@@ -4566,6 +4572,15 @@ ul.tree,
     }
   }
 }
+
+.asset-actions {
+  &.is-mobile {
+    margin: calc((var(--spacing) / 2) * -1) var(--neg-padding) var(--spacing);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
 .button-fade {
   .buttons {
     opacity: 0;

@@ -10,6 +10,7 @@ Craft.ElementEditor = Garnish.Base.extend(
     isFullPage: null,
     $container: null,
     $tabContainer: null,
+    $thumbnailContainer: null,
     $contentContainer: null,
     $revisionBtn: null,
     $revisionLabel: null,
@@ -17,6 +18,7 @@ Craft.ElementEditor = Garnish.Base.extend(
     $expandSiteStatusesBtn: null,
     $statusIcon: null,
     $previewBtn: null,
+    $actionBtnContainer: null,
 
     $editMetaBtn: null,
     metaHud: null,
@@ -98,6 +100,16 @@ Craft.ElementEditor = Garnish.Base.extend(
       this.$revisionBtn = this.$container.find('.context-btn');
       this.$revisionLabel = this.$container.find('.revision-label');
       this.$previewBtn = this.$container.find('.preview-btn');
+      this.$thumbnailContainer = this.$container.find(
+        '.preview-thumb-container'
+      );
+      this.$actionBtnContainer = this.$container.find('.asset-actions');
+
+      // If on mobile, hide thumbnail buttons
+      if (Garnish.isMobileBrowser(true)) {
+        this.$actionBtnContainer.insertAfter(this.$thumbnailContainer);
+        this.$actionBtnContainer.addClass('is-mobile');
+      }
 
       const $spinnerContainer = this.isFullPage
         ? $('#page-title')

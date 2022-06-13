@@ -2034,7 +2034,7 @@ JS;
                 ]);
 
             if ($previewable || $editable) {
-                $html .= Html::beginTag('div', ['class' => 'buttons']);
+                $html .= Html::beginTag('div', ['class' => 'asset-actions buttons']);
                 $view = Craft::$app->getView();
 
                 if ($previewable) {
@@ -2091,7 +2091,7 @@ JS;
                     $view->registerJs($js);
                 }
 
-                $html .= Html::endTag('div'); // .buttons
+                $html .= Html::endTag('div'); // .asset-actions
             }
 
             $html .= Html::endTag('div'); // .preview-thumb-container
