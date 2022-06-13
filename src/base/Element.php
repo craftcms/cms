@@ -4234,6 +4234,9 @@ abstract class Element extends Component implements ElementInterface
 
                 return '';
 
+            case 'status':
+                return $this->statusBadgeHtml();
+
             case 'uri':
                 if ($this->getIsDraft() && ElementHelper::isTempSlug($this->slug)) {
                     return '';
@@ -4502,6 +4505,26 @@ JS,
     }
 
     /**
+     * Returns the status badge HTML
+     *
+     * @return string
+     * @since 4.1.0
+     */
+    public function statusBadgeHtml(): string
+    {
+        if ($this->getIsUnpublishedDraft()) {
+            $icon = Html::tag('span', '', ['data' => ['icon' => 'draft']]);
+            $label = Craft::t('app', 'Draft');
+        } else {
+            $status = $this->getStatus();
+            $statusDef = static::statuses()[$status] ?? null;
+            $icon = Html::tag('span', '', ['class' => ['status', $statusDef['color'] ?? $status]]);
+            $label = $statusDef['label'] ?? $statusDef ?? ucfirst($status);
+        }
+        return $icon . Html::tag('span', $label);
+    }
+
+    /**
      * @inheritdoc
      */
     public function getMetadata(): array
@@ -4521,16 +4544,7 @@ JS,
                 if (!static::hasStatuses()) {
                     return false;
                 }
-                if ($this->getIsUnpublishedDraft()) {
-                    $icon = Html::tag('span', '', ['data' => ['icon' => 'draft']]);
-                    $label = Craft::t('app', 'Draft');
-                } else {
-                    $status = $this->getStatus();
-                    $statusDef = static::statuses()[$status] ?? null;
-                    $icon = Html::tag('span', '', ['class' => ['status', $statusDef['color'] ?? $status]]);
-                    $label = $statusDef['label'] ?? $statusDef ?? ucfirst($status);
-                }
-                return $icon . Html::tag('span', $label);
+                return $this->statusBadgeHtml();
             },
         ], $event->metadata, [
             Craft::t('app', 'Created at') => $this->dateCreated

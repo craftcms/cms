@@ -562,6 +562,7 @@ class Entry extends Element
         }
 
         $attributes[] = 'link';
+        $attributes[] = 'status';
 
         return $attributes;
     }
