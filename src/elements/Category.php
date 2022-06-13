@@ -87,6 +87,14 @@ class Category extends Element
     /**
      * @inheritdoc
      */
+    public static function trackChanges(): bool
+    {
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public static function hasContent(): bool
     {
         return true;

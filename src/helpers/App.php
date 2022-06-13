@@ -404,7 +404,7 @@ class App
         return match (is_string($value) ? strtolower($value) : $value) {
             'true' => true,
             'false' => false,
-            default => is_numeric($value) ? Number::toIntOrFloat($value) : $value,
+            default => Number::isIntOrFloat($value) ? Number::toIntOrFloat($value) : $value,
         };
     }
 
