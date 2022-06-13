@@ -11,6 +11,10 @@
 - Fixed a bug where the `install` command would run non-interactively even if not all needed options were passed, resulting in an error after the database tables had been added. ([#11305](https://github.com/craftcms/cms/issues/11305))
 - Fixed a viewport clipping bug on the control panel’s Login page. ([#11372](https://github.com/craftcms/cms/pull/11372))
 
+### Security
+- Environment-aware control panel fields no longer suggest environment variables that begin with `HTTP_`.
+- The Sendmail mailer no longer validates if the Sendmail Command setting is set to an enivornment variable that begins with `HTTP_`.
+
 ## 3.7.44 - 2022-06-03
 
 ### Changed
