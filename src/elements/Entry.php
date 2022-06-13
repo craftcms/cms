@@ -522,6 +522,7 @@ class Entry extends Element
             'type' => ['label' => Craft::t('app', 'Entry Type')],
             'author' => ['label' => Craft::t('app', 'Author')],
             'slug' => ['label' => Craft::t('app', 'Slug')],
+            'status' => ['label' => Craft::t('app', 'Status')],
             'uri' => ['label' => Craft::t('app', 'URI')],
             'postDate' => ['label' => Craft::t('app', 'Post Date')],
             'expiryDate' => ['label' => Craft::t('app', 'Expiry Date')],
