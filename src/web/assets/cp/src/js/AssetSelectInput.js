@@ -9,6 +9,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
   $uploadBtn: null,
   uploader: null,
   progressBar: null,
+  openPreviewTimeout: null,
 
   init: function () {
     this.base.apply(this, arguments);
@@ -44,11 +45,23 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
       .find('.elementthumb')
       .addClass('open-preview')
       .on('click', (ev) => {
-        this.elementSelect.focusItem($(ev.target).parent());
-        this.openPreview();
-        ev.stopPropagation();
+        this.clearOpenPreviewTimeout();
+        this.openPreviewTimeout = setTimeout(() => {
+          this.openPreview();
+          this.openPreviewTimeout = null;
+        }, 500);
+      })
+      .on('dblclick', (ev) => {
+        this.clearOpenPreviewTimeout();
       });
     this.base();
+  },
+
+  clearOpenPreviewTimeout: function () {
+    if (this.openPreviewTimeout) {
+      clearTimeout(this.openPreviewTimeout);
+      this.openPreviewTimeout = null;
+    }
   },
 
   openPreview: function () {
