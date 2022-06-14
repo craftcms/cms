@@ -4516,6 +4516,9 @@ JS,
             $icon = Html::tag('span', '', [
                 'data' => ['icon' => 'draft'],
                 'class' => 'draft-icon',
+                'aria' => [
+                    'hidden' => true,
+                ],
             ]);
             $label = Craft::t('app', 'Draft');
         } else {
