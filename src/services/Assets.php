@@ -117,6 +117,12 @@ class Assets extends Component
     private $_queuedGeneratePendingTransformsJob = false;
 
     /**
+     * @var VolumeFolder[]
+     * @see getUserTemporaryUploadFolder
+     */
+    private $_userTempFolders = [];
+
+    /**
      * Returns a file by its ID.
      *
      * @param int $assetId
@@ -1067,6 +1073,10 @@ class Assets extends Component
             $user = Craft::$app->getUser()->getIdentity();
         }
 
+        if (isset($this->_userTempFolders[$user->id])) {
+            return $this->_userTempFolders[$user->id];
+        }
+
         if ($user) {
             $folderName = 'user_' . $user->id;
         } elseif (Craft::$app->getRequest()->getIsConsoleRequest()) {
@@ -1089,10 +1099,7 @@ class Assets extends Component
         if ($tempVolume) {
             $path = ($tempSubpath ? "$tempSubpath/" : '') . $folderName;
             $folderId = $this->ensureFolderByFullPathAndVolume($path, $tempVolume, false);
-            return $this->findFolder([
-                'volumeId' => $tempVolume->id,
-                'id' => $folderId,
-            ]);
+            return $this->_userTempFolders[$user->id] = $this->getFolderById($folderId);
         }
 
         $volumeTopFolder = $this->findFolder([
@@ -1123,7 +1130,7 @@ class Assets extends Component
 
         FileHelper::createDirectory(Craft::$app->getPath()->getTempAssetUploadsPath() . DIRECTORY_SEPARATOR . $folderName);
 
-        return $folder;
+        return $this->_userTempFolders[$user->id] = $folder;
     }
 
     /**
