@@ -6335,38 +6335,56 @@ body .selectize-dropdown .active {
 
 /* slide picker */
 .slide-picker {
+  --outline-color: var(--gray-400);
+  --active-color: var(--outline-color);
+  --hover-color: var(--light-sel-color);
   display: flex;
   height: 15px;
   white-space: nowrap;
 
   a {
-    border: 1px solid var(--hairline-color);
+    border: 1px solid var(--outline-color);
     @include border-left(none);
     background-image: none;
-    width: 7px;
+    width: var(--touch-target-size);
     height: 13px;
     margin-left: 0;
     display: inline-block;
     margin-top: 1px;
     margin-bottom: 1px;
     box-sizing: border-box;
+  }
 
-    &:first-child {
-      width: 8px;
-      @include border-left(1px solid var(--gray-400) !important);
+  .active {
+    background-color: var(--active-color);
+  }
+
+  &:hover {
+    a {
+      &.active {
+        background-color: transparent;
+      }
+
+      &.active-hover {
+        background-color: var(--hover-color);
+      }
+    }
+  }
+
+  &:not(:hover) {
+    .active:not(.last-active) {
+      @include border-right(1px solid var(--white));
     }
   }
 
   &:not(:hover) a.active,
   &:hover a.active-hover {
-    border-top-color: var(--gray-400);
-    border-bottom-color: var(--gray-400);
     height: 15px;
     margin-top: 0;
     margin-bottom: 0;
 
     &:first-child {
-      @include border-left(1px solid var(--gray-400));
+      @include border-left(1px solid var(--outline-color));
       @include border-top-left-radius(var(--small-border-radius));
       @include border-bottom-left-radius(var(--small-border-radius));
     }
@@ -6374,15 +6392,9 @@ body .selectize-dropdown .active {
 
   &:not(:hover) a.last-active,
   &:hover a.last-active-hover {
-    @include border-right(1px solid var(--gray-400));
+    @include border-right(1px solid var(--outline-color));
     @include border-top-right-radius(var(--small-border-radius));
     @include border-bottom-right-radius(var(--small-border-radius));
-  }
-
-  &:focus {
-    a.active {
-      background-color: var(--light-sel-color);
-    }
   }
 }
 
