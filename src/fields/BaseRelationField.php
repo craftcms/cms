@@ -34,6 +34,7 @@ use GraphQL\Type\Definition\Type;
 use yii\base\Event;
 use yii\base\InvalidConfigException;
 use yii\base\NotSupportedException;
+use yii\db\Expression;
 use yii\validators\NumberValidator;
 
 /**
@@ -502,7 +503,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
                     ->leftJoin(["elements_sites_$ns" => DbTable::ELEMENTS_SITES], [
                         'and',
                         "[[elements_sites_$ns.elementId]] = [[elements_$ns.id]]",
-                        ["elements_sites_$ns.siteId" => $query->siteId],
+                        ["elements_sites_$ns.siteId" => $this->_targetSiteId() ?? new Expression('[[elements_sites.siteId]]')],
                     ])
                     ->where("[[relations_$ns.sourceId]] = [[elements.id]]")
                     ->andWhere([
@@ -1063,21 +1064,20 @@ JS;
      */
     protected function targetSiteId(ElementInterface $element = null): int
     {
-        if (Craft::$app->getIsMultiSite()) {
-            if ($this->targetSiteId) {
-                try {
-                    return Craft::$app->getSites()->getSiteByUid($this->targetSiteId)->id;
-                } catch (SiteNotFoundException $exception) {
-                    Craft::warning($exception->getMessage(), __METHOD__);
-                }
-            }
+        return $this->_targetSiteId() ?? $element->siteId ?? Craft::$app->getSites()->getCurrentSite()->id;
+    }
 
-            if ($element !== null) {
-                return $element->siteId;
+    private function _targetSiteId(): ?int
+    {
+        if ($this->targetSiteId && Craft::$app->getIsMultiSite()) {
+            try {
+                return Craft::$app->getSites()->getSiteByUid($this->targetSiteId)->id;
+            } catch (SiteNotFoundException $exception) {
+                Craft::warning($exception->getMessage(), __METHOD__);
             }
         }
 
-        return Craft::$app->getSites()->getCurrentSite()->id;
+        return null;
     }
 
     /**
