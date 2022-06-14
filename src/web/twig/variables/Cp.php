@@ -519,6 +519,7 @@ class Cp extends Component
         foreach (array_keys($_SERVER) as $var) {
             if (
                 is_string($var) &&
+                !str_starts_with($var, 'HTTP_') &&
                 is_scalar($env = App::env($var)) &&
                 (!$filter || $filter($env))
             ) {
