@@ -62,7 +62,7 @@
   --focus-ring: 0 0 0 1px hsl(var(--dark-focus-hsl)),
     0 0 0 3px hsla(var(--dark-focus-hsl), 0.7);
   --touch-target-size: 24px; /* Minimum recommended touch target size */
-  --status-indicator-spacer: 10px;
+  --status-spacer: 10px;
 }
 
 body,
@@ -2564,20 +2564,12 @@ $elementInnerSpacing: 5px;
     box-sizing: border-box;
 
     &.hasstatus {
-      @include padding-left(
-        $baseElementSidePadding + $statusSize + $elementInnerSpacing
-      );
-
-      .status {
-        position: absolute;
-        @include left($baseElementSidePadding);
-        top: calc(50% - 5px);
+      .label {
+        font-weight: var(--font-weight-bold);
       }
 
-      .icon:not(.delete) {
-        position: absolute;
-        @include left($baseElementSidePadding - 1);
-        top: calc(50% - 11px);
+      .status-badge {
+        font-size: .94em;
       }
     }
 
@@ -3265,23 +3257,23 @@ ul.tree,
   @include margin(7px, 0, 0, -15px);
 }
 
-/* status badge */
-.status-badge {
-  --status-indicator-spacer: 8px;
+/* status wrapper */
+.status-wrapper {
+  --status-spacer: 6px;
   display: flex;
   align-items: center;
 }
 
 /* status icons */
 .draft-icon {
-  --status-indicator-spacer: 6px;
+  --status-spacer: 4px;
   display: inline-flex;
-  @include margin-right(var(--status-indicator-spacer));
+  @include margin-right(var(--status-spacer));
 }
 
 .status {
   display: inline-block;
-  @include margin-right(var(--status-indicator-spacer));
+  @include margin-right(var(--status-spacer));
   width: 10px;
   height: 10px;
   border: 1px solid transparent;

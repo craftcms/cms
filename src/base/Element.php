@@ -4528,7 +4528,7 @@ JS,
             $label = $statusDef['label'] ?? $statusDef ?? ucfirst($status);
         }
         return Html::beginTag('span', [
-                'class' => 'status-badge',
+                'class' => 'status-wrapper',
             ]) .
             $icon . Html::tag('span', $label) .
             Html::endTag('span');

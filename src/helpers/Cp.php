@@ -274,6 +274,10 @@ class Cp
         $label = $element->getUiLabel();
         $showStatus = $showStatus && ($isDraft || $element::hasStatuses());
 
+        if ($context !== 'field') {
+            $showStatus = false;
+        }
+
         // Create the thumb/icon image, if there is one
         if ($showThumb) {
             $thumbSizePx = $size === self::ELEMENT_SIZE_SMALL ? 34 : 120;
