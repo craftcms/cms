@@ -4190,7 +4190,7 @@ ul.tree,
         }
       }
 
-      .asset-actions {
+      .image-actions {
         &.is-mobile {
           margin: calc(var(--spacing) / 2) 0 var(--spacing);
         }
@@ -4579,7 +4579,7 @@ ul.tree,
   }
 }
 
-.asset-actions {
+.image-actions {
   &.is-mobile {
     margin: calc((var(--spacing) / 2) * -1) var(--neg-padding) var(--spacing);
     display: grid;

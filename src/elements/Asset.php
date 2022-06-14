@@ -2020,7 +2020,7 @@ JS;
                 ($userSession->getId() == $this->uploaderId || $userSession->checkPermission("editPeerImages:$volume->uid"))
             );
 
-            $html =
+            $previewThumbHtml =
                 Html::beginTag('div', [
                     'id' => 'thumb-container',
                     'class' => array_filter([
@@ -2031,14 +2031,22 @@ JS;
                 ]) .
                 Html::tag('div', $this->getPreviewThumbImg(350, 190), [
                     'class' => 'preview-thumb',
-                ]);
+                ]) .
+                Html::endTag('div'); // .preview-thumb-container;
 
             if ($previewable || $editable) {
-                $html .= Html::beginTag('div', ['class' => 'asset-actions buttons']);
+                $isMobile = Craft::$app->getRequest()->isMobileBrowser(true);
+                $imageButtonHtml = Html::beginTag('div', [
+                    'class' => array_filter([
+                        'image-actions',
+                        'buttons',
+                        ($isMobile ? 'is-mobile' : null),
+                    ]),
+                ]);
                 $view = Craft::$app->getView();
 
                 if ($previewable) {
-                    $html .= Html::button(Craft::t('app', 'Preview'), [
+                    $imageButtonHtml .= Html::button(Craft::t('app', 'Preview'), [
                         'id' => 'preview-btn',
                         'class' => ['btn', 'preview-btn'],
                     ]);
@@ -2061,7 +2069,7 @@ JS;
                 }
 
                 if ($editable) {
-                    $html .= Html::button(Craft::t('app', 'Edit'), [
+                    $imageButtonHtml .= Html::button(Craft::t('app', 'Edit'), [
                         'id' => 'edit-btn',
                         'class' => ['btn', 'edit-btn'],
                     ]);
@@ -2091,10 +2099,16 @@ JS;
                     $view->registerJs($js);
                 }
 
-                $html .= Html::endTag('div'); // .asset-actions
+                $imageButtonHtml .= Html::endTag('div'); // .image-actions
+
+                if (Craft::$app->getRequest()->isMobileBrowser(true)) {
+                    $previewThumbHtml .= $imageButtonHtml;
+                } else {
+                    $previewThumbHtml = Html::appendToTag($previewThumbHtml, $imageButtonHtml);
+                }
             }
 
-            $html .= Html::endTag('div'); // .preview-thumb-container
+            $html .= $previewThumbHtml;
         } catch (NotSupportedException) {
             // NBD
         }
