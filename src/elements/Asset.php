@@ -2178,8 +2178,17 @@ class Asset extends Element
 
         $transform = Craft::$app->getAssetTransforms()->normalizeTransform($transform);
 
-        if ($this->_width < $transform->width && $this->_height < $transform->height && !Craft::$app->getConfig()->getGeneral()->upscaleImages) {
-            $transformRatio = $transform->width / $transform->height;
+        if (
+            ($transform->width === null || $this->_width < $transform->width) &&
+            ($transform->height === null || $this->_height < $transform->height) &&
+            !Craft::$app->getConfig()->getGeneral()->upscaleImages
+        ) {
+            if ($transform->width === null || $transform->height === null) {
+                $transformRatio = $this->_width / $this->_height;
+            } else {
+                $transformRatio = $transform->width / $transform->height;
+            }
+
             $imageRatio = $this->_width / $this->_height;
 
             if ($transform->mode !== 'crop' || $imageRatio === $transformRatio) {
