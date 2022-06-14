@@ -4,6 +4,7 @@
 
 ### Changed
 - Improved performance when working with temp asset folders.
+- Temp asset folders are no longer created until they’re actually needed. ([#11427](https://github.com/craftcms/cms/issues/11427))
 - Element index queries are no longer cached if they contain a search term.
 - Search inputs within field layout designers now prevent the containing form from being submitted when the <kbd>Return</kbd> key is pressed. ([#11415](https://github.com/craftcms/cms/discussions/11415))
 

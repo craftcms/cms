@@ -1098,7 +1098,7 @@ class Assets extends Component
 
         if ($tempVolume) {
             $path = ($tempSubpath ? "$tempSubpath/" : '') . $folderName;
-            $folderId = $this->ensureFolderByFullPathAndVolume($path, $tempVolume, false);
+            $folderId = $this->ensureFolderByFullPathAndVolume($path, $tempVolume);
             return $this->_userTempFolders[$user->id] = $this->getFolderById($folderId);
         }
 
