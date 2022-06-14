@@ -4513,7 +4513,10 @@ JS,
     public function statusBadgeHtml(): string
     {
         if ($this->getIsUnpublishedDraft()) {
-            $icon = Html::tag('span', '', ['data' => ['icon' => 'draft']]);
+            $icon = Html::tag('span', '', [
+                'data' => ['icon' => 'draft'],
+                'class' => 'draft-icon',
+            ]);
             $label = Craft::t('app', 'Draft');
         } else {
             $status = $this->getStatus();
@@ -4521,7 +4524,11 @@ JS,
             $icon = Html::tag('span', '', ['class' => ['status', $statusDef['color'] ?? $status]]);
             $label = $statusDef['label'] ?? $statusDef ?? ucfirst($status);
         }
-        return $icon . Html::tag('span', $label);
+        return Html::beginTag('span', [
+                'class' => 'status-badge',
+            ]) .
+            $icon . Html::tag('span', $label) .
+            Html::endTag('span');
     }
 
     /**

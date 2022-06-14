@@ -62,6 +62,7 @@
   --focus-ring: 0 0 0 1px hsl(var(--dark-focus-hsl)),
     0 0 0 3px hsla(var(--dark-focus-hsl), 0.7);
   --touch-target-size: 24px; /* Minimum recommended touch target size */
+  --status-indicator-spacer: 10px;
 }
 
 body,
@@ -3264,10 +3265,23 @@ ul.tree,
   @include margin(7px, 0, 0, -15px);
 }
 
+/* status badge */
+.status-badge {
+  --status-indicator-spacer: 8px;
+  display: flex;
+  align-items: center;
+}
+
 /* status icons */
+.draft-icon {
+  --status-indicator-spacer: 6px;
+  display: inline-flex;
+  @include margin-right(var(--status-indicator-spacer));
+}
+
 .status {
   display: inline-block;
-  @include margin-right(10px);
+  @include margin-right(var(--status-indicator-spacer));
   width: 10px;
   height: 10px;
   border: 1px solid transparent;
@@ -3902,7 +3916,6 @@ ul.tree,
 
       & > [data-icon='draft'] {
         margin-top: -2px;
-        @include margin-right(8px);
       }
     }
 
