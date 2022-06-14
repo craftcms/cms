@@ -507,6 +507,11 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
                     ])
                     ->where("[[relations_$ns.sourceId]] = [[elements.id]]")
                     ->andWhere([
+                        'or',
+                        ["relations_$ns.sourceSiteId" => null],
+                        ["relations_$ns.sourceSiteId" => new Expression('[[elements_sites.siteId]]')],
+                    ])
+                    ->andWhere([
                         "relations_$ns.fieldId" => $this->id,
                         "elements_$ns.enabled" => true,
                         "elements_$ns.dateDeleted" => null,
