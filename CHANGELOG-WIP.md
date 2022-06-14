@@ -29,7 +29,7 @@
 - Improved Dashboard accessibility. ([#11217](https://github.com/craftcms/cms/pull/11217), [#11297](https://github.com/craftcms/cms/pull/11297))
 - Improved address management accessibility. ([#11397](https://github.com/craftcms/cms/pull/11397))
 - Improved Matrix field accessibility. ([#11306](https://github.com/craftcms/cms/pull/11306))
-- Improved element selector modals for small screens. ([#11323](https://github.com/craftcms/cms/pull/11323))
+- Improved mobile support. ([#11323](https://github.com/craftcms/cms/pull/11323), [#11430](https://github.com/craftcms/cms/pull/11430))
 - Improved keyboard support for custom selects. ([#11414](https://github.com/craftcms/cms/pull/11414))
 - It’s now possible to remove all selected elements from relational fields by pressing <kbd>Backspace</kbd> or <kbd>Delete</kbd> while one of them is focussed.
 - Improved the UI of condition builders. ([#11386](https://github.com/craftcms/cms/pull/11386))
