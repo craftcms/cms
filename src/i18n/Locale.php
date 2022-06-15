@@ -229,6 +229,7 @@ class Locale extends BaseObject
         'ar',
         'fa',
         'he',
+        'ps',
         'ur',
     ];
 
