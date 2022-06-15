@@ -132,9 +132,8 @@ Craft.ImageUpload = Garnish.Base.extend(
     _onUploadError: function (event, data) {
       if (data.jqXHR.responseJSON.error) {
         alert(data.jqXHR.responseJSON.error);
-        this.$container.removeClass('uploading');
         this.progressBar.hideProgressBar();
-        this.progressBar.resetProgressBar();
+        this.$container.removeClass('uploading');
       }
     },
   },

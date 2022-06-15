@@ -728,6 +728,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
       fileuploadstart: this._onUploadStart.bind(this),
       fileuploadprogressall: this._onUploadProgress.bind(this),
       fileuploaddone: this._onUploadComplete.bind(this),
+      fileuploadfail: this._onUploadError.bind(this),
     };
 
     if (
@@ -988,8 +989,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 
     // For the last file, display prompts, if any. If not - just update the element view.
     if (this.uploader.isLastUpload()) {
-      this.setIndexAvailable();
       this.progressBar.hideProgressBar();
+      this.setIndexAvailable();
 
       if (this.promptHandler.getPromptCount()) {
         this.promptHandler.showBatchPrompts(this._uploadFollowup.bind(this));
@@ -998,6 +999,17 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
           this._updateAfterUpload();
         }
       }
+    }
+  },
+
+  /**
+   * On a file being uploaded.
+   */
+  _onUploadError: function (event, data) {
+    if (data.jqXHR.responseJSON.error) {
+      alert(data.jqXHR.responseJSON.error);
+      this.progressBar.hideProgressBar();
+      this.setIndexAvailable();
     }
   },
 
@@ -1028,8 +1040,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
     this.promptHandler.resetPrompts();
 
     var finalCallback = () => {
-      this.setIndexAvailable();
       this.progressBar.hideProgressBar();
+      this.setIndexAvailable();
       this._updateAfterUpload();
     };
 

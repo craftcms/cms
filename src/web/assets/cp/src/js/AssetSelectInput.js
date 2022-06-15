@@ -158,6 +158,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
     options.events.fileuploadstart = this._onUploadStart.bind(this);
     options.events.fileuploadprogressall = this._onUploadProgress.bind(this);
     options.events.fileuploaddone = this._onUploadComplete.bind(this);
+    options.events.fileuploadfail = this._onUploadError.bind(this);
 
     this.uploader = new Craft.Uploader(this.$container, options);
 
@@ -256,6 +257,8 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
   _onUploadComplete: function (event, data) {
     if (data.result.error) {
       alert(data.result.error);
+      this.progressBar.hideProgressBar();
+      this.$container.removeClass('uploading');
     } else {
       var parameters = {
         elementId: data.result.assetId,
@@ -288,6 +291,18 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
       );
 
       Craft.cp.runQueue();
+    }
+  },
+
+  /**
+   * On a file being uploaded.
+   */
+  _onUploadError: function (event, data) {
+    debugger;
+    if (data.jqXHR.responseJSON.error) {
+      alert(data.jqXHR.responseJSON.error);
+      this.progressBar.hideProgressBar();
+      this.$container.removeClass('uploading');
     }
   },
 

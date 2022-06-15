@@ -15,6 +15,7 @@
 - Fixed a bug where filtering an element query by a relational field using `:empty:`/`:notempty:` wasn’t factoring in the field’s “Which site should entries be related from?” setting properly.
 - Fixed a bug where filtering an element query by a relational field using `:empty:`/`:notempty:` wasn’t factoring in the source elements’ site IDs, for fields set to manage relations on a per-site basis. ([#11418](https://github.com/craftcms/cms/issues/11418))
 - Fixed a bug where the Temporary Uploads asset source wasn’t including subfolders.
+- Fixed a bug where file upload progress bars weren’t always going away when an upload error occurred.
 
 ### Security
 - Environment-aware control panel fields no longer suggest environment variables that begin with `HTTP_`.
