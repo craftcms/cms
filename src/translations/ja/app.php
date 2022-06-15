@@ -1873,6 +1873,7 @@ return [
     '{ctrl}C to copy.' => '{ctrl}C でコピー',
     '{edition} edition' => '{edition}エディション',
     '{element} pagination' => '{element}のページネーション',
+    '{filename} isn’t selectable for this field.' => '{filename} isn’t selectable for this field.',
     '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}-{last, number}/{total, number} {total, plural, =1{{item}} other{{items}}}',
     '{first}-{last} of {total}' => '{first}-{last}/{total}',
     '{name} has been added, but an error occurred when installing it.' => '{name}が追加されましたが、インストール時にエラーが発生しました。',
