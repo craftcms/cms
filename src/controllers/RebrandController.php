@@ -46,7 +46,6 @@ class RebrandController extends Controller
      */
     public function actionUploadSiteImage(): Response
     {
-        return $this->asFailure('testing');
         $this->requireAcceptsJson();
         $this->requireAdmin();
         $type = $this->request->getRequiredBodyParam('type');
