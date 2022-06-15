@@ -171,6 +171,7 @@ class AssetsController extends Controller
      */
     public function actionUpload(): Response
     {
+        return $this->asFailure('testing');
         $this->requireAcceptsJson();
 
         $uploadedFile = UploadedFile::getInstanceByName('assets-upload');
@@ -236,9 +237,7 @@ class AssetsController extends Controller
             // In case of error, let user know about it.
             if (!$result) {
                 $errors = $asset->getFirstErrors();
-                return $this->asJson([
-                    'error' => $this->asFailure(implode("\n", $errors)),
-                ]);
+                return $this->asFailure(implode("\n", $errors));
             }
 
             if ($asset->conflictingFilename !== null) {
@@ -261,9 +260,7 @@ class AssetsController extends Controller
         } catch (Throwable $e) {
             Craft::error('An error occurred when saving an asset: ' . $e->getMessage(), __METHOD__);
             Craft::$app->getErrorHandler()->logException($e);
-            return $this->asJson([
-                'error' => $e->getMessage(),
-            ]);
+            return $this->asFailure($e->getMessage());
         }
     }
 
