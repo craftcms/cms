@@ -1875,6 +1875,7 @@ Congratulazioni! Craft ti ha inviato una email con successo. Ecco le impostazion
     '{ctrl}C to copy.' => '{ctrl}C per copiare.',
     '{edition} edition' => 'Edizione {edition}',
     '{element} pagination' => 'Impaginazione {element}',
+    '{filename} isn’t selectable for this field.' => '{filename} isn’t selectable for this field.',
     '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}-{last, number} di {total, number} {total, plural, =1{{item}} other{{items}}}',
     '{first}-{last} of {total}' => '{first}-{last} di {total}',
     '{name} has been added, but an error occurred when installing it.' => '{name} è stato aggiunto, ma si è verificato un errore durante l\'installazione.',
