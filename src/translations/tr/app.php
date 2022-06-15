@@ -1875,6 +1875,7 @@ Tebrikler! Craft eposta göndermeyi başardı.Gerkli ayarlar şu şekilde: {{ se
     '{ctrl}C to copy.' => 'Kopyalamak için {ctrl}C',
     '{edition} edition' => '{edition} sürüm',
     '{element} pagination' => '{element} sayfalandırma',
+    '{filename} isn’t selectable for this field.' => '{filename} isn’t selectable for this field.',
     '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}-{last, number} / {total, number} {total, plural, =1{{item}} other{{items}}}',
     '{first}-{last} of {total}' => '{first}-{last} / {total}',
     '{name} has been added, but an error occurred when installing it.' => '{name} eklendi ancak yüklenirken bir hata oluştu.',
