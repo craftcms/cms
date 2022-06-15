@@ -2564,12 +2564,24 @@ $elementInnerSpacing: 5px;
     box-sizing: border-box;
 
     &.hasstatus {
+      border: 1px solid var(--hairline-color);
+      padding: var(--m);
+      @include padding-right(var(--xl));
+
       .label {
         font-weight: var(--font-weight-bold);
       }
 
-      .status-badge {
+      .status-wrapper {
+        margin-top: var(--xs);
         font-size: .94em;
+      }
+
+      &.removable {
+        .delete {
+          @include right(10px);
+          top: 12px;
+        }
       }
     }
 
