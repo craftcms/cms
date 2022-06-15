@@ -171,7 +171,6 @@ class AssetsController extends Controller
      */
     public function actionUpload(): Response
     {
-        return $this->asFailure('testing');
         $this->requireAcceptsJson();
 
         $uploadedFile = UploadedFile::getInstanceByName('assets-upload');
