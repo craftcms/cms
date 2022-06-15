@@ -727,7 +727,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
     options.events = {
       fileuploadstart: this._onUploadStart.bind(this),
       fileuploadprogressall: this._onUploadProgress.bind(this),
-      fileuploadalways: this._onUploadComplete.bind(this),
+      fileuploaddone: this._onUploadComplete.bind(this),
       fileuploadfail: this._onUploadFailure.bind(this),
     };
 
@@ -946,6 +946,40 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
   },
 
   /**
+   * On Upload Complete.
+   */
+  _onUploadComplete: function (event, data) {
+    const {result} = data;
+
+    // Add the uploaded file to the selected ones, if appropriate
+    this.selectElementAfterUpdate(result.assetId);
+
+    // If there is a prompt, add it to the queue
+    if (result.conflict) {
+      result.prompt = {
+        message: Craft.t('app', result.conflict, {file: result.filename}),
+        choices: this._fileConflictTemplate.choices,
+      };
+
+      this.promptHandler.addPrompt(result);
+    }
+
+    Craft.cp.runQueue();
+
+    // For the last file, display prompts, if any. If not - just update the element view.
+    if (this.uploader.isLastUpload()) {
+      this.progressBar.hideProgressBar();
+      this.setIndexAvailable();
+
+      if (this.promptHandler.getPromptCount()) {
+        this.promptHandler.showBatchPrompts(this._uploadFollowup.bind(this));
+      } else {
+        this._updateAfterUpload();
+      }
+    }
+  },
+
+  /**
    * On Upload Failure.
    */
   _onUploadFailure: function (event, data) {
@@ -959,42 +993,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
     }
 
     alert(message);
-  },
-  /**
-   * On Upload Complete.
-   */
-  _onUploadComplete: function (event, data) {
-    const {result} = data || {};
-    const assetId = result?.assetId;
-
-    // Add the uploaded file to the selected ones, if appropriate
-    if (assetId) {
-      this.selectElementAfterUpdate(assetId);
-    }
-
-    // If there is a prompt, add it to the queue
-    if (result?.conflict) {
-      result.prompt = {
-        message: Craft.t('app', result.conflict, {file: result.filename}),
-        choices: this._fileConflictTemplate.choices,
-      };
-
-      this.promptHandler.addPrompt(result);
-    }
-
-    Craft.cp.runQueue();
-
-    // For the last file, display prompts, if any. If not - just update the element view.
-    if (this.uploader.isLastUpload()) {
-      this.setIndexAvailable();
-      this.progressBar.hideProgressBar();
-
-      if (this.promptHandler.getPromptCount()) {
-        this.promptHandler.showBatchPrompts(this._uploadFollowup.bind(this));
-      } else if (assetId) {
-        this._updateAfterUpload();
-      }
-    }
+    this.progressBar.hideProgressBar();
+    this.setIndexAvailable();
   },
 
   /**
@@ -1024,8 +1024,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
     this.promptHandler.resetPrompts();
 
     var finalCallback = () => {
-      this.setIndexAvailable();
       this.progressBar.hideProgressBar();
+      this.setIndexAvailable();
       this._updateAfterUpload();
     };
 
