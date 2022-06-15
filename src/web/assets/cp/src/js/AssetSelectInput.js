@@ -177,7 +177,7 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
     options.events.fileuploadstart = this._onUploadStart.bind(this);
     options.events.fileuploadprogressall = this._onUploadProgress.bind(this);
     options.events.fileuploaddone = this._onUploadComplete.bind(this);
-    options.events.fileuploadfail = this._onUploadFailure().bind(this);
+    options.events.fileuploadfail = this._onUploadFailure.bind(this);
 
     this.uploader = new Craft.Uploader(this.$container, options);
 
@@ -308,11 +308,18 @@ Craft.AssetSelectInput = Craft.BaseElementSelectInput.extend({
    * On Upload Failure.
    */
   _onUploadFailure: function (event, data) {
-    if (data.jqXHR.responseJSON.error) {
-      alert(data.jqXHR.responseJSON.error);
-      this.progressBar.hideProgressBar();
-      this.$container.removeClass('uploading');
+    const response = data.response();
+    let {message, filename} = response?.jqXHR?.responseJSON || {};
+
+    if (!message) {
+      message = filename
+        ? Craft.t('app', 'Upload failed for “{filename}”.', {filename})
+        : Craft.t('app', 'Upload failed.');
     }
+
+    alert(message);
+    this.progressBar.hideProgressBar();
+    this.$container.removeClass('uploading');
   },
 
   /**
