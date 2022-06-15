@@ -293,6 +293,7 @@ Craft.AuthManager = Garnish.Base.extend(
             label: Craft.t('app', 'Sign in'),
             spinner: true,
           })
+          .attr('aria-disabled', 'true')
           .appendTo($buttonContainer);
         this.$loginErrorPara = $('<p class="error"/>').appendTo($body);
 
@@ -369,9 +370,11 @@ Craft.AuthManager = Garnish.Base.extend(
     validatePassword: function () {
       if (this.$passwordInput.val().length >= 6) {
         this.$loginBtn.removeClass('disabled');
+        this.$loginBtn.removeAttr('aria-disabled');
         return true;
       } else {
         this.$loginBtn.addClass('disabled');
+        this.$loginBtn.attr('aria-disabled', 'true');
         return false;
       }
     },
