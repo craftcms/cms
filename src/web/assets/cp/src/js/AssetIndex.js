@@ -728,7 +728,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
       fileuploadstart: this._onUploadStart.bind(this),
       fileuploadprogressall: this._onUploadProgress.bind(this),
       fileuploaddone: this._onUploadComplete.bind(this),
-      fileuploadfail: this._onUploadError.bind(this),
+      fileuploadfail: this._onUploadFailure.bind(this),
     };
 
     if (
@@ -1003,9 +1003,9 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
   },
 
   /**
-   * On a file being uploaded.
+   * On Upload Failure.
    */
-  _onUploadError: function (event, data) {
+  _onUploadFailure: function (event, data) {
     if (data.jqXHR.responseJSON.error) {
       alert(data.jqXHR.responseJSON.error);
       this.progressBar.hideProgressBar();

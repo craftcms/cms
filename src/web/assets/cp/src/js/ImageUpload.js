@@ -41,7 +41,7 @@ Craft.ImageUpload = Garnish.Base.extend(
       options.events.fileuploadstart = this._onUploadStart.bind(this);
       options.events.fileuploadprogressall = this._onUploadProgress.bind(this);
       options.events.fileuploaddone = this._onUploadComplete.bind(this);
-      options.events.fileuploadfail = this._onUploadError.bind(this);
+      options.events.fileuploadfail = this._onUploadFailure.bind(this);
 
       this.uploader = new Craft.Uploader(this.$container, options);
 
@@ -127,9 +127,9 @@ Craft.ImageUpload = Garnish.Base.extend(
     },
 
     /**
-     * On a file being uploaded.
+     * On Upload Failure.
      */
-    _onUploadError: function (event, data) {
+    _onUploadFailure: function (event, data) {
       if (data.jqXHR.responseJSON.error) {
         alert(data.jqXHR.responseJSON.error);
         this.progressBar.hideProgressBar();
