@@ -4692,10 +4692,29 @@ ul.tree,
             tr {
               &.disabled {
                 opacity: 1;
-                color: var(--gray-200);
 
+                th,
+                td,
                 .element {
-                  opacity: 0.25;
+                  cursor: not-allowed;
+                }
+
+                body:not(.italicize-disabled-elements) & {
+                  color: var(--gray-200);
+
+                  .element {
+                    opacity: 0.25;
+                  }
+                }
+
+                body.italicize-disabled-elements & {
+                  --selected-element-weight: var(--font-weight-bold);
+                  font-style: italic;
+                  font-weight: var(--selected-element-weight);
+
+                  .element {
+                    font-weight: var(--selected-element-weight);
+                  }
                 }
               }
 
