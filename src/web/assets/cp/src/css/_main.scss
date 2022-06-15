@@ -6336,8 +6336,9 @@ body .selectize-dropdown .active {
 /* slide picker */
 .slide-picker {
   --outline-color: var(--gray-400);
-  --active-color: var(--outline-color);
-  --hover-color: var(--light-sel-color);
+  --active-separator-color: var(--white);
+  --active-background-color: var(--outline-color);
+  --hover-background-color: var(--blue-700);
   display: flex;
   height: 15px;
   white-space: nowrap;
@@ -6353,27 +6354,33 @@ body .selectize-dropdown .active {
     margin-top: 1px;
     margin-bottom: 1px;
     box-sizing: border-box;
+
+    &:first-child {
+      @include border-left(1px solid var(--outline-color) !important);
+    }
   }
 
   .active {
-    background-color: var(--active-color);
+    background-color: var(--active-background-color);
   }
 
   &:hover {
-    a {
-      &.active {
-        background-color: transparent;
-      }
+    .active {
+      background-color: transparent;
+    }
 
-      &.active-hover {
-        background-color: var(--hover-color);
+    .active-hover {
+      background-color: var(--hover-background-color);
+
+      &:not(.last-active-hover) {
+        @include border-right(1px solid var(--active-separator-color));
       }
     }
   }
 
   &:not(:hover) {
     .active:not(.last-active) {
-      @include border-right(1px solid var(--white));
+      @include border-right(1px solid var(--active-separator-color));
     }
   }
 
