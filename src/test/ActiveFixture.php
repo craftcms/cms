@@ -34,7 +34,7 @@ class ActiveFixture extends BaseActiveFixture
     {
         $tableSchema = $this->getTableSchema();
         $this->data = [];
-        foreach ($this->getData() as $row) {
+        foreach ($this->getData() as $key => $row) {
             $modelClass = $this->modelClass;
 
             // Fixture data may pass in props that are not for the db. We thus run an extra check to ensure
@@ -63,7 +63,8 @@ class ActiveFixture extends BaseActiveFixture
                 throw new InvalidArgumentException('Unable to save fixture data');
             }
 
-            $this->ids[] = $arInstance->id;
+            $this->data[$key] = array_merge($row, $arInstance->toArray());
+            $this->ids[$key] = $arInstance->id;
         }
     }
 
