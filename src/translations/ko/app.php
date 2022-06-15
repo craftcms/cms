@@ -1873,6 +1873,7 @@ return [
     '{ctrl}C to copy.' => '복사하려면 {ctrl}C.',
     '{edition} edition' => '{edition} 버전',
     '{element} pagination' => '{element} 페이지 매김',
+    '{filename} isn’t selectable for this field.' => '{filename} isn’t selectable for this field.',
     '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}-{last, number} / {total, number} {total, plural, =1{{item}} other{{items}}}',
     '{first}-{last} of {total}' => '{first}-{last} / {total}',
     '{name} has been added, but an error occurred when installing it.' => '{name}이(가) 추가되었으나 설치 시 오류가 발생했습니다.',
