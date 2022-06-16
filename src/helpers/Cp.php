@@ -652,7 +652,7 @@ class Cp
                         ]) .
                         Html::tag('span', '', [
                             'data' => [
-                                'icon' => 'language'
+                                'icon' => 'language',
                             ],
                             'aria' => [
                                 'hidden' => 'true',
