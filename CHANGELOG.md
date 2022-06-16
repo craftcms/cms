@@ -34,6 +34,7 @@
 - Fixed a bug where the control panel wasn’t displaying file upload failure messages.
 - Fixed a bug where `action` query params were taking precedence over `actionTrigger` URI matches, when handling action requests. ([#11435](https://github.com/craftcms/cms/issues/11435))
 - Fixed a bug where image fields within Edit User pages and the Settings → General page weren’t resetting properly after an image was deleted. ([#11436](https://github.com/craftcms/cms/issues/11436))
+- Fixed a bug where element condition rules weren’t matching correctly. ([#11451](https://github.com/craftcms/cms/pull/11451))
 
 ## 4.0.4 - 2022-06-03
 
