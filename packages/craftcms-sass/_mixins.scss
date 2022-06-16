@@ -259,6 +259,11 @@ $radioSize: 16px;
   font-weight: 500;
 }
 
+@mixin light-focus-ring() {
+  --focus-ring: 0 0 0 1px hsl(var(--light-focus-hsl)),
+  0 0 0 3px hsla(var(--light-focus-hsl), 0.7);
+}
+
 // RTL stuff
 
 @mixin left($left) {

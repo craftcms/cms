@@ -249,6 +249,7 @@
                                             {{ contentNotice ? tag('div', {
                                                 id: 'content-notice',
                                                 html: contentNotice,
+                                                role: 'status',
                                             }) }}
                                             {% if tabs %}
                                                 {% include "_includes/tabs" with {
