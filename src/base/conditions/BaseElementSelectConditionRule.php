@@ -190,14 +190,14 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
         }
 
         if (is_numeric($value)) {
-            return (int)$value === $elementId;
+            return (int)$value === (int)$elementId;
         }
 
         if (is_array($value)) {
             foreach ($value as $val) {
                 if (
                     $val instanceof ElementInterface && $val->id === $elementId ||
-                    is_numeric($val) && (int)$val === $elementId
+                    is_numeric($val) && (int)$val === (int)$elementId
                 ) {
                     return true;
                 }
