@@ -667,11 +667,81 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
     },
 
     /**
+     * Gets previous tab element from currently-active.
+     */
+    _getPrevTab: function () {
+      const activeTabIndex = this._getActiveTabIndex();
+
+      if (activeTabIndex < 0) return;
+
+      let newTabIndex;
+
+      if (activeTabIndex > 0) {
+        newTabIndex = activeTabIndex - 1;
+      } else {
+        newTabIndex = this.$tabs.length - 1;
+      }
+
+      return this.$tabs.eq(newTabIndex);
+    },
+
+    /**
+     * Gets next tab element from currently-active.
+     */
+    _getNextTab: function () {
+      const activeTabIndex = this._getActiveTabIndex();
+
+      if (activeTabIndex < 0) return;
+
+      let newTabIndex;
+
+      if (activeTabIndex < this.$tabs.length - 1) {
+        newTabIndex = activeTabIndex + 1;
+      } else {
+        newTabIndex = 0;
+      }
+
+      return this.$tabs.eq(newTabIndex);
+    },
+
+    /**
+     * Gets active tab element
+     */
+    _getActiveTab: function () {
+      return this.$tabs.filter('[aria-selected="true"]');
+    },
+
+    /**
+     * Gets index of active tab among sibling tabs
+     */
+    _getActiveTabIndex: function () {
+      const $activeTab = this._getActiveTab();
+
+      if (!$activeTab.length) return;
+
+      return $activeTab.index();
+    },
+
+    /**
      * Set up listeners for the controls.
      */
     _addControlListeners: function () {
       // Tabs
       this.addListener(this.$tabs, 'click', this._handleTabClick);
+      this.addListener(this.$tabs, 'keyup', (event) => {
+        switch (event.keyCode) {
+          case Garnish.LEFT_KEY:
+          case Garnish.UP_KEY:
+            const $prevTab = this._getPrevTab();
+            this.activateTab($prevTab);
+            break;
+          case Garnish.RIGHT_KEY:
+          case Garnish.DOWN_KEY:
+            const $nextTab = this._getNextTab();
+            this.activateTab($nextTab);
+            break;
+        }
+      });
 
       // Focal point
       this.addListener($('.focal-point'), 'click', this.toggleFocalPoint);
@@ -851,11 +921,30 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
     _handleTabClick: function (ev) {
       if (!this.animationInProgress) {
         var $tab = $(ev.currentTarget);
-        var view = $tab.data('view');
-        this.$tabs.removeClass('selected');
-        $tab.addClass('selected');
-        this.showView(view);
+        this.activateTab($tab);
       }
+    },
+
+    /**
+     * Activate a tab.
+     *
+     * @param tab
+     */
+
+    activateTab: function (tab) {
+      const view = $(tab).data('view');
+      this.$tabs.removeClass('selected').attr({
+        'aria-selected': 'false',
+        tabindex: '-1',
+      });
+      $(tab)
+        .addClass('selected')
+        .attr({
+          'aria-selected': 'true',
+          tabindex: '0',
+        })
+        .trigger('focus');
+      this.showView(view);
     },
 
     /**

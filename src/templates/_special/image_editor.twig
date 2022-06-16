@@ -1,11 +1,11 @@
 <div class="tabs">
-    <ul>
-        <li data-view="rotate"><i></i>{{ 'Rotate'|t('app') }}</li>
-        <li data-view="crop"><i></i>{{ 'Crop'|t('app') }}</li>
+    <ul role="tablist">
+        <li id="rotate-tab" data-view="rotate" role="tab" tabindex="0" aria-selected="true"><i></i>{{ 'Rotate'|t('app') }}</li>
+        <li id="crop-tab" data-view="crop" role="tab" tabindex="-1" aria-selected="false"><i></i>{{ 'Crop'|t('app') }}</li>
     </ul>
 </div>
 <div class="views">
-    <div class="rotate hidden" data-view="rotate" data-rotate="true">
+    <div role="tabpanel" class="rotate hidden" data-view="rotate" data-rotate="true" aria-labelledby="rotate-tab">
         <div class="rotate-buttons btngroup">
             <button type="button" class="rotate-left btn icon leftalign">{{ 'Rotate Left'|t('app') }}</button>
             <button type="button" class="rotate-right btn icon leftalign">{{ 'Rotate Right'|t('app') }}</button>
@@ -18,7 +18,7 @@
             <button type="button" class="focal-point btn icon leftalign">{{ 'Focal Point'|t('app') }}</button>
         </div>
     </div>
-    <div class="crop hidden" data-view="crop" data-crop="true">
+    <div role="tabpanel" class="crop hidden" data-view="crop" data-crop="true" aria-labelledby="crop-tab">
         <div class="btngroup">
             <button type="button" class="focal-point btn icon leftalign">{{ 'Focal Point'|t('app') }}</button>
         </div>
