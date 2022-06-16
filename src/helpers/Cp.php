@@ -1229,7 +1229,15 @@ JS, [
     {
         $formatRepo = Craft::$app->getAddresses()->getAddressFormatRepository()->get($address->countryCode);
 
-        $requiredFields = array_flip($formatRepo->getRequiredFields());
+        $requiredFields = [];
+        $requiredRules = array_filter($address->rules(), static function($rule) {
+            return $rule[1] === 'required';
+        });
+        foreach ($requiredRules as $rule) {
+            $requiredFields = array_merge($requiredFields, is_array($rule[0]) ? $rule[0] : [$rule[0]]);
+        }
+        $requiredFields = array_flip($requiredFields);
+
         $visibleFields = array_flip(array_merge(
                 $formatRepo->getUsedFields(),
                 $formatRepo->getUsedSubdivisionFields(),
