@@ -646,16 +646,22 @@ class Cp
                         ], $config['labelAttributes'] ?? []))
                         : '') .
                     ($translatable
-                        ? Html::tag('div', '', [
+                        ? Html::beginTag('div', [
                             'class' => ['t9n-indicator'],
                             'title' => $config['translationDescription'] ?? Craft::t('app', 'This field is translatable.'),
-                            'aria' => [
-                                'label' => $config['translationDescription'] ?? Craft::t('app', 'This field is translatable.'),
-                            ],
+                        ]) .
+                        Html::tag('span', '', [
                             'data' => [
-                                'icon' => 'language',
+                                'icon' => 'language'
                             ],
-                        ])
+                            'aria' => [
+                                'hidden' => 'true',
+                            ],
+                        ]) .
+                        Html::tag('span', $config['translationDescription'] ?? Craft::t('app', 'This field is translatable.'), [
+                            'class' => 'visually-hidden',
+                        ]) .
+                        Html::endTag('div')
                         : '') .
                     ($showAttribute
                         ? Html::tag('div', '', [
