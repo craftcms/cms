@@ -34,14 +34,16 @@
             } %}
                 {{ tab.label }}
                 {% if 'error' in tab.class %}
-                    {{ tag('span', {
-                        aria: {
-                            label: 'This tab contains errors'|t('app'),
-                        },
+                    {% tag 'span' with {
                         data: {
                             icon: 'alert',
-                        }
-                    }) }}
+                        },
+                    } %}
+                        {{ tag('span', {
+                            text: 'This tab contains errors'|t('app'),
+                            class: 'visually-hidden',
+                        }) }}
+                    {% endtag %}
                 {% endif %}
             {% endtag %}
         {% endfor %}
@@ -67,14 +69,16 @@
                     } %}
                         {{ tab.label }}
                         {% if 'error' in tab.class %}
-                            {{ tag('span', {
-                                aria: {
-                                    label: 'This tab contains errors'|t('app'),
-                                },
+                            {% tag 'span' with {
                                 data: {
                                     icon: 'alert',
-                                }
-                            }) }}
+                                },
+                            } %}
+                                {{ tag('span', {
+                                    text: 'This tab contains errors'|t('app'),
+                                    class: 'visually-hidden',
+                                }) }}
+                            {% endtag %}
                         {% endif %}
                     {% endtag %}
                 </li>
