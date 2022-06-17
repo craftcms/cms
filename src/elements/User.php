@@ -128,6 +128,7 @@ class User extends Element implements IdentityInterface
 
     public const SCENARIO_REGISTRATION = 'registration';
     public const SCENARIO_PASSWORD = 'password';
+    public const SCENARIO_INACTIVE = 'inactive';
 
     /**
      * @inheritdoc
@@ -937,6 +938,7 @@ class User extends Element implements IdentityInterface
         $scenarios = parent::scenarios();
         $scenarios[self::SCENARIO_PASSWORD] = ['newPassword'];
         $scenarios[self::SCENARIO_REGISTRATION] = ['username', 'email', 'newPassword'];
+        $scenarios[self::SCENARIO_INACTIVE] = [];
 
         return $scenarios;
     }

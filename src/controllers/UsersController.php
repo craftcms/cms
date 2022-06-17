@@ -1091,6 +1091,7 @@ JS,
         $deactivateByDefault = $userSettings['deactivateByDefault'] ?? false;
         $userVariable = $this->request->getValidatedBodyParam('userVariable') ?? 'user';
         $returnCsrfToken = false;
+        $inactive = $this->request->getBodyParam('inactive') ?? false;
 
         // Get the user being edited
         // ---------------------------------------------------------------------
@@ -1170,7 +1171,7 @@ JS,
             if ($newEmail) {
                 // Should we be sending a verification email now?
                 // Even if verification isn't required, send one out on account creation if we don't have a password yet
-                $sendActivationEmail = (!$isPublicRegistration || !$deactivateByDefault) && (
+                $sendActivationEmail = (!$isPublicRegistration || !$deactivateByDefault || !$inactive) && (
                         (
                             $requireEmailVerification && (
                                 $isPublicRegistration ||
@@ -1246,7 +1247,7 @@ JS,
 
         // New users should always be initially saved in a pending state,
         // even if an admin is doing this and opted to not send the verification email
-        if ($isNewUser) {
+        if ($isNewUser && !$inactive) {
             $user->pending = true;
         }
 
@@ -1284,6 +1285,10 @@ JS,
         // Don't validate required custom fields if it's public registration
         if (!$isPublicRegistration || ($userSettings['validateOnPublicRegistration'] ?? false)) {
             $user->setScenario(Element::SCENARIO_LIVE);
+        }
+
+        if (!$user->IsCredentialed) {
+            $user->setScenario(User::SCENARIO_INACTIVE);
         }
 
         // Manually validate the user so we can pass $clearErrors=false
