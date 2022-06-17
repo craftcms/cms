@@ -1,3 +1,5 @@
+{% import "_includes/forms" as forms %}
+
 <div class="tabs">
     <ul role="tablist">
         <li id="rotate-tab" data-view="rotate" role="tab" tabindex="0" aria-selected="true"><i></i>{{ 'Rotate'|t('app') }}</li>
@@ -23,6 +25,28 @@
             <button type="button" class="focal-point btn icon leftalign">{{ 'Focal Point'|t('app') }}</button>
         </div>
 
+        {% set constraintOptions = [] %}
+        {% for label, ratio in craft.app.config.general.imageEditorRatios %}
+            {% set constraintOptions = constraintOptions|merge([{
+                value: ratio,
+                label: label|t('app')
+            }]) %}
+
+            {% if loop.last %}
+                {% set constraintOptions = constraintOptions|merge([{
+                    value: 'custom',
+                    label: 'Custom'|t
+                }]) %}
+            {% endif %}
+        {% endfor %}
+
+        {{ forms.radioGroupField({
+            label: "Constraints",
+            name: 'constraint',
+            class: 'constraint-field',
+            value: 'none',
+            options: constraintOptions,
+        }) }}
         <div class="constraint-buttons-container">
             <div class="btngroup constraint-buttons">
                 {% for label, ratio in craft.app.config.general.imageEditorRatios %}

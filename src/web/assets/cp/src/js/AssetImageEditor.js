@@ -791,6 +791,12 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         'click',
         this._handleConstraintClick
       );
+
+      this.addListener(
+        $('.constraint-field [name="constraint"]', this.$container),
+        'change',
+        this._handleConstraintChange
+      );
       this.addListener(
         $('.orientation input', this.$container),
         'click',
@@ -813,6 +819,26 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
       var $target = $(ev.currentTarget);
       $target.siblings().removeClass('active');
       $target.addClass('active');
+
+      if (constraint == 'custom') {
+        this._showCustomConstraint();
+        this._applyCustomConstraint();
+        return;
+      }
+
+      this._hideCustomConstraint();
+
+      this.setCroppingConstraint(constraint);
+      this.enforceCroppingConstraint();
+    },
+
+    /**
+     * Handle a constraint change.
+     *
+     * @param ev
+     */
+    _handleConstraintChange: function (ev) {
+      const constraint = $(ev.target).val();
 
       if (constraint == 'custom') {
         this._showCustomConstraint();
