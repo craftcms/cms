@@ -32,6 +32,8 @@
 - Fixed a bug where changes to existing Matrix blocks weren’t saving for element types that supported drafts but not change tracking. ([#11419](https://github.com/craftcms/cms/issues/11419))
 - Fixed a bug where double-clicking on a related asset’s thumbnail could open the asset’s preview modal. ([#11424](https://github.com/craftcms/cms/issues/11424))
 - Fixed a bug where the control panel wasn’t displaying file upload failure messages.
+- Fixed a bug where `action` query params were taking precedence over `actionTrigger` URI matches, when handling action requests. ([#11435](https://github.com/craftcms/cms/issues/11435))
+- Fixed a bug where image fields within Edit User pages and the Settings → General page weren’t resetting properly after an image was deleted. ([#11436](https://github.com/craftcms/cms/issues/11436))
 
 ## 4.0.4 - 2022-06-03
 

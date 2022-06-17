@@ -2276,7 +2276,7 @@ JS;
     public function beforeSave(bool $isNew): bool
     {
         // newFolderId/newFilename => newLocation.
-        if ($this->newFilename === '' || $this->newFilename === $this->filename) {
+        if ($this->newFilename === '' || $this->newFilename === $this->getFilename()) {
             $this->newFilename = null;
         }
         if (isset($this->newFolderId) || isset($this->newFilename)) {
