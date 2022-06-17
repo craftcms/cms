@@ -36,6 +36,7 @@
 - Fixed a bug where image fields within Edit User pages and the Settings → General page weren’t resetting properly after an image was deleted. ([#11436](https://github.com/craftcms/cms/issues/11436))
 - Fixed a bug where User Group condition rules set to the “is not one of” operator weren’t being applied to individual elements correctly. ([#11444](https://github.com/craftcms/cms/discussions/11444))
 - Fixed a JavaScript error that occurred on element indexes for users that didn’t have permission to edit any sites.
+- Fixed a bug where users without permission to create new entries in a section could duplicate existing entries. ([#11447](https://github.com/craftcms/cms/pull/11447))
 
 ## 4.0.4 - 2022-06-03
 
