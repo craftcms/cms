@@ -1342,7 +1342,13 @@ class Entry extends Element
      */
     public function canDuplicate(User $user): bool
     {
-        return $this->getSection()->type !== Section::TYPE_SINGLE;
+        $section = $this->getSection();
+
+        return (
+            $section->type !== Section::TYPE_SINGLE &&
+            $user->can("createEntries:$section->uid") &&
+            $user->can("saveEntries:$section->uid")
+        );
     }
 
     /**

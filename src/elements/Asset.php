@@ -361,7 +361,7 @@ class Asset extends Element
         ) {
             $temporaryUploadFolder = Craft::$app->getAssets()->getUserTemporaryUploadFolder();
             $temporaryUploadFolder->name = Craft::t('app', 'Temporary Uploads');
-            $sourceList[] = self::_assembleSourceInfoForFolder($temporaryUploadFolder, false);
+            $sourceList[] = self::_assembleSourceInfoForFolder($temporaryUploadFolder);
         }
 
         return $sourceList;
@@ -2275,10 +2275,20 @@ JS;
      */
     public function beforeSave(bool $isNew): bool
     {
-        // newFolderId/newFilename => newLocation.
-        if ($this->newFilename === '' || $this->newFilename === $this->filename) {
+        if (!isset($this->_filename)) {
+            if (isset($this->newLocation)) {
+                [, $this->filename] = Assets::parseFileLocation($this->newLocation);
+            } elseif (isset($this->newFilename)) {
+                $this->filename = $this->newFilename;
+                $this->newFilename = null;
+            }
+        }
+
+        if ($this->newFilename === '' || $this->newFilename === $this->getFilename()) {
             $this->newFilename = null;
         }
+
+        // newFolderId/newFilename => newLocation
         if (isset($this->newFolderId) || isset($this->newFilename)) {
             $folderId = $this->newFolderId ?: $this->folderId;
             $filename = $this->newFilename ?? $this->_filename;
@@ -2304,10 +2314,8 @@ JS;
             ]));
         }
 
-        // Set the kind based on filename, if not set already
-        if (!isset($this->kind) && isset($this->_filename)) {
-            $this->kind = Assets::getFileKindByExtension($this->_filename);
-        }
+        // Set the kind based on filename
+        $this->_setKind();
 
         // Give it a default title based on the file name, if it doesn't have a title yet
         if (!$this->id && !$this->title) {
@@ -2322,6 +2330,16 @@ JS;
         }
 
         return parent::beforeSave($isNew);
+    }
+
+    /**
+     * Sets the asset’s kind based on its filename.
+     */
+    private function _setKind(): void
+    {
+        if (isset($this->_filename)) {
+            $this->kind = Assets::getFileKindByExtension($this->_filename);
+        }
     }
 
     /**
@@ -2516,8 +2534,17 @@ JS;
 
         $transform = ImageTransforms::normalizeTransform($transform);
 
-        if ($this->_width < $transform->width && $this->_height < $transform->height && !Craft::$app->getConfig()->getGeneral()->upscaleImages) {
-            $transformRatio = $transform->width / $transform->height;
+        if (
+            ($transform->width === null || $this->_width < $transform->width) &&
+            ($transform->height === null || $this->_height < $transform->height) &&
+            !Craft::$app->getConfig()->getGeneral()->upscaleImages
+        ) {
+            if ($transform->width === null || $transform->height === null) {
+                $transformRatio = $this->_width / $this->_height;
+            } else {
+                $transformRatio = $transform->width / $transform->height;
+            }
+
             $imageRatio = $this->_width / $this->_height;
 
             if ($transform->mode !== 'crop' || $imageRatio === $transformRatio) {
