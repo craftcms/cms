@@ -19,6 +19,9 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
     $straighten: null,
     $croppingCanvas: null,
     $spinner: null,
+    $constraintContainer: null,
+    $constraintInputs: null,
+    $customConstraints: null,
 
     // FabricJS objects
     canvas: null,
@@ -163,12 +166,38 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
       this.$views = $('> div', this.$viewsContainer);
       this.$imageTools = $('.image-container .image-tools', this.$body);
       this.$editorContainer = $('.image-container .image', this.$body);
+      this.$constraintContainer = $('.constraint-group', this.$body);
+      this.$constraintInputs = $('[name="constraint"]', this.$constraintContainer);
       this.editorHeight = this.$editorContainer.innerHeight();
       this.editorWidth = this.$editorContainer.innerWidth();
 
       this._showSpinner();
 
       this.updateSizeAndPosition();
+
+      // Add custom constraint inputs to fieldset
+      this.$customConstraints = $('<div/>', {
+        class: 'constraint custom hidden',
+        'data-constraint': 'custom',
+      }).append($('<label/>', {
+        for: 'custom-width',
+        text: Craft.t('app', 'Width'),
+      })).append($('<input/>', {
+        id: 'custom-width',
+        type: 'text',
+        class: 'custom-constraint-w',
+        size: 3,
+        value: 1,
+      })).append($('<label/>', {
+        for: 'custom-height',
+        text: Craft.t('app', 'Height'),
+      })).append($('<input/>', {
+        id: 'custom-height',
+        type: 'text',
+        class: 'custom-constraint-h',
+        size: 3,
+        value: 1,
+      })).appendTo(this.$constraintContainer);
 
       // Load the canvas on which we'll host our image and set up the proxy render function
       this.canvas = new fabric.StaticCanvas('image-canvas');
@@ -793,7 +822,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
       );
 
       this.addListener(
-        $('.constraint-field [name="constraint"]', this.$container),
+        this.$constraintInputs,
         'change',
         this._handleConstraintChange
       );
@@ -916,10 +945,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
      */
     _hideCustomConstraint: function () {
       this.showingCustomConstraint = false;
-      $('.constraint.custom .custom-input', this.$container).addClass('hidden');
-      $('.constraint.custom .custom-label', this.$container).removeClass(
-        'hidden'
-      );
+      this.$customConstraints.addClass('hidden');
       $('.orientation', this.$container).removeClass('hidden');
     },
 
@@ -932,10 +958,9 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
       }
 
       this.showingCustomConstraint = true;
-      $('.constraint.custom .custom-input', this.$container).removeClass(
+      this.$customConstraints.removeClass(
         'hidden'
       );
-      $('.constraint.custom .custom-label', this.$container).addClass('hidden');
       $('.orientation', this.$container).addClass('hidden');
     },
 
