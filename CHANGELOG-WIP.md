@@ -54,6 +54,7 @@
 - All element sources now have “Edit” and “Delete” actions, even if the element type’s `defineActions()` method didn’t include them. ([#11383](https://github.com/craftcms/cms/discussions/11383))
 - The “Set Status” and “Edit” element actions are now only available for elements whose `canSave()` method returned `true`. 
 - Assets fields now reject uploaded files which don’t pass their “Selectable Assets Condition” setting. ([#11433](https://github.com/craftcms/cms/issues/11433))
+- It’s now possible to save new assets without setting their `filename` or `kind` attributes, as long as `newLocation` or `newFilename` is set. ([#11439](https://github.com/craftcms/cms/issues/11439))
 - The `searchindex` table is now uses the InnoDB storage engine by default for MySQL installs. ([#11374](https://github.com/craftcms/cms/discussions/11374))
 - `Garnish.DELETE_KEY` now refers to the actual <kbd>Delete</kbd> key code, and the <kbd>Backspace</kbd> key code is now referenced by `Garnish.BACKSPACE_KEY`.
 
