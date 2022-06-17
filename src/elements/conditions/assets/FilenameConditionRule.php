@@ -49,6 +49,6 @@ class FilenameConditionRule extends BaseTextConditionRule implements ElementCond
     public function matchElement(ElementInterface $element): bool
     {
         /** @var Asset $element */
-        return $this->matchValue($element->filename);
+        return $this->matchValue($element->getFilename());
     }
 }
