@@ -1039,7 +1039,7 @@ class Asset extends Element
         $crumbs = [
             [
                 'label' => Craft::t('app', 'Assets'),
-                'url' => UrlHelper::url('assets'),
+                'url' => UrlHelper::cpUrl('assets'),
             ],
             [
                 'label' => Craft::t('site', $volume->name),
