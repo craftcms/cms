@@ -588,7 +588,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
     }
 
     &:after {
-      margin: 0 var(--s);
+      @include margin(0, 8px, 0, 7px);
       @include angle(right, var(--medium-hairline-color));
     }
   }

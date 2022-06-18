@@ -193,14 +193,14 @@ $radioSize: 16px;
   opacity: var(--icon-opacity);
 }
 
-@mixin angle($dir: down, $color: currentColor) {
+@mixin angle($dir: down, $color: currentColor, $width: 2px) {
   display: block;
   content: '';
   font-size: 0;
   width: 7px;
   height: 7px;
   border: solid $color;
-  border-width: 0 2px 2px 0;
+  border-width: 0 $width $width 0;
   opacity: 0.8;
 
   @if $dir == up {

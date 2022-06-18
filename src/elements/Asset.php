@@ -490,6 +490,7 @@ class Asset extends Element
             'width' => ['label' => Craft::t('app', 'Image Width')],
             'height' => ['label' => Craft::t('app', 'Image Height')],
             'alt' => ['label' => Craft::t('app', 'Alternative Text')],
+            'location' => ['label' => Craft::t('app', 'Location')],
             'link' => ['label' => Craft::t('app', 'Link'), 'icon' => 'world'],
             'id' => ['label' => Craft::t('app', 'ID')],
             'uid' => ['label' => Craft::t('app', 'UID')],
@@ -1992,6 +1993,9 @@ JS;
             case 'height':
                 $size = $this->$attribute;
                 return ($size ? $size . 'px' : '');
+
+            case 'location':
+                return $this->locationHtml();
         }
 
         return parent::tableAttributeHtml($attribute);
@@ -2176,16 +2180,8 @@ JS;
      */
     protected function metadata(): array
     {
-        $volume = $this->getVolume();
-
         return [
-            Craft::t('app', 'Location') => function() use ($volume) {
-                $loc = [Craft::t('site', $volume->name)];
-                if ($this->folderPath) {
-                    array_push($loc, ...ArrayHelper::filterEmptyStringsFromArray(explode('/', $this->folderPath)));
-                }
-                return implode(' → ', $loc);
-            },
+            Craft::t('app', 'Location') => fn() => $this->locationHtml(),
             Craft::t('app', 'File size') => function() {
                 $size = $this->getFormattedSize(0);
                 if (!$size) {
@@ -2211,6 +2207,27 @@ JS;
                 ]);
             },
         ];
+    }
+
+    private function locationHtml(): string
+    {
+        $volume = $this->getVolume();
+        $uri = "assets/$volume->handle";
+        $items = [
+            Html::a(Craft::t('site', $volume->name), UrlHelper::cpUrl($uri)),
+        ];
+        if ($this->folderPath) {
+            $subfolders = ArrayHelper::filterEmptyStringsFromArray(explode('/', $this->folderPath));
+            foreach ($subfolders as $subfolder) {
+                $uri .= "/$subfolder";
+                $items[] = Html::a($subfolder, UrlHelper::cpUrl($uri));
+            }
+        }
+
+        return Html::ul($items, [
+            'encode' => false,
+            'class' => 'path',
+        ]);
     }
 
     /**

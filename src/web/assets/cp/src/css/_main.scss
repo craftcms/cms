@@ -1161,6 +1161,23 @@ td.right {
   @include margin-right(10px);
 }
 
+ul.path {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  flex-wrap: wrap;
+
+  li {
+    display: inline-flex;
+    align-items: center;
+
+    &:not(:last-child):after {
+      @include margin(0, 5px, 0, 2px);
+      @include angle(right, var(--light-text-color), 1px);
+    }
+  }
+}
+
 /* ----------------------------------------
 /*  Icon lists
 /* ----------------------------------------*/
