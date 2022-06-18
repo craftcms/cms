@@ -151,13 +151,13 @@ class AssetsHelperTest extends TestCase
      */
     public function testParseFileLocationException(): void
     {
-        $this->tester->expectThrowable(Exception::class, function() {
+        $this->tester->expectThrowable(InvalidArgumentException::class, function() {
             Assets::parseFileLocation('!@#$%^&*()_');
         });
-        $this->tester->expectThrowable(Exception::class, function() {
+        $this->tester->expectThrowable(InvalidArgumentException::class, function() {
             Assets::parseFileLocation('');
         });
-        $this->tester->expectThrowable(Exception::class, function() {
+        $this->tester->expectThrowable(InvalidArgumentException::class, function() {
             Assets::parseFileLocation('{folder:string}.');
         });
     }

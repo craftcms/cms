@@ -407,7 +407,7 @@ JS;
             'right' => $orientation === 'ltr' ? 'right' : 'left',
             'runQueueAutomatically' => $generalConfig->runQueueAutomatically,
             'scriptName' => basename($request->getScriptFile()),
-            'siteId' => $upToDate ? (Cp::requestedSite()->id ?? null) : null,
+            'siteId' => $upToDate ? (Cp::requestedSite()->id ?? $sitesService->getCurrentSite()->id) : null,
             'sites' => $this->_sites($sitesService),
             'siteToken' => $generalConfig->siteToken,
             'slugWordSeparator' => $generalConfig->slugWordSeparator,
