@@ -1287,7 +1287,7 @@ JS,
             $user->setScenario(Element::SCENARIO_LIVE);
         }
 
-        if (!$user->IsCredentialed) {
+        if (!$user->isCredentialed) {
             $user->setScenario(User::SCENARIO_INACTIVE);
         }
 
