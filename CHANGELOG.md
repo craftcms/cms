@@ -37,6 +37,9 @@
 - Fixed a bug where User Group condition rules set to the “is not one of” operator weren’t being applied to individual elements correctly. ([#11444](https://github.com/craftcms/cms/discussions/11444))
 - Fixed a JavaScript error that occurred on element indexes for users that didn’t have permission to edit any sites.
 - Fixed a bug where users without permission to create new entries in a section could duplicate existing entries. ([#11447](https://github.com/craftcms/cms/pull/11447))
+- Fixed a bug where element selection condition rules weren’t working if an element ID was provided. ([#11451](https://github.com/craftcms/cms/pull/11451))
+- Fixed a PHP error that occurred when executing a GraphQL query using a token that wasn’t set to a schema. ([#11453](https://github.com/craftcms/cms/issues/11453))
+- Fixed a PHP error that could occur when unserializing a `craft\validator\DateTimeValidator`, `LanguageValidator`, `StringValidator`, or `TimeValidator` object. ([#11454](https://github.com/craftcms/cms/issues/11454))
 
 ## 4.0.4 - 2022-06-03
 
