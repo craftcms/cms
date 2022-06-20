@@ -11,7 +11,8 @@ use Craft;
 use yii\base\InvalidArgumentException;
 use yii\db\ActiveRecord;
 use yii\db\TableSchema;
-use yii\test\ActiveFixture as BaseActiveFixture;
+use yii\test\ActiveFixture as YiiActiveFixture;
+use yii\test\BaseActiveFixture;
 
 /**
  * Class Fixture.
@@ -21,7 +22,7 @@ use yii\test\ActiveFixture as BaseActiveFixture;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.6.0
  */
-class ActiveFixture extends BaseActiveFixture
+class ActiveFixture extends YiiActiveFixture
 {
     /**
      * @var array
@@ -74,8 +75,12 @@ class ActiveFixture extends BaseActiveFixture
      */
     public function unload(): void
     {
-        parent::unload();
+        foreach ($this->data as $arInstance) {
+            $arInstance->delete();
+        }
+
         $this->ids = [];
+        BaseActiveFixture::unload();
     }
 
     /**
