@@ -502,7 +502,7 @@ class Assets extends BaseRelationField
     public function afterElementSave(ElementInterface $element, bool $isNew)
     {
         // Figure out what we're working with and set up some initial variables.
-        $isCanonical = $element->id && ElementHelper::isCanonical($element);
+        $isCanonical = ElementHelper::isCanonical($element);
         $query = $element->getFieldValue($this->handle);
         $assetsService = Craft::$app->getAssets();
 
