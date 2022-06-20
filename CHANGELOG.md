@@ -20,6 +20,7 @@
 - Fixed a bug where the `upscaleImages` config setting wasn’t being respected for transforms where only a single image dimension was specified. ([#11398](https://github.com/craftcms/cms/issues/11398))
 - Fixed an error that could occur when executing a GraphQL query, if a section didn’t have any entry types. ([#11273](https://github.com/craftcms/cms/issues/11273))
 - Fixed an error that could occur when changing the primary site on installs with a large number of users. ([#11459](https://github.com/craftcms/cms/issues/11459))
+- Fixed a bug where Assets fields within Vizy fields weren’t getting relocated from the user’s temp uploads folder. ([#11462](https://github.com/craftcms/cms/issues/11462))
 
 ### Security
 - Environment-aware control panel fields no longer suggest environment variables that begin with `HTTP_`.
