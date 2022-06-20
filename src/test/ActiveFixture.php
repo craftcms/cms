@@ -74,17 +74,8 @@ class ActiveFixture extends BaseActiveFixture
      */
     public function unload(): void
     {
-        /** @var ActiveRecord $modelClass */
-        $modelClass = $this->modelClass;
-        foreach ($this->ids as $id) {
-            $arInstance = $modelClass::find()
-                ->where(['id' => $id])
-                ->one();
-
-            if ($arInstance && !$arInstance->delete()) {
-                throw new InvalidArgumentException('Unable to delete AR instance');
-            }
-        }
+        parent::unload();
+        $this->ids = [];
     }
 
     /**
