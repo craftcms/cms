@@ -16,6 +16,7 @@ use yii\test\ActiveFixture as BaseActiveFixture;
 /**
  * Class Fixture.
  *
+ * @property ActiveRecord[] $data
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.6.0
@@ -63,7 +64,7 @@ class ActiveFixture extends BaseActiveFixture
                 throw new InvalidArgumentException('Unable to save fixture data');
             }
 
-            $this->data[$key] = array_merge($row, $arInstance->toArray());
+            $this->data[$key] = $arInstance;
             $this->ids[$key] = $arInstance->id;
         }
     }
