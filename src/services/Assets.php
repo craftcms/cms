@@ -176,6 +176,10 @@ class Assets extends Component
      */
     public function moveAsset(Asset $asset, VolumeFolder $folder, string $filename = ''): bool
     {
+        if ($asset->folderId == $folder->id) {
+            return true;
+        }
+
         $asset->newFolderId = $folder->id;
 
         // If the filename hasn’t changed, then we can use the `move` scenario
