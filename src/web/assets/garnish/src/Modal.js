@@ -149,9 +149,13 @@ export default Base.extend(
           );
         }
 
-        this.trigger('show');
-        this.settings.onShow();
+        this.onShow();
       }
+    },
+
+    onShow: function () {
+      this.trigger('show');
+      this.settings.onShow();
     },
 
     quickShow: function () {
@@ -198,8 +202,12 @@ export default Base.extend(
       this.visible = false;
       Garnish.Modal.visibleModal = null;
       Garnish.uiLayerManager.removeLayer();
-      this.trigger('hide');
       Garnish.resetModalBackgroundLayerVisibility();
+      this.onHide();
+    },
+
+    onHide: function () {
+      this.trigger('hide');
       this.settings.onHide();
     },
 

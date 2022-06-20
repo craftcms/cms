@@ -447,7 +447,7 @@ Craft.ElementEditor = Garnish.Base.extend(
       $enabledForSiteField.addClass('nested');
       const $globalField = Craft.ui
         .createLightswitchField({
-          label: Craft.t('app', 'Enabled'),
+          label: Craft.t('app', 'Enabled for all sites'),
           name: 'enabled',
         })
         .insertBefore($enabledForSiteField);

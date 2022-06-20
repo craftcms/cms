@@ -226,7 +226,9 @@
                         {# sidebar #}
                         {% if sidebar %}
                             <div id="sidebar-toggle-container">
-                                <button type="button" id="sidebar-toggle" class="btn menubtn"><span id="selected-sidebar-item-label"></span></button>
+                                <button type="button" id="sidebar-toggle" class="btn menubtn" aria-controls="sidebar-container" aria-expanded="false">
+                                    {{ 'Show sidebar'|t('app') }}
+                                </button>
                             </div>
                             <div id="sidebar-container">
                                 <div id="sidebar" class="sidebar">
@@ -237,6 +239,9 @@
 
                         {# content-container #}
                         <div id="content-container">
+                            {% if sidebar %}
+                                <h2 id="content-heading"></h2>
+                            {% endif %}
                             {% block main %}
                                 <div id="content" class="content-pane">
                                     {% if contentNotice or tabs %}
@@ -298,14 +303,15 @@
                         <div class="edition-trial">{{ "Trial"|t('app') }}</div>
                     {% endif %}
                 </div>
-                <ul id="app-info">
-                    <li>Craft CMS {{ craft.app.version }}</li>
+                <div id="app-info">
+                    <span>Craft CMS {{ craft.app.version }}</span>
                     {% if canUpgradeEdition %}
-                        <li>
-                            <a class="go" href="{{ url('plugin-store/upgrade-craft') }}">{{ isTrial ? 'Buy Craft Pro'|t('app') : 'Upgrade to Craft Pro'|t('app') }}</a>
-                        </li>
+                        {% set linkText = isTrial ? 'Buy Craft Pro'|t('app') : 'Upgrade to Craft Pro'|t('app') %}
+                        <span>
+                            <a class="go" href="{{ url('plugin-store/upgrade-craft') }}" aria-label="{{ linkText }}">{{ linkText }}</a>
+                        </span>
                     {% endif %}
-                </ul>
+                </div>
             </footer>
 
         </div><!-- #page-container -->

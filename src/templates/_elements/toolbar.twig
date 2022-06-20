@@ -27,7 +27,7 @@
 {% if showStatusMenu or context == 'index' %}
     <div>
         <label id="{{ idPrefix }}status-label" class="visually-hidden">{{ "Status"|t('app') }}</label>
-        <button id="{{ idPrefix }}status-button" aria-labelledby="{{ idPrefix }}status-label {{ idPrefix }}status-button" type="button" class="btn menubtn statusmenubtn"><span class="status"></span>{{ "All"|t('app') }}</button>
+        <button id="{{ idPrefix }}status-button" aria-labelledby="{{ idPrefix }}status-label" type="button" class="btn menubtn statusmenubtn"><span class="status"></span>{{ "All"|t('app') }}</button>
         <div class="menu">
             <ul class="padded">
                 <li><a data-status="" class="sel"><span class="status"></span>{{ "All"|t('app') }}</a></li>
@@ -72,11 +72,11 @@
             label: 'Clear search'|t('app'),
         },
     }) }}
-    <button class="filter-btn" title="{{ 'Filter results'|t('app') }}" aria-label="{{ 'Filter results'|t('app') }}"></button>
+    <button class="filter-btn" title="{{ 'Filter results'|t('app') }}" aria-label="{{ 'Filter results'|t('app') }}" aria-expanded="false"></button>
 </div>
 <div>
     <label id="{{ idPrefix }}sort-by-label" class="visually-hidden">{{ 'Sort by'|t('app') }}</label>
-    <button id="{{ idPrefix }}sort-by-btn" aria-labelledby="{{ idPrefix }}sort-by-label {{ idPrefix }}sort-by-btn" type="button" class="btn menubtn sortmenubtn" {% if sortOptions %} title="{{ 'Sort by {attribute}'|t('app', { attribute: sortOptionLabel(sortOptions|first) }) }}"{% endif %} data-icon="asc">{{ sortOptions ? sortOptionLabel(sortOptions|first) }}</button>
+    <button id="{{ idPrefix }}sort-by-btn" aria-labelledby="{{ idPrefix }}sort-by-label" type="button" class="btn menubtn sortmenubtn" {% if sortOptions %} title="{{ 'Sort by {attribute}'|t('app', { attribute: sortOptionLabel(sortOptions|first) }) }}"{% endif %} data-icon="asc">{{ sortOptions ? sortOptionLabel(sortOptions|first) }}</button>
     <div class="menu">
         <ul class="padded sort-attributes">
             {% for key, sortOption in sortOptions %}
