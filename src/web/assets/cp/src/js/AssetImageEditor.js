@@ -20,7 +20,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
     $croppingCanvas: null,
     $spinner: null,
     $constraintContainer: null,
-    $constraintInputs: null,
+    $constraintRadioInputs: null,
     $customConstraints: null,
 
     // FabricJS objects
@@ -167,7 +167,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
       this.$imageTools = $('.image-container .image-tools', this.$body);
       this.$editorContainer = $('.image-container .image', this.$body);
       this.$constraintContainer = $('.constraint-group', this.$body);
-      this.$constraintInputs = $('[name="constraint"]', this.$constraintContainer);
+      this.$constraintRadioInputs = $('[name="constraint"]', this.$constraintContainer);
       this.editorHeight = this.$editorContainer.innerHeight();
       this.editorWidth = this.$editorContainer.innerWidth();
 
@@ -179,25 +179,30 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
       this.$customConstraints = $('<div/>', {
         class: 'constraint custom hidden',
         'data-constraint': 'custom',
-      }).append($('<label/>', {
-        for: 'custom-width',
-        text: Craft.t('app', 'Width'),
-      })).append($('<input/>', {
-        id: 'custom-width',
+      }).append($('<input/>', {
         type: 'text',
         class: 'custom-constraint-w',
         size: 3,
         value: 1,
-      })).append($('<label/>', {
-        for: 'custom-height',
-        text: Craft.t('app', 'Height'),
+        'aria-label': Craft.t('app', 'Width unit'),
+      })).append($('<span/>', {
+        class: 'custom-constraint-spacer',
+        text: 'x',
+        'aria-hidden': 'true',
       })).append($('<input/>', {
-        id: 'custom-height',
         type: 'text',
         class: 'custom-constraint-h',
         size: 3,
         value: 1,
+        'aria-label': Craft.t('app', 'Height unit'),
       })).appendTo(this.$constraintContainer);
+
+      // Specify which get flipped on orientation change
+      this.$constraintRadioInputs.filter(function () {
+        const regex = /^\d*\.\d+$/;
+        const value = $(this).val();
+        return regex.test(value);
+      }).addClass('flip');
 
       // Load the canvas on which we'll host our image and set up the proxy render function
       this.canvas = new fabric.StaticCanvas('image-canvas');
@@ -822,7 +827,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
       );
 
       this.addListener(
-        this.$constraintInputs,
+        this.$constraintRadioInputs,
         'change',
         this._handleConstraintChange
       );
@@ -832,7 +837,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         this._handleOrientationClick
       );
       this.addListener(
-        $('.constraint-buttons .custom-input input', this.$container),
+        $('.constraint-group .custom input', this.$container),
         'keyup',
         this._applyCustomConstraint
       );
@@ -892,11 +897,14 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
       }
       this.constraintOrientation = ev.currentTarget.value;
 
-      var $constraints = $('.constraint.flip', this.$container);
+      const $constraints = $('.flip', this.$constraintContainer);
+      console.log($constraints);
 
       for (var i = 0; i < $constraints.length; i++) {
         var $constraint = $($constraints[i]);
-        $constraint.data('constraint', 1 / $constraint.data('constraint'));
+        const $label = $('label[for="' + $constraint.id + '"]', this.$constraintContainer);
+        console.log($label);
+        $constraint.val(1 / $constraint.val());
         $constraint.html($constraint.html().split(':').reverse().join(':'));
       }
 

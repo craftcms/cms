@@ -311,6 +311,14 @@ html.noscroll body {
 }
 
 .modal.imageeditor:not(.vertical) .body .views .crop {
+  .constraint.custom {
+    margin-top: var(--xs);
+  }
+
+  .custom-constraint-spacer {
+    padding: 0 var(--xs);
+  }
+
   .constraint-buttons {
     flex-direction: column;
     align-items: stretch;
