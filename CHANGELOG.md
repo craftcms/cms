@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.0.5 - 2022-06-21
 
 ### Added
 - Added `craft\helpers\Number::isIntOrFloat()`.
