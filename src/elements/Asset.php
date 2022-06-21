@@ -363,7 +363,7 @@ class Asset extends Element
         ) {
             $temporaryUploadFolder = Craft::$app->getAssets()->getUserTemporaryUploadFolder();
             $temporaryUploadFolder->name = Craft::t('app', 'Temporary Uploads');
-            $sourceList[] = self::_assembleSourceInfoForFolder($temporaryUploadFolder, false);
+            $sourceList[] = self::_assembleSourceInfoForFolder($temporaryUploadFolder);
         }
 
         return $sourceList;
@@ -2277,7 +2277,7 @@ JS;
     public function beforeSave(bool $isNew): bool
     {
         // newFolderId/newFilename => newLocation.
-        if ($this->newFilename === '' || $this->newFilename === $this->filename) {
+        if ($this->newFilename === '' || $this->newFilename === $this->getFilename()) {
             $this->newFilename = null;
         }
         if (isset($this->newFolderId) || isset($this->newFilename)) {
@@ -2517,8 +2517,17 @@ JS;
 
         $transform = ImageTransforms::normalizeTransform($transform);
 
-        if ($this->_width < $transform->width && $this->_height < $transform->height && !Craft::$app->getConfig()->getGeneral()->upscaleImages) {
-            $transformRatio = $transform->width / $transform->height;
+        if (
+            ($transform->width === null || $this->_width < $transform->width) &&
+            ($transform->height === null || $this->_height < $transform->height) &&
+            !Craft::$app->getConfig()->getGeneral()->upscaleImages
+        ) {
+            if ($transform->width === null || $transform->height === null) {
+                $transformRatio = $this->_width / $this->_height;
+            } else {
+                $transformRatio = $transform->width / $transform->height;
+            }
+
             $imageRatio = $this->_width / $this->_height;
 
             if ($transform->mode !== 'crop' || $imageRatio === $transformRatio) {

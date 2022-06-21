@@ -236,7 +236,6 @@ class AssetsController extends Controller
             // In case of error, let user know about it.
             if (!$result) {
                 $errors = $asset->getFirstErrors();
-                // TODO: use asModelFailure, output errors in js
                 return $this->asFailure(implode("\n", $errors));
             }
 

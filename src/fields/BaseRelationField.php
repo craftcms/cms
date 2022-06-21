@@ -40,6 +40,7 @@ use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
 use yii\base\Event;
 use yii\base\InvalidConfigException;
+use yii\db\Expression;
 use yii\validators\NumberValidator;
 
 /**
@@ -550,9 +551,14 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
                     ->leftJoin(["elements_sites_$ns" => DbTable::ELEMENTS_SITES], [
                         'and',
                         "[[elements_sites_$ns.elementId]] = [[elements_$ns.id]]",
-                        ["elements_sites_$ns.siteId" => $query->siteId],
+                        ["elements_sites_$ns.siteId" => $this->_targetSiteId() ?? new Expression('[[elements_sites.siteId]]')],
                     ])
                     ->where("[[relations_$ns.sourceId]] = [[elements.id]]")
+                    ->andWhere([
+                        'or',
+                        ["relations_$ns.sourceSiteId" => null],
+                        ["relations_$ns.sourceSiteId" => new Expression('[[elements_sites.siteId]]')],
+                    ])
                     ->andWhere([
                         "relations_$ns.fieldId" => $this->id,
                         "elements_$ns.enabled" => true,
@@ -1149,21 +1155,29 @@ JS;
      */
     protected function targetSiteId(?ElementInterface $element = null): int
     {
-        if (Craft::$app->getIsMultiSite()) {
-            if ($this->targetSiteId) {
-                try {
-                    return Craft::$app->getSites()->getSiteByUid($this->targetSiteId)->id;
-                } catch (SiteNotFoundException $exception) {
-                    Craft::warning($exception->getMessage(), __METHOD__);
-                }
-            }
+        $targetSiteId = $this->_targetSiteId();
+        if ($targetSiteId) {
+            return $targetSiteId;
+        }
 
-            if ($element !== null && $element::isLocalized()) {
-                return $element->siteId;
-            }
+        if ($element !== null && $element::isLocalized()) {
+            return $element->siteId;
         }
 
         return Craft::$app->getSites()->getCurrentSite()->id;
+    }
+
+    private function _targetSiteId(): ?int
+    {
+        if ($this->targetSiteId && Craft::$app->getIsMultiSite()) {
+            try {
+                return Craft::$app->getSites()->getSiteByUid($this->targetSiteId)->id;
+            } catch (SiteNotFoundException $exception) {
+                Craft::warning($exception->getMessage(), __METHOD__);
+            }
+        }
+
+        return null;
     }
 
     /**

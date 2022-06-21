@@ -91,6 +91,12 @@ class Assets extends Component
     private array $_foldersByUid = [];
 
     /**
+     * @var VolumeFolder[]
+     * @see getUserTemporaryUploadFolder
+     */
+    private $_userTempFolders = [];
+
+    /**
      * Returns a file by its ID.
      *
      * @param int $assetId
@@ -170,6 +176,10 @@ class Assets extends Component
      */
     public function moveAsset(Asset $asset, VolumeFolder $folder, string $filename = ''): bool
     {
+        if ($asset->folderId == $folder->id) {
+            return true;
+        }
+
         $asset->newFolderId = $folder->id;
 
         // If the filename hasn’t changed, then we can use the `move` scenario
@@ -898,6 +908,10 @@ class Assets extends Component
             $user = Craft::$app->getUser()->getIdentity();
         }
 
+        if (isset($this->_userTempFolders[$user->id])) {
+            return $this->_userTempFolders[$user->id];
+        }
+
         if ($user) {
             $folderName = 'user_' . $user->id;
         } elseif (Craft::$app->getRequest()->getIsConsoleRequest()) {
@@ -919,7 +933,7 @@ class Assets extends Component
 
         if ($tempVolume) {
             $path = ($tempSubpath ? "$tempSubpath/" : '') . $folderName;
-            return $this->ensureFolderByFullPathAndVolume($path, $tempVolume, false);
+            return $this->_userTempFolders[$user->id] = $this->ensureFolderByFullPathAndVolume($path, $tempVolume);
         }
 
         $volumeTopFolder = $this->findFolder([
@@ -954,7 +968,7 @@ class Assets extends Component
             throw new VolumeException('Unable to create directory for temporary volume.');
         }
 
-        return $folder;
+        return $this->_userTempFolders[$user->id] = $folder;
     }
 
     /**
