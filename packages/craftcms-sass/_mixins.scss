@@ -148,6 +148,15 @@ $radioSize: 16px;
   font-size: 0.9em !important;
 }
 
+@function calculateRem($size) {
+  $remSize: calc($size / 16px);
+  @return #{$remSize}rem;
+}
+
+@mixin fontSize($size) {
+  font-size: calculateRem($size);
+}
+
 // Other
 
 @mixin svg-mask($color) {

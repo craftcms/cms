@@ -35,34 +35,23 @@
             {% if loop.last %}
                 {% set constraintOptions = constraintOptions|merge([{
                     value: 'custom',
-                    label: 'Custom'|t
+                    label: 'Custom'|t('app')
                 }]) %}
             {% endif %}
         {% endfor %}
 
         {{ forms.radioGroupField({
-            label: "Constraints",
+            label: 'Constraints'|t('app'),
             name: 'constraint',
             class: 'constraint-group',
             value: 'none',
             options: constraintOptions,
         }) }}
-        <div class="constraint-buttons-container">
-            <div class="btngroup constraint-buttons">
-                {% for label, ratio in craft.app.config.general.imageEditorRatios %}
-                    <div class="constraint {{ ratio matches '/^[0-9]*\\.[0-9]+$/' ? 'flip' : '' }}" data-constraint="{{ ratio }}">{{ label|t('app') }}</div>
-                {% endfor %}
-                <div class="constraint custom" data-constraint="custom">
-                    <span class="custom-label">{{ 'Custom'|t}}</span>
-                    <span class="custom-input hidden"><input type="text" class="custom-constraint-w" size="3" value="1"/> x <input type="text" class="custom-constraint-h" size="3" value="1"/></span>
-                </div>
-            </div>
-        </div>
 
-        <div class="orientation">
+        <fieldset class="orientation" aria-label="{{ 'Orientation'|t('app') }}">
             <input type="radio" name="orientation" value="landscape" checked/>
             <input type="radio" name="orientation" value="portrait"/>
-        </div>
+        </fieldset>
     </div>
 </div>
 <div class="image-container">
