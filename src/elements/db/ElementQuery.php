@@ -2699,17 +2699,16 @@ class ElementQuery extends Query implements ElementQueryInterface
             }
             if (!empty($elementIdsByScore)) {
                 $caseSql = 'CASE';
-                $schema = $db->getSchema();
                 foreach ($elementIdsByScore as $score => $elementIds) {
                     $caseSql .= ' WHEN (';
                     if (count($elementIds) === 1) {
-                        $caseSql .= '[[elements.id]] = ' . $schema->quoteValue($elementIds[0]);
+                        $caseSql .= "[[elements.id]] = $elementIds[0]";
                     } else {
-                        $caseSql .= '[[elements.id]] IN (' . implode(',', array_map(fn(int $elementId) => $schema->quoteValue($elementId), $elementIds)) . ')';
+                        $caseSql .= '[[elements.id]] IN (' . implode(',', $elementIds) . ')';
                     }
-                    $caseSql .= ') THEN ' . $schema->quoteValue($score);
+                    $caseSql .= ") THEN $score";
                 }
-                $caseSql .= ' ELSE ' . $schema->quoteValue(0) . ' END';
+                $caseSql .= ' ELSE 0 END';
                 if ($orderBy['score'] === SORT_DESC) {
                     $caseSql .= ' DESC';
                 }
