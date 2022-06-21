@@ -3657,6 +3657,14 @@ ul.tree,
         text-decoration: none;
       }
 
+      &.focus-visible {
+        box-shadow: none;
+
+        .tab-label {
+          box-shadow: var(--focus-ring);
+        }
+      }
+
       &:not(.sel) {
         &:hover {
           background-color: transparentize($grey300, 0.85);

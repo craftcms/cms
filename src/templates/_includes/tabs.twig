@@ -32,17 +32,21 @@
                     selected: tab.selected ? 'true' : 'false',
                 },
             } %}
-                {{ tab.label }}
-                {% if 'error' in tab.class %}
-                    {{ tag('span', {
-                        aria: {
-                            label: 'This tab contains errors'|t('app'),
-                        },
-                        data: {
-                            icon: 'alert',
-                        }
-                    }) }}
-                {% endif %}
+                {% tag 'span' with {
+                    class: 'tab-label',
+                } %}
+                    {{ tab.label }}
+                    {% if 'error' in tab.class %}
+                        {{ tag('span', {
+                            aria: {
+                                label: 'This tab contains errors'|t('app'),
+                            },
+                            data: {
+                                icon: 'alert',
+                            }
+                        }) }}
+                    {% endif %}
+                {% endtag %}
             {% endtag %}
         {% endfor %}
     {%  endtag %}
