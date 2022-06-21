@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.7.45 - 2022-06-21
 
 ### Changed
 - Improved performance when working with temp asset folders.
