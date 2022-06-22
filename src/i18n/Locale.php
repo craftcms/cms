@@ -222,7 +222,13 @@ class Locale extends BaseObject
     /**
      * @var array The languages that use RTL orientation.
      */
-    private static array $_rtlLanguages = ['ar', 'he', 'ur', 'fa'];
+    private static array $_rtlLanguages = [
+        'ar',
+        'fa',
+        'he',
+        'ps',
+        'ur',
+    ];
 
     /**
      * @var string|null The locale ID.

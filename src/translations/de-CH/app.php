@@ -1875,6 +1875,7 @@ Glückwunsch! Craft konnte erfolgreich eine E-Mail versenden. Hier sind die von 
     '{ctrl}C to copy.' => '{ctrl}C zum Kopieren.',
     '{edition} edition' => '{edition} Version',
     '{element} pagination' => '{element} Paginierung',
+    '{filename} isn’t selectable for this field.' => '{filename} isn’t selectable for this field.',
     '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}-{last, number} von {total, number} {total, plural, =1{{item}} other{{items}}}',
     '{first}-{last} of {total}' => '{first}-{last} von {total}',
     '{name} has been added, but an error occurred when installing it.' => '{name} wurde hinzugefügt, aber während der Installation ist ein Fehler aufgetreten.',

@@ -1873,6 +1873,7 @@ return [
     '{ctrl}C to copy.' => '单击 {ctrl}C 以复制。',
     '{edition} edition' => '{edition} 版本',
     '{element} pagination' => '{element}分页',
+    '{filename} isn’t selectable for this field.' => '{filename} isn’t selectable for this field.',
     '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '第 {first, number} - {last, number} 个，共 {total, number} 个 {total, plural, =1{{item}} other{{items}}}',
     '{first}-{last} of {total}' => '第 {first} - {last} 个，共 {total} 个',
     '{name} has been added, but an error occurred when installing it.' => '{name} 已添加，但在安装时出现错误。',

@@ -1873,6 +1873,7 @@ return [
     '{ctrl}C to copy.' => '{ctrl}C to copy.',
     '{edition} edition' => '{edition} edition',
     '{element} pagination' => '{element} pagination',
+    '{filename} isn’t selectable for this field.' => '{filename} isn’t selectable for this field.',
     '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}',
     '{first}-{last} of {total}' => '{first}-{last} of {total}',
     '{name} has been added, but an error occurred when installing it.' => '{name} has been added, but an error occurred when installing it.',

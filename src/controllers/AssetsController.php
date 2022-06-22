@@ -173,6 +173,7 @@ class AssetsController extends Controller
     {
         $this->requireAcceptsJson();
 
+        $elementsService = Craft::$app->getElements();
         $uploadedFile = UploadedFile::getInstanceByName('assets-upload');
 
         if (!$uploadedFile) {
@@ -192,6 +193,7 @@ class AssetsController extends Controller
             $tempPath = $this->_getUploadedFileTempPath($uploadedFile);
 
             if (empty($folderId)) {
+                /** @var AssetsField|null $field */
                 $field = Craft::$app->getFields()->getFieldById((int)$fieldId);
 
                 if (!($field instanceof AssetsField)) {
@@ -200,11 +202,15 @@ class AssetsController extends Controller
 
                 if ($elementId = $this->request->getBodyParam('elementId')) {
                     $siteId = $this->request->getBodyParam('siteId') ?: null;
-                    $element = Craft::$app->getElements()->getElementById($elementId, null, $siteId);
+                    $element = $elementsService->getElementById($elementId, null, $siteId);
                 } else {
                     $element = null;
                 }
                 $folderId = $field->resolveDynamicPathToFolderId($element);
+
+                $selectionCondition = $field->getSelectionCondition();
+            } else {
+                $selectionCondition = null;
             }
 
             if (empty($folderId)) {
@@ -222,6 +228,17 @@ class AssetsController extends Controller
 
             $filename = Assets::prepareAssetName($uploadedFile->name);
 
+            if ($selectionCondition) {
+                $tempFolder = Craft::$app->getAssets()->getUserTemporaryUploadFolder();
+                if ($folder->id !== $tempFolder->id) {
+                    // upload to the user's temp folder initially, with a temp name
+                    $originalFolder = $folder;
+                    $originalFilename = $filename;
+                    $folder = $tempFolder;
+                    $filename = uniqid('asset', true) . '.' . pathinfo($filename, PATHINFO_EXTENSION);
+                }
+            }
+
             $asset = new Asset();
             $asset->tempFilePath = $tempPath;
             $asset->setFilename($filename);
@@ -231,13 +248,36 @@ class AssetsController extends Controller
             $asset->avoidFilenameConflicts = true;
             $asset->setScenario(Asset::SCENARIO_CREATE);
 
-            $result = Craft::$app->getElements()->saveElement($asset);
+            $result = $elementsService->saveElement($asset);
 
             // In case of error, let user know about it.
             if (!$result) {
                 $errors = $asset->getFirstErrors();
-                // TODO: use asModelFailure, output errors in js
                 return $this->asFailure(implode("\n", $errors));
+            }
+
+            if ($selectionCondition) {
+                if (!$selectionCondition->matchElement($asset)) {
+                    // delete and reject it
+                    $elementsService->deleteElement($asset, true);
+                    return $this->asFailure(Craft::t('app', '{filename} isn’t selectable for this field.', [
+                        'filename' => $uploadedFile->name,
+                    ]));
+                }
+
+                if (isset($originalFilename, $originalFolder)) {
+                    // move it into the original target destination
+                    $asset->newFilename = $originalFilename;
+                    $asset->newFolderId = $originalFolder->id;
+                    $asset->setScenario(Asset::SCENARIO_MOVE);
+
+                    if (!$elementsService->saveElement($asset)) {
+                        $errors = $asset->getFirstErrors();
+                        return $this->asJson([
+                            'error' => $this->asFailure(implode("\n", $errors)),
+                        ]);
+                    }
+                }
             }
 
             if ($asset->conflictingFilename !== null) {

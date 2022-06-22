@@ -1,6 +1,12 @@
 @charset "UTF-8";
 @import '@craftcms/sass/mixins';
 
+.cp-image {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
 .cp-current-image {
   border-radius: var(--large-border-radius);
   width: 100px;
@@ -11,11 +17,8 @@
 
 .cp-image-controls {
   display: flex;
-  margin-top: 5px;
-
-  .btn + .btn {
-    @include margin-left(5px);
-  }
+  flex-direction: column;
+  gap: 14px;
 }
 
 .cp-image-controls .progress-shade {

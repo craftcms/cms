@@ -1875,6 +1875,7 @@ Gratulujeme, Craftu se podařilo odeslat email.Byla pro to použita následujíc
     '{ctrl}C to copy.' => '{ctrl}C pro kopírování.',
     '{edition} edition' => '{edition} edice',
     '{element} pagination' => 'Číslování stránek {element}',
+    '{filename} isn’t selectable for this field.' => '{filename} isn’t selectable for this field.',
     '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}-{last, number} z {total, number} {total, plural, =1{{item}} other{{items}}}',
     '{first}-{last} of {total}' => '{first}-{last} z {total}',
     '{name} has been added, but an error occurred when installing it.' => '{name} byl přidán, ale při jeho instalaci došlo k chybě.',

@@ -1873,6 +1873,7 @@ return [
     '{ctrl}C to copy.' => 'C{ctrl} כדי להעתיק.',
     '{edition} edition' => 'מהדורה {edition}',
     '{element} pagination' => 'עימוד {element}',
+    '{filename} isn’t selectable for this field.' => '{filename} isn’t selectable for this field.',
     '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}-{last, number} מ-{total, number} {total, plural, =1{{item}} other{{items}}}',
     '{first}-{last} of {total}' => '{first}-{last} מ-{total}',
     '{name} has been added, but an error occurred when installing it.' => '{name} נוסף, אך אירעה שגיאה בעת התקנתו.',

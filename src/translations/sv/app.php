@@ -1873,6 +1873,7 @@ return [
     '{ctrl}C to copy.' => '{ctrl}C för att kopiera.',
     '{edition} edition' => 'Utgåva {edition}',
     '{element} pagination' => '{element}-paginering',
+    '{filename} isn’t selectable for this field.' => '{filename} isn’t selectable for this field.',
     '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}-{last, number} av {total, number} {total, plural, =1{{item}} other{{items}}}',
     '{first}-{last} of {total}' => '{first}-{last} av {total}',
     '{name} has been added, but an error occurred when installing it.' => '{name} har lagts till men ett fel inträffade vid installation.',

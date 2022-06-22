@@ -1873,6 +1873,7 @@ return [
     '{ctrl}C to copy.' => '{ctrl}C pour copier.',
     '{edition} edition' => 'édition {edition}',
     '{element} pagination' => 'Pagination {element}',
+    '{filename} isn’t selectable for this field.' => '{filename} isn’t selectable for this field.',
     '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}-{last, number} du {total, number} {total, plural, =1{{item}} other{{items}}}',
     '{first}-{last} of {total}' => '{first}-{last} du {total}',
     '{name} has been added, but an error occurred when installing it.' => '{name} a été ajouté, mais une erreur est survenue lors de son installation.',
