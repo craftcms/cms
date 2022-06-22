@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where not all changes to entries and categories created via the “Save and add another” action were propagating to other sites. ([#11476](https://github.com/craftcms/cms/issues/11476))
+
 ## 4.0.5 - 2022-06-21
 
 ### Added
