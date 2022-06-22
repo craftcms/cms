@@ -175,6 +175,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
       this.updateSizeAndPosition();
 
+      $customConstraintWrapper = this.$constraintRadioInputs.filter('[value="custom"]').parent();
+
       // Add custom constraint inputs to fieldset
       this.$customConstraints = $('<div/>', {
         class: 'constraint custom hidden',
@@ -195,7 +197,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         size: 3,
         value: 1,
         'aria-label': Craft.t('app', 'Height unit'),
-      })).appendTo(this.$constraintContainer);
+      })).appendTo($customConstraintWrapper);
 
       // Specify which get flipped on orientation change
       this.$constraintRadioInputs.filter(function () {

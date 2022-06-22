@@ -226,6 +226,10 @@ html.noscroll body {
 }
 
 .modal.imageeditor .body .views .crop {
+  .custom-constraint-spacer {
+    padding: 0 var(--xs);
+  }
+
   .orientation {
     display: flex;
     align-items: center;
@@ -273,10 +277,6 @@ html.noscroll body {
   .constraint.custom {
     margin-top: var(--xs);
   }
-
-  .custom-constraint-spacer {
-    padding: 0 var(--xs);
-  }
 }
 
 /* Vertical */
@@ -287,6 +287,11 @@ html.noscroll body {
   .image-container {
     flex-basis: 30vh;
     flex-shrink: 0;
+  }
+
+  .constraint-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
   }
 }
 
