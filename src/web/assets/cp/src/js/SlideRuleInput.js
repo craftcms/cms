@@ -95,7 +95,7 @@ Craft.SlideRuleInput = Garnish.Base.extend({
   },
 
   _handleKeypress: function (event) {
-    const current = parseInt(this.$container.attr('aria-valuenow'));
+    const current = parseInt(this.$container.attr('aria-valuenow'), 10);
 
     switch (event.keyCode) {
       case Garnish.UP_KEY:
@@ -185,9 +185,7 @@ Craft.SlideRuleInput = Garnish.Base.extend({
       'aria-valuetext': Craft.t(
         'app',
         '{num, number} {num, plural, =1{degree} other{degrees}}',
-        {
-          num: value,
-        }
+        { num: parseInt(value, 10) }
       ),
     });
     this.value = value;
