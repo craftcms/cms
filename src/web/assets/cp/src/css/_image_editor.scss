@@ -230,6 +230,15 @@ html.noscroll body {
     padding: 0 var(--xs);
   }
 
+  .constraint-group {
+    display: grid;
+    grid-gap: var(--xs);
+  }
+
+  .custom {
+    @include padding-left($radioSize + 5);
+  }
+
   .orientation {
     display: flex;
     align-items: center;
@@ -290,7 +299,6 @@ html.noscroll body {
   }
 
   .constraint-group {
-    display: grid;
     grid-template-columns: 1fr 1fr;
   }
 }
