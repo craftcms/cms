@@ -23,7 +23,7 @@
 - Added `craft\helpers\DateTimeHelper::resume()`. ([#11130](https://github.com/craftcms/cms/pull/11130))
 
 ### Changed
-- Improved overall control panel accessibility. ([#11297](https://github.com/craftcms/cms/pull/11297), [#11296](https://github.com/craftcms/cms/pull/11296), [#11414](https://github.com/craftcms/cms/pull/11414))
+- Improved overall control panel accessibility. ([#11297](https://github.com/craftcms/cms/pull/11297), [#11296](https://github.com/craftcms/cms/pull/11296), [#11414](https://github.com/craftcms/cms/pull/11414), [#11452](https://github.com/craftcms/cms/pull/11452))
 - Improved pagination UI accessibility. ([#11126](https://github.com/craftcms/cms/pull/11126))
 - Improved element index accessibility. ([#11169](https://github.com/craftcms/cms/pull/11169), [#11200](https://github.com/craftcms/cms/pull/11200), [#11251](https://github.com/craftcms/cms/pull/11251))
 - Improved Dashboard accessibility. ([#11217](https://github.com/craftcms/cms/pull/11217), [#11297](https://github.com/craftcms/cms/pull/11297))

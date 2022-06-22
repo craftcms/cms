@@ -102,9 +102,8 @@ $sidebarLinkSecondaryColor: var(--gray-200);
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
   @include light-on-dark-text;
+  @include light-focus-ring;
   background-color: var(--gray-800);
-  --focus-ring: 0 0 0 1px hsl(var(--light-focus-hsl)),
-    0 0 0 3px hsla(var(--light-focus-hsl), 0.7);
 
   a {
     color: $sidebarLinkStaticColor;
