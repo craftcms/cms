@@ -167,7 +167,10 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
       this.$imageTools = $('.image-container .image-tools', this.$body);
       this.$editorContainer = $('.image-container .image', this.$body);
       this.$constraintContainer = $('.constraint-group', this.$body);
-      this.$constraintRadioInputs = $('[name="constraint"]', this.$constraintContainer);
+      this.$constraintRadioInputs = $(
+        '[name="constraint"]',
+        this.$constraintContainer
+      );
       this.editorHeight = this.$editorContainer.innerHeight();
       this.editorWidth = this.$editorContainer.innerWidth();
 
@@ -175,36 +178,50 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
       this.updateSizeAndPosition();
 
-      $customConstraintWrapper = this.$constraintRadioInputs.filter('[value="custom"]').parent();
+      $customConstraintWrapper = this.$constraintRadioInputs
+        .filter('[value="custom"]')
+        .parent();
 
       // Add custom constraint inputs to fieldset
       this.$customConstraints = $('<div/>', {
         class: 'constraint custom hidden',
         'data-constraint': 'custom',
-      }).append($('<input/>', {
-        type: 'text',
-        class: 'custom-constraint-w',
-        size: 3,
-        value: 1,
-        'aria-label': Craft.t('app', 'Width unit'),
-      })).append($('<span/>', {
-        class: 'custom-constraint-spacer',
-        text: 'x',
-        'aria-hidden': 'true',
-      })).append($('<input/>', {
-        type: 'text',
-        class: 'custom-constraint-h',
-        size: 3,
-        value: 1,
-        'aria-label': Craft.t('app', 'Height unit'),
-      })).appendTo($customConstraintWrapper);
+      })
+        .append(
+          $('<input/>', {
+            type: 'text',
+            class: 'custom-constraint-w',
+            size: 3,
+            value: 1,
+            'aria-label': Craft.t('app', 'Width unit'),
+          })
+        )
+        .append(
+          $('<span/>', {
+            class: 'custom-constraint-spacer',
+            text: 'x',
+            'aria-hidden': 'true',
+          })
+        )
+        .append(
+          $('<input/>', {
+            type: 'text',
+            class: 'custom-constraint-h',
+            size: 3,
+            value: 1,
+            'aria-label': Craft.t('app', 'Height unit'),
+          })
+        )
+        .appendTo($customConstraintWrapper);
 
       // Specify which get flipped on orientation change
-      this.$constraintRadioInputs.filter(function () {
-        const regex = /^\d*\.\d+$/;
-        const value = $(this).val();
-        return regex.test(value);
-      }).addClass('flip');
+      this.$constraintRadioInputs
+        .filter(function () {
+          const regex = /^\d*\.\d+$/;
+          const value = $(this).val();
+          return regex.test(value);
+        })
+        .addClass('flip');
 
       // Load the canvas on which we'll host our image and set up the proxy render function
       this.canvas = new fabric.StaticCanvas('image-canvas');
@@ -906,7 +923,9 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         const labelSelector = 'label[for="' + $constraint.attr('id') + '"]';
         const $label = $(labelSelector, this.$constraintContainer);
         $constraint.val(1 / $constraint.val());
-        $label.html($label.text().split(':').reverse().join(':').replace(/\s/g,''));
+        $label.html(
+          $label.text().split(':').reverse().join(':').replace(/\s/g, '')
+        );
       }
 
       $constraints.filter(':checked').trigger('change');
@@ -967,9 +986,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
       }
 
       this.showingCustomConstraint = true;
-      this.$customConstraints.removeClass(
-        'hidden'
-      );
+      this.$customConstraints.removeClass('hidden');
       $('.orientation', this.$container).addClass('hidden');
     },
 

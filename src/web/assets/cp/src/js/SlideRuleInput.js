@@ -32,9 +32,13 @@ Craft.SlideRuleInput = Garnish.Base.extend({
       'aria-valuemin': this.slideMin,
       'aria-valuemax': this.slideMax,
       'aria-valuenow': '0',
-      'aria-valuetext': Craft.t('app', '{num, number} {num, plural, =1{degree} other{degrees}}', {
-        num: 0,
-      }),
+      'aria-valuetext': Craft.t(
+        'app',
+        '{num, number} {num, plural, =1{degree} other{degrees}}',
+        {
+          num: 0,
+        }
+      ),
     });
 
     for (var i = this.graduationsMin; i <= this.graduationsMax; i++) {
@@ -65,7 +69,11 @@ Craft.SlideRuleInput = Garnish.Base.extend({
     );
     this.addListener(Garnish.$bod, 'tapmove', this._handleTapMove.bind(this));
     this.addListener(Garnish.$bod, 'tapend', this._handleTapEnd.bind(this));
-    this.addListener(this.$container, 'keydown', this._handleKeypress.bind(this));
+    this.addListener(
+      this.$container,
+      'keydown',
+      this._handleKeypress.bind(this)
+    );
 
     // Set to zero
 
@@ -89,7 +97,7 @@ Craft.SlideRuleInput = Garnish.Base.extend({
   _handleKeypress: function (event) {
     const current = parseInt(this.$container.attr('aria-valuenow'));
 
-    switch(event.keyCode) {
+    switch (event.keyCode) {
       case Garnish.UP_KEY:
       case Garnish.RIGHT_KEY:
         this.setValue(current + 1);
@@ -174,9 +182,13 @@ Craft.SlideRuleInput = Garnish.Base.extend({
 
     this.$container.attr({
       'aria-valuenow': value,
-      'aria-valuetext': Craft.t('app', '{num, number} {num, plural, =1{degree} other{degrees}}', {
-        num: value,
-      }),
+      'aria-valuetext': Craft.t(
+        'app',
+        '{num, number} {num, plural, =1{degree} other{degrees}}',
+        {
+          num: value,
+        }
+      ),
     });
     this.value = value;
   },
