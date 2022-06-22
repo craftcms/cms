@@ -1052,6 +1052,15 @@ Craft.ElementEditor = Garnish.Base.extend(
             clearTimeout(this.timeout);
             this.timeout = null;
 
+            // If we haven't had a chance to fetch the initial data yet, try again in a bit
+            if (
+              typeof this.$container.data('initialSerializedValue') ===
+              'undefined'
+            ) {
+              this.timeout = setTimeout(this.checkForm.bind(this), 500);
+              return;
+            }
+
             // Has anything changed?
             const data = this.serializeForm(true);
             if (
