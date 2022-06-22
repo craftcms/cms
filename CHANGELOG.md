@@ -4,6 +4,7 @@
 
 ### Fixed
 - Fixed a bug where it wasn’t possible to rename assets.
+- Fixed a bug where a provisional draft could be created for an entry if its form was interacted with before the page had fully initialized. ([#11466](https://github.com/craftcms/cms/issues/11466))
 
 ## 3.7.45 - 2022-06-21
 
