@@ -96,6 +96,7 @@ html.noscroll body {
   padding: 14px;
   text-align: center;
   border-bottom: 1px solid var(--gray-1000);
+  cursor: pointer;
 
   &::before {
     position: absolute;
