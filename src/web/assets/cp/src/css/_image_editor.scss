@@ -370,6 +370,26 @@ html.noscroll body {
 .slide-rule {
   position: relative;
   padding: 10px 0;
+
+  .cursor {
+    &::after {
+      content: '';
+      width: 20px;
+      height: 50px;
+      position: absolute;
+      top: -15px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+  }
+
+  &:focus {
+    .cursor {
+      &::after {
+        box-shadow: var(--focus-ring);
+      }
+    }
+  }
 }
 
 .slide-rule .cursor {
