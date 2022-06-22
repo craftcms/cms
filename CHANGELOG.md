@@ -1,9 +1,12 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.0.5.1 - 2022-06-22
 
 ### Fixed
 - Fixed a bug where not all changes to entries and categories created via the “Save and add another” action were propagating to other sites. ([#11476](https://github.com/craftcms/cms/issues/11476))
+- Fixed a bug where it wasn’t possible to rename assets.
+- Fixed a bug where a provisional draft could be created for an entry if its form was interacted with before the page had fully initialized. ([#11466](https://github.com/craftcms/cms/issues/11466))
+- Fixed exact phrase searching on PostgreSQL. ([#11486](https://github.com/craftcms/cms/issues/11486))
 
 ## 4.0.5 - 2022-06-21
 
