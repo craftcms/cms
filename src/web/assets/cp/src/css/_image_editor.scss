@@ -226,6 +226,10 @@ html.noscroll body {
 }
 
 .modal.imageeditor .body .views .crop {
+  fieldset .heading {
+    display: none;
+  }
+
   .custom-constraint-spacer {
     padding: 0 var(--xs);
   }
