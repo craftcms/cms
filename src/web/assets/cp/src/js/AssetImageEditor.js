@@ -898,17 +898,16 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
       this.constraintOrientation = ev.currentTarget.value;
 
       const $constraints = $('.flip', this.$constraintContainer);
-      console.log($constraints);
 
       for (var i = 0; i < $constraints.length; i++) {
         var $constraint = $($constraints[i]);
-        const $label = $('label[for="' + $constraint.id + '"]', this.$constraintContainer);
-        console.log($label);
+        const labelSelector = 'label[for="' + $constraint.attr('id') + '"]';
+        const $label = $(labelSelector, this.$constraintContainer);
         $constraint.val(1 / $constraint.val());
-        $constraint.html($constraint.html().split(':').reverse().join(':'));
+        $label.html($label.text().split(':').reverse().join(':').replace(/\s/g,''));
       }
 
-      $constraints.filter('.active').click();
+      $constraints.filter(':checked').trigger('change');
     },
 
     /**

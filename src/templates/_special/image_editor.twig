@@ -29,7 +29,8 @@
         {% for label, ratio in craft.app.config.general.imageEditorRatios %}
             {% set constraintOptions = constraintOptions|merge([{
                 value: ratio,
-                label: label|t('app')
+                label: label|t('app'),
+                'data-value': 'test',
             }]) %}
 
             {% if loop.last %}
