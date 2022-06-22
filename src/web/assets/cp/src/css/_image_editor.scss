@@ -267,48 +267,6 @@ html.noscroll body {
   & > .btngroup:first-child {
     justify-content: center;
   }
-
-  .constraint-buttons-container {
-    display: flex;
-    justify-content: center;
-
-    .constraint-buttons {
-      overflow: auto;
-      margin-left: -24px;
-      margin-right: -24px;
-      margin-bottom: 12px;
-      padding-left: 24px;
-      padding-right: 24px;
-      padding-bottom: 12px;
-
-      .constraint {
-        padding: 4px 12px;
-
-        &:hover {
-          cursor: pointer;
-        }
-
-        &.active {
-          color: #fff;
-          background: var(--dark-sel-color);
-          border-radius: 1rem;
-        }
-      }
-
-      .constraint:last-child {
-        position: relative;
-
-        &:after {
-          content: '';
-          display: block;
-          position: absolute;
-          right: -24px;
-          width: 24px;
-          height: 1px;
-        }
-      }
-    }
-  }
 }
 
 .modal.imageeditor:not(.vertical) .body .views .crop {
@@ -319,30 +277,17 @@ html.noscroll body {
   .custom-constraint-spacer {
     padding: 0 var(--xs);
   }
-
-  .constraint-buttons {
-    flex-direction: column;
-    align-items: stretch;
-    text-align: center;
-
-    .constraint {
-      text-align: left;
-      padding: 4px 0 4px 24px;
-      cursor: pointer;
-
-      &.active {
-        background-position: left center;
-        background-repeat: no-repeat;
-        background-image: url(../images/image-editor/check.svg);
-      }
-    }
-  }
 }
 
 /* Vertical */
 
 .vertical.imageeditor .body {
   flex-direction: column;
+
+  .image-container {
+    flex-basis: 30vh;
+    flex-shrink: 0;
+  }
 }
 
 .vertical.imageeditor .body .tabs ul {
