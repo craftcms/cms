@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where it wasn’t possible to rename assets.
+
 ## 3.7.45 - 2022-06-21
 
 ### Changed
