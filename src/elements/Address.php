@@ -493,9 +493,36 @@ class Address extends Element implements AddressInterface, BlockElementInterface
             }
 
             // Add them as individual rows making it easier to extend/manipulate the rules.
-            $rules[] = [[$attr], 'required', 'on' => [self::SCENARIO_LIVE], 'when' => function(Address $model, string $attribute) {
-                return in_array($attribute, $this->_getFormatterRequiredAttributes(), true);
-            }];
+            $rules[] = [
+                $attr,
+                'required',
+                'on' => self::SCENARIO_LIVE,
+                'when' => function(Address $model, string $attribute) {
+                    $formatter = Craft::$app->getAddresses()->getAddressFormatRepository()->get($this->countryCode);
+                    return in_array($attribute, $formatter->getRequiredFields());
+                },
+            ];
+        }
+
+        $requirableNativeFields = [
+            OrganizationField::class,
+            OrganizationTaxIdField::class,
+            FullNameField::class,
+            LatLongField::class,
+        ];
+
+        $fieldLayout = $this->getFieldLayout();
+
+        foreach ($requirableNativeFields as $class) {
+            /** @var BaseNativeField|null $field */
+            $field = $fieldLayout->getFirstVisibleElementByType($class, $this);
+            if ($field && $field->required) {
+                $attribute = $field->attribute();
+                if ($attribute === 'latLong') {
+                    $attribute = ['latitude', 'longitude'];
+                }
+                $rules[] = [$attribute, 'required', 'on' => self::SCENARIO_LIVE];
+            }
         }
 
         $rules[] = [['longitude', 'latitude'], 'safe'];
@@ -569,40 +596,5 @@ class Address extends Element implements AddressInterface, BlockElementInterface
     public function getFieldLayout(): ?FieldLayout
     {
         return Craft::$app->getAddresses()->getLayout();
-    }
-
-    /**
-     * @return array
-     * @since 4.1.0
-     */
-    private function _getFormatterRequiredAttributes(): array
-    {
-        $formatter = Craft::$app->getAddresses()->getAddressFormatRepository()->get($this->countryCode);
-        $requiredAttributes = array_filter(
-            $formatter->getRequiredFields(),
-            static fn(string $attribute) => !in_array($attribute, ['givenName', 'familyName', 'additionalName']),
-        );
-
-        $requirableNativeFields = [
-            OrganizationField::class,
-            OrganizationTaxIdField::class,
-            FullNameField::class,
-            LatLongField::class,
-        ];
-
-        $fieldLayout = $this->getFieldLayout();
-
-        foreach ($requirableNativeFields as $class) {
-            /** @var BaseNativeField|null $field */
-            $field = $fieldLayout->getFirstVisibleElementByType($class, $this);
-            if ($field && $field->required) {
-                array_push($requiredAttributes, ...match ($field->attribute()) {
-                    'latLong' => ['latitude', 'longitude'],
-                    default => [$field->attribute()],
-                });
-            }
-        }
-
-        return array_filter($requiredAttributes);
     }
 }
