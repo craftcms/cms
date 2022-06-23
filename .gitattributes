@@ -40,6 +40,7 @@
 /src/web/assets/**/dist/**/*.css.map linguist-generated=true
 /src/web/assets/**/dist/**/*.min.js linguist-generated=true
 /src/web/assets/**/dist/**/*.min.js.map linguist-generated=true
+/src/web/assets/**/src/ export-ignore
 /tests/ export-ignore
 
 # Auto detect text files and perform LF normalization
