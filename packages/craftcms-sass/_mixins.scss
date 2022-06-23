@@ -148,16 +148,23 @@ $radioSize: 16px;
   font-size: 0.9em !important;
 }
 
-@function calculateRem($size) {
-  $remSize: calc($size / 16px);
-  @return #{$remSize}rem;
+@function toRem($size) {
+  $remValue: calc($size / 16) + rem;
+  @return $remValue;
 }
 
 @mixin fontSize($size) {
-  font-size: calculateRem($size);
+  font-size: toRem($size);
 }
 
 // Other
+
+@mixin focus-styles {
+  body:not(.reduce-focus-visibility) &:focus,
+  body.reduce-focus-visibility &.focus-visible {
+    @content;
+  }
+}
 
 @mixin svg-mask($color) {
   rect,

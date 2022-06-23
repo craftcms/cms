@@ -781,15 +781,17 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
     _addControlListeners: function () {
       // Tabs
       this.addListener(this.$tabs, 'click', this._handleTabClick);
-      this.addListener(this.$tabs, 'keyup', (event) => {
+      this.addListener(this.$tabs, 'keydown', (event) => {
         switch (event.keyCode) {
           case Garnish.LEFT_KEY:
           case Garnish.UP_KEY:
+            event.preventDefault();
             const $prevTab = this._getPrevTab();
             this.activateTab($prevTab);
             break;
           case Garnish.RIGHT_KEY:
           case Garnish.DOWN_KEY:
+            event.preventDefault();
             const $nextTab = this._getNextTab();
             this.activateTab($nextTab);
             break;

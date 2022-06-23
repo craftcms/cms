@@ -211,6 +211,7 @@ html.noscroll body {
 
 .modal.imageeditor .body .image-container .image-tools .straightening {
   max-width: 400px;
+  min-height: toRem(60);
   display: block;
   margin: 0 auto;
   overflow: hidden;
@@ -371,38 +372,40 @@ html.noscroll body {
   position: relative;
   padding: 10px 0;
 
+  &:focus {
+    box-shadow: none;
+  }
+
+  @include focus-styles {
+    .cursor::after {
+      box-shadow: var(--focus-ring);
+    }
+  }
+
   .cursor {
     &::after {
       content: '';
-      width: 20px;
-      height: 50px;
+      width: toRem(20);
+      height: toRem(50);
       position: absolute;
       top: -15px;
       left: 50%;
       transform: translateX(-50%);
     }
   }
-
-  &:focus {
-    .cursor {
-      &::after {
-        box-shadow: var(--focus-ring);
-      }
-    }
-  }
 }
 
 .slide-rule .cursor {
   position: absolute;
-  margin-left: -4px;
+  margin-left: toRem(-4);
   margin-top: 4px;
   left: 50%;
   z-index: 1;
   width: 0;
   height: 0;
-  border-left: 5px solid transparent;
-  border-right: 5px solid transparent;
-  border-top: 5px solid #63a6e1;
+  border-left: toRem(5) solid transparent;
+  border-right: toRem(5) solid transparent;
+  border-top: toRem(5) solid #63a6e1;
 }
 
 .slide-rule .graduations {

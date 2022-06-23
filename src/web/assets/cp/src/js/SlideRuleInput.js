@@ -185,7 +185,7 @@ Craft.SlideRuleInput = Garnish.Base.extend({
       'aria-valuetext': Craft.t(
         'app',
         '{num, number} {num, plural, =1{degree} other{degrees}}',
-        { num: parseInt(value, 10) }
+        {num: parseInt(value, 10)}
       ),
     });
     this.value = value;
