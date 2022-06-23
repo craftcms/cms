@@ -15,6 +15,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
     $cancelBtn: null,
     $replaceBtn: null,
     $saveBtn: null,
+    $focalPointBtn: null,
     $editorContainer: null,
     $straighten: null,
     $croppingCanvas: null,
@@ -171,6 +172,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
         '[name="constraint"]',
         this.$constraintContainer
       );
+      this.$focalPointBtn = $('.focal-point', this.$body);
       this.editorHeight = this.$editorContainer.innerHeight();
       this.editorWidth = this.$editorContainer.innerWidth();
 
@@ -583,9 +585,11 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
     toggleFocalPoint: function () {
       if (!this.focalPoint) {
         this._createFocalPoint();
+        this.$focalPointBtn.attr('aria-pressed', 'true');
       } else {
         this.canvas.remove(this.focalPoint);
         this.focalPoint = null;
+        this.$focalPointBtn.attr('aria-pressed', 'false');
       }
 
       this.renderImage();
@@ -799,7 +803,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
       });
 
       // Focal point
-      this.addListener($('.focal-point'), 'click', this.toggleFocalPoint);
+      this.addListener(this.$focalPointBtn, 'click', this.toggleFocalPoint);
 
       // Rotate controls
       this.addListener($('.rotate-left'), 'click', function () {
