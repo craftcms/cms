@@ -71,8 +71,8 @@ Craft.ImageUpload = Garnish.Base.extend(
 
             Craft.sendActionRequest('POST', this.settings.deleteAction, {
               data: this.settings.postParameters,
-            }).then((response) => {
-              this.refreshImage(response);
+            }).then(({data}) => {
+              this.refreshImage(data);
             });
           }
         });

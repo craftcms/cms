@@ -1,6 +1,14 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.0.5.1 - 2022-06-22
+
+### Fixed
+- Fixed a bug where not all changes to entries and categories created via the “Save and add another” action were propagating to other sites. ([#11476](https://github.com/craftcms/cms/issues/11476))
+- Fixed a bug where it wasn’t possible to rename assets.
+- Fixed a bug where a provisional draft could be created for an entry if its form was interacted with before the page had fully initialized. ([#11466](https://github.com/craftcms/cms/issues/11466))
+- Fixed exact phrase searching on PostgreSQL. ([#11486](https://github.com/craftcms/cms/issues/11486))
+
+## 4.0.5 - 2022-06-21
 
 ### Added
 - Added `craft\helpers\Number::isIntOrFloat()`.
@@ -32,6 +40,14 @@
 - Fixed a bug where changes to existing Matrix blocks weren’t saving for element types that supported drafts but not change tracking. ([#11419](https://github.com/craftcms/cms/issues/11419))
 - Fixed a bug where double-clicking on a related asset’s thumbnail could open the asset’s preview modal. ([#11424](https://github.com/craftcms/cms/issues/11424))
 - Fixed a bug where the control panel wasn’t displaying file upload failure messages.
+- Fixed a bug where `action` query params were taking precedence over `actionTrigger` URI matches, when handling action requests. ([#11435](https://github.com/craftcms/cms/issues/11435))
+- Fixed a bug where image fields within Edit User pages and the Settings → General page weren’t resetting properly after an image was deleted. ([#11436](https://github.com/craftcms/cms/issues/11436))
+- Fixed a bug where User Group condition rules set to the “is not one of” operator weren’t being applied to individual elements correctly. ([#11444](https://github.com/craftcms/cms/discussions/11444))
+- Fixed a JavaScript error that occurred on element indexes for users that didn’t have permission to edit any sites.
+- Fixed a bug where users without permission to create new entries in a section could duplicate existing entries. ([#11447](https://github.com/craftcms/cms/pull/11447))
+- Fixed a bug where element selection condition rules weren’t working if an element ID was provided. ([#11451](https://github.com/craftcms/cms/pull/11451))
+- Fixed a PHP error that occurred when executing a GraphQL query using a token that wasn’t set to a schema. ([#11453](https://github.com/craftcms/cms/issues/11453))
+- Fixed a PHP error that could occur when unserializing a `craft\validator\DateTimeValidator`, `LanguageValidator`, `StringValidator`, or `TimeValidator` object. ([#11454](https://github.com/craftcms/cms/issues/11454))
 
 ## 4.0.4 - 2022-06-03
 

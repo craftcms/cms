@@ -1299,32 +1299,54 @@ class Sites extends Component
             }
 
             if (!empty($nonLocalizedElementTypes)) {
-                $elementIds = (new Query())
-                    ->select(['id'])
-                    ->from([Table::ELEMENTS])
-                    ->where(['type' => $nonLocalizedElementTypes])
-                    ->column();
+                // To be sure we don't hit any unique constraint database errors, first make sure there are no rows for
+                // these elements that don't currently use the old primary site ID
+                $qb = $db->getQueryBuilder();
+                $isMysql = $db->getIsMysql();
+                $elementsTable = Table::ELEMENTS;
 
-                if (!empty($elementIds)) {
-                    // To be sure we don't hit any unique constraint database errors, first make sure there are no rows for
-                    // these elements that don't currently use the old primary site ID
-                    $deleteCondition = [
+                foreach ([Table::ELEMENTS_SITES, Table::CONTENT, Table::SEARCHINDEX] as $table) {
+                    $deleteParams = [];
+                    $deleteCondition = $qb->buildCondition([
                         'and',
-                        ['elementId' => $elementIds],
-                        ['not', ['siteId' => $oldPrimarySiteId]],
-                    ];
+                        ['e.type' => $nonLocalizedElementTypes],
+                        ['not', ['t.siteId' => $oldPrimarySiteId]],
+                    ], $deleteParams);
 
-                    Db::delete(Table::ELEMENTS_SITES, $deleteCondition);
-                    Db::delete(Table::CONTENT, $deleteCondition);
-                    Db::delete(Table::SEARCHINDEX, $deleteCondition);
+                    $updateParams = [':siteId' => $newPrimarySiteId];
+                    $updateCondition = $qb->buildCondition(['e.type' => $nonLocalizedElementTypes], $updateParams);
 
-                    // Now swap the sites
-                    $updateColumns = ['siteId' => $newPrimarySiteId];
-                    $updateCondition = ['elementId' => $elementIds];
+                    if ($isMysql) {
+                        $deleteSql = <<<SQL
+DELETE `t`
+FROM $table `t`
+INNER JOIN $elementsTable `e` ON `e`.`id` = `t`.`elementId`
+WHERE $deleteCondition
+SQL;
+                        $updateSql = <<<SQL
+UPDATE $table `t`
+INNER JOIN $elementsTable `e` ON `e`.`id` = `t`.`elementId`
+SET `siteId` = :siteId
+WHERE $updateCondition
+SQL;
+                    } else {
+                        $deleteSql = <<<SQL
+DELETE FROM $table "t"
+USING $elementsTable "e"
+WHERE "e"."id" = "t"."elementId"
+AND $deleteCondition;
+SQL;
+                        $updateSql = <<<SQL
+UPDATE $table AS "t"
+SET "siteId" = :siteId
+FROM $elementsTable "e"
+WHERE "e"."id" = "t"."elementId"
+AND $updateCondition;
+SQL;
+                    }
 
-                    Db::update(Table::ELEMENTS_SITES, $updateColumns, $updateCondition, [], false);
-                    Db::update(Table::CONTENT, $updateColumns, $updateCondition, [], false);
-                    Db::update(Table::SEARCHINDEX, $updateColumns, $updateCondition, [], false);
+                    $db->createCommand($deleteSql, $deleteParams)->execute();
+                    $db->createCommand($updateSql, $updateParams)->execute();
                 }
             }
 

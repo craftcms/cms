@@ -1875,6 +1875,7 @@ Gratulacje! Craft z powodzeniem może wysyłać e-maile. Zostały użyte poniżs
     '{ctrl}C to copy.' => '{ctrl}C, aby skopiować.',
     '{edition} edition' => 'Wersja {edition}',
     '{element} pagination' => '{element} — paginacja',
+    '{filename} isn’t selectable for this field.' => '{filename} isn’t selectable for this field.',
     '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}–{last, number} z {total, number} {total, plural, =1{{item}} other{{items}}}',
     '{first}-{last} of {total}' => '{first}–{last} z {total}',
     '{name} has been added, but an error occurred when installing it.' => 'Dodano {name}, ale przy instalowaniu wystąpił błąd.',

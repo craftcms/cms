@@ -1161,6 +1161,23 @@ td.right {
   @include margin-right(10px);
 }
 
+ul.path {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  flex-wrap: wrap;
+
+  li {
+    display: inline-flex;
+    align-items: center;
+
+    &:not(:last-child):after {
+      @include margin(0, 5px, 0, 2px);
+      @include angle(right, var(--light-text-color), 1px);
+    }
+  }
+}
+
 /* ----------------------------------------
 /*  Icon lists
 /* ----------------------------------------*/
@@ -1991,7 +2008,7 @@ div.btn.submit input {
   overflow: hidden;
   cursor: pointer;
   user-select: none;
-  background-image: linear-gradient(to right, var(--gray-300), var(--gray-300));
+  background-image: linear-gradient(to right, var(--gray-400), var(--gray-400));
   transition: background-image linear 100ms;
 
   &.on {
@@ -2065,7 +2082,7 @@ div.btn.submit input {
   &:focus {
     .lightswitch-container {
       .handle {
-        background-color: var(--light-sel-color);
+        background-color: var(--gray-100);
       }
     }
   }

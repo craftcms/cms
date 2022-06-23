@@ -1873,6 +1873,7 @@ return [
     '{ctrl}C to copy.' => '{ctrl}C om te kopiëren.',
     '{edition} edition' => '{edition}-editie',
     '{element} pagination' => '{element}-paginering',
+    '{filename} isn’t selectable for this field.' => '{filename} isn’t selectable for this field.',
     '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}-{last, number} van {total, number} {total, plural, =1{{item}} other{{items}}}',
     '{first}-{last} of {total}' => '{first}-{last} van {total}',
     '{name} has been added, but an error occurred when installing it.' => '{name} is toegevoegd, maar er is een fout opgetreden tijdens de installatie.',

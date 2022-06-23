@@ -1611,6 +1611,20 @@ class Request extends \yii\web\Request
 
     private function _checkIfActionRequestInternal(bool $checkSpecialPaths): bool
     {
+        // Important we check in this specific order:
+        // 1) /actions/some/action
+        // 2) any/uri?action=some/action
+        // 3) special/uri
+
+        // Trigger match?
+        if (
+            $this->getSegment(1) === $this->generalConfig->actionTrigger &&
+            count($this->getSegments()) > 1
+        ) {
+            $this->_actionSegments = array_slice($this->getSegments(), 1);
+            return true;
+        }
+
         // Action param?
         if ($this->getNormalizedContentType() !== 'application/json') {
             $actionParam = $this->getParam('action');
@@ -1624,15 +1638,6 @@ class Request extends \yii\web\Request
             }
 
             $this->_actionSegments = array_values(array_filter(explode('/', $actionParam)));
-            return true;
-        }
-
-        // Trigger match?
-        if (
-            $this->getSegment(1) === $this->generalConfig->actionTrigger &&
-            count($this->getSegments()) > 1
-        ) {
-            $this->_actionSegments = array_slice($this->getSegments(), 1);
             return true;
         }
 

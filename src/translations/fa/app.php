@@ -1873,6 +1873,7 @@ return [
     '{ctrl}C to copy.' => 'برای کپی از {ctrl}C استفاده نمایید.',
     '{edition} edition' => '{edition} ویرایش',
     '{element} pagination' => 'صفحه‌بندی {element}',
+    '{filename} isn’t selectable for this field.' => '{filename} isn’t selectable for this field.',
     '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}-{last, number} از {total, number} {item}',
     '{first}-{last} of {total}' => '{first}-{last} از {total}',
     '{name} has been added, but an error occurred when installing it.' => '{name} اضافه شده است اما یک خطا در هنگام نصب آن اتفاق افتاد.',

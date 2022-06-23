@@ -1877,6 +1877,7 @@ Köszönjük, hogy regsiztráltál, a felhasználói filókod aktiváláshoz kat
     '{ctrl}C to copy.' => '{ctrl}C a másoláshoz',
     '{edition} edition' => '{edition} kiadás',
     '{element} pagination' => '{element} oldaltördelés',
+    '{filename} isn’t selectable for this field.' => '{filename} isn’t selectable for this field.',
     '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}-{last, number} / {total, number} {total, plural, =1{{item}} other{{items}}}',
     '{first}-{last} of {total}' => '{first}-{last} / {total}',
     '{name} has been added, but an error occurred when installing it.' => 'A(z) {name} hozzá lett adva, de a telepítésekor hiba történt.',

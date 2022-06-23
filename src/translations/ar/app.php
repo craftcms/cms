@@ -1873,6 +1873,7 @@ return [
     '{ctrl}C to copy.' => 'C{ctrl} للنسخ.',
     '{edition} edition' => 'نسخة {edition}',
     '{element} pagination' => 'الحدود الفاصلة لصفحات {element}',
+    '{filename} isn’t selectable for this field.' => '{filename} isn’t selectable for this field.',
     '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}-{last, number} من {total, number} {total, plural, =1{{item}} other{{items}}}',
     '{first}-{last} of {total}' => '{first}-{last} من {total}',
     '{name} has been added, but an error occurred when installing it.' => 'تمت إضافة {name}، لكن حدث خطأ عند تثبيته.',

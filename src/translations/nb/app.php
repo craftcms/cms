@@ -1875,6 +1875,7 @@ Gratulerer! Craft var i stand til å sende e-post. Her er innstillingene du beny
     '{ctrl}C to copy.' => '{ctrl}C for å kopiere.',
     '{edition} edition' => '{edition}-utgave',
     '{element} pagination' => '{element} paginering',
+    '{filename} isn’t selectable for this field.' => '{filename} isn’t selectable for this field.',
     '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}-{last, number} av {total, number} {total, plural, one {} =1{{item}} other{{items}}}',
     '{first}-{last} of {total}' => '{first}-{last} av {total}',
     '{name} has been added, but an error occurred when installing it.' => '{name} har blitt lagt til, men det oppstod en feil under installering.',
