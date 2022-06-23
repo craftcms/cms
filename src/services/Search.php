@@ -832,7 +832,7 @@ SQL;
     {
         $ftVal = explode(' ', $val);
         $ftVal = implode(' & ', $ftVal);
-        $likeVal = !$exact ? '%' . $val . '%' : $val;
+        $likeVal = !$exact ? '%' . $val . '%' : " $val ";
 
         $db = Craft::$app->getDb();
 
