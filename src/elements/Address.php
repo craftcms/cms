@@ -487,9 +487,15 @@ class Address extends Element implements AddressInterface, BlockElementInterface
         $rules[] = [['ownerId'], 'number'];
         $rules[] = [['countryCode'], 'required'];
 
-        foreach ($this->_getFormatterRequiredAttributes() as $attr) {
+        foreach (self::_addressAttributes() as $attr) {
+            if ($attr === 'countryCode') {
+                continue;
+            }
+
             // Add them as individual rows making it easier to extend/manipulate the rules.
-            $rules[] = [[$attr], 'required', 'on' => [self::SCENARIO_LIVE]];
+            $rules[] = [[$attr], 'required', 'on' => [self::SCENARIO_LIVE], 'when' => function(Address $model, string $attribute) {
+                return in_array($attribute, $this->getFormatterRequiredAttributes(), true);
+            }];
         }
 
         $rules[] = [['longitude', 'latitude'], 'safe'];
@@ -569,7 +575,7 @@ class Address extends Element implements AddressInterface, BlockElementInterface
      * @return array
      * @since 4.0.5
      */
-    private function _getFormatterRequiredAttributes(): array
+    public function getFormatterRequiredAttributes(): array
     {
         $formatter = Craft::$app->getAddresses()->getAddressFormatRepository()->get($this->countryCode);
         $requiredAttributes = array_filter(
