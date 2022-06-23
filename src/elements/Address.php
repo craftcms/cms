@@ -573,7 +573,7 @@ class Address extends Element implements AddressInterface, BlockElementInterface
 
     /**
      * @return array
-     * @since 4.0.5
+     * @since 4.1.0
      */
     public function getFormatterRequiredAttributes(): array
     {
