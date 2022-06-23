@@ -28,6 +28,11 @@
             <button type="button" class="focal-point btn icon leftalign">{{ 'Focal Point'|t('app') }}</button>
         </div>
 
+        <fieldset class="orientation" aria-label="{{ 'Orientation'|t('app') }}">
+            <input type="radio" name="orientation" value="landscape" checked/>
+            <input type="radio" name="orientation" value="portrait"/>
+        </fieldset>
+
         {% set constraintOptions = [] %}
         {% for label, ratio in craft.app.config.general.imageEditorRatios %}
             {% set constraintOptions = constraintOptions|merge([{
@@ -50,11 +55,6 @@
             value: 'none',
             options: constraintOptions,
         }) }}
-
-        <fieldset class="orientation" aria-label="{{ 'Orientation'|t('app') }}">
-            <input type="radio" name="orientation" value="landscape" checked/>
-            <input type="radio" name="orientation" value="portrait"/>
-        </fieldset>
     </div>
 </div>
 <div class="image-container">

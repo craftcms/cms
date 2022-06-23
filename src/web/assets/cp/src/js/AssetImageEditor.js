@@ -846,12 +846,6 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
       });
 
       this.addListener(
-        $('.constraint-buttons .constraint', this.$container),
-        'click',
-        this._handleConstraintClick
-      );
-
-      this.addListener(
         this.$constraintRadioInputs,
         'change',
         this._handleConstraintChange
