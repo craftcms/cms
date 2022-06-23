@@ -38,14 +38,14 @@ class TimeValidator extends Validator
     public ?string $max = null;
 
     /**
-     * @var string user-defined error message used when the value is earlier than [[min]]
+     * @var string|null user-defined error message used when the value is earlier than [[min]]
      */
-    public string $tooEarly;
+    public ?string $tooEarly = null;
 
     /**
-     * @var string user-defined error message used when the value is later than [[max]]
+     * @var string|null user-defined error message used when the value is later than [[max]]
      */
-    public string $tooLate;
+    public ?string $tooLate = null;
 
     /**
      * @inheritdoc

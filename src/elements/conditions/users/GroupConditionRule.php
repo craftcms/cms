@@ -10,6 +10,7 @@ use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\UserQuery;
 use craft\elements\User;
 use craft\helpers\ArrayHelper;
+use craft\models\UserGroup;
 
 /**
  * User group condition rule.
@@ -62,22 +63,15 @@ class GroupConditionRule extends BaseMultiSelectConditionRule implements Element
         $query->groupId($this->paramValue(fn($uid) => $userGroups->getGroupByUid($uid)->id ?? null));
     }
 
-
     /**
      * @param \craft\base\ElementInterface $element
-     *
      * @return bool
      * @throws \yii\base\InvalidConfigException
      */
     public function matchElement(ElementInterface $element): bool
     {
         /** @var User $element */
-        $groups = $element->getGroups();
-        foreach ($groups as $group) {
-            if ($this->matchValue($group->uid)) {
-                return true;
-            }
-        }
-        return false;
+        $groupUids = array_map(fn(UserGroup $group) => $group->uid, $element->getGroups());
+        return $this->matchValue($groupUids);
     }
 }
