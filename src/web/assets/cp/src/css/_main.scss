@@ -78,7 +78,7 @@ html.noscroll body {
 body {
   width: 100vw;
   overflow-x: hidden;
-  @include fontSize(14px);
+  @include fontSize(14);
   line-height: 1.42;
   color: var(--text-color);
   -webkit-font-smoothing: subpixel-antialiased;
