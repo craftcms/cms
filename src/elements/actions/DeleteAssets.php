@@ -17,6 +17,7 @@ use yii\base\Exception;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated in 4.1.0. [[Delete]] should be used instead.
  */
 class DeleteAssets extends ElementAction
 {

@@ -1138,7 +1138,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.setInstanceState('selectedSource', this.sourceKey);
       this.sourceSelect.selectItem($source);
 
-      Craft.cp.updateSidebarMenuLabel();
+      Craft.cp.updateContentHeading();
 
       if (this.searching) {
         // Clear the search value without causing it to update elements
@@ -1941,17 +1941,28 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 1
               );
 
-              let $prevBtn = $('<div/>', {
+              const $paginationNav = $('<nav/>', {
+                class: 'flex',
+                'aria-label': Craft.t('app', '{element} pagination', {
+                  element: itemLabel,
+                }),
+              }).appendTo($paginationContainer);
+
+              let $prevBtn = $('<button/>', {
+                role: 'button',
                 class:
                   'page-link prev-page' + (this.page > 1 ? '' : ' disabled'),
+                disabled: this.page === 1,
                 title: Craft.t('app', 'Previous Page'),
-              }).appendTo($paginationContainer);
-              let $nextBtn = $('<div/>', {
+              }).appendTo($paginationNav);
+              let $nextBtn = $('<button/>', {
+                role: 'button',
                 class:
                   'page-link next-page' +
                   (this.page < totalPages ? '' : ' disabled'),
+                disabled: this.page === totalPages,
                 title: Craft.t('app', 'Next Page'),
-              }).appendTo($paginationContainer);
+              }).appendTo($paginationNav);
 
               $('<div/>', {
                 class: 'page-info',
@@ -2236,6 +2247,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
     _showExportHud: function () {
       this.$exportBtn.addClass('active');
+      this.$exportBtn.attr('aria-expanded', 'true');
 
       var $form = $('<form/>', {
         class: 'export-form',
@@ -2305,6 +2317,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
       hud.on('hide', () => {
         this.$exportBtn.removeClass('active');
+        this.$exportBtn.attr('aria-expanded', 'false');
       });
 
       var submitting = false;
@@ -2406,7 +2419,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           this.$filterBtn.addClass('active');
         }
       } else {
-        this.$filterBtn.attr('aria-controls', null).attr('aria-expanded', null);
+        this.$filterBtn.attr('aria-controls', null);
       }
     },
   },

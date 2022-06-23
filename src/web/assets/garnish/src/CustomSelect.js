@@ -12,6 +12,7 @@ export default Base.extend(
 
     $container: null,
     $options: null,
+    $ariaOptions: null,
     $anchor: null,
 
     menuId: null,
@@ -39,16 +40,17 @@ export default Base.extend(
       this.$container = $(container);
 
       this.$options = $();
-      this.addOptions(this.$container.find('a'));
+      this.$ariaOptions = $();
 
       // Menu List
       this.menuId = 'menu' + this._namespace;
-      this.$menuList = $('ul', this.$container);
-      this.$menuList.attr({
+      this.$container.attr({
         role: 'listbox',
         id: this.menuId,
-        'aria-hidden': 'true',
       });
+
+      this.$container.find('ul').attr('role', 'group');
+      this.addOptions(this.$container.find('a'));
 
       // Deprecated
       if (this.settings.attachToElement) {
@@ -77,15 +79,46 @@ export default Base.extend(
       this.$options = this.$options.add($options);
       $options.data('menu', this);
 
-      $options.each(
-        function (optionKey, option) {
-          $(option).attr({
-            role: 'option',
-            tabindex: '-1',
-            id: this.menuId + '-option-' + optionKey,
-          });
-        }.bind(this)
-      );
+      for (let i = 0; i < $options.length; i++) {
+        const $option = $options.eq(i);
+        const $ariaOption = $option.parent('li');
+        $option.attr({
+          tabindex: '-1',
+          id: $option.attr('id') || `${this.menuId}-option-${i + 1}`,
+        });
+        $ariaOption.attr({
+          role: 'option',
+          'aria-selected': $option.hasClass('sel') ? 'true' : 'false',
+          id: $ariaOption.attr('id') || `${this.menuId}-aria-option-${i + 1}`,
+        });
+        this.$ariaOptions = this.$ariaOptions.add($ariaOption);
+
+        // keep aria-selected in-line with .sel
+        $option.data(
+          'menu-mutationObserver',
+          new MutationObserver((mutations) => {
+            for (const mutation of mutations) {
+              if (
+                mutation.type === 'attributes' &&
+                mutation.attributeName === 'class'
+              ) {
+                const optionHasHover = this.$options.is('.hover');
+                $ariaOption.attr(
+                  'aria-selected',
+                  (!optionHasHover && $option.hasClass('sel')) ||
+                    $option.hasClass('hover')
+                    ? 'true'
+                    : 'false'
+                );
+                break;
+              }
+            }
+          })
+        );
+        $option
+          .data('menu-mutationObserver')
+          .observe($option[0], {attributes: true});
+      }
 
       this.removeAllListeners($options);
       this.addListener($options, 'click', function (ev) {
@@ -195,8 +228,6 @@ export default Base.extend(
         display: 'block',
       });
 
-      this.$menuList.attr('aria-hidden', 'false');
-
       Garnish.uiLayerManager
         .addLayer(this.$container)
         .registerShortcut(Garnish.ESC_KEY, this.hide.bind(this));
@@ -216,14 +247,15 @@ export default Base.extend(
         return;
       }
 
-      this.$menuList.attr('aria-hidden', 'true');
+      this.$options.removeClass('hover');
+      this.$options.filter('.sel').parent('li').attr('aria-selected', 'true');
 
       this.$container.velocity(
         'fadeOut',
         {duration: Garnish.FX_DURATION},
-        function () {
+        () => {
           this.$container.detach();
-        }.bind(this)
+        }
       );
 
       Garnish.uiLayerManager.removeLayer();
@@ -263,6 +295,16 @@ export default Base.extend(
       }
 
       this.$container.css('left', left);
+    },
+
+    destroy: function () {
+      for (let i = 0; i < this.$options.length; i++) {
+        const $option = this.$options.eq(i);
+        $option.data('menu-mutationObserver').disconnect();
+        $option.removeData('menu-mutationObserver');
+      }
+
+      this.base();
     },
   },
   {

@@ -13,7 +13,6 @@ use craft\base\NameTrait;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\actions\DeleteUsers;
-use craft\elements\actions\Edit;
 use craft\elements\actions\Restore;
 use craft\elements\actions\SuspendUsers;
 use craft\elements\actions\UnsuspendUsers;
@@ -317,12 +316,6 @@ class User extends Element implements IdentityInterface
     {
         $actions = [];
         $elementsService = Craft::$app->getElements();
-
-        // Edit
-        $actions[] = $elementsService->createAction([
-            'type' => Edit::class,
-            'label' => Craft::t('app', 'Edit user'),
-        ]);
 
         if (Craft::$app->getUser()->checkPermission('moderateUsers')) {
             // Suspend

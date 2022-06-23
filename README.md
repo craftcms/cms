@@ -10,18 +10,18 @@ It features:
 
 - An intuitive, user-friendly control panel for content creation and administrative tasks.
 - A clean-slate approach to content modeling that doesn’t make any assumptions about the content you need to manage.
-- An auto-generated [GraphQL API](https://craftcms.com/docs/3.x/graphql.html) that can be consumed for building headless applications.
-- A fast and flexible [templating system](https://craftcms.com/docs/3.x/dev/twig-primer.html) based on Twig for building traditional websites.
+- An auto-generated [GraphQL API](https://craftcms.com/docs/4.x/graphql.html) that can be consumed for building headless applications.
+- A fast and flexible [templating system](https://craftcms.com/docs/4.x/dev/twig-primer.html) based on Twig for building traditional websites.
 - A powerful [ecommerce platform](https://craftcms.com/commerce) for building bespoke ecommerce experiences.
 - A built-in Plugin Store with hundreds of free and commercial [plugins](https://plugins.craftcms.com/).
-- A robust framework for [module and plugin development](https://craftcms.com/docs/3.x/extend/).
+- A robust framework for [module and plugin development](https://craftcms.com/docs/4.x/extend/).
 - An active, vibrant [community](https://craftcms.com/community).
 
-You can learn more about it at [craftcms.com](https://craftcms.com), and documentation is available at [craftcms.com/docs](https://craftcms.com/docs/3.x/).
+You can learn more about it at [craftcms.com](https://craftcms.com), and documentation is available at [craftcms.com/docs](https://craftcms.com/docs/4.x/).
 
 ## Tech Specs
 
-Craft is a self-hosted PHP application. It can connect to MySQL and PostgreSQL for content storage. See [Server Requirements](https://craftcms.com/docs/3.x/requirements.html) for more details.
+Craft is a self-hosted PHP application. It can connect to MySQL and PostgreSQL for content storage. See [Server Requirements](https://craftcms.com/docs/4.x/requirements.html) for more details.
 
 ## Popular Resources
 

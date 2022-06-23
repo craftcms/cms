@@ -2,7 +2,7 @@
 
 <div class="matrix matrix-field" id="{{ id }}">
     <span aria-live="assertive" class="visually-hidden" data-status-message></span>
-    <div class="blocks">
+    <div class="blocks" role="list">
         {% set totalNewBlocks = 0 %}
         {% for block in blocks %}
             {% set blockType = block.getType() %}
@@ -26,6 +26,7 @@
                     'type-name': blockTypeName,
                     collapsed: block.collapsed,
                 },
+                role: 'listitem',
             } %}
 
             {% set actionBtnLabel = "#{blockTypeName} #{'Actions'|t('app')}" %}
@@ -110,7 +111,7 @@
         <div class="buttons">
             <div class="btngroup">
                 {% for blockType in blockTypes %}
-                    <button type="button" class="btn dashed{% if loop.first %} add icon{% endif %}" data-type="{{ blockType.handle }}" aria-label="{{ blockType.name|t('site') }}">{{ blockType.name|t('site') }}</button>
+                    <button type="button" class="btn dashed{% if loop.first %} add icon{% endif %}" data-type="{{ blockType.handle }}" aria-label="{{ blockType.name|t('site') }}" aria-describedby="{{ labelId }}">{{ blockType.name|t('site') }}</button>
                 {% endfor %}
             </div>
 

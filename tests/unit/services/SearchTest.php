@@ -133,22 +133,6 @@ class SearchTest extends TestCase
     }
 
     /**
-     * @inheritDoc
-     */
-    protected function _after(): void
-    {
-        parent::_after();
-
-        // Because MyISAM doesn't support transactions we delete all search index elements except for user with id 1.
-        // (The admin user created during test setup)
-        Craft::$app->getDb()->createCommand()
-            ->delete(
-                Table::SEARCHINDEX,
-                ['not', ['elementId' => 1]]
-            )->execute();
-    }
-
-    /**
      * @param mixed $attributeName
      * @param iterable $searchIndex
      * @return string

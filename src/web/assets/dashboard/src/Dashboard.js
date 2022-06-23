@@ -271,6 +271,7 @@ import './dashboard.scss';
     $back: null,
     $settingsForm: null,
     $settingsContainer: null,
+    $settingsToggle: null,
     $saveBtn: null,
     $settingsErrorList: null,
 
@@ -288,6 +289,7 @@ import './dashboard.scss';
 
     init: function (container, settingsHtml, initSettingsFn) {
       this.$container = $(container);
+      this.$settingsToggle = this.$container.find('[data-settings-toggle]');
       this.$gridItem = this.$container.parent();
 
       // Store a reference to this object on the container element
@@ -400,6 +402,7 @@ import './dashboard.scss';
             complete: this.onShowFront.bind(this),
           }
         );
+        this.$settingsToggle.focus();
       }, 100);
     },
 
@@ -561,6 +564,10 @@ import './dashboard.scss';
       );
     },
 
+    getWidgetLabelId: function () {
+      return `widget-label-${this.id}`;
+    },
+
     getManagerRow: function () {
       var $row = $(
         '<tr data-id="' +
@@ -571,7 +578,9 @@ import './dashboard.scss';
           '<td class="widgetmanagerhud-icon">' +
           this.getTypeInfo('iconSvg') +
           '</td>' +
-          '<td>' +
+          '<td id="' +
+          this.getWidgetLabelId() +
+          '">' +
           this.getManagerRowLabel() +
           '</td>' +
           '<td class="widgetmanagerhud-col-colspan-picker thin"></td>' +
@@ -591,6 +600,8 @@ import './dashboard.scss';
           return window.dashboard.grid.totalCols;
         },
         step: 1,
+        label: Craft.t('app', 'Number of columns'),
+        describedBy: this.getWidgetLabelId(),
         valueLabel: (colspan) => {
           return Craft.t(
             'app',

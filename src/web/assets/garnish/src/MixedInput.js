@@ -336,6 +336,7 @@ var TextElement = Base.extend(
           break;
         }
 
+        case Garnish.BACKSPACE_KEY:
         case Garnish.DELETE_KEY: {
           if (
             this.$input.prop('selectionStart') === 0 &&
