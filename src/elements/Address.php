@@ -494,7 +494,7 @@ class Address extends Element implements AddressInterface, BlockElementInterface
 
             // Add them as individual rows making it easier to extend/manipulate the rules.
             $rules[] = [[$attr], 'required', 'on' => [self::SCENARIO_LIVE], 'when' => function(Address $model, string $attribute) {
-                return in_array($attribute, $this->getFormatterRequiredAttributes(), true);
+                return in_array($attribute, $this->_getFormatterRequiredAttributes(), true);
             }];
         }
 
@@ -575,7 +575,7 @@ class Address extends Element implements AddressInterface, BlockElementInterface
      * @return array
      * @since 4.1.0
      */
-    public function getFormatterRequiredAttributes(): array
+    private function _getFormatterRequiredAttributes(): array
     {
         $formatter = Craft::$app->getAddresses()->getAddressFormatRepository()->get($this->countryCode);
         $requiredAttributes = array_filter(

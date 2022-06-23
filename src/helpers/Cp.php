@@ -1257,8 +1257,7 @@ JS, [
     {
         $formatRepo = Craft::$app->getAddresses()->getAddressFormatRepository()->get($address->countryCode);
 
-        $requiredFields = $address->getFormatterRequiredAttributes();
-        $requiredFields = array_flip($requiredFields);
+        $requiredFields = array_flip($formatRepo->getRequiredFields());
 
         $visibleFields = array_flip(array_merge(
                 $formatRepo->getUsedFields(),

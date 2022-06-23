@@ -1,10 +1,5 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
-
-### Added
-- Added `craft\elements\Address::getFormatterRequiredAttributes()`.
-
 ## 4.0.5.1 - 2022-06-22
 
 ### Fixed
