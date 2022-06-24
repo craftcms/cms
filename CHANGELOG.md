@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- `canonical` is now a reserved field handle. ([#11503](https://github.com/craftcms/cms/issues/11503))
+
 ### Fixed
 - Fixed a bug where `Garnish.setFocusWithin()` wasn’t working if the first focusable element was a checkbox. ([#11498](https://github.com/craftcms/cms/discussions/11498))
 

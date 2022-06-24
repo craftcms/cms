@@ -262,6 +262,7 @@ abstract class Field extends SavableComponent implements FieldInterface
                 'behavior',
                 'behaviors',
                 'canSetProperties',
+                'canonical',
                 'children',
                 'contentTable',
                 'dateCreated',
