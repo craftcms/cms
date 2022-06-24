@@ -418,7 +418,7 @@ Garnish = $.extend(Garnish, {
    * @param {Object} container The container element. Can be either an actual element or a jQuery collection.
    */
   setFocusWithin: function (container) {
-    $(container).find(':focusable:first').focus();
+    $(container).find(':focusable:not(.checkbox):first').focus();
   },
 
   getFocusedElement: function () {
