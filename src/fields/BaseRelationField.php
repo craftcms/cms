@@ -548,11 +548,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
                 'exists', (new Query())
                     ->from(["relations_$ns" => DbTable::RELATIONS])
                     ->innerJoin(["elements_$ns" => DbTable::ELEMENTS], "[[elements_$ns.id]] = [[relations_$ns.targetId]]")
-                    ->leftJoin(["elements_sites_$ns" => DbTable::ELEMENTS_SITES], [
-                        'and',
-                        "[[elements_sites_$ns.elementId]] = [[elements_$ns.id]]",
-                        ["elements_sites_$ns.siteId" => $this->_targetSiteId() ?? new Expression('[[elements_sites.siteId]]')],
-                    ])
+                    ->leftJoin(["elements_sites_$ns" => DbTable::ELEMENTS_SITES], "[[elements_sites_$ns.elementId]] = [[elements_$ns.id]]")
                     ->where("[[relations_$ns.sourceId]] = [[elements.id]]")
                     ->andWhere([
                         'or',
@@ -563,8 +559,9 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
                         "relations_$ns.fieldId" => $this->id,
                         "elements_$ns.enabled" => true,
                         "elements_$ns.dateDeleted" => null,
+                        "elements_sites_$ns.siteId" => $this->_targetSiteId() ?? new Expression('[[elements_sites.siteId]]'),
+                        "elements_sites_$ns.enabled" => true,
                     ])
-                    ->andWhere(['not', ["elements_sites_$ns.enabled" => false]]),
             ];
 
             if ($emptyCondition === ':notempty:') {
