@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.0.5.2 - 2022-06-24
 
 ### Fixed
 - Fixed a SQL error that could occur on MySQL 5. ([#11493](https://github.com/craftcms/cms/issues/11493))
