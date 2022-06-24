@@ -982,6 +982,21 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.showingActionTriggers = false;
     },
 
+    updateCheckboxStates: function () {
+      const $selectedElements = this.view.getSelectedElements();
+      this.$container
+        .find('[data-element-checkbox]')
+        .attr('aria-checked', 'false');
+
+      $selectedElements.each((index, element) => {
+        const $checkbox = $(element).find('.checkbox');
+
+        if (!$checkbox || $checkbox.length === 0) return;
+
+        $checkbox.attr('aria-checked', 'true');
+      });
+    },
+
     updateActionTriggers: function () {
       // Do we have an action UI to update?
       if (this.actions) {
@@ -1757,6 +1772,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
     _handleSelectionChange: function () {
       this.updateActionTriggers();
+      this.updateCheckboxStates();
       this.onSelectionChange();
     },
 
