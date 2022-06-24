@@ -513,7 +513,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
                         "elements_$ns.dateDeleted" => null,
                         "elements_sites_$ns.siteId" => $this->_targetSiteId() ?? new Expression('[[elements_sites.siteId]]'),
                         "elements_sites_$ns.enabled" => true,
-                    ])
+                    ]),
             ];
 
             if ($emptyCondition === ':notempty:') {
