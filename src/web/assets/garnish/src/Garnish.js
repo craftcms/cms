@@ -435,7 +435,9 @@ Garnish = $.extend(Garnish, {
    */
   setFocusWithin: function (container) {
     const $container = $(container);
-    const $firstFocusable = $(container).find(':focusable:first');
+    const $firstFocusable = $(container).find(
+      ':focusable:not(.checkbox):first'
+    );
 
     if ($firstFocusable.length > 0) {
       $firstFocusable.trigger('focus');
