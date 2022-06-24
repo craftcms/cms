@@ -386,7 +386,7 @@ return [
     'Couldn’t unsuspend user.' => 'Suspendierung des Benutzers konnte nicht aufgehoben werden.',
     'Couldn’t update password.' => 'Das Passwort konnte nicht aktualisiert werden.',
     'Country' => 'Land',
-    'County' => 'County',
+    'County' => 'Landkreis',
     'Craft CMS does not support backtracking to this version. Please update to Craft CMS {version} or later.' => 'Craft CMS unterstützt die Rückverfolgung auf diese Version nicht. Führen Sie eine Aktualisierung auf Craft CMS {version} oder höher aus.',
     'Craft CMS is running in Dev Mode.' => 'Craft CMS läuft im Dev-Modus.',
     'Craft Support' => 'Craft-Support',
