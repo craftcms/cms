@@ -386,6 +386,7 @@ class Composer extends Component
             'config' => [
                 'allow-plugins' => [
                     'craftcms/plugin-installer' => true,
+                    'yiisoft/yii2-composer' => true,
                 ],
             ],
         ]);
