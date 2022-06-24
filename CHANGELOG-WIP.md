@@ -35,6 +35,7 @@
 - Improved the UI of condition builders. ([#11386](https://github.com/craftcms/cms/pull/11386))
 - Entry Type condition rules now allow multiple selections. ([#11124](https://github.com/craftcms/cms/pull/11124))
 - Element index filters now only show condition rules for the custom fields that are used by the field layouts in the selected source, if a native source is selected. ([#11187](https://github.com/craftcms/cms/discussions/11187))
+- Element index filters now only show condition rules for custom fields used by field layouts created for the target element type, if no native source is selected.
 - Asset indexes now have a “Location” table attribute option. ([#11450](https://github.com/craftcms/cms/discussions/11450))
 - It’s now possible to sort entries by their section and type. ([#9192](https://github.com/craftcms/cms/discussions/9192), [#11335](https://github.com/craftcms/cms/discussions/11335))
 - It’s now possible to sort assets by their file kind.
