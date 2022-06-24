@@ -20,7 +20,6 @@ use craft\fieldlayoutelements\FullNameField;
 use craft\models\FieldLayout;
 use craft\records\Address as AddressRecord;
 use yii\base\InvalidConfigException;
-use yii\validators\RequiredValidator;
 
 /**
  * Address element class
@@ -487,49 +486,48 @@ class Address extends Element implements AddressInterface, BlockElementInterface
         $rules = parent::defineRules();
         $rules[] = [['ownerId'], 'number'];
         $rules[] = [['countryCode'], 'required'];
-        $rules[] = [['longitude', 'latitude'], 'safe'];
-        $rules[] = [self::_addressAttributes(), 'safe'];
-        return $rules;
-    }
 
-    /**
-     * @inheritdoc
-     */
-    public function afterValidate(): void
-    {
-        if ($this->getScenario() === self::SCENARIO_LIVE) {
-            $formatter = Craft::$app->getAddresses()->getAddressFormatRepository()->get($this->countryCode);
-            $requiredAttributes = array_filter(
-                $formatter->getRequiredFields(),
-                fn(string $attribute) => !in_array($attribute, ['givenName', 'familyName', 'additionalName']),
-            );
-
-            $requirableNativeFields = [
-                OrganizationField::class,
-                OrganizationTaxIdField::class,
-                FullNameField::class,
-                LatLongField::class,
-            ];
-
-            $fieldLayout = $this->getFieldLayout();
-
-            foreach ($requirableNativeFields as $class) {
-                /** @var BaseNativeField|null $field */
-                $field = $fieldLayout->getFirstVisibleElementByType($class, $this);
-                if ($field && $field->required) {
-                    array_push($requiredAttributes, ...match ($field->attribute()) {
-                        'latLong' => ['latitude', 'longitude'],
-                        default => [$field->attribute()],
-                    });
-                }
+        foreach (self::_addressAttributes() as $attr) {
+            if ($attr === 'countryCode') {
+                continue;
             }
 
-            foreach ($requiredAttributes as $attribute) {
-                (new RequiredValidator())->validateAttribute($this, $attribute);
+            // Add them as individual rows making it easier to extend/manipulate the rules.
+            $rules[] = [
+                $attr,
+                'required',
+                'on' => self::SCENARIO_LIVE,
+                'when' => function(Address $model, string $attribute) {
+                    $formatter = Craft::$app->getAddresses()->getAddressFormatRepository()->get($this->countryCode);
+                    return in_array($attribute, $formatter->getRequiredFields());
+                },
+            ];
+        }
+
+        $requirableNativeFields = [
+            OrganizationField::class,
+            OrganizationTaxIdField::class,
+            FullNameField::class,
+            LatLongField::class,
+        ];
+
+        $fieldLayout = $this->getFieldLayout();
+
+        foreach ($requirableNativeFields as $class) {
+            /** @var BaseNativeField|null $field */
+            $field = $fieldLayout->getFirstVisibleElementByType($class, $this);
+            if ($field && $field->required) {
+                $attribute = $field->attribute();
+                if ($attribute === 'latLong') {
+                    $attribute = ['latitude', 'longitude'];
+                }
+                $rules[] = [$attribute, 'required', 'on' => self::SCENARIO_LIVE];
             }
         }
 
-        parent::afterValidate();
+        $rules[] = [['longitude', 'latitude'], 'safe'];
+        $rules[] = [self::_addressAttributes(), 'safe'];
+        return $rules;
     }
 
     /**

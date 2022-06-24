@@ -59,6 +59,7 @@
 - It’s now possible to save new assets without setting their `filename` or `kind` attributes, as long as `newLocation` or `newFilename` is set. ([#11439](https://github.com/craftcms/cms/issues/11439))
 - The `searchindex` table is now uses the InnoDB storage engine by default for MySQL installs. ([#11374](https://github.com/craftcms/cms/discussions/11374))
 - `craft\test\ActiveFixture::$data` is now populated with the active record instances, making them accessible to tests via `$this->tester->grabFixture('my-fixture', 'data-key')`. ([#11445](https://github.com/craftcms/cms/pull/11445))
+- Address validation rules are now defined by `defineRules()`. ([#11471](https://github.com/craftcms/cms/pull/11471))
 - `Garnish.DELETE_KEY` now refers to the actual <kbd>Delete</kbd> key code, and the <kbd>Backspace</kbd> key code is now referenced by `Garnish.BACKSPACE_KEY`.
 
 ### Deprecated
