@@ -1,5 +1,11 @@
 # Release Notes for Craft CMS 4
 
+## 4.0.5.2 - 2022-06-24
+
+### Fixed
+- Fixed a SQL error that could occur on MySQL 5. ([#11493](https://github.com/craftcms/cms/issues/11493))
+- Fixed a bug where Craft’s Composer commands weren’t ensuring that `config.allow-plugins.yiisoft/yii2-composer` was `true` in `composer.json`. ([#11399](https://github.com/craftcms/cms/issues/11399))
+
 ## 4.0.5.1 - 2022-06-22
 
 ### Fixed
