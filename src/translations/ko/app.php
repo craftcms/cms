@@ -386,7 +386,7 @@ return [
     'Couldn’t unsuspend user.' => '사용자 일시 중단을 해제할 수 없습니다.',
     'Couldn’t update password.' => '비밀번호를 업데이트할 수 없습니다.',
     'Country' => '국가',
-    'County' => 'County',
+    'County' => '시/도',
     'Craft CMS does not support backtracking to this version. Please update to Craft CMS {version} or later.' => 'Craft CMS에서 이 버전에 대한 백트래킹을 지원하지 않습니다. Craft CMS {version} 이상 버전으로 업데이트하십시오.',
     'Craft CMS is running in Dev Mode.' => 'Craft CMS가 개발 모드에서 작동 중입니다.',
     'Craft Support' => 'Craft 지원',
