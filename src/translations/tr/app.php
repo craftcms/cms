@@ -386,7 +386,7 @@ return [
     'Couldn’t unsuspend user.' => 'Kullanıcının askı durumu kaldırılamadı.',
     'Couldn’t update password.' => 'Şifre güncellenemedi.',
     'Country' => 'Ülke',
-    'County' => 'County',
+    'County' => 'Ülke',
     'Craft CMS does not support backtracking to this version. Please update to Craft CMS {version} or later.' => 'Craft CMS bu sürüme geri izlemeyi desteklemiyor. Lütfen Craft CMS\'i {version} veya daha ileri bir sürüme güncelleyin.',
     'Craft CMS is running in Dev Mode.' => 'Craft CMS Geliştirici Mod\'unda çalışıyor.',
     'Craft Support' => 'Craft Destek Bölümü',
