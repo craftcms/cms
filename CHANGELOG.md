@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where self relations within relational fields were being forgotten. ([#11461](https://github.com/craftcms/cms/issues/11461))
+
 ## 4.0.5.2 - 2022-06-24
 
 ### Fixed
