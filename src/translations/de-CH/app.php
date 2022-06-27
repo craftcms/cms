@@ -1073,7 +1073,7 @@ return [
     'Raw data (fastest)' => 'Rohdaten (am schnellsten)',
     'Reactivate' => 'Erneut aktivieren',
     'Ready to upgrade?' => 'Bereit für ein Upgrade?',
-    'Ready' => 'Ready',
+    'Ready' => 'Fertig',
     'Really delete folder “{folder}”?' => 'Ordner «{folder}» wirklich löschen?',
     'Reapply everything' => 'Alle erneut anwenden',
     'Rebuild the Config' => 'Konfiguration erneut generieren',
