@@ -3648,10 +3648,15 @@ ul.tree,
       flex-direction: row;
       align-items: center;
       position: relative;
-      padding: 0 24px;
+      padding: 0 17px;
       white-space: nowrap;
       color: var(--light-text-color);
       height: 50px;
+
+      .tab-label {
+        padding: 3px 7px;
+        border-radius: var(--large-border-radius);
+      }
 
       &:hover {
         text-decoration: none;
