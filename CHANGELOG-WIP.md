@@ -3,6 +3,8 @@
 ### Added
 - Field layouts can now have “Line Break” UI elements. ([#11328](https://github.com/craftcms/cms/discussions/11328))
 - Added the `db/drop-all-tables` command. ([#11288](https://github.com/craftcms/cms/pull/11288))
+- Added the `elements/delete` command.
+- Added the `elements/restore` command.
 - Added the `project-config/get` command. ([#11341](https://github.com/craftcms/cms/pull/11341))
 - Added the `project-config/remove` command. ([#11341](https://github.com/craftcms/cms/pull/11341))
 - Added the `project-config/set` command. ([#11341](https://github.com/craftcms/cms/pull/11341))
@@ -23,7 +25,7 @@
 - Added `craft\helpers\DateTimeHelper::resume()`. ([#11130](https://github.com/craftcms/cms/pull/11130))
 
 ### Changed
-- Improved overall control panel accessibility. ([#11297](https://github.com/craftcms/cms/pull/11297), [#11296](https://github.com/craftcms/cms/pull/11296), [#11414](https://github.com/craftcms/cms/pull/11414))
+- Improved overall control panel accessibility. ([#11297](https://github.com/craftcms/cms/pull/11297), [#11296](https://github.com/craftcms/cms/pull/11296), [#11414](https://github.com/craftcms/cms/pull/11414), [#11452](https://github.com/craftcms/cms/pull/11452))
 - Improved pagination UI accessibility. ([#11126](https://github.com/craftcms/cms/pull/11126))
 - Improved element index accessibility. ([#11169](https://github.com/craftcms/cms/pull/11169), [#11200](https://github.com/craftcms/cms/pull/11200), [#11251](https://github.com/craftcms/cms/pull/11251))
 - Improved Dashboard accessibility. ([#11217](https://github.com/craftcms/cms/pull/11217), [#11297](https://github.com/craftcms/cms/pull/11297))
@@ -33,16 +35,20 @@
 - Improved keyboard support for custom selects. ([#11414](https://github.com/craftcms/cms/pull/11414))
 - It’s now possible to remove all selected elements from relational fields by pressing <kbd>Backspace</kbd> or <kbd>Delete</kbd> while one of them is focussed.
 - Improved the UI of condition builders. ([#11386](https://github.com/craftcms/cms/pull/11386))
-- Live Preview now always shows a “Refresh” button, regardless of whether the preview target has auto-refresh enabled. ([#11160](https://github.com/craftcms/cms/discussions/11160)) 
 - Entry Type condition rules now allow multiple selections. ([#11124](https://github.com/craftcms/cms/pull/11124))
 - Element index filters now only show condition rules for the custom fields that are used by the field layouts in the selected source, if a native source is selected. ([#11187](https://github.com/craftcms/cms/discussions/11187))
+- Element index filters now only show condition rules for custom fields used by field layouts created for the target element type, if no native source is selected.
+- Condition builders can now include multiple rules with the same label, as long as they’re in different groups.
 - Asset indexes now have a “Location” table attribute option. ([#11450](https://github.com/craftcms/cms/discussions/11450))
 - It’s now possible to sort entries by their section and type. ([#9192](https://github.com/craftcms/cms/discussions/9192), [#11335](https://github.com/craftcms/cms/discussions/11335))
 - It’s now possible to sort assets by their file kind.
+- Element editor metadata now lists elements’ IDs.
+- Live Preview now always shows a “Refresh” button, regardless of whether the preview target has auto-refresh enabled. ([#11160](https://github.com/craftcms/cms/discussions/11160))
 - Sites’ Language settings now display the locale IDs as option hints, rather than the languages’ native names. ([#11195](https://github.com/craftcms/cms/discussions/11195))
 - Selectize options can now specify searchable `keywords` that won’t be visible in the UI.
 - Selectize inputs will now include their options’ values as search keywords.
 - Newly-created entries now get placeholder Post Date set on them, so they get sorted appropriately when querying for entries ordered by `postDate`. ([#11272](https://github.com/craftcms/cms/issues/11272)) 
+- Element queries can now pass columns into the `orderBy` param in addition to `score` when searching. ([#11470](https://github.com/craftcms/cms/pull/11470), [#11457](https://github.com/craftcms/cms/discussions/11457))
 - Field layout elements within field layout designers now support double-clicking to open their settings slideout. ([#11277](https://github.com/craftcms/cms/discussions/11277))
 - The control panel’s JavaScript queue is now paused when the browser tab isn’t visible. ([#10632](https://github.com/craftcms/cms/issues/10632))
 - The `db/restore` command now asks whether the database should be backed up, and whether all existing database tables should be dropped, prior to restoring the backup. ([#11288](https://github.com/craftcms/cms/pull/11288))
@@ -58,6 +64,7 @@
 - It’s now possible to save new assets without setting their `filename` or `kind` attributes, as long as `newLocation` or `newFilename` is set. ([#11439](https://github.com/craftcms/cms/issues/11439))
 - The `searchindex` table is now uses the InnoDB storage engine by default for MySQL installs. ([#11374](https://github.com/craftcms/cms/discussions/11374))
 - `craft\test\ActiveFixture::$data` is now populated with the active record instances, making them accessible to tests via `$this->tester->grabFixture('my-fixture', 'data-key')`. ([#11445](https://github.com/craftcms/cms/pull/11445))
+- Address validation rules are now defined by `defineRules()`. ([#11471](https://github.com/craftcms/cms/pull/11471))
 - `Garnish.DELETE_KEY` now refers to the actual <kbd>Delete</kbd> key code, and the <kbd>Backspace</kbd> key code is now referenced by `Garnish.BACKSPACE_KEY`.
 
 ### Deprecated

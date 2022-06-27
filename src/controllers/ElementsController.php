@@ -1705,11 +1705,19 @@ JS, [
                 throw new ServerErrorHttpException(sprintf('Unable to create a new element: %s', implode(', ', $element->getErrorSummary(true))));
             }
 
-            $response->redirect($newElement->getCpEditUrl() ?? UrlHelper::actionUrl('elements/edit', [
+            $url = $newElement->getCpEditUrl();
+
+            if ($url) {
+                $url = UrlHelper::urlWithParams($url, ['fresh' => 1]);
+            } else {
+                $url = UrlHelper::actionUrl('elements/edit', [
                     'draftId' => $newElement->draftId,
                     'siteId' => $newElement->siteId,
                     'fresh' => 1,
-                ]));
+                ]);
+            }
+
+            $response->redirect($url);
         }
 
         return $response;

@@ -437,23 +437,23 @@ JS,
         array $buttonAttributes = [],
     ): string {
         $groupedRuleTypeOptions = [];
-        $labels = [];
+        $labelsByGroup = [];
 
         if ($rule) {
             $ruleLabel = $rule->getLabel();
-            $ruleGroupLabel = $rule->getGroupLabel() ?? '__UNGROUPED__';
-            $groupedRuleTypeOptions[$ruleGroupLabel] = [
+            $groupLabel = $rule->getGroupLabel() ?? '__UNGROUPED__';
+            $groupedRuleTypeOptions[$groupLabel] = [
                 ['value' => $ruleValue, 'label' => $ruleLabel],
             ];
-            $labels[$ruleLabel] = true;
+            $labelsByGroup[$groupLabel][$ruleLabel] = true;
         }
 
         foreach ($selectableRules as $value => $selectableRule) {
             $label = $selectableRule->getLabel();
-            if (!isset($labels[$label])) {
-                $groupLabel = $selectableRule->getGroupLabel() ?? '__UNGROUPED__';
+            $groupLabel = $selectableRule->getGroupLabel() ?? '__UNGROUPED__';
+            if (!isset($labelsByGroup[$groupLabel][$label])) {
                 $groupedRuleTypeOptions[$groupLabel][] = compact('value', 'label');
-                $labels[$label] = true;
+                $labelsByGroup[$groupLabel][$label] = true;
             }
         }
 

@@ -2,6 +2,25 @@
 
 ## Unreleased
 
+### Changed
+- The `_layouts/elementindex` control panel template now sets the page title based on the element’s `pluralDisplayName()` method by default. ([#11502](https://github.com/craftcms/cms/pull/11502))
+
+## 4.0.5.2 - 2022-06-24
+
+### Fixed
+- Fixed a SQL error that could occur on MySQL 5. ([#11493](https://github.com/craftcms/cms/issues/11493))
+- Fixed a bug where Craft’s Composer commands weren’t ensuring that `config.allow-plugins.yiisoft/yii2-composer` was `true` in `composer.json`. ([#11399](https://github.com/craftcms/cms/issues/11399))
+
+## 4.0.5.1 - 2022-06-22
+
+### Fixed
+- Fixed a bug where not all changes to entries and categories created via the “Save and add another” action were propagating to other sites. ([#11476](https://github.com/craftcms/cms/issues/11476))
+- Fixed a bug where it wasn’t possible to rename assets.
+- Fixed a bug where a provisional draft could be created for an entry if its form was interacted with before the page had fully initialized. ([#11466](https://github.com/craftcms/cms/issues/11466))
+- Fixed exact phrase searching on PostgreSQL. ([#11486](https://github.com/craftcms/cms/issues/11486))
+
+## 4.0.5 - 2022-06-21
+
 ### Added
 - Added `craft\helpers\Number::isIntOrFloat()`.
 

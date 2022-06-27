@@ -112,10 +112,6 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
             /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
             $elementType = $this->elementType;
 
-            if ($elementType::hasContent() && $elementType::hasTitles()) {
-                $types[] = TitleConditionRule::class;
-            }
-
             if ($elementType::hasUris()) {
                 $types[] = HasUrlConditionRule::class;
                 $types[] = UriConditionRule::class;
@@ -125,31 +121,32 @@ class ElementCondition extends BaseCondition implements ElementConditionInterfac
                 $types[] = StatusConditionRule::class;
             }
 
-            // If we have a source key, we can fetch just the fields that belong to it
-            if ($this->sourceKey) {
-                $fields = [];
-                $fieldLayouts = Craft::$app->getElementSources()->getFieldLayoutsForSource($elementType, $this->sourceKey);
+            if ($elementType::hasContent()) {
+                if ($elementType::hasTitles()) {
+                    $types[] = TitleConditionRule::class;
+                }
+
+                // If we have a source key, we can fetch just the field layouts that are available to it
+                if ($this->sourceKey) {
+                    $fieldLayouts = Craft::$app->getElementSources()->getFieldLayoutsForSource($elementType, $this->sourceKey);
+                } else {
+                    $fieldLayouts = Craft::$app->getFields()->getLayoutsByType($elementType);
+                }
+
                 foreach ($fieldLayouts as $fieldLayout) {
-                    array_push($fields, ...$fieldLayout->getCustomFields());
+                    foreach ($fieldLayout->getCustomFields() as $field) {
+                        if (($type = $field->getElementConditionRuleType()) !== null) {
+                            if (is_string($type)) {
+                                $type = ['class' => $type];
+                            }
+                            if (!is_subclass_of($type['class'], FieldConditionRuleInterface::class)) {
+                                throw new InvalidTypeException($type['class'], FieldConditionRuleInterface::class);
+                            }
+                            $type['fieldUid'] = $field->uid;
+                            $types[] = $type;
+                        }
+                    }
                 }
-            }
-        }
-
-        if (!isset($fields)) {
-            // Default to all custom fields
-            $fields = Craft::$app->getFields()->getAllFields($this->fieldContext);
-        }
-
-        foreach ($fields as $field) {
-            if (($type = $field->getElementConditionRuleType()) !== null) {
-                if (is_string($type)) {
-                    $type = ['class' => $type];
-                }
-                if (!is_subclass_of($type['class'], FieldConditionRuleInterface::class)) {
-                    throw new InvalidTypeException($type['class'], FieldConditionRuleInterface::class);
-                }
-                $type['fieldUid'] = $field->uid;
-                $types[] = $type;
             }
         }
 

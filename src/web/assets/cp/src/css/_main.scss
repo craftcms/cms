@@ -2008,7 +2008,7 @@ div.btn.submit input {
   overflow: hidden;
   cursor: pointer;
   user-select: none;
-  background-image: linear-gradient(to right, var(--gray-300), var(--gray-300));
+  background-image: linear-gradient(to right, var(--gray-400), var(--gray-400));
   transition: background-image linear 100ms;
 
   &.on {
@@ -2082,7 +2082,7 @@ div.btn.submit input {
   &:focus {
     .lightswitch-container {
       .handle {
-        background-color: var(--light-sel-color);
+        background-color: var(--gray-100);
       }
     }
   }

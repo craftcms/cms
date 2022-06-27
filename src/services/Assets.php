@@ -176,18 +176,22 @@ class Assets extends Component
      */
     public function moveAsset(Asset $asset, VolumeFolder $folder, string $filename = ''): bool
     {
-        if ($asset->folderId == $folder->id) {
+        $folderChanging = $asset->folderId != $folder->id;
+        $filenameChanging = $filename !== '' && $filename !== $asset->getFilename();
+
+        if (!$folderChanging && !$filenameChanging) {
             return true;
         }
 
-        $asset->newFolderId = $folder->id;
+        if ($folderChanging) {
+            $asset->newFolderId = $folder->id;
+        }
 
-        // If the filename hasn’t changed, then we can use the `move` scenario
-        if ($filename === '' || $filename === $asset->getFilename()) {
-            $asset->setScenario(Asset::SCENARIO_MOVE);
-        } else {
+        if ($filenameChanging) {
             $asset->newFilename = $filename;
             $asset->setScenario(Asset::SCENARIO_FILEOPS);
+        } else {
+            $asset->setScenario(Asset::SCENARIO_MOVE);
         }
 
         return Craft::$app->getElements()->saveElement($asset);
@@ -350,7 +354,7 @@ class Assets extends Component
             // Add additional criteria but prevent overriding volumeId and order.
             $criteria = array_merge($additionalCriteria, [
                 'volumeId' => $volumeId,
-                'order' => [new Expression('path IS NULL DESC'), 'path' => SORT_ASC],
+                'order' => [new Expression('[[path]] IS NULL DESC'), 'path' => SORT_ASC],
             ]);
             $cacheKey = md5(Json::encode($criteria));
 
@@ -537,7 +541,7 @@ class Assets extends Component
     {
         return $this->findFolder([
             'volumeId' => $volumeId,
-            'parentId' => ':empty:',
+            'parentId' => null,
         ]);
     }
 
@@ -937,8 +941,8 @@ class Assets extends Component
         }
 
         $volumeTopFolder = $this->findFolder([
-            'volumeId' => ':empty:',
-            'parentId' => ':empty:',
+            'volumeId' => null,
+            'parentId' => null,
         ]);
 
         // Unlikely, but would be very awkward if this happened without any contingency plans in place.

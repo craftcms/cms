@@ -765,6 +765,8 @@ Craft.ElementEditor = Garnish.Base.extend(
       this.$editMetaBtn = $('<button/>', {
         type: 'button',
         class: 'btn edit icon',
+        'aria-expanded': 'false',
+        'aria-label': Craft.t('app', 'Edit draft settings'),
         title: Craft.t('app', 'Edit draft settings'),
       }).appendTo($btnGroup);
       $btnGroup.find('.btngroup-btn-last').removeClass('btngroup-btn-last');
@@ -1051,6 +1053,15 @@ Craft.ElementEditor = Garnish.Base.extend(
 
             clearTimeout(this.timeout);
             this.timeout = null;
+
+            // If we haven't had a chance to fetch the initial data yet, try again in a bit
+            if (
+              typeof this.$container.data('initialSerializedValue') ===
+              'undefined'
+            ) {
+              this.timeout = setTimeout(this.checkForm.bind(this), 500);
+              return;
+            }
 
             // Has anything changed?
             const data = this.serializeForm(true);
@@ -1695,6 +1706,7 @@ Craft.ElementEditor = Garnish.Base.extend(
       this.$saveMetaBtn = $('<button/>', {
         type: 'submit',
         class: 'btn submit disabled',
+        'aria-disabled': 'true',
         text: Craft.t('app', 'Save'),
       }).appendTo($footer);
 
@@ -1711,10 +1723,16 @@ Craft.ElementEditor = Garnish.Base.extend(
 
     onMetaHudShow: function () {
       this.$editMetaBtn.addClass('active');
+      this.$editMetaBtn.attr('aria-expanded', 'true');
     },
 
     onMetaHudHide: function () {
       this.$editMetaBtn.removeClass('active');
+      this.$editMetaBtn.attr('aria-expanded', 'false');
+
+      if (Garnish.focusIsInside(this.metaHud.$body)) {
+        this.$editMetaBtn.trigger('focus');
+      }
     },
 
     onMetaHudEscape: function () {
@@ -1727,10 +1745,12 @@ Craft.ElementEditor = Garnish.Base.extend(
         this.$nameTextInput.val() !== this.settings.draftName
       ) {
         this.$saveMetaBtn.removeClass('disabled');
+        this.$saveMetaBtn.removeAttr('aria-disabled');
         return true;
       }
 
       this.$saveMetaBtn.addClass('disabled');
+      this.$saveMetaBtn.attr('aria-disabled', 'true');
       return false;
     },
 

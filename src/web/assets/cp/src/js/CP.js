@@ -330,7 +330,9 @@ Craft.CP = Garnish.Base.extend(
       if ($noticeContainer.length) {
         return $noticeContainer;
       }
-      return $('<div id="content-notice"/>').prependTo(this.$contentHeader);
+      return $('<div id="content-notice"/>')
+        .attr('role', 'status')
+        .prependTo(this.$contentHeader);
     },
 
     initSpecialForms: function () {

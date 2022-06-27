@@ -1,6 +1,7 @@
 {% extends "_layouts/cp" %}
 
 {% set elementInstance = craft.app.elements.createElement(elementType) %}
+{% set title = title ?? elementInstance.pluralDisplayName() %}
 {% set context = 'index' %}
 
 {% if not elementInstance %}

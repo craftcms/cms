@@ -184,7 +184,8 @@ class Search extends Component
      * Searches for elements that match the given element query.
      *
      * @param ElementQuery $elementQuery The element query being executed
-     * @return array The filtered list of element IDs.
+     * @return int[] The filtered list of element IDs.
+     * @phpstan-return array<int,int>
      * @since 3.7.14
      */
     public function searchElements(ElementQuery $elementQuery): array
@@ -372,9 +373,9 @@ SQL;
      *
      * @param array $row A single result from the search query.
      * @param int|int[]|null $siteId
-     * @return float The total score for this row.
+     * @return int The total score for this row.
      */
-    private function _scoreRow(array $row, array|int|null $siteId = null): float
+    private function _scoreRow(array $row, array|int|null $siteId = null): int
     {
         // Starting point
         $score = 0;
@@ -395,7 +396,7 @@ SQL;
             }
         }
 
-        return $score;
+        return (int)round($score);
     }
 
     /**
@@ -831,7 +832,7 @@ SQL;
     {
         $ftVal = explode(' ', $val);
         $ftVal = implode(' & ', $ftVal);
-        $likeVal = !$exact ? '%' . $val . '%' : $val;
+        $likeVal = !$exact ? '%' . $val . '%' : " $val ";
 
         $db = Craft::$app->getDb();
 
