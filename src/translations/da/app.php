@@ -1297,7 +1297,7 @@ return [
     'Show time' => 'Vis tid',
     'Show unpermitted files' => 'Vis filer uden tilladelse',
     'Show unpermitted volumes' => 'Vis diskenheder uden tilladelse',
-    'Show {title} children' => 'Vis {title}-børn',
+    'Show {title} children' => 'Vis underordnede elementer for {title}',
     'Show' => 'Vis',
     'Show/hide children' => 'Vis/gem børn',
     'Showing results for “{searchQuery}”' => 'Viser resultater for “{searchQuery}”',
