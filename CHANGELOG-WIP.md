@@ -40,6 +40,7 @@
 - Asset indexes now have a “Location” table attribute option. ([#11450](https://github.com/craftcms/cms/discussions/11450))
 - It’s now possible to sort entries by their section and type. ([#9192](https://github.com/craftcms/cms/discussions/9192), [#11335](https://github.com/craftcms/cms/discussions/11335))
 - It’s now possible to sort assets by their file kind.
+- Element editor metadata now lists elements’ IDs.
 - Live Preview now always shows a “Refresh” button, regardless of whether the preview target has auto-refresh enabled. ([#11160](https://github.com/craftcms/cms/discussions/11160))
 - Sites’ Language settings now display the locale IDs as option hints, rather than the languages’ native names. ([#11195](https://github.com/craftcms/cms/discussions/11195))
 - Selectize options can now specify searchable `keywords` that won’t be visible in the UI.
