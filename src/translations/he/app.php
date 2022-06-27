@@ -1296,7 +1296,7 @@ return [
     'Show time' => 'הצג זמו',
     'Show unpermitted files' => 'הצג קבצים שאינם מותרים',
     'Show unpermitted volumes' => 'הצג אמצעי אחסון שאינם מותרים',
-    'Show {title} children' => 'הצג {title} ילדים',
+    'Show {title} children' => 'הצג את בני {title}',
     'Show' => 'הצג',
     'Show/hide children' => 'הצג\הסתר ילדים',
     'Showing results for “{searchQuery}”' => 'מראה תוצאות עבור "{searchQuery}"',
