@@ -259,7 +259,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
         $selectedValues = [];
         foreach ((array)$value as $val) {
             $val = (string)$val;
-            if (StringHelper::startsWith($val, 'base64:')) {
+            if (str_starts_with($val, 'base64:')) {
                 $val = base64_decode(StringHelper::removeLeft($val, 'base64:'));
             }
             $selectedValues[] = $val;
@@ -543,12 +543,12 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
      * @rturn string|array|null
      * @since 3.7.46
      */
-    protected function encodeValue($value)
+    protected function encodeValue(OptionData|MultiOptionsFieldData|string|null $value): string|array|null
     {
         if ($value instanceof MultiOptionsFieldData) {
-            return array_map(function(OptionData $value) {
-                return $this->encodeValue($value);
-            }, (array)$value);
+            /** @var OptionData[] $options */
+            $options = (array)$value;
+            return array_map(fn(OptionData $value) => $this->encodeValue($value), $options);
         }
 
         if ($value instanceof OptionData) {
