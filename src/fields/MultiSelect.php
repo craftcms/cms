@@ -60,8 +60,8 @@ class MultiSelect extends BaseOptionsField
             'id' => $this->getInputId(),
             'describedBy' => $this->describedBy,
             'name' => $this->handle,
-            'values' => $value,
-            'options' => $this->translatedOptions(),
+            'values' => $this->encodeValue($value),
+            'options' => $this->translatedOptions(true),
         ]);
     }
 

@@ -2,12 +2,17 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\fields\BaseOptionsField::encodeValue()`.
+
 ### Changed
 - `canonical` is now a reserved field handle. ([#11503](https://github.com/craftcms/cms/issues/11503))
+- Added `craft\fields\BaseOptionsField::translatedOptions()` now has an `$encode` argument.
 
 ### Fixed
 - Fixed a bug where `Garnish.setFocusWithin()` wasn’t working if the first focusable element was a checkbox. ([#11498](https://github.com/craftcms/cms/discussions/11498))
 - Fixed a bug where Matrix blocks could be saved in the wrong order.
+- Fixed a bug where Checkboxes, Dropdown, Multi-select, and Radio Buttons fields could lose their values if their option values were set to integers. ([#11461](https://github.com/craftcms/cms/issues/11461))
 
 ## 3.7.45.2 - 2022-06-24
 
