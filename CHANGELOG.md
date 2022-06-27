@@ -7,6 +7,7 @@
 
 ### Fixed
 - Fixed a bug where `Garnish.setFocusWithin()` wasn’t working if the first focusable element was a checkbox. ([#11498](https://github.com/craftcms/cms/discussions/11498))
+- Fixed a bug where Matrix blocks could be saved in the wrong order.
 
 ## 3.7.45.2 - 2022-06-24
 

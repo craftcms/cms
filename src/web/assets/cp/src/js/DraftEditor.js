@@ -1263,7 +1263,7 @@ Craft.DraftEditor = Garnish.Base.extend(
                 // (`[sortOrder]` should pass here, which could be set to a specific order index, but *not* `[sortOrder][]`!)
                 if (
                   name.match(
-                    new RegExp(`${lb}(enabled|sordOrder|type|typeId)${rb}$`)
+                    new RegExp(`${lb}(enabled|sortOrder|type|typeId)${rb}$`)
                   )
                 ) {
                   return m;
