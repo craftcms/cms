@@ -911,7 +911,7 @@ return [
     'New category group' => 'New category group',
     'New category in the {group} category group' => 'หมวดหมู่ใหม่ในกลุ่มหมวดหมู่ {group}',
     'New category' => 'New category',
-    'New category, choose a category group' => 'หมวดหมู่ใหม่ เลือกกลุ่มหมวดหมู่',
+    'New category, choose a category group' => 'หมวดหมู่ใหม่, เลือกกลุ่มหมวดหมู่',
     'New child' => 'New child',
     'New custom source' => 'แหล่งที่มาใหม่แบบกำหนดเอง',
     'New email addresses must be verified before taking effect.' => 'New email addresses must be verified before taking effect.',
