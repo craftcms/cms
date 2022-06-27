@@ -1296,7 +1296,7 @@ return [
     'Show time' => 'Laat tijd zien',
     'Show unpermitted files' => 'Niet-toegestane bestanden weergeven',
     'Show unpermitted volumes' => 'Niet-toegestane volumes weergeven',
-    'Show {title} children' => '{title} kinderen weergeven',
+    'Show {title} children' => '{title} onderliggende weergeven',
     'Show' => 'Tonen',
     'Show/hide children' => 'Kinderen tonen/verbergen',
     'Showing results for “{searchQuery}”' => 'Resultaten voor “{searchQuery}” worden weergegeven',
