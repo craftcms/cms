@@ -1296,7 +1296,7 @@ return [
     'Show time' => 'Mostrar hora',
     'Show unpermitted files' => 'Mostrar archivos no permitidos',
     'Show unpermitted volumes' => 'Mostrar volúmenes no permitidos',
-    'Show {title} children' => 'Mostrar el hijo {title}',
+    'Show {title} children' => 'Mostrar hijo de {title}',
     'Show' => 'Mostrar',
     'Show/hide children' => 'Mostrar/ocultar hijo',
     'Showing results for “{searchQuery}”' => 'Mostrando resultados para “{searchQuery}”',
