@@ -3,6 +3,8 @@
 ### Added
 - Field layouts can now have “Line Break” UI elements. ([#11328](https://github.com/craftcms/cms/discussions/11328))
 - Added the `db/drop-all-tables` command. ([#11288](https://github.com/craftcms/cms/pull/11288))
+- Added the `elements/delete` command.
+- Added the `elements/restore` command.
 - Added the `project-config/get` command. ([#11341](https://github.com/craftcms/cms/pull/11341))
 - Added the `project-config/remove` command. ([#11341](https://github.com/craftcms/cms/pull/11341))
 - Added the `project-config/set` command. ([#11341](https://github.com/craftcms/cms/pull/11341))
