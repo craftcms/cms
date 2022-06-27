@@ -1,10 +1,5 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
-
-### Changed
-- The `_layouts/elementindex` control panel template now sets the page title based on the element’s `pluralDisplayName()` method by default. ([#11502](https://github.com/craftcms/cms/pull/11502))
-
 ## 4.0.5.2 - 2022-06-24
 
 ### Fixed
