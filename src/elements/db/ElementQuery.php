@@ -22,7 +22,9 @@ use craft\db\Table;
 use craft\elements\User;
 use craft\errors\SiteNotFoundException;
 use craft\events\CancelableEvent;
+use craft\events\DefineValueEvent;
 use craft\events\PopulateElementEvent;
+use craft\events\PopulateElementsEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
@@ -63,11 +65,25 @@ class ElementQuery extends Query implements ElementQueryInterface
     public const EVENT_AFTER_PREPARE = 'afterPrepare';
 
     /**
+     * @event DefineValueEvent An event that is triggered when defining the cache tags that should be associated with the query.
+     * @see getCacheTags()
+     * @since 4.1.0
+     */
+    public const EVENT_DEFINE_CACHE_TAGS = 'defineCacheTags';
+
+    /**
      * @event PopulateElementEvent The event that is triggered after an element is populated.
      *
      * If [[PopulateElementEvent::$element]] is replaced by an event handler, the replacement will be returned by [[createElement()]] instead.
      */
     public const EVENT_AFTER_POPULATE_ELEMENT = 'afterPopulateElement';
+
+    /**
+     * @event PopulateElementEvent The event that is triggered after an element is populated.
+     *
+     * If [[PopulateElementEvent::$element]] is replaced by an event handler, the replacement will be returned by [[createElement()]] instead.
+     */
+    public const EVENT_AFTER_POPULATE_ELEMENTS = 'afterPopulateElements';
 
     /**
      * @var string The name of the [[ElementInterface]] class.
@@ -457,9 +473,12 @@ class ElementQuery extends Query implements ElementQueryInterface
     private ?array $_resultCriteria = null;
 
     /**
-     * @var array|null
+     * @var int[]|null
+     * @see _applySearchParam()
+     * @see _applyOrderByParams()
+     * @see populate()
      */
-    private ?array $_searchScores = null;
+    private ?array $_searchResults = null;
 
     /**
      * @var string[]|null
@@ -1386,10 +1405,10 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         // Should we set a search score on the elements?
-        if (isset($this->_searchScores)) {
+        if (isset($this->_searchResults)) {
             foreach ($rows as &$row) {
-                if (isset($row['id'], $this->_searchScores[$row['id']])) {
-                    $row['searchScore'] = $this->_searchScores[$row['id']];
+                if (isset($row['id'], $this->_searchResults[$row['id']])) {
+                    $row['searchScore'] = $this->_searchResults[$row['id']];
                 }
             }
         }
@@ -1886,6 +1905,15 @@ class ElementQuery extends Query implements ElementQueryInterface
                 $queryTags = (array)$this->id;
             } else {
                 $queryTags = $this->cacheTags();
+
+                if ($this->hasEventHandlers(self::EVENT_DEFINE_CACHE_TAGS)) {
+                    $event = new DefineValueEvent([
+                        'value' => $queryTags,
+                    ]);
+                    $this->trigger(self::EVENT_DEFINE_CACHE_TAGS, $event);
+                    $queryTags = $event->value;
+                }
+
                 if (!empty($queryTags)) {
                     if ($this->drafts !== false) {
                         $queryTags[] = 'drafts';
@@ -1994,8 +2022,8 @@ class ElementQuery extends Query implements ElementQueryInterface
     protected function normalizeOrderBy($columns): array
     {
         // Special case for 'score' - that should be shorthand for SORT_DESC, not SORT_ASC
-        if ($columns === 'score') {
-            return ['score' => SORT_DESC];
+        if (is_string($columns)) {
+            $columns = preg_replace('/(?<=^|,)(\s*)score(\s*)(?=$|,)/', '$1score desc$2', $columns);
         }
 
         return parent::normalizeOrderBy($columns);
@@ -2553,7 +2581,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     private function _applySearchParam(Connection $db): void
     {
-        $this->_searchScores = null;
+        $this->_searchResults = null;
 
         if ($this->search) {
             $searchResults = Craft::$app->getSearch()->searchElements($this);
@@ -2563,29 +2591,9 @@ class ElementQuery extends Query implements ElementQueryInterface
                 throw new QueryAbortedException();
             }
 
-            $filteredElementIds = array_keys($searchResults);
+            $this->_searchResults = $searchResults;
 
-            if ($this->orderBy === ['score' => SORT_ASC] || $this->orderBy === ['score' => SORT_DESC]) {
-                // Order the elements in the exact order that the Search service returned them in
-                if (!$db instanceof \craft\db\Connection) {
-                    throw new Exception('The database connection doesn’t support fixed ordering.');
-                }
-                if (
-                    ($this->orderBy === ['score' => SORT_ASC] && !$this->inReverse) ||
-                    ($this->orderBy === ['score' => SORT_DESC] && $this->inReverse)
-                ) {
-                    $orderBy = [new FixedOrderExpression('elements.id', array_reverse($filteredElementIds), $db)];
-                } else {
-                    $orderBy = [new FixedOrderExpression('elements.id', $filteredElementIds, $db)];
-                }
-
-                $this->query->orderBy($orderBy);
-                $this->subQuery->orderBy($orderBy);
-            }
-
-            $this->subQuery->andWhere(['elements.id' => $filteredElementIds]);
-
-            $this->_searchScores = $searchResults;
+            $this->subQuery->andWhere(['elements.id' => array_keys($searchResults)]);
         }
     }
 
@@ -2598,12 +2606,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     private function _applyOrderByParams(Connection $db): void
     {
-        if (
-            !isset($this->orderBy) ||
-            $this->orderBy === ['score' => SORT_ASC] ||
-            $this->orderBy === ['score' => SORT_DESC] ||
-            !empty($this->query->orderBy)
-        ) {
+        if (!isset($this->orderBy) || !empty($this->query->orderBy)) {
             return;
         }
 
@@ -2680,6 +2683,41 @@ class ElementQuery extends Query implements ElementQueryInterface
                 }
             }
             unset($direction);
+        }
+
+        // swap `score` direction value with a case expression
+        if (
+            !empty($this->_searchResults) &&
+            isset($orderBy['score']) &&
+            in_array($orderBy['score'], [SORT_ASC, SORT_DESC], true)
+        ) {
+            $elementIdsByScore = [];
+            foreach ($this->_searchResults as $elementId => $score) {
+                if ($score !== 0) {
+                    $elementIdsByScore[$score][] = $elementId;
+                }
+            }
+            if (!empty($elementIdsByScore)) {
+                $caseSql = 'CASE';
+                foreach ($elementIdsByScore as $score => $elementIds) {
+                    $caseSql .= ' WHEN (';
+                    if (count($elementIds) === 1) {
+                        $caseSql .= "[[elements.id]] = $elementIds[0]";
+                    } else {
+                        $caseSql .= '[[elements.id]] IN (' . implode(',', $elementIds) . ')';
+                    }
+                    $caseSql .= ") THEN $score";
+                }
+                $caseSql .= ' ELSE 0 END';
+                if ($orderBy['score'] === SORT_DESC) {
+                    $caseSql .= ' DESC';
+                }
+                $orderBy['score'] = new Expression($caseSql);
+            } else {
+                unset($orderBy['score']);
+            }
+        } else {
+            unset($orderBy['score']);
         }
 
         $this->query->orderBy($orderBy);
@@ -2880,6 +2918,16 @@ class ElementQuery extends Query implements ElementQueryInterface
             // Should we eager-load some elements onto these?
             if ($this->with) {
                 Craft::$app->getElements()->eagerLoadElements($this->elementType, $elements, $this->with);
+            }
+
+            // Fire an 'afterPopulateElements' event
+            if ($this->hasEventHandlers(self::EVENT_AFTER_POPULATE_ELEMENTS)) {
+                $event = new PopulateElementsEvent([
+                    'elements' => $elements,
+                    'rows' => $rows,
+                ]);
+                $this->trigger(self::EVENT_AFTER_POPULATE_ELEMENTS, $event);
+                $elements = $event->elements;
             }
         }
 

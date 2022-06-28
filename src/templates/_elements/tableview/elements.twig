@@ -4,10 +4,9 @@
 {% set structureEditable = structureEditable is defined ? structureEditable : false -%}
 
 {% if structure -%}
-    {% set basePadding = (showCheckboxes ? 14 : 24) + (structureEditable ? 14 : 0) %}
+    {% set basePadding = (showCheckboxes ? 14 : 24) + (structureEditable ? 34 : 0) %}
     {% set padding = craft.app.locale.getOrientation() == 'ltr' ? 'left' : 'right' -%}
 {% endif -%}
-
 {% for element in elements %}
     {% set totalDescendants = structure
         ? element.getDescendants()
@@ -16,16 +15,21 @@
             .draftOf(false)
             .count()
         : 0 %}
-    <tr data-id="{{ element.id }}"{% if structure %} data-level="{{ element.level }}" data-descendants="{{ totalDescendants ?? 0 }}"{% endif %}{% if element.id in disabledElementIds %} class="disabled"{% endif %}>
+    {% set elementTitle = element.title ?: element.id %}
+    <tr data-id="{{ element.id }}"{% if structure %} data-title="{{ elementTitle }}" data-level="{{ element.level }}" data-descendants="{{ totalDescendants ?? 0 }}"{% endif %}{% if element.id in disabledElementIds %} class="disabled"{% endif %}>
         {% if showCheckboxes %}
             <td class="checkbox-cell"><div class="checkbox" title="{{ 'Select'|t('app') }}" aria-label="{{ 'Select'|t('app') }}"></div></td>
         {% endif %}
         {% for attribute in attributes %}
             {% if loop.first %}
-                <th data-title="{{ attribute[1].label }}"{% if structure %} style="padding-{{ padding }}: {{ basePadding + (element.level - 1) * 44 }}px;"{% endif %} data-titlecell="">
+                <th data-title="{{ attribute[1].label }}"{% if structure %} style="padding-{{ padding }}: {{ basePadding * element.level }}px;"{% endif %} data-titlecell="">
                     {%- if structureEditable %}<a class="move icon" title="{{ 'Reorder'|t('app') }}" aria-label="{{ 'Reorder'|t('app') }}" role="button">&nbsp;</a>{% endif %}
-                    {%- if structure and totalDescendants %}<span class="toggle{% if element.id not in collapsedElementIds %} expanded{% endif
-                    %}" title="{{ 'Show/hide children'|t('app') }}" aria-label="{{ 'Show/hide children'|t('app') }}"></span>{% endif %}
+                    {%- if structure and totalDescendants %}
+                        {% set toggleLabel = 'Show {title} children'|t('app', {title: elementTitle}) %}
+                        <button type="button" class="toggle{% if element.id not in collapsedElementIds %} expanded{% endif
+                        %}" title="{{ 'Show/hide children'|t('app') }}" aria-label="{{ toggleLabel }}"
+                        aria-expanded="{{  element.id not in collapsedElementIds ? 'true' : 'false' }}"></button>
+                    {% endif %}
                     {%- include '_elements/element' with {
                         autoReload: false,
                     } -%}

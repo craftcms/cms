@@ -49,9 +49,10 @@
 /* ----------------------------------------*/
 
 :root {
-  --ui-control-color: var(--gray-400);
-  --ui-control-hover-color: var(--gray-500);
-  --ui-control-active-color: var(--gray-600);
+  --ui-control-color: var(--gray-550);
+  --ui-control-hover-color: var(--gray-600);
+  --ui-control-active-color: var(--gray-700);
+  --icon-opacity: 0.8;
   --light-focus-hsl: #{hue($lightFocusColor)}, #{saturation($lightFocusColor)},
     #{lightness($lightFocusColor)};
   --medium-focus-hsl: #{hue($mediumFocusColor)},
@@ -60,7 +61,7 @@
     #{lightness($darkFocusColor)};
   --focus-ring: 0 0 0 1px hsl(var(--dark-focus-hsl)),
     0 0 0 3px hsla(var(--dark-focus-hsl), 0.7);
-  --touch-target-size: 44px; /* Minimum recommended touch target size */
+  --touch-target-size: 24px; /* Minimum recommended touch target size */
 }
 
 body,
@@ -948,14 +949,7 @@ td.right {
 
 // Visually hide without hiding from screen readers
 .visually-hidden {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: 0;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  border: 0;
+  @include visually-hidden;
 }
 
 .invisible {
@@ -1165,6 +1159,23 @@ td.right {
 
 .customize-sources-table-column .move {
   @include margin-right(10px);
+}
+
+ul.path {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  flex-wrap: wrap;
+
+  li {
+    display: inline-flex;
+    align-items: center;
+
+    &:not(:last-child):after {
+      @include margin(0, 5px, 0, 2px);
+      @include angle(right, var(--light-text-color), 1px);
+    }
+  }
 }
 
 /* ----------------------------------------
@@ -1997,7 +2008,7 @@ div.btn.submit input {
   overflow: hidden;
   cursor: pointer;
   user-select: none;
-  background-image: linear-gradient(to right, var(--gray-300), var(--gray-300));
+  background-image: linear-gradient(to right, var(--gray-400), var(--gray-400));
   transition: background-image linear 100ms;
 
   &.on {
@@ -2071,7 +2082,7 @@ div.btn.submit input {
   &:focus {
     .lightswitch-container {
       .handle {
-        background-color: var(--light-sel-color);
+        background-color: var(--gray-100);
       }
     }
   }
@@ -2137,6 +2148,10 @@ div.btn.submit input {
         &:after {
           border-color: var(--link-color);
         }
+      }
+
+      &.focus-visible {
+        box-shadow: inset 0 0 0 1px var(--hairline-color), var(--focus-ring);
       }
     }
 
@@ -2552,7 +2567,7 @@ $elementInnerSpacing: 5px;
       padding: 1px 5px;
       font-weight: normal;
       text-decoration: none !important;
-      color: var(--light-text-color);
+      color: var(--medium-text-color);
       background: var(--gray-100);
       border-radius: var(--large-border-radius);
     }
@@ -2734,25 +2749,32 @@ $checkboxPadding: $checkboxSize + 4;
 
   // table views
   .tableview {
-    .move {
-      display: block;
+    .move,
+    .toggle {
+      display: flex;
       position: absolute;
-      top: calc(50% - 11px);
-      @include margin-left(-14px);
+      justify-content: center;
+      align-items: center;
+      top: 50%;
+      transform: translateY(-50%);
+      @include margin-left(calc(var(--touch-target-size) * -1));
+      width: var(--touch-target-size);
+      height: var(--touch-target-size);
+    }
+
+    .move {
       font-size: 11px;
       text-decoration: none;
     }
 
     .toggle {
-      display: block;
-      position: absolute;
-      top: calc(50% - 7px);
-      @include margin-left(-16px);
+      text-align: center;
       padding: 4px;
+      border-radius: 50%;
     }
 
     .move + .toggle {
-      @include margin-left(-34px);
+      @include margin-left(calc(var(--touch-target-size) * -2));
     }
   }
 
@@ -3362,24 +3384,30 @@ ul.tree,
 }
 
 .condition:not(:empty) + .condition-footer .btn.add {
-  border-top-width: 0;
-  border-top-left-radius: 0;
-  border-top-right-radius: 0;
+}
+
+.condition-rule,
+.condition-footer {
+  padding: 7px;
 }
 
 .condition-footer {
-  .btn.add {
-    height: 48px;
+  border: 1px dashed var(--medium-hairline-color);
+  border-radius: var(--large-border-radius);
+
+  .condition:not(:empty) + & {
+    border-top-width: 0;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
   }
 
-  .spinner {
-    @include margin-left(7px);
+  .spinner:not(.loading) {
+    display: none;
   }
 }
 
 .condition-rule {
   margin: 0;
-  padding: 7px;
   border: 1px solid var(--hairline-color);
   background-color: var(--gray-050);
 
@@ -3563,12 +3591,11 @@ ul.tree,
   padding: var(--s) var(--xl);
   min-height: 50px;
   box-sizing: border-box;
-  background: var(--gray-050);
   box-shadow: inset 0 -1px 0 0 transparentize($grey300, 0.75);
   border-radius: var(--large-border-radius) var(--large-border-radius) 0 0;
 
   .header-btn {
-    margin: 5px 0;
+    margin: 2px 0;
     @include header-btn;
   }
 
@@ -3578,15 +3605,17 @@ ul.tree,
 }
 
 .pane-tabs {
-  margin-bottom: calc(var(--s) * -1);
   display: flex;
   flex-direction: row;
   align-items: center;
-  max-width: 100%;
+  margin: calc(var(--s) * -1) calc(var(--xl) * -1);
+
+  &:first-child {
+    border-radius: var(--large-border-radius) var(--large-border-radius) 0 0;
+    overflow: hidden;
+  }
 
   [role='tablist'] {
-    margin: calc(var(--s) * -1) var(--neg-padding) 0;
-    padding: var(--s) var(--padding) 0;
     flex: 1;
     display: flex;
     flex-direction: row;
@@ -3619,18 +3648,26 @@ ul.tree,
       flex-direction: row;
       align-items: center;
       position: relative;
-      border-radius: var(--medium-border-radius) var(--medium-border-radius) 0 0;
-      padding: 0 12px;
+      padding: 0 17px;
       white-space: nowrap;
       color: var(--light-text-color);
-      height: 42px;
+      height: 50px;
 
-      &:not(:first-child) {
-        @include margin-left(4px);
+      .tab-label {
+        padding: 3px 7px;
+        border-radius: var(--large-border-radius);
       }
 
       &:hover {
         text-decoration: none;
+      }
+
+      &.focus-visible {
+        box-shadow: none;
+
+        .tab-label {
+          box-shadow: var(--focus-ring);
+        }
       }
 
       &:not(.sel) {
@@ -3640,9 +3677,11 @@ ul.tree,
       }
 
       &.sel {
+        position: relative;
         cursor: default;
         color: var(--text-color);
-        @include pane;
+        box-shadow: inset 0 -2px 0 var(--gray-500);
+        color: var(--text-color);
       }
 
       span[data-icon] {
@@ -3652,7 +3691,7 @@ ul.tree,
   }
 
   .menubtn {
-    @include margin-left(32px);
+    margin: 0 var(--xl);
   }
 }
 
@@ -4128,14 +4167,13 @@ ul.tree,
       display: flex;
       flex-direction: row;
       align-items: center;
-      margin-bottom: calc(var(--s) * -1);
       gap: var(--s);
-      min-height: 42px;
+      min-height: calc(50px - 16px);
 
       & > .pane-tabs {
         width: 1px; // give other elements in the header plenty of room before the tabs take up whatever's left
         flex: 1;
-        margin-bottom: 0;
+        @include margin-right(0);
       }
     }
   }
@@ -4179,6 +4217,12 @@ ul.tree,
 
         & + .pane-header {
           border-radius: 0;
+        }
+      }
+
+      .image-actions {
+        &.is-mobile {
+          margin: calc(var(--spacing) / 2) 0 var(--spacing);
         }
       }
 
@@ -4564,6 +4608,15 @@ ul.tree,
     }
   }
 }
+
+.image-actions {
+  &.is-mobile {
+    margin: calc((var(--spacing) / 2) * -1) var(--neg-padding) var(--spacing);
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
 .button-fade {
   .buttons {
     opacity: 0;
@@ -4611,8 +4664,40 @@ ul.tree,
 
 /* element selector modals */
 .elementselectormodal {
+  --content-padding: 24px;
   padding-bottom: 50px;
   user-select: none;
+
+  .main-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: var(--s);
+  }
+
+  .main-heading {
+    margin-bottom: 0;
+  }
+
+  .nav-toggle {
+    @include margin-left(4px);
+    @include touch-target;
+    color: var(--ui-control-color);
+
+    &:hover {
+      color: var(--gray-500);
+    }
+  }
+
+  .sidebar-header {
+    display: flex;
+    justify-content: flex-end;
+    padding: 0 var(--s);
+    margin-bottom: var(--s);
+  }
+
+  .nav-close {
+    @include touch-target;
+  }
 
   .body {
     position: relative;
@@ -4634,11 +4719,12 @@ ul.tree,
         @include margin-left(-249px);
         height: 100%;
         overflow: auto;
+        padding: var(--content-padding) 0;
       }
 
       .main {
         margin: -24px;
-        padding: 24px;
+        padding: var(--content-padding);
         height: 100%;
         box-sizing: border-box;
         overflow: auto;
@@ -4689,7 +4775,6 @@ ul.tree,
     left: 0;
     width: 100%;
     margin: 0;
-    height: 50px;
     box-sizing: border-box;
 
     .spinner {
@@ -4730,15 +4815,16 @@ ul.tree,
 /* Address Cards */
 .address-cards {
   display: grid;
-  gap: 14px 14px;
+  gap: var(--m) var(--m);
   grid-template-columns: repeat(1, minmax(0, 1fr));
   grid-auto-rows: minmax(0, 1fr);
+}
 
-  & > button.add {
-    padding: 1rem;
-    min-height: 8rem;
-    height: auto;
-  }
+.address-cards__add-btn {
+  padding: 1rem;
+  min-height: 8rem;
+  height: auto;
+  width: 100%;
 }
 
 .address-card.error {
@@ -4792,7 +4878,7 @@ ul.tree,
 }
 
 .address-card .address-card-label {
-  background: #dbeafe;
+  background: #e6f1fe;
   color: #2563eb;
   padding: 0.125rem 0.5rem;
   border-radius: 0.25rem;
@@ -4911,7 +4997,8 @@ ul.tree,
   ul {
     &.padded {
       li {
-        a {
+        a,
+        .menu-option {
           @include padding-left(24px);
 
           &[data-icon],
@@ -5421,7 +5508,7 @@ fieldset {
   padding: 0;
   line-height: 16px;
   border-radius: var(--small-border-radius);
-  color: var(--medium-dark-text-color);
+  color: var(--text-color);
 
   &:before {
     margin: 0;
@@ -5863,6 +5950,44 @@ body.reduce-focus-visibility {
 
   &:active {
     color: var(--ui-control-active-color);
+  }
+}
+
+.close-btn {
+  position: relative;
+
+  &:before,
+  &:after {
+    position: absolute;
+    content: '';
+    top: 50%;
+    left: 50%;
+    height: 15px;
+    width: 2px;
+    background-color: var(--ui-control-color);
+    opacity: var(--icon-opacity);
+  }
+
+  &:before {
+    transform: translate(-50%, -50%) rotate(-45deg);
+  }
+
+  &:after {
+    transform: translate(-50%, -50%) rotate(45deg);
+  }
+
+  &:hover {
+    &:before,
+    &:after {
+      background-color: var(--ui-control-hover-color);
+    }
+  }
+
+  &:active {
+    &:before,
+    &:after {
+      background-color: var(--ui-control-active-color);
+    }
   }
 }
 

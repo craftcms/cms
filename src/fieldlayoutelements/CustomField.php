@@ -233,6 +233,14 @@ class CustomField extends BaseField
     /**
      * @inheritdoc
      */
+    protected function labelId(): string
+    {
+        return $this->_field->getLabelId();
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function inputHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
         $value = $element ? $element->getFieldValue($this->_field->handle) : $this->_field->normalizeValue(null);

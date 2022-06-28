@@ -408,6 +408,7 @@ class ElementIndexesController extends BaseElementsController
         // Filter out any condition rules that touch the same query params as the source criteria
         if ($this->source['type'] === ElementSources::TYPE_NATIVE) {
             $condition->queryParams = array_keys($this->source['criteria'] ?? []);
+            $condition->sourceKey = $this->sourceKey;
         } else {
             /** @var ElementConditionInterface $sourceCondition */
             $sourceCondition = Craft::$app->getConditions()->createCondition($this->source['condition']);

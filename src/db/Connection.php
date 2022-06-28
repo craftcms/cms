@@ -265,7 +265,10 @@ class Connection extends \yii\db\Connection
             $backupPath = Craft::$app->getPath()->getDbBackupPath();
 
             // Grab all .sql files in the backup folder.
-            $files = glob($backupPath . DIRECTORY_SEPARATOR . '*.sql');
+            $files = array_merge(
+                glob($backupPath . DIRECTORY_SEPARATOR . '*.sql'),
+                glob($backupPath . DIRECTORY_SEPARATOR . '*.sql.zip'),
+            );
 
             // Sort them by file modified time descending (newest first).
             usort($files, static function($a, $b) {
