@@ -1,0 +1,23 @@
+{
+  "name": "@craftcms/browserslist-config",
+  "version": "1.0.0",
+  "description": "Browserslist config for Craft CMS",
+  "keywords": [
+    "craftcms",
+    "browserslist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "main": "index.js",
+  "author": "Pixel & Tonic, Inc. <support@pixelandtonic.com>",
+  "homepage": "https://craftcms.com",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/craftcms/cms.git"
+  },
+  "bugs": {
+    "url": "https://github.com/craftcms/cms/issues"
+  }
+}
