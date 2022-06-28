@@ -386,7 +386,7 @@ return [
     'Couldn’t unsuspend user.' => 'Nie można cofnąć zawieszenia użytkownika.',
     'Couldn’t update password.' => 'Nie można zaktualizować hasła.',
     'Country' => 'Kraj',
-    'County' => 'County',
+    'County' => 'Powiat',
     'Craft CMS does not support backtracking to this version. Please update to Craft CMS {version} or later.' => 'System Craft CMS nie wspiera backtrackingu do tej wersji. Proszę dokonać aktualizacji do Craft CMS {version} lub nowszej wersji.',
     'Craft CMS is running in Dev Mode.' => 'Craft CMS jest uruchomiony w trybie deweloperskim.',
     'Craft Support' => 'Wsparcie techniczne systemu Craft',

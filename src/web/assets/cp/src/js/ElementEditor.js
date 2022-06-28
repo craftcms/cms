@@ -1290,7 +1290,7 @@ Craft.ElementEditor = Garnish.Base.extend(
 
             for (const oldId in response.data.duplicatedElements) {
               if (
-                oldId !== this.settings.canonicalId &&
+                oldId != this.settings.canonicalId &&
                 response.data.duplicatedElements.hasOwnProperty(oldId)
               ) {
                 this.duplicatedElements[oldId] =
@@ -1588,7 +1588,7 @@ Craft.ElementEditor = Garnish.Base.extend(
                 // (`[sortOrder]` should pass here, which could be set to a specific order index, but *not* `[sortOrder][]`!)
                 if (
                   name.match(
-                    new RegExp(`${lb}(enabled|sordOrder|type|typeId)${rb}$`)
+                    new RegExp(`${lb}(enabled|sortOrder|type|typeId)${rb}$`)
                   )
                 ) {
                   return m;

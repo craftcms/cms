@@ -386,7 +386,7 @@ return [
     'Couldn’t unsuspend user.' => 'לא ניתן לבטל השעיה של משתמש.',
     'Couldn’t update password.' => 'לא ניתן לעדכן סיסמה.',
     'Country' => 'ארץ',
-    'County' => 'County',
+    'County' => 'מחוז',
     'Craft CMS does not support backtracking to this version. Please update to Craft CMS {version} or later.' => 'Craft CMS אינה תומכת בנסיגה לגרסה זו. נא לעדכן לגרסת Craft CMS {version} או גרסה מאוחרת יותר.',
     'Craft CMS is running in Dev Mode.' => 'Craft CMS פועלת במצב פיתוח.',
     'Craft Support' => 'תמיכת Craft',

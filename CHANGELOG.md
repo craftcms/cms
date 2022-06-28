@@ -1,5 +1,14 @@
 # Release Notes for Craft CMS 4
 
+## 4.0.6 - 2022-06-28
+
+### Changed
+- Improved the `install` command’s error output when invalid options were passed.
+
+### Fixed
+- Fixed a bug where self relations within relational fields were being forgotten. ([#11461](https://github.com/craftcms/cms/issues/11461))
+- Fixed a bug where the `install` command required `--site-name`, `--site-url`, and `--language` options to be passed when project config YAML was already present. ([#11513](https://github.com/craftcms/cms/issues/11513))
+
 ## 4.0.5.2 - 2022-06-24
 
 ### Fixed
