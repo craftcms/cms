@@ -911,7 +911,7 @@ return [
     'New category group' => '新建分类群组',
     'New category in the {group} category group' => '“{group}”类别组中的新类别',
     'New category' => '新建分类',
-    'New category, choose a category group' => '新类别，选择一个类别组',
+    'New category, choose a category group' => '新建类别，选择一个类别组',
     'New child' => '新建子类',
     'New custom source' => '新自定义源',
     'New email addresses must be verified before taking effect.' => '新电子邮件地址必须先验证，然后才能生效。',
