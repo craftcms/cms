@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+### Fixed
+- Fixed a PHP error. ([#11518](https://github.com/craftcms/cms/issues/11518))
+
 ## 4.1.0.1 - 2022-06-28
 
 ### Fixed

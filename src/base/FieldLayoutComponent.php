@@ -126,7 +126,7 @@ abstract class FieldLayoutComponent extends Model
      */
     public function hasConditions(): bool
     {
-        return isset($this->_userCondition) || isset($this->_elementCondition);
+        return $this->getUserCondition() || $this->getElementCondition();
     }
 
     /**
@@ -208,14 +208,8 @@ abstract class FieldLayoutComponent extends Model
     public function fields(): array
     {
         $fields = parent::fields();
-
-        if (isset($this->_userCondition)) {
-            $fields['userCondition'] = fn() => $this->getUserCondition()->getConfig();
-        }
-        if (isset($this->_elementCondition)) {
-            $fields['elementCondition'] = fn() => $this->getElementCondition()->getConfig();
-        }
-
+        $fields['userCondition'] = fn() => $this->getUserCondition()?->getConfig();
+        $fields['elementCondition'] = fn() => $this->getElementCondition()?->getConfig();
         return $fields;
     }
 
@@ -238,7 +232,7 @@ abstract class FieldLayoutComponent extends Model
                 $html .= '<hr>';
             }
 
-            $userCondition = $this->_userCondition ?? self::defaultUserCondition();
+            $userCondition = $this->getUserCondition() ?? self::defaultUserCondition();
             $userCondition->mainTag = 'div';
             $userCondition->id = 'user-condition';
             $userCondition->name = 'userCondition';
@@ -254,7 +248,7 @@ abstract class FieldLayoutComponent extends Model
             $elementType = $this->getLayout()->type;
 
             if ($elementType && is_subclass_of($elementType, ElementInterface::class)) {
-                $elementCondition = $this->_elementCondition ?? self::defaultElementCondition($elementType);
+                $elementCondition = $this->getElementCondition() ?? self::defaultElementCondition($elementType);
                 $elementCondition->mainTag = 'div';
                 $elementCondition->id = 'element-condition';
                 $elementCondition->name = 'elementCondition';
@@ -296,14 +290,17 @@ abstract class FieldLayoutComponent extends Model
     public function showInForm(?ElementInterface $element = null): bool
     {
         if ($this->conditional()) {
-            if (isset($this->_userCondition)) {
+            $userCondition = $this->getUserCondition();
+            $elementCondition = $this->getElementCondition();
+
+            if ($userCondition) {
                 $currentUser = Craft::$app->getUser()->getIdentity();
-                if ($currentUser && !$this->getUserCondition()->matchElement($currentUser)) {
+                if ($currentUser && !$userCondition->matchElement($currentUser)) {
                     return false;
                 }
             }
 
-            if (isset($this->_elementCondition) && $element && !$this->getElementCondition()->matchElement($element)) {
+            if ($elementCondition && $element && !$elementCondition->matchElement($element)) {
                 return false;
             }
         }
