@@ -386,7 +386,7 @@ return [
     'Couldn’t unsuspend user.' => 'Couldn’t unsuspend user.',
     'Couldn’t update password.' => 'Couldn’t update password.',
     'Country' => 'ประเทศ',
-    'County' => 'County',
+    'County' => 'เขต',
     'Craft CMS does not support backtracking to this version. Please update to Craft CMS {version} or later.' => 'Craft CMS does not support backtracking to this version. Please update to Craft CMS {version} or later.',
     'Craft CMS is running in Dev Mode.' => 'Craft CMS is running in Dev Mode.',
     'Craft Support' => 'Craft Support',

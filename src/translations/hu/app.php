@@ -386,7 +386,7 @@ return [
     'Couldn’t unsuspend user.' => 'A felhasználó felfüggesztését nem sikerült megszüntetni.',
     'Couldn’t update password.' => 'Nem sikerült a jelszó módosítása.',
     'Country' => 'Ország',
-    'County' => 'County',
+    'County' => 'Megye',
     'Craft CMS does not support backtracking to this version. Please update to Craft CMS {version} or later.' => 'A Craft CMS nem támogatja a visszalépést erre a verzióra. Frissíts a Craft CMS {version} vagy újabb verzióra.',
     'Craft CMS is running in Dev Mode.' => 'A Craft CMS fejlesztői üzemmódban fut.',
     'Craft Support' => 'Craft-támogatás',

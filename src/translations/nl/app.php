@@ -386,7 +386,7 @@ return [
     'Couldn’t unsuspend user.' => 'Kon schorsing van gebruiker niet opheffen.',
     'Couldn’t update password.' => 'Kon wachtwoord niet aanpassen.',
     'Country' => 'Land',
-    'County' => 'County',
+    'County' => 'District',
     'Craft CMS does not support backtracking to this version. Please update to Craft CMS {version} or later.' => 'Craft CMS ondersteunt geen backtracking naar deze versie. Voer een update uit naar Craft CMS {version} of hoger.',
     'Craft CMS is running in Dev Mode.' => 'Craft CMS werkt in ontwikkelaarsmodus.',
     'Craft Support' => 'Craft-support',

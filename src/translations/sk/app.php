@@ -386,7 +386,7 @@ return [
     'Couldn’t unsuspend user.' => 'Nepodarilo sa zrušiť blokovanie používateľa.',
     'Couldn’t update password.' => 'Nemožno aktualizovať heslo.',
     'Country' => 'Krajina',
-    'County' => 'County',
+    'County' => 'Okres',
     'Craft CMS does not support backtracking to this version. Please update to Craft CMS {version} or later.' => 'Systém Craft CMS neumožňuje návrat na túto verziu. Aktualizujte na verziu Craft CMS {version} alebo novšiu.',
     'Craft CMS is running in Dev Mode.' => 'Craft CMS je spustený v režime pre vývojárov.',
     'Craft Support' => 'Podpora Craft',

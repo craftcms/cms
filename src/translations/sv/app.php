@@ -386,7 +386,7 @@ return [
     'Couldn’t unsuspend user.' => 'Det gick inte att ta bort uppehållet för användaren.',
     'Couldn’t update password.' => 'Kunde inte uppdatera lösenord.',
     'Country' => 'Land',
-    'County' => 'County',
+    'County' => 'Län',
     'Craft CMS does not support backtracking to this version. Please update to Craft CMS {version} or later.' => 'Craft CMS stöder inte backtracking till denna version. Uppdatera till Craft CMS {version} eller senare.',
     'Craft CMS is running in Dev Mode.' => 'Craft CMS körs i dev-läge.',
     'Craft Support' => 'Craft-stöd',
