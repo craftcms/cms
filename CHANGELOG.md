@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- Improved the `install` command’s error output when invalid options were passed.
+
 ### Fixed
 - Fixed a bug where self relations within relational fields were being forgotten. ([#11461](https://github.com/craftcms/cms/issues/11461))
 

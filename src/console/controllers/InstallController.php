@@ -127,41 +127,45 @@ class InstallController extends Controller
             ($this->username || !$this->interactive) &&
             !$this->createAttributeValidator($user, 'username')($this->username ?? '', $currentError)
         ) {
-            $errors[] = $currentError;
+            $errors[] = ['username', $currentError];
         }
         if (
             ($this->email || !$this->interactive) &&
             !$this->createAttributeValidator($user, 'email')($this->email ?? '', $currentError)
         ) {
-            $errors[] = $currentError;
+            $errors[] = ['email', $currentError];
         }
         if (
             ($this->password || !$this->interactive) &&
             !$this->createAttributeValidator($user, 'newPassword')($this->password ?? '', $currentError)
         ) {
-            $errors[] = $currentError;
+            $errors[] = ['password', $currentError];
         }
         if (
             ($this->siteName || !$this->interactive) &&
             !$this->createAttributeValidator($site, 'name')($this->siteName ?? '', $currentError)
         ) {
-            $errors[] = $currentError;
+            $errors[] = ['site-name', $currentError];
         }
         if (
             ($this->siteUrl || !$this->interactive) &&
             !$this->createAttributeValidator($site, 'baseUrl')($this->siteUrl ?? '', $currentError)
         ) {
-            $errors[] = $currentError;
+            $errors[] = ['site-url', $currentError];
         }
         if (
             ($this->language || !$this->interactive) &&
             !$this->createAttributeValidator($site, 'language')($this->language ?? '', $currentError)
         ) {
-            $errors[] = $currentError;
+            $errors[] = ['language', $currentError];
         }
 
         if (!empty($errors)) {
-            $this->stderr('Invalid arguments:' . PHP_EOL . '    - ' . implode(PHP_EOL . '    - ', $errors) . PHP_EOL, Console::FG_RED);
+            $errorSummary = implode('', array_map(function($error) {
+                [$option, $error] = $error;
+                return "    --$option: $error\n";
+            }, $errors));
+            $this->stderr("Invalid options:\n$errorSummary", Console::FG_RED);
             return ExitCode::USAGE;
         }
 
