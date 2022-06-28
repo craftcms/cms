@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.7.46 - 2022-06-28
 
 ### Added
 - Added `craft\fields\BaseOptionsField::encodeValue()`.
