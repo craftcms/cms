@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.1.0.1 - 2022-06-28
 
 ### Fixed
 - Fixed an infinite recursion bug. ([#11514](https://github.com/craftcms/cms/issues/11514))
