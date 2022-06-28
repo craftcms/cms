@@ -102,9 +102,8 @@ $sidebarLinkSecondaryColor: var(--gray-200);
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
   @include light-on-dark-text;
+  @include light-focus-ring;
   background-color: var(--gray-800);
-  --focus-ring: 0 0 0 1px hsl(var(--light-focus-hsl)),
-    0 0 0 3px hsla(var(--light-focus-hsl), 0.7);
 
   a {
     color: $sidebarLinkStaticColor;
@@ -378,14 +377,12 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   text-align: center;
   gap: var(--s);
 
-  li {
-    a {
-      color: var(--gray-600);
-      text-decoration: underline;
+  a {
+    color: var(--gray-600);
+    text-decoration: underline;
 
-      &.go:hover:after {
-        color: var(--gray-600);
-      }
+    &.go:hover:after {
+      color: var(--gray-600);
     }
   }
 }
@@ -520,6 +517,29 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   }
 }
 
+.nav-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 50px;
+  line-height: 26px;
+  color: var(--gray-300);
+  text-align: center;
+  @include margin-left(-10px);
+
+  &:before {
+    @include icon;
+    content: 'menu';
+    font-size: 16px;
+    line-height: 0;
+  }
+
+  &:hover {
+    color: var(--gray-400);
+  }
+}
+
 #crumbs {
   display: flex;
   flex-direction: row;
@@ -567,7 +587,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
     }
 
     &:after {
-      margin: 0 var(--s);
+      @include margin(0, 8px, 0, 7px);
       @include angle(right, var(--medium-hairline-color));
     }
   }
@@ -587,10 +607,6 @@ li.breadcrumb-toggle-wrapper {
   &::after {
     content: none;
   }
-}
-
-#nav-toggle {
-  display: none;
 }
 
 #account-menu {
@@ -775,6 +791,12 @@ li.breadcrumb-toggle-wrapper {
 #header {
   padding-left: var(--xl);
   padding-right: var(--xl);
+}
+
+#primary-nav-toggle {
+  @media only screen and (min-width: $minFullUiWidth) {
+    display: none;
+  }
 }
 
 #global-header,
@@ -992,6 +1014,14 @@ li.breadcrumb-toggle-wrapper {
   }
 }
 
+#content-heading {
+  margin-top: var(--xl) !important;
+
+  @media only screen and (min-width: $minHorizontalUiWidth) {
+    @include visually-hidden;
+  }
+}
+
 .content-pane {
   @include pane;
   border-radius: var(--large-border-radius);
@@ -1114,29 +1144,6 @@ li.breadcrumb-toggle-wrapper {
     width: 100vw;
   }
 
-  #nav-toggle {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 36px;
-    height: 50px;
-    line-height: 26px;
-    color: var(--gray-300);
-    text-align: center;
-    @include margin-left(-10px);
-
-    &:before {
-      @include icon;
-      content: 'menu';
-      font-size: 16px;
-      line-height: 0;
-    }
-
-    &:hover {
-      color: var(--gray-400);
-    }
-  }
-
   #main-content {
     width: 100vw;
   }
@@ -1174,12 +1181,20 @@ li.breadcrumb-toggle-wrapper {
   }
 
   #sidebar-toggle {
+    &:after {
+      top: 0;
+      transform: rotate(-45deg);
+
+      body.rtl & {
+        transform: rotate(135deg);
+      }
+    }
+
     body.showing-sidebar & {
       background-color: darken($grey200, 10%) !important;
 
       &:after {
-        transform: rotate(225deg);
-        top: 1px;
+        transform: rotate(45deg);
       }
     }
   }
@@ -1302,7 +1317,7 @@ li.breadcrumb-toggle-wrapper {
       padding: 0 5px;
       margin: 0 -5px;
       text-transform: uppercase;
-      color: var(--light-text-color);
+      color: var(--medium-text-color);
       font-size: 11px;
       font-weight: bold;
     }
@@ -1463,14 +1478,13 @@ li.breadcrumb-toggle-wrapper {
 .so-content .flex-fields {
   --row-gap: var(--xl);
   display: flex;
-  gap: var(--row-gap) 0;
   flex-wrap: wrap;
   align-content: flex-start;
-  margin: 0 calc(var(--row-gap) * -1);
+  margin: 0 calc(var(--row-gap) * -1) calc(var(--row-gap) * -1);
   width: calc(100% + var(--row-gap) * 2);
 
   & > * {
-    margin: 0 !important;
+    margin: 0 0 var(--row-gap) !important;
     padding: 0 var(--row-gap);
     box-sizing: border-box;
   }
@@ -1484,11 +1498,16 @@ li.breadcrumb-toggle-wrapper {
     }
   }
 
-  & > hr {
+  & > hr,
+  & > .line-break {
     flex: 4 0 100%;
   }
 
-  & > :not(h2):not(hr) {
+  & > .line-break:not(:first-child) {
+    margin-bottom: 0 !important;
+  }
+
+  & > :not(h2):not(hr):not(.line-break) {
     &,
     &:last-child {
       position: relative;
@@ -1510,7 +1529,7 @@ li.breadcrumb-toggle-wrapper {
 
 #content :not(.meta) > .flex-fields,
 #content > .flex-fields {
-  & > :not(h2):not(hr) {
+  & > :not(h2):not(hr):not(.line-break) {
     &,
     &:last-child {
       // 4 cols for >= 1536px
@@ -1538,7 +1557,7 @@ li.breadcrumb-toggle-wrapper {
 }
 
 .so-content .flex-fields {
-  & > :not(h2):not(hr) {
+  & > :not(h2):not(hr):not(.line-break) {
     &,
     &:last-child {
       // 2 cols for >= 712px

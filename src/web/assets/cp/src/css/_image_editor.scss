@@ -14,6 +14,7 @@ html.noscroll body {
   background-color: var(--gray-900);
   color: var(--white);
   @include light-on-dark-text;
+  @include light-focus-ring;
   opacity: 0;
   user-select: none;
 }

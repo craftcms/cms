@@ -100,6 +100,7 @@ use craft\web\Application as WebApplication;
 use craft\web\AssetManager;
 use craft\web\Request as WebRequest;
 use craft\web\View;
+use Illuminate\Support\Collection;
 use Yii;
 use yii\base\Application;
 use yii\base\ErrorHandler;
@@ -1437,6 +1438,12 @@ trait ApplicationTrait
         ColumnSchemaBuilder::$typeCategoryMap[Schema::TYPE_MEDIUMTEXT] = ColumnSchemaBuilder::CATEGORY_STRING;
         ColumnSchemaBuilder::$typeCategoryMap[Schema::TYPE_LONGTEXT] = ColumnSchemaBuilder::CATEGORY_STRING;
         ColumnSchemaBuilder::$typeCategoryMap[Schema::TYPE_ENUM] = ColumnSchemaBuilder::CATEGORY_STRING;
+
+        // Register Collection::one() as an alias of first(), for consistency with yii\db\Query.
+        Collection::macro('one', function() {
+            /** @var Collection $this */
+            return $this->first(...func_get_args());
+        });
 
         // Load the request before anything else, so everything else can safely check Craft::$app->has('request', true)
         // to avoid possible recursive fatal errors in the request initialization

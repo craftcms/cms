@@ -24,6 +24,7 @@ Craft.CP = Garnish.Base.extend(
     $mainContent: null,
     $details: null,
     $sidebarContainer: null,
+    $sidebarToggle: null,
     $sidebar: null,
     $contentContainer: null,
     $edition: null,
@@ -66,7 +67,7 @@ Craft.CP = Garnish.Base.extend(
 
       // Find all the key elements
       this.$nav = $('#nav');
-      this.$navToggle = $('#nav-toggle');
+      this.$navToggle = $('#primary-nav-toggle');
       this.$globalSidebar = $('#global-sidebar');
       this.$globalContainer = $('#global-container');
       this.$mainContainer = $('#main-container');
@@ -82,13 +83,14 @@ Craft.CP = Garnish.Base.extend(
       this.$mainContent = $('#main-content');
       this.$details = $('#details');
       this.$sidebarContainer = $('#sidebar-container');
+      this.$sidebarToggle = $('#sidebar-toggle');
       this.$sidebar = $('#sidebar');
       this.$contentContainer = $('#content-container');
       this.$collapsibleTables = $('table.collapsible');
 
       this.isMobile = Garnish.isMobileBrowser();
 
-      this.updateSidebarMenuLabel();
+      this.updateContentHeading();
 
       // Swap any instruction text with info icons
       let $allInstructions = this.$details.find(
@@ -152,7 +154,7 @@ Craft.CP = Garnish.Base.extend(
 
       // Toggles
       this.addListener(this.$navToggle, 'click', 'toggleNav');
-      this.addListener($('#sidebar-toggle'), 'click', 'toggleSidebar');
+      this.addListener(this.$sidebarToggle, 'click', 'toggleSidebar');
 
       // Does this page have a primary form?
       if (!this.$primaryForm.length) {
@@ -328,7 +330,9 @@ Craft.CP = Garnish.Base.extend(
       if ($noticeContainer.length) {
         return $noticeContainer;
       }
-      return $('<div id="content-notice"/>').prependTo(this.$contentHeader);
+      return $('<div id="content-notice"/>')
+        .attr('role', 'status')
+        .prependTo(this.$contentHeader);
     },
 
     initSpecialForms: function () {
@@ -457,11 +461,13 @@ Craft.CP = Garnish.Base.extend(
     },
 
     updateSidebarMenuLabel: function () {
-      var $item = this.$sidebar.find('a.sel:first');
-      var $label = $item.children('.label');
-      $('#selected-sidebar-item-label').text(
-        $label.length ? $label.text() : $item.text()
-      );
+      this.updateContentHeading();
+    },
+
+    updateContentHeading: function () {
+      const $item = this.$sidebar.find('a.sel:first');
+      const $label = $item.children('.label');
+      $('#content-heading').text($label.length ? $label.text() : $item.text());
       Garnish.$bod.removeClass('showing-sidebar');
     },
 
@@ -525,6 +531,9 @@ Craft.CP = Garnish.Base.extend(
     },
 
     toggleSidebar: function () {
+      const expanded = this.$sidebarToggle.attr('aria-expanded') === 'true';
+      const newState = expanded ? 'false' : 'true';
+      this.$sidebarToggle.attr('aria-expanded', newState);
       Garnish.$bod.toggleClass('showing-sidebar');
     },
 
@@ -1119,18 +1128,38 @@ Craft.CP = Garnish.Base.extend(
           new Promise((resolve, reject) => {
             Craft.sendActionRequest('POST', 'app/get-utilities-badge-count')
               .then(({data}) => {
-                // Get the existing utility nav badge, if any
+                // Get the existing utility nav badge and screen reader text, if any
                 let $badge = $utilitiesLink.children('.badge');
+                let $screenReaderText = $utilitiesLink.children(
+                  '[data-notification]'
+                );
 
                 if (data.badgeCount) {
                   if (!$badge.length) {
-                    $badge = $('<span class="badge"/>').appendTo(
-                      $utilitiesLink
-                    );
+                    $badge = $(
+                      '<span class="badge" aria-hidden="true"/>'
+                    ).appendTo($utilitiesLink);
                   }
+
+                  if (!$screenReaderText.length) {
+                    $screenReaderText = $(
+                      '<span class="visually-hidden" data-notification/>'
+                    ).appendTo($utilitiesLink);
+                  }
+
                   $badge.text(data.badgeCount);
-                } else if ($badge.length) {
+                  $screenReaderText.text(
+                    Craft.t(
+                      'app',
+                      '{num, number} {num, plural, =1{notification} other{notifications}}',
+                      {
+                        num: data.badgeCount,
+                      }
+                    )
+                  );
+                } else if ($badge.length && $screenReaderText.length) {
                   $badge.remove();
+                  $screenReaderText.remove();
                 }
                 resolve();
               })

@@ -354,7 +354,7 @@ class Assets extends Component
             // Add additional criteria but prevent overriding volumeId and order.
             $criteria = array_merge($additionalCriteria, [
                 'volumeId' => $volumeId,
-                'order' => [new Expression('path IS NULL DESC'), 'path' => SORT_ASC],
+                'order' => [new Expression('[[path]] IS NULL DESC'), 'path' => SORT_ASC],
             ]);
             $cacheKey = md5(Json::encode($criteria));
 
@@ -541,7 +541,7 @@ class Assets extends Component
     {
         return $this->findFolder([
             'volumeId' => $volumeId,
-            'parentId' => ':empty:',
+            'parentId' => null,
         ]);
     }
 
@@ -941,8 +941,8 @@ class Assets extends Component
         }
 
         $volumeTopFolder = $this->findFolder([
-            'volumeId' => ':empty:',
-            'parentId' => ':empty:',
+            'volumeId' => null,
+            'parentId' => null,
         ]);
 
         // Unlikely, but would be very awkward if this happened without any contingency plans in place.
