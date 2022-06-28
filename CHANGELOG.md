@@ -7,6 +7,7 @@
 
 ### Fixed
 - Fixed a bug where self relations within relational fields were being forgotten. ([#11461](https://github.com/craftcms/cms/issues/11461))
+- Fixed a bug where the `install` command required `--site-name`, `--site-url`, and `--language` options to be passed when project config YAML was already present. ([#11513](https://github.com/craftcms/cms/issues/11513))
 
 ## 4.0.5.2 - 2022-06-24
 
