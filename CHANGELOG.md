@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.0.6 - 2022-06-28
 
 ### Changed
 - Improved the `install` command’s error output when invalid options were passed.
