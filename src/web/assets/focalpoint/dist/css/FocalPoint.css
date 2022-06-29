@@ -1,3 +1,2 @@
-.preview-focal-point{width:20px;height:20px;border:2px solid rgba(255,255,255,.8);background:rgba(0,0,0,.5);position:absolute;border-radius:20px;cursor:pointer}.preview-focal-point .inner{position:absolute;width:0;height:0;left:6px;top:6px;background:rgba(255,255,255,.8);border:2px solid rgba(255,255,255,.8);border-radius:4px}
-
+.preview-focal-point{background:rgba(0,0,0,.5);border:2px solid hsla(0,0%,100%,.8);border-radius:20px;cursor:pointer;height:20px;position:absolute;width:20px}.preview-focal-point .inner{background:hsla(0,0%,100%,.8);border:2px solid hsla(0,0%,100%,.8);border-radius:4px;height:0;left:6px;position:absolute;top:6px;width:0}
 /*# sourceMappingURL=FocalPoint.css.map*/
