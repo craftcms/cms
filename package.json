@@ -13,7 +13,7 @@
     "extends @craftcms/browserslist-config"
   ],
   "devDependencies": {
-    "@craftcms/webpack": "./packages/craftcms-webpack",
+    "@craftcms/webpack": "^1.1.0",
     "@playwright/test": "^1.19.2",
     "husky": "^7.0.4",
     "lerna": "^4.0.0",
