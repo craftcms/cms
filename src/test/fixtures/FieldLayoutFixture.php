@@ -83,6 +83,10 @@ abstract class FieldLayoutFixture extends DbFixture
                     /** @var FieldInterface|Field $field */
                     $field = $this->_fields[] = Component::createComponent($fieldConfig, FieldInterface::class);
 
+                    if (!$field->groupId) {
+                        $field->groupId = Craft::$app->getFields()->getAllGroups()[0]->id;
+                    }
+
                     if (!$fieldsService->saveField($field)) {
                         $this->throwModelError($field);
                     }
