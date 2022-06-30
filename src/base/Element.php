@@ -4517,6 +4517,9 @@ JS,
         $formatter = Craft::$app->getFormatter();
 
         return array_merge([
+            Craft::t('app', 'ID') => function() {
+                return $this->id ?? false;
+            },
             Craft::t('app', 'Status') => function() {
                 if (!static::hasStatuses()) {
                     return false;

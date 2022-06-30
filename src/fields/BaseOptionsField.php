@@ -22,6 +22,7 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\Json;
+use craft\helpers\StringHelper;
 use GraphQL\Type\Definition\Type;
 use yii\db\Schema;
 
@@ -257,7 +258,11 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
         // Normalize to an array of strings
         $selectedValues = [];
         foreach ((array)$value as $val) {
-            $selectedValues[] = (string)$val;
+            $val = (string)$val;
+            if (str_starts_with($val, 'base64:')) {
+                $val = base64_decode(StringHelper::removeLeft($val, 'base64:'));
+            }
+            $selectedValues[] = $val;
         }
 
         $options = [];
@@ -508,9 +513,10 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
     /**
      * Returns the field options, with labels run through Craft::t().
      *
+     * @param bool $encode Whether the option values should be base64-encoded
      * @return array
      */
-    protected function translatedOptions(): array
+    protected function translatedOptions(bool $encode = false): array
     {
         $translatedOptions = [];
 
@@ -522,12 +528,38 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
             } else {
                 $translatedOptions[] = [
                     'label' => Craft::t('site', $option['label']),
-                    'value' => $option['value'],
+                    'value' => $encode ? $this->encodeValue($option['value']) : $option['value'],
                 ];
             }
         }
 
         return $translatedOptions;
+    }
+
+    /**
+     * Base64-encodes a value.
+     *
+     * @param OptionData|MultiOptionsFieldData|string|null $value
+     * @rturn string|array|null
+     * @since 3.7.46
+     */
+    protected function encodeValue(OptionData|MultiOptionsFieldData|string|null $value): string|array|null
+    {
+        if ($value instanceof MultiOptionsFieldData) {
+            /** @var OptionData[] $options */
+            $options = (array)$value;
+            return array_map(fn(OptionData $value) => $this->encodeValue($value), $options);
+        }
+
+        if ($value instanceof OptionData) {
+            $value = $value->value;
+        }
+
+        if ($value === null || $value === '') {
+            return $value;
+        }
+
+        return sprintf('base64:%s', base64_encode($value));
     }
 
     /**

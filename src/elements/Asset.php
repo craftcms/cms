@@ -347,7 +347,7 @@ class Asset extends Element
             $volumeIds = $volumes->getAllVolumeIds();
         }
 
-        $additionalCriteria = $context === ElementSources::CONTEXT_SETTINGS ? ['parentId' => ':empty:'] : [];
+        $additionalCriteria = $context === ElementSources::CONTEXT_SETTINGS ? ['parentId' => null] : [];
 
         $tree = Craft::$app->getAssets()->getFolderTreeByVolumeIds($volumeIds, $additionalCriteria);
 

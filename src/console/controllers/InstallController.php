@@ -113,6 +113,10 @@ class InstallController extends Controller
         $user = new User();
         $user->setScenario(User::SCENARIO_REGISTRATION);
 
+        $defaultSiteName = InstallHelper::defaultSiteName();
+        $defaultSiteUrl = InstallHelper::defaultSiteUrl();
+        $defaultSiteLanguage = InstallHelper::defaultSiteLanguage();
+
         $site = new Site([
             'handle' => 'default',
             'hasUrls' => true,
@@ -127,41 +131,45 @@ class InstallController extends Controller
             ($this->username || !$this->interactive) &&
             !$this->createAttributeValidator($user, 'username')($this->username ?? '', $currentError)
         ) {
-            $errors[] = $currentError;
+            $errors[] = ['username', $currentError];
         }
         if (
             ($this->email || !$this->interactive) &&
             !$this->createAttributeValidator($user, 'email')($this->email ?? '', $currentError)
         ) {
-            $errors[] = $currentError;
+            $errors[] = ['email', $currentError];
         }
         if (
             ($this->password || !$this->interactive) &&
             !$this->createAttributeValidator($user, 'newPassword')($this->password ?? '', $currentError)
         ) {
-            $errors[] = $currentError;
+            $errors[] = ['password', $currentError];
         }
         if (
             ($this->siteName || !$this->interactive) &&
-            !$this->createAttributeValidator($site, 'name')($this->siteName ?? '', $currentError)
+            !$this->createAttributeValidator($site, 'name')($this->siteName ?? $defaultSiteName ?? '', $currentError)
         ) {
-            $errors[] = $currentError;
+            $errors[] = ['site-name', $currentError];
         }
         if (
             ($this->siteUrl || !$this->interactive) &&
-            !$this->createAttributeValidator($site, 'baseUrl')($this->siteUrl ?? '', $currentError)
+            !$this->createAttributeValidator($site, 'baseUrl')($this->siteUrl ?? $defaultSiteUrl ?? '', $currentError)
         ) {
-            $errors[] = $currentError;
+            $errors[] = ['site-url', $currentError];
         }
         if (
             ($this->language || !$this->interactive) &&
-            !$this->createAttributeValidator($site, 'language')($this->language ?? '', $currentError)
+            !$this->createAttributeValidator($site, 'language')($this->language ?? $defaultSiteLanguage ?? '', $currentError)
         ) {
-            $errors[] = $currentError;
+            $errors[] = ['language', $currentError];
         }
 
         if (!empty($errors)) {
-            $this->stderr('Invalid arguments:' . PHP_EOL . '    - ' . implode(PHP_EOL . '    - ', $errors) . PHP_EOL, Console::FG_RED);
+            $errorSummary = implode('', array_map(function($error) {
+                [$option, $error] = $error;
+                return "    --$option: $error\n";
+            }, $errors));
+            $this->stderr("Invalid options:\n$errorSummary", Console::FG_RED);
             return ExitCode::USAGE;
         }
 
@@ -172,9 +180,9 @@ class InstallController extends Controller
             $email = $this->email ?: $this->prompt('Email:', ['required' => true, 'validator' => $this->createAttributeValidator($user, 'email')]);
         }
         $password = $this->password ?: $this->passwordPrompt(['validator' => $this->createAttributeValidator($user, 'newPassword')]);
-        $site->name = $this->siteName ?: $this->prompt('Site name:', ['required' => true, 'default' => InstallHelper::defaultSiteName(), 'validator' => $this->createAttributeValidator($site, 'name')]);
-        $site->baseUrl = $this->siteUrl ?: $this->prompt('Site URL:', ['required' => true, 'default' => InstallHelper::defaultSiteUrl(), 'validator' => $this->createAttributeValidator($site, 'baseUrl')]);
-        $site->language = $this->language ?: $this->prompt('Site language:', ['default' => InstallHelper::defaultSiteLanguage(), 'validator' => $this->createAttributeValidator($site, 'language')]);
+        $site->name = $this->siteName ?: $this->prompt('Site name:', ['required' => true, 'default' => $defaultSiteName, 'validator' => $this->createAttributeValidator($site, 'name')]);
+        $site->baseUrl = $this->siteUrl ?: $this->prompt('Site URL:', ['required' => true, 'default' => $defaultSiteUrl, 'validator' => $this->createAttributeValidator($site, 'baseUrl')]);
+        $site->language = $this->language ?: $this->prompt('Site language:', ['default' => $defaultSiteLanguage ?? Craft::$app->language, 'validator' => $this->createAttributeValidator($site, 'language')]);
 
         // Try to save the site URL to a PRIMARY_SITE_URL environment variable
         // if it’s not already set to an alias or environment variable
