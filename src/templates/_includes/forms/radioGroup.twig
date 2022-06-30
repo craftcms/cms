@@ -12,6 +12,7 @@
     data: {
         'target-prefix': targetPrefix ?? false,
     },
+    role: 'presentation',
 }|merge(containerAttributes ?? [], recursive=true) %}
 
 {%- if block('attr') is defined %}
