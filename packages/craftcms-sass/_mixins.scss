@@ -150,6 +150,13 @@ $radioSize: 16px;
 
 // Other
 
+@mixin focus-styles {
+  body:not(.reduce-focus-visibility) &:focus,
+  body.reduce-focus-visibility &.focus-visible {
+    @content;
+  }
+}
+
 @mixin svg-mask($color) {
   rect,
   circle,
