@@ -25,7 +25,9 @@
                     role: 'checkbox',
                     tabindex: '0',
                     aria: {
-                        label: 'Select'|t('app'),
+                        label: 'Select {element}'|t('app', {
+                            element: elementTitle
+                        }),
                         checked: 'false',
                     },
                     data: {
