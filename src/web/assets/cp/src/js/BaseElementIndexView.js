@@ -38,7 +38,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
       this.$elementContainer = this.getElementContainer();
       var $elements = this.$elementContainer.children();
 
-      this.$checkboxes = this.$elementContainer.find('[data-element-checkbox]');
+      this.$checkboxes = this.$elementContainer.find('.checkbox');
 
       this.setTotalVisible($elements.length);
       this.setMorePending(
