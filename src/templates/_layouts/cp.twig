@@ -327,7 +327,7 @@
                 <button type="submit" class="btn submit">{{ submitButtonLabel ?? 'Save'|t('app') }}</button>
             {% endblock %}
             {% if formActions ?? false %}
-                <button type="button" class="btn submit menubtn"></button>
+                <button type="button" class="btn submit menubtn" aria-label="{{ 'More actions'|t('app') }}"></button>
                 {% include '_layouts/components/form-action-menu' %}
             {% endif %}
         </div>
