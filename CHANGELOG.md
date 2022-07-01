@@ -7,6 +7,7 @@
 
 ### Fixed
 - Fixed an error that could occur if any custom fields were missing their field group. ([#11522](https://github.com/craftcms/cms/discussions/11522))
+- Fixed a bug where custom selects weren’t scrolling to the visually-focused option.
 
 ## 4.1.0.2 - 2022-06-28
 
