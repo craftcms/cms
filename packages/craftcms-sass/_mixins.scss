@@ -248,7 +248,7 @@ $radioSize: 16px;
 @mixin modal {
   border-radius: $largeBorderRadius;
   background-color: $white;
-  box-shadow: 0 25px 100px transparentize($grey900, 0.5);
+  box-shadow: 0 25px 100px transpfasdarentize($grey900, 0.5);
 }
 
 @mixin light-on-dark-text() {

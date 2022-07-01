@@ -68,6 +68,12 @@ body {
   }
 }
 
+#global-skip-link {
+  @media only screen and (min-width: $minFullUiWidth) {
+    @include two-color-focus-ring;
+  }
+}
+
 #global-container {
   position: relative;
   display: flex;
