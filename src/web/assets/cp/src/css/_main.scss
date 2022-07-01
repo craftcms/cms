@@ -4630,25 +4630,20 @@ ul.tree,
       --ui-control-color: var(--white);
       --ui-control-hover-color: var(--white);
       --ui-control-active-color: var(--white);
+      --interaction-background-color: var(--gray-700);
       background-color: var(--gray-600);
       color: var(--white);
       @include light-on-dark-text;
 
-      @supports (backdrop-filter: blur(10px)) {
-        & {
-          background-color: transparentize($grey600, 0.6);
-          backdrop-filter: blur(10px);
-          transition: opacity linear 100ms, backdrop-filter linear 100ms;
-        }
+      &:hover {
+        background-color: var(--interaction-background-color) !important;
       }
 
-      &:hover {
-        background-color: var(--gray-500) !important;
-
-        @supports (backdrop-filter: blur(10px)) {
-          & {
-            background-color: transparentize($grey500, 0.3) !important;
-          }
+      &:not(.disabled):not(.loading):not(.dashed) {
+        &:focus,
+        &.focus,
+        &:hover {
+          background-color: var(--interaction-background-color);
         }
       }
     }
