@@ -293,6 +293,7 @@ Craft.ui = {
       autofocus: config.autofocus && Garnish.isMobileBrowser(true),
       disabled: config.disabled,
       'data-target-prefix': config.targetPrefix,
+      'aria-labelledby': config.labelledBy,
     }).appendTo($container);
 
     // Normalize the options into an array

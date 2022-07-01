@@ -630,6 +630,14 @@ Craft.ElementEditor = Garnish.Base.extend(
         return;
       }
 
+      const selectLabelId = 'add-site-label';
+
+      const $addlSiteSelectLabel = $('<span/>', {
+        text: Craft.t('app', 'Add a site...'),
+        class: 'visually-hidden',
+        id: selectLabelId,
+      });
+
       const $addlSiteSelectContainer = Craft.ui
         .createSelect({
           options: [
@@ -638,6 +646,7 @@ Craft.ElementEditor = Garnish.Base.extend(
               return {label: s.name, value: s.id};
             }),
           ],
+          labelledBy: selectLabelId,
         })
         .addClass('fullwidth');
 
@@ -645,6 +654,8 @@ Craft.ElementEditor = Garnish.Base.extend(
         .createField($addlSiteSelectContainer, {})
         .addClass('nested add')
         .appendTo(this.$siteStatusPane);
+
+      $addlSiteSelectLabel.prependTo(this.$additionalSiteField);
 
       const $addlSiteSelect = $addlSiteSelectContainer.find('select');
 

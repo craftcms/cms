@@ -6238,6 +6238,10 @@ body .selectize-dropdown .optgroup-header {
 
 body .selectize-dropdown .active {
   @include menu-option-active-styles;
+
+  .light {
+    color: inherit !important;
+  }
 }
 
 /* datepicker */
