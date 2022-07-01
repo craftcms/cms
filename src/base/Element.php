@@ -4229,6 +4229,7 @@ abstract class Element extends Component implements ElementInterface
                         'target' => '_blank',
                         'data-icon' => 'world',
                         'title' => Craft::t('app', 'Visit webpage'),
+                        'aria-label' => Craft::t('app', 'View'),
                     ]);
                 }
 
