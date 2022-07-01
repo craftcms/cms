@@ -2094,6 +2094,23 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         onSelectionChange: this._handleSelectionChange.bind(this),
       });
 
+      this.addListener(this.view.$checkboxes, 'keydown', (ev) => {
+        switch (ev.keyCode) {
+          case Garnish.SPACE_KEY:
+          case Garnish.RETURN_KEY:
+            ev.preventDefault();
+
+            const elementId = $(ev.target).closest('[data-id]').attr('data-id');
+
+            if ($(ev.target).attr('aria-checked') === 'true') {
+              this.view.deselectElementById(elementId);
+            } else {
+              this.view.selectElementById(elementId);
+            }
+            break;
+        }
+      });
+
       // Refocus the previously-focused element
       // -------------------------------------------------------------
 

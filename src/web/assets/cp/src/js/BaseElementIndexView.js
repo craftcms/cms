@@ -9,6 +9,7 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
     $loadingMoreSpinner: null,
     $elementContainer: null,
     $scroller: null,
+    $checkboxes: null,
 
     elementIndex: null,
     thumbLoader: null,
@@ -36,6 +37,8 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
       // Get the actual elements container and its child elements
       this.$elementContainer = this.getElementContainer();
       var $elements = this.$elementContainer.children();
+
+      this.$checkboxes = this.$elementContainer.find('[data-element-checkbox]');
 
       this.setTotalVisible($elements.length);
       this.setMorePending(
@@ -210,6 +213,21 @@ Craft.BaseElementIndexView = Garnish.Base.extend(
 
     selectAllElements: function () {
       this.elementSelect.selectAll();
+    },
+
+    deselectElementById: function (id) {
+      if (!this.elementSelect) {
+        throw 'This view is not selectable.';
+      }
+
+      var $element = this.getElementById(id);
+
+      if ($element) {
+        this.elementSelect.deselectItem($element, true);
+        return true;
+      } else {
+        return false;
+      }
     },
 
     deselectAllElements: function () {
