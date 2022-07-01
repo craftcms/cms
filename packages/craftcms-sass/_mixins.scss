@@ -150,13 +150,6 @@ $radioSize: 16px;
 
 // Other
 
-@mixin focus-styles {
-  body:not(.reduce-focus-visibility) &:focus,
-  body.reduce-focus-visibility &.focus-visible {
-    @content;
-  }
-}
-
 @mixin svg-mask($color) {
   rect,
   circle,
@@ -269,6 +262,20 @@ $radioSize: 16px;
 @mixin light-focus-ring() {
   --focus-ring: 0 0 0 1px hsl(var(--light-focus-hsl)),
     0 0 0 3px hsla(var(--light-focus-hsl), 0.7);
+}
+
+@mixin two-color-focus-ring($light-button: true) {
+  // Creates a two-color focus ring, with a white
+  // If button is light, the dark box shadow is adjacent to the button
+  // Else the light box shadow is adjacent to the button
+  --light-color: var(--white);
+  --dark-color: var(--gray-800);
+
+  @if $light-button {
+    --focus-ring: 0 0 0 3px var(--dark-color), 0 0 0 6px var(--light-color);
+  } @else {
+    --focus-ring: 0 0 0 3px var(--light-color), 0 0 0 6px var(--dark-color);
+  }
 }
 
 // RTL stuff

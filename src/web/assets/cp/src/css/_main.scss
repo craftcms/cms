@@ -4634,6 +4634,7 @@ ul.tree,
       background-color: var(--gray-600);
       color: var(--white);
       @include light-on-dark-text;
+      @include two-color-focus-ring($light-button: false);
 
       &:hover {
         background-color: var(--interaction-background-color) !important;
