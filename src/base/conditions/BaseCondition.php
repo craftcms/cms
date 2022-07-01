@@ -337,6 +337,9 @@ JS, [$view->namespaceInputId($this->id)]);
                         Html::button('', [
                             'class' => ['delete', 'icon'],
                             'title' => Craft::t('app', 'Remove'),
+                            'aria' => [
+                              'label' => Craft::t('app', 'Remove'),
+                            ],
                             'hx' => [
                                 'vals' => ['uid' => $rule->uid],
                                 'post' => UrlHelper::actionUrl('conditions/remove-rule'),
