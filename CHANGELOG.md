@@ -4,6 +4,7 @@
 
 ### Fixed
 - Fixed focus styling issues with the Edit Route modal.
+- Fixed a bug where setting `head`, `beginBody`, and `endBody` HTML placeholders in include templates would result in registered HTML snippets getting included twice. ([#11533](https://github.com/craftcms/cms/issues/11533))
 
 ## 3.7.46 - 2022-06-28
 

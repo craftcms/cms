@@ -84,7 +84,7 @@ class EventTagAdder extends BaseEventTagVisitor
         if (static::$foundHead === false && ($endHeadPos = stripos($data, '</head>')) !== false) {
             static::$foundHead = true;
 
-            return $this->_insertEventNode($node, $endHeadPos, 'head');
+            return $this->_insertEventNode($node, $endHeadPos, 'defaultHead');
         }
 
         // Are we looking for `<body>`?
@@ -98,7 +98,7 @@ class EventTagAdder extends BaseEventTagVisitor
         if (static::$foundEndBody === false && ($endBodyPos = stripos($data, '</body>')) !== false) {
             static::$foundEndBody = true;
 
-            return $this->_insertEventNode($node, $endBodyPos, 'endBody');
+            return $this->_insertEventNode($node, $endBodyPos, 'defaultEndBody');
         }
 
         return $node;
@@ -141,7 +141,7 @@ class EventTagAdder extends BaseEventTagVisitor
             if ($attribute === null) {
                 static::$foundBeginBody = true;
                 $beginBodyPos = $offsetOffset + strpos($this->_bodyTag, '>', $this->_bodyAttrOffset) + 1;
-                return $this->_insertEventNode($node, $beginBodyPos, 'beginBody');
+                return $this->_insertEventNode($node, $beginBodyPos, 'defaultBeginBody');
             }
 
             // Try again where this one ended
