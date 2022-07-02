@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed focus styling issues with the Edit Route modal.
+
 ## 3.7.46 - 2022-06-28
 
 ### Added

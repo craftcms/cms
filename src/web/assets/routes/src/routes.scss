@@ -97,8 +97,16 @@
       width: auto;
       cursor: text;
 
+      input[type='text'] {
+        box-shadow: none;
+      }
+
       .token {
         cursor: default;
+
+        &:focus {
+          box-shadow: var(--focus-ring);
+        }
       }
     }
   }
