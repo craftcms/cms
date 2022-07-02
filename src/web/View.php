@@ -98,6 +98,44 @@ class View extends \yii\web\View
     public const TEMPLATE_MODE_SITE = 'site';
 
     /**
+     * This is internally used as the placeholder for receiving the content registered for the head section,
+     * if `head()` was not explicitly called by the template.
+     *
+     * @since 3.7.47
+     */
+    public const PH_DEFAULT_HEAD = '<![CDATA[CRAFT-BLOCK-DEFAULT-HEAD]]>';
+
+    /**
+     * This is internally used as the placeholder for receiving the content registered for the beginning of the body section,
+     * if `beginBody()` was not explicitly called by the template.
+     *
+     * @since 3.7.47
+     */
+    public const PH_DEFAULT_BODY_BEGIN = '<![CDATA[CRAFT-BLOCK-DEFAULT-BODY-BEGIN]]>';
+
+    /**
+     * This is internally used as the placeholder for receiving the content registered for the end of the body section,
+     * if `endBody()` was not explicitly called by the template.
+     *
+     * @since 3.7.47
+     */
+    public const PH_DEFAULT_BODY_END = '<![CDATA[CRAFT-BLOCK-DEFAULT-BODY-END]]>';
+
+    /**
+     * @var bool Whether to minify CSS registered with [[registerCss()]]
+     * @since 3.4.0
+     * @deprecated in 3.6.0.
+     */
+    public $minifyCss = false;
+
+    /**
+     * @var bool Whether to minify JS registered with [[registerJs()]]
+     * @since 3.4.0
+     * @deprecated in 3.6.0
+     */
+    public $minifyJs = false;
+
+    /**
      * @var bool Whether to allow [[evaluateDynamicContent()]] to be called.
      *
      * ::: warning
@@ -1181,6 +1219,30 @@ class View extends \yii\web\View
     }
 
     /**
+     * Marks the default position of an HTML head section.
+     */
+    public function defaultHead(): void
+    {
+        echo self::PH_DEFAULT_HEAD;
+    }
+
+    /**
+     * Marks the default beginning of an HTML body section.
+     */
+    public function defaultBeginBody(): void
+    {
+        echo self::PH_DEFAULT_BODY_BEGIN;
+    }
+
+    /**
+     * Marks the default ending of an HTML body section.
+     */
+    public function defaultEndBody(): void
+    {
+        echo self::PH_DEFAULT_BODY_END;
+    }
+
+    /**
      * @inheritdoc
      */
     public function endBody(): void
@@ -1739,6 +1801,38 @@ JS;
      */
     public function endPage($ajaxMode = false): void
     {
+        $content = ob_get_contents();
+        $modifiedContent = false;
+
+        $placeholders = [
+            self::PH_DEFAULT_HEAD => self::PH_HEAD,
+            self::PH_DEFAULT_BODY_BEGIN => self::PH_BODY_BEGIN,
+            self::PH_DEFAULT_BODY_END => self::PH_BODY_END,
+        ];
+
+        foreach ($placeholders as $default => $placeholder) {
+            $defaultPos = strpos($content, $default);
+            $placeholderPos = strpos($content, $placeholder);
+
+            // Is there a placeholder?
+            if ($placeholderPos !== false) {
+                // Remove the default
+                if ($defaultPos !== false) {
+                    $content = substr($content, 0, $defaultPos) . substr($content, $defaultPos + strlen($default));
+                    $modifiedContent = true;
+                }
+            } elseif ($defaultPos !== false) {
+                // Replace the default with the placeholder
+                $content = substr($content, 0, $defaultPos) . $placeholder . substr($content, $defaultPos + strlen($default));
+                $modifiedContent = true;
+            }
+        }
+
+        if ($modifiedContent) {
+            ob_clean();
+            echo $content;
+        }
+
         if (!$ajaxMode && Craft::$app->getRequest()->getIsCpRequest()) {
             $this->_setJsProperty('registeredJsFiles', $this->_registeredJsFiles);
             $this->_setJsProperty('registeredAssetBundles', $this->_registeredAssetBundles);
