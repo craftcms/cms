@@ -46,6 +46,7 @@ class CustomFieldBehaviorTest extends TestCase
         $field = new PlainText();
         $field->name = 'testRetrofittingDontWork1';
         $field->handle = 'testRetrofittingDontWork1';
+        $field->groupId = Craft::$app->getFields()->getAllGroups()[0]->id;
 
         if (!Craft::$app->getFields()->saveField($field)) {
             throw new InvalidArgumentException("Couldn't save field");

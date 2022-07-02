@@ -87,9 +87,7 @@
         {% set fieldIsMissing = true %}
     {% endif %}
 
-    {% if groupId is not defined %}
-        {% set group = field.group.name|t('site')|e %}
-    {% endif %}
+    {% set group = field.getGroup() %}
 
     {% set tableData = tableData|merge([{
         id: field.id,
@@ -102,8 +100,7 @@
             isMissing: fieldIsMissing,
             label: fieldIsMissing ? field.expectedType : field.displayName()
         },
-
-        group: group ?? null,
+        group: group ? group.name|t('site') : "<span class=\"error\">#{'(Ungrouped)'|t('app')}</span>",
     }]) %}
 {% endfor %}
 
