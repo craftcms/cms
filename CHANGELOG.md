@@ -11,6 +11,7 @@
 - Fixed errors that could occur if an element condition contained any rules for deleted custom fields. ([#11526](https://github.com/craftcms/cms/issues/11526))
 - Fixed a bug where the “Deactivate users by default” user setting wasn’t working. ([#11519](https://github.com/craftcms/cms/issues/11519))
 - Fixed a styling issue with the Edit Route modal. ([#11528](https://github.com/craftcms/cms/issues/11528))
+- Fixed a bug where assets uploaded from Assets fields weren’t retaining their original filename. ([#11529](https://github.com/craftcms/cms/pull/11529))
 
 ## 4.1.0.2 - 2022-06-28
 
