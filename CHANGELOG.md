@@ -10,6 +10,7 @@
 - Fixed a bug where custom selects weren’t scrolling to the visually-focused option.
 - Fixed errors that could occur if an element condition contained any rules for deleted custom fields. ([#11526](https://github.com/craftcms/cms/issues/11526))
 - Fixed a bug where the “Deactivate users by default” user setting wasn’t working. ([#11519](https://github.com/craftcms/cms/issues/11519))
+- Fixed a styling issue with the Edit Route modal. ([#11528](https://github.com/craftcms/cms/issues/11528))
 
 ## 4.1.0.2 - 2022-06-28
 
