@@ -376,7 +376,7 @@ return [
     'Craft CMS is running in Dev Mode.' => 'Craft CMS is running in Dev Mode.',
     'Craft Support' => 'Craft Support',
     'Craft isn’t installed yet.' => 'Craft isn’t installed yet.',
-    'Craft {version} Upgrade' => 'Craft {version} Upgrade',
+    'Craft {version} Upgrade' => 'Оновлення Craft {version}',
     'Create a draft' => 'Create a draft',
     'Create a new GraphQL Schema' => 'Create a new GraphQL Schema',
     'Create a new GraphQL token' => 'Create a new GraphQL token',
