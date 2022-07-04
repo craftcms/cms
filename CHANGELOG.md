@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- Updated Composer to 2.2.15. ([#11538](https://github.com/craftcms/cms/issues/11538))
+
 ### Fixed
 - Fixed focus styling issues with the Edit Route modal.
 - Fixed a bug where setting `head`, `beginBody`, and `endBody` HTML placeholders in include templates would result in registered HTML snippets getting included twice. ([#11533](https://github.com/craftcms/cms/issues/11533))
