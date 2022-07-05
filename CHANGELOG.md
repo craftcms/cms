@@ -4,6 +4,7 @@
 
 ### Changed
 - Improved the control panel tab design. ([#11524](https://github.com/craftcms/cms/pull/11524))
+- Changed the order of relational field condition rule operators, so “is related to” is listed first. ([#11550](https://github.com/craftcms/cms/discussions/11550))
 
 ### Fixed
 - Fixed an error that could occur if any custom fields were missing their field group. ([#11522](https://github.com/craftcms/cms/discussions/11522))
