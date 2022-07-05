@@ -68,6 +68,7 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
         title: Craft.t('app', 'Show sidebar'),
         'aria-label': Craft.t('app', 'Show sidebar'),
         'data-icon': `sidebar-${Garnish.ltr ? 'right' : 'left'}`,
+        'aria-expanded': 'false',
       }).appendTo(this.$toolbar);
 
       this.addListener(this.$sidebarBtn, 'click', (ev) => {
@@ -396,8 +397,7 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
       Craft.trapFocusWithin(this.$sidebar);
 
       this.$sidebarBtn.addClass('active').attr({
-        title: Craft.t('app', 'Hide sidebar'),
-        'aria-label': Craft.t('app', 'Hide sidebar'),
+        'aria-expanded': 'true',
       });
 
       Garnish.$win.trigger('resize');
@@ -427,8 +427,7 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
         });
 
       this.$sidebarBtn.removeClass('active').attr({
-        title: Craft.t('app', 'Show sidebar'),
-        'aria-label': Craft.t('app', 'Show sidebar'),
+        'aria-expanded': 'false',
       });
 
       Garnish.uiLayerManager.removeLayer();
