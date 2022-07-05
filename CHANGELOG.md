@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Changed
+- Template caching is now supported for console requests, for `{% cache %}` tags that have the `globally` param. ([#11551](https://github.com/craftcms/cms/issues/11551))
 - Updated Composer to 2.2.15. ([#11538](https://github.com/craftcms/cms/issues/11538))
 
 ### Fixed

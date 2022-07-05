@@ -66,7 +66,7 @@ class TemplateCaches extends Component
     public function getTemplateCache(string $key, bool $global, bool $registerScripts = false)
     {
         // Make sure template caching is enabled
-        if ($this->_isTemplateCachingEnabled() === false) {
+        if ($this->_isTemplateCachingEnabled($global) === false) {
             return null;
         }
 
@@ -97,11 +97,12 @@ class TemplateCaches extends Component
      * [[\craft\web\View::registerScript()]], and [[\craft\web\View::registerCss()]] should be captured and
      * included in the cache. If this is `true`, be sure to pass `$withScripts = true` to [[endTemplateCache()]]
      * as well.
+     * @param bool $global Whether the cache should be stored globally.
      */
-    public function startTemplateCache(bool $withScripts = false)
+    public function startTemplateCache(bool $withScripts = false, bool $global = false)
     {
         // Make sure template caching is enabled
-        if ($this->_isTemplateCachingEnabled() === false) {
+        if ($this->_isTemplateCachingEnabled($global) === false) {
             return;
         }
 
@@ -152,7 +153,7 @@ class TemplateCaches extends Component
     public function endTemplateCache(string $key, bool $global, ?string $duration, $expiration, string $body, bool $withScripts = false)
     {
         // Make sure template caching is enabled
-        if ($this->_isTemplateCachingEnabled() === false) {
+        if ($this->_isTemplateCachingEnabled($global) === false) {
             return;
         }
 
@@ -386,14 +387,15 @@ class TemplateCaches extends Component
     /**
      * Returns whether template caching is enabled, based on the 'enableTemplateCaching' config setting.
      *
+     * @param bool $global Whether this is for a globally-scoped cache
      * @return bool Whether template caching is enabled
      */
-    private function _isTemplateCachingEnabled(): bool
+    private function _isTemplateCachingEnabled(bool $global): bool
     {
         if ($this->_enabled === null) {
             $this->_enabled = (
                 Craft::$app->getConfig()->getGeneral()->enableTemplateCaching &&
-                !Craft::$app->getRequest()->getIsConsoleRequest()
+                ($global || !Craft::$app->getRequest()->getIsConsoleRequest())
             );
         }
         return $this->_enabled;
