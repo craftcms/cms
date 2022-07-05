@@ -295,7 +295,7 @@ return [
     'Continue' => 'Продовжити',
     'Control panel resources' => 'Ресурси панелі керування',
     'Cookies must be enabled to access the Craft CMS control panel.' => 'Для доступу до панелі керування Craft CMS необхідно ввімкнути файли cookie.',
-    'Cooldown Time Remaining' => 'Cooldown Time Remaining',
+    'Cooldown Time Remaining' => 'Час до наступної спроби входу',
     'Copied to clipboard.' => 'Скопійовано до буфера обміну.',
     'Copy URL' => 'Копіювати URL-адресу',
     'Copy activation URL…' => 'Копіювати URL-адресу для активації…',
