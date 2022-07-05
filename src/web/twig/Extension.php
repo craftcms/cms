@@ -1234,6 +1234,9 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('ul', [Html::class, 'ul'], ['is_safe' => ['html']]),
 
             // DOM event functions
+            new TwigFunction('defaultHead', [$this->view, 'defaultHead']),
+            new TwigFunction('defaultBeginBody', [$this->view, 'defaultBeginBody']),
+            new TwigFunction('defaultEndBody', [$this->view, 'defaultEndBody']),
             new TwigFunction('head', [$this->view, 'head']),
             new TwigFunction('beginBody', [$this->view, 'beginBody']),
             new TwigFunction('endBody', [$this->view, 'endBody']),

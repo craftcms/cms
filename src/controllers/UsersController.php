@@ -1246,7 +1246,7 @@ JS,
 
         // New users should always be initially saved in a pending state,
         // even if an admin is doing this and opted to not send the verification email
-        if ($isNewUser) {
+        if ($isNewUser && !$deactivateByDefault) {
             $user->pending = true;
         }
 
@@ -1313,7 +1313,7 @@ JS,
 
         // If this is a new user and email verification isn't required,
         // go ahead and activate them now.
-        if ($isNewUser && !$requireEmailVerification) {
+        if ($isNewUser && !$requireEmailVerification && !$deactivateByDefault) {
             Craft::$app->getUsers()->activateUser($user);
         }
 

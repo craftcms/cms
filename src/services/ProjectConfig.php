@@ -472,6 +472,16 @@ class ProjectConfig extends Component
      */
     public function set(string $path, mixed $value, ?string $message = null, bool $updateTimestamp = true, bool $force = false): bool
     {
+        if (!$this->_setInternal($path, $value, $message, $updateTimestamp, $force)) {
+            return false;
+        }
+
+        $this->_saveConfigAfterRequest();
+        return true;
+    }
+
+    private function _setInternal(string $path, mixed $value, ?string $message, bool $updateTimestamp, bool $force): bool
+    {
         if (is_array($value)) {
             $value = ProjectConfigHelper::cleanupConfig($value);
         }
@@ -495,7 +505,7 @@ class ProjectConfig extends Component
 
         if ($updateTimestamp && !$this->_timestampUpdated && $valueHasChanged) {
             $this->_timestampUpdated = true;
-            $this->set(self::PATH_DATE_MODIFIED, DateTimeHelper::currentTimeStamp(), 'Update timestamp for project config');
+            $this->_setInternal(self::PATH_DATE_MODIFIED, DateTimeHelper::currentTimeStamp(), 'Update timestamp for project config', false, false);
         }
 
         if ($valueHasChanged) {
@@ -503,7 +513,6 @@ class ProjectConfig extends Component
         }
 
         $this->getCurrentWorkingConfig()->commitChanges($previousValue, $value, $path, $valueHasChanged, $message, true);
-        $this->_saveConfigAfterRequest();
         return true;
     }
 
@@ -1488,6 +1497,11 @@ class ProjectConfig extends Component
     private function _saveConfigAfterRequest(): void
     {
         $this->_updateYaml = true;
+
+        // Are we too late for EVENT_AFTER_REQUEST?
+        if (Craft::$app->state >= Application::STATE_AFTER_REQUEST) {
+            $this->saveModifiedConfigData();
+        }
     }
 
     /**

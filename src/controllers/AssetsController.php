@@ -267,6 +267,7 @@ class AssetsController extends Controller
 
                 if (isset($originalFilename, $originalFolder)) {
                     // move it into the original target destination
+                    $asset->title = Assets::filename2Title(pathinfo($originalFilename, PATHINFO_FILENAME));
                     $asset->newFilename = $originalFilename;
                     $asset->newFolderId = $originalFolder->id;
                     $asset->setScenario(Asset::SCENARIO_MOVE);
