@@ -303,6 +303,7 @@ return [
     'Connecting to CraftCMS.com…' => 'Connecting to CraftCMS.com…',
     'Content' => 'Content',
     'Contents of {path}' => 'Contents of {path}',
+    'Context' => 'Context',
     'Continue anyway' => 'Continue anyway',
     'Continue shopping' => 'Continue shopping',
     'Continue' => 'Continue',
