@@ -448,7 +448,7 @@ Craft.ElementEditor = Garnish.Base.extend(
       const $globalField = Craft.ui
         .createLightswitchField({
           label: Craft.t('app', 'Enabled for all sites'),
-          name: 'enabled',
+          name: this.namespaceInputName('enabled'),
         })
         .insertBefore($enabledForSiteField);
       $globalField.find('label').css('font-weight', 'bold');
@@ -480,7 +480,8 @@ Craft.ElementEditor = Garnish.Base.extend(
       );
 
       let serializedStatuses =
-        this.namespaceInputName('enabled') + `=${originalEnabledValue}`;
+        encodeURIComponent(this.namespaceInputName('enabled')) +
+        `=${originalEnabledValue}`;
       for (let i = 0; i < this.$siteLightswitches.length; i++) {
         const $input = this.$siteLightswitches.eq(i).data('lightswitch').$input;
         serializedStatuses +=
@@ -494,6 +495,7 @@ Craft.ElementEditor = Garnish.Base.extend(
           .replace(originalSerializedStatus, serializedStatuses)
       );
 
+      debugger;
       if (this.lastSerializedValue) {
         this.lastSerializedValue = this.lastSerializedValue.replace(
           originalSerializedStatus,
@@ -589,7 +591,7 @@ Craft.ElementEditor = Garnish.Base.extend(
       const $field = Craft.ui.createLightswitchField({
         fieldClass: `enabled-for-site-${site.id}-field`,
         label: site.name,
-        name: `enabledForSite[${site.id}]`,
+        name: this.namespaceInputName(`enabledForSite[${site.id}]`),
         on:
           typeof status != 'undefined'
             ? status
