@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.1.1 - 2022-07-05
 
 ### Changed
 - Improved the control panel tab design. ([#11524](https://github.com/craftcms/cms/pull/11524))
