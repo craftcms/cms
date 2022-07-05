@@ -14,6 +14,7 @@
 - Fixed a bug where assets uploaded from Assets fields weren’t retaining their original filename. ([#11530](https://github.com/craftcms/cms/issues/11530))
 - Fixed a bug where project config changes made at the end of the request lifecycle weren’t getting saved.
 - Fixed a bug where toggling entries’ and categories’ site-specific statuses from element editor slideouts wasn’t working. ([#11547](https://github.com/craftcms/cms/issues/11547))
+- Fixed a SQL error that occurred when running the `utils/prune-provisional-drafts` command. ([#11548](https://github.com/craftcms/cms/issues/11548))
 
 ## 4.1.0.2 - 2022-06-28
 

@@ -49,20 +49,20 @@ class PruneProvisionalDraftsController extends Controller
         $this->stdout('Finding elements with multiple provisional drafts per user ... ');
         $elements = (new Query())
             ->select([
-                'id' => 's.sourceId',
+                'id' => 's.canonicalId',
                 's.creatorId',
                 's.count',
                 'type' => (new Query())
                     ->select(['type'])
                     ->from([Table::ELEMENTS])
-                    ->where(new Expression('[[id]] = [[s.sourceId]]')),
+                    ->where(new Expression('[[id]] = [[s.canonicalId]]')),
             ])
             ->from([
                 's' => (new Query())
-                    ->select(['sourceId', 'creatorId', 'count' => 'COUNT(*)'])
+                    ->select(['canonicalId', 'creatorId', 'count' => 'COUNT(*)'])
                     ->from([Table::DRAFTS])
                     ->where(['provisional' => true])
-                    ->groupBy(['sourceId', 'creatorId'])
+                    ->groupBy(['canonicalId', 'creatorId'])
                     ->having('COUNT(*) > 1'),
             ])
             ->all();
