@@ -388,7 +388,7 @@ return [
     'Couldn’t update password.' => 'Не вдалося оновити пароль.',
     'Country' => 'Країна',
     'County' => 'Округ',
-    'Craft CMS does not support backtracking to this version. Please update to Craft CMS {version} or later.' => 'Craft CMS does not support backtracking to this version. Please update to Craft CMS {version} or later.',
+    'Craft CMS does not support backtracking to this version. Please update to Craft CMS {version} or later.' => 'Craft CMS не підтримує скасування оновлення й відновлення цієї версії. Виконайте оновлення до Craft CMS {version} або новішої версії.',
     'Craft CMS is running in Dev Mode.' => 'Craft CMS is running in Dev Mode.',
     'Craft Support' => 'Craft Support',
     'Craft isn’t installed yet.' => 'Craft isn’t installed yet.',
