@@ -20,6 +20,7 @@ use yii\db\Connection;
  * @method Address[]|array all($db = null)
  * @method Address|array|null one($db = null)
  * @method Address|array|null nth(int $n, ?Connection $db = null)
+ * @method self id($value)
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  * @doc-path addresses.md
