@@ -2,11 +2,15 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\helpers\ProjectConfig::ensureAllFilesystemsProcessed()`.
+
 ### Changed
 - Relational field condition rules now have the “is related to” operator selected by default. ([#11550](https://github.com/craftcms/cms/discussions/11550))
 
 ### Fixed
 - Fixed a bug where the Updates utility wasn’t checking for updates properly. ([#11552](https://github.com/craftcms/cms/issues/11552))
+- Fixed an error that could occur when deploying a Craft 4 upgrade to another server. ([#11558](https://github.com/craftcms/cms/issues/11558))
 
 ## 4.1.1 - 2022-07-05
 
