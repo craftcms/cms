@@ -464,7 +464,7 @@ return [
     'Delete their content' => 'Видалити вміст',
     'Delete them' => 'Видалити',
     'Delete users' => 'Видаляти користувачів',
-    'Delete {num, plural, =1{user} other{users}} and content' => 'Delete {num, plural, =1{user} other{users}} and content',
+    'Delete {num, plural, =1{user} other{users}} and content' => 'Видалити {num, plural, one {} few {користувачів} many {користувачів} =1{користувача} other{користувача}} і вміст',
     'Delete {num, plural, =1{user} other{users}}' => 'Delete {num, plural, =1{user} other{users}}',
     'Delete {site}' => 'Delete {site}',
     'Delete {type} for this site' => 'Delete {type} for this site',
