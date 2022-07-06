@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.1.2 - 2022-07-06
 
 ### Added
 - Added `craft\helpers\ProjectConfig::ensureAllFilesystemsProcessed()`.
