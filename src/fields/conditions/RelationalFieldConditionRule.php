@@ -26,7 +26,7 @@ class RelationalFieldConditionRule extends BaseElementSelectConditionRule implem
     /**
      * @inheritdoc
      */
-    public string $operator = self::OPERATOR_NOT_EMPTY;
+    public string $operator = self::OPERATOR_RELATED_TO;
 
     /**
      * @inheritdoc

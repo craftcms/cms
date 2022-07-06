@@ -23,7 +23,7 @@ import './updates.scss';
         includeDetails: true,
       };
 
-      Craft.cp.checkForUpdates(true, true, ({data}) => {
+      Craft.cp.checkForUpdates(true, true, (data) => {
         this.allowUpdates = data.allowUpdates;
 
         // Craft CMS update?
