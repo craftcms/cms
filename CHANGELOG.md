@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where asset bundles weren’t getting registered on the front end. ([#11555](https://github.com/craftcms/cms/issues/11555))
+
 ## 3.7.47 - 2022-07-05
 
 ### Changed
@@ -8,7 +13,6 @@
 
 ### Fixed
 - Fixed focus styling issues with the Edit Route modal.
-- Fixed a bug where setting `head`, `beginBody`, and `endBody` HTML placeholders in include templates would result in registered HTML snippets getting included twice. ([#11533](https://github.com/craftcms/cms/issues/11533))
 
 ## 3.7.46 - 2022-06-28
 
