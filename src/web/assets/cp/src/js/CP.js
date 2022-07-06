@@ -1064,19 +1064,20 @@ Craft.CP = Garnish.Base.extend(
     _checkForUpdates: function (forceRefresh, includeDetails) {
       return new Promise((resolve, reject) => {
         if (!forceRefresh) {
-          this._checkForCachedUpdates(includeDetails).then((info) => {
-            if (info.cached !== false) {
-              resolve(info);
-            }
+          this._checkForCachedUpdates(includeDetails)
+            .then((info) => {
+              if (info.cached) {
+                resolve(info);
+                return;
+              }
 
-            this._getUpdates(includeDetails).then((info) => {
-              resolve(info);
-            });
-          });
+              this._getUpdates(includeDetails).then((info) => {
+                resolve(info);
+              });
+            })
+            .catch(reject);
         } else {
-          this._getUpdates(includeDetails).then((info) => {
-            resolve(info);
-          });
+          this._getUpdates(includeDetails).then(resolve).catch(reject);
         }
       });
     },
@@ -1089,8 +1090,12 @@ Craft.CP = Garnish.Base.extend(
         };
 
         Craft.sendActionRequest('POST', 'app/check-for-updates', {data})
-          .then((response) => resolve(response.data))
-          .catch(({response}) => resolve({cached: false}));
+          .then(({data}) => {
+            resolve(data);
+          })
+          .catch(() => {
+            resolve({cached: false});
+          });
       });
     },
 
@@ -1098,21 +1103,27 @@ Craft.CP = Garnish.Base.extend(
       return new Promise((resolve, reject) => {
         Craft.sendApiRequest('GET', 'updates')
           .then((updates) => {
-            this._cacheUpdates(updates, includeDetails).then(resolve);
+            this._cacheUpdates(updates, includeDetails).then(({data}) => {
+              resolve(data);
+            });
           })
-          .catch((e) => {
-            this._cacheUpdates({}).then(resolve);
-          });
+          .catch(reject);
       });
     },
 
     _cacheUpdates: function (updates, includeDetails) {
-      const data = {
-        updates,
-        includeDetails,
-      };
+      return new Promise((resolve, reject) => {
+        const data = {
+          updates,
+          includeDetails,
+        };
 
-      return Craft.sendActionRequest('POST', 'app/cache-updates', {data});
+        Craft.sendActionRequest('POST', 'app/cache-updates', {data})
+          .then(({data}) => {
+            resolve(data);
+          })
+          .catch(reject);
+      });
     },
 
     updateUtilitiesBadge: function () {
