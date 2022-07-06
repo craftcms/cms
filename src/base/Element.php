@@ -4525,7 +4525,10 @@ JS,
                     return false;
                 }
                 if ($this->getIsUnpublishedDraft()) {
-                    $icon = Html::tag('span', '', ['data' => ['icon' => 'draft']]);
+                    $icon = Html::tag('span', '', [
+                        'data' => ['icon' => 'draft'],
+                        'aria' => ['hidden' => 'true'],
+                    ]);
                     $label = Craft::t('app', 'Draft');
                 } else {
                     $status = $this->getStatus();
