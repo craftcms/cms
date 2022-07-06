@@ -254,15 +254,11 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
     },
 
     enableSelectBtn: function () {
-      this.$selectBtn
-        .removeClass('disabled')
-        .attr('aria-disabled', 'false');
+      this.$selectBtn.removeClass('disabled').attr('aria-disabled', 'false');
     },
 
     disableSelectBtn: function () {
-      this.$selectBtn
-        .addClass('disabled')
-        .attr('aria-disabled', 'true');
+      this.$selectBtn.addClass('disabled').attr('aria-disabled', 'true');
     },
 
     enableCancelBtn: function () {
