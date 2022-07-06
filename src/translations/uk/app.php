@@ -398,7 +398,7 @@ return [
     'Create a new {type}' => 'Створити {type}',
     'Create and add another' => 'Створити й додати ще',
     'Create and continue editing' => 'Створити й продовжити редагування',
-    'Create assets in the “{volume}” volume' => 'Create assets in the “{volume}” volume',
+    'Create assets in the “{volume}” volume' => 'Створити ресурси в томі «{volume}»',
     'Create entries with the “{entryType}” entry type' => 'Create entries with the “{entryType}” entry type',
     'Create entries' => 'Create entries',
     'Create subfolders' => 'Create subfolders',
