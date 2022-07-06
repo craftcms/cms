@@ -797,7 +797,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       return params;
     },
 
-    updateElements: function (preservePagination) {
+    updateElements: function (preservePagination, pageChanged) {
       // Ignore if we're not fully initialized yet
       if (!this.initialized) {
         return;
@@ -832,6 +832,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             : this.$main
           ).scrollTop(0);
           this._updateView(params, response.data);
+
+          if (pageChanged) {
+            const $elementContainer = this.view.getElementContainer();
+            Garnish.firstFocusableElement($elementContainer).trigger('focus');
+          }
         })
         .catch((e) => {
           this.setIndexAvailable();
@@ -1974,7 +1979,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                   this.removeListener($prevBtn, 'click');
                   this.removeListener($nextBtn, 'click');
                   this.setPage(this.page - 1);
-                  this.updateElements(true);
+                  this.updateElements(true, true);
                 });
               }
 
@@ -1983,7 +1988,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                   this.removeListener($prevBtn, 'click');
                   this.removeListener($nextBtn, 'click');
                   this.setPage(this.page + 1);
-                  this.updateElements(true);
+                  this.updateElements(true, true);
                 });
               }
             }
