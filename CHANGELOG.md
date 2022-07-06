@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## 3.7.33 - 2022-02-15
+## 3.7.33 - 2022-02-15 [CRITICAL]
 
 > {tip} The way CSRF tokens are generated has changed in this release, so all users will be logged out during the update.
 
