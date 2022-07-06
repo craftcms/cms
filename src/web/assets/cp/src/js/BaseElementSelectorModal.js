@@ -76,6 +76,7 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
           label: Craft.t('app', 'Select'),
           spinner: true,
         })
+        .attr('aria-disabled', 'true')
         .appendTo(this.$primaryButtons);
 
       this.$body = $body;
@@ -253,11 +254,15 @@ Craft.BaseElementSelectorModal = Garnish.Modal.extend(
     },
 
     enableSelectBtn: function () {
-      this.$selectBtn.removeClass('disabled');
+      this.$selectBtn
+        .removeClass('disabled')
+        .attr('aria-disabled', 'false');
     },
 
     disableSelectBtn: function () {
-      this.$selectBtn.addClass('disabled');
+      this.$selectBtn
+        .addClass('disabled')
+        .attr('aria-disabled', 'true');
     },
 
     enableCancelBtn: function () {
