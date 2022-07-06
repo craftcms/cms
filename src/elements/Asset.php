@@ -1090,6 +1090,9 @@ class Asset extends Element
             'data' => [
                 'icon' => 'download',
             ],
+            'aria' => [
+                'label' => Craft::t('app', 'Download'),
+            ],
         ]);
 
         $js = <<<JS
