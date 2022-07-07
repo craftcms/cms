@@ -8,6 +8,7 @@
 namespace craft\helpers;
 
 use Craft;
+use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\FieldLayoutElement;
 use craft\behaviors\DraftBehavior;
@@ -1258,34 +1259,26 @@ JS, [
     {
         $formatRepo = Craft::$app->getAddresses()->getAddressFormatRepository()->get($address->countryCode);
 
-        $originalScenario = $address->getScenario();
-        $address->setScenario(Address::SCENARIO_LIVE);
-        $activeValidators = $address->getActiveValidators();
-
         $requiredFields = [];
+        $scenario = $address->getScenario();
+        $address->setScenario(Element::SCENARIO_LIVE);
+        $activeValidators = $address->getActiveValidators();
+        $address->setScenario($scenario);
+
         foreach ($activeValidators as $validator) {
-            if (!$validator instanceof RequiredValidator) {
-                continue;
-            }
-
-
-            foreach ($validator->getAttributeNames() as $attr) {
-                if ($validator->when === null || call_user_func($validator->when, $address, $attr)) {
-                    $requiredFields[] = $attr;
+            if ($validator instanceof RequiredValidator) {
+                foreach ($validator->getAttributeNames() as $attr) {
+                    if ($validator->when === null || call_user_func($validator->when, $address, $attr)) {
+                        $requiredFields[$attr] = true;
+                    }
                 }
             }
-        }
-
-        if (!empty($requiredFields)) {
-            $requiredFields = array_flip(array_unique(array_filter($requiredFields)));
         }
 
         $visibleFields = array_flip(array_merge(
                 $formatRepo->getUsedFields(),
                 $formatRepo->getUsedSubdivisionFields(),
             )) + $requiredFields;
-
-        $address->setScenario($originalScenario);
 
         return
             static::textFieldHtml([
