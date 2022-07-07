@@ -1258,6 +1258,7 @@ JS, [
     {
         $formatRepo = Craft::$app->getAddresses()->getAddressFormatRepository()->get($address->countryCode);
 
+        $originalScenario = $address->getScenario();
         $address->setScenario($scenario);
         $activeValidators = $address->getActiveValidators();
 
@@ -1283,6 +1284,8 @@ JS, [
                 $formatRepo->getUsedFields(),
                 $formatRepo->getUsedSubdivisionFields(),
             )) + $requiredFields;
+
+        $address->setScenario($originalScenario);
 
         return
             static::textFieldHtml([
