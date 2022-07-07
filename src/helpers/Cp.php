@@ -1254,12 +1254,12 @@ JS, [
      * @return string
      * @since 4.0.0
      */
-    public static function addressFieldsHtml(Address $address, string $scenario = Address::SCENARIO_LIVE): string
+    public static function addressFieldsHtml(Address $address): string
     {
         $formatRepo = Craft::$app->getAddresses()->getAddressFormatRepository()->get($address->countryCode);
 
         $originalScenario = $address->getScenario();
-        $address->setScenario($scenario);
+        $address->setScenario(Address::SCENARIO_LIVE);
         $activeValidators = $address->getActiveValidators();
 
         $requiredFields = [];
