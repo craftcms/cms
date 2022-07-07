@@ -24,6 +24,7 @@ use craft\web\View;
 use yii\base\Event;
 use yii\base\InvalidArgumentException;
 use yii\helpers\Markdown;
+use yii\validators\RequiredValidator;
 
 /**
  * Class Cp
@@ -1253,11 +1254,31 @@ JS, [
      * @return string
      * @since 4.0.0
      */
-    public static function addressFieldsHtml(Address $address): string
+    public static function addressFieldsHtml(Address $address, string $scenario = Address::SCENARIO_LIVE): string
     {
         $formatRepo = Craft::$app->getAddresses()->getAddressFormatRepository()->get($address->countryCode);
 
-        $requiredFields = array_flip($formatRepo->getRequiredFields());
+        $address->setScenario($scenario);
+        $activeValidators = $address->getActiveValidators();
+
+        $requiredFields = [];
+        foreach ($activeValidators as $validator) {
+            if (!$validator instanceof RequiredValidator) {
+                continue;
+            }
+
+
+            foreach ($validator->getAttributeNames() as $attr) {
+                if ($validator->when === null || call_user_func($validator->when, $address, $attr)) {
+                    $requiredFields[] = $attr;
+                }
+            }
+        }
+
+        if (!empty($requiredFields)) {
+            $requiredFields = array_flip(array_unique(array_filter($requiredFields)));
+        }
+
         $visibleFields = array_flip(array_merge(
                 $formatRepo->getUsedFields(),
                 $formatRepo->getUsedSubdivisionFields(),
