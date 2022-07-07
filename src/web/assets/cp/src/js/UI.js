@@ -811,6 +811,7 @@ Craft.ui = {
     $dateInputs.on('keyup', function (ev) {
       if (
         ev.keyCode === Garnish.ESC_KEY &&
+        $(this).data('datepicker') &&
         $(this).data('datepicker').dpDiv.is(':visible')
       ) {
         ev.stopPropagation();
@@ -818,12 +819,16 @@ Craft.ui = {
     });
 
     // prevent clicks in the datepicker divs from closing the menu
-    $startDate.data('datepicker').dpDiv.on('mousedown', function (ev) {
-      ev.stopPropagation();
-    });
-    $endDate.data('datepicker').dpDiv.on('mousedown', function (ev) {
-      ev.stopPropagation();
-    });
+    if ($startDate.data('datepicker')) {
+      $startDate.data('datepicker').dpDiv.on('mousedown', function (ev) {
+        ev.stopPropagation();
+      });
+    }
+    if ($endDate.data('datepicker')) {
+      $endDate.data('datepicker').dpDiv.on('mousedown', function (ev) {
+        ev.stopPropagation();
+      });
+    }
 
     var menu = new Garnish.Menu($menu, {
       onOptionSelect: function (option) {
