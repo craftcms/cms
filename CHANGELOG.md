@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- Address fields now show required indicators based on the configured validation rules. ([#11566](https://github.com/craftcms/cms/pull/11566))
+
 ### Fixed
 - Fixed a JavaScript error that occurred on the Updates utility. ([#11567](https://github.com/craftcms/cms/issues/11567))
 
