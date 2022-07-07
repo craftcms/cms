@@ -1103,7 +1103,7 @@ Craft.CP = Garnish.Base.extend(
       return new Promise((resolve, reject) => {
         Craft.sendApiRequest('GET', 'updates')
           .then((updates) => {
-            this._cacheUpdates(updates, includeDetails).then(({data}) => {
+            this._cacheUpdates(updates, includeDetails).then((data) => {
               resolve(data);
             });
           })
