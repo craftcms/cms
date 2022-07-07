@@ -871,6 +871,15 @@ class GeneralConfig extends BaseObject
 
     /**
      * @var bool Whether the system should run in [Dev Mode](https://craftcms.com/support/dev-mode).
+     *
+     * ::: code
+     * ```php Static Config
+     * 'devMode' => true,
+     * ```
+     * ```shell Environment Override
+     * CRAFT_DEV_MODE=true
+     * ```
+     * :::
      * @group System
      */
     public bool $devMode = false;
@@ -895,6 +904,15 @@ class GeneralConfig extends BaseObject
      * ::: warning
      * This should not be set on a per-environment basis, as it could result in plugin schema version mismatches
      * between environments, which will prevent project config changes from getting applied.
+     * :::
+     *
+     * ::: code
+     * ```php Static Config
+     * 'disabledPlugins' => ['redactor', 'webhooks'],
+     * ```
+     * ```shell Environment Override
+     * CRAFT_DISABLED_PLUGINS=redactor,webhooks
+     * ```
      * :::
      *
      * @since 3.1.9
