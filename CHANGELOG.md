@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where Craft’s Composer commands could produce a malformed `composer.json` file. ([#11564](https://github.com/craftcms/cms/issues/11564))
+
 ## 3.7.47.1 - 2022-07-06
 
 ### Fixed
