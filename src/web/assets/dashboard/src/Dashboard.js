@@ -195,7 +195,9 @@ import './dashboard.scss';
               '</p>'
           ).appendTo($form),
           $table = $(
-            '<table class="data' + (!$widgets.length ? ' hidden' : '') + '" role="presentation"/>'
+            '<table class="data' +
+              (!$widgets.length ? ' hidden' : '') +
+              '" role="presentation"/>'
           ).appendTo($form),
           $tbody = $('<tbody/>').appendTo($table);
 
