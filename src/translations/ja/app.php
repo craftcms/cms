@@ -1,6 +1,7 @@
 <?php
 
 return [
+    '(Ungrouped)' => '(Ungrouped)',
     '(blank)' => '(空白)',
     '(trial)' => '(トライアル)',
     '({currencyCode}) {currencySymbol}' => '({currencyCode}) {currencySymbol}',
