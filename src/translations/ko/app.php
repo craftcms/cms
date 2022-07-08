@@ -1,6 +1,7 @@
 <?php
 
 return [
+    '(Ungrouped)' => '(Ungrouped)',
     '(blank)' => '(공백)',
     '(trial)' => '(평가판)',
     '({currencyCode}) {currencySymbol}' => '({currencyCode}) {currencySymbol}',
