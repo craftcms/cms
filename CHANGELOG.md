@@ -8,6 +8,7 @@
 ### Fixed
 - Fixed a bug where Craft’s Composer commands could produce a malformed `composer.json` file. ([#11564](https://github.com/craftcms/cms/issues/11564))
 - Fixed a bug where date range inputs weren’t working on mobile. ([#11571](https://github.com/craftcms/cms/issues/11571))
+- Fixed a bug where the “Craft Support” Dashboard widget wasn’t being labeled properly in the widget settings HUD and delete confirmation dialog. ([#11573](https://github.com/craftcms/cms/discussions/11573))
 
 ## 3.7.47.1 - 2022-07-06
 
