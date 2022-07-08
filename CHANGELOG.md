@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where assets’ native Alternative Text fields were getting mislabeled as translatable. ([#11576](https://github.com/craftcms/cms/issues/11576))
+
 ## 4.1.3 - 2022-07-07
 
 ### Changed
