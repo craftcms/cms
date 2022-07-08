@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- Relation fields now focus on the next related element’s “Remove” button when an element is removed. ([#11577](https://github.com/craftcms/cms/issues/11577))
+
 ### Fixed
 - Fixed a bug where assets’ native Alternative Text fields were getting mislabeled as translatable. ([#11576](https://github.com/craftcms/cms/issues/11576))
 
