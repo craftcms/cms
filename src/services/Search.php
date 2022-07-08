@@ -16,6 +16,7 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\elements\db\ElementQuery;
 use craft\errors\SiteNotFoundException;
+use craft\events\IndexKeywordsEvent;
 use craft\events\SearchEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
@@ -40,6 +41,12 @@ use yii\db\Schema;
  */
 class Search extends Component
 {
+    /**
+     * @event IndexKeywordsEvent The event that is triggered before keywords are indexed for an element attribute or field.
+     * @since 4.2.0
+     */
+    public const EVENT_BEFORE_INDEX_KEYWORDS = 'beforeIndexKeywords';
+
     /**
      * @event SearchEvent The event that is triggered before a search is performed.
      */
@@ -330,6 +337,17 @@ SQL;
         // Clean 'em up
         $site = $element->getSite();
         $keywords = SearchHelper::normalizeKeywords($keywords, [], true, $site->language);
+
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_INDEX_KEYWORDS)) {
+            $event = new IndexKeywordsEvent([
+                'element' => $element,
+                'attribute' => $attribute,
+                'fieldId' => $fieldId,
+                'keywords' => $keywords,
+            ]);
+            $this->trigger(self::EVENT_BEFORE_INDEX_KEYWORDS, $event);
+            $keywords = $event->keywords;
+        }
 
         // Save 'em
         $columns = [
