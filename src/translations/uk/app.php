@@ -1023,7 +1023,7 @@ return [
     'Options' => 'Параметри',
     'Organization Tax ID' => 'Податковий номер організації',
     'Organization' => 'Організація',
-    'Origin' => 'Origin',
+    'Origin' => 'Джерело',
     'Our site is temporarily unavailable. Please try again later.' => 'Сайт тимчасово недоступний. Спробуйте зайти пізніше.',
     'Overview' => 'Огляд',
     'PHP Info' => 'Інформація про PHP',
