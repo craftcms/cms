@@ -977,7 +977,7 @@ return [
     'Optgroup?' => 'Optgroup?',
     'Option Label' => 'Мітка варіанта',
     'Options' => 'Параметри',
-    'Origin' => 'Origin',
+    'Origin' => 'Джерело',
     'Our site is temporarily unavailable. Please try again later.' => 'Сайт тимчасово недоступний. Спробуйте зайти пізніше.',
     'PHP Info' => 'Інформація про PHP',
     'Package Name' => 'Package Name',
