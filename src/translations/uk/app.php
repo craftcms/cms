@@ -1355,7 +1355,7 @@ return [
     'Suffix Text' => 'Текст суфікса',
     'Suspend' => 'Відключити',
     'Suspended' => 'Відключено',
-    'Switch' => 'Перемикання',
+    'Switch' => 'Перемкнути',
     'Switching sites will lose unsaved changes. Are you sure you want to switch sites?' => 'Перемикання між сайтами призведе до втрати незбережених змін. Дійсно перейти на інший сайт?',
     'System Email Address' => 'Системна адреса електронної пошти',
     'System Messages' => 'Системні повідомлення',
