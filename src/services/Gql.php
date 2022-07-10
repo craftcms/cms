@@ -920,21 +920,25 @@ class Gql extends Component
             return false;
         }
 
-        // Public token information is stored in the project config
-        if ($token->accessToken === GqlToken::PUBLIC_TOKEN) {
-            $data = [
-                'expiryDate' => $token->expiryDate ? $token->expiryDate->getTimestamp() : null,
-                'enabled' => (bool)$token->enabled,
-            ];
-
-            Craft::$app->getProjectConfig()->set(self::CONFIG_GQL_PUBLIC_TOKEN_KEY, $data);
-
-            return true;
-        }
-
         if ($runValidation && !$token->validate()) {
             Craft::info('Token not saved due to validation error.', __METHOD__);
             return false;
+        }
+
+        // Public token information is stored in the project config
+        if ($token->accessToken === GqlToken::PUBLIC_TOKEN) {
+            $data = [
+                'enabled' => (bool)$token->enabled,
+                'expiryDate' => $token->expiryDate ? $token->expiryDate->getTimestamp() : null,
+            ];
+
+            $projectConfigService = Craft::$app->getProjectConfig();
+            if ($data !== $projectConfigService->get(self::CONFIG_GQL_PUBLIC_TOKEN_KEY)) {
+                $muteEvents = $projectConfigService->muteEvents;
+                $projectConfigService->muteEvents = true;
+                $projectConfigService->set(self::CONFIG_GQL_PUBLIC_TOKEN_KEY, $data);
+                $projectConfigService->muteEvents = $muteEvents;
+            }
         }
 
         $this->_saveTokenInternal($token);
