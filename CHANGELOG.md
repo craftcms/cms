@@ -14,6 +14,7 @@
 ### Fixed
 - Fixed a bug where assets’ native Alternative Text fields were getting mislabeled as translatable. ([#11576](https://github.com/craftcms/cms/issues/11576))
 - Fixed a bug where fields nested within Neo fields could be incorrectly validated as required. ([#11574](https://github.com/craftcms/cms/issues/11574))
+- Fixed a PHP error that occurred when editing a Date field with a Min Date setting set.
 
 ## 4.1.3 - 2022-07-07
 
