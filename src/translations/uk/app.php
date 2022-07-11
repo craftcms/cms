@@ -1830,7 +1830,7 @@ return [
     '{attribute} must be set to a new password.' => 'Для {attribute} слід установити новий пароль.',
     '{attribute} must contain “{slug}”' => '{attribute} має містити «{slug}»',
     '{attribute} should contain at least {min, number} {min, plural, one{block} other{blocks}}.' => '{attribute} має містити принаймні {min, number} {min, plural, one{блок} few {блоки} many {блоків} other{блока}}.',
-    '{attribute} should contain at least {min, number} {min, plural, one{item} other{items}}.' => '{attribute} should contain at least {min, number} {min, plural, one{item} other{items}}.',
+    '{attribute} should contain at least {min, number} {min, plural, one{item} other{items}}.' => '{attribute} має містити принаймні {min, number} {min, plural, one{об\'єкт} few {об\'єкти} many {об\'єктів} other{об\'єкта}}.',
     '{attribute} should contain at most {max, number} {max, plural, one{block} other{blocks}}.' => '{attribute} should contain at most {max, number} {max, plural, one{block} other{blocks}}.',
     '{attribute} should contain at most {max, number} {max, plural, one{item} other{items}}.' => '{attribute} should contain at most {max, number} {max, plural, one{item} other{items}}.',
     '{attribute} should contain at most {max, number} {max, plural, one{selection} other{selections}}.' => '{attribute} should contain at most {max, number} {max, plural, one{selection} other{selections}}.',
