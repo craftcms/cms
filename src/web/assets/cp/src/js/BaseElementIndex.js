@@ -2546,7 +2546,6 @@ const FilterHud = Garnish.HUD.extend({
         this.$hud.find('.condition-container').on('htmx:load', () => {
           this.setReady();
         });
-
         this.setFocus();
       })
       .catch(() => {
@@ -2575,7 +2574,7 @@ const FilterHud = Garnish.HUD.extend({
   },
 
   setFocus: function () {
-    this.$main.find('.condition-footer .add').focus();
+    Garnish.setFocusWithin(this.$main);
   },
 
   clear: function () {
