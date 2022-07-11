@@ -2,11 +2,18 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\models\FieldLayout::getVisibleCustomFieldElements()`.
+
 ### Changed
 - Relation fields now focus on the next related element’s “Remove” button when an element is removed. ([#11577](https://github.com/craftcms/cms/issues/11577))
 
+### Deprecated
+- Deprecated `craft\base\FieldTrait::$required`. `craft\fieldlayoutelements\BaseField::$required` should be used instead.
+
 ### Fixed
 - Fixed a bug where assets’ native Alternative Text fields were getting mislabeled as translatable. ([#11576](https://github.com/craftcms/cms/issues/11576))
+- Fixed a bug where fields nested within Neo fields could be incorrectly validated as required. ([#11574](https://github.com/craftcms/cms/issues/11574))
 
 ## 4.1.3 - 2022-07-07
 
