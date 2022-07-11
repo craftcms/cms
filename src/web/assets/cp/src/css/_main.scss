@@ -3436,6 +3436,11 @@ ul.tree,
     .selectize {
       min-width: 100px;
     }
+
+    .text.fullwidth {
+      min-width: 100px;
+      max-width: 100%;
+    }
   }
 }
 
