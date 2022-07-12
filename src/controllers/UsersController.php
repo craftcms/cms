@@ -773,6 +773,7 @@ class UsersController extends Controller
                     }
                     break;
                 case User::STATUS_SUSPENDED:
+                    $statusLabel = Craft::t('app', 'Suspended');
                     if (Craft::$app->getUsers()->canSuspend($currentUser, $user)) {
                         $statusActions[] = [
                             'action' => 'users/unsuspend-user',

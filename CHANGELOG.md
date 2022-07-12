@@ -11,6 +11,7 @@
 - Fixed a bug where the “Craft Support” Dashboard widget wasn’t being labeled properly in the widget settings HUD and delete confirmation dialog. ([#11573](https://github.com/craftcms/cms/discussions/11573))
 - Fixed a bug where treating element queries as arrays wasn’t always logging deprecation warnings.
 - Fixed a bug where the project config cache was getting invalidated on each public GraphQL API request.
+- Fixed a bug where the “Status” label on Edit User pages was blank for suspended users.
 
 ## 3.7.47.1 - 2022-07-06
 
