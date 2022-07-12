@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.1.4 - 2022-07-12
 
 ### Added
 - Added `craft\models\FieldLayout::getVisibleCustomFieldElements()`.
