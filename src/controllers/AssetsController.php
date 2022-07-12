@@ -1075,7 +1075,7 @@ class AssetsController extends Controller
             }
         } catch (\Exception $exception) {
             Craft::$app->getErrorHandler()->logException($exception);
-            throw new ServerErrorHttpException('Image transform cannot be created.');
+            throw new ServerErrorHttpException('Image transform cannot be created.', 0, $exception);
         }
 
         $asset = Asset::findOne(['id' => $assetId]);
