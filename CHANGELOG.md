@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.7.48 - 2022-07-12
 
 ### Changed
 - Relation fields now focus on the next related element’s “Remove” button when an element is removed. ([#11577](https://github.com/craftcms/cms/issues/11577))
