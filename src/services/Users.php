@@ -950,18 +950,13 @@ class Users extends Component
             return false;
         }
 
-        $transaction = Craft::$app->getDb()->beginTransaction();
-        try {
-            $userRecord = $this->_getUserRecordById($user->id);
-            $userRecord->suspended = true;
-            $user->suspended = true;
-            $userRecord->save();
+        $userRecord = $this->_getUserRecordById($user->id);
+        $userRecord->suspended = true;
+        $user->suspended = true;
+        $userRecord->save();
 
-            $transaction->commit();
-        } catch (Throwable $e) {
-            $transaction->rollBack();
-            throw $e;
-        }
+        // Destroy all sessions for this user
+        Db::delete(Table::SESSIONS, ['userId' => $user->id]);
 
         // Fire an 'afterSuspendUser' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SUSPEND_USER)) {

@@ -573,7 +573,9 @@ import './dashboard.scss';
         '<tr data-id="' +
           this.id +
           '" data-name="' +
-          Craft.escapeHtml(this.title) +
+          (this.title
+            ? Craft.escapeHtml(this.title)
+            : this.getTypeInfo('name')) +
           '">' +
           '<td class="widgetmanagerhud-icon">' +
           this.getTypeInfo('iconSvg') +
@@ -646,6 +648,10 @@ import './dashboard.scss';
 
     getManagerRowLabel: function () {
       var typeName = this.getTypeInfo('name');
+
+      if (!this.title) {
+        return typeName;
+      }
 
       return (
         Craft.escapeHtml(this.title) +
