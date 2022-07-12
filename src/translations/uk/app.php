@@ -776,7 +776,7 @@ return [
     'Job retried.' => 'Завдання повторно запущено.',
     'Job' => 'Завдання',
     'Keep both' => 'Зберегти обидві частини',
-    'Keep me logged in' => 'Keep me logged in',
+    'Keep me logged in' => 'Залишатися в системі',
     'Keep me signed in' => 'Залишатися в системі',
     'Keep them' => 'Зберегти',
     'Knowledge Base' => 'База знань',
