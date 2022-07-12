@@ -86,6 +86,21 @@ class AssetTransform extends Model
     /**
      * @inheritdoc
      */
+    public function init()
+    {
+        parent::init();
+
+        if (is_float($this->width)) {
+            $this->width = (int)$this->width;
+        }
+        if (is_float($this->height)) {
+            $this->height = (int)$this->height;
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function attributeLabels()
     {
         return [

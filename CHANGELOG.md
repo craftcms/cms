@@ -12,6 +12,7 @@
 - Fixed a bug where treating element queries as arrays wasn’t always logging deprecation warnings.
 - Fixed a bug where the project config cache was getting invalidated on each public GraphQL API request.
 - Fixed a bug where the “Status” label on Edit User pages was blank for suspended users.
+- Fixed an error that could occur when an image transform was configured with a non-integer width or height. ([#11587](https://github.com/craftcms/cms/issues/11587))
 
 ## 3.7.47.1 - 2022-07-06
 
