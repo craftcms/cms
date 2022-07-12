@@ -729,9 +729,7 @@ class AssetTransforms extends Component
                 $this->storeTransformIndexData($index);
                 Craft::$app->getErrorHandler()->logException($e);
 
-                throw new AssetTransformException(Craft::t('app',
-                    'Failed to generate transform with id of {id}.',
-                    ['id' => $index->id]));
+                throw new AssetTransformException(Craft::t('app', 'Failed to generate transform with id of {id}.', ['id' => $index->id]), 0, $e);
             }
         }
 
