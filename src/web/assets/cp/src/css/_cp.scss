@@ -949,7 +949,10 @@ li.breadcrumb-toggle-wrapper {
   flex: 0 0 $sidebarWidth;
   width: $sidebarWidth;
   box-sizing: border-box;
-  @include margin-left(calc(var(--xl) * -1));
+
+  @media only screen and (min-width: $minFullUiWidth) {
+    @include margin-left(calc(var(--xl) * -1));
+  }
 }
 
 #sidebar {
@@ -1297,6 +1300,7 @@ li.breadcrumb-toggle-wrapper {
 
 /* Sidebar */
 .sidebar {
+  --active-indicator-width: 4px;
   width: $sidebarWidth;
   box-sizing: border-box;
   font-size: 13px;
@@ -1325,11 +1329,11 @@ li.breadcrumb-toggle-wrapper {
 
   @mixin nav-level($level) {
     & > a {
-      @include padding-left(24px + 14 * $level);
+      @include padding-left(28px + 14 * $level);
     }
 
     & > .toggle {
-      @include left(calc(var(--m) * #{$level}));
+      @include left(calc(var(--m) * #{$level} + var(--active-indicator-width)));
     }
   }
 
@@ -1382,6 +1386,31 @@ li.breadcrumb-toggle-wrapper {
         user-select: none;
         border-radius: var(--large-border-radius);
         word-break: break-word;
+
+        &::after {
+          position: absolute;
+          content: '';
+          width: var(--active-indicator-width);
+          height: 100%;
+          top: 0;
+          @include left(0);
+
+          body.rtl & {
+            border-radius: 0 var(--large-border-radius)
+              var(--large-border-radius) 0;
+          }
+
+          body.ltr & {
+            border-radius: var(--large-border-radius) 0 0
+              var(--large-border-radius);
+          }
+        }
+
+        &.sel {
+          &::after {
+            background-color: currentColor;
+          }
+        }
 
         .status {
           flex-shrink: 1;
