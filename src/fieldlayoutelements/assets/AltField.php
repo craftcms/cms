@@ -28,7 +28,7 @@ class AltField extends TextareaField
     /**
      * @inheritdoc
      */
-    public bool $translatable = true;
+    public bool $translatable = false;
 
     /**
      * @inheritdoc
