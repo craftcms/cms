@@ -817,6 +817,9 @@ class Users extends Component
         $user->suspended = true;
         $userRecord->save();
 
+        // Destroy all sessions for this user
+        Db::delete(Table::SESSIONS, ['userId' => $user->id]);
+
         // Fire an 'afterSuspendUser' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SUSPEND_USER)) {
             $this->trigger(self::EVENT_AFTER_SUSPEND_USER, new UserEvent([
