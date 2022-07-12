@@ -15,7 +15,6 @@ use craft\cache\ElementQueryTagDependency;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\db\ElementQuery;
-use craft\errors\SiteNotFoundException;
 use craft\events\IndexKeywordsEvent;
 use craft\events\SearchEvent;
 use craft\helpers\ArrayHelper;
