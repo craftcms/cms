@@ -27,4 +27,12 @@ class BaseConfig extends BaseObject
     {
         return new static($config);
     }
+
+    /**
+     * @inerhitdoc
+     */
+    final public function __construct($config = [])
+    {
+        parent::__construct($config);
+    }
 }
