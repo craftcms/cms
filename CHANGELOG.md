@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+### Added
+- The control panel is now translated into Ukranian.
+
 ## 4.1.4.1 - 2022-07-13
 
 ### Fixed
