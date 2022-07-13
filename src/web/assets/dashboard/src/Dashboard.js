@@ -37,7 +37,10 @@ import './dashboard.scss';
         });
 
         this.addListener('#new-widget-menu a', 'keydown', (event) => {
-          if (event.keyCode === Garnish.SPACE_KEY || event.keyCode === Garnish.RETURN_KEY) {
+          if (
+            event.keyCode === Garnish.SPACE_KEY ||
+            event.keyCode === Garnish.RETURN_KEY
+          ) {
             event.preventDefault();
             this.handleNewWidgetOptionSelect(event);
           }
