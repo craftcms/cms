@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.1.4.1 - 2022-07-13
 
 ### Fixed
 - Fixed a bug where `craft\services\Assets::getRootFolderByVolumeId()` wasn’t returning the root folder. ([#11593](https://github.com/craftcms/cms/issues/11593))
