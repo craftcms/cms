@@ -3,3 +3,6 @@
 ### Added
 - Added `craft\events\IndexKeywordsEvent`.
 - Added `craft\services\Search::EVENT_BEFORE_INDEX_KEYWORDS`. ([#11575](https://github.com/craftcms/cms/discussions/11575))
+
+### Changed
+- Improved condition builder accessibility. ([#11588](https://github.com/craftcms/cms/pull/11588))
