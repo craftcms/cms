@@ -1,6 +1,7 @@
 <?php
 
 return [
+    '(Ungrouped)' => '(Ungrouped)',
     '(blank)' => '(فراغ)',
     '(trial)' => '(نسخة تجريبية)',
     '({currencyCode}) {currencySymbol}' => '({currencyCode}) {currencySymbol}',
@@ -612,7 +613,6 @@ return [
     'External project config changes discarded.' => 'تم تجاهل تغييرات تكوين المشروع الخارجي.',
     'Failed to generate transform with id of {id}.' => 'فشل إنشاء تحويل بالمعرف {id}.',
     'Failed to load the SVG string.' => 'فشل تحميل سلسلة SVG.',
-    'Failed to save the asset:' => 'فشل حفظ الأصل:',
     'Failed to save the image.' => 'فشل حفظ الصورة.',
     'Failed' => 'فشل',
     'Feed' => 'تغذية إخبارية',
@@ -650,7 +650,6 @@ return [
     'Flip Vertical' => 'انعكاس عمودي',
     'Focal Point' => 'النقطة البؤرية',
     'Folder “{folder}” already exists at target location' => 'المجلد "{folder}" موجود بالفعل في الموقع الهدف',
-    'Footer' => 'التذييل',
     'For when you’re building a website for yourself or a friend.' => 'يُستخدم عند بناؤك لموقع إلكتروني لنفسك أو لصديق.',
     'For when you’re building something professionally for a client or team.' => 'يُستخدم عند بناؤك شيئًا بصورة احترافية لعميل أو فريق.',
     'Forgot your password?' => 'هل نسيت كلمة المرور؟',
