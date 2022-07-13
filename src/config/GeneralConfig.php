@@ -3031,7 +3031,7 @@ class GeneralConfig extends BaseConfig
         'underlineLinks' => false,
     ]): self
     {
-        $this->accessibilityDefaults = $accessibilityDefaults;
+        $this->accessibilityDefaults = $value;
         return $this;
     }
 
@@ -3051,7 +3051,7 @@ class GeneralConfig extends BaseConfig
      */
     public function actionTrigger(string $value = 'actions'): self
     {
-        $this->actionTrigger = $actionTrigger;
+        $this->actionTrigger = $value;
         return $this;
     }
 
@@ -3074,7 +3074,7 @@ class GeneralConfig extends BaseConfig
      */
     public function activateAccountSuccessPath(mixed $value = ''): self
     {
-        $this->activateAccountSuccessPath = $activateAccountSuccessPath;
+        $this->activateAccountSuccessPath = $value;
         return $this;
     }
 
@@ -3094,7 +3094,7 @@ class GeneralConfig extends BaseConfig
      */
     public function addTrailingSlashesToUrls(bool $value = false): self
     {
-        $this->addTrailingSlashesToUrls = $addTrailingSlashesToUrls;
+        $this->addTrailingSlashesToUrls = $value;
         return $this;
     }
 
@@ -3111,7 +3111,7 @@ class GeneralConfig extends BaseConfig
      */
     public function aliases(array $value = []): self
     {
-        $this->aliases = $aliases;
+        $this->aliases = $value;
         return $this;
     }
 
@@ -3142,7 +3142,7 @@ class GeneralConfig extends BaseConfig
      */
     public function allowAdminChanges(bool $value = true): self
     {
-        $this->allowAdminChanges = $allowAdminChanges;
+        $this->allowAdminChanges = $value;
         return $this;
     }
 
@@ -3168,7 +3168,7 @@ class GeneralConfig extends BaseConfig
      */
     public function allowedGraphqlOrigins(array|null|false $value = null): self
     {
-        $this->allowedGraphqlOrigins = $allowedGraphqlOrigins;
+        $this->allowedGraphqlOrigins = $value;
         return $this;
     }
 
@@ -3190,7 +3190,7 @@ class GeneralConfig extends BaseConfig
      */
     public function allowUpdates(bool $value = true): self
     {
-        $this->allowUpdates = $allowUpdates;
+        $this->allowUpdates = $value;
         return $this;
     }
 
@@ -3304,7 +3304,7 @@ class GeneralConfig extends BaseConfig
         'zip',
     ]): self
     {
-        $this->allowedFileExtensions = $allowedFileExtensions;
+        $this->allowedFileExtensions = $value;
         return $this;
     }
 
@@ -3324,7 +3324,7 @@ class GeneralConfig extends BaseConfig
      */
     public function allowSimilarTags(bool $value = false): self
     {
-        $this->allowSimilarTags = $allowSimilarTags;
+        $this->allowSimilarTags = $value;
         return $this;
     }
 
@@ -3344,7 +3344,7 @@ class GeneralConfig extends BaseConfig
      */
     public function allowUppercaseInSlug(bool $value = false): self
     {
-        $this->allowUppercaseInSlug = $allowUppercaseInSlug;
+        $this->allowUppercaseInSlug = $value;
         return $this;
     }
 
@@ -3364,7 +3364,7 @@ class GeneralConfig extends BaseConfig
      */
     public function autoLoginAfterAccountActivation(bool $value = false): self
     {
-        $this->autoLoginAfterAccountActivation = $autoLoginAfterAccountActivation;
+        $this->autoLoginAfterAccountActivation = $value;
         return $this;
     }
 
@@ -3388,7 +3388,7 @@ class GeneralConfig extends BaseConfig
      */
     public function autosaveDrafts(bool $value = true): self
     {
-        $this->autosaveDrafts = $autosaveDrafts;
+        $this->autosaveDrafts = $value;
         return $this;
     }
 
@@ -3409,7 +3409,7 @@ class GeneralConfig extends BaseConfig
      */
     public function backupOnUpdate(bool $value = true): self
     {
-        $this->backupOnUpdate = $backupOnUpdate;
+        $this->backupOnUpdate = $value;
         return $this;
     }
 
@@ -3443,7 +3443,7 @@ class GeneralConfig extends BaseConfig
      */
     public function backupCommand(string|null|false $value = null): self
     {
-        $this->backupCommand = $backupCommand;
+        $this->backupCommand = $value;
         return $this;
     }
 
@@ -3469,7 +3469,7 @@ class GeneralConfig extends BaseConfig
      */
     public function baseCpUrl(?string $value = null): self
     {
-        $this->baseCpUrl = $baseCpUrl;
+        $this->baseCpUrl = $value;
         return $this;
     }
 
@@ -3498,7 +3498,7 @@ class GeneralConfig extends BaseConfig
      */
     public function blowfishHashCost(int $value = 13): self
     {
-        $this->blowfishHashCost = $blowfishHashCost;
+        $this->blowfishHashCost = $value;
         return $this;
     }
 
@@ -3522,7 +3522,7 @@ class GeneralConfig extends BaseConfig
      */
     public function brokenImagePath(?string $value = null): self
     {
-        $this->brokenImagePath = $brokenImagePath;
+        $this->brokenImagePath = $value;
         return $this;
     }
 
@@ -3545,7 +3545,7 @@ class GeneralConfig extends BaseConfig
      */
     public function buildId(?string $value = null): self
     {
-        $this->buildId = $buildId;
+        $this->buildId = $value;
         return $this;
     }
 
@@ -3570,7 +3570,7 @@ class GeneralConfig extends BaseConfig
      */
     public function cacheDuration(mixed $value = 86400): self
     {
-        $this->cacheDuration = $cacheDuration;
+        $this->cacheDuration = $value;
         return $this;
     }
 
@@ -3594,7 +3594,7 @@ class GeneralConfig extends BaseConfig
      */
     public function convertFilenamesToAscii(bool $value = false): self
     {
-        $this->convertFilenamesToAscii = $convertFilenamesToAscii;
+        $this->convertFilenamesToAscii = $value;
         return $this;
     }
 
@@ -3620,7 +3620,7 @@ class GeneralConfig extends BaseConfig
      */
     public function cooldownDuration(mixed $value = 300): self
     {
-        $this->cooldownDuration = $cooldownDuration;
+        $this->cooldownDuration = $value;
         return $this;
     }
 
@@ -3649,7 +3649,7 @@ class GeneralConfig extends BaseConfig
      */
     public function cpHeadTags(array $value = []): self
     {
-        $this->cpHeadTags = $cpHeadTags;
+        $this->cpHeadTags = $value;
         return $this;
     }
 
@@ -3683,7 +3683,7 @@ class GeneralConfig extends BaseConfig
      */
     public function cpTrigger(?string $value = 'admin'): self
     {
-        $this->cpTrigger = $cpTrigger;
+        $this->cpTrigger = $value;
         return $this;
     }
 
@@ -3704,7 +3704,7 @@ class GeneralConfig extends BaseConfig
      */
     public function csrfTokenName(string $value = 'CRAFT_CSRF_TOKEN'): self
     {
-        $this->csrfTokenName = $csrfTokenName;
+        $this->csrfTokenName = $value;
         return $this;
     }
 
@@ -3726,7 +3726,7 @@ class GeneralConfig extends BaseConfig
      */
     public function defaultCookieDomain(string $value = ''): self
     {
-        $this->defaultCookieDomain = $defaultCookieDomain;
+        $this->defaultCookieDomain = $value;
         return $this;
     }
 
@@ -3746,7 +3746,7 @@ class GeneralConfig extends BaseConfig
      */
     public function defaultCpLanguage(?string $value = null): self
     {
-        $this->defaultCpLanguage = $defaultCpLanguage;
+        $this->defaultCpLanguage = $value;
         return $this;
     }
 
@@ -3770,7 +3770,7 @@ class GeneralConfig extends BaseConfig
      */
     public function defaultCpLocale(?string $value = null): self
     {
-        $this->defaultCpLocale = $defaultCpLocale;
+        $this->defaultCpLocale = $value;
         return $this;
     }
 
@@ -3792,7 +3792,7 @@ class GeneralConfig extends BaseConfig
      */
     public function defaultDirMode(mixed $value = 0775): self
     {
-        $this->defaultDirMode = $defaultDirMode;
+        $this->defaultDirMode = $value;
         return $this;
     }
 
@@ -3814,7 +3814,7 @@ class GeneralConfig extends BaseConfig
      */
     public function defaultFileMode(?int $value = null): self
     {
-        $this->defaultFileMode = $defaultFileMode;
+        $this->defaultFileMode = $value;
         return $this;
     }
 
@@ -3835,7 +3835,7 @@ class GeneralConfig extends BaseConfig
      */
     public function defaultImageQuality(int $value = 82): self
     {
-        $this->defaultImageQuality = $defaultImageQuality;
+        $this->defaultImageQuality = $value;
         return $this;
     }
 
@@ -3860,7 +3860,7 @@ class GeneralConfig extends BaseConfig
      */
     public function defaultSearchTermOptions(array $value = []): self
     {
-        $this->defaultSearchTermOptions = $defaultSearchTermOptions;
+        $this->defaultSearchTermOptions = $value;
         return $this;
     }
 
@@ -3880,7 +3880,7 @@ class GeneralConfig extends BaseConfig
      */
     public function defaultTemplateExtensions(array $value = ['html', 'twig']): self
     {
-        $this->defaultTemplateExtensions = $defaultTemplateExtensions;
+        $this->defaultTemplateExtensions = $value;
         return $this;
     }
 
@@ -3905,7 +3905,7 @@ class GeneralConfig extends BaseConfig
      */
     public function defaultTokenDuration(mixed $value = 86400): self
     {
-        $this->defaultTokenDuration = $defaultTokenDuration;
+        $this->defaultTokenDuration = $value;
         return $this;
     }
 
@@ -3936,7 +3936,7 @@ class GeneralConfig extends BaseConfig
      */
     public function defaultWeekStartDay(int $value = 1): self
     {
-        $this->defaultWeekStartDay = $defaultWeekStartDay;
+        $this->defaultWeekStartDay = $value;
         return $this;
     }
 
@@ -3960,7 +3960,7 @@ class GeneralConfig extends BaseConfig
      */
     public function deferPublicRegistrationPassword(bool $value = false): self
     {
-        $this->deferPublicRegistrationPassword = $deferPublicRegistrationPassword;
+        $this->deferPublicRegistrationPassword = $value;
         return $this;
     }
 
@@ -3979,7 +3979,7 @@ class GeneralConfig extends BaseConfig
      */
     public function devMode(bool $value = false): self
     {
-        $this->devMode = $devMode;
+        $this->devMode = $value;
         return $this;
     }
 
@@ -4019,7 +4019,7 @@ class GeneralConfig extends BaseConfig
      */
     public function disabledPlugins(string|array|null $value = null): self
     {
-        $this->disabledPlugins = $disabledPlugins;
+        $this->disabledPlugins = $value;
         return $this;
     }
 
@@ -4045,7 +4045,7 @@ class GeneralConfig extends BaseConfig
      */
     public function disallowRobots(bool $value = false): self
     {
-        $this->disallowRobots = $disallowRobots;
+        $this->disallowRobots = $value;
         return $this;
     }
 
@@ -4066,7 +4066,7 @@ class GeneralConfig extends BaseConfig
      */
     public function disableGraphqlTransformDirective(bool $value = false): self
     {
-        $this->disableGraphqlTransformDirective = $disableGraphqlTransformDirective;
+        $this->disableGraphqlTransformDirective = $value;
         return $this;
     }
 
@@ -4087,7 +4087,7 @@ class GeneralConfig extends BaseConfig
      */
     public function enableBasicHttpAuth(bool $value = false): self
     {
-        $this->enableBasicHttpAuth = $enableBasicHttpAuth;
+        $this->enableBasicHttpAuth = $value;
         return $this;
     }
 
@@ -4110,7 +4110,7 @@ class GeneralConfig extends BaseConfig
      */
     public function enableCsrfCookie(bool $value = true): self
     {
-        $this->enableCsrfCookie = $enableCsrfCookie;
+        $this->enableCsrfCookie = $value;
         return $this;
     }
 
@@ -4131,7 +4131,7 @@ class GeneralConfig extends BaseConfig
      */
     public function enableGraphqlIntrospection(bool $value = true): self
     {
-        $this->enableGraphqlIntrospection = $enableGraphqlIntrospection;
+        $this->enableGraphqlIntrospection = $value;
         return $this;
     }
 
@@ -4154,7 +4154,7 @@ class GeneralConfig extends BaseConfig
      */
     public function enableGql(bool $value = true): self
     {
-        $this->enableGql = $enableGql;
+        $this->enableGql = $value;
         return $this;
     }
 
@@ -4179,7 +4179,7 @@ class GeneralConfig extends BaseConfig
      */
     public function elevatedSessionDuration(mixed $value = 300): self
     {
-        $this->elevatedSessionDuration = $elevatedSessionDuration;
+        $this->elevatedSessionDuration = $value;
         return $this;
     }
 
@@ -4201,7 +4201,7 @@ class GeneralConfig extends BaseConfig
      */
     public function enableCsrfProtection(bool $value = true): self
     {
-        $this->enableCsrfProtection = $enableCsrfProtection;
+        $this->enableCsrfProtection = $value;
         return $this;
     }
 
@@ -4228,7 +4228,7 @@ class GeneralConfig extends BaseConfig
      */
     public function enableGraphqlCaching(bool $value = true): self
     {
-        $this->enableGraphqlCaching = $enableGraphqlCaching;
+        $this->enableGraphqlCaching = $value;
         return $this;
     }
 
@@ -4249,7 +4249,7 @@ class GeneralConfig extends BaseConfig
      */
     public function setGraphqlDatesToSystemTimeZone(bool $value = false): self
     {
-        $this->setGraphqlDatesToSystemTimeZone = $setGraphqlDatesToSystemTimeZone;
+        $this->setGraphqlDatesToSystemTimeZone = $value;
         return $this;
     }
 
@@ -4270,7 +4270,7 @@ class GeneralConfig extends BaseConfig
      */
     public function enableTemplateCaching(bool $value = true): self
     {
-        $this->enableTemplateCaching = $enableTemplateCaching;
+        $this->enableTemplateCaching = $value;
         return $this;
     }
 
@@ -4292,7 +4292,7 @@ class GeneralConfig extends BaseConfig
      */
     public function errorTemplatePrefix(string $value = ''): self
     {
-        $this->errorTemplatePrefix = $errorTemplatePrefix;
+        $this->errorTemplatePrefix = $value;
         return $this;
     }
 
@@ -4313,7 +4313,7 @@ class GeneralConfig extends BaseConfig
      */
     public function extraAllowedFileExtensions(?array $value = null): self
     {
-        $this->extraAllowedFileExtensions = $extraAllowedFileExtensions;
+        $this->extraAllowedFileExtensions = $value;
         return $this;
     }
 
@@ -4334,7 +4334,7 @@ class GeneralConfig extends BaseConfig
      */
     public function extraAppLocales(?array $value = null): self
     {
-        $this->extraAppLocales = $extraAppLocales;
+        $this->extraAppLocales = $value;
         return $this;
     }
 
@@ -4366,7 +4366,7 @@ class GeneralConfig extends BaseConfig
      */
     public function extraFileKinds(array $value = []): self
     {
-        $this->extraFileKinds = $extraFileKinds;
+        $this->extraFileKinds = $value;
         return $this;
     }
 
@@ -4386,7 +4386,7 @@ class GeneralConfig extends BaseConfig
      */
     public function filenameWordSeparator(string|false $value = '-'): self
     {
-        $this->filenameWordSeparator = $filenameWordSeparator;
+        $this->filenameWordSeparator = $value;
         return $this;
     }
 
@@ -4406,7 +4406,7 @@ class GeneralConfig extends BaseConfig
      */
     public function generateTransformsBeforePageLoad(bool $value = false): self
     {
-        $this->generateTransformsBeforePageLoad = $generateTransformsBeforePageLoad;
+        $this->generateTransformsBeforePageLoad = $value;
         return $this;
     }
 
@@ -4426,7 +4426,7 @@ class GeneralConfig extends BaseConfig
      */
     public function gqlTypePrefix(string $value = ''): self
     {
-        $this->gqlTypePrefix = $gqlTypePrefix;
+        $this->gqlTypePrefix = $value;
         return $this;
     }
 
@@ -4454,7 +4454,7 @@ class GeneralConfig extends BaseConfig
      */
     public function handleCasing(string $value = self::CAMEL_CASE): self
     {
-        $this->handleCasing = $handleCasing;
+        $this->handleCasing = $value;
         return $this;
     }
 
@@ -4490,7 +4490,7 @@ class GeneralConfig extends BaseConfig
      */
     public function headlessMode(bool $value = false): self
     {
-        $this->headlessMode = $headlessMode;
+        $this->headlessMode = $value;
         return $this;
     }
 
@@ -4513,7 +4513,7 @@ class GeneralConfig extends BaseConfig
      */
     public function httpProxy(?string $value = null): self
     {
-        $this->httpProxy = $httpProxy;
+        $this->httpProxy = $value;
         return $this;
     }
 
@@ -4534,7 +4534,7 @@ class GeneralConfig extends BaseConfig
      */
     public function imageDriver(mixed $value = self::IMAGE_DRIVER_AUTO): self
     {
-        $this->imageDriver = $imageDriver;
+        $this->imageDriver = $value;
         return $this;
     }
 
@@ -4566,7 +4566,7 @@ class GeneralConfig extends BaseConfig
         '3:2' => 1.5,
     ]): self
     {
-        $this->imageEditorRatios = $imageEditorRatios;
+        $this->imageEditorRatios = $value;
         return $this;
     }
 
@@ -4587,7 +4587,7 @@ class GeneralConfig extends BaseConfig
      */
     public function indexTemplateFilenames(array $value = ['index']): self
     {
-        $this->indexTemplateFilenames = $indexTemplateFilenames;
+        $this->indexTemplateFilenames = $value;
         return $this;
     }
 
@@ -4612,7 +4612,7 @@ class GeneralConfig extends BaseConfig
      */
     public function invalidLoginWindowDuration(mixed $value = 3600): self
     {
-        $this->invalidLoginWindowDuration = $invalidLoginWindowDuration;
+        $this->invalidLoginWindowDuration = $value;
         return $this;
     }
 
@@ -4638,7 +4638,7 @@ class GeneralConfig extends BaseConfig
      */
     public function invalidUserTokenPath(mixed $value = ''): self
     {
-        $this->invalidUserTokenPath = $invalidUserTokenPath;
+        $this->invalidUserTokenPath = $value;
         return $this;
     }
 
@@ -4662,7 +4662,7 @@ class GeneralConfig extends BaseConfig
      */
     public function ipHeaders(?array $value = null): self
     {
-        $this->ipHeaders = $ipHeaders;
+        $this->ipHeaders = $value;
         return $this;
     }
 
@@ -4683,7 +4683,7 @@ class GeneralConfig extends BaseConfig
      */
     public function isSystemLive(?bool $value = null): self
     {
-        $this->isSystemLive = $isSystemLive;
+        $this->isSystemLive = $value;
         return $this;
     }
 
@@ -4707,7 +4707,7 @@ class GeneralConfig extends BaseConfig
      */
     public function limitAutoSlugsToAscii(bool $value = false): self
     {
-        $this->limitAutoSlugsToAscii = $limitAutoSlugsToAscii;
+        $this->limitAutoSlugsToAscii = $value;
         return $this;
     }
 
@@ -4734,7 +4734,7 @@ class GeneralConfig extends BaseConfig
      */
     public function loginPath(mixed $value = 'login'): self
     {
-        $this->loginPath = $loginPath;
+        $this->loginPath = $value;
         return $this;
     }
 
@@ -4761,7 +4761,7 @@ class GeneralConfig extends BaseConfig
      */
     public function logoutPath(mixed $value = 'logout'): self
     {
-        $this->logoutPath = $logoutPath;
+        $this->logoutPath = $value;
         return $this;
     }
 
@@ -4781,7 +4781,7 @@ class GeneralConfig extends BaseConfig
      */
     public function maxCachedCloudImageSize(int $value = 2000): self
     {
-        $this->maxCachedCloudImageSize = $maxCachedCloudImageSize;
+        $this->maxCachedCloudImageSize = $value;
         return $this;
     }
 
@@ -4802,7 +4802,7 @@ class GeneralConfig extends BaseConfig
      */
     public function maxGraphqlComplexity(int $value = 0): self
     {
-        $this->maxGraphqlComplexity = $maxGraphqlComplexity;
+        $this->maxGraphqlComplexity = $value;
         return $this;
     }
 
@@ -4823,7 +4823,7 @@ class GeneralConfig extends BaseConfig
      */
     public function maxGraphqlDepth(int $value = 0): self
     {
-        $this->maxGraphqlDepth = $maxGraphqlDepth;
+        $this->maxGraphqlDepth = $value;
         return $this;
     }
 
@@ -4844,7 +4844,7 @@ class GeneralConfig extends BaseConfig
      */
     public function maxGraphqlResults(int $value = 0): self
     {
-        $this->maxGraphqlResults = $maxGraphqlResults;
+        $this->maxGraphqlResults = $value;
         return $this;
     }
 
@@ -4864,7 +4864,7 @@ class GeneralConfig extends BaseConfig
      */
     public function maxInvalidLogins(int|false $value = 5): self
     {
-        $this->maxInvalidLogins = $maxInvalidLogins;
+        $this->maxInvalidLogins = $value;
         return $this;
     }
 
@@ -4885,7 +4885,7 @@ class GeneralConfig extends BaseConfig
      */
     public function maxBackups(int|false $value = 20): self
     {
-        $this->maxBackups = $maxBackups;
+        $this->maxBackups = $value;
         return $this;
     }
 
@@ -4908,7 +4908,7 @@ class GeneralConfig extends BaseConfig
      */
     public function maxRevisions(?int $value = 50): self
     {
-        $this->maxRevisions = $maxRevisions;
+        $this->maxRevisions = $value;
         return $this;
     }
 
@@ -4928,7 +4928,7 @@ class GeneralConfig extends BaseConfig
      */
     public function maxSlugIncrement(int $value = 100): self
     {
-        $this->maxSlugIncrement = $maxSlugIncrement;
+        $this->maxSlugIncrement = $value;
         return $this;
     }
 
@@ -4953,7 +4953,7 @@ class GeneralConfig extends BaseConfig
      */
     public function maxUploadFileSize(string|int $value = 16777216): self
     {
-        $this->maxUploadFileSize = $maxUploadFileSize;
+        $this->maxUploadFileSize = $value;
         return $this;
     }
 
@@ -4983,7 +4983,7 @@ class GeneralConfig extends BaseConfig
      */
     public function omitScriptNameInUrls(bool $value = false): self
     {
-        $this->omitScriptNameInUrls = $omitScriptNameInUrls;
+        $this->omitScriptNameInUrls = $value;
         return $this;
     }
 
@@ -5005,7 +5005,7 @@ class GeneralConfig extends BaseConfig
      */
     public function optimizeImageFilesize(bool $value = true): self
     {
-        $this->optimizeImageFilesize = $optimizeImageFilesize;
+        $this->optimizeImageFilesize = $value;
         return $this;
     }
 
@@ -5039,7 +5039,7 @@ class GeneralConfig extends BaseConfig
      */
     public function pageTrigger(string $value = 'p'): self
     {
-        $this->pageTrigger = $pageTrigger;
+        $this->pageTrigger = $value;
         return $this;
     }
 
@@ -5066,7 +5066,7 @@ class GeneralConfig extends BaseConfig
      */
     public function pathParam(?string $value = 'p'): self
     {
-        $this->pathParam = $pathParam;
+        $this->pathParam = $value;
         return $this;
     }
 
@@ -5087,7 +5087,7 @@ class GeneralConfig extends BaseConfig
      */
     public function permissionsPolicyHeader(?string $value = null): self
     {
-        $this->permissionsPolicyHeader = $permissionsPolicyHeader;
+        $this->permissionsPolicyHeader = $value;
         return $this;
     }
 
@@ -5110,7 +5110,7 @@ class GeneralConfig extends BaseConfig
      */
     public function phpMaxMemoryLimit(?string $value = null): self
     {
-        $this->phpMaxMemoryLimit = $phpMaxMemoryLimit;
+        $this->phpMaxMemoryLimit = $value;
         return $this;
     }
 
@@ -5131,7 +5131,7 @@ class GeneralConfig extends BaseConfig
      */
     public function phpSessionName(string $value = 'CraftSessionId'): self
     {
-        $this->phpSessionName = $phpSessionName;
+        $this->phpSessionName = $value;
         return $this;
     }
 
@@ -5157,7 +5157,7 @@ class GeneralConfig extends BaseConfig
      */
     public function postCpLoginRedirect(mixed $value = 'dashboard'): self
     {
-        $this->postCpLoginRedirect = $postCpLoginRedirect;
+        $this->postCpLoginRedirect = $value;
         return $this;
     }
 
@@ -5183,7 +5183,7 @@ class GeneralConfig extends BaseConfig
      */
     public function postLoginRedirect(mixed $value = ''): self
     {
-        $this->postLoginRedirect = $postLoginRedirect;
+        $this->postLoginRedirect = $value;
         return $this;
     }
 
@@ -5206,7 +5206,7 @@ class GeneralConfig extends BaseConfig
      */
     public function postLogoutRedirect(mixed $value = ''): self
     {
-        $this->postLogoutRedirect = $postLogoutRedirect;
+        $this->postLogoutRedirect = $value;
         return $this;
     }
 
@@ -5227,7 +5227,7 @@ class GeneralConfig extends BaseConfig
      */
     public function prefixGqlRootTypes(bool $value = true): self
     {
-        $this->prefixGqlRootTypes = $prefixGqlRootTypes;
+        $this->prefixGqlRootTypes = $value;
         return $this;
     }
 
@@ -5251,7 +5251,7 @@ class GeneralConfig extends BaseConfig
      */
     public function preserveCmykColorspace(bool $value = false): self
     {
-        $this->preserveCmykColorspace = $preserveCmykColorspace;
+        $this->preserveCmykColorspace = $value;
         return $this;
     }
 
@@ -5275,7 +5275,7 @@ class GeneralConfig extends BaseConfig
      */
     public function preserveExifData(bool $value = false): self
     {
-        $this->preserveExifData = $preserveExifData;
+        $this->preserveExifData = $value;
         return $this;
     }
 
@@ -5298,7 +5298,7 @@ class GeneralConfig extends BaseConfig
      */
     public function preserveImageColorProfiles(bool $value = true): self
     {
-        $this->preserveImageColorProfiles = $preserveImageColorProfiles;
+        $this->preserveImageColorProfiles = $value;
         return $this;
     }
 
@@ -5322,7 +5322,7 @@ class GeneralConfig extends BaseConfig
      */
     public function preventUserEnumeration(bool $value = false): self
     {
-        $this->preventUserEnumeration = $preventUserEnumeration;
+        $this->preventUserEnumeration = $value;
         return $this;
     }
 
@@ -5340,7 +5340,7 @@ class GeneralConfig extends BaseConfig
      */
     public function previewIframeResizerOptions(array $value = []): self
     {
-        $this->previewIframeResizerOptions = $previewIframeResizerOptions;
+        $this->previewIframeResizerOptions = $value;
         return $this;
     }
 
@@ -5368,7 +5368,7 @@ class GeneralConfig extends BaseConfig
      */
     public function previewTokenDuration(mixed $value = null): self
     {
-        $this->previewTokenDuration = $previewTokenDuration;
+        $this->previewTokenDuration = $value;
         return $this;
     }
 
@@ -5391,7 +5391,7 @@ class GeneralConfig extends BaseConfig
      */
     public function privateTemplateTrigger(string $value = '_'): self
     {
-        $this->privateTemplateTrigger = $privateTemplateTrigger;
+        $this->privateTemplateTrigger = $value;
         return $this;
     }
 
@@ -5423,7 +5423,7 @@ class GeneralConfig extends BaseConfig
      */
     public function purgePendingUsersDuration(mixed $value = 0): self
     {
-        $this->purgePendingUsersDuration = $purgePendingUsersDuration;
+        $this->purgePendingUsersDuration = $value;
         return $this;
     }
 
@@ -5451,7 +5451,7 @@ class GeneralConfig extends BaseConfig
      */
     public function purgeStaleUserSessionDuration(mixed $value = 7776000): self
     {
-        $this->purgeStaleUserSessionDuration = $purgeStaleUserSessionDuration;
+        $this->purgeStaleUserSessionDuration = $value;
         return $this;
     }
 
@@ -5477,7 +5477,7 @@ class GeneralConfig extends BaseConfig
      */
     public function purgeUnsavedDraftsDuration(mixed $value = 2592000): self
     {
-        $this->purgeUnsavedDraftsDuration = $purgeUnsavedDraftsDuration;
+        $this->purgeUnsavedDraftsDuration = $value;
         return $this;
     }
 
@@ -5500,7 +5500,7 @@ class GeneralConfig extends BaseConfig
      */
     public function rasterizeSvgThumbs(bool $value = false): self
     {
-        $this->rasterizeSvgThumbs = $rasterizeSvgThumbs;
+        $this->rasterizeSvgThumbs = $value;
         return $this;
     }
 
@@ -5525,7 +5525,7 @@ class GeneralConfig extends BaseConfig
      */
     public function rememberUsernameDuration(mixed $value = 31536000): self
     {
-        $this->rememberUsernameDuration = $rememberUsernameDuration;
+        $this->rememberUsernameDuration = $value;
         return $this;
     }
 
@@ -5550,7 +5550,7 @@ class GeneralConfig extends BaseConfig
      */
     public function rememberedUserSessionDuration(mixed $value = 1209600): self
     {
-        $this->rememberedUserSessionDuration = $rememberedUserSessionDuration;
+        $this->rememberedUserSessionDuration = $value;
         return $this;
     }
 
@@ -5570,7 +5570,7 @@ class GeneralConfig extends BaseConfig
      */
     public function requireMatchingUserAgentForSession(bool $value = true): self
     {
-        $this->requireMatchingUserAgentForSession = $requireMatchingUserAgentForSession;
+        $this->requireMatchingUserAgentForSession = $value;
         return $this;
     }
 
@@ -5590,7 +5590,7 @@ class GeneralConfig extends BaseConfig
      */
     public function requireUserAgentAndIpForSession(bool $value = true): self
     {
-        $this->requireUserAgentAndIpForSession = $requireUserAgentAndIpForSession;
+        $this->requireUserAgentAndIpForSession = $value;
         return $this;
     }
 
@@ -5610,7 +5610,7 @@ class GeneralConfig extends BaseConfig
      */
     public function resourceBasePath(string $value = '@webroot/cpresources'): self
     {
-        $this->resourceBasePath = $resourceBasePath;
+        $this->resourceBasePath = $value;
         return $this;
     }
 
@@ -5630,7 +5630,7 @@ class GeneralConfig extends BaseConfig
      */
     public function resourceBaseUrl(string $value = '@web/cpresources'): self
     {
-        $this->resourceBaseUrl = $resourceBaseUrl;
+        $this->resourceBaseUrl = $value;
         return $this;
     }
 
@@ -5663,7 +5663,7 @@ class GeneralConfig extends BaseConfig
      */
     public function restoreCommand(string|null|false $value = null): self
     {
-        $this->restoreCommand = $restoreCommand;
+        $this->restoreCommand = $value;
         return $this;
     }
 
@@ -5684,7 +5684,7 @@ class GeneralConfig extends BaseConfig
      */
     public function revAssetUrls(bool $value = false): self
     {
-        $this->revAssetUrls = $revAssetUrls;
+        $this->revAssetUrls = $value;
         return $this;
     }
 
@@ -5704,7 +5704,7 @@ class GeneralConfig extends BaseConfig
      */
     public function rotateImagesOnUploadByExifData(bool $value = true): self
     {
-        $this->rotateImagesOnUploadByExifData = $rotateImagesOnUploadByExifData;
+        $this->rotateImagesOnUploadByExifData = $value;
         return $this;
     }
 
@@ -5737,7 +5737,7 @@ class GeneralConfig extends BaseConfig
      */
     public function runQueueAutomatically(bool $value = true): self
     {
-        $this->runQueueAutomatically = $runQueueAutomatically;
+        $this->runQueueAutomatically = $value;
         return $this;
     }
 
@@ -5758,7 +5758,7 @@ class GeneralConfig extends BaseConfig
      */
     public function sanitizeCpImageUploads(bool $value = true): self
     {
-        $this->sanitizeCpImageUploads = $sanitizeCpImageUploads;
+        $this->sanitizeCpImageUploads = $value;
         return $this;
     }
 
@@ -5781,7 +5781,7 @@ class GeneralConfig extends BaseConfig
      */
     public function sameSiteCookieValue(?string $value = null): self
     {
-        $this->sameSiteCookieValue = $sameSiteCookieValue;
+        $this->sameSiteCookieValue = $value;
         return $this;
     }
 
@@ -5803,7 +5803,7 @@ class GeneralConfig extends BaseConfig
      */
     public function sanitizeSvgUploads(bool $value = true): self
     {
-        $this->sanitizeSvgUploads = $sanitizeSvgUploads;
+        $this->sanitizeSvgUploads = $value;
         return $this;
     }
 
@@ -5820,7 +5820,7 @@ class GeneralConfig extends BaseConfig
      */
     public function securityKey(string $value = ''): self
     {
-        $this->securityKey = $securityKey;
+        $this->securityKey = $value;
         return $this;
     }
 
@@ -5841,7 +5841,7 @@ class GeneralConfig extends BaseConfig
      */
     public function sendContentLengthHeader(bool $value = false): self
     {
-        $this->sendContentLengthHeader = $sendContentLengthHeader;
+        $this->sendContentLengthHeader = $value;
         return $this;
     }
 
@@ -5862,7 +5862,7 @@ class GeneralConfig extends BaseConfig
      */
     public function sendPoweredByHeader(bool $value = true): self
     {
-        $this->sendPoweredByHeader = $sendPoweredByHeader;
+        $this->sendPoweredByHeader = $value;
         return $this;
     }
 
@@ -5891,7 +5891,7 @@ class GeneralConfig extends BaseConfig
      */
     public function setPasswordPath(mixed $value = 'setpassword'): self
     {
-        $this->setPasswordPath = $setPasswordPath;
+        $this->setPasswordPath = $value;
         return $this;
     }
 
@@ -5922,7 +5922,7 @@ class GeneralConfig extends BaseConfig
      */
     public function setPasswordRequestPath(mixed $value = null): self
     {
-        $this->setPasswordRequestPath = $setPasswordRequestPath;
+        $this->setPasswordRequestPath = $value;
         return $this;
     }
 
@@ -5945,7 +5945,7 @@ class GeneralConfig extends BaseConfig
      */
     public function setPasswordSuccessPath(mixed $value = ''): self
     {
-        $this->setPasswordSuccessPath = $setPasswordSuccessPath;
+        $this->setPasswordSuccessPath = $value;
         return $this;
     }
 
@@ -5966,7 +5966,7 @@ class GeneralConfig extends BaseConfig
      */
     public function siteToken(string $value = 'siteToken'): self
     {
-        $this->siteToken = $siteToken;
+        $this->siteToken = $value;
         return $this;
     }
 
@@ -5986,7 +5986,7 @@ class GeneralConfig extends BaseConfig
      */
     public function slugWordSeparator(string $value = '-'): self
     {
-        $this->slugWordSeparator = $slugWordSeparator;
+        $this->slugWordSeparator = $value;
         return $this;
     }
 
@@ -6017,7 +6017,7 @@ class GeneralConfig extends BaseConfig
      */
     public function secureHeaders(?array $value = null): self
     {
-        $this->secureHeaders = $secureHeaders;
+        $this->secureHeaders = $value;
         return $this;
     }
 
@@ -6046,7 +6046,7 @@ class GeneralConfig extends BaseConfig
      */
     public function secureProtocolHeaders(?array $value = null): self
     {
-        $this->secureProtocolHeaders = $secureProtocolHeaders;
+        $this->secureProtocolHeaders = $value;
         return $this;
     }
 
@@ -6072,7 +6072,7 @@ class GeneralConfig extends BaseConfig
      */
     public function softDeleteDuration(mixed $value = 2592000): self
     {
-        $this->softDeleteDuration = $softDeleteDuration;
+        $this->softDeleteDuration = $value;
         return $this;
     }
 
@@ -6093,7 +6093,7 @@ class GeneralConfig extends BaseConfig
      */
     public function storeUserIps(bool $value = false): self
     {
-        $this->storeUserIps = $storeUserIps;
+        $this->storeUserIps = $value;
         return $this;
     }
 
@@ -6117,7 +6117,7 @@ class GeneralConfig extends BaseConfig
      */
     public function testToEmailAddress(string|array|null|false $value = null): self
     {
-        $this->testToEmailAddress = $testToEmailAddress;
+        $this->testToEmailAddress = $value;
         return $this;
     }
 
@@ -6139,7 +6139,7 @@ class GeneralConfig extends BaseConfig
      */
     public function timezone(?string $value = null): self
     {
-        $this->timezone = $timezone;
+        $this->timezone = $value;
         return $this;
     }
 
@@ -6160,7 +6160,7 @@ class GeneralConfig extends BaseConfig
      */
     public function transformGifs(bool $value = true): self
     {
-        $this->transformGifs = $transformGifs;
+        $this->transformGifs = $value;
         return $this;
     }
 
@@ -6181,7 +6181,7 @@ class GeneralConfig extends BaseConfig
      */
     public function transformSvgs(bool $value = true): self
     {
-        $this->transformSvgs = $transformSvgs;
+        $this->transformSvgs = $value;
         return $this;
     }
 
@@ -6202,7 +6202,7 @@ class GeneralConfig extends BaseConfig
      */
     public function translationDebugOutput(bool $value = false): self
     {
-        $this->translationDebugOutput = $translationDebugOutput;
+        $this->translationDebugOutput = $value;
         return $this;
     }
 
@@ -6222,7 +6222,7 @@ class GeneralConfig extends BaseConfig
      */
     public function tokenParam(string $value = 'token'): self
     {
-        $this->tokenParam = $tokenParam;
+        $this->tokenParam = $value;
         return $this;
     }
 
@@ -6246,7 +6246,7 @@ class GeneralConfig extends BaseConfig
      */
     public function trustedHosts(array $value = ['any']): self
     {
-        $this->trustedHosts = $trustedHosts;
+        $this->trustedHosts = $value;
         return $this;
     }
 
@@ -6267,7 +6267,7 @@ class GeneralConfig extends BaseConfig
      */
     public function upscaleImages(bool $value = true): self
     {
-        $this->upscaleImages = $upscaleImages;
+        $this->upscaleImages = $value;
         return $this;
     }
 
@@ -6293,7 +6293,7 @@ class GeneralConfig extends BaseConfig
      */
     public function useEmailAsUsername(bool $value = false): self
     {
-        $this->useEmailAsUsername = $useEmailAsUsername;
+        $this->useEmailAsUsername = $value;
         return $this;
     }
 
@@ -6329,7 +6329,7 @@ class GeneralConfig extends BaseConfig
      */
     public function useIframeResizer(bool $value = false): self
     {
-        $this->useIframeResizer = $useIframeResizer;
+        $this->useIframeResizer = $value;
         return $this;
     }
 
@@ -6351,7 +6351,7 @@ class GeneralConfig extends BaseConfig
      */
     public function usePathInfo(bool $value = false): self
     {
-        $this->usePathInfo = $usePathInfo;
+        $this->usePathInfo = $value;
         return $this;
     }
 
@@ -6374,7 +6374,7 @@ class GeneralConfig extends BaseConfig
      */
     public function useSecureCookies(string|bool $value = 'auto'): self
     {
-        $this->useSecureCookies = $useSecureCookies;
+        $this->useSecureCookies = $value;
         return $this;
     }
 
@@ -6398,7 +6398,7 @@ class GeneralConfig extends BaseConfig
      */
     public function useSslOnTokenizedUrls(string|bool $value = 'auto'): self
     {
-        $this->useSslOnTokenizedUrls = $useSslOnTokenizedUrls;
+        $this->useSslOnTokenizedUrls = $value;
         return $this;
     }
 
@@ -6425,7 +6425,7 @@ class GeneralConfig extends BaseConfig
      */
     public function userSessionDuration(mixed $value = 3600): self
     {
-        $this->userSessionDuration = $userSessionDuration;
+        $this->userSessionDuration = $value;
         return $this;
     }
 
@@ -6450,7 +6450,7 @@ class GeneralConfig extends BaseConfig
      */
     public function useFileLocks(?bool $value = null): self
     {
-        $this->useFileLocks = $useFileLocks;
+        $this->useFileLocks = $value;
         return $this;
     }
 
@@ -6475,7 +6475,7 @@ class GeneralConfig extends BaseConfig
      */
     public function verificationCodeDuration(mixed $value = 86400): self
     {
-        $this->verificationCodeDuration = $verificationCodeDuration;
+        $this->verificationCodeDuration = $value;
         return $this;
     }
 
@@ -6501,7 +6501,7 @@ class GeneralConfig extends BaseConfig
      */
     public function verifyEmailPath(mixed $value = 'verifyemail'): self
     {
-        $this->verifyEmailPath = $verifyEmailPath;
+        $this->verifyEmailPath = $value;
         return $this;
     }
 
@@ -6525,7 +6525,7 @@ class GeneralConfig extends BaseConfig
      */
     public function verifyEmailSuccessPath(mixed $value = ''): self
     {
-        $this->verifyEmailSuccessPath = $verifyEmailSuccessPath;
+        $this->verifyEmailSuccessPath = $value;
         return $this;
     }
 

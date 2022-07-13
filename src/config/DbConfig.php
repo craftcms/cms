@@ -335,7 +335,7 @@ class DbConfig extends BaseConfig
      */
     public function attributes(array $value = []): self
     {
-        $this->attributes = $attributes;
+        $this->attributes = $value;
         return $this;
     }
 
@@ -361,7 +361,7 @@ class DbConfig extends BaseConfig
      */
     public function charset(string $value = 'utf8'): self
     {
-        $this->charset = $charset;
+        $this->charset = $value;
         return $this;
     }
 
@@ -396,7 +396,7 @@ class DbConfig extends BaseConfig
      */
     public function collation(?string $value = null): self
     {
-        $this->collation = $collation;
+        $this->collation = $value;
         return $this;
     }
 
@@ -420,7 +420,7 @@ class DbConfig extends BaseConfig
      */
     public function dsn(?string $value = null): self
     {
-        $this->dsn = $dsn;
+        $this->dsn = $value;
         return $this;
     }
 
@@ -438,7 +438,7 @@ class DbConfig extends BaseConfig
      */
     public function password(string $value = ''): self
     {
-        $this->password = $password;
+        $this->password = $value;
         return $this;
     }
 
@@ -463,7 +463,7 @@ class DbConfig extends BaseConfig
      */
     public function schema(?string $value = 'public'): self
     {
-        $this->schema = $schema;
+        $this->schema = $value;
         return $this;
     }
 
@@ -488,7 +488,7 @@ class DbConfig extends BaseConfig
      */
     public function setSchemaOnConnect(bool $value = false): self
     {
-        $this->setSchemaOnConnect = $setSchemaOnConnect;
+        $this->setSchemaOnConnect = $value;
         return $this;
     }
 
@@ -507,7 +507,7 @@ class DbConfig extends BaseConfig
      */
     public function tablePrefix(?string $value = null): self
     {
-        $this->tablePrefix = $tablePrefix;
+        $this->tablePrefix = $value;
         return $this;
     }
 
@@ -525,7 +525,7 @@ class DbConfig extends BaseConfig
      */
     public function user(string $value = 'root'): self
     {
-        $this->user = $user;
+        $this->user = $value;
         return $this;
     }
 
@@ -552,7 +552,7 @@ class DbConfig extends BaseConfig
      */
     public function useUnbufferedConnections(bool $value = false): self
     {
-        $this->useUnbufferedConnections = $useUnbufferedConnections;
+        $this->useUnbufferedConnections = $value;
         return $this;
     }
 
@@ -572,7 +572,7 @@ class DbConfig extends BaseConfig
      */
     public function url(?string $value = null): self
     {
-        $this->url = $url;
+        $this->url = $value;
         return $this;
     }
 
@@ -590,7 +590,7 @@ class DbConfig extends BaseConfig
      */
     public function driver(?string $value = null): self
     {
-        $this->driver = $driver;
+        $this->driver = $value;
         return $this;
     }
 
@@ -608,7 +608,7 @@ class DbConfig extends BaseConfig
      */
     public function server(?string $value = null): self
     {
-        $this->server = $server;
+        $this->server = $value;
         return $this;
     }
 
@@ -626,7 +626,7 @@ class DbConfig extends BaseConfig
      */
     public function port(?int $value = null): self
     {
-        $this->port = $port;
+        $this->port = $value;
         return $this;
     }
 
@@ -645,7 +645,7 @@ class DbConfig extends BaseConfig
      */
     public function unixSocket(?string $value = null): self
     {
-        $this->unixSocket = $unixSocket;
+        $this->unixSocket = $value;
         return $this;
     }
 
@@ -663,9 +663,10 @@ class DbConfig extends BaseConfig
      */
     public function database(?string $value = null): self
     {
-        $this->database = $database;
+        $this->database = $value;
         return $this;
     }
+
 
     /**
      * @inheritdoc
