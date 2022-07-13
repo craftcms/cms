@@ -5,6 +5,9 @@
 ### Added
 - The control panel is now translated into Ukranian.
 
+### Fixed
+- Fixed a bug where new condition rules’ type selectors weren’t getting auto-focused.
+
 ## 4.1.4.1 - 2022-07-13
 
 ### Fixed
