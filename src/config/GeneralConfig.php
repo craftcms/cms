@@ -3005,7 +3005,6 @@ class GeneralConfig extends BaseConfig
      */
     public mixed $verifyEmailSuccessPath = '';
 
-
     /** The default user accessibility preferences that should be applied to users that haven’t saved their preferences yet.
      *
      * The array can contain the following keys:
@@ -3022,7 +3021,8 @@ class GeneralConfig extends BaseConfig
      *
      * @since 3.6.4
      * @group System
-     * @param array
+     * @param array $value
+     * @return self
      */
     public function accessibilityDefaults(array $value = [
         'alwaysShowFocusRings' => false,
@@ -3046,7 +3046,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Routing
-     * @param string
+     * @param string $value
+     * @return self
      */
     public function actionTrigger(string $value = 'actions'): self
     {
@@ -3069,7 +3070,8 @@ class GeneralConfig extends BaseConfig
      *
      * @see getActivateAccountSuccessPath()
      * @group Routing
-     * @param mixed
+     * @param mixed $value
+     * @return self
      */
     public function activateAccountSuccessPath(mixed $value = ''): self
     {
@@ -3089,7 +3091,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Routing
-     * @param bool
+     * @param bool $value
+     * @return self
      */
     public function addTrailingSlashesToUrls(bool $value = false): self
     {
@@ -3106,7 +3109,8 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Environment
-     * @param array
+     * @param array $value
+     * @return self
      */
     public function aliases(array $value = []): self
     {
@@ -3137,7 +3141,8 @@ class GeneralConfig extends BaseConfig
      *
      * @since 3.1.0
      * @group System
-     * @param bool
+     * @param bool $value
+     * @return self
      */
     public function allowAdminChanges(bool $value = true): self
     {
@@ -3163,7 +3168,8 @@ class GeneralConfig extends BaseConfig
      *
      * @since 3.5.0
      * @group GraphQL
-     * @param string
+     * @param string $value
+     * @return self
      */
     public function allowedGraphqlOrigins(array|null|false $value = null): self
     {
@@ -3185,7 +3191,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group System
-     * @param bool
+     * @param bool $value
+     * @return self
      */
     public function allowUpdates(bool $value = true): self
     {
@@ -3204,7 +3211,8 @@ class GeneralConfig extends BaseConfig
      *
      * @see extraAllowedFileExtensions
      * @group Assets
-     * @param string
+     * @param string $value
+     * @return self
      */
     public function allowedFileExtensions(array $value = [
         '7z',
@@ -3319,7 +3327,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group System
-     * @param bool
+     * @param bool $value
+     * @return self
      */
     public function allowSimilarTags(bool $value = false): self
     {
@@ -3339,7 +3348,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Routing
-     * @param bool
+     * @param bool $value
+     * @return self
      */
     public function allowUppercaseInSlug(bool $value = false): self
     {
@@ -3359,7 +3369,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group System
-     * @param bool
+     * @param bool $value
+     * @return self
      */
     public function autoLoginAfterAccountActivation(bool $value = false): self
     {
@@ -3383,7 +3394,8 @@ class GeneralConfig extends BaseConfig
      * @since 3.5.6
      * @deprecated in 4.0.0
      * @group System
-     * @param bool
+     * @param bool $value
+     * @return self
      */
     public function autosaveDrafts(bool $value = true): self
     {
@@ -3404,7 +3416,8 @@ class GeneralConfig extends BaseConfig
      *
      * @see backupCommand
      * @group System
-     * @param bool
+     * @param bool $value
+     * @return self
      */
     public function backupOnUpdate(bool $value = true): self
     {
@@ -3438,7 +3451,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Environment
-     * @param string|null|false
+     * @param string|null|false $value
+     * @return self
      */
     public function backupCommand(string|null|false $value = null): self
     {
@@ -3464,7 +3478,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Routing
-     * @param string|null
+     * @param string|null $value
+     * @return self
      */
     public function baseCpUrl(?string $value = null): self
     {
@@ -3493,7 +3508,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Security
-     * @param int
+     * @param int $value
+     * @return self
      */
     public function blowfishHashCost(int $value = 13): self
     {
@@ -3517,7 +3533,8 @@ class GeneralConfig extends BaseConfig
      *
      * @since 3.5.0
      * @group Image Handling
-     * @param string|null
+     * @param string|null $value
+     * @return self
      */
     public function brokenImagePath(?string $value = null): self
     {
@@ -3540,7 +3557,8 @@ class GeneralConfig extends BaseConfig
      *
      * @since 4.0.0
      * @group Environment
-     * @param string|null
+     * @param string|null $value
+     * @return self
      */
     public function buildId(?string $value = null): self
     {
@@ -3565,7 +3583,8 @@ class GeneralConfig extends BaseConfig
      *
      * @group System
      * @defaultAlt 1 day
-     * @param mixed
+     * @param mixed $value
+     * @return self
      */
     public function cacheDuration(mixed $value = 86400): self
     {
@@ -3589,7 +3608,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Assets
-     * @param bool
+     * @param bool $value
+     * @return self
      */
     public function convertFilenamesToAscii(bool $value = false): self
     {
@@ -3615,7 +3635,8 @@ class GeneralConfig extends BaseConfig
      *
      * @group Security
      * @defaultAlt 5 minutes
-     * @param mixed
+     * @param mixed $value
+     * @return self
      */
     public function cooldownDuration(mixed $value = 300): self
     {
@@ -3644,7 +3665,8 @@ class GeneralConfig extends BaseConfig
      *
      * @since 3.5.0
      * @group System
-     * @param array
+     * @param array $value
+     * @return self
      */
     public function cpHeadTags(array $value = []): self
     {
@@ -3678,7 +3700,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Routing
-     * @param string|null
+     * @param string|null $value
+     * @return self
      */
     public function cpTrigger(?string $value = 'admin'): self
     {
@@ -3699,7 +3722,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Security
-     * @param string
+     * @param string $value
+     * @return self
      */
     public function csrfTokenName(string $value = 'CRAFT_CSRF_TOKEN'): self
     {
@@ -3721,7 +3745,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Environment
-     * @param string
+     * @param string $value
+     * @return self
      */
     public function defaultCookieDomain(string $value = ''): self
     {
@@ -3741,7 +3766,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group System
-     * @param string|null
+     * @param string|null $value
+     * @return self
      */
     public function defaultCpLanguage(?string $value = null): self
     {
@@ -3765,7 +3791,8 @@ class GeneralConfig extends BaseConfig
      *
      * @since 3.5.0
      * @group System
-     * @param string|null
+     * @param string|null $value
+     * @return self
      */
     public function defaultCpLocale(?string $value = null): self
     {
@@ -3787,7 +3814,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group System
-     * @param mixed
+     * @param mixed $value
+     * @return self
      */
     public function defaultDirMode(mixed $value = 0775): self
     {
@@ -3809,7 +3837,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group System
-     * @param int|null
+     * @param int|null $value
+     * @return self
      */
     public function defaultFileMode(?int $value = null): self
     {
@@ -3830,7 +3859,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Image Handling
-     * @param int
+     * @param int $value
+     * @return self
      */
     public function defaultImageQuality(int $value = 82): self
     {
@@ -3855,7 +3885,8 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group System
-     * @param array
+     * @param array $value
+     * @return self
      */
     public function defaultSearchTermOptions(array $value = []): self
     {
@@ -3875,7 +3906,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group System
-     * @param string
+     * @param string $value
+     * @return self
      */
     public function defaultTemplateExtensions(array $value = ['html', 'twig']): self
     {
@@ -3900,7 +3932,8 @@ class GeneralConfig extends BaseConfig
      *
      * @group Security
      * @defaultAlt 1 day
-     * @param mixed
+     * @param mixed $value
+     * @return self
      */
     public function defaultTokenDuration(mixed $value = 86400): self
     {
@@ -3931,7 +3964,8 @@ class GeneralConfig extends BaseConfig
      *
      * @group System
      * @defaultAlt Monday
-     * @param int
+     * @param int $value
+     * @return self
      */
     public function defaultWeekStartDay(int $value = 1): self
     {
@@ -3955,7 +3989,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Security
-     * @param bool
+     * @param bool $value
+     * @return self
      */
     public function deferPublicRegistrationPassword(bool $value = false): self
     {
@@ -3974,7 +4009,8 @@ class GeneralConfig extends BaseConfig
      * ```
      * :::
      * @group System
-     * @param bool
+     * @param bool $value
+     * @return self
      */
     public function devMode(bool $value = false): self
     {
@@ -4014,7 +4050,8 @@ class GeneralConfig extends BaseConfig
      *
      * @since 3.1.9
      * @group System
-     * @param string
+     * @param string $value
+     * @return self
      */
     public function disabledPlugins(string|array|null $value = null): self
     {
@@ -4040,7 +4077,8 @@ class GeneralConfig extends BaseConfig
      *
      * @since 3.5.10
      * @group System
-     * @param bool
+     * @param bool $value
+     * @return self
      */
     public function disallowRobots(bool $value = false): self
     {
@@ -4061,7 +4099,8 @@ class GeneralConfig extends BaseConfig
      *
      * @since 3.6.0
      * @group GraphQL
-     * @param bool
+     * @param bool $value
+     * @return self
      */
     public function disableGraphqlTransformDirective(bool $value = false): self
     {
@@ -4082,7 +4121,8 @@ class GeneralConfig extends BaseConfig
      *
      * @since 3.5.0
      * @group Security
-     * @param bool
+     * @param bool $value
+     * @return self
      */
     public function enableBasicHttpAuth(bool $value = false): self
     {
@@ -4105,7 +4145,8 @@ class GeneralConfig extends BaseConfig
      *
      * @see enableCsrfProtection
      * @group Security
-     * @param bool
+     * @param bool $value
+     * @return self
      */
     public function enableCsrfCookie(bool $value = true): self
     {
@@ -4126,7 +4167,8 @@ class GeneralConfig extends BaseConfig
      *
      * @since 3.6.0
      * @group GraphQL
-     * @param bool
+     * @param bool $value
+     * @return self
      */
     public function enableGraphqlIntrospection(bool $value = true): self
     {
@@ -4149,7 +4191,8 @@ class GeneralConfig extends BaseConfig
      *
      * @since 3.3.1
      * @group GraphQL
-     * @param bool
+     * @param bool $value
+     * @return self
      */
     public function enableGql(bool $value = true): self
     {
@@ -4174,7 +4217,8 @@ class GeneralConfig extends BaseConfig
      *
      * @group Security
      * @defaultAlt 5 minutes
-     * @param mixed
+     * @param mixed $value
+     * @return self
      */
     public function elevatedSessionDuration(mixed $value = 300): self
     {
@@ -4196,7 +4240,8 @@ class GeneralConfig extends BaseConfig
      * @see csrfTokenName
      * @see enableCsrfCookie
      * @group Security
-     * @param bool
+     * @param bool $value
+     * @return self
      */
     public function enableCsrfProtection(bool $value = true): self
     {
@@ -4223,7 +4268,8 @@ class GeneralConfig extends BaseConfig
      *
      * @since 3.3.12
      * @group GraphQL
-     * @param bool
+     * @param bool $value
+     * @return self
      */
     public function enableGraphqlCaching(bool $value = true): self
     {
@@ -4244,7 +4290,8 @@ class GeneralConfig extends BaseConfig
      *
      * @since 3.7.0
      * @group GraphQL
-     * @param bool
+     * @param bool $value
+     * @return self
      */
     public function setGraphqlDatesToSystemTimeZone(bool $value = false): self
     {
@@ -4265,7 +4312,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group System
-     * @param bool
+     * @param bool $value
+     * @return self
      */
     public function enableTemplateCaching(bool $value = true): self
     {
@@ -4287,7 +4335,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group System
-     * @param string
+     * @param string $value
+     * @return self
      */
     public function errorTemplatePrefix(string $value = ''): self
     {
@@ -4308,7 +4357,8 @@ class GeneralConfig extends BaseConfig
      *
      * @see allowedFileExtensions
      * @group System
-     * @param string
+     * @param string $value
+     * @return self
      */
     public function extraAllowedFileExtensions(?array $value = null): self
     {
@@ -4329,7 +4379,8 @@ class GeneralConfig extends BaseConfig
      *
      * @since 3.0.24
      * @group System
-     * @param string
+     * @param string $value
+     * @return self
      */
     public function extraAppLocales(?array $value = null): self
     {
@@ -4361,7 +4412,8 @@ class GeneralConfig extends BaseConfig
      *
      * @since 3.0.37
      * @group Assets
-     * @param array
+     * @param array $value
+     * @return self
      */
     public function extraFileKinds(array $value = []): self
     {
@@ -4381,7 +4433,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Assets
-     * @param string|false
+     * @param string|false $value
+     * @return self
      */
     public function filenameWordSeparator(string|false $value = '-'): self
     {
@@ -4401,7 +4454,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Image Handling
-     * @param bool
+     * @param bool $value
+     * @return self
      */
     public function generateTransformsBeforePageLoad(bool $value = false): self
     {
@@ -4421,7 +4475,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group GraphQL
-     * @param string
+     * @param string $value
+     * @return self
      */
     public function gqlTypePrefix(string $value = ''): self
     {
@@ -4449,7 +4504,8 @@ class GeneralConfig extends BaseConfig
      *
      * @since 3.6.0
      * @group System
-     * @param string
+     * @param string $value
+     * @return self
      */
     public function handleCasing(string $value = self::CAMEL_CASE): self
     {
@@ -4485,7 +4541,8 @@ class GeneralConfig extends BaseConfig
      *
      * @since 3.3.0
      * @group System
-     * @param bool
+     * @param bool $value
+     * @return self
      */
     public function headlessMode(bool $value = false): self
     {
@@ -4508,7 +4565,8 @@ class GeneralConfig extends BaseConfig
      *
      * @group System
      * @since 3.7.0
-     * @param string|null
+     * @param string|null $value
+     * @return self
      */
     public function httpProxy(?string $value = null): self
     {
@@ -4529,7 +4587,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Image Handling
-     * @param mixed
+     * @param mixed $value
+     * @return self
      */
     public function imageDriver(mixed $value = self::IMAGE_DRIVER_AUTO): self
     {
@@ -4551,7 +4610,8 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Image Handling
-     * @param array
+     * @param array $value
+     * @return self
      */
     public function imageEditorRatios(array $value = [
         'Unconstrained' => 'none',
@@ -4582,7 +4642,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group System
-     * @param string
+     * @param string $value
+     * @return self
      */
     public function indexTemplateFilenames(array $value = ['index']): self
     {
@@ -4607,7 +4668,8 @@ class GeneralConfig extends BaseConfig
      *
      * @group Security
      * @defaultAlt 1 hour
-     * @param mixed
+     * @param mixed $value
+     * @return self
      */
     public function invalidLoginWindowDuration(mixed $value = 3600): self
     {
@@ -4633,7 +4695,8 @@ class GeneralConfig extends BaseConfig
      *
      * @see getInvalidUserTokenPath()
      * @group Routing
-     * @param mixed
+     * @param mixed $value
+     * @return self
      */
     public function invalidUserTokenPath(mixed $value = ''): self
     {
@@ -4657,7 +4720,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group System
-     * @param string
+     * @param string $value
+     * @return self
      */
     public function ipHeaders(?array $value = null): self
     {
@@ -4678,7 +4742,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group System
-     * @param bool|null
+     * @param bool|null $value
+     * @return self
      */
     public function isSystemLive(?bool $value = null): self
     {
@@ -4702,7 +4767,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group System
-     * @param bool
+     * @param bool $value
+     * @return self
      */
     public function limitAutoSlugsToAscii(bool $value = false): self
     {
@@ -4729,7 +4795,8 @@ class GeneralConfig extends BaseConfig
      *
      * @see getLoginPath()
      * @group Routing
-     * @param mixed
+     * @param mixed $value
+     * @return self
      */
     public function loginPath(mixed $value = 'login'): self
     {
@@ -4756,7 +4823,8 @@ class GeneralConfig extends BaseConfig
      *
      * @see getLogoutPath()
      * @group Routing
-     * @param mixed
+     * @param mixed $value
+     * @return self
      */
     public function logoutPath(mixed $value = 'logout'): self
     {
@@ -4776,7 +4844,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Image Handling
-     * @param int
+     * @param int $value
+     * @return self
      */
     public function maxCachedCloudImageSize(int $value = 2000): self
     {
@@ -4797,7 +4866,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group GraphQL
-     * @param int
+     * @param int $value
+     * @return self
      */
     public function maxGraphqlComplexity(int $value = 0): self
     {
@@ -4818,7 +4888,8 @@ class GeneralConfig extends BaseConfig
      *
      * @since 3.6.0
      * @group GraphQL
-     * @param int
+     * @param int $value
+     * @return self
      */
     public function maxGraphqlDepth(int $value = 0): self
     {
@@ -4839,7 +4910,8 @@ class GeneralConfig extends BaseConfig
      *
      * @since 3.6.0
      * @group GraphQL
-     * @param int
+     * @param int $value
+     * @return self
      */
     public function maxGraphqlResults(int $value = 0): self
     {
@@ -4859,7 +4931,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Security
-     * @param int|false
+     * @param int|false $value
+     * @return self
      */
     public function maxInvalidLogins(int|false $value = 5): self
     {
@@ -4880,7 +4953,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group System
-     * @param int|false
+     * @param int|false $value
+     * @return self
      */
     public function maxBackups(int|false $value = 20): self
     {
@@ -4903,7 +4977,8 @@ class GeneralConfig extends BaseConfig
      *
      * @since 3.2.0
      * @group System
-     * @param int|null
+     * @param int|null $value
+     * @return self
      */
     public function maxRevisions(?int $value = 50): self
     {
@@ -4923,7 +4998,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group System
-     * @param int
+     * @param int $value
+     * @return self
      */
     public function maxSlugIncrement(int $value = 100): self
     {
@@ -4948,7 +5024,8 @@ class GeneralConfig extends BaseConfig
      *
      * @group Assets
      * @defaultAlt 16MB
-     * @param int|string
+     * @param int|string $value
+     * @return self
      */
     public function maxUploadFileSize(string|int $value = 16777216): self
     {
@@ -4978,7 +5055,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Routing
-     * @param bool
+     * @param bool $value
+     * @return self
      */
     public function omitScriptNameInUrls(bool $value = false): self
     {
@@ -5000,7 +5078,8 @@ class GeneralConfig extends BaseConfig
      *
      * @see imageDriver
      * @group Image Handling
-     * @param bool
+     * @param bool $value
+     * @return self
      */
     public function optimizeImageFilesize(bool $value = true): self
     {
@@ -5034,7 +5113,8 @@ class GeneralConfig extends BaseConfig
      *
      * @see getPageTrigger()
      * @group Routing
-     * @param string
+     * @param string $value
+     * @return self
      */
     public function pageTrigger(string $value = 'p'): self
     {
@@ -5061,7 +5141,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Routing
-     * @param string|null
+     * @param string|null $value
+     * @return self
      */
     public function pathParam(?string $value = 'p'): self
     {
@@ -5082,7 +5163,8 @@ class GeneralConfig extends BaseConfig
      *
      * @since 3.6.14
      * @group System
-     * @param string|null
+     * @param string|null $value
+     * @return self
      */
     public function permissionsPolicyHeader(?string $value = null): self
     {
@@ -5105,7 +5187,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group System
-     * @param string|null
+     * @param string|null $value
+     * @return self
      */
     public function phpMaxMemoryLimit(?string $value = null): self
     {
@@ -5126,7 +5209,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Session
-     * @param string
+     * @param string $value
+     * @return self
      */
     public function phpSessionName(string $value = 'CraftSessionId'): self
     {
@@ -5152,7 +5236,8 @@ class GeneralConfig extends BaseConfig
      *
      * @see getPostCpLoginRedirect()
      * @group Routing
-     * @param mixed
+     * @param mixed $value
+     * @return self
      */
     public function postCpLoginRedirect(mixed $value = 'dashboard'): self
     {
@@ -5178,7 +5263,8 @@ class GeneralConfig extends BaseConfig
      *
      * @see getPostLoginRedirect()
      * @group Routing
-     * @param mixed
+     * @param mixed $value
+     * @return self
      */
     public function postLoginRedirect(mixed $value = ''): self
     {
@@ -5201,7 +5287,8 @@ class GeneralConfig extends BaseConfig
      *
      * @see getPostLogoutRedirect()
      * @group Routing
-     * @param mixed
+     * @param mixed $value
+     * @return self
      */
     public function postLogoutRedirect(mixed $value = ''): self
     {
@@ -5222,7 +5309,8 @@ class GeneralConfig extends BaseConfig
      *
      * @since 3.6.6
      * @group GraphQL
-     * @param bool
+     * @param bool $value
+     * @return self
      */
     public function prefixGqlRootTypes(bool $value = true): self
     {
@@ -5246,7 +5334,8 @@ class GeneralConfig extends BaseConfig
      *
      * @since 3.0.8
      * @group Image Handling
-     * @param bool
+     * @param bool $value
+     * @return self
      */
     public function preserveCmykColorspace(bool $value = false): self
     {
@@ -5270,7 +5359,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Image Handling
-     * @param bool
+     * @param bool $value
+     * @return self
      */
     public function preserveExifData(bool $value = false): self
     {
@@ -5293,7 +5383,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Image Handling
-     * @param bool
+     * @param bool $value
+     * @return self
      */
     public function preserveImageColorProfiles(bool $value = true): self
     {
@@ -5317,7 +5408,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Security
-     * @param bool
+     * @param bool $value
+     * @return self
      */
     public function preventUserEnumeration(bool $value = false): self
     {
@@ -5335,7 +5427,8 @@ class GeneralConfig extends BaseConfig
      *
      * @since 3.5.0
      * @group System
-     * @param array
+     * @param array $value
+     * @return self
      */
     public function previewIframeResizerOptions(array $value = []): self
     {
@@ -5363,7 +5456,8 @@ class GeneralConfig extends BaseConfig
      * @group Security
      * @defaultAlt 1 day
      * @since 3.7.0
-     * @param mixed
+     * @param mixed $value
+     * @return self
      */
     public function previewTokenDuration(mixed $value = null): self
     {
@@ -5386,7 +5480,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group System
-     * @param string
+     * @param string $value
+     * @return self
      */
     public function privateTemplateTrigger(string $value = '_'): self
     {
@@ -5418,7 +5513,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Garbage Collection
-     * @param mixed
+     * @param mixed $value
+     * @return self
      */
     public function purgePendingUsersDuration(mixed $value = 0): self
     {
@@ -5446,7 +5542,8 @@ class GeneralConfig extends BaseConfig
      * @since 3.3.0
      * @group Garbage Collection
      * @defaultAlt 90 days
-     * @param mixed
+     * @param mixed $value
+     * @return self
      */
     public function purgeStaleUserSessionDuration(mixed $value = 7776000): self
     {
@@ -5472,7 +5569,8 @@ class GeneralConfig extends BaseConfig
      * @since 3.2.0
      * @group Garbage Collection
      * @defaultAlt 30 days
-     * @param mixed
+     * @param mixed $value
+     * @return self
      */
     public function purgeUnsavedDraftsDuration(mixed $value = 2592000): self
     {
@@ -5495,7 +5593,8 @@ class GeneralConfig extends BaseConfig
      *
      * @since 3.6.0
      * @group Image Handling
-     * @param bool
+     * @param bool $value
+     * @return self
      */
     public function rasterizeSvgThumbs(bool $value = false): self
     {
@@ -5520,7 +5619,8 @@ class GeneralConfig extends BaseConfig
      *
      * @group Session
      * @defaultAlt 1 year
-     * @param mixed
+     * @param mixed $value
+     * @return self
      */
     public function rememberUsernameDuration(mixed $value = 31536000): self
     {
@@ -5545,7 +5645,8 @@ class GeneralConfig extends BaseConfig
      *
      * @group Session
      * @defaultAlt 14 days
-     * @param mixed
+     * @param mixed $value
+     * @return self
      */
     public function rememberedUserSessionDuration(mixed $value = 1209600): self
     {
@@ -5565,7 +5666,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Session
-     * @param bool
+     * @param bool $value
+     * @return self
      */
     public function requireMatchingUserAgentForSession(bool $value = true): self
     {
@@ -5585,7 +5687,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Session
-     * @param bool
+     * @param bool $value
+     * @return self
      */
     public function requireUserAgentAndIpForSession(bool $value = true): self
     {
@@ -5605,7 +5708,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Environment
-     * @param string
+     * @param string $value
+     * @return self
      */
     public function resourceBasePath(string $value = '@webroot/cpresources'): self
     {
@@ -5625,7 +5729,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Environment
-     * @param string
+     * @param string $value
+     * @return self
      */
     public function resourceBaseUrl(string $value = '@web/cpresources'): self
     {
@@ -5658,7 +5763,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Environment
-     * @param string|null|false
+     * @param string|null|false $value
+     * @return self
      */
     public function restoreCommand(string|null|false $value = null): self
     {
@@ -5679,7 +5785,8 @@ class GeneralConfig extends BaseConfig
      *
      * @since 3.7.0
      * @group Assets
-     * @param bool
+     * @param bool $value
+     * @return self
      */
     public function revAssetUrls(bool $value = false): self
     {
@@ -5699,7 +5806,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Image Handling
-     * @param bool
+     * @param bool $value
+     * @return self
      */
     public function rotateImagesOnUploadByExifData(bool $value = true): self
     {
@@ -5732,7 +5840,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group System
-     * @param bool
+     * @param bool $value
+     * @return self
      */
     public function runQueueAutomatically(bool $value = true): self
     {
@@ -5753,7 +5862,8 @@ class GeneralConfig extends BaseConfig
      *
      * @since 3.6.0
      * @group Security
-     * @param bool
+     * @param bool $value
+     * @return self
      */
     public function sanitizeCpImageUploads(bool $value = true): self
     {
@@ -5776,7 +5886,8 @@ class GeneralConfig extends BaseConfig
      *
      * @since 3.1.33
      * @group System
-     * @param
+     * @param  $value
+     * @return self
      */
     public function sameSiteCookieValue(?string $value = null): self
     {
@@ -5798,7 +5909,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Security
-     * @param bool
+     * @param bool $value
+     * @return self
      */
     public function sanitizeSvgUploads(bool $value = true): self
     {
@@ -5815,7 +5927,8 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Security
-     * @param string
+     * @param string $value
+     * @return self
      */
     public function securityKey(string $value = ''): self
     {
@@ -5836,7 +5949,8 @@ class GeneralConfig extends BaseConfig
      *
      * @since 3.7.3
      * @group System
-     * @param bool
+     * @param bool $value
+     * @return self
      */
     public function sendContentLengthHeader(bool $value = false): self
     {
@@ -5857,7 +5971,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group System
-     * @param bool
+     * @param bool $value
+     * @return self
      */
     public function sendPoweredByHeader(bool $value = true): self
     {
@@ -5886,7 +6001,8 @@ class GeneralConfig extends BaseConfig
      *
      * @see getSetPasswordPath()
      * @group Routing
-     * @param mixed
+     * @param mixed $value
+     * @return self
      */
     public function setPasswordPath(mixed $value = 'setpassword'): self
     {
@@ -5917,7 +6033,8 @@ class GeneralConfig extends BaseConfig
      * @see getSetPasswordRequestPath()
      * @group Routing
      * @since 3.5.14
-     * @param mixed
+     * @param mixed $value
+     * @return self
      */
     public function setPasswordRequestPath(mixed $value = null): self
     {
@@ -5940,7 +6057,8 @@ class GeneralConfig extends BaseConfig
      *
      * @see getSetPasswordSuccessPath()
      * @group Routing
-     * @param mixed
+     * @param mixed $value
+     * @return self
      */
     public function setPasswordSuccessPath(mixed $value = ''): self
     {
@@ -5961,7 +6079,8 @@ class GeneralConfig extends BaseConfig
      *
      * @since 3.5.0
      * @group Routing
-     * @param string
+     * @param string $value
+     * @return self
      */
     public function siteToken(string $value = 'siteToken'): self
     {
@@ -5981,7 +6100,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group System
-     * @param string
+     * @param string $value
+     * @return self
      */
     public function slugWordSeparator(string $value = '-'): self
     {
@@ -6012,7 +6132,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Security
-     * @param array|null
+     * @param array|null $value
+     * @return self
      */
     public function secureHeaders(?array $value = null): self
     {
@@ -6041,7 +6162,8 @@ class GeneralConfig extends BaseConfig
      * ```
      *
      * @group Security
-     * @param array|null
+     * @param array|null $value
+     * @return self
      */
     public function secureProtocolHeaders(?array $value = null): self
     {
@@ -6067,7 +6189,8 @@ class GeneralConfig extends BaseConfig
      * @since 3.1.0
      * @group Garbage Collection
      * @defaultAlt 30 days
-     * @param mixed
+     * @param mixed $value
+     * @return self
      */
     public function softDeleteDuration(mixed $value = 2592000): self
     {
@@ -6088,7 +6211,8 @@ class GeneralConfig extends BaseConfig
      *
      * @since 3.1.0
      * @group Security
-     * @param bool
+     * @param bool $value
+     * @return self
      */
     public function storeUserIps(bool $value = false): self
     {
@@ -6112,7 +6236,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group System
-     * @param string|array|null|false
+     * @param string|array|null|false $value
+     * @return self
      */
     public function testToEmailAddress(string|array|null|false $value = null): self
     {
@@ -6134,7 +6259,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group System
-     * @param string|null
+     * @param string|null $value
+     * @return self
      */
     public function timezone(?string $value = null): self
     {
@@ -6155,7 +6281,8 @@ class GeneralConfig extends BaseConfig
      *
      * @since 3.0.7
      * @group Image Handling
-     * @param bool
+     * @param bool $value
+     * @return self
      */
     public function transformGifs(bool $value = true): self
     {
@@ -6176,7 +6303,8 @@ class GeneralConfig extends BaseConfig
      *
      * @since 3.7.1
      * @group Image Handling
-     * @param bool
+     * @param bool $value
+     * @return self
      */
     public function transformSvgs(bool $value = true): self
     {
@@ -6197,7 +6325,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group System
-     * @param bool
+     * @param bool $value
+     * @return self
      */
     public function translationDebugOutput(bool $value = false): self
     {
@@ -6217,7 +6346,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Routing
-     * @param string
+     * @param string $value
+     * @return self
      */
     public function tokenParam(string $value = 'token'): self
     {
@@ -6241,7 +6371,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Security
-     * @param array
+     * @param array $value
+     * @return self
      */
     public function trustedHosts(array $value = ['any']): self
     {
@@ -6262,7 +6393,8 @@ class GeneralConfig extends BaseConfig
      *
      * @since 3.4.0
      * @group Image Handling
-     * @param bool
+     * @param bool $value
+     * @return self
      */
     public function upscaleImages(bool $value = true): self
     {
@@ -6288,7 +6420,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group System
-     * @param bool
+     * @param bool $value
+     * @return self
      */
     public function useEmailAsUsername(bool $value = false): self
     {
@@ -6324,7 +6457,8 @@ class GeneralConfig extends BaseConfig
      *
      * @since 3.5.5
      * @group System
-     * @param bool
+     * @param bool $value
+     * @return self
      */
     public function useIframeResizer(bool $value = false): self
     {
@@ -6346,7 +6480,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Routing
-     * @param bool
+     * @param bool $value
+     * @return self
      */
     public function usePathInfo(bool $value = false): self
     {
@@ -6369,7 +6504,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Security
-     * @param bool|string
+     * @param bool|string $value
+     * @return self
      */
     public function useSecureCookies(string|bool $value = 'auto'): self
     {
@@ -6393,7 +6529,8 @@ class GeneralConfig extends BaseConfig
      * :::
      *
      * @group Routing
-     * @param bool|string
+     * @param bool|string $value
+     * @return self
      */
     public function useSslOnTokenizedUrls(string|bool $value = 'auto'): self
     {
@@ -6420,7 +6557,8 @@ class GeneralConfig extends BaseConfig
      *
      * @group Session
      * @defaultAlt 1 hour
-     * @param mixed
+     * @param mixed $value
+     * @return self
      */
     public function userSessionDuration(mixed $value = 3600): self
     {
@@ -6445,7 +6583,8 @@ class GeneralConfig extends BaseConfig
      *
      * @see https://php.net/manual/en/function.file-put-contents.php
      * @group System
-     * @param bool|null
+     * @param bool|null $value
+     * @return self
      */
     public function useFileLocks(?bool $value = null): self
     {
@@ -6470,7 +6609,8 @@ class GeneralConfig extends BaseConfig
      *
      * @group Security
      * @defaultAlt 1 day
-     * @param mixed
+     * @param mixed $value
+     * @return self
      */
     public function verificationCodeDuration(mixed $value = 86400): self
     {
@@ -6496,7 +6636,8 @@ class GeneralConfig extends BaseConfig
      * @see getVerifyEmailPath()
      * @since 3.4.0
      * @group Routing
-     * @param mixed
+     * @param mixed $value
+     * @return self
      */
     public function verifyEmailPath(mixed $value = 'verifyemail'): self
     {
@@ -6520,7 +6661,8 @@ class GeneralConfig extends BaseConfig
      * @see getVerifyEmailSuccessPath()
      * @since 3.1.20
      * @group Routing
-     * @param mixed
+     * @param mixed $value
+     * @return self
      */
     public function verifyEmailSuccessPath(mixed $value = ''): self
     {

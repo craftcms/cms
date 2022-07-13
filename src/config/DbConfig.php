@@ -316,7 +316,6 @@ class DbConfig extends BaseConfig
      */
     public ?string $database = null;
 
-
     /** An array of key-value pairs of PDO attributes to pass into the PDO constructor.
      *
      * For example, when using the [MySQL PDO driver](https://php.net/manual/en/ref.pdo-mysql.php), if you wanted to enable a SSL database connection
@@ -330,7 +329,8 @@ class DbConfig extends BaseConfig
      *     PDO::MYSQL_ATTR_SSL_CA     => '/path/to/my/ca-cert.pem',
      * ],
      * ```
-     * @param array
+     * @param array $value
+     * @return self
      */
     public function attributes(array $value = []): self
     {
@@ -356,7 +356,8 @@ class DbConfig extends BaseConfig
      * CRAFT_DB_CHARSET=utf8mb4
      * ```
      * :::
-     * @param string
+     * @param string $value
+     * @return self
      */
     public function charset(string $value = 'utf8'): self
     {
@@ -391,7 +392,8 @@ class DbConfig extends BaseConfig
      * :::
      *
      * @since 3.6.4
-     * @param string|null
+     * @param string|null $value
+     * @return self
      */
     public function collation(?string $value = null): self
     {
@@ -415,7 +417,8 @@ class DbConfig extends BaseConfig
      * CRAFT_DB_DSN=mysql:host=127.0.0.1;port=3306;dbname=acme_corp
      * ```
      * :::
-     * @param string|null
+     * @param string|null $value
+     * @return self
      */
     public function dsn(?string $value = null): self
     {
@@ -433,7 +436,8 @@ class DbConfig extends BaseConfig
      * CRAFT_DB_PASSWORD=super-secret
      * ```
      * :::
-     * @param string
+     * @param string $value
+     * @return self
      */
     public function password(string $value = ''): self
     {
@@ -458,7 +462,8 @@ class DbConfig extends BaseConfig
      * :::
      *
      * @see https://www.postgresql.org/docs/8.2/static/ddl-schemas.html
-     * @param string|null
+     * @param string|null $value
+     * @return self
      */
     public function schema(?string $value = 'public'): self
     {
@@ -483,7 +488,8 @@ class DbConfig extends BaseConfig
      * :::
      *
      * @since 3.7.27
-     * @param bool
+     * @param bool $value
+     * @return self
      */
     public function setSchemaOnConnect(bool $value = false): self
     {
@@ -502,7 +508,8 @@ class DbConfig extends BaseConfig
      * CRAFT_DB_TABLE_PREFIX=craft_
      * ```
      * :::
-     * @param string|null
+     * @param string|null $value
+     * @return self
      */
     public function tablePrefix(?string $value = null): self
     {
@@ -520,7 +527,8 @@ class DbConfig extends BaseConfig
      * CRAFT_DB_USER=db
      * ```
      * :::
-     * @param string
+     * @param string $value
+     * @return self
      */
     public function user(string $value = 'root'): self
     {
@@ -547,7 +555,8 @@ class DbConfig extends BaseConfig
      * :::
      *
      * @since 3.7.0
-     * @param bool
+     * @param bool $value
+     * @return self
      */
     public function useUnbufferedConnections(bool $value = false): self
     {
@@ -567,7 +576,8 @@ class DbConfig extends BaseConfig
      * CRAFT_DB_URL=jdbc:mysql://database.foo:3306/mydb
      * ```
      * :::
-     * @param string|null
+     * @param string|null $value
+     * @return self
      */
     public function url(?string $value = null): self
     {
@@ -585,7 +595,8 @@ class DbConfig extends BaseConfig
      * CRAFT_DB_DRIVER=mysql
      * ```
      * :::
-     * @param string|null
+     * @param string|null $value
+     * @return self
      */
     public function driver(?string $value = null): self
     {
@@ -603,7 +614,8 @@ class DbConfig extends BaseConfig
      * CRAFT_DB_SERVER=localhost
      * ```
      * :::
-     * @param string|null
+     * @param string|null $value
+     * @return self
      */
     public function server(?string $value = null): self
     {
@@ -621,7 +633,8 @@ class DbConfig extends BaseConfig
      * CRAFT_DB_PORT=3306
      * ```
      * :::
-     * @param int|null
+     * @param int|null $value
+     * @return self
      */
     public function port(?int $value = null): self
     {
@@ -640,7 +653,8 @@ class DbConfig extends BaseConfig
      * CRAFT_DB_UNIX_SOCKET=/Applications/MAMP/tmp/mysql/mysql.sock
      * ```
      * :::
-     * @param string|null
+     * @param string|null $value
+     * @return self
      */
     public function unixSocket(?string $value = null): self
     {
@@ -658,14 +672,14 @@ class DbConfig extends BaseConfig
      * CRAFT_DB_DATABASE=mydatabase
      * ```
      * :::
-     * @param string|null
+     * @param string|null $value
+     * @return self
      */
     public function database(?string $value = null): self
     {
         $this->database = $value;
         return $this;
     }
-
 
     /**
      * @inheritdoc
