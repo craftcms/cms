@@ -11,7 +11,6 @@ use Craft;
 use craft\db\Connection;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
-use yii\base\BaseObject;
 use yii\base\InvalidConfigException;
 
 /**

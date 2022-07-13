@@ -7,7 +7,6 @@
 
 namespace craft\config;
 
-use Craft;
 use yii\base\BaseObject;
 
 /**
