@@ -1,5 +1,8 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+- The control panel is now translated into Ukranian.
+
 ## 3.7.48 - 2022-07-12
 
 ### Changed
