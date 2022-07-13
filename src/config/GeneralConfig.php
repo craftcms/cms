@@ -4504,7 +4504,7 @@ class GeneralConfig extends BaseConfig
      * @since 3.6.0
      * @group System
      * @param string $value
-     * @phpstan-param self::CAMEL_CASE|self::PASCAL_CASE|self::SNAKE_CASE
+     * @phpstan-param self::CAMEL_CASE|self::PASCAL_CASE|self::SNAKE_CASE $value
      * @return self
      */
     public function handleCasing(string $value = self::CAMEL_CASE): self
@@ -5887,7 +5887,7 @@ class GeneralConfig extends BaseConfig
      * @since 3.1.33
      * @group System
      * @param ?string $value
-     * @phpstan-param 'None'|'Lax'|'Strict'|null
+     * @phpstan-param 'None'|'Lax'|'Strict'|null $value
      * @return self
      */
     public function sameSiteCookieValue(?string $value = null): self
