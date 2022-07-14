@@ -113,7 +113,7 @@ return [
     'Are you sure you want to delete the selected {type} along with their descendants?' => 'Дійсно видалити вибране ({type}) разом із дочірніми елементами?',
     'Are you sure you want to delete the selected {type} for this site?' => 'Дійсно видалити вибране ({type}) для цього сайту?',
     'Are you sure you want to delete the selected {type}?' => 'Дійсно видалити вибране ({type})?',
-    'Are you sure you want to delete the {type} for this site?' => 'Дійсно видалити {type} для цього сайту?',
+    'Are you sure you want to delete the {type} for this site?' => 'Дійсно видалити об\'єкт ({type}) для цього сайту?',
     'Are you sure you want to delete this block type?' => 'Дійсно видалити цей тип блока?',
     'Are you sure you want to delete this draft?' => 'Дійсно видалити цю чернетку?',
     'Are you sure you want to delete this field?' => 'Дійсно видалити це поле?',
