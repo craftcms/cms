@@ -4504,7 +4504,7 @@ JS,
     }
 
     /**
-     * Returns the status icon HTML when icons are present with accompanying text
+     * Returns the status icon HTML when icons are present without accompanying text
      *
      * @return string
      * @since 4.2.0
