@@ -4503,6 +4503,39 @@ JS,
         return $fieldLayout && !empty($fieldLayout->getTabs());
     }
 
+    public function statusIconHtml(): string
+    {
+        if ($this->getIsUnpublishedDraft()) {
+            $icon = Html::tag('span', '', [
+                'data' => ['icon' => 'draft'],
+                'class' => 'icon',
+                'aria' => [
+                    'hidden' => true,
+                ],
+                'role' => 'img',
+                'aria' => [
+                    'label' => Craft::t('app', 'Status: {status}', [
+                        'status' => Craft::t('app', 'Draft')
+                    ]),
+                ],
+            ]);
+        } else {
+            $status = $this->getStatus();
+            $statusDef = static::statuses()[$status] ?? null;
+            $icon = Html::tag('span', '', [
+                'class' => ['status', $statusDef['color'] ?? $status],
+                'role' => 'img',
+                'aria' => [
+                    'label' => Craft::t('app', 'Status: {status}', [
+                        'status' => $statusDef['label'] ?? $statusDef ?? ucfirst($status)
+                    ]),
+                    
+                ],
+            ]);
+        }
+        return $icon;
+    }
+
     /**
      * @inheritdoc
      */
