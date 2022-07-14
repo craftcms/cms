@@ -7,8 +7,8 @@
 
 namespace craft\config;
 
-use yii\base\BaseObject;
 use craft\base\FluentModelTrait;
+use yii\base\BaseObject;
 
 /**
  * Base config class
