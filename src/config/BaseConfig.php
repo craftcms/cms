@@ -18,9 +18,8 @@ use craft\base\FluentModelTrait;
  */
 class BaseConfig extends BaseObject
 {
-    
     use FluentModelTrait;
-    
+
     /**
      * Factory method for creating new config objects
      *
