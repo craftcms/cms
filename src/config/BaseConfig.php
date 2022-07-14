@@ -7,7 +7,7 @@
 
 namespace craft\config;
 
-use yii\base\BaseObject;
+use craft\base\Model;
 
 /**
  * Base config class
@@ -15,7 +15,7 @@ use yii\base\BaseObject;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.1.5
  */
-class BaseConfig extends BaseObject
+class BaseConfig extends Model
 {
     /**
      * Factory method for creating new config objects
