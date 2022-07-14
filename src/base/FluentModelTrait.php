@@ -12,7 +12,7 @@ use yii\base\InvalidArgumentException;
 
 /**
  * Add fluent getters/setters to a class, allowing the fluent model to work if fluent model methods are not provided
- * It is preferred to add actual methods to the class, to avoid the magic method overhead, and to provide proper
+ * It is preferred to add actual methods to the class, to avoid the magic method overhead and to provide proper
  * inline documentation, but this is useful as a fallback
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
