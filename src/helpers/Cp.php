@@ -390,10 +390,6 @@ class Cp
                 ]);
         }
 
-//        if ($showStatus) {
-//            $innerHtml .= $element->statusIconHtml();
-//        }
-
         $innerHtml .= $imgHtml;
 
         if ($showLabel) {

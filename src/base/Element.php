@@ -4503,6 +4503,12 @@ JS,
         return $fieldLayout && !empty($fieldLayout->getTabs());
     }
 
+    /**
+     * Returns the status icon HTML when icons are present with accompanying text
+     *
+     * @return string
+     * @since 4.2.0
+     */
     public function statusIconHtml(): string
     {
         if ($this->getIsUnpublishedDraft()) {
@@ -4529,7 +4535,7 @@ JS,
                     'label' => Craft::t('app', 'Status: {status}', [
                         'status' => $statusDef['label'] ?? $statusDef ?? ucfirst($status)
                     ]),
-                    
+
                 ],
             ]);
         }
