@@ -13,7 +13,7 @@ use yii\base\BaseObject;
  * Base config class
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.1.5
+ * @since 4.2.0
  */
 class BaseConfig extends BaseObject
 {
