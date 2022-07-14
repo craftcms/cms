@@ -8,6 +8,7 @@
 namespace craft\config;
 
 use yii\base\BaseObject;
+use craft\base\FluentModelTrait;
 
 /**
  * Base config class
@@ -17,6 +18,9 @@ use yii\base\BaseObject;
  */
 class BaseConfig extends BaseObject
 {
+    
+    use FluentModelTrait;
+    
     /**
      * Factory method for creating new config objects
      *
