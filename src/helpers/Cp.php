@@ -409,6 +409,7 @@ class Cp
                         $status,
                         $status ? ($element::statuses()[$status]['color'] ?? null) : null,
                     ]),
+                    'role' => 'img',
                 ]);
             }
         }
