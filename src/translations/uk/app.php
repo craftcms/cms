@@ -729,7 +729,7 @@ return [
     'It looks like these settings are being overridden by {paths}.' => 'Імовірно, {paths} перевизначає ці налаштування.',
     'Item' => 'Об\'єкт',
     'Items in your cart' => 'Об\'єкти в кошику',
-    'It’s not possible to rename the top folder of a Volume.' => 'Неможливо перейменувати верхню папку тома.',
+    'It’s not possible to rename the top folder of a Volume.' => 'Неможливо перейменувати верхню папку тому.',
     'JavaScript must be enabled to access the Craft CMS control panel.' => 'Для доступу до панелі керування Craft необхідно ввімкнути підтримку JavaScript.',
     'Job Data' => 'Дані завдання',
     'Job released.' => 'Завдання розблоковано.',
