@@ -876,11 +876,6 @@ li.breadcrumb-toggle-wrapper {
   flex: 1;
   align-items: flex-start;
 
-  .btn,
-  .text {
-    color: darken($inputColor, 20%);
-  }
-
   .icon:before,
   .texticon:before,
   .menubtn:after,
@@ -888,6 +883,11 @@ li.breadcrumb-toggle-wrapper {
   [data-icon-after]:after {
     color: currentColor;
     opacity: 0.8;
+  }
+
+  .btn[aria-pressed="true"] {
+    background-color: var(--gray-500);
+    color: var(--white);
   }
 
   .text {
