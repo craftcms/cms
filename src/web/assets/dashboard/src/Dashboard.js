@@ -227,6 +227,7 @@ import './dashboard.scss';
           sortable: true,
           reorderAction: 'dashboard/reorder-user-widgets',
           deleteAction: 'dashboard/delete-user-widget',
+          noItemsSelector: '#nowidgets',
           onReorderItems: (ids) => {
             var lastWidget = null;
 
@@ -577,7 +578,7 @@ import './dashboard.scss';
             ? Craft.escapeHtml(this.title)
             : this.getTypeInfo('name')) +
           '">' +
-          '<td class="widgetmanagerhud-icon">' +
+          '<td class="widgetmanagerhud-icon thin">' +
           this.getTypeInfo('iconSvg') +
           '</td>' +
           '<td id="' +
