@@ -1225,7 +1225,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       if (this.sourceViewModes.length > 1) {
         this.$viewModeBtnContainer = $('<section class="btngroup"/>')
           .appendTo(this.$toolbar)
-          .attr('aria-label', 'View');
+          .attr('aria-label', Craft.t('app', 'View'));
 
         for (var i = 0; i < this.sourceViewModes.length; i++) {
           let sourceViewMode = this.sourceViewModes[i];
@@ -1357,7 +1357,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     selectViewMode: function (viewMode, force) {
-      console.log('in select view mode');
       // Make sure that the current source supports it
       if (!force && !this.doesSourceHaveViewMode(viewMode)) {
         viewMode = this.sourceViewModes[0].mode;
