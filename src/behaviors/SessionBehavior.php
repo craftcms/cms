@@ -52,13 +52,42 @@ class SessionBehavior extends Behavior
      * [[getFlash()|`getFlash('notice')`]] or [[getAllFlashes()]].
      * Only one flash notice can be stored at a time.
      *
-     * @param string $message The message.
+     * @param string $message The message
+     * @param array $settings The control panel notification settings
      */
-    public function setNotice(string $message): void
+    public function setNotice(string $message, array $settings = []): void
     {
         if (Craft::$app->getRequest()->getIsCpRequest()) {
+            $this->_setNotificationFlash('notice', $message, $settings + [
+                    'icon' => 'info',
+                    'iconLabel' => Craft::t('app', 'Notice'),
+                ]);
             $this->owner->setFlash('cp-notice', $message);
         } else {
+            $this->owner->setFlash('notice', $message);
+        }
+    }
+
+    /**
+     * Stores a success message in the user’s flash data.
+     *
+     * The message will be stored on the session, and can be retrieved by calling
+     * [[getFlash()|`getFlash('notice')`]] or [[getAllFlashes()]].
+     * Only one flash notice can be stored at a time.
+     *
+     * @param string $message The message
+     * @param array $settings The control panel notification settings
+     * @since 4.2.0
+     */
+    public function setSuccess(string $message, array $settings = []): void
+    {
+        if (Craft::$app->getRequest()->getIsCpRequest()) {
+            $this->_setNotificationFlash('success', $message, $settings + [
+                    'icon' => 'check',
+                    'iconLabel' => Craft::t('app', 'Success'),
+                ]);
+        } else {
+            // todo: switch to `success` in Craft 5
             $this->owner->setFlash('notice', $message);
         }
     }
@@ -70,12 +99,16 @@ class SessionBehavior extends Behavior
      * [[getFlash()|`getFlash('error')`]] or [[getAllFlashes()]].
      * Only one flash error message can be stored at a time.
      *
-     * @param string $message The message.
+     * @param string $message The message
+     * @param array $settings The control panel notification settings
      */
-    public function setError(string $message): void
+    public function setError(string $message, array $settings = []): void
     {
         if (Craft::$app->getRequest()->getIsCpRequest()) {
-            $this->owner->setFlash('cp-error', $message);
+            $this->_setNotificationFlash('error', $message, $settings + [
+                    'icon' => 'alert',
+                    'iconLabel' => Craft::t('app', 'Error'),
+                ]);
         } else {
             $this->owner->setFlash('error', $message);
         }
@@ -89,9 +122,24 @@ class SessionBehavior extends Behavior
     public function getNotice(): ?string
     {
         if (Craft::$app->getRequest()->getIsCpRequest()) {
-            return $this->owner->getFlash('cp-notice');
+            return $this->_getNotificationFlashMessage('notice');
         }
 
+        return $this->owner->getFlash('notice');
+    }
+
+    /**
+     * Retrieves a success message from the user’s flash data.
+     *
+     * @return string|null
+     */
+    public function getSuccess(): ?string
+    {
+        if (Craft::$app->getRequest()->getIsCpRequest()) {
+            return $this->_getNotificationFlashMessage('success');
+        }
+
+        // todo: switch to `success` in Craft 5
         return $this->owner->getFlash('notice');
     }
 
@@ -103,10 +151,20 @@ class SessionBehavior extends Behavior
     public function getError(): ?string
     {
         if (Craft::$app->getRequest()->getIsCpRequest()) {
-            return $this->owner->getFlash('cp-error');
+            return $this->_getNotificationFlashMessage('error');
         }
 
         return $this->owner->getFlash('error');
+    }
+
+    private function _getNotificationFlashMessage(string $type)
+    {
+        return $this->owner->getFlash("cp-notification-$type")[0] ?? null;
+    }
+
+    private function _setNotificationFlash(string $type, string $message, array $settings = [])
+    {
+        $this->owner->setFlash("cp-notification-$type", [$message, $settings]);
     }
 
     /**
@@ -194,7 +252,8 @@ class SessionBehavior extends Behavior
 if (Craft.broadcaster) {
     Craft.broadcaster.postMessage($jsonMessage);
 }
-JS);
+JS
+        );
     }
 
     // Session-Based Authorization

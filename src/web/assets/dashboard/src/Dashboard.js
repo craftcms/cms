@@ -47,85 +47,96 @@ import './dashboard.scss';
     },
 
     handleNewWidgetOptionSelect: function (e) {
-      var $option = $(e.selectedOption),
-        type = $option.data('type'),
-        settingsNamespace =
-          'newwidget' + Math.floor(Math.random() * 1000000000) + '-settings',
-        settingsHtml = this.getTypeInfo(type, 'settingsHtml', '').replace(
-          /__NAMESPACE__/g,
-          settingsNamespace
-        ),
-        settingsJs = this.getTypeInfo(type, 'settingsJs', '').replace(
-          /__NAMESPACE__/g,
-          settingsNamespace
-        ),
-        $gridItem = $(
-          '<div class="item" data-colspan="1" style="display: block">'
-        ),
-        $container = $('<div/>', {
-          class: 'widget new loading-new scaleout',
-          'data-type': type,
-        })
-          .addClass(type.toLowerCase())
-          .append(
-            $('<div/>', {class: 'front'}).append(
-              $('<div/>', {class: 'pane'})
-                .append($('<div/>', {class: 'spinner body-loading'}))
-                .append(
-                  $('<div/>', {class: 'widget-heading'})
-                    .append('<h2/>')
-                    .append('<h5/>')
-                )
-                .append($('<div/>', {class: 'body'}))
-                .append($('<div/>', {class: 'settings icon hidden'}))
+      const $option = $(e.selectedOption);
+      this.createWidget($option.data('type'), $option.data('name'));
+    },
+
+    createWidget: function (type, name, responseData) {
+      const settingsNamespace =
+        typeof responseData === 'undefined'
+          ? `newwidget${Math.floor(Math.random() * 1000000000)}-settings`
+          : `widget${responseData.id}-settings`;
+      const settingsHtml =
+        typeof responseData === 'undefined'
+          ? this.getTypeInfo(type, 'settingsHtml', '').replace(
+              /__NAMESPACE__/g,
+              settingsNamespace
             )
-          )
-          .append(
-            $('<div/>', {class: 'back'}).append(
-              $('<form/>', {class: 'pane'})
-                .append(
-                  $('<input/>', {
-                    type: 'hidden',
-                    name: 'type',
-                    value: type,
-                  })
-                )
-                .append(
-                  $('<input/>', {
-                    type: 'hidden',
-                    name: 'settingsNamespace',
-                    value: settingsNamespace,
-                  })
-                )
-                .append(
-                  $('<h2/>', {
-                    class: 'first',
-                    text: Craft.t('app', '{type} Settings', {
-                      type: $option.data('name'),
-                    }),
-                  })
-                )
-                .append($('<div/>', {class: 'settings'}))
-                .append('<hr/>')
-                .append(
-                  $('<div/>', {class: 'buttons clearafter'})
-                    .append(
-                      Craft.ui.createSubmitButton({
-                        label: Craft.t('app', 'Save'),
-                        spinner: true,
-                      })
-                    )
-                    .append(
-                      $('<button/>', {
-                        type: 'button',
-                        class: 'btn',
-                        text: Craft.t('app', 'Cancel'),
-                      })
-                    )
-                )
+          : null;
+      const settingsJs =
+        typeof responseData === 'undefined'
+          ? this.getTypeInfo(type, 'settingsJs', '').replace(
+              /__NAMESPACE__/g,
+              settingsNamespace
             )
+          : null;
+      const $gridItem = $(
+        '<div class="item" data-colspan="1" style="display: block">'
+      );
+      const $container = $('<div/>', {
+        class: 'widget new loading-new scaleout',
+        'data-type': type,
+      })
+        .addClass(type.toLowerCase())
+        .append(
+          $('<div/>', {class: 'front'}).append(
+            $('<div/>', {class: 'pane'})
+              .append($('<div/>', {class: 'spinner body-loading'}))
+              .append(
+                $('<div/>', {class: 'widget-heading'})
+                  .append('<h2/>')
+                  .append('<h5/>')
+              )
+              .append($('<div/>', {class: 'body'}))
+              .append($('<div/>', {class: 'settings icon hidden'}))
           )
-          .appendTo($gridItem);
+        )
+        .append(
+          $('<div/>', {class: 'back'}).append(
+            $('<form/>', {class: 'pane'})
+              .append(
+                $('<input/>', {
+                  type: 'hidden',
+                  name: 'type',
+                  value: type,
+                })
+              )
+              .append(
+                $('<input/>', {
+                  type: 'hidden',
+                  name: 'settingsNamespace',
+                  value: settingsNamespace,
+                })
+              )
+              .append(
+                $('<h2/>', {
+                  class: 'first',
+                  text: Craft.t('app', '{type} Settings', {
+                    type: name,
+                  }),
+                })
+              )
+              .append($('<div/>', {class: 'settings'}))
+              .append('<hr/>')
+              .append(
+                $('<div/>', {class: 'buttons clearafter'})
+                  .append(
+                    Craft.ui.createSubmitButton({
+                      label: Craft.t('app', 'Save'),
+                      spinner: true,
+                    })
+                  )
+                  .append(
+                    $('<button/>', {
+                      type: 'button',
+                      class: 'btn',
+                      text: Craft.t('app', 'Cancel'),
+                    })
+                  )
+              )
+          )
+        )
+        .appendTo($gridItem);
 
       if (settingsHtml) {
         $container.addClass('flipped');
@@ -135,12 +146,16 @@ import './dashboard.scss';
         $container.children('.back').addClass('hidden');
       }
 
-      var widget = new Craft.Widget(
+      const widget = new Craft.Widget(
         $container,
-        settingsHtml.replace(/__NAMESPACE__/g, settingsNamespace),
-        function () {
-          eval(settingsJs);
-        }
+        settingsHtml
+          ? settingsHtml.replace(/__NAMESPACE__/g, settingsNamespace)
+          : null,
+        settingsJs
+          ? () => {
+              eval(settingsJs);
+            }
+          : $.noop
       );
 
       // Append the new widget after the last one
@@ -157,8 +172,11 @@ import './dashboard.scss';
 
       $container.removeClass('scaleout');
 
-      if (!settingsHtml) {
-        var data = {
+      if (typeof responseData !== 'undefined') {
+        $container.removeClass('loading');
+        widget.update(responseData);
+      } else if (!settingsHtml) {
+        const data = {
           type: type,
         };
 
@@ -227,6 +245,8 @@ import './dashboard.scss';
           sortable: true,
           reorderAction: 'dashboard/reorder-user-widgets',
           deleteAction: 'dashboard/delete-user-widget',
+          confirmDeleteMessage: null,
+          deleteSuccessMessage: null,
           noItemsSelector: '#nowidgets',
           onReorderItems: (ids) => {
             var lastWidget = null;
@@ -246,7 +266,50 @@ import './dashboard.scss';
             this.grid.resetItemOrder();
           },
           onDeleteItem: (id) => {
-            this.widgets[id].destroy();
+            const widget = this.widgets[id];
+            widget.destroy();
+
+            const $undoBtn = Craft.ui.createButton({
+              label: Craft.t('app', 'Undo'),
+              spinner: true,
+            });
+
+            const notification = Craft.cp.displayNotice(
+              Craft.t('app', '“{name}” deleted.', {
+                name: widget.getLabel(),
+              }),
+              {
+                details: $undoBtn,
+              }
+            );
+
+            $undoBtn.on('click', () => {
+              if ($undoBtn.hasClass('loading')) {
+                return;
+              }
+
+              $undoBtn.addClass('loading');
+
+              const data = {
+                type: widget.type,
+                settings: widget.storedSettings,
+              };
+
+              Craft.sendActionRequest('POST', 'dashboard/create-widget', {data})
+                .then((response) => {
+                  this.createWidget(
+                    widget.type,
+                    widget.getLabel(),
+                    response.data
+                  );
+
+                  $undoBtn.off('click');
+                  notification.close();
+                })
+                .finally(() => {
+                  $undoBtn.removeClass('loading');
+                });
+            });
           },
         });
       } else {
@@ -280,6 +343,7 @@ import './dashboard.scss';
     type: null,
     title: null,
     subtitle: null,
+    storedSettings: null,
 
     totalCols: null,
     settingsHtml: null,
@@ -288,8 +352,10 @@ import './dashboard.scss';
 
     colspanPicker: null,
 
-    init: function (container, settingsHtml, initSettingsFn) {
+    init: function (container, settingsHtml, initSettingsFn, storedSettings) {
       this.$container = $(container);
+      this.storedSettings = storedSettings;
+
       this.$settingsToggle = this.$container.find('[data-settings-toggle]');
       this.$gridItem = this.$container.parent();
 
@@ -431,7 +497,7 @@ import './dashboard.scss';
                   this.$settingsErrorList = null;
                 }
 
-                Craft.cp.displayNotice(Craft.t('app', 'Widget saved.'));
+                Craft.cp.displaySuccess(Craft.t('app', 'Widget saved.'));
 
                 // Make sure the widget is still allowed to be shown, just in case
                 if (!response.data.info) {
@@ -464,8 +530,13 @@ import './dashboard.scss';
     },
 
     update: function (response) {
+      if (!this.$back) {
+        this.initBackUi();
+      }
+
       this.title = response.info.title;
       this.subtitle = response.info.subtitle;
+      this.storedSettings = response.info.settings;
 
       // Is this a new widget?
       if (this.$container.hasClass('new')) {
@@ -629,7 +700,7 @@ import './dashboard.scss';
             data,
           })
             .then((response) => {
-              Craft.cp.displayNotice(Craft.t('app', 'Widget saved.'));
+              Craft.cp.displaySuccess(Craft.t('app', 'Widget saved.'));
             })
             .catch(({response}) => {
               Craft.cp.displayError(Craft.t('app', 'Couldn’t save widget.'));
@@ -645,6 +716,10 @@ import './dashboard.scss';
       });
 
       return $row;
+    },
+
+    getLabel: function () {
+      return this.title || this.getTypeInfo('name');
     },
 
     getManagerRowLabel: function () {

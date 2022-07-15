@@ -238,42 +238,54 @@
                     value: user.getPreference('weekStartDay', craft.app.config.general.defaultWeekStartDay)
                 }) }}
 
-                <hr>
+                <h2>{{ 'Accessibility'|t('app') }}</h2>
 
                 <fieldset>
                     {% embed '_includes/forms/field' with {
-                        label: 'Accessibility'|t('app'),
+                        label: 'Display Settings'|t('app'),
                     } %}
                         {% set a11yDefaults = craft.app.config.general.accessibilityDefaults %}
                         {% block input %}
-                            {% from '_includes/forms' import checkboxField %}
-                            {{ checkboxField({
+                            {% import '_includes/forms' as forms %}
+                            {{ forms.checkboxField({
                                 label: 'Always show focus rings'|t('app'),
                                 name: 'alwaysShowFocusRings',
                                 id: 'alwaysShowFocusRings',
                                 checked: user.getPreference('alwaysShowFocusRings') ?? a11yDefaults['alwaysShowFocusRings'] ?? false,
                             }) }}
-                            {{ checkboxField({
+                            {{ forms.checkboxField({
                                 label: 'Use shapes to represent statuses'|t('app'),
                                 name: 'useShapes',
                                 id: 'useShapes',
                                 checked: user.getPreference('useShapes') ?? a11yDefaults['useShapes'] ?? false,
                             }) }}
-                            {{ checkboxField({
+                            {{ forms.checkboxField({
                                 label: 'Underline links'|t('app'),
                                 name: 'underlineLinks',
                                 id: 'underlineLinks',
                                 checked: user.getPreference('underlineLinks') ?? a11yDefaults['underlineLinks'] ?? false,
+                            }) }}
+                            {{ forms.selectField({
+                                label: 'Notification Duration'|t('app'),
+                                instructions: 'How long notifications should be shown before they disappear automatically.',
+                                name: 'notificationDuration',
+                                id: 'notificationDuration',
+                                options: [
+                                    {value: 2000, label: '{num, number} {num, plural, =1{second} other{seconds}}'|t({num: 2})},
+                                    {value: 5000, label: '{num, number} {num, plural, =1{second} other{seconds}}'|t({num: 5})},
+                                    {value: 10000, label: '{num, number} {num, plural, =1{second} other{seconds}}'|t({num: 10})},
+                                    {value: 0, label: 'Show them indefinitely'|t},
+                                ],
+                                value: user.getPreference('notificationDuration') ?? a11yDefaults['notificationDuration'] ?? 5000,
                             }) }}
                         {% endblock %}
                     {% endembed %}
                 </fieldset>
 
                 {% if user.admin %}
+                    <h2>{{ 'Development'|t('app') }}</h2>
                     <fieldset>
-                        {% embed '_includes/forms/field' with {
-                            label: 'Development'|t('app'),
-                        } %}
+                        {% embed '_includes/forms/field' %}
                             {% block input %}
                                 {% from '_includes/forms' import checkboxField %}
                                 {{ checkboxField({

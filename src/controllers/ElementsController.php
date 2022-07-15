@@ -1685,7 +1685,9 @@ JS, [
             'modelName' => 'element',
             'element' => $element->toArray($element->attributes()),
         ];
-        $response = $this->asSuccess($message, $data, $this->getPostedRedirectUrl($element));
+        $response = $this->asSuccess($message, $data, $this->getPostedRedirectUrl($element), [
+            'details' => Cp::elementHtml($element),
+        ]);
 
         if ($addAnother && $this->_addAnother) {
             $user = Craft::$app->getUser()->getIdentity();
