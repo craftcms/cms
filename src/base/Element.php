@@ -4504,10 +4504,7 @@ JS,
     }
 
     /**
-     * Returns the status icon HTML when icons are present without accompanying text
-     *
-     * @return string
-     * @since 4.2.0
+     * @inheritdoc
      */
     public function statusIconHtml(): string
     {
