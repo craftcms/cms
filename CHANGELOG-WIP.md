@@ -3,6 +3,7 @@
 ### Added
 - Added the “Notification Duration” user accessibility preference. ([#11612](https://github.com/craftcms/cms/pull/11612))
 - The `accessibilityDefaults` config setting now supports a `notificationDuration` key.
+- Added `craft\behaviors\SessionBehavior::getSuccess()`.
 - Added `craft\behaviors\SessionBehavior::setSuccess()`.
 - Added `craft\events\IndexKeywordsEvent`.
 - Added `craft\services\Search::EVENT_BEFORE_INDEX_KEYWORDS`. ([#11575](https://github.com/craftcms/cms/discussions/11575))

@@ -132,6 +132,7 @@ class SessionBehavior extends Behavior
      * Retrieves a success message from the user’s flash data.
      *
      * @return string|null
+     * @since 4.2.0
      */
     public function getSuccess(): ?string
     {
