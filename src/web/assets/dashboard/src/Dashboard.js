@@ -188,9 +188,9 @@ import './dashboard.scss';
               '</form>'
           ).appendTo(Garnish.$bod),
           $noWidgets = $(
-            '<p id="nowidgets"' +
-              ($widgets.length ? ' class="hidden"' : '') +
-              '>' +
+            '<p id="nowidgets" class="zilch small' +
+              ($widgets.length ? ' hidden' : '') +
+              '">' +
               Craft.t('app', 'You don’t have any widgets yet.') +
               '</p>'
           ).appendTo($form),
