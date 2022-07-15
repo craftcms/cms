@@ -1686,7 +1686,7 @@ JS, [
             'element' => $element->toArray($element->attributes()),
         ];
         $response = $this->asSuccess($message, $data, $this->getPostedRedirectUrl($element), [
-            'details' => Cp::elementHtml($element),
+            'details' => !$element->dateDeleted ? Cp::elementHtml($element) : null,
         ]);
 
         if ($addAnother && $this->_addAnother) {
