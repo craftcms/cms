@@ -2560,6 +2560,12 @@ $elementInnerSpacing: 5px;
     }
   }
 
+  &.error {
+    [data-icon='alert'] {
+      margin-left: var(--xs);
+    }
+  }
+
   .label {
     display: inline-block;
 

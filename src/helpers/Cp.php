@@ -439,6 +439,18 @@ class Cp
                 $innerHtml .= $encodedLabel;
             }
 
+            if ($element->hasErrors()) {
+                $innerHtml .= Html::tag('span', '', [
+                    'data' => [
+                        'icon' => 'alert',
+                    ],
+                    'aria' => [
+                        'label' => Craft::t('app', 'Error'),
+                    ],
+                    'role' => 'img',
+                ]);
+            }
+
             $innerHtml .= '</span></div>';
         }
 
