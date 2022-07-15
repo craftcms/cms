@@ -757,7 +757,7 @@ li.breadcrumb-toggle-wrapper {
   position: fixed;
   bottom: 8px;
   @include left(8px);
-  width: 100%;
+  width: calc(100% - 16px);
   z-index: 101;
 
   @media only screen and (min-width: $minHorizontalUiWidth) {
