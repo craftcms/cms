@@ -274,7 +274,7 @@ import './dashboard.scss';
               spinner: true,
             });
 
-            const notification = Craft.cp.displayNotice(
+            const notification = Craft.cp.displaySuccess(
               Craft.t('app', '“{name}” deleted.', {
                 name: widget.getLabel(),
               }),
