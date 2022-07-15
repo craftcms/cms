@@ -26,12 +26,13 @@
 
       this.initFields();
 
-      var $menuBtn = this.$form.find('> .buttons > .btngroup > .menubtn'),
-        $saveAndContinueEditingBtn = $menuBtn
-          .data('menubtn')
-          .menu.$container.find('> ul > li > a');
+      var $menuBtn = this.$form.find('> .buttons > .btngroup > .menubtn');
 
-      $menuBtn.menubtn();
+      const $saveAndContinueEditingBtn = $menuBtn
+        .data('trigger')
+        .$container.find('> ul > li > a');
+
+      //$menuBtn.menubtn();
 
       this.addListener(this.$form, 'submit', 'handleFormSubmit');
       this.addListener(
@@ -39,6 +40,16 @@
         'click',
         'saveAndContinueEditing'
       );
+
+      this.addListener($saveAndContinueEditingBtn, 'keydown', (event) => {
+        if (
+          event.keyCode === Garnish.SPACE_KEY ||
+          event.keyCode === Garnish.RETURN_KEY
+        ) {
+          event.preventDefault();
+          this.saveAndContinueEditing();
+        }
+      });
     },
 
     handleFormSubmit: function (event) {
