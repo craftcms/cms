@@ -727,14 +727,20 @@ $.extend(Craft, {
               return;
             }
 
-            if (typeof Craft.cp !== 'undefined') {
-              Craft.cp.displayError();
-            } else {
-              alert(Craft.t('app', 'A server error occurred.'));
+            if (jqXHR.status !== 400) {
+              if (typeof Craft.cp !== 'undefined') {
+                Craft.cp.displayError();
+              } else {
+                alert(Craft.t('app', 'A server error occurred.'));
+              }
             }
 
             if (callback) {
-              callback(null, textStatus, jqXHR);
+              callback(
+                jqXHR.status === 400 ? jqXHR.responseJSON : null,
+                textStatus,
+                jqXHR
+              );
             }
           },
         },
