@@ -813,6 +813,7 @@ li.breadcrumb-toggle-wrapper {
     .notification-close-btn {
       position: relative;
       top: -2px;
+      @include margin-left(10px);
     }
   }
 }
