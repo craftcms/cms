@@ -4515,13 +4515,10 @@ JS,
             $icon = Html::tag('span', '', [
                 'data' => ['icon' => 'draft'],
                 'class' => 'icon',
-                'aria' => [
-                    'hidden' => true,
-                ],
                 'role' => 'img',
                 'aria' => [
                     'label' => Craft::t('app', 'Status: {status}', [
-                        'status' => Craft::t('app', 'Draft')
+                        'status' => Craft::t('app', 'Draft'),
                     ]),
                 ],
             ]);
@@ -4533,7 +4530,7 @@ JS,
                 'role' => 'img',
                 'aria' => [
                     'label' => Craft::t('app', 'Status: {status}', [
-                        'status' => $statusDef['label'] ?? $statusDef ?? ucfirst($status)
+                        'status' => $statusDef['label'] ?? $statusDef ?? ucfirst($status),
                     ]),
 
                 ],
