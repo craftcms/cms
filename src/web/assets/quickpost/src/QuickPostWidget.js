@@ -26,13 +26,10 @@
 
       this.initFields();
 
-      var $menuBtn = this.$form.find('> .buttons > .btngroup > .menubtn');
-
-      const $saveAndContinueEditingBtn = $menuBtn
-        .data('trigger')
-        .$container.find('> ul > li > a');
-
-      //$menuBtn.menubtn();
+      const $menuBtn = this.$form.find('> .buttons > .btngroup > .menubtn'),
+        $saveAndContinueEditingBtn = $menuBtn
+          .data('trigger')
+          .$container.find('> ul > li > a');
 
       this.addListener(this.$form, 'submit', 'handleFormSubmit');
       this.addListener(
