@@ -168,14 +168,14 @@ class TemplateCaches extends Component
 
         // If there are any transform generation URLs in the body, don't cache it.
         // stripslashes($body) in case the URL has been JS-encoded or something.
-        if (StringHelper::contains(stripslashes($body), 'assets/generate-transform')) {
-            return;
+        $saveCache = !StringHelper::contains(stripslashes($body), 'assets/generate-transform');
+
+        if ($saveCache) {
+            // Always add a `template` tag
+            $dep->tags[] = 'template';
+
+            $cacheValue = [$body, $dep->tags];
         }
-
-        // Always add a `template` tag
-        $dep->tags[] = 'template';
-
-        $cacheValue = [$body, $dep->tags];
 
         if ($withScripts) {
             // Parse the JS/CSS code and tag attributes out of the <script> and <style> tags
@@ -190,10 +190,16 @@ class TemplateCaches extends Component
                 return [$tag['children'][0]['value'], $tag['attributes']];
             }, $bufferedCss);
 
-            array_push($cacheValue, $bufferedJs, $bufferedScripts, $bufferedCss);
+            if ($saveCache) {
+                array_push($cacheValue, $bufferedJs, $bufferedScripts, $bufferedCss);
+            }
 
             // Re-register the JS and CSS
             $this->_registerScripts($bufferedJs, $bufferedScripts, $bufferedCss);
+        }
+
+        if (!$saveCache) {
+            return;
         }
 
         $cacheKey = $this->_cacheKey($key, $global);
