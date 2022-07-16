@@ -13,7 +13,6 @@ use craft\helpers\App;
 use craft\helpers\Json;
 use craft\helpers\Template;
 use GuzzleHttp\Exception\ClientException;
-use Throwable;
 use Twig\Error\Error as TwigError;
 use Twig\Error\LoaderError as TwigLoaderError;
 use Twig\Error\RuntimeError as TwigRuntimeError;
