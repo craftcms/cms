@@ -112,7 +112,7 @@ class Deprecator extends Component
             'file' => $file,
             'line' => $line,
             'message' => $message,
-            'traces' => $this->_cleanTraces($traces),
+            'traces' => $this->_processStackTrace($traces),
         ]);
     }
 
@@ -354,15 +354,23 @@ class Deprecator extends Component
      * @param array $traces debug_backtrace() results leading up to [[log()]]
      * @return array
      */
-    private function _cleanTraces(array $traces): array
+    private function _processStackTrace(array $traces): array
     {
         $logTraces = [];
 
-        foreach ($traces as $i => $trace) {
+        foreach ($traces as $trace) {
+            $file = $trace['file'] ?? null;
+            $line = $trace['line'] ?? null;
+            $templateInfo = Template::resolveTemplatePathAndLine($file ?? '', $line);
+
+            if ($templateInfo !== false) {
+                [$file, $line] = $templateInfo;
+            }
+
             $logTraces[] = [
                 'objectClass' => !empty($trace['object']) ? get_class($trace['object']) : null,
-                'file' => !empty($trace['file']) ? $trace['file'] : null,
-                'line' => !empty($trace['line']) ? $trace['line'] : null,
+                'file' => $file,
+                'line' => $line,
                 'class' => !empty($trace['class']) ? $trace['class'] : null,
                 'method' => !empty($trace['function']) ? $trace['function'] : null,
                 'args' => !empty($trace['args']) ? $this->_argsToString($trace['args']) : null,

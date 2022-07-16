@@ -4,6 +4,10 @@
 
 ### Added
 - The control panel is now translated into Ukranian.
+- Added `craft\helpers\Template::resolveTemplatePathAndLine()`.
+
+### Changed
+- Deprecation warnings’ stack traces now show source templates’ paths and line numbers.
 
 ### Fixed
 - Fixed a bug where deprecation warnings for treating an element query as an array weren’t getting logged with an origin, if they involved Twig’s `|batch` filter. ([#11597](https://github.com/craftcms/cms/issues/11597))
