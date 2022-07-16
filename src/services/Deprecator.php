@@ -265,7 +265,7 @@ class Deprecator extends Component
      */
     private function _findOrigin(array $traces): array
     {
-        // Should we be treating this as as template deprecation log?
+        // Should we be treating this as a template deprecation log?
         if (empty($traces[2]['class']) && isset($traces[2]['function']) && $traces[2]['function'] === 'twig_get_attribute') {
             // came through twig_get_attribute()
             $templateTrace = 3;
