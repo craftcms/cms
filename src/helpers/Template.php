@@ -304,9 +304,9 @@ class Template
         $templateLine = null;
 
         if ($line !== null) {
-            foreach ($template->getDebugInfo() as $codeLine => $templateLine) {
+            foreach ($template->getDebugInfo() as $codeLine => $thisTemplateLine) {
                 if ($codeLine <= $line) {
-                    $templateLine = $templateLine;
+                    $templateLine = $thisTemplateLine;
                     break;
                 }
             }
