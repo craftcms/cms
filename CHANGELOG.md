@@ -5,6 +5,9 @@
 ### Added
 - The control panel is now translated into Ukranian.
 
+### Fixed
+- Fixed a bug where deprecation warnings for treating an element query as an array weren’t getting logged with an origin, if they involved Twig’s `|batch` filter. ([#11597](https://github.com/craftcms/cms/issues/11597))
+
 ## 3.7.48 - 2022-07-12
 
 ### Changed

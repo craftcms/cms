@@ -277,23 +277,29 @@ class Deprecator extends Component
             $templateTrace = 2;
         } elseif (
             isset($traces[1]['class'], $traces[1]['function']) &&
-            (
-                ($traces[1]['class'] === ElementQuery::class && $traces[1]['function'] === 'getIterator') ||
-                (
-                    $traces[1]['class'] === Extension::class &&
-                    in_array($traces[1]['function'], [
-                        'getCsrfInput',
-                        'getFootHtml',
-                        'getHeadHtml',
-                        'groupFilter',
-                        'roundFunction',
-                        'svgFunction',
-                        'ucwordsFilter',
-                    ], true)
-                )
-            )
+            ($traces[1]['class'] === ElementQuery::class && $traces[1]['function'] === 'getIterator')
         ) {
-            // special case for deprecated looping through element queries
+            // looping through element queries
+            if (isset($traces[4]['function']) && $traces[4]['function'] === 'twig_array_batch') {
+                // |batch filter
+                $templateTrace = 4;
+            } else {
+                $templateTrace = 1;
+            }
+        } elseif (
+            isset($traces[1]['class'], $traces[1]['function']) &&
+            $traces[1]['class'] === Extension::class &&
+            in_array($traces[1]['function'], [
+                'getCsrfInput',
+                'getFootHtml',
+                'getHeadHtml',
+                'groupFilter',
+                'roundFunction',
+                'svgFunction',
+                'ucwordsFilter',
+            ], true)
+        ) {
+            // deprecated function
             $templateTrace = 1;
         }
 
