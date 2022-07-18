@@ -997,7 +997,7 @@ return [
     'Nothing to index.' => 'Nothing to index.',
     'Nothing to update.' => 'Nothing to update.',
     'Notice' => 'Notice',
-    'Notification' => 'Notification',
+    'Notifications' => 'Notifications',
     'Notification Duration' => 'Notification Duration',
     'Number of columns' => 'Number of columns',
     'Number' => 'Number',

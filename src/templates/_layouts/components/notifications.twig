@@ -1,4 +1,6 @@
-<section id="notifications" aria-label="{{ 'Notification'|t('app') }}"></section>
+<div id="notifications" aria-labelledby="cp-notification-heading" role="region">
+  <h2 id="cp-notification-heading" class="visually-hidden">{{ 'Notifications'|t('app') }}</h2>
+</div>
 
 {% for type in ['notice', 'success', 'error'] %}
   {% set notification = craft.app.session.getFlash("cp-notification-#{type}") %}
