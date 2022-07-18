@@ -1451,15 +1451,14 @@ Craft.CP.Notification = Garnish.Base.extend({
       if (this.settings.iconLabel) {
         $icon.attr({
           'aria-label': this.settings.iconLabel,
-          'role': 'img',
+          role: 'img',
         });
       } else {
         $icon.attr('aria-hidden', 'true');
       }
     }
 
-    const $main = $('<div class="notification-main"/>')
-      .appendTo($body);
+    const $main = $('<div class="notification-main"/>').appendTo($body);
 
     $('<div/>', {
       class: 'notification-message',
