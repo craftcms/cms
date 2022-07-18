@@ -1445,7 +1445,10 @@ Craft.CP.Notification = Garnish.Base.extend({
         'data-icon': this.settings.icon,
       }).appendTo(this.$container);
       if (this.settings.iconLabel) {
-        $icon.attr('aria-label', this.settings.iconLabel);
+        $icon.attr({
+          'aria-label': this.settings.iconLabel,
+          'role': 'img',
+        });
       } else {
         $icon.attr('aria-hidden', 'true');
       }
