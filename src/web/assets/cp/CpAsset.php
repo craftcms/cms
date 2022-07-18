@@ -192,7 +192,7 @@ JS;
             'Information',
             'Instructions',
             'Keep both',
-            'Keep me logged in',
+            'Keep me signed in',
             'Keep them',
             'Label',
             'Landscape',
