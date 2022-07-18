@@ -5,6 +5,9 @@
 ### Added
 - The control panel is now translated into Ukranian.
 
+### Changed
+- Element edit pages no longer jump down when the “Showing your unsaved changes” notice is added, unless there’s not enough content to require a scroll bar. ([#11586](https://github.com/craftcms/cms/discussions/11586))
+
 ### Fixed
 - Fixed a bug where new condition rules’ type selectors weren’t getting auto-focused.
 - Fixed a bug where Quick Post widgets weren’t submitting custom field values.
