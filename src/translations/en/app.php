@@ -774,7 +774,7 @@ return [
     'Job retried.' => 'Job retried.',
     'Job' => 'Job',
     'Keep both' => 'Keep both',
-    'Keep me logged in' => 'Keep me logged in',
+    'Keep me signed in for {duration}' => 'Keep me signed in for {duration}',
     'Keep me signed in' => 'Keep me signed in',
     'Keep them' => 'Keep them',
     'Knowledge Base' => 'Knowledge Base',
