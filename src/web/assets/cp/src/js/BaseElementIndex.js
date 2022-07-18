@@ -936,7 +936,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             }
 
             if (response.data.message) {
-              Craft.cp.displayNotice(response.data.message);
+              Craft.cp.displaySuccess(response.data.message);
             }
 
             this.afterAction(action, params);

@@ -2,6 +2,10 @@
 @import '@craftcms/sass/mixins';
 
 :root {
+  --bg-color: $grey100;
+  --bg-color-hsl: #{hue($grey100)}, #{saturation($grey100)},
+    #{lightness($grey100)};
+
   // submit button colors
   --primary-color: var(--red-500);
   --secondary-color: var(--gray-500);

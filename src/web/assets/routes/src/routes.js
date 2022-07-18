@@ -48,7 +48,7 @@ import './routes.scss';
 
       Craft.sendActionRequest('POST', 'routes/update-route-order', {data})
         .then(() => {
-          Craft.cp.displayNotice(Craft.t('app', 'New route order saved.'));
+          Craft.cp.displaySuccess(Craft.t('app', 'New route order saved.'));
         })
         .catch(() => {
           Craft.cp.displayError(
@@ -479,7 +479,7 @@ import './routes.scss';
           this.route.updateHtmlFromModal();
           this.hide();
 
-          Craft.cp.displayNotice(Craft.t('app', 'Route saved.'));
+          Craft.cp.displaySuccess(Craft.t('app', 'Route saved.'));
         })
         .catch(() => {
           Craft.cp.displayError(Craft.t('app', 'Couldn’t save route.'));
@@ -516,7 +516,7 @@ import './routes.scss';
         Craft.sendActionRequest('POST', 'routes/delete-route', {
           data: {routeUid: this.route.uid},
         }).then((response) => {
-          Craft.cp.displayNotice(Craft.t('app', 'Route deleted.'));
+          Craft.cp.displaySuccess(Craft.t('app', 'Route deleted.'));
         });
 
         Craft.routes.sorter.removeItems(this.route.$container);

@@ -400,7 +400,7 @@ Craft.ElementEditor = Garnish.Base.extend(
                     },
                   })
                     .then((response) => {
-                      Craft.cp.displayNotice(response.data.message);
+                      Craft.cp.displaySuccess(response.data.message);
                       this.slideout.close();
                     })
                     .catch(reject);

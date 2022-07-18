@@ -75,7 +75,9 @@
           }
 
           if (textStatus === 'success') {
-            Craft.cp.displayNotice(Craft.t('app', 'Entry saved.'));
+            Craft.cp.displaySuccess(Craft.t('app', 'Entry saved.'), {
+              details: response.elementHtml,
+            });
             callback(response);
           } else {
             Craft.cp.displayError(Craft.t('app', 'Couldn’t save entry.'));
