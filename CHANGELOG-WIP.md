@@ -6,3 +6,4 @@
 
 ### Changed
 - Improved condition builder accessibility. ([#11588](https://github.com/craftcms/cms/pull/11588))
+- The `|length` Twig filter now checks if the variable is a query, and if so, returns its count. ([#11625](https://github.com/craftcms/cms/discussions/11625))
