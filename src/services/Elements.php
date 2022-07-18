@@ -38,6 +38,7 @@ use craft\events\DeleteElementEvent;
 use craft\events\EagerLoadElementsEvent;
 use craft\events\ElementEvent;
 use craft\events\ElementQueryEvent;
+use craft\events\InvalidateElementCachesEvent;
 use craft\events\MergeElementsEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\helpers\ArrayHelper;
@@ -259,6 +260,12 @@ class Elements extends Component
     public const EVENT_AFTER_MERGE_CANONICAL_CHANGES = 'afterMergeCanonical';
 
     /**
+     * @event InvalidateElementCachesEvent The event that is triggered when element TagDependency caches are invalidated
+     * @since 4.2.0
+     */
+    public const EVENT_INVALIDATE_ELEMENT_CACHES = 'invalidateElementCaches';
+
+    /**
      * @var int[] Stores a mapping of source element IDs to their duplicated element IDs.
      */
     public static array $duplicatedElementIds = [];
@@ -418,7 +425,14 @@ class Elements extends Component
      */
     public function invalidateAllCaches(): void
     {
-        TagDependency::invalidate(Craft::$app->getCache(), 'element');
+        $tags = ['element'];
+        TagDependency::invalidate(Craft::$app->getCache(), $tags);
+        // Fire a 'invalidateElementCaches' event
+        if ($this->hasEventHandlers(self::EVENT_INVALIDATE_ELEMENT_CACHES)) {
+            $this->trigger(self::EVENT_INVALIDATE_ELEMENT_CACHES, new InvalidateElementCachesEvent([
+                'tags' => $tags,
+            ]));
+        }
     }
 
     /**
@@ -430,7 +444,14 @@ class Elements extends Component
      */
     public function invalidateCachesForElementType(string $elementType): void
     {
-        TagDependency::invalidate(Craft::$app->getCache(), "element::$elementType");
+        $tags = ["element::$elementType"];
+        TagDependency::invalidate(Craft::$app->getCache(), $tags);
+        // Fire a 'invalidateElementCaches' event
+        if ($this->hasEventHandlers(self::EVENT_INVALIDATE_ELEMENT_CACHES)) {
+            $this->trigger(self::EVENT_INVALIDATE_ELEMENT_CACHES, new InvalidateElementCachesEvent([
+                'tags' => $tags,
+            ]));
+        }
     }
 
     /**
@@ -464,6 +485,12 @@ class Elements extends Component
         }
 
         TagDependency::invalidate(Craft::$app->getCache(), $tags);
+        // Fire a 'invalidateElementCaches' event
+        if ($this->hasEventHandlers(self::EVENT_INVALIDATE_ELEMENT_CACHES)) {
+            $this->trigger(self::EVENT_INVALIDATE_ELEMENT_CACHES, new InvalidateElementCachesEvent([
+                'tags' => $tags,
+            ]));
+        }
     }
 
     // Finding Elements
