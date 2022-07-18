@@ -795,6 +795,7 @@ li.breadcrumb-toggle-wrapper {
     }
 
     .notification-body {
+      display: flex;
       flex: 1;
 
       .notification-message {

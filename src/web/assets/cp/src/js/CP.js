@@ -1439,11 +1439,15 @@ Craft.CP.Notification = Garnish.Base.extend({
       'data-type': this.type,
     }).appendTo(Craft.cp.$notificationContainer);
 
+    const $body = $('<div class="notification-body"/>')
+      .appendTo(this.$container)
+      .attr('role', 'status');
+
     if (this.settings.icon) {
       const $icon = $('<span/>', {
         class: 'notification-icon',
         'data-icon': this.settings.icon,
-      }).appendTo(this.$container);
+      }).appendTo($body);
       if (this.settings.iconLabel) {
         $icon.attr({
           'aria-label': this.settings.iconLabel,
@@ -1454,14 +1458,13 @@ Craft.CP.Notification = Garnish.Base.extend({
       }
     }
 
-    const $body = $('<div class="notification-body"/>').appendTo(
-      this.$container
-    );
+    const $main = $('<div class="notification-main"/>')
+      .appendTo($body);
 
     $('<div/>', {
       class: 'notification-message',
       text: this.message,
-    }).appendTo($body);
+    }).appendTo($main);
 
     const $closeBtnContainer = $('<div/>').appendTo(this.$container);
     this.$closeBtn = $('<button/>', {
@@ -1474,7 +1477,7 @@ Craft.CP.Notification = Garnish.Base.extend({
     if (this.settings.details) {
       $('<div class="notification-details"/>')
         .append(this.settings.details)
-        .appendTo($body);
+        .appendTo($main);
     }
 
     this.$container
