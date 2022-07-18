@@ -1,6 +1,7 @@
 /** global: Craft */
 /** global: Garnish */
 import Garnish from '../../../garnish/src';
+import $ from 'jquery';
 
 /**
  * CP class
@@ -1428,6 +1429,7 @@ Craft.CP.Notification = Garnish.Base.extend({
   _preventDelayedClose: false,
   $container: null,
   $closeBtn: null,
+  originalActiveElement: null,
 
   init: function (type, message, settings) {
     this.type = type;
@@ -1474,9 +1476,25 @@ Craft.CP.Notification = Garnish.Base.extend({
     }).appendTo($closeBtnContainer);
 
     if (this.settings.details) {
-      $('<div class="notification-details"/>')
+      const $detailsContainer = $('<div class="notification-details"/>')
         .append(this.settings.details)
         .appendTo($main);
+
+      const $focusableElement = $detailsContainer.find('button,input');
+      if ($focusableElement.length) {
+        Garnish.uiLayerManager.addLayer(this.$container);
+        Garnish.uiLayerManager.registerShortcut(Garnish.ESC_KEY, () => {
+          this.close();
+        });
+        this.originalActiveElement = document.activeElement;
+        this.$container.attr('tabindex', '-1').focus();
+        this.$container.on('keydown', (ev) => {
+          if (ev.keyCode === Garnish.ESC_KEY) {
+            ev.stopPropagation();
+            this.close();
+          }
+        });
+      }
     }
 
     this.$container
@@ -1537,6 +1555,15 @@ Craft.CP.Notification = Garnish.Base.extend({
     }
 
     this.closing = true;
+
+    if (
+      this.originalActiveElement &&
+      document.activeElement &&
+      (document.activeElement === this.$container[0] ||
+        $.contains(this.$container[0], document.activeElement))
+    ) {
+      $(this.originalActiveElement).focus();
+    }
 
     this.$container.velocity(
       {opacity: 0, 'margin-bottom': this._negMargin()},
