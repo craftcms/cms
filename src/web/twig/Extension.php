@@ -188,7 +188,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('date', [$this, 'dateFilter'], ['needs_environment' => true]),
             new TwigFilter('datetime', [$this, 'datetimeFilter'], ['needs_environment' => true]),
             new TwigFilter('diff', 'array_diff'),
-            new TwigFilter('duration', [DateTimeHelper::class, 'humanDurationFromInterval']),
+            new TwigFilter('duration', [DateTimeHelper::class, 'humanDuration']),
             new TwigFilter('encenc', [$this, 'encencFilter']),
             new TwigFilter('explodeClass', [Html::class, 'explodeClass']),
             new TwigFilter('explodeStyle', [Html::class, 'explodeStyle']),
