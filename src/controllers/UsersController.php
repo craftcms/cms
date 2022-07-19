@@ -1340,6 +1340,10 @@ JS,
 
         Craft::$app->getUsers()->saveUserPreferences($user, $preferences);
 
+        if ($isCurrentUser) {
+            Craft::$app->updateTargetLanguage();
+        }
+
         // Is this the current user, and did their username just change?
         // todo: remove comment when WI-51866 is fixed
         /** @noinspection PhpUndefinedVariableInspection */
