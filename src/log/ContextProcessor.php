@@ -10,6 +10,7 @@ namespace craft\log;
 use Craft;
 use Illuminate\Support\Collection;
 use Monolog\Processor\ProcessorInterface;
+use yii\helpers\VarDumper;
 use yii\web\Request;
 use yii\web\Session;
 
@@ -24,10 +25,12 @@ class ContextProcessor implements ProcessorInterface
     /**
      * @param array $vars The global variables to include {@see \yii\log\Target::$logVars}
      * @param string $key The key in the record to push context data
+     * @param bool $dumpVars Whether to dump vars as a readable, multi-line string to the message
      */
     public function __construct(
         protected array $vars = [],
         protected string $key = 'context',
+        protected bool $dumpVars = true,
     ) {
     }
 
@@ -68,10 +71,23 @@ class ContextProcessor implements ProcessorInterface
         }
 
         if ($vars = $this->filterVars($this->vars)) {
-            $record[$this->key]['vars'] = $vars;
+            if ($this->dumpVars) {
+                $record['message'] .= "\n" . $this->dumpVars($vars);
+            } else {
+                $record[$this->key]['vars'] = $vars;
+            }
         }
 
         return $record;
+    }
+
+    protected function dumpVars(array $vars): string
+    {
+        return Collection::make($vars)
+            ->map(function($value, $name) {
+              return "\${$name} = " . VarDumper::dumpAsString($value);
+            })
+            ->join("\n\n");
     }
 
     protected function filterVars(array $vars = []): array
