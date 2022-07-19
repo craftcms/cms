@@ -30,7 +30,7 @@ class ContextProcessor implements ProcessorInterface
     public function __construct(
         protected array $vars = [],
         protected string $key = 'context',
-        protected bool $dumpVars = true,
+        protected bool $dumpVars = false,
     ) {
     }
 
