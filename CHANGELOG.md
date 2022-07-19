@@ -9,6 +9,7 @@
 
 ### Fixed
 - Fixed a PHP error. ([#11518](https://github.com/craftcms/cms/issues/11518))
+- Fixed an issue where sensitive values were not always redacted from logs. [#11618](https://github.com/craftcms/cms/issues/11618)
 
 ## 4.1.0.1 - 2022-06-28
 
