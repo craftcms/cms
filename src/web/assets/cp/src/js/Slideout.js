@@ -14,7 +14,7 @@
       init: function (contents, settings) {
         this.setSettings(settings, Craft.Slideout.defaults);
 
-        if (!Garnish.isMobileBrowser()) {
+        if (!Craft.Slideout.useMobileStyles()) {
           this.$shade = $('<div class="slideout-shade"/>').appendTo(
             Garnish.$bod
           );
@@ -42,7 +42,7 @@
 
         Garnish.addModalAttributes(this.$outerContainer);
 
-        if (Garnish.isMobileBrowser()) {
+        if (Craft.Slideout.useMobileStyles()) {
           this.$container.addClass('so-mobile');
         }
 
@@ -69,7 +69,7 @@
 
         this.$outerContainer.appendTo(Garnish.$bod).removeClass('hidden');
 
-        if (Garnish.isMobileBrowser()) {
+        if (Craft.Slideout.useMobileStyles()) {
           this.$container.css('top', '100vh');
         } else {
           this.$container.css(Garnish.ltr ? 'left' : 'right', '100vw');
@@ -173,7 +173,7 @@
       openPanels: [],
       addPanel: function (panel) {
         Craft.Slideout.openPanels.unshift(panel);
-        if (Garnish.isMobileBrowser()) {
+        if (Craft.Slideout.useMobileStyles()) {
           panel.$container.css('top', 0);
         } else {
           Craft.Slideout.updateStyles();
@@ -183,12 +183,17 @@
         Craft.Slideout.openPanels = Craft.Slideout.openPanels.filter(
           (m) => m !== panel
         );
-        if (Garnish.isMobileBrowser()) {
+        if (Craft.Slideout.useMobileStyles()) {
           panel.$container.css('top', '100vh');
         } else {
           panel.$container.css(Garnish.ltr ? 'left' : 'right', '100vw');
           Craft.Slideout.updateStyles();
         }
+      },
+      useMobileStyles: function () {
+        const viewportWidth = document.body.clientWidth;
+
+        return Garnish.isMobileBrowser() || viewportWidth < 600;
       },
       updateStyles: function () {
         const totalPanels = Craft.Slideout.openPanels.length;
