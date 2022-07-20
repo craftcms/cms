@@ -19,6 +19,7 @@ use craft\errors\UserLockedException;
 use craft\events\DefineUserContentSummaryEvent;
 use craft\events\InvalidUserTokenEvent;
 use craft\events\LoginFailureEvent;
+use craft\events\LoginUserNotFoundEvent;
 use craft\events\RegisterUserActionsEvent;
 use craft\events\UserEvent;
 use craft\helpers\ArrayHelper;
@@ -65,6 +66,11 @@ use yii\web\ServerErrorHttpException;
  */
 class UsersController extends Controller
 {
+    /**
+     * @event LoginUserNotFoundEvent The event that is triggered when a user cannot be found
+     */
+    public const EVENT_LOGIN_USER_NOT_FOUND = 'loginUserNotFound';
+
     /**
      * @event LoginFailureEvent The event that is triggered when a failed login attempt was made
      */
@@ -167,9 +173,22 @@ class UsersController extends Controller
         $user = Craft::$app->getUsers()->getUserByUsernameOrEmail($loginName);
 
         if (!$user || $user->password === null) {
-            // Delay again to match $user->authenticate()'s delay
-            Craft::$app->getSecurity()->validatePassword('p@ss1w0rd', '$2y$13$nj9aiBeb7RfEfYP3Cum6Revyu14QelGGxwcnFUKXIrQUitSodEPRi');
-            return $this->_handleLoginFailure(User::AUTH_INVALID_CREDENTIALS);
+            
+            $event = new LoginUserNotFoundEvent([
+                'loginName' => $loginName,
+            ]);
+            $this->trigger(self::EVENT_LOGIN_USER_NOT_FOUND, $event);
+
+            // when there isn't an event before handling the user-login, just continue
+            if (!$event->handled || null === $event->user) {
+
+                // Delay again to match $user->authenticate()'s delay
+                Craft::$app->getSecurity()->validatePassword('p@ss1w0rd', '$2y$13$nj9aiBeb7RfEfYP3Cum6Revyu14QelGGxwcnFUKXIrQUitSodEPRi');
+                return $this->_handleLoginFailure(User::AUTH_INVALID_CREDENTIALS);
+            }
+
+            // take over the user
+            $user = $event->user;
         }
 
         // Did they submit a valid password, and is the user capable of being logged-in?
