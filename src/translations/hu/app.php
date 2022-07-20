@@ -304,6 +304,7 @@ return [
     'Connecting to CraftCMS.com…' => 'Kapcsolódás a CraftCMS.com webhelyhez…',
     'Content' => 'Tartalom',
     'Contents of {path}' => '{path} tartalma',
+    'Context' => 'Context',
     'Continue anyway' => 'Mindenképpen tovább',
     'Continue shopping' => 'Vásárlás folytatása',
     'Continue' => 'Tovább',
