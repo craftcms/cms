@@ -8,6 +8,7 @@
 namespace craft\config;
 
 use craft\base\FluentModelTrait;
+use craft\base\Model;
 use craft\services\Config;
 use yii\base\BaseObject;
 use yii\base\UnknownPropertyException;
@@ -18,7 +19,7 @@ use yii\base\UnknownPropertyException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.2.0
  */
-class BaseConfig extends BaseObject
+class BaseConfig extends Model
 {
     use FluentModelTrait;
 
