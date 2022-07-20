@@ -888,6 +888,7 @@ return [
     'More Resources' => 'Meer bronnen',
     'More' => 'Meer',
     'More…' => 'Meer…',
+    'More actions' => 'More actions',
     'Move down' => 'Omlaag',
     'Move to the left' => 'Verplaatsen naar links',
     'Move to the right' => 'Verplaatsen naar rechts',
