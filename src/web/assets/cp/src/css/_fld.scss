@@ -91,9 +91,7 @@ $gridColor: hsl(212, 50%, 95%);
     0 2px 5px -2px transparentize($grey900, 0.8);
 }
 
-.fld-tab .settings,
-.fld-element .settings,
-.fld-element .slide-picker {
+.fld-tab .tab .settings {
   @include margin-left(7px);
 }
 
@@ -101,7 +99,6 @@ $gridColor: hsl(212, 50%, 95%);
 .fld-element .settings:before {
   margin-top: -2px;
   font-size: 16px;
-  opacity: 0.5;
 }
 
 .fld-tab .settings:hover:before,
@@ -238,6 +235,12 @@ $gridColor: hsl(212, 50%, 95%);
   }
 
   &.fld-field {
+    display: grid;
+    grid-template-areas:
+      'name settings'
+      'slidepicker .';
+    gap: var(--s);
+    justify-content: space-between;
     color: var(--medium-text-color);
     @include striped-bg(var(--gray-100));
 
@@ -256,9 +259,21 @@ $gridColor: hsl(212, 50%, 95%);
     }
 
     .field-name {
+      grid-area: name;
+
       .fld-element-label {
         margin-bottom: 2px;
       }
+    }
+
+    .settings {
+      grid-area: settings;
+      justify-self: end;
+      align-self: start;
+    }
+
+    .slide-picker {
+      justify-self: start;
     }
   }
 

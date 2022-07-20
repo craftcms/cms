@@ -6390,15 +6390,19 @@ body .selectize-dropdown .active {
 
 /* slide picker */
 .slide-picker {
+  --outline-color: var(--gray-400);
+  --active-separator-color: var(--white);
+  --active-background-color: var(--outline-color);
+  --hover-background-color: var(--blue-700);
   display: flex;
   height: 15px;
   white-space: nowrap;
 
   a {
-    border: 1px solid var(--hairline-color);
+    border: 1px solid var(--outline-color);
     @include border-left(none);
     background-image: none;
-    width: 7px;
+    width: var(--touch-target-size);
     height: 13px;
     margin-left: 0;
     display: inline-block;
@@ -6407,21 +6411,42 @@ body .selectize-dropdown .active {
     box-sizing: border-box;
 
     &:first-child {
-      width: 8px;
-      @include border-left(1px solid var(--gray-400) !important);
+      @include border-left(1px solid var(--outline-color) !important);
+    }
+  }
+
+  .active {
+    background-color: var(--active-background-color);
+  }
+
+  &:hover {
+    .active {
+      background-color: transparent;
+    }
+
+    .active-hover {
+      background-color: var(--hover-background-color);
+
+      &:not(.last-active-hover) {
+        @include border-right(1px solid var(--active-separator-color));
+      }
+    }
+  }
+
+  &:not(:hover) {
+    .active:not(.last-active) {
+      @include border-right(1px solid var(--active-separator-color));
     }
   }
 
   &:not(:hover) a.active,
   &:hover a.active-hover {
-    border-top-color: var(--gray-400);
-    border-bottom-color: var(--gray-400);
     height: 15px;
     margin-top: 0;
     margin-bottom: 0;
 
     &:first-child {
-      @include border-left(1px solid var(--gray-400));
+      @include border-left(1px solid var(--outline-color));
       @include border-top-left-radius(var(--small-border-radius));
       @include border-bottom-left-radius(var(--small-border-radius));
     }
@@ -6429,15 +6454,9 @@ body .selectize-dropdown .active {
 
   &:not(:hover) a.last-active,
   &:hover a.last-active-hover {
-    @include border-right(1px solid var(--gray-400));
+    @include border-right(1px solid var(--outline-color));
     @include border-top-right-radius(var(--small-border-radius));
     @include border-bottom-right-radius(var(--small-border-radius));
-  }
-
-  &:focus {
-    a.active {
-      background-color: var(--light-sel-color);
-    }
   }
 }
 
