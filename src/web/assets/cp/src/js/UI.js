@@ -513,7 +513,7 @@ Craft.ui = {
       'data-value': value,
       'data-indeterminate-value': indeterminateValue,
       id: config.id,
-      role: 'checkbox',
+      role: 'switch',
       'aria-checked': config.on
         ? 'true'
         : config.indeterminate
