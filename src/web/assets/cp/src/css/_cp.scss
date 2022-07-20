@@ -838,7 +838,6 @@ li.breadcrumb-toggle-wrapper {
 #global-header,
 #header {
   .flex {
-    flex-wrap: nowrap;
     max-width: 100%;
 
     &.flex-nowrap {
@@ -957,10 +956,6 @@ li.breadcrumb-toggle-wrapper {
       background-clip: border-box;
     }
   }
-}
-
-#action-buttons {
-  height: 34px;
 }
 
 #main-content {
