@@ -4431,10 +4431,15 @@ JS,
 
         if (count($supportedSites) > 1) {
             $expandStatusBtn = (count($propEditableSiteIds) > 1 || $addlEditableSites)
-                ? Html::button(Craft::t('app', 'Update status for individual sites'), [
+                ? Html::button('', [
                     'class' => ['expand-status-btn', 'btn'],
+                    'data' => [
+                        'icon' => 'ellipsis',
+                    ],
+                    'title' => Craft::t('app', 'Update status for individual sites'),
                     'aria' => [
                         'expanded' => 'false',
+                        'label' => Craft::t('app', 'Update status for individual sites'),
                     ],
                 ])
                 : '';

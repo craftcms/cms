@@ -5527,8 +5527,17 @@ fieldset {
 }
 
 .expand-status-btn {
-  margin: var(--m) 0;
-  width: 100%;
+  margin: 0 auto;
+  width: 30px;
+  height: 17px;
+  padding: 0;
+  line-height: 16px;
+  border-radius: var(--small-border-radius);
+  color: var(--text-color);
+
+  &:before {
+    margin: 0;
+  }
 }
 
 /* toggles and nested fields */
