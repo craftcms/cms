@@ -304,6 +304,7 @@ return [
     'Connecting to CraftCMS.com…' => 'Kobler til craftcms.com…',
     'Content' => 'Innhold',
     'Contents of {path}' => 'Innhold i {path}',
+    'Context' => 'Context',
     'Continue anyway' => 'Fortsett likevel',
     'Continue shopping' => 'Fortsett å handle',
     'Continue' => 'Fortsett',
