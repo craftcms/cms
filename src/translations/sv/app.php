@@ -888,6 +888,7 @@ return [
     'More Resources' => 'Fler resurser',
     'More' => 'Mer',
     'More…' => 'Mer …',
+    'More actions' => 'More actions',
     'Move down' => 'Flytta ned',
     'Move to the left' => 'Flytta till vänster',
     'Move to the right' => 'Flytta till höger',
