@@ -304,6 +304,7 @@ return [
     'Connecting to CraftCMS.com…' => 'Выполняется подключение к CraftCMS.com…',
     'Content' => 'Контент',
     'Contents of {path}' => 'Содержимое {path}',
+    'Context' => 'Context',
     'Continue anyway' => 'Все равно продолжить',
     'Continue shopping' => 'Продолжить покупки',
     'Continue' => 'Продолжить',
