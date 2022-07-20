@@ -11,7 +11,6 @@ use Craft;
 use craft\base\FluentModelTrait;
 use craft\base\Model;
 use craft\services\Config;
-use yii\base\BaseObject;
 use yii\base\UnknownPropertyException;
 
 /**
