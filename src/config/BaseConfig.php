@@ -7,6 +7,7 @@
 
 namespace craft\config;
 
+use Craft;
 use craft\base\FluentModelTrait;
 use craft\base\Model;
 use craft\services\Config;
@@ -52,7 +53,7 @@ class BaseConfig extends Model
     {
         parent::__construct($config);
     }
-    
+
     /**
      * @inheritdoc
      */
