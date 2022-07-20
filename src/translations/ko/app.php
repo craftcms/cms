@@ -304,6 +304,7 @@ return [
     'Connecting to CraftCMS.com…' => 'CraftCMS.com에 연결 중…',
     'Content' => '콘텐츠',
     'Contents of {path}' => '{path}의 콘텐츠',
+    'Context' => 'Context',
     'Continue anyway' => '계속',
     'Continue shopping' => '쇼핑 계속하기',
     'Continue' => '계속',
