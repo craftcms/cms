@@ -573,6 +573,9 @@ Craft.ui = {
     if (!config.id) {
       config.id = 'lightswitch' + Math.floor(Math.random() * 1000000000);
     }
+    if (!config.labelId) {
+      config.labelId = `${config.id}-label`;
+    }
     return this.createField(this.createLightswitch(config), config).addClass(
       'lightswitch-field'
     );

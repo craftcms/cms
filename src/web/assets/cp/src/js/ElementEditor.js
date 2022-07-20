@@ -435,10 +435,8 @@ Craft.ElementEditor = Garnish.Base.extend(
 
     expandSiteStatuses: function () {
       this.removeListener(this.$expandSiteStatusesBtn, 'click');
-      const $btnWrapper = this.$expandSiteStatusesBtn.parent('.field');
-
-      $btnWrapper.velocity({opacity: 0}, 'fast', () => {
-        $btnWrapper.remove();
+      this.$expandSiteStatusesBtn.velocity({opacity: 0}, 'fast', () => {
+        this.$expandSiteStatusesBtn.remove();
       });
 
       const $enabledForSiteField = this.$container.find(
