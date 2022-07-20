@@ -41,7 +41,15 @@ class GeneralConfig extends BaseConfig
      */
     public const SNAKE_CASE = 'snake';
 
-    private static array $renamedSettings = [
+    /**
+     * @inerhitdoc
+     */
+    public static $configCategory = Config::CATEGORY_GENERAL;
+
+    /**
+     * @inerhitdoc 
+     */
+    protected static array $renamedSettings = [
         'activateAccountFailurePath' => 'invalidUserTokenPath',
         'allowAutoUpdates' => 'allowUpdates',
         'backupDbOnUpdate' => 'backupOnUpdate',
@@ -6669,50 +6677,6 @@ class GeneralConfig extends BaseConfig
     {
         $this->verifyEmailSuccessPath = $value;
         return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function __get($name)
-    {
-        if (isset(self::$renamedSettings[$name])) {
-            return $this->{self::$renamedSettings[$name]};
-        }
-
-        return parent::__get($name);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function __set($name, $value)
-    {
-        if (isset(self::$renamedSettings[$name])) {
-            $newName = self::$renamedSettings[$name];
-            $configFilePath = Craft::$app->getConfig()->getConfigFilePath(Config::CATEGORY_GENERAL);
-            Craft::$app->getDeprecator()->log($name, "The `$name` config setting has been renamed to `$newName`.", $configFilePath);
-            $this->$newName = $value;
-            return;
-        }
-
-        try {
-            parent::__set($name, $value);
-        } catch (UnknownPropertyException) {
-            throw new UnknownPropertyException("Invalid general config setting: $name. You can set custom config settings from config/custom.php.");
-        }
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function __isset($name)
-    {
-        if (isset(self::$renamedSettings[$name])) {
-            return isset($this->{self::$renamedSettings[$name]});
-        }
-
-        return parent::__isset($name);
     }
 
     /**

@@ -11,6 +11,7 @@ use Craft;
 use craft\db\Connection;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
+use craft\services\Config;
 use yii\base\InvalidConfigException;
 
 /**
@@ -21,6 +22,17 @@ use yii\base\InvalidConfigException;
  */
 class DbConfig extends BaseConfig
 {
+    /**
+     * @inerhitdoc
+     */
+    public static $configCategory = Config::CATEGORY_DB;
+
+    /**
+     * @inerhitdoc
+     */
+    protected static array $renamedSettings = [
+    ];
+
     /**
      * @deprecated in 3.4.0. Use [[Connection::DRIVER_MYSQL]] instead.
      */
