@@ -31,6 +31,7 @@ class DbConfig extends BaseConfig
      * @inerhitdoc
      */
     protected static array $renamedSettings = [
+        'attributes' => 'pdoAttributes',
     ];
 
     /**
@@ -58,7 +59,7 @@ class DbConfig extends BaseConfig
      * ],
      * ```
      */
-    public array $attributes = [];
+    public array $podAttributes = [];
 
     /**
      * @var string The charset to use when creating tables.
@@ -344,9 +345,9 @@ class DbConfig extends BaseConfig
      * @param array $value
      * @return self
      */
-    public function attributes(array $value = []): self
+    public function pdoAttributes(array $value = []): self
     {
-        $this->attributes = $value;
+        $this->pdoAttributes = $value;
         return $this;
     }
 
