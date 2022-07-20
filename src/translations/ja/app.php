@@ -304,6 +304,7 @@ return [
     'Connecting to CraftCMS.com…' => 'CraftCMS.com に接続しています…',
     'Content' => 'コンテンツ',
     'Contents of {path}' => '{path}のコンテンツ',
+    'Context' => 'Context',
     'Continue anyway' => '続ける',
     'Continue shopping' => 'ショッピングを続ける',
     'Continue' => '続ける',
