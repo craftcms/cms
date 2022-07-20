@@ -304,6 +304,7 @@ return [
     'Connecting to CraftCMS.com…' => 'Opretter forbindelse til CraftCMS.com…',
     'Content' => 'Indhold',
     'Contents of {path}' => 'Indhold af {path}',
+    'Context' => 'Context',
     'Continue anyway' => 'Fortsæt alligevel',
     'Continue shopping' => 'Fortsæt indkøb',
     'Continue' => 'Fortsæt',
