@@ -5,6 +5,15 @@
 ### Added
 - The control panel is now translated into Ukranian.
 
+### Changed
+- Element edit pages no longer jump down when the “Showing your unsaved changes” notice is added, unless there’s not enough content to require a scroll bar. ([#11586](https://github.com/craftcms/cms/discussions/11586))
+
+### Fixed
+- Fixed a bug where new condition rules’ type selectors weren’t getting auto-focused.
+- Fixed a bug where Quick Post widgets weren’t submitting custom field values.
+- Fixed a bug where assets’ `getImg()` methods were returning `null` for assets in volumes without URLs, even if a transform was being used. ([#11614](https://github.com/craftcms/cms/issues/11614))
+- Fixed a bug where sensative data wasn’t getting redacted in the logs when Dev Mode was enabled. ([#11618](https://github.com/craftcms/cms/issues/11618))
+
 ## 4.1.4.1 - 2022-07-13
 
 ### Fixed

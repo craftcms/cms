@@ -140,7 +140,6 @@
 
         <div id="page-container">
             {% include '_layouts/components/alerts' %}
-            {% include '_layouts/components/notifications' %}
 
             <div id="global-header" role="region" aria-label="{{ 'My Account'|t('app') }}">
                 <div class="flex">
@@ -317,6 +316,8 @@
 
         </div><!-- #page-container -->
     </div><!-- #global-container -->
+
+    {% include '_layouts/components/notifications' %}
 {% endblock %}
 
 

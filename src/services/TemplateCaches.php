@@ -145,14 +145,14 @@ class TemplateCaches extends Component
 
         // If there are any transform generation URLs in the body, don't cache it.
         // stripslashes($body) in case the URL has been JS-encoded or something.
-        if (StringHelper::contains(stripslashes($body), 'assets/generate-transform')) {
-            return;
+        $saveCache = !StringHelper::contains(stripslashes($body), 'assets/generate-transform');
+
+        if ($saveCache) {
+            // Always add a `template` tag
+            $dep->tags[] = 'template';
+
+            $cacheValue = [$body, $dep->tags];
         }
-
-        // Always add a `template` tag
-        $dep->tags[] = 'template';
-
-        $cacheValue = [$body, $dep->tags];
 
         if ($withResources) {
             // Parse the JS/CSS code and tag attributes out of the <script> and <style> tags
@@ -161,10 +161,16 @@ class TemplateCaches extends Component
             $bufferedJsFiles = array_map(fn(array $tags) => $this->_parseExternalResourceTags($tags, 'src'), $bufferedJsFiles);
             $bufferedCssFiles = $this->_parseExternalResourceTags($bufferedCssFiles, 'href');
 
-            array_push($cacheValue, $bufferedJs, $bufferedScripts, $bufferedCss, $bufferedJsFiles, $bufferedCssFiles);
+            if ($saveCache) {
+                array_push($cacheValue, $bufferedJs, $bufferedScripts, $bufferedCss, $bufferedJsFiles, $bufferedCssFiles);
+            }
 
             // Re-register the JS and CSS
             $this->_registerResources($bufferedJs, $bufferedScripts, $bufferedCss, $bufferedJsFiles, $bufferedCssFiles);
+        }
+
+        if (!$saveCache) {
+            return;
         }
 
         $cacheKey = $this->_cacheKey($key, $global);
@@ -177,6 +183,7 @@ class TemplateCaches extends Component
             $duration = DateTimeHelper::toDateTime($expiration)->getTimestamp() - time();
         }
 
+        /** @phpstan-ignore-next-line */
         Craft::$app->getCache()->set($cacheKey, $cacheValue, $duration, $dep);
     }
 
