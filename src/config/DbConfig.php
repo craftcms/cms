@@ -59,7 +59,7 @@ class DbConfig extends BaseConfig
      * ],
      * ```
      */
-    public array $podAttributes = [];
+    public array $pdoAttributes = [];
 
     /**
      * @var string The charset to use when creating tables.
