@@ -5527,7 +5527,7 @@ fieldset {
 }
 
 .expand-status-btn {
-  margin: 0 auto;
+  @include margin-left(5px);
   width: 30px;
   height: 17px;
   padding: 0;
