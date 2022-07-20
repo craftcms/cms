@@ -4514,9 +4514,7 @@ JS,
                 'class' => 'icon',
                 'role' => 'img',
                 'aria' => [
-                    'label' => Craft::t('app', 'Status: {status}', [
-                        'status' => Craft::t('app', 'Draft'),
-                    ]),
+                    'label' => sprintf('%s %s', Craft::t('app', 'Status:'), Craft::t('app', 'Draft')),
                 ],
             ]);
         } else {
@@ -4526,10 +4524,7 @@ JS,
                 'class' => ['status', $statusDef['color'] ?? $status],
                 'role' => 'img',
                 'aria' => [
-                    'label' => Craft::t('app', 'Status: {status}', [
-                        'status' => $statusDef['label'] ?? $statusDef ?? ucfirst($status),
-                    ]),
-
+                    'label' => sprintf('%s %s', Craft::t('app', 'Status:'), $statusDef['label'] ?? $statusDef ?? ucfirst($status)),
                 ],
             ]);
         }

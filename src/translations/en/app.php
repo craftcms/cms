@@ -1345,7 +1345,6 @@ return [
     'Status updated.' => 'Status updated.',
     'Status' => 'Status',
     'Status:' => 'Status:',
-    'Status: {status}' => 'Status: {status}',
     'Statuses updated.' => 'Statuses updated.',
     'Stretch to fit' => 'Stretch to fit',
     'Stretch' => 'Stretch',
