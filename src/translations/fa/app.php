@@ -1,6 +1,7 @@
 <?php
 
 return [
+    '(Ungrouped)' => '(Ungrouped)',
     '(blank)' => '(خالی)',
     '(trial)' => '(دوره آزمایشی)',
     '({currencyCode}) {currencySymbol}' => '({currencyCode}) {currencySymbol}',
@@ -612,7 +613,6 @@ return [
     'External project config changes discarded.' => 'تغییرات پیکربندی پروژه خارجی لغو گردید.',
     'Failed to generate transform with id of {id}.' => 'تولید تغییر شکل با شناسه {id} با شکست مواجه شد.',
     'Failed to load the SVG string.' => 'لود رشته ی SVG با شکست مواجه شد',
-    'Failed to save the asset:' => 'ذخیره فایل پروژه با شکست مواجه شد:',
     'Failed to save the image.' => 'ذخیره تصویر با شکست مواجه شد.',
     'Failed' => 'با شکست مواجه شد',
     'Feed' => 'فید',
@@ -650,7 +650,6 @@ return [
     'Flip Vertical' => 'وارونه کردن عمودی',
     'Focal Point' => 'نقطه کانونی',
     'Folder “{folder}” already exists at target location' => 'پوشه "{folder}" از قبل در مکان موردنظر وجود دارد',
-    'Footer' => 'پانویس',
     'For when you’re building a website for yourself or a friend.' => 'برای زمانی که برای خودتان یا یک دوست وبسایت می سازید.',
     'For when you’re building something professionally for a client or team.' => 'برای زمانی که چیزی حرفه ای برای یک مشتری یا تیم می سازید.',
     'Forgot your password?' => 'رمز عبورتان را فراموش کرده اید؟',
@@ -1873,6 +1872,7 @@ return [
     '{ctrl}C to copy.' => 'برای کپی از {ctrl}C استفاده نمایید.',
     '{edition} edition' => '{edition} ویرایش',
     '{element} pagination' => 'صفحه‌بندی {element}',
+    '{filename} isn’t selectable for this field.' => '{filename} isn’t selectable for this field.',
     '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}-{last, number} از {total, number} {item}',
     '{first}-{last} of {total}' => '{first}-{last} از {total}',
     '{name} has been added, but an error occurred when installing it.' => '{name} اضافه شده است اما یک خطا در هنگام نصب آن اتفاق افتاد.',

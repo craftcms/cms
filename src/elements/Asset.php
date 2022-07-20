@@ -490,6 +490,7 @@ class Asset extends Element
             'width' => ['label' => Craft::t('app', 'Image Width')],
             'height' => ['label' => Craft::t('app', 'Image Height')],
             'alt' => ['label' => Craft::t('app', 'Alternative Text')],
+            'location' => ['label' => Craft::t('app', 'Location')],
             'link' => ['label' => Craft::t('app', 'Link'), 'icon' => 'world'],
             'id' => ['label' => Craft::t('app', 'ID')],
             'uid' => ['label' => Craft::t('app', 'UID')],
@@ -1039,7 +1040,7 @@ class Asset extends Element
         $crumbs = [
             [
                 'label' => Craft::t('app', 'Assets'),
-                'url' => UrlHelper::url('assets'),
+                'url' => UrlHelper::cpUrl('assets'),
             ],
             [
                 'label' => Craft::t('site', $volume->name),
@@ -1189,30 +1190,30 @@ JS;
             return null;
         }
 
-        $volume = $this->getVolume();
-
-        if (!$volume->getFs()->hasUrls) {
-            return null;
-        }
-
         if ($transform) {
             $oldTransform = $this->_transform;
             $this->setTransform($transform);
         }
 
-        $img = Html::tag('img', '', [
-            'src' => $this->getUrl(),
-            'width' => $this->getWidth(),
-            'height' => $this->getHeight(),
-            'srcset' => $sizes ? $this->getSrcset($sizes) : false,
-            'alt' => $this->alt ?? $this->title,
-        ]);
+        $url = $this->getUrl();
 
-        if (isset($oldTransform)) {
+        if ($url) {
+            $img = Html::tag('img', '', [
+                'src' => $url,
+                'width' => $this->getWidth(),
+                'height' => $this->getHeight(),
+                'srcset' => $sizes ? $this->getSrcset($sizes) : false,
+                'alt' => $this->alt ?? $this->title,
+            ]);
+        } else {
+            $img = null;
+        }
+
+        if ($transform) {
             $this->setTransform($oldTransform);
         }
 
-        return Template::raw($img);
+        return $img ? Template::raw($img) : null;
     }
 
     /**
@@ -1992,6 +1993,9 @@ JS;
             case 'height':
                 $size = $this->$attribute;
                 return ($size ? $size . 'px' : '');
+
+            case 'location':
+                return $this->locationHtml();
         }
 
         return parent::tableAttributeHtml($attribute);
@@ -2176,16 +2180,8 @@ JS;
      */
     protected function metadata(): array
     {
-        $volume = $this->getVolume();
-
         return [
-            Craft::t('app', 'Location') => function() use ($volume) {
-                $loc = [Craft::t('site', $volume->name)];
-                if ($this->folderPath) {
-                    array_push($loc, ...ArrayHelper::filterEmptyStringsFromArray(explode('/', $this->folderPath)));
-                }
-                return implode(' → ', $loc);
-            },
+            Craft::t('app', 'Location') => fn() => $this->locationHtml(),
             Craft::t('app', 'File size') => function() {
                 $size = $this->getFormattedSize(0);
                 if (!$size) {
@@ -2211,6 +2207,27 @@ JS;
                 ]);
             },
         ];
+    }
+
+    private function locationHtml(): string
+    {
+        $volume = $this->getVolume();
+        $uri = "assets/$volume->handle";
+        $items = [
+            Html::a(Craft::t('site', $volume->name), UrlHelper::cpUrl($uri)),
+        ];
+        if ($this->folderPath) {
+            $subfolders = ArrayHelper::filterEmptyStringsFromArray(explode('/', $this->folderPath));
+            foreach ($subfolders as $subfolder) {
+                $uri .= "/$subfolder";
+                $items[] = Html::a($subfolder, UrlHelper::cpUrl($uri));
+            }
+        }
+
+        return Html::ul($items, [
+            'encode' => false,
+            'class' => 'path',
+        ]);
     }
 
     /**

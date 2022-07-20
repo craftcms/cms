@@ -98,6 +98,20 @@ class View extends \yii\web\View
     public const TEMPLATE_MODE_SITE = 'site';
 
     /**
+     * @var bool Whether to minify CSS registered with [[registerCss()]]
+     * @since 3.4.0
+     * @deprecated in 3.6.0.
+     */
+    public $minifyCss = false;
+
+    /**
+     * @var bool Whether to minify JS registered with [[registerJs()]]
+     * @since 3.4.0
+     * @deprecated in 3.6.0
+     */
+    public $minifyJs = false;
+
+    /**
      * @var bool Whether to allow [[evaluateDynamicContent()]] to be called.
      *
      * ::: warning

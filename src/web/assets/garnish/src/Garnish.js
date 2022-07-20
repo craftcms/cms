@@ -395,6 +395,14 @@ Garnish = $.extend(Garnish, {
   },
 
   /**
+   * Checks whether focus is inside a given container
+   * @param {Object} container
+   */
+  focusIsInside: function (container) {
+    return $(container).find(':focus').length > 0;
+  },
+
+  /**
    * Traps focus within a container, so when focus is tabbed out of it, it’s cycled back into it.
    * @param {Object} container
    */
@@ -427,7 +435,9 @@ Garnish = $.extend(Garnish, {
    */
   setFocusWithin: function (container) {
     const $container = $(container);
-    const $firstFocusable = $(container).find(':focusable:first');
+    const $firstFocusable = $(container).find(
+      ':focusable:not(.checkbox):first'
+    );
 
     if ($firstFocusable.length > 0) {
       $firstFocusable.trigger('focus');

@@ -8,6 +8,7 @@
 namespace craft\helpers;
 
 use Craft;
+use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\FieldLayoutElement;
 use craft\behaviors\DraftBehavior;
@@ -24,6 +25,7 @@ use craft\web\View;
 use yii\base\Event;
 use yii\base\InvalidArgumentException;
 use yii\helpers\Markdown;
+use yii\validators\RequiredValidator;
 
 /**
  * Class Cp
@@ -646,16 +648,22 @@ class Cp
                         ], $config['labelAttributes'] ?? []))
                         : '') .
                     ($translatable
-                        ? Html::tag('div', '', [
+                        ? Html::beginTag('div', [
                             'class' => ['t9n-indicator'],
                             'title' => $config['translationDescription'] ?? Craft::t('app', 'This field is translatable.'),
-                            'aria' => [
-                                'label' => $config['translationDescription'] ?? Craft::t('app', 'This field is translatable.'),
-                            ],
+                        ]) .
+                        Html::tag('span', '', [
                             'data' => [
                                 'icon' => 'language',
                             ],
-                        ])
+                            'aria' => [
+                                'hidden' => 'true',
+                            ],
+                        ]) .
+                        Html::tag('span', $config['translationDescription'] ?? Craft::t('app', 'This field is translatable.'), [
+                            'class' => 'visually-hidden',
+                        ]) .
+                        Html::endTag('div')
                         : '') .
                     ($showAttribute
                         ? Html::tag('div', '', [
@@ -1251,7 +1259,22 @@ JS, [
     {
         $formatRepo = Craft::$app->getAddresses()->getAddressFormatRepository()->get($address->countryCode);
 
-        $requiredFields = array_flip($formatRepo->getRequiredFields());
+        $requiredFields = [];
+        $scenario = $address->getScenario();
+        $address->setScenario(Element::SCENARIO_LIVE);
+        $activeValidators = $address->getActiveValidators();
+        $address->setScenario($scenario);
+
+        foreach ($activeValidators as $validator) {
+            if ($validator instanceof RequiredValidator) {
+                foreach ($validator->getAttributeNames() as $attr) {
+                    if ($validator->when === null || call_user_func($validator->when, $address, $attr)) {
+                        $requiredFields[$attr] = true;
+                    }
+                }
+            }
+        }
+
         $visibleFields = array_flip(array_merge(
                 $formatRepo->getUsedFields(),
                 $formatRepo->getUsedSubdivisionFields(),

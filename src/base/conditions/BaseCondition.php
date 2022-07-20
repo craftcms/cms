@@ -12,6 +12,7 @@ use craft\helpers\UrlHelper;
 use craft\web\assets\conditionbuilder\ConditionBuilderAsset;
 use Illuminate\Support\Collection;
 use yii\base\InvalidArgumentException;
+use yii\base\InvalidConfigException;
 
 /**
  * BaseCondition provides a base implementation for conditions.
@@ -268,7 +269,7 @@ JS, [$view->namespaceInputId($this->id)]);
             $isHtmxRequest = Craft::$app->getRequest()->getHeaders()->has('HX-Request');
             $selectableRules = $this->getSelectableConditionRules();
             $allRulesHtml = '';
-            $ruleCount = 0;
+            $ruleNum = 1;
 
             // Start rule js buffer
             $view->startJsBuffer();
@@ -293,62 +294,67 @@ JS, [$view->namespaceInputId($this->id)]);
             $html .= Html::hiddenInput('config', Json::encode($this->config()));
 
             foreach ($this->getConditionRules() as $rule) {
-                $ruleCount++;
+                try {
+                    $allRulesHtml .= $view->namespaceInputs(function() use ($rule, $ruleNum, $selectableRules) {
+                        $ruleHtml =
+                            Html::tag('legend', Craft::t('app', 'Condition {num, number}', [
+                                'num' => $ruleNum,
+                            ]), [
+                                'class' => 'visually-hidden',
+                            ]) .
+                            Html::hiddenInput('uid', $rule->uid) .
+                            Html::hiddenInput('class', get_class($rule));
 
-                $allRulesHtml .= $view->namespaceInputs(function() use ($rule, $ruleCount, $selectableRules) {
-                    $ruleHtml =
-                        Html::tag('legend', Craft::t('app', 'Condition {num, number}', [
-                            'num' => $ruleCount,
-                        ]), [
-                            'class' => 'visually-hidden',
-                        ]) .
-                        Html::hiddenInput('uid', $rule->uid) .
-                        Html::hiddenInput('class', get_class($rule));
+                        if ($this->sortable) {
+                            $ruleHtml .= Html::tag('div',
+                                Html::tag('a', '', [
+                                    'class' => ['move', 'icon', 'draggable-handle'],
+                                ]),
+                                [
+                                    'class' => ['rule-move'],
+                                ]
+                            );
+                        }
 
-                    if ($this->sortable) {
-                        $ruleHtml .= Html::tag('div',
-                            Html::tag('a', '', [
-                                'class' => ['move', 'icon', 'draggable-handle'],
-                            ]),
-                            [
-                                'class' => ['rule-move'],
-                            ]
-                        );
-                    }
+                        $ruleValue = Json::encode($rule->getConfig());
 
-                    $ruleValue = Json::encode($rule->getConfig());
+                        $ruleHtml .=
+                            // Rule type selector
+                            Html::beginTag('div', ['class' => 'rule-switcher']) .
+                            Html::hiddenLabel(Craft::t('app', 'Rule Type'), 'type') .
+                            $this->_ruleTypeMenu($selectableRules, $rule, $ruleValue) .
+                            Html::endTag('div') .
+                            // Rule HTML
+                            Html::tag('div', $rule->getHtml(), [
+                                'id' => 'rule-body',
+                                'class' => ['rule-body', 'flex-grow'],
+                            ]) .
+                            // Remove button
+                            Html::beginTag('div', [
+                                'id' => 'rule-actions',
+                                'class' => ['rule-actions'],
+                            ]) .
+                            Html::button('', [
+                                'class' => ['delete', 'icon'],
+                                'title' => Craft::t('app', 'Remove'),
+                                'hx' => [
+                                    'vals' => ['uid' => $rule->uid],
+                                    'post' => UrlHelper::actionUrl('conditions/remove-rule'),
+                                ],
+                            ]) .
+                            Html::endTag('div');
 
-                    $ruleHtml .=
-                        // Rule type selector
-                        Html::beginTag('div', ['class' => 'rule-switcher']) .
-                        Html::hiddenLabel(Craft::t('app', 'Rule Type'), 'type') .
-                        $this->_ruleTypeMenu($selectableRules, $rule, $ruleValue) .
-                        Html::endTag('div') .
-                        // Rule HTML
-                        Html::tag('div', $rule->getHtml(), [
-                            'id' => 'rule-body',
-                            'class' => ['rule-body', 'flex-grow'],
-                        ]) .
-                        // Remove button
-                        Html::beginTag('div', [
-                            'id' => 'rule-actions',
-                            'class' => ['rule-actions'],
-                        ]) .
-                        Html::button('', [
-                            'class' => ['delete', 'icon'],
-                            'title' => Craft::t('app', 'Remove'),
-                            'hx' => [
-                                'vals' => ['uid' => $rule->uid],
-                                'post' => UrlHelper::actionUrl('conditions/remove-rule'),
-                            ],
-                        ]) .
-                        Html::endTag('div');
+                        return Html::tag('fieldset', $ruleHtml, [
+                            'id' => 'condition-rule',
+                            'class' => ['condition-rule', 'flex', 'flex-start', 'draggable'],
+                        ]);
+                    }, 'conditionRules[' . $ruleNum . ']');
+                } catch (InvalidConfigException) {
+                    // The rule is misconfigured
+                    continue;
+                }
 
-                    return Html::tag('fieldset', $ruleHtml, [
-                        'id' => 'condition-rule',
-                        'class' => ['condition-rule', 'flex', 'flex-start', 'draggable'],
-                    ]);
-                }, 'conditionRules[' . $ruleCount . ']');
+                $ruleNum++;
             }
 
             $rulesJs = $view->clearJsBuffer(false);
@@ -437,23 +443,23 @@ JS,
         array $buttonAttributes = [],
     ): string {
         $groupedRuleTypeOptions = [];
-        $labels = [];
+        $labelsByGroup = [];
 
         if ($rule) {
             $ruleLabel = $rule->getLabel();
-            $ruleGroupLabel = $rule->getGroupLabel() ?? '__UNGROUPED__';
-            $groupedRuleTypeOptions[$ruleGroupLabel] = [
+            $groupLabel = $rule->getGroupLabel() ?? '__UNGROUPED__';
+            $groupedRuleTypeOptions[$groupLabel] = [
                 ['value' => $ruleValue, 'label' => $ruleLabel],
             ];
-            $labels[$ruleLabel] = true;
+            $labelsByGroup[$groupLabel][$ruleLabel] = true;
         }
 
         foreach ($selectableRules as $value => $selectableRule) {
             $label = $selectableRule->getLabel();
-            if (!isset($labels[$label])) {
-                $groupLabel = $selectableRule->getGroupLabel() ?? '__UNGROUPED__';
+            $groupLabel = $selectableRule->getGroupLabel() ?? '__UNGROUPED__';
+            if (!isset($labelsByGroup[$groupLabel][$label])) {
                 $groupedRuleTypeOptions[$groupLabel][] = compact('value', 'label');
-                $labels[$label] = true;
+                $labelsByGroup[$groupLabel][$label] = true;
             }
         }
 
@@ -514,6 +520,7 @@ JS,
             Html::button($rule?->getLabel() ?? $this->addRuleLabel, ArrayHelper::merge([
                 'id' => $buttonId,
                 'class' => ['btn', 'menubtn'],
+                'autofocus' => $rule?->getAutofocus(),
             ], $buttonAttributes)) .
             Html::tag('div', $optionsHtml, [
                 'id' => $menuId,
@@ -545,7 +552,15 @@ JS,
         return array_merge($this->config(), [
             'class' => get_class($this),
             'conditionRules' => $this->_conditionRules
-                ->map(fn(ConditionRuleInterface $rule) => $rule->getConfig())
+                ->map(function(ConditionRuleInterface $rule) {
+                    try {
+                        return $rule->getConfig();
+                    } catch (InvalidConfigException) {
+                        // The rule is misconfigured
+                        return null;
+                    }
+                })
+                ->filter(fn(?array $config) => $config !== null)
                 ->values()
                 ->all(),
         ]);

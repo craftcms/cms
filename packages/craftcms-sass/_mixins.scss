@@ -193,14 +193,14 @@ $radioSize: 16px;
   opacity: var(--icon-opacity);
 }
 
-@mixin angle($dir: down, $color: currentColor) {
+@mixin angle($dir: down, $color: currentColor, $width: 2px) {
   display: block;
   content: '';
   font-size: 0;
   width: 7px;
   height: 7px;
   border: solid $color;
-  border-width: 0 2px 2px 0;
+  border-width: 0 $width $width 0;
   opacity: 0.8;
 
   @if $dir == up {
@@ -257,6 +257,11 @@ $radioSize: 16px;
   -moz-osx-font-smoothing: grayscale;
   -webkit-font-smoothing: antialiased;
   font-weight: 500;
+}
+
+@mixin light-focus-ring() {
+  --focus-ring: 0 0 0 1px hsl(var(--light-focus-hsl)),
+    0 0 0 3px hsla(var(--light-focus-hsl), 0.7);
 }
 
 // RTL stuff

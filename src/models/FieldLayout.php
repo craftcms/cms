@@ -554,6 +554,19 @@ class FieldLayout extends Model
     }
 
     /**
+     * Returns the visible layout elements representing custom fields, taking conditions into account.
+     *
+     * @param ElementInterface $element
+     * @return CustomField[]
+     * @since 4.1.4
+     */
+    public function getVisibleCustomFieldElements(ElementInterface $element): array
+    {
+        $filter = fn(FieldLayoutElement $layoutElement) => $layoutElement instanceof CustomField;
+        return iterator_to_array($this->_elements($filter, $element));
+    }
+
+    /**
      * Returns the custom fields included in the layout.
      *
      * @return FieldInterface[]

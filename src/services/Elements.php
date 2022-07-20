@@ -1692,6 +1692,8 @@ class Elements extends Component
             // Invalidate any caches involving this element
             $this->invalidateCachesForElement($element);
 
+            DateTimeHelper::pause();
+
             if ($element->hardDelete) {
                 Db::delete(Table::ELEMENTS, [
                     'id' => $element->id,
@@ -1709,12 +1711,15 @@ class Elements extends Component
                 $this->_cascadeDeleteDraftsAndRevisions($element->id);
             }
 
+            $element->dateDeleted = DateTimeHelper::now();
             $element->afterDelete();
 
             $transaction->commit();
         } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
+        } finally {
+            DateTimeHelper::resume();
         }
 
         // Fire an 'afterDeleteElement' event
