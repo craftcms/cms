@@ -61,9 +61,11 @@ class GeneralConfig extends BaseObject
      *
      * The array can contain the following keys:
      *
-     * - `alwaysShowFocusRings` - Whether focus rings should always be shown when an element has focus
-     * - `useShapes` – Whether shapes should be used to represent statuses
-     * - `underlineLinks` – Whether links should be underlined
+     * - `alwaysShowFocusRings` - Whether focus rings should always be shown when an element has focus.
+     * - `useShapes` – Whether shapes should be used to represent statuses.
+     * - `underlineLinks` – Whether links should be underlined.
+     * - `notificationDuration` – How long notifications should be shown before they disappear automatically (in
+     *   milliseconds). Set to `0` to show them indefinitely.
      *
      * ```php
      * 'accessibilityDefaults' => [
@@ -78,6 +80,7 @@ class GeneralConfig extends BaseObject
         'alwaysShowFocusRings' => false,
         'useShapes' => false,
         'underlineLinks' => false,
+        'notificationDuration' => 5000,
     ];
 
     /**
@@ -871,6 +874,15 @@ class GeneralConfig extends BaseObject
 
     /**
      * @var bool Whether the system should run in [Dev Mode](https://craftcms.com/support/dev-mode).
+     *
+     * ::: code
+     * ```php Static Config
+     * 'devMode' => true,
+     * ```
+     * ```shell Environment Override
+     * CRAFT_DEV_MODE=true
+     * ```
+     * :::
      * @group System
      */
     public bool $devMode = false;
@@ -895,6 +907,15 @@ class GeneralConfig extends BaseObject
      * ::: warning
      * This should not be set on a per-environment basis, as it could result in plugin schema version mismatches
      * between environments, which will prevent project config changes from getting applied.
+     * :::
+     *
+     * ::: code
+     * ```php Static Config
+     * 'disabledPlugins' => ['redactor', 'webhooks'],
+     * ```
+     * ```shell Environment Override
+     * CRAFT_DISABLED_PLUGINS=redactor,webhooks
+     * ```
      * :::
      *
      * @since 3.1.9

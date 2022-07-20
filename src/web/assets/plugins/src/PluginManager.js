@@ -72,7 +72,7 @@ import './plugins.scss';
                   )
                 )
                 .append(
-                  $('<div/>', {class: 'details'})
+                  $('<div/>', {class: 'plugin-details'})
                     .append($('<h2/>', {text: info.name}))
                     .append(
                       info.description
@@ -237,7 +237,7 @@ import './plugins.scss';
     init: function (manager, $row) {
       this.manager = manager;
       this.$row = $row;
-      this.$details = this.$row.find('.details');
+      this.$details = this.$row.find('.plugin-details');
       this.$keyContainer = $row.find('.license-key');
       this.$keyInput = this.$keyContainer
         .find('input.text')
