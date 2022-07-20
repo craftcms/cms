@@ -25,7 +25,7 @@ class ContextProcessor implements ProcessorInterface
     /**
      * @param array $vars The global variables to include {@see \yii\log\Target::$logVars}
      * @param string $key The key in the record to push context data
-     * @param bool $dumpVars Whether to dump vars as a readable, multi-line string to the message
+     * @param bool $dumpVars Whether to dump vars as a readable, multi-line string in the message
      */
     public function __construct(
         protected array $vars = [],
@@ -85,7 +85,7 @@ class ContextProcessor implements ProcessorInterface
     {
         return Collection::make($vars)
             ->map(function($value, $name) {
-              return "\${$name} = " . VarDumper::dumpAsString($value);
+                return "\${$name} = " . VarDumper::dumpAsString($value);
             })
             ->join("\n\n");
     }
