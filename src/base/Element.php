@@ -4446,11 +4446,10 @@ JS,
             $statusField = Cp::lightswitchFieldHtml([
                 'fieldClass' => "enabled-for-site-$this->siteId-field",
                 'label' => Craft::t('site', $this->getSite()->getName()),
+                'headingSuffix' => $expandStatusBtn,
                 'name' => "enabledForSite[$this->siteId]",
                 'on' => $this->enabled && $this->getEnabledForSite(),
                 'status' => $this->getAttributeStatus('enabled'),
-            ]) . Html::tag('div', $expandStatusBtn, [
-                'class' => 'field',
             ]);
         } else {
             $statusField = Cp::lightswitchFieldHtml([
