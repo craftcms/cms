@@ -541,7 +541,7 @@ class Assets extends Component
     {
         return $this->findFolder([
             'volumeId' => $volumeId,
-            'parentId' => null,
+            'parentId' => ':empty:',
         ]);
     }
 
@@ -941,8 +941,8 @@ class Assets extends Component
         }
 
         $volumeTopFolder = $this->findFolder([
-            'volumeId' => null,
-            'parentId' => null,
+            'volumeId' => ':empty:',
+            'parentId' => ':empty:',
         ]);
 
         // Unlikely, but would be very awkward if this happened without any contingency plans in place.

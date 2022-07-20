@@ -188,9 +188,9 @@ import './dashboard.scss';
               '</form>'
           ).appendTo(Garnish.$bod),
           $noWidgets = $(
-            '<p id="nowidgets"' +
-              ($widgets.length ? ' class="hidden"' : '') +
-              '>' +
+            '<p id="nowidgets" class="zilch small' +
+              ($widgets.length ? ' hidden' : '') +
+              '">' +
               Craft.t('app', 'You don’t have any widgets yet.') +
               '</p>'
           ).appendTo($form),
@@ -227,6 +227,7 @@ import './dashboard.scss';
           sortable: true,
           reorderAction: 'dashboard/reorder-user-widgets',
           deleteAction: 'dashboard/delete-user-widget',
+          noItemsSelector: '#nowidgets',
           onReorderItems: (ids) => {
             var lastWidget = null;
 
@@ -573,9 +574,11 @@ import './dashboard.scss';
         '<tr data-id="' +
           this.id +
           '" data-name="' +
-          Craft.escapeHtml(this.title) +
+          (this.title
+            ? Craft.escapeHtml(this.title)
+            : this.getTypeInfo('name')) +
           '">' +
-          '<td class="widgetmanagerhud-icon">' +
+          '<td class="widgetmanagerhud-icon thin">' +
           this.getTypeInfo('iconSvg') +
           '</td>' +
           '<td id="' +
@@ -646,6 +649,10 @@ import './dashboard.scss';
 
     getManagerRowLabel: function () {
       var typeName = this.getTypeInfo('name');
+
+      if (!this.title) {
+        return typeName;
+      }
 
       return (
         Craft.escapeHtml(this.title) +

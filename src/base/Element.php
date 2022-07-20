@@ -2239,12 +2239,14 @@ abstract class Element extends Component implements ElementInterface
             $fieldLayout = $this->getFieldLayout()
         ) {
             $scenario = $this->getScenario();
+            $layoutElements = $fieldLayout->getVisibleCustomFieldElements($this);
 
-            foreach ($fieldLayout->getVisibleCustomFields($this) as $field) {
+            foreach ($layoutElements as $layoutElement) {
+                $field = $layoutElement->getField();
                 $attribute = "field:$field->handle";
                 $isEmpty = fn() => $field->isValueEmpty($this->getFieldValue($field->handle), $this);
 
-                if ($scenario === self::SCENARIO_LIVE && $field->required) {
+                if ($scenario === self::SCENARIO_LIVE && $layoutElement->required) {
                     (new RequiredValidator(['isEmpty' => $isEmpty]))
                         ->validateAttribute($this, $attribute);
                 }

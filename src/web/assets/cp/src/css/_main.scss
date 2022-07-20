@@ -61,6 +61,8 @@
     #{lightness($darkFocusColor)};
   --focus-ring: 0 0 0 1px hsl(var(--dark-focus-hsl)),
     0 0 0 3px hsla(var(--dark-focus-hsl), 0.7);
+  --inner-focus-ring: inset 0 0 0 1px hsl(var(--dark-focus-hsl)),
+    inset 0 0 0 3px hsla(var(--dark-focus-hsl), 0.7);
   --touch-target-size: 24px; /* Minimum recommended touch target size */
 }
 
@@ -3601,7 +3603,7 @@ ul.tree,
   }
 
   .spinner {
-    margin: 3px 0 !important;
+    margin: 0 !important;
   }
 }
 
@@ -3645,19 +3647,20 @@ ul.tree,
     }
 
     [role='tab'] {
-      display: flex;
-      flex-direction: row;
-      align-items: center;
-      position: relative;
-      border-radius: 2px 2px 0 0;
-      padding: 0 17px;
-      white-space: nowrap;
-      color: var(--light-text-color);
-      height: 50px;
+      &,
+      .tab-label {
+        border-radius: 2px 2px 0 0;
+      }
 
       .tab-label {
-        padding: 3px 7px;
-        border-radius: var(--large-border-radius);
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        position: relative;
+        padding: 0 24px;
+        white-space: nowrap;
+        color: var(--light-text-color);
+        height: 50px;
       }
 
       &:hover {
@@ -3668,7 +3671,7 @@ ul.tree,
         box-shadow: none;
 
         .tab-label {
-          box-shadow: var(--focus-ring);
+          box-shadow: var(--inner-focus-ring);
         }
       }
 
@@ -3683,7 +3686,7 @@ ul.tree,
         z-index: 1;
         cursor: default;
         color: var(--text-color);
-        box-shadow: inset 0 2px 0 var(--gray-500), 0 0 0 1px $grey200,
+        box-shadow: inset 0 2px 0 var(--gray-500), 0 0 0 1px $hairlineColor,
           0 2px 12px transparentize($grey200, 0.5);
         color: var(--text-color);
         background-color: var(--white);
@@ -3699,7 +3702,10 @@ ul.tree,
     [role='tablist'] {
       [role='tab'] {
         &:first-child {
-          @include border-top-left-radius(var(--large-border-radius));
+          &,
+          .tab-label {
+            @include border-top-left-radius(var(--large-border-radius));
+          }
         }
       }
     }
@@ -5261,12 +5267,11 @@ table.editable {
   }
 }
 
-.text:not(.selectize-text),
+.text,
 .passwordwrapper,
 .border-box,
 .matrix-configurator > .field > .input,
-.selectize-text > .selectize-control > .selectize-input,
-.selectize.multiselect .selectize-control.multi .selectize-input,
+.selectize.multiselect .selectize-input,
 .multiselect > select {
   @include input-styles;
 }
@@ -5274,8 +5279,7 @@ table.editable {
 .text,
 .passwordwrapper,
 .border-box,
-.selectize-text > .selectize-control > .selectize-input,
-.selectize.multiselect .selectize-control.multi .selectize-input {
+.selectize.multiselect .selectize-input {
   &.focus {
     @include input-focused-styles;
   }
@@ -5291,8 +5295,7 @@ textarea.text,
 .text > input,
 .text > textarea,
 table.editable textarea,
-.selectize-text > .selectize-control > .selectize-input,
-.selectize.multiselect .selectize-control.multi .selectize-input {
+.selectize.multiselect .selectize-input {
   font-size: 14px;
   line-height: 20px;
   color: var(--text-color);
@@ -5301,8 +5304,7 @@ table.editable textarea,
   appearance: none;
 }
 
-.selectize-text > .selectize-control > .selectize-input,
-.selectize.multiselect .selectize-control.multi .selectize-input {
+.selectize.multiselect .selectize-input {
   line-height: 18px;
 }
 
@@ -5369,8 +5371,7 @@ textarea.text.fullwidth {
   }
 
   .text:focus,
-  .selectize-text > .selectize-control > .selectize-input.focus,
-  .selectize.multiselect .selectize-control.multi .selectize-input.focus {
+  .selectize.multiselect .selectize-input.focus {
     position: relative;
     z-index: 2;
   }
@@ -5769,9 +5770,8 @@ body.reduce-focus-visibility {
   }
 }
 
-.text:not(.selectize-text),
-.selectize-text > .selectize-control > .selectize-input,
-.selectize.multiselect .selectize-control.multi .selectize-input {
+.text,
+.selectize.multiselect .selectize-input {
   padding: 6px 9px;
 }
 
@@ -6127,15 +6127,14 @@ tr.indexingSession td.progress div.progressContainer div.progressInfo {
 }
 
 /* selectize reset */
-.selectize .selectize-control.single .selectize-input,
-.selectize .selectize-control.multi .selectize-input {
+.selectize .selectize-input {
   display: block;
   border-color: inherit;
   box-shadow: none;
   background-color: transparent;
 }
 
-.selectize .selectize-control.single .selectize-input:after {
+.selectize.select .selectize-input:after {
   display: none;
 }
 
@@ -6153,32 +6152,39 @@ body .selectize-dropdown {
   }
 }
 
-.selectize.select .selectize-control,
-.selectize.select .selectize-control .selectize-input {
-  @include select-styles;
-}
-
 .selectize.select .selectize-control {
   @include select-container-styles;
+
+  &:after {
+    @include select-arrow-styles;
+  }
 }
 
-.selectize.select .selectize-control:after {
-  @include select-arrow-styles;
+.selectize.select .selectize-input {
+  @include select-styles;
+
+  &.focus {
+    box-shadow: var(--focus-ring);
+  }
 }
 
-.selectize.select .selectize-control .selectize-input {
+.selectize.select .selectize-input {
   @include select-input-styles;
 }
 
 .selectize.select .selectize-control,
-.selectize.select .selectize-control .selectize-input {
+.selectize.select .selectize-input {
   width: 100%;
 }
 
 /* multi select styles */
-.selectize.multiselect .selectize-control.multi .selectize-input {
+.selectize.multiselect .selectize-input {
   min-height: 34px;
   padding-bottom: 3px;
+
+  &.focus {
+    @include input-focused-styles;
+  }
 
   & > .item {
     @include token-styles;
@@ -6210,11 +6216,6 @@ body .selectize-dropdown {
       }
     }
   }
-}
-
-/* shared styles */
-.selectize .selectize-control .selectize-input.focus {
-  @include input-focused-styles;
 }
 
 /* menu styles */

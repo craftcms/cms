@@ -2,14 +2,81 @@
 
 ## Unreleased
 
+### Added
+- The control panel is now translated into Ukranian.
+
+### Changed
+- Element edit pages no longer jump down when the “Showing your unsaved changes” notice is added, unless there’s not enough content to require a scroll bar. ([#11586](https://github.com/craftcms/cms/discussions/11586))
+
+### Fixed
+- Fixed a bug where new condition rules’ type selectors weren’t getting auto-focused.
+- Fixed a bug where Quick Post widgets weren’t submitting custom field values.
+- Fixed a bug where assets’ `getImg()` methods were returning `null` for assets in volumes without URLs, even if a transform was being used. ([#11614](https://github.com/craftcms/cms/issues/11614))
+- Fixed an issue where sensitive values were not always redacted from logs. [#11618](https://github.com/craftcms/cms/issues/11618)
+
+## 4.1.4.1 - 2022-07-13
+
+### Fixed
+- Fixed a bug where `craft\services\Assets::getRootFolderByVolumeId()` wasn’t returning the root folder. ([#11593](https://github.com/craftcms/cms/issues/11593))
+
+## 4.1.4 - 2022-07-12
+
+### Added
+- Added `craft\models\FieldLayout::getVisibleCustomFieldElements()`.
+
+### Changed
+- Relation fields now focus on the next related element’s “Remove” button when an element is removed. ([#11577](https://github.com/craftcms/cms/issues/11577))
+
+### Deprecated
+- Deprecated `craft\base\FieldTrait::$required`. `craft\fieldlayoutelements\BaseField::$required` should be used instead.
+
+### Fixed
+- Fixed a bug where assets’ native Alternative Text fields were getting mislabeled as translatable. ([#11576](https://github.com/craftcms/cms/issues/11576))
+- Fixed a bug where fields nested within Neo fields could be incorrectly validated as required. ([#11574](https://github.com/craftcms/cms/issues/11574))
+- Fixed a PHP error that occurred when editing a Date field with a Min Date setting set.
+
+## 4.1.3 - 2022-07-07
+
+### Changed
+- Address fields now show required indicators based on the configured validation rules. ([#11566](https://github.com/craftcms/cms/pull/11566))
+
+### Fixed
+- Fixed a JavaScript error that occurred on the Updates utility. ([#11567](https://github.com/craftcms/cms/issues/11567))
+
+## 4.1.2 - 2022-07-06
+
+### Added
+- Added `craft\helpers\ProjectConfig::ensureAllFilesystemsProcessed()`.
+
+### Changed
+- Relational field condition rules now have the “is related to” operator selected by default. ([#11550](https://github.com/craftcms/cms/discussions/11550))
+
+### Fixed
+- Fixed a bug where the Updates utility wasn’t checking for updates properly. ([#11552](https://github.com/craftcms/cms/issues/11552))
+- Fixed an error that could occur when deploying a Craft 4 upgrade to another server. ([#11558](https://github.com/craftcms/cms/issues/11558))
+- Fixed a bug where Assets fields were relocating assets when saving a revision.
+
+## 4.1.1 - 2022-07-05
+
 ### Changed
 - Improved the control panel tab design. ([#11524](https://github.com/craftcms/cms/pull/11524))
+- Changed the order of relational field condition rule operators, so “is related to” is listed first. ([#11550](https://github.com/craftcms/cms/discussions/11550))
+
+### Fixed
+- Fixed an error that could occur if any custom fields were missing their field group. ([#11522](https://github.com/craftcms/cms/discussions/11522))
+- Fixed a bug where custom selects weren’t scrolling to the visually-focused option.
+- Fixed errors that could occur if an element condition contained any rules for deleted custom fields. ([#11526](https://github.com/craftcms/cms/issues/11526))
+- Fixed a bug where the “Deactivate users by default” user setting wasn’t working. ([#11519](https://github.com/craftcms/cms/issues/11519))
+- Fixed a styling issue with the Edit Route modal. ([#11528](https://github.com/craftcms/cms/issues/11528))
+- Fixed a bug where assets uploaded from Assets fields weren’t retaining their original filename. ([#11530](https://github.com/craftcms/cms/issues/11530))
+- Fixed a bug where project config changes made at the end of the request lifecycle weren’t getting saved.
+- Fixed a bug where toggling entries’ and categories’ site-specific statuses from element editor slideouts wasn’t working. ([#11547](https://github.com/craftcms/cms/issues/11547))
+- Fixed a SQL error that occurred when running the `utils/prune-provisional-drafts` command. ([#11548](https://github.com/craftcms/cms/issues/11548))
 
 ## 4.1.0.2 - 2022-06-28
 
 ### Fixed
 - Fixed a PHP error. ([#11518](https://github.com/craftcms/cms/issues/11518))
-- Fixed an issue where sensitive values were not always redacted from logs. [#11618](https://github.com/craftcms/cms/issues/11618)
 
 ## 4.1.0.1 - 2022-06-28
 
