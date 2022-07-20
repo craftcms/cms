@@ -304,6 +304,7 @@ return [
     'Connecting to CraftCMS.com…' => 'Trwa łączenie z witryną CraftCMS.com…',
     'Content' => 'Zawartość',
     'Contents of {path}' => 'Zawartość lokalizacji {path}',
+    'Context' => 'Context',
     'Continue anyway' => 'Kontynuuj mimo to',
     'Continue shopping' => 'Kontynuuj zakupy',
     'Continue' => 'Kontynuuj',
