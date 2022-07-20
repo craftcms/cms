@@ -1562,6 +1562,7 @@ ul.icons {
     .text {
       border-top-right-radius: 0;
       border-bottom-right-radius: 0;
+      min-width: 0;
     }
     .btn {
       border-top-left-radius: 0;
@@ -6157,7 +6158,7 @@ body .selectize-dropdown {
   height: 34px;
 
   &:not(.fullwidth) {
-    width: 25em;
+    max-width: 25em;
   }
 }
 
