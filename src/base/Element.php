@@ -4431,24 +4431,21 @@ JS,
 
         if (count($supportedSites) > 1) {
             $expandStatusBtn = (count($propEditableSiteIds) > 1 || $addlEditableSites)
-                ? Html::button('', [
+                ? Html::button(Craft::t('app', 'Update status for individual sites'), [
                     'class' => ['expand-status-btn', 'btn'],
-                    'data' => [
-                        'icon' => 'ellipsis',
-                    ],
                     'aria' => [
                         'expanded' => 'false',
-                        'label' => Craft::t('app', 'Update status for individual sites'),
                     ],
                 ])
                 : '';
             $statusField = Cp::lightswitchFieldHtml([
                 'fieldClass' => "enabled-for-site-$this->siteId-field",
-                'label' => Craft::t('site', $this->getSite()->getName()) .
-                    $expandStatusBtn,
+                'label' => Craft::t('site', $this->getSite()->getName()),
                 'name' => "enabledForSite[$this->siteId]",
                 'on' => $this->enabled && $this->getEnabledForSite(),
                 'status' => $this->getAttributeStatus('enabled'),
+            ]) . Html::tag('div', $expandStatusBtn, [
+                'class' => 'field',
             ]);
         } else {
             $statusField = Cp::lightswitchFieldHtml([

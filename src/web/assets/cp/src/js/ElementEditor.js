@@ -435,8 +435,10 @@ Craft.ElementEditor = Garnish.Base.extend(
 
     expandSiteStatuses: function () {
       this.removeListener(this.$expandSiteStatusesBtn, 'click');
-      this.$expandSiteStatusesBtn.velocity({opacity: 0}, 'fast', () => {
-        this.$expandSiteStatusesBtn.remove();
+      const $btnWrapper = this.$expandSiteStatusesBtn.parent('.field');
+
+      $btnWrapper.velocity({opacity: 0}, 'fast', () => {
+        $btnWrapper.remove();
       });
 
       const $enabledForSiteField = this.$container.find(
@@ -519,6 +521,9 @@ Craft.ElementEditor = Garnish.Base.extend(
       ) {
         this._createAddlSiteField();
       }
+
+      // Focus on first lightswitch
+      this.$globalLightswitch.focus();
 
       this.$globalLightswitch.on('change', this._updateSiteStatuses.bind(this));
       this._updateGlobalStatus();
