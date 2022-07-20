@@ -14,7 +14,6 @@ use craft\helpers\StringHelper;
 use craft\services\Config;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
-use yii\base\UnknownPropertyException;
 
 /**
  * General config class
