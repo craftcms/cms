@@ -304,6 +304,7 @@ return [
     'Connecting to CraftCMS.com…' => 'CraftCMS.com ile bağlantı kuruluyor…',
     'Content' => 'İçerik',
     'Contents of {path}' => '{path} içerikleri',
+    'Context' => 'Context',
     'Continue anyway' => 'Yine de devam et',
     'Continue shopping' => 'Alışverişe devam et',
     'Continue' => 'Devam',
