@@ -304,6 +304,7 @@ return [
     'Connecting to CraftCMS.com…' => 'Pripája sa k webu CraftSMS.com…',
     'Content' => 'Obsah',
     'Contents of {path}' => 'Obsah {path}',
+    'Context' => 'Context',
     'Continue anyway' => 'Napriek tomu pokračovať',
     'Continue shopping' => 'Pokračovať v nakupovaní',
     'Continue' => 'Pokračovať',
