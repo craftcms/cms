@@ -304,6 +304,7 @@ return [
     'Connecting to CraftCMS.com…' => '正在连接 craftcms.com…',
     'Content' => '内容',
     'Contents of {path}' => '{path} 的内容',
+    'Context' => 'Context',
     'Continue anyway' => '强制执行',
     'Continue shopping' => '继续购物',
     'Continue' => '继续',
