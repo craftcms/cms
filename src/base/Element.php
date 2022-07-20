@@ -4436,6 +4436,7 @@ JS,
                     'data' => [
                         'icon' => 'ellipsis',
                     ],
+                    'title' => Craft::t('app', 'Update status for individual sites'),
                     'aria' => [
                         'expanded' => 'false',
                         'label' => Craft::t('app', 'Update status for individual sites'),
@@ -4444,8 +4445,8 @@ JS,
                 : '';
             $statusField = Cp::lightswitchFieldHtml([
                 'fieldClass' => "enabled-for-site-$this->siteId-field",
-                'label' => Craft::t('site', $this->getSite()->getName()) .
-                    $expandStatusBtn,
+                'label' => Craft::t('site', $this->getSite()->getName()),
+                'headingSuffix' => $expandStatusBtn,
                 'name' => "enabledForSite[$this->siteId]",
                 'on' => $this->enabled && $this->getEnabledForSite(),
                 'status' => $this->getAttributeStatus('enabled'),

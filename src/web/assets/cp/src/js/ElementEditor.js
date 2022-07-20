@@ -520,6 +520,9 @@ Craft.ElementEditor = Garnish.Base.extend(
         this._createAddlSiteField();
       }
 
+      // Focus on first lightswitch
+      this.$globalLightswitch.focus();
+
       this.$globalLightswitch.on('change', this._updateSiteStatuses.bind(this));
       this._updateGlobalStatus();
     },
