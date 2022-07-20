@@ -304,6 +304,7 @@ return [
     'Connecting to CraftCMS.com…' => 'Připojování k CraftCMS.com…',
     'Content' => 'Obsah',
     'Contents of {path}' => 'Obsah {path}',
+    'Context' => 'Context',
     'Continue anyway' => 'Přesto pokračovat',
     'Continue shopping' => 'Pokračovat v nákupu',
     'Continue' => 'Pokračovat',
