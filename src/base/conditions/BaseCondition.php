@@ -317,12 +317,19 @@ JS, [$view->namespaceInputId($this->id)]);
                         }
 
                         $ruleValue = Json::encode($rule->getConfig());
+                        $labelId = 'type-label';
 
                         $ruleHtml .=
                             // Rule type selector
                             Html::beginTag('div', ['class' => 'rule-switcher']) .
-                            Html::hiddenLabel(Craft::t('app', 'Rule Type'), 'type') .
-                            $this->_ruleTypeMenu($selectableRules, $rule, $ruleValue) .
+                            Html::hiddenLabel(Craft::t('app', 'Rule Type'), 'type', [
+                                'id' => $labelId,
+                            ]) .
+                            $this->_ruleTypeMenu($selectableRules, $rule, $ruleValue, [
+                                'aria' => [
+                                    'labelledby' => $labelId,
+                                ],
+                            ]) .
                             Html::endTag('div') .
                             // Rule HTML
                             Html::tag('div', $rule->getHtml(), [
