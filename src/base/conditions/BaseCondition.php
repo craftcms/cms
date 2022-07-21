@@ -383,6 +383,9 @@ JS, [$view->namespaceInputId($this->id)]);
                         'icon',
                         empty($selectableRules) ? 'disabled' : null,
                     ]),
+                    'aria' => [
+                        'label' => $this->addRuleLabel,
+                    ],
                     'autofocus' => $autofocusAddButton,
                 ]) .
                 Html::tag('div', '', [
