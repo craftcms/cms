@@ -7,6 +7,7 @@
 - Added `craft\behaviors\SessionBehavior::setSuccess()`.
 - Added `craft\events\IndexKeywordsEvent`.
 - Added `craft\helpers\DateTimeHelper::humanDuration()`.
+- Added `craft\services\Elements::EVENT_INVALIDATE_CACHES`. ([#11617](https://github.com/craftcms/cms/pull/11617))
 - Added `craft\services\Search::EVENT_BEFORE_INDEX_KEYWORDS`. ([#11575](https://github.com/craftcms/cms/discussions/11575))
 
 ### Changed
