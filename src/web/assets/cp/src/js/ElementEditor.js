@@ -305,12 +305,13 @@ Craft.ElementEditor = Garnish.Base.extend(
       let $discardButton = this.$container.find('.discard-changes-btn');
 
       if (!$discardButton.length) {
-        let initialHeight;
+        let initialHeight, scrollTop;
 
         let $noticeContainer;
         if (this.isFullPage) {
+          initialHeight = $('#content').height();
+          scrollTop = Garnish.$win.scrollTop();
           $noticeContainer = Craft.cp.$noticeContainer;
-          initialHeight = $noticeContainer.height();
         } else {
           $noticeContainer = this.$container.find('.so-notice');
         }
@@ -339,21 +340,28 @@ Craft.ElementEditor = Garnish.Base.extend(
         }).appendTo($notice);
 
         if (this.isFullPage) {
-          // Disable pointer events until half a second after the animation is complete
-          Craft.cp.$contentContainer.css('pointer-events', 'none');
+          const heightDiff = $('#content').height() - initialHeight;
+          console.log(heightDiff);
+          Garnish.$win.scrollTop(scrollTop + heightDiff);
 
-          $('#content-header').css('min-height', 'auto');
-          const height = $noticeContainer.height();
-          $noticeContainer
-            .css({height: initialHeight, overflow: 'hidden'})
-            .velocity({height: height}, 'fast', () => {
-              $('#content-header').css('min-height', '');
-              $noticeContainer.css({height: '', overflow: ''});
+          // If there isn’t enough content to simulate the same scroll position, slide it down instead
+          if (Garnish.$win.scrollTop() === scrollTop) {
+            // Disable pointer events until half a second after the animation is complete
+            Craft.cp.$contentContainer.css('pointer-events', 'none');
 
-              setTimeout(() => {
-                Craft.cp.$contentContainer.css('pointer-events', '');
-              }, 300);
-            });
+            $('#content-header').css('min-height', 'auto');
+            const height = $noticeContainer.height();
+            $noticeContainer
+              .css({height: height - heightDiff, overflow: 'hidden'})
+              .velocity({height: height}, 'fast', () => {
+                $('#content-header').css('min-height', '');
+                $noticeContainer.css({height: '', overflow: ''});
+
+                setTimeout(() => {
+                  Craft.cp.$contentContainer.css('pointer-events', '');
+                }, 300);
+              });
+          }
         }
       }
 
@@ -392,7 +400,7 @@ Craft.ElementEditor = Garnish.Base.extend(
                     },
                   })
                     .then((response) => {
-                      Craft.cp.displayNotice(response.data.message);
+                      Craft.cp.displaySuccess(response.data.message);
                       this.slideout.close();
                     })
                     .catch(reject);
@@ -511,6 +519,9 @@ Craft.ElementEditor = Garnish.Base.extend(
       ) {
         this._createAddlSiteField();
       }
+
+      // Focus on first lightswitch
+      this.$globalLightswitch.focus();
 
       this.$globalLightswitch.on('change', this._updateSiteStatuses.bind(this));
       this._updateGlobalStatus();

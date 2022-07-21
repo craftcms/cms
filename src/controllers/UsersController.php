@@ -1325,6 +1325,7 @@ JS,
             'alwaysShowFocusRings' => (bool)$this->request->getBodyParam('alwaysShowFocusRings', $user->getPreference('alwaysShowFocusRings')),
             'useShapes' => (bool)$this->request->getBodyParam('useShapes', $user->getPreference('useShapes')),
             'underlineLinks' => (bool)$this->request->getBodyParam('underlineLinks', $user->getPreference('underlineLinks')),
+            'notificationDuration' => $this->request->getBodyParam('notificationDuration', $user->getPreference('notificationDuration')),
         ];
 
         if ($user->admin) {
@@ -1338,6 +1339,10 @@ JS,
         }
 
         Craft::$app->getUsers()->saveUserPreferences($user, $preferences);
+
+        if ($isCurrentUser) {
+            Craft::$app->updateTargetLanguage();
+        }
 
         // Is this the current user, and did their username just change?
         // todo: remove comment when WI-51866 is fixed

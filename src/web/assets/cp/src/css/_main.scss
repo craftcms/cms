@@ -1562,6 +1562,7 @@ ul.icons {
     .text {
       border-top-right-radius: 0;
       border-bottom-right-radius: 0;
+      min-width: 0;
     }
     .btn {
       border-top-left-radius: 0;
@@ -3431,6 +3432,15 @@ ul.tree,
     .lightswitch {
       margin-top: 6px;
       display: block;
+    }
+
+    .selectize {
+      min-width: 100px;
+    }
+
+    .text.fullwidth {
+      min-width: 100px;
+      max-width: 100%;
     }
   }
 }
@@ -6148,7 +6158,7 @@ body .selectize-dropdown {
   height: 34px;
 
   &:not(.fullwidth) {
-    width: 25em;
+    max-width: 25em;
   }
 }
 
