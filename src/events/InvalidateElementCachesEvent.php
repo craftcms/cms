@@ -11,6 +11,7 @@ use yii\base\Event;
 
 /**
  * InvalidateElementCachesEvent class.
+ *
  * The event that is triggered when element TagDependency caches are invalidated
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -21,5 +22,5 @@ class InvalidateElementCachesEvent extends Event
     /**
      * @var array An array of TagDependency tag names that are being invalidated
      */
-    public array $tags = [];
+    public array $tags;
 }
