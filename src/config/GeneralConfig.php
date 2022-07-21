@@ -61,9 +61,11 @@ class GeneralConfig extends BaseObject
      *
      * The array can contain the following keys:
      *
-     * - `alwaysShowFocusRings` - Whether focus rings should always be shown when an element has focus
-     * - `useShapes` – Whether shapes should be used to represent statuses
-     * - `underlineLinks` – Whether links should be underlined
+     * - `alwaysShowFocusRings` - Whether focus rings should always be shown when an element has focus.
+     * - `useShapes` – Whether shapes should be used to represent statuses.
+     * - `underlineLinks` – Whether links should be underlined.
+     * - `notificationDuration` – How long notifications should be shown before they disappear automatically (in
+     *   milliseconds). Set to `0` to show them indefinitely.
      *
      * ```php
      * 'accessibilityDefaults' => [
@@ -78,6 +80,7 @@ class GeneralConfig extends BaseObject
         'alwaysShowFocusRings' => false,
         'useShapes' => false,
         'underlineLinks' => false,
+        'notificationDuration' => 5000,
     ];
 
     /**

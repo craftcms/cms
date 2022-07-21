@@ -515,6 +515,7 @@ class Cp
     {
         $attribute = $config['attribute'] ?? $config['id'] ?? null;
         $id = $config['id'] = $config['id'] ?? 'field' . mt_rand();
+        $labelId = $config['labelId'] ?? "$id-label";
         $instructionsId = $config['instructionsId'] ?? "$id-instructions";
         $tipId = $config['tipId'] ?? "$id-tip";
         $warningId = $config['warningId'] ?? "$id-warning";
@@ -528,7 +529,10 @@ class Cp
         $status = $config['status'] ?? null;
 
         if (str_starts_with($input, 'template:')) {
-            // Set a describedBy value in case the input template supports it
+            // Set labelledBy and describedBy values in case the input template supports it
+            if (!isset($config['labelledBy'])) {
+                $config['labelledBy'] = $labelId;
+            }
             if (!isset($config['describedBy'])) {
                 $descriptorIds = array_filter([
                     $errors ? $errorsId : null,
@@ -545,7 +549,6 @@ class Cp
 
         $fieldset = $config['fieldset'] ?? false;
         $fieldId = $config['fieldId'] ?? "$id-field";
-        $labelId = $config['labelId'] ?? "$id-label";
         $label = $config['fieldLabel'] ?? $config['label'] ?? null;
 
         if ($label === '__blank__') {
