@@ -673,6 +673,7 @@ class Category extends Element
                 'limit' => 1,
                 'elements' => $parent ? [$parent] : [],
                 'disabled' => $static,
+                'describedBy' => 'parentId-label',
             ]);
         })();
 
