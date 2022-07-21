@@ -1582,6 +1582,7 @@ return [
     'Unformatted' => 'Unformatted',
     'Uninstall' => 'Uninstall',
     'Uninstalling {name}' => 'Uninstalling {name}',
+    'Unit' => 'Unit',
     'Unknown type' => 'Unknown type',
     'Unknown' => 'Unknown',
     'Unlimited video training' => 'Unlimited video training',
