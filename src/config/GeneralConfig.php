@@ -44,11 +44,6 @@ class GeneralConfig extends BaseConfig
     /**
      * @inerhitdoc
      */
-    public static $configCategory = Config::CATEGORY_GENERAL;
-
-    /**
-     * @inerhitdoc
-     */
     protected static array $renamedSettings = [
         'activateAccountFailurePath' => 'invalidUserTokenPath',
         'allowAutoUpdates' => 'allowUpdates',

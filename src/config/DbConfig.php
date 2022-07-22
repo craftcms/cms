@@ -23,11 +23,6 @@ use yii\base\InvalidConfigException;
 class DbConfig extends BaseConfig
 {
     /**
-     * @inerhitdoc
-     */
-    public static $configCategory = Config::CATEGORY_DB;
-
-    /**
      * @deprecated in 3.4.0. Use [[Connection::DRIVER_MYSQL]] instead.
      */
     public const DRIVER_MYSQL = 'mysql';

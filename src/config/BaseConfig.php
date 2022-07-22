@@ -20,11 +20,6 @@ use craft\services\Config;
 class BaseConfig extends Model
 {
     /**
-     * @var string The category for this config
-     */
-    public static $configCategory = '';
-
-    /**
      * @var array Settings that have been renamed
      */
     protected static array $renamedSettings = [
@@ -68,8 +63,7 @@ class BaseConfig extends Model
     {
         if (isset(static::$renamedSettings[$name])) {
             $newName = static::$renamedSettings[$name];
-            $configFilePath = Craft::$app->getConfig()->getConfigFilePath(static::$configCategory);
-            Craft::$app->getDeprecator()->log($name, "The `$name` config setting has been renamed to `$newName`.", $configFilePath);
+            Craft::$app->getDeprecator()->log(sprintf('%s::%s', static::class, $name), "`$name` has been renamed to `$newName`.");
             $this->$newName = $value;
             return;
         }
