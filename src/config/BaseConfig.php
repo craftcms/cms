@@ -9,7 +9,6 @@ namespace craft\config;
 
 use Craft;
 use craft\base\Model;
-use craft\services\Config;
 
 /**
  * Base config class
@@ -22,11 +21,10 @@ class BaseConfig extends Model
     /**
      * @var array Settings that have been renamed
      */
-    protected static array $renamedSettings = [
-    ];
+    protected static array $renamedSettings = [];
 
     /**
-     * Factory method for creating new config objects
+     * Factory method for creating new config objects.
      *
      * @param array $config
      * @return static
