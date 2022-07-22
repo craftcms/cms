@@ -31,6 +31,7 @@ class BaseConfig extends Model
      */
     public static function create(array $config = []): static
     {
+        // We can't use Craft::createObject() here because Craft may not be autoloadable yet
         return new static($config);
     }
 
