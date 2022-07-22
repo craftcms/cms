@@ -8,6 +8,7 @@
 namespace craft\services;
 
 use Craft;
+use craft\config\BaseConfig;
 use craft\config\DbConfig;
 use craft\config\GeneralConfig;
 use craft\helpers\App;
@@ -138,11 +139,18 @@ class Config extends Component
                 throw new InvalidArgumentException("Invalid config category: $category");
         }
 
-        // Merge in any environment value overrides, and typecast everything
+        // Get any environment value overrides
         $envConfig = App::envConfig($configClass, $envPrefix);
+
+        // If $config is already a BaseConfig object, assign the env overrides to it and return
+        if ($config instanceof BaseConfig) {
+            Typecast::properties($configClass, $envConfig);
+            Craft::configure($config, $envConfig);
+            return $config;
+        }
+
         $config = array_merge($config, $envConfig);
         Typecast::properties($configClass, $config);
-
         /** @var BaseObject */
         return new $configClass($config);
     }
@@ -232,9 +240,9 @@ class Config extends Component
      * ```
      *
      * @param string $filename
-     * @return array
+     * @return array|BaseConfig
      */
-    public function getConfigFromFile(string $filename): array
+    public function getConfigFromFile(string $filename): array|BaseConfig
     {
         $path = $this->getConfigFilePath($filename);
 
@@ -242,7 +250,13 @@ class Config extends Component
             return [];
         }
 
-        if (!is_array($config = @include $path)) {
+        $config = @include $path;
+
+        if ($config instanceof BaseConfig) {
+            return $config;
+        }
+
+        if (!is_array($config)) {
             return [];
         }
 
