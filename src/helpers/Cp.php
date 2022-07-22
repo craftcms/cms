@@ -603,22 +603,17 @@ class Cp
                 ])
                 : '') .
             ($translatable
-                ? Html::beginTag('span', [
+                ? Html::tag('span', '', [
                     'class' => ['t9n-indicator'],
                     'title' => $config['translationDescription'] ?? Craft::t('app', 'This field is translatable.'),
-                ]) .
-                Html::tag('span', '', [
                     'data' => [
                         'icon' => 'language',
                     ],
                     'aria' => [
-                        'hidden' => 'true',
+                        'label' => $config['translationDescription'] ?? Craft::t('app', 'This field is translatable.'),
                     ],
-                ]) .
-                Html::tag('span', $config['translationDescription'] ?? Craft::t('app', 'This field is translatable.'), [
-                    'class' => 'visually-hidden',
-                ]) .
-                Html::endTag('span')
+                    'role' => 'img',
+                ])
                 : '')
             );
 
