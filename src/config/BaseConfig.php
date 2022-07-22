@@ -10,7 +10,6 @@ namespace craft\config;
 use Craft;
 use craft\base\Model;
 use craft\services\Config;
-use yii\base\UnknownPropertyException;
 
 /**
  * Base config class
@@ -75,12 +74,7 @@ class BaseConfig extends Model
             return;
         }
 
-        try {
-            parent::__set($name, $value);
-        } catch (UnknownPropertyException) {
-            $category = static::$configCategory;
-            throw new UnknownPropertyException("Invalid $category config setting: $name. You can set custom config settings from config/custom.php.");
-        }
+        parent::__set($name, $value);
     }
 
     /**

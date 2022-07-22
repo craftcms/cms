@@ -14,6 +14,7 @@ use craft\helpers\StringHelper;
 use craft\services\Config;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
+use yii\base\UnknownPropertyException;
 
 /**
  * General config class
@@ -3015,6 +3016,18 @@ class GeneralConfig extends BaseConfig
      * @group Routing
      */
     public mixed $verifyEmailSuccessPath = '';
+
+    /**
+     * @inheritdoc
+     */
+    public function __set($name, $value)
+    {
+        try {
+            parent::__set($name, $value);
+        } catch (UnknownPropertyException) {
+            throw new UnknownPropertyException("Invalid general config setting: $name. You can set custom config settings from config/custom.php.");
+        }
+    }
 
     /**
      * The default user accessibility preferences that should be applied to users that haven’t saved their preferences yet.
