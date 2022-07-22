@@ -11,7 +11,7 @@ use Craft;
 use craft\db\Connection;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
-use yii\base\BaseObject;
+use craft\services\Config;
 use yii\base\InvalidConfigException;
 
 /**
@@ -20,7 +20,7 @@ use yii\base\InvalidConfigException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class DbConfig extends BaseObject
+class DbConfig extends BaseConfig
 {
     /**
      * @deprecated in 3.4.0. Use [[Connection::DRIVER_MYSQL]] instead.
@@ -316,6 +316,232 @@ class DbConfig extends BaseObject
      * :::
      */
     public ?string $database = null;
+
+    /**
+     * An array of key-value pairs of PDO attributes to pass into the PDO constructor.
+     *
+     * @param array $value
+     * @return self
+     * @see $attributes
+     * @since 4.2.0
+     */
+    public function pdoAttributes(array $value): self
+    {
+        $this->attributes = $value;
+        return $this;
+    }
+
+    /**
+     * The charset to use when creating tables.
+     *
+     * @param string $value
+     * @return self
+     * @see $charset
+     * @since 4.2.0
+     */
+    public function charset(string $value): self
+    {
+        $this->charset = $value;
+        return $this;
+    }
+
+    /**
+     * The collation to use when creating tables.
+     *
+     * @param string|null $value
+     * @return self
+     * @see $collation
+     * @since 4.2.0
+     */
+    public function collation(?string $value): self
+    {
+        $this->collation = $value;
+        return $this;
+    }
+
+    /**
+     * The Data Source Name (“DSN”) that tells Craft how to connect to the database.
+     *
+     * @param string|null $value
+     * @return self
+     * @see $dsn
+     * @since 4.2.0
+     */
+    public function dsn(?string $value): self
+    {
+        $this->dsn = $value;
+        return $this;
+    }
+
+    /**
+     * The database password to connect with.
+     *
+     * @param string $value
+     * @return self
+     * @see $password
+     * @since 4.2.0
+     */
+    public function password(string $value): self
+    {
+        $this->password = $value;
+        return $this;
+    }
+
+    /**
+     * The schema that Postgres is configured to use by default (PostgreSQL only).
+     *
+     * @param string|null $value
+     * @return self
+     * @see $schema
+     * @since 4.2.0
+     */
+    public function schema(?string $value): self
+    {
+        $this->schema = $value;
+        return $this;
+    }
+
+    /**
+     * Whether the [[schema]] should be explicitly used for database queries (PostgreSQL only).
+     *
+     * @param bool $value
+     * @return self
+     * @see $setSchemaOnConnect
+     * @since 4.2.0
+     */
+    public function setSchemaOnConnect(bool $value = true): self
+    {
+        $this->setSchemaOnConnect = $value;
+        return $this;
+    }
+
+    /**
+     * If you’re sharing Craft installs in a single database (MySQL) or a single database and using a shared schema (PostgreSQL),
+     * you can set a table prefix here to avoid per-install table naming conflicts. This can be no more than 5 characters, and must be all lowercase.
+     *
+     * @param string|null $value
+     * @return self
+     * @see $tablePrefix
+     * @since 4.2.0
+     */
+    public function tablePrefix(?string $value): self
+    {
+        $this->tablePrefix = $value;
+        return $this;
+    }
+
+    /**
+     * The database username to connect with.
+     *
+     * @param string $value
+     * @return self
+     * @see $user
+     * @since 4.2.0
+     */
+    public function user(string $value): self
+    {
+        $this->user = $value;
+        return $this;
+    }
+
+    /**
+     * Whether batched queries should be executed on a separate, unbuffered database connection.
+     *
+     * @param bool $value
+     * @return self
+     * @see $useUnbufferedConnections
+     * @since 4.2.0
+     */
+    public function useUnbufferedConnections(bool $value = true): self
+    {
+        $this->useUnbufferedConnections = $value;
+        return $this;
+    }
+
+    /**
+     * The database connection URL, if one was provided by your hosting environment.
+     *
+     * @param string|null $value
+     * @return self
+     * @see $url
+     * @since 4.2.0
+     */
+    public function url(?string $value): self
+    {
+        $this->url = $value;
+        return $this;
+    }
+
+    /**
+     * The database driver to use. Either `mysql` for MySQL or `pgsql` for PostgreSQL.
+     *
+     * @param string|null $value
+     * @return self
+     * @see $driver
+     * @since 4.2.0
+     */
+    public function driver(?string $value): self
+    {
+        $this->driver = $value;
+        return $this;
+    }
+
+    /**
+     * The database server name or IP address. Usually `localhost` or `127.0.0.1`.
+     *
+     * @param string|null $value
+     * @return self
+     * @see $server
+     * @since 4.2.0
+     */
+    public function server(?string $value): self
+    {
+        $this->server = $value;
+        return $this;
+    }
+
+    /**
+     * The database server port. Defaults to 3306 for MySQL and 5432 for PostgreSQL.
+     *
+     * @param int|null $value
+     * @return self
+     * @see $port
+     * @since 4.2.0
+     */
+    public function port(?int $value): self
+    {
+        $this->port = $value;
+        return $this;
+    }
+
+    /**
+     * MySQL only. If this is set, the CLI connection string (used for yiic) will connect to the Unix socket instead of
+     * the server and port. If this is specified, then `server` and `port` settings are ignored.
+     *
+     * @param string|null $value
+     * @return self
+     * @see $unixSocket
+     * @since 4.2.0
+     */
+    public function unixSocket(?string $value): self
+    {
+        $this->unixSocket = $value;
+        return $this;
+    }
+
+    /**
+     * The name of the database to select.
+     *
+     * @param string|null $value
+     * @return self
+     * @see $database
+     * @since 4.2.0
+     */
+    public function database(?string $value): self
+    {
+        $this->database = $value;
+        return $this;
+    }
 
     /**
      * @inheritdoc
