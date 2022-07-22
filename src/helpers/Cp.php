@@ -591,7 +591,7 @@ class Cp
             : '';
 
         $labelHtml = $label . (
-            $required
+            ($required
                 ? Html::tag('span', Craft::t('app', 'Required'), [
                     'class' => ['visually-hidden'],
                 ]) .
@@ -601,7 +601,25 @@ class Cp
                         'hidden' => 'true',
                     ],
                 ])
-                : ''
+                : '') .
+            ($translatable
+                ? Html::beginTag('span', [
+                    'class' => ['t9n-indicator'],
+                    'title' => $config['translationDescription'] ?? Craft::t('app', 'This field is translatable.'),
+                ]) .
+                Html::tag('span', '', [
+                    'data' => [
+                        'icon' => 'language',
+                    ],
+                    'aria' => [
+                        'hidden' => 'true',
+                    ],
+                ]) .
+                Html::tag('span', $config['translationDescription'] ?? Craft::t('app', 'This field is translatable.'), [
+                    'class' => 'visually-hidden',
+                ]) .
+                Html::endTag('span')
+                : '')
             );
 
         $containerTag = $fieldset ? 'fieldset' : 'div';
@@ -649,24 +667,6 @@ class Cp
                                 'hidden' => $fieldset ? 'true' : null,
                             ],
                         ], $config['labelAttributes'] ?? []))
-                        : '') .
-                    ($translatable
-                        ? Html::beginTag('div', [
-                            'class' => ['t9n-indicator'],
-                            'title' => $config['translationDescription'] ?? Craft::t('app', 'This field is translatable.'),
-                        ]) .
-                        Html::tag('span', '', [
-                            'data' => [
-                                'icon' => 'language',
-                            ],
-                            'aria' => [
-                                'hidden' => 'true',
-                            ],
-                        ]) .
-                        Html::tag('span', $config['translationDescription'] ?? Craft::t('app', 'This field is translatable.'), [
-                            'class' => 'visually-hidden',
-                        ]) .
-                        Html::endTag('div')
                         : '') .
                     ($showAttribute
                         ? Html::tag('div', '', [

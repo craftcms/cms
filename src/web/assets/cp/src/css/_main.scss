@@ -5456,7 +5456,7 @@ fieldset {
       }
     }
 
-    & > .t9n-indicator {
+    .t9n-indicator {
       @include margin-left(7px);
       color: var(--light-text-color);
     }
