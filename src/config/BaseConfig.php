@@ -8,7 +8,6 @@
 namespace craft\config;
 
 use Craft;
-use craft\base\FluentModelTrait;
 use craft\base\Model;
 use craft\services\Config;
 use yii\base\UnknownPropertyException;
@@ -21,8 +20,6 @@ use yii\base\UnknownPropertyException;
  */
 class BaseConfig extends Model
 {
-    use FluentModelTrait;
-
     /**
      * @var string The category for this config
      */
