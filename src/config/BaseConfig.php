@@ -62,7 +62,11 @@ class BaseConfig extends Model
     {
         if (isset(static::$renamedSettings[$name])) {
             $newName = static::$renamedSettings[$name];
-            Craft::$app->getDeprecator()->log(sprintf('%s::%s', static::class, $name), "`$name` has been renamed to `$newName`.");
+
+            if (class_exists(Craft::class, false)) {
+                Craft::$app->getDeprecator()->log(sprintf('%s::%s', static::class, $name), "`$name` has been renamed to `$newName`.");
+            }
+
             $this->$newName = $value;
             return;
         }
