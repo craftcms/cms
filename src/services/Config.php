@@ -80,6 +80,13 @@ class Config extends Component
     private ?string $_dotEnvPath = null;
 
     /**
+     * @var string|null
+     * @see getConfigFromFile()
+     * @see getLoadingConfigFile()
+     */
+    private ?string $_loadingConfigFile = null;
+
+    /**
      * Returns all of the config settings for a given category.
      *
      * @param string $category The config category
@@ -149,10 +156,16 @@ class Config extends Component
             return $config;
         }
 
+        $loadingConfig = $this->_loadingConfigFile;
+        $this->_loadingConfigFile = $category;
+
         $config = array_merge($config, $envConfig);
         Typecast::properties($configClass, $config);
-        /** @var BaseObject */
-        return new $configClass($config);
+        /** @var BaseObject $config */
+        $config = new $configClass($config);
+
+        $this->_loadingConfigFile = $loadingConfig;
+        return $config;
     }
 
     /**
@@ -250,6 +263,17 @@ class Config extends Component
             return [];
         }
 
+        $loadingConfig = $this->_loadingConfigFile;
+        $this->_loadingConfigFile = $filename;
+
+        $config = $this->_configFromFileInternal($path);
+
+        $this->_loadingConfigFile = $loadingConfig;
+        return $config;
+    }
+
+    private function _configFromFileInternal(string $path): array|BaseConfig
+    {
         $config = @include $path;
 
         if ($config instanceof BaseConfig) {
@@ -278,6 +302,17 @@ class Config extends Component
         }
 
         return $mergedConfig;
+    }
+
+    /**
+     * Returns the config filename currently being loaded.
+     *
+     * @return string|null
+     * @since 4.2.0
+     */
+    public function getLoadingConfigFile(): ?string
+    {
+        return $this->_loadingConfigFile;
     }
 
     /**

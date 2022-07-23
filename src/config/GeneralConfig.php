@@ -59,6 +59,11 @@ class GeneralConfig extends BaseConfig
     ];
 
     /**
+     * @inheritdoc
+     */
+    protected ?string $filename = Config::CATEGORY_GENERAL;
+
+    /**
      * @var array The default user accessibility preferences that should be applied to users that haven’t saved their preferences yet.
      *
      * The array can contain the following keys:

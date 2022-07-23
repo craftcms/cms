@@ -24,6 +24,11 @@ class BaseConfig extends Model
     protected static array $renamedSettings = [];
 
     /**
+     * @var string|null The config filename
+     */
+    protected ?string $filename = null;
+
+    /**
      * Factory method for creating new config objects.
      *
      * @param array $config
@@ -40,6 +45,10 @@ class BaseConfig extends Model
      */
     final public function __construct($config = [])
     {
+        if (class_exists(Craft::class, false)) {
+            $this->filename = Craft::$app->getConfig()->getLoadingConfigFile();
+        }
+
         parent::__construct($config);
     }
 
@@ -64,7 +73,8 @@ class BaseConfig extends Model
             $newName = static::$renamedSettings[$name];
 
             if (class_exists(Craft::class, false)) {
-                Craft::$app->getDeprecator()->log(sprintf('%s::%s', static::class, $name), "`$name` has been renamed to `$newName`.");
+                $configFilePath = $this->filename ? Craft::$app->getConfig()->getConfigFilePath($this->filename) : null;
+                Craft::$app->getDeprecator()->log(sprintf('%s::%s', static::class, $name), "`$name` has been renamed to `$newName`.", $configFilePath);
             }
 
             $this->$newName = $value;

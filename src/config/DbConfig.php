@@ -33,6 +33,11 @@ class DbConfig extends BaseConfig
     public const DRIVER_PGSQL = 'pgsql';
 
     /**
+     * @inheritdoc
+     */
+    protected ?string $filename = Config::CATEGORY_DB;
+
+    /**
      * @var array An array of key-value pairs of PDO attributes to pass into the PDO constructor.
      *
      * For example, when using the [MySQL PDO driver](https://php.net/manual/en/ref.pdo-mysql.php), if you wanted to enable a SSL database connection
