@@ -13,6 +13,7 @@
 - Fixed a bug where Quick Post widgets weren’t submitting custom field values.
 - Fixed a bug where assets’ `getImg()` methods were returning `null` for assets in volumes without URLs, even if a transform was being used. ([#11614](https://github.com/craftcms/cms/issues/11614))
 - Fixed a bug where sensative data wasn’t getting redacted in the logs when Dev Mode was enabled. ([#11618](https://github.com/craftcms/cms/issues/11618))
+- Fixed a SQL error that could occur on MySQL 5. ([#11596](https://github.com/craftcms/cms/issues/11596))
 
 ## 4.1.4.1 - 2022-07-13
 
