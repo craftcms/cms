@@ -888,7 +888,7 @@ return [
     'More Resources' => 'Ďalšie zdroje',
     'More' => 'Viac',
     'More…' => 'Viac…',
-    'More actions' => 'More actions',
+    'More actions' => 'Ďalšie akcie',
     'Move down' => 'Posunúť dole',
     'Move to the left' => 'Posunúť doľava',
     'Move to the right' => 'Posunúť doprava',
