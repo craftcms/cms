@@ -936,7 +936,7 @@ td.right {
     cursor: pointer;
 
     &:hover:before {
-      color: var(--red-600);
+      color: var(--disabled-color);
     }
 
     &:active:before {
@@ -2017,15 +2017,15 @@ div.btn.submit input {
   &.on {
     background-image: linear-gradient(
       to right,
-      var(--success-color),
-      var(--success-color)
+      var(--enabled-color),
+      var(--enabled-color)
     );
   }
 
   &.indeterminate {
     background-image: linear-gradient(
       to right,
-      var(--success-color),
+      var(--enabled-color),
       var(--gray-300)
     );
   }
@@ -3299,7 +3299,7 @@ ul.tree,
       background-color: transparent;
       border-style: solid;
       border-width: 0 5px 10px 5px;
-      border-color: transparent transparent var(--yellow-700) transparent;
+      border-color: transparent transparent var(--pending-color) transparent;
       border-radius: 1px;
     }
 
@@ -3320,26 +3320,20 @@ ul.tree,
 .status.live,
 .status.active,
 .status.enabled {
-  background-color: var(--teal-500);
+  background-color: var(--enabled-color);
 }
-
-/* green */
 
 .orange,
 .status.pending {
-  background-color: var(--yellow-700);
+  background-color: var(--pending-color);
 }
-
-/* orange */
 
 .red,
 .status.off,
 .status.suspended,
 .status.expired {
-  background-color: var(--red-600);
+  background-color: var(--disabled-color);
 }
-
-/* red */
 
 .yellow {
   background-color: var(--yellow-300);
@@ -5432,7 +5426,7 @@ fieldset {
     }
 
     &.outdated {
-      background-color: var(--yellow-700);
+      background-color: var(--pending-color);
     }
   }
 
