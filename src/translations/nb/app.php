@@ -1,6 +1,7 @@
 <?php
 
 return [
+    '(Ungrouped)' => '(Ungrouped)',
     '(blank)' => '(tom)',
     '(trial)' => '(prøveversjon)',
     '({currencyCode}) {currencySymbol}' => '({currencyCode}) {currencySymbol}',
@@ -612,7 +613,6 @@ return [
     'External project config changes discarded.' => 'Eksterne prosjektkonfigurasjonsendringer forkastet.',
     'Failed to generate transform with id of {id}.' => 'Kan ikke opprette en transformasjon med ID-en {id}.',
     'Failed to load the SVG string.' => 'Kunne ikke laste inn SVG-strengen.',
-    'Failed to save the asset:' => 'Kunne ikke lagre filen:',
     'Failed to save the image.' => 'Kunne ikke lagre bildet.',
     'Failed' => 'Mislyktes',
     'Feed' => 'RSS-strøm',
@@ -650,7 +650,6 @@ return [
     'Flip Vertical' => 'Vend vertikalt',
     'Focal Point' => 'Brennpunkt',
     'Folder “{folder}” already exists at target location' => 'Mappen «{folder}» finnes allerede på målplasseringen',
-    'Footer' => 'Bunntekst',
     'For when you’re building a website for yourself or a friend.' => 'Når du bygger et nettsted for deg selv eller en venn.',
     'For when you’re building something professionally for a client or team.' => 'Når du bygger noe i jobbsammenheng for en kunde eller et team.',
     'Forgot your password?' => 'Glemt passordet?',

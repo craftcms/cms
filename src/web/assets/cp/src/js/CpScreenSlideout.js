@@ -492,7 +492,7 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
       this.clearErrors();
       const data = response.data || {};
       if (data.message) {
-        Craft.cp.displayNotice(data.message);
+        Craft.cp.displaySuccess(data.message, data.notificationSettings);
       }
       this.trigger('submit', {
         response: response,

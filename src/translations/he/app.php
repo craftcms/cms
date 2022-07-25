@@ -1,6 +1,7 @@
 <?php
 
 return [
+    '(Ungrouped)' => '(Ungrouped)',
     '(blank)' => '(ריק)',
     '(trial)' => '(ניסיון)',
     '({currencyCode}) {currencySymbol}' => '({currencyCode}) {currencySymbol}',
@@ -612,7 +613,6 @@ return [
     'External project config changes discarded.' => 'שינויי תצורה של פרויקט חיצוני בוטלו.',
     'Failed to generate transform with id of {id}.' => 'יצירת שינוי עם המזהה {id} נכשלה.',
     'Failed to load the SVG string.' => 'טעינת מחרוזת SVG נכשלה.',
-    'Failed to save the asset:' => 'שמירת הנכס נכשלה:',
     'Failed to save the image.' => 'שמירת התמונה נכשלה.',
     'Failed' => 'נכשל',
     'Feed' => 'פיד',
@@ -650,7 +650,6 @@ return [
     'Flip Vertical' => 'הפוך בכיוון אנכי',
     'Focal Point' => 'נקודת מוקד',
     'Folder “{folder}” already exists at target location' => 'התיקייה "{folder}" כבר קיימת במיקום היעד',
-    'Footer' => 'כותרת תחתונה',
     'For when you’re building a website for yourself or a friend.' => 'כאשר אתה בונה אתר לעצמך או עבור חבר.',
     'For when you’re building something professionally for a client or team.' => 'כאשר אתה בונה משהו מקצועי עבור לקוח או צוות.',
     'Forgot your password?' => 'שכחת את הסיסמה?',

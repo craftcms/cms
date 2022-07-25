@@ -1,6 +1,7 @@
 <?php
 
 return [
+    '(Ungrouped)' => '(Ungrouped)',
     '(blank)' => '(vide)',
     '(trial)' => '(essai)',
     '({currencyCode}) {currencySymbol}' => '({currencyCode}) {currencySymbol}',
@@ -612,7 +613,6 @@ return [
     'External project config changes discarded.' => 'Modifications de la configuration du projet annulées.',
     'Failed to generate transform with id of {id}.' => 'Impossible de générer la transformation d’image d’ID {id}.',
     'Failed to load the SVG string.' => 'Impossible de charger la chaîne SVG.',
-    'Failed to save the asset:' => 'Enregistrement impossible de la ressource :',
     'Failed to save the image.' => 'Échec de l’enregistrement de l’image.',
     'Failed' => 'Échec',
     'Feed' => 'Diffusion',
@@ -650,7 +650,6 @@ return [
     'Flip Vertical' => 'Retourner verticalement',
     'Focal Point' => 'Point focus',
     'Folder “{folder}” already exists at target location' => 'Le dossier « {folder} » existe déjà dans l’emplacement cible',
-    'Footer' => 'Pied de page',
     'For when you’re building a website for yourself or a friend.' => 'Dans le cas où vous développez un site Web pour vous-même ou un ami.',
     'For when you’re building something professionally for a client or team.' => 'Dans le cas où vous développez de manière professionnelle un système pour un client ou une équipe.',
     'Forgot your password?' => 'Mot de passe oublié ?',

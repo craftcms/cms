@@ -59,10 +59,6 @@ body {
   display: none;
 }
 
-#login-form.remember-me:not(.reset-password) #login-form-bottom {
-  justify-content: space-between;
-}
-
 #login-form:not(.reset-password) {
   #loginName {
     margin: -1px -1px 0;
@@ -107,7 +103,14 @@ body {
 }
 
 #login-form-bottom {
-  margin-top: 24px;
+  margin-top: var(--m);
+}
+
+#login-form-buttons {
+  margin: var(--xl) 0 var(--s);
+}
+
+#login-form-extra {
   display: flex;
   justify-content: center;
 }

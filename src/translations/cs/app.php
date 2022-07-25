@@ -1,6 +1,7 @@
 <?php
 
 return [
+    '(Ungrouped)' => '(Ungrouped)',
     '(blank)' => '(prázdné)',
     '(trial)' => '(zkušební verze)',
     '({currencyCode}) {currencySymbol}' => '({currencyCode}) {currencySymbol}',
@@ -612,7 +613,6 @@ return [
     'External project config changes discarded.' => 'Externí změny konfigurace projektu budou zrušeny.',
     'Failed to generate transform with id of {id}.' => 'Transformaci s ID {id} se nepodařilo vygenerovat.',
     'Failed to load the SVG string.' => 'Řetězec SVG nelze načíst.',
-    'Failed to save the asset:' => 'Objekt nelze uložit:',
     'Failed to save the image.' => 'Obrázek nelze uložit.',
     'Failed' => 'Chyba',
     'Feed' => 'Informační kanál',
@@ -650,7 +650,6 @@ return [
     'Flip Vertical' => 'Překlopit svisle',
     'Focal Point' => 'Ústřední bod',
     'Folder “{folder}” already exists at target location' => 'Složka „{folder}“ již v cílovém umístění existuje',
-    'Footer' => 'Zápatí',
     'For when you’re building a website for yourself or a friend.' => 'Při vytváření webu pro sebe nebo přítele.',
     'For when you’re building something professionally for a client or team.' => 'Při vytváření něčeho profesionálního pro klienta nebo tým.',
     'Forgot your password?' => 'Zapomněli jste heslo?',

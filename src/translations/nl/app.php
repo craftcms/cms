@@ -1,6 +1,7 @@
 <?php
 
 return [
+    '(Ungrouped)' => '(Ungrouped)',
     '(blank)' => '(leeg)',
     '(trial)' => '(proef)',
     '({currencyCode}) {currencySymbol}' => '({currencyCode}) {currencySymbol}',
@@ -612,7 +613,6 @@ return [
     'External project config changes discarded.' => 'Externe wijzigingen in de projectconfiguratie zijn verworpen.',
     'Failed to generate transform with id of {id}.' => 'Kan geen transformatie genereren met de id {id}.',
     'Failed to load the SVG string.' => 'Kan de SVG-tekenreeks niet laden.',
-    'Failed to save the asset:' => 'Het bestand kan niet worden opgeslagen:',
     'Failed to save the image.' => 'Kan de afbeelding niet opslaan.',
     'Failed' => 'Gefaald',
     'Feed' => 'Feed',
@@ -650,7 +650,6 @@ return [
     'Flip Vertical' => 'Verticaal spiegelen',
     'Focal Point' => 'Focuspunt',
     'Folder “{folder}” already exists at target location' => 'De map \'{folder}\' bestaat al op de doellocatie.',
-    'Footer' => 'Voettekst',
     'For when you’re building a website for yourself or a friend.' => 'Voor het bouwen van een website voor uzelf of een vriend.',
     'For when you’re building something professionally for a client or team.' => 'Voor professioneel bouwen voor een klant of een team.',
     'Forgot your password?' => 'Wachtwoord vergeten?',

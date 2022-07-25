@@ -1,6 +1,7 @@
 <?php
 
 return [
+    '(Ungrouped)' => '(Ungrouped)',
     '(blank)' => '(ว่างเปล่า)',
     '(trial)' => '(การทดลอง)',
     '({currencyCode}) {currencySymbol}' => '({currencyCode}) {currencySymbol}',
@@ -612,7 +613,6 @@ return [
     'External project config changes discarded.' => 'ละทิ้งการเปลี่ยนแปลงการกำหนดค่าโครงการภายนอกแล้ว',
     'Failed to generate transform with id of {id}.' => 'Failed to generate transform with id of {id}.',
     'Failed to load the SVG string.' => 'Failed to load the SVG string.',
-    'Failed to save the asset:' => 'Failed to save the asset:',
     'Failed to save the image.' => 'Failed to save the image.',
     'Failed' => 'Failed',
     'Feed' => 'Feed',
@@ -650,7 +650,6 @@ return [
     'Flip Vertical' => 'Flip Vertical',
     'Focal Point' => 'Focal Point',
     'Folder “{folder}” already exists at target location' => 'Folder “{folder}” already exists at target location',
-    'Footer' => 'ส่วนท้าย',
     'For when you’re building a website for yourself or a friend.' => 'For when you’re building a website for yourself or a friend.',
     'For when you’re building something professionally for a client or team.' => 'For when you’re building something professionally for a client or team.',
     'Forgot your password?' => 'Forgot your password?',

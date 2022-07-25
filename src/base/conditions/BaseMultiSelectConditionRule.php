@@ -102,7 +102,7 @@ JS;
             Html::hiddenLabel($this->getLabel(), $multiSelectId) .
             Cp::multiSelectHtml([
                 'id' => $multiSelectId,
-                'class' => 'selectize fullwidth',
+                'class' => 'selectize flex-grow',
                 'name' => 'values',
                 'values' => $this->_values,
                 'options' => $this->options(),
