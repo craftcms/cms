@@ -14,6 +14,8 @@
     background-color: var(--gray-100);
     box-shadow: 0 1px 0 transparentize($grey700, 0.8);
     box-sizing: border-box;
+    position: relative;
+    z-index: 1;
 
     @supports (backdrop-filter: blur(10px)) {
       & {
@@ -28,13 +30,6 @@
         & + .lp-editor {
           padding-top: #{10 + 34 + 10 + 24}px;
         }
-      }
-    }
-
-    @supports (-moz-appearance: none) {
-      & {
-        position: relative;
-        z-index: 1;
       }
     }
 
@@ -96,7 +91,7 @@
   .lp-preview-header {
     display: flex;
 
-    @supports (-moz-appearance: none) {
+    @supports (not (backdrop-filter: blur(10px))) {
       background-color: transparentize($grey100, 0.25);
     }
 
@@ -109,10 +104,10 @@
     }
 
     & + .lp-iframe-container {
-      padding-top: 50px;
+      padding-top: 0;
 
-      @supports (-moz-appearance: none) {
-        padding-top: 0;
+      @supports (backdrop-filter: blur(10px)) {
+        padding-top: 50px;
       }
     }
 
@@ -216,13 +211,13 @@
       flex: none;
       padding-top: 0 !important;
       position: relative;
-      top: 50px;
+      top: 0;
       height: calc(100% - 50px);
       width: 100%;
       background-color: var(--gray-100);
 
-      @supports (-moz-appearance: none) {
-        top: 0;
+      @supports (backdrop-filter: blur(10px)) {
+        top: 50px;
       }
 
       // Preview container
