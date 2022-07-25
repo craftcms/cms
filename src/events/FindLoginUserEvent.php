@@ -11,21 +11,23 @@ use craft\elements\User;
 use yii\base\Event;
 
 /**
- * LoginUserNotFoundEvent class.
+ * FindLoginUserEvent class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Bert Oost <hello@bertoost.com>
- * @since 4.1.4.1
+ * @since 4.2.0
  */
-class LoginUserNotFoundEvent extends Event
+class FindLoginUserEvent extends Event
 {
     /**
-     * @var string The loginName which is tried to login
+     * @var string The provided email or username
      */
     public string $loginName;
 
     /**
-     * @var User|null The user that the login was attempted for, handled by the event
+     * @var User|null The resolved user, if any.
+     *
+     * If this is set by an event handler, that will be the user that is attempted to be signed in.
      */
     public ?User $user = null;
 }

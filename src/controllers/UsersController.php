@@ -19,7 +19,7 @@ use craft\errors\UserLockedException;
 use craft\events\DefineUserContentSummaryEvent;
 use craft\events\InvalidUserTokenEvent;
 use craft\events\LoginFailureEvent;
-use craft\events\LoginUserNotFoundEvent;
+use craft\events\FindLoginUserEvent;
 use craft\events\RegisterUserActionsEvent;
 use craft\events\UserEvent;
 use craft\helpers\ArrayHelper;
@@ -67,9 +67,36 @@ use yii\web\ServerErrorHttpException;
 class UsersController extends Controller
 {
     /**
-     * @event LoginUserNotFoundEvent The event that is triggered when a user cannot be found
+     * @event FindLoginUserEvent The event that is triggered before attempting to find a user to sign in
+     *
+     * ```php
+     * use Craft;
+     * use craft\controllers\UsersController;
+     * use craft\elements\User;
+     * use craft\events\FindLoginUserEvent;
+     * use yii\base\Event;
+     *
+     * Event::on(
+     *     UsersController::class,
+     *     UsersController::EVENT_BEFORE_FIND_LOGIN_USER,
+     *     function(FindLoginUserEvent $event) {
+     *         // force username-based login
+     *         $event->user = User::find()
+     *             ->username($event->loginName)
+     *             ->addSelect(['users.password', 'users.passwordResetRequired'])
+     *             ->one();
+     *     }
+     * );
+     *
+     * @since 4.2.0
      */
-    public const EVENT_LOGIN_USER_NOT_FOUND = 'loginUserNotFound';
+    public const EVENT_BEFORE_FIND_LOGIN_USER = 'beforeFindLoginUser';
+
+    /**
+     * @event FindLoginUserEvent The event that is triggered after attempting to find a user to sign in
+     * @since 4.2.0
+     */
+    public const EVENT_AFTER_FIND_LOGIN_USER = 'afterFindLoginUser';
 
     /**
      * @event LoginFailureEvent The event that is triggered when a failed login attempt was made
@@ -169,20 +196,7 @@ class UsersController extends Controller
         $password = $this->request->getRequiredBodyParam('password');
         $rememberMe = (bool)$this->request->getBodyParam('rememberMe');
 
-        // Does a user exist with that username/email?
-        $user = Craft::$app->getUsers()->getUserByUsernameOrEmail($loginName);
-
-        if (!$user) {
-            $event = new LoginUserNotFoundEvent([
-                'loginName' => $loginName,
-            ]);
-            $this->trigger(self::EVENT_LOGIN_USER_NOT_FOUND, $event);
-
-            // when there is an event handling the user-not-found, continue to use it
-            if ($event->handled && null !== $event->user) {
-                $user = $event->user;
-            }
-        }
+        $user = $this->_findLoginUser($loginName);
 
         if (!$user || $user->password === null) {
             // Delay again to match $user->authenticate()'s delay
@@ -210,6 +224,23 @@ class UsersController extends Controller
         }
 
         return $this->_handleSuccessfulLogin();
+    }
+
+    private function _findLoginUser(string $loginName): ?User
+    {
+        $event = new FindLoginUserEvent([
+            'loginName' => $loginName,
+        ]);
+        $this->trigger(self::EVENT_BEFORE_FIND_LOGIN_USER, $event);
+
+        $user = $event->user ?? Craft::$app->getUsers()->getUserByUsernameOrEmail($loginName);
+
+        $event = new FindLoginUserEvent([
+            'loginName' => $loginName,
+            'user' => $user,
+        ]);
+        $this->trigger(self::EVENT_AFTER_FIND_LOGIN_USER, $event);
+        return $event->user;
     }
 
     /**

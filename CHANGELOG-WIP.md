@@ -6,7 +6,10 @@
 - Added `craft\behaviors\SessionBehavior::getSuccess()`.
 - Added `craft\behaviors\SessionBehavior::setSuccess()`.
 - Added `craft\config\BaseConfig`. ([#11591](https://github.com/craftcms/cms/pull/11591), [#11656](https://github.com/craftcms/cms/pull/11656))
+- Added `craft\controllers\UsersController::EVENT_AFTER_FIND_LOGIN_USER`. ([#11645](https://github.com/craftcms/cms/pull/11645))
+- Added `craft\controllers\UsersController::EVENT_BEFORE_FIND_LOGIN_USER`. ([#11645](https://github.com/craftcms/cms/pull/11645))
 - Added `craft\events\DefineFieldLayoutCustomFieldsEvent`.
+- Added `craft\events\FindLoginUserEvent`.
 - Added `craft\events\IndexKeywordsEvent`.
 - Added `craft\helpers\DateTimeHelper::humanDuration()`.
 - Added `craft\models\FieldLayout::EVENT_DEFINE_CUSTOM_FIELDS`. ([#11634](https://github.com/craftcms/cms/discussions/11634))
