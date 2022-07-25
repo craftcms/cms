@@ -129,7 +129,7 @@ class SetupController extends Controller
             return ExitCode::OK;
         }
 
-        if ($this->interactive && !$this->confirm(PHP_EOL . 'Install Craft now?', true)) {
+        if (!$this->confirm(PHP_EOL . 'Install Craft now?', true)) {
             $this->stdout("You can install Craft from a browser once you've set up a web server, or by running this command:" . PHP_EOL, Console::FG_YELLOW);
             $this->_outputCommand('install');
             return ExitCode::OK;
