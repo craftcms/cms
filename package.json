@@ -24,7 +24,7 @@
   },
   "dependencies": {
     "@benmajor/jquery-touch-events": "^2.0.3",
-    "@craftcms/sass": "^1.0.1",
+    "@craftcms/sass": "./packages/craftcms-sass",
     "@craftcms/vue": "^1.0.0",
     "@types/jquery": "^3.5.7",
     "accounting": "^0.4.1",

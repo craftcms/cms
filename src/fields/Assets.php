@@ -58,7 +58,7 @@ class Assets extends BaseRelationField
     /**
      * @event LocateUploadedFilesEvent The event that is triggered when identifying any uploaded files that
      * should be stored as assets and related by the field.
-     * @since 3.7.72
+     * @since 4.0.2
      */
     public const EVENT_LOCATE_UPLOADED_FILES = 'locateUploadedFiles';
 
