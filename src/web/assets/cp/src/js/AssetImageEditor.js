@@ -75,7 +75,11 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
     renderImage: null,
     renderCropper: null,
 
+    _queue: null,
+
     init: function (assetId, settings) {
+      this._queue = new Craft.Queue();
+
       this.cacheBust = Date.now();
 
       this.setSettings(settings, Craft.AssetImageEditor.defaults);
@@ -1049,9 +1053,21 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
 
       // See if we have to enable or disable crop mode as we transition between tabs
       if (this.currentView === 'crop' && view !== 'crop') {
-        this.disableCropMode();
+        this._queue.push(
+          () =>
+            new Promise((resolve, reject) => {
+              this.disableCropMode();
+              resolve();
+            })
+        );
       } else if (this.currentView !== 'crop' && view === 'crop') {
-        this.enableCropMode();
+        this._queue.push(
+          () =>
+            new Promise((resolve, reject) => {
+              this.enableCropMode();
+              resolve();
+            })
+        );
       }
 
       // Mark the current view
@@ -1982,6 +1998,8 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
       imageProperties,
       viewportProperties
     ) {
+      this._queue.pause();
+
       if (!this.animationInProgress) {
         this.animationInProgress = true;
 
@@ -1998,6 +2016,7 @@ Craft.AssetImageEditor = Garnish.Modal.extend(
             callback();
             this.animationInProgress = false;
             this.renderImage();
+            this._queue.resume();
           },
         });
 
