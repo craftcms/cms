@@ -707,7 +707,7 @@ return [
     'Hostname' => 'Ana bilgisayar adı',
     'Hours' => 'Saat',
     'How field values will be formatted within element indexes.' => 'Alan değerlerinin öğe dizinleri içinde nasıl biçimlendirileceği.',
-    'How long notifications should be shown before they disappear automatically.' => 'How long notifications should be shown before they disappear automatically.',
+    'How long notifications should be shown before they disappear automatically.' => 'Bildirimler otomatik olarak kaybolmadan önce ne kadar süreyle gösterilmeli.',
     'How should Craft CMS send the emails?' => 'Craft CMS e-postaları nasıl göndermeli?',
     'How should this field’s values be translated?' => 'Bu alanın değerleri nasıl çevrilmelidir?',
     'How should {type} titles be translated?' => '{type} başlıkları nasıl çevrilmelidir?',
