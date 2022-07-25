@@ -1295,7 +1295,7 @@ return [
     'Show the debug toolbar in the control panel' => 'Afficher la barre d’outils de débogage dans le panneau de contrôle',
     'Show the debug toolbar on the front end' => 'Afficher la barre d’outils de débogage sur la partie publique du site',
     'Show the site menu' => 'Afficher le menu de sélection du site',
-    'Show them indefinitely' => 'Show them indefinitely',
+    'Show them indefinitely' => 'Les afficher indéfiniment',
     'Show thumbnails and titles' => 'Afficher les miniatures et les titres',
     'Show thumbnails only' => 'Afficher uniquement les miniatures',
     'Show time' => 'Afficher l’heure',
