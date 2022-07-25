@@ -80,8 +80,8 @@ html.noscroll body {
 body {
   width: 100vw;
   overflow-x: hidden;
-  font-size: 14px;
-  line-height: 20px;
+  @include fontSize(14);
+  line-height: 1.42;
   color: var(--text-color);
   -webkit-font-smoothing: subpixel-antialiased;
 }
@@ -5689,7 +5689,7 @@ div.radio {
   clear: none;
   position: relative;
   @include padding-left($radioSize + 5);
-  height: 16px;
+  line-height: calc(24 / 14);
   cursor: pointer;
 }
 
@@ -5718,8 +5718,9 @@ div.radio:after {
 
 input.radio + label:before,
 div.radio:before {
-  top: 0;
+  top: 50%;
   left: 0;
+  transform: translateY(-50%);
   width: var(--radio-size);
   height: var(--radio-size);
   background-color: hsl(212, 50%, 99%);
@@ -5728,8 +5729,9 @@ div.radio:before {
 
 input.radio + label:after,
 div.radio:after {
-  top: 4px;
+  top: calc(50%);
   left: 4px;
+  transform: translateY(-50%);
   width: calc(var(--radio-size) - 8px);
   height: calc(var(--radio-size) - 8px);
 }
