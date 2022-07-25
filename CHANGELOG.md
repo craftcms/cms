@@ -21,6 +21,7 @@
 - Fixed a bug where the “User saved” notification was translated for the former language, when changing the current user’s language preference.
 - Fixed a JavaScript error that occurred when removing a category from a Categories field, if any of its descendants were selected as well. ([#11641](https://github.com/craftcms/cms/issues/11641))
 - Fixed a bug where links to config settings from **Settings** → **General** didn’t include the correct setting anchors. ([#11665](https://github.com/craftcms/cms/pull/11665))
+- Fixed styling issues with Live Preview in Firefox.
 
 ## 4.1.4.1 - 2022-07-13
 
