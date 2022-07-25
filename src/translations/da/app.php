@@ -891,6 +891,7 @@ return [
     'More Resources' => 'Flere ressourcer',
     'More' => 'Mere',
     'More…' => 'Mere…',
+    'More actions' => 'Flere handlinger',
     'Move down' => 'Flyt ned',
     'Move to the left' => 'Flyt til venstre',
     'Move to the right' => 'Flyt til højre',

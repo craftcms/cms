@@ -890,6 +890,7 @@ return [
     'More Resources' => 'Daha Fazla Kaynak',
     'More' => 'Daha Fazla',
     'More…' => 'Daha Fazla…',
+    'More actions' => 'More actions',
     'Move down' => 'Aşağı Taşı',
     'Move to the left' => 'Sola taşı',
     'Move to the right' => 'Sağa taşı',

@@ -890,6 +890,7 @@ return [
     'More Resources' => 'Додаткові ресурси',
     'More' => 'Додатково',
     'More…' => 'Додатково…',
+    'More actions' => 'More actions',
     'Move down' => 'Перемістити вниз',
     'Move to the left' => 'Перемістити вліво',
     'Move to the right' => 'Перемістити вправо',

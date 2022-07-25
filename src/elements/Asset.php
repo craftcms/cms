@@ -2076,7 +2076,7 @@ JS;
                 }
 
                 if ($editable) {
-                    $imageButtonHtml .= Html::button(Craft::t('app', 'Edit'), [
+                    $imageButtonHtml .= Html::button(Craft::t('app', 'Edit Image'), [
                         'id' => 'edit-btn',
                         'class' => ['btn', 'edit-btn'],
                     ]);

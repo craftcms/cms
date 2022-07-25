@@ -890,6 +890,7 @@ return [
     'More Resources' => 'منابع بیشتر',
     'More' => 'بیشتر',
     'More…' => 'بیشتر...',
+    'More actions' => 'More actions',
     'Move down' => 'انتقال به پایین',
     'Move to the left' => 'انتقال به چپ',
     'Move to the right' => 'انتقال به راست',
