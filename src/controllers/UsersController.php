@@ -184,7 +184,7 @@ class UsersController extends Controller
             }
         }
 
-        if ($user->password === null) {
+        if (!$user || $user->password === null) {
 
             // Delay again to match $user->authenticate()'s delay
             Craft::$app->getSecurity()->validatePassword('p@ss1w0rd', '$2y$13$nj9aiBeb7RfEfYP3Cum6Revyu14QelGGxwcnFUKXIrQUitSodEPRi');
