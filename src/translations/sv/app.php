@@ -1,7 +1,7 @@
 <?php
 
 return [
-    '(Ungrouped)' => '(Ungrouped)',
+    '(Ungrouped)' => '(Inte grupperad)',
     '(blank)' => '(tom)',
     '(trial)' => '(testversion)',
     '({currencyCode}) {currencySymbol}' => '({currencyCode}) {currencySymbol}',
