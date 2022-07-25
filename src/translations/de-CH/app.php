@@ -1,7 +1,7 @@
 <?php
 
 return [
-    '(Ungrouped)' => '(Ungrouped)',
+    '(Ungrouped)' => '(Ungruppiert)',
     '(blank)' => '(leer)',
     '(trial)' => '(Testversion)',
     '({currencyCode}) {currencySymbol}' => '({currencyCode}) {currencySymbol}',
@@ -1181,7 +1181,7 @@ return [
     'Restore' => 'Wiederherstellen',
     'Restoring database…' => 'Datenbank wird wiederhergestellt…',
     'Restrict allowed file types' => 'Erlaubte Dateitypen einschränken',
-    'Restrict assets to a single location' => 'Medienobjekte auf einen einzigen Speicherort begrenzen',
+    'Restrict assets to a single location' => 'Dateien auf einen einzigen Speicherort begrenzen',
     'Retry Duration' => 'Wiederholungsdauer',
     'Retry all failed jobs' => 'Alle fehlgeschlagenen Aufgaben erneut versuchen',
     'Retry' => 'Erneut versuchen',
@@ -1205,7 +1205,7 @@ return [
     'Row could not be deleted. Minimum number of rows reached.' => 'Zeile konnte nicht gelöscht werden. Mindestanzahl von Zeilen erreicht.',
     'Rule Type' => 'Regeltyp',
     'SVG file recommended. The logo will be displayed at {size} wide.' => 'SVG-Datei empfohlen. Das Logo wird mit einer Breite von {size} angezeigt.',
-    'Same as asset filesystem' => 'Gleich wie das Dateisystem für Medienobjekte',
+    'Same as asset filesystem' => 'Gleich wie das Dateisystem für Dateien',
     'Same as language' => 'Gleich wie Sprache',
     'Save and add another' => 'Speichern und einen neuen Eintrag hinzufügen',
     'Save and continue editing' => 'Speichern und mit dem Bearbeiten fortfahren',

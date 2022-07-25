@@ -1,7 +1,7 @@
 <?php
 
 return [
-    '(Ungrouped)' => '(Ungrouped)',
+    '(Ungrouped)' => '(Nezařazeno)',
     '(blank)' => '(prázdné)',
     '(trial)' => '(zkušební verze)',
     '({currencyCode}) {currencySymbol}' => '({currencyCode}) {currencySymbol}',
