@@ -888,7 +888,7 @@ return [
     'More Resources' => '기타 리소스',
     'More' => '더 보기',
     'More…' => '더 보기…',
-    'More actions' => 'More actions',
+    'More actions' => '기타 작업',
     'Move down' => '아래로 이동',
     'Move to the left' => '왼쪽으로 이동',
     'Move to the right' => '오른쪽으로 이동',
