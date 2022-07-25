@@ -46,6 +46,7 @@ use craft\web\assets\matrixsettings\MatrixSettingsAsset;
 use GraphQL\Type\Definition\Type;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
+use yii\db\Expression;
 
 /**
  * Matrix represents a Matrix field.
@@ -586,15 +587,12 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
         $existsQuery = (new Query())
             ->from(["matrixblocks_$ns" => DbTable::MATRIXBLOCKS])
             ->innerJoin(["elements_$ns" => DbTable::ELEMENTS], "[[elements_$ns.id]] = [[matrixblocks_$ns.id]]")
-            ->innerJoin(["matrixblocks_owners_$ns" => DbTable::MATRIXBLOCKS_OWNERS], [
-                'and',
-                "[[matrixblocks_owners_$ns.blockId]] = [[elements_$ns.id]]",
-                "[[matrixblocks_owners_$ns.ownerId]] = [[elements.id]]",
-            ])
+            ->innerJoin(["matrixblocks_owners_$ns" => DbTable::MATRIXBLOCKS_OWNERS], "[[matrixblocks_owners_$ns.blockId]] = [[elements_$ns.id]]")
             ->andWhere([
                 "matrixblocks_$ns.fieldId" => $this->id,
                 "elements_$ns.enabled" => true,
                 "elements_$ns.dateDeleted" => null,
+                "[[matrixblocks_owners_$ns.ownerId]]" => new Expression('[[elements.id]]'),
             ]);
 
         if ($value === 'not :empty:') {
