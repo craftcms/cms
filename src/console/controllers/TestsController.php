@@ -72,7 +72,7 @@ class TestsController extends Controller
             }
 
             $this->stdout(PHP_EOL);
-            if (!$this->confirm('Are you sure you want to continue?')) {
+            if ($this->interactive && !$this->confirm('Are you sure you want to continue?')) {
                 $this->stdout('Aborting.' . PHP_EOL);
                 return ExitCode::UNSPECIFIED_ERROR;
             }
@@ -85,7 +85,7 @@ class TestsController extends Controller
             $this->stdout("- $file" . PHP_EOL);
         }
         $this->stdout(PHP_EOL);
-        if (!$this->confirm('Continue?', true)) {
+        if ($this->interactive && !$this->confirm('Continue?', true)) {
             $this->stdout('Aborting.' . PHP_EOL);
             return ExitCode::UNSPECIFIED_ERROR;
         }

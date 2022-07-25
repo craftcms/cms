@@ -97,7 +97,7 @@ $linkColor: #2563eb;
 // menu colors
 $menuOptionColor: $textColor;
 $menuOptionActiveColor: $white;
-$menuOptionActiveBackgroundColor: $grey350;
+$menuOptionActiveBackgroundColor: $grey500;
 
 // hairline colors
 $hairlineColor: transparentize($grey800, 0.9);
@@ -148,7 +148,23 @@ $radioSize: 16px;
   font-size: 0.9em !important;
 }
 
+@function toRem($size) {
+  $remValue: calc($size / 16) + rem;
+  @return $remValue;
+}
+
+@mixin fontSize($size) {
+  font-size: toRem($size);
+}
+
 // Other
+
+@mixin focus-styles {
+  body:not(.reduce-focus-visibility) &:focus,
+  body.reduce-focus-visibility &.focus-visible {
+    @content;
+  }
+}
 
 @mixin svg-mask($color) {
   rect,
@@ -262,6 +278,20 @@ $radioSize: 16px;
 @mixin light-focus-ring() {
   --focus-ring: 0 0 0 1px hsl(var(--light-focus-hsl)),
     0 0 0 3px hsla(var(--light-focus-hsl), 0.7);
+}
+
+@mixin two-color-focus-ring($light-button: true) {
+  // Creates a two-color focus ring, with a white
+  // If button is light, the dark box shadow is adjacent to the button
+  // Else the light box shadow is adjacent to the button
+  --light-color: var(--white);
+  --dark-color: var(--gray-800);
+
+  @if $light-button {
+    --focus-ring: 0 0 0 3px var(--dark-color), 0 0 0 6px var(--light-color);
+  } @else {
+    --focus-ring: 0 0 0 3px var(--light-color), 0 0 0 6px var(--dark-color);
+  }
 }
 
 // RTL stuff
@@ -557,8 +587,7 @@ $radioSize: 16px;
 }
 
 @mixin input-focused-styles {
-  border-color: hsl(var(--dark-focus-hsl));
-  box-shadow: 0 0 0 2px hsla(var(--dark-focus-hsl), 0.7);
+  box-shadow: var(--focus-ring);
 }
 
 @mixin placeholder-styles($color) {

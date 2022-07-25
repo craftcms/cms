@@ -24,7 +24,7 @@
   },
   "dependencies": {
     "@benmajor/jquery-touch-events": "^2.0.3",
-    "@craftcms/sass": "^1.0.1",
+    "@craftcms/sass": "./packages/craftcms-sass",
     "@craftcms/vue": "^1.0.0",
     "@types/jquery": "^3.5.7",
     "accounting": "^0.4.1",
@@ -55,7 +55,7 @@
     "typescript": "^4.7.4",
     "v-tooltip": "^2.0.3",
     "velocity-animate": "^1.5.0",
-    "vue": "^2.6.14",
+    "vue": "^2.7.0",
     "vue-autosuggest": "^2.2.0",
     "vue-awesome-swiper": "^4.1.1",
     "vue-cleave": "^1.2.2",

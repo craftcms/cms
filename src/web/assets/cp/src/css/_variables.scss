@@ -2,6 +2,10 @@
 @import '@craftcms/sass/mixins';
 
 :root {
+  --bg-color: $grey100;
+  --bg-color-hsl: #{hue($grey100)}, #{saturation($grey100)},
+    #{lightness($grey100)};
+
   // submit button colors
   --primary-color: var(--red-500);
   --secondary-color: var(--gray-500);
@@ -50,6 +54,11 @@
   --warning-color: var(--yellow-800);
   --success-color: var(--teal-700);
   --notice-color: var(--blue-800);
+
+  // status colors
+  --enabled-color: var(--teal-500);
+  --pending-color: var(--yellow-700);
+  --disabled-color: var(--red-600);
 
   // UI element styles
   --small-border-radius: 3px;
