@@ -44,14 +44,18 @@ abstract class BaseLightswitchConditionRule extends BaseConditionRule
     protected function inputHtml(): string
     {
         $lightswitchId = 'lightswitch';
+        $labelId = "$lightswitchId-label";
 
         return
-            Html::hiddenLabel($this->getLabel(), $lightswitchId) .
+            Html::hiddenLabel($this->getLabel(), $lightswitchId, [
+                'id' => $labelId,
+            ]) .
             Html::tag('div',
                 Cp::lightswitchHtml([
                     'id' => $lightswitchId,
                     'on' => $this->value,
                     'name' => 'value',
+                    'labelledBy' => $labelId,
                 ])
             );
     }

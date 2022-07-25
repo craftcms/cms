@@ -51,7 +51,7 @@ class TemplateCaches extends Component
     public function getTemplateCache(string $key, bool $global, bool $registerResources = false): ?string
     {
         // Make sure template caching is enabled
-        if ($this->_isTemplateCachingEnabled() === false) {
+        if ($this->_isTemplateCachingEnabled($global) === false) {
             return null;
         }
 
@@ -89,11 +89,12 @@ class TemplateCaches extends Component
      * [[\craft\web\View::registerJsFile()]], and [[\craft\web\View::registerCssFile()]] should be captured and
      * included in the cache. If this is `true`, be sure to pass `$withResources = true` to [[endTemplateCache()]]
      * as well.
+     * @param bool $global Whether the cache should be stored globally.
      */
-    public function startTemplateCache(bool $withResources = false): void
+    public function startTemplateCache(bool $withResources = false, bool $global = false): void
     {
         // Make sure template caching is enabled
-        if ($this->_isTemplateCachingEnabled() === false) {
+        if ($this->_isTemplateCachingEnabled($global) === false) {
             return;
         }
 
@@ -127,7 +128,7 @@ class TemplateCaches extends Component
     public function endTemplateCache(string $key, bool $global, ?string $duration, mixed $expiration, string $body, bool $withResources = false): void
     {
         // Make sure template caching is enabled
-        if ($this->_isTemplateCachingEnabled() === false) {
+        if ($this->_isTemplateCachingEnabled($global) === false) {
             return;
         }
 
@@ -144,14 +145,14 @@ class TemplateCaches extends Component
 
         // If there are any transform generation URLs in the body, don't cache it.
         // stripslashes($body) in case the URL has been JS-encoded or something.
-        if (StringHelper::contains(stripslashes($body), 'assets/generate-transform')) {
-            return;
+        $saveCache = !StringHelper::contains(stripslashes($body), 'assets/generate-transform');
+
+        if ($saveCache) {
+            // Always add a `template` tag
+            $dep->tags[] = 'template';
+
+            $cacheValue = [$body, $dep->tags];
         }
-
-        // Always add a `template` tag
-        $dep->tags[] = 'template';
-
-        $cacheValue = [$body, $dep->tags];
 
         if ($withResources) {
             // Parse the JS/CSS code and tag attributes out of the <script> and <style> tags
@@ -160,10 +161,16 @@ class TemplateCaches extends Component
             $bufferedJsFiles = array_map(fn(array $tags) => $this->_parseExternalResourceTags($tags, 'src'), $bufferedJsFiles);
             $bufferedCssFiles = $this->_parseExternalResourceTags($bufferedCssFiles, 'href');
 
-            array_push($cacheValue, $bufferedJs, $bufferedScripts, $bufferedCss, $bufferedJsFiles, $bufferedCssFiles);
+            if ($saveCache) {
+                array_push($cacheValue, $bufferedJs, $bufferedScripts, $bufferedCss, $bufferedJsFiles, $bufferedCssFiles);
+            }
 
             // Re-register the JS and CSS
             $this->_registerResources($bufferedJs, $bufferedScripts, $bufferedCss, $bufferedJsFiles, $bufferedCssFiles);
+        }
+
+        if (!$saveCache) {
+            return;
         }
 
         $cacheKey = $this->_cacheKey($key, $global);
@@ -176,6 +183,7 @@ class TemplateCaches extends Component
             $duration = DateTimeHelper::toDateTime($expiration)->getTimestamp() - time();
         }
 
+        /** @phpstan-ignore-next-line */
         Craft::$app->getCache()->set($cacheKey, $cacheValue, $duration, $dep);
     }
 
@@ -245,14 +253,15 @@ class TemplateCaches extends Component
     /**
      * Returns whether template caching is enabled, based on the 'enableTemplateCaching' config setting.
      *
+     * @param bool $global Whether this is for a globally-scoped cache
      * @return bool Whether template caching is enabled
      */
-    private function _isTemplateCachingEnabled(): bool
+    private function _isTemplateCachingEnabled(bool $global): bool
     {
         if (!isset($this->_enabled)) {
             $this->_enabled = (
                 Craft::$app->getConfig()->getGeneral()->enableTemplateCaching &&
-                !Craft::$app->getRequest()->getIsConsoleRequest()
+                ($global || !Craft::$app->getRequest()->getIsConsoleRequest())
             );
         }
         return $this->_enabled;

@@ -176,7 +176,7 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
 
         return
             Html::beginTag('div', [
-                'class' => ['flex', 'flex-nowrap', 'flex-start'],
+                'class' => ['flex', 'flex-start'],
             ]) .
             (count($operators) > 1
                 ? (

@@ -822,6 +822,13 @@ class Gql extends Component
         if (!isset($this->_publicToken)) {
             $config = Craft::$app->getProjectConfig()->get(ProjectConfig::PATH_GRAPHQL_PUBLIC_TOKEN) ?? [];
             $this->_publicToken = $this->_createPublicToken($config);
+
+            if ($this->_publicToken) {
+                $this->_publicToken->id = $this->_createTokenQuery()
+                    ->select(['id'])
+                    ->where(['accessToken' => GqlToken::PUBLIC_TOKEN])
+                    ->scalar();
+            }
         }
 
         return $this->_publicToken;
@@ -869,21 +876,23 @@ class Gql extends Component
             return false;
         }
 
-        // Public token information is stored in the project config
-        if ($token->accessToken === GqlToken::PUBLIC_TOKEN) {
-            $data = [
-                'expiryDate' => $token->expiryDate?->getTimestamp(),
-                'enabled' => $token->enabled,
-            ];
-
-            Craft::$app->getProjectConfig()->set(ProjectConfig::PATH_GRAPHQL_PUBLIC_TOKEN, $data);
-
-            return true;
-        }
-
         if ($runValidation && !$token->validate()) {
             Craft::info('Token not saved due to validation error.', __METHOD__);
             return false;
+        }
+
+        // Public token information is stored in the project config
+        if ($token->accessToken === GqlToken::PUBLIC_TOKEN) {
+            $data = [
+                'enabled' => $token->enabled,
+                'expiryDate' => $token->expiryDate?->getTimestamp(),
+            ];
+
+            $projectConfigService = Craft::$app->getProjectConfig();
+            $muteEvents = $projectConfigService->muteEvents;
+            $projectConfigService->muteEvents = false;
+            Craft::$app->getProjectConfig()->set(ProjectConfig::PATH_GRAPHQL_PUBLIC_TOKEN, $data);
+            $projectConfigService->muteEvents = $muteEvents;
         }
 
         $this->_saveTokenInternal($token);

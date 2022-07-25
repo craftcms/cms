@@ -386,6 +386,20 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       // Disable the hidden input in case the form is submitted before this element gets removed from the DOM
       $elements.children('input').prop('disabled', true);
 
+      // Move the focus to the next element in the list, if there is one
+      let $nextDeleteBtn;
+      if (this.settings.selectable) {
+        const lastElementIndex = this.$elements.index($elements.last());
+        $nextDeleteBtn = this.$elements
+          .eq(lastElementIndex + 1)
+          .find('.delete');
+      }
+      if ($nextDeleteBtn.length) {
+        $nextDeleteBtn.focus();
+      } else {
+        this.focusNextLogicalElement();
+      }
+
       this.$elements = this.$elements.not($elements);
       this.updateAddElementsBtn();
 
@@ -424,7 +438,9 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
         animateCss,
         Craft.BaseElementSelectInput.REMOVE_FX_DURATION,
         () => {
-          callback();
+          if (callback) {
+            callback();
+          }
 
           // Resume the draft editor
           if (this.$form.data('elementEditor')) {
@@ -629,7 +645,6 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
     onRemoveElements: function () {
       this.trigger('removeElements');
       this.settings.onRemoveElements();
-      this.focusNextLogicalElement();
     },
   },
   {

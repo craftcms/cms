@@ -761,30 +761,66 @@ li.breadcrumb-toggle-wrapper {
 
 #notifications {
   position: fixed;
-  top: 0;
-  width: 100%;
+  bottom: 8px;
+  @include left(8px);
+  width: calc(100% - 16px);
   z-index: 101;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  pointer-events: none;
 
-  @media only screen and (min-width: $minFullUiWidth) {
-    width: calc(100% - #{$sidebarWidth});
+  @media only screen and (min-width: $minHorizontalUiWidth) {
+    width: 350px;
   }
 
   .notification {
-    padding: 5px 10px;
-    border-radius: 0 0 3px 3px;
-    border-width: 0 1px 1px;
-    color: var(--white) !important;
-    pointer-events: auto;
-    @include light-on-dark-text;
-    @include shadow;
-    background-color: var(--notice-color);
+    display: flex;
+    position: relative;
+    @include pane;
+    padding: 10px 14px;
+    border-radius: var(--large-border-radius);
+    box-shadow: 0 0 0 1px transparentize($grey1000, 0.85),
+      0 2px 12px transparentize($grey1000, 0.85);
+    --color: var(--notice-color);
 
-    &.error {
-      background-color: var(--primary-color);
+    &[data-type='success'] {
+      --color: var(--success-color);
+    }
+
+    &[data-type='error'] {
+      --color: var(--error-color);
+    }
+
+    & + .notification {
+      margin-top: 12px;
+    }
+
+    .notification-icon {
+      width: 18px;
+      margin-top: -2px;
+      @include margin-right(10px);
+      font-size: 18px;
+      color: var(--color);
+    }
+
+    .notification-body {
+      display: flex;
+      flex: 1;
+
+      .notification-message {
+        font-weight: bold;
+      }
+
+      .notification-details {
+        margin-top: var(--xs);
+
+        .element {
+          border: 1px solid $hairlineColor;
+        }
+      }
+    }
+
+    .notification-close-btn {
+      position: relative;
+      top: -2px;
+      @include margin-left(10px);
     }
   }
 }
@@ -808,7 +844,6 @@ li.breadcrumb-toggle-wrapper {
 #global-header,
 #header {
   .flex {
-    flex-wrap: nowrap;
     max-width: 100%;
 
     &.flex-nowrap {
@@ -927,10 +962,6 @@ li.breadcrumb-toggle-wrapper {
       background-clip: border-box;
     }
   }
-}
-
-#action-buttons {
-  height: 34px;
 }
 
 #main-content {
