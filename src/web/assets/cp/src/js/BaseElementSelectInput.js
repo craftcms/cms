@@ -352,7 +352,9 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
         animateCss,
         Craft.BaseElementSelectInput.REMOVE_FX_DURATION,
         () => {
-          callback();
+          if (callback) {
+            callback();
+          }
 
           // Resume the draft editor
           if (window.draftEditor) {
