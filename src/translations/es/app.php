@@ -1578,7 +1578,7 @@ return [
     'Unauthorized' => 'Sin autorización',
     'Uncheck for {offLabel}.' => 'Desmarcar {offLabel}.',
     'Underline links' => 'Subrayar enlaces',
-    'Undo' => 'Undo',
+    'Undo' => 'Deshacer',
     'Unformatted' => 'Sin formato',
     'Uninstall' => 'Desinstalar',
     'Uninstalling {name}' => 'Desinstalar {name}',
