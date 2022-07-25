@@ -888,7 +888,7 @@ return [
     'More Resources' => 'More Resources',
     'More' => 'More',
     'More…' => 'เพิ่มเติม…',
-    'More actions' => 'More actions',
+    'More actions' => 'การดำเนินการเพิ่มเติม',
     'Move down' => 'Move down',
     'Move to the left' => 'Move to the left',
     'Move to the right' => 'Move to the right',
