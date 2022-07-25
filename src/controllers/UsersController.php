@@ -172,23 +172,23 @@ class UsersController extends Controller
         // Does a user exist with that username/email?
         $user = Craft::$app->getUsers()->getUserByUsernameOrEmail($loginName);
 
-        if (!$user || $user->password === null) {
-            
+        if (!$user) {
             $event = new LoginUserNotFoundEvent([
                 'loginName' => $loginName,
             ]);
             $this->trigger(self::EVENT_LOGIN_USER_NOT_FOUND, $event);
 
-            // when there isn't an event before handling the user-login, just continue
-            if (!$event->handled || null === $event->user) {
-
-                // Delay again to match $user->authenticate()'s delay
-                Craft::$app->getSecurity()->validatePassword('p@ss1w0rd', '$2y$13$nj9aiBeb7RfEfYP3Cum6Revyu14QelGGxwcnFUKXIrQUitSodEPRi');
-                return $this->_handleLoginFailure(User::AUTH_INVALID_CREDENTIALS);
+            // when there is an event handling the user-not-found, continue to use it
+            if ($event->handled && null !== $event->user) {
+                $user = $event->user;
             }
+        }
 
-            // take over the user
-            $user = $event->user;
+        if ($user->password === null) {
+
+            // Delay again to match $user->authenticate()'s delay
+            Craft::$app->getSecurity()->validatePassword('p@ss1w0rd', '$2y$13$nj9aiBeb7RfEfYP3Cum6Revyu14QelGGxwcnFUKXIrQUitSodEPRi');
+            return $this->_handleLoginFailure(User::AUTH_INVALID_CREDENTIALS);
         }
 
         // Did they submit a valid password, and is the user capable of being logged-in?
