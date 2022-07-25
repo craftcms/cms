@@ -587,8 +587,7 @@ $radioSize: 16px;
 }
 
 @mixin input-focused-styles {
-  border-color: hsl(var(--dark-focus-hsl));
-  box-shadow: 0 0 0 2px hsla(var(--dark-focus-hsl), 0.7);
+  box-shadow: var(--focus-ring);
 }
 
 @mixin placeholder-styles($color) {

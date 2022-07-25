@@ -645,6 +645,9 @@ class ElementsController extends Controller
                 ($enablePreview
                     ? Html::button(Craft::t('app', 'Preview'), [
                         'class' => ['preview-btn', 'btn'],
+                        'aria' => [
+                            'label' => Craft::t('app', 'Preview'),
+                        ],
                     ])
                     : '') .
                 Html::endTag('div');
