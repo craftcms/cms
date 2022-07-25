@@ -887,6 +887,7 @@ return [
     'More Resources' => 'その他のリソース',
     'More' => '詳しく',
     'More…' => '詳細…',
+    'More actions' => 'More actions',
     'Move down' => '下に移動',
     'Move to the left' => '左に移動',
     'Move to the right' => '右に移動',

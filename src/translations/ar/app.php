@@ -887,6 +887,7 @@ return [
     'More Resources' => 'المزيد من المصادر',
     'More' => 'المزيد',
     'More…' => 'المزيد…',
+    'More actions' => 'More actions',
     'Move down' => 'التحريك لأسفل',
     'Move to the left' => 'التحريك جهة اليسار',
     'Move to the right' => 'التحريك جهة اليمين',

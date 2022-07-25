@@ -887,6 +887,7 @@ return [
     'More Resources' => 'További erőforrások',
     'More' => 'Tovább',
     'More…' => 'Több…',
+    'More actions' => 'More actions',
     'Move down' => 'Mozgatás lefelé',
     'Move to the left' => 'Mozgatás balra',
     'Move to the right' => 'Mozgatás jobbra',

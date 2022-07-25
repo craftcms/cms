@@ -1,7 +1,6 @@
 <?php
 
 return [
-    '(Ungrouped)' => '(не згруповано)',
     '(blank)' => '(пусто)',
     '(trial)' => '(пробна версія)',
     '({currencyCode}) {currencySymbol}' => '({currencyCode}) {currencySymbol}',
@@ -613,6 +612,7 @@ return [
     'External project config changes discarded.' => 'Зовнішні зміни конфігурації проєкту скасовані.',
     'Failed to generate transform with id of {id}.' => 'Не вдалося створити перетворення з ID {id}.',
     'Failed to load the SVG string.' => 'Не вдалося завантажити рядок SVG.',
+    'Failed to save the asset:' => 'Не вдалося зберегти ресурс:',
     'Failed to save the image.' => 'Не вдалося зберегти зображення.',
     'Failed' => 'Не виконано',
     'Feed' => 'Канал',
@@ -650,6 +650,7 @@ return [
     'Flip Vertical' => 'Віддзеркалити вертикально',
     'Focal Point' => 'Точка фокуса',
     'Folder “{folder}” already exists at target location' => 'Папка «{folder}» уже існує в цільовому розташуванні',
+    'Footer' => 'Нижній колонтитул',
     'For when you’re building a website for yourself or a friend.' => 'У разі, якщо ви створюєте сайт для себе чи друга.',
     'For when you’re building something professionally for a client or team.' => 'У разі, якщо ви виконуєте професійний проєкт для замовника чи команди.',
     'Forgot your password?' => 'Забули пароль?',
@@ -887,6 +888,7 @@ return [
     'More Resources' => 'Додаткові ресурси',
     'More' => 'Додатково',
     'More…' => 'Додатково…',
+    'More actions' => 'More actions',
     'Move down' => 'Перемістити вниз',
     'Move to the left' => 'Перемістити вліво',
     'Move to the right' => 'Перемістити вправо',

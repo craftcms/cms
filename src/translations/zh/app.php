@@ -887,6 +887,7 @@ return [
     'More Resources' => '更多资源',
     'More' => '更多',
     'More…' => '更多…',
+    'More actions' => '更多操作',
     'Move down' => '下移',
     'Move to the left' => '移动到左侧',
     'Move to the right' => '移动到右侧',

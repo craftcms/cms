@@ -887,6 +887,7 @@ return [
     'More Resources' => 'Weitere Ressourcen',
     'More' => 'Mehr',
     'More…' => 'Mehr…',
+    'More actions' => 'More actions',
     'Move down' => 'Nach unten schieben',
     'Move to the left' => 'Nach links schieben',
     'Move to the right' => 'Nach rechts verschieben',
