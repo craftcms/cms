@@ -998,7 +998,7 @@ return [
     'Nothing to index.' => 'Rien à indexer.',
     'Nothing to update.' => 'Rien à mettre à jour.',
     'Notice' => 'Avis',
-    'Notification Duration' => 'Notification Duration',
+    'Notification Duration' => 'Durée des notifications',
     'Notifications' => 'Notifications',
     'Number of columns' => 'Nombre de colonnes',
     'Number' => 'Nombre',
