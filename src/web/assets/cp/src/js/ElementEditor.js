@@ -137,6 +137,7 @@ Craft.ElementEditor = Garnish.Base.extend(
           const [target] = this.settings.previewTargets;
           this.createPreviewLink(target)
             .addClass('view-btn btn')
+            .attr('aria-label', Craft.t('app', 'View'))
             .appendTo($previewBtnContainer);
         } else {
           this.createShareMenu($previewBtnContainer);
