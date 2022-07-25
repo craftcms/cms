@@ -1891,7 +1891,7 @@ return [
     '{num, number} {num, plural, =1{hour} other{hours}}' => '{num, number} {num, plural, one {} =1{hour} other{hours}}',
     '{num, number} {num, plural, =1{minute} other{minutes}}' => '{num, number} {num, plural, one {} =1{minute} other{minutes}}',
     '{num, number} {num, plural, =1{month} other{months}}' => '{num, number} {num, plural, one {} =1{month} other{months}}',
-    '{num, number} {num, plural, =1{notification} other{notifications}}' => '{num, number} {num, plural, =1{notification} other{notifications}}',
+    '{num, number} {num, plural, =1{notification} other{notifications}}' => '{num, number} {num, plural, one {} =1{notification} other{notifications}}',
     '{num, number} {num, plural, =1{second} other{seconds}}' => '{num, number} {num, plural, one {} =1{second} other{seconds}}',
     '{num, number} {num, plural, =1{week} other{weeks}}' => '{num, number} {num, plural, one {} =1{week} other{weeks}}',
     '{num, number} {num, plural, =1{year} other{years}}' => '{num, number} {num, plural, one {} =1{year} other{years}}',
