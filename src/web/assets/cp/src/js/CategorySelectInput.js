@@ -81,7 +81,7 @@ Craft.CategorySelectInput = Craft.BaseElementSelectInput.extend({
 
   removeElement: function ($element) {
     // Find any descendants this category might have
-    var $allCategories = $element.add(
+    const $allCategories = $element.add(
       $element.parent().siblings('ul').find('.element')
     );
 
@@ -89,19 +89,19 @@ Craft.CategorySelectInput = Craft.BaseElementSelectInput.extend({
     this.removeElements($allCategories);
 
     // Animate them away one at a time
-    for (var i = 0; i < $allCategories.length; i++) {
+    for (let i = 0; i < $allCategories.length; i++) {
       this._animateCategoryAway($allCategories, i);
     }
   },
 
   _animateCategoryAway: function ($allCategories, i) {
-    var callback;
+    let callback;
 
     // Is this the last one?
     if (i === $allCategories.length - 1) {
       callback = () => {
-        var $li = $allCategories.first().parent().parent(),
-          $ul = $li.parent();
+        const $li = $allCategories.first().parent().parent();
+        const $ul = $li.parent();
 
         if ($ul[0] === this.$elementsContainer[0] || $li.siblings().length) {
           $li.remove();
@@ -111,7 +111,7 @@ Craft.CategorySelectInput = Craft.BaseElementSelectInput.extend({
       };
     }
 
-    var func = () => {
+    const func = () => {
       this.animateElementAway($allCategories.eq(i), callback);
     };
 

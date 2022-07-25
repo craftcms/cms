@@ -278,7 +278,7 @@ class Template
      * @param int|null $line The line number from the compiled template
      * @return array|false The resolved template path and line number, or `false` if the path couldn’t be determined.
      * If a template path could be determined but not the template line number, the line number will be null.
-     * @since 3.7.49
+     * @since 4.1.5
      */
     public static function resolveTemplatePathAndLine(string $path, ?int $line)
     {
