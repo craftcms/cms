@@ -1,7 +1,7 @@
 <?php
 
 return [
-    '(Ungrouped)' => '(Ungrouped)',
+    '(Ungrouped)' => '(Non groupé)',
     '(blank)' => '(vide)',
     '(trial)' => '(essai)',
     '({currencyCode}) {currencySymbol}' => '({currencyCode}) {currencySymbol}',
@@ -304,7 +304,7 @@ return [
     'Connecting to CraftCMS.com…' => 'Connexion à CraftCMS.com…',
     'Content' => 'Contenu',
     'Contents of {path}' => 'Contenu de {path}',
-    'Context' => 'Context',
+    'Context' => 'Contexte',
     'Continue anyway' => 'Continuer quand même',
     'Continue shopping' => 'Continuer les achats',
     'Continue' => 'Continuer',
