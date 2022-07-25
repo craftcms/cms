@@ -888,7 +888,7 @@ return [
     'More Resources' => 'יותר משאבים',
     'More' => 'עוד',
     'More…' => 'עוד…',
-    'More actions' => 'More actions',
+    'More actions' => 'פעולות נוספות',
     'Move down' => 'הזז כלפי מטה',
     'Move to the left' => 'הזז שמאלה',
     'Move to the right' => 'הזז ימינה',
