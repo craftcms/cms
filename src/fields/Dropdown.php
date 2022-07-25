@@ -48,10 +48,10 @@ class Dropdown extends BaseOptionsField implements SortableFieldInterface
     protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
     {
         /** @var SingleOptionFieldData $value */
-        $options = $this->translatedOptions();
+        $options = $this->translatedOptions(true);
 
         if (!$value->valid) {
-            Craft::$app->getView()->setInitialDeltaValue($this->handle, $value->value);
+            Craft::$app->getView()->setInitialDeltaValue($this->handle, $this->encodeValue($value->value));
             $value = null;
 
             // Add a blank option to the beginning if one doesn't already exist
@@ -66,7 +66,7 @@ class Dropdown extends BaseOptionsField implements SortableFieldInterface
             'id' => $this->getInputId(),
             'describedBy' => $this->describedBy,
             'name' => $this->handle,
-            'value' => $value,
+            'value' => $this->encodeValue($value),
             'options' => $options,
         ]);
     }

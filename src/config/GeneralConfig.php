@@ -12,7 +12,6 @@ use craft\helpers\ConfigHelper;
 use craft\helpers\Localization;
 use craft\helpers\StringHelper;
 use craft\services\Config;
-use yii\base\BaseObject;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\base\UnknownPropertyException;
@@ -23,7 +22,7 @@ use yii\base\UnknownPropertyException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class GeneralConfig extends BaseObject
+class GeneralConfig extends BaseConfig
 {
     public const IMAGE_DRIVER_AUTO = 'auto';
     public const IMAGE_DRIVER_GD = 'gd';
@@ -42,7 +41,10 @@ class GeneralConfig extends BaseObject
      */
     public const SNAKE_CASE = 'snake';
 
-    private static array $renamedSettings = [
+    /**
+     * @inerhitdoc
+     */
+    protected static array $renamedSettings = [
         'activateAccountFailurePath' => 'invalidUserTokenPath',
         'allowAutoUpdates' => 'allowUpdates',
         'backupDbOnUpdate' => 'backupOnUpdate',
@@ -57,13 +59,20 @@ class GeneralConfig extends BaseObject
     ];
 
     /**
+     * @inheritdoc
+     */
+    protected ?string $filename = Config::CATEGORY_GENERAL;
+
+    /**
      * @var array The default user accessibility preferences that should be applied to users that haven’t saved their preferences yet.
      *
      * The array can contain the following keys:
      *
-     * - `alwaysShowFocusRings` - Whether focus rings should always be shown when an element has focus
-     * - `useShapes` – Whether shapes should be used to represent statuses
-     * - `underlineLinks` – Whether links should be underlined
+     * - `alwaysShowFocusRings` - Whether focus rings should always be shown when an element has focus.
+     * - `useShapes` – Whether shapes should be used to represent statuses.
+     * - `underlineLinks` – Whether links should be underlined.
+     * - `notificationDuration` – How long notifications should be shown before they disappear automatically (in
+     *   milliseconds). Set to `0` to show them indefinitely.
      *
      * ```php
      * 'accessibilityDefaults' => [
@@ -78,6 +87,7 @@ class GeneralConfig extends BaseObject
         'alwaysShowFocusRings' => false,
         'useShapes' => false,
         'underlineLinks' => false,
+        'notificationDuration' => 5000,
     ];
 
     /**
@@ -871,6 +881,16 @@ class GeneralConfig extends BaseObject
 
     /**
      * @var bool Whether the system should run in [Dev Mode](https://craftcms.com/support/dev-mode).
+     *
+     * ::: code
+     * ```php Static Config
+     * 'devMode' => true,
+     * ```
+     * ```shell Environment Override
+     * CRAFT_DEV_MODE=true
+     * ```
+     * :::
+     *
      * @group System
      */
     public bool $devMode = false;
@@ -895,6 +915,15 @@ class GeneralConfig extends BaseObject
      * ::: warning
      * This should not be set on a per-environment basis, as it could result in plugin schema version mismatches
      * between environments, which will prevent project config changes from getting applied.
+     * :::
+     *
+     * ::: code
+     * ```php Static Config
+     * 'disabledPlugins' => ['redactor', 'webhooks'],
+     * ```
+     * ```shell Environment Override
+     * CRAFT_DISABLED_PLUGINS=redactor,webhooks
+     * ```
      * :::
      *
      * @since 3.1.9
@@ -2397,7 +2426,7 @@ class GeneralConfig extends BaseObject
      *
      * @group Security
      */
-    public string $securityKey;
+    public string $securityKey = '';
 
     /**
      * @var bool Whether a `Content-Length` header should be sent with responses.
@@ -2991,28 +3020,8 @@ class GeneralConfig extends BaseObject
     /**
      * @inheritdoc
      */
-    public function __get($name)
-    {
-        if (isset(self::$renamedSettings[$name])) {
-            return $this->{self::$renamedSettings[$name]};
-        }
-
-        return parent::__get($name);
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function __set($name, $value)
     {
-        if (isset(self::$renamedSettings[$name])) {
-            $newName = self::$renamedSettings[$name];
-            $configFilePath = Craft::$app->getConfig()->getConfigFilePath(Config::CATEGORY_GENERAL);
-            Craft::$app->getDeprecator()->log($name, "The `$name` config setting has been renamed to `$newName`.", $configFilePath);
-            $this->$newName = $value;
-            return;
-        }
-
         try {
             parent::__set($name, $value);
         } catch (UnknownPropertyException) {
@@ -3021,15 +3030,2188 @@ class GeneralConfig extends BaseObject
     }
 
     /**
-     * @inheritdoc
+     * The default user accessibility preferences that should be applied to users that haven’t saved their preferences yet.
+     *
+     * @group System
+     * @param array $value
+     * @return self
+     * @see $accessibilityDefaults
+     * @since 4.2.0
      */
-    public function __isset($name)
+    public function accessibilityDefaults(array $value): self
     {
-        if (isset(self::$renamedSettings[$name])) {
-            return isset($this->{self::$renamedSettings[$name]});
-        }
+        $this->accessibilityDefaults = $value;
+        return $this;
+    }
 
-        return parent::__isset($name);
+    /**
+     * The URI segment Craft should look for when determining if the current request should be routed to a controller action.
+     *
+     * @group Routing
+     * @param string $value
+     * @return self
+     * @see $actionTrigger
+     * @since 4.2.0
+     */
+    public function actionTrigger(string $value): self
+    {
+        $this->actionTrigger = $value;
+        return $this;
+    }
+
+    /**
+     * The URI that users without access to the control panel should be redirected to after activating their account.
+     *
+     * @group Routing
+     * @param mixed $value
+     * @return self
+     * @see $activateAccountSuccessPath
+     * @since 4.2.0
+     */
+    public function activateAccountSuccessPath(mixed $value): self
+    {
+        $this->activateAccountSuccessPath = $value;
+        return $this;
+    }
+
+    /**
+     * Whether auto-generated URLs should have trailing slashes.
+     *
+     * @group Routing
+     * @param bool $value
+     * @return self
+     * @see $addTrailingSlashesToUrls
+     * @since 4.2.0
+     */
+    public function addTrailingSlashesToUrls(bool $value = true): self
+    {
+        $this->addTrailingSlashesToUrls = $value;
+        return $this;
+    }
+
+    /**
+     * Any custom Yii [aliases](https://www.yiiframework.com/doc/guide/2.0/en/concept-aliases) that should be defined for every request.
+     *
+     * @group Environment
+     * @param array $value
+     * @return self
+     * @see $aliases
+     * @since 4.2.0
+     */
+    public function aliases(array $value): self
+    {
+        $this->aliases = $value;
+        return $this;
+    }
+
+    /**
+     * Whether admins should be allowed to make administrative changes to the system.
+     *
+     * @group System
+     * @param bool $value
+     * @return self
+     * @see $allowAdminChanges
+     * @since 4.2.0
+     */
+    public function allowAdminChanges(bool $value = true): self
+    {
+        $this->allowAdminChanges = $value;
+        return $this;
+    }
+
+    /**
+     * The Ajax origins that should be allowed to access the GraphQL API, if enabled.
+     *
+     * @group GraphQL
+     * @param array|null|false $value
+     * @return self
+     * @see $allowedGraphqlOrigins
+     * @since 4.2.0
+     */
+    public function allowedGraphqlOrigins(array|null|false $value): self
+    {
+        $this->allowedGraphqlOrigins = $value;
+        return $this;
+    }
+
+    /**
+     * Whether Craft should allow system and plugin updates in the control panel, and plugin installation from the Plugin Store.
+     *
+     * @group System
+     * @param bool $value
+     * @return self
+     * @see $allowUpdates
+     * @since 4.2.0
+     */
+    public function allowUpdates(bool $value = true): self
+    {
+        $this->allowUpdates = $value;
+        return $this;
+    }
+
+    /**
+     * The file extensions Craft should allow when a user is uploading files.
+     *
+     * @group Assets
+     * @param string[] $value
+     * @return self
+     * @see $allowedFileExtensions
+     * @since 4.2.0
+     */
+    public function allowedFileExtensions(array $value): self
+    {
+        $this->allowedFileExtensions = $value;
+        return $this;
+    }
+
+    /**
+     * Whether users should be allowed to create similarly-named tags.
+     *
+     * @group System
+     * @param bool $value
+     * @return self
+     * @see $allowSimilarTags
+     * @since 4.2.0
+     */
+    public function allowSimilarTags(bool $value = true): self
+    {
+        $this->allowSimilarTags = $value;
+        return $this;
+    }
+
+    /**
+     * Whether uppercase letters should be allowed in slugs.
+     *
+     * @group Routing
+     * @param bool $value
+     * @return self
+     * @see $allowUppercaseInSlug
+     * @since 4.2.0
+     */
+    public function allowUppercaseInSlug(bool $value = true): self
+    {
+        $this->allowUppercaseInSlug = $value;
+        return $this;
+    }
+
+    /**
+     * Whether users should automatically be logged in after activating their account or resetting their password.
+     *
+     * @group System
+     * @param bool $value
+     * @return self
+     * @see $autoLoginAfterAccountActivation
+     * @since 4.2.0
+     */
+    public function autoLoginAfterAccountActivation(bool $value = true): self
+    {
+        $this->autoLoginAfterAccountActivation = $value;
+        return $this;
+    }
+
+    /**
+     * Whether Craft should create a database backup before applying a new system update.
+     *
+     * @group System
+     * @param bool $value
+     * @return self
+     * @see $backupOnUpdate
+     * @since 4.2.0
+     */
+    public function backupOnUpdate(bool $value = true): self
+    {
+        $this->backupOnUpdate = $value;
+        return $this;
+    }
+
+    /**
+     * The shell command that Craft should execute to create a database backup.
+     *
+     * @group Environment
+     * @param string|null|false $value
+     * @return self
+     * @see $backupCommand
+     * @since 4.2.0
+     */
+    public function backupCommand(string|null|false $value): self
+    {
+        $this->backupCommand = $value;
+        return $this;
+    }
+
+    /**
+     * The base URL Craft should use when generating control panel URLs.
+     *
+     * @group Routing
+     * @param string|null $value
+     * @return self
+     * @see $baseCpUrl
+     * @since 4.2.0
+     */
+    public function baseCpUrl(?string $value): self
+    {
+        $this->baseCpUrl = $value;
+        return $this;
+    }
+
+    /**
+     * The higher the cost value, the longer it takes to generate a password hash and to verify against it.
+     *
+     * @group Security
+     * @param int $value
+     * @return self
+     * @see $blowfishHashCost
+     * @since 4.2.0
+     */
+    public function blowfishHashCost(int $value): self
+    {
+        $this->blowfishHashCost = $value;
+        return $this;
+    }
+
+    /**
+     * The server path to an image file that should be sent when responding to an image request with a
+     * 404 status code.
+     *
+     * @group Image Handling
+     * @param string|null $value
+     * @return self
+     * @see $brokenImagePath
+     * @since 4.2.0
+     */
+    public function brokenImagePath(?string $value): self
+    {
+        $this->brokenImagePath = $value;
+        return $this;
+    }
+
+    /**
+     * A unique ID representing the current build of the codebase.
+     *
+     * @group Environment
+     * @param string|null $value
+     * @return self
+     * @see $buildId
+     * @since 4.2.0
+     */
+    public function buildId(?string $value): self
+    {
+        $this->buildId = $value;
+        return $this;
+    }
+
+    /**
+     * The default length of time Craft will store data, RSS feed, and template caches.
+     *
+     * @group System
+     * @defaultAlt 1 day
+     * @param mixed $value
+     * @return self
+     * @see $cacheDuration
+     * @since 4.2.0
+     */
+    public function cacheDuration(mixed $value): self
+    {
+        $this->cacheDuration = $value;
+        return $this;
+    }
+
+    /**
+     * Whether uploaded filenames with non-ASCII characters should be converted to ASCII (i.e. `ñ` → `n`).
+     *
+     * @group Assets
+     * @param bool $value
+     * @return self
+     * @see $convertFilenamesToAscii
+     * @since 4.2.0
+     */
+    public function convertFilenamesToAscii(bool $value = true): self
+    {
+        $this->convertFilenamesToAscii = $value;
+        return $this;
+    }
+
+    /**
+     * The amount of time a user must wait before re-attempting to log in after their account is locked due to too many
+     * failed login attempts.
+     *
+     * @group Security
+     * @defaultAlt 5 minutes
+     * @param mixed $value
+     * @return self
+     * @see $cooldownDuration
+     * @since 4.2.0
+     */
+    public function cooldownDuration(mixed $value): self
+    {
+        $this->cooldownDuration = $value;
+        return $this;
+    }
+
+    /**
+     * List of additional HTML tags that should be included in the `<head>` of control panel pages.
+     *
+     * @group System
+     * @param array $value
+     * @return self
+     * @see $cpHeadTags
+     * @since 4.2.0
+     */
+    public function cpHeadTags(array $value): self
+    {
+        $this->cpHeadTags = $value;
+        return $this;
+    }
+
+    /**
+     * The URI segment Craft should look for when determining if the current request should route to the control panel rather than
+     * the front-end website.
+     *
+     * @group Routing
+     * @param string|null $value
+     * @return self
+     * @see $cpTrigger
+     * @since 4.2.0
+     */
+    public function cpTrigger(?string $value): self
+    {
+        $this->cpTrigger = $value;
+        return $this;
+    }
+
+    /**
+     * The name of CSRF token used for CSRF validation if <config4:enableCsrfProtection> is set to `true`.
+     *
+     * @group Security
+     * @param string $value
+     * @return self
+     * @see $csrfTokenName
+     * @since 4.2.0
+     */
+    public function csrfTokenName(string $value): self
+    {
+        $this->csrfTokenName = $value;
+        return $this;
+    }
+
+    /**
+     * The domain that cookies generated by Craft should be created for. If blank, it will be left up to the browser to determine
+     * which domain to use (almost always the current). If you want the cookies to work for all subdomains, for example, you could
+     * set this to `'.my-project.tld'`.
+     *
+     * @group Environment
+     * @param string $value
+     * @return self
+     * @see $defaultCookieDomain
+     * @since 4.2.0
+     */
+    public function defaultCookieDomain(string $value): self
+    {
+        $this->defaultCookieDomain = $value;
+        return $this;
+    }
+
+    /**
+     * The default language the control panel should use for users who haven’t set a preferred language yet.
+     *
+     * @group System
+     * @param string|null $value
+     * @return self
+     * @see $defaultCpLanguage
+     * @since 4.2.0
+     */
+    public function defaultCpLanguage(?string $value): self
+    {
+        $this->defaultCpLanguage = $value;
+        return $this;
+    }
+
+    /**
+     * The default locale the control panel should use for date/number formatting, for users who haven’t set
+     * a preferred language or formatting locale.
+     *
+     * @group System
+     * @param string|null $value
+     * @return self
+     * @see $defaultCpLocale
+     * @since 4.2.0
+     */
+    public function defaultCpLocale(?string $value): self
+    {
+        $this->defaultCpLocale = $value;
+        return $this;
+    }
+
+    /**
+     * The default permission to be set for newly-generated directories.
+     *
+     * @group System
+     * @param mixed $value
+     * @return self
+     * @see $defaultDirMode
+     * @since 4.2.0
+     */
+    public function defaultDirMode(mixed $value): self
+    {
+        $this->defaultDirMode = $value;
+        return $this;
+    }
+
+    /**
+     * The default permission to be set for newly-generated files.
+     *
+     * @group System
+     * @param int|null $value
+     * @return self
+     * @see $defaultFileMode
+     * @since 4.2.0
+     */
+    public function defaultFileMode(?int $value): self
+    {
+        $this->defaultFileMode = $value;
+        return $this;
+    }
+
+    /**
+     * The quality level Craft will use when saving JPG and PNG files. Ranges from 1 (worst quality, smallest file) to
+     * 100 (best quality, biggest file).
+     *
+     * @group Image Handling
+     * @param int $value
+     * @return self
+     * @see $defaultImageQuality
+     * @since 4.2.0
+     */
+    public function defaultImageQuality(int $value): self
+    {
+        $this->defaultImageQuality = $value;
+        return $this;
+    }
+
+    /**
+     * The default options that should be applied to each search term.
+     *
+     * @group System
+     * @param array $value
+     * @return self
+     * @see $defaultSearchTermOptions
+     * @since 4.2.0
+     */
+    public function defaultSearchTermOptions(array $value): self
+    {
+        $this->defaultSearchTermOptions = $value;
+        return $this;
+    }
+
+    /**
+     * The template file extensions Craft will look for when matching a template path to a file on the front end.
+     *
+     * @group System
+     * @param array $value
+     * @return self
+     * @see $defaultTemplateExtensions
+     * @since 4.2.0
+     */
+    public function defaultTemplateExtensions(array $value): self
+    {
+        $this->defaultTemplateExtensions = $value;
+        return $this;
+    }
+
+    /**
+     * The default amount of time tokens can be used before expiring.
+     *
+     * @group Security
+     * @defaultAlt 1 day
+     * @param mixed $value
+     * @return self
+     * @see $defaultTokenDuration
+     * @since 4.2.0
+     */
+    public function defaultTokenDuration(mixed $value): self
+    {
+        $this->defaultTokenDuration = $value;
+        return $this;
+    }
+
+    /**
+     * The default day new users should have set as their Week Start Day.
+     *
+     * @group System
+     * @defaultAlt Monday
+     * @param int $value
+     * @return self
+     * @see $defaultWeekStartDay
+     * @since 4.2.0
+     */
+    public function defaultWeekStartDay(int $value): self
+    {
+        $this->defaultWeekStartDay = $value;
+        return $this;
+    }
+
+    /**
+     * By default, Craft requires a front-end “password” field for public user registrations. Setting this to `true`
+     * removes that requirement for the initial registration form.
+     *
+     * @group Security
+     * @param bool $value
+     * @return self
+     * @see $deferPublicRegistrationPassword
+     * @since 4.2.0
+     */
+    public function deferPublicRegistrationPassword(bool $value = true): self
+    {
+        $this->deferPublicRegistrationPassword = $value;
+        return $this;
+    }
+
+    /**
+     * Whether the system should run in [Dev Mode](https://craftcms.com/support/dev-mode).
+     *
+     * @group System
+     * @param bool $value
+     * @return self
+     * @see $devMode
+     * @since 4.2.0
+     */
+    public function devMode(bool $value = true): self
+    {
+        $this->devMode = $value;
+        return $this;
+    }
+
+    /**
+     * Array of plugin handles that should be disabled, regardless of what the project config says.
+     *
+     * @group System
+     * @param string|array|null $value
+     * @return self
+     * @see $disabledPlugins
+     * @since 4.2.0
+     */
+    public function disabledPlugins(string|array|null $value): self
+    {
+        $this->disabledPlugins = $value;
+        return $this;
+    }
+
+    /**
+     * Whether front end requests should respond with `X-Robots-Tag: none` HTTP headers, indicating that pages should not be indexed,
+     * and links on the page should not be followed, by web crawlers.
+     *
+     * @group System
+     * @param bool $value
+     * @return self
+     * @see $disallowRobots
+     * @since 4.2.0
+     */
+    public function disallowRobots(bool $value = true): self
+    {
+        $this->disallowRobots = $value;
+        return $this;
+    }
+
+    /**
+     * Whether the `transform` directive should be disabled for the GraphQL API.
+     *
+     * @group GraphQL
+     * @param bool $value
+     * @return self
+     * @see $disableGraphqlTransformDirective
+     * @since 4.2.0
+     */
+    public function disableGraphqlTransformDirective(bool $value = true): self
+    {
+        $this->disableGraphqlTransformDirective = $value;
+        return $this;
+    }
+
+    /**
+     * Whether front-end web requests should support basic HTTP authentication.
+     *
+     * @group Security
+     * @param bool $value
+     * @return self
+     * @see $enableBasicHttpAuth
+     * @since 4.2.0
+     */
+    public function enableBasicHttpAuth(bool $value = true): self
+    {
+        $this->enableBasicHttpAuth = $value;
+        return $this;
+    }
+
+    /**
+     * Whether to use a cookie to persist the CSRF token if <config4:enableCsrfProtection> is enabled. If false, the CSRF token will be
+     * stored in session under the `csrfTokenName` config setting name. Note that while storing CSRF tokens in session increases security,
+     * it requires starting a session for every page that a CSRF token is needed, which may degrade site performance.
+     *
+     * @group Security
+     * @param bool $value
+     * @return self
+     * @see $enableCsrfCookie
+     * @since 4.2.0
+     */
+    public function enableCsrfCookie(bool $value = true): self
+    {
+        $this->enableCsrfCookie = $value;
+        return $this;
+    }
+
+    /**
+     * Whether GraphQL introspection queries are allowed. Defaults to `true` and is always allowed in the control panel.
+     *
+     * @group GraphQL
+     * @param bool $value
+     * @return self
+     * @see $enableGraphqlIntrospection
+     * @since 4.2.0
+     */
+    public function enableGraphqlIntrospection(bool $value = true): self
+    {
+        $this->enableGraphqlIntrospection = $value;
+        return $this;
+    }
+
+    /**
+     * Whether the GraphQL API should be enabled.
+     *
+     * @group GraphQL
+     * @param bool $value
+     * @return self
+     * @see $enableGql
+     * @since 4.2.0
+     */
+    public function enableGql(bool $value = true): self
+    {
+        $this->enableGql = $value;
+        return $this;
+    }
+
+    /**
+     * The amount of time a user’s elevated session will last, which is required for some sensitive actions (e.g. user group/permission assignment).
+     *
+     * @group Security
+     * @defaultAlt 5 minutes
+     * @param mixed $value
+     * @return self
+     * @see $elevatedSessionDuration
+     * @since 4.2.0
+     */
+    public function elevatedSessionDuration(mixed $value): self
+    {
+        $this->elevatedSessionDuration = $value;
+        return $this;
+    }
+
+    /**
+     * Whether to enable CSRF protection via hidden form inputs for all forms submitted via Craft.
+     *
+     * @group Security
+     * @param bool $value
+     * @return self
+     * @see $enableCsrfProtection
+     * @since 4.2.0
+     */
+    public function enableCsrfProtection(bool $value = true): self
+    {
+        $this->enableCsrfProtection = $value;
+        return $this;
+    }
+
+    /**
+     * Whether Craft should cache GraphQL queries.
+     *
+     * @group GraphQL
+     * @param bool $value
+     * @return self
+     * @see $enableGraphqlCaching
+     * @since 4.2.0
+     */
+    public function enableGraphqlCaching(bool $value = true): self
+    {
+        $this->enableGraphqlCaching = $value;
+        return $this;
+    }
+
+    /**
+     * Whether dates returned by the GraphQL API should be set to the system time zone by default, rather than UTC.
+     *
+     * @group GraphQL
+     * @param bool $value
+     * @return self
+     * @see $setGraphqlDatesToSystemTimeZone
+     * @since 4.2.0
+     */
+    public function setGraphqlDatesToSystemTimeZone(bool $value = true): self
+    {
+        $this->setGraphqlDatesToSystemTimeZone = $value;
+        return $this;
+    }
+
+    /**
+     * Whether to enable Craft’s template `{% cache %}` tag on a global basis.
+     *
+     * @group System
+     * @param bool $value
+     * @return self
+     * @see $enableTemplateCaching
+     * @since 4.2.0
+     */
+    public function enableTemplateCaching(bool $value = true): self
+    {
+        $this->enableTemplateCaching = $value;
+        return $this;
+    }
+
+    /**
+     * The prefix that should be prepended to HTTP error status codes when determining the path to look for an error’s template.
+     *
+     * @group System
+     * @param string $value
+     * @return self
+     * @see $errorTemplatePrefix
+     * @since 4.2.0
+     */
+    public function errorTemplatePrefix(string $value): self
+    {
+        $this->errorTemplatePrefix = $value;
+        return $this;
+    }
+
+    /**
+     * List of file extensions that will be merged into the <config4:allowedFileExtensions> config setting.
+     *
+     * @group System
+     * @param string[]|null $value
+     * @return self
+     * @see $extraAllowedFileExtensions
+     * @since 4.2.0
+     */
+    public function extraAllowedFileExtensions(?array $value): self
+    {
+        $this->extraAllowedFileExtensions = $value;
+        return $this;
+    }
+
+    /**
+     * List of extra locale IDs that the application should support, and users should be able to select as their Preferred Language.
+     *
+     * @group System
+     * @param string[]|null $value
+     * @return self
+     * @see $extraAppLocales
+     * @since 4.2.0
+     */
+    public function extraAppLocales(?array $value): self
+    {
+        $this->extraAppLocales = $value;
+        return $this;
+    }
+
+    /**
+     * List of additional file kinds Craft should support. This array will get merged with the one defined in
+     * `\craft\helpers\Assets::_buildFileKinds()`.
+     *
+     * @group Assets
+     * @param array $value
+     * @return self
+     * @see $extraFileKinds
+     * @since 4.2.0
+     */
+    public function extraFileKinds(array $value): self
+    {
+        $this->extraFileKinds = $value;
+        return $this;
+    }
+
+    /**
+     * The string to use to separate words when uploading Assets. If set to `false`, spaces will be left alone.
+     *
+     * @group Assets
+     * @param string|false $value
+     * @return self
+     * @see $filenameWordSeparator
+     * @since 4.2.0
+     */
+    public function filenameWordSeparator(string|false $value): self
+    {
+        $this->filenameWordSeparator = $value;
+        return $this;
+    }
+
+    /**
+     * Whether image transforms should be generated before page load.
+     *
+     * @group Image Handling
+     * @param bool $value
+     * @return self
+     * @see $generateTransformsBeforePageLoad
+     * @since 4.2.0
+     */
+    public function generateTransformsBeforePageLoad(bool $value = true): self
+    {
+        $this->generateTransformsBeforePageLoad = $value;
+        return $this;
+    }
+
+    /**
+     * Prefix to use for all type names returned by GraphQL.
+     *
+     * @group GraphQL
+     * @param string $value
+     * @return self
+     * @see $gqlTypePrefix
+     * @since 4.2.0
+     */
+    public function gqlTypePrefix(string $value): self
+    {
+        $this->gqlTypePrefix = $value;
+        return $this;
+    }
+
+    /**
+     * The casing to use for autogenerated component handles.
+     *
+     * @group System
+     * @param string $value
+     * @phpstan-param self::CAMEL_CASE|self::PASCAL_CASE|self::SNAKE_CASE $value
+     * @return self
+     * @see $handleCasing
+     * @since 4.2.0
+     */
+    public function handleCasing(string $value): self
+    {
+        $this->handleCasing = $value;
+        return $this;
+    }
+
+    /**
+     * Whether the system should run in Headless Mode, which optimizes the system and control panel for headless CMS implementations.
+     *
+     * @group System
+     * @param bool $value
+     * @return self
+     * @see $headlessMode
+     * @since 4.2.0
+     */
+    public function headlessMode(bool $value = true): self
+    {
+        $this->headlessMode = $value;
+        return $this;
+    }
+
+    /**
+     * The proxy server that should be used for outgoing HTTP requests.
+     *
+     * @group System
+     * @param string|null $value
+     * @return self
+     * @see $httpProxy
+     * @since 4.2.0
+     */
+    public function httpProxy(?string $value): self
+    {
+        $this->httpProxy = $value;
+        return $this;
+    }
+
+    /**
+     * The image driver Craft should use to cleanse and transform images. By default Craft will use ImageMagick if it’s installed
+     * and otherwise fall back to GD. You can explicitly set either `'imagick'` or `'gd'` here to override that behavior.
+     *
+     * @group Image Handling
+     * @param mixed $value
+     * @return self
+     * @see $imageDriver
+     * @since 4.2.0
+     */
+    public function imageDriver(mixed $value): self
+    {
+        $this->imageDriver = $value;
+        return $this;
+    }
+
+    /**
+     * An array containing the selectable image aspect ratios for the image editor. The array must be in the format
+     * of `label` => `ratio`, where ratio must be a float or a string. For string values, only values of “none” and “original” are allowed.
+     *
+     * @group Image Handling
+     * @param array $value
+     * @return self
+     * @see $imageEditorRatios
+     * @since 4.2.0
+     */
+    public function imageEditorRatios(array $value): self
+    {
+        $this->imageEditorRatios = $value;
+        return $this;
+    }
+
+    /**
+     * The template filenames Craft will look for within a directory to represent the directory’s “index” template when
+     * matching a template path to a file on the front end.
+     *
+     * @group System
+     * @param string[] $value
+     * @return self
+     * @see $indexTemplateFilenames
+     * @since 4.2.0
+     */
+    public function indexTemplateFilenames(array $value): self
+    {
+        $this->indexTemplateFilenames = $value;
+        return $this;
+    }
+
+    /**
+     * The amount of time to track invalid login attempts for a user, for determining if Craft should lock an account.
+     *
+     * See [[ConfigHelper::durationInSeconds()]] for a list of supported value types.
+     *
+     * @group Security
+     * @defaultAlt 1 hour
+     * @param mixed $value
+     * @return self
+     * @see $invalidLoginWindowDuration
+     * @since 4.2.0
+     */
+    public function invalidLoginWindowDuration(mixed $value): self
+    {
+        $this->invalidLoginWindowDuration = $value;
+        return $this;
+    }
+
+    /**
+     * The URI Craft should redirect to when user token validation fails. A token is used on things like setting and resetting user account
+     * passwords. Note that this only affects front-end site requests.
+     *
+     * @group Routing
+     * @param mixed $value
+     * @return self
+     * @see $invalidUserTokenPath
+     * @since 4.2.0
+     */
+    public function invalidUserTokenPath(mixed $value): self
+    {
+        $this->invalidUserTokenPath = $value;
+        return $this;
+    }
+
+    /**
+     * List of headers where proxies store the real client IP.
+     *
+     * @group System
+     * @param string[]|null $value
+     * @return self
+     * @see $ipHeaders
+     * @since 4.2.0
+     */
+    public function ipHeaders(?array $value): self
+    {
+        $this->ipHeaders = $value;
+        return $this;
+    }
+
+    /**
+     * Whether the site is currently live. If set to `true` or `false`, it will take precedence over the System Status setting
+     * in Settings → General.
+     *
+     * @group System
+     * @param bool|null $value
+     * @return self
+     * @see $isSystemLive
+     * @since 4.2.0
+     */
+    public function isSystemLive(?bool $value): self
+    {
+        $this->isSystemLive = $value;
+        return $this;
+    }
+
+    /**
+     * Whether non-ASCII characters in auto-generated slugs should be converted to ASCII (i.e. ñ → n).
+     *
+     * @group System
+     * @param bool $value
+     * @return self
+     * @see $limitAutoSlugsToAscii
+     * @since 4.2.0
+     */
+    public function limitAutoSlugsToAscii(bool $value = true): self
+    {
+        $this->limitAutoSlugsToAscii = $value;
+        return $this;
+    }
+
+    /**
+     * The URI Craft should use for user login on the front end.
+     *
+     * @group Routing
+     * @param mixed $value
+     * @return self
+     * @see $loginPath
+     * @since 4.2.0
+     */
+    public function loginPath(mixed $value): self
+    {
+        $this->loginPath = $value;
+        return $this;
+    }
+
+    /**
+     * The URI Craft should use for user logout on the front end.
+     *
+     * @group Routing
+     * @param mixed $value
+     * @return self
+     * @see $logoutPath
+     * @since 4.2.0
+     */
+    public function logoutPath(mixed $value): self
+    {
+        $this->logoutPath = $value;
+        return $this;
+    }
+
+    /**
+     * The maximum dimension size to use when caching images from external sources to use in transforms. Set to `0` to never cache them.
+     *
+     * @group Image Handling
+     * @param int $value
+     * @return self
+     * @see $maxCachedCloudImageSize
+     * @since 4.2.0
+     */
+    public function maxCachedCloudImageSize(int $value): self
+    {
+        $this->maxCachedCloudImageSize = $value;
+        return $this;
+    }
+
+    /**
+     * The maximum allowed complexity a GraphQL query is allowed to have. Set to `0` to allow any complexity.
+     *
+     * @group GraphQL
+     * @param int $value
+     * @return self
+     * @see $maxGraphqlComplexity
+     * @since 4.2.0
+     */
+    public function maxGraphqlComplexity(int $value): self
+    {
+        $this->maxGraphqlComplexity = $value;
+        return $this;
+    }
+
+    /**
+     * The maximum allowed depth a GraphQL query is allowed to reach. Set to `0` to allow any depth.
+     *
+     * @group GraphQL
+     * @param int $value
+     * @return self
+     * @see $maxGraphqlDepth
+     * @since 4.2.0
+     */
+    public function maxGraphqlDepth(int $value): self
+    {
+        $this->maxGraphqlDepth = $value;
+        return $this;
+    }
+
+    /**
+     * The maximum allowed results for a single GraphQL query. Set to `0` to disable any limits.
+     *
+     * @group GraphQL
+     * @param int $value
+     * @return self
+     * @see $maxGraphqlResults
+     * @since 4.2.0
+     */
+    public function maxGraphqlResults(int $value): self
+    {
+        $this->maxGraphqlResults = $value;
+        return $this;
+    }
+
+    /**
+     * The number of invalid login attempts Craft will allow within the specified duration before the account gets locked.
+     *
+     * @group Security
+     * @param int|false $value
+     * @return self
+     * @see $maxInvalidLogins
+     * @since 4.2.0
+     */
+    public function maxInvalidLogins(int|false $value): self
+    {
+        $this->maxInvalidLogins = $value;
+        return $this;
+    }
+
+    /**
+     * The number of backups Craft should make before it starts deleting the oldest backups. If set to `false`, Craft will
+     * not delete any backups.
+     *
+     * @group System
+     * @param int|false $value
+     * @return self
+     * @see $maxBackups
+     * @since 4.2.0
+     */
+    public function maxBackups(int|false $value): self
+    {
+        $this->maxBackups = $value;
+        return $this;
+    }
+
+    /**
+     * The maximum number of revisions that should be stored for each element.
+     *
+     * @group System
+     * @param int|null $value
+     * @return self
+     * @see $maxRevisions
+     * @since 4.2.0
+     */
+    public function maxRevisions(?int $value): self
+    {
+        $this->maxRevisions = $value;
+        return $this;
+    }
+
+    /**
+     * The highest number Craft will tack onto a slug in order to make it unique before giving up and throwing an error.
+     *
+     * @group System
+     * @param int $value
+     * @return self
+     * @see $maxSlugIncrement
+     * @since 4.2.0
+     */
+    public function maxSlugIncrement(int $value): self
+    {
+        $this->maxSlugIncrement = $value;
+        return $this;
+    }
+
+    /**
+     * The maximum upload file size allowed.
+     *
+     * @group Assets
+     * @defaultAlt 16MB
+     * @param int|string $value
+     * @return self
+     * @see $maxUploadFileSize
+     * @since 4.2.0
+     */
+    public function maxUploadFileSize(string|int $value): self
+    {
+        $this->maxUploadFileSize = $value;
+        return $this;
+    }
+
+    /**
+     * Whether generated URLs should omit `index.php` (e.g. `http://my-project.tld/path` instead of `http://my-project.tld/index.php/path`)
+     *
+     * @group Routing
+     * @param bool $value
+     * @return self
+     * @see $omitScriptNameInUrls
+     * @since 4.2.0
+     */
+    public function omitScriptNameInUrls(bool $value = true): self
+    {
+        $this->omitScriptNameInUrls = $value;
+        return $this;
+    }
+
+    /**
+     * Whether Craft should optimize images for reduced file sizes without noticeably reducing image quality. (Only supported when
+     * ImageMagick is used.)
+     *
+     * @group Image Handling
+     * @param bool $value
+     * @return self
+     * @see $optimizeImageFilesize
+     * @since 4.2.0
+     */
+    public function optimizeImageFilesize(bool $value = true): self
+    {
+        $this->optimizeImageFilesize = $value;
+        return $this;
+    }
+
+    /**
+     * The string preceding a number which Craft will look for when determining if the current request is for a particular page in
+     * a paginated list of pages.
+     *
+     * @group Routing
+     * @param string $value
+     * @return self
+     * @see $pageTrigger
+     * @since 4.2.0
+     */
+    public function pageTrigger(string $value): self
+    {
+        $this->pageTrigger = $value;
+        return $this;
+    }
+
+    /**
+     * The query string param that Craft will check when determining the request’s path.
+     *
+     * @group Routing
+     * @param string|null $value
+     * @return self
+     * @see $pathParam
+     * @since 4.2.0
+     */
+    public function pathParam(?string $value): self
+    {
+        $this->pathParam = $value;
+        return $this;
+    }
+
+    /**
+     * The `Permissions-Policy` header that should be sent for web responses.
+     *
+     * @group System
+     * @param string|null $value
+     * @return self
+     * @see $permissionsPolicyHeader
+     * @since 4.2.0
+     */
+    public function permissionsPolicyHeader(?string $value): self
+    {
+        $this->permissionsPolicyHeader = $value;
+        return $this;
+    }
+
+    /**
+     * The maximum amount of memory Craft will try to reserve during memory-intensive operations such as zipping,
+     * unzipping and updating. Defaults to an empty string, which means it will use as much memory as it can.
+     *
+     * @group System
+     * @param string|null $value
+     * @return self
+     * @see $phpMaxMemoryLimit
+     * @since 4.2.0
+     */
+    public function phpMaxMemoryLimit(?string $value): self
+    {
+        $this->phpMaxMemoryLimit = $value;
+        return $this;
+    }
+
+    /**
+     * The name of the PHP session cookie.
+     *
+     * @group Session
+     * @param string $value
+     * @return self
+     * @see $phpSessionName
+     * @since 4.2.0
+     */
+    public function phpSessionName(string $value): self
+    {
+        $this->phpSessionName = $value;
+        return $this;
+    }
+
+    /**
+     * The path users should be redirected to after logging into the control panel.
+     *
+     * @group Routing
+     * @param mixed $value
+     * @return self
+     * @see $postCpLoginRedirect
+     * @since 4.2.0
+     */
+    public function postCpLoginRedirect(mixed $value): self
+    {
+        $this->postCpLoginRedirect = $value;
+        return $this;
+    }
+
+    /**
+     * The path users should be redirected to after logging in from the front-end site.
+     *
+     * @group Routing
+     * @param mixed $value
+     * @return self
+     * @see $postLoginRedirect
+     * @since 4.2.0
+     */
+    public function postLoginRedirect(mixed $value): self
+    {
+        $this->postLoginRedirect = $value;
+        return $this;
+    }
+
+    /**
+     * The path that users should be redirected to after logging out from the front-end site.
+     *
+     * @group Routing
+     * @param mixed $value
+     * @return self
+     * @see $postLogoutRedirect
+     * @since 4.2.0
+     */
+    public function postLogoutRedirect(mixed $value): self
+    {
+        $this->postLogoutRedirect = $value;
+        return $this;
+    }
+
+    /**
+     * Whether the <config4:gqlTypePrefix> config setting should have an impact on `query`, `mutation`, and `subscription` types.
+     *
+     * ::: code
+     * ```php Static Config
+     * 'prefixGqlRootTypes' => false,
+     * ```
+     * ```shell Environment Override
+     * CRAFT_PREFIX_GQL_ROOT_TYPES=false
+     * ```
+     * :::
+     *
+     * @group GraphQL
+     * @param bool $value
+     * @return self
+     * @see $prefixGqlRootTypes
+     * @since 4.2.0
+     */
+    public function prefixGqlRootTypes(bool $value = true): self
+    {
+        $this->prefixGqlRootTypes = $value;
+        return $this;
+    }
+
+    /**
+     * Whether CMYK should be preserved as the colorspace when manipulating images.
+     *
+     * @group Image Handling
+     * @param bool $value
+     * @return self
+     * @see $preserveCmykColorspace
+     * @since 4.2.0
+     */
+    public function preserveCmykColorspace(bool $value = true): self
+    {
+        $this->preserveCmykColorspace = $value;
+        return $this;
+    }
+
+    /**
+     * Whether the EXIF data should be preserved when manipulating and uploading images.
+     *
+     * @group Image Handling
+     * @param bool $value
+     * @return self
+     * @see $preserveExifData
+     * @since 4.2.0
+     */
+    public function preserveExifData(bool $value = true): self
+    {
+        $this->preserveExifData = $value;
+        return $this;
+    }
+
+    /**
+     * Whether the embedded Image Color Profile (ICC) should be preserved when manipulating images.
+     *
+     * @group Image Handling
+     * @param bool $value
+     * @return self
+     * @see $preserveImageColorProfiles
+     * @since 4.2.0
+     */
+    public function preserveImageColorProfiles(bool $value = true): self
+    {
+        $this->preserveImageColorProfiles = $value;
+        return $this;
+    }
+
+    /**
+     * When `true`, Craft will always return a successful response in the “forgot password” flow, making it difficult to enumerate users.
+     *
+     * @group Security
+     * @param bool $value
+     * @return self
+     * @see $preventUserEnumeration
+     * @since 4.2.0
+     */
+    public function preventUserEnumeration(bool $value = true): self
+    {
+        $this->preventUserEnumeration = $value;
+        return $this;
+    }
+
+    /**
+     * Custom [iFrame Resizer options](http://davidjbradshaw.github.io/iframe-resizer/#options) that should be used for preview iframes.
+     *
+     * @group System
+     * @param array $value
+     * @return self
+     * @see $previewIframeResizerOptions
+     * @since 4.2.0
+     */
+    public function previewIframeResizerOptions(array $value): self
+    {
+        $this->previewIframeResizerOptions = $value;
+        return $this;
+    }
+
+    /**
+     * The amount of time content preview tokens can be used before expiring.
+     *
+     * @group Security
+     * @defaultAlt 1 day
+     * @param mixed $value
+     * @return self
+     * @see $previewTokenDuration
+     * @since 4.2.0
+     */
+    public function previewTokenDuration(mixed $value): self
+    {
+        $this->previewTokenDuration = $value;
+        return $this;
+    }
+
+    /**
+     * The template path segment prefix that should be used to identify “private” templates, which are templates that are not
+     * directly accessible via a matching URL.
+     *
+     * @group System
+     * @param string $value
+     * @return self
+     * @see $privateTemplateTrigger
+     * @since 4.2.0
+     */
+    public function privateTemplateTrigger(string $value): self
+    {
+        $this->privateTemplateTrigger = $value;
+        return $this;
+    }
+
+    /**
+     * The amount of time to wait before Craft purges pending users from the system that have not activated.
+     *
+     * @group Garbage Collection
+     * @param mixed $value
+     * @return self
+     * @see $purgePendingUsersDuration
+     * @since 4.2.0
+     */
+    public function purgePendingUsersDuration(mixed $value): self
+    {
+        $this->purgePendingUsersDuration = $value;
+        return $this;
+    }
+
+    /**
+     * The amount of time to wait before Craft purges stale user sessions from the sessions table in the database.
+     *
+     * @group Garbage Collection
+     * @defaultAlt 90 days
+     * @param mixed $value
+     * @return self
+     * @see $purgeStaleUserSessionDuration
+     * @since 4.2.0
+     */
+    public function purgeStaleUserSessionDuration(mixed $value): self
+    {
+        $this->purgeStaleUserSessionDuration = $value;
+        return $this;
+    }
+
+    /**
+     * The amount of time to wait before Craft purges unpublished drafts that were never updated with content.
+     *
+     * @group Garbage Collection
+     * @defaultAlt 30 days
+     * @param mixed $value
+     * @return self
+     * @see $purgeUnsavedDraftsDuration
+     * @since 4.2.0
+     */
+    public function purgeUnsavedDraftsDuration(mixed $value): self
+    {
+        $this->purgeUnsavedDraftsDuration = $value;
+        return $this;
+    }
+
+    /**
+     * Whether SVG thumbnails should be rasterized.
+     *
+     * @group Image Handling
+     * @param bool $value
+     * @return self
+     * @see $rasterizeSvgThumbs
+     * @since 4.2.0
+     */
+    public function rasterizeSvgThumbs(bool $value = true): self
+    {
+        $this->rasterizeSvgThumbs = $value;
+        return $this;
+    }
+
+    /**
+     * The amount of time Craft will remember a username and pre-populate it on the control panel’s Login page.
+     *
+     * @group Session
+     * @defaultAlt 1 year
+     * @param mixed $value
+     * @return self
+     * @see $rememberUsernameDuration
+     * @since 4.2.0
+     */
+    public function rememberUsernameDuration(mixed $value): self
+    {
+        $this->rememberUsernameDuration = $value;
+        return $this;
+    }
+
+    /**
+     * The amount of time a user stays logged if “Remember Me” is checked on the login page.
+     *
+     * @group Session
+     * @defaultAlt 14 days
+     * @param mixed $value
+     * @return self
+     * @see $rememberedUserSessionDuration
+     * @since 4.2.0
+     */
+    public function rememberedUserSessionDuration(mixed $value): self
+    {
+        $this->rememberedUserSessionDuration = $value;
+        return $this;
+    }
+
+    /**
+     * Whether Craft should require a matching user agent string when restoring a user session from a cookie.
+     *
+     * @group Session
+     * @param bool $value
+     * @return self
+     * @see $requireMatchingUserAgentForSession
+     * @since 4.2.0
+     */
+    public function requireMatchingUserAgentForSession(bool $value = true): self
+    {
+        $this->requireMatchingUserAgentForSession = $value;
+        return $this;
+    }
+
+    /**
+     * Whether Craft should require the existence of a user agent string and IP address when creating a new user session.
+     *
+     * @group Session
+     * @param bool $value
+     * @return self
+     * @see $requireUserAgentAndIpForSession
+     * @since 4.2.0
+     */
+    public function requireUserAgentAndIpForSession(bool $value = true): self
+    {
+        $this->requireUserAgentAndIpForSession = $value;
+        return $this;
+    }
+
+    /**
+     * The path to the root directory that should store published control panel resources.
+     *
+     * @group Environment
+     * @param string $value
+     * @return self
+     * @see $resourceBasePath
+     * @since 4.2.0
+     */
+    public function resourceBasePath(string $value): self
+    {
+        $this->resourceBasePath = $value;
+        return $this;
+    }
+
+    /**
+     * The URL to the root directory that should store published control panel resources.
+     *
+     * @group Environment
+     * @param string $value
+     * @return self
+     * @see $resourceBaseUrl
+     * @since 4.2.0
+     */
+    public function resourceBaseUrl(string $value): self
+    {
+        $this->resourceBaseUrl = $value;
+        return $this;
+    }
+
+    /**
+     * The shell command Craft should execute to restore a database backup.
+     *
+     * @group Environment
+     * @param string|null|false $value
+     * @return self
+     * @see $restoreCommand
+     * @since 4.2.0
+     */
+    public function restoreCommand(string|null|false $value): self
+    {
+        $this->restoreCommand = $value;
+        return $this;
+    }
+
+    /**
+     * Whether asset URLs should be revved so browsers don’t load cached versions when they’re modified.
+     *
+     * @group Assets
+     * @param bool $value
+     * @return self
+     * @see $revAssetUrls
+     * @since 4.2.0
+     */
+    public function revAssetUrls(bool $value = true): self
+    {
+        $this->revAssetUrls = $value;
+        return $this;
+    }
+
+    /**
+     * Whether Craft should rotate images according to their EXIF data on upload.
+     *
+     * @group Image Handling
+     * @param bool $value
+     * @return self
+     * @see $rotateImagesOnUploadByExifData
+     * @since 4.2.0
+     */
+    public function rotateImagesOnUploadByExifData(bool $value = true): self
+    {
+        $this->rotateImagesOnUploadByExifData = $value;
+        return $this;
+    }
+
+    /**
+     * Whether Craft should run pending queue jobs automatically when someone visits the control panel.
+     *
+     * @group System
+     * @param bool $value
+     * @return self
+     * @see $runQueueAutomatically
+     * @since 4.2.0
+     */
+    public function runQueueAutomatically(bool $value = true): self
+    {
+        $this->runQueueAutomatically = $value;
+        return $this;
+    }
+
+    /**
+     * Whether images uploaded via the control panel should be sanitized.
+     *
+     * @group Security
+     * @param bool $value
+     * @return self
+     * @see $sanitizeCpImageUploads
+     * @since 4.2.0
+     */
+    public function sanitizeCpImageUploads(bool $value = true): self
+    {
+        $this->sanitizeCpImageUploads = $value;
+        return $this;
+    }
+
+    /**
+     * The [SameSite](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie/SameSite) value that should be set on Craft cookies, if any.
+     *
+     * @group System
+     * @param ?string $value
+     * @phpstan-param 'None'|'Lax'|'Strict'|null $value
+     * @return self
+     * @see $sameSiteCookieValue
+     * @since 4.2.0
+     */
+    public function sameSiteCookieValue(?string $value): self
+    {
+        $this->sameSiteCookieValue = $value;
+        return $this;
+    }
+
+    /**
+     * Whether Craft should sanitize uploaded SVG files and strip out potential malicious-looking content.
+     *
+     * @group Security
+     * @param bool $value
+     * @return self
+     * @see $sanitizeSvgUploads
+     * @since 4.2.0
+     */
+    public function sanitizeSvgUploads(bool $value = true): self
+    {
+        $this->sanitizeSvgUploads = $value;
+        return $this;
+    }
+
+    /**
+     * A private, random, cryptographically-secure key that is used for hashing and encrypting data in [[\craft\services\Security]].
+     *
+     * @group Security
+     * @param string $value
+     * @return self
+     * @see $securityKey
+     * @since 4.2.0
+     */
+    public function securityKey(string $value): self
+    {
+        $this->securityKey = $value;
+        return $this;
+    }
+
+    /**
+     * Whether a `Content-Length` header should be sent with responses.
+     *
+     * @group System
+     * @param bool $value
+     * @return self
+     * @see $sendContentLengthHeader
+     * @since 4.2.0
+     */
+    public function sendContentLengthHeader(bool $value = true): self
+    {
+        $this->sendContentLengthHeader = $value;
+        return $this;
+    }
+
+    /**
+     * Whether an `X-Powered-By: Craft CMS` header should be sent, helping services like [BuiltWith](https://builtwith.com/) and
+     * [Wappalyzer](https://www.wappalyzer.com/) identify that the site is running on Craft.
+     *
+     * @group System
+     * @param bool $value
+     * @return self
+     * @see $sendPoweredByHeader
+     * @since 4.2.0
+     */
+    public function sendPoweredByHeader(bool $value = true): self
+    {
+        $this->sendPoweredByHeader = $value;
+        return $this;
+    }
+
+    /**
+     * The URI or URL that Craft should use for Set Password forms on the front end.
+     *
+     * @group Routing
+     * @param mixed $value
+     * @return self
+     * @see $setPasswordPath
+     * @since 4.2.0
+     */
+    public function setPasswordPath(mixed $value): self
+    {
+        $this->setPasswordPath = $value;
+        return $this;
+    }
+
+    /**
+     * The URI to the page where users can request to change their password.
+     *
+     * @group Routing
+     * @param mixed $value
+     * @return self
+     * @see $setPasswordRequestPath
+     * @since 4.2.0
+     */
+    public function setPasswordRequestPath(mixed $value): self
+    {
+        $this->setPasswordRequestPath = $value;
+        return $this;
+    }
+
+    /**
+     * The URI Craft should redirect users to after setting their password from the front end.
+     *
+     * @group Routing
+     * @param mixed $value
+     * @return self
+     * @see $setPasswordSuccessPath
+     * @since 4.2.0
+     */
+    public function setPasswordSuccessPath(mixed $value): self
+    {
+        $this->setPasswordSuccessPath = $value;
+        return $this;
+    }
+
+    /**
+     * The query string parameter name that site tokens should be set to.
+     *
+     * @group Routing
+     * @param string $value
+     * @return self
+     * @see $siteToken
+     * @since 4.2.0
+     */
+    public function siteToken(string $value): self
+    {
+        $this->siteToken = $value;
+        return $this;
+    }
+
+    /**
+     * The character(s) that should be used to separate words in slugs.
+     *
+     * @group System
+     * @param string $value
+     * @return self
+     * @see $slugWordSeparator
+     * @since 4.2.0
+     */
+    public function slugWordSeparator(string $value): self
+    {
+        $this->slugWordSeparator = $value;
+        return $this;
+    }
+
+    /**
+     * Lists of headers that are, by default, subject to the trusted host configuration.
+     *
+     * @group Security
+     * @param array|null $value
+     * @return self
+     * @see $secureHeaders
+     * @since 4.2.0
+     */
+    public function secureHeaders(?array $value): self
+    {
+        $this->secureHeaders = $value;
+        return $this;
+    }
+
+    /**
+     * List of headers to check for determining whether the connection is made via HTTPS.
+     *
+     * @group Security
+     * @param array|null $value
+     * @return self
+     * @see $secureProtocolHeaders
+     * @since 4.2.0
+     */
+    public function secureProtocolHeaders(?array $value): self
+    {
+        $this->secureProtocolHeaders = $value;
+        return $this;
+    }
+
+    /**
+     * The amount of time before a soft-deleted item will be up for hard-deletion by garbage collection.
+     *
+     * @group Garbage Collection
+     * @defaultAlt 30 days
+     * @param mixed $value
+     * @return self
+     * @see $softDeleteDuration
+     * @since 4.2.0
+     */
+    public function softDeleteDuration(mixed $value): self
+    {
+        $this->softDeleteDuration = $value;
+        return $this;
+    }
+
+    /**
+     * Whether user IP addresses should be stored/logged by the system.
+     *
+     * @group Security
+     * @param bool $value
+     * @return self
+     * @see $storeUserIps
+     * @since 4.2.0
+     */
+    public function storeUserIps(bool $value = true): self
+    {
+        $this->storeUserIps = $value;
+        return $this;
+    }
+
+    /**
+     * Configures Craft to send all system emails to either a single email address or an array of email addresses
+     * for testing purposes.
+     *
+     * @group System
+     * @param string|array|null|false $value
+     * @return self
+     * @see $testToEmailAddress
+     * @since 4.2.0
+     */
+    public function testToEmailAddress(string|array|null|false $value): self
+    {
+        $this->testToEmailAddress = $value;
+        return $this;
+    }
+
+    /**
+     * The timezone of the site. If set, it will take precedence over the Timezone setting in Settings → General.
+     *
+     * @group System
+     * @param string|null $value
+     * @return self
+     * @see $timezone
+     * @since 4.2.0
+     */
+    public function timezone(?string $value): self
+    {
+        $this->timezone = $value;
+        return $this;
+    }
+
+    /**
+     * Whether GIF files should be cleansed/transformed.
+     *
+     * @group Image Handling
+     * @param bool $value
+     * @return self
+     * @see $transformGifs
+     * @since 4.2.0
+     */
+    public function transformGifs(bool $value = true): self
+    {
+        $this->transformGifs = $value;
+        return $this;
+    }
+
+    /**
+     * Whether SVG files should be transformed.
+     *
+     * @group Image Handling
+     * @param bool $value
+     * @return self
+     * @see $transformSvgs
+     * @since 4.2.0
+     */
+    public function transformSvgs(bool $value = true): self
+    {
+        $this->transformSvgs = $value;
+        return $this;
+    }
+
+    /**
+     * Whether translated messages should be wrapped in special characters to help find any strings that are not being run through
+     * `Craft::t()` or the `|translate` filter.
+     *
+     * @group System
+     * @param bool $value
+     * @return self
+     * @see $translationDebugOutput
+     * @since 4.2.0
+     */
+    public function translationDebugOutput(bool $value = true): self
+    {
+        $this->translationDebugOutput = $value;
+        return $this;
+    }
+
+    /**
+     * The query string parameter name that Craft tokens should be set to.
+     *
+     * @group Routing
+     * @param string $value
+     * @return self
+     * @see $tokenParam
+     * @since 4.2.0
+     */
+    public function tokenParam(string $value): self
+    {
+        $this->tokenParam = $value;
+        return $this;
+    }
+
+    /**
+     * The configuration for trusted security-related headers.
+     *
+     * @group Security
+     * @param array $value
+     * @return self
+     * @see $trustedHosts
+     * @since 4.2.0
+     */
+    public function trustedHosts(array $value): self
+    {
+        $this->trustedHosts = $value;
+        return $this;
+    }
+
+    /**
+     * Whether images should be upscaled if the provided transform size is larger than the image.
+     *
+     * @group Image Handling
+     * @param bool $value
+     * @return self
+     * @see $upscaleImages
+     * @since 4.2.0
+     */
+    public function upscaleImages(bool $value = true): self
+    {
+        $this->upscaleImages = $value;
+        return $this;
+    }
+
+    /**
+     * Whether Craft should set users’ usernames to their email addresses, rather than let them set their username separately.
+     *
+     * @group System
+     * @param bool $value
+     * @return self
+     * @see $useEmailAsUsername
+     * @since 4.2.0
+     */
+    public function useEmailAsUsername(bool $value = true): self
+    {
+        $this->useEmailAsUsername = $value;
+        return $this;
+    }
+
+    /**
+     * Whether [iFrame Resizer options](http://davidjbradshaw.github.io/iframe-resizer/#options) should be used for Live Preview.
+     *
+     * @group System
+     * @param bool $value
+     * @return self
+     * @see $useIframeResizer
+     * @since 4.2.0
+     */
+    public function useIframeResizer(bool $value = true): self
+    {
+        $this->useIframeResizer = $value;
+        return $this;
+    }
+
+    /**
+     * Whether Craft should specify the path using `PATH_INFO` or as a query string parameter when generating URLs.
+     *
+     * @group Routing
+     * @param bool $value
+     * @return self
+     * @see $usePathInfo
+     * @since 4.2.0
+     */
+    public function usePathInfo(bool $value = true): self
+    {
+        $this->usePathInfo = $value;
+        return $this;
+    }
+
+    /**
+     * Whether Craft will set the “secure” flag when saving cookies when using `Craft::cookieConfig()` to create a cookie.
+     *
+     * @group Security
+     * @param bool|string $value
+     * @return self
+     * @see $useSecureCookies
+     * @since 4.2.0
+     */
+    public function useSecureCookies(string|bool $value): self
+    {
+        $this->useSecureCookies = $value;
+        return $this;
+    }
+
+    /**
+     * Determines what protocol/schema Craft will use when generating tokenized URLs. If set to `'auto'`, Craft will check the
+     * current site’s base URL and the protocol of the current request and if either of them are HTTPS will use `https` in the tokenized URL. If not,
+     * will use `http`.
+     *
+     * @group Routing
+     * @param bool|string $value
+     * @return self
+     * @see $useSslOnTokenizedUrls
+     * @since 4.2.0
+     */
+    public function useSslOnTokenizedUrls(string|bool $value): self
+    {
+        $this->useSslOnTokenizedUrls = $value;
+        return $this;
+    }
+
+    /**
+     * The amount of time before a user will get logged out due to inactivity.
+     *
+     * @group Session
+     * @defaultAlt 1 hour
+     * @param mixed $value
+     * @return self
+     * @see $userSessionDuration
+     * @since 4.2.0
+     */
+    public function userSessionDuration(mixed $value): self
+    {
+        $this->userSessionDuration = $value;
+        return $this;
+    }
+
+    /**
+     * Whether to grab an exclusive lock on a file when writing to it by using the `LOCK_EX` flag.
+     *
+     * @group System
+     * @param bool|null $value
+     * @return self
+     * @see $useFileLocks
+     * @since 4.2.0
+     */
+    public function useFileLocks(?bool $value): self
+    {
+        $this->useFileLocks = $value;
+        return $this;
+    }
+
+    /**
+     * The amount of time a user verification code can be used before expiring.
+     *
+     * @group Security
+     * @defaultAlt 1 day
+     * @param mixed $value
+     * @return self
+     * @see $verificationCodeDuration
+     * @since 4.2.0
+     */
+    public function verificationCodeDuration(mixed $value): self
+    {
+        $this->verificationCodeDuration = $value;
+        return $this;
+    }
+
+    /**
+     * The URI or URL that Craft should use for email verification links on the front end.
+     *
+     * @group Routing
+     * @param mixed $value
+     * @return self
+     * @see $verifyEmailPath
+     * @since 4.2.0
+     */
+    public function verifyEmailPath(mixed $value): self
+    {
+        $this->verifyEmailPath = $value;
+        return $this;
+    }
+
+    /**
+     * The URI that users without access to the control panel should be redirected to after verifying a new email address.
+     *
+     * @group Routing
+     * @param mixed $value
+     * @return self
+     * @see $verifyEmailSuccessPath
+     * @since 4.2.0
+     */
+    public function verifyEmailSuccessPath(mixed $value): self
+    {
+        $this->verifyEmailSuccessPath = $value;
+        return $this;
     }
 
     /**

@@ -12,12 +12,13 @@ use craft\events\DefineBehaviorsEvent;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
+use DateTime;
 
 /**
  * Active Record base class.
  *
- * @property string $dateCreated Date created
- * @property string $dateUpdated Date updated
+ * @property DateTime|string|null $dateCreated Date created
+ * @property DateTime|string|null $dateUpdated Date updated
  * @property string $uid UUID
  * @method ActiveQuery hasMany(string $class, array $link) See [[\yii\db\BaseActiveRecord::hasMany()]] for more info.
  * @method ActiveQuery hasOne(string $class, array $link) See [[\yii\db\BaseActiveRecord::hasOne()]] for more info.

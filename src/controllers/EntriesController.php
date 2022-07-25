@@ -364,6 +364,10 @@ class EntriesController extends BaseEntriesController
             $data['dateCreated'] = DateTimeHelper::toIso8601($entry->dateCreated);
             $data['dateUpdated'] = DateTimeHelper::toIso8601($entry->dateUpdated);
             $data['postDate'] = ($entry->postDate ? DateTimeHelper::toIso8601($entry->postDate) : null);
+
+            if ($this->request->getIsCpRequest()) {
+                $data['elementHtml'] = Cp::elementHtml($entry);
+            }
         }
 
         return $this->asModelSuccess(

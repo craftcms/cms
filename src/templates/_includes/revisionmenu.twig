@@ -63,6 +63,12 @@
 {% set showMenu = editableSiteIds|length > 1 or showRevisions %}
 
 <div class="context-btngroup btngroup">
+    {% tag 'label' with {
+        class: 'visually-hidden',
+        id: 'context-label',
+    } %}
+        {{ 'Context'|t('app') }}
+    {% endtag %}
     {% tag 'button' with {
         type: 'button',
         class: [
@@ -74,6 +80,9 @@
         data: {
             icon: showSiteLabel ? 'world' : null,
         },
+        aria: {
+            'labelledby': 'context-label',
+        }
     } %}
         {%- if showSiteLabel %}
             {{- originalElement.getSite().name|t('site') }}

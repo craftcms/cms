@@ -225,6 +225,7 @@ abstract class Field extends SavableComponent implements FieldInterface
     public function attributeLabels(): array
     {
         return [
+            'groupId' => Craft::t('app', 'Group'),
             'handle' => Craft::t('app', 'Handle'),
             'name' => Craft::t('app', 'Name'),
         ];
@@ -253,6 +254,13 @@ abstract class Field extends SavableComponent implements FieldInterface
         $rules[] = [['handle'], 'string', 'max' => $maxHandleLength];
         $rules[] = [['name', 'handle', 'translationMethod'], 'required'];
         $rules[] = [['groupId'], 'number', 'integerOnly' => true];
+
+        $rules[] = [
+            ['groupId'],
+            'required',
+            'when' => fn() => $this->context === 'global',
+        ];
+
         $rules[] = [
             ['translationMethod'],
             'in',
@@ -264,6 +272,7 @@ abstract class Field extends SavableComponent implements FieldInterface
                 self::TRANSLATION_METHOD_CUSTOM,
             ],
         ];
+
         $rules[] = [
             ['handle'],
             HandleValidator::class,
@@ -275,6 +284,7 @@ abstract class Field extends SavableComponent implements FieldInterface
                 'behavior',
                 'behaviors',
                 'canSetProperties',
+                'canonical',
                 'children',
                 'contentTable',
                 'dateCreated',
@@ -671,6 +681,10 @@ abstract class Field extends SavableComponent implements FieldInterface
      */
     public function getGroup(): ?FieldGroup
     {
+        if (!$this->groupId) {
+            return null;
+        }
+
         return Craft::$app->getFields()->getGroupById($this->groupId);
     }
 

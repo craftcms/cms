@@ -129,21 +129,13 @@ class MonologTarget extends PsrTarget
             return;
         }
 
-        $message = 'Request context:';
-        $vars = [];
-
-        if ($this->allowLineBreaks) {
-            $message .= "\n" . trim(parent::getContextMessage());
-        } else {
-            $vars = $this->logVars;
-        }
-
         $this->logger->pushProcessor(new ContextProcessor(
-            vars: $vars,
+            vars: $this->logVars,
+            dumpVars: $this->allowLineBreaks,
         ));
 
         // Log at default level, so it doesn't get filtered
-        $this->logger->log($this->level, $message);
+        $this->logger->log($this->level, 'Request context:');
         $this->logger->popProcessor();
     }
 

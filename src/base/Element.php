@@ -2239,12 +2239,14 @@ abstract class Element extends Component implements ElementInterface
             $fieldLayout = $this->getFieldLayout()
         ) {
             $scenario = $this->getScenario();
+            $layoutElements = $fieldLayout->getVisibleCustomFieldElements($this);
 
-            foreach ($fieldLayout->getVisibleCustomFields($this) as $field) {
+            foreach ($layoutElements as $layoutElement) {
+                $field = $layoutElement->getField();
                 $attribute = "field:$field->handle";
                 $isEmpty = fn() => $field->isValueEmpty($this->getFieldValue($field->handle), $this);
 
-                if ($scenario === self::SCENARIO_LIVE && $field->required) {
+                if ($scenario === self::SCENARIO_LIVE && $layoutElement->required) {
                     (new RequiredValidator(['isEmpty' => $isEmpty]))
                         ->validateAttribute($this, $attribute);
                 }
@@ -4229,6 +4231,7 @@ abstract class Element extends Component implements ElementInterface
                         'target' => '_blank',
                         'data-icon' => 'world',
                         'title' => Craft::t('app', 'Visit webpage'),
+                        'aria-label' => Craft::t('app', 'View'),
                     ]);
                 }
 
@@ -4434,6 +4437,7 @@ JS,
                     'data' => [
                         'icon' => 'ellipsis',
                     ],
+                    'title' => Craft::t('app', 'Update status for individual sites'),
                     'aria' => [
                         'expanded' => 'false',
                         'label' => Craft::t('app', 'Update status for individual sites'),
@@ -4442,8 +4446,8 @@ JS,
                 : '';
             $statusField = Cp::lightswitchFieldHtml([
                 'fieldClass' => "enabled-for-site-$this->siteId-field",
-                'label' => Craft::t('site', $this->getSite()->getName()) .
-                    $expandStatusBtn,
+                'label' => Craft::t('site', $this->getSite()->getName()),
+                'headingSuffix' => $expandStatusBtn,
                 'name' => "enabledForSite[$this->siteId]",
                 'on' => $this->enabled && $this->getEnabledForSite(),
                 'status' => $this->getAttributeStatus('enabled'),
@@ -4517,12 +4521,18 @@ JS,
         $formatter = Craft::$app->getFormatter();
 
         return array_merge([
+            Craft::t('app', 'ID') => function() {
+                return $this->id ?? false;
+            },
             Craft::t('app', 'Status') => function() {
                 if (!static::hasStatuses()) {
                     return false;
                 }
                 if ($this->getIsUnpublishedDraft()) {
-                    $icon = Html::tag('span', '', ['data' => ['icon' => 'draft']]);
+                    $icon = Html::tag('span', '', [
+                        'data' => ['icon' => 'draft'],
+                        'aria' => ['hidden' => 'true'],
+                    ]);
                     $label = Craft::t('app', 'Draft');
                 } else {
                     $status = $this->getStatus();

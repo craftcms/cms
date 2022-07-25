@@ -74,6 +74,7 @@ use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\db\Exception;
 use yii\db\Expression;
+use yii\db\QueryInterface;
 use yii\helpers\Markdown;
 use function twig_date_converter;
 use function twig_date_format_filter;
@@ -187,7 +188,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('date', [$this, 'dateFilter'], ['needs_environment' => true]),
             new TwigFilter('datetime', [$this, 'datetimeFilter'], ['needs_environment' => true]),
             new TwigFilter('diff', 'array_diff'),
-            new TwigFilter('duration', [DateTimeHelper::class, 'humanDurationFromInterval']),
+            new TwigFilter('duration', [DateTimeHelper::class, 'humanDuration']),
             new TwigFilter('encenc', [$this, 'encencFilter']),
             new TwigFilter('explodeClass', [Html::class, 'explodeClass']),
             new TwigFilter('explodeStyle', [Html::class, 'explodeStyle']),
@@ -204,6 +205,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('json_encode', [$this, 'jsonEncodeFilter']),
             new TwigFilter('json_decode', [Json::class, 'decode']),
             new TwigFilter('kebab', [$this, 'kebabFilter']),
+            new TwigFilter('length', [$this, 'lengthFilter'], ['needs_environment' => true]),
             new TwigFilter('lcfirst', [$this, 'lcfirstFilter']),
             new TwigFilter('literal', [$this, 'literalFilter']),
             new TwigFilter('markdown', [$this, 'markdownFilter'], ['is_safe' => ['html']]),
@@ -1102,6 +1104,23 @@ class Extension extends AbstractExtension implements GlobalsInterface
         }
 
         return -1;
+    }
+
+    /**
+     * Returns the length of an array, or the total result count of a query.
+     *
+     * @param TwigEnvironment $env
+     * @param mixed $value A variable
+     * @return int The length of the value
+     * @since 4.2.0
+     */
+    public function lengthFilter(TwigEnvironment $env, mixed $value): int
+    {
+        if ($value instanceof QueryInterface) {
+            return $value->count();
+        }
+
+        return twig_length_filter($env, $value);
     }
 
     /**
