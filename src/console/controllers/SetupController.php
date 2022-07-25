@@ -129,7 +129,7 @@ class SetupController extends Controller
             return ExitCode::OK;
         }
 
-        if (!$this->confirm(PHP_EOL . 'Install Craft now?', true)) {
+        if ($this->interactive && !$this->confirm(PHP_EOL . 'Install Craft now?', true)) {
             $this->stdout("You can install Craft from a browser once you've set up a web server, or by running this command:" . PHP_EOL, Console::FG_YELLOW);
             $this->_outputCommand('install');
             return ExitCode::OK;
@@ -558,7 +558,7 @@ EOD;
         $path = $configService->getDotEnvPath();
 
         if (!file_exists($path)) {
-            if ($this->confirm(PHP_EOL . "A .env file doesn't exist at $path. Would you like to create one?", true)) {
+            if (!$this->interactive || $this->confirm(PHP_EOL . "A .env file doesn't exist at $path. Would you like to create one?", true)) {
                 try {
                     FileHelper::writeToFile($path, '');
                 } catch (Throwable $e) {
