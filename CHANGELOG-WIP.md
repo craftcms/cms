@@ -17,7 +17,7 @@
 ### Changed
 - Redesigned user notifications. ([#11612](https://github.com/craftcms/cms/pull/11612))
 - Most element notifications now include a link to the element. ([#11612](https://github.com/craftcms/cms/pull/11612))
-- Improved overall control panel accessibility. ([#11563](https://github.com/craftcms/cms/pull/11563))
+- Improved overall control panel accessibility. ([#11563](https://github.com/craftcms/cms/pull/11563), [#11543](https://github.com/craftcms/cms/pull/11543))
 - Improved condition builder accessibility. ([#11588](https://github.com/craftcms/cms/pull/11588), [#11643](https://github.com/craftcms/cms/pull/11643))
 - The “Keep me signed in” checkbox label on the control panel’s login page now includes the remembered session duration, e.g. “Keep me signed in for 2 weeks”. ([#11594](https://github.com/craftcms/cms/discussions/11594))
 - Dashboard widgets no longer show a confirmation dialog when deleted. Their delete notifications include an “Undo” button instead. ([#11573](https://github.com/craftcms/cms/discussions/11573))
