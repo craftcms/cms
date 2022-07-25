@@ -888,7 +888,7 @@ return [
     'More Resources' => 'Altre risorse',
     'More' => 'Altro',
     'More…' => 'Altro…',
-    'More actions' => 'More actions',
+    'More actions' => 'Altre azioni',
     'Move down' => 'Sposta in basso',
     'Move to the left' => 'Sposta a sinistra',
     'Move to the right' => 'Sposta a destra',
