@@ -1880,7 +1880,7 @@ class Fields extends Component
             ->orderBy(['sortOrder' => SORT_ASC]);
 
         // todo: remove this after the next breakpoint
-        if (version_compare(Craft::$app->schemaVersion, '4.0.0.1', '>=')) {
+        if (version_compare(Craft::$app->getInfo()->schemaVersion, '4.0.0.1', '>=')) {
             $query->addSelect('settings');
         }
 
