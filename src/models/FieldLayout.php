@@ -183,11 +183,10 @@ class FieldLayout extends Model
     private array $_availableCustomFields;
 
     /**
-     * @var array
-     * @phpstan-var array<BaseField|class-string<BaseField>|array{class:class-string<BaseField>}>
+     * @var BaseField[]
      * @see getAvailableNativeFields()
      */
-    private array $_availableStandardFields;
+    private array $_availableNativeFields;
 
     /**
      * @var FieldLayoutTab[]
@@ -356,13 +355,14 @@ class FieldLayout extends Model
      */
     public function getAvailableNativeFields(): array
     {
-        if (!isset($this->_availableStandardFields)) {
+        if (!isset($this->_availableNativeFields)) {
+            $this->_availableNativeFields = [];
+
             $event = new DefineFieldLayoutFieldsEvent();
             $this->trigger(self::EVENT_DEFINE_NATIVE_FIELDS, $event);
-            $this->_availableStandardFields = $event->fields;
 
             // Instantiate them
-            foreach ($this->_availableStandardFields as &$field) {
+            foreach ($event->fields as $field) {
                 if (is_string($field) || is_array($field)) {
                     $field = Craft::createObject($field);
                 }
@@ -370,9 +370,10 @@ class FieldLayout extends Model
                     throw new InvalidConfigException('Invalid standard field config');
                 }
                 $field->setLayout($this);
+                $this->_availableNativeFields[] = $field;
             }
         }
-        return $this->_availableStandardFields;
+        return $this->_availableNativeFields;
     }
 
     /**
