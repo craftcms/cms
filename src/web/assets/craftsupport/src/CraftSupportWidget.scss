@@ -172,6 +172,11 @@
             margin: 0 auto;
           }
 
+          .cs-resource-heading {
+            display: flex;
+            align-items: center;
+          }
+
           .cs-icon-resources {
             position: relative;
             margin-top: 14px;

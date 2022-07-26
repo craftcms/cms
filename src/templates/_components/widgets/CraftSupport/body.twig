@@ -1,3 +1,15 @@
+{% import "_includes/links" as links %}
+
+{% macro resourceLink(config) %}
+    <a href="{{ config.link }}" target="_blank" rel="noopener">
+        <h3 class="cs-resource-heading">
+            <img class="cs-logo-image" src="{{ config.bundleUrl }}{{ config.iconPath }}" alt="{{ config.title }}">
+            {{ links.externalLinkIcon() }}
+        </h3>
+        <p>{{ config.description }}</p>
+    </a>
+{% endmacro %}
+
 {% macro screen(widget, showBackupOption, bundleUrl, screen, placeholder, resultsIcon, resultsHeading, formAction, submitText) %}
     {% import "_includes/forms" as forms %}
     {% set idPrefix = 'cs-'~screen~random() %}
@@ -24,28 +36,45 @@
                 <hr>
                 <h2>{{ 'More Resources'|t('app') }}</h2>
                 <div class="cs-logo-resources">
-                    <a href="https://craftcms.com/partners" target="_blank" rel="noopener">
-                        <h3><img class="cs-logo-image" src="{{ bundleUrl }}/logos/craft-partners.svg" alt="Craft Partners"></h3>
-                        <p>{{ 'Find an official Craft Partner'|t('app') }}</p>
-                    </a>
-                    <a href="https://craftcms.com/discord" target="_blank" rel="noopener">
-                        <h3><img class="cs-logo-image" src="{{ bundleUrl }}/logos/discord.svg" alt="Discord"></h3>
-                        <p>{{ 'Meet the Craft community'|t('app') }}</p>
-                    </a>
-                    <a href="https://craftquest.io" target="_blank" rel="noopener">
-                        <h3><img class="cs-logo-image" src="{{ bundleUrl }}/logos/craftquest.svg" alt="CraftQuest"></h3>
-                        <p>{{ 'Unlimited video training'|t('app') }}</p>
-                    </a>
+                    {{ _self.resourceLink({
+                        link: 'https://craftcms.com/partners',
+                        iconPath: '/logos/craft-partners.svg',
+                        title: 'Craft Partners',
+                        description: 'Find an official Craft Partner'|t('app'),
+                        bundleUrl: bundleUrl,
+                    }) }}
+                    {{ _self.resourceLink({
+                        link: 'https://craftcms.com/discord',
+                        iconPath: '/logos/discord.svg',
+                        title: 'Discord',
+                        description: 'Meet the Craft community'|t('app'),
+                        bundleUrl: bundleUrl,
+                    }) }}
+                    {{ _self.resourceLink({
+                        link: 'https://craftquest.io',
+                        iconPath: '/logos/craftquest.svg',
+                        title: 'CraftQuest',
+                        description: 'Unlimited video training'|t('app'),
+                        bundleUrl: bundleUrl,
+                    }) }}
                 </div>
                 <div class="cs-icon-resources">
-                    <a href="https://craftcms.com/docs/4.x/" target="_blank" rel="noopener">
+                    {% set documentationLinkHtml %}
                         {{ svg('@appicons/book.svg')|attr({ 'aria-hidden': 'true' }) }}
                         <span>{{ 'Documentation'|t('app') }}</span>
-                    </a>
-                    <a href="https://craftcms.com/knowledge-base" target="_blank" rel="noopener">
+                    {% endset %}
+                    {% set knowledgeBaseLinkHtml %}
                         {{ svg('@appicons/magnifying-glass.svg', namespace=true)|attr({ 'aria-hidden': 'true' }) }}
                         <span>{{ 'Knowledge Base'|t('app') }}</span>
-                    </a>
+                    {% endset %}
+                    {{ links.externalLink({
+                        permalink: 'https://craftcms.com/docs/4.x/',
+                        text: documentationLinkHtml
+                    }) }}
+                    {{ links.externalLink({
+                        permalink: 'https://craftcms.com/knowledge-base',
+                        text: knowledgeBaseLinkHtml
+                    }) }}
                 </div>
             </form>
             <form class="cs-support-form hidden" action="{{ actionUrl('dashboard/send-support-request') }}" method="post" target="{{ idPrefix }}-iframe" accept-charset="UTF-8" enctype="multipart/form-data">

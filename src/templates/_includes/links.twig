@@ -1,5 +1,6 @@
 {% macro externalLinkIcon() %}
     {{ tag('span', {
+        'class': 'external-link-icon',
         'data-icon': 'external',
         'role': 'img',
         'aria-label': 'Opens in a new window'|t('app'),
@@ -11,7 +12,7 @@
         href: config.permalink,
         target: '_blank',
         rel: 'noopener',
-        html: config.title ~ '<span class="visually-hidden">, </span>' ~ _self.externalLinkIcon()
+        html: config.text ~ _self.externalLinkIcon()
     } %}
     {{ tag('a', linkAttributes) }}
 {% endmacro %}
