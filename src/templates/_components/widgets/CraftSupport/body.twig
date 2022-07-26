@@ -39,11 +39,11 @@
                 </div>
                 <div class="cs-icon-resources">
                     <a href="https://craftcms.com/docs/4.x/" target="_blank" rel="noopener">
-                        {{ svg('@appicons/book.svg') }}
+                        {{ svg('@appicons/book.svg')|attr({ 'aria-hidden': 'true' }) }}
                         <span>{{ 'Documentation'|t('app') }}</span>
                     </a>
                     <a href="https://craftcms.com/knowledge-base" target="_blank" rel="noopener">
-                        {{ svg('@appicons/magnifying-glass.svg', namespace=true) }}
+                        {{ svg('@appicons/magnifying-glass.svg', namespace=true)|attr({ 'aria-hidden': 'true' }) }}
                         <span>{{ 'Knowledge Base'|t('app') }}</span>
                     </a>
                 </div>
@@ -113,12 +113,12 @@
 
 <div class="cs-screen cs-screen-home">
     <button type="button" class="cs-opt" data-screen="help" aria-controls="cs-screen-help" aria-expanded="false">
-        <div class="cs-opt-icon">{{ svg(buoeyIcon, sanitize=false) }}</div>
+        <div class="cs-opt-icon">{{ svg(buoeyIcon, sanitize=false)|attr({ 'aria-hidden': 'true' }) }}</div>
         <h2>{{ "Get help"|t('app') }}</h2>
         <p>{{ "How-to’s and other questions"|t('app') }}</p>
     </button>
     <button type="button" class="cs-opt" data-screen="feedback" aria-controls="cs-screen-feedback" aria-expanded="false">
-        <div class="cs-opt-icon">{{ svg(bullhornIcon, sanitize=false) }}</div>
+        <div class="cs-opt-icon">{{ svg(bullhornIcon, sanitize=false)|attr({ 'aria-hidden': 'true' }) }}</div>
         <h2>{{ "Give feedback"|t('app') }}</h2>
         <p>{{ "Bug reports and feature requests"|t('app') }}</p>
     </button>
