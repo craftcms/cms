@@ -17,6 +17,7 @@ use craft\elements\User;
 use craft\errors\UploadFailedException;
 use craft\errors\UserLockedException;
 use craft\events\DefineUserContentSummaryEvent;
+use craft\events\FindLoginUserEvent;
 use craft\events\InvalidUserTokenEvent;
 use craft\events\LoginFailureEvent;
 use craft\events\RegisterUserActionsEvent;
@@ -65,6 +66,38 @@ use yii\web\ServerErrorHttpException;
  */
 class UsersController extends Controller
 {
+    /**
+     * @event FindLoginUserEvent The event that is triggered before attempting to find a user to sign in
+     *
+     * ```php
+     * use Craft;
+     * use craft\controllers\UsersController;
+     * use craft\elements\User;
+     * use craft\events\FindLoginUserEvent;
+     * use yii\base\Event;
+     *
+     * Event::on(
+     *     UsersController::class,
+     *     UsersController::EVENT_BEFORE_FIND_LOGIN_USER,
+     *     function(FindLoginUserEvent $event) {
+     *         // force username-based login
+     *         $event->user = User::find()
+     *             ->username($event->loginName)
+     *             ->addSelect(['users.password', 'users.passwordResetRequired'])
+     *             ->one();
+     *     }
+     * );
+     *
+     * @since 4.2.0
+     */
+    public const EVENT_BEFORE_FIND_LOGIN_USER = 'beforeFindLoginUser';
+
+    /**
+     * @event FindLoginUserEvent The event that is triggered after attempting to find a user to sign in
+     * @since 4.2.0
+     */
+    public const EVENT_AFTER_FIND_LOGIN_USER = 'afterFindLoginUser';
+
     /**
      * @event LoginFailureEvent The event that is triggered when a failed login attempt was made
      */
@@ -163,8 +196,7 @@ class UsersController extends Controller
         $password = $this->request->getRequiredBodyParam('password');
         $rememberMe = (bool)$this->request->getBodyParam('rememberMe');
 
-        // Does a user exist with that username/email?
-        $user = Craft::$app->getUsers()->getUserByUsernameOrEmail($loginName);
+        $user = $this->_findLoginUser($loginName);
 
         if (!$user || $user->password === null) {
             // Delay again to match $user->authenticate()'s delay
@@ -192,6 +224,23 @@ class UsersController extends Controller
         }
 
         return $this->_handleSuccessfulLogin();
+    }
+
+    private function _findLoginUser(string $loginName): ?User
+    {
+        $event = new FindLoginUserEvent([
+            'loginName' => $loginName,
+        ]);
+        $this->trigger(self::EVENT_BEFORE_FIND_LOGIN_USER, $event);
+
+        $user = $event->user ?? Craft::$app->getUsers()->getUserByUsernameOrEmail($loginName);
+
+        $event = new FindLoginUserEvent([
+            'loginName' => $loginName,
+            'user' => $user,
+        ]);
+        $this->trigger(self::EVENT_AFTER_FIND_LOGIN_USER, $event);
+        return $event->user;
     }
 
     /**
@@ -1325,6 +1374,7 @@ JS,
             'alwaysShowFocusRings' => (bool)$this->request->getBodyParam('alwaysShowFocusRings', $user->getPreference('alwaysShowFocusRings')),
             'useShapes' => (bool)$this->request->getBodyParam('useShapes', $user->getPreference('useShapes')),
             'underlineLinks' => (bool)$this->request->getBodyParam('underlineLinks', $user->getPreference('underlineLinks')),
+            'notificationDuration' => $this->request->getBodyParam('notificationDuration', $user->getPreference('notificationDuration')),
         ];
 
         if ($user->admin) {

@@ -60,7 +60,7 @@
   --dark-focus-hsl: #{hue($darkFocusColor)}, #{saturation($darkFocusColor)},
     #{lightness($darkFocusColor)};
   --focus-ring: 0 0 0 1px hsl(var(--dark-focus-hsl)),
-    0 0 0 3px hsla(var(--dark-focus-hsl), 0.7);
+    0 0 0 3px hsla(var(--dark-focus-hsl), 0.8);
   --inner-focus-ring: inset 0 0 0 1px hsl(var(--dark-focus-hsl)),
     inset 0 0 0 3px hsla(var(--dark-focus-hsl), 0.7);
   --touch-target-size: 24px; /* Minimum recommended touch target size */
@@ -80,8 +80,8 @@ html.noscroll body {
 body {
   width: 100vw;
   overflow-x: hidden;
-  font-size: 14px;
-  line-height: 20px;
+  @include fontSize(14);
+  line-height: 1.42;
   color: var(--text-color);
   -webkit-font-smoothing: subpixel-antialiased;
 }
@@ -1562,6 +1562,7 @@ ul.icons {
     .text {
       border-top-right-radius: 0;
       border-bottom-right-radius: 0;
+      min-width: 0;
     }
     .btn {
       border-top-left-radius: 0;
@@ -3418,6 +3419,15 @@ ul.tree,
       margin-top: 6px;
       display: block;
     }
+
+    .selectize {
+      min-width: 100px;
+    }
+
+    .text.fullwidth {
+      min-width: 100px;
+      max-width: 100%;
+    }
   }
 }
 
@@ -4637,25 +4647,21 @@ ul.tree,
       --ui-control-color: var(--white);
       --ui-control-hover-color: var(--white);
       --ui-control-active-color: var(--white);
+      --interaction-background-color: var(--gray-700);
       background-color: var(--gray-600);
       color: var(--white);
       @include light-on-dark-text;
-
-      @supports (backdrop-filter: blur(10px)) {
-        & {
-          background-color: transparentize($grey600, 0.6);
-          backdrop-filter: blur(10px);
-          transition: opacity linear 100ms, backdrop-filter linear 100ms;
-        }
-      }
+      @include two-color-focus-ring($light-button: false);
 
       &:hover {
-        background-color: var(--gray-500) !important;
+        background-color: var(--interaction-background-color) !important;
+      }
 
-        @supports (backdrop-filter: blur(10px)) {
-          & {
-            background-color: transparentize($grey500, 0.3) !important;
-          }
+      &:not(.disabled):not(.loading):not(.dashed) {
+        &:focus,
+        &.focus,
+        &:hover {
+          background-color: var(--interaction-background-color);
         }
       }
     }
@@ -5669,7 +5675,7 @@ div.radio {
   clear: none;
   position: relative;
   @include padding-left($radioSize + 5);
-  height: 16px;
+  line-height: calc(24 / 14);
   cursor: pointer;
 }
 
@@ -5698,8 +5704,9 @@ div.radio:after {
 
 input.radio + label:before,
 div.radio:before {
-  top: 0;
+  top: 50%;
   left: 0;
+  transform: translateY(-50%);
   width: var(--radio-size);
   height: var(--radio-size);
   background-color: hsl(212, 50%, 99%);
@@ -5708,8 +5715,9 @@ div.radio:before {
 
 input.radio + label:after,
 div.radio:after {
-  top: 4px;
+  top: calc(50%);
   left: 4px;
+  transform: translateY(-50%);
   width: calc(var(--radio-size) - 8px);
   height: calc(var(--radio-size) - 8px);
 }
@@ -6134,7 +6142,7 @@ body .selectize-dropdown {
   height: 34px;
 
   &:not(.fullwidth) {
-    width: 25em;
+    max-width: 25em;
   }
 }
 
@@ -6240,6 +6248,10 @@ body .selectize-dropdown .optgroup-header {
 
 body .selectize-dropdown .active {
   @include menu-option-active-styles;
+
+  .light {
+    color: inherit !important;
+  }
 }
 
 /* datepicker */
