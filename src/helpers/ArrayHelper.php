@@ -474,7 +474,7 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
             foreach ($array as $key => $val) {
                 if (
                     (($strict || is_object($val)) && $val === $value) ||
-                    (!$strict && $val == $value)
+                    (!$strict && !is_object($val) && $val == $value)
                 ) {
                     $result[$key] = $val;
                     unset($array[$key]);
