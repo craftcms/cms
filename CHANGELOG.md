@@ -9,7 +9,7 @@
 ## 3.7.49 - 2022-07-26
 
 ### Added
-- The control panel is now translated into Ukranian.
+- The control panel is now translated into Ukrainian.
 - Added `craft\helpers\Template::resolveTemplatePathAndLine()`.
 
 ### Changed
