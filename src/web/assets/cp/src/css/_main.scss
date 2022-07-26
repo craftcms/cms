@@ -60,7 +60,7 @@
   --dark-focus-hsl: #{hue($darkFocusColor)}, #{saturation($darkFocusColor)},
     #{lightness($darkFocusColor)};
   --focus-ring: 0 0 0 1px hsl(var(--dark-focus-hsl)),
-    0 0 0 3px hsla(var(--dark-focus-hsl), 0.7);
+    0 0 0 3px hsla(var(--dark-focus-hsl), 0.8);
   --inner-focus-ring: inset 0 0 0 1px hsl(var(--dark-focus-hsl)),
     inset 0 0 0 3px hsla(var(--dark-focus-hsl), 0.7);
   --touch-target-size: 24px; /* Minimum recommended touch target size */
