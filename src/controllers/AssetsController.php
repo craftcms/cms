@@ -36,6 +36,7 @@ use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\base\InvalidRouteException;
 use yii\base\NotSupportedException;
+use yii\base\UserException;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\HttpException;
@@ -298,7 +299,7 @@ class AssetsController extends Controller
                 'filename' => $asset->getFilename(),
                 'assetId' => $asset->id,
             ]);
-        } catch (Throwable $e) {
+        } catch (UserException $e) {
             Craft::error('An error occurred when saving an asset: ' . $e->getMessage(), __METHOD__);
             Craft::$app->getErrorHandler()->logException($e);
             return $this->asFailure($e->getMessage());
@@ -389,7 +390,7 @@ class AssetsController extends Controller
                     $assetId = $sourceAsset->id;
                 }
             }
-        } catch (Throwable $e) {
+        } catch (UserException $e) {
             Craft::error('An error occurred when replacing an asset: ' . $e->getMessage(), __METHOD__);
             Craft::$app->getErrorHandler()->logException($e);
             return $this->asFailure($e->getMessage());
@@ -445,7 +446,7 @@ class AssetsController extends Controller
                 'folderUid' => $folderModel->uid,
                 'folderId' => $folderModel->id,
             ]);
-        } catch (FsException|ForbiddenHttpException $exception) {
+        } catch (UserException $exception) {
             return $this->asFailure($exception->getMessage());
         }
     }
@@ -476,7 +477,7 @@ class AssetsController extends Controller
         $this->requireVolumePermissionByFolder('deleteAssets', $folder);
         try {
             $assets->deleteFoldersByIds($folderId);
-        } catch (FsException $exception) {
+        } catch (UserException $exception) {
             return $this->asFailure($exception->getMessage());
         }
 
@@ -508,7 +509,7 @@ class AssetsController extends Controller
 
         try {
             $success = Craft::$app->getElements()->deleteElement($asset);
-        } catch (Throwable $e) {
+        } catch (UserException $e) {
             if ($this->request->getAcceptsJson()) {
                 return $this->asFailure($e->getMessage());
             }
@@ -557,7 +558,7 @@ class AssetsController extends Controller
 
         try {
             $newName = Craft::$app->getAssets()->renameFolderById($folderId, $newName);
-        } catch (FsException|AssetException $exception) {
+        } catch (UserException $exception) {
             return $this->asFailure($exception->getMessage());
         }
 
@@ -963,7 +964,7 @@ class AssetsController extends Controller
 
                 $output['newAssetId'] = $newAsset->id;
             }
-        } catch (Throwable $exception) {
+        } catch (UserException $exception) {
             return $this->asFailure($exception->getMessage());
         }
 
