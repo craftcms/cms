@@ -462,6 +462,18 @@ class ArrayHelperTest extends TestCase
     }
 
     /**
+     * @dataProvider removeValueDataProvider
+     * @param array $expected
+     * @param array $array
+     * @param mixed $value
+     * @param bool $strict
+     */
+    public function testRemoveValue(array $expected, array $array, mixed $value, bool $strict = false)
+    {
+        $this->assertSame($expected, ArrayHelper::removeValue($array, $value, $strict));
+    }
+
+    /**
      * @return array
      */
     public function toArrayDataProvider(): array
@@ -637,6 +649,28 @@ class ArrayHelperTest extends TestCase
             ['foo[bar][]', ['foo[bar][]' => 'foo[bar][]'], 'foo[bar][]'],
             ['foo.bar:baz.qux', ['foo' => ['bar:baz' => ['qux' => 'foo.bar:baz.qux']]], 'foo[bar:baz][qux]'],
             ['foo-bar.baz.qux', ['foo-bar' => ['baz' => ['qux' => 'foo-bar.baz.qux']]], 'foo-bar[baz][qux]'],
+        ];
+    }
+
+    public function removeValueDataProvider(): array
+    {
+        return [
+            [
+                ['a', 'b'],
+                ['a', 'b', 'c'],
+                'c',
+            ],
+            [
+                ['1', '2'],
+                ['1', '2', '3'],
+                3,
+            ],
+            [
+                ['1', '2', '3'],
+                ['1', '2', '3'],
+                3,
+                true,
+            ],
         ];
     }
 }

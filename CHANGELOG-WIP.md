@@ -29,8 +29,10 @@
 - `config/general.php` and `config/db.php` can now return `craft\config\GeneralConfig`/`DbConfig` objects, which can be defined using new fluent setter methods. ([#11591](https://github.com/craftcms/cms/pull/11591), [#11656](https://github.com/craftcms/cms/pull/11656))
 - The `|duration` Twig filter can now be used with an integer representing a number of seconds, and its `showSeconds` argument is no longer required. Seconds will be output if the duration is less than one minute by default.
 - The `|length` Twig filter now checks if the variable is a query, and if so, returns its count. ([#11625](https://github.com/craftcms/cms/discussions/11625))
+- The `|without` Twig filter no longer uses strict value comparisons by default. It has a new `$strict` argument that can be set to `true` to enforce strict comparisons if desired. ([#11695](https://github.com/craftcms/cms/issues/11695))
 - `craft\behaviors\SessionBehavior::setError()` now has a `$settings` argument.
 - `craft\behaviors\SessionBehavior::setNotice()` now has a `$settings` argument.
+- `craft\helpers\ArrayHelper::removeValue()` no longer uses strict value comparisons by default. It has a new `$strict` argument that can be set to `true` to enforce strict comparisons if desired.
 - `craft\web\Controller::asSuccess()` now has a `$notificationSettings` argument.
 - `craft\web\Controller::setFailFlash()` now has a `$settings` argument.
 - `craft\web\Controller::setSuccessFlash()` now has a `$settings` argument.
