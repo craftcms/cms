@@ -2,10 +2,10 @@
 
 {% macro resourceLink(config) %}
     <a href="{{ config.link }}" target="_blank" rel="noopener">
-        <h3 class="cs-resource-heading">
+        <h4 class="cs-resource-heading">
             <img class="cs-logo-image" src="{{ config.bundleUrl }}{{ config.iconPath }}" alt="{{ config.title }}">
             {{ links.externalLinkIcon() }}
-        </h3>
+        </h4>
         <p>{{ config.description }}</p>
     </a>
 {% endmacro %}
@@ -15,6 +15,9 @@
     {% set idPrefix = 'cs-'~screen~random() %}
 
     <div id="cs-screen-{{ screen }}" class="cs-screen cs-screen-2 cs-screen-{{ screen }}" action="{{ formAction }}" method="get" target="_blank" rel="noopener">
+        {{ tag('h2', {
+            text: submitText,
+        }) }}
         {{ forms.textareaField({
             first: true,
             class: 'cs-body-text',
@@ -34,7 +37,7 @@
                     <p>{{ "or <a>send to Developer Support</a>"|t('app')|raw }}</p>
                 {% endif %}
                 <hr>
-                <h2>{{ 'More Resources'|t('app') }}</h2>
+                <h3 class="cs-more-resources-heading">{{ 'More Resources'|t('app') }}</h3>
                 <div class="cs-logo-resources">
                     {{ _self.resourceLink({
                         link: 'https://craftcms.com/partners',
