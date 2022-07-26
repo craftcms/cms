@@ -672,6 +672,11 @@ class ArrayHelperTest extends TestCase
                 3,
                 true,
             ],
+            [
+                [(object)['foo' => true], (object)['bar' => true]],
+                [(object)['foo' => true], (object)['bar' => true]],
+                1,
+            ],
         ];
     }
 }

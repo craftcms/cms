@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+### Fixed
+- Fixed an error that could occur when passing an object into `craft\helpers\ArrayHelper::removeValue()` or the `|without` filter.
+
 ## 4.2.0 - 2022-07-26
 
 ### Added
