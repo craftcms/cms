@@ -1,7 +1,7 @@
 <?php
 
 return [
-    '(Ungrouped)' => '(Ungrouped)',
+    '(Ungrouped)' => '(Sem agrupar)',
     '(blank)' => '(vazio)',
     '(trial)' => '(avaliação)',
     '({currencyCode}) {currencySymbol}' => '({currencyCode}) {currencySymbol}',

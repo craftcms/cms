@@ -1,7 +1,7 @@
 <?php
 
 return [
-    '(Ungrouped)' => '(Ungrouped)',
+    '(Ungrouped)' => '(Nincs csoportosítva)',
     '(blank)' => '(üres)',
     '(trial)' => '(próbaverzió)',
     '({currencyCode}) {currencySymbol}' => '({currencyCode}) {currencySymbol}',
