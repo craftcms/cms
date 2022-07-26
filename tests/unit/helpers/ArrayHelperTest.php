@@ -470,7 +470,8 @@ class ArrayHelperTest extends TestCase
      */
     public function testRemoveValue(array $expected, array $array, mixed $value, bool $strict = false)
     {
-        $this->assertSame($expected, ArrayHelper::removeValue($array, $value, $strict));
+        ArrayHelper::removeValue($array, $value, $strict);
+        $this->assertSame($expected, $array);
     }
 
     /**
