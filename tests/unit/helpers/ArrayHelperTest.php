@@ -655,6 +655,9 @@ class ArrayHelperTest extends TestCase
 
     public function removeValueDataProvider(): array
     {
+        $obj1 = (object)['foo' => true];
+        $obj2 = (object)['bar' => true];
+
         return [
             [
                 ['a', 'b'],
@@ -673,8 +676,8 @@ class ArrayHelperTest extends TestCase
                 true,
             ],
             [
-                [(object)['foo' => true], (object)['bar' => true]],
-                [(object)['foo' => true], (object)['bar' => true]],
+                [$obj1, $obj2],
+                [$obj1, $obj2],
                 1,
             ],
         ];
