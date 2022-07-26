@@ -2082,14 +2082,6 @@ div.btn.submit input {
     margin-bottom: -5px;
   }
 
-  &:focus {
-    .lightswitch-container {
-      .handle {
-        background-color: var(--gray-100);
-      }
-    }
-  }
-
   &.on {
     .lightswitch-container {
       @include margin-left(0);
