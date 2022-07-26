@@ -23,6 +23,7 @@ use craft\elements\db\MatrixBlockQuery;
 use craft\elements\MatrixBlock;
 use craft\events\BlockTypesEvent;
 use craft\fieldlayoutelements\CustomField;
+use craft\fields\conditions\EmptyFieldConditionRule;
 use craft\gql\arguments\elements\MatrixBlock as MatrixBlockArguments;
 use craft\gql\resolvers\elements\MatrixBlock as MatrixBlockResolver;
 use craft\gql\types\generators\MatrixBlockType as MatrixBlockTypeGenerator;
@@ -572,6 +573,14 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
     public function copyValue(ElementInterface $from, ElementInterface $to): void
     {
         // We'll do it later from afterElementPropagate()
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getElementConditionRuleType(): array|string|null
+    {
+        return EmptyFieldConditionRule::class;
     }
 
     /**

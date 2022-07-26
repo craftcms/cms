@@ -1,6 +1,7 @@
 # Release notes for Craft 4.2.0 (WIP)
 
 ### Added
+- Element conditions can now include condition rules for Matrix fields. ([#11620](https://github.com/craftcms/cms/issues/11620))
 - Added the “Notification Duration” user accessibility preference. ([#11612](https://github.com/craftcms/cms/pull/11612))
 - The `accessibilityDefaults` config setting now supports a `notificationDuration` key.
 - Added `craft\behaviors\SessionBehavior::getSuccess()`.
@@ -11,6 +12,7 @@
 - Added `craft\events\DefineFieldLayoutCustomFieldsEvent`.
 - Added `craft\events\FindLoginUserEvent`.
 - Added `craft\events\IndexKeywordsEvent`.
+- Added `craft\fields\conditions\EmptyFieldConditionRule`.
 - Added `craft\helpers\DateTimeHelper::humanDuration()`.
 - Added `craft\models\FieldLayout::EVENT_DEFINE_CUSTOM_FIELDS`. ([#11634](https://github.com/craftcms/cms/discussions/11634))
 - Added `craft\services\Config::getLoadingConfigFile()`.
@@ -31,6 +33,7 @@
 - The `|duration` Twig filter can now be used with an integer representing a number of seconds, and its `showSeconds` argument is no longer required. Seconds will be output if the duration is less than one minute by default.
 - The `|length` Twig filter now checks if the variable is a query, and if so, returns its count. ([#11625](https://github.com/craftcms/cms/discussions/11625))
 - The `|without` Twig filter no longer uses strict value comparisons by default. It has a new `$strict` argument that can be set to `true` to enforce strict comparisons if desired. ([#11695](https://github.com/craftcms/cms/issues/11695))
+- `craft\base\conditions\BaseConditionRule::inputHtml()` is no longer abstract, and returns an empty string by default.
 - `craft\behaviors\SessionBehavior::setError()` now has a `$settings` argument.
 - `craft\behaviors\SessionBehavior::setNotice()` now has a `$settings` argument.
 - `craft\db\Query` now implements the `ArrayAccess` and `IteratorAggregate` interfaces, so queries (including element queries) can be treated as arrays.
