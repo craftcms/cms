@@ -602,7 +602,6 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public function getIterator(): ArrayIterator
     {
-        Craft::$app->getDeprecator()->log('ElementQuery::getIterator()', 'Looping through element queries directly has been deprecated. Use `all()` to fetch the query results before looping over them.');
         return new ArrayIterator($this->all());
     }
 
@@ -615,8 +614,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function offsetExists($name): bool
     {
         if (is_numeric($name)) {
-            Craft::$app->getDeprecator()->log('ElementQuery::offsetExists()', 'Treating element queries as arrays has been deprecated. Use `exists()` to determine if an element query will yield any results, or `all()` to fetch the results.');
-
             // Cached?
             if (($cachedResult = $this->getCachedResult()) !== null) {
                 return $name < count($cachedResult);
@@ -650,8 +647,6 @@ class ElementQuery extends Query implements ElementQueryInterface
     public function offsetGet($name)
     {
         if (is_numeric($name)) {
-            Craft::$app->getDeprecator()->log('ElementQuery::offsetGet()', 'Treating element queries as arrays has been deprecated. Use `exists()` to determine if an element query will yield any results, or `all()` to fetch the results.');
-
             $element = $this->nth($name);
             if ($element) {
                 return $element;
@@ -1631,12 +1626,6 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     public function count($q = '*', $db = null)
     {
-        $backtrace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 3);
-        $function = $backtrace[2]['function'] ?? null;
-        if ($function === 'twig_length_filter') {
-            Craft::$app->getDeprecator()->log('ElementQuery::count()', 'Treating element queries as arrays has been deprecated. Use `count()` to get the total number of results without querying for them, or use `all()` to fetch the query results, and check the length of the resulting array.');
-        }
-
         // Cached?
         if (($cachedResult = $this->getCachedResult()) !== null) {
             return count($cachedResult);

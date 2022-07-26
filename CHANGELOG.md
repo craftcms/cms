@@ -1,5 +1,11 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Changed
+- Treating element queries as arrays is no longer deprecated. ([#11625](https://github.com/craftcms/cms/discussions/11625))
+- Using the `|length` filter on an element query is no longer deprecated. ([#11625](https://github.com/craftcms/cms/discussions/11625))
+
 ## 3.7.49 - 2022-07-26
 
 ### Added
