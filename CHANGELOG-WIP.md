@@ -33,11 +33,11 @@
 - The `|without` Twig filter no longer uses strict value comparisons by default. It has a new `$strict` argument that can be set to `true` to enforce strict comparisons if desired. ([#11695](https://github.com/craftcms/cms/issues/11695))
 - `craft\behaviors\SessionBehavior::setError()` now has a `$settings` argument.
 - `craft\behaviors\SessionBehavior::setNotice()` now has a `$settings` argument.
+- `craft\db\Query` now implements the `ArrayAccess` and `IteratorAggregate` interfaces, so queries (including element queries) can be treated as arrays.
 - `craft\helpers\ArrayHelper::removeValue()` no longer uses strict value comparisons by default. It has a new `$strict` argument that can be set to `true` to enforce strict comparisons if desired.
 - `craft\web\Controller::asSuccess()` now has a `$notificationSettings` argument.
 - `craft\web\Controller::setFailFlash()` now has a `$settings` argument.
 - `craft\web\Controller::setSuccessFlash()` now has a `$settings` argument.
-- `craft\db\Query` now implements the `ArrayAccess` and `IteratorAggregate` interfaces, so queries (including element queries) can be treated as arrays.
 
 ### Deprecated
 - Deprecated `craft\helpers\DateTimeHelper::humanDurationFromInterval()`. `humanDuration()` should be used instead.
