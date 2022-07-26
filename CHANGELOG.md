@@ -9,7 +9,7 @@
 ### Changed
 - Deprecation warnings’ stack traces now show source templates’ paths and line numbers.
 - Matrix block previews now show selected option labels rather than their raw values. ([#11659](https://github.com/craftcms/cms/issues/11659))
-- Exception JSON responses now include the previous exception details, recursively. ([#11694](https://github.com/craftcms/cms/issues/11694))
+- Exception JSON responses now include the previous exception details, recursively. ([#11694](https://github.com/craftcms/cms/discussions/11694))
 
 ### Fixed
 - Fixed a bug where deprecation warnings for treating an element query as an array weren’t getting logged with an origin, if they involved Twig’s `|batch` filter. ([#11597](https://github.com/craftcms/cms/issues/11597))
