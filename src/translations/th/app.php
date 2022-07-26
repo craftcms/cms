@@ -1029,7 +1029,7 @@ return [
     'Options' => 'Options',
     'Organization Tax ID' => 'หมายเลขประจำตัวผู้เสียภาษีขององค์กร',
     'Organization' => 'องค์กร',
-    'Orientation' => 'Orientation',
+    'Orientation' => 'การจัดแนว',
     'Origin' => 'Origin',
     'Our site is temporarily unavailable. Please try again later.' => 'Our site is temporarily unavailable. Please try again later.',
     'Overview' => 'ภาพรวม',
