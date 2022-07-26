@@ -18,6 +18,9 @@
 - Fixed a bug where links to config settings from **Settings** → **General** didn’t include the correct setting anchors. ([#11665](https://github.com/craftcms/cms/pull/11665))
 - Fixed styling issues with Live Preview in Firefox.
 
+### Security
+- Fixed an information disclosure vulnerability.
+
 ## 3.7.48 - 2022-07-12
 
 ### Changed

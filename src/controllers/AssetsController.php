@@ -29,6 +29,7 @@ use craft\web\UploadedFile;
 use yii\base\ErrorException;
 use yii\base\Exception;
 use yii\base\NotSupportedException;
+use yii\base\UserException;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\HttpException;
@@ -353,7 +354,7 @@ class AssetsController extends Controller
                 'filename' => $asset->filename,
                 'assetId' => $asset->id,
             ]);
-        } catch (\Throwable $e) {
+        } catch (UserException $e) {
             Craft::error('An error occurred when saving an asset: ' . $e->getMessage(), __METHOD__);
             Craft::$app->getErrorHandler()->logException($e);
             return $this->asErrorJson($e->getMessage());
@@ -440,7 +441,7 @@ class AssetsController extends Controller
                     $assetId = $sourceAsset->id;
                 }
             }
-        } catch (\Throwable $e) {
+        } catch (UserException $e) {
             Craft::error('An error occurred when replacing an asset: ' . $e->getMessage(), __METHOD__);
             Craft::$app->getErrorHandler()->logException($e);
             return $this->asErrorJson($e->getMessage());
@@ -497,7 +498,7 @@ class AssetsController extends Controller
                 'folderUid' => $folderModel->uid,
                 'folderId' => $folderModel->id,
             ]);
-        } catch (AssetException | ForbiddenHttpException $e) {
+        } catch (UserException $e) {
             return $this->asErrorJson($e->getMessage());
         }
     }
@@ -524,7 +525,7 @@ class AssetsController extends Controller
         $this->requireVolumePermissionByFolder('deleteFilesAndFoldersInVolume', $folder);
         try {
             $assets->deleteFoldersByIds($folderId);
-        } catch (AssetException $exception) {
+        } catch (UserException $exception) {
             return $this->asErrorJson($exception->getMessage());
         }
 
@@ -537,7 +538,7 @@ class AssetsController extends Controller
      * @return Response|null
      * @throws BadRequestHttpException if the folder cannot be found
      * @throws ForbiddenHttpException
-     * @throws AssetException
+     * @throws UserException
      */
     public function actionDeleteAsset()
     {
@@ -556,7 +557,7 @@ class AssetsController extends Controller
 
         try {
             $success = Craft::$app->getElements()->deleteElement($asset);
-        } catch (AssetException $e) {
+        } catch (UserException $e) {
             if ($this->request->getAcceptsJson()) {
                 return $this->asErrorJson($e->getMessage());
             }
@@ -611,7 +612,7 @@ class AssetsController extends Controller
 
         try {
             $newName = Craft::$app->getAssets()->renameFolderById($folderId, $newName);
-        } catch (\Throwable $exception) {
+        } catch (UserException $exception) {
             return $this->asErrorJson($exception->getMessage());
         }
 
@@ -790,7 +791,7 @@ class AssetsController extends Controller
                     ->all();
                 $fileTransferList = Assets::fileTransferList($foundAssets, $folderIdChanges);
             }
-        } catch (AssetLogicException $exception) {
+        } catch (UserException $exception) {
             return $this->asErrorJson($exception->getMessage());
         }
 
@@ -1007,7 +1008,7 @@ class AssetsController extends Controller
                 // Don't validate required custom fields
                 Craft::$app->getElements()->saveElement($newAsset);
             }
-        } catch (\Throwable $exception) {
+        } catch (UserException $exception) {
             return $this->asErrorJson($exception->getMessage());
         }
 
