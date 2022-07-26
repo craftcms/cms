@@ -13,6 +13,7 @@ use craft\helpers\Json;
 use craft\helpers\Template;
 use craft\log\Dispatcher;
 use GuzzleHttp\Exception\ClientException;
+use Throwable;
 use Twig\Error\Error as TwigError;
 use Twig\Error\LoaderError as TwigLoaderError;
 use Twig\Error\RuntimeError as TwigRuntimeError;
@@ -135,16 +136,7 @@ class ErrorHandler extends \yii\web\ErrorHandler
         if ($request && $request->getAcceptsJson()) {
             $response->format = Response::FORMAT_JSON;
             if ($this->_showExceptionView()) {
-                $response->data = [
-                    'error' => $exception->getMessage(),
-                    'exception' => get_class($exception),
-                    'file' => $exception->getFile(),
-                    'line' => $exception->getLine(),
-                    'trace' => array_map(function($step) {
-                        unset($step['args']);
-                        return $step;
-                    }, $exception->getTrace()),
-                ];
+                $response->data = $this->_exceptionAsArray($exception);
             } else {
                 $response->data = [
                     'error' => $exception instanceof UserException ? $exception->getMessage() : Craft::t('app', 'A server error occurred.'),
@@ -190,6 +182,27 @@ class ErrorHandler extends \yii\web\ErrorHandler
         }
 
         parent::renderException($exception);
+    }
+
+    private function _exceptionAsArray(Throwable  $exception)
+    {
+        $array = [
+            'error' => $exception->getMessage(),
+            'exception' => get_class($exception),
+            'file' => $exception->getFile(),
+            'line' => $exception->getLine(),
+            'trace' => array_map(function($step) {
+                unset($step['args']);
+                return $step;
+            }, $exception->getTrace()),
+        ];
+
+        $prev = $exception->getPrevious();
+        if ($prev !== null) {
+            $array['previous'] = $this->_exceptionAsArray($prev);
+        }
+
+        return $array;
     }
 
     /**
