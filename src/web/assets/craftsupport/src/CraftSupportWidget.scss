@@ -122,7 +122,13 @@
         .cs-forms {
           position: relative;
 
-          .submit {
+          .cs-button-wrapper {
+            display: grid;
+            gap: var(--s);
+          }
+
+          .submit,
+          .cancel {
             display: block;
             margin: 0 auto;
             max-width: 365px;
@@ -133,6 +139,7 @@
           transition: padding-top linear 100ms;
 
           p {
+            margin: 0;
             text-align: center;
           }
 

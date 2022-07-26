@@ -32,10 +32,16 @@
         <div class="cs-forms">
             <form class="cs-search-form" action="{{ formAction }}" method="get" target="_blank" rel="noopener">
                 <div class="cs-search-params"></div>
-                <button type="submit" class="btn submit fullwidth disabled">{{ submitText }}</button>
-                {% if CraftEdition == CraftPro %}
-                    <p>{{ "or <a>send to Developer Support</a>"|t('app')|raw }}</p>
-                {% endif %}
+                {% tag 'div' with { class: 'cs-button-wrapper' }%}
+                    <button type="submit" class="btn submit fullwidth disabled">{{ submitText }}</button>
+                    {% if CraftEdition == CraftPro %}
+                        <p>{{ "or <a>send to Developer Support</a>"|t('app')|raw }}</p>
+                    {% endif %}
+                    {{ tag('button', {
+                        class: 'btn fullwidth cancel',
+                        text: 'Cancel'|t('app'),
+                    }) }}
+                {% endtag %}
                 <hr>
                 <h3 class="cs-more-resources-heading">{{ 'More Resources'|t('app') }}</h3>
                 <div class="cs-logo-resources">
