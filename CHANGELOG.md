@@ -10,6 +10,7 @@
 - Element edit pages no longer jump down when the “Showing your unsaved changes” notice is added, unless there’s not enough content to require a scroll bar. ([#11586](https://github.com/craftcms/cms/discussions/11586))
 - Deprecation warnings’ stack traces now show source templates’ paths and line numbers.
 - Matrix block previews now show selected option labels rather than their raw values. ([#11659](https://github.com/craftcms/cms/issues/11659))
+- Exception JSON responses now include the previous exception details, recursively. ([#11694](https://github.com/craftcms/cms/issues/11694))
 
 ### Fixed
 - Fixed a bug where new condition rules’ type selectors weren’t getting auto-focused.
