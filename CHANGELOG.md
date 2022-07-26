@@ -10,6 +10,7 @@
 - Element edit pages no longer jump down when the “Showing your unsaved changes” notice is added, unless there’s not enough content to require a scroll bar. ([#11586](https://github.com/craftcms/cms/discussions/11586))
 - Deprecation warnings’ stack traces now show source templates’ paths and line numbers.
 - Matrix block previews now show selected option labels rather than their raw values. ([#11659](https://github.com/craftcms/cms/issues/11659))
+- Exception JSON responses now include the previous exception details, recursively. ([#11694](https://github.com/craftcms/cms/discussions/11694))
 
 ### Fixed
 - Fixed a bug where new condition rules’ type selectors weren’t getting auto-focused.
@@ -19,6 +20,7 @@
 - Fixed a SQL error that could occur on MySQL 5. ([#11596](https://github.com/craftcms/cms/issues/11596))
 - Fixed an error that could occur when upgrading to Craft 4. ([#11644](https://github.com/craftcms/cms/issues/11644))
 - Fixed a bug where the green color used in lightswitches was too dark. ([#11653](https://github.com/craftcms/cms/issues/11653))
+- Fixed a bug where relational and Matrix fields were assuming their values hadn’t been eager-loaded on element save. ([#11667](https://github.com/craftcms/cms/issues/11667), [#11670](https://github.com/craftcms/cms/issues/11670))
 - Fixed a bug where deprecation warnings for treating an element query as an array weren’t getting logged with an origin, if they involved Twig’s `|batch` filter. ([#11597](https://github.com/craftcms/cms/issues/11597))
 - Fixed a bug where `{% js %}`, `{% script %}`, and `{% css %}` tags weren’t registering JavaScript and CSS code properly when used within a `{% cache %}` tag that contained an ungenerated image transform. ([#11602](https://github.com/craftcms/cms/issues/11602))
 - Fixed a bug where the “User saved” notification was translated for the former language, when changing the current user’s language preference.
