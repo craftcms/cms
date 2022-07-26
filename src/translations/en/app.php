@@ -1023,6 +1023,7 @@ return [
     'Oops!' => 'Oops!',
     'Open PRs' => 'Open PRs',
     'Open the full edit page in a new tab' => 'Open the full edit page in a new tab',
+    'Opens in a new window' => 'Opens in a new window',
     'Operator' => 'Operator',
     'Optgroup?' => 'Optgroup?',
     'Option Label' => 'Option Label',

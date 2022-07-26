@@ -1,13 +1,13 @@
+{% import "_includes/links" as links %}
+
 <table class="fullwidth" dir="{{ feed.direction }}">
     {% for item in feed.items %}
         <tr>
             <td>
                 {% if item.permalink ?? false %}
-                    {{ tag('a', {
-                        href: item.permalink,
-                        target: '_blank',
-                        rel: 'noopener',
-                        text: item.title,
+                    {{ links.externalLink({
+                        permalink: item.permalink,
+                        title: item.title,
                     }) }}
                     {% if item.date ?? false %}
                         {{ tag('span', {
