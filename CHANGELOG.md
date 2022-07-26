@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.7.50 - 2022-07-26
 
 ### Changed
 - Treating element queries as arrays is no longer deprecated. ([#11625](https://github.com/craftcms/cms/discussions/11625))
