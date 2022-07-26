@@ -4,9 +4,8 @@
     <a href="{{ config.link }}" target="_blank" rel="noopener">
         <h4 class="cs-resource-heading">
             <img class="cs-logo-image" src="{{ config.bundleUrl }}{{ config.iconPath }}" alt="{{ config.title }}">
-            {{ links.externalLinkIcon() }}
         </h4>
-        <p>{{ config.description }}</p>
+        <p>{{ config.description }} {{ links.externalLinkIcon() }}</p>
     </a>
 {% endmacro %}
 

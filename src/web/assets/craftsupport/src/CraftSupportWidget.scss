@@ -179,10 +179,6 @@
             display: flex;
             justify-content: center;
             align-items: center;
-
-            [data-icon="external"] {
-              margin-left: var(--s);
-            }
           }
 
           .cs-icon-resources {
