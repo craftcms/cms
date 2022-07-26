@@ -2,6 +2,7 @@
 
 ### Added
 - Element conditions can now include condition rules for Matrix fields. ([#11620](https://github.com/craftcms/cms/issues/11620))
+- Element conditions can now include condition rules for Money fields. ([#11560](https://github.com/craftcms/cms/issues/11560))
 - Added the “Notification Duration” user accessibility preference. ([#11612](https://github.com/craftcms/cms/pull/11612))
 - The `accessibilityDefaults` config setting now supports a `notificationDuration` key.
 - Added `craft\behaviors\SessionBehavior::getSuccess()`.
