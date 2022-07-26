@@ -6,7 +6,7 @@
             <td>
                 {% if item.permalink ?? false %}
                     {{ links.externalLink({
-                        permalink: item.permalink,
+                        link: item.permalink,
                         text: item.title,
                     }) }}
                     {% if item.date ?? false %}

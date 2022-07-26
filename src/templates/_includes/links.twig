@@ -8,7 +8,7 @@
 
 {% macro externalLink(config) %}
     {% set linkAttributes = {
-        href: config.permalink,
+        href: config.link,
         target: '_blank',
         rel: 'noopener',
         html: config.text ~ _self.externalLinkIcon()
