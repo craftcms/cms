@@ -936,7 +936,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             }
 
             if (response.data.message) {
-              Craft.cp.displayNotice(response.data.message);
+              Craft.cp.displaySuccess(response.data.message);
             }
 
             this.afterAction(action, params);
@@ -2546,7 +2546,6 @@ const FilterHud = Garnish.HUD.extend({
         this.$hud.find('.condition-container').on('htmx:load', () => {
           this.setReady();
         });
-
         this.setFocus();
       })
       .catch(() => {
@@ -2575,7 +2574,7 @@ const FilterHud = Garnish.HUD.extend({
   },
 
   setFocus: function () {
-    this.$main.find('.condition-footer .add').focus();
+    Garnish.setFocusWithin(this.$main);
   },
 
   clear: function () {

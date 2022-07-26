@@ -122,7 +122,8 @@ class DashboardController extends Controller
 
             $allWidgetJs .= 'new Craft.Widget("#widget' . $widget->id . '", ' .
                 Json::encode($info['settingsHtml']) . ', ' .
-                'function(){' . $info['settingsJs'] . '}' .
+                '() => {' . $info['settingsJs'] . '},' .
+                Json::encode($info['settings']) .
                 ");\n";
 
             if (!empty($widgetJs)) {
@@ -157,12 +158,13 @@ class DashboardController extends Controller
         $dashboardService = Craft::$app->getDashboard();
 
         $type = $this->request->getRequiredBodyParam('type');
-        $settingsNamespace = $this->request->getBodyParam('settingsNamespace');
+        $settings = $this->request->getBodyParam('settings');
 
-        if ($settingsNamespace) {
-            $settings = $this->request->getBodyParam($settingsNamespace);
-        } else {
-            $settings = null;
+        if (!$settings) {
+            $settingsNamespace = $this->request->getBodyParam('settingsNamespace');
+            if ($settingsNamespace) {
+                $settings = $this->request->getBodyParam($settingsNamespace);
+            }
         }
 
         $widget = $dashboardService->createWidget([
@@ -491,6 +493,7 @@ class DashboardController extends Controller
             'bodyHtml' => $widgetBodyHtml,
             'settingsHtml' => $settingsHtml,
             'settingsJs' => (string)$settingsJs,
+            'settings' => $widget->getSettings(),
         ];
     }
 

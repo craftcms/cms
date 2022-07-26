@@ -337,6 +337,9 @@ JS, [$view->namespaceInputId($this->id)]);
                             Html::button('', [
                                 'class' => ['delete', 'icon'],
                                 'title' => Craft::t('app', 'Remove'),
+                                'aria' => [
+                                  'label' => Craft::t('app', 'Remove'),
+                                ],
                                 'hx' => [
                                     'vals' => ['uid' => $rule->uid],
                                     'post' => UrlHelper::actionUrl('conditions/remove-rule'),
@@ -353,6 +356,7 @@ JS, [$view->namespaceInputId($this->id)]);
                     // The rule is misconfigured
                     continue;
                 }
+
 
                 $ruleNum++;
             }
@@ -520,6 +524,7 @@ JS,
             Html::button($rule?->getLabel() ?? $this->addRuleLabel, ArrayHelper::merge([
                 'id' => $buttonId,
                 'class' => ['btn', 'menubtn'],
+                'autofocus' => $rule?->getAutofocus(),
             ], $buttonAttributes)) .
             Html::tag('div', $optionsHtml, [
                 'id' => $menuId,

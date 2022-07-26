@@ -27,6 +27,7 @@ use craft\models\Site;
 use craft\records\MatrixBlockType as MatrixBlockTypeRecord;
 use craft\web\assets\matrix\MatrixAsset;
 use craft\web\View;
+use Illuminate\Support\Collection;
 use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
@@ -665,14 +666,22 @@ class Matrix extends Component
     public function saveField(MatrixField $field, ElementInterface $owner): void
     {
         $elementsService = Craft::$app->getElements();
-        /** @var MatrixBlockQuery $query */
-        $query = $owner->getFieldValue($field->handle);
-        if (($blocks = $query->getCachedResult()) !== null) {
-            $saveAll = false;
-        } else {
-            $blocks = (clone $query)->status(null)->all();
+
+        /** @var MatrixBlockQuery|Collection $value */
+        $value = $owner->getFieldValue($field->handle);
+        if ($value instanceof Collection) {
+            $blocks = $value->all();
             $saveAll = true;
+        } else {
+            $blocks = $value->getCachedResult();
+            if ($blocks !== null) {
+                $saveAll = false;
+            } else {
+                $blocks = (clone $value)->status(null)->all();
+                $saveAll = true;
+            }
         }
+
         $blockIds = [];
         $collapsedBlockIds = [];
         $sortOrder = 0;
@@ -750,9 +759,11 @@ class Matrix extends Component
                     // Duplicate Matrix blocks, ensuring we don't process the same blocks more than once
                     $handledSiteIds = [];
 
-                    $cachedQuery = (clone $query)->status(null);
-                    $cachedQuery->setCachedResult($blocks);
-                    $owner->setFieldValue($field->handle, $cachedQuery);
+                    if ($value instanceof MatrixBlockQuery) {
+                        $cachedQuery = (clone $value)->status(null);
+                        $cachedQuery->setCachedResult($blocks);
+                        $owner->setFieldValue($field->handle, $cachedQuery);
+                    }
 
                     foreach ($localizedOwners as $localizedOwner) {
                         // Make sure we haven't already duplicated blocks for this site, via propagation from another site
@@ -788,7 +799,9 @@ class Matrix extends Component
                         $handledSiteIds = array_merge($handledSiteIds, array_flip($sourceSupportedSiteIds));
                     }
 
-                    $owner->setFieldValue($field->handle, $query);
+                    if ($value instanceof MatrixBlockQuery) {
+                        $owner->setFieldValue($field->handle, $value);
+                    }
                 }
             }
 
@@ -830,11 +843,14 @@ class Matrix extends Component
         bool $trackDuplications = true,
     ): void {
         $elementsService = Craft::$app->getElements();
-        /** @var MatrixBlockQuery $query */
-        $query = $source->getFieldValue($field->handle);
-        if (($blocks = $query->getCachedResult()) === null) {
-            $blocks = (clone $query)->status(null)->all();
+        /** @var MatrixBlockQuery|Collection $value */
+        $value = $source->getFieldValue($field->handle);
+        if ($value instanceof Collection) {
+            $blocks = $value->all();
+        } else {
+            $blocks = $value->getCachedResult() ?? (clone $value)->status(null)->all();
         }
+
         $newBlockIds = [];
 
         $transaction = Craft::$app->getDb()->beginTransaction();

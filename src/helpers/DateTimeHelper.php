@@ -324,54 +324,11 @@ class DateTimeHelper
      * @param int $seconds The number of seconds
      * @param bool $showSeconds Whether to output seconds or not
      * @return string
+     * @deprecated in 4.2.0. [[humanDuration()]] should be used instead.
      */
     public static function secondsToHumanTimeDuration(int $seconds, bool $showSeconds = true): string
     {
-        $secondsInWeek = 604800;
-        $secondsInDay = 86400;
-        $secondsInHour = 3600;
-        $secondsInMinute = 60;
-
-        $weeks = floor($seconds / $secondsInWeek);
-        $seconds %= $secondsInWeek;
-
-        $days = floor($seconds / $secondsInDay);
-        $seconds %= $secondsInDay;
-
-        $hours = floor($seconds / $secondsInHour);
-        $seconds %= $secondsInHour;
-
-        if ($showSeconds) {
-            $minutes = floor($seconds / $secondsInMinute);
-            $seconds %= $secondsInMinute;
-        } else {
-            $minutes = round($seconds / $secondsInMinute);
-            $seconds = 0;
-        }
-
-        $timeComponents = [];
-
-        if ($weeks) {
-            $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{week} other{weeks}}', ['num' => $weeks]);
-        }
-
-        if ($days) {
-            $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{day} other{days}}', ['num' => $days]);
-        }
-
-        if ($hours) {
-            $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{hour} other{hours}}', ['num' => $hours]);
-        }
-
-        if ($minutes || (!$showSeconds && !$weeks && !$days && !$hours)) {
-            $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{minute} other{minutes}}', ['num' => $minutes]);
-        }
-
-        if ($seconds || ($showSeconds && !$weeks && !$days && !$hours && !$minutes)) {
-            $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{second} other{seconds}}', ['num' => $seconds]);
-        }
-
-        return implode(', ', $timeComponents);
+        return static::humanDuration($seconds, $showSeconds);
     }
 
     /**
@@ -553,14 +510,30 @@ class DateTimeHelper
     }
 
     /**
-     * Returns the interval in a human-friendly string.
+     * Returns a human-friendly duration string for the given date interval or number of seconds.
      *
-     * @param DateInterval $dateInterval
-     * @param bool $showSeconds
+     * @param DateInterval|int $dateInterval
+     * @param bool|null $showSeconds Whether the duration string should include the number of seconds
      * @return string
+     * @since 4.2.0
      */
-    public static function humanDurationFromInterval(DateInterval $dateInterval, bool $showSeconds = true): string
+    public static function humanDuration(DateInterval|int $dateInterval, ?bool $showSeconds = null): string
     {
+        if (is_int($dateInterval)) {
+            $dateInterval = static::secondsToInterval($dateInterval);
+        }
+
+        // Get a new interval using DateTime::diff(), so the years/months/days/hours/minutes values are all populated correctly
+        $now = static::now();
+        $then = (clone $now)->add($dateInterval);
+        $dateInterval = $then->diff($now);
+
+        $secondsOnly = !$dateInterval->y && !$dateInterval->m && !$dateInterval->d && !$dateInterval->h && !$dateInterval->i;
+
+        if ($showSeconds === null) {
+            $showSeconds = $secondsOnly;
+        }
+
         $timeComponents = [];
 
         if ($dateInterval->y) {
@@ -572,7 +545,16 @@ class DateTimeHelper
         }
 
         if ($dateInterval->d) {
-            $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{day} other{days}}', ['num' => $dateInterval->d]);
+            $weeks = floor($dateInterval->d / 7);
+            $days = $dateInterval->d % 7;
+
+            if ($weeks) {
+                $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{week} other{weeks}}', ['num' => $weeks]);
+            }
+
+            if ($days) {
+                $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{day} other{days}}', ['num' => $days]);
+            }
         }
 
         if ($dateInterval->h) {
@@ -584,7 +566,7 @@ class DateTimeHelper
         if (!$showSeconds) {
             if ($minutes && round($dateInterval->s / 60)) {
                 $minutes++;
-            } elseif (!$dateInterval->y && !$dateInterval->m && !$dateInterval->d && !$dateInterval->h && !$minutes) {
+            } elseif ($secondsOnly) {
                 return Craft::t('app', 'less than a minute');
             }
         }
@@ -609,6 +591,19 @@ class DateTimeHelper
         }
         $string .= $last;
         return $string;
+    }
+
+    /**
+     * Returns the interval in a human-friendly string.
+     *
+     * @param DateInterval $dateInterval
+     * @param bool $showSeconds
+     * @return string
+     * @deprecated in 4.2.0. [[humanDuration()]] should be used instead.
+     */
+    public static function humanDurationFromInterval(DateInterval $dateInterval, bool $showSeconds = true): string
+    {
+        return static::humanDuration($dateInterval, $showSeconds);
     }
 
     /**

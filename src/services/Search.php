@@ -15,7 +15,7 @@ use craft\cache\ElementQueryTagDependency;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\db\ElementQuery;
-use craft\errors\SiteNotFoundException;
+use craft\events\IndexKeywordsEvent;
 use craft\events\SearchEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
@@ -40,6 +40,12 @@ use yii\db\Schema;
  */
 class Search extends Component
 {
+    /**
+     * @event IndexKeywordsEvent The event that is triggered before keywords are indexed for an element attribute or field.
+     * @since 4.2.0
+     */
+    public const EVENT_BEFORE_INDEX_KEYWORDS = 'beforeIndexKeywords';
+
     /**
      * @event SearchEvent The event that is triggered before a search is performed.
      */
@@ -111,7 +117,6 @@ class Search extends Component
      * @param string[]|null $fieldHandles The field handles that should be indexed,
      * or `null` if all fields should be indexed.
      * @return bool Whether the indexing was a success.
-     * @throws SiteNotFoundException
      */
     public function indexElementAttributes(ElementInterface $element, ?array $fieldHandles = null): bool
     {
@@ -164,14 +169,14 @@ class Search extends Component
         }
         foreach (array_keys($searchableAttributes) as $attribute) {
             $value = $element->getSearchKeywords($attribute);
-            $this->_indexElementKeywords($element->id, $attribute, '0', $element->siteId, $value);
+            $this->_indexKeywords($element, $value, attribute: $attribute);
         }
 
         // Update the custom fields' keywords
         foreach ($updateFields as $field) {
             $fieldValue = $element->getFieldValue($field->handle);
             $keywords = $field->getSearchKeywords($fieldValue, $element);
-            $this->_indexElementKeywords($element->id, 'field', (string)$field->id, $element->siteId, $keywords);
+            $this->_indexKeywords($element, $keywords, fieldId: $field->id);
         }
 
         // Release the lock
@@ -317,34 +322,43 @@ SQL;
     /**
      * Indexes keywords for a specific element attribute/field.
      *
-     * @param int $elementId
-     * @param string $attribute
-     * @param string $fieldId
-     * @param int $siteId
-     * @param string $dirtyKeywords
-     * @throws SiteNotFoundException
+     * @param ElementInterface $element
+     * @param string $keywords
+     * @param string|null $attribute
+     * @param int|null $fieldId
      */
-    private function _indexElementKeywords(int $elementId, string $attribute, string $fieldId, int $siteId, string $dirtyKeywords): void
+    private function _indexKeywords(ElementInterface $element, string $keywords, ?string $attribute = null, ?int $fieldId = null): void
     {
-        $attribute = strtolower($attribute);
-
-        /** @var Site $site */
-        $site = Craft::$app->getSites()->getSiteById($siteId, true);
+        if ($attribute !== null) {
+            $attribute = strtolower($attribute);
+        }
 
         // Clean 'em up
-        $cleanKeywords = SearchHelper::normalizeKeywords($dirtyKeywords, [], true, $site->language);
+        $site = $element->getSite();
+        $keywords = SearchHelper::normalizeKeywords($keywords, [], true, $site->language);
+
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_INDEX_KEYWORDS)) {
+            $event = new IndexKeywordsEvent([
+                'element' => $element,
+                'attribute' => $attribute,
+                'fieldId' => $fieldId,
+                'keywords' => $keywords,
+            ]);
+            $this->trigger(self::EVENT_BEFORE_INDEX_KEYWORDS, $event);
+            $keywords = $event->keywords;
+        }
 
         // Save 'em
         $columns = [
-            'elementId' => $elementId,
-            'attribute' => $attribute,
-            'fieldId' => $fieldId,
+            'elementId' => $element->id,
+            'attribute' => $attribute ?? 'field',
+            'fieldId' => $fieldId ? (string)$fieldId : '0',
             'siteId' => $site->id,
         ];
 
-        if ($cleanKeywords !== '') {
+        if ($keywords !== '') {
             // Add padding around keywords
-            $cleanKeywords = ' ' . $cleanKeywords . ' ';
+            $keywords = ' ' . $keywords . ' ';
         }
 
         $db = Craft::$app->getDb();
@@ -355,13 +369,13 @@ SQL;
         }
 
         if ($maxSize !== null && $maxSize !== false) {
-            $cleanKeywords = $this->_truncateSearchIndexKeywords($cleanKeywords, $maxSize);
+            $keywords = $this->_truncateSearchIndexKeywords($keywords, $maxSize);
         }
 
-        $columns['keywords'] = $cleanKeywords;
+        $columns['keywords'] = $keywords;
 
         if ($isPgsql) {
-            $columns['keywords_vector'] = $cleanKeywords;
+            $columns['keywords_vector'] = $keywords;
         }
 
         // Insert/update the row in searchindex
@@ -840,13 +854,13 @@ SQL;
     }
 
     /**
-     * @param string $cleanKeywords The string of space separated search keywords.
+     * @param string $keywords The string of space separated search keywords.
      * @param int $maxSize The maximum size the keywords string should be.
      * @return string The (possibly) truncated keyword string.
      */
-    private function _truncateSearchIndexKeywords(string $cleanKeywords, int $maxSize): string
+    private function _truncateSearchIndexKeywords(string $keywords, int $maxSize): string
     {
-        $cleanKeywordsLength = strlen($cleanKeywords);
+        $cleanKeywordsLength = strlen($keywords);
 
         // Give ourselves a little wiggle room.
         /** @noinspection CallableParameterUseCaseInTypeContextInspection */
@@ -854,19 +868,19 @@ SQL;
 
         if ($cleanKeywordsLength > $maxSize) {
             // Time to truncate.
-            $cleanKeywords = mb_strcut($cleanKeywords, 0, $maxSize);
+            $keywords = mb_strcut($keywords, 0, $maxSize);
 
             // Make sure we don't cut off a word in the middle.
-            if ($cleanKeywords[mb_strlen($cleanKeywords) - 1] !== ' ') {
-                $position = mb_strrpos($cleanKeywords, ' ');
+            if ($keywords[mb_strlen($keywords) - 1] !== ' ') {
+                $position = mb_strrpos($keywords, ' ');
 
                 if ($position) {
-                    $cleanKeywords = mb_substr($cleanKeywords, 0, $position + 1);
+                    $keywords = mb_substr($keywords, 0, $position + 1);
                 }
             }
         }
 
-        return $cleanKeywords;
+        return $keywords;
     }
 
     /**

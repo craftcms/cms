@@ -74,7 +74,7 @@
         Craft.sendActionRequest('POST', 'fields/save-group', {data})
           .then((response) => {
             this.$selectedGroup.text(response.data.group.name);
-            Craft.cp.displayNotice(Craft.t('app', 'Group renamed.'));
+            Craft.cp.displaySuccess(Craft.t('app', 'Group renamed.'));
           })
           .catch(({response}) => {
             if (response.data.errors) {
