@@ -323,6 +323,24 @@ class DbConfig extends BaseConfig
     public ?string $database = null;
 
     /**
+     * @inheritdoc
+     * @throws InvalidConfigException
+     */
+    public function init(): void
+    {
+        // (Re-)normalize everything.
+        $this
+            ->url($this->url)
+            ->tablePrefix($this->tablePrefix)
+        ;
+
+        // If we don't have a DSN yet, create one from the deprecated settings
+        if (!isset($this->dsn)) {
+            $this->_updateDsn();
+        }
+    }
+
+    /**
      * An array of key-value pairs of PDO attributes to pass into the PDO constructor.
      *
      * @param array $value
@@ -426,11 +444,19 @@ class DbConfig extends BaseConfig
      *
      * @param string|null $value
      * @return self
-     * @see $tablePrefix
+     * @throws InvalidConfigException
      * @since 4.2.0
+     * @see $tablePrefix
      */
     public function tablePrefix(?string $value): self
     {
+        if ($value) {
+            $value = StringHelper::ensureRight($value, '_');
+            if (strlen($value) > 6) {
+                throw new InvalidConfigException('tablePrefix must be 5 or less characters long: ' . $value);
+            }
+        }
+
         $this->tablePrefix = $value;
         return $this;
     }
@@ -473,6 +499,11 @@ class DbConfig extends BaseConfig
      */
     public function url(?string $value): self
     {
+        if ($value) {
+            Craft::configure($this, Db::url2config($value));
+            $this->_updateDsn();
+        }
+
         $this->url = $value;
         return $this;
     }
@@ -482,12 +513,14 @@ class DbConfig extends BaseConfig
      *
      * @param string|null $value
      * @return self
-     * @see $driver
+     * @throws InvalidConfigException
      * @since 4.2.0
+     * @see $driver
      */
     public function driver(?string $value): self
     {
         $this->driver = $value;
+        $this->_updateDsn();
         return $this;
     }
 
@@ -496,12 +529,14 @@ class DbConfig extends BaseConfig
      *
      * @param string|null $value
      * @return self
-     * @see $server
+     * @throws InvalidConfigException
      * @since 4.2.0
+     * @see $server
      */
     public function server(?string $value): self
     {
         $this->server = $value;
+        $this->_updateDsn();
         return $this;
     }
 
@@ -510,12 +545,14 @@ class DbConfig extends BaseConfig
      *
      * @param int|null $value
      * @return self
-     * @see $port
+     * @throws InvalidConfigException
      * @since 4.2.0
+     * @see $port
      */
     public function port(?int $value): self
     {
         $this->port = $value;
+        $this->_updateDsn();
         return $this;
     }
 
@@ -525,12 +562,14 @@ class DbConfig extends BaseConfig
      *
      * @param string|null $value
      * @return self
-     * @see $unixSocket
+     * @throws InvalidConfigException
      * @since 4.2.0
+     * @see $unixSocket
      */
     public function unixSocket(?string $value): self
     {
         $this->unixSocket = $value;
+        $this->_updateDsn();
         return $this;
     }
 
@@ -539,38 +578,15 @@ class DbConfig extends BaseConfig
      *
      * @param string|null $value
      * @return self
-     * @see $database
+     * @throws InvalidConfigException
      * @since 4.2.0
+     * @see $database
      */
     public function database(?string $value): self
     {
         $this->database = $value;
+        $this->_updateDsn();
         return $this;
-    }
-
-    /**
-     * @inheritdoc
-     * @throws InvalidConfigException
-     */
-    public function init(): void
-    {
-        // If $url was set, parse it to set other properties
-        if ($this->url) {
-            Craft::configure($this, Db::url2config($this->url));
-        }
-
-        // Validate tablePrefix
-        if ($this->tablePrefix) {
-            $this->tablePrefix = StringHelper::ensureRight($this->tablePrefix, '_');
-            if (strlen($this->tablePrefix) > 6) {
-                throw new InvalidConfigException('tablePrefix must be 5 or less characters long: ' . $this->tablePrefix);
-            }
-        }
-
-        // If we don't have a DSN yet, create one from the deprecated settings
-        if (!isset($this->dsn)) {
-            $this->_updateDsn();
-        }
     }
 
     /**

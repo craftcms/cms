@@ -3030,6 +3030,42 @@ class GeneralConfig extends BaseConfig
     }
 
     /**
+     * @inheritdoc
+     * @throws InvalidConfigException
+     */
+    public function init(): void
+    {
+        // (Re-)normalize everything.
+        // Even if they were already set via the fluent methods, \Craft may not have been autoloaded yet,
+        // so some values would still be in need of normalization, e.g. defaultCpLanguage/extraAppLocales.
+        $this
+            // file extensions
+            ->allowedFileExtensions($this->allowedFileExtensions)
+            ->extraAllowedFileExtensions($this->extraAllowedFileExtensions)
+            // durations
+            ->cacheDuration($this->cacheDuration)
+            ->cooldownDuration($this->cooldownDuration)
+            ->defaultTokenDuration($this->defaultTokenDuration)
+            ->elevatedSessionDuration($this->elevatedSessionDuration)
+            ->invalidLoginWindowDuration($this->invalidLoginWindowDuration)
+            ->previewTokenDuration($this->previewTokenDuration ?? $this->defaultTokenDuration)
+            ->purgePendingUsersDuration($this->purgePendingUsersDuration)
+            ->purgeUnsavedDraftsDuration($this->purgeUnsavedDraftsDuration)
+            ->rememberUsernameDuration($this->rememberUsernameDuration)
+            ->rememberedUserSessionDuration($this->rememberedUserSessionDuration)
+            ->softDeleteDuration($this->softDeleteDuration)
+            ->userSessionDuration($this->userSessionDuration)
+            ->verificationCodeDuration($this->verificationCodeDuration)
+            // locales
+            ->defaultCpLanguage($this->defaultCpLanguage)
+            ->extraAppLocales($this->extraAppLocales)
+            // misc
+            ->maxUploadFileSize($this->maxUploadFileSize)
+            ->disabledPlugins($this->disabledPlugins)
+        ;
+    }
+
+    /**
      * The default user accessibility preferences that should be applied to users that haven’t saved their preferences yet.
      *
      * @group System
@@ -3160,7 +3196,7 @@ class GeneralConfig extends BaseConfig
      */
     public function allowedFileExtensions(array $value): self
     {
-        $this->allowedFileExtensions = $value;
+        $this->allowedFileExtensions = array_map('strtolower', $value);
         return $this;
     }
 
@@ -3312,7 +3348,7 @@ class GeneralConfig extends BaseConfig
      */
     public function cacheDuration(mixed $value): self
     {
-        $this->cacheDuration = $value;
+        $this->cacheDuration = ConfigHelper::durationInSeconds($value);
         return $this;
     }
 
@@ -3344,7 +3380,7 @@ class GeneralConfig extends BaseConfig
      */
     public function cooldownDuration(mixed $value): self
     {
-        $this->cooldownDuration = $value;
+        $this->cooldownDuration = ConfigHelper::durationInSeconds($value);
         return $this;
     }
 
@@ -3417,11 +3453,20 @@ class GeneralConfig extends BaseConfig
      * @group System
      * @param string|null $value
      * @return self
-     * @see $defaultCpLanguage
+     * @throws InvalidConfigException
      * @since 4.2.0
+     * @see $defaultCpLanguage
      */
     public function defaultCpLanguage(?string $value): self
     {
+        if ($value !== null && class_exists(Craft::class, false)) {
+            try {
+                $value = Localization::normalizeLanguage($value);
+            } catch (InvalidArgumentException $e) {
+                throw new InvalidConfigException($e->getMessage(), 0, $e);
+            }
+        }
+
         $this->defaultCpLanguage = $value;
         return $this;
     }
@@ -3530,7 +3575,7 @@ class GeneralConfig extends BaseConfig
      */
     public function defaultTokenDuration(mixed $value): self
     {
-        $this->defaultTokenDuration = $value;
+        $this->defaultTokenDuration = ConfigHelper::durationInSeconds($value);
         return $this;
     }
 
@@ -3592,6 +3637,10 @@ class GeneralConfig extends BaseConfig
      */
     public function disabledPlugins(string|array|null $value): self
     {
+        if (is_string($value) && $value !== '*') {
+            $value = StringHelper::split($value);
+        }
+
         $this->disabledPlugins = $value;
         return $this;
     }
@@ -3701,7 +3750,7 @@ class GeneralConfig extends BaseConfig
      */
     public function elevatedSessionDuration(mixed $value): self
     {
-        $this->elevatedSessionDuration = $value;
+        $this->elevatedSessionDuration = ConfigHelper::durationInSeconds($value);
         return $this;
     }
 
@@ -3791,7 +3840,11 @@ class GeneralConfig extends BaseConfig
      */
     public function extraAllowedFileExtensions(?array $value): self
     {
-        $this->extraAllowedFileExtensions = $value;
+        if (is_array($value)) {
+            $this->allowedFileExtensions = array_merge($this->allowedFileExtensions, array_map('strtolower', $value));
+        }
+
+        $this->extraAllowedFileExtensions = null;
         return $this;
     }
 
@@ -3801,11 +3854,22 @@ class GeneralConfig extends BaseConfig
      * @group System
      * @param string[]|null $value
      * @return self
-     * @see $extraAppLocales
+     * @throws InvalidConfigException
      * @since 4.2.0
+     * @see $extraAppLocales
      */
     public function extraAppLocales(?array $value): self
     {
+        if (is_array($value) && class_exists(Craft::class, false)) {
+            foreach ($value as &$localeId) {
+                try {
+                    $localeId = Localization::normalizeLanguage($localeId);
+                } catch (InvalidArgumentException $e) {
+                    throw new InvalidConfigException($e->getMessage(), 0, $e);
+                }
+            }
+        }
+
         $this->extraAppLocales = $value;
         return $this;
     }
@@ -3979,7 +4043,7 @@ class GeneralConfig extends BaseConfig
      */
     public function invalidLoginWindowDuration(mixed $value): self
     {
-        $this->invalidLoginWindowDuration = $value;
+        $this->invalidLoginWindowDuration = ConfigHelper::durationInSeconds($value);
         return $this;
     }
 
@@ -4208,7 +4272,7 @@ class GeneralConfig extends BaseConfig
      */
     public function maxUploadFileSize(string|int $value): self
     {
-        $this->maxUploadFileSize = $value;
+        $this->maxUploadFileSize = ConfigHelper::sizeInBytes($value);
         return $this;
     }
 
@@ -4476,7 +4540,7 @@ class GeneralConfig extends BaseConfig
      */
     public function previewTokenDuration(mixed $value): self
     {
-        $this->previewTokenDuration = $value;
+        $this->previewTokenDuration = ConfigHelper::durationInSeconds($value);
         return $this;
     }
 
@@ -4507,7 +4571,7 @@ class GeneralConfig extends BaseConfig
      */
     public function purgePendingUsersDuration(mixed $value): self
     {
-        $this->purgePendingUsersDuration = $value;
+        $this->purgePendingUsersDuration = ConfigHelper::durationInSeconds($value);
         return $this;
     }
 
@@ -4539,7 +4603,7 @@ class GeneralConfig extends BaseConfig
      */
     public function purgeUnsavedDraftsDuration(mixed $value): self
     {
-        $this->purgeUnsavedDraftsDuration = $value;
+        $this->purgeUnsavedDraftsDuration = ConfigHelper::durationInSeconds($value);
         return $this;
     }
 
@@ -4570,7 +4634,7 @@ class GeneralConfig extends BaseConfig
      */
     public function rememberUsernameDuration(mixed $value): self
     {
-        $this->rememberUsernameDuration = $value;
+        $this->rememberUsernameDuration = ConfigHelper::durationInSeconds($value);
         return $this;
     }
 
@@ -4586,7 +4650,7 @@ class GeneralConfig extends BaseConfig
      */
     public function rememberedUserSessionDuration(mixed $value): self
     {
-        $this->rememberedUserSessionDuration = $value;
+        $this->rememberedUserSessionDuration = ConfigHelper::durationInSeconds($value);
         return $this;
     }
 
@@ -4919,7 +4983,7 @@ class GeneralConfig extends BaseConfig
      */
     public function softDeleteDuration(mixed $value): self
     {
-        $this->softDeleteDuration = $value;
+        $this->softDeleteDuration = ConfigHelper::durationInSeconds($value);
         return $this;
     }
 
@@ -5149,7 +5213,7 @@ class GeneralConfig extends BaseConfig
      */
     public function userSessionDuration(mixed $value): self
     {
-        $this->userSessionDuration = $value;
+        $this->userSessionDuration = ConfigHelper::durationInSeconds($value);
         return $this;
     }
 
@@ -5180,7 +5244,7 @@ class GeneralConfig extends BaseConfig
      */
     public function verificationCodeDuration(mixed $value): self
     {
-        $this->verificationCodeDuration = $value;
+        $this->verificationCodeDuration = ConfigHelper::durationInSeconds($value);
         return $this;
     }
 
@@ -5212,62 +5276,6 @@ class GeneralConfig extends BaseConfig
     {
         $this->verifyEmailSuccessPath = $value;
         return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function init(): void
-    {
-        // Merge extraAllowedFileExtensions into allowedFileExtensions
-        if (is_array($this->extraAllowedFileExtensions)) {
-            $this->allowedFileExtensions = array_merge($this->allowedFileExtensions, $this->extraAllowedFileExtensions);
-            $this->extraAllowedFileExtensions = null;
-        }
-        $this->allowedFileExtensions = array_map('strtolower', $this->allowedFileExtensions);
-
-        // Normalize time duration settings
-        $this->cacheDuration = ConfigHelper::durationInSeconds($this->cacheDuration);
-        $this->cooldownDuration = ConfigHelper::durationInSeconds($this->cooldownDuration);
-        $this->defaultTokenDuration = ConfigHelper::durationInSeconds($this->defaultTokenDuration);
-        $this->elevatedSessionDuration = ConfigHelper::durationInSeconds($this->elevatedSessionDuration);
-        $this->invalidLoginWindowDuration = ConfigHelper::durationInSeconds($this->invalidLoginWindowDuration);
-        $this->previewTokenDuration = ConfigHelper::durationInSeconds($this->previewTokenDuration ?? $this->defaultTokenDuration);
-        $this->purgePendingUsersDuration = ConfigHelper::durationInSeconds($this->purgePendingUsersDuration);
-        $this->purgeUnsavedDraftsDuration = ConfigHelper::durationInSeconds($this->purgeUnsavedDraftsDuration);
-        $this->rememberUsernameDuration = ConfigHelper::durationInSeconds($this->rememberUsernameDuration);
-        $this->rememberedUserSessionDuration = ConfigHelper::durationInSeconds($this->rememberedUserSessionDuration);
-        $this->softDeleteDuration = ConfigHelper::durationInSeconds($this->softDeleteDuration);
-        $this->userSessionDuration = ConfigHelper::durationInSeconds($this->userSessionDuration);
-        $this->verificationCodeDuration = ConfigHelper::durationInSeconds($this->verificationCodeDuration);
-
-        // Normalize size settings
-        $this->maxUploadFileSize = ConfigHelper::sizeInBytes($this->maxUploadFileSize);
-
-        // Normalize the default control panel language
-        if (isset($this->defaultCpLanguage)) {
-            try {
-                $this->defaultCpLanguage = Localization::normalizeLanguage($this->defaultCpLanguage);
-            } catch (InvalidArgumentException $e) {
-                throw new InvalidConfigException($e->getMessage(), 0, $e);
-            }
-        }
-
-        // Normalize the extra app locales
-        if (!empty($this->extraAppLocales)) {
-            foreach ($this->extraAppLocales as $i => $localeId) {
-                try {
-                    $this->extraAppLocales[$i] = Localization::normalizeLanguage($localeId);
-                } catch (InvalidArgumentException $e) {
-                    throw new InvalidConfigException($e->getMessage(), 0, $e);
-                }
-            }
-        }
-
-        // Normalize disabledPlugins
-        if (is_string($this->disabledPlugins) && $this->disabledPlugins !== '*') {
-            $this->disabledPlugins = StringHelper::split($this->disabledPlugins);
-        }
     }
 
     /**

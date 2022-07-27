@@ -1,6 +1,5 @@
 /** global: Craft */
 /** global: Garnish */
-import Garnish from '../../../garnish/src';
 import $ from 'jquery';
 
 /**
@@ -1385,7 +1384,7 @@ Craft.CP = Garnish.Base.extend(
         history.replaceState({}, '', url);
 
         // update the site--x body class
-        for (className of document.body.classList) {
+        for (let className of document.body.classList) {
           if (className.match(/^site--/)) {
             document.body.classList.remove(className);
           }
