@@ -464,13 +464,17 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      */
     public static function removeValue(&$array, $value, bool $strict = false)
     {
+        if (is_object($value)) {
+            $strict = true;
+        }
+
         $result = [];
 
         if (is_array($array)) {
             foreach ($array as $key => $val) {
                 if (
-                    ($strict && $val === $value) ||
-                    (!$strict && $val == $value)
+                    (($strict || is_object($val)) && $val === $value) ||
+                    (!$strict && !is_object($val) && $val == $value)
                 ) {
                     $result[$key] = $val;
                     unset($array[$key]);
