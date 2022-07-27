@@ -4,6 +4,7 @@
 
 ### Fixed
 - Fixed a bug where `Garnish.uiShortcutManager` was getting double-instantiated, causing some keyboard shortcuts to be triggered multiple times.
+- Fixed a JavaScript error that occurred when switching sites in the control panel. ([#11709](https://github.com/craftcms/cms/issues/11709))
 
 ## 4.2.0.1 - 2022-07-26
 
