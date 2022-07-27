@@ -417,7 +417,7 @@ return [
     'Create a new user' => 'Einen neuen Benutzer erstellen',
     'Create a new volume…' => 'Neues Volumen erstellen…',
     'Create a new {section} entry type' => 'Erstellen Sie einen neuen Eintragstyp für „{section}“',
-    'Create a new {type}' => 'Neuen {type}-Typ erstellen',
+    'Create a new {type}' => '{type} erstellen',
     'Create and add another' => 'Erstellen und neuen hinzufügen',
     'Create and continue editing' => 'Erstellen und mit Bearbeitung fortfahren',
     'Create assets in the “{volume}” volume' => 'Dateien im Datenträger „{volume}“ erstellen',
