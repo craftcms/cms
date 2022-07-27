@@ -5,6 +5,7 @@
   "scripts": {
     "prebuild": "npm run fix-prettier",
     "build": "webpack --node-env=production --progress",
+    "dev": "webpack --node-env=production --progress",
     "serve": "webpack-dev-server --node-env=development",
     "check-prettier": "prettier --check .",
     "fix-prettier": "prettier --write ."
@@ -55,7 +56,7 @@
     "typescript": "^4.7.4",
     "v-tooltip": "^2.0.3",
     "velocity-animate": "^1.5.0",
-    "vue": "^2.7.2",
+    "vue": "^2.6.14",
     "vue-autosuggest": "^2.2.0",
     "vue-awesome-swiper": "^4.1.1",
     "vue-cleave": "^1.2.2",
