@@ -6,6 +6,9 @@
 - Treating element queries as arrays is no longer deprecated. ([#11625](https://github.com/craftcms/cms/discussions/11625))
 - Using the `|length` filter on an element query is no longer deprecated. ([#11625](https://github.com/craftcms/cms/discussions/11625))
 
+### Fixed
+- Fixed a bug where system messages provided by Yii weren’t getting translated in some cases. ([#11712](https://github.com/craftcms/cms/issues/11712))
+
 ## 3.7.49 - 2022-07-26
 
 ### Added
