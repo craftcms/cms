@@ -468,10 +468,42 @@ class DateTimeHelper
     }
 
     /**
+     * Converts a value into a DateInterval object.
+     *
+     * The `$value` can either be an interval declaration string, a [[\DateInterval]] object, or a number of seconds.
+     *
+     * @param mixed $value
+     * @return DateInterval|false
+     * @throws InvalidArgumentException
+     * @since 4.2.1
+     */
+    public static function toDateInterval(mixed $value): DateInterval|false
+    {
+        if (!$value) {
+            return false;
+        }
+
+        if (is_int($value)) {
+            // Can't go the other way around here because secondsToInterval() will return a DateInterval for 0 seconds
+            return static::secondsToInterval($value);
+        }
+
+        if (is_string($value)) {
+            try {
+                return new DateInterval($value);
+            } catch (Exception $e) {
+            }
+        }
+
+        throw new InvalidArgumentException('Unable to convert the value to a DateInterval.', 0, $e ?? null);
+    }
+
+    /**
      * Creates a DateInterval object based on a given number of seconds.
      *
      * @param int $seconds
      * @return DateInterval
+     * @deprecated in 4.2.1. [[toDateInterval()]] should be used instead.
      */
     public static function secondsToInterval(int $seconds): DateInterval
     {

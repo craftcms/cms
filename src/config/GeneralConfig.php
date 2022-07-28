@@ -9,9 +9,11 @@ namespace craft\config;
 
 use Craft;
 use craft\helpers\ConfigHelper;
+use craft\helpers\DateTimeHelper;
 use craft\helpers\Localization;
 use craft\helpers\StringHelper;
 use craft\services\Config;
+use DateInterval;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\base\UnknownPropertyException;
@@ -3017,6 +3019,8 @@ class GeneralConfig extends BaseConfig
      */
     public mixed $verifyEmailSuccessPath = '';
 
+    private ?DateInterval $_rememberedUserSessionDuration = null;
+
     /**
      * @inheritdoc
      */
@@ -4645,12 +4649,22 @@ class GeneralConfig extends BaseConfig
      * @defaultAlt 14 days
      * @param mixed $value
      * @return self
+     * @throws InvalidConfigException
      * @see $rememberedUserSessionDuration
+     * @see getRememberedUserSessionDuration()
      * @since 4.2.0
      */
     public function rememberedUserSessionDuration(mixed $value): self
     {
-        $this->rememberedUserSessionDuration = ConfigHelper::durationInSeconds($value);
+        // Store the DateInterval separately for getRememberedUserSessionDuration()
+        try {
+            $interval = DateTimeHelper::toDateInterval($value);
+        } catch (InvalidArgumentException $e) {
+            throw new InvalidConfigException($e->getMessage(), 0, $e);
+        }
+
+        $this->rememberedUserSessionDuration = $interval ? ConfigHelper::durationInSeconds($interval) : 0;
+        $this->_rememberedUserSessionDuration = $interval ?: null;
         return $this;
     }
 
@@ -5492,5 +5506,16 @@ class GeneralConfig extends BaseConfig
             }
         }
         return $to;
+    }
+
+    /**
+     * Returns the remembered user session duration as a [[\DateInterval]] object, if it’s set.
+     *
+     * @return DateInterval|null
+     * @since 4.2.1
+     */
+    public function getRememberedUserSessionDuration(): ?DateInterval
+    {
+        return $this->_rememberedUserSessionDuration ?: null;
     }
 }
