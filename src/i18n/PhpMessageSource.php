@@ -46,21 +46,13 @@ class PhpMessageSource extends \yii\i18n\PhpMessageSource
     {
         if ($category === 'yii') {
             // Map Craft’s language IDs to Yii’s when necessary
-            switch ($language) {
-                case 'de-CH':
-                    $language = 'de';
-                    break;
-                case 'fr-CA':
-                    $language = 'fr';
-                    break;
-                case 'nb':
-                case 'nn':
-                    $language = 'nb-NO';
-                    break;
-                case 'zh':
-                    $language = 'zh-CN';
-                    break;
-            }
+            $language = match ($language) {
+                'de-CH' => 'de',
+                'fr-CA' => 'fr',
+                'nb', 'nn' => 'nb-NO',
+                'zh' => 'zh-CN',
+                default => $language,
+            };
         }
 
         return parent::getMessageFilePath($category, $language);
