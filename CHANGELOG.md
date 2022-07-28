@@ -18,7 +18,7 @@
 - Fixed a bug where the “Keep me signed in” checkbox label wasn’t always accurately representing the `rememberedUserSessionDuration` config setting. ([#11594](https://github.com/craftcms/cms/discussions/11594))
 
 ### Security
-- Fixed an XSS vulnerability.
+- Fixed XSS vulnerabilities.
 
 ## 4.2.0.2 - 2022-07-27
 

@@ -1620,7 +1620,7 @@ JS;
                     $customizable ? 'draggable' : null,
                 ]),
             ]) .
-            Html::tag('span', $tab->name) .
+            Html::tag('span', Html::encode($tab->name)) .
             ($customizable
                 ? Html::a('', null, [
                     'role' => 'button',
@@ -1722,7 +1722,7 @@ JS;
                 ]),
                 'data' => ['name' => mb_strtolower($groupName)],
             ]) .
-            Html::tag('h6', $groupName) .
+            Html::tag('h6', Html::encode($groupName)) .
             implode('', array_map(fn(BaseField $field) => self::_fldElementSelectorHtml($field, true, [
                 'class' => array_filter([
                     $fieldLayout->isFieldIncluded($field->attribute()) ? 'hidden' : null,
