@@ -15,7 +15,7 @@ use craft\db\Connection;
  * Unit tests for DbConfig
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.2.0
+ * @since 4.2.1
  */
 class DbConfigTest extends Unit
 {
