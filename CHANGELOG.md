@@ -7,6 +7,7 @@
 
 ### Fixed
 - Fixed a bug where database connections would always use port `3306` by default if `craft\config\DbConfig` had been configured via fluent methods, even for PostgreSQL.
+- Fixed a bug where system messages provided by Yii weren’t getting translated in some cases. ([#11712](https://github.com/craftcms/cms/issues/11712))
 
 ## 4.2.0.2 - 2022-07-27
 
