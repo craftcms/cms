@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+### Changed
+- `craft\config\DbConfig::dsn()` now parses the DSN string and populates the other DSN-settable config properties.
+
 ## 4.2.0.2 - 2022-07-27
 
 ### Fixed

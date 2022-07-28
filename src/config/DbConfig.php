@@ -393,6 +393,16 @@ class DbConfig extends BaseConfig
     public function dsn(?string $value): self
     {
         $this->dsn = $value;
+
+        if ($value) {
+            $parsed = Db::parseDsn($value);
+            $this->driver = $parsed['driver'];
+            $this->unixSocket = $parsed['unix_socket'] ?? null;
+            $this->server = $parsed['host'] ?? null;
+            $this->port = (int)($parsed['port'] ?? 0) ?: null;
+            $this->database = $parsed['dbname'] ?? null;
+        };
+
         return $this;
     }
 
