@@ -47,7 +47,7 @@ class DbConfigTest extends Unit
             ->database('db2');
         $this->assertEquals("pgsql:host=127.0.0.1;dbname=db2;port=5432", $config->dsn);
         $this->assertEquals('pgsql', $config->driver);
-        $this->assertEquals('127.0.0.1', $config->database);
+        $this->assertEquals('127.0.0.1', $config->server);
         $this->assertEquals('db2', $config->database);
         $this->assertEquals(5432, $config->port);
     }
