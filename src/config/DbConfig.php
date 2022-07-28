@@ -621,16 +621,16 @@ class DbConfig extends BaseConfig
         }
 
         $this->server = strtolower($this->server ?? '');
-        if (!$this->port) {
-            switch ($this->driver) {
-                case Connection::DRIVER_MYSQL:
-                    $this->port = 3306;
-                    break;
-                case Connection::DRIVER_PGSQL:
-                    $this->port = 5432;
-                    break;
-            }
+
+        if ($this->port) {
+            $port = $this->port;
+        } else {
+            $port = match ($this->driver) {
+                Connection::DRIVER_MYSQL => 3306,
+                Connection::DRIVER_PGSQL => 5432,
+            };
         }
-        $this->dsn = "$this->driver:host=$this->server;dbname=$this->database;port=$this->port";
+
+        $this->dsn = "$this->driver:host=$this->server;dbname=$this->database;port=$port";
     }
 }

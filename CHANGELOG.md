@@ -5,6 +5,9 @@
 ### Changed
 - `craft\config\DbConfig::dsn()` now parses the DSN string and populates the other DSN-settable config properties.
 
+### Fixed
+- Fixed a bug where database connections would always use port `3306` by default if `craft\config\DbConfig` had been configured via fluent methods, even for PostgreSQL.
+
 ## 4.2.0.2 - 2022-07-27
 
 ### Fixed
