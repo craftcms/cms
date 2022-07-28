@@ -2,12 +2,20 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\config\GeneralConfig::getRememberedUserSessionDuration()`.
+- Added `craft\helpers\DateTimeHelper::toDateInterval()`.
+
 ### Changed
 - `craft\config\DbConfig::dsn()` now parses the DSN string and populates the other DSN-settable config properties.
+
+### Deprecated
+- Deprecated `craft\helpers\DateTimeHelper::secondsToInterval()`. `toDateInterval()` should be used instead.
 
 ### Fixed
 - Fixed a bug where database connections would always use port `3306` by default if `craft\config\DbConfig` had been configured via fluent methods, even for PostgreSQL.
 - Fixed a bug where system messages provided by Yii weren’t getting translated in some cases. ([#11712](https://github.com/craftcms/cms/issues/11712))
+- Fixed a bug where the “Keep me signed in” checkbox label wasn’t always accurately representing the `rememberedUserSessionDuration` config setting. ([#11594](https://github.com/craftcms/cms/discussions/11594))
 
 ## 4.2.0.2 - 2022-07-27
 
