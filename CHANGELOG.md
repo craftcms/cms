@@ -9,6 +9,9 @@
 ### Fixed
 - Fixed a bug where system messages provided by Yii weren’t getting translated in some cases. ([#11712](https://github.com/craftcms/cms/issues/11712))
 
+### Security
+- Fixed an XSS vulnerability.
+
 ## 3.7.49 - 2022-07-26
 
 ### Added

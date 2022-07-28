@@ -471,7 +471,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
     createNewElement: function (elementInfo) {
       var $element = elementInfo.$element.clone();
       var removeText = Craft.t('app', 'Remove {label}', {
-        label: elementInfo.label,
+        label: Craft.escapeHtml(elementInfo.label),
       });
       // Make a couple tweaks
       Craft.setElementSize(
