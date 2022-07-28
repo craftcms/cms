@@ -20,15 +20,9 @@ use craft\db\Connection;
 class DbConfigTest extends Unit
 {
     /**
-     * Test config for renamed settings
-     *
-     * @dataProvider renamedSettingsDataProvider
-     *
-     * @param string $oldProperty
-     * @param string $newProperty
-     * @param mixed $value
+     * Test DbConfig::dsn()
      */
-    public function testDsn(string $oldProperty, string $newProperty, mixed $value): void
+    public function testDsn(): void
     {
         $config = DbConfig::create()
             ->driver(Connection::DRIVER_MYSQL)
