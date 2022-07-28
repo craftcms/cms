@@ -2,8 +2,20 @@
 
 ## Unreleased
 
+### Changed
+- `craft\config\DbConfig::dsn()` now parses the DSN string and populates the other DSN-settable config properties.
+
+### Fixed
+- Fixed a bug where database connections would always use port `3306` by default if `craft\config\DbConfig` had been configured via fluent methods, even for PostgreSQL.
+- Fixed a bug where system messages provided by Yii weren’t getting translated in some cases. ([#11712](https://github.com/craftcms/cms/issues/11712))
+
+## 4.2.0.2 - 2022-07-27
+
 ### Fixed
 - Fixed a bug where `Garnish.uiShortcutManager` was getting double-instantiated, causing some keyboard shortcuts to be triggered multiple times.
+- Fixed a JavaScript error that occurred when switching sites in the control panel. ([#11709](https://github.com/craftcms/cms/issues/11709))
+- Fixed a bug where some config settings set via fluent setters weren’t getting normalized.
+- Fixed a bug where the database connection DSN string wasn’t getting built properly when the connection settings were set via fluent setters.
 
 ## 4.2.0.1 - 2022-07-26
 
