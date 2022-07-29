@@ -685,7 +685,7 @@ class DateTimeHelperTest extends TestCase
             ['8 days', 691200],
             ['17 minutes', 999],
             ['17 minutes', '999'],
-            ['17 minutes and 39 seconds', 999, true],
+            ['16 minutes and 39 seconds', 999, true],
             ['999 seconds', 'PT999S'],
             ['27 minutes', 'PT10M999S'],
         ];
