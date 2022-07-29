@@ -1169,7 +1169,6 @@ JS, [
             'name' => null,
         ];
 
-        $label = $address->title;
         $canDelete = $address->canDelete(Craft::$app->getUser()->getIdentity());
         $actionMenuId = sprintf('address-card-action-menu-%s', mt_rand());
 
@@ -1183,10 +1182,10 @@ JS, [
             ]) .
             ($config['name'] ? Html::hiddenInput("{$config['name']}[]", (string)$address->id) : '') .
             Html::beginTag('div', ['class' => 'address-card-header']) .
-            Html::tag('h2', $address->title, [
+            Html::tag('h2', Html::encode($address->title), [
                 'class' => array_filter([
                     'address-card-label',
-                    !$label ? 'hidden' : null,
+                    !$address->title ? 'hidden' : null,
                 ]),
             ]) .
             ($canDelete
@@ -1201,7 +1200,7 @@ JS, [
                     'title' => Craft::t('app', 'Actions'),
                     'aria' => [
                         'controls' => $actionMenuId,
-                        'label' => sprintf('%s %s', $label ?? Craft::t('app', 'New Address'), Craft::t('app', 'Settings')),
+                        'label' => sprintf('%s %s', $address->title ? Html::encode($address->title) : Craft::t('app', 'New Address'), Craft::t('app', 'Settings')),
                     ],
                     'data' => [
                         'icon' => 'settings',
