@@ -4483,8 +4483,17 @@ ul.tree,
     height: 24px;
     cursor: nwse-resize;
     padding: var(--xs);
+
     body.rtl & {
-      background-image: url(../images/resizehandle_rtl.png);
+      .ltr {
+        display: none;
+      }
+    }
+
+    body.ltr & {
+      .rtl {
+        display: none;
+      }
     }
 
     path {
