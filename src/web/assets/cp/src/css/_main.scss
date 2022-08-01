@@ -4474,7 +4474,6 @@ ul.tree,
   }
 
   .resizehandle {
-    --ui-control-color: var(--black);
     position: absolute;
     z-index: 1;
     bottom: 0;
@@ -4483,6 +4482,10 @@ ul.tree,
     height: 24px;
     cursor: nwse-resize;
     padding: var(--xs);
+
+    path {
+      fill: var(--ui-control-color);
+    }
 
     body.rtl & {
       .ltr {
@@ -4494,10 +4497,6 @@ ul.tree,
       .rtl {
         display: none;
       }
-    }
-
-    path {
-      fill: var(--ui-control-color);
     }
   }
 }
