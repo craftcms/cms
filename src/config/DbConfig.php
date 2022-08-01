@@ -45,10 +45,10 @@ class DbConfig extends BaseConfig
      * you’d set these:
      *
      * ```php
-     * [
-     *     PDO::MYSQL_ATTR_SSL_KEY    => '/path/to/my/client-key.pem',
-     *     PDO::MYSQL_ATTR_SSL_CERT   => '/path/to/my/client-cert.pem',
-     *     PDO::MYSQL_ATTR_SSL_CA     => '/path/to/my/ca-cert.pem',
+     * 'attributes' => [
+     *     PDO::MYSQL_ATTR_SSL_KEY => '/path/to/my/client-key.pem',
+     *     PDO::MYSQL_ATTR_SSL_CERT => '/path/to/my/client-cert.pem',
+     *     PDO::MYSQL_ATTR_SSL_CA => '/path/to/my/ca-cert.pem',
      * ],
      * ```
      */
@@ -343,6 +343,17 @@ class DbConfig extends BaseConfig
     /**
      * An array of key-value pairs of PDO attributes to pass into the PDO constructor.
      *
+     * For example, when using the [MySQL PDO driver](https://php.net/manual/en/ref.pdo-mysql.php), if you wanted to enable a SSL database connection
+     * (assuming [SSL is enabled in MySQL](https://dev.mysql.com/doc/mysql-secure-deployment-guide/5.7/en/secure-deployment-secure-connections.html) and `'user'` can connect via SSL,
+     * you’d set these:
+     *
+     * ```php
+     * ->pdoAttributes([
+     *     PDO::MYSQL_ATTR_SSL_KEY => '/path/to/my/client-key.pem',
+     *     PDO::MYSQL_ATTR_SSL_CERT => '/path/to/my/client-cert.pem',
+     *     PDO::MYSQL_ATTR_SSL_CA => '/path/to/my/ca-cert.pem',
+     * ])
+     * ```
      * @param array $value
      * @return self
      * @see $attributes
@@ -356,6 +367,18 @@ class DbConfig extends BaseConfig
 
     /**
      * The charset to use when creating tables.
+     *
+     * ::: tip
+     * You can change the character set and collation across all existing database tables using this terminal command:
+     *
+     * ```bash
+     * php craft db/convert-charset
+     * ```
+     * :::
+     *
+     * ```php
+     * ->charset('utf8mb4')
+     * ```
      *
      * @param string $value
      * @return self
@@ -371,6 +394,25 @@ class DbConfig extends BaseConfig
     /**
      * The collation to use when creating tables.
      *
+     * This is only used by MySQL. If null, the [[$charset|charset’s]] default collation will be used.
+     *
+     * | Charset   | Default collation    |
+     * | --------- | -------------------- |
+     * | `utf8`    | `utf8_general_ci`    |
+     * | `utf8mb4` | `utf8mb4_0900_ai_ci` |
+     *
+     * ::: tip
+     * You can change the character set and collation across all existing database tables using this terminal command:
+     *
+     * ```bash
+     * php craft db/convert-charset
+     * ```
+     * :::
+     *
+     * ```php
+     * ->collation('utf8mb4_0900_ai_ci')
+     * ```
+     *
      * @param string|null $value
      * @return self
      * @see $collation
@@ -384,6 +426,16 @@ class DbConfig extends BaseConfig
 
     /**
      * The Data Source Name (“DSN”) that tells Craft how to connect to the database.
+     *
+     * DSNs should begin with a driver prefix (`mysql:` or `pgsql:`), followed by driver-specific parameters.
+     * For example, `mysql:host=127.0.0.1;port=3306;dbname=acme_corp`.
+     *
+     * - MySQL parameters: <https://php.net/manual/en/ref.pdo-mysql.connection.php>
+     * - PostgreSQL parameters: <https://php.net/manual/en/ref.pdo-pgsql.connection.php>
+     *
+     * ```php
+     * ->dsn('mysql:host=127.0.0.1;port=3306;dbname=acme_corp')
+     * ```
      *
      * @param string|null $value
      * @return self
@@ -409,6 +461,10 @@ class DbConfig extends BaseConfig
     /**
      * The database password to connect with.
      *
+     * ```php
+     * ->password('super-secret')
+     * ```
+     *
      * @param string $value
      * @return self
      * @see $password
@@ -423,9 +479,19 @@ class DbConfig extends BaseConfig
     /**
      * The schema that Postgres is configured to use by default (PostgreSQL only).
      *
+     * ::: tip
+     * To force Craft to use the specified schema regardless of PostgreSQL’s `search_path` setting, you must enable
+     * the [[setSchemaOnConnect]] setting.
+     * :::
+     *
+     * ```php
+     * ->schema('myschema,public')
+     * ```
+     *
      * @param string|null $value
      * @return self
      * @see $schema
+     * @see https://www.postgresql.org/docs/8.2/static/ddl-schemas.html
      * @since 4.2.0
      */
     public function schema(?string $value): self
@@ -436,6 +502,15 @@ class DbConfig extends BaseConfig
 
     /**
      * Whether the [[schema]] should be explicitly used for database queries (PostgreSQL only).
+     *
+     * ::: warning
+     * This will cause an extra `SET search_path` SQL query to be executed per database connection. Ideally,
+     * PostgreSQL’s `search_path` setting should be configured to prioritize the desired schema.
+     * :::
+     *
+     * ```php
+     * ->setSchemaOnConnect()
+     * ```
      *
      * @param bool $value
      * @return self
@@ -451,6 +526,10 @@ class DbConfig extends BaseConfig
     /**
      * If you’re sharing Craft installs in a single database (MySQL) or a single database and using a shared schema (PostgreSQL),
      * you can set a table prefix here to avoid per-install table naming conflicts. This can be no more than 5 characters, and must be all lowercase.
+     *
+     * ```php
+     * ->tablePrefix('craft_')
+     * ```
      *
      * @param string|null $value
      * @return self
@@ -474,6 +553,10 @@ class DbConfig extends BaseConfig
     /**
      * The database username to connect with.
      *
+     * ```php
+     * ->user('db')
+     * ```
+     *
      * @param string $value
      * @return self
      * @see $user
@@ -488,6 +571,17 @@ class DbConfig extends BaseConfig
     /**
      * Whether batched queries should be executed on a separate, unbuffered database connection.
      *
+     * This setting only applies to MySQL. It can be enabled when working with high volume content, to prevent
+     * PHP from running out of memory when querying too much data at once. (See
+     * <https://www.yiiframework.com/doc/guide/2.0/en/db-query-builder#batch-query-mysql> for an explanation
+     * of MySQL’s batch query limitations.)
+     *
+     * For more on Craft batch queries, see <https://craftcms.com/knowledge-base/query-batching-batch-each>.
+     *
+     * ```php
+     * ->useUnbufferedConnections()
+     * ```
+     *
      * @param bool $value
      * @return self
      * @see $useUnbufferedConnections
@@ -501,6 +595,12 @@ class DbConfig extends BaseConfig
 
     /**
      * The database connection URL, if one was provided by your hosting environment.
+     *
+     * If this is set, the values for [[driver]], [[user]], [[database]], [[server]], [[port]], and [[database]] will be extracted from it.
+     *
+     * ```php
+     * ->url('jdbc:mysql://database.foo:3306/mydb')
+     * ```
      *
      * @param string|null $value
      * @return self
@@ -521,6 +621,10 @@ class DbConfig extends BaseConfig
     /**
      * The database driver to use. Either `mysql` for MySQL or `pgsql` for PostgreSQL.
      *
+     * ```php
+     * ->driver('mysql')
+     * ```
+     *
      * @param string|null $value
      * @return self
      * @throws InvalidConfigException
@@ -537,6 +641,10 @@ class DbConfig extends BaseConfig
     /**
      * The database server name or IP address. Usually `localhost` or `127.0.0.1`.
      *
+     * ```php
+     * ->server('localhost')
+     * ```
+     *
      * @param string|null $value
      * @return self
      * @throws InvalidConfigException
@@ -552,6 +660,10 @@ class DbConfig extends BaseConfig
 
     /**
      * The database server port. Defaults to 3306 for MySQL and 5432 for PostgreSQL.
+     *
+     * ```php
+     * ->port(3306)
+     * ```
      *
      * @param int|null $value
      * @return self
@@ -570,6 +682,10 @@ class DbConfig extends BaseConfig
      * MySQL only. If this is set, the CLI connection string (used for yiic) will connect to the Unix socket instead of
      * the server and port. If this is specified, then `server` and `port` settings are ignored.
      *
+     * ```php
+     * ->unixSocket('/Applications/MAMP/tmp/mysql/mysql.sock')
+     * ```
+     *
      * @param string|null $value
      * @return self
      * @throws InvalidConfigException
@@ -585,6 +701,10 @@ class DbConfig extends BaseConfig
 
     /**
      * The name of the database to select.
+     *
+     * ```php
+     * ->database('mydatabase')
+     * ```
      *
      * @param string|null $value
      * @return self
