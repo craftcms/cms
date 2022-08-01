@@ -240,10 +240,6 @@ class DateTimeHelperTest extends TestCase
      */
     public function testHumanDuration(string $expected, string|int $duration, ?bool $showSeconds = null): void
     {
-        if (is_string($duration)) {
-            $duration = new DateInterval($duration);
-        }
-
         self::assertSame($expected, DateTimeHelper::humanDuration($duration, $showSeconds));
     }
 
@@ -686,6 +682,12 @@ class DateTimeHelperTest extends TestCase
             ['1 hour', 3600],
             ['1 day', 86400],
             ['1 week', 604800],
+            ['8 days', 691200],
+            ['17 minutes', 999],
+            ['17 minutes', '999'],
+            ['16 minutes and 39 seconds', 999, true],
+            ['999 seconds', 'PT999S'],
+            ['27 minutes', 'PT10M999S'],
         ];
     }
 

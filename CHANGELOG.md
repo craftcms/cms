@@ -1,5 +1,37 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+### Added
+- Added `craft\config\GeneralConfig::getRememberedUserSessionDuration()`.
+- Added `craft\helpers\DateTimeHelper::toDateInterval()`.
+
+### Changed
+- `craft\config\DbConfig::dsn()` now parses the DSN string and populates the other DSN-settable config properties.
+- `craft\helpers\DateTimeHelper::humanDuration()` now accepts date interval strings to be passed in.
+- `craft\helpers\DateTimeHelper::humanDuration()` no longer returns the number of weeks, unless the number of days is divisible by 7. ([#11594](https://github.com/craftcms/cms/discussions/11594))
+- Element index filters are now managed for each site and source, rather than just for each source. ([#11719](https://github.com/craftcms/cms/issues/11719))
+
+### Deprecated
+- Deprecated `craft\helpers\DateTimeHelper::secondsToInterval()`. `toDateInterval()` should be used instead.
+
+### Fixed
+- Fixed a bug where database connections would always use port `3306` by default if `craft\config\DbConfig` had been configured via fluent methods, even for PostgreSQL.
+- Fixed a bug where system messages provided by Yii weren’t getting translated in some cases. ([#11712](https://github.com/craftcms/cms/issues/11712))
+- Fixed a bug where the “Keep me signed in” checkbox label wasn’t always accurately representing the `rememberedUserSessionDuration` config setting. ([#11594](https://github.com/craftcms/cms/discussions/11594))
+- Fixed a bug where the `Craft.cp.setSiteId()` JavaScript method wasn’t updating `Craft.siteId`, or the base URLs used by `Craft.getActionUrl()`, `Craft.getCpUrl()`, and `Craft.getUrl()`.
+
+### Security
+- Fixed XSS vulnerabilities.
+
+## 4.2.0.2 - 2022-07-27
+
+### Fixed
+- Fixed a bug where `Garnish.uiShortcutManager` was getting double-instantiated, causing some keyboard shortcuts to be triggered multiple times.
+- Fixed a JavaScript error that occurred when switching sites in the control panel. ([#11709](https://github.com/craftcms/cms/issues/11709))
+- Fixed a bug where some config settings set via fluent setters weren’t getting normalized.
+- Fixed a bug where the database connection DSN string wasn’t getting built properly when the connection settings were set via fluent setters.
+
 ## 4.2.0.1 - 2022-07-26
 
 ### Fixed

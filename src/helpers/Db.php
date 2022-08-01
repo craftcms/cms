@@ -1371,7 +1371,7 @@ class Db
      * Parses a DSN string and returns an array with the `driver` and any driver params, or just a single key.
      *
      * @param string $dsn
-     * @param string|null $key The key that is needed from the DSN. If this is
+     * @param string|null $key The key that is needed from the DSN, if only one param is needed.
      * @return array|string|false The full array, or the specific key value, or `false` if `$key` is a param that
      * doesn’t exist in the DSN string.
      * @throws InvalidArgumentException if $dsn is invalid
