@@ -11,9 +11,11 @@ use Craft;
 use craft\console\Controller;
 use craft\events\ConfigEvent;
 use craft\helpers\Console;
+use craft\helpers\FileHelper;
 use craft\helpers\ProjectConfig;
 use craft\services\Plugins;
 use craft\services\ProjectConfig as ProjectConfigService;
+use Symfony\Component\Yaml\Yaml;
 use yii\console\ExitCode;
 
 /**
@@ -34,6 +36,18 @@ class ProjectConfigController extends Controller
      * @since 3.5.13
      */
     public $invert = false;
+
+    /**
+     * @var bool Whether to export the external project config data, from the `config/project/` folder
+     * @since 3.7.51
+     */
+    public $external = false;
+
+    /**
+     * @var bool Whether to overwrite an existing export file, if a specific file path is given.
+     * @since 3.7.51
+     */
+    public $overwrite = false;
 
     /**
      * @var int Counter of the total paths that have been processed.
@@ -64,6 +78,10 @@ class ProjectConfigController extends Controller
                 break;
             case 'diff':
                 $options[] = 'invert';
+                break;
+            case 'export':
+                $options[] = 'external';
+                break;
         }
 
         return $options;
@@ -310,6 +328,65 @@ class ProjectConfigController extends Controller
         $time = time();
         ProjectConfig::touch($time);
         $this->stdout("The dateModified value in project.yaml is now set to $time." . PHP_EOL, Console::FG_GREEN);
+        return ExitCode::OK;
+    }
+
+    /**
+     * Exports the entire project config to a single file.
+     *
+     * @param string|null $path The path the project config should be exported to.
+     * Can be any of the following:
+     *
+     * - A full file path
+     * - A folder path (export will be saved in there with a dynamically-generated name)
+     * - A filename (export will be saved in the working directory with the given name)
+     * - Blank (export will be saved in the working directly with a dynamically-generated name)
+     */
+    public function actionExport(?string $path = null): int
+    {
+        if ($path !== null) {
+            // Prefix with the working directory if a relative path or no path is given
+            if (strpos($path, '.') === 0 || strpos(FileHelper::normalizePath($path, '/'), '/') === false) {
+                $path = getcwd() . DIRECTORY_SEPARATOR . $path;
+            }
+
+            $path = FileHelper::normalizePath($path);
+        } else {
+            $path = getcwd();
+        }
+
+        if (is_dir($path)) {
+            $i = 0;
+            do {
+                $testPath = $path . DIRECTORY_SEPARATOR . 'project-config-' . ($this->external ? 'external' : 'internal') . '--' . date('Y-m-d') . ($i ? "--$i" : '') . '.yaml';
+                $i++;
+            } while (file_exists($testPath));
+            $path = $testPath;
+        } elseif (is_file($path)) {
+            if (!$this->overwrite) {
+                if (!$this->interactive) {
+                    $this->stderr("$path already exists. Retry with the --overwrite flag to overwrite it." . PHP_EOL, Console::FG_RED);
+                    return ExitCode::UNSPECIFIED_ERROR;
+                }
+                if (!$this->confirm("$path already exists. Overwrite?")) {
+                    $this->stdout('Aborting' . PHP_EOL);
+                    return ExitCode::OK;
+                }
+            }
+            unlink($path);
+        }
+
+        $this->stdout('Exporting the ' . ($this->external ? 'external' : 'loaded') . ' project config data ... ');
+
+        $config = Craft::$app->getProjectConfig()->get(null, $this->external);
+        $content = Yaml::dump(ProjectConfig::cleanupConfig($config), 20, 2);
+        FileHelper::writeToFile($path, $content);
+
+        $this->stdout("done\n", Console::FG_GREEN);
+        $size = Craft::$app->getFormatter()->asShortSize(filesize($path));
+        $this->stdout('Exported to: ');
+        $this->stdout($path, Console::FG_CYAN);
+        $this->stdout(" ($size)\n");
         return ExitCode::OK;
     }
 
