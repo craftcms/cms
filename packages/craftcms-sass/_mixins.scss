@@ -148,9 +148,19 @@ $radioSize: 16px;
   font-size: 0.9em !important;
 }
 
-@function toRem($size) {
-  $remValue: calc($size / 16) + rem;
-  @return $remValue;
+@function toRem($values...) {
+  $max: length($values);
+  $remValues: '';
+
+  @for $i from 1 through $max {
+    $remValues: #{$remValues + calc(nth($values, $i) / 16)}rem;
+
+    @if $i < $max {
+      $remValues: #{$remValues + " "};
+    }
+  }
+
+  @return $remValues;
 }
 
 @mixin fontSize($size) {
