@@ -156,7 +156,7 @@ $radioSize: 16px;
     $remValues: #{$remValues + calc(nth($values, $i) / 16)}rem;
 
     @if $i < $max {
-      $remValues: #{$remValues + " "};
+      $remValues: #{$remValues + ' '};
     }
   }
 
