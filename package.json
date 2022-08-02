@@ -41,7 +41,7 @@
     "graphiql": "~1.7.2",
     "graphiql-explorer": "^0.9.0",
     "graphql": "^15.8.0",
-    "htmx.org": "^1.6.1",
+    "htmx.org": "^1.8.0",
     "iframe-resizer": "^4.3.2",
     "inputmask": "^5.0.7",
     "jquery": "^3.6.0",
