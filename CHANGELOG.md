@@ -5,6 +5,9 @@
 ### Added
 - Added the `project-config/export` command. ([#11733](https://github.com/craftcms/cms/pull/11733))
 
+### Fixed
+- Fixed a bug where the `project-config/apply` command could appear to end prematurely.
+
 ## 3.7.50 - 2022-07-26
 
 ### Changed

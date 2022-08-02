@@ -190,6 +190,7 @@ class ProjectConfigController extends Controller
                 $projectConfig->on(ProjectConfigService::EVENT_UPDATE_ITEM, [$this, 'onFinishProcessingItem'], ['label' => 'updating'], true);
 
                 $projectConfig->applyYamlChanges();
+                $projectConfig->saveModifiedConfigData();
 
                 $projectConfig->forceUpdate = $forceUpdate;
             } catch (\Throwable $e) {
