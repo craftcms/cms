@@ -999,6 +999,7 @@ SQL
             ->ownerId($canonical->id)
             ->fieldId($field->id)
             ->siteId('*')
+            ->preferSites([$canonical->siteId])
             ->unique()
             ->status(null)
             ->all();
