@@ -247,6 +247,7 @@ abstract class Controller extends \yii\web\Controller
      * @param string|null $message
      * @param array $data Additional data to include in the JSON response
      * @param string|null $redirect The URL to redirect the request
+     * @param array $notificationSettings Control panel notification settings
      * @return YiiResponse|null
      * @since 4.0.0
      */
@@ -254,15 +255,22 @@ abstract class Controller extends \yii\web\Controller
         ?string $message = null,
         array $data = [],
         ?string $redirect = null,
+        array $notificationSettings = [],
     ): ?YiiResponse {
         if ($this->request->getAcceptsJson()) {
-            return $this->asJson($data + array_filter([
-                    'message' => $message,
-                    'redirect' => $redirect,
-                ]));
+            $data += array_filter([
+                'message' => $message,
+                'redirect' => $redirect,
+            ]);
+            if ($notificationSettings && $this->request->getIsCpRequest()) {
+                $data += [
+                    'notificationSettings' => $notificationSettings,
+                ];
+            }
+            return $this->asJson($data);
         }
 
-        $this->setSuccessFlash($message);
+        $this->setSuccessFlash($message, $notificationSettings);
 
         if ($redirect !== null) {
             return $this->redirect($redirect);
@@ -491,14 +499,15 @@ abstract class Controller extends \yii\web\Controller
      *
      * If a hashed `successMessage` param was sent with the request, that will be used instead of the provided default.
      *
-     * @param string|null $default
+     * @param string|null $default The default message, if no `successMessage` param was sent
+     * @param array $settings Control panel notification settings
      * @since 3.5.0
      */
-    public function setSuccessFlash(?string $default = null): void
+    public function setSuccessFlash(?string $default = null, array $settings = []): void
     {
         $message = $this->request->getValidatedBodyParam('successMessage') ?? $default;
         if ($message !== null) {
-            Craft::$app->getSession()->setNotice($message);
+            Craft::$app->getSession()->setSuccess($message, $settings);
         }
     }
 
@@ -507,14 +516,15 @@ abstract class Controller extends \yii\web\Controller
      *
      * If a hashed `failMessage` param was sent with the request, that will be used instead of the provided default.
      *
-     * @param string|null $default
+     * @param string|null $default The default message, if no `successMessage` param was sent
+     * @param array $settings Control panel notification settings
      * @since 3.5.0
      */
-    public function setFailFlash(?string $default = null): void
+    public function setFailFlash(?string $default = null, array $settings = []): void
     {
         $message = $this->request->getValidatedBodyParam('failMessage') ?? $default;
         if ($message !== null) {
-            Craft::$app->getSession()->setError($message);
+            Craft::$app->getSession()->setError($message, $settings);
         }
     }
 

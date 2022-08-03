@@ -23,6 +23,7 @@ use craft\elements\db\MatrixBlockQuery;
 use craft\elements\MatrixBlock;
 use craft\events\BlockTypesEvent;
 use craft\fieldlayoutelements\CustomField;
+use craft\fields\conditions\EmptyFieldConditionRule;
 use craft\gql\arguments\elements\MatrixBlock as MatrixBlockArguments;
 use craft\gql\resolvers\elements\MatrixBlock as MatrixBlockResolver;
 use craft\gql\types\generators\MatrixBlockType as MatrixBlockTypeGenerator;
@@ -44,6 +45,7 @@ use craft\validators\ArrayValidator;
 use craft\web\assets\matrix\MatrixAsset;
 use craft\web\assets\matrixsettings\MatrixSettingsAsset;
 use GraphQL\Type\Definition\Type;
+use Illuminate\Support\Collection;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\db\Expression;
@@ -548,7 +550,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
      */
     public function serializeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
-        /** @var MatrixBlockQuery $value */
+        /** @var MatrixBlockQuery|Collection $value */
         $serialized = [];
         $new = 0;
 
@@ -571,6 +573,14 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
     public function copyValue(ElementInterface $from, ElementInterface $to): void
     {
         // We'll do it later from afterElementPropagate()
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getElementConditionRuleType(): array|string|null
+    {
+        return EmptyFieldConditionRule::class;
     }
 
     /**
@@ -756,7 +766,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
      */
     public function isValueEmpty(mixed $value, ElementInterface $element): bool
     {
-        /** @var MatrixBlockQuery $value */
+        /** @var MatrixBlockQuery|Collection $value */
         return $value->count() === 0;
     }
 
@@ -767,7 +777,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
      */
     public function validateBlocks(ElementInterface $element): void
     {
-        /** @var MatrixBlockQuery $value */
+        /** @var MatrixBlockQuery|Collection $value */
         $value = $element->getFieldValue($this->handle);
         $blocks = $value->all();
         $allBlocksValidate = true;
@@ -822,7 +832,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
      */
     protected function searchKeywords(mixed $value, ElementInterface $element): string
     {
-        /** @var MatrixBlockQuery $value */
+        /** @var MatrixBlockQuery|Collection $value */
         $keywords = [];
 
         foreach ($value->all() as $block) {
@@ -843,7 +853,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
      */
     public function getStaticHtml(mixed $value, ElementInterface $element): string
     {
-        /** @var MatrixBlockQuery $value */
+        /** @var MatrixBlockQuery|Collection $value */
         $value = $value->all();
 
         /** @var MatrixBlock[] $value */
@@ -1059,10 +1069,12 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
 
         // Repopulate the Matrix block query if this is a new element
         if ($resetValue || $isNew) {
-            /** @var MatrixBlockQuery $query */
-            $query = $element->getFieldValue($this->handle);
-            $this->_populateQuery($query, $element);
-            $query->clearCachedResult();
+            /** @var MatrixBlockQuery|Collection $value */
+            $value = $element->getFieldValue($this->handle);
+            if ($value instanceof MatrixBlockQuery) {
+                $this->_populateQuery($value, $element);
+            }
+            $value->clearCachedResult();
         }
 
         parent::afterElementPropagate($element, $isNew);

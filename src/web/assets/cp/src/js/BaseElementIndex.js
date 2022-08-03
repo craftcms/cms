@@ -783,10 +783,12 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       }
 
       if (
-        this.filterHuds[this.sourceKey] &&
-        this.filterHuds[this.sourceKey].serialized
+        this.filterHuds[this.siteId] &&
+        this.filterHuds[this.siteId][this.sourceKey] &&
+        this.filterHuds[this.siteId][this.sourceKey].serialized
       ) {
-        params.filters = this.filterHuds[this.sourceKey].serialized;
+        params.filters =
+          this.filterHuds[this.siteId][this.sourceKey].serialized;
       }
 
       // Give plugins a chance to hook in here
@@ -936,7 +938,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             }
 
             if (response.data.message) {
-              Craft.cp.displayNotice(response.data.message);
+              Craft.cp.displaySuccess(response.data.message);
             }
 
             this.afterAction(action, params);
@@ -1705,6 +1707,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
         // Update the elements
         this.updateElements();
+        this.updateFilterBtn();
       }
     },
 
@@ -2393,28 +2396,43 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     showFilterHud: function () {
-      if (!this.filterHuds[this.sourceKey]) {
-        this.filterHuds[this.sourceKey] = new FilterHud(this, this.sourceKey);
+      if (!this.filterHuds[this.siteId]) {
+        this.filterHuds[this.siteId] = {};
+      }
+      if (!this.filterHuds[this.siteId][this.sourceKey]) {
+        this.filterHuds[this.siteId][this.sourceKey] = new FilterHud(
+          this,
+          this.sourceKey,
+          this.siteId
+        );
         this.updateFilterBtn();
       } else {
-        this.filterHuds[this.sourceKey].show();
+        this.filterHuds[this.siteId][this.sourceKey].show();
       }
     },
 
     updateFilterBtn: function () {
       this.$filterBtn.removeClass('active');
 
-      if (this.filterHuds[this.sourceKey]) {
+      if (
+        this.filterHuds[this.siteId] &&
+        this.filterHuds[this.siteId][this.sourceKey]
+      ) {
         this.$filterBtn
-          .attr('aria-controls', this.filterHuds[this.sourceKey].id)
+          .attr(
+            'aria-controls',
+            this.filterHuds[this.siteId][this.sourceKey].id
+          )
           .attr(
             'aria-expanded',
-            this.filterHuds[this.sourceKey].showing ? 'true' : 'false'
+            this.filterHuds[this.siteId][this.sourceKey].showing
+              ? 'true'
+              : 'false'
           );
 
         if (
-          this.filterHuds[this.sourceKey].showing ||
-          this.filterHuds[this.sourceKey].hasRules()
+          this.filterHuds[this.siteId][this.sourceKey].showing ||
+          this.filterHuds[this.siteId][this.sourceKey].hasRules()
         ) {
           this.$filterBtn.addClass('active');
         }
@@ -2460,15 +2478,17 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 const FilterHud = Garnish.HUD.extend({
   elementIndex: null,
   sourceKey: null,
+  siteId: null,
   id: null,
   loading: true,
   serialized: null,
   $clearBtn: null,
   cleared: false,
 
-  init: function (elementIndex, sourceKey) {
+  init: function (elementIndex, sourceKey, siteId) {
     this.elementIndex = elementIndex;
     this.sourceKey = sourceKey;
+    this.siteId = siteId;
     this.id = `filter-${Math.floor(Math.random() * 1000000000)}`;
 
     const $loadingContent = $('<div/>')
@@ -2546,7 +2566,6 @@ const FilterHud = Garnish.HUD.extend({
         this.$hud.find('.condition-container').on('htmx:load', () => {
           this.setReady();
         });
-
         this.setFocus();
       })
       .catch(() => {
@@ -2575,7 +2594,7 @@ const FilterHud = Garnish.HUD.extend({
   },
 
   setFocus: function () {
-    this.$main.find('.condition-footer .add').focus();
+    Garnish.setFocusWithin(this.$main);
   },
 
   clear: function () {
@@ -2614,7 +2633,6 @@ const FilterHud = Garnish.HUD.extend({
     }
 
     if (this.cleared) {
-      delete this.elementIndex.filterHuds[this.elementIndex.sourceKey];
       this.destroy();
     }
 
@@ -2628,5 +2646,10 @@ const FilterHud = Garnish.HUD.extend({
 
   serialize: function () {
     return !this.cleared && this.hasRules() ? this.$body.serialize() : null;
+  },
+
+  destroy: function () {
+    this.base();
+    delete this.elementIndex.filterHuds[this.siteId][this.sourceKey];
   },
 });

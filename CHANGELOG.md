@@ -3,12 +3,97 @@
 ## Unreleased
 
 ### Added
-- The control panel is now translated into Ukranian.
-- Added `craft\helpers\Template::resolveTemplatePathAndLine()`.
+- Added the `project-config/export` command. ([#11733](https://github.com/craftcms/cms/pull/11733))
+- Added `craft\config\GeneralConfig::getRememberedUserSessionDuration()`.
+- Added `craft\helpers\DateTimeHelper::toDateInterval()`.
 
 ### Changed
+- `craft\config\DbConfig::dsn()` now parses the DSN string and populates the other DSN-settable config properties.
+- `craft\helpers\DateTimeHelper::humanDuration()` now accepts date interval strings to be passed in.
+- `craft\helpers\DateTimeHelper::humanDuration()` no longer returns the number of weeks, unless the number of days is divisible by 7. ([#11594](https://github.com/craftcms/cms/discussions/11594))
+- Element index filters are now managed for each site and source, rather than just for each source. ([#11719](https://github.com/craftcms/cms/issues/11719))
+
+### Deprecated
+- Deprecated `craft\helpers\DateTimeHelper::secondsToInterval()`. `toDateInterval()` should be used instead.
+
+### Fixed
+- Fixed a bug where database connections would always use port `3306` by default if `craft\config\DbConfig` had been configured via fluent methods, even for PostgreSQL.
+- Fixed a bug where system messages provided by Yii weren’t getting translated in some cases. ([#11712](https://github.com/craftcms/cms/issues/11712))
+- Fixed a bug where the “Keep me signed in” checkbox label wasn’t always accurately representing the `rememberedUserSessionDuration` config setting. ([#11594](https://github.com/craftcms/cms/discussions/11594))
+- Fixed a bug where the `Craft.cp.setSiteId()` JavaScript method wasn’t updating `Craft.siteId`, or the base URLs used by `Craft.getActionUrl()`, `Craft.getCpUrl()`, and `Craft.getUrl()`.
+- Fixed an error that occurred when removing a Single section from the primary site, if it contained any Matrix blocks. ([#11669](https://github.com/craftcms/cms/issues/11669))
+- Fixed a bug where not all project config changes would be applied if a field or site was deleted. ([#9567](https://github.com/craftcms/cms/issues/9567))
+
+### Security
+- Fixed XSS vulnerabilities.
+
+## 4.2.0.2 - 2022-07-27
+
+### Fixed
+- Fixed a bug where `Garnish.uiShortcutManager` was getting double-instantiated, causing some keyboard shortcuts to be triggered multiple times.
+- Fixed a JavaScript error that occurred when switching sites in the control panel. ([#11709](https://github.com/craftcms/cms/issues/11709))
+- Fixed a bug where some config settings set via fluent setters weren’t getting normalized.
+- Fixed a bug where the database connection DSN string wasn’t getting built properly when the connection settings were set via fluent setters.
+
+## 4.2.0.1 - 2022-07-26
+
+### Fixed
+- Fixed an error that could occur when passing an object into `craft\helpers\ArrayHelper::removeValue()` or the `|without` filter.
+
+## 4.2.0 - 2022-07-26
+
+### Added
+- The control panel is now translated into Ukrainian.
+- Element conditions can now include condition rules for Matrix fields. ([#11620](https://github.com/craftcms/cms/issues/11620))
+- Element conditions can now include condition rules for Money fields. ([#11560](https://github.com/craftcms/cms/issues/11560))
+- Added the “Notification Duration” user accessibility preference. ([#11612](https://github.com/craftcms/cms/pull/11612))
+- The `accessibilityDefaults` config setting now supports a `notificationDuration` key.
+- Added `craft\behaviors\SessionBehavior::getSuccess()`.
+- Added `craft\behaviors\SessionBehavior::setSuccess()`.
+- Added `craft\config\BaseConfig`. ([#11591](https://github.com/craftcms/cms/pull/11591), [#11656](https://github.com/craftcms/cms/pull/11656))
+- Added `craft\controllers\UsersController::EVENT_AFTER_FIND_LOGIN_USER`. ([#11645](https://github.com/craftcms/cms/pull/11645))
+- Added `craft\controllers\UsersController::EVENT_BEFORE_FIND_LOGIN_USER`. ([#11645](https://github.com/craftcms/cms/pull/11645))
+- Added `craft\events\DefineFieldLayoutCustomFieldsEvent`.
+- Added `craft\events\FindLoginUserEvent`.
+- Added `craft\events\IndexKeywordsEvent`.
+- Added `craft\fields\conditions\EmptyFieldConditionRule`.
+- Added `craft\helpers\DateTimeHelper::humanDuration()`.
+- Added `craft\helpers\Template::resolveTemplatePathAndLine()`.
+- Added `craft\models\FieldLayout::EVENT_DEFINE_CUSTOM_FIELDS`. ([#11634](https://github.com/craftcms/cms/discussions/11634))
+- Added `craft\services\Config::getLoadingConfigFile()`.
+- Added `craft\services\Elements::EVENT_INVALIDATE_CACHES`. ([#11617](https://github.com/craftcms/cms/pull/11617))
+- Added `craft\services\Search::EVENT_BEFORE_INDEX_KEYWORDS`. ([#11575](https://github.com/craftcms/cms/discussions/11575))
+
+### Changed
+- Redesigned user notifications. ([#11612](https://github.com/craftcms/cms/pull/11612))
+- Most element notifications now include a link to the element. ([#11612](https://github.com/craftcms/cms/pull/11612))
+- Improved overall control panel accessibility. ([#11563](https://github.com/craftcms/cms/pull/11563), [#11543](https://github.com/craftcms/cms/pull/11543), [#11688](https://github.com/craftcms/cms/pull/11688), [#11699](https://github.com/craftcms/cms/pull/11699))
+- Improved condition builder accessibility. ([#11588](https://github.com/craftcms/cms/pull/11588), [#11643](https://github.com/craftcms/cms/pull/11643))
+- Improved Image Editor accessibility. ([#11496](https://github.com/craftcms/cms/pull/11496))
+- The “Keep me signed in” checkbox label on the control panel’s login page now includes the remembered session duration, e.g. “Keep me signed in for 2 weeks”. ([#11594](https://github.com/craftcms/cms/discussions/11594))
+- Dashboard widgets no longer show a confirmation dialog when deleted. Their delete notifications include an “Undo” button instead. ([#11573](https://github.com/craftcms/cms/discussions/11573))
 - Element edit pages no longer jump down when the “Showing your unsaved changes” notice is added, unless there’s not enough content to require a scroll bar. ([#11586](https://github.com/craftcms/cms/discussions/11586))
+- Matrix block previews now show selected option labels rather than their raw values. ([#11659](https://github.com/craftcms/cms/issues/11659))
+- Improved the behavior of some console commands for non-interactive shells. ([#11650](https://github.com/craftcms/cms/issues/11650))
+- The `utils/prune-revisions` console command now has a `--section` option. ([#8783](https://github.com/craftcms/cms/discussions/8783))
 - Deprecation warnings’ stack traces now show source templates’ paths and line numbers.
+- Exception JSON responses now include the previous exception details, recursively. ([#11694](https://github.com/craftcms/cms/discussions/11694))
+- `config/general.php` and `config/db.php` can now return `craft\config\GeneralConfig`/`DbConfig` objects, which can be defined using new fluent setter methods. ([#11591](https://github.com/craftcms/cms/pull/11591), [#11656](https://github.com/craftcms/cms/pull/11656))
+- The `|duration` Twig filter can now be used with an integer representing a number of seconds, and its `showSeconds` argument is no longer required. Seconds will be output if the duration is less than one minute by default.
+- The `|length` Twig filter now checks if the variable is a query, and if so, returns its count. ([#11625](https://github.com/craftcms/cms/discussions/11625))
+- The `|without` Twig filter no longer uses strict value comparisons by default. It has a new `$strict` argument that can be set to `true` to enforce strict comparisons if desired. ([#11695](https://github.com/craftcms/cms/issues/11695))
+- `craft\base\conditions\BaseConditionRule::inputHtml()` is no longer abstract, and returns an empty string by default.
+- `craft\behaviors\SessionBehavior::setError()` now has a `$settings` argument.
+- `craft\behaviors\SessionBehavior::setNotice()` now has a `$settings` argument.
+- `craft\db\Query` now implements the `ArrayAccess` and `IteratorAggregate` interfaces, so queries (including element queries) can be treated as arrays.
+- `craft\helpers\ArrayHelper::removeValue()` no longer uses strict value comparisons by default. It has a new `$strict` argument that can be set to `true` to enforce strict comparisons if desired.
+- `craft\web\Controller::asSuccess()` now has a `$notificationSettings` argument.
+- `craft\web\Controller::setFailFlash()` now has a `$settings` argument.
+- `craft\web\Controller::setSuccessFlash()` now has a `$settings` argument.
+
+### Deprecated
+- Deprecated `craft\helpers\DateTimeHelper::humanDurationFromInterval()`. `humanDuration()` should be used instead.
+- Deprecated `craft\helpers\DateTimeHelper::secondsToHumanTimeDuration()`. `humanDuration()` should be used instead.
 
 ### Fixed
 - Fixed a bug where new condition rules’ type selectors weren’t getting auto-focused.
@@ -16,10 +101,18 @@
 - Fixed a bug where assets’ `getImg()` methods were returning `null` for assets in volumes without URLs, even if a transform was being used. ([#11614](https://github.com/craftcms/cms/issues/11614))
 - Fixed a bug where sensitive data wasn’t getting redacted in the logs when Dev Mode was enabled. ([#11618](https://github.com/craftcms/cms/issues/11618))
 - Fixed a SQL error that could occur on MySQL 5. ([#11596](https://github.com/craftcms/cms/issues/11596))
+- Fixed an error that could occur when upgrading to Craft 4. ([#11644](https://github.com/craftcms/cms/issues/11644))
+- Fixed a bug where the green color used in lightswitches was too dark. ([#11653](https://github.com/craftcms/cms/issues/11653))
+- Fixed a bug where relational and Matrix fields were assuming their values hadn’t been eager-loaded on element save. ([#11667](https://github.com/craftcms/cms/issues/11667), [#11670](https://github.com/craftcms/cms/issues/11670))
 - Fixed a bug where deprecation warnings for treating an element query as an array weren’t getting logged with an origin, if they involved Twig’s `|batch` filter. ([#11597](https://github.com/craftcms/cms/issues/11597))
 - Fixed a bug where `{% js %}`, `{% script %}`, and `{% css %}` tags weren’t registering JavaScript and CSS code properly when used within a `{% cache %}` tag that contained an ungenerated image transform. ([#11602](https://github.com/craftcms/cms/issues/11602))
 - Fixed a bug where the “User saved” notification was translated for the former language, when changing the current user’s language preference.
 - Fixed a JavaScript error that occurred when removing a category from a Categories field, if any of its descendants were selected as well. ([#11641](https://github.com/craftcms/cms/issues/11641))
+- Fixed a bug where links to config settings from **Settings** → **General** didn’t include the correct setting anchors. ([#11665](https://github.com/craftcms/cms/pull/11665))
+- Fixed styling issues with Live Preview in Firefox.
+
+### Security
+- Fixed an information disclosure vulnerability.
 
 ## 4.1.4.1 - 2022-07-13
 

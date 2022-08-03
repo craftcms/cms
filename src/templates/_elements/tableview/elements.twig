@@ -22,7 +22,7 @@
         {% endif %}
         {% for attribute in attributes %}
             {% if loop.first %}
-                <th data-title="{{ attribute[1].label }}"{% if structure %} style="padding-{{ padding }}: {{ basePadding * element.level }}px;"{% endif %} data-titlecell="">
+                <th data-title="{{ attribute[1].label }}"{% if structure %} style="padding-{{ padding }}: {{ basePadding * element.level }}px;"{% endif %} data-titlecell="" scope="row">
                     {%- if structureEditable %}<a class="move icon" title="{{ 'Reorder'|t('app') }}" aria-label="{{ 'Reorder'|t('app') }}" role="button">&nbsp;</a>{% endif %}
                     {%- if structure and totalDescendants %}
                         {% set toggleLabel = 'Show {title} children'|t('app', {title: elementTitle}) %}

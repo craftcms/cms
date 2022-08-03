@@ -293,6 +293,7 @@ Craft.ui = {
       autofocus: config.autofocus && Garnish.isMobileBrowser(true),
       disabled: config.disabled,
       'data-target-prefix': config.targetPrefix,
+      'aria-labelledby': config.labelledBy,
     }).appendTo($container);
 
     // Normalize the options into an array
@@ -513,7 +514,7 @@ Craft.ui = {
       'data-value': value,
       'data-indeterminate-value': indeterminateValue,
       id: config.id,
-      role: 'checkbox',
+      role: 'switch',
       'aria-checked': config.on
         ? 'true'
         : config.indeterminate
@@ -572,6 +573,9 @@ Craft.ui = {
   createLightswitchField: function (config) {
     if (!config.id) {
       config.id = 'lightswitch' + Math.floor(Math.random() * 1000000000);
+    }
+    if (!config.labelId) {
+      config.labelId = `${config.id}-label`;
     }
     return this.createField(this.createLightswitch(config), config).addClass(
       'lightswitch-field'
