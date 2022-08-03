@@ -5,8 +5,17 @@
 ### Added
 - Added the `project-config/export` command. ([#11733](https://github.com/craftcms/cms/pull/11733))
 
+### Deprecated
+- Deprecated `craft\services\Categories::pruneDeletedField()`. ([#11054](https://github.com/craftcms/cms/discussions/11054), [#9567](https://github.com/craftcms/cms/issues/9567))
+- Deprecated `craft\services\Globals::pruneDeletedField()`. ([#11054](https://github.com/craftcms/cms/discussions/11054), [#9567](https://github.com/craftcms/cms/issues/9567))
+- Deprecated `craft\services\Sections::pruneDeletedField()`. ([#11054](https://github.com/craftcms/cms/discussions/11054), [#9567](https://github.com/craftcms/cms/issues/9567))
+- Deprecated `craft\services\Tags::pruneDeletedField()`. ([#11054](https://github.com/craftcms/cms/discussions/11054), [#9567](https://github.com/craftcms/cms/issues/9567))
+- Deprecated `craft\services\Users::pruneDeletedField()`. ([#11054](https://github.com/craftcms/cms/discussions/11054), [#9567](https://github.com/craftcms/cms/issues/9567))
+- Deprecated `craft\services\Volumes::pruneDeletedField()`. ([#11054](https://github.com/craftcms/cms/discussions/11054), [#9567](https://github.com/craftcms/cms/issues/9567))
+
 ### Fixed
 - Fixed a bug where the `project-config/apply` command could appear to end prematurely.
+- Fixed a bug where not all project config changes would be applied if a field or site was deleted. ([#9567](https://github.com/craftcms/cms/issues/9567))
 
 ## 3.7.50 - 2022-07-26
 
