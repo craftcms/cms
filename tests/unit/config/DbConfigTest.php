@@ -51,4 +51,26 @@ class DbConfigTest extends Unit
         $this->assertEquals('db2', $config->database);
         $this->assertEquals(5432, $config->port);
     }
+
+    /**
+     * Test DbConfig::url()
+     */
+    public function testUrl(): void
+    {
+        $config = DbConfig::create()
+            ->url('mysql://127.0.0.1:3306/db');
+        $this->assertEquals('db', $config->database);
+        $this->assertEquals("mysql:host=127.0.0.1;dbname=db;port=3306", $config->dsn);
+
+        $config = DbConfig::create()
+            ->url('pgsql://127.0.0.1:5432/db');
+        $this->assertEquals('db', $config->database);
+        $this->assertEquals("pgsql:host=127.0.0.1;dbname=db;port=5432", $config->dsn);
+
+        $config = DbConfig::create()
+            ->url('pgsql://127.0.0.1:5432/db')
+            ->database('db2');
+        $this->assertEquals('db2', $config->database);
+        $this->assertEquals("pgsql:host=127.0.0.1;dbname=db2;port=5432", $config->dsn);
+    }
 }

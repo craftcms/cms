@@ -610,7 +610,10 @@ class DbConfig extends BaseConfig
     public function url(?string $value): self
     {
         if ($value) {
-            Craft::configure($this, Db::url2config($value));
+            $config = Db::url2config($value);
+            foreach ($config as $configKey => $configValue) {
+                $this->{$configKey}($configValue);
+            }
             $this->_updateDsn();
         }
 
