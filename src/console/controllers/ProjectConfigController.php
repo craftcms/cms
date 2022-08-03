@@ -104,6 +104,7 @@ class ProjectConfigController extends Controller
                 break;
             case 'export':
                 $options[] = 'external';
+                $options[] = 'overwrite';
                 break;
         }
 
@@ -449,6 +450,8 @@ class ProjectConfigController extends Controller
      * - A folder path (export will be saved in there with a dynamically-generated name)
      * - A filename (export will be saved in the working directory with the given name)
      * - Blank (export will be saved in the working directly with a dynamically-generated name)
+     *
+     * @since 3.7.51
      */
     public function actionExport(?string $path = null): int
     {
