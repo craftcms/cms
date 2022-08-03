@@ -62,7 +62,7 @@ class ProjectConfigController extends Controller
      * @var bool Whether to overwrite an existing export file, if a specific file path is given.
      * @since 4.2.1
      */
-    public $overwrite = false;
+    public bool $overwrite = false;
 
     /**
      * @var int Counter of the total paths that have been processed.
@@ -451,13 +451,13 @@ class ProjectConfigController extends Controller
      * - A filename (export will be saved in the working directory with the given name)
      * - Blank (export will be saved in the working directly with a dynamically-generated name)
      *
-     * @since 3.7.51
+     * @since 4.2.1
      */
     public function actionExport(?string $path = null): int
     {
         if ($path !== null) {
             // Prefix with the working directory if a relative path or no path is given
-            if (strpos($path, '.') === 0 || strpos(FileHelper::normalizePath($path, '/'), '/') === false) {
+            if (str_starts_with($path, '.') || !str_contains(FileHelper::normalizePath($path, '/'), '/')) {
                 $path = getcwd() . DIRECTORY_SEPARATOR . $path;
             }
 
