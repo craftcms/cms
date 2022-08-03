@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- Added the `project-config/export` command. ([#11733](https://github.com/craftcms/cms/pull/11733))
 - Added `craft\config\GeneralConfig::getRememberedUserSessionDuration()`.
 - Added `craft\helpers\DateTimeHelper::toDateInterval()`.
 
@@ -20,6 +21,8 @@
 - Fixed a bug where system messages provided by Yii weren’t getting translated in some cases. ([#11712](https://github.com/craftcms/cms/issues/11712))
 - Fixed a bug where the “Keep me signed in” checkbox label wasn’t always accurately representing the `rememberedUserSessionDuration` config setting. ([#11594](https://github.com/craftcms/cms/discussions/11594))
 - Fixed a bug where the `Craft.cp.setSiteId()` JavaScript method wasn’t updating `Craft.siteId`, or the base URLs used by `Craft.getActionUrl()`, `Craft.getCpUrl()`, and `Craft.getUrl()`.
+- Fixed an error that occurred when removing a Single section from the primary site, if it contained any Matrix blocks. ([#11669](https://github.com/craftcms/cms/issues/11669))
+- Fixed a bug where not all project config changes would be applied if a field or site was deleted. ([#9567](https://github.com/craftcms/cms/issues/9567))
 
 ### Security
 - Fixed XSS vulnerabilities.
