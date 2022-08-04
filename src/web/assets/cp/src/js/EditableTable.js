@@ -545,6 +545,8 @@ Craft.EditableTable = Garnish.Base.extend(
             $('<a/>', {
               class: 'move icon',
               title: Craft.t('app', 'Reorder'),
+              role: 'button',
+              type: 'button',
             })
           )
           .appendTo($tr);
