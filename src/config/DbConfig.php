@@ -611,7 +611,6 @@ class DbConfig extends BaseConfig
     {
         if ($value) {
             Craft::configure($this, Db::url2config($value));
-            $this->_updateDsn();
         }
 
         $this->url = $value;
