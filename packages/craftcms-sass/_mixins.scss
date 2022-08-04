@@ -621,7 +621,7 @@ $radioSize: 16px;
     color: $color;
   }
 
-  ::placeholder {
+  input::placeholder {
     color: $color;
   }
 }

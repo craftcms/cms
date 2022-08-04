@@ -6043,7 +6043,7 @@ body.reduce-focus-visibility {
   width: 7em;
 }
 
-@include placeholder-styles(var(--gray-400));
+@include placeholder-styles(var(--gray-550));
 
 /* Kill IE's special text features */
 ::-ms-reveal,
