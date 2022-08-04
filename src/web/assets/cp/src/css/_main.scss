@@ -6043,7 +6043,7 @@ body.reduce-focus-visibility {
   width: 7em;
 }
 
-@include placeholder-styles(var(--gray-550));
+@include placeholder-styles(var(--gray-400));
 
 /* Kill IE's special text features */
 ::-ms-reveal,
@@ -6139,6 +6139,7 @@ body .selectize-dropdown {
 
 /* single select styles */
 .selectize.select {
+  @include placeholder-styles(var(--gray-700));
   height: 34px;
 
   &:not(.fullwidth) {

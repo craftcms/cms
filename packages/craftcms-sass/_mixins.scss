@@ -601,27 +601,33 @@ $radioSize: 16px;
 }
 
 @mixin placeholder-styles($color) {
-  ::-webkit-input-placeholder {
+  input::-webkit-input-placeholder,
+  textarea::-webkit-input-placeholder {
     color: $color;
   }
 
-  input:-ms-input-placeholder {
+  input:-ms-input-placeholder,
+  textarea:-ms-input-placeholder {
     color: $color;
   }
 
-  ::-ms-input-placeholder {
+  input::-ms-input-placeholder,
+  textarea::-ms-input-placeholder {
     color: $color;
   }
 
-  :-moz-placeholder {
+  input:-moz-placeholder,
+  textarea:-moz-placeholder {
     color: $color;
   }
 
-  ::-moz-placeholder {
+  input::-moz-placeholder,
+  textarea::-moz-placeholder {
     color: $color;
   }
 
-  input::placeholder {
+  input::placeholder,
+  textarea::placeholder {
     color: $color;
   }
 }
