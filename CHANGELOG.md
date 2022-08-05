@@ -27,6 +27,7 @@
 - Fixed a bug where Matrix sub-fields weren’t showing their validation errors when `autosaveDrafts` was `false`. ([#11731](https://github.com/craftcms/cms/issues/11731))
 - Fixed a bug where saving an element with invalid field values could result in the invalid values being forgotten, rather than re-validated. ([#11731](https://github.com/craftcms/cms/issues/11731))
 - Fixed a bug where the database connection would be misconfigured if the `url` connection setting was used. ([#11735](https://github.com/craftcms/cms/issues/11735))
+- Fixed a bug where the element index filter HUDs weren’t always visually aligned with the search input. ([#11739](https://github.com/craftcms/cms/issues/11739))
 
 ### Security
 - Fixed XSS vulnerabilities.

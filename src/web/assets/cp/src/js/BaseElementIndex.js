@@ -1,5 +1,7 @@
 /** global: Craft */
 /** global: Garnish */
+import Garnish from '../../../garnish/src';
+
 /**
  * Element index class
  */
@@ -1690,7 +1692,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       var $headings = this.getSourceContainer().children('.heading');
       var $heading;
 
-      for (i = 0; i < $headings.length; i++) {
+      for (let i = 0; i < $headings.length; i++) {
         $heading = $headings.eq(i);
         if ($heading.nextUntil('.heading', ':not(.hidden)').length !== 0) {
           $heading.removeClass('hidden');
@@ -2571,6 +2573,12 @@ const FilterHud = Garnish.HUD.extend({
       .catch(() => {
         Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
       });
+
+    this.$hud.css('position', 'fixed');
+
+    this.addListener(Garnish.$win, 'scroll,resize', () => {
+      this.updateSizeAndPosition(true);
+    });
   },
 
   addListener: function (elem, events, data, func) {
@@ -2603,7 +2611,9 @@ const FilterHud = Garnish.HUD.extend({
   },
 
   updateSizeAndPositionInternal: function () {
-    const searchOffset = this.elementIndex.$searchContainer.offset();
+    // const searchOffset = this.elementIndex.$searchContainer.offset();
+    const searchOffset =
+      this.elementIndex.$searchContainer[0].getBoundingClientRect();
 
     this.$hud.css({
       width: this.elementIndex.$searchContainer.outerWidth() - 2,
