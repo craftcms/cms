@@ -8,10 +8,10 @@
 - Added `craft\helpers\DateTimeHelper::toDateInterval()`.
 
 ### Changed
-- `craft\config\DbConfig::dsn()` now parses the DSN string and populates the other DSN-settable config properties.
-- `craft\helpers\DateTimeHelper::humanDuration()` now accepts date interval strings to be passed in.
-- `craft\helpers\DateTimeHelper::humanDuration()` no longer returns the number of weeks, unless the number of days is divisible by 7. ([#11594](https://github.com/craftcms/cms/discussions/11594))
 - Element index filters are now managed for each site and source, rather than just for each source. ([#11719](https://github.com/craftcms/cms/issues/11719))
+- `craft\config\DbConfig::dsn()` now parses the DSN string and populates the other DSN-settable config properties.
+- `craft\helpers\DateTimeHelper::humanDuration()` no longer returns the number of weeks, unless the number of days is divisible by 7. ([#11594](https://github.com/craftcms/cms/discussions/11594))
+- `craft\helpers\DateTimeHelper::humanDuration()` now accepts date interval strings to be passed in.
 
 ### Deprecated
 - Deprecated `craft\helpers\DateTimeHelper::secondsToInterval()`. `toDateInterval()` should be used instead.
