@@ -12,6 +12,7 @@
 - `craft\config\DbConfig::dsn()` now parses the DSN string and populates the other DSN-settable config properties.
 - `craft\helpers\DateTimeHelper::humanDuration()` no longer returns the number of weeks, unless the number of days is divisible by 7. ([#11594](https://github.com/craftcms/cms/discussions/11594))
 - `craft\helpers\DateTimeHelper::humanDuration()` now accepts date interval strings to be passed in.
+- `craft\helpers\Db::url2config()` now returns `driver`, `server`, `port`, and `database` keys, when possible. ([#11735](https://github.com/craftcms/cms/issues/11735))
 
 ### Deprecated
 - Deprecated `craft\helpers\DateTimeHelper::secondsToInterval()`. `toDateInterval()` should be used instead.

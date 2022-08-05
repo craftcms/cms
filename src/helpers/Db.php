@@ -1471,25 +1471,27 @@ class Db
 
         // URL scheme => driver
         if (in_array(strtolower($parsed['scheme']), ['pgsql', 'postgres', 'postgresql'], true)) {
-            $driver = Connection::DRIVER_PGSQL;
+            $config['driver'] = Connection::DRIVER_PGSQL;
         } else {
-            $driver = Connection::DRIVER_MYSQL;
+            $config['driver'] = Connection::DRIVER_MYSQL;
         }
 
-        // DSN params
-        $checkParams = [
-            'host' => 'host',
-            'port' => 'port',
-            'path' => 'dbname',
+        // Other URL params
+        $urlParams = [
+            'host' => ['server', 'host'],
+            'port' => ['port', 'port'],
+            'path' => ['database', 'dbname'],
         ];
         $dsnParams = [];
-        foreach ($checkParams as $urlParam => $dsnParam) {
+        foreach ($urlParams as $urlParam => [$configKey, $dsnParam]) {
             if (isset($parsed[$urlParam])) {
-                $dsnParams[] = $dsnParam . '=' . trim($parsed[$urlParam], '/');
+                $value = trim($parsed[$urlParam], '/');
+                $config[$configKey] = $value;
+                $dsnParams[] = sprintf('%s=%s', $dsnParam, $value);
             }
         }
 
-        $config['dsn'] = "$driver:" . implode(';', $dsnParams);
+        $config['dsn'] = "{$config['driver']}:" . implode(';', $dsnParams);
 
         // Append any query params to the DSN
         if (isset($parsed['query'])) {

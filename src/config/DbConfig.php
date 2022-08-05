@@ -9,7 +9,6 @@ namespace craft\config;
 
 use Craft;
 use craft\db\Connection;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\StringHelper;
 use craft\services\Config;
@@ -611,10 +610,7 @@ class DbConfig extends BaseConfig
     public function url(?string $value): self
     {
         if ($value) {
-            $config = Db::url2config($value);
-            $dsn = ArrayHelper::remove($config, 'dsn');
-            Craft::configure($this, $config);
-            $this->dsn($dsn);
+            Craft::configure($this, Db::url2config($value));
         }
 
         $this->url = $value;
