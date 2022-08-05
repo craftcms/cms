@@ -454,7 +454,7 @@ class DbConfig extends BaseConfig
             $this->server = $parsed['host'] ?? null;
             $this->port = (int)($parsed['port'] ?? 0) ?: null;
             $this->database = $parsed['dbname'] ?? null;
-        };
+        }
 
         return $this;
     }
