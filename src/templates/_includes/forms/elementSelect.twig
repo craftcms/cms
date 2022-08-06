@@ -17,6 +17,7 @@
 {% set single = single ?? false %}
 {% set limit = single ? 1 : (limit ?? null) %}
 {% set disabled = (disabled ?? false) ? true : false %}
+{% set relateAncestors = relateAncestors ?? false %}
 
 {% set containerAttributes = {
     id: id,
@@ -28,18 +29,11 @@
 {% endif %}
 
 {% tag 'div' with containerAttributes %}
-    <div class="elements">
-        {% for element in elements %}
-            {% set element = include('_elements/element', {
-                context: 'field',
-                size: (viewMode == 'large' ? 'large' : 'small')
-            }) %}
-            {% if disabled %}
-                {% set element = element|removeClass('removable') %}
-            {% endif %}
-            {{ element|raw }}
-        {% endfor %}
-    </div>
+    {% if relateAncestors %}
+        {{ include('_elements/structurelist', { elements, id }, with_context=false)}}
+    {% else %}
+        {{ include('_elements/flatlist', { elements, viewMode, disabled }, with_context=false) }}
+    {% endif %}
 
     <div class="flex flex-nowrap">
         {{ tag('button', {
@@ -72,7 +66,7 @@
         condition: condition ? condition.getConfig() : null,
         criteria: criteria,
         allowSelfRelations: allowSelfRelations ?? false,
-        relateAncestors: relateAncestors ?? false,
+        relateAncestors: relateAncestors,
         branchLimit: branchLimit ?? null,
         sourceElementId: sourceElementId,
         disabledElementIds: disabledElementIds ?? null,

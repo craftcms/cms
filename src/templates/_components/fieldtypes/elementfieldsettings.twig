@@ -33,6 +33,18 @@
         {% endif %}
     {% endblock %}
 
+    {% block branchLimitField %}
+        {{ forms.textField({
+            label: "Branch Limit"|t('app'),
+            instructions: "Limit the number of selectable {type} branches."|t('app', { type: elementType }),
+            id: 'branchLimit',
+            name: 'branchLimit',
+            value: field.branchLimit,
+            size: 2,
+            errors: field.getErrors('branchLimit')
+        }) }}
+    {% endblock %}
+
     {% block selectionConditionField %}
         {{ (selectionCondition ?? false) ? selectionCondition|raw }}
     {% endblock %}

@@ -62,7 +62,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       }
 
       // No reason for this to be sortable if we're only allowing 1 selection
-      if (this.settings.limit == 1) {
+      if (this.settings.limit == 1 || this.settings.relateAncestors) {
         this.settings.sortable = false;
       }
 
@@ -112,7 +112,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
     },
 
     getElements: function () {
-      return this.$elementsContainer.children();
+      return  this.$elementsContainer.find('.element');
     },
 
     getAddElementsBtn: function () {
@@ -664,6 +664,8 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       disabledElementIds: null,
       viewMode: 'list',
       single: false,
+      relateAncestors: false,
+      branchLimit: null,
       limit: null,
       showSiteMenu: false,
       modalStorageKey: null,

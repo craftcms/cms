@@ -74,10 +74,6 @@ class Categories extends BaseRelationField
      */
     public bool $allowMultipleSources = false;
 
-    /**
-     * @var int|null Branch limit
-     */
-    public ?int $branchLimit = null;
 
     /**
      * @inheritdoc

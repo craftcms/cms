@@ -513,7 +513,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
 
                 /** @var Entry[] $entries */
                 $structureEntries = (clone($query))
-                    ->anyStatus()
+                    ->status(null)
                     ->all();
 
                 // Fill in any gaps
@@ -794,6 +794,10 @@ JS;
             } catch (SiteNotFoundException $exception) {
                 Craft::warning($exception->getMessage(), __METHOD__);
             }
+        }
+
+        if ($this->relateAncestors) {
+            $criteria['orderBy'] = ['structureelements.lft' => SORT_ASC];
         }
 
         return [
