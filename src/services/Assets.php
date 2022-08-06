@@ -44,6 +44,7 @@ use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
+use yii\base\NotSupportedException;
 use yii\db\Expression;
 
 /**
@@ -645,6 +646,7 @@ class Assets extends Component
      * @param int $maxHeight
      * @return string
      * @since 4.0.0
+     * @throws NotSupportedException if the asset’s volume doesn’t have a filesystem with public URLs
      */
     public function getImagePreviewUrl(Asset $asset, int $maxWidth, int $maxHeight): string
     {
@@ -666,7 +668,13 @@ class Assets extends Component
             $transform = null;
         }
 
-        return $asset->getUrl($transform, true);
+        $url = $asset->getUrl($transform, true);
+
+        if (!$url) {
+            throw new NotSupportedException('A preview URL couldn’t be generated for the asset.');
+        }
+
+        return $url;
     }
 
     /**

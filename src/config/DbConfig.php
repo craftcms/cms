@@ -453,7 +453,7 @@ class DbConfig extends BaseConfig
             $this->server = $parsed['host'] ?? null;
             $this->port = (int)($parsed['port'] ?? 0) ?: null;
             $this->database = $parsed['dbname'] ?? null;
-        };
+        }
 
         return $this;
     }
@@ -611,7 +611,6 @@ class DbConfig extends BaseConfig
     {
         if ($value) {
             Craft::configure($this, Db::url2config($value));
-            $this->_updateDsn();
         }
 
         $this->url = $value;
