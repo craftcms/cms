@@ -91,6 +91,16 @@
         }) }}
     {% endblock %}
 
+    {% block relateAncestors %}
+        {{ forms.checkboxField({
+            label: 'Relate ancestors',
+            instructions: 'Whether structural ancestors of {type} should be added to the selection.'|t('app', { type: pluralElementType }),
+            id: 'relate-ancestors',
+            name: 'relateAncestors',
+            checked: field.relateAncestors
+        }) }}
+    {% endblock %}
+
     {% block advancedSettings %}
         <hr>
 

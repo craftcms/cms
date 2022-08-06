@@ -22,6 +22,7 @@ use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\ElementRelationParamParser;
+use craft\elements\Entry;
 use craft\errors\SiteNotFoundException;
 use craft\events\ElementCriteriaEvent;
 use craft\events\ElementEvent;
@@ -134,6 +135,20 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      * @since 3.5.0
      */
     public bool $showSiteMenu = false;
+
+    /**
+     * @var bool Whether to automatically relate structural ancestors.
+     *
+     * @since 4.0.0
+     */
+    public $relateAncestors = false;
+
+    /**
+     * @var int|null Branch limit
+     *
+     * @since 4.0.0
+     */
+    public $branchLimit;
 
     /**
      * @var string|null The view mode
@@ -280,6 +295,9 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         $attributes[] = 'targetSiteId';
         $attributes[] = 'validateRelatedElements';
         $attributes[] = 'viewMode';
+        $attributes[] = 'allowSelfRelations';
+        $attributes[] = 'relateAncestors';
+        $attributes[] = 'branchLimit';
 
         return $attributes;
     }
@@ -488,6 +506,27 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
                 if (isset($source['criteria'])) {
                     Craft::configure($query, $source['criteria']);
                 }
+            }
+
+            if ($this->relateAncestors || $this->branchLimit) {
+                $structuresService = Craft::$app->getStructures();
+
+                /** @var Entry[] $entries */
+                $structureEntries = (clone($query))
+                    ->anyStatus()
+                    ->all();
+
+                // Fill in any gaps
+                if ($this->relateAncestors) {
+                    $structuresService->fillGapsInElements($structureEntries);
+                }
+
+                // Enforce the branch limit
+                if ($this->branchLimit) {
+                    $structuresService->applyBranchLimitToElements($structureEntries, $this->branchLimit);
+                }
+
+                $query->id(ArrayHelper::getColumn($structureEntries, 'id'));
             }
         } else {
             $query->id(false);
@@ -1065,7 +1104,9 @@ JS;
             'condition' => $this->getSelectionCondition(),
             'criteria' => $selectionCriteria,
             'showSiteMenu' => ($this->targetSiteId || !$this->showSiteMenu) ? false : 'auto',
-            'allowSelfRelations' => $this->allowSelfRelations,
+            'allowSelfRelations' => (bool)$this->allowSelfRelations,
+            'relateAncestors' => (bool)$this->relateAncestors,
+            'branchLimit' => (int)$this->branchLimit,
             'sourceElementId' => !empty($element->id) ? $element->id : null,
             'disabledElementIds' => $disabledElementIds,
             'limit' => $this->allowLimit ? $this->maxRelations : null,

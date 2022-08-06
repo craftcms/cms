@@ -87,12 +87,12 @@ class Categories extends BaseRelationField
     /**
      * @inheritdoc
      */
-    protected string $inputTemplate = '_components/fieldtypes/Categories/input';
+    // protected $inputTemplate = '_components/fieldtypes/Categories/input';
 
     /**
      * @inheritdoc
      */
-    protected ?string $inputJsClass = 'Craft.CategorySelectInput';
+    // protected $inputJsClass = 'Craft.CategorySelectInput';
 
     /**
      * @inheritdoc
