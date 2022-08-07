@@ -1442,6 +1442,49 @@ JS, [
         return $this->asJson(compact('html', 'headHtml'));
     }
 
+
+    public function actionInputHtml(): Response
+    {
+        $this->requireAcceptsJson();
+
+        $elementType = $this->request->getRequiredParam('elementType', null);
+        $elementIds = $this->request->getParam('elementIds', []);
+
+        $elements = [];
+
+        if (!empty($elementIds)) {
+            /** @var ElementInterface[] $elements */
+            $elements = $elementType::find()
+                ->id($elementIds)
+                ->siteId($this->request->getParam('siteId'))
+                ->status(null)
+                ->all();
+
+            // Fill in the gaps
+            $structuresService = Craft::$app->getStructures();
+            $structuresService->fillGapsInElements($elements);
+
+            // Enforce the branch limit
+            if ($branchLimit = $this->request->getParam('branchLimit')) {
+                $structuresService->applyBranchLimitToElements($elements, $branchLimit);
+            }
+        }
+
+        $html = $this->getView()->renderTemplate('_includes/forms/elementselect',
+            [
+                'elements' => $elements,
+                'id' => $this->request->getParam('containerId'),
+                'name' => $this->request->getParam('name'),
+                'selectionLabel' => $this->request->getParam('selectionLabel'),
+                'elementType' => $elementType,
+                'relateAncestors' => true
+            ]);
+
+        return $this->asJson([
+            'html' => $html,
+        ]);
+    }
+
     /**
      * Returns the requested element, populated with any posted attributes.
      *

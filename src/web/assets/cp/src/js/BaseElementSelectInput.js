@@ -112,7 +112,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
     },
 
     getElements: function () {
-      return  this.$elementsContainer.find('.element');
+      return this.$elementsContainer.find('.element');
     },
 
     getAddElementsBtn: function () {
@@ -407,10 +407,25 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
     },
 
     removeElement: function ($element) {
-      this.removeElements($element);
-      this.animateElementAway($element, () => {
-        $element.remove();
-      });
+      if (this.settings.relateAncestors) {
+        // Find any descendants this element might have
+        const $allElements = $element.add(
+          $element.parent().siblings('ul').find('.element')
+        );
+
+        // Remove our record of them all at once
+        this.removeElements($allElements);
+
+        // Animate them away one at a time
+        for (let i = 0; i < $allElements.length; i++) {
+          this._animateStructureElementAway($allElements, i);
+        }
+      } else {
+        this.removeElements($element);
+        this.animateElementAway($element, () => {
+          $element.remove();
+        });
+      }
     },
 
     animateElementAway: function ($element, callback) {
@@ -479,6 +494,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
           condition: this.settings.condition,
           criteria: this.settings.criteria,
           multiSelect: this.settings.limit != 1,
+          hideOnSelect: !this.settings.relateAncestors,
           showSiteMenu: this.settings.showSiteMenu,
           disabledElementIds: this.getDisabledElementIds(),
           onSelect: this.onModalSelect.bind(this),
@@ -517,17 +533,21 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
     },
 
     onModalSelect: function (elements) {
-      if (this.settings.limit) {
-        // Cut off any excess elements
-        var slotsLeft = this.settings.limit - this.$elements.length;
+      if (this.settings.relateAncestors) {
+        this.selectStructuredElements(elements);
+      } else {
+        if (this.settings.limit) {
+          // Cut off any excess elements
+          var slotsLeft = this.settings.limit - this.$elements.length;
 
-        if (elements.length > slotsLeft) {
-          elements = elements.slice(0, slotsLeft);
+          if (elements.length > slotsLeft) {
+            elements = elements.slice(0, slotsLeft);
+          }
         }
-      }
 
-      this.selectElements(elements);
-      this.updateDisabledElementsInModal();
+        this.selectElements(elements);
+        this.updateDisabledElementsInModal();
+      }
     },
 
     onModalHide: function () {
@@ -553,6 +573,67 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       }
 
       this.onSelectElements(elements);
+    },
+
+    selectStructuredElements: function (elements) {
+      // Disable the modal
+      this.modal.disable();
+      this.modal.disableCancelBtn();
+      this.modal.disableSelectBtn();
+      this.modal.showFooterSpinner();
+
+      // Get the new element HTML
+      var selectedElementIds = this.getSelectedElementIds();
+
+      for (var i = 0; i < elements.length; i++) {
+        selectedElementIds.push(elements[i].id);
+      }
+
+      var data = {
+        elementIds: selectedElementIds,
+        siteId: elements[0].siteId,
+        containerId: this.settings.id,
+        name: this.settings.name,
+        branchLimit: this.settings.branchLimit,
+        selectionLabel: this.settings.selectionLabel,
+        elementType: this.settings.elementType,
+      };
+
+      const onResponse = () => {
+        this.modal.enable();
+        this.modal.enableCancelBtn();
+        this.modal.enableSelectBtn();
+        this.modal.hideFooterSpinner();
+      };
+      Craft.sendActionRequest('POST', 'elements/input-html', {data})
+        .then((response) => {
+          onResponse();
+          var $newInput = $(response.data.html),
+            $newElementsContainer = $newInput.children('.elements');
+
+          this.$elementsContainer.replaceWith($newElementsContainer);
+          this.$elementsContainer = $newElementsContainer;
+          this.resetElements();
+
+          var filteredElements = [];
+
+          for (var i = 0; i < elements.length; i++) {
+            var element = elements[i],
+              $element = this.getElementById(element.id);
+
+            if ($element) {
+              this.animateElementIntoPlace(element.$element, $element);
+              filteredElements.push(element);
+            }
+          }
+
+          this.updateDisabledElementsInModal();
+          this.modal.hide();
+          this.onSelectElements(filteredElements);
+        })
+        .catch(({response}) => {
+          onResponse();
+        });
     },
 
     createNewElement: function (elementInfo) {
@@ -645,6 +726,34 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
     onRemoveElements: function () {
       this.trigger('removeElements');
       this.settings.onRemoveElements();
+    },
+
+    _animateStructureElementAway: function ($allElements, i) {
+      let callback;
+
+      // Is this the last one?
+      if (i === $allElements.length - 1) {
+        callback = () => {
+          const $li = $allElements.first().parent().parent();
+          const $ul = $li.parent();
+
+          if ($ul[0] === this.$elementsContainer[0] || $li.siblings().length) {
+            $li.remove();
+          } else {
+            $ul.remove();
+          }
+        };
+      }
+
+      const func = () => {
+        this.animateElementAway($allElements.eq(i), callback);
+      };
+
+      if (i === 0) {
+        func();
+      } else {
+        setTimeout(func, 100 * i);
+      }
     },
   },
   {

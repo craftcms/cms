@@ -11,7 +11,6 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\elements\Category;
 use craft\elements\db\CategoryQuery;
-use craft\elements\db\ElementQueryInterface;
 use craft\gql\arguments\elements\Category as CategoryArguments;
 use craft\gql\interfaces\elements\Category as CategoryInterface;
 use craft\gql\resolvers\elements\Category as CategoryResolver;
@@ -74,7 +73,6 @@ class Categories extends BaseRelationField
      */
     public bool $allowMultipleSources = false;
 
-
     /**
      * @inheritdoc
      */
@@ -83,17 +81,22 @@ class Categories extends BaseRelationField
     /**
      * @inheritdoc
      */
-    // protected $inputTemplate = '_components/fieldtypes/Categories/input';
-
-    /**
-     * @inheritdoc
-     */
-    // protected $inputJsClass = 'Craft.CategorySelectInput';
-
-    /**
-     * @inheritdoc
-     */
     protected bool $sortable = false;
+
+    /**
+     * Force relateAncestors to true.
+     *
+     * @inheritdoc
+     * @since 4.0.0
+     */
+    public function __construct($config)
+    {
+        if (isset($config['relateAncestors'])) {
+            $config['relateAncestors'] = true;
+        }
+
+        parent::__construct($config);
+    }
 
     /**
      * @inheritdoc
@@ -138,17 +141,6 @@ class Categories extends BaseRelationField
         }
 
         return parent::inputHtml($value, $element);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function inputTemplateVariables(array|ElementQueryInterface $value = null, ?ElementInterface $element = null): array
-    {
-        $variables = parent::inputTemplateVariables($value, $element);
-        $variables['branchLimit'] = $this->branchLimit;
-
-        return $variables;
     }
 
     public function getEagerLoadingMap(array $sourceElements): array|null|false

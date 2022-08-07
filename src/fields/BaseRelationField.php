@@ -141,14 +141,14 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      *
      * @since 4.0.0
      */
-    public $relateAncestors = false;
+    public bool $relateAncestors = false;
 
     /**
      * @var int|null Branch limit
      *
      * @since 4.0.0
      */
-    public $branchLimit;
+    public ?int $branchLimit;
 
     /**
      * @var string|null The view mode

@@ -30,9 +30,9 @@
 
 {% tag 'div' with containerAttributes %}
     {% if relateAncestors %}
-        {{ include('_elements/structurelist', { elements, id }, with_context=false)}}
+        {{ include('_elements/structurelist', { elements, id })}}
     {% else %}
-        {{ include('_elements/flatlist', { elements, viewMode, disabled }, with_context=false) }}
+        {{ include('_elements/list', { elements, viewMode, disabled }) }}
     {% endif %}
 
     <div class="flex flex-nowrap">
