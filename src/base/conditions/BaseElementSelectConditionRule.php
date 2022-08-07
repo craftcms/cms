@@ -18,14 +18,6 @@ use craft\helpers\Cp;
 abstract class BaseElementSelectConditionRule extends BaseConditionRule
 {
     /**
-     * @inheritdoc
-     */
-    public static function supportsProjectConfig(): bool
-    {
-        return false;
-    }
-
-    /**
      * @var int|string|null
      * @see getElementId()
      * @see setElementId()

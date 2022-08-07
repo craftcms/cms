@@ -8,6 +8,7 @@
 - Added `craft\helpers\DateTimeHelper::toDateInterval()`.
 
 ### Changed
+- “Related To” condition rules are now available for conditions that are stored in the project config. ([#11740](https://github.com/craftcms/cms/issues/11740))
 - Element index filters are now managed for each site and source, rather than just for each source. ([#11719](https://github.com/craftcms/cms/issues/11719))
 - `craft\config\DbConfig::dsn()` now parses the DSN string and populates the other DSN-settable config properties.
 - `craft\helpers\DateTimeHelper::humanDuration()` no longer returns the number of weeks, unless the number of days is divisible by 7. ([#11594](https://github.com/craftcms/cms/discussions/11594))
