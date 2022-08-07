@@ -1442,7 +1442,15 @@ JS, [
         return $this->asJson(compact('html', 'headHtml'));
     }
 
-
+    /**
+     * Returns HTML for the elements field input that has "relateAncestors" set to true,
+     * based on a given list of selected element ids.
+     *
+     * @return Response
+     * @throws BadRequestHttpException
+     * @throws ForbiddenHttpException
+     * @since 4.0.0
+     */
     public function actionInputHtml(): Response
     {
         $this->requireAcceptsJson();

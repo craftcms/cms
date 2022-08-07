@@ -22,7 +22,6 @@ use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\ElementRelationParamParser;
-use craft\elements\Entry;
 use craft\errors\SiteNotFoundException;
 use craft\events\ElementCriteriaEvent;
 use craft\events\ElementEvent;
@@ -148,7 +147,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      *
      * @since 4.0.0
      */
-    public ?int $branchLimit;
+    public ?int $branchLimit = null;
 
     /**
      * @var string|null The view mode
@@ -379,7 +378,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      */
     public function validateRelatedElements(ElementInterface $element): void
     {
-        // Prevent circular relations from worrying about this entry
+        // Prevent circular relations from worrying about this element
         $sourceId = $element->getCanonicalId();
         $sourceValidates = self::$_relatedElementValidates[$sourceId][$element->siteId] ?? null;
         self::$_relatedElementValidates[$sourceId][$element->siteId] = true;
@@ -511,22 +510,22 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
             if ($this->relateAncestors || $this->branchLimit) {
                 $structuresService = Craft::$app->getStructures();
 
-                /** @var Entry[] $entries */
-                $structureEntries = (clone($query))
+                /** @var ElementInterface[] $structureElements */
+                $structureElements = (clone($query))
                     ->status(null)
                     ->all();
 
                 // Fill in any gaps
                 if ($this->relateAncestors) {
-                    $structuresService->fillGapsInElements($structureEntries);
+                    $structuresService->fillGapsInElements($structureElements);
                 }
 
                 // Enforce the branch limit
                 if ($this->branchLimit) {
-                    $structuresService->applyBranchLimitToElements($structureEntries, $this->branchLimit);
+                    $structuresService->applyBranchLimitToElements($structureElements, $this->branchLimit);
                 }
 
-                $query->id(ArrayHelper::getColumn($structureEntries, 'id'));
+                $query->id(ArrayHelper::getColumn($structureElements, 'id'));
             }
         } else {
             $query->id(false);
