@@ -117,7 +117,6 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
                 'id' => 'elementId',
                 'name' => 'elementId',
                 'value' => $this->getElementId(false),
-                'fieldClass' => 'fullwidth',
                 'placeholder' => Craft::t('app', '{type} ID', [
                     'type' => $this->elementType()::displayName(),
                 ]),
