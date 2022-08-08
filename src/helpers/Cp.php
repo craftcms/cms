@@ -1421,7 +1421,7 @@ JS, [
             'value' => $value,
             'required' => $required,
             'errors' => $address->getErrors($name),
-            'autocomplete' => 'administrative level',
+            'autocomplete' => 'administrative-level',
         ]);
     }
 
