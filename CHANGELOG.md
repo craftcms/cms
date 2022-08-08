@@ -31,6 +31,7 @@
 - Fixed a bug where the element index filter HUDs weren’t always visually aligned with the search input. ([#11739](https://github.com/craftcms/cms/issues/11739))
 - Fixed a bug where it wasn’t possible to preview or edit image assets if their filesystem and transform filesystem didn’t have public URLs. ([#11686](https://github.com/craftcms/cms/issues/11686), [#11687](https://github.com/craftcms/cms/issues/11687))
 - Fixed a bug where not all project config changes would be applied if a site was deleted. ([#9567](https://github.com/craftcms/cms/issues/9567))
+- Fixed a bug where `$` characters in database connection passwords weren’t being escaped property when backing up/restoring the database. ([#11750](https://github.com/craftcms/cms/issues/11750))
 
 ### Security
 - Fixed XSS vulnerabilities.
