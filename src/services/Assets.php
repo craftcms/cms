@@ -1081,7 +1081,7 @@ class Assets extends Component
             $user = Craft::$app->getUser()->getIdentity();
         }
 
-        if (isset($this->_userTempFolders[$user->id])) {
+        if ($user && isset($this->_userTempFolders[$user->id])) {
             return $this->_userTempFolders[$user->id];
         }
 
