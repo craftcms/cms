@@ -16,6 +16,7 @@
 ### Fixed
 - Fixed a bug where the `project-config/apply` command could appear to end prematurely.
 - Fixed a bug where not all project config changes would be applied if a field or site was deleted. ([#9567](https://github.com/craftcms/cms/issues/9567))
+- Fixed an error that could occur when saving an element to a disabled site. ([#10499](https://github.com/craftcms/cms/issues/10499), [#11741](https://github.com/craftcms/cms/issues/11741))
 
 ## 3.7.50 - 2022-07-26
 
