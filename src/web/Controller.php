@@ -9,12 +9,14 @@ namespace craft\web;
 
 use Craft;
 use craft\base\ModelInterface;
+use Throwable;
 use yii\base\Action;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\base\Model;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
+use yii\web\IdentityInterface;
 use yii\web\JsonResponseFormatter;
 use yii\web\Response as YiiResponse;
 use yii\web\UnauthorizedHttpException;
@@ -26,6 +28,7 @@ use yii\web\UnauthorizedHttpException;
  * @property Request $request
  * @property Response $response
  * @property View $view The view object that can be used to render views or view files
+ * @property-read ?IdentityInterface $currentUser The current logged-in user
  * @method View getView() Returns the view object that can be used to render views or view files
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
@@ -173,6 +176,18 @@ abstract class Controller extends \yii\web\Controller
         }
 
         return true;
+    }
+
+    /**
+     * Gets the current logged-in user.
+     *
+     * @param mixed ...$args
+     * @return IdentityInterface|null
+     * @throws Throwable
+     */
+    public function getCurrentUser(...$args): ?IdentityInterface
+    {
+        return Craft::$app->getUser()->getIdentity(...$args);
     }
 
     /**
