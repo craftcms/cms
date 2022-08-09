@@ -392,6 +392,15 @@ class UsersController extends Controller
             $return['uid'] = $user->uid;
             $return['username'] = $user->username;
             $return['email'] = $user->email;
+            $return['firstName'] = $user->firstName;
+            $return['lastName'] = $user->lastName;
+            $return['fullName'] = $user->fullName;
+            $return['friendlyName'] = $user->getFriendlyName();
+            $return['admin'] = $user->admin;
+            $return['status'] = $user->getStatus();
+            $photo = $user->getPhoto();
+            $return['photoId'] = $photo ? $photo->id : null;
+            $return['photo'] = $photo ? $user->getPhoto()->getUrl() : null;
         }
 
         return $this->asJson($return);
