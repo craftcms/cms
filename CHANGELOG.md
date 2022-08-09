@@ -19,15 +19,13 @@
 - Fixed an error that could occur when saving an element to a disabled site. ([#10499](https://github.com/craftcms/cms/issues/10499), [#11741](https://github.com/craftcms/cms/issues/11741))
 - Fixed a bug where `$` characters in database connection passwords weren’t being escaped property when backing up/restoring the database. ([#11750](https://github.com/craftcms/cms/issues/11750))
 - Fixed a PHP error that could occur if `craft\services\Assets::getUserTemporaryUploadFolder()` was called when there was no logged-in user account. ([#11751](https://github.com/craftcms/cms/issues/11751))
+- Fixed a bug where system messages provided by Yii weren’t getting translated in some cases. ([#11712](https://github.com/craftcms/cms/issues/11712))
 
 ## 3.7.50 - 2022-07-26
 
 ### Changed
 - Treating element queries as arrays is no longer deprecated. ([#11625](https://github.com/craftcms/cms/discussions/11625))
 - Using the `|length` filter on an element query is no longer deprecated. ([#11625](https://github.com/craftcms/cms/discussions/11625))
-
-### Fixed
-- Fixed a bug where system messages provided by Yii weren’t getting translated in some cases. ([#11712](https://github.com/craftcms/cms/issues/11712))
 
 ### Security
 - Fixed an XSS vulnerability.
