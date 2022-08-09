@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.2.1 - 2022-08-09
 
 ### Added
 - Added the `project-config/export` command. ([#11733](https://github.com/craftcms/cms/pull/11733))
