@@ -100,7 +100,7 @@
             isMissing: fieldIsMissing,
             label: fieldIsMissing ? field.expectedType : field.displayName()
         },
-        group: group ? group.name|t('site') : "<span class=\"error\">#{'(Ungrouped)'|t('app')}</span>",
+        group: group ? group.name|t('site')|e : "<span class=\"error\">#{'(Ungrouped)'|t('app')}</span>",
     }]) %}
 {% endfor %}
 

@@ -779,7 +779,7 @@ return [
     'Job retried.' => 'ジョブを再試行しました。',
     'Job' => 'ジョブ',
     'Keep both' => '両方を保持',
-    'Keep me signed in for {duration}' => '{duration}日間サインアウトしない',
+    'Keep me signed in for {duration}' => '{duration}サインアウトしない',
     'Keep me signed in' => 'サインイン状態を維持する',
     'Keep them' => 'これらを保持',
     'Knowledge Base' => 'ナレッジベース',
