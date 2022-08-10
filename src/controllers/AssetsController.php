@@ -856,7 +856,7 @@ class AssetsController extends Controller
             $folder = $asset->getFolder();
 
             // Do what you want with your own photo.
-            if ($asset->id != Craft::$app->getUser()->getIdentity()->photoId) {
+            if ($asset->id != $this->getCurrentUser()->photoId) {
                 $this->requireVolumePermissionByAsset('editImages', $asset);
                 $this->requirePeerVolumePermissionByAsset('editPeerImages', $asset);
             }
@@ -1127,7 +1127,7 @@ class AssetsController extends Controller
         $variables = [];
 
         if ($previewHandler instanceof ImagePreview) {
-            if ($asset->id != Craft::$app->getUser()->getIdentity()->photoId) {
+            if ($asset->id != $this->getCurrentUser()->photoId) {
                 $variables['editFocal'] = true;
 
                 try {
