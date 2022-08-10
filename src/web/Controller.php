@@ -17,7 +17,6 @@ use yii\base\InvalidConfigException;
 use yii\base\Model;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
-use yii\web\IdentityInterface;
 use yii\web\JsonResponseFormatter;
 use yii\web\Response as YiiResponse;
 use yii\web\UnauthorizedHttpException;
@@ -29,7 +28,7 @@ use yii\web\UnauthorizedHttpException;
  * @property Request $request
  * @property Response $response
  * @property View $view The view object that can be used to render views or view files
- * @property-read ?IdentityInterface $currentUser The current logged-in user
+ * @property-read ?User $currentUser The current logged-in user
  * @method View getView() Returns the view object that can be used to render views or view files
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
