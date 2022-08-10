@@ -179,7 +179,7 @@ abstract class Controller extends \yii\web\Controller
     }
 
     /**
-     * Gets the current logged-in user.
+     * Returns the current logged-in user.
      *
      * @param bool $autoRenew
      * @return ?User
