@@ -9,6 +9,7 @@ namespace craft\web;
 
 use Craft;
 use craft\base\ModelInterface;
+use craft\elements\User;
 use Throwable;
 use yii\base\Action;
 use yii\base\InvalidArgumentException;
