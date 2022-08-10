@@ -658,7 +658,7 @@ class Db
      * @param string|bool $value The param value
      * @param bool|null $defaultValue How `null` values should be treated
      * @return mixed
-     * @since 3.4.15
+     * @since 3.4.14
      */
     public static function parseBooleanParam(string $column, $value, ?bool $defaultValue = null)
     {
