@@ -181,17 +181,15 @@ abstract class Controller extends \yii\web\Controller
     /**
      * Gets the current logged-in user.
      *
-     * @param mixed ...$args
+     * @param bool $autoRenew
      * @return ?User
      * @throws Throwable
+     * @see \yii\web\User::getIdentity
      * @since 4.3.0
      */
-    public function getCurrentUser(...$args): ?User
+    public function getCurrentUser(bool $autoRenew = true): ?User
     {
-        /** @var ?User $user */
-        $user = Craft::$app->getUser()->getIdentity(...$args);
-
-        return $user;
+        return Craft::$app->getUser()->getIdentity($autoRenew);
     }
 
     /**
