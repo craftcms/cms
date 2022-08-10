@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+### Fixed
+- Fixed a bug that could occur when using SSL to serve asset bundles via `webpack-dev-server` outside of a container.
+
 ## 4.2.1 - 2022-08-09
 
 ### Added
