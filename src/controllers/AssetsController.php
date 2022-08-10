@@ -814,8 +814,14 @@ class AssetsController extends Controller
             throw new BadRequestHttpException('The Asset cannot be found');
         }
 
-        $url = Craft::$app->getAssets()->getImagePreviewUrl($asset, $size, $size);
-        return $this->response->redirect($url);
+        try {
+            $url = Craft::$app->getAssets()->getImagePreviewUrl($asset, $size, $size);
+            return $this->response->redirect($url);
+        } catch (NotSupportedException) {
+            // just output the file contents
+            $path = ImageTransforms::getLocalImageSource($asset);
+            return $this->response->sendFile($path, $asset->getFilename());
+        }
     }
 
     /**
