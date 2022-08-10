@@ -3,7 +3,7 @@
 ## Unreleased
 
 ### Fixed
-- Fixed a bug that could occur when using SSL to serve asset bundles via `webpack-dev-server` outside of a container.
+- Fixed a bug where it wasn’t always possible to serve asset bundles via `webpack-dev-server` over SSL. ([#11758](https://github.com/craftcms/cms/pull/11758))
 
 ## 4.2.1 - 2022-08-09
 
