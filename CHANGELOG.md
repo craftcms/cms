@@ -4,6 +4,7 @@
 
 ### Fixed
 - Fixed a bug where saving an element with invalid field values could result in some field values being forgotten. ([#11756](https://github.com/craftcms/cms/issues/11756))
+- Fixed a bug where it wasn’t always possible to serve asset bundles via `webpack-dev-server` over SSL. ([#11758](https://github.com/craftcms/cms/pull/11758))
 
 ## 4.2.1 - 2022-08-09
 
