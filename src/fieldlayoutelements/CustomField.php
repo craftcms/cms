@@ -208,8 +208,7 @@ class CustomField extends BaseField
         $view->setIsDeltaRegistrationActive(
             $isDeltaRegistrationActive &&
             ($element->id ?? false) &&
-            !$static &&
-            !$element?->hasErrors(sprintf('%s.*', $this->attribute()))
+            !$static
         );
         $html = $view->namespaceInputs(function() use ($element, $static) {
             return (string)parent::formHtml($element, $static);
