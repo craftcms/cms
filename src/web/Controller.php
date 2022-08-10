@@ -10,7 +10,6 @@ namespace craft\web;
 use Craft;
 use craft\base\ModelInterface;
 use craft\elements\User;
-use Throwable;
 use yii\base\Action;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
@@ -183,7 +182,6 @@ abstract class Controller extends \yii\web\Controller
      *
      * @param bool $autoRenew
      * @return ?User
-     * @throws Throwable
      * @see \yii\web\User::getIdentity()
      * @since 4.3.0
      */
