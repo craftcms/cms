@@ -184,7 +184,7 @@ abstract class Controller extends \yii\web\Controller
      * @param bool $autoRenew
      * @return ?User
      * @throws Throwable
-     * @see \yii\web\User::getIdentity
+     * @see \yii\web\User::getIdentity()
      * @since 4.3.0
      */
     public function getCurrentUser(bool $autoRenew = true): ?User
