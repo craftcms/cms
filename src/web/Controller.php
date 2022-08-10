@@ -182,12 +182,16 @@ abstract class Controller extends \yii\web\Controller
      * Gets the current logged-in user.
      *
      * @param mixed ...$args
-     * @return IdentityInterface|null
+     * @return ?User
      * @throws Throwable
+     * @since 4.3.0
      */
-    public function getCurrentUser(...$args): ?IdentityInterface
+    public function getCurrentUser(...$args): ?User
     {
-        return Craft::$app->getUser()->getIdentity(...$args);
+        /** @var ?User $user */
+        $user = Craft::$app->getUser()->getIdentity(...$args);
+
+        return $user;
     }
 
     /**
