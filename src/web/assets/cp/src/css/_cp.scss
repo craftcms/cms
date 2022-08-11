@@ -122,7 +122,7 @@ $sidebarLinkSecondaryColor: var(--gray-200);
     transition: background-color linear 100ms;
 
     &[href] {
-      &:hover,
+      &:not(.sel):hover,
       &.active,
       &:active {
         color: var(--white);
@@ -131,10 +131,6 @@ $sidebarLinkSecondaryColor: var(--gray-200);
       &:not(.sel):hover {
         background-color: darken($grey800, 5%);
         transition: none;
-
-        .icon {
-          opacity: 1;
-        }
       }
 
       &.active,
@@ -288,8 +284,8 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
   li {
     &:not(.has-subnav) > a.sel {
-      color: var(--white);
-      background-color: var(--gray-900);
+      color: var(--gray-800);
+      background-color: var(--gray-100);
       opacity: 1;
 
       .icon {
@@ -318,20 +314,6 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
       &:active .icon {
         opacity: 1;
-      }
-
-      .icon {
-        opacity: 0.5;
-
-        &.icon-mask {
-          svg {
-            @include svg-mask(var(--white));
-          }
-
-          span[data-icon] {
-            color: var(--white);
-          }
-        }
       }
 
       .label {
@@ -530,7 +512,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   width: 36px;
   height: 50px;
   line-height: 26px;
-  color: var(--gray-300);
+  color: currentColor;
   text-align: center;
   @include margin-left(-10px);
 
@@ -1021,10 +1003,6 @@ li.breadcrumb-toggle-wrapper {
             background-color: var(--gray-200);
           }
         }
-        &.sel {
-          @include pane;
-          background-color: var(--gray-050);
-        }
       }
     }
   }
@@ -1337,7 +1315,6 @@ li.breadcrumb-toggle-wrapper {
 
 /* Sidebar */
 .sidebar {
-  --active-indicator-width: 4px;
   width: $sidebarWidth;
   box-sizing: border-box;
   font-size: 13px;
@@ -1366,11 +1343,11 @@ li.breadcrumb-toggle-wrapper {
 
   @mixin nav-level($level) {
     & > a {
-      @include padding-left(28px + 14 * $level);
+      @include padding-left(24px + 14 * $level);
     }
 
     & > .toggle {
-      @include left(calc(var(--m) * #{$level} + var(--active-indicator-width)));
+      @include left(calc(var(--m) * #{$level}));
     }
   }
 
@@ -1397,16 +1374,24 @@ li.breadcrumb-toggle-wrapper {
       position: relative;
 
       &:not(.has-subnav) > a {
-        transition: background-color linear 100ms;
+        transition: background-color linear 100ms, color linear 100ms,
+          font-weight linear 100ms;
 
-        &:hover {
+        &:not(.sel):hover {
           text-decoration: none;
           background-color: var(--gray-100);
         }
 
         &.sel {
           cursor: default;
-          background-color: var(--gray-200);
+          background-color: var(--gray-500);
+          @include light-on-dark-text;
+          font-weight: 600;
+
+          &,
+          & + .toggle {
+            color: var(--white);
+          }
         }
       }
 
@@ -1424,31 +1409,6 @@ li.breadcrumb-toggle-wrapper {
         border-radius: var(--large-border-radius);
         word-break: break-word;
 
-        &::after {
-          position: absolute;
-          content: '';
-          width: var(--active-indicator-width);
-          height: 100%;
-          top: 0;
-          @include left(0);
-
-          body.rtl & {
-            border-radius: 0 var(--large-border-radius)
-              var(--large-border-radius) 0;
-          }
-
-          body.ltr & {
-            border-radius: var(--large-border-radius) 0 0
-              var(--large-border-radius);
-          }
-        }
-
-        &.sel {
-          &::after {
-            background-color: currentColor;
-          }
-        }
-
         .status {
           flex-shrink: 1;
         }
@@ -1460,14 +1420,15 @@ li.breadcrumb-toggle-wrapper {
           height: 18px;
           word-break: normal;
           transition: margin-left linear 150ms, margin-right linear 150ms;
+          opacity: 0.85;
 
           &.icon-mask {
             svg {
-              @include svg-mask(var(--ui-control-color));
+              @include svg-mask(currentColor);
             }
 
             span[data-icon] {
-              color: var(--ui-control-color);
+              color: currentColor;
             }
           }
 
