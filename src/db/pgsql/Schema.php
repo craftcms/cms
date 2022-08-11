@@ -15,7 +15,7 @@ use yii\db\Exception;
 
 /**
  * @inheritdoc
- * @method TableSchema getTableSchema($name, $refresh = false) Obtains the schema information for the named table.
+ * @method TableSchema|null getTableSchema($name, $refresh = false) Obtains the schema information for the named table.
  * @property Connection $db
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0

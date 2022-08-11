@@ -11,7 +11,6 @@ use craft\base\NameTrait;
 use craft\elements\conditions\addresses\AddressCondition;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\AddressQuery;
-use craft\elements\db\ElementQueryInterface;
 use craft\fieldlayoutelements\addresses\LatLongField;
 use craft\fieldlayoutelements\addresses\OrganizationField;
 use craft\fieldlayoutelements\addresses\OrganizationTaxIdField;
@@ -99,7 +98,7 @@ class Address extends Element implements AddressInterface, BlockElementInterface
      * @inheritdoc
      * @return AddressQuery The newly created [[AddressQuery]] instance.
      */
-    public static function find(): ElementQueryInterface
+    public static function find(): AddressQuery
     {
         return new AddressQuery(static::class);
     }

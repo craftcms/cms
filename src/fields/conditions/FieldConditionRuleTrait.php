@@ -97,7 +97,14 @@ trait FieldConditionRuleTrait
      */
     public function getExclusiveQueryParams(): array
     {
-        return [$this->field()->handle];
+        try {
+            $field = $this->field();
+        } catch (InvalidConfigException) {
+            // The field doesn't exist
+            return [];
+        }
+
+        return [$field->handle];
     }
 
     /**
@@ -118,8 +125,16 @@ trait FieldConditionRuleTrait
     public function matchElement(ElementInterface $element): bool
     {
         try {
-            $value = $element->getFieldValue($this->field()->handle);
+            $field = $this->field();
+        } catch (InvalidConfigException) {
+            // The field doesn't exist
+            return true;
+        }
+
+        try {
+            $value = $element->getFieldValue($field->handle);
         } catch (InvalidFieldException) {
+            // The field doesn't belong to the element's field layout
             return false;
         }
 

@@ -238,7 +238,7 @@
                     value: user.getPreference('weekStartDay', craft.app.config.general.defaultWeekStartDay)
                 }) }}
 
-                <hr>
+                <h2>{{ 'Accessibility'|t('app') }}</h2>
 
                 {% set a11yDefaults = craft.app.config.general.accessibilityDefaults %}
                 {% set a11yPreferences = [
@@ -262,11 +262,27 @@
                     }
                 ] %}
                 {{ forms.checkboxGroupField({
-                    label: 'Accessibility'|t('app'),
+                    label: 'Display Settings'|t('app'),
                     options: a11yPreferences,
                 }) }}
 
+                {{ forms.selectField({
+                    label: 'Notification Duration'|t('app'),
+                    instructions: 'How long notifications should be shown before they disappear automatically.',
+                    name: 'notificationDuration',
+                    id: 'notificationDuration',
+                    options: [
+                        {value: 2000, label: '{num, number} {num, plural, =1{second} other{seconds}}'|t({num: 2})},
+                        {value: 5000, label: '{num, number} {num, plural, =1{second} other{seconds}}'|t({num: 5})},
+                        {value: 10000, label: '{num, number} {num, plural, =1{second} other{seconds}}'|t({num: 10})},
+                        {value: 0, label: 'Show them indefinitely'|t},
+                    ],
+                    value: user.getPreference('notificationDuration') ?? a11yDefaults['notificationDuration'] ?? 5000,
+                }) }}
+
                 {% if user.admin %}
+                    <h2>{{ 'Development'|t('app') }}</h2>
+
                     {% set devPreferences = [
                         {
                             label: 'Show field handles in edit forms'|t('app'),
@@ -300,7 +316,6 @@
                         }
                     ] %}
                     {{ forms.checkboxGroupField({
-                        label: 'Development'|t('app'),
                         options: devPreferences,
                     }) }}
                 {% endif %}
