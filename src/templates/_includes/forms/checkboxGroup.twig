@@ -4,14 +4,13 @@
 
 {% set fieldsetAttributes = {
     class: ['checkbox-group'],
-    role: 'presentation',
 } %}
 
 {% if block('attr') is defined %}
     {%- set fieldsetAttributes = fieldsetAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
 {% endif %}
 
-{% tag 'fieldset' with fieldsetAttributes %}
+{% tag 'div' with fieldsetAttributes %}
     {% if name ?? false %}
         {{ hiddenInput(name, '') }}
     {% endif -%}
