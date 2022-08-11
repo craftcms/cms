@@ -189,7 +189,7 @@
                     {% endif %}
                 {% endfor %}
                 {% if allowReorder -%}
-                    <td class="thin action"><a class="move icon" title="{{ 'Reorder'|t('app') }}" aria-label="{{ 'Reorder'|t('app') }}"></a></td>
+                    <td class="thin action"><a class="move icon" title="{{ 'Reorder'|t('app') }}" aria-label="{{ 'Reorder'|t('app') }}" type="button" role="button"></a></td>
                 {%- endif -%}
                 {%- if allowDelete -%}
                     <td class="thin action">

@@ -130,6 +130,7 @@
 
 {% block body %}
     {{ tag ('a', {
+        id: 'global-skip-link',
         text: 'Skip to content'|t('app'),
         href: '#main',
         class: 'skip-link btn',
@@ -140,7 +141,6 @@
 
         <div id="page-container">
             {% include '_layouts/components/alerts' %}
-            {% include '_layouts/components/notifications' %}
 
             <div id="global-header" role="region" aria-label="{{ 'My Account'|t('app') }}">
                 <div class="flex">
@@ -317,6 +317,8 @@
 
         </div><!-- #page-container -->
     </div><!-- #global-container -->
+
+    {% include '_layouts/components/notifications' %}
 {% endblock %}
 
 
@@ -327,7 +329,7 @@
                 <button type="submit" class="btn submit">{{ submitButtonLabel ?? 'Save'|t('app') }}</button>
             {% endblock %}
             {% if formActions ?? false %}
-                <button type="button" class="btn submit menubtn"></button>
+                <button type="button" class="btn submit menubtn" aria-label="{{ 'More actions'|t('app') }}"></button>
                 {% include '_layouts/components/form-action-menu' %}
             {% endif %}
         </div>

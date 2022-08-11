@@ -8,6 +8,7 @@
 namespace craft\helpers;
 
 use Craft;
+use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\FieldLayoutElement;
 use craft\behaviors\DraftBehavior;
@@ -24,6 +25,7 @@ use craft\web\View;
 use yii\base\Event;
 use yii\base\InvalidArgumentException;
 use yii\helpers\Markdown;
+use yii\validators\RequiredValidator;
 
 /**
  * Class Cp
@@ -513,6 +515,7 @@ class Cp
     {
         $attribute = $config['attribute'] ?? $config['id'] ?? null;
         $id = $config['id'] = $config['id'] ?? 'field' . mt_rand();
+        $labelId = $config['labelId'] ?? "$id-label";
         $instructionsId = $config['instructionsId'] ?? "$id-instructions";
         $tipId = $config['tipId'] ?? "$id-tip";
         $warningId = $config['warningId'] ?? "$id-warning";
@@ -526,7 +529,10 @@ class Cp
         $status = $config['status'] ?? null;
 
         if (str_starts_with($input, 'template:')) {
-            // Set a describedBy value in case the input template supports it
+            // Set labelledBy and describedBy values in case the input template supports it
+            if (!isset($config['labelledBy'])) {
+                $config['labelledBy'] = $labelId;
+            }
             if (!isset($config['describedBy'])) {
                 $descriptorIds = array_filter([
                     $errors ? $errorsId : null,
@@ -543,7 +549,6 @@ class Cp
 
         $fieldset = $config['fieldset'] ?? false;
         $fieldId = $config['fieldId'] ?? "$id-field";
-        $labelId = $config['labelId'] ?? "$id-label";
         $label = $config['fieldLabel'] ?? $config['label'] ?? null;
 
         if ($label === '__blank__') {
@@ -1164,7 +1169,6 @@ JS, [
             'name' => null,
         ];
 
-        $label = $address->title;
         $canDelete = $address->canDelete(Craft::$app->getUser()->getIdentity());
         $actionMenuId = sprintf('address-card-action-menu-%s', mt_rand());
 
@@ -1178,10 +1182,10 @@ JS, [
             ]) .
             ($config['name'] ? Html::hiddenInput("{$config['name']}[]", (string)$address->id) : '') .
             Html::beginTag('div', ['class' => 'address-card-header']) .
-            Html::tag('h2', $address->title, [
+            Html::tag('h2', Html::encode($address->title), [
                 'class' => array_filter([
                     'address-card-label',
-                    !$label ? 'hidden' : null,
+                    !$address->title ? 'hidden' : null,
                 ]),
             ]) .
             ($canDelete
@@ -1196,7 +1200,7 @@ JS, [
                     'title' => Craft::t('app', 'Actions'),
                     'aria' => [
                         'controls' => $actionMenuId,
-                        'label' => sprintf('%s %s', $label ?? Craft::t('app', 'New Address'), Craft::t('app', 'Settings')),
+                        'label' => sprintf('%s %s', $address->title ? Html::encode($address->title) : Craft::t('app', 'New Address'), Craft::t('app', 'Settings')),
                     ],
                     'data' => [
                         'icon' => 'settings',
@@ -1257,7 +1261,22 @@ JS, [
     {
         $formatRepo = Craft::$app->getAddresses()->getAddressFormatRepository()->get($address->countryCode);
 
-        $requiredFields = array_flip($formatRepo->getRequiredFields());
+        $requiredFields = [];
+        $scenario = $address->getScenario();
+        $address->setScenario(Element::SCENARIO_LIVE);
+        $activeValidators = $address->getActiveValidators();
+        $address->setScenario($scenario);
+
+        foreach ($activeValidators as $validator) {
+            if ($validator instanceof RequiredValidator) {
+                foreach ($validator->getAttributeNames() as $attr) {
+                    if ($validator->when === null || call_user_func($validator->when, $address, $attr)) {
+                        $requiredFields[$attr] = true;
+                    }
+                }
+            }
+        }
+
         $visibleFields = array_flip(array_merge(
                 $formatRepo->getUsedFields(),
                 $formatRepo->getUsedSubdivisionFields(),
@@ -1600,7 +1619,7 @@ JS;
                     $customizable ? 'draggable' : null,
                 ]),
             ]) .
-            Html::tag('span', $tab->name) .
+            Html::tag('span', Html::encode($tab->name)) .
             ($customizable
                 ? Html::a('', null, [
                     'role' => 'button',
@@ -1702,7 +1721,7 @@ JS;
                 ]),
                 'data' => ['name' => mb_strtolower($groupName)],
             ]) .
-            Html::tag('h6', $groupName) .
+            Html::tag('h6', Html::encode($groupName)) .
             implode('', array_map(fn(BaseField $field) => self::_fldElementSelectorHtml($field, true, [
                 'class' => array_filter([
                     $fieldLayout->isFieldIncluded($field->attribute()) ? 'hidden' : null,

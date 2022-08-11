@@ -20,7 +20,6 @@ use Composer\Util\Platform;
 use Craft;
 use craft\composer\Factory;
 use craft\helpers\App;
-use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Json;
 use Seld\JsonLint\DuplicateKeyException;
@@ -327,19 +326,51 @@ class Composer extends Component
     {
         $json = new JsonFile($jsonPath);
         $config = $json->read();
+        $allowPlugins = $config['config']['allow-plugins'] ?? [];
 
-        if (($config['config']['allow-plugins'] ?? null) === true) {
+        if ($allowPlugins === true) {
             return;
         }
 
-        $config = ArrayHelper::merge($config, [
-            'config' => [
-                'allow-plugins' => [
-                    'craftcms/plugin-installer' => true,
-                    'yiisoft/yii2-composer' => true,
-                ],
-            ],
-        ]);
+        $plugins = [
+            'craftcms/plugin-installer',
+            'yiisoft/yii2-composer',
+        ];
+
+        // See if everything is already in place
+        $hasAllPlugins = true;
+        foreach ($plugins as $plugin) {
+            if (($allowPlugins[$plugin] ?? false) !== true) {
+                $hasAllPlugins = false;
+                break;
+            }
+        }
+        if ($hasAllPlugins) {
+            return;
+        }
+
+        // First try using JsonManipulator
+        $success = true;
+        $manipulator = new JsonManipulator(file_get_contents($jsonPath));
+
+        foreach ($plugins as $plugin) {
+            if (($allowPlugins[$plugin] ?? false) !== true) {
+                $success = $manipulator->addConfigSetting("allow-plugins.$plugin", true);
+                if (!$success) {
+                    break;
+                }
+            }
+        }
+
+        if ($success) {
+            file_put_contents($jsonPath, $manipulator->getContents());
+            return;
+        }
+
+        // There was a problem so do it manually instead
+        foreach ($plugins as $plugin) {
+            $config['config']['allow-plugins'][$plugin] = true;
+        }
 
         $json->write($config);
     }

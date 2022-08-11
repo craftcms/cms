@@ -261,6 +261,8 @@ export default Base.extend(
 
       $option.addClass('hover');
       this.$btn.attr('aria-activedescendant', $option.parent('li').attr('id'));
+
+      Garnish.scrollContainerToElement(this.menu.$container, $option);
     },
 
     focusSelectedOption: function () {

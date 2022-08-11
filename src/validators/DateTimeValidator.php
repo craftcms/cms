@@ -26,18 +26,18 @@ use yii\validators\Validator;
 class DateTimeValidator extends Validator
 {
     /**
-     * @var string|null The minimum date allowed
+     * @var mixed The minimum date allowed
      * @see $tooEarly for the customized message used when the date is too early
      * @since 3.5.12
      */
-    public ?string $min = null;
+    public mixed $min = null;
 
     /**
-     * @var string|null The maximum date allowed
+     * @var mixed The maximum date allowed
      * @see $tooLate for the customized message used when the date is too late
      * @since 3.5.12
      */
-    public ?string $max = null;
+    public mixed $max = null;
 
     /**
      * @var string|null user-defined error message used when the value is earlier than [[min]]

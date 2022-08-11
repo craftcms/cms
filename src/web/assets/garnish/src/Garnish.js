@@ -857,6 +857,10 @@ Object.assign(Garnish, {
   SelectMenu,
   UiLayerManager,
   /**
+   * @deprecated Use CustomSelect instead.
+   */
+  Menu: CustomSelect,
+  /**
    * @deprecated Use UiLayerManager instead.
    */
   ShortcutManager: UiLayerManager,

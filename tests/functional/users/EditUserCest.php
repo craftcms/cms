@@ -58,7 +58,6 @@ class EditUserCest
             'fullName' => 'IM A CHANGED FULLNAME',
         ]);
 
-        $I->see('User saved');
         $I->seeInTitle('Users');
 
         /** @var User $user */

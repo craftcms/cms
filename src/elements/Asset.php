@@ -347,7 +347,7 @@ class Asset extends Element
             $volumeIds = $volumes->getAllVolumeIds();
         }
 
-        $additionalCriteria = $context === ElementSources::CONTEXT_SETTINGS ? ['parentId' => null] : [];
+        $additionalCriteria = $context === ElementSources::CONTEXT_SETTINGS ? ['parentId' => ':empty:'] : [];
 
         $tree = Craft::$app->getAssets()->getFolderTreeByVolumeIds($volumeIds, $additionalCriteria);
 
@@ -1090,6 +1090,9 @@ class Asset extends Element
             'data' => [
                 'icon' => 'download',
             ],
+            'aria' => [
+                'label' => Craft::t('app', 'Download'),
+            ],
         ]);
 
         $js = <<<JS
@@ -1190,30 +1193,30 @@ JS;
             return null;
         }
 
-        $volume = $this->getVolume();
-
-        if (!$volume->getFs()->hasUrls) {
-            return null;
-        }
-
         if ($transform) {
             $oldTransform = $this->_transform;
             $this->setTransform($transform);
         }
 
-        $img = Html::tag('img', '', [
-            'src' => $this->getUrl(),
-            'width' => $this->getWidth(),
-            'height' => $this->getHeight(),
-            'srcset' => $sizes ? $this->getSrcset($sizes) : false,
-            'alt' => $this->alt ?? $this->title,
-        ]);
+        $url = $this->getUrl();
 
-        if (isset($oldTransform)) {
+        if ($url) {
+            $img = Html::tag('img', '', [
+                'src' => $url,
+                'width' => $this->getWidth(),
+                'height' => $this->getHeight(),
+                'srcset' => $sizes ? $this->getSrcset($sizes) : false,
+                'alt' => $this->alt ?? $this->title,
+            ]);
+        } else {
+            $img = null;
+        }
+
+        if ($transform) {
             $this->setTransform($oldTransform);
         }
 
-        return Template::raw($img);
+        return $img ? Template::raw($img) : null;
     }
 
     /**
@@ -2073,7 +2076,7 @@ JS;
                 }
 
                 if ($editable) {
-                    $imageButtonHtml .= Html::button(Craft::t('app', 'Edit'), [
+                    $imageButtonHtml .= Html::button(Craft::t('app', 'Edit Image'), [
                         'id' => 'edit-btn',
                         'class' => ['btn', 'edit-btn'],
                     ]);

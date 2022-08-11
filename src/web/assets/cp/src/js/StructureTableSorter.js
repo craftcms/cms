@@ -301,7 +301,7 @@ Craft.StructureTableSorter = Garnish.DragSort.extend(
 
         Craft.sendActionRequest('POST', 'structures/move-element', {data})
           .then((response) => {
-            Craft.cp.displayNotice(Craft.t('app', 'New position saved.'));
+            Craft.cp.displaySuccess(Craft.t('app', 'New position saved.'));
             this.onPositionChange();
 
             // Were we waiting on this to complete so we can expand the new parent?

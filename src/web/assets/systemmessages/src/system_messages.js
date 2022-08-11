@@ -169,7 +169,7 @@ import './system_messages.scss';
           }
 
           this.hide();
-          Craft.cp.displayNotice(Craft.t('app', 'Message saved.'));
+          Craft.cp.displaySuccess(Craft.t('app', 'Message saved.'));
         })
         .catch(({response}) => {
           if (response && response.data && response.data.message) {
