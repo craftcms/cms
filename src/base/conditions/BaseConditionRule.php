@@ -139,7 +139,10 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
      *
      * @return string
      */
-    abstract protected function inputHtml(): string;
+    protected function inputHtml(): string
+    {
+        return '';
+    }
 
     /**
      * Returns the option label for a given operator.
@@ -176,7 +179,7 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
 
         return
             Html::beginTag('div', [
-                'class' => ['flex', 'flex-nowrap', 'flex-start'],
+                'class' => ['flex', 'flex-start'],
             ]) .
             (count($operators) > 1
                 ? (

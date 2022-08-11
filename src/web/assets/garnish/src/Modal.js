@@ -9,6 +9,7 @@ export default Base.extend(
   {
     $container: null,
     $shade: null,
+    $triggerElement: null,
 
     visible: false,
 
@@ -47,6 +48,12 @@ export default Base.extend(
         if (this.settings.autoShow) {
           this.show();
         }
+      }
+
+      if (this.settings.triggerElement) {
+        this.$triggerElement = this.settings.triggerElement;
+      } else {
+        this.$triggerElement = Garnish.getFocusedElement();
       }
 
       Garnish.Modal.instances.push(this);
@@ -195,9 +202,7 @@ export default Base.extend(
         this.removeListener(Garnish.$win, 'resize');
       }
 
-      if (this.settings.triggerElement) {
-        this.settings.triggerElement.focus();
-      }
+      this.$triggerElement.focus();
 
       this.visible = false;
       Garnish.Modal.visibleModal = null;

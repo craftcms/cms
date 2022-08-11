@@ -74,7 +74,7 @@ EOD;
 
         $this->stdout(PHP_EOL);
 
-        if (!$this->confirm('Ready to rename these filenames as ASCII?', true)) {
+        if ($this->interactive && !$this->confirm('Ready to rename these filenames as ASCII?', true)) {
             return ExitCode::OK;
         }
 
