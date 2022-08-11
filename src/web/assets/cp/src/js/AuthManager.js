@@ -164,7 +164,7 @@ Craft.AuthManager = Garnish.Base.extend(
         let $renewSessionBtn = $('<button/>', {
           type: 'submit',
           class: 'btn submit',
-          text: Craft.t('app', 'Keep me logged in'),
+          text: Craft.t('app', 'Keep me signed in'),
         }).appendTo($buttons);
 
         this.$logoutWarningPara = $('<p/>').prependTo($body);
@@ -283,7 +283,7 @@ Craft.AuthManager = Garnish.Base.extend(
           );
 
         this.$passwordInput = $(
-          '<input type="password" class="text password fullwidth" placeholder="' +
+          '<input type="password" class="text password fullwidth" autocomplete="current-password" placeholder="' +
             Craft.t('app', 'Password') +
             '"/>'
         ).appendTo($passwordWrapper);

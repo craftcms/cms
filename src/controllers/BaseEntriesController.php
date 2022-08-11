@@ -76,7 +76,7 @@ abstract class BaseEntriesController extends Controller
         }
 
         try {
-            if (!$entry->canSave(Craft::$app->getUser()->getIdentity())) {
+            if (!$entry->canSave($this->getCurrentUser())) {
                 throw new ForbiddenHttpException('User is not authorized to perform this action.');
             }
         } finally {

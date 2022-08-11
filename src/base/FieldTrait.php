@@ -104,6 +104,7 @@ trait FieldTrait
 
     /**
      * @var bool|null Whether the field is required in the field layout it was fetched from
+     * @deprecated in 4.1.4. [[\craft\fieldlayoutelements\BaseField::$required]] should be used instead
      */
     public ?bool $required = null;
 
