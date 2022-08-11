@@ -501,6 +501,7 @@ return [
     'Deselect All' => 'Deselect All',
     'Desktop' => 'Desktop',
     'Development' => 'Development',
+    'Development Settings' => 'Development Settings',
     'Device type' => 'Device type',
     'Dimensions' => 'Dimensions',
     'Directories cannot be deleted while moving assets.' => 'Directories cannot be deleted while moving assets.',

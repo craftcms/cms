@@ -12,14 +12,13 @@
     data: {
         'target-prefix': targetPrefix ?? false,
     },
-    role: 'presentation',
 }|merge(containerAttributes ?? [], recursive=true) %}
 
 {%- if block('attr') is defined %}
     {%- set containerAttributes = containerAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
 {% endif %}
 
-{% tag 'fieldset' with containerAttributes %}
+{% tag 'div' with containerAttributes %}
     {%- for key, option in options %}
         {%- if option is not iterable %}
             {%- set option = {label: option, value: key} %}

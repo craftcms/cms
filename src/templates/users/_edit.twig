@@ -212,6 +212,8 @@
 
         {% if user.getIsCurrent() %}
             <div id="prefs" class="flex-fields hidden">
+                <h2>{{ 'Location'|t('app') }}</h2>
+
                 {{ forms.selectizeField({
                     id: 'preferredLanguage',
                     name: 'preferredLanguage',
@@ -316,6 +318,7 @@
                         }
                     ] %}
                     {{ forms.checkboxGroupField({
+                        label: 'Development Settings'|t('app'),
                         options: devPreferences,
                     }) }}
                 {% endif %}
