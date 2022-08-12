@@ -2657,9 +2657,6 @@ $elementInnerSpacing: 5px;
 
     .label {
       display: block;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
       word-wrap: normal;
     }
   }
@@ -2790,9 +2787,9 @@ $checkboxPadding: $checkboxSize + 4;
     width: calc(
       100% + #{$baseElementSidePadding + $baseElementSidePadding + 1px}
     );
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
+    display: grid;
+    gap: 5px;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
 
     li {
       position: relative;
@@ -2801,6 +2798,14 @@ $checkboxPadding: $checkboxSize + 4;
       &:hover {
         .element {
           background-color: var(--gray-050);
+        }
+      }
+
+      .element.large.hasthumb {
+        width: unset;
+
+        .elementthumb:not(:empty) {
+          width: 100%;
         }
       }
 
