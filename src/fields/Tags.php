@@ -102,6 +102,7 @@ class Tags extends BaseRelationField
                 [
                     'elementType' => static::elementType(),
                     'id' => $this->getInputId(),
+                    'describedBy' => $this->describedBy,
                     'name' => $this->handle,
                     'elements' => $value,
                     'tagGroupId' => $tagGroup->id,

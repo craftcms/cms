@@ -36,14 +36,6 @@ class RelationalFieldConditionRule extends BaseElementSelectConditionRule implem
     /**
      * @inheritdoc
      */
-    public static function supportsProjectConfig(): bool
-    {
-        return true;
-    }
-
-    /**
-     * @inheritdoc
-     */
     protected function elementType(): string
     {
         /** @var BaseRelationField $field */
