@@ -1025,6 +1025,7 @@ return [
     'Oops!' => 'ای وای!',
     'Open PRs' => 'PR‌های باز',
     'Open the full edit page in a new tab' => 'باز کردن صفحه ویرایش تمام صفحه در یک زبانه جدید',
+    'Opens in a new window' => 'Opens in a new window',
     'Operator' => 'عملگر',
     'Optgroup?' => 'گروه بندی گزینه ها؟',
     'Option Label' => 'برچسب گزینه',
