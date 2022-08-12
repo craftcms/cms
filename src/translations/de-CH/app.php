@@ -1025,6 +1025,7 @@ return [
     'Oops!' => 'Huch!',
     'Open PRs' => 'Offene PRs',
     'Open the full edit page in a new tab' => 'Öffnen Sie die vollständige Bearbeitungsseite in einem neuen Tab',
+    'Opens in a new window' => 'Opens in a new window',
     'Operator' => 'Betreiber',
     'Optgroup?' => 'Optgroup?',
     'Option Label' => 'Bezeichnung der Einstellungen',
