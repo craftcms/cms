@@ -390,29 +390,6 @@ class Cp
                 ]);
         }
 
-        if ($showStatus) {
-            if ($isDraft) {
-                $innerHtml .= Html::tag('span', '', [
-                    'class' => ['icon'],
-                    'aria' => [
-                        'hidden' => 'true',
-                    ],
-                    'data' => [
-                        'icon' => 'draft',
-                    ],
-                ]);
-            } else {
-                $status = !$isRevision ? $element->getStatus() : null;
-                $innerHtml .= Html::tag('span', '', [
-                    'class' => array_filter([
-                        'status',
-                        $status,
-                        $status ? ($element::statuses()[$status]['color'] ?? null) : null,
-                    ]),
-                ]);
-            }
-        }
-
         $innerHtml .= $imgHtml;
 
         if ($showLabel) {
@@ -452,6 +429,33 @@ class Cp
             }
 
             $innerHtml .= '</span></div>';
+        }
+
+        if ($showStatus) {
+            if ($isDraft) {
+                $innerHtml .= Html::tag('span', '', [
+                    'data' => ['icon' => 'draft'],
+                    'class' => 'icon',
+                    'role' => 'img',
+                    'aria' => [
+                        'label' => sprintf('%s %s', Craft::t('app', 'Status:'), Craft::t('app', 'Draft')),
+                    ],
+                ]);
+            } else {
+                $status = $element->getStatus();
+                $statusDef = $element::statuses()[$status] ?? null;
+                $innerHtml .= Html::tag('span', '', [
+                    'class' => array_filter([
+                        'status',
+                        $status,
+                        $statusDef['color'] ?? null,
+                    ]),
+                    'role' => 'img',
+                    'aria' => [
+                        'label' => sprintf('%s %s', Craft::t('app', 'Status:'), $statusDef['label'] ?? $statusDef ?? ucfirst($status)),
+                    ],
+                ]);
+            }
         }
 
         // Allow plugins to modify the inner HTML
