@@ -212,7 +212,7 @@
 
         {% if user.getIsCurrent() %}
             <div id="prefs" class="flex-fields hidden">
-                <h2>{{ 'Location'|t('app') }}</h2>
+                <h2>{{ 'General'|t('app') }}</h2>
 
                 {{ forms.selectizeField({
                     id: 'preferredLanguage',
@@ -243,29 +243,28 @@
                 <h2>{{ 'Accessibility'|t('app') }}</h2>
 
                 {% set a11yDefaults = craft.app.config.general.accessibilityDefaults %}
-                {% set a11yPreferences = [
-                    {
-                        label: 'Always show focus rings'|t('app'),
-                        name: 'alwaysShowFocusRings',
-                        id: 'alwaysShowFocusRings',
-                        checked: user.getPreference('alwaysShowFocusRings') ?? a11yDefaults['alwaysShowFocusRings'] ?? false,
-                    },
-                    {
-                        label: 'Use shapes to represent statuses'|t('app'),
-                        name: 'useShapes',
-                        id: 'useShapes',
-                        checked: user.getPreference('useShapes') ?? a11yDefaults['useShapes'] ?? false,
-                    },
-                    {
-                        label: 'Underline links'|t('app'),
-                        name: 'underlineLinks',
-                        id: 'underlineLinks',
-                        checked: user.getPreference('underlineLinks') ?? a11yDefaults['underlineLinks'] ?? false,
-                    }
-                ] %}
                 {{ forms.checkboxGroupField({
                     label: 'Display Settings'|t('app'),
-                    options: a11yPreferences,
+                    options: [
+                        {
+                            label: 'Always show focus rings'|t('app'),
+                            name: 'alwaysShowFocusRings',
+                            id: 'alwaysShowFocusRings',
+                            checked: user.getPreference('alwaysShowFocusRings') ?? a11yDefaults['alwaysShowFocusRings'] ?? false,
+                        },
+                        {
+                            label: 'Use shapes to represent statuses'|t('app'),
+                            name: 'useShapes',
+                            id: 'useShapes',
+                            checked: user.getPreference('useShapes') ?? a11yDefaults['useShapes'] ?? false,
+                        },
+                        {
+                            label: 'Underline links'|t('app'),
+                            name: 'underlineLinks',
+                            id: 'underlineLinks',
+                            checked: user.getPreference('underlineLinks') ?? a11yDefaults['underlineLinks'] ?? false,
+                        },
+                    ],
                 }) }}
 
                 {{ forms.selectField({
@@ -285,41 +284,46 @@
                 {% if user.admin %}
                     <h2>{{ 'Development'|t('app') }}</h2>
 
-                    {% set devPreferences = [
-                        {
-                            label: 'Show field handles in edit forms'|t('app'),
-                            name: 'showFieldHandles',
-                            id: 'showFieldHandles',
-                            checked: user.getPreference('showFieldHandles')
-                        },
-                        {
-                            label: "Show the debug toolbar on the front end"|t('app'),
-                            name: 'enableDebugToolbarForSite',
-                            id: 'enableDebugToolbarForSite',
-                            checked: user.getPreference('enableDebugToolbarForSite')
-                        },
-                        {
-                            label: "Show the debug toolbar in the control panel"|t('app'),
-                            name: 'enableDebugToolbarForCp',
-                            id: 'enableDebugToolbarForCp',
-                            checked: user.getPreference('enableDebugToolbarForCp')
-                        },
-                        {
-                            label: 'Profile Twig templates when Dev Mode is disabled'|t('app'),
-                            name: 'profileTemplates',
-                            id: 'profileTemplates',
-                            checked: user.getPreference('profileTemplates')
-                        },
-                        {
-                            label: 'Show full exception views when Dev Mode is disabled'|t('app'),
-                            name: 'showExceptionView',
-                            id: 'showExceptionView',
-                            checked: user.getPreference('showExceptionView')
-                        }
-                    ] %}
                     {{ forms.checkboxGroupField({
                         label: 'Development Settings'|t('app'),
-                        options: devPreferences,
+                        options: [
+                            {
+                                label: 'Show field handles in edit forms'|t('app'),
+                                name: 'showFieldHandles',
+                                id: 'showFieldHandles',
+                                checked: user.getPreference('showFieldHandles')
+                            },
+                            {
+                                label: 'Profile Twig templates when Dev Mode is disabled'|t('app'),
+                                name: 'profileTemplates',
+                                id: 'profileTemplates',
+                                checked: user.getPreference('profileTemplates')
+                            },
+                            {
+                                label: 'Show full exception views when Dev Mode is disabled'|t('app'),
+                                name: 'showExceptionView',
+                                id: 'showExceptionView',
+                                checked: user.getPreference('showExceptionView')
+                            },
+                        ],
+                    }) }}
+
+                    {{ forms.checkboxGroupField({
+                        label: 'Debug Toolbar'|t('app'),
+                        options: [
+                            {
+                                label: "Show the debug toolbar on the front end"|t('app'),
+                                name: 'enableDebugToolbarForSite',
+                                id: 'enableDebugToolbarForSite',
+                                checked: user.getPreference('enableDebugToolbarForSite')
+                            },
+                            {
+                                label: "Show the debug toolbar in the control panel"|t('app'),
+                                name: 'enableDebugToolbarForCp',
+                                id: 'enableDebugToolbarForCp',
+                                checked: user.getPreference('enableDebugToolbarForCp')
+                            },
+                        ],
                     }) }}
                 {% endif %}
 

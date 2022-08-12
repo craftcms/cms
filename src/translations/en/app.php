@@ -450,6 +450,7 @@ return [
     'Deactivate users by default' => 'Deactivate users by default',
     'Deactivate…' => 'Deactivate…',
     'Deactivating a user revokes their ability to sign in. Are you sure you want to continue?' => 'Deactivating a user revokes their ability to sign in. Are you sure you want to continue?',
+    'Debug Toolbar' => 'Debug Toolbar',
     'Decimal Points' => 'Decimal Points',
     'Default Color' => 'Default Color',
     'Default Focal Point' => 'Default Focal Point',
