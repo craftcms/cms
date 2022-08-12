@@ -1025,6 +1025,7 @@ return [
     'Oops!' => 'Obs!',
     'Open PRs' => 'Åpne PR-er',
     'Open the full edit page in a new tab' => 'Åpne hele redigeringssiden i en ny fane',
+    'Opens in a new window' => 'Opens in a new window',
     'Operator' => 'Operatør',
     'Optgroup?' => 'Optgroup?',
     'Option Label' => 'Navn',
