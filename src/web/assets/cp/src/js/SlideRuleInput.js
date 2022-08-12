@@ -26,6 +26,21 @@ Craft.SlideRuleInput = Garnish.Base.extend({
     );
     this.$graduationsUl = $('<ul></ul>').appendTo(this.$graduations);
 
+    this.$container.attr({
+      role: 'slider',
+      tabindex: '0',
+      'aria-valuemin': this.slideMin,
+      'aria-valuemax': this.slideMax,
+      'aria-valuenow': '0',
+      'aria-valuetext': Craft.t(
+        'app',
+        '{num, number} {num, plural, =1{degree} other{degrees}}',
+        {
+          num: 0,
+        }
+      ),
+    });
+
     for (var i = this.graduationsMin; i <= this.graduationsMax; i++) {
       var $li = $(
         '<li class="graduation" data-graduation="' +
@@ -54,6 +69,11 @@ Craft.SlideRuleInput = Garnish.Base.extend({
     );
     this.addListener(Garnish.$bod, 'tapmove', this._handleTapMove.bind(this));
     this.addListener(Garnish.$bod, 'tapend', this._handleTapEnd.bind(this));
+    this.addListener(
+      this.$container,
+      'keydown',
+      this._handleKeypress.bind(this)
+    );
 
     // Set to zero
 
@@ -72,6 +92,35 @@ Craft.SlideRuleInput = Garnish.Base.extend({
   _handleResize: function () {
     var left = this.valueToPosition(this.value);
     this.$graduationsUl.css('left', left);
+  },
+
+  _handleKeypress: function (event) {
+    const current = parseInt(this.$container.attr('aria-valuenow'), 10);
+
+    switch (event.keyCode) {
+      case Garnish.UP_KEY:
+      case Garnish.RIGHT_KEY:
+        this.setValue(current + 1);
+        break;
+      case Garnish.DOWN_KEY:
+      case Garnish.LEFT_KEY:
+        this.setValue(current - 1);
+        break;
+      case Garnish.PAGE_UP_KEY:
+        this.setValue(current + 10);
+        break;
+      case Garnish.PAGE_DOWN_KEY:
+        this.setValue(current - 10);
+        break;
+      case Garnish.HOME_KEY:
+        this.setValue(this.slideMin);
+        break;
+      case Garnish.END_KEY:
+        this.setValue(this.slideMax);
+        break;
+    }
+
+    this.onChange();
   },
 
   _handleTapStart: function (ev, touch) {
@@ -131,6 +180,14 @@ Craft.SlideRuleInput = Garnish.Base.extend({
       });
     }
 
+    this.$container.attr({
+      'aria-valuenow': value,
+      'aria-valuetext': Craft.t(
+        'app',
+        '{num, number} {num, plural, =1{degree} other{degrees}}',
+        {num: parseInt(value, 10)}
+      ),
+    });
     this.value = value;
   },
 

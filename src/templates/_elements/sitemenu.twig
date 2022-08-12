@@ -11,7 +11,8 @@
     {% endif %}
     {% set groups = craft.app.sites.getAllGroups() %}
     <div>
-        <button type="button" id="context-btn" class="btn menubtn sitemenubtn" data-icon="world">{{ selectedSiteId ? craft.app.sites.getSiteById(selectedSiteId).name|t('site') }}</button>
+        <label id="context-label" class="visually-hidden">{{ "Site"|t('app') }}</label>
+        <button type="button" id="context-btn" class="btn menubtn sitemenubtn" data-icon="world" aria-labelledby="context-label">{{ selectedSiteId ? craft.app.sites.getSiteById(selectedSiteId).name|t('site') }}</button>
         <div class="menu">
             {% for group in groups %}
                 {% set groupSiteIds = group.getSiteIds()|intersect(siteIds) %}

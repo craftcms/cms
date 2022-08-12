@@ -139,7 +139,10 @@ abstract class BaseConditionRule extends Component implements ConditionRuleInter
      *
      * @return string
      */
-    abstract protected function inputHtml(): string;
+    protected function inputHtml(): string
+    {
+        return '';
+    }
 
     /**
      * Returns the option label for a given operator.

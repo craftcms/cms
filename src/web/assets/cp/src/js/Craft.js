@@ -2296,6 +2296,13 @@ $.extend(Craft, {
       }
     }
   },
+
+  isVisible: function () {
+    return (
+      typeof document.visibilityState === 'undefined' ||
+      document.visibilityState === 'visible'
+    );
+  },
 });
 
 // -------------------------------------------

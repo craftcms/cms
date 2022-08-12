@@ -233,7 +233,7 @@ class PluginStoreController extends Controller
         $data = [];
 
         // Current user
-        $currentUser = Craft::$app->getUser()->getIdentity();
+        $currentUser = $this->getCurrentUser();
         $data['currentUser'] = $currentUser->getAttributes(['email']);
 
         // Craft license/edition info

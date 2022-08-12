@@ -68,6 +68,12 @@ body {
   }
 }
 
+#global-skip-link {
+  @media only screen and (min-width: $minFullUiWidth) {
+    @include two-color-focus-ring;
+  }
+}
+
 #global-container {
   position: relative;
   display: flex;
@@ -116,7 +122,7 @@ $sidebarLinkSecondaryColor: var(--gray-200);
     transition: background-color linear 100ms;
 
     &[href] {
-      &:hover,
+      &:not(.sel):hover,
       &.active,
       &:active {
         color: var(--white);
@@ -125,10 +131,6 @@ $sidebarLinkSecondaryColor: var(--gray-200);
       &:not(.sel):hover {
         background-color: darken($grey800, 5%);
         transition: none;
-
-        .icon {
-          opacity: 1;
-        }
       }
 
       &.active,
@@ -282,8 +284,8 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
   li {
     &:not(.has-subnav) > a.sel {
-      color: var(--white);
-      background-color: var(--gray-900);
+      color: var(--gray-800);
+      background-color: var(--gray-100);
       opacity: 1;
 
       .icon {
@@ -312,20 +314,6 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
       &:active .icon {
         opacity: 1;
-      }
-
-      .icon {
-        opacity: 0.5;
-
-        &.icon-mask {
-          svg {
-            @include svg-mask(var(--white));
-          }
-
-          span[data-icon] {
-            color: var(--white);
-          }
-        }
       }
 
       .label {
@@ -524,7 +512,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   width: 36px;
   height: 50px;
   line-height: 26px;
-  color: var(--gray-300);
+  color: currentColor;
   text-align: center;
   @include margin-left(-10px);
 
@@ -755,30 +743,66 @@ li.breadcrumb-toggle-wrapper {
 
 #notifications {
   position: fixed;
-  top: 0;
-  width: 100%;
+  bottom: 8px;
+  @include left(8px);
+  width: calc(100% - 16px);
   z-index: 101;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  pointer-events: none;
 
-  @media only screen and (min-width: $minFullUiWidth) {
-    width: calc(100% - #{$sidebarWidth});
+  @media only screen and (min-width: $minHorizontalUiWidth) {
+    width: 350px;
   }
 
   .notification {
-    padding: 5px 10px;
-    border-radius: 0 0 3px 3px;
-    border-width: 0 1px 1px;
-    color: var(--white) !important;
-    pointer-events: auto;
-    @include light-on-dark-text;
-    @include shadow;
-    background-color: var(--notice-color);
+    display: flex;
+    position: relative;
+    @include pane;
+    padding: 10px 14px;
+    border-radius: var(--large-border-radius);
+    box-shadow: 0 0 0 1px transparentize($grey1000, 0.85),
+      0 2px 12px transparentize($grey1000, 0.85);
+    --color: var(--notice-color);
 
-    &.error {
-      background-color: var(--primary-color);
+    &[data-type='success'] {
+      --color: var(--success-color);
+    }
+
+    &[data-type='error'] {
+      --color: var(--error-color);
+    }
+
+    & + .notification {
+      margin-top: 12px;
+    }
+
+    .notification-icon {
+      width: 18px;
+      margin-top: -2px;
+      @include margin-right(10px);
+      font-size: 18px;
+      color: var(--color);
+    }
+
+    .notification-body {
+      display: flex;
+      flex: 1;
+
+      .notification-message {
+        font-weight: bold;
+      }
+
+      .notification-details {
+        margin-top: var(--xs);
+
+        .element {
+          border: 1px solid $hairlineColor;
+        }
+      }
+    }
+
+    .notification-close-btn {
+      position: relative;
+      top: -2px;
+      @include margin-left(10px);
     }
   }
 }
@@ -802,7 +826,6 @@ li.breadcrumb-toggle-wrapper {
 #global-header,
 #header {
   .flex {
-    flex-wrap: nowrap;
     max-width: 100%;
 
     &.flex-nowrap {
@@ -853,9 +876,6 @@ li.breadcrumb-toggle-wrapper {
     margin-top: 0;
     margin-bottom: 0;
     min-width: 0;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
   }
 
   .buttons,
@@ -923,10 +943,6 @@ li.breadcrumb-toggle-wrapper {
   }
 }
 
-#action-buttons {
-  height: 34px;
-}
-
 #main-content {
   display: flex;
   flex-direction: row;
@@ -949,7 +965,10 @@ li.breadcrumb-toggle-wrapper {
   flex: 0 0 $sidebarWidth;
   width: $sidebarWidth;
   box-sizing: border-box;
-  @include margin-left(calc(var(--xl) * -1));
+
+  @media only screen and (min-width: $minFullUiWidth) {
+    @include margin-left(calc(var(--xl) * -1));
+  }
 }
 
 #sidebar {
@@ -980,10 +999,6 @@ li.breadcrumb-toggle-wrapper {
           &:hover {
             background-color: var(--gray-200);
           }
-        }
-        &.sel {
-          @include pane;
-          background-color: var(--gray-050);
         }
       }
     }
@@ -1356,16 +1371,24 @@ li.breadcrumb-toggle-wrapper {
       position: relative;
 
       &:not(.has-subnav) > a {
-        transition: background-color linear 100ms;
+        transition: background-color linear 100ms, color linear 100ms,
+          font-weight linear 100ms;
 
-        &:hover {
+        &:not(.sel):hover {
           text-decoration: none;
           background-color: var(--gray-100);
         }
 
         &.sel {
           cursor: default;
-          background-color: var(--gray-200);
+          background-color: var(--gray-500);
+          @include light-on-dark-text;
+          font-weight: 600;
+
+          &,
+          & + .toggle {
+            color: var(--white);
+          }
         }
       }
 
@@ -1394,14 +1417,15 @@ li.breadcrumb-toggle-wrapper {
           height: 18px;
           word-break: normal;
           transition: margin-left linear 150ms, margin-right linear 150ms;
+          opacity: 0.85;
 
           &.icon-mask {
             svg {
-              @include svg-mask(var(--ui-control-color));
+              @include svg-mask(currentColor);
             }
 
             span[data-icon] {
-              color: var(--ui-control-color);
+              color: currentColor;
             }
           }
 

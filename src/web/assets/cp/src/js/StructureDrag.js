@@ -381,7 +381,7 @@ Craft.StructureDrag = Garnish.Drag.extend({
 
         Craft.sendActionRequest('POST', 'structures/move-element', {data}).then(
           (response) => {
-            Craft.cp.displayNotice(Craft.t('app', 'New order saved.'));
+            Craft.cp.displaySuccess(Craft.t('app', 'New order saved.'));
           }
         );
       }
