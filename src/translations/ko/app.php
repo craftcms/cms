@@ -1025,6 +1025,7 @@ return [
     'Oops!' => '저런!',
     'Open PRs' => 'PR 열기',
     'Open the full edit page in a new tab' => '새로운 탭에서 전체 편집 페이지 열기',
+    'Opens in a new window' => 'Opens in a new window',
     'Operator' => '연산자',
     'Optgroup?' => '그룹 선택?',
     'Option Label' => '옵션 라벨',
