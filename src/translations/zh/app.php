@@ -1025,6 +1025,7 @@ return [
     'Oops!' => '糟糕！',
     'Open PRs' => '开放 PR',
     'Open the full edit page in a new tab' => '在新选项卡中打开完整的编辑页',
+    'Opens in a new window' => 'Opens in a new window',
     'Operator' => '运算符',
     'Optgroup?' => 'Optgroup?',
     'Option Label' => '选项标签',
