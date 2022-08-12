@@ -212,6 +212,8 @@
 
         {% if user.getIsCurrent() %}
             <div id="prefs" class="flex-fields hidden">
+                <h2>{{ 'General'|t('app') }}</h2>
+
                 {{ forms.selectizeField({
                     id: 'preferredLanguage',
                     name: 'preferredLanguage',
@@ -240,87 +242,89 @@
 
                 <h2>{{ 'Accessibility'|t('app') }}</h2>
 
-                <fieldset>
-                    {% embed '_includes/forms/field' with {
-                        label: 'Display Settings'|t('app'),
-                    } %}
-                        {% set a11yDefaults = craft.app.config.general.accessibilityDefaults %}
-                        {% block input %}
-                            {% import '_includes/forms' as forms %}
-                            {{ forms.checkboxField({
-                                label: 'Always show focus rings'|t('app'),
-                                name: 'alwaysShowFocusRings',
-                                id: 'alwaysShowFocusRings',
-                                checked: user.getPreference('alwaysShowFocusRings') ?? a11yDefaults['alwaysShowFocusRings'] ?? false,
-                            }) }}
-                            {{ forms.checkboxField({
-                                label: 'Use shapes to represent statuses'|t('app'),
-                                name: 'useShapes',
-                                id: 'useShapes',
-                                checked: user.getPreference('useShapes') ?? a11yDefaults['useShapes'] ?? false,
-                            }) }}
-                            {{ forms.checkboxField({
-                                label: 'Underline links'|t('app'),
-                                name: 'underlineLinks',
-                                id: 'underlineLinks',
-                                checked: user.getPreference('underlineLinks') ?? a11yDefaults['underlineLinks'] ?? false,
-                            }) }}
-                            {{ forms.selectField({
-                                label: 'Notification Duration'|t('app'),
-                                instructions: 'How long notifications should be shown before they disappear automatically.',
-                                name: 'notificationDuration',
-                                id: 'notificationDuration',
-                                options: [
-                                    {value: 2000, label: '{num, number} {num, plural, =1{second} other{seconds}}'|t({num: 2})},
-                                    {value: 5000, label: '{num, number} {num, plural, =1{second} other{seconds}}'|t({num: 5})},
-                                    {value: 10000, label: '{num, number} {num, plural, =1{second} other{seconds}}'|t({num: 10})},
-                                    {value: 0, label: 'Show them indefinitely'|t},
-                                ],
-                                value: user.getPreference('notificationDuration') ?? a11yDefaults['notificationDuration'] ?? 5000,
-                            }) }}
-                        {% endblock %}
-                    {% endembed %}
-                </fieldset>
+                {% set a11yDefaults = craft.app.config.general.accessibilityDefaults %}
+                {{ forms.checkboxGroupField({
+                    label: 'Display Settings'|t('app'),
+                    options: [
+                        {
+                            label: 'Always show focus rings'|t('app'),
+                            name: 'alwaysShowFocusRings',
+                            id: 'alwaysShowFocusRings',
+                            checked: user.getPreference('alwaysShowFocusRings') ?? a11yDefaults['alwaysShowFocusRings'] ?? false,
+                        },
+                        {
+                            label: 'Use shapes to represent statuses'|t('app'),
+                            name: 'useShapes',
+                            id: 'useShapes',
+                            checked: user.getPreference('useShapes') ?? a11yDefaults['useShapes'] ?? false,
+                        },
+                        {
+                            label: 'Underline links'|t('app'),
+                            name: 'underlineLinks',
+                            id: 'underlineLinks',
+                            checked: user.getPreference('underlineLinks') ?? a11yDefaults['underlineLinks'] ?? false,
+                        },
+                    ],
+                }) }}
+
+                {{ forms.selectField({
+                    label: 'Notification Duration'|t('app'),
+                    instructions: 'How long notifications should be shown before they disappear automatically.',
+                    name: 'notificationDuration',
+                    id: 'notificationDuration',
+                    options: [
+                        {value: 2000, label: '{num, number} {num, plural, =1{second} other{seconds}}'|t({num: 2})},
+                        {value: 5000, label: '{num, number} {num, plural, =1{second} other{seconds}}'|t({num: 5})},
+                        {value: 10000, label: '{num, number} {num, plural, =1{second} other{seconds}}'|t({num: 10})},
+                        {value: 0, label: 'Show them indefinitely'|t},
+                    ],
+                    value: user.getPreference('notificationDuration') ?? a11yDefaults['notificationDuration'] ?? 5000,
+                }) }}
 
                 {% if user.admin %}
                     <h2>{{ 'Development'|t('app') }}</h2>
-                    <fieldset>
-                        {% embed '_includes/forms/field' %}
-                            {% block input %}
-                                {% from '_includes/forms' import checkboxField %}
-                                {{ checkboxField({
-                                    label: 'Show field handles in edit forms'|t('app'),
-                                    name: 'showFieldHandles',
-                                    id: 'showFieldHandles',
-                                    checked: user.getPreference('showFieldHandles')
-                                }) }}
-                                {{ checkboxField({
-                                    label: "Show the debug toolbar on the front end"|t('app'),
-                                    name: 'enableDebugToolbarForSite',
-                                    id: 'enableDebugToolbarForSite',
-                                    checked: user.getPreference('enableDebugToolbarForSite')
-                                }) }}
-                                {{ checkboxField({
-                                    label: "Show the debug toolbar in the control panel"|t('app'),
-                                    name: 'enableDebugToolbarForCp',
-                                    id: 'enableDebugToolbarForCp',
-                                    checked: user.getPreference('enableDebugToolbarForCp')
-                                }) }}
-                                {{ checkboxField({
-                                    label: 'Profile Twig templates when Dev Mode is disabled'|t('app'),
-                                    name: 'profileTemplates',
-                                    id: 'profileTemplates',
-                                    checked: user.getPreference('profileTemplates')
-                                }) }}
-                                {{ checkboxField({
-                                    label: 'Show full exception views when Dev Mode is disabled'|t('app'),
-                                    name: 'showExceptionView',
-                                    id: 'showExceptionView',
-                                    checked: user.getPreference('showExceptionView')
-                                }) }}
-                            {% endblock %}
-                        {% endembed %}
-                    </fieldset>
+
+                    {{ forms.checkboxGroupField({
+                        label: 'Development Settings'|t('app'),
+                        options: [
+                            {
+                                label: 'Show field handles in edit forms'|t('app'),
+                                name: 'showFieldHandles',
+                                id: 'showFieldHandles',
+                                checked: user.getPreference('showFieldHandles')
+                            },
+                            {
+                                label: 'Profile Twig templates when Dev Mode is disabled'|t('app'),
+                                name: 'profileTemplates',
+                                id: 'profileTemplates',
+                                checked: user.getPreference('profileTemplates')
+                            },
+                            {
+                                label: 'Show full exception views when Dev Mode is disabled'|t('app'),
+                                name: 'showExceptionView',
+                                id: 'showExceptionView',
+                                checked: user.getPreference('showExceptionView')
+                            },
+                        ],
+                    }) }}
+
+                    {{ forms.checkboxGroupField({
+                        label: 'Debug Toolbar'|t('app'),
+                        options: [
+                            {
+                                label: "Show the debug toolbar on the front end"|t('app'),
+                                name: 'enableDebugToolbarForSite',
+                                id: 'enableDebugToolbarForSite',
+                                checked: user.getPreference('enableDebugToolbarForSite')
+                            },
+                            {
+                                label: "Show the debug toolbar in the control panel"|t('app'),
+                                name: 'enableDebugToolbarForCp',
+                                id: 'enableDebugToolbarForCp',
+                                checked: user.getPreference('enableDebugToolbarForCp')
+                            },
+                        ],
+                    }) }}
                 {% endif %}
 
                 {% hook 'cp.users.edit.prefs' %}

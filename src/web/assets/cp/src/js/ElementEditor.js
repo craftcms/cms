@@ -1,6 +1,5 @@
 /** global: Craft */
 /** global: Garnish */
-import Garnish from '../../../garnish/src';
 
 /**
  * Element Editor
@@ -137,6 +136,7 @@ Craft.ElementEditor = Garnish.Base.extend(
           const [target] = this.settings.previewTargets;
           this.createPreviewLink(target)
             .addClass('view-btn btn')
+            .attr('aria-label', Craft.t('app', 'View'))
             .appendTo($previewBtnContainer);
         } else {
           this.createShareMenu($previewBtnContainer);
@@ -520,6 +520,9 @@ Craft.ElementEditor = Garnish.Base.extend(
         this._createAddlSiteField();
       }
 
+      // Focus on first lightswitch
+      this.$globalLightswitch.focus();
+
       this.$globalLightswitch.on('change', this._updateSiteStatuses.bind(this));
       this._updateGlobalStatus();
     },
@@ -640,6 +643,14 @@ Craft.ElementEditor = Garnish.Base.extend(
         return;
       }
 
+      const selectLabelId = 'add-site-label';
+
+      const $addlSiteSelectLabel = $('<span/>', {
+        text: Craft.t('app', 'Add a site...'),
+        class: 'visually-hidden',
+        id: selectLabelId,
+      });
+
       const $addlSiteSelectContainer = Craft.ui
         .createSelect({
           options: [
@@ -648,6 +659,7 @@ Craft.ElementEditor = Garnish.Base.extend(
               return {label: s.name, value: s.id};
             }),
           ],
+          labelledBy: selectLabelId,
         })
         .addClass('fullwidth');
 
@@ -655,6 +667,8 @@ Craft.ElementEditor = Garnish.Base.extend(
         .createField($addlSiteSelectContainer, {})
         .addClass('nested add')
         .appendTo(this.$siteStatusPane);
+
+      $addlSiteSelectLabel.prependTo(this.$additionalSiteField);
 
       const $addlSiteSelect = $addlSiteSelectContainer.find('select');
 
@@ -1521,7 +1535,8 @@ Craft.ElementEditor = Garnish.Base.extend(
         data,
         this.$container.data('delta-names'),
         deltaCallback,
-        this.$container.data('initial-delta-values')
+        this.$container.data('initial-delta-values'),
+        this.$container.data('modified-delta-names')
       );
 
       // Swap out element IDs with their duplicated ones

@@ -5,6 +5,7 @@ on:
     branches:
       - develop
       - v3
+      - 4.3
   pull_request:
 concurrency:
   group: ci-${{ github.ref }}

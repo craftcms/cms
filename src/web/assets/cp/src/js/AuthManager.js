@@ -283,7 +283,7 @@ Craft.AuthManager = Garnish.Base.extend(
           );
 
         this.$passwordInput = $(
-          '<input type="password" class="text password fullwidth" placeholder="' +
+          '<input type="password" class="text password fullwidth" autocomplete="current-password" placeholder="' +
             Craft.t('app', 'Password') +
             '"/>'
         ).appendTo($passwordWrapper);

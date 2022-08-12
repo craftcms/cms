@@ -1,6 +1,5 @@
 /** global: Craft */
 /** global: Garnish */
-import Garnish from '../../../garnish/src';
 import $ from 'jquery';
 
 /**
@@ -1367,8 +1366,9 @@ Craft.CP = Garnish.Base.extend(
       let siteId = Craft.getLocalStorage('BaseElementIndex.siteId');
       if (typeof siteId !== 'undefined') {
         Craft.removeLocalStorage('BaseElementIndex.siteId');
-        this.setSiteId(siteId);
-        return siteId;
+        try {
+          this.setSiteId(siteId);
+        } catch (e) {}
       }
       return Craft.siteId;
     },
@@ -1379,30 +1379,40 @@ Craft.CP = Garnish.Base.extend(
      */
     setSiteId: function (siteId) {
       const site = Craft.sites.find((s) => s.id === siteId);
-      if (site) {
-        // update the current URL
-        const url = Craft.getUrl(document.location.href, {site: site.handle});
-        history.replaceState({}, '', url);
 
-        // update the site--x body class
-        for (className of document.body.classList) {
-          if (className.match(/^site--/)) {
-            document.body.classList.remove(className);
-          }
-        }
-        document.body.classList.add(`site--${site.handle}`);
-
-        // update other URLs on the page
-        $('a').each(function () {
-          if (
-            this.hostname.length &&
-            this.hostname === location.hostname &&
-            this.href.indexOf(Craft.cpTrigger) !== -1
-          ) {
-            this.href = Craft.getUrl(this.href, {site: site.handle});
-          }
-        });
+      if (!site) {
+        throw `Invalid site ID: ${siteId}`;
       }
+
+      Craft.siteId = siteId;
+
+      // update the base URLs used get Craft.getUrl(), etc.
+      Craft.actionUrl = Craft.getUrl(Craft.actionUrl, {site: site.handle});
+      Craft.baseCpUrl = Craft.getUrl(Craft.baseCpUrl, {site: site.handle});
+      Craft.baseUrl = Craft.getUrl(Craft.baseUrl, {site: site.handle});
+
+      // update the current URL
+      const url = Craft.getUrl(document.location.href, {site: site.handle});
+      history.replaceState({}, '', url);
+
+      // update the site--x body class
+      for (let className of document.body.classList) {
+        if (className.match(/^site--/)) {
+          document.body.classList.remove(className);
+        }
+      }
+      document.body.classList.add(`site--${site.handle}`);
+
+      // update other URLs on the page
+      $('a').each(function () {
+        if (
+          this.hostname.length &&
+          this.hostname === location.hostname &&
+          this.href.indexOf(Craft.cpTrigger) !== -1
+        ) {
+          this.href = Craft.getUrl(this.href, {site: site.handle});
+        }
+      });
     },
   },
   {

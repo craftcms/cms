@@ -213,7 +213,9 @@ import './dashboard.scss';
               '</p>'
           ).appendTo($form),
           $table = $(
-            '<table class="data' + (!$widgets.length ? ' hidden' : '') + '"/>'
+            '<table class="data' +
+              (!$widgets.length ? ' hidden' : '') +
+              '" role="presentation"/>'
           ).appendTo($form),
           $tbody = $('<tbody/>').appendTo($table);
 
@@ -661,9 +663,13 @@ import './dashboard.scss';
           '<td class="widgetmanagerhud-col-move thin"><a class="move icon" title="' +
           Craft.t('app', 'Reorder') +
           '" role="button"></a></td>' +
-          '<td class="thin"><a class="delete icon" title="' +
+          '<td class="thin"><a class="delete icon" tabindex="0" type="button" title="' +
           Craft.t('app', 'Delete') +
-          '" role="button"></a></td>' +
+          '" role="button" aria-label="' +
+          Craft.t('app', 'Delete') +
+          '" aria-describedby="' +
+          this.getWidgetLabelId() +
+          '"></a></td>' +
           '</tr>'
       );
 

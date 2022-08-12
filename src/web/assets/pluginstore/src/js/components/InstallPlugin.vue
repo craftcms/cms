@@ -110,7 +110,7 @@
           {
             name: 'DDEV',
             handle: 'ddev',
-            copyValue: `ddev composer require ${this.plugin.packageName} && ddev exec php craft plugin/install ${this.plugin.handle}`,
+            copyValue: `ddev composer require ${this.plugin.packageName} && ddev craft plugin/install ${this.plugin.handle}`,
           },
         ];
       },

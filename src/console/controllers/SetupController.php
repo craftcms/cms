@@ -558,7 +558,7 @@ EOD;
         $path = $configService->getDotEnvPath();
 
         if (!file_exists($path)) {
-            if ($this->confirm(PHP_EOL . "A .env file doesn't exist at $path. Would you like to create one?", true)) {
+            if (!$this->interactive || $this->confirm(PHP_EOL . "A .env file doesn't exist at $path. Would you like to create one?", true)) {
                 try {
                     FileHelper::writeToFile($path, '');
                 } catch (Throwable $e) {
