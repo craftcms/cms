@@ -1026,6 +1026,7 @@ return [
     'Oops!' => 'Ups!',
     'Open PRs' => 'Åbn PRs',
     'Open the full edit page in a new tab' => 'Åbn den fulde redigeringsside på en ny fane',
+    'Opens in a new window' => 'Opens in a new window',
     'Operator' => 'Operator',
     'Optgroup?' => 'Optgroup?',
     'Option Label' => 'Etiket for alternativ',
