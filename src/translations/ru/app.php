@@ -1025,6 +1025,7 @@ return [
     'Oops!' => 'Ой!',
     'Open PRs' => 'Открытые pull-запросы',
     'Open the full edit page in a new tab' => 'Открыть страницу редактирования целиком в новой вкладке',
+    'Opens in a new window' => 'Opens in a new window',
     'Operator' => 'Оператор',
     'Optgroup?' => 'Optgroup?',
     'Option Label' => 'Метка варианта',
