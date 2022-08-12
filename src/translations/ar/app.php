@@ -1025,6 +1025,7 @@ return [
     'Oops!' => 'عذراً!',
     'Open PRs' => 'فتح طلبات PR',
     'Open the full edit page in a new tab' => 'افتح صفحة التحرير الكاملة في علامة تبويب جديدة',
+    'Opens in a new window' => 'Opens in a new window',
     'Operator' => 'المشغل',
     'Optgroup?' => 'Optgroup؟',
     'Option Label' => 'تسمية الخيار',
