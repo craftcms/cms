@@ -1,6 +1,5 @@
 /** global: Craft */
 /** global: Garnish */
-import Garnish from '../../../garnish/src';
 
 /**
  * Element Editor
@@ -1536,7 +1535,8 @@ Craft.ElementEditor = Garnish.Base.extend(
         data,
         this.$container.data('delta-names'),
         deltaCallback,
-        this.$container.data('initial-delta-values')
+        this.$container.data('initial-delta-values'),
+        this.$container.data('modified-delta-names')
       );
 
       // Swap out element IDs with their duplicated ones

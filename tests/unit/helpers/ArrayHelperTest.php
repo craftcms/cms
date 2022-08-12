@@ -470,7 +470,8 @@ class ArrayHelperTest extends TestCase
      */
     public function testRemoveValue(array $expected, array $array, mixed $value, bool $strict = false)
     {
-        $this->assertSame($expected, ArrayHelper::removeValue($array, $value, $strict));
+        ArrayHelper::removeValue($array, $value, $strict);
+        $this->assertSame($expected, $array);
     }
 
     /**
@@ -654,6 +655,9 @@ class ArrayHelperTest extends TestCase
 
     public function removeValueDataProvider(): array
     {
+        $obj1 = (object)['foo' => true];
+        $obj2 = (object)['bar' => true];
+
         return [
             [
                 ['a', 'b'],
@@ -670,6 +674,11 @@ class ArrayHelperTest extends TestCase
                 ['1', '2', '3'],
                 3,
                 true,
+            ],
+            [
+                [$obj1, $obj2],
+                [$obj1, $obj2],
+                1,
             ],
         ];
     }

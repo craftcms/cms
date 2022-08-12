@@ -182,7 +182,7 @@ class ElementsController extends Controller
         }
         $element->setAttributes($this->_attributes);
 
-        $user = Craft::$app->getUser()->getIdentity();
+        $user = $this->getCurrentUser();
 
         if (!$element->canSave($user)) {
             throw new ForbiddenHttpException('User not authorized to create this element.');
@@ -236,32 +236,37 @@ class ElementsController extends Controller
         $this->requireCpRequest();
 
         $strictSite = $this->request->getAcceptsJson();
-        /** @var Element|DraftBehavior|RevisionBehavior|Response|null $element */
-        $element = $element ?? $this->_element($elementId, null, true, $strictSite);
 
-        if ($element instanceof Response) {
-            return $element;
+        if ($element === null) {
+            /** @var Element|DraftBehavior|RevisionBehavior|Response|null $element */
+            $element = $this->_element($elementId, null, true, $strictSite);
+
+            if ($element instanceof Response) {
+                return $element;
+            }
+
+            if (!$element) {
+                throw new BadRequestHttpException('No element was identified by the request.');
+            }
+
+            // If this is an outdated draft, merge in the latest canonical changes
+            $mergeCanonicalChanges = $element->getIsDraft() && !$element->getIsUnpublishedDraft() && ElementHelper::isOutdated($element);
+            if ($mergeCanonicalChanges) {
+                Craft::$app->getElements()->mergeCanonicalChanges($element);
+            }
+
+            $this->_applyParamsToElement($element);
+
+            // Prevalidate?
+            if ($this->_prevalidate && $element->enabled && $element->getEnabledForSite()) {
+                $element->setScenario(Element::SCENARIO_LIVE);
+                $element->validate();
+            }
+        } else {
+            $mergeCanonicalChanges = false;
         }
 
-        if (!$element) {
-            throw new BadRequestHttpException('No element was identified by the request.');
-        }
-
-        // If this is an outdated draft, merge in the latest canonical changes
-        $mergeCanonicalChanges = $element->getIsDraft() && !$element->getIsUnpublishedDraft() && ElementHelper::isOutdated($element);
-        if ($mergeCanonicalChanges) {
-            Craft::$app->getElements()->mergeCanonicalChanges($element);
-        }
-
-        $this->_applyParamsToElement($element);
-
-        // Prevalidate?
-        if ($this->_prevalidate && $element->enabled && $element->getEnabledForSite()) {
-            $element->setScenario(Element::SCENARIO_LIVE);
-            $element->validate();
-        }
-
-        $user = Craft::$app->getUser()->getIdentity();
+        $user = $this->getCurrentUser();
 
         // Figure out what we're dealing with here
         $isCanonical = $element->getIsCanonical();
@@ -852,7 +857,7 @@ JS, [
         }
 
         $this->_applyParamsToElement($element);
-        $user = Craft::$app->getUser()->getIdentity();
+        $user = $this->getCurrentUser();
 
         if (!$element->canSave($user)) {
             throw new ForbiddenHttpException('User not authorized to save this element.');
@@ -940,7 +945,7 @@ JS, [
             throw new BadRequestHttpException('No element was identified by the request.');
         }
 
-        if (!$element->canDuplicate(Craft::$app->getUser()->getIdentity())) {
+        if (!$element->canDuplicate($this->getCurrentUser())) {
             throw new ForbiddenHttpException('User not authorized to duplicate this element.');
         }
 
@@ -987,7 +992,7 @@ JS, [
             throw new BadRequestHttpException('No element was identified by the request.');
         }
 
-        $user = Craft::$app->getUser()->getIdentity();
+        $user = $this->getCurrentUser();
 
         if (!$element->canDelete($user)) {
             throw new ForbiddenHttpException('User not authorized to delete this element.');
@@ -1023,7 +1028,7 @@ JS, [
             throw new BadRequestHttpException('No element was identified by the request.');
         }
 
-        $user = Craft::$app->getUser()->getIdentity();
+        $user = $this->getCurrentUser();
 
         if (!$element->canDeleteForSite($user)) {
             throw new ForbiddenHttpException('User not authorized to delete the element for this site.');
@@ -1083,7 +1088,7 @@ JS, [
             throw new BadRequestHttpException('No element was identified by the request.');
         }
 
-        $user = Craft::$app->getUser()->getIdentity();
+        $user = $this->getCurrentUser();
 
         if (!$element->getIsDraft() && !$this->_provisional) {
             if (!$element->canCreateDrafts($user)) {
@@ -1233,7 +1238,7 @@ JS, [
         }
 
         $this->_applyParamsToElement($element);
-        $user = Craft::$app->getUser()->getIdentity();
+        $user = $this->getCurrentUser();
 
         if (!$element->canSave($user)) {
             throw new ForbiddenHttpException('User not authorized to save this draft.');
@@ -1343,7 +1348,7 @@ JS, [
             throw new BadRequestHttpException('No draft was identified by the request.');
         }
 
-        $user = Craft::$app->getUser()->getIdentity();
+        $user = $this->getCurrentUser();
 
         if (!$element->canDelete($user)) {
             throw new ForbiddenHttpException('User not authorized to delete this draft.');
@@ -1394,7 +1399,7 @@ JS, [
             throw new BadRequestHttpException('No revision was identified by the request.');
         }
 
-        $user = Craft::$app->getUser()->getIdentity();
+        $user = $this->getCurrentUser();
 
         if (!$element->getCanonical(true)->canSave($user)) {
             throw new ForbiddenHttpException('User not authorized to save this element.');
@@ -1455,7 +1460,7 @@ JS, [
 
         $sitesService = Craft::$app->getSites();
         $elementsService = Craft::$app->getElements();
-        $user = Craft::$app->getUser()->getIdentity();
+        $user = $this->getCurrentUser();
 
         if ($this->_siteId) {
             $site = $sitesService->getSiteById($this->_siteId, true);
@@ -1550,7 +1555,7 @@ JS, [
             return null;
         }
 
-        if (!$element->canView(Craft::$app->getUser()->getIdentity())) {
+        if (!$element->canView($this->getCurrentUser())) {
             throw new ForbiddenHttpException('User not authorized to edit this element.');
         }
 
@@ -1632,7 +1637,7 @@ JS, [
         $element->setScenario($scenario);
 
         // Now that the element is fully configured, make sure the user can actually view it
-        if (!$element->canView(Craft::$app->getUser()->getIdentity())) {
+        if (!$element->canView($this->getCurrentUser())) {
             throw new ForbiddenHttpException('User not authorized to edit this element.');
         }
 
@@ -1693,7 +1698,7 @@ JS, [
         ]);
 
         if ($addAnother && $this->_addAnother) {
-            $user = Craft::$app->getUser()->getIdentity();
+            $user = $this->getCurrentUser();
             $newElement = $element->createAnother();
 
             if (!$newElement || !$newElement->canSave($user)) {

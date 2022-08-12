@@ -468,10 +468,46 @@ class DateTimeHelper
     }
 
     /**
+     * Converts a value into a DateInterval object.
+     *
+     * @param mixed $value The value, represented as either a [[\DateInterval]] object, an interval duration string, or a number of seconds.
+     * @return DateInterval|false
+     * @throws InvalidArgumentException
+     * @since 4.2.1
+     */
+    public static function toDateInterval(mixed $value): DateInterval|false
+    {
+        if ($value instanceof DateInterval) {
+            return $value;
+        }
+
+        if (!$value) {
+            return false;
+        }
+
+        if (is_numeric($value)) {
+            // Use DateTime::diff() so the years/months/days/hours/minutes values are all populated correctly
+            $now = static::now();
+            $then = (clone $now)->modify("+$value seconds");
+            return $then->diff($now);
+        }
+
+        if (is_string($value)) {
+            try {
+                return new DateInterval($value);
+            } catch (Exception $e) {
+            }
+        }
+
+        throw new InvalidArgumentException('Unable to convert the value to a DateInterval.', 0, $e ?? null);
+    }
+
+    /**
      * Creates a DateInterval object based on a given number of seconds.
      *
      * @param int $seconds
      * @return DateInterval
+     * @deprecated in 4.2.1. [[toDateInterval()]] should be used instead.
      */
     public static function secondsToInterval(int $seconds): DateInterval
     {
@@ -512,22 +548,14 @@ class DateTimeHelper
     /**
      * Returns a human-friendly duration string for the given date interval or number of seconds.
      *
-     * @param DateInterval|int $dateInterval
+     * @param mixed $dateInterval The value, represented as either a [[\DateInterval]] object, an interval duration string, or a number of seconds.
      * @param bool|null $showSeconds Whether the duration string should include the number of seconds
      * @return string
      * @since 4.2.0
      */
-    public static function humanDuration(DateInterval|int $dateInterval, ?bool $showSeconds = null): string
+    public static function humanDuration(mixed $dateInterval, ?bool $showSeconds = null): string
     {
-        if (is_int($dateInterval)) {
-            $dateInterval = static::secondsToInterval($dateInterval);
-        }
-
-        // Get a new interval using DateTime::diff(), so the years/months/days/hours/minutes values are all populated correctly
-        $now = static::now();
-        $then = (clone $now)->add($dateInterval);
-        $dateInterval = $then->diff($now);
-
+        $dateInterval = static::toDateInterval($dateInterval);
         $secondsOnly = !$dateInterval->y && !$dateInterval->m && !$dateInterval->d && !$dateInterval->h && !$dateInterval->i;
 
         if ($showSeconds === null) {
@@ -545,15 +573,11 @@ class DateTimeHelper
         }
 
         if ($dateInterval->d) {
-            $weeks = floor($dateInterval->d / 7);
-            $days = $dateInterval->d % 7;
-
-            if ($weeks) {
-                $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{week} other{weeks}}', ['num' => $weeks]);
-            }
-
-            if ($days) {
-                $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{day} other{days}}', ['num' => $days]);
+            // Is it an exact number of weeks?
+            if ($dateInterval->d % 7 === 0) {
+                $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{week} other{weeks}}', ['num' => $dateInterval->d / 7]);
+            } else {
+                $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{day} other{days}}', ['num' => $dateInterval->d]);
             }
         }
 
@@ -564,8 +588,9 @@ class DateTimeHelper
         $minutes = $dateInterval->i;
 
         if (!$showSeconds) {
-            if ($minutes && round($dateInterval->s / 60)) {
-                $minutes++;
+            $addlMinutes = round($dateInterval->s / 60);
+            if ($addlMinutes) {
+                $minutes += $addlMinutes;
             } elseif ($secondsOnly) {
                 return Craft::t('app', 'less than a minute');
             }

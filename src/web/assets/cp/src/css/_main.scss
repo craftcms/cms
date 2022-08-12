@@ -1526,7 +1526,7 @@ ul.icons {
     }
 
     body.ltr & {
-      &:not(:first-child) {
+      &:not(:first-child):not(.btngroup-btn-first) {
         border-top-left-radius: 0;
         border-bottom-left-radius: 0;
       }
@@ -1538,7 +1538,7 @@ ul.icons {
     }
 
     body.rtl & {
-      &:not(:first-child) {
+      &:not(:first-child):not(.btngroup-btn-first) {
         border-top-right-radius: 0;
         border-bottom-right-radius: 0;
       }
@@ -2550,6 +2550,12 @@ $elementInnerSpacing: 5px;
     }
     .elementthumb.open-preview {
       cursor: pointer;
+    }
+  }
+
+  &.error {
+    [data-icon='alert'] {
+      margin-left: var(--xs);
     }
   }
 
