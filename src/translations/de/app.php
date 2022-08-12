@@ -17,7 +17,7 @@ return [
     'A license key is required.' => 'Ein Lizenzschlüssel ist erforderlich.',
     'A server error occurred.' => 'Ein Serverfehler ist aufgetreten.',
     'A template name cannot contain NUL bytes.' => 'Ein Template-Name kann keine NUL-Bytes enthalten.',
-    'Abandoned' => 'Abgebrochen',
+    'Abandoned' => 'Aufgegeben',
     'Abort the update' => 'Update abbrechen',
     'Access the control panel when the system is offline' => 'Auf das Control Panel zugreifen, wenn das System offline ist',
     'Access the control panel' => 'Auf das Control Panel zugreifen',
