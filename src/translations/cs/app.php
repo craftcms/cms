@@ -1025,6 +1025,7 @@ return [
     'Oops!' => 'A to je nepříjemné!',
     'Open PRs' => 'Otevřít PR',
     'Open the full edit page in a new tab' => 'Otevřít celou stránku pro úpravy na nové kartě',
+    'Opens in a new window' => 'Opens in a new window',
     'Operator' => 'Operátor',
     'Optgroup?' => 'Optgroup?',
     'Option Label' => 'Popis možnosti',
