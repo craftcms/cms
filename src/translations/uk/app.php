@@ -1025,6 +1025,7 @@ return [
     'Oops!' => 'Лишенько!',
     'Open PRs' => 'Відкриті pull-запити',
     'Open the full edit page in a new tab' => 'Відкривати сторінку редагування цілком у новій вкладці',
+    'Opens in a new window' => 'Opens in a new window',
     'Operator' => 'Оператор',
     'Optgroup?' => 'Optgroup?',
     'Option Label' => 'Мітка варіанта',
