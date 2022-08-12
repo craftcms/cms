@@ -1025,6 +1025,7 @@ return [
     'Oops!' => 'Hoppsan!',
     'Open PRs' => 'Öppna PR',
     'Open the full edit page in a new tab' => 'Öppna den fullständiga redigeringssidan i en ny flik',
+    'Opens in a new window' => 'Opens in a new window',
     'Operator' => 'Operatör',
     'Optgroup?' => 'Optgroup?',
     'Option Label' => 'Etikett för alternativ',
