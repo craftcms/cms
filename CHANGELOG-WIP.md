@@ -1,7 +1,9 @@
 # Release Notes for Craft CMS 4.3 (WIP)
 
 ### Added
+- Added `craft\events\CreateTwigEvent`.
 - Added `craft\web\Controller::getCurrentUser()`. ([#11754](https://github.com/craftcms/cms/pull/11754))
+- Added `craft\web\View::EVENT_AFTER_CREATE_TWIG`. ([#11774](https://github.com/craftcms/cms/pull/11774))
 
 ### Changed
 - Improved the control panel accessibility. ([#11534](https://github.com/craftcms/cms/pull/11534), [#11565](https://github.com/craftcms/cms/pull/11565), [#11578](https://github.com/craftcms/cms/pull/11578), [#11589](https://github.com/craftcms/cms/pull/11589), [#11610](https://github.com/craftcms/cms/pull/11610), [#11613](https://github.com/craftcms/cms/pull/11613), [#11768](https://github.com/craftcms/cms/pull/11768))
