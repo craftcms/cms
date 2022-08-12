@@ -1025,6 +1025,7 @@ return [
     'Oops!' => 'Oops!',
     'Open PRs' => 'เปิด PR',
     'Open the full edit page in a new tab' => 'Open the full edit page in a new tab',
+    'Opens in a new window' => 'Opens in a new window',
     'Operator' => 'ผู้ปฏิบัติการ',
     'Optgroup?' => 'Optgroup?',
     'Option Label' => 'Option Label',
