@@ -88,7 +88,7 @@ class EntriesController extends BaseEntriesController
             $site = $sitesService->getSiteById($editableSiteIds[0]);
         }
 
-        $user = Craft::$app->getUser()->getIdentity();
+        $user = $this->getCurrentUser();
 
         // Create & populate the draft
         $entry = Craft::createObject(Entry::class);
@@ -231,7 +231,7 @@ class EntriesController extends BaseEntriesController
         // Permission enforcement
         $this->enforceSitePermission($entry->getSite());
         $this->enforceEditEntryPermissions($entry, $duplicate);
-        $currentUser = Craft::$app->getUser()->getIdentity();
+        $currentUser = $this->getCurrentUser();
         $section = $entry->getSection();
 
         // Is this another user’s entry (and it’s not a Single)?
@@ -337,7 +337,7 @@ class EntriesController extends BaseEntriesController
         $provisional = Entry::find()
             ->provisionalDrafts()
             ->draftOf($entry->id)
-            ->draftCreator(Craft::$app->getUser()->getIdentity())
+            ->draftCreator($this->getCurrentUser())
             ->siteId($entry->siteId)
             ->status(null)
             ->one();
@@ -396,7 +396,7 @@ class EntriesController extends BaseEntriesController
                 $entry = Entry::find()
                     ->provisionalDrafts()
                     ->draftOf($entryId)
-                    ->draftCreator(Craft::$app->getUser()->getIdentity())
+                    ->draftCreator($this->getCurrentUser())
                     ->siteId($siteId)
                     ->status(null)
                     ->one();
@@ -464,7 +464,7 @@ class EntriesController extends BaseEntriesController
         $entry->setFieldValuesFromRequest($fieldsLocation);
 
         // Author
-        $authorId = $this->request->getBodyParam('author', ($entry->authorId ?: Craft::$app->getUser()->getIdentity()->id));
+        $authorId = $this->request->getBodyParam('author', ($entry->authorId ?: $this->getCurrentUser()->id));
 
         if (is_array($authorId)) {
             $authorId = $authorId[0] ?? null;

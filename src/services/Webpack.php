@@ -199,11 +199,9 @@ class Webpack extends Component
      * Returns the running status of the webpack dev server.
      *
      * @param string $class
-     * @phpstan-param class-string<AssetBundle> $class
      * @param string $loopback
      * @return bool
      * @throws GuzzleException
-     * @throws ReflectionException
      */
     private function _isDevServerRunning(string $class, string $loopback): bool
     {
@@ -216,7 +214,8 @@ class Webpack extends Component
             return $this->_isDevServerRunning[$class] = $this->_matchAsset($this->_serverResponse[$loopback], $class);
         }
 
-        $client = Craft::createGuzzleClient();
+        // Make sure the request isn't too strict for people running the dev server using https and outside the container
+        $client = Craft::createGuzzleClient(['verify' => false]);
         try {
             $res = $client->get(StringHelper::ensureRight($loopback, '/') . 'which-asset');
             if ($res->getStatusCode() !== 200) {
