@@ -1232,9 +1232,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
       // Create the buttons if there's more than one mode available to this source
       if (this.sourceViewModes.length > 1) {
-        this.$viewModeBtnContainer = $('<div class="btngroup"/>').appendTo(
-          this.$toolbar
-        );
+        this.$viewModeBtnContainer = $('<section class="btngroup"/>')
+          .appendTo(this.$toolbar)
+          .attr('aria-label', Craft.t('app', 'View'));
 
         for (var i = 0; i < this.sourceViewModes.length; i++) {
           let sourceViewMode = this.sourceViewModes[i];
@@ -1249,6 +1249,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             'data-view': sourceViewMode.mode,
             'data-icon': sourceViewMode.icon,
             'aria-label': sourceViewMode.title,
+            'aria-pressed': 'false',
             title: sourceViewMode.title,
           }).appendTo(this.$viewModeBtnContainer);
 
@@ -1380,14 +1381,18 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         this.viewMode &&
         typeof this.viewModeBtns[this.viewMode] !== 'undefined'
       ) {
-        this.viewModeBtns[this.viewMode].removeClass('active');
+        this.viewModeBtns[this.viewMode]
+          .removeClass('active')
+          .attr('aria-pressed', 'false');
       }
 
       this.viewMode = viewMode;
       this.setSelecetedSourceState('mode', this.viewMode);
 
       if (typeof this.viewModeBtns[this.viewMode] !== 'undefined') {
-        this.viewModeBtns[this.viewMode].addClass('active');
+        this.viewModeBtns[this.viewMode]
+          .addClass('active')
+          .attr('aria-pressed', 'true');
       }
     },
 
