@@ -1025,6 +1025,7 @@ return [
     'Oops!' => 'Ops!',
     'Open PRs' => 'PRs abertos',
     'Open the full edit page in a new tab' => 'Abra a página de edição completa numa nova aba',
+    'Opens in a new window' => 'Opens in a new window',
     'Operator' => 'Operador',
     'Optgroup?' => 'Optgroup?',
     'Option Label' => 'Opção de etiqueta',
