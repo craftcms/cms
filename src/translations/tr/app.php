@@ -1025,6 +1025,7 @@ return [
     'Oops!' => 'Ay!',
     'Open PRs' => 'Açık Talepler',
     'Open the full edit page in a new tab' => 'Tam düzenleme sayfasını yeni bir sekmede açın',
+    'Opens in a new window' => 'Opens in a new window',
     'Operator' => 'Operatör',
     'Optgroup?' => 'Optgroup?',
     'Option Label' => 'Seçenek Etiketi',
