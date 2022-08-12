@@ -355,7 +355,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
 
         this.elementIndex.updateElements();
 
-        Craft.cp.displayNotice(Craft.t('app', 'Source settings saved'));
+        Craft.cp.displaySuccess(Craft.t('app', 'Source settings saved'));
         this.hide();
       })
       .catch(() => {
