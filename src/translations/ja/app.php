@@ -1025,6 +1025,7 @@ return [
     'Oops!' => 'おっと！',
     'Open PRs' => 'PR を開く',
     'Open the full edit page in a new tab' => '新しいタブでフル編集ページを開く',
+    'Opens in a new window' => 'Opens in a new window',
     'Operator' => '演算子',
     'Optgroup?' => 'Optgroup?',
     'Option Label' => 'オプションのラベル',
