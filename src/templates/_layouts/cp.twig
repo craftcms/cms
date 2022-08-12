@@ -130,6 +130,7 @@
 
 {% block body %}
     {{ tag ('a', {
+        id: 'global-skip-link',
         text: 'Skip to content'|t('app'),
         href: '#main',
         class: 'skip-link btn',
@@ -197,7 +198,7 @@
                         <div id="header-container">
                             <header id="header">
                                 {% block header %}
-                                    <div id="page-title" class="flex flex-nowrap{% if toolbar %} has-toolbar{% endif %}">
+                                    <div id="page-title" class="flex{% if toolbar %} has-toolbar{% endif %}">
                                         {% block pageTitle %}
                                             {% if title is defined and title|length %}
                                                 <h1 class="screen-title" title="{{ title }}">{{ title }}</h1>
@@ -328,7 +329,7 @@
                 <button type="submit" class="btn submit">{{ submitButtonLabel ?? 'Save'|t('app') }}</button>
             {% endblock %}
             {% if formActions ?? false %}
-                <button type="button" class="btn submit menubtn"></button>
+                <button type="button" class="btn submit menubtn" aria-label="{{ 'More actions'|t('app') }}"></button>
                 {% include '_layouts/components/form-action-menu' %}
             {% endif %}
         </div>

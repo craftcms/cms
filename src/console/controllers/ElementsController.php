@@ -68,7 +68,7 @@ class ElementsController extends Controller
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
-        if (!$this->confirm(sprintf('Are you sure you want to %s “%s”?', $this->hard ? 'hard-delete' : 'delete', $title))) {
+        if ($this->interactive && !$this->confirm(sprintf('Are you sure you want to %s “%s”?', $this->hard ? 'hard-delete' : 'delete', $title))) {
             return ExitCode::OK;
         }
 

@@ -390,29 +390,6 @@ class Cp
                 ]);
         }
 
-        if ($showStatus) {
-            if ($isDraft) {
-                $innerHtml .= Html::tag('span', '', [
-                    'class' => ['icon'],
-                    'aria' => [
-                        'hidden' => 'true',
-                    ],
-                    'data' => [
-                        'icon' => 'draft',
-                    ],
-                ]);
-            } else {
-                $status = !$isRevision ? $element->getStatus() : null;
-                $innerHtml .= Html::tag('span', '', [
-                    'class' => array_filter([
-                        'status',
-                        $status,
-                        $status ? ($element::statuses()[$status]['color'] ?? null) : null,
-                    ]),
-                ]);
-            }
-        }
-
         $innerHtml .= $imgHtml;
 
         if ($showLabel) {
@@ -439,7 +416,46 @@ class Cp
                 $innerHtml .= $encodedLabel;
             }
 
+            if ($element->hasErrors()) {
+                $innerHtml .= Html::tag('span', '', [
+                    'data' => [
+                        'icon' => 'alert',
+                    ],
+                    'aria' => [
+                        'label' => Craft::t('app', 'Error'),
+                    ],
+                    'role' => 'img',
+                ]);
+            }
+
             $innerHtml .= '</span></div>';
+        }
+
+        if ($showStatus) {
+            if ($isDraft) {
+                $innerHtml .= Html::tag('span', '', [
+                    'data' => ['icon' => 'draft'],
+                    'class' => 'icon',
+                    'role' => 'img',
+                    'aria' => [
+                        'label' => sprintf('%s %s', Craft::t('app', 'Status:'), Craft::t('app', 'Draft')),
+                    ],
+                ]);
+            } else {
+                $status = $element->getStatus();
+                $statusDef = $element::statuses()[$status] ?? null;
+                $innerHtml .= Html::tag('span', '', [
+                    'class' => array_filter([
+                        'status',
+                        $status,
+                        $statusDef['color'] ?? null,
+                    ]),
+                    'role' => 'img',
+                    'aria' => [
+                        'label' => sprintf('%s %s', Craft::t('app', 'Status:'), $statusDef['label'] ?? $statusDef ?? ucfirst($status)),
+                    ],
+                ]);
+            }
         }
 
         // Allow plugins to modify the inner HTML
@@ -1169,7 +1185,6 @@ JS, [
             'name' => null,
         ];
 
-        $label = $address->title;
         $canDelete = $address->canDelete(Craft::$app->getUser()->getIdentity());
         $actionMenuId = sprintf('address-card-action-menu-%s', mt_rand());
 
@@ -1183,10 +1198,10 @@ JS, [
             ]) .
             ($config['name'] ? Html::hiddenInput("{$config['name']}[]", (string)$address->id) : '') .
             Html::beginTag('div', ['class' => 'address-card-header']) .
-            Html::tag('h2', $address->title, [
+            Html::tag('h2', Html::encode($address->title), [
                 'class' => array_filter([
                     'address-card-label',
-                    !$label ? 'hidden' : null,
+                    !$address->title ? 'hidden' : null,
                 ]),
             ]) .
             ($canDelete
@@ -1201,7 +1216,7 @@ JS, [
                     'title' => Craft::t('app', 'Actions'),
                     'aria' => [
                         'controls' => $actionMenuId,
-                        'label' => sprintf('%s %s', $label ?? Craft::t('app', 'New Address'), Craft::t('app', 'Settings')),
+                        'label' => sprintf('%s %s', $address->title ? Html::encode($address->title) : Craft::t('app', 'New Address'), Craft::t('app', 'Settings')),
                     ],
                     'data' => [
                         'icon' => 'settings',
@@ -1620,7 +1635,7 @@ JS;
                     $customizable ? 'draggable' : null,
                 ]),
             ]) .
-            Html::tag('span', $tab->name) .
+            Html::tag('span', Html::encode($tab->name)) .
             ($customizable
                 ? Html::a('', null, [
                     'role' => 'button',
@@ -1722,7 +1737,7 @@ JS;
                 ]),
                 'data' => ['name' => mb_strtolower($groupName)],
             ]) .
-            Html::tag('h6', $groupName) .
+            Html::tag('h6', Html::encode($groupName)) .
             implode('', array_map(fn(BaseField $field) => self::_fldElementSelectorHtml($field, true, [
                 'class' => array_filter([
                     $fieldLayout->isFieldIncluded($field->attribute()) ? 'hidden' : null,

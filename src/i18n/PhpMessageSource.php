@@ -42,6 +42,25 @@ class PhpMessageSource extends \yii\i18n\PhpMessageSource
     /**
      * @inheritdoc
      */
+    protected function getMessageFilePath($category, $language): string
+    {
+        if ($category === 'yii') {
+            // Map Craft’s language IDs to Yii’s when necessary
+            $language = match ($language) {
+                'de-CH' => 'de',
+                'fr-CA' => 'fr',
+                'nb', 'nn' => 'nb-NO',
+                'zh' => 'zh-CN',
+                default => $language,
+            };
+        }
+
+        return parent::getMessageFilePath($category, $language);
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function loadMessagesFromFile($messageFile): ?array
     {
         $messages = parent::loadMessagesFromFile($messageFile);

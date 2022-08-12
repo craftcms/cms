@@ -403,6 +403,14 @@ Garnish = $.extend(Garnish, {
   },
 
   /**
+   * Gets the first focusable element inside a container
+   * @param {Object} container
+   */
+  firstFocusableElement: function (container) {
+    return $(container).find(':focusable').first();
+  },
+
+  /**
    * Traps focus within a container, so when focus is tabbed out of it, it’s cycled back into it.
    * @param {Object} container
    */
@@ -848,6 +856,10 @@ Object.assign(Garnish, {
   Select,
   SelectMenu,
   UiLayerManager,
+  /**
+   * @deprecated Use CustomSelect instead.
+   */
+  Menu: CustomSelect,
   /**
    * @deprecated Use UiLayerManager instead.
    */

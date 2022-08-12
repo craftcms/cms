@@ -451,7 +451,7 @@ class Connection extends \yii\db\Connection
             '{port}' => $parsed['port'] ?? '',
             '{server}' => $parsed['host'] ?? '',
             '{user}' => $username,
-            '{password}' => addslashes(str_replace('$', '\\$', $password)),
+            '{password}' => str_replace('$', '\\$', addslashes($password)),
             '{database}' => $parsed['dbname'] ?? '',
             '{schema}' => $this->getSchema()->defaultSchema ?? '',
         ];

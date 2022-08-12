@@ -254,7 +254,7 @@ class CategoriesController extends Controller
             throw new ForbiddenHttpException('User not authorized to edit content in any sites.');
         }
 
-        $user = Craft::$app->getUser()->getIdentity();
+        $user = $this->getCurrentUser();
 
         // Create & populate the draft
         $category = Craft::createObject(Category::class);

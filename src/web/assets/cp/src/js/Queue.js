@@ -1,6 +1,5 @@
 /** global: Craft */
 /** global: Garnish */
-import Garnish from '../../../garnish/src';
 
 /**
  * Queue
@@ -8,20 +7,24 @@ import Garnish from '../../../garnish/src';
 Craft.Queue = Garnish.Base.extend({
   running: false,
   paused: false,
+  pausedForVisibility: false,
   jobs: null,
 
   get length() {
     return this.jobs.length;
   },
 
+  get isPaused() {
+    return this.paused || this.pausedForVisibility;
+  },
+
   init: function () {
     this.jobs = [];
 
     Garnish.$doc.on('visibilitychange', () => {
-      if (this.paused && Craft.isVisible()) {
-        this.paused = false;
-        this.trigger('resume');
-        this._exec();
+      if (this.pausedForVisibility && Craft.isVisible()) {
+        this.pausedForVisibility = false;
+        this._resume();
       }
     });
   },
@@ -42,6 +45,22 @@ Craft.Queue = Garnish.Base.extend({
    */
   unshift: function (job) {
     return this._add(job, 'unshift');
+  },
+
+  pause: function () {
+    if (!this.paused) {
+      this.paused = true;
+      if (!this.pausedForVisibility) {
+        this.trigger('pause');
+      }
+    }
+  },
+
+  resume: function () {
+    if (this.paused) {
+      this.paused = false;
+      this._resume();
+    }
   },
 
   /**
@@ -92,12 +111,14 @@ Craft.Queue = Garnish.Base.extend({
       return;
     }
 
-    if (!this.paused && !Craft.isVisible()) {
-      this.paused = true;
-      this.trigger('pause');
+    if (!this.pausedForVisibility && !Craft.isVisible()) {
+      this.pausedForVisibility = true;
+      if (!this.paused) {
+        this.trigger('pause');
+      }
     }
 
-    if (this.paused) {
+    if (this.paused || this.pausedForVisibility) {
       return;
     }
 
@@ -107,6 +128,13 @@ Craft.Queue = Garnish.Base.extend({
       this.trigger('afterExec');
       this._exec();
     });
+  },
+
+  _resume: function () {
+    if (!this.isPaused) {
+      this.trigger('resume');
+      this._exec();
+    }
   },
 });
 
