@@ -16,6 +16,7 @@ $sidebarZIndex: 100;
 $detailsWidth: 350px;
 $minFullUiWidth: 1200px;
 $minXlUiWidth: 1536px;
+$minDesktopWidth: 600px;
 $minHorizontalUiWidth: $minFullUiWidth - $sidebarWidth;
 
 // Colors
@@ -1537,8 +1538,8 @@ li.breadcrumb-toggle-wrapper {
         }
       }
 
-      // 2 cols for 500 - 1535px
-      @media only screen and (min-width: 500px) and (max-width: $minXlUiWidth - 1px) {
+      // 2 cols for 600 - 1535px
+      @media only screen and (min-width: $minDesktopWidth) and (max-width: $minXlUiWidth - 1px) {
         &.width-25,
         &.width-50 {
           width: 50%;
@@ -1552,8 +1553,8 @@ li.breadcrumb-toggle-wrapper {
   & > :not(h2):not(hr):not(.line-break) {
     &,
     &:last-child {
-      // 2 cols for >= 1536px
-      @media only screen and (min-width: $minXlUiWidth) {
+      // 2 cols for >= 1200
+      @media only screen and (min-width: $minDesktopWidth * 2) {
         &.width-25,
         &.width-50 {
           width: 50%;
