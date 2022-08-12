@@ -16,6 +16,7 @@ $sidebarZIndex: 100;
 $detailsWidth: 350px;
 $minFullUiWidth: 1200px;
 $minXlUiWidth: 1536px;
+$minDesktopWidth: 600px;
 $minHorizontalUiWidth: $minFullUiWidth - $sidebarWidth;
 
 // Colors
@@ -113,39 +114,20 @@ $sidebarLinkSecondaryColor: var(--gray-200);
 
   a {
     color: $sidebarLinkStaticColor;
-    transition: color linear 100ms;
     text-decoration: none;
   }
 
   & > a,
   *:not(.has-subnav) > a {
-    transition: background-color linear 100ms;
-
     &[href] {
-      &:not(.sel):hover,
-      &.active,
-      &:active {
-        color: var(--white);
-      }
-
       &:not(.sel):hover {
         background-color: darken($grey800, 5%);
-        transition: none;
-      }
-
-      &.active,
-      &:active {
-        background-color: darken($grey800, 10%);
       }
     }
 
     &:not([href]) {
       cursor: default;
       background-color: transparent;
-    }
-
-    .icon {
-      transition: opacity linear 100ms;
     }
   }
 
@@ -257,7 +239,6 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
       &#job-icon-hover {
         opacity: 0;
-        transition: opacity linear 100ms;
       }
     }
   }
@@ -310,10 +291,6 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
         @include margin-left(5px);
         @include icon;
         content: 'external';
-      }
-
-      &:active .icon {
-        opacity: 1;
       }
 
       .label {
@@ -395,7 +372,6 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
     letter-spacing: 1.7px;
     padding-right: 5px;
     text-transform: uppercase;
-    transition: color linear 100ms;
   }
 
   & > .edition-trial {
@@ -409,7 +385,6 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
     letter-spacing: 1px;
     @include padding-right(7px);
     text-transform: lowercase;
-    transition: background linear 100ms;
 
     &:before {
       display: block;
@@ -420,7 +395,6 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
       width: 0;
       height: 0;
       border-style: solid;
-      transition: border-color linear 100ms;
 
       body.ltr & {
         left: -10px;
@@ -481,7 +455,6 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
         &:hover {
           border-color: var(--error-color);
-          transition: border-color linear 100ms;
         }
       }
     }
@@ -896,11 +869,6 @@ li.breadcrumb-toggle-wrapper {
   flex: 1;
   align-items: flex-start;
 
-  .btn,
-  .text {
-    color: darken($inputColor, 20%);
-  }
-
   .icon:before,
   .texticon:before,
   .menubtn:after,
@@ -908,6 +876,11 @@ li.breadcrumb-toggle-wrapper {
   [data-icon-after]:after {
     color: currentColor;
     opacity: 0.8;
+  }
+
+  .btn[aria-pressed='true'] {
+    background-color: var(--gray-500);
+    color: var(--white);
   }
 
   .text {
@@ -1371,9 +1344,6 @@ li.breadcrumb-toggle-wrapper {
       position: relative;
 
       &:not(.has-subnav) > a {
-        transition: background-color linear 100ms, color linear 100ms,
-          font-weight linear 100ms;
-
         &:not(.sel):hover {
           text-decoration: none;
           background-color: var(--gray-100);
@@ -1383,7 +1353,6 @@ li.breadcrumb-toggle-wrapper {
           cursor: default;
           background-color: var(--gray-500);
           @include light-on-dark-text;
-          font-weight: 600;
 
           &,
           & + .toggle {
@@ -1569,8 +1538,8 @@ li.breadcrumb-toggle-wrapper {
         }
       }
 
-      // 2 cols for 712 - 1536px
-      @media only screen and (min-width: 500px) and (max-width: $minXlUiWidth - 1px) {
+      // 2 cols for 600 - 1535px
+      @media only screen and (min-width: $minDesktopWidth) and (max-width: $minXlUiWidth - 1px) {
         &.width-25,
         &.width-50 {
           width: 50%;
@@ -1584,8 +1553,8 @@ li.breadcrumb-toggle-wrapper {
   & > :not(h2):not(hr):not(.line-break) {
     &,
     &:last-child {
-      // 2 cols for >= 712px
-      @media only screen and (min-width: $minXlUiWidth) {
+      // 2 cols for >= 1200
+      @media only screen and (min-width: $minDesktopWidth * 2) {
         &.width-25,
         &.width-50 {
           width: 50%;

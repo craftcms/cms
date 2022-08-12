@@ -4491,13 +4491,23 @@ ul.tree,
     @include right(0);
     width: 24px;
     height: 24px;
-    background: no-repeat 50% 50%;
     cursor: nwse-resize;
-    body.ltr & {
-      background-image: url(../images/resizehandle.png);
+    padding: var(--xs);
+
+    path {
+      fill: var(--ui-control-color);
     }
+
     body.rtl & {
-      background-image: url(../images/resizehandle_rtl.png);
+      .ltr {
+        display: none;
+      }
+    }
+
+    body.ltr & {
+      .rtl {
+        display: none;
+      }
     }
   }
 }
@@ -7001,16 +7011,6 @@ body.sitepicker {
     }
     body.rtl & {
       background-image: url(../images/branch_rtl_2x.png);
-    }
-  }
-
-  .modal .resizehandle {
-    background-size: 13px;
-    body.ltr & {
-      background-image: url(../images/resizehandle_2x.png);
-    }
-    body.rtl & {
-      background-image: url(../images/resizehandle_rtl_2x.png);
     }
   }
 
