@@ -1,16 +1,26 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.2.1.1 - 2022-08-10
+
+### Fixed
+- Fixed a bug where saving an element with invalid field values could result in some field values being forgotten. ([#11756](https://github.com/craftcms/cms/issues/11756))
+- Fixed a bug where it wasn’t always possible to serve asset bundles via `webpack-dev-server` over SSL. ([#11758](https://github.com/craftcms/cms/pull/11758))
+
+## 4.2.1 - 2022-08-09
 
 ### Added
+- Added the `project-config/export` command. ([#11733](https://github.com/craftcms/cms/pull/11733))
 - Added `craft\config\GeneralConfig::getRememberedUserSessionDuration()`.
 - Added `craft\helpers\DateTimeHelper::toDateInterval()`.
 
 ### Changed
-- `craft\config\DbConfig::dsn()` now parses the DSN string and populates the other DSN-settable config properties.
-- `craft\helpers\DateTimeHelper::humanDuration()` now accepts date interval strings to be passed in.
-- `craft\helpers\DateTimeHelper::humanDuration()` no longer returns the number of weeks, unless the number of days is divisible by 7. ([#11594](https://github.com/craftcms/cms/discussions/11594))
+- “Related To” condition rules are now available for conditions that are stored in the project config. ([#11740](https://github.com/craftcms/cms/issues/11740))
 - Element index filters are now managed for each site and source, rather than just for each source. ([#11719](https://github.com/craftcms/cms/issues/11719))
+- `craft\config\DbConfig::dsn()` now parses the DSN string and populates the other DSN-settable config properties.
+- `craft\helpers\DateTimeHelper::humanDuration()` no longer returns the number of weeks, unless the number of days is divisible by 7. ([#11594](https://github.com/craftcms/cms/discussions/11594))
+- `craft\helpers\DateTimeHelper::humanDuration()` now accepts date interval strings to be passed in.
+- `craft\helpers\Db::url2config()` now returns `driver`, `server`, `port`, and `database` keys, when possible. ([#11735](https://github.com/craftcms/cms/issues/11735))
+- `craft\services\Assets::getImagePreviewUrl()` now throws a `yii\base\NotSupportedException` if a preview URL could not be generated for the asset, rather than causing a PHP error.
 
 ### Deprecated
 - Deprecated `craft\helpers\DateTimeHelper::secondsToInterval()`. `toDateInterval()` should be used instead.
@@ -20,6 +30,15 @@
 - Fixed a bug where system messages provided by Yii weren’t getting translated in some cases. ([#11712](https://github.com/craftcms/cms/issues/11712))
 - Fixed a bug where the “Keep me signed in” checkbox label wasn’t always accurately representing the `rememberedUserSessionDuration` config setting. ([#11594](https://github.com/craftcms/cms/discussions/11594))
 - Fixed a bug where the `Craft.cp.setSiteId()` JavaScript method wasn’t updating `Craft.siteId`, or the base URLs used by `Craft.getActionUrl()`, `Craft.getCpUrl()`, and `Craft.getUrl()`.
+- Fixed an error that occurred when removing a Single section from the primary site, if it contained any Matrix blocks. ([#11669](https://github.com/craftcms/cms/issues/11669))
+- Fixed a bug where Matrix sub-fields weren’t showing their validation errors when `autosaveDrafts` was `false`. ([#11731](https://github.com/craftcms/cms/issues/11731))
+- Fixed a bug where saving an element with invalid field values could result in the invalid values being forgotten, rather than re-validated. ([#11731](https://github.com/craftcms/cms/issues/11731))
+- Fixed a bug where the database connection would be misconfigured if the `url` connection setting was used. ([#11735](https://github.com/craftcms/cms/issues/11735))
+- Fixed a bug where the element index filter HUDs weren’t always visually aligned with the search input. ([#11739](https://github.com/craftcms/cms/issues/11739))
+- Fixed a bug where it wasn’t possible to preview or edit image assets if their filesystem and transform filesystem didn’t have public URLs. ([#11686](https://github.com/craftcms/cms/issues/11686), [#11687](https://github.com/craftcms/cms/issues/11687))
+- Fixed a bug where not all project config changes would be applied if a site was deleted. ([#9567](https://github.com/craftcms/cms/issues/9567))
+- Fixed a bug where `$` characters in database connection passwords weren’t being escaped property when backing up/restoring the database. ([#11750](https://github.com/craftcms/cms/issues/11750))
+- Fixed a PHP error that could occur if `craft\services\Assets::getUserTemporaryUploadFolder()` was called when there was no logged-in user account. ([#11751](https://github.com/craftcms/cms/issues/11751))
 
 ### Security
 - Fixed XSS vulnerabilities.

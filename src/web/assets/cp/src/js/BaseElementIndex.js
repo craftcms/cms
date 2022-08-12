@@ -1,5 +1,7 @@
 /** global: Craft */
 /** global: Garnish */
+import Garnish from '../../../garnish/src';
+
 /**
  * Element index class
  */
@@ -799,7 +801,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       return params;
     },
 
-    updateElements: function (preservePagination) {
+    updateElements: function (preservePagination, pageChanged) {
       // Ignore if we're not fully initialized yet
       if (!this.initialized) {
         return;
@@ -834,6 +836,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             : this.$main
           ).scrollTop(0);
           this._updateView(params, response.data);
+
+          if (pageChanged) {
+            const $elementContainer = this.view.getElementContainer();
+            Garnish.firstFocusableElement($elementContainer).trigger('focus');
+          }
         })
         .catch((e) => {
           this.setIndexAvailable();
@@ -1225,9 +1232,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
       // Create the buttons if there's more than one mode available to this source
       if (this.sourceViewModes.length > 1) {
-        this.$viewModeBtnContainer = $('<div class="btngroup"/>').appendTo(
-          this.$toolbar
-        );
+        this.$viewModeBtnContainer = $('<section class="btngroup"/>')
+          .appendTo(this.$toolbar)
+          .attr('aria-label', Craft.t('app', 'View'));
 
         for (var i = 0; i < this.sourceViewModes.length; i++) {
           let sourceViewMode = this.sourceViewModes[i];
@@ -1242,6 +1249,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             'data-view': sourceViewMode.mode,
             'data-icon': sourceViewMode.icon,
             'aria-label': sourceViewMode.title,
+            'aria-pressed': 'false',
             title: sourceViewMode.title,
           }).appendTo(this.$viewModeBtnContainer);
 
@@ -1373,14 +1381,18 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         this.viewMode &&
         typeof this.viewModeBtns[this.viewMode] !== 'undefined'
       ) {
-        this.viewModeBtns[this.viewMode].removeClass('active');
+        this.viewModeBtns[this.viewMode]
+          .removeClass('active')
+          .attr('aria-pressed', 'false');
       }
 
       this.viewMode = viewMode;
       this.setSelecetedSourceState('mode', this.viewMode);
 
       if (typeof this.viewModeBtns[this.viewMode] !== 'undefined') {
-        this.viewModeBtns[this.viewMode].addClass('active');
+        this.viewModeBtns[this.viewMode]
+          .addClass('active')
+          .attr('aria-pressed', 'true');
       }
     },
 
@@ -1690,7 +1702,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       var $headings = this.getSourceContainer().children('.heading');
       var $heading;
 
-      for (i = 0; i < $headings.length; i++) {
+      for (let i = 0; i < $headings.length; i++) {
         $heading = $headings.eq(i);
         if ($heading.nextUntil('.heading', ':not(.hidden)').length !== 0) {
           $heading.removeClass('hidden');
@@ -1977,7 +1989,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                   this.removeListener($prevBtn, 'click');
                   this.removeListener($nextBtn, 'click');
                   this.setPage(this.page - 1);
-                  this.updateElements(true);
+                  this.updateElements(true, true);
                 });
               }
 
@@ -1986,7 +1998,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                   this.removeListener($prevBtn, 'click');
                   this.removeListener($nextBtn, 'click');
                   this.setPage(this.page + 1);
-                  this.updateElements(true);
+                  this.updateElements(true, true);
                 });
               }
             }
@@ -2571,6 +2583,12 @@ const FilterHud = Garnish.HUD.extend({
       .catch(() => {
         Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
       });
+
+    this.$hud.css('position', 'fixed');
+
+    this.addListener(Garnish.$win, 'scroll,resize', () => {
+      this.updateSizeAndPosition(true);
+    });
   },
 
   addListener: function (elem, events, data, func) {
@@ -2603,7 +2621,9 @@ const FilterHud = Garnish.HUD.extend({
   },
 
   updateSizeAndPositionInternal: function () {
-    const searchOffset = this.elementIndex.$searchContainer.offset();
+    // const searchOffset = this.elementIndex.$searchContainer.offset();
+    const searchOffset =
+      this.elementIndex.$searchContainer[0].getBoundingClientRect();
 
     this.$hud.css({
       width: this.elementIndex.$searchContainer.outerWidth() - 2,

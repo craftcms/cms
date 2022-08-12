@@ -406,6 +406,10 @@
             if (this.selectAll && this.allowMultipleSelections) {
               this.selectAll.addEventListener('click', this.handleSelectAll);
             }
+
+            if (this.tableDataEndpoint) {
+              Craft.initUiElements(this.container);
+            }
           }
         });
 
@@ -637,6 +641,10 @@
       },
 
       detailRowComponent() {
+        if (this.tableDataEndpoint) {
+          return this.detailRow;
+        }
+
         if (!this.tableData || this.tableData.length == 0) {
           return '';
         }

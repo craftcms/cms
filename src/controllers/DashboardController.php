@@ -315,7 +315,7 @@ class DashboardController extends Controller
             ],
             [
                 'name' => 'name',
-                'contents' => Craft::$app->getUser()->getIdentity()->getName(),
+                'contents' => $this->getCurrentUser()->getName(),
             ],
             [
                 'name' => 'message',
