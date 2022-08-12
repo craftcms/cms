@@ -1025,6 +1025,7 @@ return [
     'Oops!' => 'Ups!',
     'Open PRs' => 'Otwórz PR',
     'Open the full edit page in a new tab' => 'Otwórz pełną stronę edycji w nowej karcie',
+    'Opens in a new window' => 'Opens in a new window',
     'Operator' => 'Operator',
     'Optgroup?' => 'Optgroup?',
     'Option Label' => 'Podpis opcji',
