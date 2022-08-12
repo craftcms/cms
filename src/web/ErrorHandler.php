@@ -11,14 +11,14 @@ use Craft;
 use craft\events\ExceptionEvent;
 use craft\helpers\App;
 use craft\helpers\Json;
+use craft\helpers\Template;
 use GuzzleHttp\Exception\ClientException;
 use Throwable;
 use Twig\Error\Error as TwigError;
 use Twig\Error\LoaderError as TwigLoaderError;
 use Twig\Error\RuntimeError as TwigRuntimeError;
 use Twig\Error\SyntaxError as TwigSyntaxError;
-use Twig\Template;
-use yii\base\Exception;
+use Twig\Template as TwigTemplate;
 use yii\base\UserException;
 use yii\web\HttpException;
 use yii\web\NotFoundHttpException;
@@ -128,19 +128,7 @@ class ErrorHandler extends \yii\web\ErrorHandler
         if ($request && $request->getAcceptsJson()) {
             $response->format = Response::FORMAT_JSON;
             if ($this->_showExceptionView()) {
-                $response->data = [
-                    'message' => $exception->getMessage(),
-                    'exception' => get_class($exception),
-                    'file' => $exception->getFile(),
-                    'line' => $exception->getLine(),
-                    'trace' => array_map(function($step) {
-                        unset($step['args']);
-                        return $step;
-                    }, $exception->getTrace()),
-
-                    // TODO: remove in v5; error message should only be in `message`
-                    'error' => $exception->getMessage(),
-                ];
+                $response->data = $this->_exceptionAsArray($exception);
             } else {
                 $message = $exception instanceof UserException ? $exception->getMessage() : Craft::t('app', 'A server error occurred.');
                 $response->data = [
@@ -194,6 +182,30 @@ class ErrorHandler extends \yii\web\ErrorHandler
         parent::renderException($exception);
     }
 
+    private function _exceptionAsArray(Throwable  $exception)
+    {
+        $array = [
+            'message' => $exception->getMessage(),
+            'exception' => get_class($exception),
+            'file' => $exception->getFile(),
+            'line' => $exception->getLine(),
+            'trace' => array_map(function($step) {
+                unset($step['args']);
+                return $step;
+            }, $exception->getTrace()),
+
+            // TODO: remove in v5; error message should only be in `message`
+            'error' => $exception->getMessage(),
+        ];
+
+        $prev = $exception->getPrevious();
+        if ($prev !== null) {
+            $array['previous'] = $this->_exceptionAsArray($prev);
+        }
+
+        return $array;
+    }
+
     /**
      * @inheritdoc
      */
@@ -203,7 +215,7 @@ class ErrorHandler extends \yii\web\ErrorHandler
 
         if ($url === null) {
             if (str_starts_with($class, '__TwigTemplate_')) {
-                $class = Template::class;
+                $class = TwigTemplate::class;
             }
 
             if (str_starts_with($class, 'Twig\\')) {
@@ -223,49 +235,13 @@ class ErrorHandler extends \yii\web\ErrorHandler
      */
     public function renderCallStackItem($file, $line, $class, $method, $args, $index): string
     {
-        if (str_contains($file, 'compiled_templates')) {
-            try {
-                [$file, $line] = $this->_resolveTemplateTrace($file, $line);
-            } catch (Throwable) {
-                // oh well, we tried
-            }
+        $templateInfo = Template::resolveTemplatePathAndLine($file ?? '', $line);
+
+        if ($templateInfo !== false) {
+            [$file, $line] = $templateInfo;
         }
 
         return parent::renderCallStackItem($file, $line, $class, $method, $args, $index);
-    }
-
-    /**
-     * Attempts to swap out debug trace info with template info.
-     *
-     * @param string $traceFile
-     * @param int|null $traceLine
-     * @return array
-     * @throws Exception
-     */
-    private function _resolveTemplateTrace(string $traceFile, ?int $traceLine = null): array
-    {
-        $contents = file_get_contents($traceFile);
-        if (!preg_match('/^class (\w+)/m', $contents, $match)) {
-            throw new Exception("Unable to determine template class in $traceFile");
-        }
-        $class = $match[1];
-        /** @var Template $template */
-        $template = new $class(Craft::$app->getView()->getTwig());
-        $src = $template->getSourceContext();
-        //                $this->sourceCode = $src->getCode();
-        $file = $src->getPath() ?: null;
-        $line = null;
-
-        if ($traceLine !== null) {
-            foreach ($template->getDebugInfo() as $codeLine => $templateLine) {
-                if ($codeLine <= $traceLine) {
-                    $line = $templateLine;
-                    break;
-                }
-            }
-        }
-
-        return [$file, $line];
     }
 
     /**

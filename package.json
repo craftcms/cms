@@ -5,18 +5,21 @@
   "scripts": {
     "prebuild": "npm run fix-prettier",
     "build": "webpack --node-env=production --progress",
+    "dev": "webpack --node-env=production --progress",
     "serve": "webpack-dev-server --node-env=development",
     "check-prettier": "prettier --check .",
     "fix-prettier": "prettier --write ."
   },
+  "workspaces": [
+    "packages/*"
+  ],
   "browserslist": [
     "extends @craftcms/browserslist-config"
   ],
   "devDependencies": {
-    "@craftcms/webpack": "^1.1.0",
+    "@craftcms/webpack": "file:packages/craftcms-webpack",
     "@playwright/test": "^1.19.2",
     "husky": "^7.0.4",
-    "lerna": "^4.0.0",
     "lint-staged": "^12.3.8",
     "prettier": "2.6.2",
     "tailwindcss": "^3.0.18",
@@ -24,8 +27,8 @@
   },
   "dependencies": {
     "@benmajor/jquery-touch-events": "^2.0.3",
-    "@craftcms/sass": "^1.0.1",
-    "@craftcms/vue": "^1.0.0",
+    "@craftcms/sass": "file:packages/craftcms-sass",
+    "@craftcms/vue": "file:packages/craftcms-vue",
     "@types/jquery": "^3.5.7",
     "accounting": "^0.4.1",
     "axios": "^0.27.2",

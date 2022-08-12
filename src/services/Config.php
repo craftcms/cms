@@ -8,6 +8,7 @@
 namespace craft\services;
 
 use Craft;
+use craft\config\BaseConfig;
 use craft\config\DbConfig;
 use craft\config\GeneralConfig;
 use craft\helpers\App;
@@ -79,6 +80,13 @@ class Config extends Component
     private ?string $_dotEnvPath = null;
 
     /**
+     * @var string|null
+     * @see getConfigFromFile()
+     * @see getLoadingConfigFile()
+     */
+    private ?string $_loadingConfigFile = null;
+
+    /**
      * Returns all of the config settings for a given category.
      *
      * @param string $category The config category
@@ -138,13 +146,26 @@ class Config extends Component
                 throw new InvalidArgumentException("Invalid config category: $category");
         }
 
-        // Merge in any environment value overrides, and typecast everything
+        // Get any environment value overrides
         $envConfig = App::envConfig($configClass, $envPrefix);
+
+        // If $config is already a BaseConfig object, assign the env overrides to it and return
+        if ($config instanceof BaseConfig) {
+            Typecast::properties($configClass, $envConfig);
+            Craft::configure($config, $envConfig);
+            return $config;
+        }
+
+        $loadingConfig = $this->_loadingConfigFile;
+        $this->_loadingConfigFile = $category;
+
         $config = array_merge($config, $envConfig);
         Typecast::properties($configClass, $config);
+        /** @var BaseObject $config */
+        $config = new $configClass($config);
 
-        /** @var BaseObject */
-        return new $configClass($config);
+        $this->_loadingConfigFile = $loadingConfig;
+        return $config;
     }
 
     /**
@@ -232,9 +253,9 @@ class Config extends Component
      * ```
      *
      * @param string $filename
-     * @return array
+     * @return array|BaseConfig
      */
-    public function getConfigFromFile(string $filename): array
+    public function getConfigFromFile(string $filename): array|BaseConfig
     {
         $path = $this->getConfigFilePath($filename);
 
@@ -242,7 +263,24 @@ class Config extends Component
             return [];
         }
 
-        if (!is_array($config = @include $path)) {
+        $loadingConfig = $this->_loadingConfigFile;
+        $this->_loadingConfigFile = $filename;
+
+        $config = $this->_configFromFileInternal($path);
+
+        $this->_loadingConfigFile = $loadingConfig;
+        return $config;
+    }
+
+    private function _configFromFileInternal(string $path): array|BaseConfig
+    {
+        $config = @include $path;
+
+        if ($config instanceof BaseConfig) {
+            return $config;
+        }
+
+        if (!is_array($config)) {
             return [];
         }
 
@@ -264,6 +302,17 @@ class Config extends Component
         }
 
         return $mergedConfig;
+    }
+
+    /**
+     * Returns the config filename currently being loaded.
+     *
+     * @return string|null
+     * @since 4.2.0
+     */
+    public function getLoadingConfigFile(): ?string
+    {
+        return $this->_loadingConfigFile;
     }
 
     /**

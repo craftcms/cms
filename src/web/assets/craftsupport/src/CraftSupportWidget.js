@@ -70,6 +70,12 @@ import './CraftSupportWidget.scss';
         this.$triggerElement.focus();
       },
 
+      closeSearchScreen: function () {
+        this.gotoScreen(Craft.CraftSupportWidget.SCREEN_HOME);
+        this.focusTrigger();
+        this.$triggerElement.attr('aria-expanded', false);
+      },
+
       gotoScreen: function (screen) {
         // Are we right in the middle of a transition?
         if (this.$nextScreen) {
@@ -160,6 +166,7 @@ import './CraftSupportWidget.scss';
     {
       $body: null,
       $formContainer: null,
+      $cancelBtn: null,
       mode: null,
       bodyStartHeight: null,
 
@@ -182,6 +189,7 @@ import './CraftSupportWidget.scss';
       afterInit: function () {
         this.$body = this.$screen.find('.cs-body-text:first').trigger('focus');
         this.$formContainer = this.$screen.children('.cs-forms');
+        this.$cancelBtn = this.$screen.find('.cancel');
 
         // Search mode stuff
         this.$searchResultsContainer = this.$screen.children(
@@ -224,6 +232,7 @@ import './CraftSupportWidget.scss';
         this.bodyStartHeight = this.$body.height();
         this.addListener(this.$body, 'input', 'handleBodyTextChange');
         this.addListener(this.$body, 'keydown', 'handleBodyKeydown');
+        this.addListener(this.$cancelBtn, 'click', 'handleCancelClick');
         this.prepForSearch(false);
       },
 
@@ -268,13 +277,15 @@ import './CraftSupportWidget.scss';
         }
       },
 
+      handleCancelClick: function () {
+        this.widget.closeSearchScreen();
+      },
+
       handleBodyKeydown: function (ev) {
         switch (ev.keyCode) {
           case Garnish.ESC_KEY:
             if (this.mode === BaseSearchScreen.MODE_SEARCH) {
-              this.widget.gotoScreen(Craft.CraftSupportWidget.SCREEN_HOME);
-              this.widget.focusTrigger();
-              this.widget.$triggerElement.attr('aria-expanded', false);
+              this.widget.closeSearchScreen();
             } else if (!this.sendingSupportTicket) {
               this.prepForSearch(true);
             }
@@ -530,7 +541,7 @@ import './CraftSupportWidget.scss';
         }
 
         if (response.success) {
-          Craft.cp.displayNotice(Craft.t('app', 'Message sent successfully.'));
+          Craft.cp.displaySuccess(Craft.t('app', 'Message sent successfully.'));
           this.$body.val('');
           this.$supportMessage.val('');
           this.$supportAttachment.val('');

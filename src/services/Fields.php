@@ -1867,18 +1867,24 @@ class Fields extends Component
      */
     private function _createLayoutTabQuery(): Query
     {
-        return (new Query())
+        $query = (new Query())
             ->select([
                 'id',
                 'layoutId',
                 'name',
-                'settings',
                 'elements',
                 'sortOrder',
                 'uid',
             ])
             ->from([Table::FIELDLAYOUTTABS])
             ->orderBy(['sortOrder' => SORT_ASC]);
+
+        // todo: remove this after the next breakpoint
+        if (version_compare(Craft::$app->getInfo()->schemaVersion, '4.0.0.1', '>=')) {
+            $query->addSelect('settings');
+        }
+
+        return $query;
     }
 
     /**

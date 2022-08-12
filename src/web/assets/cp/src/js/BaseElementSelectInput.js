@@ -438,7 +438,9 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
         animateCss,
         Craft.BaseElementSelectInput.REMOVE_FX_DURATION,
         () => {
-          callback();
+          if (callback) {
+            callback();
+          }
 
           // Resume the draft editor
           if (this.$form.data('elementEditor')) {
@@ -556,7 +558,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
     createNewElement: function (elementInfo) {
       var $element = elementInfo.$element.clone();
       var removeText = Craft.t('app', 'Remove {label}', {
-        label: elementInfo.label,
+        label: Craft.escapeHtml(elementInfo.label),
       });
       // Make a couple tweaks
       Craft.setElementSize(
