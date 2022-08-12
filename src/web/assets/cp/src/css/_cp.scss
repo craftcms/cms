@@ -357,20 +357,20 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   border: 1px solid var(--gray-600);
   border-radius: 3px;
   display: inline-flex;
-  height: 20px;
+  height: toRem(20);
   box-sizing: content-box;
   font-size: 11px;
 
   & > .edition-name,
   & > .edition-trial {
-    padding: 6px 7px 5px;
+    padding: toRem(6, 7, 5);
     line-height: var(--s);
   }
 
   & > .edition-name {
     font-weight: 600;
     letter-spacing: 1.7px;
-    padding-right: 5px;
+    padding-right: toRem(5);
     text-transform: uppercase;
   }
 
@@ -1382,8 +1382,8 @@ li.breadcrumb-toggle-wrapper {
         .icon {
           @include margin-right(10px);
           flex-shrink: 1;
-          width: 18px;
-          height: 18px;
+          width: toRem(18);
+          height: toRem(18);
           word-break: normal;
           transition: margin-left linear 150ms, margin-right linear 150ms;
           opacity: 0.85;

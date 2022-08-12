@@ -1306,6 +1306,7 @@ JS, [
                 'value' => $address->addressLine1,
                 'required' => isset($requiredFields['addressLine1']),
                 'errors' => $address->getErrors('addressLine1'),
+                'autocomplete' => 'address-line1',
             ]) .
             static::textFieldHtml([
                 'label' => $address->getAttributeLabel('addressLine2'),
@@ -1314,6 +1315,7 @@ JS, [
                 'value' => $address->addressLine2,
                 'required' => isset($requiredFields['addressLine2']),
                 'errors' => $address->getErrors('addressLine2'),
+                'autocomplete' => 'address-line2',
             ]) .
             self::_subdivisionField(
                 $address,
@@ -1351,6 +1353,7 @@ JS, [
                 'value' => $address->postalCode,
                 'required' => isset($requiredFields['postalCode']),
                 'errors' => $address->getErrors('postalCode'),
+                'autocomplete' => 'postal-code',
             ]) .
             static::textFieldHtml([
                 'fieldClass' => array_filter([
