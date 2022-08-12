@@ -445,11 +445,11 @@ class Cp
                 $status = $element->getStatus();
                 $statusDef = $element::statuses()[$status] ?? null;
                 $innerHtml .= Html::tag('span', '', [
-                    'class' => [
+                    'class' => array_filter([
                         'status',
                         $status,
                         $statusDef['color'] ?? null,
-                    ],
+                    ]),
                     'role' => 'img',
                     'aria' => [
                         'label' => sprintf('%s %s', Craft::t('app', 'Status:'), $statusDef['label'] ?? $statusDef ?? ucfirst($status)),
