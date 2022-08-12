@@ -42,6 +42,9 @@ class Search extends Component
 {
     /**
      * @event IndexKeywordsEvent The event that is triggered before keywords are indexed for an element attribute or field.
+     *
+     * You may set [[\craft\events\CancelableEvent::$isValid]] to `false` to prevent the attribute/field’s keywords from being indexed.
+     *
      * @since 4.2.0
      */
     public const EVENT_BEFORE_INDEX_KEYWORDS = 'beforeIndexKeywords';
@@ -345,6 +348,11 @@ SQL;
                 'keywords' => $keywords,
             ]);
             $this->trigger(self::EVENT_BEFORE_INDEX_KEYWORDS, $event);
+
+            if (!$event->isValid) {
+                return;
+            }
+
             $keywords = $event->keywords;
         }
 

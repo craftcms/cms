@@ -168,7 +168,7 @@ $generalConfig = $configService->getConfigFromFile('general');
 // Determine if Craft is running in Dev Mode
 // -----------------------------------------------------------------------------
 
-$devMode = App::env('CRAFT_DEV_MODE') ?? ArrayHelper::getValue($generalConfig, 'devMode', false);
+$devMode = App::env('CRAFT_DEV_MODE') ?? $generalConfig['devMode'] ?? false;
 
 if ($devMode) {
     ini_set('display_errors', '1');

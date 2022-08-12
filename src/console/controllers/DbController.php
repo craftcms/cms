@@ -82,7 +82,7 @@ class DbController extends Controller
             return ExitCode::OK;
         }
 
-        if (!$this->confirm('Are you sure you want to drop all tables from the database?')) {
+        if ($this->interactive && !$this->confirm('Are you sure you want to drop all tables from the database?')) {
             $this->stdout('Aborted.' . PHP_EOL, Console::FG_YELLOW);
             return ExitCode::OK;
         }
@@ -195,13 +195,13 @@ class DbController extends Controller
         foreach ($checkPaths as $checkPath) {
             if (is_file($checkPath)) {
                 if (!$this->overwrite) {
-                    if (!$this->confirm("$checkPath already exists. Overwrite?")) {
-                        if ($this->interactive) {
-                            $this->stdout('Aborting' . PHP_EOL);
-                            return ExitCode::OK;
-                        }
+                    if (!$this->interactive) {
                         $this->stderr("$checkPath already exists. Retry with the --overwrite flag to overwrite it." . PHP_EOL, Console::FG_RED);
                         return ExitCode::UNSPECIFIED_ERROR;
+                    }
+                    if (!$this->confirm("$checkPath already exists. Overwrite?")) {
+                        $this->stdout('Aborting' . PHP_EOL);
+                        return ExitCode::OK;
                     }
                 }
                 unlink($checkPath);

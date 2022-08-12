@@ -60,7 +60,7 @@
   --dark-focus-hsl: #{hue($darkFocusColor)}, #{saturation($darkFocusColor)},
     #{lightness($darkFocusColor)};
   --focus-ring: 0 0 0 1px hsl(var(--dark-focus-hsl)),
-    0 0 0 3px hsla(var(--dark-focus-hsl), 0.7);
+    0 0 0 3px hsla(var(--dark-focus-hsl), 0.8);
   --inner-focus-ring: inset 0 0 0 1px hsl(var(--dark-focus-hsl)),
     inset 0 0 0 3px hsla(var(--dark-focus-hsl), 0.7);
   --touch-target-size: 24px; /* Minimum recommended touch target size */
@@ -80,8 +80,8 @@ html.noscroll body {
 body {
   width: 100vw;
   overflow-x: hidden;
-  font-size: 14px;
-  line-height: 20px;
+  @include fontSize(14);
+  line-height: 1.42;
   color: var(--text-color);
   -webkit-font-smoothing: subpixel-antialiased;
 }
@@ -936,7 +936,7 @@ td.right {
     cursor: pointer;
 
     &:hover:before {
-      color: var(--red-600);
+      color: var(--disabled-color);
     }
 
     &:active:before {
@@ -1526,7 +1526,7 @@ ul.icons {
     }
 
     body.ltr & {
-      &:not(:first-child) {
+      &:not(:first-child):not(.btngroup-btn-first) {
         border-top-left-radius: 0;
         border-bottom-left-radius: 0;
       }
@@ -1538,7 +1538,7 @@ ul.icons {
     }
 
     body.rtl & {
-      &:not(:first-child) {
+      &:not(:first-child):not(.btngroup-btn-first) {
         border-top-right-radius: 0;
         border-bottom-right-radius: 0;
       }
@@ -1562,6 +1562,7 @@ ul.icons {
     .text {
       border-top-right-radius: 0;
       border-bottom-right-radius: 0;
+      min-width: 0;
     }
     .btn {
       border-top-left-radius: 0;
@@ -2016,15 +2017,15 @@ div.btn.submit input {
   &.on {
     background-image: linear-gradient(
       to right,
-      var(--success-color),
-      var(--success-color)
+      var(--enabled-color),
+      var(--enabled-color)
     );
   }
 
   &.indeterminate {
     background-image: linear-gradient(
       to right,
-      var(--success-color),
+      var(--enabled-color),
       var(--gray-300)
     );
   }
@@ -2079,14 +2080,6 @@ div.btn.submit input {
   table & {
     display: inline-block;
     margin-bottom: -5px;
-  }
-
-  &:focus {
-    .lightswitch-container {
-      .handle {
-        background-color: var(--gray-100);
-      }
-    }
   }
 
   &.on {
@@ -2557,6 +2550,12 @@ $elementInnerSpacing: 5px;
     }
     .elementthumb.open-preview {
       cursor: pointer;
+    }
+  }
+
+  &.error {
+    [data-icon='alert'] {
+      margin-left: var(--xs);
     }
   }
 
@@ -3298,7 +3297,7 @@ ul.tree,
       background-color: transparent;
       border-style: solid;
       border-width: 0 5px 10px 5px;
-      border-color: transparent transparent var(--yellow-700) transparent;
+      border-color: transparent transparent var(--pending-color) transparent;
       border-radius: 1px;
     }
 
@@ -3319,26 +3318,20 @@ ul.tree,
 .status.live,
 .status.active,
 .status.enabled {
-  background-color: var(--teal-500);
+  background-color: var(--enabled-color);
 }
-
-/* green */
 
 .orange,
 .status.pending {
-  background-color: var(--yellow-700);
+  background-color: var(--pending-color);
 }
-
-/* orange */
 
 .red,
 .status.off,
 .status.suspended,
 .status.expired {
-  background-color: var(--red-600);
+  background-color: var(--disabled-color);
 }
-
-/* red */
 
 .yellow {
   background-color: var(--yellow-300);
@@ -4493,13 +4486,23 @@ ul.tree,
     @include right(0);
     width: 24px;
     height: 24px;
-    background: no-repeat 50% 50%;
     cursor: nwse-resize;
-    body.ltr & {
-      background-image: url(../images/resizehandle.png);
+    padding: var(--xs);
+
+    path {
+      fill: var(--ui-control-color);
     }
+
     body.rtl & {
-      background-image: url(../images/resizehandle_rtl.png);
+      .ltr {
+        display: none;
+      }
+    }
+
+    body.ltr & {
+      .rtl {
+        display: none;
+      }
     }
   }
 }
@@ -4660,25 +4663,21 @@ ul.tree,
       --ui-control-color: var(--white);
       --ui-control-hover-color: var(--white);
       --ui-control-active-color: var(--white);
+      --interaction-background-color: var(--gray-700);
       background-color: var(--gray-600);
       color: var(--white);
       @include light-on-dark-text;
-
-      @supports (backdrop-filter: blur(10px)) {
-        & {
-          background-color: transparentize($grey600, 0.6);
-          backdrop-filter: blur(10px);
-          transition: opacity linear 100ms, backdrop-filter linear 100ms;
-        }
-      }
+      @include two-color-focus-ring($light-button: false);
 
       &:hover {
-        background-color: var(--gray-500) !important;
+        background-color: var(--interaction-background-color) !important;
+      }
 
-        @supports (backdrop-filter: blur(10px)) {
-          & {
-            background-color: transparentize($grey500, 0.3) !important;
-          }
+      &:not(.disabled):not(.loading):not(.dashed) {
+        &:focus,
+        &.focus,
+        &:hover {
+          background-color: var(--interaction-background-color);
         }
       }
     }
@@ -5435,7 +5434,7 @@ fieldset {
     }
 
     &.outdated {
-      background-color: var(--yellow-700);
+      background-color: var(--pending-color);
     }
   }
 
@@ -5692,7 +5691,7 @@ div.radio {
   clear: none;
   position: relative;
   @include padding-left($radioSize + 5);
-  height: 16px;
+  line-height: calc(24 / 14);
   cursor: pointer;
 }
 
@@ -5721,8 +5720,9 @@ div.radio:after {
 
 input.radio + label:before,
 div.radio:before {
-  top: 0;
+  top: 50%;
   left: 0;
+  transform: translateY(-50%);
   width: var(--radio-size);
   height: var(--radio-size);
   background-color: hsl(212, 50%, 99%);
@@ -5731,8 +5731,9 @@ div.radio:before {
 
 input.radio + label:after,
 div.radio:after {
-  top: 4px;
+  top: calc(50%);
   left: 4px;
+  transform: translateY(-50%);
   width: calc(var(--radio-size) - 8px);
   height: calc(var(--radio-size) - 8px);
 }
@@ -6157,7 +6158,7 @@ body .selectize-dropdown {
   height: 34px;
 
   &:not(.fullwidth) {
-    width: 25em;
+    max-width: 25em;
   }
 }
 
@@ -6263,6 +6264,10 @@ body .selectize-dropdown .optgroup-header {
 
 body .selectize-dropdown .active {
   @include menu-option-active-styles;
+
+  .light {
+    color: inherit !important;
+  }
 }
 
 /* datepicker */
@@ -7001,16 +7006,6 @@ body.sitepicker {
     }
     body.rtl & {
       background-image: url(../images/branch_rtl_2x.png);
-    }
-  }
-
-  .modal .resizehandle {
-    background-size: 13px;
-    body.ltr & {
-      background-image: url(../images/resizehandle_2x.png);
-    }
-    body.rtl & {
-      background-image: url(../images/resizehandle_rtl_2x.png);
     }
   }
 

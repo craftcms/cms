@@ -83,7 +83,7 @@
                         {{ forms.checkboxField({
                             id: 'rememberMe',
                             label: 'Keep me signed in for {duration}'|t('app', {
-                                duration: generalConfig.rememberedUserSessionDuration|duration,
+                                duration: generalConfig.getRememberedUserSessionDuration()|duration,
                             })
                         }) }}
                     {% endif %}

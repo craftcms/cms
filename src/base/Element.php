@@ -4231,6 +4231,7 @@ abstract class Element extends Component implements ElementInterface
                         'target' => '_blank',
                         'data-icon' => 'world',
                         'title' => Craft::t('app', 'Visit webpage'),
+                        'aria-label' => Craft::t('app', 'View'),
                     ]);
                 }
 
@@ -4436,6 +4437,7 @@ JS,
                     'data' => [
                         'icon' => 'ellipsis',
                     ],
+                    'title' => Craft::t('app', 'Update status for individual sites'),
                     'aria' => [
                         'expanded' => 'false',
                         'label' => Craft::t('app', 'Update status for individual sites'),
@@ -4444,8 +4446,8 @@ JS,
                 : '';
             $statusField = Cp::lightswitchFieldHtml([
                 'fieldClass' => "enabled-for-site-$this->siteId-field",
-                'label' => Craft::t('site', $this->getSite()->getName()) .
-                    $expandStatusBtn,
+                'label' => Craft::t('site', $this->getSite()->getName()),
+                'headingSuffix' => $expandStatusBtn,
                 'name' => "enabledForSite[$this->siteId]",
                 'on' => $this->enabled && $this->getEnabledForSite(),
                 'status' => $this->getAttributeStatus('enabled'),
@@ -4555,7 +4557,10 @@ JS,
                     return false;
                 }
                 if ($this->getIsUnpublishedDraft()) {
-                    $icon = Html::tag('span', '', ['data' => ['icon' => 'draft']]);
+                    $icon = Html::tag('span', '', [
+                        'data' => ['icon' => 'draft'],
+                        'aria' => ['hidden' => 'true'],
+                    ]);
                     $label = Craft::t('app', 'Draft');
                 } else {
                     $status = $this->getStatus();
@@ -4584,7 +4589,7 @@ JS,
                 }
                 /** @var RevisionBehavior $behavior */
                 $behavior = $revision->getBehavior('revision');
-                return $behavior->revisionNotes ?: false;
+                return Html::encode($behavior->revisionNotes) ?: false;
             },
         ]);
     }

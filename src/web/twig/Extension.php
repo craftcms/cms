@@ -630,9 +630,10 @@ class Extension extends AbstractExtension implements GlobalsInterface
      *
      * @param mixed $arr
      * @param mixed $exclude
+     * @param bool $strict
      * @return array
      */
-    public function withoutFilter(mixed $arr, mixed $exclude): array
+    public function withoutFilter(mixed $arr, mixed $exclude, bool $strict = false): array
     {
         $arr = (array)$arr;
 
@@ -641,7 +642,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
         }
 
         foreach ($exclude as $value) {
-            ArrayHelper::removeValue($arr, $value);
+            ArrayHelper::removeValue($arr, $value, $strict);
         }
 
         return $arr;

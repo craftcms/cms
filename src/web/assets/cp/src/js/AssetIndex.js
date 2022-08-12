@@ -870,7 +870,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
           }
         );
       } else {
-        this.$includeSubfoldersContainer.velocity('stop');
+        this.$includeSubfoldersContainer.velocity('stop').removeClass('hidden');
       }
 
       var checked = this.getSelectedSourceState('includeSubfolders', false);
@@ -899,7 +899,12 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
           marginBottom: -25,
           opacity: 0,
         },
-        'fast'
+        {
+          duration: 'fast',
+          complete: () => {
+            this.$includeSubfoldersContainer.addClass('hidden');
+          },
+        }
       );
 
       this.showingIncludeSubfoldersCheckbox = false;

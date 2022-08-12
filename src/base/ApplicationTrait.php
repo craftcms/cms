@@ -1654,9 +1654,11 @@ trait ApplicationTrait
 
         // Prune deleted sites from site settings
         Event::on(Sites::class, Sites::EVENT_AFTER_DELETE_SITE, function(DeleteSiteEvent $event) {
-            $this->getRoutes()->handleDeletedSite($event);
-            $this->getCategories()->pruneDeletedSite($event);
-            $this->getSections()->pruneDeletedSite($event);
+            if (!Craft::$app->getProjectConfig()->getIsApplyingExternalChanges()) {
+                $this->getRoutes()->handleDeletedSite($event);
+                $this->getCategories()->pruneDeletedSite($event);
+                $this->getSections()->pruneDeletedSite($event);
+            }
         });
     }
 
