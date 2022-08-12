@@ -4508,34 +4508,6 @@ JS,
     /**
      * @inheritdoc
      */
-    public function statusIconHtml(): string
-    {
-        if ($this->getIsUnpublishedDraft()) {
-            $icon = Html::tag('span', '', [
-                'data' => ['icon' => 'draft'],
-                'class' => 'icon',
-                'role' => 'img',
-                'aria' => [
-                    'label' => sprintf('%s %s', Craft::t('app', 'Status:'), Craft::t('app', 'Draft')),
-                ],
-            ]);
-        } else {
-            $status = $this->getStatus();
-            $statusDef = static::statuses()[$status] ?? null;
-            $icon = Html::tag('span', '', [
-                'class' => ['status', $statusDef['color'] ?? $status],
-                'role' => 'img',
-                'aria' => [
-                    'label' => sprintf('%s %s', Craft::t('app', 'Status:'), $statusDef['label'] ?? $statusDef ?? ucfirst($status)),
-                ],
-            ]);
-        }
-        return $icon;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function getMetadata(): array
     {
         $metadata = $this->metadata();

@@ -1519,14 +1519,6 @@ interface ElementInterface extends ComponentInterface
     public function getSidebarHtml(bool $static): string;
 
     /**
-     * Returns the status icon HTML when icons are present without accompanying label text
-     *
-     * @return string
-     * @since 4.2.0
-     */
-    public function statusIconHtml(): string;
-
-    /**
      * Returns element metadata that should be shown within the editor sidebar.
      *
      * @return array The data, with keys representing the labels. The values can either be strings or callables.
