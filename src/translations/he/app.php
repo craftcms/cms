@@ -1025,6 +1025,7 @@ return [
     'Oops!' => 'אופס!',
     'Open PRs' => 'PRs פתוחים',
     'Open the full edit page in a new tab' => 'פתח את מלוא דף העריכה בכרטיסייה חדשה',
+    'Opens in a new window' => 'Opens in a new window',
     'Operator' => 'מפעיל',
     'Optgroup?' => 'Optgroup?',
     'Option Label' => 'תווית אופציה',
