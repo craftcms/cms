@@ -270,6 +270,7 @@ JS;
             'div',
             Cp::selectHtml([
                 'id' => "$id-type",
+                'describedBy' => $this->describedBy,
                 'name' => "$this->handle[type]",
                 'options' => $typeOptions,
                 'value' => $valueType,
