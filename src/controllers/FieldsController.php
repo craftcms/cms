@@ -198,17 +198,18 @@ class FieldsController extends Controller
 
         if ($groupId) {
             $fieldGroup = $fieldsService->getGroupById($groupId);
-
             if ($fieldGroup === null) {
                 throw new NotFoundHttpException('Field group not found');
             }
+        } elseif (!$field->id && !$field->hasErrors()) {
+            $fieldGroup = reset($allGroups);
         } else {
             $fieldGroup = null;
         }
 
         $groupOptions = [];
 
-        if (!$groupId) {
+        if (!$fieldGroup) {
             $groupOptions[] = ['value' => '', 'label' => ''];
         }
 

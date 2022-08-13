@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- The first field group is now automatically selected by default when creating a new custom field.
+
 ### Fixed
 - Fixed a bug where keyboard focus wasn’t being maintained when changing the element type within a “Related To” condition rule.
 - Fixed a bug where keyboard focus wasn’t being maintained when changing the country within an address’s “Administrative Area” condition rule.
