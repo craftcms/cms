@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Changed
+- Improved the styling of Categories fields.
 - The first field group is now automatically selected by default when creating a new custom field.
 
 ### Fixed
