@@ -31,7 +31,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     $visibleSources: null,
 
     $customizeSourcesBtn: null,
-    customizeSourcesModal: null,
 
     $toolbar: null,
     toolbarOffset: null,
@@ -414,7 +413,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     initSources: function () {
-      var $sources = this._getSourcesInList(this.getSourceContainer());
+      var $sources = this._getSourcesInList(this.getSourceContainer(), true);
 
       // No source, no party.
       if ($sources.length === 0) {
@@ -1704,7 +1703,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
       for (let i = 0; i < $headings.length; i++) {
         $heading = $headings.eq(i);
-        if ($heading.nextUntil('.heading', ':not(.hidden)').length !== 0) {
+        if ($heading.has('> ul > li:not(.hidden)')) {
           $heading.removeClass('hidden');
         } else {
           $heading.addClass('hidden');
@@ -1811,8 +1810,12 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     // Source managemnet
     // -------------------------------------------------------------------------
 
-    _getSourcesInList: function ($list) {
-      return $list.children('li').children('a');
+    _getSourcesInList: function ($list, topLevel) {
+      let $sources = $list.find('> li:not(.heading) > a');
+      if (topLevel) {
+        $sources = $sources.add($list.find('> li.heading > ul > li > a'));
+      }
+      return $sources;
     },
 
     _getChildSources: function ($source) {

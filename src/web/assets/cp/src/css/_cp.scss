@@ -16,6 +16,7 @@ $sidebarZIndex: 100;
 $detailsWidth: 350px;
 $minFullUiWidth: 1200px;
 $minXlUiWidth: 1536px;
+$minDesktopWidth: 600px;
 $minHorizontalUiWidth: $minFullUiWidth - $sidebarWidth;
 
 // Colors
@@ -356,20 +357,20 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   border: 1px solid var(--gray-600);
   border-radius: 3px;
   display: inline-flex;
-  height: 20px;
+  height: toRem(20);
   box-sizing: content-box;
   font-size: 11px;
 
   & > .edition-name,
   & > .edition-trial {
-    padding: 6px 7px 5px;
+    padding: toRem(6, 7, 5);
     line-height: var(--s);
   }
 
   & > .edition-name {
     font-weight: 600;
     letter-spacing: 1.7px;
-    padding-right: 5px;
+    padding-right: toRem(5);
     text-transform: uppercase;
   }
 
@@ -1101,9 +1102,9 @@ li.breadcrumb-toggle-wrapper {
     }
 
     .notes {
-      border-radius: 5px;
-      padding-top: 15px;
-      padding-bottom: 15px;
+      border-radius: var(--large-border-radius);
+      padding-top: var(--m);
+      padding-bottom: var(--m);
     }
   }
 }
@@ -1295,9 +1296,13 @@ li.breadcrumb-toggle-wrapper {
 
   .heading {
     position: relative;
-    margin: var(--m) var(--xl) 2px;
+    margin: 0 var(--xl);
 
-    span {
+    &:not(:first-child) {
+      margin-top: var(--m);
+    }
+
+    & > span {
       display: inline-block;
       position: relative;
       z-index: 1;
@@ -1307,6 +1312,10 @@ li.breadcrumb-toggle-wrapper {
       color: var(--medium-text-color);
       font-size: 11px;
       font-weight: bold;
+    }
+
+    & > ul {
+      margin: 2px calc(var(--xl) * -1);
     }
   }
 
@@ -1323,16 +1332,19 @@ li.breadcrumb-toggle-wrapper {
   nav {
     padding: 0 var(--s);
 
-    & > ul > li {
-      @include nav-level(0);
-      & > ul > li {
-        @include nav-level(1);
-        & > ul > li {
-          @include nav-level(2);
-          & > ul > li {
-            @include nav-level(3);
-            & > ul > li {
-              @include nav-level(4);
+    & > ul {
+      & > li:not(.heading),
+      & > li.heading > ul > li {
+        @include nav-level(0);
+        & > ul.nested > li {
+          @include nav-level(1);
+          & > ul.nested > li {
+            @include nav-level(2);
+            & > ul.nested > li {
+              @include nav-level(3);
+              & > ul.nested > li {
+                @include nav-level(4);
+              }
             }
           }
         }
@@ -1381,8 +1393,8 @@ li.breadcrumb-toggle-wrapper {
         .icon {
           @include margin-right(10px);
           flex-shrink: 1;
-          width: 18px;
-          height: 18px;
+          width: toRem(18);
+          height: toRem(18);
           word-break: normal;
           transition: margin-left linear 150ms, margin-right linear 150ms;
           opacity: 0.85;
@@ -1442,8 +1454,11 @@ li.breadcrumb-toggle-wrapper {
         display: none;
       }
 
-      &.expanded > ul {
-        display: block;
+      &.heading,
+      &.expanded {
+        & > ul {
+          display: block;
+        }
       }
     }
   }
@@ -1537,8 +1552,8 @@ li.breadcrumb-toggle-wrapper {
         }
       }
 
-      // 2 cols for 500 - 1535px
-      @media only screen and (min-width: 500px) and (max-width: $minXlUiWidth - 1px) {
+      // 2 cols for 600 - 1535px
+      @media only screen and (min-width: $minDesktopWidth) and (max-width: $minXlUiWidth - 1px) {
         &.width-25,
         &.width-50 {
           width: 50%;
@@ -1552,8 +1567,8 @@ li.breadcrumb-toggle-wrapper {
   & > :not(h2):not(hr):not(.line-break) {
     &,
     &:last-child {
-      // 2 cols for >= 1536px
-      @media only screen and (min-width: $minXlUiWidth) {
+      // 2 cols for >= 1200
+      @media only screen and (min-width: $minDesktopWidth * 2) {
         &.width-25,
         &.width-50 {
           width: 50%;

@@ -1,5 +1,15 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+### Changed
+- Improved the styling of Categories fields.
+- The first field group is now automatically selected by default when creating a new custom field.
+
+### Fixed
+- Fixed a bug where keyboard focus wasn’t being maintained when changing the element type within a “Related To” condition rule.
+- Fixed a bug where keyboard focus wasn’t being maintained when changing the country within an address’s “Administrative Area” condition rule.
+
 ## 4.2.1.1 - 2022-08-10
 
 ### Fixed

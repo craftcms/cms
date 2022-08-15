@@ -289,7 +289,7 @@ h2,
   margin: 14px 0;
   font-size: 16px;
   font-weight: bold;
-  line-height: 20px;
+  line-height: 1.2;
 }
 
 h3,
@@ -2651,9 +2651,6 @@ $elementInnerSpacing: 5px;
 
     .label {
       display: block;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
       word-wrap: normal;
     }
   }
@@ -2784,9 +2781,9 @@ $checkboxPadding: $checkboxSize + 4;
     width: calc(
       100% + #{$baseElementSidePadding + $baseElementSidePadding + 1px}
     );
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
+    display: grid;
+    gap: 5px;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
 
     li {
       position: relative;
@@ -2795,6 +2792,14 @@ $checkboxPadding: $checkboxSize + 4;
       &:hover {
         .element {
           background-color: var(--gray-050);
+        }
+      }
+
+      .element.large.hasthumb {
+        width: unset;
+
+        .elementthumb:not(:empty) {
+          width: 100%;
         }
       }
 
@@ -2950,7 +2955,7 @@ $checkboxPadding: $checkboxSize + 4;
 
       &:not(:last-child):not(.last) {
         @include padding-left(37px);
-        @include border-left(1px solid var(--hairline-color));
+        @include border-left(1px solid var(--gray-200));
 
         body.ltr & {
           background-position: -1px 0;
@@ -4256,6 +4261,11 @@ ul.tree,
         & > .input > .text.fullwidth {
           border-radius: 0;
         }
+      }
+
+      .notes {
+        padding-top: var(--m);
+        padding-bottom: var(--m);
       }
     }
   }
@@ -6149,6 +6159,7 @@ body .selectize-dropdown {
 
 /* single select styles */
 .selectize.select {
+  @include placeholder-styles(var(--gray-700));
   height: 34px;
 
   &:not(.fullwidth) {
@@ -6325,7 +6336,7 @@ body .selectize-dropdown .active {
 .ui-datepicker-calendar th span,
 .ui-datepicker-calendar td a {
   display: block;
-  width: 26px;
+  width: toRem(26);
   line-height: 26px;
   text-align: center;
   color: var(--text-color);

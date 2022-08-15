@@ -67,11 +67,11 @@ class RelatedToConditionRule extends BaseElementSelectConditionRule implements E
      */
     protected function inputHtml(): string
     {
-        $relatedToId = 'relatedTo';
-        return Html::hiddenLabel($this->getLabel(), $relatedToId) .
+        $id = 'element-type';
+        return Html::hiddenLabel($this->getLabel(), $id) .
             Html::tag('div',
                 Cp::selectHtml([
-                    'id' => $relatedToId,
+                    'id' => $id,
                     'name' => 'elementType',
                     'options' => $this->_elementTypeOptions(),
                     'value' => $this->elementType,
