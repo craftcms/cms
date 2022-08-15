@@ -1589,6 +1589,7 @@ return [
     'Unformatted' => '取消设置格式',
     'Uninstall' => '卸载',
     'Uninstalling {name}' => '正在卸载 {name}',
+    'Unit' => 'Unit',
     'Unknown type' => '未知类型',
     'Unknown' => '未知',
     'Unlimited video training' => '无限制的视频培训',
