@@ -34,16 +34,14 @@ class Category extends Element
     /**
      * @inheritdoc
      */
-    protected function resolve($source, $arguments, $context, ResolveInfo $resolveInfo)
+    protected function resolve(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): mixed
     {
         /** @var CategoryElement $source */
         $fieldName = $resolveInfo->fieldName;
 
-        switch ($fieldName) {
-            case 'groupHandle':
-                return $source->getGroup()->handle;
-        }
-
-        return parent::resolve($source, $arguments, $context, $resolveInfo);
+        return match ($fieldName) {
+            'groupHandle' => $source->getGroup()->handle,
+            default => parent::resolve($source, $arguments, $context, $resolveInfo),
+        };
     }
 }

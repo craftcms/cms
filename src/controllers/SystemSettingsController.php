@@ -38,7 +38,7 @@ class SystemSettingsController extends Controller
     /**
      * @inheritdoc
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         // All system setting actions require an admin
         $this->requireAdmin();
@@ -65,7 +65,7 @@ class SystemSettingsController extends Controller
      *
      * @return Response|null
      */
-    public function actionSaveGeneralSettings()
+    public function actionSaveGeneralSettings(): ?Response
     {
         $this->requirePostRequest();
 
@@ -76,7 +76,7 @@ class SystemSettingsController extends Controller
         $systemSettings['retryDuration'] = (int)$this->request->getBodyParam('retryDuration') ?: null;
         $systemSettings['timeZone'] = $this->request->getBodyParam('timeZone');
 
-        if (strpos($systemSettings['live'], '$') !== 0) {
+        if (!str_starts_with($systemSettings['live'], '$')) {
             $systemSettings['live'] = (bool)$systemSettings['live'];
         }
 
@@ -94,7 +94,7 @@ class SystemSettingsController extends Controller
      * @return Response
      * @throws Exception if a plugin returns an invalid mail transport type
      */
-    public function actionEditEmailSettings(MailSettings $settings = null, TransportAdapterInterface $adapter = null): Response
+    public function actionEditEmailSettings(?MailSettings $settings = null, ?TransportAdapterInterface $adapter = null): Response
     {
         if ($settings === null) {
             $settings = App::mailSettings();
@@ -103,7 +103,7 @@ class SystemSettingsController extends Controller
         if ($adapter === null) {
             try {
                 $adapter = MailerHelper::createTransportAdapter($settings->transportType, $settings->transportSettings);
-            } catch (MissingComponentException $e) {
+            } catch (MissingComponentException) {
                 $adapter = new Sendmail();
                 $adapter->addError('type', Craft::t('app', 'The transport type “{type}” could not be found.', [
                     'type' => $settings->transportType,
@@ -124,6 +124,7 @@ class SystemSettingsController extends Controller
 
         foreach ($allTransportAdapterTypes as $transportAdapterType) {
             /** @var string|TransportAdapterInterface $transportAdapterType */
+            /** @phpstan-var class-string<TransportAdapterInterface>|TransportAdapterInterface $transportAdapterType */
             if ($transportAdapterType === get_class($adapter) || $transportAdapterType::isSelectable()) {
                 $allTransportAdapters[] = MailerHelper::createTransportAdapter($transportAdapterType);
                 $transportTypeOptions[] = [
@@ -160,7 +161,7 @@ class SystemSettingsController extends Controller
      *
      * @return Response|null
      */
-    public function actionSaveEmailSettings()
+    public function actionSaveEmailSettings(): ?Response
     {
         $this->requirePostRequest();
 
@@ -192,7 +193,7 @@ class SystemSettingsController extends Controller
     /**
      * Tests the email settings.
      */
-    public function actionTestEmailSettings()
+    public function actionTestEmailSettings(): void
     {
         $this->requirePostRequest();
 
@@ -211,7 +212,7 @@ class SystemSettingsController extends Controller
                 ->composeFromKey('test_email', [
                     'settings' => MailerHelper::settingsReport($mailer, $adapter),
                 ])
-                ->setTo(Craft::$app->getUser()->getIdentity());
+                ->setTo($this->getCurrentUser());
 
             if ($message->send()) {
                 $this->setSuccessFlash(Craft::t('app', 'Email sent successfully! Check your inbox.'));
@@ -237,7 +238,7 @@ class SystemSettingsController extends Controller
      * @return Response
      * @throws NotFoundHttpException if the requested global set cannot be found
      */
-    public function actionEditGlobalSet(int $globalSetId = null, GlobalSet $globalSet = null): Response
+    public function actionEditGlobalSet(?int $globalSetId = null, ?GlobalSet $globalSet = null): Response
     {
         if ($globalSet === null) {
             if ($globalSetId !== null) {

@@ -38,7 +38,7 @@ class SystemMessages extends Utility
     /**
      * @inheritdoc
      */
-    public static function iconPath()
+    public static function iconPath(): ?string
     {
         return Craft::getAlias('@appicons/envelope.svg');
     }

@@ -1,19 +1,21 @@
 @charset "UTF-8";
-@import "@craftcms/sass/mixins";
+@import '@craftcms/sass/mixins';
 
 .lp-editor-container,
 .lp-preview-container {
   position: fixed;
   top: 0;
   height: 100%;
-  background-color: $white;
+  background-color: var(--white);
   z-index: 100;
 
   header {
     padding: 8px 24px;
-    background-color: $grey100;
+    background-color: var(--gray-100);
     box-shadow: 0 1px 0 transparentize($grey700, 0.8);
     box-sizing: border-box;
+    position: relative;
+    z-index: 1;
 
     @supports (backdrop-filter: blur(10px)) {
       & {
@@ -31,14 +33,9 @@
       }
     }
 
-    @supports (-moz-appearance:none) {
-      & {
-        position: relative;
-        z-index: 1;
-      }
-    }
-
-    .btn, .spinner, .checkmark-icon {
+    .btn,
+    .spinner,
+    .checkmark-icon {
       margin-bottom: 0;
     }
   }
@@ -47,7 +44,6 @@
 .lp-editor-container {
   display: flex;
   flex-direction: column;
-  box-shadow: 1px 0 0 transparentize($grey700, 0.8);
 
   .lp-editor {
     flex: 1;
@@ -80,6 +76,7 @@
 .lp-preview-container {
   display: flex;
   flex-direction: column;
+  box-shadow: -1px 0 0 transparentize($grey700, 0.8);
 
   &.dragging:after {
     position: absolute;
@@ -94,7 +91,7 @@
   .lp-preview-header {
     display: flex;
 
-    @supports (-moz-appearance:none) {
+    @supports (not (backdrop-filter: blur(10px))) {
       background-color: transparentize($grey100, 0.25);
     }
 
@@ -107,37 +104,82 @@
     }
 
     & + .lp-iframe-container {
-      padding-top: 50px;
+      padding-top: 0;
 
-      @supports (-moz-appearance:none) {
-        padding-top: 0;
+      @supports (backdrop-filter: blur(10px)) {
+        padding-top: 50px;
       }
     }
 
     .lp-device-type {
-      .btn {
-        &::before {
-          width: 27px;
-          height: 22px;
-          display: block;
-          content: '';
-          background-size: contain;
-          background-repeat: no-repeat;
-          background-position: center;
-          transition-duration: .3s;
-        }
+      margin: 0;
+    }
+  }
 
-        // SVGs
-        &.lp-device-type-btn--phone::before {
-          background-image: url(../images/preview/icon-phone.svg);
-        }
-        &.lp-device-type-btn--tablet::before {
-          background-image: url(../images/preview/icon-tablet.svg);
-        }
-        &.lp-device-type-btn--desktop::before {
-          background-image: url(../images/preview/icon-desktop.svg);
-        }
-      }
+  .lp-device-type__label {
+    &::before {
+      width: 27px;
+      height: 22px;
+      display: block;
+      content: '';
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      transition-duration: 0.3s;
+    }
+
+    // SVGs
+    &.lp-device-type__label--phone::before {
+      background-image: url(../images/preview/icon-phone.svg);
+    }
+    &.lp-device-type__label--tablet::before {
+      background-image: url(../images/preview/icon-tablet.svg);
+    }
+    &.lp-device-type__label--desktop::before {
+      background-image: url(../images/preview/icon-desktop.svg);
+    }
+  }
+
+  .lp-device-type__radio-group {
+    display: flex;
+    white-space: nowrap;
+    align-items: center;
+  }
+
+  .lp-device-type__item:not(:last-child) .btn {
+    body.ltr & {
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
+      margin-right: 1px;
+    }
+
+    body.rtl & {
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
+      margin-left: 1px;
+    }
+  }
+
+  .lp-preview-container__bumper-link {
+    top: unset;
+    bottom: 0;
+  }
+
+  .lp-device-type__item:not(:first-child) .btn {
+    body.ltr & {
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
+    }
+
+    body.rtl & {
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
+    }
+  }
+
+  .lp-device-type__input {
+    &.focus-visible + label {
+      box-shadow: var(--focus-ring);
     }
   }
 
@@ -169,13 +211,13 @@
       flex: none;
       padding-top: 0 !important;
       position: relative;
-      top: 50px;
+      top: 0;
       height: calc(100% - 50px);
       width: 100%;
-      background-color: $grey100;
+      background-color: var(--gray-100);
 
-      @supports (-moz-appearance:none) {
-        top: 0;
+      @supports (backdrop-filter: blur(10px)) {
+        top: 50px;
       }
 
       // Preview container
@@ -186,7 +228,7 @@
         z-index: 2;
         overflow: auto;
         opacity: 1;
-        transition: opacity .3s;
+        transition: opacity 0.3s;
       }
 
       // Device mask
@@ -196,32 +238,36 @@
         top: 50%;
         left: 50%;
         z-index: 1;
-        background-image: url(../images/preview/chrome-phone-top.svg), url(../images/preview/chrome-phone-bottom.svg);
+        background-image: url(../images/preview/chrome-phone-top.svg),
+          url(../images/preview/chrome-phone-bottom.svg);
         background-position: top center, bottom center;
         background-repeat: no-repeat;
         background-size: contain;
         background-color: #fff;
-        box-shadow: 0 0 58px rgba(6,67,117,.3);
+        box-shadow: 0 0 58px rgba(6, 67, 117, 0.3);
         border-radius: 18px;
       }
 
       // Tablet
       &.lp-iframe-container--tablet {
         .lp-device-mask {
-          background-image: url(../images/preview/chrome-tablet-top.svg), url(../images/preview/chrome-tablet-bottom.svg);
+          background-image: url(../images/preview/chrome-tablet-top.svg),
+            url(../images/preview/chrome-tablet-bottom.svg);
         }
       }
     }
 
     // Animate rotations
-    &--rotating {
-      .lp-device-mask {
-        transition-duration: .3s;
-        transition-property: transform;
-      }
-      .lp-device-preview-container {
-        opacity: 0;
-        transition: opacity 0s;
+    @media screen and (prefers-reduced-motion: no-preference) {
+      &--rotating {
+        .lp-device-mask {
+          transition-duration: 0.3s;
+          transition-property: transform;
+        }
+        .lp-device-preview-container {
+          opacity: 0;
+          transition: opacity 0s;
+        }
       }
     }
   }

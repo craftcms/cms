@@ -1,10 +1,10 @@
 @charset "UTF-8";
-@import "@craftcms/sass/mixins";
+@import '@craftcms/sass/mixins';
 
 .tooltip {
   display: block !important;
   z-index: 10000;
-  background: $white;
+  background: var(--white);
   box-shadow: 0 25px 100px rgba(0, 0, 0, 0.5);
   padding: 24px;
 
@@ -17,7 +17,7 @@
     border-color: white;
   }
 
-  &[x-placement^="top"] {
+  &[x-placement^='top'] {
     margin-bottom: 12px;
 
     .tooltip-arrow {
@@ -32,7 +32,7 @@
     }
   }
 
-  &[x-placement^="bottom"] {
+  &[x-placement^='bottom'] {
     margin-top: 12px;
 
     .tooltip-arrow {
@@ -47,7 +47,7 @@
     }
   }
 
-  &[x-placement^="right"] {
+  &[x-placement^='right'] {
     margin-left: 12px;
 
     .tooltip-arrow {
@@ -62,7 +62,7 @@
     }
   }
 
-  &[x-placement^="left"] {
+  &[x-placement^='left'] {
     margin-right: 12px;
 
     .tooltip-arrow {
@@ -80,12 +80,12 @@
   &[aria-hidden='true'] {
     visibility: hidden;
     opacity: 0;
-    transition: opacity .15s, visibility .15s;
+    transition: opacity 0.15s, visibility 0.15s;
   }
 
   &[aria-hidden='false'] {
     visibility: visible;
     opacity: 1;
-    transition: opacity .15s;
+    transition: opacity 0.15s;
   }
 }

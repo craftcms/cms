@@ -24,21 +24,21 @@ return [
     [
         'name' => 'Test field',
         'handle' => 'testField3',
-        'fieldType' => Assets::class
+        'fieldType' => Assets::class,
     ],
     [
         'name' => 'Test field',
         'handle' => 'testField4',
-        'fieldType' => Table::class
+        'fieldType' => Table::class,
     ],
     [
         'name' => 'Test field',
         'handle' => 'testField5',
-        'fieldType' => Entries::class
+        'fieldType' => Entries::class,
     ],
     [
         'name' => 'Test field',
         'handle' => 'testField6',
-        'fieldType' => PlainText::class
-    ]
+        'fieldType' => PlainText::class,
+    ],
 ];

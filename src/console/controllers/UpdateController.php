@@ -22,6 +22,7 @@ use craft\models\Updates;
 use craft\models\Updates as UpdatesModel;
 use Symfony\Component\Process\Exception\ProcessFailedException;
 use Symfony\Component\Process\Process;
+use Throwable;
 use yii\base\InvalidConfigException;
 use yii\console\ExitCode;
 use yii\validators\EmailValidator;
@@ -44,22 +45,22 @@ class UpdateController extends Controller
     /**
      * @var bool Force the update if allowUpdates is disabled
      */
-    public $force = false;
+    public bool $force = false;
 
     /**
      * @var bool|null Backup the database before updating
      */
-    public $backup;
+    public ?bool $backup = null;
 
     /**
      * @var bool Run new database migrations after completing the update
      */
-    public $migrate = true;
+    public bool $migrate = true;
 
     /**
      * @inheritdoc
      */
-    public function options($actionID)
+    public function options($actionID): array
     {
         $options = parent::options($actionID);
 
@@ -75,7 +76,7 @@ class UpdateController extends Controller
     /**
      * @inheritdoc
      */
-    public function optionAliases()
+    public function optionAliases(): array
     {
         $aliases = parent::optionAliases();
         $aliases['f'] = 'force';
@@ -113,7 +114,7 @@ class UpdateController extends Controller
             if ($pluginUpdate->getHasReleases()) {
                 try {
                     $pluginInfo = $pluginsService->getPluginInfo($pluginHandle);
-                } catch (InvalidPluginException $e) {
+                } catch (InvalidPluginException) {
                     continue;
                 }
                 if ($pluginInfo['isInstalled']) {
@@ -134,13 +135,12 @@ class UpdateController extends Controller
     /**
      * Updates Craft and/or plugins.
      *
-     * @param string $handle
-     * The update handle (`all`, `craft`, or a plugin handle). You can pass
-     * multiple handles separated by spaces, and you can update to a specific
+     * @param string|null $handle The update handle (`all`, `craft`, or a plugin handle).
+     * You can pass multiple handles separated by spaces, and you can update to a specific
      * version using the syntax `<handle>:<version>`.
      * @return int
      */
-    public function actionUpdate(string $handle = null): int
+    public function actionUpdate(?string $handle = null): int
     {
         $handles = array_filter(func_get_args());
 
@@ -188,7 +188,7 @@ class UpdateController extends Controller
     }
 
     /**
-     * Installs dependencies based on the current composer.json & composer.lock.
+     * Installs dependencies based on the current `composer.json` & `composer.lock`.
      *
      * @return int
      */
@@ -199,7 +199,7 @@ class UpdateController extends Controller
 
         try {
             Craft::$app->getComposer()->install(null, $io);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Craft::$app->getErrorHandler()->logException($e);
             $this->stderr('error: ' . $e->getMessage() . PHP_EOL . PHP_EOL, Console::FG_RED);
             $this->stdout('Output:' . PHP_EOL . PHP_EOL . $io->getOutput() . PHP_EOL . PHP_EOL);
@@ -236,7 +236,7 @@ class UpdateController extends Controller
     /**
      * Returns the new Composer requirements.
      *
-     * @param string[] $handles
+     * @param string ...$handles
      * @return array
      */
     private function _getRequirements(string ...$handles): array
@@ -245,7 +245,7 @@ class UpdateController extends Controller
         if ($handles !== ['all']) {
             // Look for any specific versions that were requested
             foreach ($handles as $handle) {
-                if (strpos($handle, ':') !== false) {
+                if (str_contains($handle, ':')) {
                     [$handle, $to] = explode(':', $handle, 2);
                     if ($handle === 'craft') {
                         $handle = 'cms';
@@ -269,7 +269,7 @@ class UpdateController extends Controller
                 if (($latest = $pluginUpdate->getLatest()) !== null) {
                     try {
                         $pluginInfo = $pluginsService->getPluginInfo($pluginHandle);
-                    } catch (InvalidPluginException $e) {
+                    } catch (InvalidPluginException) {
                         continue;
                     }
                     if ($pluginInfo['isInstalled']) {
@@ -279,7 +279,7 @@ class UpdateController extends Controller
             }
         } else {
             foreach ($handles as $handle) {
-                if (strpos($handle, ':') !== false) {
+                if (str_contains($handle, ':')) {
                     [$handle, $to] = explode(':', $handle, 2);
                 } else {
                     $to = null;
@@ -292,7 +292,7 @@ class UpdateController extends Controller
                     if (isset($updates->plugins[$handle])) {
                         try {
                             $pluginInfo = $pluginsService->getPluginInfo($handle);
-                        } catch (InvalidPluginException $e) {
+                        } catch (InvalidPluginException) {
                         }
                     }
 
@@ -334,10 +334,10 @@ class UpdateController extends Controller
      * @param string $oldPackageName
      * @param Update $update
      */
-    private function _updateRequirements(array &$requirements, array &$info, string $handle, string $from, ?string $to, string $oldPackageName, Update $update)
+    private function _updateRequirements(array &$requirements, array &$info, string $handle, string $from, ?string $to, string $oldPackageName, Update $update): void
     {
         if ($update->status === Update::STATUS_EXPIRED) {
-            $this->stdout("Skipping {$handle} because its license has expired." . PHP_EOL, Console::FG_GREY);
+            $this->stdout("Skipping $handle because its license has expired." . PHP_EOL, Console::FG_GREY);
             return;
         }
 
@@ -352,7 +352,7 @@ class UpdateController extends Controller
         }
 
         if ($to === $from) {
-            $this->stdout("Skipping {$handle} because it’s already up to date." . PHP_EOL, Console::FG_GREY);
+            $this->stdout("Skipping $handle because it’s already up to date." . PHP_EOL, Console::FG_GREY);
             return;
         }
 
@@ -380,7 +380,7 @@ class UpdateController extends Controller
 
         try {
             $composerService->install($requirements, $io);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Craft::$app->getErrorHandler()->logException($e);
             $this->stderr('error: ' . $e->getMessage() . PHP_EOL . PHP_EOL, Console::FG_RED);
             $this->stdout('Output:' . PHP_EOL . PHP_EOL . $io->getOutput() . PHP_EOL . PHP_EOL);
@@ -447,7 +447,7 @@ class UpdateController extends Controller
 
         try {
             Craft::$app->getDb()->restore($this->backupPath);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->stdout('error: ' . $e->getMessage() . PHP_EOL, Console::FG_RED);
             $this->stdout('You can manually restore the backup file located at ' . $this->backupPath . PHP_EOL);
             return false;
@@ -460,7 +460,7 @@ class UpdateController extends Controller
     /**
      * Reverts Composer changes.
      */
-    private function _revertComposerChanges()
+    private function _revertComposerChanges(): void
     {
         // See if we have composer.json and composer.lock backups
         $backupsDir = Craft::$app->getPath()->getComposerBackupsPath();
@@ -468,12 +468,12 @@ class UpdateController extends Controller
         $lockBackup = $backupsDir . DIRECTORY_SEPARATOR . 'composer.lock';
 
         if (!is_file($jsonBackup)) {
-            $this->stdout("Can’t revert Composer changes because no composer.json backup exists in {$backupsDir}." . PHP_EOL, Console::FG_RED);
+            $this->stdout("Can’t revert Composer changes because no composer.json backup exists in $backupsDir." . PHP_EOL, Console::FG_RED);
             return;
         }
 
         if (!is_file($lockBackup)) {
-            $this->stdout("Can’t revert Composer changes because no composer.lock backup exists in {$backupsDir}." . PHP_EOL, Console::FG_RED);
+            $this->stdout("Can’t revert Composer changes because no composer.lock backup exists in $backupsDir." . PHP_EOL, Console::FG_RED);
             return;
         }
 
@@ -529,7 +529,7 @@ class UpdateController extends Controller
      * @param string $status
      * @param string|null $phpConstraint
      */
-    private function _outputUpdate(string $handle, string $from, string $to, bool $critical, string $status, string $phpConstraint = null)
+    private function _outputUpdate(string $handle, string $from, string $to, bool $critical, string $status, ?string $phpConstraint = null): void
     {
         $expired = $status === Update::STATUS_EXPIRED;
         $grey = $expired ? Console::FG_GREY : null;
@@ -562,7 +562,7 @@ class UpdateController extends Controller
      *
      * @return int|null
      */
-    private function _checkCraftLicense()
+    private function _checkCraftLicense(): ?int
     {
         if (!App::licenseKey()) {
             if (defined('CRAFT_LICENSE_KEY')) {
@@ -576,7 +576,7 @@ class UpdateController extends Controller
 
             if (!$user) {
                 $email = $this->prompt('Enter your email address to request a new license key:', [
-                    'validator' => function(string $input, string &$error = null) {
+                    'validator' => function(string $input, ?string &$error = null) {
                         return (new EmailValidator())->validate($input, $error);
                     },
                 ]);
@@ -592,7 +592,7 @@ class UpdateController extends Controller
                 $session->setIdentity(null);
             }
 
-            if (!App::licenseKey()) {
+            if (App::licenseKey() === null) {
                 $this->stderr('License key creation was unsuccessful.' . PHP_EOL, Console::FG_RED);
                 return ExitCode::UNSPECIFIED_ERROR;
             }

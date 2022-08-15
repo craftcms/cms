@@ -1,5 +1,5 @@
 @charset "UTF-8";
-@import "@craftcms/sass/mixins";
+@import '@craftcms/sass/mixins';
 
 #main-container #main #main-content #content-container #content {
   display: flex;
@@ -7,41 +7,40 @@
   min-height: 400px;
 }
 
+a {
+  @apply tw-text-blue-600;
+}
+
 .ps-wrapper {
-  @apply .flex .flex-1 .flex-col;
+  @apply tw-flex tw-flex-1 tw-flex-col;
+  @apply lg:tw-flex-row;
   padding-bottom: 0 !important;
 
   .ps-sidebar {
-    @apply .px-6 .py-6 .w-full;
-    background-color: $grey050;
-    @include border-radius($largeBorderRadius, 0, 0, $largeBorderRadius);
+    @apply tw-px-6 tw-py-6 tw-w-full;
+    background-color: var(--gray-050);
+    @include border-radius(
+      var(--large-border-radius),
+      0,
+      0,
+      var(--large-border-radius)
+    );
+    @apply lg:tw-border-b-0 lg:tw-border-r lg:tw-overflow-auto lg:tw-w-64;
+
+    .categories {
+      @apply lg:tw-block;
+    }
   }
 
   .ps-main {
-    @apply .flex-1 .overflow-auto .flex;
+    @apply tw-flex-1 tw-overflow-auto;
 
     .ps-container {
-      @apply .flex-1 .max-w-4xl .mx-auto;
+      @apply tw-flex-1 tw-max-w-screen-xl tw-mx-auto;
     }
   }
 }
 
 .ps-container {
-  @apply .px-10 .py-6;
-}
-
-@media only screen and (min-width: 975px) {
-  .ps-wrapper {
-    @apply .flex-row;
-
-    .ps-sidebar {
-      @apply .border-b-0 .border-r .overflow-auto;
-      max-width: 225px;
-
-
-      .categories {
-        display: block;
-      }
-    }
-  }
+  @apply tw-px-10 tw-py-6;
 }

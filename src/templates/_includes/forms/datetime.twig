@@ -1,0 +1,11 @@
+<div class="datetimewrapper">
+    {% include '_includes/forms/date' with {
+        hasOuterContainer: true,
+        isDateTime: true,
+    } %}
+    {% include '_includes/forms/time' with {
+        hasOuterContainer: true,
+        isDateTime: true,
+        outputTzParam: false,
+    } %}
+</div>

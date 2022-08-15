@@ -1,0 +1,133 @@
+{% requireAdmin %}
+
+{% extends "settings/users/_layout" %}
+{% set selectedNavItem = 'settings' %}
+
+{% import "_includes/forms" as forms %}
+
+
+{% if settings is not defined %}
+    {% set settings = craft.app.projectConfig.get('users') ?? [] %}
+{% endif %}
+
+{# set defaults #}
+{% set settings = {
+    photoVolumeUid: null,
+    photoSubpath: null,
+    requireEmailVerification: true,
+    allowPublicRegistration: false,
+    validateOnPublicRegistration: false,
+    deactivateByDefault: false,
+    defaultGroup: null,
+}|merge(settings) %}
+
+{% set hasVolumes = craft.app.volumes.getAllVolumes|length != 0 %}
+{% set photoVolume = settings.photoVolumeUid ? craft.app.volumes.getVolumeByUid(settings.photoVolumeUid) : null %}
+
+{% set allVolumes = craft.app.volumes.getAllVolumes() %}
+{% set volumeList = [] %}
+{% set validVolumeUids = [] %}
+
+{% for volume in allVolumes %}
+    {% if volume.getTransformFs().hasUrls %}
+        {% set volumeList = volumeList|push({label: volume.name, value: volume.uid}) %}
+        {% set validVolumeUids = validVolumeUids|push(volume.uid) %}
+    {% endif %}
+{% endfor %}
+
+{% macro assetLocationInput(volumeOptions, photoVolume, subpath) %}
+    {% import '_includes/forms' as forms %}
+    <div class="flex">
+        <div>
+            {{ forms.volume({
+                id: 'photoVolumeId',
+                name: 'photoVolumeId',
+                options: volumeOptions,
+                value: photoVolume.id ?? null,
+            }) }}
+        </div>
+        <div class="flex-grow">
+            {{ forms.text({
+                id: 'photoSubpath',
+                class: 'ltr',
+                name: 'photoSubpath',
+                value: subpath,
+                placeholder: "path/to/subfolder"|t('app')
+            }) }}
+        </div>
+    </div>
+{% endmacro %}
+
+{% block content %}
+    <form id="settings-form" method="post" class="centered" accept-charset="UTF-8" data-saveshortcut>
+        {{ actionInput('user-settings/save-user-settings') }}
+        {{ csrfInput() }}
+
+        {% if hasVolumes %}
+            {% set volumeOptions = craft.cp.getVolumeOptions() %}
+            {%  if not photoVolume %}
+                {% set volumeOptions = volumeOptions|unshift({label: 'Select a volume'|t('app'), value: null}) %}
+            {%  endif %}
+
+            {{ forms.field({
+                first: true,
+                label: "User Photo Location"|t('app'),
+                instructions: "Where do you want to store user photos? Note that the subfolder path can contain variables like <code>{username}</code>."|t('app')
+            }, _self.assetLocationInput(volumeOptions, photoVolume, settings.photoSubpath)) }}
+        {% else %}
+            {{ forms.field({
+                first: true,
+                label: "User Photo Volume"|t('app')
+            }, '<p class="error">' ~ "No volumes exist yet."|t('app') ~ '</p>') }}
+        {% endif %}
+
+        {% if CraftEdition == CraftPro %}
+            {{ forms.checkboxField({
+                label: 'Verify email addresses'|t('app'),
+                instructions: "Should new email addresses be verified before getting saved to user accounts? (This also affects new user registration.)"|t('app'),
+                name: 'requireEmailVerification',
+                checked: settings.requireEmailVerification,
+            }) }}
+
+            {{ forms.checkboxField({
+                label: 'Allow public registration'|t('app'),
+                name: 'allowPublicRegistration',
+                checked: settings.allowPublicRegistration,
+                toggle: 'publicRegistrationSettings'
+            }) }}
+
+            <div id="publicRegistrationSettings" class="nested-fields{% if not settings.allowPublicRegistration %} hidden{% endif %}">
+                {{ forms.checkboxField({
+                    label: 'Validate custom fields on public registration'|t('app'),
+                    instructions: 'Whether custom fields should be validated during public registration.'|t('app'),
+                    name: 'validateOnPublicRegistration',
+                    checked: settings.validateOnPublicRegistration,
+                }) }}
+
+                {{ forms.checkboxField({
+                    label: 'Deactivate users by default'|t('app'),
+                    instructions: 'Should users who register their own accounts be deactivated by default? This will prevent them from receiving an activation email or logging in.'|t('app'),
+                    name: 'deactivateByDefault',
+                    checked: settings.deactivateByDefault,
+                }) }}
+
+                {% set groups = [{ label: "None"|t('app'), value: '' }] %}
+                {% for group in craft.app.userGroups.getAllGroups() %}
+                    {% set groups = groups|merge([{ label: group.name, value: group.uid }]) %}
+                {% endfor %}
+
+                {{ forms.selectField({
+                    label: "Default User Group"|t('app'),
+                    instructions: "Choose a user group that publicly-registered members will be added to by default."|t('app'),
+                    name: 'defaultGroup',
+                    options: groups,
+                    value: settings.defaultGroup
+                }) }}
+            </div>
+        {% endif %}
+
+        <div class="buttons">
+            <button type="submit" class="btn submit">{{ 'Save'|t('app') }}</button>
+        </div>
+    </form>
+{% endblock %}

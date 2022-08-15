@@ -9,6 +9,7 @@ namespace craft\queue\jobs;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\i18n\Translation;
 use craft\queue\BaseJob;
 
 /**
@@ -20,38 +21,41 @@ use craft\queue\BaseJob;
 class UpdateSearchIndex extends BaseJob
 {
     /**
-     * @var string|ElementInterface|null The type of elements to update.
+     * @var string The type of elements to update.
+     * @phpstan-var class-string<ElementInterface>
      */
-    public $elementType;
+    public string $elementType;
 
     /**
      * @var int|int[]|null The ID(s) of the element(s) to update
      */
-    public $elementId;
+    public array|int|null $elementId = null;
 
     /**
      * @var int|string|null The site ID of the elements to update, or `'*'` to update all sites
      */
-    public $siteId = '*';
+    public string|int|null $siteId = '*';
 
     /**
      * @var string[]|null The field handles that should be indexed
      * @since 3.4.0
      */
-    public $fieldHandles;
+    public ?array $fieldHandles = null;
 
     /**
      * @inheritdoc
      */
-    public function execute($queue)
+    public function execute($queue): void
     {
+        /** @var string|ElementInterface $class */
+        /** @phpstan-var class-string<ElementInterface>|ElementInterface $class */
         $class = $this->elementType;
         $elements = $class::find()
             ->drafts(null)
             ->provisionalDrafts(null)
             ->id($this->elementId)
             ->siteId($this->siteId)
-            ->anyStatus()
+            ->status(null)
             ->all();
         $total = count($elements);
         $searchService = Craft::$app->getSearch();
@@ -65,8 +69,8 @@ class UpdateSearchIndex extends BaseJob
     /**
      * @inheritdoc
      */
-    protected function defaultDescription(): string
+    protected function defaultDescription(): ?string
     {
-        return Craft::t('app', 'Updating search indexes');
+        return Translation::prep('app', 'Updating search indexes');
     }
 }

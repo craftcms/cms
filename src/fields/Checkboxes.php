@@ -39,16 +39,7 @@ class Checkboxes extends BaseOptionsField
     /**
      * @inheritdoc
      */
-    public $multi = true;
-
-    /**
-     * @inheritdoc
-     */
-    public function init()
-    {
-        parent::init();
-        $this->multi = true;
-    }
+    protected bool $multi = true;
 
     /**
      * @inheritdoc
@@ -61,7 +52,7 @@ class Checkboxes extends BaseOptionsField
     /**
      * @inheritdoc
      */
-    protected function inputHtml($value, ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
     {
         /** @var MultiOptionsFieldData $value */
         if (ArrayHelper::contains($value, 'valid', false, true)) {
@@ -71,8 +62,8 @@ class Checkboxes extends BaseOptionsField
         return Craft::$app->getView()->renderTemplate('_includes/forms/checkboxGroup', [
             'describedBy' => $this->describedBy,
             'name' => $this->handle,
-            'values' => $value,
-            'options' => $this->translatedOptions(),
+            'values' => $this->encodeValue($value),
+            'options' => $this->translatedOptions(true),
         ]);
     }
 

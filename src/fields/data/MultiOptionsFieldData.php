@@ -7,18 +7,20 @@
 
 namespace craft\fields\data;
 
+use ArrayObject;
+
 /**
  * Multi-select option field data class.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class MultiOptionsFieldData extends \ArrayObject
+class MultiOptionsFieldData extends ArrayObject
 {
     /**
      * @var OptionData[]
      */
-    private $_options = [];
+    private array $_options = [];
 
     /**
      * Returns the options.
@@ -35,7 +37,7 @@ class MultiOptionsFieldData extends \ArrayObject
      *
      * @param OptionData[] $options
      */
-    public function setOptions(array $options)
+    public function setOptions(array $options): void
     {
         $this->_options = $options;
     }
@@ -44,7 +46,7 @@ class MultiOptionsFieldData extends \ArrayObject
      * @param mixed $value
      * @return bool
      */
-    public function contains($value): bool
+    public function contains(mixed $value): bool
     {
         $value = (string)$value;
 

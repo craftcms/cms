@@ -12,6 +12,7 @@ use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
 use craft\base\SortableFieldInterface;
+use craft\fields\conditions\TextFieldConditionRule;
 use craft\helpers\Db;
 use LitEmoji\LitEmoji;
 use yii\db\Schema;
@@ -41,52 +42,53 @@ class PlainText extends Field implements PreviewableFieldInterface, SortableFiel
     }
 
     /**
-     * @var string The UI mode of the field.
+     * @var 'normal'|'enlarged' The UI mode of the field.
      * @since 3.5.0
      */
-    public $uiMode = 'normal';
+    public string $uiMode = 'normal';
 
     /**
      * @var string|null The input’s placeholder text
      */
-    public $placeholder;
+    public ?string $placeholder = null;
 
     /**
      * @var bool Whether the input should use monospace font
      */
-    public $code = false;
+    public bool $code = false;
 
     /**
      * @var bool Whether the input should allow line breaks
      */
-    public $multiline = false;
+    public bool $multiline = false;
 
     /**
      * @var int The minimum number of rows the input should have, if multi-line
      */
-    public $initialRows = 4;
+    public int $initialRows = 4;
 
     /**
      * @var int|null The maximum number of characters allowed in the field
      */
-    public $charLimit;
+    public ?int $charLimit = null;
 
     /**
      * @var int|null The maximum number of bytes allowed in the field
      * @since 3.4.0
      */
-    public $byteLimit;
+    public ?int $byteLimit = null;
 
     /**
      * @var string|null The type of database column the field should have in the content table
      */
-    public $columnType;
+    public ?string $columnType = null;
 
     /**
      * @inheritdoc
      */
     public function __construct(array $config = [])
     {
+        // Config normalization
         if (isset($config['limitUnit'], $config['fieldLimit'])) {
             if ($config['limitUnit'] === 'chars') {
                 $config['charLimit'] = (int)$config['fieldLimit'] ?: null;
@@ -96,15 +98,7 @@ class PlainText extends Field implements PreviewableFieldInterface, SortableFiel
             unset($config['limitUnit'], $config['fieldLimit']);
         }
 
-        if (isset($config['charLimit']) && empty($config['charLimit'])) {
-            unset($config['charLimit']);
-        }
-
-        if (isset($config['byteLimit']) && empty($config['byteLimit'])) {
-            unset($config['byteLimit']);
-        }
-
-        if (isset($config['columnType']) && $config['columnType'] === 'auto') {
+        if (($config['columnType'] ?? null) === 'auto') {
             unset($config['columnType']);
         }
 
@@ -117,15 +111,11 @@ class PlainText extends Field implements PreviewableFieldInterface, SortableFiel
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
-        if ($this->placeholder === '') {
-            $this->placeholder = null;
-        }
-
-        if ($this->placeholder !== null) {
+        if (isset($this->placeholder)) {
             $this->placeholder = LitEmoji::shortcodeToUnicode($this->placeholder);
         }
     }
@@ -158,7 +148,7 @@ class PlainText extends Field implements PreviewableFieldInterface, SortableFiel
      *
      * @param string $attribute
      */
-    public function validateFieldLimit(string $attribute)
+    public function validateFieldLimit(string $attribute): void
     {
         if ($bytes = $this->$attribute) {
             if ($attribute === 'charLimit') {
@@ -174,7 +164,7 @@ class PlainText extends Field implements PreviewableFieldInterface, SortableFiel
     /**
      * @inheritdoc
      */
-    public function getSettingsHtml()
+    public function getSettingsHtml(): ?string
     {
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/PlainText/settings',
             [
@@ -193,19 +183,19 @@ class PlainText extends Field implements PreviewableFieldInterface, SortableFiel
 
         if ($this->byteLimit) {
             $bytes = $this->byteLimit;
-        } else if ($this->charLimit) {
+        } elseif ($this->charLimit) {
             $bytes = $this->charLimit * 4;
         } else {
             return Schema::TYPE_TEXT;
         }
 
-        return Schema::TYPE_STRING . "({$bytes})";
+        return Schema::TYPE_STRING . "($bytes)";
     }
 
     /**
      * @inheritdoc
      */
-    public function normalizeValue($value, ElementInterface $element = null)
+    public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
         if ($value !== null) {
             $value = LitEmoji::shortcodeToUnicode($value);
@@ -218,10 +208,9 @@ class PlainText extends Field implements PreviewableFieldInterface, SortableFiel
     /**
      * @inheritdoc
      */
-    protected function inputHtml($value, ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
     {
         return Craft::$app->getView()->renderTemplate('_components/fieldtypes/PlainText/input', [
-            'id' => $this->getInputId(),
             'name' => $this->handle,
             'value' => $value,
             'field' => $this,
@@ -246,7 +235,7 @@ class PlainText extends Field implements PreviewableFieldInterface, SortableFiel
     /**
      * @inheritdoc
      */
-    public function serializeValue($value, ElementInterface $element = null)
+    public function serializeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
         if ($value !== null) {
             $value = LitEmoji::unicodeToShortcode($value);
@@ -257,10 +246,17 @@ class PlainText extends Field implements PreviewableFieldInterface, SortableFiel
     /**
      * @inheritdoc
      */
-    protected function searchKeywords($value, ElementInterface $element): string
+    protected function searchKeywords(mixed $value, ElementInterface $element): string
     {
         $value = (string)$value;
-        $value = LitEmoji::unicodeToShortcode($value);
-        return $value;
+        return LitEmoji::unicodeToShortcode($value);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getElementConditionRuleType(): ?string
+    {
+        return TextFieldConditionRule::class;
     }
 }

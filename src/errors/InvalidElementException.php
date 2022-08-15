@@ -20,7 +20,7 @@ class InvalidElementException extends ElementException
     /**
      * @inheritdoc
      */
-    public function __construct(ElementInterface $element, string $message = null, int $code = 0)
+    public function __construct(ElementInterface $element, ?string $message = null, int $code = 0)
     {
         if ($message === null) {
             $message = "The element “{$element}” is invalid.";

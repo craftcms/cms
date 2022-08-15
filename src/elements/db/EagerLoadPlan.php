@@ -18,30 +18,30 @@ use yii\base\BaseObject;
 class EagerLoadPlan extends BaseObject
 {
     /**
-     * @var string The eager-loading handle
+     * @var string|null The eager-loading handle
      */
-    public $handle;
+    public ?string $handle = null;
 
     /**
-     * @var string The eager-loading alias
+     * @var string|null The eager-loading alias
      */
-    public $alias;
+    public ?string $alias = null;
 
     /**
      * @var array The criteria that should be applied when eager-loading these elements
      */
-    public $criteria = [];
+    public array $criteria = [];
 
     /**
      * @var bool Whether to eager-load the matching elements
      * @since 3.5.12
      */
-    public $all = false;
+    public bool $all = false;
 
     /**
      * @var bool Whether to eager-load the count of the matching elements
      */
-    public $count = false;
+    public bool $count = false;
 
     /**
      * @var callable|null A PHP callable whose return value determines whether to apply eager-loaded elements to the given element.
@@ -56,5 +56,5 @@ class EagerLoadPlan extends BaseObject
     /**
      * @var EagerLoadPlan[] Nested eager-loading plans to apply to the eager-loaded elements.
      */
-    public $nested = [];
+    public array $nested = [];
 }

@@ -1,5 +1,5 @@
 @charset "UTF-8";
-@import "@craftcms/sass/mixins";
+@import '@craftcms/sass/mixins';
 
 #plugins {
   tbody {
@@ -14,14 +14,14 @@
       display: table;
 
       .icon,
-      .details {
+      .plugin-details {
         display: table-cell;
       }
 
       .icon {
         display: block;
         vertical-align: top;
-        @include padding-right(14px);
+        @include margin-right(14px);
         position: relative;
 
         a {
@@ -29,7 +29,8 @@
           line-height: 0;
         }
 
-        svg, img {
+        svg,
+        img {
           display: block;
           width: 44px;
           height: 44px;
@@ -42,7 +43,7 @@
           @include left(26px);
           width: 20px;
           height: 20px;
-          background: no-repeat 0 0 url(images/invalid-icon.svg) ;
+          background: no-repeat 0 0 url(images/invalid-icon.svg);
           background-size: 100% 100%;
 
           &.valid {
@@ -51,7 +52,7 @@
         }
       }
 
-      .details {
+      .plugin-details {
         vertical-align: middle;
 
         .plugin-id {
@@ -71,10 +72,10 @@
             top: -1px;
             @include margin-left(7px);
             user-select: none;
-            border: 1px solid $mediumTextColor;
+            border: 1px solid var(--medium-text-color);
             border-radius: 3px;
             display: inline-flex;
-            height: 16px;
+            height: 18px;
             transition: border-color linear 100ms;
 
             & > .edition-name,
@@ -86,7 +87,7 @@
             }
 
             & > .edition-name {
-              color: $mediumDarkTextColor;
+              color: var(--medium-dark-text-color);
               letter-spacing: 1.5px;
               padding-right: 5px;
               text-transform: uppercase;
@@ -95,8 +96,8 @@
 
             & > .edition-trial {
               position: relative;
-              background: $mediumTextColor;
-              color: $white;
+              background: var(--medium-text-color);
+              color: var(--white);
               border-radius: 0 1px 1px 0;
               letter-spacing: 1px;
               text-transform: lowercase;
@@ -121,13 +122,15 @@
                 body.ltr & {
                   left: -7px;
                   border-width: 0 7px 16px 0;
-                  border-color: transparent $mediumTextColor transparent transparent;
+                  border-color: transparent var(--medium-text-color) transparent
+                    transparent;
                 }
 
                 body.rtl & {
                   right: -7px;
                   border-width: 0 0 16px 7px;
-                  border-color: transparent transparent transparent $mediumTextColor;
+                  border-color: transparent transparent transparent
+                    var(--medium-text-color);
                 }
               }
             }
@@ -135,14 +138,14 @@
 
           a.edition:hover {
             text-decoration: none;
-            border-color: $linkColor;
+            border-color: var(--link-color);
 
             & > .edition-name {
-              color: $linkColor;
+              color: var(--link-color);
             }
 
             & > .edition-trial {
-              background: $linkColor;
+              background: var(--link-color);
             }
 
             & .edition-name + .edition-trial {
@@ -150,18 +153,18 @@
                 body.ltr & {
                   left: -7px;
                   border-width: 0 7px 16px 0;
-                  border-right-color: $linkColor;
+                  border-right-color: var(--link-color);
                 }
 
                 body.rtl & {
-                  border-left-color: $linkColor;
+                  border-left-color: var(--link-color);
                 }
               }
             }
           }
 
           .version {
-            color: $mediumTextColor;
+            color: var(--medium-text-color);
             font-weight: normal;
             @include margin-left(14px);
           }
@@ -176,7 +179,7 @@
           display: flex;
           white-space: nowrap;
           flex-wrap: wrap;
-          color: $lightTextColor;
+          color: var(--light-text-color);
 
           li {
             display: flex;
@@ -191,8 +194,8 @@
               &:before {
                 @include icon;
                 @include margin-right(4px);
-                margin-top: -2px;
-                color: $grey300;
+                margin-top: -3px;
+                color: var(--gray-300);
               }
             }
 
@@ -221,18 +224,20 @@
           .pane {
             margin: 0;
             padding: 3px;
-            background: $grey050;
-            border-radius: $mediumBorderRadius;
+            background: transparentize($inputColor, 0.75);
+            border-radius: var(--medium-border-radius);
 
             input.text {
               font-weight: bold;
               font-size: 11px !important;
               padding: 3px 7px 1px;
               width: 19em;
+              min-height: 0;
             }
           }
 
-          .btn, .spinner {
+          .btn,
+          .spinner {
             margin: 0;
           }
         }
@@ -245,7 +250,7 @@
 
     &:not(.collapsed) {
       .plugin-infos {
-        .details {
+        .plugin-details {
           min-width: 150px;
         }
       }

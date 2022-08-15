@@ -8,6 +8,7 @@
 namespace crafttests\unit\web;
 
 use Codeception\Test\Unit;
+use craft\test\TestCase;
 use craft\web\Response;
 
 /**
@@ -17,21 +18,20 @@ use craft\web\Response;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class ResponseTest extends Unit
+class ResponseTest extends TestCase
 {
     /**
      * @var Response
      */
-    public $response;
+    public Response $response;
 
     /**
      * @dataProvider getContentTypeDataProvider
-     *
      * @param string|null $expected
-     * @param string $format
+     * @param string|null $format
      * @param string|null $contentType
      */
-    public function testGetContentType(?string $expected, ?string $format = null, ?string $contentType = null)
+    public function testGetContentType(?string $expected, ?string $format = null, ?string $contentType = null): void
     {
         $this->response->format = $format ?? Response::FORMAT_RAW;
 
@@ -45,7 +45,7 @@ class ResponseTest extends Unit
     /**
      *
      */
-    public function testSetCacheHeaders()
+    public function testSetCacheHeaders(): void
     {
         $this->response->setCacheHeaders();
         $headers = $this->response->getHeaders();
@@ -61,7 +61,7 @@ class ResponseTest extends Unit
     /**
      *
      */
-    public function testSetLastModifiedHeader()
+    public function testSetLastModifiedHeader(): void
     {
         // Use the current file
         $path = dirname(__DIR__) . '/web/ResponseTest.php';
@@ -77,7 +77,7 @@ class ResponseTest extends Unit
      * @param mixed $url
      * @dataProvider testRedirectDataProvider
      */
-    public function testRedirect(string $expected, $url)
+    public function testRedirect(string $expected, mixed $url): void
     {
         $this->assertEquals($expected, $this->response->redirect($url)->headers->get('location'));
     }
@@ -101,7 +101,7 @@ class ResponseTest extends Unit
     /**
      * @inheritdoc
      */
-    protected function _before()
+    protected function _before(): void
     {
         parent::_before();
         $this->response = new Response();

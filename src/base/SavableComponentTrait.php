@@ -20,15 +20,15 @@ trait SavableComponentTrait
     /**
      * @var int|string|null The component’s ID (could be a temporary one: "new:X")
      */
-    public $id;
+    public int|string|null $id = null;
 
     /**
      * @var DateTime|null The date that the component was created
      */
-    public $dateCreated;
+    public ?DateTime $dateCreated = null;
 
     /**
      * @var DateTime|null The date that the component was last updated
      */
-    public $dateUpdated;
+    public ?DateTime $dateUpdated = null;
 }

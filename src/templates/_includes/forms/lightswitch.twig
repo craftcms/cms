@@ -1,0 +1,82 @@
+{%- set id = id ?? "lightswitch#{random()}" %}
+{%- set on = on ?? false %}
+{%- set indeterminate = not on and (indeterminate ?? false) %}
+{%- set value = value ?? '1' %}
+{%- set indeterminateValue = indeterminateValue ?? '-' %}
+{%- set small = small ?? false %}
+{%- set toggle = toggle ?? null %}
+{%- set reverseToggle = reverseToggle ?? null %}
+{%- set disabled = (disabled ?? false) ? true : false %}
+{%- set onLabel = onLabel ?? label ?? false %}
+{%- set offLabel = offLabel ?? false %}
+{%- set hasOnLabel = onLabel is not same as(false) %}
+{%- set hasOffLabel = offLabel is not same as(false) %}
+{%- set hasLabels = hasOnLabel or hasOffLabel %}
+{%- set descriptionId = descriptionId ?? "#{id}-desc" %}
+
+{%- set containerAttributes = {
+    id: id,
+    class: [
+        'lightswitch',
+        on ? 'on' : null,
+        hasLabels ? 'has-labels' : null,
+        indeterminate ? 'indeterminate' : null,
+        small ? 'small' : null,
+        toggle or reverseToggle ? 'fieldtoggle' : null,
+        disabled ? 'disabled' : null,
+    ]|filter,
+    data: {
+        value: value != '1' ? value : false,
+        'indeterminate-value': indeterminateValue != '-' ? indeterminateValue : false,
+        target: toggle ?: false,
+        'reverse-target': reverseToggle ?: false,
+    },
+    type: 'button',
+    role: 'switch',
+    aria: {
+        checked: on ? 'true' : (indeterminate ? 'mixed' : 'false'),
+        labelledby: labelledBy ?? labelId ?? false,
+        describedby: [describedBy ?? null, hasLabels ? descriptionId : null]|filter|join(' ') ?: false,
+    },
+}|merge(containerAttributes ?? [], recursive=true) %}
+
+{%- if block('attr') is defined %}
+    {%- set containerAttributes = containerAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
+{% endif %}
+
+{% set input %}
+    {% tag 'button' with containerAttributes %}
+        <div class="lightswitch-container">
+            <div class="handle"></div>
+        </div>
+        {% if name is defined -%}
+            {{ hiddenInput(name, on ? value : (indeterminate ? indeterminateValue : ''), {disabled: disabled}) }}
+        {%- endif %}
+    {% endtag %}
+{% endset %}
+
+{% if hasLabels -%}
+    <div class="lightswitch-outer-container">
+        {% if hasLabels %}
+            {{ tag('span', {
+                id: descriptionId,
+                class: 'visually-hidden',
+                text: [
+                    onLabel ? 'Check for {onLabel}.'|t('app', {onLabel: onLabel}),
+                    offLabel ? 'Uncheck for {offLabel}.'|t('app', {offLabel: offLabel}),
+                ]|filter|join(' '),
+            }) }}
+        {% endif %}
+        <div class="lightswitch-inner-container">
+            {% if hasOffLabel %}
+                <span data-toggle="off" aria-hidden="true">{{ offLabel }}</span>
+            {% endif %}
+            {{ input }}
+            {% if hasOnLabel %}
+                <span data-toggle="on" aria-hidden="true">{{ onLabel }}</span>
+            {% endif %}
+        </div>
+    </div>
+{% else %}
+    {{ input }}
+{%- endif %}

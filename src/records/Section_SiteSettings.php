@@ -19,8 +19,8 @@ use yii\db\ActiveQueryInterface;
  * @property int $siteId Site ID
  * @property bool $enabledByDefault Enabled by default
  * @property bool $hasUrls Has URLs
- * @property string $uriFormat URI format
- * @property string $template Template
+ * @property string|null $uriFormat URI format
+ * @property string|null $template Template
  * @property Section $section Section
  * @property Site $site Site
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>

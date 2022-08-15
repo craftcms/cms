@@ -26,7 +26,7 @@ abstract class BaseSystemStatusController extends Controller
      * @param string|int|bool|null $value The new value
      * @throws Throwable
      */
-    protected function set(string $path, $value): void
+    protected function set(string $path, mixed $value): void
     {
         // Allow changes to the project config even if it’s supposed to be read only,
         // and prevent changes from getting written to YAML

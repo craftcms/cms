@@ -23,8 +23,7 @@ class OnController extends BaseSystemStatusController
     /**
      * Turns the system on.
      *
-     * **Example**
-     *
+     * Example:
      * ```
      * $ php craft on
      * The system is now online.

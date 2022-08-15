@@ -18,12 +18,12 @@ use yii\base\Event;
 class EditionChangeEvent extends Event
 {
     /**
-     * @var int|null The old edition
+     * @var int The old edition
      */
-    public $oldEdition;
+    public int $oldEdition;
 
     /**
-     * @var int|null The new edition
+     * @var int The new edition
      */
-    public $newEdition;
+    public int $newEdition;
 }

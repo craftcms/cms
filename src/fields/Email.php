@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
+use craft\fields\conditions\TextFieldConditionRule;
 use craft\helpers\App;
 use craft\helpers\Cp;
 use craft\helpers\Html;
@@ -44,7 +45,18 @@ class Email extends Field implements PreviewableFieldInterface
     /**
      * @var string|null The input’s placeholder text
      */
-    public $placeholder;
+    public ?string $placeholder = null;
+
+    /**
+     * @inheritdoc
+     */
+    public function __construct($config = [])
+    {
+        if (($config['placeholder'] ?? null) === '') {
+            unset($config['placeholder']);
+        }
+        parent::__construct($config);
+    }
 
     /**
      * @inheritdoc
@@ -57,7 +69,7 @@ class Email extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function getSettingsHtml()
+    public function getSettingsHtml(): ?string
     {
         return Cp::textFieldHtml([
             'label' => Craft::t('app', 'Placeholder Text'),
@@ -72,7 +84,7 @@ class Email extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function normalizeValue($value, ElementInterface $element = null)
+    public function normalizeValue(mixed $value, ElementInterface $element = null): mixed
     {
         return $value !== '' ? $value : null;
     }
@@ -80,7 +92,7 @@ class Email extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function serializeValue($value, ElementInterface $element = null)
+    public function serializeValue(mixed $value, ElementInterface $element = null): mixed
     {
         return $value !== null ? StringHelper::idnToUtf8Email($value) : null;
     }
@@ -88,7 +100,7 @@ class Email extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    protected function inputHtml($value, ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
     {
         return Craft::$app->getView()->renderTemplate('_includes/forms/text', [
             'type' => 'email',
@@ -115,12 +127,20 @@ class Email extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function getTableAttributeHtml($value, ElementInterface $element): string
+    public function getElementConditionRuleType(): array|string|null
+    {
+        return TextFieldConditionRule::class;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getTableAttributeHtml(mixed $value, ElementInterface $element): string
     {
         if (!$value) {
             return '';
         }
         $value = Html::encode($value);
-        return "<a href=\"mailto:{$value}\">{$value}</a>";
+        return "<a href=\"mailto:$value\">$value</a>";
     }
 }

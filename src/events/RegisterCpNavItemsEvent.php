@@ -20,5 +20,5 @@ class RegisterCpNavItemsEvent extends Event
     /**
      * @var array The registered control panel nav items
      */
-    public $navItems = [];
+    public array $navItems = [];
 }

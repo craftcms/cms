@@ -7,7 +7,6 @@
 
 namespace craft\test\fixtures\elements;
 
-
 use Craft;
 use craft\base\ElementInterface;
 use craft\elements\GlobalSet;
@@ -26,7 +25,7 @@ abstract class GlobalSetFixture extends BaseElementFixture
     /**
      * @inheritdoc
      */
-    public function load()
+    public function load(): void
     {
         parent::load();
         Craft::$app->getGlobals()->reset();
@@ -35,7 +34,7 @@ abstract class GlobalSetFixture extends BaseElementFixture
     /**
      * @inheritdoc
      */
-    public function unload()
+    public function unload(): void
     {
         parent::unload();
         Craft::$app->getGlobals()->reset();

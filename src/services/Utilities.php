@@ -40,7 +40,7 @@ class Utilities extends Component
      *
      * Utility types must implement [[UtilityInterface]]. [[\craft\base\Utility]] provides a base implementation.
      *
-     * See [Utility Types](https://craftcms.com/docs/3.x/extend/utility-types.html) for documentation on creating utility types.
+     * See [Utility Types](https://craftcms.com/docs/4.x/extend/utility-types.html) for documentation on creating utility types.
      * ---
      * ```php
      * use craft\events\RegisterComponentTypesEvent;
@@ -55,12 +55,13 @@ class Utilities extends Component
      * );
      * ```
      */
-    const EVENT_REGISTER_UTILITY_TYPES = 'registerUtilityTypes';
+    public const EVENT_REGISTER_UTILITY_TYPES = 'registerUtilityTypes';
 
     /**
      * Returns all available utility type classes.
      *
      * @return string[]
+     * @phpstan-return class-string<UtilityInterface>[]
      */
     public function getAllUtilityTypes(): array
     {
@@ -120,11 +121,13 @@ class Utilities extends Component
      * Returns whether the current user is authorized to use a given utility.
      *
      * @param string $class The utility class
+     * @phpstan-param class-string<UtilityInterface> $class
      * @return bool
      */
     public function checkAuthorization(string $class): bool
     {
         /** @var string|UtilityInterface $class */
+        /** @phpstan-var class-string<UtilityInterface>|UtilityInterface $class */
         $utilityId = $class::id();
         $user = Craft::$app->getUser();
 
@@ -137,10 +140,11 @@ class Utilities extends Component
      * @param string $id
      * @return string|null
      */
-    public function getUtilityTypeById(string $id)
+    public function getUtilityTypeById(string $id): ?string
     {
         foreach ($this->getAllUtilityTypes() as $class) {
-            /** @var UtilityInterface $class */
+            /** @var string|UtilityInterface $class */
+            /** @phpstan-var class-string<UtilityInterface>|UtilityInterface $class */
             if ($class::id() === $id) {
                 return $class;
             }

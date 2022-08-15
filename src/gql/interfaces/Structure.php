@@ -7,7 +7,7 @@
 
 namespace craft\gql\interfaces;
 
-use craft\gql\TypeManager;
+use Craft;
 use GraphQL\Type\Definition\Type;
 
 /**
@@ -23,7 +23,7 @@ abstract class Structure extends Element
      */
     public static function getFieldDefinitions(): array
     {
-        return TypeManager::prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), [
+        return Craft::$app->getGql()->prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), [
             'lft' => [
                 'name' => 'lft',
                 'type' => Type::int(),

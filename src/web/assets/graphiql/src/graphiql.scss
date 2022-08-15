@@ -1,5 +1,5 @@
 @charset "UTF-8";
-@import "@craftcms/sass/mixins";
+@import '@craftcms/sass/mixins';
 
 body,
 #graphiql {
@@ -13,8 +13,19 @@ body,
   justify-content: center;
   font-size: 14px;
   line-height: 20px;
-  color: $textColor;
+  color: var(--text-color);
   -webkit-font-smoothing: subpixel-antialiased;
+
+  svg {
+    display: inline-block;
+  }
+
+  select {
+    color: var(--text-color) !important;
+    background-color: transparentize($inputColor, 0.75);
+    border-radius: var(--large-border-radius);
+    padding: 4px;
+  }
 
   .graphiql-container .topBar,
   .graphiql-container .docExplorerShow,
@@ -38,15 +49,15 @@ body,
   .graphiql-container .toolbar-select-options > li.hover,
   .graphiql-container .toolbar-select-options > li:active,
   .graphiql-container .toolbar-select-options > li:hover,
-  .CodeMirror-gutters{
+  .CodeMirror-gutters {
     background: none;
     border: none;
   }
 
   .graphiql-container .history-contents > p:hover,
   .graphiql-container .history-contents > p:active {
-    color: $textColor;
-    background-color: $grey050;
+    color: var(--text-color);
+    background-color: var(--gray-050);
 
     span:not(.history-label) {
       font-size: 14px;
@@ -63,13 +74,14 @@ body,
         direction: rtl;
       }
       padding: 14px 24px;
+      height: 100%;
 
       .title {
         @include sans-serif-font;
         font-size: 18px;
         font-weight: bold;
         line-height: 1.2;
-        color: $textColor;
+        color: var(--text-color);
       }
     }
 
@@ -80,12 +92,13 @@ body,
 
   .doc-explorer-title-bar,
   .history-title-bar {
-    background: $white;
+    background: var(--white);
+    box-sizing: content-box;
   }
 
   .queryWrap,
   .docExplorerWrap,
-  .historyPaneWrap, {
+  .historyPaneWrap {
     @include pane;
     overflow: hidden;
   }
@@ -96,25 +109,26 @@ body,
 
   .queryWrap {
     margin: 0 0 24px 24px;
-    border-radius: $largeBorderRadius;
+    border-radius: var(--large-border-radius);
 
     .CodeMirror-gutters {
-      background: $grey050;
-      box-shadow: inset -1px 0 0 $hairlineColor;
+      background: var(--gray-050);
+      box-shadow: inset -1px 0 0 var(--hairline-color);
     }
 
     .CodeMirror-linenumber {
-      color: $lightTextColor;
+      color: var(--light-text-color);
     }
 
     .variable-editor {
       height: 28px;
 
       .variable-editor-title {
-        background: $grey050;
-        box-shadow: 0 -1px 0 $hairlineColor, 0 1px 0 $hairlineColor;
+        background: var(--gray-050);
+        box-shadow: 0 -1px 0 var(--hairline-color),
+          0 1px 0 var(--hairline-color);
         z-index: 4;
-        color: $lightTextColor;
+        color: var(--light-text-color);
       }
     }
   }
@@ -125,8 +139,8 @@ body,
     }
     .toolbar-button {
       display: inline-block;
-      background-color: $grey200;
-      border-radius: $largeBorderRadius;
+      background-color: var(--gray-200);
+      border-radius: var(--large-border-radius);
       padding: 7px 14px;
       border: none;
       text-align: center;
@@ -135,7 +149,7 @@ body,
       cursor: pointer;
       box-sizing: border-box;
       appearance: none;
-      color: $textColor;
+      color: var(--text-color);
       height: 34px;
       max-width: 100%;
       box-shadow: none;
@@ -150,7 +164,8 @@ body,
       }
     }
 
-    .execute-options, .toolbar-menu-items {
+    .execute-options,
+    .toolbar-menu-items {
       min-width: 100%;
       margin-top: 0;
       @include menu-styles;
@@ -162,7 +177,7 @@ body,
         max-width: unset;
 
         &:hover {
-          @include menu-option-active-styles;
+          @include disclosure-link-hover-styles;
         }
 
         &.selected-schema {
@@ -175,11 +190,11 @@ body,
             @include floatleft;
             @include margin(3px, 0, 0, -17px);
             font-size: 14px;
-            color: $lightTextColor;
+            color: var(--light-text-color);
           }
 
           &:hover {
-            background-color: $white;
+            background-color: var(--white);
           }
         }
       }
@@ -190,8 +205,8 @@ body,
     }
 
     .execute-button {
-      background: linear-gradient(#fdfdfd, #CFD6DC);
-      border: 1px solid #CFD6DC;
+      background: linear-gradient(#fdfdfd, #cfd6dc);
+      border: 1px solid #cfd6dc;
     }
 
     .graphiql-explorer-root {
@@ -233,7 +248,18 @@ body,
     }
 
     .spinner {
-      background: none;
+      animation: none;
+      border: none;
+      display: inline-flex;
+      height: 24px;
+      width: 24px;
+      position: relative;
+    }
+  }
+
+  .graphiql-explorer-graphql-arguments {
+    select {
+      padding: 2px;
     }
   }
 }

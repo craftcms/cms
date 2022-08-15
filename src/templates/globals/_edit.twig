@@ -1,0 +1,45 @@
+{% extends "_layouts/cp" %}
+{% set title = globalSet.name|t('site') %}
+{% set fullPageForm = true %}
+{% set retainScrollOnSaveShortcut = true %}
+
+{% hook "cp.globals.edit" %}
+
+{% block contextMenu %}
+    {% if craft.app.getIsMultiSite() %}
+        {% include "_elements/sitemenu" with {
+            selectedSiteId: globalSet.siteId,
+            urlFormat: cpUrl("globals/#{globalSet.handle}", {site: '{handle}'}),
+        } %}
+    {% endif %}
+{% endblock %}
+
+
+{% block sidebar %}
+    <nav>
+        <ul>
+            {% for theGlobalSet in editableGlobalSets %}
+                <li><a{% if theGlobalSet.handle == globalSet.handle %} class="sel"{% endif %} href="{{ theGlobalSet.getCpEditUrl() }}">{{ theGlobalSet.name|t('site') }}</a></li>
+            {% endfor %}
+        </ul>
+    </nav>
+{% endblock %}
+
+
+{% block content %}
+    {{ actionInput('globals/save-content') }}
+    {{ hiddenInput('setId', globalSet.id) }}
+    {{ hiddenInput('siteId', globalSet.siteId) }}
+    {{ csrfInput() }}
+
+    {% if globalSet.getFieldLayout().getTabs()|length %}
+        <div id="fields">
+            {{ fieldsHtml|raw }}
+        </div>
+    {% else %}
+        {{ "This global set doesn’t have any fields assigned to it in its field layout."|t('app') }}
+    {% endif %}
+
+    {# Give plugins a chance to add other things here #}
+    {% hook "cp.globals.edit.content" %}
+{% endblock %}

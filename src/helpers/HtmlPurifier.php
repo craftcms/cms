@@ -8,6 +8,7 @@
 namespace craft\helpers;
 
 use HTMLPurifier_Config;
+use HTMLPurifier_Encoder;
 
 /**
  * HtmlPurifier provides an ability to clean up HTML from any harmful code.
@@ -23,7 +24,7 @@ class HtmlPurifier extends \yii\helpers\HtmlPurifier
      */
     public static function cleanUtf8(string $string): string
     {
-        return \HTMLPurifier_Encoder::cleanUTF8($string);
+        return HTMLPurifier_Encoder::cleanUTF8($string);
     }
 
     /**
@@ -33,13 +34,14 @@ class HtmlPurifier extends \yii\helpers\HtmlPurifier
      */
     public static function convertToUtf8(string $string, HTMLPurifier_Config $config): string
     {
-        return \HTMLPurifier_Encoder::convertToUTF8($string, $config, null);
+        /** @phpstan-ignore-next-line */
+        return HTMLPurifier_Encoder::convertToUTF8($string, $config, null);
     }
 
     /**
      * @inheritdoc
      */
-    public static function configure($config)
+    public static function configure($config): void
     {
         // Don't set alt attributes to filenames by default
         $config->set('Attr.DefaultImageAlt', '');
@@ -49,6 +51,9 @@ class HtmlPurifier extends \yii\helpers\HtmlPurifier
         // see https://github.com/mewebstudio/Purifier/issues/32#issuecomment-182502361
         // see https://gist.github.com/lluchs/3303693
         if ($def = $config->getDefinition('HTML', true)) {
+
+            /** @var \HTMLPurifier_HTMLDefinition $def */
+
             // Content model actually excludes several tags, not modelled here
             $def->addElement('address', 'Block', 'Flow', 'Common');
             $def->addElement('hgroup', 'Block', 'Required: h1 | h2 | h3 | h4 | h5 | h6', 'Common');

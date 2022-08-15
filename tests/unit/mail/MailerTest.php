@@ -35,23 +35,22 @@ class MailerTest extends TestCase
     /**
      * @var TestMailer
      */
-    public $mailer;
+    public TestMailer $mailer;
 
     /**
      * @var UnitTester
      */
-    protected $tester;
+    protected UnitTester $tester;
 
     /**
      * Tests mail from key composition
      *
      * @dataProvider fromKeyCompositionDataProvider
-     *
-     * @param $key
+     * @param string $key
      * @param array $variables
      * @throws InvalidConfigException
      */
-    public function testFromKeyComposition($key, array $variables = [])
+    public function testFromKeyComposition(string $key, array $variables = []): void
     {
         $res = $this->mailer->composeFromKey($key, $variables);
         self::assertInstanceOf(Message::class, $res);
@@ -62,7 +61,7 @@ class MailerTest extends TestCase
     /**
      *
      */
-    public function testSendMail()
+    public function testSendMail(): void
     {
         $this->_sendMail();
         self::assertInstanceOf(Message::class, $this->tester->grabLastSentEmail());
@@ -73,7 +72,7 @@ class MailerTest extends TestCase
      * @throws SiteNotFoundException
      * @throws ReflectionException
      */
-    public function testSendMailLanguageDetermination()
+    public function testSendMailLanguageDetermination(): void
     {
         $this->_testSendMailLanguage(true, 'nl');
         $this->_testSendMailLanguage(false, 'en-US');
@@ -82,7 +81,7 @@ class MailerTest extends TestCase
     /**
      *
      */
-    public function testDefaultFrom()
+    public function testDefaultFrom(): void
     {
         $this->mailer->from = 'info@craftcms.com';
 
@@ -95,9 +94,21 @@ class MailerTest extends TestCase
     }
 
     /**
+     * Test whether trying to send an email to nobody throws an exception.
+     */
+    public function testRequiresTo(): void
+    {
+        $this->_sendMail();
+        $this->expectExceptionMessage('An email must have a');
+
+        // Since the mock mailer simply stores the data, we won't trigger an exception until we try to unpack the message
+        $this->tester->grabLastSentEmail()->toString();
+    }
+
+    /**
      *
      */
-    public function testEmailVariables()
+    public function testEmailVariables(): void
     {
         $this->_sendMail();
 
@@ -113,44 +124,44 @@ class MailerTest extends TestCase
      * @throws NotSupportedException
      * @throws ServerErrorHttpException
      */
-    public function testMessageProperties()
+    public function testMessageProperties(): void
     {
         Craft::$app->getProjectConfig()->set('email', ['fromName' => '$FROM_EMAIL_NAME', 'fromEmail' => '$FROM_EMAIL_ADDRESS']);
         $this->tester->mockCraftMethods('systemMessages', [
             'getMessage' => new SystemMessage([
                 'body' => '{{fromEmail}} || {{fromName}}',
                 'subject' => '{{fromName}} || {{fromEmail}}',
-            ])
+            ]),
         ]);
 
-        $this->_sendMail();
+        $this->_sendMail('test@craft.test');
 
         /* @var Message $lastMessage */
         $lastMessage = $this->tester->grabLastSentEmail();
 
         self::assertSame('Craft CMS || info@craftcms.com', $lastMessage->getSubject());
-        self::assertStringContainsString('info@craftcms.com || Craft CMS', $lastMessage->swiftMessage->toString());
+        self::assertStringContainsString('info@craftcms.com || Craft CMS', $lastMessage->toString());
     }
 
     /**
      *
      */
-    public function testSendMessageCustomTemplate()
+    public function testSendMessageCustomTemplate(): void
     {
         // Only works for rich peeps.
         Craft::$app->setEdition(Craft::Pro);
         $this->mailer->template = 'withvar';
 
-        $this->_sendMail();
+        $this->_sendMail('test@craft.test');
 
         $lastMessage = $this->tester->grabLastSentEmail();
-        self::assertStringContainsString('Hello iam This is a name', $lastMessage->swiftMessage->toString());
+        self::assertStringContainsString('Hello iam This is a name', $lastMessage->toString());
     }
 
     /**
      *
      */
-    public function testToEmailAddress()
+    public function testToEmailAddress(): void
     {
         Craft::$app->getConfig()->getGeneral()->testToEmailAddress = ['giel@yellowflash.net', 'info@craftcms.com'];
 
@@ -159,14 +170,14 @@ class MailerTest extends TestCase
 
         self::assertSame([
             'giel@yellowflash.net' => 'Test Recipient',
-            'info@craftcms.com' => 'Test Recipient'
+            'info@craftcms.com' => 'Test Recipient',
         ], $lastMessage->to);
     }
 
     /**
      *
      */
-    public function testToEmailAddressWithCustomName()
+    public function testToEmailAddressWithCustomName(): void
     {
         Craft::$app->getConfig()->getGeneral()->testToEmailAddress = ['giel@yellowflash.net' => 'Giel', 'info@craftcms.com' => 'Craft CMS'];
 
@@ -175,7 +186,7 @@ class MailerTest extends TestCase
 
         self::assertSame([
             'giel@yellowflash.net' => 'Giel',
-            'info@craftcms.com' => 'Craft CMS'
+            'info@craftcms.com' => 'Craft CMS',
         ], $lastMessage->to);
     }
 
@@ -186,18 +197,24 @@ class MailerTest extends TestCase
     {
         return [
             ['account_activation', []],
-            ['not_a_key that exists']
+            ['not_a_key that exists'],
         ];
     }
 
-    protected function _sendMail()
+    protected function _sendMail(?string $to = null)
     {
-        $user = Craft::$app->getUsers()->getUserById('1');
-        $this->mailer->send($this->mailer->composeFromKey('account_activation', [
+        $user = Craft::$app->getUsers()->getUserById(1);
+        $message = $this->mailer->composeFromKey('account_activation', [
             'user' => $user,
             'link' => 'https://craftcms.com',
-            'name' => 'This is a name'
-        ]));
+            'name' => 'This is a name',
+        ]);
+
+        if ($to) {
+            $message->setTo($to);
+        }
+
+        $this->mailer->send($message);
     }
 
     /**
@@ -216,7 +233,7 @@ class MailerTest extends TestCase
 
         $this->mailer->send($this->mailer->composeFromKey('account_activation', [
             'user' => new User(),
-            'link' => 'https://craftcms.com'
+            'link' => 'https://craftcms.com',
         ]));
 
         self::assertSame($desiredLang, $this->tester->grabLastSentEmail()->language);
@@ -225,10 +242,12 @@ class MailerTest extends TestCase
     /**
      * @inheritdoc
      */
-    protected function _before()
+    protected function _before(): void
     {
         parent::_before();
 
-        $this->mailer = Craft::$app->getMailer();
+        /** @var TestMailer $mailer */
+        $mailer = Craft::$app->getMailer();
+        $this->mailer = $mailer;
     }
 }

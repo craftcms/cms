@@ -1,0 +1,126 @@
+{% import "_includes/forms" as forms %}
+
+{% set sourceOptions = field.getSourceOptions() %}
+{% set elementType = elementType ?? pluralElementType %}
+
+{% block fieldSettings %}
+    {% block sourcesField %}
+        {% if sourceOptions %}
+            {% if field.allowMultipleSources %}
+                {{ forms.checkboxSelectField({
+                    label: "Sources"|t('app'),
+                    instructions: "Which sources do you want to select {type} from?"|t('app', { type: pluralElementType }),
+                    id: 'sources',
+                    name: 'sources',
+                    options: sourceOptions,
+                    values: field.sources,
+                    showAllOption: true,
+                }) }}
+            {% else %}
+                {{ forms.selectField({
+                    label: "Source"|t('app'),
+                    instructions: "Which source do you want to select {type} from?"|t('app', { type: pluralElementType }),
+                    id: 'source',
+                    name: 'source',
+                    options: sourceOptions,
+                    value: field.source
+                }) }}
+            {% endif %}
+        {% else %}
+            {{ forms.field({
+                label: (field.allowMultipleSources ? "Sources"|t('app') : "Source"|t('app'))
+            }, '<p class="error">' ~ "No sources exist yet."|t('app') ~ '</p>') }}
+        {% endif %}
+    {% endblock %}
+
+    {% block selectionConditionField %}
+        {{ (selectionCondition ?? false) ? selectionCondition|raw }}
+    {% endblock %}
+
+    {% block limitFields %}
+        {% if field.allowLimit %}
+            {{ forms.textField({
+                label: 'Min Relations'|t('app'),
+                instructions: 'The minimum number of {type} that may be selected.'|t('app', {
+                    type: pluralElementType,
+                }),
+                id: 'min-relations',
+                name: 'minRelations',
+                value: field.minRelations,
+                size: 2,
+                errors: field.getErrors('minRelations'),
+            }) }}
+
+            {{ forms.textField({
+                label: 'Max Relations'|t('app'),
+                instructions: 'The maximum number of {type} that may be selected.'|t('app', {
+                    type: pluralElementType,
+                }),
+                id: 'max-relations',
+                name: 'maxRelations',
+                value: field.maxRelations,
+                size: 2,
+                errors: field.getErrors('maxRelations'),
+            }) }}
+        {% endif %}
+    {% endblock %}
+
+    {% block viewModeField %}
+        {{ field.getViewModeFieldHtml()|raw }}
+    {% endblock %}
+
+    {% block selectionLabelField %}
+        {{ forms.textField({
+            label: "Selection Label"|t('app'),
+            instructions: "Enter the text you want to appear on the {type} selection input."|t('app', { type: elementType }),
+            id: 'selectionLabel',
+            name: 'selectionLabel',
+            value: field.selectionLabel,
+            placeholder: field.defaultSelectionLabel(),
+            errors: field.getErrors('selectionLabel')
+        }) }}
+    {% endblock %}
+
+    {% block validateRelatedElementsField %}
+        {{ forms.checkboxField({
+            label: 'Validate related {type}'|t('app', { type: pluralElementType }),
+            instructions: 'Whether validation errors on the related {type} should prevent the source element from being saved.'|t('app', { type: pluralElementType }),
+            id: 'validate-related-elements',
+            name: 'validateRelatedElements',
+            checked: field.validateRelatedElements
+        }) }}
+    {% endblock %}
+
+    {% block advancedSettings %}
+        <hr>
+
+        <a class="fieldtoggle" data-target="advanced">{{ "Advanced"|t('app') }}</a>
+        <div id="advanced" class="hidden">
+
+            {{ forms.checkboxField({
+                label: 'Allow self relations'|t('app'),
+                instructions: 'Whether {type} elements should be allowed to relate to themselves.'|t('app', { type: elementType }),
+                id: 'allow-self-relations',
+                name: 'allowSelfRelations',
+                checked: field.allowSelfRelations,
+            }) }}
+
+            {% if craft.app.getIsMultiSite() %}
+
+                {% block targetSiteField %}
+                    {{ field.getTargetSiteFieldHtml()|raw }}
+                {% endblock %}
+
+                {% block localizeRelationsField %}
+                    {{ forms.checkboxField({
+                        label: 'Manage relations on a per-site basis'|t('app'),
+                        id: 'localize-relations',
+                        name: 'localizeRelations',
+                        checked: field.localizeRelations
+                    }) }}
+                {% endblock %}
+            {% endif %}
+
+        </div>
+    {% endblock %}
+{% endblock %}

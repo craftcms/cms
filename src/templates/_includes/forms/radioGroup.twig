@@ -1,0 +1,35 @@
+{%- set options = options ?? [] %}
+{%- set value = value ?? null %}
+
+{%- set class = (class ?? [])|explodeClass|merge([
+    'radio-group',
+    (toggle ?? false) ? 'fieldtoggle' : null,
+    (disabled ?? false) ? 'disabled' : null,
+]|filter) %}
+
+{%- set containerAttributes = {
+    class: class,
+    data: {
+        'target-prefix': targetPrefix ?? false,
+    },
+}|merge(containerAttributes ?? [], recursive=true) %}
+
+{%- if block('attr') is defined %}
+    {%- set containerAttributes = containerAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
+{% endif %}
+
+{% tag 'div' with containerAttributes %}
+    {%- for key, option in options %}
+        {%- if option is not iterable %}
+            {%- set option = {label: option, value: key} %}
+        {%- endif %}
+        <div>
+            {% include "_includes/forms/radio" with {
+                describedBy: describedBy ?? null,
+                name: name ?? null,
+                checked: (option.value is defined and option.value == value),
+                autofocus: loop.first and (autofocus ?? false) and not craft.app.request.isMobileBrowser(true),
+            }|merge(option) only %}
+        </div>
+    {% endfor %}
+{% endtag %}

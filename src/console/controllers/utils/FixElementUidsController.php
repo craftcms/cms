@@ -49,7 +49,7 @@ class FixElementUidsController extends Controller
             return ExitCode::OK;
         }
 
-        $this->stdout("Found {$total} elements with duplicate UIDs." . PHP_EOL);
+        $this->stdout("Found $total elements with duplicate UIDs." . PHP_EOL);
 
         foreach (Db::each($query) as $result) {
             if (!isset($uids[$result['uid']])) {
@@ -60,7 +60,7 @@ class FixElementUidsController extends Controller
 
             // Duplicate! Give this element a unique UID
             $newUid = StringHelper::UUID();
-            $this->stdout("- Changing {$result['uid']} ({$result['id']}) to {$newUid} ... ");
+            $this->stdout("- Changing {$result['uid']} ({$result['id']}) to $newUid ... ");
             Db::update(Table::ELEMENTS, [
                 'uid' => $newUid,
             ], [

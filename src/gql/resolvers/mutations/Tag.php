@@ -15,6 +15,7 @@ use craft\helpers\Db;
 use craft\models\TagGroup;
 use GraphQL\Error\Error;
 use GraphQL\Type\Definition\ResolveInfo;
+use Throwable;
 
 /**
  * Class SaveTag
@@ -25,19 +26,19 @@ use GraphQL\Type\Definition\ResolveInfo;
 class Tag extends ElementMutationResolver
 {
     /** @inheritdoc */
-    protected $immutableAttributes = ['id', 'uid', 'groupId'];
+    protected array $immutableAttributes = ['id', 'uid', 'groupId'];
 
     /**
      * Save a tag using the passed arguments.
      *
-     * @param $source
+     * @param mixed $source
      * @param array $arguments
-     * @param $context
+     * @param mixed $context
      * @param ResolveInfo $resolveInfo
-     * @return mixed
-     * @throws \Throwable if reasons.
+     * @return TagElement
+     * @throws Throwable if reasons.
      */
-    public function saveTag($source, array $arguments, $context, ResolveInfo $resolveInfo)
+    public function saveTag(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): TagElement
     {
         /** @var TagGroup $tagGroup */
         $tagGroup = $this->getResolutionData('tagGroup');
@@ -73,14 +74,13 @@ class Tag extends ElementMutationResolver
     /**
      * Delete a tag identified by the arguments.
      *
-     * @param $source
+     * @param mixed $source
      * @param array $arguments
-     * @param $context
+     * @param mixed $context
      * @param ResolveInfo $resolveInfo
-     * @return mixed
-     * @throws \Throwable if reasons.
+     * @throws Throwable if reasons.
      */
-    public function deleteTag($source, array $arguments, $context, ResolveInfo $resolveInfo)
+    public function deleteTag(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): void
     {
         $tagId = $arguments['id'];
 
@@ -88,14 +88,12 @@ class Tag extends ElementMutationResolver
         $tag = $elementService->getElementById($tagId, TagElement::class);
 
         if (!$tag) {
-            return true;
+            return;
         }
 
         $tagGroupUid = Db::uidById(Table::TAGGROUPS, $tag->groupId);
         $this->requireSchemaAction('taggroups.' . $tagGroupUid, 'delete');
 
         $elementService->deleteElementById($tagId);
-
-        return true;
     }
 }

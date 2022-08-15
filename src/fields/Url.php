@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementInterface;
 use craft\base\Field;
 use craft\base\PreviewableFieldInterface;
+use craft\fields\conditions\TextFieldConditionRule;
 use craft\helpers\Cp;
 use craft\helpers\Html;
 use craft\helpers\StringHelper;
@@ -33,15 +34,15 @@ class Url extends Field implements PreviewableFieldInterface
     /**
      * @since 3.6.0
      */
-    const TYPE_URL = 'url';
+    public const TYPE_URL = 'url';
     /**
      * @since 3.6.0
      */
-    const TYPE_TEL = 'tel';
+    public const TYPE_TEL = 'tel';
     /**
      * @since 3.6.0
      */
-    const TYPE_EMAIL = 'email';
+    public const TYPE_EMAIL = 'email';
 
     /**
      * @inheritdoc
@@ -63,25 +64,31 @@ class Url extends Field implements PreviewableFieldInterface
      * @var string[] Allowed URL types
      * @since 3.6.0
      */
-    public $types = [
+    public array $types = [
         self::TYPE_URL,
     ];
 
     /**
-     * @var string|null The input’s placeholder text
-     * @deprecated in 3.6.0
-     */
-    public $placeholder;
-
-    /**
      * @var int The maximum length (in bytes) the field can hold
      */
-    public $maxLength = 255;
+    public int $maxLength = 255;
 
     /**
      * @inheritdoc
      */
-    public function fields()
+    public function __construct($config = [])
+    {
+        if (array_key_exists('placeholder', $config)) {
+            unset($config['placeholder']);
+        }
+
+        parent::__construct($config);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function fields(): array
     {
         $fields = parent::fields();
         unset($fields['placeholder']);
@@ -105,13 +112,13 @@ class Url extends Field implements PreviewableFieldInterface
      */
     public function getContentColumnType(): string
     {
-        return Schema::TYPE_STRING . "({$this->maxLength})";
+        return Schema::TYPE_STRING . "($this->maxLength)";
     }
 
     /**
      * @inheritdoc
      */
-    public function getSettingsHtml()
+    public function getSettingsHtml(): ?string
     {
         return
             Cp::checkboxSelectFieldHtml([
@@ -142,7 +149,7 @@ class Url extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    public function normalizeValue($value, ElementInterface $element = null)
+    public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
         if (is_array($value) && isset($value['value'])) {
             $type = $value['type'] ?? self::TYPE_URL;
@@ -186,7 +193,7 @@ class Url extends Field implements PreviewableFieldInterface
     /**
      * @inheritdoc
      */
-    protected function inputHtml($value, ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
     {
         if (is_string($value)) {
             $valueType = $this->_urlType($value);
@@ -263,6 +270,7 @@ JS;
             'div',
             Cp::selectHtml([
                 'id' => "$id-type",
+                'describedBy' => $this->describedBy,
                 'name' => "$this->handle[type]",
                 'options' => $typeOptions,
                 'value' => $valueType,
@@ -315,13 +323,21 @@ JS;
     /**
      * @inheritdoc
      */
-    public function getTableAttributeHtml($value, ElementInterface $element): string
+    public function getElementConditionRuleType(): array|string|null
+    {
+        return TextFieldConditionRule::class;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getTableAttributeHtml(mixed $value, ElementInterface $element): string
     {
         if (!$value) {
             return '';
         }
         $value = Html::encode($value);
-        return "<a href=\"{$value}\" target=\"_blank\">{$value}</a>";
+        return "<a href=\"$value\" target=\"_blank\">$value</a>";
     }
 
     /**
@@ -332,11 +348,11 @@ JS;
      */
     private function _urlType(string $value): string
     {
-        if (strpos($value, 'tel:') === 0) {
+        if (str_starts_with($value, 'tel:')) {
             return self::TYPE_TEL;
         }
 
-        if (strpos($value, 'mailto:') === 0) {
+        if (str_starts_with($value, 'mailto:')) {
             return self::TYPE_EMAIL;
         }
 

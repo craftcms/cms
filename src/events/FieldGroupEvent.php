@@ -19,12 +19,12 @@ use yii\base\Event;
 class FieldGroupEvent extends Event
 {
     /**
-     * @var FieldGroup|null The field group associated with this event.
+     * @var FieldGroup The field group associated with this event.
      */
-    public $group;
+    public FieldGroup $group;
 
     /**
      * @var bool Whether the field group is brand new
      */
-    public $isNew = false;
+    public bool $isNew = false;
 }

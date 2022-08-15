@@ -14,7 +14,6 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\fields\BaseRelationField;
 use craft\fields\Matrix;
-use craft\helpers\ArrayHelper;
 use craft\helpers\StringHelper;
 use craft\models\Site;
 use yii\base\BaseObject;
@@ -28,33 +27,33 @@ use yii\base\InvalidArgumentException;
  */
 class ElementRelationParamParser extends BaseObject
 {
-    const DIR_FORWARD = 0;
-    const DIR_REVERSE = 1;
+    public const DIR_FORWARD = 0;
+    public const DIR_REVERSE = 1;
 
     /**
      * @var int
      */
-    private static $_relateSourceMatrixBlocksCount = 0;
+    private static int $_relateSourceMatrixBlocksCount = 0;
 
     /**
      * @var int
      */
-    private static $_relateTargetMatrixBlocksCount = 0;
+    private static int $_relateTargetMatrixBlocksCount = 0;
 
     /**
      * @var int
      */
-    private static $_relateSourcesCount = 0;
+    private static int $_relateSourcesCount = 0;
 
     /**
      * @var int
      */
-    private static $_relateTargetsCount = 0;
+    private static int $_relateTargetsCount = 0;
 
     /**
      * @var FieldInterface[]|null The custom fields that are game for the query.
      */
-    public $fields;
+    public ?array $fields = null;
 
     /**
      * Normalizes a `relatedTo` param for [[parse()]].
@@ -64,7 +63,7 @@ class ElementRelationParamParser extends BaseObject
      * @throws InvalidArgumentException if any of the relation criteria contain an invalid site handle
      * @since 3.6.11
      */
-    public static function normalizeRelatedToParam($relatedToParam): array
+    public static function normalizeRelatedToParam(mixed $relatedToParam): array
     {
         // Ensure it's an array
         if (!is_array($relatedToParam)) {
@@ -97,7 +96,7 @@ class ElementRelationParamParser extends BaseObject
                     && $relCriteria['field'] === null &&
                     $relCriteria['sourceSite'] === null
                 ) {
-                    ArrayHelper::append($orElements, ...array_slice($relCriteria['element'], 1));
+                    array_push($orElements, ...array_slice($relCriteria['element'], 1));
                     unset($relatedToParam[$i]);
                 }
             }
@@ -119,7 +118,7 @@ class ElementRelationParamParser extends BaseObject
      * @throws InvalidArgumentException if the criteria contains an invalid site handle
      * @since 3.6.11
      */
-    public static function normalizeRelatedToCriteria($relCriteria): array
+    public static function normalizeRelatedToCriteria(mixed $relCriteria): array
     {
         if (
             !is_array($relCriteria) ||
@@ -133,13 +132,6 @@ class ElementRelationParamParser extends BaseObject
             'field' => null,
             'sourceSite' => null,
         ];
-
-        // Check for now-deprecated sourceLocale param
-        if (isset($relCriteria['sourceLocale'])) {
-            Craft::$app->getDeprecator()->log('relatedTo:sourceLocale', 'The `sourceLocale` criteria in `relatedTo` element query params has been deprecated. Use `sourceSite` instead.');
-            $relCriteria['sourceSite'] = $relCriteria['sourceLocale'];
-            unset($relCriteria['sourceLocale']);
-        }
 
         // Normalize the sourceSite param (should be an ID)
         if ($relCriteria['sourceSite'] && !is_numeric($relCriteria['sourceSite'])) {
@@ -188,7 +180,7 @@ class ElementRelationParamParser extends BaseObject
      * @param mixed $relatedToParam
      * @return array|false
      */
-    public function parse($relatedToParam)
+    public function parse(mixed $relatedToParam): array|false
     {
         $relatedToParam = static::normalizeRelatedToParam($relatedToParam);
         $glue = array_shift($relatedToParam);
@@ -204,7 +196,7 @@ class ElementRelationParamParser extends BaseObject
 
             if ($condition) {
                 $conditions[] = $condition;
-            } else if ($glue === 'or') {
+            } elseif ($glue === 'or') {
                 continue;
             } else {
                 return false;
@@ -230,7 +222,7 @@ class ElementRelationParamParser extends BaseObject
      * @param mixed $relCriteria
      * @return mixed
      */
-    private function _subparse($relCriteria)
+    private function _subparse(mixed $relCriteria): mixed
     {
         // Get the element IDs, wherever they are
         $relElementIds = [];
@@ -238,7 +230,6 @@ class ElementRelationParamParser extends BaseObject
         $glue = 'or';
 
         $elementParams = ['element', 'sourceElement', 'targetElement'];
-        $elementParam = null;
 
         foreach ($elementParams as $elementParam) {
             if (isset($relCriteria[$elementParam])) {
@@ -251,7 +242,7 @@ class ElementRelationParamParser extends BaseObject
                         if ($elementParam === 'element') {
                             $relSourceElementIds[] = $element;
                         }
-                    } else if ($element instanceof ElementInterface) {
+                    } elseif ($element instanceof ElementInterface) {
                         if ($elementParam === 'targetElement') {
                             $relElementIds[] = $element->getCanonicalId();
                         } else {
@@ -260,11 +251,11 @@ class ElementRelationParamParser extends BaseObject
                                 $relSourceElementIds[] = $element->getCanonicalId();
                             }
                         }
-                    } else if ($element instanceof ElementQueryInterface) {
+                    } elseif ($element instanceof ElementQueryInterface) {
                         $ids = $element->ids();
-                        ArrayHelper::append($relElementIds, ...$ids);
+                        array_push($relElementIds, ...$ids);
                         if ($elementParam === 'element') {
-                            ArrayHelper::append($relSourceElementIds, ...$ids);
+                            array_push($relSourceElementIds, ...$ids);
                         }
                     }
                 }
@@ -334,7 +325,7 @@ class ElementRelationParamParser extends BaseObject
                 if ($fieldModel instanceof BaseRelationField) {
                     // We'll deal with normal relation fields all together
                     $relationFieldIds[] = $fieldModel->id;
-                } else if ($fieldModel instanceof Matrix) {
+                } elseif ($fieldModel instanceof Matrix) {
                     $blockTypeFieldIds = [];
 
                     // Searching by a specific block type field?
@@ -344,7 +335,7 @@ class ElementRelationParamParser extends BaseObject
                         $blockTypes = Craft::$app->getMatrix()->getBlockTypesByFieldId($fieldModel->id);
 
                         foreach ($blockTypes as $blockType) {
-                            foreach ($blockType->getFields() as $blockTypeField) {
+                            foreach ($blockType->getCustomFields() as $blockTypeField) {
                                 if ($blockTypeField->handle == $fieldHandleParts[1]) {
                                     $blockTypeFieldIds[] = $blockTypeField->id;
                                     break;
@@ -368,10 +359,10 @@ class ElementRelationParamParser extends BaseObject
                         $subQuery = (new Query())
                             ->select(["$sourcesAlias.targetId"])
                             ->from([$sourcesAlias => Table::RELATIONS])
-                            ->innerJoin([$targetMatrixBlocksAlias => Table::MATRIXBLOCKS], "[[{$targetMatrixBlocksAlias}.id]] = [[{$sourcesAlias}.sourceId]]")
-                            ->innerJoin([$targetMatrixElementsAlias => Table::ELEMENTS], "[[{$targetMatrixElementsAlias}.id]] = [[{$targetMatrixBlocksAlias}.id]]")
+                            ->innerJoin([$targetMatrixBlocksAlias => Table::MATRIXBLOCKS], "[[$targetMatrixBlocksAlias.id]] = [[$sourcesAlias.sourceId]]")
+                            ->innerJoin([$targetMatrixElementsAlias => Table::ELEMENTS], "[[$targetMatrixElementsAlias.id]] = [[$targetMatrixBlocksAlias.id]]")
                             ->where([
-                                "$targetMatrixBlocksAlias.ownerId" => $relElementIds,
+                                "$targetMatrixBlocksAlias.primaryOwnerId" => $relElementIds,
                                 "$targetMatrixBlocksAlias.fieldId" => $fieldModel->id,
                                 "$targetMatrixElementsAlias.enabled" => true,
                                 "$targetMatrixElementsAlias.dateDeleted" => null,
@@ -395,10 +386,10 @@ class ElementRelationParamParser extends BaseObject
                         $matrixBlockTargetsAlias = 'matrixblock_targets' . self::$_relateSourceMatrixBlocksCount;
 
                         $subQuery = (new Query())
-                            ->select(["$sourceMatrixBlocksAlias.ownerId"])
+                            ->select(["$sourceMatrixBlocksAlias.primaryOwnerId"])
                             ->from([$sourceMatrixBlocksAlias => Table::MATRIXBLOCKS])
-                            ->innerJoin([$sourceMatrixElementsAlias => Table::ELEMENTS], "[[{$sourceMatrixElementsAlias}.id]] = [[{$sourceMatrixBlocksAlias}.id]]")
-                            ->innerJoin([$matrixBlockTargetsAlias => Table::RELATIONS], "[[{$matrixBlockTargetsAlias}.sourceId]] = [[{$sourceMatrixBlocksAlias}.id]]")
+                            ->innerJoin([$sourceMatrixElementsAlias => Table::ELEMENTS], "[[$sourceMatrixElementsAlias.id]] = [[$sourceMatrixBlocksAlias.id]]")
+                            ->innerJoin([$matrixBlockTargetsAlias => Table::RELATIONS], "[[$matrixBlockTargetsAlias.sourceId]] = [[$sourceMatrixBlocksAlias.id]]")
                             ->where([
                                 "$sourceMatrixElementsAlias.enabled" => true,
                                 "$sourceMatrixElementsAlias.dateDeleted" => null,
@@ -481,10 +472,10 @@ class ElementRelationParamParser extends BaseObject
      * Returns a field model based on its handle or ID.
      *
      * @param mixed $field
-     * @param array|null &$fieldHandleParts
+     * @param array|null $fieldHandleParts
      * @return FieldInterface|null
      */
-    private function _getField($field, array &$fieldHandleParts = null)
+    private function _getField(mixed $field, ?array &$fieldHandleParts = null): ?FieldInterface
     {
         if (is_numeric($field)) {
             $fieldHandleParts = null;

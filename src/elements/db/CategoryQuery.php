@@ -24,7 +24,7 @@ use yii\db\Connection;
  * @property-write string|string[]|CategoryGroup|null $group The category group(s) that resulting categories must belong to
  * @method Category[]|array all($db = null)
  * @method Category|array|null one($db = null)
- * @method Category|array|null nth(int $n, Connection $db = null)
+ * @method Category|array|null nth(int $n, ?Connection $db = null)
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  * @doc-path categories.md
@@ -49,14 +49,14 @@ class CategoryQuery extends ElementQuery
      * @var bool Whether to only return categories that the user has permission to edit.
      * @used-by editable()
      */
-    public $editable = false;
+    public bool $editable = false;
 
     /**
-     * @var int|int[]|null The category group ID(s) that the resulting categories must be in.
+     * @var mixed The category group ID(s) that the resulting categories must be in.
      * @used-by group()
      * @used-by groupId()
      */
-    public $groupId;
+    public mixed $groupId = null;
 
     /**
      * @inheritdoc
@@ -73,9 +73,9 @@ class CategoryQuery extends ElementQuery
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
-        if ($this->withStructure === null) {
+        if (!isset($this->withStructure)) {
             $this->withStructure = true;
         }
 
@@ -86,10 +86,10 @@ class CategoryQuery extends ElementQuery
      * Sets the [[$editable]] property.
      *
      * @param bool $value The property value (defaults to true)
-     * @return static self reference
+     * @return self self reference
      * @uses $editable
      */
-    public function editable(bool $value = true)
+    public function editable(bool $value = true): self
     {
         $this->editable = $value;
         return $this;
@@ -124,23 +124,29 @@ class CategoryQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param string|string[]|CategoryGroup|null $value The property value
-     * @return static self reference
+     * @param mixed $value The property value
+     * @return self self reference
      * @uses $groupId
      */
-    public function group($value)
+    public function group(mixed $value): self
     {
         if ($value instanceof CategoryGroup) {
+            // Special case for a single category group, since we also want to capture the structure ID
             $this->structureId = ($value->structureId ?: false);
             $this->groupId = [$value->id];
-        } else if ($value !== null) {
+        } elseif (Db::normalizeParam($value, function($item) {
+            if (is_string($item)) {
+                $item = Craft::$app->getCategories()->getGroupByHandle($item);
+            }
+            return $item instanceof CategoryGroup ? $item->id : null;
+        })) {
+            $this->groupId = $value;
+        } else {
             $this->groupId = (new Query())
                 ->select(['id'])
                 ->from(Table::CATEGORYGROUPS)
                 ->where(Db::parseParam('handle', $value))
                 ->column();
-        } else {
-            $this->groupId = null;
         }
 
         return $this;
@@ -174,11 +180,11 @@ class CategoryQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param int|int[]|null $value The property value
-     * @return static self reference
+     * @param mixed $value The property value
+     * @return self self reference
      * @uses $groupId
      */
-    public function groupId($value)
+    public function groupId(mixed $value): self
     {
         $this->groupId = $value;
         return $this;
@@ -214,7 +220,7 @@ class CategoryQuery extends ElementQuery
      *
      * @throws QueryAbortedException
      */
-    private function _applyEditableParam()
+    private function _applyEditableParam(): void
     {
         if ($this->editable) {
             // Limit the query to only the category groups the user has permission to edit
@@ -227,17 +233,17 @@ class CategoryQuery extends ElementQuery
     /**
      * Applies the 'groupId' param to the query being prepared.
      */
-    private function _applyGroupIdParam()
+    private function _applyGroupIdParam(): void
     {
         if ($this->groupId) {
             $this->subQuery->andWhere(['categories.groupId' => $this->groupId]);
 
             // Should we set the structureId param?
-            if ($this->structureId === null && count($this->groupId) === 1) {
+            if (!isset($this->structureId) && count($this->groupId) === 1) {
                 $structureId = (new Query())
                     ->select(['structureId'])
                     ->from([Table::CATEGORYGROUPS])
-                    ->where(Db::parseParam('id', $this->groupId))
+                    ->where(Db::parseNumericParam('id', $this->groupId))
                     ->scalar();
                 $this->structureId = (int)$structureId ?: false;
             }
@@ -247,17 +253,17 @@ class CategoryQuery extends ElementQuery
     /**
      * Normalizes the groupId param to an array of IDs or null
      */
-    private function _normalizeGroupId()
+    private function _normalizeGroupId(): void
     {
         if (empty($this->groupId)) {
             $this->groupId = is_array($this->groupId) ? [] : null;
-        } else if (is_numeric($this->groupId)) {
+        } elseif (is_numeric($this->groupId)) {
             $this->groupId = [$this->groupId];
-        } else if (!is_array($this->groupId) || !ArrayHelper::isNumeric($this->groupId)) {
+        } elseif (!is_array($this->groupId) || !ArrayHelper::isNumeric($this->groupId)) {
             $this->groupId = (new Query())
                 ->select(['id'])
                 ->from([Table::CATEGORYGROUPS])
-                ->where(Db::parseParam('id', $this->groupId))
+                ->where(Db::parseNumericParam('id', $this->groupId))
                 ->column();
         }
     }
@@ -265,7 +271,7 @@ class CategoryQuery extends ElementQuery
     /**
      * Applies the 'ref' param to the query being prepared.
      */
-    private function _applyRefParam()
+    private function _applyRefParam(): void
     {
         if (!$this->ref) {
             return;

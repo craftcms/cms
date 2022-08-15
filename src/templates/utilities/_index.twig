@@ -1,0 +1,43 @@
+{% extends "_layouts/cp" %}
+
+{% set title = displayName %}
+
+{% block sidebar %}
+    <nav aria-label="{{ 'Utilities'|t('app') }}">
+        <ul>
+            {% for utility in utilities %}
+                {% set selected = utility.id == id %}
+                <li>
+                    <a class="{% if selected %}sel{% elseif utility.badgeCount %}has-badge{% endif %}" href="{{ url('utilities/'~utility.id) }}">
+                        <span class="icon icon-mask" aria-hidden="true">{{ svg(utility.iconSvg, sanitize=false) }}</span>
+                        <span class="label">{{ utility.displayName }}</span>
+                        {% if not selected and utility.badgeCount %}
+                            <span class="badge" aria-hidden="true">{{ utility.badgeCount|number(decimals=0) }}</span>
+                            {{ tag('span', {
+                                class: 'visually-hidden',
+                                data: {
+                                    notification: true,
+                                },
+                                text: '{num, number} {num, plural, =1{notification} other{notifications}}'|t('app', {
+                                   num: utility.badgeCount,
+                                }),
+                            }) }}
+                        {% endif %}
+                    </a>
+                </li>
+            {% endfor %}
+        </ul>
+    </nav>
+{% endblock %}
+
+{% block toolbar %}
+    {{ toolbarHtml|raw }}
+{% endblock %}
+
+{% block content %}
+    {{ contentHtml|raw }}
+{% endblock %}
+
+{% block footer %}
+    {{ footerHtml|raw }}
+{% endblock %}

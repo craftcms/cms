@@ -24,7 +24,7 @@ class ElementRelationParamParserTest extends TestCase
      * @param array $expected
      * @param mixed $param
      */
-    public function testNormalizeRelatedToParam(array $expected, $param)
+    public function testNormalizeRelatedToParam(array $expected, mixed $param): void
     {
         self::assertEquals($expected, ElementRelationParamParser::normalizeRelatedToParam($param));
     }
@@ -50,7 +50,7 @@ class ElementRelationParamParserTest extends TestCase
      * @param array|false $expected
      * @param mixed $param
      */
-    public function testNormalizeRelatedToCriteria($expected, $param)
+    public function testNormalizeRelatedToCriteria(array|false $expected, mixed $param): void
     {
         if ($expected === false) {
             self::expectException(InvalidArgumentException::class);
@@ -67,7 +67,6 @@ class ElementRelationParamParserTest extends TestCase
     {
         return [
             [false, ['element' => 1, 'sourceSite' => 'notARealSiteHandle']],
-            [false, ['element' => 1, 'sourceLocale' => 'notARealSiteHandle']],
             [['element' => ['or'], 'field' => null, 'sourceSite' => null], []],
             [['element' => ['or', 1], 'field' => null, 'sourceSite' => null], 1],
             [['element' => ['or', 1, 2], 'field' => null, 'sourceSite' => null], [1, 2]],

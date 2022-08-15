@@ -1,0 +1,38 @@
+{% if name is defined and name %}
+    {{ hiddenInput(name, '') }}
+{% endif -%}
+
+{% set elements = (elements is defined ? elements : []) -%}
+{% set criteria = (criteria is defined and criteria ? criteria : null) -%}
+{% set sourceElementId = (sourceElementId is defined and sourceElementId ? sourceElementId : null) -%}
+
+{% from "_includes/forms" import text %}
+
+<div id="{{ id }}" class="elementselect tagselect">
+    <div class="elements">
+        {% for element in elements %}
+            {% include "_elements/element" with { context: 'field' } %}
+        {% endfor %}
+    </div>
+
+    <div class="texticon add icon">
+        {{ text({
+            width: 'auto',
+            placeholder: selectionLabel,
+            describedBy: describedBy ?? false,
+        }) }}
+        <div class="spinner hidden"></div>
+    </div>
+</div>
+
+{% set jsSettings = {
+    id: id|namespaceInputId,
+    name: name|namespaceInputName,
+    tagGroupId: tagGroupId,
+    sourceElementId: sourceElementId ?: null,
+    targetSiteId: targetSiteId
+} %}
+
+{% js %}
+    new Craft.TagSelectInput({{ jsSettings|json_encode|raw }});
+{% endjs %}

@@ -21,7 +21,9 @@ use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
 use craft\migrations\CreateDbCacheTable;
 use craft\migrations\CreatePhpSessionTable;
+use PDOException;
 use Seld\CliPrompt\CliPrompt;
+use Throwable;
 use yii\base\InvalidConfigException;
 use yii\console\ExitCode;
 use yii\db\Exception as DbException;
@@ -35,50 +37,50 @@ use yii\db\Exception as DbException;
 class SetupController extends Controller
 {
     /**
-     * @var string|null The database driver to use. Either 'mysql' for MySQL or 'pgsql' for PostgreSQL.
+     * @var string|null The database driver to use. Either `'mysql'` for MySQL or `'pgsql'` for PostgreSQL.
      */
-    public $driver;
+    public ?string $driver = null;
     /**
-     * @var string|null The database server name or IP address. Usually 'localhost' or '127.0.0.1'.
+     * @var string|null The database server name or IP address. Usually `'localhost'` or `'127.0.0.1'`.
      */
-    public $server;
+    public ?string $server = null;
     /**
      * @var int|null The database server port. Defaults to 3306 for MySQL and 5432 for PostgreSQL.
      */
-    public $port;
+    public ?int $port = null;
     /**
      * @var string|null The database username to connect with.
      */
-    public $user;
+    public ?string $user = null;
     /**
      * @var string|null The database password to connect with.
      */
-    public $password;
+    public ?string $password = null;
     /**
      * @var string|null The name of the database to select.
      */
-    public $database;
+    public ?string $database = null;
     /**
      * @var string|null The schema that Postgres is configured to use by default (PostgreSQL only).
      * @see https://www.postgresql.org/docs/8.2/static/ddl-schemas.html
      */
-    public $schema;
+    public ?string $schema = null;
     /**
      * @var string|null The table prefix to add to all database tables. This can
      * be no more than 5 characters, and must be all lowercase.
      */
-    public $tablePrefix;
+    public ?string $tablePrefix = null;
 
     /**
      * @var bool Whether existing environment variables should be used as the default values by the `db-creds` command.
      * @see _env()
      */
-    private $_useEnvDefaults = true;
+    private bool $_useEnvDefaults = true;
 
     /**
      * @inheritdoc
      */
-    public function options($actionID)
+    public function options($actionID): array
     {
         $options = parent::options($actionID);
 
@@ -98,6 +100,9 @@ class SetupController extends Controller
 
     /**
      * Sets up all the things.
+     *
+     * This is an interactive wrapper for the `setup/app-id`, `setup/security-key`, `setup/db-creds`,
+     * and `install` commands, each of which support being run non-interactively.
      *
      * @return int
      */
@@ -187,10 +192,10 @@ EOD;
     {
         $this->stdout('Generating an application ID ... ', Console::FG_YELLOW);
         $key = 'CraftCMS--' . StringHelper::UUID();
-        if (!$this->_setEnvVar('APP_ID', $key)) {
+        if (!$this->_setEnvVar('CRAFT_APP_ID', $key)) {
             return ExitCode::UNSPECIFIED_ERROR;
         }
-        $this->stdout("done ({$key})" . PHP_EOL, Console::FG_YELLOW);
+        $this->stdout("done ($key)" . PHP_EOL, Console::FG_YELLOW);
         return ExitCode::OK;
     }
 
@@ -203,12 +208,12 @@ EOD;
     {
         $this->stdout('Generating a security key ... ', Console::FG_YELLOW);
         $key = Craft::$app->getSecurity()->generateRandomString();
-        if (!$this->_setEnvVar('SECURITY_KEY', $key)) {
+        if (!$this->_setEnvVar('CRAFT_SECURITY_KEY', $key)) {
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
         Craft::$app->getConfig()->getGeneral()->securityKey = $key;
-        $this->stdout("done ({$key})" . PHP_EOL, Console::FG_YELLOW);
+        $this->stdout("done ($key)" . PHP_EOL, Console::FG_YELLOW);
         return ExitCode::OK;
     }
 
@@ -224,7 +229,7 @@ EOD;
         top:
 
         // driver
-        $envDriver = App::env('DB_DRIVER');
+        $envDriver = App::env('CRAFT_DB_DRIVER');
         $this->driver = $this->prompt('Which database driver are you using? (mysql or pgsql)', [
             'required' => true,
             'default' => $this->driver ?? $envDriver ?: 'mysql',
@@ -237,14 +242,14 @@ EOD;
         // server
         $this->server = $this->prompt('Database server name or IP address:', [
             'required' => true,
-            'default' => $this->server ?? $this->_envDefault('DB_SERVER') ?? '127.0.0.1',
+            'default' => $this->server ?? $this->_envDefault('CRAFT_DB_SERVER') ?? '127.0.0.1',
         ]);
         $this->server = strtolower($this->server);
 
         // port
         $this->port = (int)$this->prompt('Database port:', [
             'required' => true,
-            'default' => $this->port ?? $this->_envDefault('DB_PORT') ?? ($this->driver === Connection::DRIVER_MYSQL ? 3306 : 5432),
+            'default' => $this->port ?? $this->_envDefault('CRAFT_DB_PORT') ?? ($this->driver === Connection::DRIVER_MYSQL ? 3306 : 5432),
             'validator' => function(string $input): bool {
                 return is_numeric($input);
             },
@@ -254,11 +259,11 @@ EOD;
 
         // user & password
         $this->user = $this->prompt('Database username:', [
-            'default' => $this->user ?? $this->_envDefault('DB_USER') ?? 'root',
+            'default' => $this->user ?? $this->_envDefault('CRAFT_DB_USER') ?? 'root',
         ]);
 
         if (!$this->password && $this->interactive) {
-            $envPassword = App::env('DB_PASSWORD');
+            $envPassword = App::env('CRAFT_DB_PASSWORD');
             if ($envPassword && $this->confirm('Use the password provided by $DB_PASSWORD?', true)) {
                 $this->password = $envPassword;
             } else {
@@ -267,6 +272,7 @@ EOD;
             }
         }
 
+        /** @phpstan-ignore-next-line */
         if ($badUserCredentials) {
             $badUserCredentials = false;
             goto test;
@@ -279,12 +285,12 @@ EOD;
         }
         $this->database = $this->prompt('Database name:', [
             'required' => true,
-            'default' => $this->database ?? $this->_envDefault('DB_DATABASE') ?? null,
+            'default' => $this->database ?? $this->_envDefault('CRAFT_DB_DATABASE') ?? null,
         ]);
 
         // tablePrefix
         $this->tablePrefix = $this->prompt('Database table prefix' . ($this->tablePrefix ? ' (type "none" for none)' : '') . ':', [
-            'default' => $this->tablePrefix ?? $this->_envDefault('DB_TABLE_PREFIX') ?? null,
+            'default' => $this->tablePrefix ?? $this->_envDefault('CRAFT_DB_TABLE_PREFIX') ?? null,
             'validator' => function(string $input): bool {
                 if (strlen(StringHelper::ensureRight($input, '_')) > 6) {
                     $this->stderr('The table prefix must be 5 or less characters long.' . PHP_EOL, Console::FG_RED);
@@ -304,10 +310,11 @@ EOD;
 
         test:
 
+        /** @phpstan-ignore-next-line */
         if (!isset($dbConfig)) {
             try {
                 $dbConfig = Craft::$app->getConfig()->getDb();
-            } catch (InvalidConfigException $e) {
+            } catch (InvalidConfigException) {
                 $dbConfig = new DbConfig();
             }
         }
@@ -316,7 +323,7 @@ EOD;
         $dbConfig->server = $this->server;
         $dbConfig->port = $this->port;
         $dbConfig->database = $this->database;
-        $dbConfig->dsn = "{$this->driver}:host={$this->server};port={$this->port};dbname={$this->database};";
+        $dbConfig->dsn = "$this->driver:host=$this->server;port=$this->port;dbname=$this->database;";
         $dbConfig->user = $this->user;
         $dbConfig->password = $this->password;
         $dbConfig->tablePrefix = $this->tablePrefix;
@@ -336,7 +343,7 @@ EOD;
             // 1045: Access denied for user (username, password)
             // 1049: Unknown database (database)
             // 2002: Connection timed out (server)
-            /** @var \PDOException $pdoException */
+            /** @var PDOException $pdoException */
             $pdoException = $e->getPrevious()->getPrevious() ?? $e->getPrevious() ?? $e;
             $this->stderr('failed: ' . $pdoException->getMessage() . PHP_EOL, Console::FG_RED);
 
@@ -359,9 +366,9 @@ EOD;
             }
 
             if (
-                strpos($message, 'Access denied for user') !== false ||
-                strpos($message, 'no password supplied') !== false ||
-                strpos($message, 'password authentication failed for user') !== false
+                str_contains($message, 'Access denied for user') ||
+                str_contains($message, 'no password supplied') ||
+                str_contains($message, 'password authentication failed for user')
             ) {
                 $this->stdout('Try with a different username and/or password.' . PHP_EOL, Console::FG_YELLOW);
                 $badUserCredentials = true;
@@ -382,21 +389,21 @@ EOD;
             if ($dbConfig->setSchemaOnConnect) {
                 $this->schema = $this->prompt('Database schema:', [
                     'required' => true,
-                    'default' => $this->schema ?? App::env('DB_SCHEMA') ?: 'public',
+                    'default' => $this->schema ?? App::env('CRAFT_DB_SCHEMA') ?? 'public',
                 ]);
                 $db->createCommand("SET search_path TO $this->schema;")->execute();
-            } else if ($this->schema === null) {
+            } elseif ($this->schema === null) {
                 // Make sure that the DB is actually configured to use the provided schema by default
                 $searchPath = $db->createCommand('SHOW search_path')->queryScalar();
-                $defaultSchemas = array_map('trim', explode(',', $searchPath)) ?: ['public'];
+                $defaultSchemas = ArrayHelper::filterEmptyStringsFromArray(array_map('trim', explode(',', $searchPath))) ?: ['public'];
 
                 // Get the available schemas (h/t https://dba.stackexchange.com/a/40051/205387)
                 try {
                     $allSchemas = $db->createCommand('SELECT schema_name FROM information_schema.schemata')->queryColumn();
-                } catch (DbException $e) {
+                } catch (DbException) {
                     try {
                         $allSchemas = $db->createCommand('SELECT nspname FROM pg_catalog.pg_namespace')->queryColumn();
-                    } catch (DbException $e) {
+                    } catch (DbException) {
                         $allSchemas = null;
                     }
                 }
@@ -439,24 +446,24 @@ EOD;
         $this->stdout('Saving database credentials to your .env file ... ', Console::FG_YELLOW);
 
         // If there's a DB_DSN environment variable, go with that
-        if (App::env('DB_DSN') !== false) {
-            if (!$this->_setEnvVar('DB_DSN', $dbConfig->dsn)) {
+        if (App::env('CRAFT_DB_DSN') !== null) {
+            if (!$this->_setEnvVar('CRAFT_DB_DSN', $dbConfig->dsn)) {
                 return ExitCode::UNSPECIFIED_ERROR;
             }
-        } else if (
-            !$this->_setEnvVar('DB_DRIVER', $this->driver) ||
-            !$this->_setEnvVar('DB_SERVER', $this->server) ||
-            !$this->_setEnvVar('DB_PORT', $this->port) ||
-            !$this->_setEnvVar('DB_DATABASE', $this->database)
+        } elseif (
+            !$this->_setEnvVar('CRAFT_DB_DRIVER', $this->driver) ||
+            !$this->_setEnvVar('CRAFT_DB_SERVER', $this->server) ||
+            !$this->_setEnvVar('CRAFT_DB_PORT', $this->port) ||
+            !$this->_setEnvVar('CRAFT_DB_DATABASE', $this->database)
         ) {
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
         if (
-            !$this->_setEnvVar('DB_USER', $this->user) ||
-            !$this->_setEnvVar('DB_PASSWORD', $this->password) ||
-            !$this->_setEnvVar('DB_SCHEMA', $this->schema) ||
-            !$this->_setEnvVar('DB_TABLE_PREFIX', $this->tablePrefix)
+            !$this->_setEnvVar('CRAFT_DB_USER', $this->user) ||
+            !$this->_setEnvVar('CRAFT_DB_PASSWORD', $this->password) ||
+            !$this->_setEnvVar('CRAFT_DB_SCHEMA', $this->schema) ||
+            !$this->_setEnvVar('CRAFT_DB_TABLE_PREFIX', $this->tablePrefix)
         ) {
             return ExitCode::UNSPECIFIED_ERROR;
         }
@@ -526,12 +533,12 @@ EOD;
      *
      * @param string $command
      */
-    private function _outputCommand(string $command)
+    private function _outputCommand(string $command): void
     {
         $script = FileHelper::normalizePath($this->request->getScriptFile());
-        if (!Platform::isWindows() && ($home = App::env('HOME')) !== false) {
+        if (!Platform::isWindows() && ($home = App::env('HOME')) !== null) {
             $home = FileHelper::normalizePath($home);
-            if (strpos($script, $home . DIRECTORY_SEPARATOR) === 0) {
+            if (str_starts_with($script, $home . DIRECTORY_SEPARATOR)) {
                 $script = '~' . substr($script, strlen($home));
             }
         }
@@ -541,25 +548,25 @@ EOD;
     /**
      * Sets an environment variable value in the project’s `.env` file.
      *
-     * @param $name
-     * @param $value
+     * @param string $name
+     * @param mixed $value
      * @return bool
      */
-    private function _setEnvVar($name, $value): bool
+    private function _setEnvVar(string $name, mixed $value): bool
     {
         $configService = Craft::$app->getConfig();
         $path = $configService->getDotEnvPath();
 
         if (!file_exists($path)) {
-            if ($this->confirm(PHP_EOL . "A .env file doesn't exist at {$path}. Would you like to create one?", true)) {
+            if (!$this->interactive || $this->confirm(PHP_EOL . "A .env file doesn't exist at $path. Would you like to create one?", true)) {
                 try {
                     FileHelper::writeToFile($path, '');
-                } catch (\Throwable $e) {
-                    $this->stderr("Unable to create {$path}: {$e->getMessage()}" . PHP_EOL, Console::FG_RED);
+                } catch (Throwable $e) {
+                    $this->stderr("Unable to create $path: {$e->getMessage()}" . PHP_EOL, Console::FG_RED);
                     return false;
                 }
 
-                $this->stdout("{$path} created. Note you still need to set up PHP dotenv for its values to take effect." . PHP_EOL, Console::FG_YELLOW);
+                $this->stdout("$path created. Note you still need to set up PHP dotenv for its values to take effect." . PHP_EOL, Console::FG_YELLOW);
             } else {
                 $this->stdout(PHP_EOL . 'Action aborted.' . PHP_EOL, Console::FG_YELLOW);
                 return false;
@@ -567,9 +574,9 @@ EOD;
         }
 
         try {
-            $configService->setDotEnvVar($name, $value);
-        } catch (\Throwable $e) {
-            $this->stderr("Unable to set {$name} on {$path}: {$e->getMessage()}" . PHP_EOL, Console::FG_RED);
+            $configService->setDotEnvVar($name, $value ?? '');
+        } catch (Throwable $e) {
+            $this->stderr("Unable to set $name on $path: {$e->getMessage()}" . PHP_EOL, Console::FG_RED);
             return false;
         }
 
@@ -584,6 +591,6 @@ EOD;
      */
     private function _envDefault(string $name): ?string
     {
-        return $this->_useEnvDefaults ? (App::env($name) ?: null) : null;
+        return $this->_useEnvDefaults ? App::env($name) : null;
     }
 }

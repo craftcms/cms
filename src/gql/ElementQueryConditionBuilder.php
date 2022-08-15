@@ -31,6 +31,7 @@ use GraphQL\Language\AST\FragmentSpreadNode;
 use GraphQL\Language\AST\InlineFragmentNode;
 use GraphQL\Language\AST\ListValueNode;
 use GraphQL\Language\AST\Node;
+use GraphQL\Language\AST\NodeList;
 use GraphQL\Language\AST\ObjectFieldNode;
 use GraphQL\Language\AST\ObjectValueNode;
 use GraphQL\Language\AST\VariableNode;
@@ -49,7 +50,6 @@ use yii\base\InvalidArgumentException;
  */
 class ElementQueryConditionBuilder extends Component
 {
-
     /**
      * @event RegisterGqlEagerLoadableFields The event that is triggered when registering additional eager-loading nodes.
      *
@@ -69,24 +69,24 @@ class ElementQueryConditionBuilder extends Component
      *
      * @since 3.5.0
      */
-    const EVENT_REGISTER_GQL_EAGERLOADABLE_FIELDS = 'registerGqlEagerLoadableFields';
+    public const EVENT_REGISTER_GQL_EAGERLOADABLE_FIELDS = 'registerGqlEagerLoadableFields';
 
-    const LOCALIZED_NODENAME = 'localized';
+    public const LOCALIZED_NODENAME = 'localized';
 
     /**
-     * @var ResolveInfo
+     * @var ResolveInfo|null
      */
-    private $_resolveInfo;
+    private ?ResolveInfo $_resolveInfo = null;
 
     /**
      * @var ArgumentManager
      */
-    private $_argumentManager;
+    private ArgumentManager $_argumentManager;
 
-    private $_fragments;
-    private $_eagerLoadableFieldsByContext = [];
-    private $_transformableAssetProperties = ['url', 'width', 'height'];
-    private $_additionalEagerLoadableNodes = null;
+    private array $_fragments;
+    private array $_eagerLoadableFieldsByContext = [];
+    private array $_transformableAssetProperties = ['url', 'width', 'height'];
+    private array $_additionalEagerLoadableNodes;
 
 
     /**
@@ -118,7 +118,7 @@ class ElementQueryConditionBuilder extends Component
      *
      * @param ResolveInfo $resolveInfo
      */
-    public function setResolveInfo(ResolveInfo $resolveInfo)
+    public function setResolveInfo(ResolveInfo $resolveInfo): void
     {
         $this->_resolveInfo = $resolveInfo;
         $this->_fragments = $this->_resolveInfo->fragments;
@@ -130,7 +130,7 @@ class ElementQueryConditionBuilder extends Component
      * @param ArgumentManager $argumentManager
      * @since 3.6.0
      */
-    public function setArgumentManager(ArgumentManager $argumentManager)
+    public function setArgumentManager(ArgumentManager $argumentManager): void
     {
         $this->_argumentManager = $argumentManager;
     }
@@ -139,16 +139,19 @@ class ElementQueryConditionBuilder extends Component
      * Extract the query conditions based on the resolve information passed in the constructor.
      * Returns an array of [methodName => parameters] to be called on the element query.
      *
-     * @param FieldInterface $startingParentField the starting parent field for the extraction, if any
+     * @param FieldInterface|null $startingParentField the starting parent field for the extraction, if any
      * @return array
      */
-    public function extractQueryConditions(FieldInterface $startingParentField = null)
+    public function extractQueryConditions(?FieldInterface $startingParentField = null): array
     {
-        $startingNode = $this->_resolveInfo->fieldNodes[0];
+        /** @var \ArrayObject $fieldNodes */
+        $fieldNodes = $this->_resolveInfo->fieldNodes;
 
-        if ($startingNode === null) {
+        if ($fieldNodes->count() === 0 || empty($fieldNodes[0])) {
             return [];
         }
+
+        $startingNode = $fieldNodes[0];
 
         $rootPlan = new EagerLoadPlan();
 
@@ -167,10 +170,10 @@ class ElementQueryConditionBuilder extends Component
     /**
      * Extract arguments from an array of argument nodes, substituting variables wit the real values.
      *
-     * @param ArgumentNode[] $argumentNodes
+     * @param ArgumentNode[]|NodeList $argumentNodes
      * @return array
      */
-    private function _extractArguments($argumentNodes)
+    private function _extractArguments(NodeList|array $argumentNodes): array
     {
         $arguments = [];
 
@@ -185,8 +188,9 @@ class ElementQueryConditionBuilder extends Component
      * Extract the value from an argument node, even if it's an array or a GraphQL variable.
      *
      * @param Node $argumentNode
+     * @return mixed
      */
-    private function _extractArgumentValue(Node $argumentNode)
+    private function _extractArgumentValue(Node $argumentNode): mixed
     {
         // Deal with a raw object value.
         if ($argumentNode->kind === 'ObjectValue') {
@@ -230,11 +234,10 @@ class ElementQueryConditionBuilder extends Component
      * Figure out whether a node in the parentfield is a special eager-loadable field.
      *
      * @param string $nodeName
-     * @param $parentField
-     *
+     * @param mixed $parentField
      * @return bool
      */
-    private function _isAdditionalEagerLoadableNode(string $nodeName, $parentField): bool
+    private function _isAdditionalEagerLoadableNode(string $nodeName, mixed $parentField): bool
     {
         $nodeList = $this->_getKnownSpecialEagerLoadNodes();
 
@@ -284,9 +287,10 @@ class ElementQueryConditionBuilder extends Component
      */
     private function _getKnownSpecialEagerLoadNodes(): array
     {
-        if ($this->_additionalEagerLoadableNodes === null) {
+        if (!isset($this->_additionalEagerLoadableNodes)) {
             $list = [
                 'photo' => [UserField::class, 'canBeAliased' => false],
+                'addresses' => [UserField::class, 'canBeAliased' => true],
                 'author' => [EntryField::class, 'canBeAliased' => false],
                 'uploader' => [AssetField::class, 'canBeAliased' => false],
                 'parent' => [BaseRelationField::class, 'canBeAliased' => false],
@@ -313,7 +317,7 @@ class ElementQueryConditionBuilder extends Component
             $this->_additionalEagerLoadableNodes = $list;
         }
 
-        return (array)$this->_additionalEagerLoadableNodes;
+        return $this->_additionalEagerLoadableNodes;
     }
 
     /**
@@ -322,10 +326,14 @@ class ElementQueryConditionBuilder extends Component
      * @param Node $node
      * @return array
      */
-    private function _extractTransformDirectiveArguments(Node $node)
+    private function _extractTransformDirectiveArguments(Node $node): array
     {
         $arguments = [];
-        $directives = $node->directives ?? [];
+        if (isset($node->directives)) {
+            $directives = $node->directives;
+        } else {
+            $directives = [];
+        }
 
         foreach ($directives as $directive) {
             if ($directive->name->value === 'transform') {
@@ -339,18 +347,16 @@ class ElementQueryConditionBuilder extends Component
     /**
      * Prepare a list of transform arguments for return.
      *
-     * @param $arguments
+     * @param array $arguments
      * @return array
      */
-    private function _prepareTransformArguments($arguments)
+    private function _prepareTransformArguments(array $arguments): array
     {
         if (empty($arguments)) {
             return [];
         }
 
-        $arguments = [GqlHelper::prepareTransformArguments($arguments)];
-
-        return $arguments;
+        return [GqlHelper::prepareTransformArguments($arguments)];
     }
 
     /**
@@ -358,7 +364,7 @@ class ElementQueryConditionBuilder extends Component
      *
      * @return bool
      */
-    private function _isInsideAssetQuery()
+    private function _isInsideAssetQuery(): bool
     {
         if ($this->_resolveInfo->returnType instanceof WrappingType) {
             return $this->_resolveInfo->returnType->getWrappedType()->name === AssetInterface::getName();
@@ -381,7 +387,7 @@ class ElementQueryConditionBuilder extends Component
      * @param string $context the context in which to search fields
      * @return array
      */
-    private function _traversAndBuildPlans(Node $parentNode, EagerLoadPlan $parentPlan, FieldInterface $parentField = null, Node $wrappingFragment = null, $context = 'global'): array
+    private function _traversAndBuildPlans(Node $parentNode, EagerLoadPlan $parentPlan, ?FieldInterface $parentField = null, ?Node $wrappingFragment = null, string $context = 'global'): array
     {
         $subNodes = $parentNode->selectionSet->selections ?? [];
         $plans = [];
@@ -405,6 +411,7 @@ class ElementQueryConditionBuilder extends Component
 
             // If that's a GraphQL field
             if ($subNode instanceof FieldNode) {
+                /** @var FieldInterface|null $craftContentField */
                 $craftContentField = $this->_eagerLoadableFieldsByContext[$context][$nodeName] ?? null;
 
                 $transformableAssetProperty = ($rootOfAssetQuery || $parentField instanceof AssetField) && in_array($nodeName, $this->_transformableAssetProperties, true);
@@ -420,10 +427,9 @@ class ElementQueryConditionBuilder extends Component
                     $plan = new EagerLoadPlan();
 
                     // Any arguments?
-                    $arguments = $this->_extractArguments($subNode->arguments ?? []);
+                    $arguments = $this->_extractArguments($subNode->arguments);
 
                     $transformEagerLoadArguments = [];
-
 
                     // If it's a place where we can have transforms defined, grab the possible values from directive as well
                     if ($isAssetField) {
@@ -450,11 +456,11 @@ class ElementQueryConditionBuilder extends Component
 
                     // If this a custom Craft content field
                     if ($craftContentField) {
-                        /** @var EagerLoadingFieldInterface $craftContentField */
+                        /** @var FieldInterface|EagerLoadingFieldInterface $craftContentField */
                         $additionalArguments = $craftContentField->getEagerLoadingGqlConditions();
 
                         // Load additional requirements enforced by schema, enforcing permissions to see content
-                        if ($additionalArguments === false) {
+                        if ($additionalArguments === null) {
                             // If `false` was returned, make sure nothing is returned by setting a constraint that always fails.
                             $arguments = ['id' => ['and', 1, 2]];
                         } else {
@@ -506,9 +512,8 @@ class ElementQueryConditionBuilder extends Component
 
                     // Add this to the eager loading list.
                     if (!$transformableAssetProperty) {
-                        /** @var InlineFragmentNode|FragmentDefinitionNode $wrappingFragment */
+                        /** @var InlineFragmentNode|FragmentDefinitionNode|null $wrappingFragment */
                         if ($wrappingFragment) {
-                            // TODO: In Craft 4, get rid of all closures
                             $plan->when = function(Element $element) use ($wrappingFragment) {
                                 return $element->getGqlTypeName() === $wrappingFragment->typeCondition->name->value;
                             };
@@ -533,7 +538,7 @@ class ElementQueryConditionBuilder extends Component
                     }
                 }
                 // If not, see if it's a fragment
-            } else if ($subNode instanceof InlineFragmentNode || $subNode instanceof FragmentSpreadNode) {
+            } elseif ($subNode instanceof InlineFragmentNode || $subNode instanceof FragmentSpreadNode) {
                 $plan = new EagerLoadPlan();
 
                 // For named fragments, replace the node with the actual fragment.
@@ -562,7 +567,7 @@ class ElementQueryConditionBuilder extends Component
                             $nestedPlan->handle = $newHandle;
                         }
                         // This is to be expected, depending on whether the fragment is targeted towards the field itself instead of its subtypes.
-                    } catch (InvalidArgumentException $exception) {
+                    } catch (InvalidArgumentException) {
                         $plan->nested = $this->_traversAndBuildPlans($subNode, $plan, $parentField, $wrappingFragment, $context);
                     }
                     // If we are not, just expand the fragment and traverse it as if on the same level in the query tree
@@ -574,7 +579,7 @@ class ElementQueryConditionBuilder extends Component
             if (isset($plan)) {
                 if (!empty($plan->handle)) {
                     $plans[] = $plan;
-                } else if (!empty($plan->nested)) {
+                } elseif (!empty($plan->nested)) {
                     // Unpack plans generated by parsing fragments.
                     foreach ($plan->nested as $nestedPlan) {
                         $plans[] = $nestedPlan;
@@ -616,7 +621,7 @@ class ElementQueryConditionBuilder extends Component
      * @param null $parentField
      * @return bool
      */
-    public function canNodeBeAliased(string $nodeName, $parentField = null)
+    public function canNodeBeAliased(string $nodeName, $parentField = null): bool
     {
         return !$this->_isAdditionalEagerLoadableNode($nodeName, $parentField) || $this->_canSpecialFieldBeAliased($nodeName);
     }

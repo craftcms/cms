@@ -45,17 +45,18 @@ class DashboardAsset extends AssetBundle
     /**
      * @inheritdoc
      */
-    public function registerAssetFiles($view)
+    public function registerAssetFiles($view): void
     {
         parent::registerAssetFiles($view);
 
         if ($view instanceof View) {
             $view->registerTranslations('app', [
+                'Couldn’t save widget.',
+                'Number of columns',
+                'Widget saved.',
+                'You don’t have any widgets yet.',
                 '{num, number} {num, plural, =1{column} other{columns}}',
                 '{type} Settings',
-                'Widget saved.',
-                'Couldn’t save widget.',
-                'You don’t have any widgets yet.',
             ]);
         }
     }

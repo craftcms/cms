@@ -39,7 +39,7 @@ class ProjectConfig extends Utility
     /**
      * @inheritdoc
      */
-    public static function iconPath()
+    public static function iconPath(): ?string
     {
         return Craft::getAlias('@appicons/sliders.svg');
     }
@@ -70,7 +70,7 @@ class ProjectConfig extends Utility
         return $view->renderTemplate('_components/utilities/ProjectConfig', [
             'readOnly' => $projectConfig->readOnly,
             'invert' => $invert,
-            'yamlExists' => $projectConfig->writeYamlAutomatically || $projectConfig->getDoesYamlExist(),
+            'yamlExists' => $projectConfig->writeYamlAutomatically || $projectConfig->getDoesExternalConfigExist(),
             'areChangesPending' => $areChangesPending,
             'entireConfig' => Yaml::dump($projectConfig->get(), 20, 2),
         ]);

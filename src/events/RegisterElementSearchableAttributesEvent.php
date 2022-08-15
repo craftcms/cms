@@ -20,5 +20,5 @@ class RegisterElementSearchableAttributesEvent extends Event
     /**
      * @var array List of registered searchable attributes for the element type.
      */
-    public $attributes = [];
+    public array $attributes = [];
 }

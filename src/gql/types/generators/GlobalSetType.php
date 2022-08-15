@@ -15,9 +15,7 @@ use craft\gql\base\ObjectType;
 use craft\gql\base\SingleGeneratorInterface;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\elements\GlobalSet as GlobalSetInterface;
-use craft\gql\TypeManager;
 use craft\gql\types\elements\GlobalSet;
-use craft\helpers\Gql;
 use craft\helpers\Gql as GqlHelper;
 
 /**
@@ -31,7 +29,7 @@ class GlobalSetType extends Generator implements GeneratorInterface, SingleGener
     /**
      * @inheritdoc
      */
-    public static function generateTypes($context = null): array
+    public static function generateTypes(mixed $context = null): array
     {
         $globalSets = Craft::$app->getGlobals()->getAllSets();
         $gqlTypes = [];
@@ -52,7 +50,7 @@ class GlobalSetType extends Generator implements GeneratorInterface, SingleGener
     }
 
     /**
-     * @inheritdoc
+     * Returns the generator name.
      */
     public static function getName($context = null): string
     {
@@ -63,21 +61,19 @@ class GlobalSetType extends Generator implements GeneratorInterface, SingleGener
     /**
      * @inheritdoc
      */
-    public static function generateType($context): ObjectType
+    public static function generateType(mixed $context): ObjectType
     {
-        /** @var GlobalSetElement $globalSet */
         $typeName = self::getName($context);
 
         $contentFieldGqlTypes = self::getContentFields($context);
 
-        $globalSetFields = TypeManager::prepareFieldDefinitions(array_merge(GlobalSetInterface::getFieldDefinitions(), $contentFieldGqlTypes), $typeName);
+        $globalSetFields = array_merge(GlobalSetInterface::getFieldDefinitions(), $contentFieldGqlTypes);
 
         return GqlEntityRegistry::getEntity($typeName) ?: GqlEntityRegistry::createEntity($typeName, new GlobalSet([
             'name' => $typeName,
-            'fields' => function() use ($globalSetFields) {
-                return $globalSetFields;
+            'fields' => function() use ($globalSetFields, $typeName) {
+                return Craft::$app->getGql()->prepareFieldDefinitions($globalSetFields, $typeName);
             },
         ]));
     }
-
 }

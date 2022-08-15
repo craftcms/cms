@@ -1,14 +1,14 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace crafttests\unit\helpers\FileHelper;
 
-use Codeception\Test\Unit;
 use craft\helpers\FileHelper;
+use craft\test\TestCase;
 use UnitTester;
 use yii\base\ErrorException;
 use yii\base\Exception;
@@ -22,33 +22,30 @@ use yii\base\InvalidConfigException;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class FileHelperTest extends Unit
+class FileHelperTest extends TestCase
 {
-    /**
-     * @var UnitTester
-     */
-    protected $tester;
+    protected UnitTester $tester;
 
     /**
      * @throws ErrorException
      * @throws Exception
      */
-    public function testCreateRemove()
+    public function testCreateRemove(): void
     {
         $location = dirname(__DIR__, 4) . '/at-root';
         FileHelper::createDirectory('at-root');
         self::assertDirectoryExists($location);
 
         FileHelper::removeDirectory($location);
-        self::assertDirectoryNotExists($location);
+        self::assertDirectoryDoesNotExist($location);
 
-        self::assertNull(FileHelper::removeDirectory('notadir'));
+        FileHelper::removeDirectory('notadir');
     }
 
     /**
      * @throws ErrorException
      */
-    public function testCopyAndClear()
+    public function testCopyAndClear(): void
     {
         $copyIntoDir = __DIR__ . '/sandbox/copyInto';
         $copyFromDir = dirname(__DIR__, 3) . '/_data/assets/files';
@@ -79,7 +76,7 @@ class FileHelperTest extends Unit
     /**
      *
      */
-    public function testClearException()
+    public function testClearException(): void
     {
         $this->tester->expectThrowable(InvalidArgumentException::class, function() {
             FileHelper::clearDirectory('not-a-dir');
@@ -88,24 +85,22 @@ class FileHelperTest extends Unit
 
     /**
      * @dataProvider normalizePathDataProvider
-     *
      * @param string $expected
      * @param string $path
      * @param string $ds
      */
-    public function testNormalizePath(string $expected, string $path, string $ds)
+    public function testNormalizePath(string $expected, string $path, string $ds): void
     {
         self::assertSame($expected, FileHelper::normalizePath($path, $ds));
     }
 
     /**
      * @dataProvider isDirectoryEmptyDataProvider
-     *
      * @param bool $expected
      * @param string $dir
      * @throws ErrorException
      */
-    public function testIsDirectoryEmpty(bool $expected, string $dir)
+    public function testIsDirectoryEmpty(bool $expected, string $dir): void
     {
         self::assertSame($expected, FileHelper::isDirectoryEmpty($dir));
     }
@@ -113,7 +108,7 @@ class FileHelperTest extends Unit
     /**
      *
      */
-    public function testIsDirEmptyExceptions()
+    public function testIsDirEmptyExceptions(): void
     {
         $this->tester->expectThrowable(InvalidArgumentException::class, function() {
             FileHelper::isDirectoryEmpty('aaaaa//notadir');
@@ -128,14 +123,13 @@ class FileHelperTest extends Unit
 
     /**
      * @dataProvider mimeTypeDataProvider
-     *
      * @param string|null $expected
      * @param string $file
      * @param string|null $magicFile
      * @param bool $checkExtension
      * @throws InvalidConfigException
      */
-    public function testGetMimeType(?string $expected, string $file, ?string $magicFile, bool $checkExtension)
+    public function testGetMimeType(?string $expected, string $file, ?string $magicFile, bool $checkExtension): void
     {
         self::assertSame($expected, FileHelper::getMimeType($file, $magicFile, $checkExtension));
     }
@@ -143,63 +137,61 @@ class FileHelperTest extends Unit
     /**
      *
      */
-    public function testGetMimeTypeExceptions()
+    public function testGetMimeTypeExceptions(): void
     {
-        $this->tester->expectThrowable(ErrorException::class, function() {
-            FileHelper::getMimeType('notafile');
-        });
+        if (PHP_VERSION_ID < 80100) {
+            $this->tester->expectThrowable(ErrorException::class, function() {
+                FileHelper::getMimeType('notafile');
+            });
+        }
     }
 
     /**
      * @dataProvider sanitizeFilenameDataProvider
-     *
      * @param string $expected
      * @param string $filename
      * @param array $options
      */
-    public function testSanitizeFilename(string $expected, string $filename, array $options)
+    public function testSanitizeFilename(string $expected, string $filename, array $options): void
     {
         self::assertSame($expected, FileHelper::sanitizeFilename($filename, $options));
     }
 
     /**
      * @dataProvider isSvgDataProvider
-     *
      * @param bool $expected
      * @param string $file
      * @param string|null $magicFile
      * @param bool $checkExtension
      */
-    public function testIsSvg(bool $expected, string $file, ?string $magicFile, bool $checkExtension)
+    public function testIsSvg(bool $expected, string $file, ?string $magicFile, bool $checkExtension): void
     {
         self::assertSame($expected, FileHelper::isSvg($file, $magicFile, $checkExtension));
     }
 
     /**
      * @dataProvider isGifDataProvider
-     *
      * @param bool $expected
      * @param string $input
      * @param string|null $magicFile
      * @param bool $checkExtension
      */
-    public function testIsGif(bool $expected, string $input, ?string $magicFile, bool $checkExtension)
+    public function testIsGif(bool $expected, string $input, ?string $magicFile, bool $checkExtension): void
     {
         self::assertSame($expected, FileHelper::isGif($input, $magicFile, $checkExtension));
     }
 
     /**
      * @dataProvider writeToFileDataProvider
-     *
-     * @param $content
-     * @param $file
-     * @param $contents
-     * @param $options
+     * @param string|false $content
+     * @param string $file
+     * @param string $contents
+     * @param array $options
      * @param bool $removeDir
      * @param string $removeableDir
      * @throws ErrorException
      */
-    public function testWriteToFile($content, $file, $contents, $options, $removeDir = false, $removeableDir = '')
+    public function testWriteToFile(string|false $content, string $file, string $contents, array $options, bool $removeDir = false, string $removeableDir = ''): void
     {
         FileHelper::writeToFile($file, $contents, $options);
 
@@ -216,7 +208,7 @@ class FileHelperTest extends Unit
     /**
      * @throws ErrorException
      */
-    public function testWriteToFileAppend()
+    public function testWriteToFileAppend(): void
     {
         $sandboxDir = __DIR__ . '/sandbox/writeto';
         $file = $sandboxDir . '/test-file';
@@ -236,7 +228,7 @@ class FileHelperTest extends Unit
     /**
      *
      */
-    public function testWriteToFileExceptions()
+    public function testWriteToFileExceptions(): void
     {
         $this->tester->expectThrowable(InvalidArgumentException::class, function() {
             FileHelper::writeToFile('notafile/folder', 'somecontent', ['createDirs' => false]);
@@ -253,7 +245,7 @@ class FileHelperTest extends Unit
             [
                 'c:' . DIRECTORY_SEPARATOR . 'vagrant' . DIRECTORY_SEPARATOR . 'box',
                 'c:/vagrant/box',
-                DIRECTORY_SEPARATOR
+                DIRECTORY_SEPARATOR,
             ],
             ['c:\\vagrant\\box', 'c:/vagrant/box', '\\'],
             ['c:|vagrant|box', 'c:\\vagrant\\box', '|'],
@@ -275,8 +267,8 @@ class FileHelperTest extends Unit
             ['application/pdf', dirname(__DIR__, 3) . '/_data/assets/files/pdf-sample.pdf', null, true],
             ['image/svg+xml', dirname(__DIR__, 3) . '/_data/assets/files/gng.svg', null, true],
             ['application/xml', dirname(__DIR__, 3) . '/_data/assets/files/random.xml', null, true],
-            ['text/plain', dirname(__DIR__, 3) . '/_data/assets/files/test.html', null, false],
-            ['directory', __DIR__, null, true],
+            [PHP_VERSION_ID >= 80100 ? 'text/html' : 'text/plain', dirname(__DIR__, 3) . '/_data/assets/files/test.html', null, false],
+            [PHP_VERSION_ID >= 80100 ? null : 'directory', __DIR__, null, true],
         ];
     }
 
@@ -359,7 +351,7 @@ class FileHelperTest extends Unit
     /**
      * @inheritdoc
      */
-    protected function _before()
+    protected function _before(): void
     {
         if (!is_dir(__DIR__ . '/sandbox/copyInto')) {
             FileHelper::createDirectory(__DIR__ . '/sandbox/copyInto');

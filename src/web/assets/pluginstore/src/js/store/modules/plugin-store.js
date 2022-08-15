@@ -1,273 +1,301 @@
-import api from '../../api/pluginstore'
+import api from '../../api/pluginstore';
 
 /**
  * State
  */
 const state = {
-    categories: [],
-    cmsEditions: null,
-    developer: null,
-    expiryDateOptions: [],
-    featuredPlugins: [],
-    featuredSection: null,
-    featuredSections: [],
-    plugin: null,
-    pluginChangelog: null,
+  categories: [],
+  cmsEditions: null,
+  developer: null,
+  expiryDateOptions: [],
+  featuredPlugins: [],
+  featuredSection: null,
+  featuredSections: [],
+  plugin: null,
+  pluginChangelog: null,
+  pluginChangelogPluginId: null,
 
-    // plugin index
-    plugins: [],
-}
+  // plugin index
+  plugins: [],
+};
 
 /**
  * Getters
  */
 const getters = {
-    getCategoryById(state) {
-        return id => {
-            return state.categories.find(c => c.id == id)
-        }
-    },
+  getCategoryById(state) {
+    return (id) => {
+      return state.categories.find((c) => c.id == id);
+    };
+  },
 
-    getPluginEdition() {
-        return (plugin, editionHandle) => {
-            return plugin.editions.find(edition => edition.handle === editionHandle)
-        }
-    },
+  getPluginEdition() {
+    return (plugin, editionHandle) => {
+      return plugin.editions.find(
+        (edition) => edition.handle === editionHandle
+      );
+    };
+  },
 
-    getPluginIndexParams() {
-        return context => {
-            const perPage = context.perPage ? context.perPage : null
-            const page = context.page ? context.page : 1
-            const orderBy = context.orderBy
-            const direction = context.direction
+  getPluginEditions() {
+    return (plugin) => {
+      return plugin.editions;
+    };
+  },
 
-            return {
-                perPage,
-                page,
-                orderBy,
-                direction,
-            }
-        }
-    },
+  getPluginIndexParams() {
+    return (context) => {
+      const perPage = context.perPage ? context.perPage : null;
+      const page = context.page ? context.page : 1;
+      const orderBy = context.orderBy;
+      const direction = context.direction;
 
-    isPluginEditionFree() {
-        return edition => {
-            return edition.price === null
-        }
-    },
-}
+      return {
+        perPage,
+        page,
+        orderBy,
+        direction,
+      };
+    };
+  },
+
+  isPluginEditionFree() {
+    return (edition) => {
+      return edition.price === null;
+    };
+  },
+
+  isCommercial() {
+    return (plugin) => {
+      return !!plugin.editions.find((edition) => edition.price > 0);
+    };
+  },
+};
 
 /**
  * Actions
  */
 const actions = {
-    cancelRequests() {
-        return api.cancelRequests()
-    },
+  cancelRequests() {
+    return api.cancelRequests();
+  },
 
-    getCoreData({commit}) {
-        return new Promise((resolve, reject) => {
-            api.getCoreData()
-                .then(responseData => {
-                    commit('updateCoreData', {responseData})
-                    resolve(responseData)
-                })
-                .catch(error => {
-                    reject(error)
-                })
+  getCoreData({commit}) {
+    return new Promise((resolve, reject) => {
+      api
+        .getCoreData()
+        .then((responseData) => {
+          commit('updateCoreData', {responseData});
+          resolve(responseData);
         })
-    },
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  },
 
-    getCmsEditions({commit}, payload) {
-        const force = payload && payload.force ? payload.force : false
+  getCmsEditions({commit}, payload) {
+    const force = payload && payload.force ? payload.force : false;
 
-        return new Promise((resolve, reject) => {
-            if (state.cmsEditions && force !== true) {
-                resolve()
-                return
-            }
+    return new Promise((resolve, reject) => {
+      if (state.cmsEditions && force !== true) {
+        resolve();
+        return;
+      }
 
-            api.getCmsEditions()
-                .then(responseData => {
-                    commit('updateCmsEditions', {responseData})
-                    resolve(responseData)
-                })
-                .catch(error => {
-                    reject(error)
-                })
+      api
+        .getCmsEditions()
+        .then((responseData) => {
+          commit('updateCmsEditions', {responseData});
+          resolve(responseData);
         })
-    },
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  },
 
-    getDeveloper({commit}, developerId) {
-        return api.getDeveloper(developerId)
-            .then(responseData => {
-                commit('updateDeveloper', responseData)
-            })
-    },
+  getDeveloper({commit}, developerId) {
+    return api.getDeveloper(developerId).then((responseData) => {
+      commit('updateDeveloper', responseData);
+    });
+  },
 
-    getFeaturedSectionByHandle({commit}, featuredSectionHandle) {
-        return api.getFeaturedSectionByHandle(featuredSectionHandle)
-            .then(responseData => {
-                commit('updateFeaturedSection', responseData)
-            })
-    },
+  getFeaturedSectionByHandle({commit}, featuredSectionHandle) {
+    return api
+      .getFeaturedSectionByHandle(featuredSectionHandle)
+      .then((responseData) => {
+        commit('updateFeaturedSection', responseData);
+      });
+  },
 
-    getFeaturedSections({commit}) {
-        return api.getFeaturedSections()
-            .then(responseData => {
-                commit('updateFeaturedSections', responseData)
-            })
-    },
+  getFeaturedSections({commit}) {
+    return api.getFeaturedSections().then((responseData) => {
+      commit('updateFeaturedSections', responseData);
+    });
+  },
 
-    getPluginChangelog({commit}, pluginId) {
-        return new Promise((resolve, reject) => {
-            api.getPluginChangelog(pluginId)
-                .then(responseData => {
-                    commit('updatePluginChangelog', responseData)
-                    resolve(responseData)
-                })
-                .catch(error => {
-                    reject(error)
-                })
+  getPluginChangelog({commit}, pluginId) {
+    return new Promise((resolve, reject) => {
+      api
+        .getPluginChangelog(pluginId)
+        .then((responseData) => {
+          commit('updatePluginChangelog', {
+            pluginId,
+            changelog: responseData,
+          });
+          resolve(responseData);
         })
-    },
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  },
 
-    getPluginDetails({commit}, pluginId) {
-        return new Promise((resolve, reject) => {
-            api.getPluginDetails(pluginId)
-                .then(responseData => {
-                    commit('updatePluginDetails', responseData)
-                    resolve(responseData)
-                })
-                .catch(error => {
-                    reject(error)
-                })
+  getPluginDetails({commit}, pluginId) {
+    return new Promise((resolve, reject) => {
+      api
+        .getPluginDetails(pluginId)
+        .then((responseData) => {
+          commit('updatePluginDetails', responseData);
+          resolve(responseData);
         })
-    },
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  },
 
-    getPluginDetailsByHandle({commit}, pluginHandle) {
-        return api.getPluginDetailsByHandle(pluginHandle)
-            .then(responseData => {
-                commit('updatePluginDetails', responseData)
-            })
-    },
+  getPluginDetailsByHandle({commit}, pluginHandle) {
+    return api.getPluginDetailsByHandle(pluginHandle).then((responseData) => {
+      commit('updatePluginDetails', responseData);
+    });
+  },
 
-    getPluginsByCategory({getters, dispatch}, context) {
-        return new Promise((resolve, reject) => {
-            const pluginIndexParams = getters['getPluginIndexParams'](context)
+  getPluginsByCategory({getters, dispatch}, context) {
+    return new Promise((resolve, reject) => {
+      const pluginIndexParams = getters['getPluginIndexParams'](context);
 
-            api.getPluginsByCategory(context.categoryId, pluginIndexParams)
-                .then(responseData => {
-                    dispatch('updatePluginIndex', {context, responseData})
-                    resolve(responseData)
-                })
-                .catch(error => {
-                    reject(error)
-                })
+      api
+        .getPluginsByCategory(context.categoryId, pluginIndexParams)
+        .then((responseData) => {
+          dispatch('updatePluginIndex', {context, responseData});
+          resolve(responseData);
         })
-    },
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  },
 
-    getPluginsByDeveloperId({getters, dispatch}, context) {
-        return new Promise((resolve, reject) => {
-            const pluginIndexParams = getters['getPluginIndexParams'](context)
+  getPluginsByDeveloperId({getters, dispatch}, context) {
+    return new Promise((resolve, reject) => {
+      const pluginIndexParams = getters['getPluginIndexParams'](context);
 
-            api.getPluginsByDeveloperId(context.developerId, pluginIndexParams)
-                .then(responseData => {
-                    dispatch('updatePluginIndex', {context, responseData})
-                    resolve(responseData)
-                })
-                .catch(error => {
-                    reject(error)
-                })
+      api
+        .getPluginsByDeveloperId(context.developerId, pluginIndexParams)
+        .then((responseData) => {
+          dispatch('updatePluginIndex', {context, responseData});
+          resolve(responseData);
         })
-    },
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  },
 
-    getPluginsByFeaturedSectionHandle({getters, dispatch}, context) {
-        return new Promise((resolve, reject) => {
-            const pluginIndexParams = getters['getPluginIndexParams'](context)
+  getPluginsByFeaturedSectionHandle({getters, dispatch}, context) {
+    return new Promise((resolve, reject) => {
+      const pluginIndexParams = getters['getPluginIndexParams'](context);
 
-            return api.getPluginsByFeaturedSectionHandle(context.featuredSectionHandle, pluginIndexParams)
-                .then(responseData => {
-                    dispatch('updatePluginIndex', {context, responseData})
-                    resolve(responseData)
-                })
-                .catch(error => {
-                    reject(error)
-                })
+      return api
+        .getPluginsByFeaturedSectionHandle(
+          context.featuredSectionHandle,
+          pluginIndexParams
+        )
+        .then((responseData) => {
+          dispatch('updatePluginIndex', {context, responseData});
+          resolve(responseData);
         })
-    },
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  },
 
-    searchPlugins({getters, dispatch}, context) {
-        return new Promise((resolve, reject) => {
-            const pluginIndexParams = getters['getPluginIndexParams'](context)
+  searchPlugins({getters, dispatch}, context) {
+    return new Promise((resolve, reject) => {
+      const pluginIndexParams = getters['getPluginIndexParams'](context);
 
-            api.searchPlugins(context.searchQuery, pluginIndexParams)
-                .then(responseData => {
-                    dispatch('updatePluginIndex', {context, responseData})
-                    resolve(responseData)
-                })
-                .catch(error => {
-                    reject(error)
-                })
+      api
+        .searchPlugins(context.searchQuery, pluginIndexParams)
+        .then((responseData) => {
+          dispatch('updatePluginIndex', {context, responseData});
+          resolve(responseData);
         })
-    },
+        .catch((error) => {
+          reject(error);
+        });
+    });
+  },
 
-    updatePluginIndex({commit}, {context, responseData}) {
-        if (context.appendData && context.appendData === true) {
-            commit('appendPlugins', responseData.plugins)
-        } else {
-            commit('updatePlugins', responseData.plugins)
-        }
-    },
-}
+  updatePluginIndex({commit}, {context, responseData}) {
+    if (context.appendData && context.appendData === true) {
+      commit('appendPlugins', responseData.plugins);
+    } else {
+      commit('updatePlugins', responseData.plugins);
+    }
+  },
+};
 
 /**
  * Mutations
  */
 const mutations = {
-    appendPlugins(state, plugins) {
-        state.plugins = [...state.plugins, ...plugins]
-    },
+  appendPlugins(state, plugins) {
+    state.plugins = [...state.plugins, ...plugins];
+  },
 
-    updateCoreData(state, {responseData}) {
-        state.categories = responseData.categories
-        state.expiryDateOptions = responseData.expiryDateOptions
-        state.sortOptions = responseData.sortOptions
-    },
+  updateCoreData(state, {responseData}) {
+    state.categories = responseData.categories;
+    state.expiryDateOptions = responseData.expiryDateOptions;
+    state.sortOptions = responseData.sortOptions;
+  },
 
-    updateCmsEditions(state, {responseData}) {
-        state.cmsEditions = responseData.editions
-    },
+  updateCmsEditions(state, {responseData}) {
+    state.cmsEditions = responseData.editions;
+  },
 
-    updateDeveloper(state, developer) {
-        state.developer = developer
-    },
+  updateDeveloper(state, developer) {
+    state.developer = developer;
+  },
 
-    updateFeaturedSection(state, featuredSection) {
-        state.featuredSection = featuredSection
-    },
+  updateFeaturedSection(state, featuredSection) {
+    state.featuredSection = featuredSection;
+  },
 
-    updateFeaturedSections(state, featuredSections) {
-        state.featuredSections = featuredSections
-    },
+  updateFeaturedSections(state, featuredSections) {
+    state.featuredSections = featuredSections;
+  },
 
-    updatePluginChangelog(state, changelog) {
-        state.pluginChangelog = changelog
-    },
+  updatePluginChangelog(state, {pluginId, changelog}) {
+    state.pluginChangelogPluginId = pluginId;
+    state.pluginChangelog = changelog;
+  },
 
-    updatePluginDetails(state, pluginDetails) {
-        state.plugin = pluginDetails
-    },
+  updatePluginDetails(state, pluginDetails) {
+    state.plugin = pluginDetails;
+  },
 
-    updatePlugins(state, plugins) {
-        state.plugins = plugins
-    },
-}
+  updatePlugins(state, plugins) {
+    state.plugins = plugins;
+  },
+};
 
 export default {
-    namespaced: true,
-    state,
-    getters,
-    actions,
-    mutations
-}
+  namespaced: true,
+  state,
+  getters,
+  actions,
+  mutations,
+};

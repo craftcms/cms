@@ -9,6 +9,7 @@ namespace craft\queue\jobs;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\i18n\Translation;
 use craft\queue\BaseJob;
 
 /**
@@ -20,30 +21,31 @@ use craft\queue\BaseJob;
 class PruneRevisions extends BaseJob
 {
     /**
-     * @var string|ElementInterface The type of elements to update.
+     * @var string The type of elements to update.
+     * @phpstan-var class-string<ElementInterface>
      */
-    public $elementType;
+    public string $elementType;
 
     /**
-     * @var int The ID of the source element.
+     * @var int The ID of the canonical element.
      */
-    public $sourceId;
+    public int $canonicalId;
 
     /**
      * @var int The site ID of the source element
      */
-    public $siteId;
+    public int $siteId;
 
     /**
      * @var int|null The maximum number of revisions an element can have
      * @since 3.5.13
      */
-    public $maxRevisions;
+    public ?int $maxRevisions = null;
 
     /**
      * @inheritdoc
      */
-    public function execute($queue)
+    public function execute($queue): void
     {
         if (!$this->maxRevisions) {
             // Make sure maxRevisions is still set
@@ -54,11 +56,13 @@ class PruneRevisions extends BaseJob
             $this->maxRevisions = $generalConfig->maxRevisions;
         }
 
+        /** @var string|ElementInterface $class */
+        /** @phpstan-var class-string<ElementInterface>|ElementInterface $class */
         $class = $this->elementType;
         $extraRevisions = $class::find()
-            ->revisionOf($this->sourceId)
+            ->revisionOf($this->canonicalId)
             ->siteId($this->siteId)
-            ->anyStatus()
+            ->status(null)
             ->orderBy(['num' => SORT_DESC])
             ->offset($this->maxRevisions)
             ->all();
@@ -79,8 +83,8 @@ class PruneRevisions extends BaseJob
     /**
      * @inheritdoc
      */
-    protected function defaultDescription(): string
+    protected function defaultDescription(): ?string
     {
-        return Craft::t('app', 'Pruning extra revisions');
+        return Translation::prep('app', 'Pruning extra revisions');
     }
 }

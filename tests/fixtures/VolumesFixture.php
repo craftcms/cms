@@ -1,20 +1,14 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace crafttests\fixtures;
 
-use Craft;
-use craft\helpers\FileHelper;
-use craft\helpers\Json;
 use craft\records\Volume;
-use craft\services\Volumes;
 use craft\test\ActiveFixture;
-use yii\base\ErrorException;
-use yii\base\Exception;
 
 /**
  * Class VolumesFixture.
@@ -26,8 +20,6 @@ use yii\base\Exception;
  */
 class VolumesFixture extends ActiveFixture
 {
-    const BASE_URL = 'https://cdn.test.craftcms.test/';
-
     /**
      * @inheritdoc
      */
@@ -41,37 +33,5 @@ class VolumesFixture extends ActiveFixture
     /**
      * @inheritdoc
      */
-    public $depends = [FieldLayoutFixture::class];
-
-    /**
-     * @inheritdoc
-     * @throws Exception
-     */
-    public function load()
-    {
-        parent::load();
-
-        // Create the dirs
-        foreach ($this->getData() as $data) {
-            $settings = Json::decodeIfJson($data['settings']);
-            FileHelper::createDirectory($settings['path']);
-        }
-
-        Craft::$app->set('volumes', new Volumes());
-    }
-
-    /**
-     * @inheritdoc
-     * @throws ErrorException
-     */
-    public function unload()
-    {
-        // Remove the dirs
-        foreach ($this->getData() as $data) {
-            $settings = Json::decodeIfJson($data['settings']);
-            FileHelper::removeDirectory($settings['path']);
-        }
-
-        parent::unload();
-    }
+    public $depends = [FieldLayoutFixture::class, FsFixture::class];
 }

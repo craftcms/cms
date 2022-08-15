@@ -22,15 +22,15 @@ class LoginFailureEvent extends Event
      * @var string|null The authentication error key, if the reason is known.
      * @see User
      */
-    public $authError;
+    public ?string $authError = null;
 
     /**
      * @var string The error message that will be presented to the user.
      */
-    public $message;
+    public string $message;
 
     /**
      * @var User|null The user that the login was attempted for, if there was a username/email match
      */
-    public $user;
+    public ?User $user = null;
 }

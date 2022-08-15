@@ -18,6 +18,7 @@ use craft\helpers\StringHelper;
 use craft\helpers\Template;
 use craft\models\DeprecationError;
 use craft\web\twig\Extension;
+use DateTime;
 use Twig\Template as TwigTemplate;
 use yii\base\Application;
 use yii\base\Component;
@@ -36,36 +37,41 @@ class Deprecator extends Component
      * @var bool Whether deprecation warnings should throw exceptions rather than being logged.
      * @since 3.1.18
      */
-    public $throwExceptions = false;
+    public bool $throwExceptions = false;
 
     /**
-     * @var string|false Whether deprecation errors should be logged in the database ('db'),
+     * @var string|false Whether deprecation warnings should be logged in the database ('db'),
      * error logs ('logs'), or not at all (false).
      *
-     * Changing this will prevent deprecation errors from showing up in the "Deprecation Warnings" utility
+     * Changing this will prevent deprecation warnings from showing up in the "Deprecation Warnings" utility
      * or in the "Deprecated" panel in the Debug Toolbar.
      *
      * @since 3.0.7
      */
-    public $logTarget = 'db';
+    public string|false $logTarget = 'db';
 
     /**
-     * @var DeprecationError[] The deprecation errors that were logged in the current request
+     * @var DeprecationError[] The deprecation warnings that were logged in the current request
      */
-    private $_requestLogs = [];
+    private array $_requestLogs = [];
 
     /**
-     * @var DeprecationError[]|null All the unique deprecation errors that have been logged
+     * @var DeprecationError[] The deprecation warnings that still need to be stored in the DB
      */
-    private $_allLogs;
+    private array $_pendingRequestLogs = [];
+
+    /**
+     * @var DeprecationError[]|null All the unique deprecation warnings that have been logged
+     */
+    private ?array $_allLogs = null;
 
     /**
      * @inheritdoc
      * @since 3.4.12
      */
-    public function init()
+    public function init(): void
     {
-        if (!$this->throwExceptions && $this->logTarget === 'db') {
+        if ($this->_storeLogsInDb()) {
             Craft::$app->on(Application::EVENT_AFTER_REQUEST, [$this, 'storeLogs'], null, false);
         }
 
@@ -81,7 +87,7 @@ class Deprecator extends Component
      * @param int|null $line
      * @throws DeprecationException
      */
-    public function log(string $key, string $message, string $file = null, int $line = null)
+    public function log(string $key, string $message, ?string $file = null, ?int $line = null): void
     {
         if ($this->logTarget === false) {
             return;
@@ -105,15 +111,24 @@ class Deprecator extends Component
         $fingerprint = $file . ($line ? ':' . $line : '');
 
         // Don't log the same key/fingerprint twice in the same request
-        $this->_requestLogs["$key-$fingerprint"] = new DeprecationError([
+        $this->_requestLogs["$key-$fingerprint"] = $this->_pendingRequestLogs["$key-$fingerprint"] = new DeprecationError([
             'key' => $key,
             'fingerprint' => $fingerprint,
-            'lastOccurrence' => new \DateTime(),
+            'lastOccurrence' => new DateTime(),
             'file' => $file,
             'line' => $line,
             'message' => $message,
-            'traces' => $this->_cleanTraces($traces),
+            'traces' => $this->_processStackTrace($traces),
         ]);
+
+        if ($this->_storeLogsInDb() && Craft::$app->state >= Application::STATE_AFTER_REQUEST) {
+            $this->storeLogs();
+        }
+    }
+
+    private function _storeLogsInDb(): bool
+    {
+        return !$this->throwExceptions && $this->logTarget === 'db';
     }
 
     /**
@@ -121,33 +136,34 @@ class Deprecator extends Component
      *
      * @since 3.4.12
      */
-    public function storeLogs()
+    public function storeLogs(): void
     {
         $db = Craft::$app->getDb();
 
-        foreach ($this->_requestLogs as $log) {
+        foreach ($this->_pendingRequestLogs as $log) {
             try {
                 Db::upsert(Table::DEPRECATIONERRORS, [
                     'key' => $log->key,
                     'fingerprint' => $log->fingerprint,
-                ], [
                     'lastOccurrence' => Db::prepareDateForDb($log->lastOccurrence),
                     'file' => $log->file,
                     'line' => $log->line,
                     'message' => $log->message,
                     'traces' => Json::encode($log->traces),
                 ]);
-                $log->id = $db->getLastInsertID();
+                $log->id = (int)$db->getLastInsertID();
             } catch (Exception $e) {
                 Craft::warning("Couldn't save deprecation warning: {$e->getMessage()}", __METHOD__);
                 // Craft probably isn’t installed yet
                 break;
             }
         }
+
+        $this->_pendingRequestLogs = [];
     }
 
     /**
-     * Returns the deprecation errors that were logged in the current request.
+     * Returns the deprecation warnings that were logged in the current request.
      *
      * @return DeprecationError[]
      */
@@ -157,7 +173,7 @@ class Deprecator extends Component
     }
 
     /**
-     * Returns the total number of deprecation errors that have been logged.
+     * Returns the total number of deprecation warnings that have been logged.
      *
      * @return int
      */
@@ -174,9 +190,9 @@ class Deprecator extends Component
      * @param int|null $limit
      * @return DeprecationError[]
      */
-    public function getLogs(int $limit = null): array
+    public function getLogs(?int $limit = null): array
     {
-        if ($this->_allLogs !== null) {
+        if (isset($this->_allLogs)) {
             return $this->_allLogs;
         }
 
@@ -200,7 +216,7 @@ class Deprecator extends Component
      * @param int $logId
      * @return DeprecationError|null
      */
-    public function getLogById(int $logId)
+    public function getLogById(int $logId): ?DeprecationError
     {
         $log = $this->_createDeprecationErrorQuery()
             ->where(['id' => $logId])
@@ -265,35 +281,41 @@ class Deprecator extends Component
      */
     private function _findOrigin(array $traces): array
     {
-        // Should we be treating this as as template deprecation log?
+        // Should we be treating this as a template deprecation log?
         if (empty($traces[2]['class']) && isset($traces[2]['function']) && $traces[2]['function'] === 'twig_get_attribute') {
             // came through twig_get_attribute()
             $templateTrace = 3;
-        } else if ($this->_isTemplateAttributeCall($traces, 4)) {
+        } elseif ($this->_isTemplateAttributeCall($traces, 4)) {
             // came through Template::attribute()
             $templateTrace = 4;
-        } else if ($this->_isTemplateAttributeCall($traces, 2)) {
+        } elseif ($this->_isTemplateAttributeCall($traces, 2)) {
             // special case for "deprecated" date functions the Template helper pretends still exist
             $templateTrace = 2;
-        } else if (
+        } elseif (
             isset($traces[1]['class'], $traces[1]['function']) &&
-            (
-                ($traces[1]['class'] === ElementQuery::class && $traces[1]['function'] === 'getIterator') ||
-                (
-                    $traces[1]['class'] === Extension::class &&
-                    in_array($traces[1]['function'], [
-                        'getCsrfInput',
-                        'getFootHtml',
-                        'getHeadHtml',
-                        'groupFilter',
-                        'roundFunction',
-                        'svgFunction',
-                        'ucwordsFilter',
-                    ], true)
-                )
-            )
+            ($traces[1]['class'] === ElementQuery::class && $traces[1]['function'] === 'getIterator')
         ) {
-            // special case for deprecated looping through element queries
+            // looping through element queries
+            if (isset($traces[4]['function']) && $traces[4]['function'] === 'twig_array_batch') {
+                // |batch filter
+                $templateTrace = 4;
+            } else {
+                $templateTrace = 1;
+            }
+        } elseif (
+            isset($traces[1]['class'], $traces[1]['function']) &&
+            $traces[1]['class'] === Extension::class &&
+            in_array($traces[1]['function'], [
+                'getCsrfInput',
+                'getFootHtml',
+                'getHeadHtml',
+                'groupFilter',
+                'roundFunction',
+                'svgFunction',
+                'ucwordsFilter',
+            ], true)
+        ) {
+            // deprecated function
             $templateTrace = 1;
         }
 
@@ -348,15 +370,23 @@ class Deprecator extends Component
      * @param array $traces debug_backtrace() results leading up to [[log()]]
      * @return array
      */
-    private function _cleanTraces(array $traces): array
+    private function _processStackTrace(array $traces): array
     {
         $logTraces = [];
 
-        foreach ($traces as $i => $trace) {
+        foreach ($traces as $trace) {
+            $file = $trace['file'] ?? null;
+            $line = $trace['line'] ?? null;
+            $templateInfo = Template::resolveTemplatePathAndLine($file ?? '', $line);
+
+            if ($templateInfo !== false) {
+                [$file, $line] = $templateInfo;
+            }
+
             $logTraces[] = [
                 'objectClass' => !empty($trace['object']) ? get_class($trace['object']) : null,
-                'file' => !empty($trace['file']) ? $trace['file'] : null,
-                'line' => !empty($trace['line']) ? $trace['line'] : null,
+                'file' => $file,
+                'line' => $line,
                 'class' => !empty($trace['class']) ? $trace['class'] : null,
                 'method' => !empty($trace['function']) ? $trace['function'] : null,
                 'args' => !empty($trace['args']) ? $this->_argsToString($trace['args']) : null,
@@ -373,7 +403,7 @@ class Deprecator extends Component
      * @param int|null $actualCodeLine
      * @return int|null
      */
-    private function _findTemplateLine(TwigTemplate $template, int $actualCodeLine = null)
+    private function _findTemplateLine(TwigTemplate $template, ?int $actualCodeLine = null): ?int
     {
         if ($actualCodeLine === null) {
             return null;
@@ -406,28 +436,26 @@ class Deprecator extends Component
 
         foreach ($args as $key => $value) {
             // Cap it off at 5
-            $count++;
-
-            if ($count == 5) {
+            if (++$count === 5) {
                 $strArgs[] = '...';
                 break;
             }
 
             if (is_object($value)) {
                 $strValue = get_class($value);
-            } else if (is_bool($value)) {
+            } elseif (is_bool($value)) {
                 $strValue = $value ? 'true' : 'false';
-            } else if (is_string($value)) {
+            } elseif (is_string($value)) {
                 if (strlen($value) > 64) {
                     $strValue = '"' . StringHelper::substr($value, 0, 64) . '..."';
                 } else {
                     $strValue = '"' . $value . '"';
                 }
-            } else if (is_array($value)) {
+            } elseif (is_array($value)) {
                 $strValue = '[' . $this->_argsToString($value) . ']';
-            } else if ($value === null) {
+            } elseif ($value === null) {
                 $strValue = 'null';
-            } else if (is_resource($value)) {
+            } elseif (is_resource($value)) {
                 $strValue = 'resource';
             } else {
                 $strValue = $value;
@@ -435,14 +463,10 @@ class Deprecator extends Component
 
             if (is_string($key)) {
                 $strArgs[] = '"' . $key . '" => ' . $strValue;
-            } else if ($isAssoc) {
+            } elseif ($isAssoc) {
                 $strArgs[] = $key . ' => ' . $strValue;
             } else {
                 $strArgs[] = $strValue;
-            }
-
-            if ($count == 5) {
-                break;
             }
         }
 

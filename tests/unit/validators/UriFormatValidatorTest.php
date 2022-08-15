@@ -1,15 +1,16 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace crafttests\unit\validators;
 
-use Codeception\Test\Unit;
 use craft\test\mockclasses\models\ExampleModel;
+use craft\test\TestCase;
 use craft\validators\UriFormatValidator;
+use UnitTester;
 
 /**
  * Class UriFormatValidator.
@@ -18,37 +19,34 @@ use craft\validators\UriFormatValidator;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class UriFormatValidatorTest extends Unit
+class UriFormatValidatorTest extends TestCase
 {
     /**
      * @var UriFormatValidator
      */
-    protected $uriFormatValidator;
+    protected UriFormatValidator $uriFormatValidator;
 
     /**
      * @var ExampleModel
      */
-    protected $model;
+    protected ExampleModel $model;
     /*
      * @var UnitTester
      */
-    protected $tester;
+    protected UnitTester $tester;
 
     /**
      * @dataProvider validateAttributeDataProvider
-     *
-     * @param $mustValidate
-     * @param $input
+     * @param bool $mustValidate
+     * @param string $input
      * @param bool $requireSlug
      */
-    public function testValidateAttribute($mustValidate, $input, $requireSlug = false)
+    public function testValidateAttribute(bool $mustValidate, string $input, bool $requireSlug = false): void
     {
         $this->model->exampleParam = $input;
         $this->uriFormatValidator->requireSlug = $requireSlug;
 
-        $validatorResult = $this->uriFormatValidator->validateAttribute($this->model, 'exampleParam');
-
-        self::assertNull($validatorResult);
+        $this->uriFormatValidator->validateAttribute($this->model, 'exampleParam');
 
         if ($mustValidate) {
             self::assertArrayNotHasKey('exampleParam', $this->model->getErrors());
@@ -80,7 +78,7 @@ class UriFormatValidatorTest extends Unit
     /**
      * @inheritdoc
      */
-    protected function _before()
+    protected function _before(): void
     {
         $this->model = new ExampleModel();
         $this->uriFormatValidator = new UriFormatValidator();

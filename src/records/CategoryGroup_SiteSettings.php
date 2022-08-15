@@ -18,8 +18,8 @@ use yii\db\ActiveQueryInterface;
  * @property int $groupId Group ID
  * @property int $siteId Site ID
  * @property bool $hasUrls Has URLs
- * @property string $uriFormat URI format
- * @property string $template Template
+ * @property string|null $uriFormat URI format
+ * @property string|null $template Template
  * @property CategoryGroup $group Group
  * @property Site $site Site
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>

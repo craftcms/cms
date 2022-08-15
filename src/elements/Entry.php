@@ -14,17 +14,18 @@ use craft\base\Field;
 use craft\behaviors\DraftBehavior;
 use craft\behaviors\RevisionBehavior;
 use craft\controllers\ElementIndexesController;
+use craft\db\Connection;
+use craft\db\FixedOrderExpression;
 use craft\db\Table;
 use craft\elements\actions\Delete;
 use craft\elements\actions\DeleteForSite;
 use craft\elements\actions\Duplicate;
-use craft\elements\actions\Edit;
 use craft\elements\actions\NewChild;
 use craft\elements\actions\NewSiblingAfter;
 use craft\elements\actions\NewSiblingBefore;
 use craft\elements\actions\Restore;
-use craft\elements\actions\SetStatus;
-use craft\elements\actions\View;
+use craft\elements\conditions\ElementConditionInterface;
+use craft\elements\conditions\entries\EntryCondition;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\EntryQuery;
@@ -36,41 +37,48 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
-use craft\helpers\Json;
 use craft\helpers\UrlHelper;
 use craft\models\EntryType;
+use craft\models\FieldLayout;
 use craft\models\Section;
+use craft\models\Section_SiteSettings;
 use craft\models\Site;
 use craft\records\Entry as EntryRecord;
+use craft\services\ElementSources;
 use craft\services\Structures;
 use craft\validators\DateCompareValidator;
 use craft\validators\DateTimeValidator;
+use craft\web\CpScreenResponseBehavior;
+use DateTime;
+use Illuminate\Support\Collection;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\db\Expression;
+use yii\web\Response;
 
 /**
  * Entry represents an entry element.
  *
- * @property User|null $author the entry's author
- * @property Section $section the entry's section
+ * @property int $typeId the entry type’s ID
+ * @property int|null $authorId the entry author’s ID
  * @property EntryType $type the entry type
+ * @property Section $section the entry’s section
+ * @property User|null $author the entry’s author
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
 class Entry extends Element
 {
-    const STATUS_LIVE = 'live';
-    const STATUS_PENDING = 'pending';
-    const STATUS_EXPIRED = 'expired';
+    public const STATUS_LIVE = 'live';
+    public const STATUS_PENDING = 'pending';
+    public const STATUS_EXPIRED = 'expired';
 
     /**
      * @event DefineEntryTypesEvent The event that is triggered when defining the available entry types for the entry
-     *
      * @see getAvailableEntryTypes()
      * @since 3.6.0
      */
-    const EVENT_DEFINE_ENTRY_TYPES = 'defineEntryTypes';
+    public const EVENT_DEFINE_ENTRY_TYPES = 'defineEntryTypes';
 
     /**
      * @inheritdoc
@@ -107,7 +115,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public static function refHandle()
+    public static function refHandle(): ?string
     {
         return 'entry';
     }
@@ -177,17 +185,26 @@ class Entry extends Element
      * @inheritdoc
      * @return EntryQuery The newly created [[EntryQuery]] instance.
      */
-    public static function find(): ElementQueryInterface
+    public static function find(): EntryQuery
     {
         return new EntryQuery(static::class);
     }
 
     /**
      * @inheritdoc
+     * @return EntryCondition
      */
-    protected static function defineSources(string $context = null): array
+    public static function createCondition(): ElementConditionInterface
     {
-        if ($context === 'index') {
+        return Craft::createObject(EntryCondition::class, [static::class]);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected static function defineSources(string $context): array
+    {
+        if ($context === ElementSources::CONTEXT_INDEX) {
             $sections = Craft::$app->getSections()->getEditableSections();
             $editable = true;
         } else {
@@ -238,6 +255,8 @@ class Entry extends Element
             Section::TYPE_STRUCTURE => Craft::t('app', 'Structures'),
         ];
 
+        $user = Craft::$app->getUser()->getIdentity();
+
         foreach ($sectionTypes as $type => $heading) {
             if (!empty($sectionsByType[$type])) {
                 $sources[] = ['heading' => $heading];
@@ -261,7 +280,7 @@ class Entry extends Element
                     if ($type == Section::TYPE_STRUCTURE) {
                         $source['defaultSort'] = ['structure', 'asc'];
                         $source['structureId'] = $section->structureId;
-                        $source['structureEditable'] = Craft::$app->getUser()->checkPermission('publishEntries:' . $section->uid);
+                        $source['structureEditable'] = $user && $user->can("saveEntries:$section->uid");
                     } else {
                         $source['defaultSort'] = ['postDate', 'desc'];
                     }
@@ -284,9 +303,9 @@ class Entry extends Element
         $sections = [];
         if ($source === '*') {
             $sections = Craft::$app->getSections()->getAllSections();
-        } else if ($source === 'singles') {
+        } elseif ($source === 'singles') {
             $sections = Craft::$app->getSections()->getSectionsByType(Section::TYPE_SINGLE);
-        } else if (
+        } elseif (
             preg_match('/^section:(.+)$/', $source, $matches) &&
             $section = Craft::$app->getSections()->getSectionByUid($matches[1])
         ) {
@@ -305,7 +324,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    protected static function defineActions(string $source = null): array
+    protected static function defineActions(string $source): array
     {
         // Get the selected site
         $controller = Craft::$app->controller;
@@ -319,158 +338,86 @@ class Entry extends Element
             ? Craft::$app->getSites()->getSiteById($elementQuery->siteId)
             : Craft::$app->getSites()->getCurrentSite();
 
-        // Get the section(s) we need to check permissions on
-        switch ($source) {
-            case '*':
-                $sections = Craft::$app->getSections()->getEditableSections();
-                break;
-            case 'singles':
-                $sections = Craft::$app->getSections()->getSectionsByType(Section::TYPE_SINGLE);
-                break;
-            default:
-                if (preg_match('/^section:(\d+)$/', $source, $matches)) {
-                    if (($section = Craft::$app->getSections()->getSectionById($matches[1])) !== null) {
-                        $sections = [$section];
-                    }
-                } else if (preg_match('/^section:(.+)$/', $source, $matches)) {
-                    if (($section = Craft::$app->getSections()->getSectionByUid($matches[1])) !== null) {
-                        $sections = [$section];
-                    }
-                }
+        // Get the section we need to check permissions on
+        if (preg_match('/^section:(\d+)$/', $source, $matches)) {
+            $section = Craft::$app->getSections()->getSectionById($matches[1]);
+        } elseif (preg_match('/^section:(.+)$/', $source, $matches)) {
+            $section = Craft::$app->getSections()->getSectionByUid($matches[1]);
+        } else {
+            $section = null;
         }
 
         // Now figure out what we can do with these
         $actions = [];
         $elementsService = Craft::$app->getElements();
 
-        /** @var Section[] $sections */
-        if (!empty($sections)) {
-            $userSession = Craft::$app->getUser();
-            $canSetStatus = true;
-            $canEdit = false;
+        if ($section) {
+            $user = Craft::$app->getUser()->getIdentity();
 
-            foreach ($sections as $section) {
-                $canPublishEntries = $userSession->checkPermission('publishEntries:' . $section->uid);
+            if (
+                $section->type == Section::TYPE_STRUCTURE &&
+                $user->can('createEntries:' . $section->uid)
+            ) {
+                $newEntryUrl = 'entries/' . $section->handle . '/new';
 
-                // Only show the Set Status action if we're sure they can make changes in all the sections
-                if (!(
-                    $canPublishEntries &&
-                    ($section->type == Section::TYPE_SINGLE || $userSession->checkPermission('publishPeerEntries:' . $section->uid))
-                )
-                ) {
-                    $canSetStatus = false;
+                if (Craft::$app->getIsMultiSite()) {
+                    $newEntryUrl .= '?site=' . $site->handle;
                 }
 
-                // Show the Edit action if they can publish changes to *any* of the sections
-                // (the trigger will disable itself for entries that aren't editable)
-                if ($canPublishEntries) {
-                    $canEdit = true;
-                }
-            }
-
-            // Set Status
-            if ($canSetStatus) {
-                $actions[] = SetStatus::class;
-            }
-
-            // Edit
-            if ($canEdit) {
                 $actions[] = $elementsService->createAction([
-                    'type' => Edit::class,
-                    'label' => Craft::t('app', 'Edit entry'),
+                    'type' => NewSiblingBefore::class,
+                    'label' => Craft::t('app', 'Create a new entry before'),
+                    'newSiblingUrl' => $newEntryUrl,
                 ]);
-            }
 
-            // View
-            $showViewAction = ($source === '*' || $source === 'singles');
-
-            if (!$showViewAction) {
-                // They are viewing a specific section. See if it has URLs for the requested site
-                if (isset($sections[0]->siteSettings[$site->id]) && $sections[0]->siteSettings[$site->id]->hasUrls) {
-                    $showViewAction = true;
-                }
-            }
-
-            if ($showViewAction) {
-                // View
                 $actions[] = $elementsService->createAction([
-                    'type' => View::class,
-                    'label' => Craft::t('app', 'View entry'),
+                    'type' => NewSiblingAfter::class,
+                    'label' => Craft::t('app', 'Create a new entry after'),
+                    'newSiblingUrl' => $newEntryUrl,
                 ]);
+
+                if ($section->maxLevels != 1) {
+                    $actions[] = $elementsService->createAction([
+                        'type' => NewChild::class,
+                        'label' => Craft::t('app', 'Create a new child entry'),
+                        'maxLevels' => $section->maxLevels,
+                        'newChildUrl' => $newEntryUrl,
+                    ]);
+                }
             }
 
-            if ($source === '*') {
-                // Delete
-                $actions[] = Delete::class;
-            } else if ($source !== 'singles') {
-                // Channel/Structure-only actions
-                $section = $sections[0];
+            // Duplicate
+            if (
+                $user->can("createEntries:$section->uid") &&
+                $user->can("saveEntries:$section->uid")
+            ) {
+                $actions[] = Duplicate::class;
 
+                if ($section->type === Section::TYPE_STRUCTURE && $section->maxLevels != 1) {
+                    $actions[] = [
+                        'type' => Duplicate::class,
+                        'deep' => true,
+                    ];
+                }
+            }
+
+            // Delete?
+            $actions[] = Delete::class;
+
+            if ($user->can("deleteEntries:$section->uid")) {
                 if (
-                    $section->type == Section::TYPE_STRUCTURE &&
-                    $userSession->checkPermission('createEntries:' . $section->uid)
+                    $section->type === Section::TYPE_STRUCTURE &&
+                    $section->maxLevels != 1 &&
+                    $user->can("deletePeerEntries:$section->uid")
                 ) {
-                    $newEntryUrl = 'entries/' . $section->handle . '/new';
-
-                    if (Craft::$app->getIsMultiSite()) {
-                        $newEntryUrl .= '?site=' . $site->handle;
-                    }
-
-                    $actions[] = $elementsService->createAction([
-                        'type' => NewSiblingBefore::class,
-                        'label' => Craft::t('app', 'Create a new entry before'),
-                        'newSiblingUrl' => $newEntryUrl,
-                    ]);
-
-                    $actions[] = $elementsService->createAction([
-                        'type' => NewSiblingAfter::class,
-                        'label' => Craft::t('app', 'Create a new entry after'),
-                        'newSiblingUrl' => $newEntryUrl,
-                    ]);
-
-                    if ($section->maxLevels != 1) {
-                        $actions[] = $elementsService->createAction([
-                            'type' => NewChild::class,
-                            'label' => Craft::t('app', 'Create a new child entry'),
-                            'maxLevels' => $section->maxLevels,
-                            'newChildUrl' => $newEntryUrl,
-                        ]);
-                    }
+                    $actions[] = [
+                        'type' => Delete::class,
+                        'withDescendants' => true,
+                    ];
                 }
 
-                // Duplicate
-                if (
-                    $userSession->checkPermission('createEntries:' . $section->uid) &&
-                    $userSession->checkPermission('publishEntries:' . $section->uid)
-                ) {
-                    $actions[] = Duplicate::class;
-
-                    if ($section->type === Section::TYPE_STRUCTURE && $section->maxLevels != 1) {
-                        $actions[] = [
-                            'type' => Duplicate::class,
-                            'deep' => true,
-                        ];
-                    }
-                }
-
-                // Delete?
-                $actions[] = Delete::class;
-
-                if ($userSession->checkPermission("deleteEntries:$section->uid")) {
-                    if (
-                        $section->type === Section::TYPE_STRUCTURE &&
-                        $section->maxLevels != 1 &&
-                        $userSession->checkPermission("deletePeerEntries:$section->uid")
-                    ) {
-                        $actions[] = [
-                            'type' => Delete::class,
-                            'withDescendants' => true,
-                        ];
-                    }
-
-                    if ($section->propagationMethod === Section::PROPAGATION_METHOD_CUSTOM && $section->getHasMultiSiteEntries()) {
-                        $actions[] = DeleteForSite::class;
-                    }
+                if ($section->propagationMethod === Section::PROPAGATION_METHOD_CUSTOM && $section->getHasMultiSiteEntries()) {
+                    $actions[] = DeleteForSite::class;
                 }
             }
         }
@@ -495,6 +442,32 @@ class Entry extends Element
             'title' => Craft::t('app', 'Title'),
             'slug' => Craft::t('app', 'Slug'),
             'uri' => Craft::t('app', 'URI'),
+            [
+                'label' => Craft::t('app', 'Section'),
+                'orderBy' => function(int $dir, Connection $db) {
+                    $sectionIds = Collection::make(Craft::$app->getSections()->getAllSections())
+                        ->sort(fn(Section $a, Section $b) => $dir === SORT_ASC
+                            ? $a->name <=> $b->name
+                            : $b->name <=> $a->name)
+                        ->map(fn(Section $section) => $section->id)
+                        ->all();
+                    return new FixedOrderExpression('entries.sectionId', $sectionIds, $db);
+                },
+                'attribute' => 'section',
+            ],
+            [
+                'label' => Craft::t('app', 'Entry Type'),
+                'orderBy' => function(int $dir, Connection $db) {
+                    $entryTypeIds = Collection::make(Craft::$app->getSections()->getAllEntryTypes())
+                        ->sort(fn(EntryType $a, EntryType $b) => $dir === SORT_ASC
+                            ? $a->name <=> $b->name
+                            : $b->name <=> $a->name)
+                        ->map(fn(EntryType $type) => $type->id)
+                        ->all();
+                    return new FixedOrderExpression('entries.typeId', $entryTypeIds, $db);
+                },
+                'attribute' => 'type',
+            ],
             [
                 'label' => Craft::t('app', 'Post Date'),
                 'orderBy' => function(int $dir) {
@@ -545,7 +518,6 @@ class Entry extends Element
     protected static function defineTableAttributes(): array
     {
         $attributes = [
-            'title' => ['label' => Craft::t('app', 'Entry')],
             'section' => ['label' => Craft::t('app', 'Section')],
             'type' => ['label' => Craft::t('app', 'Entry Type')],
             'author' => ['label' => Craft::t('app', 'Author')],
@@ -596,17 +568,19 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public static function eagerLoadingMap(array $sourceElements, string $handle)
+    public static function eagerLoadingMap(array $sourceElements, string $handle): array|null|false
     {
         if ($handle === 'author') {
-            $sourceElementsWithAuthors = array_filter($sourceElements, function(Entry $entry) {
-                return $entry->authorId !== null;
+            /** @phpstan-ignore-next-line */
+            $sourceElementsWithAuthors = array_filter($sourceElements, function(self $entry) {
+                return $entry->getAuthorId() !== null;
             });
 
-            $map = array_map(function(Entry $entry) {
+            /** @phpstan-ignore-next-line */
+            $map = array_map(function(self $entry) {
                 return [
                     'source' => $entry->id,
-                    'target' => $entry->authorId
+                    'target' => $entry->getAuthorId(),
                 ];
             }, $sourceElementsWithAuthors);
 
@@ -625,7 +599,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public static function gqlTypeNameByContext($context): string
+    public static function gqlTypeNameByContext(mixed $context): string
     {
         /** @var EntryType $context */
         return self::_getGqlIdentifierByContext($context) . '_Entry';
@@ -635,7 +609,7 @@ class Entry extends Element
      * @inheritdoc
      * @since 3.5.0
      */
-    public static function gqlMutationNameByContext($context): string
+    public static function gqlMutationNameByContext(mixed $context): string
     {
         /** @var EntryType $context */
         return 'save_' . self::_getGqlIdentifierByContext($context) . '_Entry';
@@ -644,7 +618,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public static function gqlScopesByContext($context): array
+    public static function gqlScopesByContext(mixed $context): array
     {
         /** @var EntryType $context */
         return [
@@ -656,7 +630,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, string $attribute)
+    protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, string $attribute): void
     {
         switch ($attribute) {
             case 'author':
@@ -686,34 +660,10 @@ class Entry extends Element
      * {{ entry.sectionId }}
      * ```
      */
-    public $sectionId;
+    public ?int $sectionId = null;
 
     /**
-     * @var int|null Type ID
-     * ---
-     * ```php
-     * echo $entry->typeId;
-     * ```
-     * ```twig
-     * {{ entry.typeId }}
-     * ```
-     */
-    public $typeId;
-
-    /**
-     * @var int|null Author ID
-     * ---
-     * ```php
-     * echo $entry->authorId;
-     * ```
-     * ```twig
-     * {{ entry.authorId }}
-     * ```
-     */
-    public $authorId;
-
-    /**
-     * @var \DateTime|null Post date
+     * @var DateTime|null Post date
      * ---
      * ```php
      * echo Craft::$app->formatter->asDate($entry->postDate, 'short');
@@ -722,10 +672,10 @@ class Entry extends Element
      * {{ entry.postDate|date('short') }}
      * ```
      */
-    public $postDate;
+    public ?DateTime $postDate = null;
 
     /**
-     * @var \DateTime|null Expiry date
+     * @var DateTime|null Expiry date
      * ---
      * ```php
      * if ($entry->expiryDate) {
@@ -738,60 +688,65 @@ class Entry extends Element
      * {% endif %}
      * ```
      */
-    public $expiryDate;
-
-    /**
-     * @var int|false|null New parent ID
-     * @internal
-     */
-    public $newParentId;
+    public ?DateTime $expiryDate = null;
 
     /**
      * @var bool Whether the entry was deleted along with its entry type
      * @see beforeDelete()
      * @internal
      */
-    public $deletedWithEntryType = false;
+    public bool $deletedWithEntryType = false;
+
+    /**
+     * @var int|null Author ID
+     * @see getAuthorId()
+     * @see setAuthorId()
+     */
+    public ?int $_authorId = null;
 
     /**
      * @var User|null|false
+     * @see getAuthor()
+     * @see setAuthor()
      */
-    private $_author;
+    private User|false|null $_author = null;
+
+    /**
+     * @var int|null Type ID
+     * @see getType()
+     */
+    private ?int $_typeId = null;
 
     /**
      * @var int|null
      */
-    private $_oldTypeId;
-
-    /**
-     * @var bool|null
-     * @see _hasNewParent()
-     */
-    private $_hasNewParent;
-
-    /**
-     * @inheritdoc
-     */
-    public function __clone()
-    {
-        parent::__clone();
-        $this->_hasNewParent = null;
-    }
+    private ?int $_oldTypeId = null;
 
     /**
      * @inheritdoc
      * @since 3.5.0
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
-        $this->_oldTypeId = $this->typeId;
+        $this->_oldTypeId = $this->_typeId;
     }
 
     /**
      * @inheritdoc
      */
-    public function extraFields()
+    public function attributes(): array
+    {
+        $names = parent::attributes();
+        $names[] = 'authorId';
+        $names[] = 'typeId';
+        return $names;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function extraFields(): array
     {
         $names = parent::extraFields();
         $names[] = 'author';
@@ -803,18 +758,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public function datetimeAttributes(): array
-    {
-        $attributes = parent::datetimeAttributes();
-        $attributes[] = 'postDate';
-        $attributes[] = 'expiryDate';
-        return $attributes;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function attributeLabels()
+    public function attributeLabels(): array
     {
         return array_merge(parent::attributeLabels(), [
             'postDate' => Craft::t('app', 'Post Date'),
@@ -842,8 +786,12 @@ class Entry extends Element
             'on' => self::SCENARIO_LIVE,
         ];
 
-        if ($this->getSection()->type !== Section::TYPE_SINGLE) {
-            $rules[] = [['authorId'], 'required', 'on' => self::SCENARIO_LIVE];
+        if ($this->sectionId) {
+            $section = $this->getSection();
+
+            if ($section->type !== Section::TYPE_SINGLE) {
+                $rules[] = [['authorId'], 'required', 'on' => self::SCENARIO_LIVE];
+            }
         }
 
         return $rules;
@@ -866,8 +814,8 @@ class Entry extends Element
             $section->propagationMethod === Section::PROPAGATION_METHOD_CUSTOM
         ) {
             if ($this->id) {
-                $currentSites = static::find()
-                    ->anyStatus()
+                $currentSites = self::find()
+                    ->status(null)
                     ->id($this->id)
                     ->site('*')
                     ->select('elements_sites.siteId')
@@ -881,8 +829,8 @@ class Entry extends Element
 
             // If this is being duplicated from another element (e.g. a draft), include any sites the source element is saved to as well
             if (!empty($this->duplicateOf->id)) {
-                array_push($currentSites, ...static::find()
-                    ->anyStatus()
+                array_push($currentSites, ...self::find()
+                    ->status(null)
                     ->id($this->duplicateOf->id)
                     ->site('*')
                     ->select('elements_sites.siteId')
@@ -941,15 +889,15 @@ class Entry extends Element
      * @inheritdoc
      * @since 3.5.0
      */
-    public function getCacheTags(): array
+    protected function cacheTags(): array
     {
         $tags = [
-            "entryType:$this->typeId",
+            sprintf('entryType:%s', $this->getTypeId()),
             "section:$this->sectionId",
         ];
 
         // Did the entry type just change?
-        if ($this->typeId != $this->_oldTypeId) {
+        if ($this->getTypeId() !== $this->_oldTypeId) {
             $tags[] = "entryType:$this->_oldTypeId";
         }
 
@@ -958,9 +906,9 @@ class Entry extends Element
 
     /**
      * @inheritdoc
-     * @throws InvalidConfigException if [[siteId]] is not set to a site ID that the entry's section is enabled for
+     * @throws InvalidConfigException if [[siteId]] is not set to a site ID that the entry’s section is enabled for
      */
-    public function getUriFormat()
+    public function getUriFormat(): ?string
     {
         $sectionSiteSettings = $this->getSection()->getSiteSettings();
 
@@ -974,7 +922,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    protected function route()
+    protected function route(): array|string|null
     {
         // Make sure that the entry is actually live
         if (!$this->previewing && $this->getStatus() != self::STATUS_LIVE) {
@@ -1004,7 +952,7 @@ class Entry extends Element
      */
     protected function uiLabel(): ?string
     {
-        if ($this->title === null || trim($this->title) === '') {
+        if (!isset($this->title) || trim($this->title) === '') {
             return Craft::t('app', 'Untitled entry');
         }
 
@@ -1027,7 +975,7 @@ class Entry extends Element
      *
      * @return string|null
      */
-    public function getRef()
+    public function getRef(): ?string
     {
         return $this->getSection()->handle . '/' . $this->slug;
     }
@@ -1043,7 +991,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public function getTitleTranslationDescription()
+    public function getTitleTranslationDescription(): ?string
     {
         return ElementHelper::translationDescription($this->getType()->titleTranslationMethod);
     }
@@ -1060,14 +1008,14 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public function getFieldLayout()
+    public function getFieldLayout(): ?FieldLayout
     {
         if (($fieldLayout = parent::getFieldLayout()) !== null) {
             return $fieldLayout;
         }
         try {
             $entryType = $this->getType();
-        } catch (InvalidConfigException $e) {
+        } catch (InvalidConfigException) {
             // The entry type was probably deleted
             return null;
         }
@@ -1075,7 +1023,7 @@ class Entry extends Element
     }
 
     /**
-     * Returns the entry's section.
+     * Returns the entry’s section.
      *
      * ---
      * ```php
@@ -1090,7 +1038,7 @@ class Entry extends Element
      */
     public function getSection(): Section
     {
-        if ($this->sectionId === null) {
+        if (!isset($this->sectionId)) {
             throw new InvalidConfigException('Entry is missing its section ID');
         }
 
@@ -1099,6 +1047,29 @@ class Entry extends Element
         }
 
         return $section;
+    }
+
+    /**
+     * Returns the entry type ID.
+     *
+     * @return int
+     * @since 4.0.0
+     */
+    public function getTypeId(): int
+    {
+        return $this->getType()->id;
+    }
+
+    /**
+     * Sets the entry type ID.
+     *
+     * @param int $typeId
+     * @since 4.0.0
+     */
+    public function setTypeId(int $typeId): void
+    {
+        $this->_typeId = $typeId;
+        $this->fieldLayoutId = null;
     }
 
     /**
@@ -1145,25 +1116,62 @@ class Entry extends Element
      */
     public function getType(): EntryType
     {
-        if ($this->typeId === null) {
-            throw new InvalidConfigException('Entry is missing its type ID');
+        if (!isset($this->_typeId)) {
+            // Default to the section's first entry type
+            $entryTypes = $this->getAvailableEntryTypes();
+            if (!$entryTypes) {
+                throw new InvalidConfigException('Entry is missing its type ID');
+            }
+            $this->_typeId = $entryTypes[0]->id;
         }
 
         $sectionEntryTypes = ArrayHelper::index($this->getSection()->getEntryTypes(), 'id');
 
-        if ($this->typeId === null || !isset($sectionEntryTypes[$this->typeId])) {
-            Craft::warning("Entry {$this->id} has an invalid entry type ID: {$this->typeId}");
+        if (!isset($sectionEntryTypes[$this->_typeId])) {
+            Craft::warning("Entry $this->id has an invalid entry type ID: $this->_typeId");
             if (empty($sectionEntryTypes)) {
-                throw new InvalidConfigException("Section {$this->sectionId} has no entry types");
+                throw new InvalidConfigException("Section $this->sectionId has no entry types");
             }
             return reset($sectionEntryTypes);
         }
 
-        return $sectionEntryTypes[$this->typeId];
+        return $sectionEntryTypes[$this->_typeId];
     }
 
     /**
-     * Returns the entry's author.
+     * Returns the entry author ID.
+     *
+     * @return int|null
+     * @since 4.0.0
+     */
+    public function getAuthorId(): ?int
+    {
+        return $this->_authorId;
+    }
+
+    /**
+     * Sets the entry author ID.
+     *
+     * @param int|int[]|string|null $authorId
+     * @since 4.0.0
+     */
+    public function setAuthorId(array|int|string|null $authorId): void
+    {
+        if ($authorId === '') {
+            $authorId = null;
+        }
+
+        if (is_array($authorId)) {
+            $this->_authorId = reset($authorId) ?: null;
+        } else {
+            $this->_authorId = $authorId;
+        }
+
+        $this->_author = null;
+    }
+
+    /**
+     * Returns the entry’s author.
      *
      * ---
      * ```php
@@ -1176,14 +1184,14 @@ class Entry extends Element
      * @return User|null
      * @throws InvalidConfigException if [[authorId]] is set but invalid
      */
-    public function getAuthor()
+    public function getAuthor(): ?User
     {
-        if ($this->_author === null) {
-            if ($this->authorId === null) {
+        if (!isset($this->_author)) {
+            if (!$this->getAuthorId()) {
                 return null;
             }
 
-            if (($this->_author = Craft::$app->getUsers()->getUserById($this->authorId)) === null) {
+            if (($this->_author = Craft::$app->getUsers()->getUserById($this->getAuthorId())) === null) {
                 // The author is probably soft-deleted. Just no author is set
                 $this->_author = false;
             }
@@ -1193,27 +1201,27 @@ class Entry extends Element
     }
 
     /**
-     * Sets the entry's author.
+     * Sets the entry’s author.
      *
      * @param User|null $author
      */
-    public function setAuthor(User $author = null)
+    public function setAuthor(?User $author = null): void
     {
         $this->_author = $author;
-        $this->authorId = $author->id;
+        $this->setAuthorId($author?->id);
     }
 
     /**
      * @inheritdoc
      */
-    public function getStatus()
+    public function getStatus(): ?string
     {
         $status = parent::getStatus();
 
         if ($status == self::STATUS_ENABLED && $this->postDate) {
             $currentTime = DateTimeHelper::currentTimeStamp();
             $postDate = $this->postDate->getTimestamp();
-            $expiryDate = ($this->expiryDate ? $this->expiryDate->getTimestamp() : null);
+            $expiryDate = $this->expiryDate?->getTimestamp();
 
             if ($postDate <= $currentTime && ($expiryDate === null || $expiryDate > $currentTime)) {
                 return self::STATUS_LIVE;
@@ -1231,102 +1239,243 @@ class Entry extends Element
 
     /**
      * @inheritdoc
-     *
-     * ---
-     * ```php
-     * $editable = $entry->isEditable;
-     * ```
-     * ```twig{1}
-     * {% if entry.isEditable %}
-     *   <a href="{{ entry.cpEditUrl }}">Edit</a>
-     * {% endif %}
-     * ```
      */
-    protected function isEditable(): bool
+    public function createAnother(): ?self
     {
         $section = $this->getSection();
-        $userSession = Craft::$app->getUser();
 
-        // Cover the basics
-        if (
-            !$userSession->checkPermission("editEntries:$section->uid") ||
-            ($this->enabled && !$userSession->checkPermission("publishEntries:$section->uid"))
-        ) {
-            return false;
+        /** @var self $entry */
+        $entry = Craft::createObject([
+            'class' => self::class,
+            'sectionId' => $this->sectionId,
+            'typeId' => $this->typeId,
+            'siteId' => $this->siteId,
+        ]);
+
+        // Set the default status based on the section's settings
+        /** @var Section_SiteSettings $siteSettings */
+        $siteSettings = ArrayHelper::firstWhere($section->getSiteSettings(), 'siteId', $this->siteId);
+        $enabled = $siteSettings->enabledByDefault;
+
+        if (Craft::$app->getIsMultiSite() && count($entry->getSupportedSites()) > 1) {
+            $entry->enabled = true;
+            $entry->setEnabledForSite($enabled);
+        } else {
+            $entry->enabled = $enabled;
+            $entry->setEnabledForSite(true);
         }
 
-        if ($section->type === Section::TYPE_SINGLE) {
-            return true;
+        // Structure parent
+        if ($section->type === Section::TYPE_STRUCTURE && $section->maxLevels !== 1) {
+            $entry->setParentId($this->getParentId());
         }
 
-        // Is this a new entry?
-        if (!$this->id) {
-            return $userSession->checkPermission("createEntries:$section->uid");
-        }
-
-        // Is this their own entry?
-        if (!$this->authorId || $this->authorId == $userSession->getId()) {
-            return true;
-        }
-
-        if (!$this->enabled) {
-            return $userSession->checkPermission("editPeerEntries:$section->uid");
-        }
-
-        return $userSession->checkPermission("publishPeerEntries:$section->uid");
+        return $entry;
     }
 
     /**
      * @inheritdoc
      */
-    protected function isDeletable(): bool
+    public function canView(User $user): bool
     {
-        $section = $this->getSection();
-        $userSession = Craft::$app->getUser();
-        $userId = $userSession->getId();
-
-        if ($this->getIsDraft()) {
-            /** @var Entry|DraftBehavior $this */
-            return $this->creatorId == $userId || $userSession->checkPermission("deletePeerEntryDrafts:$section->uid");
+        if (parent::canView($user)) {
+            return true;
         }
 
-        if ($section->type === Section::TYPE_SINGLE) {
+        $section = $this->getSection();
+
+        if (!$user->can("viewEntries:$section->uid")) {
             return false;
         }
 
+        if ($this->getIsDraft() && $this->getIsDerivative()) {
+            /** @var static|DraftBehavior $this */
+            return (
+                $this->creatorId === $user->id ||
+                $user->can("viewPeerEntryDrafts:$section->uid")
+            );
+        }
+
         return (
-            $userSession->checkPermission("deleteEntries:$section->uid") &&
-            ($this->authorId == $userId || $userSession->checkPermission("deletePeerEntries:$section->uid"))
+            $section->type === Section::TYPE_SINGLE ||
+            $this->getAuthorId() === $user->id ||
+            $user->can("viewPeerEntries:$section->uid")
         );
     }
 
     /**
      * @inheritdoc
-     *
-     * ---
-     * ```php
-     * $url = $entry->cpEditUrl;
-     * ```
-     * ```twig{2}
-     * {% if entry.isEditable %}
-     *   <a href="{{ entry.cpEditUrl }}">Edit</a>
-     * {% endif %}
-     * ```
+     */
+    public function canSave(User $user): bool
+    {
+        if (parent::canSave($user)) {
+            return true;
+        }
+
+        $section = $this->getSection();
+
+        if (!$this->id) {
+            return $user->can("createEntries:$section->uid");
+        }
+
+        if ($this->getIsDraft()) {
+            /** @var static|DraftBehavior $this */
+            return (
+                $this->creatorId === $user->id ||
+                $user->can("savePeerEntryDrafts:$section->uid")
+            );
+        }
+
+        if (!$user->can("saveEntries:$section->uid")) {
+            return false;
+        }
+
+        return (
+            $section->type === Section::TYPE_SINGLE ||
+            $this->getAuthorId() === $user->id ||
+            $user->can("savePeerEntries:$section->uid")
+        );
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function canDuplicate(User $user): bool
+    {
+        $section = $this->getSection();
+
+        return (
+            $section->type !== Section::TYPE_SINGLE &&
+            $user->can("createEntries:$section->uid") &&
+            $user->can("saveEntries:$section->uid")
+        );
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function canDelete(User $user): bool
+    {
+        $section = $this->getSection();
+
+        if ($section->type === Section::TYPE_SINGLE && !$this->getIsDraft()) {
+            return false;
+        }
+
+        if (parent::canDelete($user)) {
+            return true;
+        }
+
+        if ($this->getIsDraft() && $this->getIsDerivative()) {
+            /** @var static|DraftBehavior $this */
+            return (
+                $this->creatorId === $user->id ||
+                $user->can("deletePeerEntries:$section->uid")
+            );
+        }
+
+        if (!$user->can("deleteEntries:$section->uid")) {
+            return false;
+        }
+
+        return (
+            $this->getAuthorId() === $user->id ||
+            $user->can("deletePeerEntries:$section->uid")
+        );
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function canDeleteForSite(User $user): bool
+    {
+        return $this->getSection()->propagationMethod === Section::PROPAGATION_METHOD_CUSTOM;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function canCreateDrafts(User $user): bool
+    {
+        // Everyone with view permissions can create drafts
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function hasRevisions(): bool
+    {
+        return $this->getSection()->enableVersioning;
+    }
+
+    /**
+     * @inheritdoc
      */
     protected function cpEditUrl(): ?string
     {
         $section = $this->getSection();
 
-        // The slug *might* not be set if this is a Draft and they've deleted it for whatever reason
-        $path = 'entries/' . $section->handle . '/' . $this->getCanonicalId() .
-            ($this->slug && strpos($this->slug, '__') !== 0 ? '-' . $this->slug : '');
+        $path = sprintf('entries/%s/%s', $section->handle, $this->getCanonicalId());
 
-        $params = [];
-        if (Craft::$app->getIsMultiSite()) {
-            $params['site'] = $this->getSite()->handle;
+        // Ignore homepage/temp slugs
+        if ($this->slug && !str_starts_with($this->slug, '__')) {
+            $path .= "-$this->slug";
         }
 
-        return UrlHelper::cpUrl($path, $params);
+        return UrlHelper::cpUrl($path);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getPostEditUrl(): ?string
+    {
+        $section = $this->getSection();
+        $sourceKey = $section->type === Section::TYPE_SINGLE ? 'singles' : $section->handle;
+        return UrlHelper::cpUrl("entries/$sourceKey");
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function prepareEditScreen(Response $response, string $containerId): void
+    {
+        $section = $this->getSection();
+
+        $crumbs = [
+            [
+                'label' => Craft::t('app', 'Entries'),
+                'url' => 'entries',
+            ],
+        ];
+
+        if ($section->type === Section::TYPE_SINGLE) {
+            $crumbs[] = [
+                'label' => Craft::t('app', 'Singles'),
+                'url' => 'entries/singles',
+            ];
+        } else {
+            $crumbs[] = [
+                'label' => Craft::t('site', $section->name),
+                'url' => "entries/$section->handle",
+            ];
+
+            if ($section->type === Section::TYPE_STRUCTURE) {
+                $user = Craft::$app->getUser()->getIdentity();
+                foreach ($this->getCanonical()->getAncestors()->all() as $ancestor) {
+                    if ($ancestor->canView($user)) {
+                        $crumbs[] = [
+                            'label' => $ancestor->title,
+                            'url' => $ancestor->getCpEditUrl(),
+                        ];
+                    }
+                }
+            }
+        }
+
+        /** @var Response|CpScreenResponseBehavior $response */
+        $response->crumbs($crumbs);
     }
 
     /**
@@ -1341,7 +1490,7 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public function setEagerLoadedElements(string $handle, array $elements)
+    public function setEagerLoadedElements(string $handle, array $elements): void
     {
         if ($handle === 'author') {
             $this->_author = $elements[0] ?? false;
@@ -1369,39 +1518,43 @@ class Entry extends Element
             case 'type':
                 try {
                     return Html::encode(Craft::t('site', $this->getType()->name));
-                } catch (InvalidConfigException $e) {
+                } catch (InvalidConfigException) {
                     return Craft::t('app', 'Unknown');
                 }
 
             case 'revisionNotes':
                 /** @var Entry|null $revision */
+                $revision = $this->getCurrentRevision();
+                if (!$revision) {
+                    return '';
+                }
                 /** @var RevisionBehavior|null $behavior */
-                if (
-                    ($revision = $this->getCurrentRevision()) === null ||
-                    ($behavior = $revision->getBehavior('revision')) === null
-                ) {
+                $behavior = $revision->getBehavior('revision');
+                if (!$behavior) {
                     return '';
                 }
                 return Html::encode($behavior->revisionNotes);
 
             case 'revisionCreator':
                 /** @var Entry|null $revision */
-                /** @var RevisionBehavior|null $behavior */
-                if (
-                    ($revision = $this->getCurrentRevision()) === null ||
-                    ($behavior = $revision->getBehavior('revision')) === null ||
-                    ($creator = $behavior->getCreator()) === null
-                ) {
+                $revision = $this->getCurrentRevision();
+                if (!$revision) {
                     return '';
                 }
-                return Cp::elementHtml($creator);
+                /** @var RevisionBehavior|null $behavior */
+                $behavior = $revision->getBehavior('revision');
+                if (!$behavior) {
+                    return '';
+                }
+                $creator = $behavior->getCreator();
+                return $creator ? Cp::elementHtml($creator) : '';
 
             case 'drafts':
                 if (!$this->hasEagerLoadedElements('drafts')) {
                     return '';
                 }
 
-                $drafts = $this->getEagerLoadedElements('drafts');
+                $drafts = $this->getEagerLoadedElements('drafts')->all();
 
                 foreach ($drafts as $draft) {
                     /** @var ElementInterface|DraftBehavior $draft */
@@ -1417,16 +1570,21 @@ class Entry extends Element
     /**
      * @inheritdoc
      */
-    public function metaFieldsHtml(): string
+    public function metaFieldsHtml(bool $static): string
     {
         $fields = [];
         $view = Craft::$app->getView();
         $section = $this->getSection();
+        $user = Craft::$app->getUser()->getIdentity();
 
         if ($section->type !== Section::TYPE_SINGLE) {
-            $entryTypes = $this->getAvailableEntryTypes();
+            // Type
+            $fields[] = (function() use ($static, $view) {
+                $entryTypes = $this->getAvailableEntryTypes();
+                if (count($entryTypes) <= 1) {
+                    return null;
+                }
 
-            if (count($entryTypes) > 1) {
                 $entryTypeOptions = [];
                 $fieldLayoutIds = [];
 
@@ -1438,89 +1596,177 @@ class Entry extends Element
                     $fieldLayoutIds["type-$entryType->id"] = $entryType->fieldLayoutId;
                 }
 
-                $fields[] = Cp::selectFieldHtml([
-                    'label' => Craft::t('app', 'Entry Type'),
-                    'id' => 'entryType',
-                    'value' => $this->typeId,
-                    'options' => $entryTypeOptions,
-                ]);
-
-                $typeInputId = $view->namespaceInputId('entryType');
-                $fieldLayoutIdsJson = Json::encode($fieldLayoutIds);
-                $js = <<<EOD
+                if (!$static) {
+                    $typeInputId = $view->namespaceInputId('entryType');
+                    $js = <<<EOD
 (() => {
     const \$typeInput = $('#$typeInputId');
-    const editor = \$typeInput.closest('.element-editor').data('elementEditor');
-    const fieldLayoutIds = $fieldLayoutIdsJson;
+    const editor = \$typeInput.closest('form').data('elementEditor');
     if (editor) {
-        \$typeInput.on('change', function(ev) {
-            editor.setElementAttribute('typeId', \$typeInput.val());
-            editor.setElementAttribute('fieldLayoutId', fieldLayoutIds[`type-\${\$typeInput.val()}`]);
-            editor.load({}, false);
-        });
+        editor.checkForm();
     }
 })();
 EOD;
-                $view->registerJs($js);
-            }
+                    $view->registerJs($js);
+                }
+
+                return Cp::selectFieldHtml([
+                    'label' => Craft::t('app', 'Entry Type'),
+                    'id' => 'entryType',
+                    'name' => 'typeId',
+                    'value' => $this->getTypeId(),
+                    'options' => $entryTypeOptions,
+                    'disabled' => $static,
+                ]);
+            })();
         }
 
-        $fields[] = $this->slugFieldHtml();
+        // Slug
+        $fields[] = $this->slugFieldHtml($static);
+
+        // Parent
+        if ($section->type === Section::TYPE_STRUCTURE && $section->maxLevels !== 1) {
+            $fields[] = (function() use ($static, $section) {
+                if ($parentId = $this->getParentId()) {
+                    $parent = Craft::$app->getEntries()->getEntryById($parentId, $this->siteId, [
+                        'drafts' => null,
+                        'draftOf' => false,
+                    ]);
+                } else {
+                    // If the entry already has structure data, use it. Otherwise, use its canonical entry
+                    /** @var self|null $parent */
+                    $parent = self::find()
+                        ->siteId($this->siteId)
+                        ->ancestorOf($this->lft ? $this : ($this->getIsCanonical() ? $this->id : $this->getCanonical(true)))
+                        ->ancestorDist(1)
+                        ->drafts(null)
+                        ->draftOf(false)
+                        ->status(null)
+                        ->one();
+                }
+
+                return Cp::elementSelectFieldHtml([
+                    'label' => Craft::t('app', 'Parent'),
+                    'id' => 'parentId',
+                    'name' => 'parentId',
+                    'elementType' => self::class,
+                    'selectionLabel' => Craft::t('app', 'Choose'),
+                    'sources' => ["section:$section->uid"],
+                    'criteria' => $this->_parentOptionCriteria($section),
+                    'limit' => 1,
+                    'elements' => $parent ? [$parent] : [],
+                    'disabled' => $static,
+                ]);
+            })();
+        }
 
         if ($section->type !== Section::TYPE_SINGLE) {
-            if (
-                Craft::$app->getEdition() === Craft::Pro &&
-                Craft::$app->getUser()->checkPermission("editPeerEntries:$section->uid")
-            ) {
-                $author = $this->getAuthor();
-                $fields[] = Cp::elementSelectFieldHtml([
-                    'label' => Craft::t('app', 'Author'),
-                    'id' => 'authorId',
-                    'name' => 'authorId',
-                    'elementType' => User::class,
-                    'selectionLabel' => Craft::t('app', 'Choose'),
-                    'criteria' => [
-                        'can' => "editEntries:$section->uid",
-                    ],
-                    'single' => true,
-                    'elements' => $author ? [$author] : null,
-                ]);
+            // Author
+            if (Craft::$app->getEdition() === Craft::Pro && $user->can("viewPeerEntries:$section->uid")) {
+                $fields[] = (function() use ($static, $section) {
+                    $author = $this->getAuthor();
+                    return Cp::elementSelectFieldHtml([
+                        'label' => Craft::t('app', 'Author'),
+                        'id' => 'authorId',
+                        'name' => 'authorId',
+                        'elementType' => User::class,
+                        'selectionLabel' => Craft::t('app', 'Choose'),
+                        'criteria' => [
+                            'can' => "viewEntries:$section->uid",
+                        ],
+                        'single' => true,
+                        'elements' => $author ? [$author] : null,
+                        'disabled' => $static,
+                    ]);
+                })();
             }
 
+            $isDeltaRegistrationActive = $view->getIsDeltaRegistrationActive();
+            $view->setIsDeltaRegistrationActive(true);
+            $view->registerDeltaName('postDate');
+            $view->registerDeltaName('expiryDate');
+            $view->setIsDeltaRegistrationActive($isDeltaRegistrationActive);
+
+            // Post Date
             $fields[] = Cp::dateTimeFieldHtml([
                 'label' => Craft::t('app', 'Post Date'),
                 'id' => 'postDate',
                 'name' => 'postDate',
-                'value' => $this->postDate,
+                'value' => $this->_userPostDate(),
                 'errors' => $this->getErrors('postDate'),
+                'disabled' => $static,
             ]);
 
+            // Expiry Date
             $fields[] = Cp::dateTimeFieldHtml([
                 'label' => Craft::t('app', 'Expiry Date'),
                 'id' => 'expiryDate',
                 'name' => 'expiryDate',
                 'value' => $this->expiryDate,
                 'errors' => $this->getErrors('expiryDate'),
+                'disabled' => $static,
             ]);
         }
 
-        $fields[] = parent::metaFieldsHtml();
+        $fields[] = parent::metaFieldsHtml($static);
 
-        return implode('', $fields);
+        return implode("\n", $fields);
+    }
+
+    private function _parentOptionCriteria(Section $section): array
+    {
+        $parentOptionCriteria = [
+            'siteId' => $this->siteId,
+            'sectionId' => $section->id,
+            'status' => null,
+            'drafts' => null,
+            'draftOf' => false,
+        ];
+
+        // Prevent the current entry, or any of its descendants, from being selected as a parent
+        if ($this->id) {
+            $excludeIds = self::find()
+                ->descendantOf($this)
+                ->drafts(null)
+                ->draftOf(false)
+                ->status(null)
+                ->ids();
+            $excludeIds[] = $this->getCanonicalId();
+            $parentOptionCriteria['id'] = array_merge(['not'], $excludeIds);
+        }
+
+        if ($section->maxLevels) {
+            if ($this->id) {
+                // Figure out how deep the ancestors go
+                $maxDepth = self::find()
+                    ->select('level')
+                    ->descendantOf($this)
+                    ->status(null)
+                    ->leaves()
+                    ->scalar();
+                $depth = 1 + ($maxDepth ?: $this->level) - $this->level;
+            } else {
+                $depth = 1;
+            }
+
+            $parentOptionCriteria['level'] = sprintf('<=%s', $section->maxLevels - $depth);
+        }
+
+        return $parentOptionCriteria;
     }
 
     /**
-     * Updates the entry's title, if its entry type has a dynamic title format.
+     * Updates the entry’s title, if its entry type has a dynamic title format.
      *
      * @since 3.0.3
      */
-    public function updateTitle()
+    public function updateTitle(): void
     {
         $entryType = $this->getType();
         if (!$entryType->hasTitleField) {
             // Make sure that the locale has been loaded in case the title format has any Date/Time fields
             Craft::$app->getLocale();
-            // Set Craft to the entry's site's language, in case the title format has any static translations
+            // Set Craft to the entry’s site’s language, in case the title format has any static translations
             $language = Craft::$app->language;
             Craft::$app->language = $this->getSite()->language;
             $title = Craft::$app->getView()->renderObjectTemplate($entryType->titleFormat, $this);
@@ -1531,16 +1777,48 @@ EOD;
         }
     }
 
+    /**
+     * Returns the Post Date value that should be shown on the edit form.
+     *
+     * @return DateTime|null
+     */
+    private function _userPostDate(): ?DateTime
+    {
+        if (!$this->postDate || ($this->getIsUnpublishedDraft() && $this->postDate == $this->dateCreated)) {
+            // Pretend the post date hasn't been set yet, even if it has
+            return null;
+        }
+
+        return $this->postDate;
+    }
+
     // Events
     // -------------------------------------------------------------------------
 
     /**
      * @inheritdoc
      */
-    public function beforeValidate()
+    public function beforeValidate(): bool
     {
-        if (!$this->authorId && $this->getSection()->type !== Section::TYPE_SINGLE) {
-            $this->authorId = Craft::$app->getUser()->getId();
+        if (!$this->getAuthorId() && $this->getSection()->type !== Section::TYPE_SINGLE) {
+            $this->setAuthorId(Craft::$app->getUser()->getId());
+        }
+
+        if (
+            !$this->_userPostDate() &&
+            (
+                in_array($this->scenario, [self::SCENARIO_LIVE, self::SCENARIO_DEFAULT]) ||
+                (!$this->getIsDraft() && !$this->getIsRevision())
+            )
+        ) {
+            // Default the post date to the current date/time
+            $this->postDate = new DateTime();
+            // ...without the seconds
+            $this->postDate->setTimestamp($this->postDate->getTimestamp() - ($this->postDate->getTimestamp() % 60));
+            // ...unless an expiry date is set in the past
+            if ($this->expiryDate && $this->postDate >= $this->expiryDate) {
+                $this->postDate = (clone $this->expiryDate)->modify('-1 day');
+            }
         }
 
         return parent::beforeValidate();
@@ -1557,7 +1835,7 @@ EOD;
         // Verify that the section supports this site
         $sectionSiteSettings = $section->getSiteSettings();
         if (!isset($sectionSiteSettings[$this->siteId])) {
-            throw new UnsupportedSiteException($this, $this->siteId, "The section '{$section->name}' is not enabled for the site '{$this->siteId}'");
+            throw new UnsupportedSiteException($this, $this->siteId, "The section '$section->name' is not enabled for the site '$this->siteId'");
         }
 
         // Make sure the entry has at least one revision if the section has versioning enabled
@@ -1565,19 +1843,20 @@ EOD;
             $hasRevisions = self::find()
                 ->revisionOf($this)
                 ->site('*')
-                ->anyStatus()
+                ->status(null)
                 ->exists();
             if (!$hasRevisions) {
+                /** @var self|null $currentEntry */
                 $currentEntry = self::find()
                     ->id($this->id)
                     ->site('*')
-                    ->anyStatus()
+                    ->status(null)
                     ->one();
 
                 // May be null if the entry is currently stored as an unpublished draft
                 if ($currentEntry) {
                     $revisionNotes = 'Revision from ' . Craft::$app->getFormatter()->asDatetime($currentEntry->dateUpdated);
-                    Craft::$app->getRevisions()->createRevision($currentEntry, $currentEntry->authorId, $revisionNotes);
+                    Craft::$app->getRevisions()->createRevision($currentEntry, $currentEntry->getAuthorId(), $revisionNotes);
                 }
             }
         }
@@ -1586,55 +1865,42 @@ EOD;
         if ($section->type === Section::TYPE_STRUCTURE) {
             $this->structureId = $section->structureId;
 
-            if (!$this->duplicateOf) {
-                // Has the entry been assigned to a new parent?
-                if ($this->_hasNewParent()) {
-                    if ($this->newParentId) {
-                        $parentEntry = Craft::$app->getEntries()->getEntryById($this->newParentId, '*', [
-                            'preferSites' => [$this->siteId],
-                            'drafts' => null,
-                            'draftOf' => false,
-                        ]);
+            // Has the entry been assigned to a new parent?
+            if (!$this->duplicateOf && $this->hasNewParent()) {
+                if ($parentId = $this->getParentId()) {
+                    $parentEntry = Craft::$app->getEntries()->getEntryById($parentId, '*', [
+                        'preferSites' => [$this->siteId],
+                        'drafts' => null,
+                        'draftOf' => false,
+                    ]);
 
-                        if (!$parentEntry) {
-                            throw new \Exception('Invalid entry ID: ' . $this->newParentId);
-                        }
-                    } else {
-                        $parentEntry = null;
+                    if (!$parentEntry) {
+                        throw new InvalidConfigException("Invalid parent ID: $parentId");
                     }
-
-                    $this->setParent($parentEntry);
+                } else {
+                    $parentEntry = null;
                 }
+
+                $this->setParent($parentEntry);
             }
         }
 
         // Section type-specific stuff
         if ($section->type == Section::TYPE_SINGLE) {
-            $this->authorId = null;
+            $this->setAuthorId(null);
             $this->expiryDate = null;
         }
 
         $this->updateTitle();
-
-        if ($this->enabled && !$this->postDate) {
-            // Default the post date to the current date/time
-            $this->postDate = new \DateTime();
-            // ...without the seconds
-            $this->postDate->setTimestamp($this->postDate->getTimestamp() - ($this->postDate->getTimestamp() % 60));
-            // ...unless an expiry date is set in the past
-            if ($this->expiryDate && $this->postDate >= $this->expiryDate) {
-                $this->postDate = (clone $this->expiryDate)->modify('-1 day');
-            }
-        }
 
         return parent::beforeSave($isNew);
     }
 
     /**
      * @inheritdoc
-     * @throws Exception if reasons
+     * @throws InvalidConfigException
      */
-    public function afterSave(bool $isNew)
+    public function afterSave(bool $isNew): void
     {
         if (!$this->propagating) {
             $section = $this->getSection();
@@ -1644,7 +1910,7 @@ EOD;
                 $record = EntryRecord::findOne($this->id);
 
                 if (!$record) {
-                    throw new Exception('Invalid entry ID: ' . $this->id);
+                    throw new InvalidConfigException("Invalid entry ID: $this->id");
                 }
             } else {
                 $record = new EntryRecord();
@@ -1652,10 +1918,10 @@ EOD;
             }
 
             $record->sectionId = (int)$this->sectionId;
-            $record->typeId = (int)$this->typeId;
-            $record->authorId = (int)$this->authorId ?: null;
-            $record->postDate = $this->postDate;
-            $record->expiryDate = $this->expiryDate;
+            $record->typeId = $this->getTypeId();
+            $record->authorId = $this->getAuthorId();
+            $record->postDate = Db::prepareDateForDb($this->postDate);
+            $record->expiryDate = Db::prepareDateForDb($this->expiryDate);
 
             // Capture the dirty attributes from the record
             $dirtyAttributes = array_keys($record->getDirtyAttributes());
@@ -1664,11 +1930,11 @@ EOD;
 
             if ($this->getIsCanonical() && $section->type == Section::TYPE_STRUCTURE) {
                 // Has the parent changed?
-                if ($this->_hasNewParent()) {
+                if ($this->hasNewParent()) {
                     $this->_placeInStructure($isNew, $section);
                 }
 
-                // Update the entry's descendants, who may be using this entry's URI in their own URIs
+                // Update the entry’s descendants, who may be using this entry’s URI in their own URIs
                 if (!$isNew) {
                     Craft::$app->getElements()->updateDescendantSlugsAndUris($this, true, true);
                 }
@@ -1682,34 +1948,37 @@ EOD;
 
     private function _placeInStructure(bool $isNew, Section $section): void
     {
+        $parentId = $this->getParentId();
+        $structuresService = Craft::$app->getStructures();
+
         // If this is a provisional draft and its new parent matches the canonical entry’s, just drop it from the structure
         if ($this->isProvisionalDraft) {
-            $canonicalParentId = Entry::find()
+            $canonicalParentId = self::find()
                 ->select(['elements.id'])
                 ->ancestorOf($this->getCanonicalId())
                 ->ancestorDist(1)
-                ->anyStatus()
+                ->status(null)
                 ->scalar();
 
-            if ($this->newParentId == $canonicalParentId) {
-                Craft::$app->getStructures()->remove($this->structureId, $this);
+            if ($parentId == $canonicalParentId) {
+                $structuresService->remove($this->structureId, $this);
                 return;
             }
         }
 
         $mode = $isNew ? Structures::MODE_INSERT : Structures::MODE_AUTO;
 
-        if (!$this->newParentId) {
+        if (!$parentId) {
             if ($section->defaultPlacement === Section::DEFAULT_PLACEMENT_BEGINNING) {
-                Craft::$app->getStructures()->prependToRoot($this->structureId, $this, $mode);
+                $structuresService->prependToRoot($this->structureId, $this, $mode);
             } else {
-                Craft::$app->getStructures()->appendToRoot($this->structureId, $this, $mode);
+                $structuresService->appendToRoot($this->structureId, $this, $mode);
             }
         } else {
             if ($section->defaultPlacement === Section::DEFAULT_PLACEMENT_BEGINNING) {
-                Craft::$app->getStructures()->prepend($this->structureId, $this, $this->getParent(), $mode);
+                $structuresService->prepend($this->structureId, $this, $this->getParent(), $mode);
             } else {
-                Craft::$app->getStructures()->append($this->structureId, $this, $this->getParent(), $mode);
+                $structuresService->append($this->structureId, $this, $this->getParent(), $mode);
             }
         }
     }
@@ -1717,7 +1986,7 @@ EOD;
     /**
      * @inheritdoc
      */
-    public function afterPropagate(bool $isNew)
+    public function afterPropagate(bool $isNew): void
     {
         parent::afterPropagate($isNew);
 
@@ -1744,7 +2013,7 @@ EOD;
         if ($this->structureId) {
             // Remember the parent ID, in case the entry needs to be restored later
             $parentId = $this->getAncestors(1)
-                ->anyStatus()
+                ->status(null)
                 ->select(['elements.id'])
                 ->scalar();
             if ($parentId) {
@@ -1762,11 +2031,12 @@ EOD;
     /**
      * @inheritdoc
      */
-    public function afterRestore()
+    public function afterRestore(): void
     {
         $section = $this->getSection();
         if ($section->type === Section::TYPE_STRUCTURE) {
             // Add the entry back into its structure
+            /** @var self|null $parent */
             $parent = self::find()
                 ->structureId($section->structureId)
                 ->innerJoin(['j' => Table::ENTRIES], '[[j.parentId]] = [[elements.id]]')
@@ -1786,7 +2056,7 @@ EOD;
     /**
      * @inheritdoc
      */
-    public function afterMoveInStructure(int $structureId)
+    public function afterMoveInStructure(int $structureId): void
     {
         // Was the entry moved within its section's structure?
         $section = $this->getSection();
@@ -1796,9 +2066,10 @@ EOD;
 
             // If this is the canonical entry, update its drafts
             if ($this->getIsCanonical()) {
-                $drafts = static::find()
+                /** @var self[] $drafts */
+                $drafts = self::find()
                     ->draftOf($this)
-                    ->anyStatus()
+                    ->status(null)
                     ->site('*')
                     ->unique()
                     ->all();
@@ -1813,77 +2084,6 @@ EOD;
         }
 
         parent::afterMoveInStructure($structureId);
-    }
-
-    /**
-     * Returns whether the entry has been assigned a new parent.
-     *
-     * @return bool
-     * @see beforeSave()
-     * @see afterSave()
-     */
-    private function _hasNewParent(): bool
-    {
-        if ($this->_hasNewParent !== null) {
-            return $this->_hasNewParent;
-        }
-
-        return $this->_hasNewParent = $this->_checkForNewParent();
-    }
-
-    /**
-     * Checks if the entry has been assigned a new parent.
-     *
-     * @return bool
-     * @see _hasNewParent()
-     */
-    private function _checkForNewParent(): bool
-    {
-        // Make sure this is a Structure section, and that it’s either a canonical entry or provisional drafT
-        if (!(
-            $this->getSection()->type === Section::TYPE_STRUCTURE &&
-            ($this->getIsCanonical() || $this->isProvisionalDraft)
-        )) {
-            return false;
-        }
-
-        // Is it a brand new (non-provisional) entry?
-        if ($this->id === null && !$this->isProvisionalDraft) {
-            return true;
-        }
-
-        // Was a new parent ID actually submitted?
-        if ($this->newParentId === null) {
-            return false;
-        }
-
-        // If this is a provisional draft, but doesn't actually exist in the structure yet, check based on the canonical entry
-        if ($this->isProvisionalDraft && !$this->lft) {
-            $entry = $this->getCanonical(true);
-        } else {
-            $entry = $this;
-        }
-
-        // Is it set to the top level now, but it hadn't been before?
-        if (!$this->newParentId && $entry->level != 1) {
-            return true;
-        }
-
-        // Is it set to be under a parent now, but didn't have one before?
-        if ($this->newParentId && $entry->level == 1) {
-            return true;
-        }
-
-        // Is the parentId set to a different entry ID than its previous parent?
-        $oldParentId = self::find()
-            ->ancestorOf($entry)
-            ->ancestorDist(1)
-            ->siteId($entry->siteId)
-            ->anyStatus()
-            ->select('elements.id')
-            ->scalar();
-
-        return $this->newParentId != $oldParentId;
     }
 
     /**
@@ -1911,7 +2111,6 @@ EOD;
      */
     private static function _getGqlIdentifierByContext(EntryType $context): string
     {
-        $gqlIdentifier = $context->getSection()->handle . '_' . $context->handle;
-        return $gqlIdentifier;
+        return $context->getSection()->handle . '_' . $context->handle;
     }
 }

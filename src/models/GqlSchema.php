@@ -24,41 +24,41 @@ class GqlSchema extends Model
     /**
      * @var int|null ID
      */
-    public $id;
+    public ?int $id = null;
 
     /**
-     * @var string Schema name
+     * @var string|null Schema name
      */
-    public $name;
+    public ?string $name = null;
 
     /**
      * @var array The schema’s scope
      */
-    public $scope = [];
+    public array $scope = [];
 
     /**
-     * @var array Whether this schema is public
+     * @var bool Whether this schema is public
      */
-    public $isPublic = false;
+    public bool $isPublic = false;
 
     /**
-     * @var string $uid
+     * @var string|null $uid
      */
-    public $uid;
+    public ?string $uid = null;
 
     /**
      * @var array Instance cache for the extracted scope pairs
      * @since 3.3.16
      */
-    private $_cachedPairs = [];
+    private array $_cachedPairs = [];
 
     public function __construct($config = [])
     {
-        parent::__construct($config);
-
-        if (is_string($this->scope)) {
-            $this->scope = Json::decodeIfJson($this->scope);
+        if (isset($config['scope']) && is_string($config['scope'])) {
+            $config['scope'] = Json::decode($config['scope']);
         }
+
+        parent::__construct($config);
     }
 
     /**
@@ -90,7 +90,7 @@ class GqlSchema extends Model
     /**
      * Return whether this schema can perform an action
      *
-     * @param $name
+     * @param string $name
      * @return bool
      */
     public function has(string $name): bool
@@ -116,7 +116,7 @@ class GqlSchema extends Model
                 $parts = explode('.', $permission);
                 if (count($parts) === 2) {
                     $this->_cachedPairs[$action][$parts[0]][] = $parts[1];
-                } else if (count($parts) === 1) {
+                } elseif (count($parts) === 1) {
                     $this->_cachedPairs[$action][$parts[0]] = true;
                 }
             }

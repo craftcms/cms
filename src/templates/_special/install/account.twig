@@ -1,0 +1,42 @@
+{% import "_includes/forms" as forms %}
+
+{% set useEmailAsUsername = craft.app.config.general.useEmailAsUsername %}
+
+<div id="account" class="screen hidden" data-inputs="username,email,password">
+    <h1>{{ "Create your account"|t('app') }}</h1>
+
+    <form accept-charset="UTF-8">
+        {{ csrfInput() }}
+
+        {% if not useEmailAsUsername %}
+            {{ forms.textField({
+                first: true,
+                label: "Username"|t('app'),
+                id: 'account-username',
+                maxlength: 255,
+            }) }}
+        {% endif %}
+
+        {{ forms.textField({
+            first: useEmailAsUsername,
+            label: "Email"|t('app'),
+            id: 'account-email',
+            maxlength: 255,
+            autocomplete: 'email',
+        }) }}
+
+        {{ forms.passwordField({
+            label: "Password"|t('app'),
+            id: 'account-password',
+            autocomplete: 'new-password',
+        }) }}
+
+        <div class="buttons">
+            {{ forms.submitButton({
+                class: 'big',
+                label: 'Next'|t('app'),
+                spinner: true,
+            }) }}
+        </div>
+    </form>
+</div>

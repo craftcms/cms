@@ -1,0 +1,11 @@
+<?php
+
+namespace GraphQL\Type\Definition;
+
+class ResolveInfo
+{
+    /**
+     * @var string[]|null
+     */
+    public $path;
+}

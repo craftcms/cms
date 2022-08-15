@@ -1,0 +1,182 @@
+{% extends "_layouts/cp" %}
+{% set fullPageForm = true %}
+{% set formActions = [
+    {
+        label: 'Save and continue editing'|t('app'),
+        redirect: 'settings/fields/edit/{id}'|hash,
+        shortcut: true,
+        retainScroll: true,
+    },
+    fieldId ?? false ? {
+        label: 'Delete'|t('app'),
+        action: 'fields/delete-field',
+        redirect: 'settings/fields'|hash,
+        destructive: true,
+        confirm: 'Are you sure you want to delete “{name}”?'|t('app', {
+            name: field.name,
+        }),
+    },
+]|filter %}
+
+{% import "_includes/forms" as forms %}
+
+{% block content %}
+    {{ actionInput('fields/save-field') }}
+    {{ redirectInput('settings/fields/{groupId}') }}
+    {% if fieldId is defined and fieldId %}
+        {{ hiddenInput('fieldId', fieldId) }}
+    {% endif %}
+
+    {{ forms.selectField({
+        first: true,
+        label: "Group"|t('app'),
+        instructions: "Which group should this field be displayed in?"|t('app'),
+        id: 'group',
+        name: 'group',
+        options: groupOptions,
+        value: groupId,
+        required: true,
+        errors: field.getErrors('groupId'),
+    }) }}
+
+    {{ forms.textField({
+        label: "Name"|t('app'),
+        instructions: "What this field will be called in the control panel."|t('app'),
+        id: 'name',
+        name: 'name',
+        value: field.name,
+        errors: field.getErrors('name'),
+        required: true,
+        autofocus: true
+    }) }}
+
+    {{ forms.textField({
+        label: "Handle"|t('app'),
+        instructions: "How you’ll refer to this field in the templates."|t('app'),
+        id: 'handle',
+        name: 'handle',
+        class: 'code',
+        autocorrect: false,
+        autocapitalize: false,
+        maxlength: 64,
+        value: field.handle,
+        errors: field.getErrors('handle'),
+        required: true,
+    }) }}
+
+    {{ forms.textareaField({
+        label: "Default Instructions"|t('app'),
+        instructions: "Helper text to guide the author."|t('app'),
+        id: 'instructions',
+        class: 'nicetext',
+        name: 'instructions',
+        value: field.instructions,
+        errors: field.getErrors('instructions'),
+    }) }}
+
+    {{ forms.checkboxField({
+        label: 'Use this field’s values as search keywords'|t('app'),
+        id: 'searchable',
+        name: 'searchable',
+        checked: field.searchable
+    }) }}
+
+    {{ forms.selectField({
+        label: "Field Type"|t('app'),
+        instructions: "What type of field is this?"|t('app'),
+        warning: (fieldId is not empty and not field.hasErrors('type') ? "Changing this may result in data loss."|t('app')),
+        id: 'type',
+        name: 'type',
+        options: fieldTypeOptions,
+        value: field is missing ? field.expectedType : className(field),
+        errors: field.getErrors('type'),
+    }) }}
+
+    {{ missingFieldPlaceholder|raw }}
+
+    {% if craft.app.getIsMultiSite() %}
+        {% set translationMethods = field.supportedTranslationMethods %}
+        {% if translationMethods|length > 1 %}
+            <div id="translation-settings">
+                {{ forms.selectField({
+                    label: "Translation Method"|t('app'),
+                    instructions: "How should this field’s values be translated?"|t('app'),
+                    id: 'translation-method',
+                    name: 'translationMethod',
+                    options: [
+                        'none' in translationMethods ? { value: 'none', label: "Not translatable"|t('app') },
+                        'site' in translationMethods ? { value: 'site', label: "Translate for each site"|t('app') },
+                        'siteGroup' in translationMethods ? { value: 'siteGroup', label: "Translate for each site group"|t('app') },
+                        'language' in translationMethods ? { value: 'language', label: "Translate for each language"|t('app') },
+                        'custom' in translationMethods ? { value: 'custom', label: "Custom…"|t('app') }
+                    ]|filter,
+                    value: field.translationMethod,
+                    toggle: true,
+                    targetPrefix: 'translation-method-'
+                }) }}
+
+                {% if 'custom' in translationMethods %}
+                    {% tag 'div' with {
+                        id: 'translation-method-custom',
+                        class: field.translationMethod != 'custom' ? 'hidden' : null,
+                    } %}
+                        {{ forms.textField({
+                            label: "Translation Key Format"|t('app'),
+                            instructions: "Template that defines the field’s custom “translation key” format. Field values will be copied to all sites that produce the same key. For example, to make the field translatable based on the first two characters of the site handle, you could enter `{site.handle[:2]}`.",
+                            id: 'translation-key-format',
+                            class: 'code',
+                            name: 'translationKeyFormat',
+                            value: field.translationKeyFormat,
+                            errors: field.getErrors('translationKeyFormat')
+                        }) }}
+                    {% endtag %}
+                {% endif %}
+            </div>
+        {% endif %}
+    {% endif %}
+
+    <hr>
+
+    <div id="settings">
+        <div id="{{ className(field)|id }}">
+            {% include 'settings/fields/_type-settings' with {
+                namespace: 'types['~className(field)~']'
+            } %}
+        </div>
+    </div>
+{% endblock %}
+
+
+{% if field is empty or field.handle is empty %}
+    {% js %}
+        new Craft.HandleGenerator('#name', '#handle');
+    {% endjs %}
+{% endif %}
+
+{% js %}
+    Craft.supportedTranslationMethods = {{ supportedTranslationMethods|json_encode|raw }};
+
+    Craft.updateTranslationMethodSettings = function(type, container) {
+        var $container = $(container);
+        if (!Craft.supportedTranslationMethods[type] || Craft.supportedTranslationMethods[type].length == 1) {
+            $container.addClass('hidden');
+        } else {
+            $container.removeClass('hidden');
+            // Rebuild the options based on the field type's supported translation methods
+            $container.find('select').html(
+                ($.inArray('none', Craft.supportedTranslationMethods[type]) != -1 ? '<option value="none">{{ "Not translatable"|t('app')|e('js') }}</option>' : '') +
+                ($.inArray('site', Craft.supportedTranslationMethods[type]) != -1 ? '<option value="site">{{ "Translate for each site"|t('app')|e('js') }}</option>' : '') +
+                ($.inArray('siteGroup', Craft.supportedTranslationMethods[type]) != -1 ? '<option value="siteGroup">{{ "Translate for each site group"|t('app')|e('js') }}</option>' : '') +
+                ($.inArray('language', Craft.supportedTranslationMethods[type]) != -1 ? '<option value="language">{{ "Translate for each language"|t('app')|e('js') }}</option>' : '') +
+                ($.inArray('custom', Craft.supportedTranslationMethods[type]) != -1 ? '<option value="custom">{{ "Custom…"|t('app')|e('js') }}</option>' : '')
+            );
+        }
+    }
+
+    var $fieldTypeInput = $("#{{ 'type'|namespaceInputId|e('js') }}"),
+        $translationSettings = $("#{{ 'translation-settings'|namespaceInputId|e('js') }}");
+
+    $fieldTypeInput.change(function(e) {
+        Craft.updateTranslationMethodSettings($(this).val(), $translationSettings);
+    });
+{% endjs %}

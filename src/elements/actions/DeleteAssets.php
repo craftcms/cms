@@ -10,7 +10,6 @@ namespace craft\elements\actions;
 use Craft;
 use craft\base\ElementAction;
 use craft\elements\db\ElementQueryInterface;
-use craft\helpers\Json;
 use yii\base\Exception;
 
 /**
@@ -18,6 +17,7 @@ use yii\base\Exception;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ * @deprecated in 4.1.0. [[Delete]] should be used instead.
  */
 class DeleteAssets extends ElementAction
 {
@@ -40,7 +40,7 @@ class DeleteAssets extends ElementAction
     /**
      * @inheritdoc
      */
-    public function getConfirmationMessage()
+    public function getConfirmationMessage(): ?string
     {
         return Craft::t('app', 'Are you sure you want to delete the selected assets?');
     }
@@ -49,16 +49,14 @@ class DeleteAssets extends ElementAction
      * @inheritdoc
      * @since 3.5.15
      */
-    public function getTriggerHtml()
+    public function getTriggerHtml(): ?string
     {
         // Only enable for deletable elements, per getIsDeletable()
-        $type = Json::encode(static::class);
-        $js = <<<JS
+        Craft::$app->getView()->registerJsWithVars(fn($type) => <<<JS
 (() => {
     new Craft.ElementActionTrigger({
-        type: {$type},
-        validateSelection: function(\$selectedItems)
-        {
+        type: $type,
+        validateSelection: \$selectedItems => {
             for (let i = 0; i < \$selectedItems.length; i++) {
                 if (!Garnish.hasAttr(\$selectedItems.eq(i).find('.element'), 'data-deletable')) {
                     return false;
@@ -68,8 +66,8 @@ class DeleteAssets extends ElementAction
         },
     });
 })();
-JS;
-        Craft::$app->getView()->registerJs($js);
+JS, [static::class]);
+
         return null;
     }
 
@@ -79,10 +77,11 @@ JS;
     public function performAction(ElementQueryInterface $query): bool
     {
         $elementsService = Craft::$app->getElements();
+        $user = Craft::$app->getUser()->getIdentity();
 
         try {
             foreach ($query->all() as $asset) {
-                if ($asset->getIsDeletable()) {
+                if ($asset->canDelete($user)) {
                     $elementsService->deleteElement($asset);
                 }
             }

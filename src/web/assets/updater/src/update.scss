@@ -1,5 +1,5 @@
 @charset "UTF-8";
-@import "../../../../../packages/craftcms-sass/mixins";
+@import '../../../../../packages/craftcms-sass/mixins';
 
 #graphic {
   display: block;
@@ -7,6 +7,8 @@
   top: 50%;
   left: 50%;
   @include margin(-48px, 0, 0, -24px);
+  width: 48px;
+  height: 48px;
   background-repeat: no-repeat;
   background-position: 50% 50%;
 
@@ -27,12 +29,12 @@
   text-align: center;
   font-size: 16px;
   line-height: 20px;
-  color: $grey500;
+  color: var(--gray-500);
 
   #error {
     margin: 24px auto;
     border-radius: 3px;
-    border: 1px solid $hairlineColor;
+    border: 1px solid var(--hairline-color);
     padding: 24px;
     width: 600px;
     max-width: calc(100% - 96px);
@@ -52,10 +54,10 @@
 }
 
 @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
-only screen and (-moz-min-device-pixel-ratio: 1.5),
-only screen and (-o-min-device-pixel-ratio: 3/2),
-only screen and (min-device-pixel-ratio: 1.5),
-only screen and (min-resolution: 1.5dppx) {
+  only screen and (-moz-min-device-pixel-ratio: 1.5),
+  only screen and (-o-min-device-pixel-ratio: 3/2),
+  only screen and (min-device-pixel-ratio: 1.5),
+  only screen and (min-resolution: 1.5dppx) {
   #graphic {
     &.error {
       background-image: url(images/error_2x.png);

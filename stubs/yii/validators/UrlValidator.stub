@@ -1,0 +1,11 @@
+<?php
+
+namespace yii\validators;
+
+class UrlValidator
+{
+    /**
+     * @var string|null
+     */
+    public $defaultScheme;
+}

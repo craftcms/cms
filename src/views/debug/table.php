@@ -2,10 +2,10 @@
 
 use yii\helpers\Html;
 
-/** @var string $caption */ 
-/** @var string[] $headings */ 
-/** @var array $values */ 
-/** @var array $columnStyles */ 
+/** @var string $caption */
+/** @var string[] $headings */
+/** @var array $values */
+/** @var array $columnStyles */
 ?>
 
 <?php if (!empty($caption)): ?>

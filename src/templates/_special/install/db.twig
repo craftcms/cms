@@ -1,0 +1,89 @@
+{% import "_includes/forms" as forms %}
+
+{% set dbConfig = craft.app.config.db %}
+
+<div id="db" class="screen hidden" data-inputs="driver,server,port,user,password,database,schema,tablePrefix">
+    <h1>{{ "Connect the database"|t('app') }}</h1>
+
+    <form accept-charset="UTF-8">
+        {{ csrfInput() }}
+
+        <div class="flex field first">
+            <div>
+                {{ forms.selectField({
+                    first: true,
+                    label: "Driver"|t('app'),
+                    id: 'db-driver',
+                    options: [
+                        { label: 'MySQL', value: 'mysql' },
+                        { label: 'PostgreSQL', value: 'pgsql' }
+                    ],
+                    value: dbConfig.driver,
+                    toggle: true,
+                    targetPrefix: '.db-',
+                }) }}
+            </div>
+            <div class="flex-grow">
+                {{ forms.textField({
+                    label: "Server"|t('app'),
+                    id: 'db-server',
+                    value: dbConfig.server != '127.0.0.1' ? dbConfig.server,
+                    placeholder: '127.0.0.1',
+                }) }}
+            </div>
+            <div>
+                {{ forms.textField({
+                    label: "Port"|t('app'),
+                    id: 'db-port',
+                    value: dbConfig.port,
+                    size: 7
+                }) }}
+            </div>
+        </div>
+
+        <div class="flex field">
+            <div class="flex-grow">
+                {{ forms.textField({
+                    label: "Username"|t('app'),
+                    id: 'db-user',
+                    value: dbConfig.user != 'root' ? dbConfig.user,
+                    placeholder: 'root',
+                }) }}
+            </div>
+            <div class="flex-grow">
+                {{ forms.passwordField({
+                    label: "Password"|t('app'),
+                    id: 'db-password',
+                    value: dbConfig.password,
+                }) }}
+            </div>
+        </div>
+
+        <div class="flex field">
+            <div class="flex-grow">
+                {{ forms.textField({
+                    label: "Database Name"|t('app'),
+                    id: 'db-database',
+                    value: dbConfig.database
+                }) }}
+            </div>
+            <div>
+                {{ forms.textField({
+                    label: "#{'Prefix'|t('app')} <span class='info'>#{'The table name prefix'|t('app')}</span>",
+                    id: 'db-tablePrefix',
+                    value: dbConfig.tablePrefix|trim('_'),
+                    maxlength: 5,
+                    size: 7
+                }) }}
+            </div>
+        </div>
+
+        <div class="buttons">
+            {{ forms.submitButton({
+                class: 'big',
+                label: 'Next'|t('app'),
+                spinner: true,
+            }) }}
+        </div>
+    </form>
+</div>

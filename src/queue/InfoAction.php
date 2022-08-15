@@ -27,20 +27,20 @@ class InfoAction extends Action
     /**
      * Info about queue status.
      */
-    public function run()
+    public function run(): void
     {
         Console::output($this->format('Jobs', Console::FG_GREEN));
 
         Console::stdout($this->format('- waiting: ', Console::FG_YELLOW));
-        Console::output($this->queue->getTotalWaiting());
+        Console::output((string)$this->queue->getTotalWaiting());
 
         Console::stdout($this->format('- delayed: ', Console::FG_YELLOW));
-        Console::output($this->queue->getTotalDelayed());
+        Console::output((string)$this->queue->getTotalDelayed());
 
         Console::stdout($this->format('- reserved: ', Console::FG_YELLOW));
-        Console::output($this->queue->getTotalReserved());
+        Console::output((string)$this->queue->getTotalReserved());
 
         Console::stdout($this->format('- failed: ', Console::FG_YELLOW));
-        Console::output($this->queue->getTotalFailed());
+        Console::output((string)$this->queue->getTotalFailed());
     }
 }

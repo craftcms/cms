@@ -1,7 +1,7 @@
 @charset "UTF-8";
-@import "@craftcms/sass/mixins";
+@import '@craftcms/sass/mixins';
 
-html, body {
+html {
   height: 100%;
 }
 
@@ -10,6 +10,7 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  min-height: 100%;
 }
 
 #login {
@@ -31,19 +32,23 @@ body {
   padding: 1px;
 }
 
-#login-form .field {
-  margin: 0;
-}
+#login-form {
+  position: relative;
 
-#login-form .btn {
-  display: block;
+  .field {
+    margin: 0;
+  }
+
+  .btn {
+    display: flex;
+  }
 }
 
 #loginName {
   margin: 0 -1px;
   width: calc(100% + 2px);
   padding: 14px 16px;
-  border-radius: $largeBorderRadius;
+  border-radius: var(--large-border-radius);
 }
 
 #loginName-field {
@@ -54,14 +59,10 @@ body {
   display: none;
 }
 
-#login-form.remember-me:not(.reset-password) #login-form-bottom {
-  justify-content: space-between;
-}
-
 #login-form:not(.reset-password) {
   #loginName {
     margin: -1px -1px 0;
-    border-radius: $largeBorderRadius $largeBorderRadius 0 0;
+    border-radius: var(--large-border-radius) var(--large-border-radius) 0 0;
     border-bottom-width: 0;
 
     &:focus {
@@ -72,7 +73,6 @@ body {
 }
 
 #login-form.reset-password {
-
   #password-field,
   #rememberMe-field,
   #forgot-password {
@@ -86,7 +86,7 @@ body {
 
 .passwordwrapper {
   margin: 0 -1px -1px;
-  border-radius: 0 0 $largeBorderRadius $largeBorderRadius;
+  border-radius: 0 0 var(--large-border-radius) var(--large-border-radius);
 
   &.focus {
     z-index: 1;
@@ -103,7 +103,14 @@ body {
 }
 
 #login-form-bottom {
-  margin-top: 24px;
+  margin-top: var(--m);
+}
+
+#login-form-buttons {
+  margin: var(--xl) 0 var(--s);
+}
+
+#login-form-extra {
   display: flex;
   justify-content: center;
 }
@@ -115,33 +122,25 @@ body {
 #forgot-password,
 #remember-password {
   font-size: 11px;
-  color: $mediumTextColor;
+  color: var(--medium-text-color);
 }
 
 #forgot-password:hover,
 #forgot-password:focus,
 #remember-password:hover,
 #remember-password:focus {
-  color: $linkColor;
+  color: var(--link-color);
 }
 
 #login-form .submit {
-  display: block;
-  padding: 14px 16px;
-  height: auto;
+  display: flex;
+  height: 44px;
   width: 100%;
-}
-
-#spinner {
-  position: absolute;
-  top: 58px;
-  left: 50%;
-  margin-left: -12px;
 }
 
 #login-errors {
   text-align: center;
-  color: $errorColor;
+  color: var(--error-color);
   margin-top: 1em;
 }
 
@@ -150,7 +149,11 @@ body {
   text-align: center;
   margin-top: 70px;
   margin-bottom: 48px;
-  opacity: .8;
+  opacity: 0.8;
+
+  > svg {
+    display: inline-block;
+  }
 }
 
 #poweredby:hover,
@@ -175,5 +178,5 @@ body {
   @include left(24px);
   content: 'mail';
   font-size: 30px;
-  color: $linkColor;
+  color: var(--link-color);
 }

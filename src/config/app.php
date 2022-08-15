@@ -3,14 +3,17 @@
 return [
     'id' => 'CraftCMS',
     'name' => 'Craft CMS',
-    'version' => '3.7.32',
-    'schemaVersion' => '3.7.32',
-    'minVersionRequired' => '2.6.2788',
+    'version' => '4.2.1.1',
+    'schemaVersion' => '4.0.0.9',
+    'minVersionRequired' => '3.7.11',
     'basePath' => dirname(__DIR__), // Defines the @app alias
     'runtimePath' => '@storage/runtime', // Defines the @runtime alias
     'controllerNamespace' => 'craft\controllers',
 
     'components' => [
+        'addresses' => [
+            'class' => craft\services\Addresses::class,
+        ],
         'announcements' => [
             'class' => craft\services\Announcements::class,
         ],
@@ -23,14 +26,14 @@ return [
         'assetIndexer' => [
             'class' => craft\services\AssetIndexer::class,
         ],
-        'assetTransforms' => [
-            'class' => craft\services\AssetTransforms::class,
-        ],
         'categories' => [
             'class' => craft\services\Categories::class,
         ],
         'composer' => [
-            'class' => \craft\services\Composer::class,
+            'class' => craft\services\Composer::class,
+        ],
+        'conditions' => [
+            'class' => craft\services\Conditions::class,
         ],
         'content' => [
             'class' => craft\services\Content::class,
@@ -44,8 +47,8 @@ return [
         'drafts' => [
             'class' => craft\services\Drafts::class,
         ],
-        'elementIndexes' => [
-            'class' => craft\services\ElementIndexes::class,
+        'elementSources' => [
+            'class' => craft\services\ElementSources::class,
         ],
         'elements' => [
             'class' => craft\services\Elements::class,
@@ -53,14 +56,11 @@ return [
         'entries' => [
             'class' => craft\services\Entries::class,
         ],
-        'entryRevisions' => [
-            'class' => craft\services\EntryRevisions::class,
-        ],
-        'feeds' => [
-            'class' => craft\feeds\Feeds::class,
-        ],
         'fields' => [
             'class' => craft\services\Fields::class,
+        ],
+        'fs' => [
+            'class' => craft\services\Fs::class,
         ],
         'gc' => [
             'class' => craft\services\Gc::class,
@@ -73,6 +73,9 @@ return [
         ],
         'images' => [
             'class' => craft\services\Images::class,
+        ],
+        'imageTransforms' => [
+            'class' => craft\services\ImageTransforms::class,
         ],
         'log' => [
             'class' => craft\log\Dispatcher::class,
@@ -177,10 +180,7 @@ return [
         ],
         'sites' => [
             'class' => craft\services\Sites::class,
-            'currentSite' => defined('CRAFT_SITE') ? CRAFT_SITE : (defined('CRAFT_LOCALE') ? CRAFT_LOCALE : null),
-        ],
-        'systemSettings' => [
-            'class' => craft\services\SystemSettings::class,
+            'currentSite' => craft\helpers\App::env('CRAFT_SITE'),
         ],
         'i18n' => [
             'class' => craft\i18n\I18N::class,

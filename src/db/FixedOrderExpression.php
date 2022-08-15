@@ -20,17 +20,17 @@ class FixedOrderExpression extends Expression
     /**
      * @var string The column name that contains the values
      */
-    public $column;
+    public string $column;
 
     /**
      * @var array The column values, in the order in which the rows should be returned in
      */
-    public $values;
+    public array $values;
 
     /**
      * @var Connection The DB connection
      */
-    public $db;
+    public Connection $db;
 
     /**
      * Constructor

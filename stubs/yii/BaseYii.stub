@@ -1,0 +1,37 @@
+<?php
+
+namespace yii;
+
+class BaseYii
+{
+    /**
+     * @var \craft\web\Application|\craft\console\Application|null
+     */
+    public static $app;
+
+    /**
+     * @template T
+     * @param class-string<T>|array{class: class-string<T>}|callable(): T $type
+     * @param array<mixed> $params
+     * @return T
+     */
+    public static function createObject($type, array $params = []);
+
+    /**
+     * @param \yii\log\Logger|null $logger
+     * @return void
+     */
+    public static function setLogger($logger) {}
+}
+
+namespace yii\log;
+
+class Logger {}
+
+namespace craft\console;
+
+class Application {}
+
+namespace craft\web;
+
+class Application {}

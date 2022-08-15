@@ -21,22 +21,18 @@ class TemplateValidator extends Validator
 {
     /**
      * @var string The template mode to use when looking for the template
+     * @phpstan-var View::TEMPLATE_MODE_SITE|View::TEMPLATE_MODE_CP
      */
-    public $templateMode = View::TEMPLATE_MODE_SITE;
-
-    /**
-     * @var string user-defined error message used when the value is not a string.
-     */
-    public $message;
+    public string $templateMode = View::TEMPLATE_MODE_SITE;
 
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
-        if ($this->message === null) {
+        if (!isset($this->message)) {
             $this->message = str_replace('{template}', '{value}', Craft::t('app', 'Unable to find the template “{template}”.'));
         }
     }
@@ -44,7 +40,7 @@ class TemplateValidator extends Validator
     /**
      * @inheritdoc
      */
-    public function validateValue($value)
+    public function validateValue($value): ?array
     {
         if (Craft::$app->getView()->resolveTemplate($value, $this->templateMode) === false) {
             return [$this->message, []];

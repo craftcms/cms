@@ -1,0 +1,15 @@
+{% from "_includes/forms" import autosuggestField %}
+
+{{ autosuggestField({
+    label: "Base Path"|t('app'),
+    instructions: "The base folder path that should be used as the root of the filesystem."|t('app'),
+    id: 'path',
+    class: 'ltr',
+    name: 'path',
+    suggestEnvVars: true,
+    suggestAliases: true,
+    value: volume.path,
+    errors: volume.getErrors('path'),
+    required: true,
+    placeholder: "/path/to/folder"|t('app')
+}) }}

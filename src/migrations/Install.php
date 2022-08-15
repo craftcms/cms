@@ -1,4 +1,6 @@
-<?php /** @noinspection RepetitiveMethodCallsInspection */
+<?php
+
+/** @noinspection RepetitiveMethodCallsInspection */
 
 /**
  * @link https://craftcms.com/
@@ -25,9 +27,9 @@ use craft\models\CategoryGroup;
 use craft\models\Info;
 use craft\models\Section;
 use craft\models\Site;
-use craft\services\Plugins;
 use craft\services\ProjectConfig;
 use craft\web\Response;
+use Throwable;
 use yii\base\InvalidConfigException;
 
 /**
@@ -41,45 +43,46 @@ class Install extends Migration
     /**
      * @var string|null The admin user’s username
      */
-    public $username;
+    public ?string $username = null;
 
     /**
      * @var string|null The admin user’s password
      */
-    public $password;
+    public ?string $password = null;
 
     /**
      * @var string|null The admin user’s email
      */
-    public $email;
+    public ?string $email = null;
 
     /**
      * @var Site|null The default site
      */
-    public $site;
+    public ?Site $site = null;
 
     /**
      * @var bool Whether to apply the existing project config YAML files, if they exist
      * @since 3.5.9
      */
-    public $applyProjectConfigYaml = true;
+    public bool $applyProjectConfigYaml = true;
 
     /**
      * @inheritdoc
      */
-    public function safeUp()
+    public function safeUp(): bool
     {
         $this->createTables();
         $this->createIndexes();
         $this->addForeignKeys();
         $this->db->getSchema()->refresh();
         $this->insertDefaultData();
+        return true;
     }
 
     /**
      * @inheritdoc
      */
-    public function safeDown()
+    public function safeDown(): bool
     {
         return false;
     }
@@ -87,8 +90,30 @@ class Install extends Migration
     /**
      * Creates the tables.
      */
-    public function createTables()
+    public function createTables(): void
     {
+        $this->createTable(Table::ADDRESSES, [
+            'id' => $this->integer()->notNull(),
+            'ownerId' => $this->integer(),
+            'countryCode' => $this->string()->notNull(),
+            'administrativeArea' => $this->string(),
+            'locality' => $this->string(),
+            'dependentLocality' => $this->string(),
+            'postalCode' => $this->string(),
+            'sortingCode' => $this->string(),
+            'addressLine1' => $this->string(),
+            'addressLine2' => $this->string(),
+            'organization' => $this->string(),
+            'organizationTaxId' => $this->string(),
+            'fullName' => $this->string(),
+            'firstName' => $this->string(),
+            'lastName' => $this->string(),
+            'latitude' => $this->string(),
+            'longitude' => $this->string(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'PRIMARY KEY(id)',
+        ]);
         $this->createTable(Table::ANNOUNCEMENTS, [
             'id' => $this->primaryKey(),
             'userId' => $this->integer()->notNull(),
@@ -101,14 +126,28 @@ class Install extends Migration
         ]);
         $this->createTable(Table::ASSETINDEXDATA, [
             'id' => $this->primaryKey(),
-            'sessionId' => $this->string(36)->notNull()->defaultValue(''),
+            'sessionId' => $this->integer()->notNull(),
             'volumeId' => $this->integer()->notNull(),
             'uri' => $this->text(),
             'size' => $this->bigInteger()->unsigned(),
             'timestamp' => $this->dateTime(),
+            'isDir' => $this->boolean()->defaultValue(false),
             'recordId' => $this->integer(),
+            'isSkipped' => $this->boolean()->defaultValue(false),
             'inProgress' => $this->boolean()->defaultValue(false),
             'completed' => $this->boolean()->defaultValue(false),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid(),
+        ]);
+        $this->createTable(Table::ASSETINDEXINGSESSIONS, [
+            'id' => $this->primaryKey(),
+            'indexedVolumes' => $this->text(),
+            'totalEntries' => $this->integer(),
+            'processedEntries' => $this->integer()->notNull()->defaultValue(0),
+            'cacheRemoteImages' => $this->boolean(),
+            'isCli' => $this->boolean()->defaultValue(false),
+            'actionRequired' => $this->boolean()->defaultValue(false),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
@@ -120,6 +159,7 @@ class Install extends Migration
             'uploaderId' => $this->integer(),
             'filename' => $this->string()->notNull(),
             'kind' => $this->string(50)->notNull()->defaultValue(Asset::KIND_UNKNOWN),
+            'alt' => $this->text(),
             'width' => $this->integer()->unsigned(),
             'height' => $this->integer()->unsigned(),
             'size' => $this->bigInteger()->unsigned(),
@@ -129,16 +169,15 @@ class Install extends Migration
             'dateModified' => $this->dateTime(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->uid(),
             'PRIMARY KEY([[id]])',
         ]);
-        $this->createTable(Table::ASSETTRANSFORMINDEX, [
+        $this->createTable(Table::IMAGETRANSFORMINDEX, [
             'id' => $this->primaryKey(),
             'assetId' => $this->integer()->notNull(),
+            'transformer' => $this->string()->null(),
             'filename' => $this->string(),
             'format' => $this->string(),
-            'location' => $this->string()->notNull(),
-            'volumeId' => $this->integer(),
+            'transformString' => $this->string()->notNull(),
             'fileExists' => $this->boolean()->notNull()->defaultValue(false),
             'inProgress' => $this->boolean()->notNull()->defaultValue(false),
             'error' => $this->boolean()->defaultValue(false)->notNull(),
@@ -147,7 +186,7 @@ class Install extends Migration
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
         ]);
-        $this->createTable(Table::ASSETTRANSFORMS, [
+        $this->createTable(Table::IMAGETRANSFORMS, [
             'id' => $this->primaryKey(),
             'name' => $this->string()->notNull(),
             'handle' => $this->string()->notNull(),
@@ -158,7 +197,7 @@ class Install extends Migration
             'format' => $this->string(),
             'quality' => $this->integer(),
             'interlace' => $this->enum('interlace', ['none', 'line', 'plane', 'partition'])->notNull()->defaultValue('none'),
-            'dimensionChangeTime' => $this->dateTime(),
+            'parameterChangeTime' => $this->dateTime(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
             'uid' => $this->uid(),
@@ -170,7 +209,6 @@ class Install extends Migration
             'deletedWithGroup' => $this->boolean()->null(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->uid(),
             'PRIMARY KEY([[id]])',
         ]);
         $this->createTable(Table::CATEGORYGROUPS, [
@@ -247,7 +285,7 @@ class Install extends Migration
         ]);
         $this->createTable(Table::DRAFTS, [
             'id' => $this->primaryKey(),
-            'sourceId' => $this->integer(), // todo: remove this in v4
+            'canonicalId' => $this->integer(),
             'creatorId' => $this->integer(),
             'provisional' => $this->boolean()->notNull()->defaultValue(false),
             'name' => $this->string()->notNull(),
@@ -255,14 +293,6 @@ class Install extends Migration
             'trackChanges' => $this->boolean()->notNull()->defaultValue(false),
             'dateLastMerged' => $this->dateTime(),
             'saved' => $this->boolean()->notNull()->defaultValue(true),
-        ]);
-        $this->createTable(Table::ELEMENTINDEXSETTINGS, [
-            'id' => $this->primaryKey(),
-            'type' => $this->string()->notNull(),
-            'settings' => $this->text(),
-            'dateCreated' => $this->dateTime()->notNull(),
-            'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->uid(),
         ]);
         $this->createTable(Table::ELEMENTS, [
             'id' => $this->primaryKey(),
@@ -297,7 +327,7 @@ class Install extends Migration
         ]);
         $this->createTable(Table::REVISIONS, [
             'id' => $this->primaryKey(),
-            'sourceId' => $this->integer()->notNull(), // todo: remove this in v4
+            'canonicalId' => $this->integer()->notNull(),
             'creatorId' => $this->integer(),
             'num' => $this->integer()->notNull(),
             'notes' => $this->text(),
@@ -328,7 +358,6 @@ class Install extends Migration
             'deletedWithEntryType' => $this->boolean()->null(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->uid(),
             'PRIMARY KEY([[id]])',
         ]);
         $this->createTable(Table::ENTRYTYPES, [
@@ -378,6 +407,7 @@ class Install extends Migration
             'id' => $this->primaryKey(),
             'layoutId' => $this->integer()->notNull(),
             'name' => $this->string()->notNull(),
+            'settings' => $this->text(),
             'elements' => $this->text(),
             'sortOrder' => $this->smallInteger()->unsigned(),
             'dateCreated' => $this->dateTime()->notNull(),
@@ -445,15 +475,19 @@ class Install extends Migration
         ]);
         $this->createTable(Table::MATRIXBLOCKS, [
             'id' => $this->integer()->notNull(),
-            'ownerId' => $this->integer()->notNull(),
+            'primaryOwnerId' => $this->integer()->notNull(),
             'fieldId' => $this->integer()->notNull(),
             'typeId' => $this->integer()->notNull(),
-            'sortOrder' => $this->smallInteger()->unsigned(),
             'deletedWithOwner' => $this->boolean()->null(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->uid(),
             'PRIMARY KEY([[id]])',
+        ]);
+        $this->createTable(Table::MATRIXBLOCKS_OWNERS, [
+            'blockId' => $this->integer()->notNull(),
+            'ownerId' => $this->integer()->notNull(),
+            'sortOrder' => $this->smallInteger()->unsigned()->notNull(),
+            'PRIMARY KEY([[blockId]], [[ownerId]])',
         ]);
         $this->createTable(Table::MATRIXBLOCKTYPES, [
             'id' => $this->primaryKey(),
@@ -576,7 +610,7 @@ class Install extends Migration
             'id' => $this->primaryKey(),
             'groupId' => $this->integer()->notNull(),
             'primary' => $this->boolean()->notNull(),
-            'enabled' => $this->boolean()->notNull()->defaultValue(true),
+            'enabled' => $this->string()->notNull()->defaultValue('true'),
             'name' => $this->string()->notNull(),
             'handle' => $this->string()->notNull(),
             'language' => $this->string(12)->notNull(),
@@ -632,27 +666,7 @@ class Install extends Migration
             'deletedWithGroup' => $this->boolean()->null(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->uid(),
             'PRIMARY KEY([[id]])',
-        ]);
-        $this->createTable(Table::TEMPLATECACHEELEMENTS, [
-            'id' => $this->primaryKey(),
-            'cacheId' => $this->integer()->notNull(),
-            'elementId' => $this->integer()->notNull(),
-        ]);
-        $this->createTable(Table::TEMPLATECACHEQUERIES, [
-            'id' => $this->primaryKey(),
-            'cacheId' => $this->integer()->notNull(),
-            'type' => $this->string()->notNull(),
-            'query' => $this->longText()->notNull(),
-        ]);
-        $this->createTable(Table::TEMPLATECACHES, [
-            'id' => $this->primaryKey(),
-            'siteId' => $this->integer()->notNull(),
-            'cacheKey' => $this->string()->notNull(),
-            'path' => $this->string(),
-            'expiryDate' => $this->dateTime()->notNull(),
-            'body' => $this->mediumText()->notNull(),
         ]);
         $this->createTable(Table::TOKENS, [
             'id' => $this->primaryKey(),
@@ -711,16 +725,18 @@ class Install extends Migration
         ]);
         $this->createTable(Table::USERS, [
             'id' => $this->integer()->notNull(),
-            'username' => $this->string(100)->notNull(),
             'photoId' => $this->integer(),
-            'firstName' => $this->string(100),
-            'lastName' => $this->string(100),
-            'email' => $this->string()->notNull(),
-            'password' => $this->string(),
-            'admin' => $this->boolean()->defaultValue(false)->notNull(),
+            'active' => $this->boolean()->defaultValue(false)->notNull(),
+            'pending' => $this->boolean()->defaultValue(false)->notNull(),
             'locked' => $this->boolean()->defaultValue(false)->notNull(),
             'suspended' => $this->boolean()->defaultValue(false)->notNull(),
-            'pending' => $this->boolean()->defaultValue(false)->notNull(),
+            'admin' => $this->boolean()->defaultValue(false)->notNull(),
+            'username' => $this->string(),
+            'fullName' => $this->string(),
+            'firstName' => $this->string(),
+            'lastName' => $this->string(),
+            'email' => $this->string(),
+            'password' => $this->string(),
             'lastLoginDate' => $this->dateTime(),
             'lastLoginAttemptIp' => $this->string(45),
             'invalidLoginWindowStart' => $this->dateTime(),
@@ -735,7 +751,6 @@ class Install extends Migration
             'lastPasswordChangeDate' => $this->dateTime(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
-            'uid' => $this->uid(),
             'PRIMARY KEY([[id]])',
         ]);
         $this->createTable(Table::VOLUMEFOLDERS, [
@@ -753,12 +768,11 @@ class Install extends Migration
             'fieldLayoutId' => $this->integer(),
             'name' => $this->string()->notNull(),
             'handle' => $this->string()->notNull(),
-            'type' => $this->string()->notNull(),
-            'hasUrls' => $this->boolean()->defaultValue(true)->notNull(),
-            'url' => $this->string(),
+            'fs' => $this->string()->notNull(),
+            'transformFs' => $this->string(),
+            'transformSubpath' => $this->string(),
             'titleTranslationMethod' => $this->string()->notNull()->defaultValue(Field::TRANSLATION_METHOD_SITE),
             'titleTranslationKeyFormat' => $this->text(),
-            'settings' => $this->text(),
             'sortOrder' => $this->smallInteger()->unsigned(),
             'dateCreated' => $this->dateTime()->notNull(),
             'dateUpdated' => $this->dateTime()->notNull(),
@@ -782,7 +796,7 @@ class Install extends Migration
     /**
      * Creates the indexes.
      */
-    public function createIndexes()
+    public function createIndexes(): void
     {
         $this->createIndex(null, Table::ANNOUNCEMENTS, ['userId', 'unread', 'dateRead', 'dateCreated'], false);
         $this->createIndex(null, Table::ANNOUNCEMENTS, ['dateRead'], false);
@@ -791,10 +805,6 @@ class Install extends Migration
         $this->createIndex(null, Table::ASSETS, ['filename', 'folderId'], false);
         $this->createIndex(null, Table::ASSETS, ['folderId'], false);
         $this->createIndex(null, Table::ASSETS, ['volumeId'], false);
-        $this->createIndex(null, Table::ASSETTRANSFORMINDEX, ['volumeId', 'assetId', 'location'], false);
-        $this->createIndex(null, Table::ASSETTRANSFORMINDEX, ['assetId', 'format', 'location'], false);
-        $this->createIndex(null, Table::ASSETTRANSFORMS, ['name']);
-        $this->createIndex(null, Table::ASSETTRANSFORMS, ['handle']);
         $this->createIndex(null, Table::CATEGORIES, ['groupId'], false);
         $this->createIndex(null, Table::CATEGORYGROUPS, ['name'], false);
         $this->createIndex(null, Table::CATEGORYGROUPS, ['handle'], false);
@@ -811,7 +821,6 @@ class Install extends Migration
         $this->createIndex(null, Table::DEPRECATIONERRORS, ['key', 'fingerprint'], true);
         $this->createIndex(null, Table::DRAFTS, ['creatorId', 'provisional'], false);
         $this->createIndex(null, Table::DRAFTS, ['saved'], false);
-        $this->createIndex(null, Table::ELEMENTINDEXSETTINGS, ['type'], true);
         $this->createIndex(null, Table::ELEMENTS, ['dateDeleted'], false);
         $this->createIndex(null, Table::ELEMENTS, ['fieldLayoutId'], false);
         $this->createIndex(null, Table::ELEMENTS, ['type'], false);
@@ -854,10 +863,12 @@ class Install extends Migration
         $this->createIndex(null, Table::GLOBALSETS, ['sortOrder'], false);
         $this->createIndex(null, Table::GQLTOKENS, ['accessToken'], true);
         $this->createIndex(null, Table::GQLTOKENS, ['name'], true);
-        $this->createIndex(null, Table::MATRIXBLOCKS, ['ownerId'], false);
+        $this->createIndex(null, Table::IMAGETRANSFORMINDEX, ['assetId', 'transformString'], false);
+        $this->createIndex(null, Table::IMAGETRANSFORMS, ['name']);
+        $this->createIndex(null, Table::IMAGETRANSFORMS, ['handle']);
+        $this->createIndex(null, Table::MATRIXBLOCKS, ['primaryOwnerId'], false);
         $this->createIndex(null, Table::MATRIXBLOCKS, ['fieldId'], false);
         $this->createIndex(null, Table::MATRIXBLOCKS, ['typeId'], false);
-        $this->createIndex(null, Table::MATRIXBLOCKS, ['sortOrder'], false);
         $this->createIndex(null, Table::MATRIXBLOCKTYPES, ['name', 'fieldId']);
         $this->createIndex(null, Table::MATRIXBLOCKTYPES, ['handle', 'fieldId']);
         $this->createIndex(null, Table::MATRIXBLOCKTYPES, ['fieldId'], false);
@@ -870,7 +881,7 @@ class Install extends Migration
         $this->createIndex(null, Table::RELATIONS, ['sourceId'], false);
         $this->createIndex(null, Table::RELATIONS, ['targetId'], false);
         $this->createIndex(null, Table::RELATIONS, ['sourceSiteId'], false);
-        $this->createIndex(null, Table::REVISIONS, ['sourceId', 'num'], true);
+        $this->createIndex(null, Table::REVISIONS, ['canonicalId', 'num'], true);
         $this->createIndex(null, Table::SECTIONS, ['handle'], false);
         $this->createIndex(null, Table::SECTIONS, ['name'], false);
         $this->createIndex(null, Table::SECTIONS, ['structureId'], false);
@@ -897,13 +908,6 @@ class Install extends Migration
         $this->createIndex(null, Table::TAGGROUPS, ['handle'], false);
         $this->createIndex(null, Table::TAGGROUPS, ['dateDeleted'], false);
         $this->createIndex(null, Table::TAGS, ['groupId'], false);
-        $this->createIndex(null, Table::TEMPLATECACHEELEMENTS, ['cacheId'], false);
-        $this->createIndex(null, Table::TEMPLATECACHEELEMENTS, ['elementId'], false);
-        $this->createIndex(null, Table::TEMPLATECACHEQUERIES, ['cacheId'], false);
-        $this->createIndex(null, Table::TEMPLATECACHEQUERIES, ['type'], false);
-        $this->createIndex(null, Table::TEMPLATECACHES, ['cacheKey', 'siteId', 'expiryDate', 'path'], false);
-        $this->createIndex(null, Table::TEMPLATECACHES, ['cacheKey', 'siteId', 'expiryDate'], false);
-        $this->createIndex(null, Table::TEMPLATECACHES, ['siteId'], false);
         $this->createIndex(null, Table::TOKENS, ['token'], true);
         $this->createIndex(null, Table::TOKENS, ['expiryDate'], false);
         $this->createIndex(null, Table::USERGROUPS, ['handle']);
@@ -915,7 +919,10 @@ class Install extends Migration
         $this->createIndex(null, Table::USERPERMISSIONS_USERGROUPS, ['groupId'], false);
         $this->createIndex(null, Table::USERPERMISSIONS_USERS, ['permissionId', 'userId'], true);
         $this->createIndex(null, Table::USERPERMISSIONS_USERS, ['userId'], false);
-        $this->createIndex(null, Table::USERS, ['uid'], false);
+        $this->createIndex(null, Table::USERS, ['active'], false);
+        $this->createIndex(null, Table::USERS, ['locked'], false);
+        $this->createIndex(null, Table::USERS, ['pending'], false);
+        $this->createIndex(null, Table::USERS, ['suspended'], false);
         $this->createIndex(null, Table::USERS, ['verificationCode'], false);
         $this->createIndex(null, Table::VOLUMEFOLDERS, ['name', 'parentId', 'volumeId'], true);
         $this->createIndex(null, Table::VOLUMEFOLDERS, ['parentId'], false);
@@ -938,7 +945,7 @@ class Install extends Migration
                 'fieldId' => $this->integer()->notNull(),
                 'siteId' => $this->integer()->notNull(),
                 'keywords' => $this->text()->notNull(),
-            ], ' ENGINE=MyISAM');
+            ]);
 
             $this->addPrimaryKey(null, Table::SEARCHINDEX, ['elementId', 'attribute', 'fieldId', 'siteId']);
 
@@ -976,11 +983,14 @@ class Install extends Migration
     /**
      * Adds the foreign keys.
      */
-    public function addForeignKeys()
+    public function addForeignKeys(): void
     {
+        $this->addForeignKey(null, Table::ADDRESSES, ['id'], Table::ELEMENTS, ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, Table::ADDRESSES, ['ownerId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ANNOUNCEMENTS, ['userId'], Table::USERS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ANNOUNCEMENTS, ['pluginId'], Table::PLUGINS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ASSETINDEXDATA, ['volumeId'], Table::VOLUMES, ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, Table::ASSETINDEXDATA, ['sessionId'], Table::ASSETINDEXINGSESSIONS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ASSETS, ['folderId'], Table::VOLUMEFOLDERS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ASSETS, ['id'], Table::ELEMENTS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ASSETS, ['uploaderId'], Table::USERS, ['id'], 'SET NULL', null);
@@ -1003,7 +1013,7 @@ class Install extends Migration
         $this->addForeignKey(null, Table::CRAFTIDTOKENS, ['userId'], Table::USERS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::CONTENT, ['siteId'], Table::SITES, ['id'], 'CASCADE', 'CASCADE');
         $this->addForeignKey(null, Table::DRAFTS, ['creatorId'], Table::USERS, ['id'], 'SET NULL', null);
-        $this->addForeignKey(null, Table::DRAFTS, ['sourceId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, Table::DRAFTS, ['canonicalId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ELEMENTS, ['canonicalId'], Table::ELEMENTS, ['id'], 'SET NULL');
         $this->addForeignKey(null, Table::ELEMENTS, ['draftId'], Table::DRAFTS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ELEMENTS, ['revisionId'], Table::REVISIONS, ['id'], 'CASCADE', null);
@@ -1027,8 +1037,10 @@ class Install extends Migration
         $this->addForeignKey(null, Table::GQLTOKENS, 'schemaId', Table::GQLSCHEMAS, 'id', 'SET NULL', null);
         $this->addForeignKey(null, Table::MATRIXBLOCKS, ['fieldId'], Table::FIELDS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::MATRIXBLOCKS, ['id'], Table::ELEMENTS, ['id'], 'CASCADE', null);
-        $this->addForeignKey(null, Table::MATRIXBLOCKS, ['ownerId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, Table::MATRIXBLOCKS, ['primaryOwnerId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::MATRIXBLOCKS, ['typeId'], Table::MATRIXBLOCKTYPES, ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, Table::MATRIXBLOCKS_OWNERS, ['blockId'], Table::MATRIXBLOCKS, ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, Table::MATRIXBLOCKS_OWNERS, ['ownerId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::MATRIXBLOCKTYPES, ['fieldId'], Table::FIELDS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::MATRIXBLOCKTYPES, ['fieldLayoutId'], Table::FIELDLAYOUTS, ['id'], 'SET NULL', null);
         $this->addForeignKey(null, Table::RELATIONS, ['fieldId'], Table::FIELDS, ['id'], 'CASCADE', null);
@@ -1036,7 +1048,7 @@ class Install extends Migration
         $this->addForeignKey(null, Table::RELATIONS, ['sourceSiteId'], Table::SITES, ['id'], 'CASCADE', 'CASCADE');
         $this->addForeignKey(null, Table::RELATIONS, ['targetId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::REVISIONS, ['creatorId'], Table::USERS, ['id'], 'SET NULL', null);
-        $this->addForeignKey(null, Table::REVISIONS, ['sourceId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, Table::REVISIONS, ['canonicalId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::SECTIONS, ['structureId'], Table::STRUCTURES, ['id'], 'SET NULL', null);
         $this->addForeignKey(null, Table::SECTIONS_SITES, ['siteId'], Table::SITES, ['id'], 'CASCADE', 'CASCADE');
         $this->addForeignKey(null, Table::SECTIONS_SITES, ['sectionId'], Table::SECTIONS, ['id'], 'CASCADE', null);
@@ -1048,10 +1060,6 @@ class Install extends Migration
         $this->addForeignKey(null, Table::TAGGROUPS, ['fieldLayoutId'], Table::FIELDLAYOUTS, ['id'], 'SET NULL', null);
         $this->addForeignKey(null, Table::TAGS, ['groupId'], Table::TAGGROUPS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::TAGS, ['id'], Table::ELEMENTS, ['id'], 'CASCADE', null);
-        $this->addForeignKey(null, Table::TEMPLATECACHEELEMENTS, ['cacheId'], Table::TEMPLATECACHES, ['id'], 'CASCADE', null);
-        $this->addForeignKey(null, Table::TEMPLATECACHEELEMENTS, ['elementId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
-        $this->addForeignKey(null, Table::TEMPLATECACHEQUERIES, ['cacheId'], Table::TEMPLATECACHES, ['id'], 'CASCADE', null);
-        $this->addForeignKey(null, Table::TEMPLATECACHES, ['siteId'], Table::SITES, ['id'], 'CASCADE', 'CASCADE');
         $this->addForeignKey(null, Table::USERGROUPS_USERS, ['groupId'], Table::USERGROUPS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::USERGROUPS_USERS, ['userId'], Table::USERS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::USERPERMISSIONS_USERGROUPS, ['groupId'], Table::USERGROUPS, ['id'], 'CASCADE', null);
@@ -1070,7 +1078,7 @@ class Install extends Migration
     /**
      * Populates the DB with the default data.
      */
-    public function insertDefaultData()
+    public function insertDefaultData(): void
     {
         // Populate the info table
         echo '    > populating the info table ... ';
@@ -1088,14 +1096,14 @@ class Install extends Migration
 
         $applyExistingProjectConfig = false;
 
-        if ($this->applyProjectConfigYaml && $projectConfig->getDoesYamlExist()) {
+        if ($this->applyProjectConfigYaml && $projectConfig->getDoesExternalConfigExist()) {
             try {
-                $expectedSchemaVersion = (string)$projectConfig->get(ProjectConfig::CONFIG_SCHEMA_VERSION_KEY, true);
-                $craftSchemaVersion = (string)Craft::$app->schemaVersion;
+                $expectedSchemaVersion = (string)$projectConfig->get(ProjectConfig::PATH_SCHEMA_VERSION, true);
+                $craftSchemaVersion = Craft::$app->schemaVersion;
 
                 // Compare existing Craft schema version with the one that is being applied.
                 if (!version_compare($craftSchemaVersion, $expectedSchemaVersion, '=')) {
-                    throw new InvalidConfigException("Craft is installed at the wrong schema version ({$craftSchemaVersion}, but project.yaml lists {$expectedSchemaVersion}).");
+                    throw new InvalidConfigException("Craft is installed at the wrong schema version ($craftSchemaVersion, but project.yaml lists $expectedSchemaVersion).");
                 }
 
                 // Make sure at least sites are processed
@@ -1103,7 +1111,7 @@ class Install extends Migration
 
                 $this->_installPlugins();
                 $applyExistingProjectConfig = true;
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 echo "    > can't apply existing project config: {$e->getMessage()}\n";
                 Craft::$app->getErrorHandler()->logException($e);
 
@@ -1122,7 +1130,7 @@ class Install extends Migration
         if ($applyExistingProjectConfig) {
             // Save the existing system settings
             echo '    > applying existing project config ... ';
-            $projectConfig->applyYamlChanges();
+            $projectConfig->applyExternalChanges();
             echo "done\n";
         } else {
             // Save the default system settings
@@ -1152,10 +1160,11 @@ class Install extends Migration
         // Save the first user
         echo '    > saving the first user ... ';
         $user = new User([
+            'active' => true,
+            'admin' => true,
             'username' => $this->username,
             'newPassword' => $this->password,
             'email' => $this->email,
-            'admin' => true,
         ]);
         Craft::$app->getElements()->saveElement($user);
         echo "done\n";
@@ -1174,22 +1183,22 @@ class Install extends Migration
     /**
      * Attempts to install any plugins listed in project.yaml.
      *
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
-    private function _installPlugins()
+    private function _installPlugins(): void
     {
         $projectConfig = Craft::$app->getProjectConfig();
         $pluginsService = Craft::$app->getPlugins();
-        $pluginConfigs = $projectConfig->get(Plugins::CONFIG_PLUGINS_KEY, true) ?? [];
+        $pluginConfigs = $projectConfig->get(ProjectConfig::PATH_PLUGINS, true) ?? [];
 
         // Make sure that all to-be-installed plugins actually exist,
         // and that they have the same schema as project.yaml
         foreach ($pluginConfigs as $handle => $config) {
             $plugin = $pluginsService->createPlugin($handle);
-            $expectedSchemaVersion = $projectConfig->get(Plugins::CONFIG_PLUGINS_KEY . '.' . $handle . '.schemaVersion', true);
+            $expectedSchemaVersion = $projectConfig->get(ProjectConfig::PATH_PLUGINS . '.' . $handle . '.schemaVersion', true);
 
             if ($plugin->schemaVersion && $expectedSchemaVersion && $plugin->schemaVersion != $expectedSchemaVersion) {
-                throw new InvalidPluginException($handle, "{$handle} is installed at the wrong schema version ({$plugin->schemaVersion}, but project.yaml lists {$expectedSchemaVersion}).");
+                throw new InvalidPluginException($handle, "$handle is installed at the wrong schema version ($plugin->schemaVersion, but project.yaml lists $expectedSchemaVersion).");
             }
         }
 
@@ -1200,7 +1209,7 @@ class Install extends Migration
 
         try {
             foreach ($pluginConfigs as $handle => $pluginConfig) {
-                echo "    > installing {$handle} ... ";
+                echo "    > installing $handle ... ";
                 $pluginsService->installPlugin($handle);
                 echo "done\n";
             }

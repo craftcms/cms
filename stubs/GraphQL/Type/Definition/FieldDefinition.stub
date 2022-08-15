@@ -1,0 +1,13 @@
+<?php
+
+namespace GraphQL\Type\Definition;
+
+class FieldDefinition
+{
+    /**
+     * @var FieldArgument[]|null
+     */
+    public $args;
+}
+
+class FieldArgument {}

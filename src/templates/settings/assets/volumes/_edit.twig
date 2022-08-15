@@ -1,0 +1,107 @@
+{% import "_includes/forms" as forms %}
+
+
+{% if not isNewVolume %}{{ hiddenInput('volumeId', volume.id) }}{% endif %}
+
+{{ forms.textField({
+    first: true,
+    label: "Name"|t('app'),
+    id: 'name',
+    name: 'name',
+    value: volume.name,
+    errors: volume.getErrors('name'),
+    autofocus: true,
+    required: true,
+}) }}
+
+{{ forms.textField({
+    label: "Handle"|t('app'),
+    id: 'handle',
+    name: 'handle',
+    class: 'code',
+    autocorrect: false,
+    autocapitalize: false,
+    value: volume.handle,
+    errors: volume.getErrors('handle'),
+    required: true,
+}) }}
+
+<hr>
+
+{{ forms.fsField({
+    label: 'Asset Filesystem'|t('app'),
+    instructions: 'Choose which filesystem assets should be stored in.'|t('app'),
+    id: 'fs-handle',
+    name: 'fsHandle',
+    includeEnvVars: true,
+    value: volume.getFsHandle(false),
+    options: fsOptions
+}) }}
+
+{{ forms.fsField({
+    label: 'Transform Filesystem'|t('app'),
+    instructions: 'Choose which filesystem image transforms should be stored in.'|t('app'),
+    id: 'transform-fs-handle',
+    name: 'transformFsHandle',
+    includeEnvVars: true,
+    value: volume.transformFsHandle(false),
+    options: [{label: 'Same as asset filesystem'|t('app'), value: null}]|merge(craft.cp.getFsOptions())
+}) }}
+
+{{ forms.textField({
+    label: 'Transform Subpath'|t('app'),
+    instructions: 'Where transforms should be stored on the filesystem.'|t('app'),
+    id: 'transformSubpath',
+    name: 'transformSubpath',
+    value: volume.transformSubpath,
+    errors: volume.getErrors('transformSubpath'),
+}) }}
+
+{% if craft.app.getIsMultiSite() %}
+    <hr>
+
+    {{ forms.selectField({
+        label: 'Title Translation Method'|t('app'),
+        instructions: 'How should {type} titles be translated?'|t('app', {
+            type: lowerTypeName,
+        }),
+        id: 'translation-method',
+        name: 'titleTranslationMethod',
+        options: [
+            { value: 'none', label: 'Not translatable'|t('app') },
+            { value: 'site', label: 'Translate for each site'|t('app') },
+            { value: 'siteGroup', label: 'Translate for each site group'|t('app') },
+            { value: 'language', label: 'Translate for each language'|t('app') },
+            { value: 'custom', label: 'Custom…'|t('app') },
+        ]|filter,
+        value: volume.titleTranslationMethod,
+        toggle: true,
+        targetPrefix: 'translation-method-'
+    }) }}
+
+    <div id="translation-method-custom" {% if volume.titleTranslationMethod != 'custom' %}class="hidden"{% endif %}>
+        {{ forms.textField({
+            label: 'Title Translation Key Format'|t('app'),
+            instructions: 'Template that defines the Title field’s custom “translation key” format. {type} titles will be copied to all sites that produce the same key. For example, to make titles translatable based on the first two characters of the site handle, you could enter `{site.handle[:2]}`.'|t('app', {
+                type: typeName,
+            }),
+            id: 'translation-key-format',
+            name: 'titleTranslationKeyFormat',
+            value: volume.titleTranslationKeyFormat,
+            errors: volume.getErrors('titleTranslationKeyFormat')
+        }) }}
+    </div>
+{% endif %}
+
+<hr>
+
+{{ forms.fieldLayoutDesignerField({
+    fieldLayout: volume.getFieldLayout(),
+}) }}
+
+
+{% if volume is not defined or not volume.handle %}
+    {% js %}
+      new Craft.HandleGenerator("#{{ 'name'|namespaceInputId }}", "#{{ 'handle'|namespaceInputId }}");
+    {% endjs %}
+{% endif %}

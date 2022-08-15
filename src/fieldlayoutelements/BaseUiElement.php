@@ -26,21 +26,27 @@ abstract class BaseUiElement extends FieldLayoutElement
     public function selectorHtml(): string
     {
         $label = $this->selectorLabel();
-        $labelHtml = Html::tag('div',
-            Html::tag('h4', Html::encode($label)),
-            ArrayHelper::merge([
-                'class' => ['fld-element-label'],
-            ], $this->selectorLabelAttributes()));
-        $icon = Component::iconSvg($this->selectorIcon(), $label);
 
-        return Html::tag('div',
-            Html::tag('div', $icon, [
-                'class' => 'fld-element-icon',
-            ]) . Html::tag('div', $labelHtml, [
-                'class' => ['field-name'],
-            ]), [
-                'class' => ['fld-ui-element'],
-            ]);
+        return
+            Html::beginTag('div', [
+                'class' => 'fld-ui-element',
+                'data' => [
+                    'type' => str_replace('\\', '-', static::class),
+                    'foo' => 'bar',
+                ],
+            ]) .
+            Html::beginTag('div', ['class' => 'fld-element-icon']) .
+            Component::iconSvg($this->selectorIcon(), $label) .
+            Html::endTag('div') . // .fld-element-icon
+            Html::beginTag('div', ['class' => 'field-name']) .
+            Html::beginTag('div', ArrayHelper::merge(
+                ['class' => 'fld-element-label'],
+                $this->selectorLabelAttributes(),
+            )) .
+            Html::tag('h4', Html::encode($label)) .
+            Html::endTag('div') . // .fld-element-label
+            Html::endTag('div') . // .field-name
+            Html::endTag('div'); // .fld-ui-element
     }
 
     /**
@@ -65,7 +71,7 @@ abstract class BaseUiElement extends FieldLayoutElement
      *
      * @return string|null
      */
-    protected function selectorIcon()
+    protected function selectorIcon(): ?string
     {
         return null;
     }

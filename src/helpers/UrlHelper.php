@@ -27,7 +27,7 @@ class UrlHelper
      */
     public static function isAbsoluteUrl(string $url): bool
     {
-        return (strpos($url, 'http://') === 0 || strpos($url, 'https://') === 0);
+        return (str_starts_with($url, 'http://') || str_starts_with($url, 'https://'));
     }
 
     /**
@@ -38,7 +38,7 @@ class UrlHelper
      */
     public static function isProtocolRelativeUrl(string $url): bool
     {
-        return (strpos($url, '//') === 0);
+        return (str_starts_with($url, '//'));
     }
 
     /**
@@ -49,7 +49,7 @@ class UrlHelper
      */
     public static function isRootRelativeUrl(string $url): bool
     {
-        return (strpos($url, '/') === 0 && !static::isProtocolRelativeUrl($url));
+        return (str_starts_with($url, '/') && !static::isProtocolRelativeUrl($url));
     }
 
     /**
@@ -98,8 +98,12 @@ class UrlHelper
      * @param array|string $params
      * @return string
      */
-    public static function urlWithParams(string $url, $params): string
+    public static function urlWithParams(string $url, array|string $params): string
     {
+        if (empty($params)) {
+            return $url;
+        }
+
         // Extract any params/fragment from the base URL
         [$url, $baseParams, $baseFragment] = self::_extractParams($url);
 
@@ -183,7 +187,7 @@ class UrlHelper
         }
 
         if (static::isRootRelativeUrl($url)) {
-            // Prepend the current request's scheme and host name
+            // Prepend the current request’s scheme and hostname
             $url = static::siteHost() . $url;
         }
 
@@ -217,7 +221,7 @@ class UrlHelper
             return substr($url, $slash);
         }
         // Is this a host without a URI?
-        if (strpos($url, '//') !== false) {
+        if (str_contains($url, '//')) {
             return '/';
         }
         // Must just be a URI, then
@@ -234,7 +238,7 @@ class UrlHelper
      * By default (null) it will defer to the `omitScriptNameInUrls` config setting.
      * @return string
      */
-    public static function url(string $path = '', $params = null, ?string $scheme = null, ?bool $showScriptName = null): string
+    public static function url(string $path = '', array|string|null $params = null, ?string $scheme = null, ?bool $showScriptName = null): string
     {
         // Return $path if it appears to be an absolute URL.
         if (static::isFullUrl($path)) {
@@ -276,7 +280,7 @@ class UrlHelper
      * @param string|null $scheme
      * @return string
      */
-    public static function cpUrl(string $path = '', $params = null, ?string $scheme = null): string
+    public static function cpUrl(string $path = '', array|string|null $params = null, ?string $scheme = null): string
     {
         // If this is already an absolute or root-relative URL, don't change it
         if (static::isAbsoluteUrl($path) || static::isRootRelativeUrl($path)) {
@@ -299,7 +303,7 @@ class UrlHelper
      * @return string
      * @throws Exception if|null $siteId is invalid
      */
-    public static function siteUrl(string $path = '', $params = null, ?string $scheme = null, ?int $siteId = null): string
+    public static function siteUrl(string $path = '', array|string|null $params = null, ?string $scheme = null, ?int $siteId = null): string
     {
         // Return $path if it appears to be an absolute URL.
         if (static::isAbsoluteUrl($path) || static::isProtocolRelativeUrl($path)) {
@@ -351,7 +355,7 @@ class UrlHelper
      * it’s only safe to set this to `false` for URLs that will be used for GET requests.
      * @return string
      */
-    public static function actionUrl(string $path = '', $params = null, ?string $scheme = null, ?bool $showScriptName = null): string
+    public static function actionUrl(string $path = '', array|string|null $params = null, ?string $scheme = null, ?bool $showScriptName = null): string
     {
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         $path = $generalConfig->actionTrigger . '/' . trim($path, '/');
@@ -466,7 +470,7 @@ class UrlHelper
             }
         } catch (SiteNotFoundException $e) {
             // Fail silently if Craft isn't installed yet or is in the middle of updating
-            if (Craft::$app->getIsInstalled() && !Craft::$app->getUpdates()->getIsCraftDbMigrationNeeded()) {
+            if (Craft::$app->getIsInstalled() && !Craft::$app->getUpdates()->getIsCraftUpdatePending()) {
                 throw $e;
             }
         }
@@ -482,30 +486,14 @@ class UrlHelper
      */
     public static function baseCpUrl(): string
     {
-        // Is a custom base CP URL being defined in the config?
+        // Is a custom base control panel URL being defined in the config?
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         if ($generalConfig->baseCpUrl) {
             return rtrim($generalConfig->baseCpUrl, '/') . '/';
         }
 
-        // Use the request's base URL as a fallback
-        return static::baseRequestUrl();
-    }
-
-    /**
-     * Returns the base URL (with a trailing slash) for the current request.
-     *
-     * @return string
-     * @deprecated in 3.7.15. `Craft::getAlias('@web')` should be used instead.
-     */
-    public static function baseRequestUrl(): string
-    {
-        $request = Craft::$app->getRequest();
-        if ($request->getIsConsoleRequest()) {
-            return '/';
-        }
-
-        return rtrim($request->getHostInfo() . $request->getBaseUrl(), '/') . '/';
+        // Use @web as a fallback
+        return Craft::getAlias('@web');
     }
 
     /**
@@ -569,7 +557,7 @@ class UrlHelper
     }
 
     /**
-     * Prepends the CP trigger onto the given path.
+     * Prepends the control panel trigger onto the given path.
      *
      * @param string $path
      * @return string
@@ -580,35 +568,6 @@ class UrlHelper
         return implode('/', array_filter([Craft::$app->getConfig()->getGeneral()->cpTrigger, $path]));
     }
 
-    // Deprecated Methods
-    // -------------------------------------------------------------------------
-
-    /**
-     * Returns a URL with a specific scheme.
-     *
-     * @param string $url the URL
-     * @param string $scheme the scheme ('http' or 'https')
-     * @return string
-     * @deprecated in 3.0.0. Use [[urlWithScheme()]] instead.
-     */
-    public static function urlWithProtocol(string $url, string $scheme): string
-    {
-        return static::urlWithScheme($url, $scheme);
-    }
-
-    /**
-     * Returns what the scheme part of the URL should be (http/https)
-     * for any tokenized URLs in Craft (email verification links, password reset
-     * urls, share entry URLs, etc.
-     *
-     * @return string
-     * @deprecated in 3.0.0. Use [[getSchemeForTokenizedUrl()]] instead.
-     */
-    public static function getProtocolForTokenizedUrl(): string
-    {
-        return static::getSchemeForTokenizedUrl();
-    }
-
     /**
      * Returns a URL.
      *
@@ -617,10 +576,10 @@ class UrlHelper
      * @param string|null $scheme
      * @param bool $cpUrl
      * @param bool|null $showScriptName
-     * @param bool|null $addToken
+     * @param bool $addToken
      * @return string
      */
-    private static function _createUrl(string $path, $params, ?string $scheme, bool $cpUrl, ?bool $showScriptName = null, ?bool $addToken = null): string
+    private static function _createUrl(string $path, array|string|null $params, ?string $scheme, bool $cpUrl, ?bool $showScriptName = null, bool $addToken = true): string
     {
         // Extract any params/fragment from the path
         [$path, $baseParams, $baseFragment] = self::_extractParams($path);
@@ -635,9 +594,14 @@ class UrlHelper
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         $request = Craft::$app->getRequest();
 
-        // If this is a site URL and there was a (site) token on the request, pass it along
-        if (!$cpUrl && $addToken !== false) {
-            if (!isset($params[$generalConfig->tokenParam]) && ($token = $request->getToken()) !== null) {
+        if ($cpUrl) {
+            // site param
+            if (!isset($params['site']) && Craft::$app->getIsInitialized() && Craft::$app->getIsMultiSite() && Cp::requestedSite() !== null) {
+                $params['site'] = Cp::requestedSite()->handle;
+            }
+        } else {
+            // token/siteToken params
+            if ($addToken && !isset($params[$generalConfig->tokenParam]) && ($token = $request->getToken()) !== null) {
                 $params[$generalConfig->tokenParam] = $token;
             }
             if (!isset($params[$generalConfig->siteToken]) && ($siteToken = $request->getSiteToken()) !== null) {
@@ -650,7 +614,7 @@ class UrlHelper
         }
 
         // If we must show the script name, then just start with the script URL,
-        // regardless of whether this is a CP or site request, as we can't assume
+        // regardless of whether this is a control panel or site request, as we can't assume
         // that index.php lives within the base URL anymore.
         if ($showScriptName) {
             if ($request->getIsConsoleRequest()) {
@@ -659,7 +623,7 @@ class UrlHelper
             } else {
                 $baseUrl = static::host() . $request->getScriptUrl();
             }
-        } else if ($cpUrl) {
+        } elseif ($cpUrl) {
             $baseUrl = static::baseCpUrl();
         } else {
             $baseUrl = static::baseSiteUrl();
@@ -725,7 +689,7 @@ class UrlHelper
      * @param string|array|null $params
      * @return array
      */
-    private static function _normalizeParams($params): array
+    private static function _normalizeParams(array|string|null $params): array
     {
         // If it's already an array, just split out the fragment and return
         if (is_array($params)) {

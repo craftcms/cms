@@ -20,5 +20,5 @@ class RegisterElementTableAttributesEvent extends Event
     /**
      * @var array List of registered table attributes for the element type.
      */
-    public $tableAttributes = [];
+    public array $tableAttributes = [];
 }

@@ -1,5 +1,6 @@
 <?php
 
+use Codeception\Actor;
 
 /**
  * Inherited Methods
@@ -16,7 +17,7 @@
  *
  * @SuppressWarnings(PHPMD)
  */
-class GqlTester extends \Codeception\Actor
+class GqlTester extends Actor
 {
     use _generated\GqlTesterActions;
 

@@ -12,6 +12,9 @@ use craft\events\DefineConsoleActionsEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Console;
 use craft\helpers\StringHelper;
+use ReflectionFunction;
+use ReflectionFunctionAbstract;
+use ReflectionMethod;
 use Seld\CliPrompt\CliPrompt;
 use yii\base\Action;
 use yii\base\InvalidConfigException;
@@ -61,25 +64,25 @@ class Controller extends YiiController
      * );
      * ```
      */
-    const EVENT_DEFINE_ACTIONS = 'defineActions';
+    public const EVENT_DEFINE_ACTIONS = 'defineActions';
 
     /**
      * @var array Custom actions that should be available.
      * @see defineActions()
      */
-    private $_actions;
+    private array $_actions;
 
     /**
-     * @var \ReflectionFunction[] Memoized reflection objects
+     * @var ReflectionFunctionAbstract[] Memoized reflection objects
      * @see getActionMethodReflection()
      */
-    private $_reflections = [];
+    private array $_reflections = [];
 
     /**
      * @var string|null The active action ID.
      * @see runAction()
      */
-    private $_actionId;
+    private ?string $_actionId = null;
 
     /**
      * @inheritdoc
@@ -122,7 +125,7 @@ class Controller extends YiiController
      * @inheritdoc
      * @throws InvalidConfigException
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
         $this->checkTty();
@@ -134,7 +137,7 @@ class Controller extends YiiController
             }
 
             if (!isset($action['action'])) {
-                throw new InvalidConfigException("Action '{$id}' is missing an 'action' key.");
+                throw new InvalidConfigException("Action '$id' is missing an 'action' key.");
             }
 
             if (is_callable($action['action'])) {
@@ -164,7 +167,7 @@ class Controller extends YiiController
     /**
      * @inheritdoc
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         // Make sure this isn't a root user
         if (!$this->checkRootUser()) {
@@ -177,7 +180,7 @@ class Controller extends YiiController
     /**
      * @inheritdoc
      */
-    public function actions()
+    public function actions(): array
     {
         return ArrayHelper::getColumn($this->_actions, 'action');
     }
@@ -185,7 +188,7 @@ class Controller extends YiiController
     /**
      * @inheritdoc
      */
-    public function options($actionID)
+    public function options($actionID): array
     {
         $options = parent::options($actionID);
 
@@ -215,7 +218,7 @@ class Controller extends YiiController
     /**
      * @inheritdoc
      */
-    public function runAction($id, $params = [])
+    public function runAction($id, $params = []): int
     {
         $this->_actionId = $id;
         $result = parent::runAction($id, $params);
@@ -226,7 +229,7 @@ class Controller extends YiiController
     /**
      * @inheritdoc
      */
-    public function getActionHelpSummary($action)
+    public function getActionHelpSummary($action): string
     {
         if (isset($this->_actions[$action->id])) {
             $help = $this->_actions[$action->id]['helpSummary'] ?? $this->_actions[$action->id]['help'] ?? '';
@@ -239,7 +242,7 @@ class Controller extends YiiController
     /**
      * @inheritdoc
      */
-    public function getActionHelp($action)
+    public function getActionHelp($action): string
     {
         if (isset($this->_actions[$action->id])) {
             return $this->_actions[$action->id]['help'] ?? $this->_actions[$action->id]['helpSummary'] ?? '';
@@ -251,7 +254,7 @@ class Controller extends YiiController
     /**
      * @inheritdoc
      */
-    public function getActionArgsHelp($action)
+    public function getActionArgsHelp($action): array
     {
         $args = parent::getActionArgsHelp($action);
 
@@ -269,7 +272,7 @@ class Controller extends YiiController
     /**
      * @inheritdoc
      */
-    public function getActionOptionsHelp($action)
+    public function getActionOptionsHelp($action): array
     {
         $options = parent::getActionOptionsHelp($action);
 
@@ -313,16 +316,16 @@ class Controller extends YiiController
 
     /**
      * @param Action $action
-     * @return \ReflectionMethod
+     * @return ReflectionFunctionAbstract
      */
-    protected function getActionMethodReflection($action)
+    protected function getActionMethodReflection($action): ReflectionFunctionAbstract
     {
         if ($action instanceof CallableAction) {
             if (!isset($this->_reflections[$action->id])) {
                 if (is_array($action->callable)) {
-                    $this->_reflections[$action->id] = new \ReflectionMethod($action->callable[0], $action->callable[1]);
+                    $this->_reflections[$action->id] = new ReflectionMethod($action->callable[0], $action->callable[1]);
                 } else {
-                    $this->_reflections[$action->id] = new \ReflectionFunction($action->callable);
+                    $this->_reflections[$action->id] = new ReflectionFunction($action->callable);
                 }
             }
             return $this->_reflections[$action->id];
@@ -340,7 +343,7 @@ class Controller extends YiiController
     private function _isCustomOption(string $name): bool
     {
         return (
-            $this->_actionId !== null &&
+            isset($this->_actionId) &&
             isset($this->_actions[$this->_actionId]['options']) &&
             array_key_exists($name, $this->_actions[$this->_actionId]['options'])
         );
@@ -401,13 +404,14 @@ class Controller extends YiiController
         $error = null;
 
         if ($options['validator'] && !$options['validator']($input, $error)) {
+            /** @var string|null $error */
             $this->stdout(($error ?? $options['error']) . PHP_EOL);
             goto top;
         }
 
         if ($options['confirm']) {
             $this->stdout('Confirm: ');
-            if (!($matched = ($input === CliPrompt::hiddenPrompt(true)))) {
+            if ($input !== CliPrompt::hiddenPrompt(true)) {
                 $this->stdout('Passwords didn\'t match, try again.' . PHP_EOL, Console::FG_RED);
                 goto top;
             }

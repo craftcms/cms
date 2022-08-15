@@ -21,24 +21,26 @@ use yii\base\Arrayable;
 trait MissingComponentTrait
 {
     /**
-     * @var string|Component|null The expected component class name.
+     * @var string The expected component class name.
+     * @phpstan-var class-string<ComponentInterface>
      */
-    public $expectedType;
+    public string $expectedType;
 
     /**
      * @var string|null The exception message that explains why the component class was invalid
      */
-    public $errorMessage;
+    public ?string $errorMessage = null;
 
     /**
-     * @var mixed The custom settings associated with the component, if it is savable
+     * @var array|null The custom settings associated with the component, if it is savable
      */
-    public $settings;
+    public ?array $settings = null;
 
     /**
      * Creates a new component of a given type based on this one’s properties.
      *
      * @param string $type The component class that should be used as the fallback
+     * @phpstan-param class-string<ComponentInterface> $type
      * @return ComponentInterface
      */
     public function createFallback(string $type): ComponentInterface
@@ -59,7 +61,7 @@ trait MissingComponentTrait
      */
     public function getPlaceholderHtml(): string
     {
-        $error = $this->errorMessage ?? "Unable to find component class '{$this->expectedType}'.";
+        $error = $this->errorMessage ?? "Unable to find component class '$this->expectedType'.";
         $showPlugin = false;
         $isComposerInstalled = false;
         $isInstalled = false;
@@ -82,7 +84,7 @@ trait MissingComponentTrait
                     $name = 'Redactor';
                     $handle = 'redactor';
                     $iconUrl = 'https://s3-us-west-2.amazonaws.com/plugin-icons.craftcms/redactor.svg';
-                    $error = "Support for {$name} fields has been moved to a plugin.";
+                    $error = "Support for $name fields has been moved to a plugin.";
                     break;
                 case 'craft\awss3\Volume':
                     $showPlugin = true;
@@ -90,7 +92,7 @@ trait MissingComponentTrait
                     $name = 'Amazon S3';
                     $handle = 'aws-s3';
                     $iconUrl = 'https://s3-us-west-2.amazonaws.com/plugin-icons.craftcms/aws-s3.svg';
-                    $error = "Support for {$name} volumes has been moved to a plugin.";
+                    $error = "Support for $name volumes has been moved to a plugin.";
                     break;
                 case 'craft\googlecloud\Volume':
                     $showPlugin = true;
@@ -98,7 +100,7 @@ trait MissingComponentTrait
                     $name = 'Google Cloud Storage';
                     $handle = 'google-cloud';
                     $iconUrl = 'https://s3-us-west-2.amazonaws.com/plugin-icons.craftcms/google-cloud.svg';
-                    $error = "Support for {$name} volumes has been moved to a plugin.";
+                    $error = "Support for $name volumes has been moved to a plugin.";
                     break;
                 case 'craft\rackspace\Volume':
                     $showPlugin = true;
@@ -106,7 +108,7 @@ trait MissingComponentTrait
                     $name = 'Rackspace Cloud Files';
                     $handle = 'rackspace';
                     $iconUrl = 'https://s3-us-west-2.amazonaws.com/plugin-icons.craftcms/rackspace.svg';
-                    $error = "Support for {$name} volumes has been moved to a plugin.";
+                    $error = "Support for $name volumes has been moved to a plugin.";
                     break;
                 default:
                     if ($handle = $pluginsService->getPluginHandleByClass($this->expectedType)) {
@@ -121,7 +123,7 @@ trait MissingComponentTrait
                     $isInstalled = $info['isInstalled'];
                     $name = $info['name'];
                     $iconSvg = $pluginsService->getPluginIconSvg($handle);
-                } catch (InvalidPluginException $e) {
+                } catch (InvalidPluginException) {
                 }
             }
         }

@@ -7,10 +7,11 @@
 
 namespace crafttests\unit\helpers;
 
-use Craft;
 use Codeception\Test\Unit;
+use Craft;
 use craft\elements\User;
 use craft\helpers\Cp;
+use craft\test\TestCase;
 use craft\web\twig\TemplateLoaderException;
 use crafttests\fixtures\SitesFixture;
 use UnitTester;
@@ -22,18 +23,18 @@ use yii\base\InvalidArgumentException;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.6.0
  */
-class CpHelperTest extends Unit
+class CpHelperTest extends TestCase
 {
     /**
      * @var UnitTester
      */
-    protected $tester;
+    protected UnitTester $tester;
 
     public function _fixtures(): array
     {
         return [
             'sites' => [
-                'class' => SitesFixture::class
+                'class' => SitesFixture::class,
             ],
         ];
     }
@@ -41,7 +42,7 @@ class CpHelperTest extends Unit
     /**
      *
      */
-    public function testElementHtml()
+    public function testElementHtml(): void
     {
         /** @var User $user */
         $user = User::findOne(1);
@@ -99,11 +100,11 @@ class CpHelperTest extends Unit
     /**
      *
      */
-    public function testFieldHtml()
+    public function testFieldHtml(): void
     {
         self::assertStringContainsString('<div class="input ltr"><input></div>', Cp::fieldHtml('<input>'));
         self::assertStringContainsString('<label id="id-label" for="id">Label</label>', Cp::fieldHtml('<input>', ['label' => 'Label', 'id' => 'id']));
-        self::assertStringNotContainsString('<label', Cp::fieldHtml('<input>', ['label' => '__blank__',]));
+        self::assertStringNotContainsString('<label', Cp::fieldHtml('<input>', ['label' => '__blank__', ]));
         // invalid site ID
         $this->tester->expectThrowable(InvalidArgumentException::class, function() {
             Cp::fieldHtml('<input>', ['siteId' => -1]);
@@ -140,12 +141,11 @@ class CpHelperTest extends Unit
 
     /**
      * @dataProvider fieldMethodsDataProvider
-     *
      * @param string $needle
      * @param string $method
      * @param array $config
      */
-    public function testFieldMethods(string $needle, string $method, array $config = [])
+    public function testFieldMethods(string $needle, string $method, array $config = []): void
     {
         self::assertStringContainsString($needle, call_user_func([Cp::class, $method], $config));
     }
@@ -161,7 +161,7 @@ class CpHelperTest extends Unit
             [
                 'editable', 'editableTableFieldHtml', [
                 'name' => 'test',
-            ]
+            ],
             ],
             ['lightswitch', 'lightswitchFieldHtml'],
             ['<select', 'selectFieldHtml'],
@@ -169,7 +169,7 @@ class CpHelperTest extends Unit
             [
                 '<div class="label light">Test unit</div>', 'textFieldHtml', [
                 'unit' => 'Test unit',
-            ]
+            ],
             ],
             ['<textarea', 'textareaFieldHtml'],
         ];

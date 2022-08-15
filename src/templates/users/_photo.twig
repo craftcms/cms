@@ -1,0 +1,26 @@
+{% set volume = craft.app.volumes.getUserPhotoVolume() %}
+{% if volume and volume.getTransformFs().hasUrls %}
+    <div class="user-photo" data-user="{{ user.id }}">
+        <div id="current-photo">
+            <img sizes="100px" srcset="{{ user.getThumbUrl(100) }} 100w, {{ user.getThumbUrl(200) }} 200w" alt="{{ user.getThumbAlt() }}">
+        </div>
+        <div class="user-photo-controls">
+            <input type="file" name="photo" class="hidden" />
+            {% if user.photo %}
+                <div class="flex flex-nowrap">
+                    <button type="button" class="btn upload-photo">{{ "Change photo"|t('app') }}</button>
+                    <button type="button" class="btn delete-photo">{{ "Delete photo"|t('app') }}</button>
+                </div>
+                <div class="flex flex-nowrap">
+                    <button type="button" class="btn edit-photo" data-photoid="{{ user.photoId }}">{{ "Edit Image"|t('app') }}</button>
+                </div>
+            {% else %}
+                <div class="flex flex-nowrap">
+                    <button type="button" class="btn upload-photo">{{ "Upload a photo"|t('app') }}</button>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% else %}
+    <p>{{ 'Please set a valid volume for storing the user photos in user settings page first.'|t('app') }}</p>
+{% endif %}

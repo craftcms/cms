@@ -16,22 +16,22 @@ use yii\base\Exception;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class ShellCommandException extends Exception
+final class ShellCommandException extends Exception
 {
     /**
-     * @var string|null The command that was executed
+     * @var string The command that was executed
      */
-    public $command;
+    public string $command;
 
     /**
-     * @var int|null The command’s exit code
+     * @var int The command’s exit code
      */
-    public $exitCode;
+    public int $exitCode;
 
     /**
      * @var string|null The command’s error output
      */
-    public $error;
+    public ?string $error = null;
 
     /**
      * Creates a ShellCommandException from a [[Command]] object
@@ -39,15 +39,15 @@ class ShellCommandException extends Exception
      * @param Command $command The failed Command object
      * @return static|false
      */
-    public static function createFromCommand(Command $command)
+    public static function createFromCommand(Command $command): self|false
     {
         $execCommand = $command->getExecCommand();
 
-        if ($execCommand !== false) {
-            return new static($execCommand, $command->getExitCode(), $command->getStdErr());
+        if ($execCommand === false) {
+            return false;
         }
 
-        return false;
+        return new self($execCommand, $command->getExitCode(), $command->getStdErr());
     }
 
     /**
@@ -59,20 +59,14 @@ class ShellCommandException extends Exception
      * @param string|null $message The error message
      * @param int $code The error code
      */
-    public function __construct(string $command, int $exitCode, string $error = null, string $message = null, int $code = 0)
+    public function __construct(string $command, int $exitCode, ?string $error = null, ?string $message = null, int $code = 0)
     {
         $this->command = $command;
         $this->exitCode = $exitCode;
         $this->error = $error;
 
         if ($message === null) {
-            // Quote the command
-            if ($command !== false) {
-                $command = "\"{$command}\"";
-            } else {
-                $command = '`false`';
-            }
-            $message = "The shell command {$command} failed with exit code {$exitCode}" . ($error ? ": {$error}" : '.');
+            $message = "The shell command \"$command\" failed with exit code $exitCode" . ($error ? ": $error" : '.');
         }
 
         parent::__construct($message, $code);

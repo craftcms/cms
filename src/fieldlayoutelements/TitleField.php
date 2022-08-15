@@ -16,37 +16,37 @@ use craft\base\ElementInterface;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.0
  */
-class TitleField extends StandardTextField
+class TitleField extends TextField
 {
     /**
      * @inheritdoc
      */
-    public $mandatory = true;
+    public bool $mandatory = true;
 
     /**
      * @inheritdoc
      */
-    public $attribute = 'title';
+    public string $attribute = 'title';
 
     /**
      * @inheritdoc
      */
-    public $translatable = true;
+    public bool $translatable = true;
 
     /**
      * @inheritdoc
      */
-    public $maxlength = 255;
+    public ?int $maxlength = 255;
 
     /**
      * @inheritdoc
      */
-    public $required = true;
+    public bool $required = true;
 
     /**
      * @inheritdoc
      */
-    public $autofocus = true;
+    public bool $autofocus = true;
 
     /**
      * @inheritdoc
@@ -69,7 +69,7 @@ class TitleField extends StandardTextField
     /**
      * @inheritdoc
      */
-    public function fields()
+    public function fields(): array
     {
         $fields = parent::fields();
         unset(
@@ -86,7 +86,7 @@ class TitleField extends StandardTextField
     /**
      * @inheritdoc
      */
-    public function defaultLabel(ElementInterface $element = null, bool $static = false)
+    public function defaultLabel(?ElementInterface $element = null, bool $static = false): ?string
     {
         return Craft::t('app', 'Title');
     }
@@ -94,7 +94,7 @@ class TitleField extends StandardTextField
     /**
      * @inheritdoc
      */
-    protected function statusClass(ElementInterface $element = null, bool $static = false)
+    protected function statusClass(?ElementInterface $element = null, bool $static = false): ?string
     {
         if ($element && ($status = $element->getAttributeStatus('title'))) {
             return $status[0];
@@ -105,7 +105,7 @@ class TitleField extends StandardTextField
     /**
      * @inheritdoc
      */
-    protected function statusLabel(ElementInterface $element = null, bool $static = false)
+    protected function statusLabel(?ElementInterface $element = null, bool $static = false): ?string
     {
         if ($element && ($status = $element->getAttributeStatus('title'))) {
             return $status[1];

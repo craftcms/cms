@@ -12,6 +12,7 @@ use craft\config\DbConfig;
 use craft\db\Connection;
 use craft\elements\User;
 use craft\errors\DbConnectException;
+use craft\errors\MigrationException;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Install as InstallHelper;
@@ -20,9 +21,12 @@ use craft\migrations\Install;
 use craft\models\Site;
 use craft\web\assets\installer\InstallerAsset;
 use craft\web\Controller;
+use PDOException;
+use Throwable;
 use yii\base\Exception;
-use yii\base\Response;
+use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
+use yii\web\Response;
 
 /** @noinspection ClassOverridesFieldOfSuperClassInspection */
 
@@ -39,15 +43,15 @@ class InstallController extends Controller
     /**
      * @inheritdoc
      */
-    protected $allowAnonymous = self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE;
+    protected array|bool|int $allowAnonymous = self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE;
 
     /**
      * @inheritdoc
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         // Return a 404 if Craft is already installed
-        if (!YII_DEBUG && Craft::$app->getIsInstalled()) {
+        if (!App::devMode() && Craft::$app->getIsInstalled()) {
             throw new BadRequestHttpException('Craft is already installed');
         }
 
@@ -57,11 +61,11 @@ class InstallController extends Controller
     /**
      * Index action.
      *
-     * @return Response|string The requirements check response if the server doesn’t meet Craft’s requirements, or the rendering result
-     * @throws \Throwable if it's an Ajax request and the server doesn’t meet Craft’s requirements
+     * @return Response The requirements check response if the server doesn’t meet Craft’s requirements, or the rendering result
+     * @throws Throwable if it's an Ajax request and the server doesn’t meet Craft’s requirements
      * @throws DbConnectException if a .env file can't be found and the current DB credentials are invalid
      */
-    public function actionIndex()
+    public function actionIndex(): Response
     {
         if (($response = Craft::$app->runAction('templates/requirements-check')) !== null) {
             return $response;
@@ -69,9 +73,9 @@ class InstallController extends Controller
 
         // Can we establish a DB connection?
         try {
-            Craft::$app->getDb()->open();
+            $this->_checkDbConfig();
             $showDbScreen = false;
-        } catch (DbConnectException $e) {
+        } catch (InvalidConfigException $e) {
             // Can we control the settings?
             if ($this->_canControlDbConfig()) {
                 $showDbScreen = true;
@@ -113,7 +117,7 @@ class InstallController extends Controller
      *
      * @return Response
      */
-    public function actionValidateDb()
+    public function actionValidateDb(): Response
     {
         $this->requirePostRequest();
         $this->requireAcceptsJson();
@@ -146,28 +150,25 @@ class InstallController extends Controller
             try {
                 $db->open();
             } catch (DbConnectException $e) {
-                /** @var \PDOException $pdoException */
+                /** @var PDOException $pdoException */
                 $pdoException = $e->getPrevious()->getPrevious();
-                switch ($pdoException->getCode()) {
-                    case 1045:
-                        $attr = 'user';
-                        break;
-                    case 1049:
-                        $attr = 'database';
-                        break;
-                    case 2002:
-                        $attr = 'server';
-                        break;
-                    default:
-                        $attr = '*';
-                }
+                $attr = match ($pdoException->getCode()) {
+                    1045 => 'user',
+                    1049 => 'database',
+                    2002 => 'server',
+                    default => '*',
+                };
                 $errors[$attr][] = 'PDO exception: ' . $pdoException->getMessage();
             }
         }
 
         $validates = empty($errors);
 
-        return $this->asJson(compact('validates', 'errors'));
+        return $validates ?
+            $this->asSuccess() :
+            $this->asFailure(data: [
+                'errors' => $errors,
+            ]);
     }
 
     /**
@@ -193,7 +194,13 @@ class InstallController extends Controller
             $errors['password'] = ArrayHelper::remove($errors, 'newPassword');
         }
 
-        return $this->asJson(compact('validates', 'errors'));
+        if (!$validates) {
+            return $this->asFailure(data: [
+                'errors' => $errors,
+            ]);
+        }
+
+        return $this->asModelSuccess($user);
     }
 
     /**
@@ -212,10 +219,11 @@ class InstallController extends Controller
             'language' => $this->request->getBodyParam('language'),
         ]);
 
-        $validates = $site->validate(['name', 'baseUrl', 'language']);
-        $errors = $site->getErrors();
+        if (!$site->validate(['name', 'baseUrl', 'language'])) {
+            return $this->asModelFailure($site);
+        }
 
-        return $this->asJson(compact('validates', 'errors'));
+        return $this->asModelSuccess($site);
     }
 
     /**
@@ -237,19 +245,19 @@ class InstallController extends Controller
             $this->_populateDbConfig($dbConfig, 'db-');
 
             // If there's a DB_DSN environment variable, go with that
-            if (App::env('DB_DSN') !== false) {
-                $configService->setDotEnvVar('DB_DSN', $dbConfig->dsn);
+            if (App::env('CRAFT_DB_DSN') !== null) {
+                $configService->setDotEnvVar('CRAFT_DB_DSN', $dbConfig->dsn);
             } else {
-                $configService->setDotEnvVar('DB_DRIVER', $dbConfig->driver);
-                $configService->setDotEnvVar('DB_SERVER', $dbConfig->server);
-                $configService->setDotEnvVar('DB_PORT', $dbConfig->port);
-                $configService->setDotEnvVar('DB_DATABASE', $dbConfig->database);
+                $configService->setDotEnvVar('CRAFT_DB_DRIVER', $dbConfig->driver);
+                $configService->setDotEnvVar('CRAFT_DB_SERVER', $dbConfig->server);
+                $configService->setDotEnvVar('CRAFT_DB_PORT', (string)$dbConfig->port);
+                $configService->setDotEnvVar('CRAFT_DB_DATABASE', $dbConfig->database);
             }
 
-            $configService->setDotEnvVar('DB_USER', $dbConfig->user);
-            $configService->setDotEnvVar('DB_PASSWORD', $dbConfig->password);
-            $configService->setDotEnvVar('DB_SCHEMA', $dbConfig->schema);
-            $configService->setDotEnvVar('DB_TABLE_PREFIX', $dbConfig->tablePrefix);
+            $configService->setDotEnvVar('CRAFT_DB_USER', $dbConfig->user);
+            $configService->setDotEnvVar('CRAFT_DB_PASSWORD', $dbConfig->password);
+            $configService->setDotEnvVar('CRAFT_DB_SCHEMA', $dbConfig->schema);
+            $configService->setDotEnvVar('CRAFT_DB_TABLE_PREFIX', $dbConfig->tablePrefix);
 
             // Update the db component based on new values
             $db = Craft::$app->getDb();
@@ -270,12 +278,12 @@ class InstallController extends Controller
         }
 
         // Try to save the site URL to a PRIMARY_SITE_URL environment variable
-        // if it's not already set to an alias or environment variable
+        // if it’s not already set to an alias or environment variable
         if ($siteUrl[0] !== '@' && $siteUrl[0] !== '$' && !App::isEphemeral()) {
             try {
                 $configService->setDotEnvVar('PRIMARY_SITE_URL', $siteUrl);
                 $siteUrl = '$PRIMARY_SITE_URL';
-            } catch (Exception $e) {
+            } catch (Exception) {
                 // that's fine, we'll just store the entered URL
             }
         }
@@ -295,18 +303,36 @@ class InstallController extends Controller
             'site' => $site,
         ]);
 
-        if ($migrator->migrateUp($migration) !== false) {
-            $success = true;
-
-            // Mark all existing migrations as applied
-            foreach ($migrator->getNewMigrations() as $name) {
-                $migrator->addMigrationHistory($name);
-            }
-        } else {
-            $success = false;
+        try {
+            $migrator->migrateUp($migration);
+        } catch (MigrationException $e) {
+            return $this->asFailure($e->getMessage());
         }
 
-        return $this->asJson(['success' => $success]);
+        // Mark all existing migrations as applied
+        foreach ($migrator->getNewMigrations() as $name) {
+            $migrator->addMigrationHistory($name);
+        }
+
+        return $this->asSuccess();
+    }
+
+    /**
+     * @throws InvalidConfigException
+     */
+    private function _checkDbConfig(): void
+    {
+        // If no database is set yet, definitely show it
+        if (!Craft::$app->getConfig()->getDb()->database) {
+            throw new InvalidConfigException('No database has been selected yet.');
+        }
+
+        // Can we establish a DB connection?
+        try {
+            Craft::$app->getDb()->open();
+        } catch (DbConnectException $e) {
+            throw new InvalidConfigException('A database connection couldn’t be established.', 0, $e);
+        }
     }
 
     /**
@@ -326,53 +352,7 @@ class InstallController extends Controller
             return false;
         }
 
-        // Map the DB settings we definitely care about to their environment variable names
-        $vars = [
-            'user' => 'DB_USER',
-            'password' => 'DB_PASSWORD',
-        ];
-
-        // If there's a DB_DSN environment variable, go with that
-        if (App::env('DB_DSN') !== false) {
-            $vars['dsn'] = 'DB_DSN';
-        } else {
-            $vars['driver'] = 'DB_DRIVER';
-            $vars['server'] = 'DB_SERVER';
-            $vars['port'] = 'DB_PORT';
-            $vars['database'] = 'DB_DATABASE';
-        }
-
-        // Save the current environment variable values, and set temporary ones
-        $realValues = [];
-        $tempValues = [];
-
-        foreach ($vars as $setting => $var) {
-            $realValues[$setting] = App::env($var);
-            $tempValues[$setting] = $_SERVER[$var] = StringHelper::randomString();
-            putenv("{$var}={$tempValues[$setting]}");
-        }
-
-        // Grab the new DB config. Maybe it will contain our temporary values
-        $config = Craft::$app->getConfig()->getConfigFromFile('db');
-
-        // Put the old values back
-        foreach ($vars as $setting => $var) {
-            if ($realValues[$setting] === false) {
-                unset($_SERVER[$var]);
-                putenv($var);
-            } else {
-                $_SERVER[$var] = $realValues[$setting];
-                putenv("{$var}={$realValues[$setting]}");
-            }
-        }
-
-        // Now see if our temp values made it in
-        foreach ($vars as $setting => $var) {
-            if (!isset($config[$setting]) || $config[$setting] !== $tempValues[$setting]) {
-                return false;
-            }
-        }
-
+        // Nothing else to worry about, thanks to `CRAFT_X` environment variable overrides
         return true;
     }
 
@@ -382,7 +362,7 @@ class InstallController extends Controller
      * @param DbConfig $dbConfig The DbConfig object
      * @param string $prefix The post param prefix to use
      */
-    private function _populateDbConfig(DbConfig $dbConfig, string $prefix = '')
+    private function _populateDbConfig(DbConfig $dbConfig, string $prefix = ''): void
     {
         $driver = $this->request->getRequiredBodyParam("{$prefix}driver");
         $server = $this->request->getBodyParam("{$prefix}server") ?: '127.0.0.1';
@@ -396,7 +376,7 @@ class InstallController extends Controller
         $dbConfig->server = $server;
         $dbConfig->port = $port;
         $dbConfig->database = $database;
-        $dbConfig->dsn = "{$driver}:host={$server};port={$port};dbname={$database}";
+        $dbConfig->dsn = "$driver:host=$server;port=$port;dbname=$database";
         $dbConfig->user = $this->request->getBodyParam("{$prefix}user") ?: 'root';
         $dbConfig->password = $this->request->getBodyParam("{$prefix}password");
         $dbConfig->tablePrefix = $this->request->getBodyParam("{$prefix}tablePrefix");

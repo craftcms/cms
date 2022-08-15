@@ -8,7 +8,6 @@
 namespace craft\web\twig\tokenparsers;
 
 use craft\web\twig\nodes\DdNode;
-use Twig\Parser;
 use Twig\Token;
 use Twig\TokenParser\AbstractTokenParser;
 
@@ -23,10 +22,9 @@ class DdTokenParser extends AbstractTokenParser
     /**
      * @inheritdoc
      */
-    public function parse(Token $token)
+    public function parse(Token $token): DdNode
     {
         $lineno = $token->getLine();
-        /** @var Parser $parser */
         $parser = $this->parser;
         $stream = $parser->getStream();
 
@@ -42,7 +40,7 @@ class DdTokenParser extends AbstractTokenParser
     /**
      * @inheritdoc
      */
-    public function getTag()
+    public function getTag(): string
     {
         return 'dd';
     }

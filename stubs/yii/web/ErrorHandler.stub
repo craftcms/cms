@@ -1,0 +1,11 @@
+<?php
+
+namespace yii\web;
+
+class ErrorHandler
+{
+    /**
+     * @var string|null
+     */
+    public $errorAction;
+}

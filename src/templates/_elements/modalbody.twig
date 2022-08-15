@@ -1,0 +1,14 @@
+<div class="content{% if showSidebar %} has-sidebar{% endif %}">
+    <div class="sidebar{% if not showSidebar %} hidden{% endif %}">
+        <nav>
+            {% include "_elements/sources" %}
+        </nav>
+    </div>
+
+    <div class="main">
+        <div class="toolbar flex">
+            {% include '_elements/toolbar' %}
+        </div>
+        <div class="elements"></div>
+    </div>
+</div>

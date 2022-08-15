@@ -24,8 +24,8 @@ use yii\helpers\Markdown as MarkdownHelper;
  */
 class Markdown extends Directive
 {
-    const DEFAULT_FLAVOR = null;
-    const DEFAULT_INLINE_ONLY = false;
+    public const DEFAULT_FLAVOR = null;
+    public const DEFAULT_INLINE_ONLY = false;
 
     /**
      * @inheritdoc
@@ -36,7 +36,7 @@ class Markdown extends Directive
             return $type;
         }
 
-        $type = GqlEntityRegistry::createEntity(static::name(), new self([
+        return GqlEntityRegistry::createEntity(static::name(), new self([
             'name' => static::name(),
             'locations' => [
                 DirectiveLocation::FIELD,
@@ -57,8 +57,6 @@ class Markdown extends Directive
             ],
             'description' => 'Parses the passed field value as Markdown.',
         ]));
-
-        return $type;
     }
 
     /**
@@ -72,7 +70,7 @@ class Markdown extends Directive
     /**
      * @inheritdoc
      */
-    public static function apply($source, $value, array $arguments, ResolveInfo $resolveInfo)
+    public static function apply(mixed $source, mixed $value, array $arguments, ResolveInfo $resolveInfo): mixed
     {
         $inlineOnly = $arguments['inlineOnly'] ?? self::DEFAULT_INLINE_ONLY;
 

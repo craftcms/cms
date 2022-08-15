@@ -8,7 +8,6 @@
 namespace craft\web\twig\tokenparsers;
 
 use craft\web\twig\nodes\NamespaceNode;
-use Twig\Parser;
 use Twig\Token;
 use Twig\TokenParser\AbstractTokenParser;
 
@@ -23,7 +22,7 @@ class NamespaceTokenParser extends AbstractTokenParser
     /**
      * @inheritdoc
      */
-    public function getTag()
+    public function getTag(): string
     {
         return 'namespace';
     }
@@ -31,10 +30,9 @@ class NamespaceTokenParser extends AbstractTokenParser
     /**
      * @inheritdoc
      */
-    public function parse(Token $token)
+    public function parse(Token $token): NamespaceNode
     {
         $lineno = $token->getLine();
-        /** @var Parser $parser */
         $parser = $this->parser;
         $stream = $parser->getStream();
 

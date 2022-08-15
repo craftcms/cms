@@ -1,124 +1,142 @@
-(function($) {
-    /** global: Craft */
-    /** global: Garnish */
-    var FieldsAdmin = Garnish.Base.extend({
-        $groups: null,
-        $selectedGroup: null,
+(function ($) {
+  /** global: Craft */
+  /** global: Garnish */
+  var FieldsAdmin = Garnish.Base.extend({
+    $groups: null,
+    $selectedGroup: null,
 
-        init: function() {
-            this.$groups = $('#groups');
-            this.$selectedGroup = this.$groups.find('a.sel:first');
-            this.addListener($('#newgroupbtn'), 'activate', 'addNewGroup');
+    init: function () {
+      this.$groups = $('#groups');
+      this.$selectedGroup = this.$groups.find('a.sel:first');
+      this.addListener($('#newgroupbtn'), 'activate', 'addNewGroup');
 
-            var $groupSettingsBtn = $('#groupsettingsbtn');
+      var $groupSettingsBtn = $('#groupsettingsbtn');
 
-            if ($groupSettingsBtn.length) {
-                var menuBtn = $groupSettingsBtn.data('menubtn');
+      if ($groupSettingsBtn.length) {
+        var menuBtn = $groupSettingsBtn.data('menubtn');
 
-                menuBtn.settings.onOptionSelect = elem => {
-                    var action = $(elem).data('action');
+        menuBtn.settings.onOptionSelect = (elem) => {
+          var action = $(elem).data('action');
 
-                    switch (action) {
-                        case 'rename': {
-                            this.renameSelectedGroup();
-                            break;
-                        }
-                        case 'delete': {
-                            this.deleteSelectedGroup();
-                            break;
-                        }
-                    }
-                };
+          switch (action) {
+            case 'rename': {
+              this.renameSelectedGroup();
+              break;
             }
-        },
-
-        addNewGroup: function() {
-            var name = this.promptForGroupName('');
-
-            if (name) {
-                var data = {
-                    name: name
-                };
-
-                Craft.postActionRequest('fields/save-group', data, (response, textStatus) => {
-                    if (textStatus === 'success') {
-                        if (response.success) {
-                            location.href = Craft.getUrl('settings/fields/' + response.group.id);
-                        } else if (response.errors) {
-                            var errors = this.flattenErrors(response.errors);
-                            alert(Craft.t('app', 'Could not create the group:') + "\n\n" + errors.join("\n"));
-                        } else {
-                            Craft.cp.displayError();
-                        }
-                    }
-                });
+            case 'delete': {
+              this.deleteSelectedGroup();
+              break;
             }
-        },
+          }
+        };
+      }
+    },
 
-        renameSelectedGroup: function() {
-            var oldName = this.$selectedGroup.text(),
-                newName = this.promptForGroupName(oldName);
+    addNewGroup: function () {
+      var name = this.promptForGroupName('');
 
-            if (newName && newName !== oldName) {
-                var data = {
-                    id: this.$selectedGroup.data('id'),
-                    name: newName
-                };
+      if (name) {
+        var data = {
+          name: name,
+        };
 
-                Craft.postActionRequest('fields/save-group', data, (response, textStatus) => {
-                    if (textStatus === 'success') {
-                        if (response.success) {
-                            this.$selectedGroup.text(response.group.name);
-                            Craft.cp.displayNotice(Craft.t('app', 'Group renamed.'));
-                        } else if (response.errors) {
-                            var errors = this.flattenErrors(response.errors);
-                            alert(Craft.t('app', 'Could not rename the group:') + "\n\n" + errors.join("\n"));
-                        } else {
-                            Craft.cp.displayError();
-                        }
-                    }
-                });
+        Craft.sendActionRequest('POST', 'fields/save-group', {data})
+          .then((response) => {
+            location.href = Craft.getUrl(
+              'settings/fields/' + response.data.group.id
+            );
+          })
+          .catch(({response}) => {
+            if (response.data.errors) {
+              var errors = this.flattenErrors(response.data.errors);
+              alert(
+                Craft.t('app', 'Could not create the group:') +
+                  '\n\n' +
+                  errors.join('\n')
+              );
+            } else {
+              Craft.cp.displayError();
             }
-        },
+          });
+      }
+    },
 
-        promptForGroupName: function(oldName) {
-            return prompt(Craft.t('app', 'What do you want to name the group?'), oldName);
-        },
+    renameSelectedGroup: function () {
+      var oldName = this.$selectedGroup.text(),
+        newName = this.promptForGroupName(oldName);
 
-        deleteSelectedGroup: function() {
-            if (confirm(Craft.t('app', 'Are you sure you want to delete this group and all its fields?'))) {
-                var data = {
-                    id: this.$selectedGroup.data('id')
-                };
+      if (newName && newName !== oldName) {
+        var data = {
+          id: this.$selectedGroup.data('id'),
+          name: newName,
+        };
 
-                Craft.postActionRequest('fields/delete-group', data, (response, textStatus) => {
-                    if (textStatus === 'success') {
-                        if (response.success) {
-                            location.href = Craft.getUrl('settings/fields');
-                        } else {
-                            Craft.cp.displayError();
-                        }
-                    }
-                });
+        Craft.sendActionRequest('POST', 'fields/save-group', {data})
+          .then((response) => {
+            this.$selectedGroup.text(response.data.group.name);
+            Craft.cp.displaySuccess(Craft.t('app', 'Group renamed.'));
+          })
+          .catch(({response}) => {
+            if (response.data.errors) {
+              var errors = this.flattenErrors(response.data.errors);
+              alert(
+                Craft.t('app', 'Could not rename the group:') +
+                  '\n\n' +
+                  errors.join('\n')
+              );
+            } else {
+              Craft.cp.displayError();
             }
-        },
+          });
+      }
+    },
 
-        flattenErrors: function(responseErrors) {
-            var errors = [];
+    promptForGroupName: function (oldName) {
+      return prompt(
+        Craft.t('app', 'What do you want to name the group?'),
+        oldName
+      );
+    },
 
-            for (var attribute in responseErrors) {
-                if (!responseErrors.hasOwnProperty(attribute)) {
-                    continue;
-                }
+    deleteSelectedGroup: function () {
+      if (
+        confirm(
+          Craft.t(
+            'app',
+            'Are you sure you want to delete this group and all its fields?'
+          )
+        )
+      ) {
+        var data = {
+          id: this.$selectedGroup.data('id'),
+        };
 
-                errors = errors.concat(responseErrors[attribute]);
-            }
+        Craft.sendActionRequest('POST', 'fields/delete-group', {data})
+          .then((response) => {
+            location.href = Craft.getUrl('settings/fields');
+          })
+          .catch(({response}) => {
+            Craft.cp.displayError();
+          });
+      }
+    },
 
-            return errors;
+    flattenErrors: function (responseErrors) {
+      var errors = [];
+
+      for (var attribute in responseErrors) {
+        if (!responseErrors.hasOwnProperty(attribute)) {
+          continue;
         }
-    });
 
-    Garnish.$doc.ready(function() {
-        Craft.FieldsAdmin = new FieldsAdmin();
-    });
+        errors = errors.concat(responseErrors[attribute]);
+      }
+
+      return errors;
+    },
+  });
+
+  Garnish.$doc.ready(function () {
+    Craft.FieldsAdmin = new FieldsAdmin();
+  });
 })(jQuery);

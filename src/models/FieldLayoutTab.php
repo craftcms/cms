@@ -9,12 +9,15 @@ namespace craft\models;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\base\FieldInterface;
-use craft\base\FieldLayoutElementInterface;
-use craft\base\Model;
+use craft\base\FieldLayoutComponent;
+use craft\base\FieldLayoutElement;
+use craft\db\Query;
+use craft\db\Table;
+use craft\errors\FieldNotFoundException;
 use craft\fieldlayoutelements\BaseField;
 use craft\fieldlayoutelements\CustomField;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Cp;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
 use yii\base\InvalidArgumentException;
@@ -23,11 +26,12 @@ use yii\base\InvalidConfigException;
 /**
  * FieldLayoutTab model class.
  *
+ * @property FieldLayoutElement[]|null $elements The tab’s layout elements
  * @property FieldLayout|null $layout The tab’s layout
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class FieldLayoutTab extends Model
+class FieldLayoutTab extends FieldLayoutComponent
 {
     /**
      * Creates a new field layout tab from the given config.
@@ -48,7 +52,7 @@ class FieldLayoutTab extends Model
      * @param array $config
      * @since 3.5.0
      */
-    public static function updateConfig(array &$config)
+    public static function updateConfig(array &$config): void
     {
         if (!array_key_exists('fields', $config)) {
             return;
@@ -71,82 +75,95 @@ class FieldLayoutTab extends Model
     /**
      * @var int|null ID
      */
-    public $id;
+    public ?int $id = null;
 
     /**
      * @var int|null Layout ID
      */
-    public $layoutId;
+    public ?int $layoutId = null;
 
     /**
      * @var string|null Name
      */
-    public $name;
-
-    /**
-     * @var FieldLayoutElementInterface[]|null The tab’s layout elements
-     * @since 3.5.0
-     */
-    public $elements;
+    public ?string $name = null;
 
     /**
      * @var int|null Sort order
      */
-    public $sortOrder;
+    public ?int $sortOrder = null;
 
     /**
-     * @var string|null UID
-     */
-    public $uid;
-
-    /**
-     * @var FieldLayout|null
+     * @var FieldLayout
      * @see getLayout()
      * @see setLayout()
      */
-    private $_layout;
+    private FieldLayout $_layout;
 
     /**
-     * @var FieldInterface[]|null
-     * @see getFields()
-     * @see setFields()
+     * @var FieldLayoutElement[] The tab’s layout elements
+     * @see getElements()
+     * @see setElements()
      */
-    private $_fields;
+    private array $_elements;
 
     /**
      * @inheritdoc
      */
-    public function init()
+    public function __construct($config = [])
+    {
+        // Config normalization
+        if (array_key_exists('elements', $config)) {
+            if (is_string($config['elements'])) {
+                $config['elements'] = Json::decode($config['elements']);
+            }
+            if (!is_array($config['elements'])) {
+                unset($config['elements']);
+            }
+        }
+
+        parent::__construct($config);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function init(): void
     {
         parent::init();
 
-        if ($this->elements === null) {
-            $this->elements = [];
-            foreach ($this->getFields() as $field) {
-                $this->elements[] = Craft::createObject([
-                    'class' => CustomField::class,
-                    'required' => $field->required,
-                ], [
-                    $field,
-                ]);
-            }
-        } else {
-            if (is_string($this->elements)) {
-                $this->elements = Json::decode($this->elements);
-            }
+        if (!isset($this->_elements) && isset($this->id)) {
+            // No element configs for this tab yet, so create the elements ourselves
             $fieldsService = Craft::$app->getFields();
-            foreach ($this->elements as $i => $layoutElement) {
-                if (is_array($layoutElement)) {
-                    try {
-                        $this->elements[$i] = $fieldsService->createLayoutElement($layoutElement);
-                    } catch (InvalidArgumentException $e) {
-                        Craft::warning('Invalid field layout element config: ' . $e->getMessage(), __METHOD__);
-                        Craft::$app->getErrorHandler()->logException($e);
-                        unset($this->elements[$i]);
-                    }
+            $layoutElements = [];
+
+            $fieldInfo = (new Query())
+                ->select(['fieldId', 'required'])
+                ->from([Table::FIELDLAYOUTFIELDS])
+                ->where(['tabId' => $this->id])
+                ->orderBy(['sortOrder' => SORT_ASC])
+                ->all();
+
+            foreach ($fieldInfo as $row) {
+                $field = $fieldsService->getFieldById($row['fieldId']);
+                if ($field) {
+                    $layoutElements[] = new CustomField($field, [
+                        'required' => $row['required'],
+                    ]);
                 }
             }
+
+            $this->setElements($layoutElements);
         }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function fields(): array
+    {
+        $fields = parent::fields();
+        unset($fields['sortOrder']);
+        return $fields;
     }
 
     /**
@@ -162,22 +179,33 @@ class FieldLayoutTab extends Model
     }
 
     /**
+     * @inheritdoc
+     */
+    protected function settingsHtml(): ?string
+    {
+        return Cp::textFieldHtml([
+            'label' => Craft::t('app', 'Name'),
+            'name' => 'name',
+            'value' => $this->name,
+            'required' => true,
+        ]);
+    }
+
+    /**
      * Returns the field layout tab’s config.
      *
-     * @return array|null
+     * @return array
      * @since 3.5.0
      */
-    public function getConfig()
+    public function getConfig(): array
     {
-        if (empty($this->elements)) {
-            return null;
+        if (!isset($this->uid)) {
+            $this->uid = StringHelper::UUID();
         }
 
-        return [
-            'name' => $this->name,
-            'sortOrder' => (int)$this->sortOrder,
-            'elements' => $this->getElementConfigs(),
-        ];
+        $config = $this->toArray(['name', 'uid', 'userCondition', 'elementCondition']);
+        $config['elements'] = $this->getElementConfigs();
+        return $config;
     }
 
     /**
@@ -189,7 +217,10 @@ class FieldLayoutTab extends Model
     public function getElementConfigs(): array
     {
         $elementConfigs = [];
-        foreach ($this->elements as $layoutElement) {
+        foreach ($this->getElements() as $layoutElement) {
+            if (!isset($layoutElement->uid)) {
+                $layoutElement->uid = StringHelper::UUID();
+            }
             $elementConfigs[] = ['type' => get_class($layoutElement)] + $layoutElement->toArray();
         }
         return $elementConfigs;
@@ -198,17 +229,17 @@ class FieldLayoutTab extends Model
     /**
      * Returns the tab’s layout.
      *
-     * @return FieldLayout|null The tab’s layout.
+     * @return FieldLayout The tab’s layout.
      * @throws InvalidConfigException if [[layoutId]] is set but invalid
      */
-    public function getLayout()
+    public function getLayout(): FieldLayout
     {
-        if ($this->_layout !== null) {
+        if (isset($this->_layout)) {
             return $this->_layout;
         }
 
         if (!$this->layoutId) {
-            return null;
+            throw new InvalidConfigException('Field layout tab is missing its field layout.');
         }
 
         if (($this->_layout = Craft::$app->getFields()->getLayoutById($this->layoutId)) === null) {
@@ -223,56 +254,50 @@ class FieldLayoutTab extends Model
      *
      * @param FieldLayout $layout The tab’s layout.
      */
-    public function setLayout(FieldLayout $layout)
+    public function setLayout(FieldLayout $layout): void
     {
         $this->_layout = $layout;
     }
 
     /**
-     * Returns the custom fields included in this tab.
+     * Returns the tab’s layout elements.
      *
-     * @return FieldInterface[]
+     * @return FieldLayoutElement[]
+     * @since 4.0.0
      */
-    public function getFields(): array
+    public function getElements(): array
     {
-        if ($this->_fields !== null) {
-            return $this->_fields;
-        }
-
-        $this->_fields = [];
-
-        if ($layout = $this->getLayout()) {
-            foreach ($layout->getFields() as $field) {
-                if ($field->tabId == $this->id) {
-                    $this->_fields[] = $field;
-                }
-            }
-        }
-
-        return $this->_fields;
+        return $this->_elements ?? [];
     }
 
     /**
-     * Sets the custom fields included in this tab.
+     * Sets the tab’s layout elements.
      *
-     * @param FieldInterface[] $fields
+     * @param array $elements
+     * @phpstan-param array<FieldLayoutElement|array{type:class-string<FieldLayoutElement>}> $elements
+     * @since 4.0.0
      */
-    public function setFields(array $fields)
+    public function setElements(array $elements): void
     {
-        ArrayHelper::multisort($fields, 'sortOrder');
-        $this->_fields = $fields;
+        $fieldsService = Craft::$app->getFields();
+        $this->_elements = [];
 
-        $this->elements = [];
-        foreach ($this->_fields as $field) {
-            $this->elements[] = Craft::createObject([
-                'class' => CustomField::class,
-                'required' => $field->required,
-            ], [$field]);
-        }
+        foreach ($elements as $layoutElement) {
+            if (is_array($layoutElement)) {
+                try {
+                    $layoutElement = $fieldsService->createLayoutElement($layoutElement);
+                } catch (FieldNotFoundException) {
+                    // Skip quietly
+                    continue;
+                } catch (InvalidArgumentException|InvalidConfigException $e) {
+                    Craft::warning('Invalid field layout element config: ' . $e->getMessage(), __METHOD__);
+                    Craft::$app->getErrorHandler()->logException($e);
+                    continue;
+                }
+            }
 
-        // Clear the field layout's field cache
-        if ($this->_layout !== null) {
-            $this->_layout->setFields(null);
+            $layoutElement->setLayout($this->getLayout());
+            $this->_elements[] = $layoutElement;
         }
     }
 
@@ -283,7 +308,8 @@ class FieldLayoutTab extends Model
      */
     public function getHtmlId(): string
     {
-        return 'tab-' . StringHelper::toKebabCase($this->name);
+        // Use two dashes here in case a tab name starts with “Tab”
+        return 'tab--' . StringHelper::toKebabCase($this->name);
     }
 
     /**
@@ -299,7 +325,7 @@ class FieldLayoutTab extends Model
             return false;
         }
 
-        foreach ($this->elements as $layoutElement) {
+        foreach ($this->getElements() as $layoutElement) {
             if ($layoutElement instanceof BaseField && $element->hasErrors($layoutElement->attribute() . '.*')) {
                 return true;
             }

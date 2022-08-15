@@ -10,6 +10,7 @@ namespace craft\mail\transportadapters;
 use Craft;
 use craft\behaviors\EnvAttributeParserBehavior;
 use craft\helpers\App;
+use Symfony\Component\Mailer\Transport\AbstractTransport;
 
 /**
  * Smtp implements a SMTP transport adapter into Craft’s mailer.
@@ -30,65 +31,78 @@ class Smtp extends BaseTransportAdapter
     /**
      * @var string|null The host that should be used
      */
-    public $host;
+    public ?string $host = null;
 
     /**
      * @var string|null The port that should be used
      */
-    public $port;
+    public ?string $port = null;
 
     /**
      * @var bool|string|null Whether to use authentication
      */
-    public $useAuthentication;
+    public bool|string|null $useAuthentication = null;
 
     /**
      * @var string|null The username that should be used
      */
-    public $username;
+    public ?string $username = null;
 
     /**
      * @var string|null The password that should be used
      */
-    public $password;
+    public ?string $password = null;
 
     /**
      * @var string|null The encryption method that should be used, if any (ssl or tls)
      */
-    public $encryptionMethod;
+    public ?string $encryptionMethod = null;
 
     /**
-     * @var string The timeout duration (in seconds)
+     * @var string|int The timeout duration (in seconds)
      */
-    public $timeout = 10;
+    public string|int $timeout = 10;
 
     /**
      * @inheritdoc
      */
-    public function behaviors()
+    public function __construct($config = [])
     {
-        $behaviors = parent::behaviors();
-        $behaviors['parser'] = [
-            'class' => EnvAttributeParserBehavior::class,
-            'attributes' => [
-                'host',
-                'port',
-                'useAuthentication',
-                'username',
-                'password',
-                'encryptionMethod',
-            ],
-        ];
-        return $behaviors;
+        // Config normalization
+        if (($config['useAuthentication'] ?? null) === '') {
+            unset($config['useAuthentication']);
+        }
+
+        parent::__construct($config);
     }
 
     /**
      * @inheritdoc
      */
-    public function attributeLabels()
+    protected function defineBehaviors(): array
     {
         return [
-            'host' => Craft::t('app', 'Host Name'),
+            'parser' => [
+                'class' => EnvAttributeParserBehavior::class,
+                'attributes' => [
+                    'host',
+                    'port',
+                    'useAuthentication',
+                    'username',
+                    'password',
+                    'encryptionMethod',
+                ],
+            ],
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function attributeLabels(): array
+    {
+        return [
+            'host' => Craft::t('app', 'Hostname'),
             'port' => Craft::t('app', 'Port'),
             'useAuthentication' => Craft::t('app', 'Use authentication'),
             'username' => Craft::t('app', 'Username'),
@@ -122,7 +136,7 @@ class Smtp extends BaseTransportAdapter
     /**
      * @inheritdoc
      */
-    public function getSettingsHtml()
+    public function getSettingsHtml(): ?string
     {
         return Craft::$app->getView()->renderTemplate('_components/mailertransportadapters/Smtp/settings', [
             'adapter' => $this,
@@ -132,10 +146,10 @@ class Smtp extends BaseTransportAdapter
     /**
      * @inheritdoc
      */
-    public function defineTransport()
+    public function defineTransport(): array|AbstractTransport
     {
         $config = [
-            'class' => \Swift_SmtpTransport::class,
+            'scheme' => 'smtp',
             'host' => App::parseEnv($this->host),
             'port' => App::parseEnv($this->port),
             'timeout' => $this->timeout,

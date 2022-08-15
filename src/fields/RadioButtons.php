@@ -47,7 +47,7 @@ class RadioButtons extends BaseOptionsField implements SortableFieldInterface
     /**
      * @inheritdoc
      */
-    protected function inputHtml($value, ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
     {
         /** @var SingleOptionFieldData $value */
         if (!$value->valid) {
@@ -57,8 +57,8 @@ class RadioButtons extends BaseOptionsField implements SortableFieldInterface
         return Craft::$app->getView()->renderTemplate('_includes/forms/radioGroup', [
             'describedBy' => $this->describedBy,
             'name' => $this->handle,
-            'value' => $value,
-            'options' => $this->translatedOptions(),
+            'value' => $this->encodeValue($value),
+            'options' => $this->translatedOptions(true),
         ]);
     }
 

@@ -20,5 +20,5 @@ class RegisterCacheOptionsEvent extends Event
     /**
      * @var array List of registered cache options for the Clear Caches tool.
      */
-    public $options = [];
+    public array $options = [];
 }

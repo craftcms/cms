@@ -1,0 +1,69 @@
+{% set hasOuterContainer = hasOuterContainer ?? false %}
+{% set id = (id ?? "time#{random()}") ~ '-time' -%}
+{% set name = name ?? null -%}
+{% set value = value ?? null -%}
+{% set outputTzParam = outputTzParam ?? true %}
+{% set isMobile = craft.app.request.isMobileBrowser %}
+{% set labelId = labelId ?? null %}
+{% set labelledBy = labelledBy ?? null %}
+{% set formatLabelId = "#{id}-format" %}
+{% set isDateTime = isDateTime ?? false %}
+
+{% do view.registerAssetBundle('craft\\web\\assets\\timepicker\\TimepickerAsset') -%}
+
+{% set containerAttributes = {
+    class: ['timewrapper']|merge((class ?? [])|explodeClass),
+}|merge(containerAttributes ?? [], recursive=true) %}
+
+{%- if block('attr') is defined %}
+    {%- set containerAttributes = containerAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
+{% endif %}
+
+{% if not hasOuterContainer %}<div class="datetimewrapper">{% endif %}
+
+{% tag 'div' with containerAttributes %}
+    <span id="{{ formatLabelId }}" class="visually-hidden"><!-- TODO add human-readable format string -->HH:MM AM/PM</span>
+    {%- include "_includes/forms/text" with {
+        type: isMobile ? 'time' : 'text',
+        class: isMobile and not value ? 'empty-value' : false,
+        name: name ? "#{name}[time]" : null,
+        autocomplete: false,
+        size: 10,
+        placeholder: ' ',
+        value: value ? value|time(isMobile ? 'H:i' : 'short') : '',
+        labelledBy: [labelId, labelledBy, formatLabelId]|filter|join(' '),
+        inputAttributes: {
+            aria: {
+                label: isDateTime ? 'Time'|t('app') : false,
+            },
+        },
+    } -%}
+    <div data-icon="time"></div>
+    {%- if name and outputTzParam -%}
+        {{- hiddenInput("#{name}[timezone]", craft.app.getTimeZone()) -}}
+    {%- endif -%}
+{% endtag -%}
+
+{% if not hasOuterContainer %}</div>{% endif %}
+
+{%- if not isMobile -%}
+    {% set options = {
+        minTime: minTime ?? null,
+        maxTime: maxTime ?? null,
+        disableTimeRanges: disableTimeRanges ?? null,
+        step: minuteIncrement ?? null,
+        forceRoundTime: forceRoundTime ?? false,
+    }|filter %}
+
+    {#- include JSON_FORCE_OBJECT in the json_encode options -#}
+    {%- set jsonOptions = constant('JSON_HEX_TAG') b-or constant('JSON_HEX_AMP') b-or constant('JSON_HEX_QUOT') b-or constant('JSON_FORCE_OBJECT') -%}
+
+    {%- js -%}
+        var $timePicker = $('#{{ id|namespaceInputId|e('js') }}');
+        $timePicker.timepicker($.extend({{ options|json_encode(jsonOptions)|raw }}, Craft.timepickerOptions));
+
+        {%- if value and value.format is defined -%}
+            $timePicker.timepicker('setTime', {{ value.format('G') }}*3600 + {{ value.format('i') }}*60 + {{ value.format('s') }});
+        {%- endif -%}
+    {%- endjs -%}
+{%- endif -%}

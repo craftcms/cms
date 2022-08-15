@@ -26,7 +26,7 @@ abstract class AdminTable
         $lastPage = ceil($total / $limit);
         $from = ($page * $limit) - $limit;
         $to = $from + $limit;
-        $to = $to > $total ? $total : $to;
+        $to = min($to, $total);
         $from++;
 
         return [

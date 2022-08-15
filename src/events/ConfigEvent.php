@@ -18,24 +18,24 @@ use yii\base\Event;
 class ConfigEvent extends Event
 {
     /**
-     * @var string|null The config path being processed
+     * @var string The config path being processed
      */
-    public $path;
+    public string $path;
 
     /**
-     * @var array The old config item value
+     * @var mixed The old config item value
      */
-    public $oldValue = [];
+    public mixed $oldValue = null;
 
     /**
-     * @var array The new config item value
+     * @var mixed The new config item value
      */
-    public $newValue = [];
+    public mixed $newValue = null;
 
     /**
      * @var string[]|null Any parts of the path that were matched by `{uid}` tokens.
      * This wil be populated if the handler was registered using [[\craft\services\ProjectConfig::registerChangeEventHandler()]],
      * or one of its shortcut methods.
      */
-    public $tokenMatches;
+    public ?array $tokenMatches = null;
 }

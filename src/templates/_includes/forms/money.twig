@@ -1,0 +1,44 @@
+{% import '_includes/forms' as forms %}
+{% do view.registerAssetBundle("craft\\web\\assets\\money\\MoneyAsset") %}
+
+{% set id = id ?? "money#{random()}" -%}
+{% set decimals = decimals ?? 2 %}
+{% set name = name ?? null -%}
+{% set value = not (value ?? false) ? null : value -%}
+{% set formattingLocale = formattingLocale ?? craft.app.formattingLocale.id -%}
+{% set decimalSeparator = decimalSeparator ?? craft.app.formattingLocale.getNumberSymbol(constant('craft\\i18n\\Locale::SYMBOL_DECIMAL_SEPARATOR')) -%}
+{% set groupSeparator = groupSeparator ?? craft.app.formattingLocale.getNumberSymbol(constant('craft\\i18n\\Locale::SYMBOL_GROUPING_SEPARATOR')) -%}
+{% set currencyLabel = currencyLabel ?? null  %}
+{% set size = size ?? null %}
+
+{{ hiddenInput("#{name}[locale]", formattingLocale) }}
+
+<div class="money-container">
+    {% if currencyLabel and showCurrency ?? true %}
+        <div class="money-currency-label">
+            <span>{{ currencyLabel }}</span>
+        </div>
+    {% endif %}
+    {% include '_includes/forms/text' with {
+        inputAttributes: {
+            name: "#{name}[value]",
+        }
+    } %}
+    <div class="money-clear">
+        {{ forms.button({
+            attributes: {
+                title: 'Clear'|t('app'),
+                class: 'clear-btn hidden',
+                'aria-label': 'Clear'|t('app'),
+            }
+        }) }}
+    </div>
+</div>
+
+{% js %}
+new Craft.Money('{{ id|namespaceInputId }}', {
+    decimalSeparator: '{{ decimalSeparator }}',
+    groupSeparator: '{{ groupSeparator }}',
+    decimals: {{ decimals }},
+});
+{% endjs %}

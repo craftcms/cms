@@ -15,6 +15,7 @@ namespace craft\elements\actions;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.6.5
+ * @mixin Delete
  */
 interface DeleteActionInterface
 {
@@ -27,8 +28,6 @@ interface DeleteActionInterface
 
     /**
      * Instructs the action that the elements should be hard-deleted.
-     *
-     * @param void
      */
     public function setHardDelete(): void;
 }

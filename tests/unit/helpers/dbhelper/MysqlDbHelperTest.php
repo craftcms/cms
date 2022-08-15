@@ -12,7 +12,7 @@ use Craft;
 use craft\db\mysql\Schema as MysqlSchema;
 use craft\db\pgsql\Schema as PgsqlSchema;
 use craft\helpers\Db;
-use UnitTester;
+use craft\test\TestCase;
 use yii\base\Exception;
 use yii\base\NotSupportedException;
 
@@ -23,21 +23,15 @@ use yii\base\NotSupportedException;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class MysqlDbHelperTest extends Unit
+class MysqlDbHelperTest extends TestCase
 {
     /**
-     * @var UnitTester
-     */
-    protected $tester;
-
-    /**
      * @dataProvider sqlTypesDataProvider
-     *
-     * @param $type
-     * @param $supported
+     * @param string $type
+     * @param bool $supported
      * @throws NotSupportedException
      */
-    public function testTypeSupport($type, $supported)
+    public function testTypeSupport(string $type, bool $supported): void
     {
         $isSupported = Db::isTypeSupported($type);
         self::assertSame($supported, Db::isTypeSupported($type));
@@ -46,11 +40,10 @@ class MysqlDbHelperTest extends Unit
 
     /**
      * @dataProvider getTextualColumnStorageCapacityDataProvider
-     *
      * @param int|null|false $expected
      * @param string $columnType
      */
-    public function testGetTextualColumnStorageCapacity($expected, string $columnType)
+    public function testGetTextualColumnStorageCapacity(int|null|false $expected, string $columnType): void
     {
         self::assertSame($expected, Db::getTextualColumnStorageCapacity($columnType));
     }
@@ -67,26 +60,24 @@ class MysqlDbHelperTest extends Unit
 
     /**
      * @dataProvider parseParamDataProvider
-     *
      * @param mixed $expected
      * @param string $column
      * @param string|int|array $value
      * @param string $defaultOperator
      * @param bool $caseInsensitive
      */
-    public function testParseParam($expected, string $column, $value, string $defaultOperator = '=', bool $caseInsensitive = false)
+    public function testParseParam(mixed $expected, string $column, mixed $value, string $defaultOperator = '=', bool $caseInsensitive = false): void
     {
         self::assertSame($expected, Db::parseParam($column, $value, $defaultOperator, $caseInsensitive));
     }
 
     /**
      * @dataProvider getTextualColumnTypeByContentLengthDataProvider
-     *
      * @param string $expected
      * @param int $contentLength
      * @throws Exception
      */
-    public function testGetTextualColumnTypeByContentLength(string $expected, int $contentLength)
+    public function testGetTextualColumnTypeByContentLength(string $expected, int $contentLength): void
     {
         self::assertSame($expected, Db::getTextualColumnTypeByContentLength($contentLength));
     }
@@ -118,35 +109,35 @@ class MysqlDbHelperTest extends Unit
                         [
                             'or',
                             ['content_table' => null],
-                            ['content_table' => '']
+                            ['content_table' => ''],
                         ],
                     ],
                     [
                         '!=',
                         'content_table',
-                        'field_2'
-                    ]
+                        'field_2',
+                    ],
                 ],
-                'content_table', ':empty:, field_2', '!='
+                'content_table', ':empty:, field_2', '!=',
             ],
             [
-                ['or', ['foo' => null], ['foo' => '']], 'foo', ':empty:'
+                ['or', ['foo' => null], ['foo' => '']], 'foo', ':empty:',
             ],
             [
-                ['or', ['foo' => null], ['foo' => '']], 'foo', ':EMPTY:'
+                ['or', ['foo' => null], ['foo' => '']], 'foo', ':EMPTY:',
             ],
             [
-                ['not', ['or', ['foo' => null], ['foo' => '']]], 'foo', ':notempty:'
+                ['not', ['or', ['foo' => null], ['foo' => '']]], 'foo', ':notempty:',
             ],
             [
-                ['not', ['or', ['foo' => null], ['foo' => '']]], 'foo', ':NOTEMPTY:'
+                ['not', ['or', ['foo' => null], ['foo' => '']]], 'foo', ':NOTEMPTY:',
             ],
             [
-                ['not', ['or', ['foo' => null], ['foo' => '']]], 'foo', 'not :empty:'
+                ['not', ['or', ['foo' => null], ['foo' => '']]], 'foo', 'not :empty:',
             ],
             [
-                ['not', ['or', ['foo' => null], ['foo' => '']]], 'foo', 'NOT :EMPTY:'
-            ]
+                ['not', ['or', ['foo' => null], ['foo' => '']]], 'foo', 'NOT :EMPTY:',
+            ],
         ];
     }
 
@@ -175,7 +166,7 @@ class MysqlDbHelperTest extends Unit
     /**
      * @inheritdoc
      */
-    protected function _before()
+    protected function _before(): void
     {
         if (!Craft::$app->getDb()->getIsMysql()) {
             $this->markTestSkipped();

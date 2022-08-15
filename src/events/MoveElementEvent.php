@@ -16,7 +16,7 @@ namespace craft\events;
 class MoveElementEvent extends ElementEvent
 {
     /**
-     * @var int|null The ID of the structure the element is being moved within.
+     * @var int The ID of the structure the element is being moved within.
      */
-    public $structureId;
+    public int $structureId;
 }

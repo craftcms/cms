@@ -1,5 +1,6 @@
 .idea
 .env
+.php-cs-fixer.cache
 Source/.idea/*
 *.log
 *.bak
@@ -14,3 +15,4 @@ node_modules/
 vendor/
 /bower_components
 cpresources/*
+.ddev/

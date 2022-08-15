@@ -5,9 +5,8 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craftunit\gql;
+namespace crafttests\unit\gql;
 
-use Codeception\Test\Unit;
 use Craft;
 use craft\elements\Asset;
 use craft\elements\Category;
@@ -25,22 +24,24 @@ use craft\gql\handlers\RelatedTags;
 use craft\gql\handlers\RelatedUsers;
 use craft\models\GqlSchema;
 use craft\services\Gql;
+use craft\test\TestCase;
+use Exception;
 use GraphQL\Type\Definition\ResolveInfo;
 use GraphQL\Type\Definition\Type;
 use yii\base\Event;
+use yii\base\InvalidConfigException;
 
-class ArgumentHandlerTest extends Unit
+class ArgumentHandlerTest extends TestCase
 {
     /**
      * Test whether it's possible to modify fields
      *
      * @dataProvider integrationTestDataProvider
-     *
      * @param string $argumentString
      * @param array $expectedResult
-     * @throws \Exception
+     * @throws Exception
      */
-    public function testArgumentHandlerIntegration(string $argumentString, array $expectedResult)
+    public function testArgumentHandlerIntegration(string $argumentString, array $expectedResult): void
     {
         $gql = Craft::$app->getGql();
         $gql->flushCaches();
@@ -63,7 +64,7 @@ class ArgumentHandlerTest extends Unit
                     ksort($arguments);
                     // Encode as string, so we can pass a data structure as a string.
                     return json_encode($arguments);
-                }
+                },
             ];
         });
 
@@ -76,14 +77,14 @@ class ArgumentHandlerTest extends Unit
                 }
 
                 return $argumentList;
-            }
+            },
         ]);
 
         Event::on(ArgumentManager::class, ArgumentManager::EVENT_DEFINE_GQL_ARGUMENT_HANDLERS, function(RegisterGqlArgumentHandlersEvent $event) use ($handler) {
             $event->handlers['initial'] = $handler;
         });
 
-        $result = $gql->executeQuery(new GqlSchema(), "{integrationQuery ($argumentString)}");
+        $result = $gql->executeQuery(new GqlSchema(['id' => 1]), "{integrationQuery ($argumentString)}");
         $this->assertEquals($expectedResult, json_decode($result['data']['integrationQuery'], true));
     }
 
@@ -91,13 +92,12 @@ class ArgumentHandlerTest extends Unit
      * Test whether relation argument handlers return the right element query and format the `relatedTo` argument correctly.
      *
      * @dataProvider relationArgumentHandlerProvider
-     *
      * @param array $handlers
-     * @param $arguments
-     * @param $expectedRelatedTo
-     * @throws \yii\base\InvalidConfigException
+     * @param array $arguments
+     * @param array $expectedRelatedTo
+     * @throws InvalidConfigException
      */
-    public function testRelationArgumentHandlers(array $handlers, $arguments, $expectedRelatedTo): void
+    public function testRelationArgumentHandlers(array $handlers, array $arguments, array $expectedRelatedTo): void
     {
         $argumentManager = new ArgumentManager();
 
@@ -139,19 +139,19 @@ class ArgumentHandlerTest extends Unit
                 $handlers,
                 [
                     'relatedToEntries' => ['expected' => Entry::class, 'return' => [[3, 4]]],
-                    'relatedToAssets' => ['expected' => Asset::class, 'return' => [[9,10]]]
+                    'relatedToAssets' => ['expected' => Asset::class, 'return' => [[9, 10]]],
                 ],
                 [
                     'and',
                     ['element' => [3, 4]],
-                    ['element' => [9,10]]
+                    ['element' => [9, 10]],
                 ],
             ],
             [
                 $handlers,
                 [
                     'relatedToEntries' => ['expected' => Entry::class, 'return' => [[3], [4]]],
-                    'relatedTo' => [8, 9]
+                    'relatedTo' => [8, 9],
                 ],
                 [
                     'and',
@@ -164,7 +164,7 @@ class ArgumentHandlerTest extends Unit
                 $handlers,
                 [
                     'relatedToEntries' => ['expected' => Entry::class, 'return' => [[3, 4]]],
-                    'relatedTo' => ['and', 8, 9]
+                    'relatedTo' => ['and', 8, 9],
                 ],
                 [
                     'and',

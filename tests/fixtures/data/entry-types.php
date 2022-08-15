@@ -15,7 +15,7 @@ return [
         'titleFormat' => null,
         'sortOrder' => '1',
         'fieldLayoutType' => 'field_layout_with_matrix_and_normal_fields',
-        'uid' => 'entry-type-1000------------------uid'
+        'uid' => 'entry-type-1000------------------uid',
     ],
     [
         'id' => '1001',
@@ -26,7 +26,7 @@ return [
         'titleFormat' => null,
         'sortOrder' => '2',
         'dateDeleted' => (new DateTime('now'))->sub(new DateInterval('P3M5D'))->format('Y-m-d'),
-        'uid' => 'entry-type-1001------------------uid'
+        'uid' => 'entry-type-1001------------------uid',
     ],
     [
         'id' => '1002',
@@ -37,7 +37,7 @@ return [
         'titleFormat' => null,
         'sortOrder' => '3',
         'dateDeleted' => (new DateTime('now'))->sub(new DateInterval('P3M5D'))->format('Y-m-d'),
-        'uid' => 'entry-type-1002------------------uid'
+        'uid' => 'entry-type-1002------------------uid',
     ],
     [
         'id' => '1003',
@@ -47,7 +47,7 @@ return [
         'handle' => 'withUrls',
         'titleFormat' => null,
         'sortOrder' => '4',
-        'uid' => 'entry-type-1003------------------uid'
+        'uid' => 'entry-type-1003------------------uid',
     ],
     [
         'id' => '1004',
@@ -57,7 +57,7 @@ return [
         'handle' => 'withVersioning',
         'titleFormat' => null,
         'sortOrder' => '1',
-        'uid' => 'entry-type-1004------------------uid'
+        'uid' => 'entry-type-1004------------------uid',
     ],
     [
         'id' => '1005',
@@ -67,6 +67,6 @@ return [
         'handle' => 'single',
         'titleFormat' => null,
         'sortOrder' => '1',
-        'uid' => 'entry-type-1005------------------uid'
-    ]
+        'uid' => 'entry-type-1005------------------uid',
+    ],
 ];

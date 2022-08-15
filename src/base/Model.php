@@ -7,12 +7,17 @@
 
 namespace craft\base;
 
-use Craft;
+use Closure;
 use craft\events\DefineBehaviorsEvent;
 use craft\events\DefineFieldsEvent;
 use craft\events\DefineRulesEvent;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\StringHelper;
+use craft\helpers\Typecast;
+use DateTime;
+use ReflectionClass;
+use ReflectionNamedType;
+use ReflectionProperty;
 use yii\validators\Validator;
 
 /**
@@ -21,7 +26,7 @@ use yii\validators\Validator;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-abstract class Model extends \yii\base\Model
+abstract class Model extends \yii\base\Model implements ModelInterface
 {
     use ClonefixTrait;
 
@@ -29,48 +34,56 @@ abstract class Model extends \yii\base\Model
      * @event \yii\base\Event The event that is triggered after the model's init cycle
      * @see init()
      */
-    const EVENT_INIT = 'init';
+    public const EVENT_INIT = 'init';
 
     /**
      * @event DefineBehaviorsEvent The event that is triggered when defining the class behaviors
      * @see behaviors()
      */
-    const EVENT_DEFINE_BEHAVIORS = 'defineBehaviors';
+    public const EVENT_DEFINE_BEHAVIORS = 'defineBehaviors';
 
     /**
      * @event DefineRulesEvent The event that is triggered when defining the model rules
      * @see rules()
      * @since 3.1.0
      */
-    const EVENT_DEFINE_RULES = 'defineRules';
+    public const EVENT_DEFINE_RULES = 'defineRules';
 
     /**
-     * @event DefineRulesEvent The event that is triggered when defining the arrayable fields
+     * @event DefineFieldsEvent The event that is triggered when defining the arrayable fields
      * @see fields()
      * @since 3.5.0
      */
-    const EVENT_DEFINE_FIELDS = 'defineFields';
+    public const EVENT_DEFINE_FIELDS = 'defineFields';
 
     /**
-     * @event DefineRulesEvent The event that is triggered when defining the extra arrayable fields
+     * @event DefineFieldsEvent The event that is triggered when defining the extra arrayable fields
      * @see extraFields()
      * @since 3.5.0
      */
-    const EVENT_DEFINE_EXTRA_FIELDS = 'defineExtraFields';
+    public const EVENT_DEFINE_EXTRA_FIELDS = 'defineExtraFields';
+
+    public function __construct($config = [])
+    {
+        // Typecast the properties
+        Typecast::properties(static::class, $config);
+
+        // Normalize the DateTime attributes
+        foreach ($this->datetimeAttributes() as $attribute) {
+            if (array_key_exists($attribute, $config) && $config[$attribute] !== null) {
+                $config[$attribute] = DateTimeHelper::toDateTime($config[$attribute]);
+            }
+        }
+
+        parent::__construct($config);
+    }
 
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
-
-        // Normalize the DateTime attributes
-        foreach ($this->datetimeAttributes() as $attribute) {
-            if ($this->$attribute !== null) {
-                $this->$attribute = DateTimeHelper::toDateTime($this->$attribute);
-            }
-        }
 
         if ($this->hasEventHandlers(self::EVENT_INIT)) {
             $this->trigger(self::EVENT_INIT);
@@ -80,18 +93,23 @@ abstract class Model extends \yii\base\Model
     /**
      * @inheritdoc
      */
-    public function behaviors()
+    public function behaviors(): array
     {
-        // Fire a 'defineBehaviors' event
-        $event = new DefineBehaviorsEvent();
+        $behaviors = $this->defineBehaviors();
+        
+        // Give plugins a chance to modify them
+        $event = new DefineBehaviorsEvent([
+            'behaviors' => $behaviors,
+        ]);
         $this->trigger(self::EVENT_DEFINE_BEHAVIORS, $event);
+
         return $event->behaviors;
     }
 
     /**
      * @inheritdoc
      */
-    public function rules()
+    public function rules(): array
     {
         $rules = $this->defineRules();
 
@@ -111,11 +129,11 @@ abstract class Model extends \yii\base\Model
     /**
      * Normalizes a validation rule.
      *
-     * @param Validator|array $rule
+     * @param array|Validator $rule
      */
-    private function _normalizeRule(&$rule)
+    private function _normalizeRule(array|Validator &$rule): void
     {
-        if (is_array($rule) && isset($rule[1]) && $rule[1] instanceof \Closure) {
+        if (is_array($rule) && isset($rule[1]) && $rule[1] instanceof Closure) {
             // Wrap the closure in another one, so InlineValidator doesn’t bind it to the model
             $method = $rule[1];
             $rule[1] = function($attribute, $params, $validator, $current) use ($method) {
@@ -124,6 +142,22 @@ abstract class Model extends \yii\base\Model
         }
     }
 
+    /**
+     * Returns the behaviors to attach to this class.
+     *
+     * See [[behaviors()]] for details about what should be returned.
+     *
+     * Models should override this method instead of [[behaviors()]] so [[EVENT_DEFINE_BEHAVIORS]] handlers can modify the
+     * class-defined behaviors.
+     *
+     * @return array
+     * @since 4.0.0
+     */
+    protected function defineBehaviors(): array
+    {
+        return [];
+    }
+    
     /**
      * Returns the validation rules for attributes.
      *
@@ -146,6 +180,7 @@ abstract class Model extends \yii\base\Model
      * @return string[]
      * @see init()
      * @see fields()
+     * @deprecated in 4.0.0. Use [[\DateTime]] type declarations instead.
      */
     public function datetimeAttributes(): array
     {
@@ -168,13 +203,45 @@ abstract class Model extends \yii\base\Model
 
     /**
      * @inheritdoc
+     * @since 4.0.0
      */
-    public function fields()
+    public function setAttributes($values, $safeOnly = true): void
+    {
+        // Typecast them
+        Typecast::properties(static::class, $values);
+
+        // Normalize the date/time attributes
+        foreach ($this->datetimeAttributes() as $name) {
+            if (isset($values[$name])) {
+                $values[$name] = DateTimeHelper::toDateTime($values[$name]) ?: null;
+            }
+        }
+
+        parent::setAttributes($values, $safeOnly);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function fields(): array
     {
         $fields = parent::fields();
 
+        $datetimeAttributes = [];
+        foreach ((new ReflectionClass($this))->getProperties(ReflectionProperty::IS_PUBLIC) as $property) {
+            if (!$property->isStatic()) {
+                $type = $property->getType();
+                if ($type instanceof ReflectionNamedType && $type->getName() === DateTime::class) {
+                    $datetimeAttributes[] = $property->getName();
+                }
+            }
+        }
+
+        // Include datetimeAttributes() for now
+        $datetimeAttributes = array_unique(array_merge($datetimeAttributes, $this->datetimeAttributes()));
+
         // Have all DateTime attributes converted to ISO-8601 strings
-        foreach ($this->datetimeAttributes() as $attribute) {
+        foreach ($datetimeAttributes as $attribute) {
             $fields[$attribute] = function($model, $attribute) {
                 if (!empty($model->$attribute)) {
                     return DateTimeHelper::toIso8601($model->$attribute);
@@ -194,7 +261,7 @@ abstract class Model extends \yii\base\Model
     /**
      * @inheritdoc
      */
-    public function extraFields()
+    public function extraFields(): array
     {
         $fields = parent::extraFields();
         $event = new DefineFieldsEvent([
@@ -210,7 +277,7 @@ abstract class Model extends \yii\base\Model
      * @param \yii\base\Model $model The other model
      * @param string $attrPrefix The prefix that should be added to error attributes when adding them to this model
      */
-    public function addModelErrors(\yii\base\Model $model, string $attrPrefix = '')
+    public function addModelErrors(\yii\base\Model $model, string $attrPrefix = ''): void
     {
         if ($attrPrefix !== '') {
             $attrPrefix = rtrim($attrPrefix, '.') . '.';
@@ -226,7 +293,7 @@ abstract class Model extends \yii\base\Model
     /**
      * @inheritdoc
      */
-    public function hasErrors($attribute = null)
+    public function hasErrors($attribute = null): bool
     {
         $includeNested = $attribute !== null && StringHelper::endsWith($attribute, '.*');
 
@@ -240,32 +307,15 @@ abstract class Model extends \yii\base\Model
 
         if ($includeNested) {
             foreach ($this->getErrors() as $attr => $errors) {
-                if (strpos($attr, $attribute . '.') === 0) {
+                if (str_starts_with($attr, $attribute . '.')) {
                     return true;
                 }
-                if (strpos($attr, $attribute . '[') === 0) {
+                if (str_starts_with($attr, $attribute . '[')) {
                     return true;
                 }
             }
         }
 
         return false;
-    }
-
-    // Deprecated Methods
-    // -------------------------------------------------------------------------
-
-    /**
-     * Returns the first error of the specified attribute.
-     *
-     * @param string $attribute The attribute name.
-     * @return string|null The error message, or null if there are no errors.
-     * @deprecated in 3.0.0. Use [[getFirstError()]] instead.
-     */
-    public function getError(string $attribute)
-    {
-        Craft::$app->getDeprecator()->log('Model::getError()', '`getError()` has been deprecated. Use `getFirstError()` instead.');
-
-        return $this->getFirstError($attribute);
     }
 }

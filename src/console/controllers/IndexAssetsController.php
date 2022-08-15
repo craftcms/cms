@@ -8,13 +8,18 @@
 namespace craft\console\controllers;
 
 use Craft;
-use craft\base\VolumeInterface;
 use craft\console\Controller;
 use craft\db\Table;
+use craft\elements\Asset;
 use craft\errors\AssetDisallowedExtensionException;
+use craft\errors\AssetNotIndexableException;
+use craft\errors\FsObjectNotFoundException;
 use craft\errors\MissingAssetException;
-use craft\errors\VolumeObjectNotFoundException;
+use craft\errors\MissingVolumeFolderException;
 use craft\helpers\Db;
+use craft\models\FsListing;
+use craft\models\Volume;
+use Throwable;
 use yii\console\ExitCode;
 use yii\db\Exception;
 use yii\helpers\Console;
@@ -35,22 +40,22 @@ class IndexAssetsController extends Controller
     /**
      * @var bool Whether remote-stored images should be locally cached in the process.
      */
-    public $cacheRemoteImages = false;
+    public bool $cacheRemoteImages = false;
 
     /**
      * @var bool Whether to auto-create new asset records when missing.
      */
-    public $createMissingAssets = true;
+    public bool $createMissingAssets = true;
 
     /**
      * @var bool Whether to delete all the asset records that have their files missing.
      */
-    public $deleteMissingAssets = false;
+    public bool $deleteMissingAssets = false;
 
     /**
      * @inheritdoc
      */
-    public function options($actionID)
+    public function options($actionID): array
     {
         $options = parent::options($actionID);
         $options[] = 'cacheRemoteImages';
@@ -77,19 +82,19 @@ class IndexAssetsController extends Controller
     }
 
     /**
-     * Re-indexes assets from the given volume handle ($startAt = 0).
+     * Re-indexes assets from the given volume handle.
      *
      * @param string $handle The handle of the volume to index.
-     * It is also possible to provide a volume sub-path to index, e.g. `./craft index-assets/one volume-handle/path/to/folder`.
-     * @param int $startAt
+     * You can optionally provide a volume sub-path, e.g. `php craft index-assets/one volume-handle/path/to/folder`.
+     * @param int $startAt Index of the asset to start with, which defaults to `0`.
      * @return int
      * @since 3.1.4
      */
-    public function actionOne($handle, $startAt = 0): int
+    public function actionOne(string $handle, int $startAt = 0): int
     {
         $path = '';
 
-        if (strpos($handle, '/') !== false) {
+        if (str_contains($handle, '/')) {
             $parts = explode('/', $handle);
             $handle = array_shift($parts);
             $path = implode('/', $parts);
@@ -106,61 +111,80 @@ class IndexAssetsController extends Controller
     }
 
     /**
+     * Removes all CLI indexing sessions.
+     *
+     * @return int
+     * @since 4.0.0
+     */
+    public function actionCleanup(): int
+    {
+        $total = Craft::$app->getAssetIndexer()->removeCliIndexingSessions();
+
+        $this->stdout('Removed ' . $total . ' CLI indexing session' . ($total !== 1 ? 's' : '') . PHP_EOL, Console::FG_GREEN);
+
+        return ExitCode::OK;
+    }
+
+    /**
      * Indexes the assets in the given volumes.
      *
-     * @param VolumeInterface[] $volumes
+     * @param Volume[] $volumes
      * @param string $path the subfolder path
      * @param int $startAt
      * @return int
      * @throws MissingAssetException
-     * @throws VolumeObjectNotFoundException
+     * @throws FsObjectNotFoundException
      * @throws Exception
      */
-    private function _indexAssets(array $volumes, string $path = '', $startAt = 0): int
+    private function _indexAssets(array $volumes, string $path = '', int $startAt = 0): int
     {
         $assetIndexer = Craft::$app->getAssetIndexer();
-        $sessionId = $assetIndexer->getIndexingSessionId();
 
         $this->stdout(PHP_EOL);
+
+        $session = $assetIndexer->createIndexingSession($volumes, $this->cacheRemoteImages, true);
 
         foreach ($volumes as $volume) {
             $this->stdout('Indexing assets in ', Console::FG_YELLOW);
             $this->stdout($volume->name, Console::FG_CYAN);
             $this->stdout(' ...' . PHP_EOL, Console::FG_YELLOW);
-            $fileList = array_filter($assetIndexer->getIndexListOnVolume($volume, $path), function($entry) {
-                return $entry['type'] !== 'dir';
-            });
-
-            $startAt = (is_numeric($startAt) && $startAt < count($fileList)) ? (int)$startAt : 0;
+            $fileList = $assetIndexer->getIndexListOnVolume($volume, $path);
 
             $index = 0;
             /** @var MissingAssetException[] $missingRecords */
             $missingRecords = [];
             $missingRecordsByFilename = [];
 
+            /** @var FsListing $item */
             foreach ($fileList as $item) {
                 $count = $index;
                 $this->stdout('    > #' . $count . ': ');
-                $this->stdout($item['path'], Console::FG_CYAN);
+                $this->stdout($item->getUri() . ($item->getIsDir() ? '/' : ''), Console::FG_CYAN);
                 $this->stdout(' ... ');
                 if ($index++ < $startAt) {
                     $this->stdout('skipped' . PHP_EOL, Console::FG_YELLOW);
                     continue;
                 }
+
                 try {
-                    $assetIndexer->indexFile($volume, $item['path'], $sessionId, $this->cacheRemoteImages, $this->createMissingAssets);
+                    if ($item->getIsDir()) {
+                        $assetIndexer->indexFolderByListing((int)$volume->id, $item, $session->id, $this->createMissingAssets);
+                    } else {
+                        $assetIndexer->indexFileByListing((int)$volume->id, $item, $session->id, $this->cacheRemoteImages, $this->createMissingAssets);
+                    }
                 } catch (MissingAssetException $e) {
                     $this->stdout('missing' . PHP_EOL, Console::FG_YELLOW);
                     $missingRecords[] = $e;
                     $missingRecordsByFilename[$e->filename][] = $e;
                     continue;
-                } catch (AssetDisallowedExtensionException $e) {
+                } catch (MissingVolumeFolderException $e) {
+                    $this->stdout('missing' . PHP_EOL, Console::FG_YELLOW);
+                    $missingRecords[] = $e;
+                    continue;
+                } catch (AssetDisallowedExtensionException|AssetNotIndexableException $e) {
                     $this->stdout('skipped: ' . $e->getMessage() . PHP_EOL, Console::FG_YELLOW);
                     continue;
-                } catch (VolumeObjectNotFoundException $e) {
-                    $this->stdout('skipped: ' . $e->getMessage() . PHP_EOL, Console::FG_RED);
-                    continue;
-                } catch (\Throwable $e) {
+                } catch (Throwable $e) {
                     $this->stdout('error: ' . $e->getMessage() . PHP_EOL . PHP_EOL, Console::FG_RED);
                     Craft::$app->getErrorHandler()->logException($e);
                     return ExitCode::UNSPECIFIED_ERROR;
@@ -175,23 +199,28 @@ class IndexAssetsController extends Controller
 
             if (!$this->createMissingAssets && !empty($missingRecords)) {
                 $totalMissing = count($missingRecords);
-                $this->stdout(($totalMissing === 1 ? 'One file is missing its record:' : "{$totalMissing} files are missing their records:") . PHP_EOL, Console::FG_YELLOW);
+                $this->stdout(($totalMissing === 1 ? 'One record is missing:' : "$totalMissing records are missing:") . PHP_EOL, Console::FG_YELLOW);
                 foreach ($missingRecords as $e) {
-                    $this->stdout("- {$e->volume->name}/{$e->indexEntry->uri}" . PHP_EOL);
+                    $this->stdout("- {$e->volume->name}/{$e->indexEntry->uri}" . ($e instanceof MissingVolumeFolderException ? '/' : '') . PHP_EOL);
                 }
                 $this->stdout(PHP_EOL);
             }
         }
 
-        $missingFiles = $assetIndexer->getMissingFiles($sessionId);
+        // Manually close the indexing session.
+        $session->actionRequired = true;
+        $missingEntries = $assetIndexer->getMissingEntriesForSession($session);
+        $missingFiles = $missingEntries['files'];
+        $missingFolders = $missingEntries['folders'];
+
         $maybes = false;
 
         if (!empty($missingFiles)) {
             $totalMissing = count($missingFiles);
-            $this->stdout(($totalMissing === 1 ? 'One recorded asset is missing its file:' : "{$totalMissing} recorded assets are missing their files:") . PHP_EOL, Console::FG_YELLOW);
-            foreach ($missingFiles as $assetId => $missingPath) {
-                $this->stdout("- {$missingPath} ({$assetId})");
-                $filename = basename($missingPath);
+            $this->stdout(($totalMissing === 1 ? 'One recorded asset is missing its file:' : "$totalMissing recorded assets are missing their files:") . PHP_EOL, Console::FG_YELLOW);
+            foreach ($missingFiles as $assetId => $filePath) {
+                $this->stdout("- $filePath ($assetId)");
+                $filename = basename($filePath);
                 if (isset($missingRecordsByFilename[$filename])) {
                     $maybes = true;
                     $maybePaths = [];
@@ -206,20 +235,19 @@ class IndexAssetsController extends Controller
             $this->stdout(PHP_EOL);
         }
 
-
         $remainingMissingFiles = $missingFiles;
 
-        if ($maybes && $this->confirm('Fix asset locations?')) {
-            foreach ($missingFiles as $assetId => $path) {
+        if ($maybes && $this->interactive && $this->confirm('Fix asset locations?')) {
+            foreach ($missingFiles as $assetId => $filePath) {
                 unset($remainingMissingFiles[$assetId]);
-                $filename = basename($path);
+                $filename = basename($filePath);
                 if (isset($missingRecordsByFilename[$filename])) {
-                    $e = $this->_chooseMissingRecord($path, $missingRecordsByFilename[$filename]);
+                    $e = $this->_chooseMissingRecord($filePath, $missingRecordsByFilename[$filename]);
                     if (!$e) {
-                        $this->stdout("Skipping asset {$assetId}" . PHP_EOL);
+                        $this->stdout("Skipping asset $assetId" . PHP_EOL);
                         continue;
                     }
-                    $this->stdout("Relocating asset {$assetId} to {$e->volume->name}/{$e->indexEntry->uri} ... ");
+                    $this->stdout("Relocating asset $assetId to {$e->volume->name}/{$e->indexEntry->uri} ... ");
                     Db::update(Table::ASSETS, [
                         'volumeId' => $e->volume->id,
                         'folderId' => $e->folder->id,
@@ -236,17 +264,31 @@ class IndexAssetsController extends Controller
         }
 
         if (!empty($remainingMissingFiles) && $this->deleteMissingAssets) {
+            $assetIds = array_keys($remainingMissingFiles);
             $totalMissingFiles = count($remainingMissingFiles);
             $this->stdout('Deleting the' . ($totalMissingFiles > 1 ? ' ' . $totalMissingFiles : '') . ' missing asset record' . ($totalMissingFiles > 1 ? 's' : '') . ' ... ');
 
-            Db::delete(Table::ASSETS, [
-                'id' => array_keys($remainingMissingFiles),
-            ]);
+            /** @var Asset[] $assets */
+            $assets = Asset::find()->id($assetIds)->all();
+            foreach ($assets as $asset) {
+                Craft::$app->getImageTransforms()->deleteCreatedTransformsForAsset($asset);
+                $asset->keepFileOnDelete = true;
+                Craft::$app->getElements()->deleteElement($asset);
+            }
 
             $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
         }
 
-        $assetIndexer->deleteStaleIndexingData();
+        if (!empty($missingFolders) && $this->deleteMissingAssets) {
+            $totalMissingFolders = count($missingFolders);
+            $this->stdout('Deleting the' . ($totalMissingFolders > 1 ? ' ' . $totalMissingFolders : '') . ' missing folder record' . ($totalMissingFolders > 1 ? 's' : '') . ' ... ');
+
+            Craft::$app->getAssets()->deleteFoldersByIds(array_keys($missingFolders), false);
+
+            $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
+        }
+
+        $assetIndexer->stopIndexingSession($session);
 
         return ExitCode::OK;
     }
@@ -256,7 +298,7 @@ class IndexAssetsController extends Controller
      * @param MissingAssetException[] $missingRecords
      * @return MissingAssetException|null
      */
-    private function _chooseMissingRecord(string $path, array $missingRecords)
+    private function _chooseMissingRecord(string $path, array $missingRecords): ?MissingAssetException
     {
         if (count($missingRecords) === 1) {
             // Only one asset with the same name. Probably safe to just go with that.
@@ -272,7 +314,7 @@ class IndexAssetsController extends Controller
             $this->stdout("{$e->volume->name}/{$e->indexEntry->uri}" . PHP_EOL);
         }
 
-        $selection = $this->prompt('>', [
+        $selection = (int)$this->prompt('>', [
             'validator' => function($input) use ($missingRecords) {
                 return !$input || (is_numeric($input) && isset($missingRecords[$input - 1]));
             },

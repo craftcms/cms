@@ -12,17 +12,18 @@ export default Base.extend(
     $trigger: null,
     $container: null,
     $alignmentElement: null,
-    $wrapper: null,
+    $nextFocusableElement: null,
 
-    _windowWidth: null,
-    _windowHeight: null,
-    _windowScrollLeft: null,
-    _windowScrollTop: null,
+    _viewportWidth: null,
+    _viewportHeight: null,
+    _viewportScrollLeft: null,
+    _viewportScrollTop: null,
 
-    _wrapperElementOffset: null,
     _alignmentElementOffset: null,
-    _triggerWidth: null,
-    _triggerHeight: null,
+    _alignmentElementWidth: null,
+    _alignmentElementHeight: null,
+    _alignmentElementOffsetRight: null,
+    _alignmentElementOffsetBottom: null,
 
     _menuWidth: null,
     _menuHeight: null,
@@ -34,16 +35,15 @@ export default Base.extend(
       this.setSettings(settings, Garnish.DisclosureMenu.defaults);
 
       this.$trigger = $(trigger);
-      var triggerId = this.$trigger.attr('aria-controls');
-      this.$container = $("#" + triggerId);
-
-      if (!this.$container) return; /* Exit if no disclosure container is found */
 
       // Is this already a disclosure button?
       if (this.$trigger.data('trigger')) {
         console.warn('Double-instantiating a disclosure menu on an element');
-        this.$trigger.data('trigger').destroy();
+        return;
       }
+
+      var triggerId = this.$trigger.attr('aria-controls');
+      this.$container = $('#' + triggerId);
 
       this.$trigger.data('trigger', this);
 
@@ -58,32 +58,43 @@ export default Base.extend(
       // Capture additional alignment element
       var alignmentSelector = this.$container.data('align-to');
       if (alignmentSelector) {
-        this.$alignmentElement = $(alignmentSelector);
+        this.$alignmentElement = this.$trigger.find(alignmentSelector).first();
       } else {
         this.$alignmentElement = this.$trigger;
       }
 
-      var wrapper = this.$container.closest('[data-wrapper]');
-      if (wrapper) {
-        this.$wrapper = wrapper;
-      }
-
+      this.$container.appendTo(Garnish.$bod);
       this.addDisclosureMenuEventListeners();
     },
 
-    addDisclosureMenuEventListeners: function() {
-      this.addListener(this.$trigger, 'click', function() {
+    addDisclosureMenuEventListeners: function () {
+      this.addListener(this.$trigger, 'click', () => {
         this.handleTriggerClick();
       });
 
-      this.addListener(this.$container, 'keydown', function(event) {
+      this.addListener(this.$container, 'keydown', function (event) {
         this.handleKeypress(event);
       });
 
-      this.addListener(Garnish.$doc, 'mousedown', this.handleMousedown)
+      this.addListener(Garnish.$doc, 'mousedown', this.handleMousedown);
+
+      // When the menu is expanded, tabbing on the trigger should move focus into it
+      this.addListener(this.$trigger, 'keydown', (ev) => {
+        if (
+          ev.keyCode === Garnish.TAB_KEY &&
+          !ev.shiftKey &&
+          this.isExpanded()
+        ) {
+          const $focusableElement = this.$container.find(':focusable:first');
+          if ($focusableElement.length) {
+            ev.preventDefault();
+            $focusableElement.focus();
+          }
+        }
+      });
     },
 
-    focusElement: function(direction) {
+    focusElement: function (direction) {
       var currentFocus = $(':focus');
 
       var focusable = this.$container.find(':focusable');
@@ -106,7 +117,8 @@ export default Base.extend(
     handleMousedown: function (event) {
       var newTarget = event.target;
       var triggerButton = $(newTarget).closest('[data-disclosure-trigger]');
-      var newTargetIsInsideDisclosure = this.$container.has(newTarget).length > 0;
+      var newTargetIsInsideDisclosure =
+        this.$container.has(newTarget).length > 0;
 
       // If click target matches trigger element or disclosure child, do nothing
       if ($(triggerButton).is(this.$trigger) || newTargetIsInsideDisclosure) {
@@ -116,7 +128,7 @@ export default Base.extend(
       this.hide();
     },
 
-    handleKeypress: function(event) {
+    handleKeypress: function (event) {
       var keyCode = event.keyCode;
 
       switch (keyCode) {
@@ -130,7 +142,21 @@ export default Base.extend(
           event.preventDefault();
           this.focusElement('prev');
           break;
-        default:
+        case Garnish.TAB_KEY:
+          const $focusableElements = this.$container.find(':focusable');
+          const index = $focusableElements.index(event.target);
+
+          if (index === 0 && event.shiftKey) {
+            event.preventDefault();
+            this.$trigger.focus();
+          } else if (
+            index === $focusableElements.length - 1 &&
+            !event.shiftKey &&
+            this.$nextFocusableElement
+          ) {
+            event.preventDefault();
+            this.$nextFocusableElement.focus();
+          }
           break;
       }
     },
@@ -141,7 +167,7 @@ export default Base.extend(
       return isExpanded === 'true';
     },
 
-    handleTriggerClick: function() {
+    handleTriggerClick: function () {
       if (!this.isExpanded()) {
         this.show();
       } else {
@@ -153,6 +179,9 @@ export default Base.extend(
       if (this.isExpanded()) {
         return;
       }
+
+      // Move the menu to the end of the DOM
+      this.$container.appendTo(Garnish.$bod);
 
       this.setContainerPosition();
       this.addListener(
@@ -167,7 +196,6 @@ export default Base.extend(
         display: 'block',
       });
 
-
       // Set ARIA attribute for expanded
       this.$trigger.attr('aria-expanded', 'true');
 
@@ -180,11 +208,31 @@ export default Base.extend(
         this.$container.focus();
       }
 
+      // Find the next focusable element in the DOM after the trigger.
+      // Shift-tabbing on it should take focus back into the container.
+      const $focusableElements = Garnish.$bod.find(':focusable');
+      const triggerIndex = $focusableElements.index(this.$trigger[0]);
+      if (triggerIndex !== -1 && $focusableElements.length > triggerIndex + 1) {
+        this.$nextFocusableElement = $focusableElements.eq(triggerIndex + 1);
+        this.addListener(this.$nextFocusableElement, 'keydown', (ev) => {
+          if (ev.keyCode === Garnish.TAB_KEY && ev.shiftKey) {
+            const $focusableElement = this.$container.find(':focusable:last');
+            if ($focusableElement.length) {
+              ev.preventDefault();
+              $focusableElement.focus();
+            }
+          }
+        });
+      }
+
       this.trigger('show');
       Garnish.uiLayerManager.addLayer(this.$container);
-      Garnish.uiLayerManager.registerShortcut(Garnish.ESC_KEY, function() {
-        this.hide();
-      }.bind(this));
+      Garnish.uiLayerManager.registerShortcut(
+        Garnish.ESC_KEY,
+        function () {
+          this.hide();
+        }.bind(this)
+      );
     },
 
     hide: function () {
@@ -192,10 +240,7 @@ export default Base.extend(
         return;
       }
 
-      this.$container.velocity(
-        'fadeOut',
-        { duration: Garnish.FX_DURATION }
-      );
+      this.$container.velocity('fadeOut', {duration: Garnish.FX_DURATION});
 
       this.$trigger.attr('aria-expanded', 'false');
 
@@ -203,32 +248,38 @@ export default Base.extend(
         this.$trigger.focus();
       }
 
+      if (this.$nextFocusableElement) {
+        this.removeListener(this.$nextFocusableElement, 'keydown');
+        this.$nextFocusableElement = null;
+      }
+
       this.trigger('hide');
       Garnish.uiLayerManager.removeLayer();
     },
 
-    focusIsInMenu: function() {
+    focusIsInMenu: function () {
       const $focusedEl = Garnish.getFocusedElement();
-
-      return $.contains(this.$container, $focusedEl);
+      return $focusedEl.length && $.contains(this.$container[0], $focusedEl[0]);
     },
 
     setContainerPosition: function () {
-      this._windowWidth = Garnish.$win.width();
-      this._windowHeight = Garnish.$win.height();
-      this._windowScrollLeft = Garnish.$win.scrollLeft();
-      this._windowScrollTop = Garnish.$win.scrollTop();
+      this._viewportWidth = Garnish.$win.width();
+      this._viewportHeight = Garnish.$win.height();
+      this._viewportScrollLeft = Garnish.$win.scrollLeft();
+      this._viewportScrollTop = Garnish.$win.scrollTop();
 
-      this._alignmentElementOffset = this.$alignmentElement[0].getBoundingClientRect();
-
-      this._wrapperElementOffset = this.$wrapper[0].getBoundingClientRect();
-
-      this._triggerWidth = this.$trigger.outerWidth();
+      this._alignmentElementOffset = this.$alignmentElement.offset();
+      this._alignmentElementWidth = this.$alignmentElement.outerWidth();
+      this._alignmentElementHeight = this.$alignmentElement.outerHeight();
+      this._alignmentElementOffsetRight =
+        this._alignmentElementOffset.left + this._alignmentElementHeight;
+      this._alignmentElementOffsetBottom =
+        this._alignmentElementOffset.top + this._alignmentElementHeight;
 
       this.$container.css('minWidth', 0);
       this.$container.css(
         'minWidth',
-        this._triggerWidth -
+        this._alignmentElementWidth -
           (this.$container.outerWidth() - this.$container.width())
       );
 
@@ -236,27 +287,29 @@ export default Base.extend(
       this._menuHeight = this.$container.outerHeight();
 
       // Is there room for the menu below the trigger?
-      var topClearance = this._alignmentElementOffset.top,
-        bottomClearance = this._windowHeight - this._alignmentElementOffset.bottom;
+      var topClearance =
+          this._alignmentElementOffset.top - this._viewportScrollTop,
+        bottomClearance =
+          this._viewportHeight +
+          this._viewportScrollTop -
+          this._alignmentElementOffsetBottom;
 
-      // Find top/bottom offset relative to wrapper element
-      var topAdjustment = this._alignmentElementOffset.top - this._wrapperElementOffset.top;
-      var bottomAdjustment = this._alignmentElementOffset.bottom - this._wrapperElementOffset.bottom;
-
-      var bottomClearanceExists =
+      if (
         bottomClearance >= this._menuHeight ||
-        (topClearance < this._menuHeight && bottomClearance >= topClearance);
-
-      if (bottomClearanceExists) {
+        (topClearance < this._menuHeight && bottomClearance >= topClearance)
+      ) {
         this.$container.css({
-          top: 'calc(100% + ' + bottomAdjustment + 'px)',
-          bottom: 'unset',
+          top: this._alignmentElementOffsetBottom,
           maxHeight: bottomClearance - this.settings.windowSpacing,
         });
       } else {
         this.$container.css({
-          bottom: 'calc(100% - ' + topAdjustment + 'px)',
-          top: 'unset',
+          top:
+            this._alignmentElementOffset.top -
+            Math.min(
+              this._menuHeight,
+              topClearance - this.settings.windowSpacing
+            ),
           maxHeight: topClearance - this.settings.windowSpacing,
         });
       }
@@ -273,10 +326,10 @@ export default Base.extend(
       } else {
         // Figure out which options are actually possible
         var rightClearance =
-            this._windowWidth +
-            this._windowScrollLeft -
+            this._viewportWidth +
+            this._viewportScrollLeft -
             (this._alignmentElementOffset.left + this._menuWidth),
-          leftClearance = this._alignmentElementOffset.right - this._menuWidth;
+          leftClearance = this._alignmentElementOffsetRight - this._menuWidth;
 
         if ((align === 'right' && leftClearance >= 0) || rightClearance < 0) {
           this._alignRight();
@@ -285,14 +338,15 @@ export default Base.extend(
         }
       }
 
-      delete this._windowWidth;
-      delete this._windowHeight;
-      delete this._windowScrollLeft;
-      delete this._windowScrollTop;
-      delete this._wrapperElementOffset;
+      delete this._viewportWidth;
+      delete this._viewportHeight;
+      delete this._viewportScrollLeft;
+      delete this._viewportScrollTop;
       delete this._alignmentElementOffset;
-      delete this._triggerWidth;
-      delete this._triggerHeight;
+      delete this._alignmentElementWidth;
+      delete this._alignmentElementHeight;
+      delete this._alignmentElementOffsetRight;
+      delete this._alignmentElementOffsetBottom;
       delete this._menuWidth;
       delete this._menuHeight;
     },
@@ -300,7 +354,7 @@ export default Base.extend(
     /**
      * Destroy
      */
-    destroy: function() {
+    destroy: function () {
       this.$trigger.removeData('trigger');
       this.removeListener(this.$trigger, 'click');
       this.removeListener(this.$container, 'keydown');
@@ -308,28 +362,33 @@ export default Base.extend(
     },
 
     _alignLeft: function () {
-      var leftAdjustment = this._alignmentElementOffset.left - this._wrapperElementOffset.left;
-
       this.$container.css({
-        right: 'unset',
-        left: leftAdjustment + 'px',
+        left: this._alignmentElementOffset.left,
+        right: 'auto',
       });
     },
 
     _alignRight: function () {
-      var rightAdjustment = this._alignmentElementOffset.right - this._wrapperElementOffset.right;
-
       this.$container.css({
-        left: 'unset',
-        right: - rightAdjustment + 'px',
+        right:
+          this._viewportWidth -
+          (this._alignmentElementOffset.left + this._alignmentElementWidth),
+        left: 'auto',
       });
     },
 
     _alignCenter: function () {
-      var left = Math.round(this._triggerWidth / 2 - this._menuWidth / 2);
-      var leftAdjustment = this._alignmentElementOffset.left - this._wrapperElementOffset.left;
+      var left = Math.round(
+        this._alignmentElementOffset.left +
+          this._alignmentElementWidth / 2 -
+          this._menuWidth / 2
+      );
 
-      this.$container.css('left', left - leftAdjustment);
+      if (left < 0) {
+        left = 0;
+      }
+
+      this.$container.css('left', left);
     },
   },
   {

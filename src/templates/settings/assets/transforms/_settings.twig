@@ -1,0 +1,177 @@
+{% extends "_layouts/cp" %}
+
+{% import "_includes/forms" as forms %}
+
+{% set crumbs = [
+    { label: "Settings"|t('app'), url: url('settings') },
+    { label: "Assets"|t('app'), url: url('settings/assets') },
+    { label: "Image Transforms"|t('app'), url: url('settings/assets/transforms') }
+] %}
+
+{% set fullPageForm = true %}
+
+
+{% block content %}
+        {{ actionInput('image-transforms/save') }}
+        {{ redirectInput('settings/assets/transforms') }}
+
+        {% if transform.id %}{{ hiddenInput('transformId', transform.id) }}{% endif %}
+
+        {{ forms.textField({
+            first: true,
+            label: "Name"|t('app'),
+            id: 'name',
+            name: 'name',
+            value: (transform is defined ? transform.name : null),
+            errors: (transform is defined ? transform.getErrors('name') : null),
+            autofocus: true,
+            required: true,
+        }) }}
+
+        {{ forms.textField({
+            label: "Handle"|t('app'),
+            id: "handle",
+            name: "handle",
+            class: 'code',
+            autocorrect: false,
+            autocapitalize: false,
+            value: (transform is defined ? transform.handle : null),
+            errors: (transform is defined ? transform.getErrors('handle') : null),
+            required: true,
+        }) }}
+
+        {% set modeInput %}
+            <div id="mode">
+                <label id="mode-crop">
+                    <input type="radio" name="mode" value="crop"{% if transform is not defined or transform.mode == 'crop' %} checked{% endif %}>
+                    {{ "Crop"|t('app') }}
+                </label>
+
+                <label id="mode-fit">
+                    <input type="radio" name="mode" value="fit"{% if transform is defined and transform.mode == 'fit' %} checked{% endif %}>
+                    {{ "Fit"|t('app') }}
+                </label>
+
+                <label id="mode-stretch">
+                    <input type="radio" name="mode" value="stretch"{% if transform is defined and transform.mode == 'stretch' %} checked{% endif %}>
+                    {{ "Stretch"|t('app') }}
+                </label>
+            </div>
+        {% endset %}
+
+        {{ forms.field({
+            label: "Mode"|t('app')
+        }, modeInput) }}
+
+        <div id="position-container"{% if transform is defined and transform.mode != 'crop' %} class="hidden"{% endif %}>
+            {{ forms.selectField({
+                label: "Default Focal Point"|t('app'),
+                id: 'position',
+                name: 'position',
+                options: {
+                    'top-left': "Top-Left"|t('app'),
+                    'top-center': "Top-Center"|t('app'),
+                    'top-right': "Top-Right"|t('app'),
+                    'center-left': "Center-Left"|t('app'),
+                    'center-center': "Center-Center"|t('app'),
+                    'center-right': "Center-Right"|t('app'),
+                    'bottom-left': "Bottom-Left"|t('app'),
+                    'bottom-center': "Bottom-Center"|t('app'),
+                    'bottom-right': "Bottom-Right"|t('app')
+                },
+                value: (transform is defined and transform.mode == 'crop' ? transform.position : 'center-center')
+            }) }}
+        </div>
+
+        {{ forms.textField({
+            label: "Width"|t('app'),
+            id: "width",
+            name: "width",
+            size: 5,
+            value: (transform is defined ? transform.width : null),
+            errors: (transform is defined ? transform.getErrors('width') : null),
+        }) }}
+
+        {{ forms.textField({
+            label: "Height"|t('app'),
+            id: "height",
+            name: "height",
+            size: 5,
+            value: (transform is defined ? transform.height : null),
+            errors: (transform is defined ? transform.getErrors('height') : null),
+        }) }}
+
+        {{ forms.selectField({
+            label: "Quality"|t('app'),
+            id: "quality",
+            name: "quality",
+            options: [
+                {label: 'Auto'|t('app'), value: '0'},
+                {label: 'Low'|t('app'), value: '10'},
+                {label: 'Medium'|t('app'), value: '30'},
+                {label: 'High'|t('app'), value: '60'},
+                {label: 'Very High (Recommended)'|t('app'), value: '82'},
+                {label: 'Maximum'|t('app'), value: '100'},
+            ],
+            value: (transform is defined ? transform.quality : 82),
+            errors: (transform is defined ? transform.getErrors('quality') : null),
+        }) }}
+
+        {{ forms.selectField({
+            label: "Interlacing"|t('app'),
+            id: "interlace",
+            name: "interlace",
+            options: [
+                {label: 'None'|t('app'), value: 'none'},
+                {label: 'Line'|t('app'), value: 'line'},
+                {label: 'Plane'|t('app'), value: 'plane'},
+                {label: 'Partition'|t('app'), value: 'partition'},
+            ],
+            value: (transform is defined ? transform.interlace : 'none'),
+            errors: (transform is defined ? transform.getErrors('interlace') : null),
+        }) }}
+
+        {% set formatOptions = [
+            {label: 'Auto', value: null},
+            {label: 'jpg', value: 'jpg'},
+            {label: 'png', value: 'png'},
+            {label: 'gif', value: 'gif'},
+        ] %}
+
+        {% if (transform is defined and transform.format == 'webp') or craft.app.images.supportsWebP %}
+            {% set formatOptions = formatOptions|merge([{label: 'webp', value: 'webp'}]) %}
+        {% endif %}
+        
+        {% if (transform is defined and transform.format == 'avif') or craft.app.images.supportsAvif %}
+            {% set formatOptions = formatOptions|merge([{label: 'avif', value: 'avif'}]) %}
+        {% endif %}
+
+        {{ forms.selectField({
+            label: "Image Format"|t('app'),
+            id: "format",
+            name: "format",
+            instructions: "The image format that transformed images should use."|t('app'),
+            value: (transform is defined ? transform.format : null),
+            errors: (transform is defined ? transform.getErrors('format') : null),
+            options: formatOptions,
+        }) }}
+
+
+{% endblock %}
+
+
+{% js %}
+    {% if transform is not defined or not transform.handle %}new Craft.HandleGenerator('#name', '#handle');{% endif %}
+
+    $('#mode input').change(function()
+    {
+        if ($(this).val() == 'crop')
+        {
+            $('#position-container').removeClass('hidden');
+        }
+        else
+        {
+            $('#position-container').addClass('hidden');
+        }
+    })
+{% endjs %}

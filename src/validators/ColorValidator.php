@@ -51,9 +51,9 @@ class ColorValidator extends RegularExpressionValidator
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
-        if ($this->message === null) {
+        if (!isset($this->message)) {
             $this->message = Craft::t('app', '{attribute} isn’t a valid hex color value.');
         }
         parent::init();
@@ -62,7 +62,7 @@ class ColorValidator extends RegularExpressionValidator
     /**
      * @inheritdoc
      */
-    public function validateAttribute($model, $attribute)
+    public function validateAttribute($model, $attribute): void
     {
         $original = $value = $model->$attribute;
 
@@ -73,11 +73,11 @@ class ColorValidator extends RegularExpressionValidator
         $result = $this->validateValue($value);
         if (!empty($result)) {
             $this->addError($model, $attribute, $result[0], $result[1]);
-        } else if ($value !== $original) {
+        } elseif ($value !== $original) {
             // update the model with the normalized value
             try {
                 $model->$attribute = $value;
-            } catch (UnknownPropertyException $e) {
+            } catch (UnknownPropertyException) {
                 // fine, validate the original value
                 parent::validateAttribute($model, $attribute);
             }

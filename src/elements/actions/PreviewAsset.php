@@ -9,7 +9,6 @@ namespace craft\elements\actions;
 
 use Craft;
 use craft\base\ElementAction;
-use craft\helpers\Json;
 
 /**
  * View represents a View element action.
@@ -22,14 +21,14 @@ class PreviewAsset extends ElementAction
     /**
      * @var string|null The trigger label
      */
-    public $label;
+    public ?string $label = null;
 
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
-        if ($this->label === null) {
+        if (!isset($this->label)) {
             $this->label = Craft::t('app', 'Preview file');
         }
     }
@@ -45,33 +44,27 @@ class PreviewAsset extends ElementAction
     /**
      * @inheritdoc
      */
-    public function getTriggerHtml()
+    public function getTriggerHtml(): ?string
     {
-        $type = Json::encode(static::class);
-
-        $js = <<<JS
+        Craft::$app->getView()->registerJsWithVars(fn($type) => <<<JS
 (() => {
     new Craft.ElementActionTrigger({
-        type: {$type},
+        type: $type,
         batch: false,
-        validateSelection: function(\$selectedItems)
-        {
-            return \$selectedItems.length === 1;
-        },
-        activate: function(\$selectedItems)
-        {
-            var settings = {};
-            if (\$selectedItems.find('.element').data('image-width')) {
-                settings.startingWidth = \$selectedItems.find('.element').data('image-width');
-                settings.startingHeight = \$selectedItems.find('.element').data('image-height');
+        validateSelection: \$selectedItems => \$selectedItems.length === 1,
+        activate: \$selectedItems => {
+            const \$element = \$selectedItems.find('.element');
+            const settings = {};
+            if (\$element.data('image-width')) {
+                settings.startingWidth = \$element.data('image-width');
+                settings.startingHeight = \$element.data('image-height');
             }
-            var modal = new Craft.PreviewFileModal(\$selectedItems.find('.element').data('id'), Craft.elementIndex.view.elementSelect, settings);
-        }
+            new Craft.PreviewFileModal(\$element.data('id'), Craft.elementIndex.view.elementSelect, settings);
+        },
     });
 })();
-JS;
+JS, [static::class]);
 
-        Craft::$app->getView()->registerJs($js);
         return null;
     }
 }

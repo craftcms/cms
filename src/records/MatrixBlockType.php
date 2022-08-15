@@ -17,7 +17,7 @@ use yii\db\ActiveQueryInterface;
  *
  * @property int $id ID
  * @property int $fieldId Field ID
- * @property int $fieldLayoutId Field layout ID
+ * @property int|null $fieldLayoutId Field layout ID
  * @property string $name Name
  * @property string $handle Handle
  * @property int $sortOrder Sort order
@@ -29,15 +29,9 @@ use yii\db\ActiveQueryInterface;
 class MatrixBlockType extends ActiveRecord
 {
     /**
-     * @var bool Whether the Name and Handle attributes should validated to ensure they’re unique.
-     * @deprecated in 3.7.11
-     */
-    public $validateUniques = true;
-
-    /**
      * @inheritdoc
      */
-    public function rules()
+    public function rules(): array
     {
         return [
             [['name'], 'unique', 'targetAttribute' => ['name', 'fieldId']],

@@ -1,0 +1,12 @@
+<?php
+
+namespace yii\di;
+
+class ServiceLocator
+{
+    /**
+     * @param bool $returnDefinitions
+     * @return array<string, mixed>
+     */
+    public function getComponents($returnDefinitions = true) {}
+}

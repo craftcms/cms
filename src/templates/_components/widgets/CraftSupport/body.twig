@@ -1,0 +1,167 @@
+{% import "_includes/links" as links %}
+
+{% macro resourceLink(config) %}
+    <a href="{{ config.link }}" target="_blank" rel="noopener">
+        <h4 class="cs-resource-heading">
+            <img class="cs-logo-image" src="{{ config.bundleUrl }}{{ config.iconPath }}" alt="{{ config.title }}">
+        </h4>
+        <p>{{ config.description }} {{ links.externalLinkIcon() }}</p>
+    </a>
+{% endmacro %}
+
+{% macro screen(widget, showBackupOption, bundleUrl, screen, placeholder, resultsIcon, resultsHeading, formAction, submitText) %}
+    {% import "_includes/forms" as forms %}
+    {% set idPrefix = 'cs-'~screen~random() %}
+
+    <div id="cs-screen-{{ screen }}" class="cs-screen cs-screen-2 cs-screen-{{ screen }}" action="{{ formAction }}" method="get" target="_blank" rel="noopener">
+        {{ tag('h2', {
+            text: submitText,
+        }) }}
+        {{ forms.textareaField({
+            first: true,
+            class: 'cs-body-text',
+            label: placeholder|t('app'),
+            rows: 5
+        }) }}
+        <div class="cs-search-results-container hidden">
+            <div class="cs-search-icon">{{ svg(resultsIcon, sanitize=false) }}</div>
+            <h2>{{ resultsHeading }}</h2>
+            <ul class="cs-search-results"></ul>
+        </div>
+        <div class="cs-forms">
+            <form class="cs-search-form" action="{{ formAction }}" method="get" target="_blank" rel="noopener">
+                <div class="cs-search-params"></div>
+                {% tag 'div' with { class: 'cs-button-wrapper' }%}
+                    <button type="submit" class="btn submit fullwidth disabled">{{ submitText }}</button>
+                    {% if CraftEdition == CraftPro %}
+                        <p>{{ "or <a>send to Developer Support</a>"|t('app')|raw }}</p>
+                    {% endif %}
+                    {{ tag('button', {
+                        class: 'btn fullwidth cancel',
+                        type: 'button',
+                        text: 'Cancel'|t('app'),
+                    }) }}
+                {% endtag %}
+                <hr>
+                <h3 class="cs-more-resources-heading">{{ 'More Resources'|t('app') }}</h3>
+                <div class="cs-logo-resources">
+                    {{ _self.resourceLink({
+                        link: 'https://craftcms.com/partners',
+                        iconPath: '/logos/craft-partners.svg',
+                        title: 'Craft Partners',
+                        description: 'Find an official Craft Partner'|t('app'),
+                        bundleUrl: bundleUrl,
+                    }) }}
+                    {{ _self.resourceLink({
+                        link: 'https://craftcms.com/discord',
+                        iconPath: '/logos/discord.svg',
+                        title: 'Discord',
+                        description: 'Meet the Craft community'|t('app'),
+                        bundleUrl: bundleUrl,
+                    }) }}
+                    {{ _self.resourceLink({
+                        link: 'https://craftquest.io',
+                        iconPath: '/logos/craftquest.svg',
+                        title: 'CraftQuest',
+                        description: 'Unlimited video training'|t('app'),
+                        bundleUrl: bundleUrl,
+                    }) }}
+                </div>
+                <div class="cs-icon-resources">
+                    {% set documentationLinkHtml %}
+                        {{ svg('@appicons/book.svg')|attr({ 'aria-hidden': 'true' }) }}
+                        <span>{{ 'Documentation'|t('app') }}</span>
+                    {% endset %}
+                    {% set knowledgeBaseLinkHtml %}
+                        {{ svg('@appicons/magnifying-glass.svg', namespace=true)|attr({ 'aria-hidden': 'true' }) }}
+                        <span>{{ 'Knowledge Base'|t('app') }}</span>
+                    {% endset %}
+                    {{ links.externalLink({
+                        link: 'https://craftcms.com/docs/4.x/',
+                        text: documentationLinkHtml
+                    }) }}
+                    {{ links.externalLink({
+                        link: 'https://craftcms.com/knowledge-base',
+                        text: knowledgeBaseLinkHtml
+                    }) }}
+                </div>
+            </form>
+            <form class="cs-support-form hidden" action="{{ actionUrl('dashboard/send-support-request') }}" method="post" target="{{ idPrefix }}-iframe" accept-charset="UTF-8" enctype="multipart/form-data">
+                {{ csrfInput() }}
+                {{ hiddenInput('widgetId', widget.id) }}
+                {{ hiddenInput('message', '', {class: 'cs-support-message'}) }}
+
+                {% set email = currentUser.email %}
+                {% if email in ['support@pixelandtonic.com', 'support@craftcms.com'] %}
+                    {% set email = '' %}
+                {% endif %}
+
+                {{ forms.textField({
+                    first: true,
+                    label: "Your Email"|t('app'),
+                    name: 'fromEmail',
+                    value: email
+                }) }}
+
+                <a class="fieldtoggle" data-target="{{ idPrefix }}-support-more">{{ "More"|t('app') }}</a>
+
+                <div id="{{ idPrefix }}-support-more" class="cs-support-more hidden">
+                    <fieldset>
+                        {{ forms.checkboxField({
+                            label: 'Attach error logs'|t('app'),
+                            name: 'attachLogs',
+                            checked: true
+                        }) }}
+
+                        {% if showBackupOption %}
+                            {{ forms.checkboxField({
+                                label: 'Attach a database backup'|t('app'),
+                                name: 'attachDbBackup',
+                                checked: true
+                            }) }}
+                        {% endif %}
+
+                        {{ forms.checkboxField({
+                            name: 'attachTemplates',
+                            checked: true,
+                            label: 'Include your template files'|t('app'),
+                        }) }}
+                    </fieldset>
+
+                    {{ forms.fileField({
+                        label: 'Attach an additional file'|t('app'),
+                        class: 'cs-support-attachment',
+                        name: 'attachAdditionalFile',
+                    }) }}
+                </div>
+
+                {{ forms.submitButton({
+                    class: ['fullwidth', 'disabled'],
+                    label: 'Send'|t('app'),
+                    spinner: true,
+                }) }}
+            </form>
+        </div>
+        <iframe id="{{ idPrefix }}-iframe" name="{{ idPrefix }}-iframe" class="hidden"></iframe>
+    </div>
+{% endmacro %}
+
+{% from _self import screen %}
+
+
+<div class="cs-screen cs-screen-home">
+    <button type="button" class="cs-opt" data-screen="help" aria-controls="cs-screen-help" aria-expanded="false">
+        <div class="cs-opt-icon">{{ svg(buoeyIcon, sanitize=false)|attr({ 'aria-hidden': 'true' }) }}</div>
+        <h2>{{ "Get help"|t('app') }}</h2>
+        <p>{{ "How-to’s and other questions"|t('app') }}</p>
+    </button>
+    <button type="button" class="cs-opt" data-screen="feedback" aria-controls="cs-screen-feedback" aria-expanded="false">
+        <div class="cs-opt-icon">{{ svg(bullhornIcon, sanitize=false)|attr({ 'aria-hidden': 'true' }) }}</div>
+        <h2>{{ "Give feedback"|t('app') }}</h2>
+        <p>{{ "Bug reports and feature requests"|t('app') }}</p>
+    </button>
+</div>
+
+{{ screen(widget, showBackupOption, bundleUrl, 'help', "Briefly describe your question."|t('app'), seIcon, "Similar questions on Stack Exchange"|t('app'), 'https://craftcms.stackexchange.com/questions/ask', "Ask on Stack Exchange"|t('app')) }}
+
+{{ screen(widget, showBackupOption, bundleUrl, 'feedback', "Briefly describe your issue or idea."|t('app'), ghIcon, "Similar issues on GitHub"|t('app'), 'https://github.com/craftcms/cms/issues/new', "Post on GitHub"|t('app')) }}

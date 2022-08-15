@@ -1,0 +1,91 @@
+{% if name ?? false %}
+    {{ hiddenInput(name, '') }}
+{% endif -%}
+
+{% set id = id ?? "elementselect#{random()}" -%}
+{% set elements = elements ?? [] -%}
+{% set jsClass = jsClass ?? 'Craft.BaseElementSelectInput' -%}
+{% set sources = sources ?? null -%}
+{% set condition = condition ?? null -%}
+{% set criteria = criteria ?? null -%}
+{% set sourceElementId = sourceElementId ?? null -%}
+{% set storageKey = storageKey ?? null -%}
+{% set viewMode = viewMode ?? 'list' %}
+{% set sortable = sortable ?? true %}
+{% set prevalidate = prevalidate ?? false %}
+{% set fieldId = fieldId ?? null %}
+{% set single = single ?? false %}
+{% set limit = single ? 1 : (limit ?? null) %}
+{% set disabled = (disabled ?? false) ? true : false %}
+
+{% set containerAttributes = {
+    id: id,
+    class: ['elementselect']|merge((class ?? [])|explodeClass),
+}|merge(containerAttributes ?? [], recursive=true) %}
+
+{%- if block('attr') is defined %}
+    {%- set containerAttributes = containerAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
+{% endif %}
+
+{% tag 'div' with containerAttributes %}
+    <div class="elements">
+        {% for element in elements %}
+            {% set element = include('_elements/element', {
+                context: 'field',
+                size: (viewMode == 'large' ? 'large' : 'small')
+            }) %}
+            {% if disabled %}
+                {% set element = element|removeClass('removable') %}
+            {% endif %}
+            {{ element|raw }}
+        {% endfor %}
+    </div>
+
+    <div class="flex flex-nowrap">
+        {{ tag('button', {
+            type: 'button',
+            class: [
+                'btn',
+                'add',
+                'icon',
+                'dashed',
+                disabled ? 'disabled',
+                limit and elements|length >= limit ? 'hidden',
+            ]|filter,
+            text: selectionLabel ?? 'Choose'|t('app'),
+            disabled: disabled,
+            aria: {
+                label: selectionLabel ?? 'Choose'|t('app'),
+                describedby: describedBy ?? false,
+            }
+        }) }}
+        <div class="spinner hidden"></div>
+    </div>
+{% endtag %}
+
+{% if not disabled %}
+    {% set jsSettings = {
+        id: id|namespaceInputId,
+        name: name|namespaceInputName,
+        elementType: elementType,
+        sources: sources,
+        condition: condition ? condition.getConfig() : null,
+        criteria: criteria,
+        allowSelfRelations: allowSelfRelations ?? false,
+        sourceElementId: sourceElementId,
+        disabledElementIds: disabledElementIds ?? null,
+        viewMode: viewMode,
+        single: single,
+        limit: limit,
+        showSiteMenu: showSiteMenu ?? false,
+        modalStorageKey: storageKey,
+        fieldId: fieldId,
+        sortable: sortable,
+        prevalidate: prevalidate,
+        modalSettings: modalSettings ?? {},
+    } %}
+
+    {% js %}
+        new {{ jsClass }}({{ jsSettings|json_encode|raw }});
+    {% endjs %}
+{% endif %}

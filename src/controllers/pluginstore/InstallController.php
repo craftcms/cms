@@ -10,6 +10,7 @@ namespace craft\controllers\pluginstore;
 use Craft;
 use craft\controllers\BaseUpdaterController;
 use craft\web\Response;
+use Throwable;
 use yii\web\ForbiddenHttpException;
 use yii\web\Response as YiiResponse;
 
@@ -22,19 +23,19 @@ use yii\web\Response as YiiResponse;
  */
 class InstallController extends BaseUpdaterController
 {
-    const ACTION_CRAFT_INSTALL = 'craft-install';
-    const ACTION_ENABLE = 'enable';
-    const ACTION_MIGRATE = 'migrate';
+    public const ACTION_CRAFT_INSTALL = 'craft-install';
+    public const ACTION_ENABLE = 'enable';
+    public const ACTION_MIGRATE = 'migrate';
 
     /**
      * @var string|null
      */
-    private $_pluginRedirect;
+    private ?string $_pluginRedirect = null;
 
     /**
      * @inheritdoc
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         if (!parent::beforeAction($action)) {
             return false;
@@ -161,22 +162,18 @@ class InstallController extends BaseUpdaterController
      */
     protected function actionStatus(string $action): string
     {
-        switch ($action) {
-            case self::ACTION_CRAFT_INSTALL:
-                return Craft::t('app', 'Installing the plugin…');
-            case self::ACTION_ENABLE:
-                return Craft::t('app', 'Enabling the plugin…');
-            case self::ACTION_MIGRATE:
-                return Craft::t('app', 'Updating the plugin…');
-            default:
-                return parent::actionStatus($action);
-        }
+        return match ($action) {
+            self::ACTION_CRAFT_INSTALL => Craft::t('app', 'Installing the plugin…'),
+            self::ACTION_ENABLE => Craft::t('app', 'Enabling the plugin…'),
+            self::ACTION_MIGRATE => Craft::t('app', 'Updating the plugin…'),
+            default => parent::actionStatus($action),
+        };
     }
 
     /**
      * @inheritdoc
      */
-    protected function initialState(): array
+    protected function initialState(bool $force = false): array
     {
         // Make sure we can find composer.json
         if (!$this->ensureComposerJson()) {
@@ -221,7 +218,7 @@ class InstallController extends BaseUpdaterController
         if ($this->data['licenseKey'] !== null) {
             try {
                 Craft::$app->getPlugins()->setPluginLicenseKey($this->data['handle'], $this->data['licenseKey']);
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 Craft::error("Could not set the license key on {$this->data['handle']}: {$e->getMessage()}", __METHOD__);
                 Craft::$app->getErrorHandler()->logException($e);
             }

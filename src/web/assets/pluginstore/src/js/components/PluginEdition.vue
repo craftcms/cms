@@ -1,117 +1,104 @@
 <template>
-    <div class="plugin-editions-edition">
-        <div class="description">
-            <edition-badge v-if="plugin.editions.length > 1" :name="edition.name" block big></edition-badge>
-            <div class="price">
-                <template v-if="!isPluginEditionFree(edition)">
-                    <template v-if="licensedEdition && licensedEdition.handle !== edition.handle && licensedEdition.price > 0 && licenseValidOrAstray">
-                        <del>{{edition.price|currency}}</del>
-                        {{(edition.price - licensedEdition.price)|currency}}
-                    </template>
-                    <template v-else>
-                        {{edition.price|currency}}
-                    </template>
-                </template>
-                <template v-else>
-                    {{ "Free"|t('app') }}
-                </template>
-            </div>
-            <p v-if="!isPluginEditionFree(edition)" class="-mt-8 py-6 text-grey-dark">
-                {{ "Price includes 1 year of updates."|t('app') }}<br />
-                {{ "{renewalPrice}/year per site for updates after that."|t('app', {renewalPrice: $options.filters.currency(edition.renewalPrice)}) }}
-            </p>
-
-            <ul v-if="plugin.editions.length > 1 && edition.features && edition.features.length > 0">
-                <li v-for="(feature, key) in edition.features" :key="key">
-                    <icon icon="check" />
-                    {{feature.name}}
-
-                    <info-hud v-if="feature.description">
-                        {{feature.description}}
-                    </info-hud>
-                </li>
-            </ul>
+  <div
+    class="plugin-editions-edition"
+    :class="{
+      'tw-flex tw-flex-col': true,
+      'tw-border tw-border-gray-200 tw-border-solid tw-rounded-md':
+        context !== 'meta' ||
+        plugin.editions.length > 1 ||
+        !isPluginEditionFree(edition),
+      'tw-p-8 tw-text-center': context !== 'meta',
+      'tw-p-4':
+        context === 'meta' &&
+        (plugin.editions.length > 1 || !isPluginEditionFree(edition)),
+    }"
+  >
+    <div class="description tw-flex-1">
+      <template v-if="plugin.editions.length > 1">
+        <div class="tw-text-xl tw-font-bold tw-mb-4">
+          {{ edition.name }}
         </div>
+      </template>
 
-        <plugin-actions :plugin="plugin" :edition="edition"></plugin-actions>
+      <template v-if="context !== 'meta'">
+        <ul
+          v-if="
+            plugin.editions.length > 1 &&
+            edition.features &&
+            edition.features.length > 0
+          "
+          class="tw-text-left tw-mt-8 tw-mb-8"
+        >
+          <li
+            v-for="(feature, key) in edition.features"
+            :key="key"
+            class="tw-py-2 tw-border-b tw-border-gray-200 tw-border-solid"
+            :class="{
+              'tw-border-t': key === 0,
+            }"
+          >
+            <c-icon icon="check" />
+            {{ feature.name }}
+
+            <info-hud v-if="feature.description">
+              {{ feature.description }}
+            </info-hud>
+          </li>
+        </ul>
+      </template>
     </div>
+
+    <plugin-actions :plugin="plugin" :edition="edition" />
+
+    <p v-if="!isPluginEditionFree(edition)" class="tw-text-gray-700">
+      {{ 'Price includes 1 year of updates.' | t('app') }}
+      {{
+        '{renewalPrice}/year per site for updates after that.'
+          | t('app', {
+            renewalPrice: $options.filters.currency(edition.renewalPrice),
+          })
+      }}
+    </p>
+  </div>
 </template>
 
 <script>
-    import {mapState, mapGetters} from 'vuex'
-    import PluginActions from './PluginActions'
-    import InfoHud from './InfoHud'
-    import EditionBadge from './EditionBadge'
-    import licensesMixin from '../mixins/licenses'
+  import {mapState, mapGetters} from 'vuex';
+  import PluginActions from './PluginActions';
+  import InfoHud from './InfoHud';
+  import licensesMixin from '../mixins/licenses';
 
-    export default {
-        mixins: [licensesMixin],
+  export default {
+    mixins: [licensesMixin],
 
-        props: ['plugin', 'edition'],
+    props: {
+      edition: {
+        type: Object,
+        required: true,
+      },
+      plugin: {
+        type: Object,
+        required: true,
+      },
+      context: {
+        type: String,
+      },
+    },
 
-        components: {
-            PluginActions,
-            InfoHud,
-            EditionBadge,
-        },
+    components: {
+      PluginActions,
+      InfoHud,
+    },
 
-        computed: {
-            ...mapState({
-                cart: state => state.cart.cart,
-            }),
+    computed: {
+      ...mapState({
+        cart: (state) => state.cart.cart,
+      }),
 
-            ...mapGetters({
-                isPluginEditionFree: 'pluginStore/isPluginEditionFree',
-                getPluginEdition: 'pluginStore/getPluginEdition',
-                getPluginLicenseInfo: 'craft/getPluginLicenseInfo',
-            }),
-
-
-            pluginLicenseInfo() {
-                if (!this.plugin) {
-                    return null
-                }
-
-                return this.getPluginLicenseInfo(this.plugin.handle)
-            },
-
-            licensedEdition() {
-                if (!this.pluginLicenseInfo) {
-                    return null
-                }
-                
-                return this.getPluginEdition(this.plugin, this.pluginLicenseInfo.licensedEdition)
-            }
-        },
-    }
+      ...mapGetters({
+        isPluginEditionFree: 'pluginStore/isPluginEditionFree',
+        getPluginLicenseInfo: 'craft/getPluginLicenseInfo',
+      }),
+    },
+  };
 </script>
-
-<style lang="scss">
-    .plugin-editions-edition {
-        @apply .border .border-grey-light .border-solid .p-8 .rounded .text-center .flex .flex-col;
-
-        .description {
-            @apply .flex-1;
-
-            .edition-name {
-                @apply .border-b .border-grey-light .border-solid .text-grey-dark .inline-block .py-1 .uppercase .text-lg .font-bold;
-            }
-
-            .price {
-                @apply .text-3xl .font-bold .my-8;
-            }
-
-            ul {
-                @apply .text-left .mb-8;
-
-                li {
-                    @apply .py-2 .border-b .border-grey-lighter .border-solid;
-
-                    &:first-child {
-                        @apply .border-t;
-                    }
-                }
-            }
-        }
-    }
-</style>

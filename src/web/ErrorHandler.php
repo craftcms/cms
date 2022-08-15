@@ -9,17 +9,17 @@ namespace craft\web;
 
 use Craft;
 use craft\events\ExceptionEvent;
+use craft\helpers\App;
 use craft\helpers\Json;
-use craft\log\Dispatcher;
+use craft\helpers\Template;
 use GuzzleHttp\Exception\ClientException;
+use Throwable;
 use Twig\Error\Error as TwigError;
 use Twig\Error\LoaderError as TwigLoaderError;
 use Twig\Error\RuntimeError as TwigRuntimeError;
 use Twig\Error\SyntaxError as TwigSyntaxError;
-use Twig\Template;
-use yii\base\Exception;
+use Twig\Template as TwigTemplate;
 use yii\base\UserException;
-use yii\log\FileTarget;
 use yii\web\HttpException;
 use yii\web\NotFoundHttpException;
 
@@ -34,12 +34,12 @@ class ErrorHandler extends \yii\web\ErrorHandler
     /**
      * @event ExceptionEvent The event that is triggered before handling an exception.
      */
-    const EVENT_BEFORE_HANDLE_EXCEPTION = 'beforeHandleException';
+    public const EVENT_BEFORE_HANDLE_EXCEPTION = 'beforeHandleException';
 
     /**
      * @inheritdoc
      */
-    public function handleException($exception)
+    public function handleException($exception): void
     {
         // Fire a 'beforeHandleException' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_HANDLE_EXCEPTION)) {
@@ -55,13 +55,6 @@ class ErrorHandler extends \yii\web\ErrorHandler
 
         // 404?
         if ($exception instanceof HttpException && $exception->statusCode === 404) {
-            // Log to a special file
-            $logDispatcher = Craft::$app->getLog();
-            $fileTarget = $logDispatcher->targets[Dispatcher::TARGET_FILE] ?? $logDispatcher->targets[0] ?? null;
-            if ($fileTarget && $fileTarget instanceof FileTarget) {
-                $fileTarget->logFile = Craft::getAlias('@storage/logs/web-404s.log');
-            }
-
             $request = Craft::$app->getRequest();
             if ($request->getIsSiteRequest() && $request->getPathInfo() === 'wp-admin') {
                 $exception->statusCode = 418;
@@ -74,11 +67,11 @@ class ErrorHandler extends \yii\web\ErrorHandler
     /**
      * @inheritdoc
      */
-    public function handleError($code, $message, $file, $line)
+    public function handleError($code, $message, $file, $line): bool
     {
         // Because: https://bugs.php.net/bug.php?id=74980
-        if (PHP_VERSION_ID >= 70100 && strpos($message, 'Narrowing occurred during type inference. Please file a bug report') !== false) {
-            return null;
+        if (str_contains($message, 'Narrowing occurred during type inference. Please file a bug report')) {
+            return true;
         }
 
         return parent::handleError($code, $message, $file, $line);
@@ -87,7 +80,7 @@ class ErrorHandler extends \yii\web\ErrorHandler
     /**
      * @inheritdoc
      */
-    public function getExceptionName($exception)
+    public function getExceptionName($exception): ?string
     {
         // Yii isn't translating its own exceptions' names, so meh
         if ($exception instanceof TwigError) {
@@ -110,7 +103,7 @@ class ErrorHandler extends \yii\web\ErrorHandler
     /**
      * @inheritdoc
      */
-    public function isCoreFile($file)
+    public function isCoreFile($file): bool
     {
         if (parent::isCoreFile($file)) {
             return true;
@@ -118,15 +111,15 @@ class ErrorHandler extends \yii\web\ErrorHandler
 
         $file = realpath($file);
         $pathService = Craft::$app->getPath();
-        return strpos($file, $pathService->getCompiledTemplatesPath() . DIRECTORY_SEPARATOR) === 0 ||
-            strpos($file, $pathService->getVendorPath() . DIRECTORY_SEPARATOR . 'twig' . DIRECTORY_SEPARATOR . 'twig' . DIRECTORY_SEPARATOR) === 0 ||
+        return str_starts_with($file, $pathService->getCompiledTemplatesPath() . DIRECTORY_SEPARATOR) ||
+            str_starts_with($file, $pathService->getVendorPath() . DIRECTORY_SEPARATOR . 'twig' . DIRECTORY_SEPARATOR . 'twig' . DIRECTORY_SEPARATOR) ||
             $file === __DIR__ . DIRECTORY_SEPARATOR . 'twig' . DIRECTORY_SEPARATOR . 'Template.php';
     }
 
     /**
      * @inheritdoc
      */
-    protected function renderException($exception)
+    protected function renderException($exception): void
     {
         $request = Craft::$app->has('request', true) ? Craft::$app->getRequest() : null;
         $response = Craft::$app->getResponse();
@@ -135,19 +128,14 @@ class ErrorHandler extends \yii\web\ErrorHandler
         if ($request && $request->getAcceptsJson()) {
             $response->format = Response::FORMAT_JSON;
             if ($this->_showExceptionView()) {
-                $response->data = [
-                    'error' => $exception->getMessage(),
-                    'exception' => get_class($exception),
-                    'file' => $exception->getFile(),
-                    'line' => $exception->getLine(),
-                    'trace' => array_map(function($step) {
-                        unset($step['args']);
-                        return $step;
-                    }, $exception->getTrace()),
-                ];
+                $response->data = $this->_exceptionAsArray($exception);
             } else {
+                $message = $exception instanceof UserException ? $exception->getMessage() : Craft::t('app', 'A server error occurred.');
                 $response->data = [
-                    'error' => $exception instanceof UserException ? $exception->getMessage() : Craft::t('app', 'A server error occurred.'),
+                    'message' => $message,
+
+                    // TODO: remove in v5; error message should only be in `message`
+                    'error' => $message,
                 ];
             }
 
@@ -155,6 +143,8 @@ class ErrorHandler extends \yii\web\ErrorHandler
             if ($exception instanceof ClientException) {
                 $response->setStatusCode($exception->getCode());
                 if (($guzzleResponse = $exception->getResponse()) !== null) {
+
+                    // TODO: review for v5
                     $body = Json::decodeIfJson((string)$guzzleResponse->getBody());
                     if (isset($body['message'])) {
                         $response->data['error'] = $body['message'];
@@ -184,7 +174,7 @@ class ErrorHandler extends \yii\web\ErrorHandler
         }
         // Show the full exception view for all exceptions when Dev Mode is enabled (don't skip `UserException`s)
         // or if the user is an admin and has indicated they want to see it
-        else if ($this->_showExceptionView()) {
+        elseif ($this->_showExceptionView()) {
             $this->errorAction = null;
             $this->errorView = $this->exceptionView;
         }
@@ -192,19 +182,43 @@ class ErrorHandler extends \yii\web\ErrorHandler
         parent::renderException($exception);
     }
 
+    private function _exceptionAsArray(Throwable  $exception)
+    {
+        $array = [
+            'message' => $exception->getMessage(),
+            'exception' => get_class($exception),
+            'file' => $exception->getFile(),
+            'line' => $exception->getLine(),
+            'trace' => array_map(function($step) {
+                unset($step['args']);
+                return $step;
+            }, $exception->getTrace()),
+
+            // TODO: remove in v5; error message should only be in `message`
+            'error' => $exception->getMessage(),
+        ];
+
+        $prev = $exception->getPrevious();
+        if ($prev !== null) {
+            $array['previous'] = $this->_exceptionAsArray($prev);
+        }
+
+        return $array;
+    }
+
     /**
      * @inheritdoc
      */
-    protected function getTypeUrl($class, $method)
+    protected function getTypeUrl($class, $method): ?string
     {
         $url = parent::getTypeUrl($class, $method);
 
         if ($url === null) {
-            if (strpos($class, '__TwigTemplate_') === 0) {
-                $class = Template::class;
+            if (str_starts_with($class, '__TwigTemplate_')) {
+                $class = TwigTemplate::class;
             }
 
-            if (strpos($class, 'Twig\\') === 0) {
+            if (str_starts_with($class, 'Twig\\')) {
                 $url = "http://twig.sensiolabs.org/api/2.x/$class.html";
 
                 if ($method) {
@@ -219,48 +233,15 @@ class ErrorHandler extends \yii\web\ErrorHandler
     /**
      * @inheritdoc
      */
-    public function renderCallStackItem($file, $line, $class, $method, $args, $index)
+    public function renderCallStackItem($file, $line, $class, $method, $args, $index): string
     {
-        if (strpos($file, 'compiled_templates') !== false) {
-            try {
-                [$file, $line] = $this->_resolveTemplateTrace($file, $line);
-            } catch (\Throwable $e) {
-                // oh well, we tried
-            }
+        $templateInfo = Template::resolveTemplatePathAndLine($file ?? '', $line);
+
+        if ($templateInfo !== false) {
+            [$file, $line] = $templateInfo;
         }
 
         return parent::renderCallStackItem($file, $line, $class, $method, $args, $index);
-    }
-
-    /**
-     * Attempts to swap out debug trace info with template info.
-     *
-     * @throws \Throwable
-     */
-    private function _resolveTemplateTrace(string $traceFile, int $traceLine = null)
-    {
-        $contents = file_get_contents($traceFile);
-        if (!preg_match('/^class (\w+)/m', $contents, $match)) {
-            throw new Exception("Unable to determine template class in $traceFile");
-        }
-        $class = $match[1];
-        /** @var Template $template */
-        $template = new $class(Craft::$app->getView()->getTwig());
-        $src = $template->getSourceContext();
-        //                $this->sourceCode = $src->getCode();
-        $file = $src->getPath();
-        $line = null;
-
-        if ($traceLine !== null) {
-            foreach ($template->getDebugInfo() as $codeLine => $templateLine) {
-                if ($codeLine <= $traceLine) {
-                    $line = $templateLine;
-                    break;
-                }
-            }
-        }
-
-        return [$file, $line];
     }
 
     /**
@@ -270,7 +251,7 @@ class ErrorHandler extends \yii\web\ErrorHandler
      */
     private function _showExceptionView(): bool
     {
-        if (YII_DEBUG) {
+        if (App::devMode()) {
             return true;
         }
 
@@ -286,8 +267,9 @@ class ErrorHandler extends \yii\web\ErrorHandler
      * @inheritdoc
      * @since 3.4.10
      */
-    protected function shouldRenderSimpleHtml()
+    protected function shouldRenderSimpleHtml(): bool
     {
+        /** @phpstan-ignore-next-line */
         return YII_ENV_TEST || (Craft::$app->has('request', true) && Craft::$app->request->getIsAjax());
     }
 }

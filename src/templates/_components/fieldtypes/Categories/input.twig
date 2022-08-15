@@ -1,0 +1,55 @@
+{{ hiddenInput(name, '') }}
+<div id="{{ id }}" class="categoriesfield">
+    <ul class="elements structure">
+        {% nav category in elements %}
+            <li id="{{ id }}-category-{{ category.id }}">
+                {% set indent = (category.level - 1) * 35 %}
+                <div class="row" style="margin-left: -{{ indent }}px; padding-left: {{ indent }}px;">
+                    {%- include "_elements/element" with { element: category, context: 'field' } -%}
+                </div>
+
+                {% ifchildren %}
+                    <ul>
+                        {% children %}
+                    </ul>
+                {% endifchildren %}
+            </li>
+        {% endnav %}
+    </ul>
+
+    <div class="flex flex-nowrap">
+        {{ tag('button', {
+            type: 'button',
+            text: selectionLabel,
+            class: [
+                'btn',
+                'add',
+                'icon',
+                'dashed',
+            ],
+            aria: {
+                label: selectionLabel,
+                describedby: describedBy ?? false,
+            },
+        }) }}
+        <div class="spinner hidden"></div>
+    </div>
+</div>
+
+{% if jsClass is defined %}
+    {% js %}
+        new {{ jsClass }}({
+            id: "{{ id   | namespaceInputId   | e('js') }}",
+            name: "{{ name | namespaceInputName | e('js') }}",
+            elementType: "{{ elementType|e('js') }}",
+            sources: {{ sources|json_encode|raw }},
+            criteria: {{ criteria|json_encode|raw }},
+            sourceElementId: {{ sourceElementId ?: 'null' }},
+            prevalidate: {{ (prevalidate ?? false) ? 'true' : 'false' }},
+            branchLimit: {{ branchLimit ?: 'null' }},
+            showSiteMenu: {{ (showSiteMenu ?? false)|json_encode|raw }},
+            modalStorageKey: "{{ storageKey|e('js') }}",
+            selectionLabel: "{{ selectionLabel|e('js') }}"
+        });
+    {% endjs %}
+{% endif %}

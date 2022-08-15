@@ -18,9 +18,9 @@ use yii\base\Exception;
 class InvalidPluginException extends Exception
 {
     /**
-     * @var string|null The invalid plugin handle
+     * @var string The invalid plugin handle
      */
-    public $handle;
+    public string $handle;
 
     /**
      * Constructor.
@@ -29,12 +29,12 @@ class InvalidPluginException extends Exception
      * @param string|null $message The error message
      * @param int $code The error code
      */
-    public function __construct(string $handle, string $message = null, int $code = 0)
+    public function __construct(string $handle, ?string $message = null, int $code = 0)
     {
         $this->handle = $handle;
 
         if ($message === null) {
-            $message = "No plugin exists with the handle \"{$handle}\".";
+            $message = "No plugin exists with the handle \"$handle\".";
         }
 
         parent::__construct($message, $code);
@@ -43,7 +43,7 @@ class InvalidPluginException extends Exception
     /**
      * @return string the user-friendly name of this exception
      */
-    public function getName()
+    public function getName(): string
     {
         return 'Invalid plugin';
     }

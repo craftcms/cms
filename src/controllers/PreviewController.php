@@ -9,7 +9,10 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\web\Application;
 use craft\web\Controller;
+use Exception;
+use Throwable;
 use yii\web\BadRequestHttpException;
 use yii\web\Response;
 use yii\web\ServerErrorHttpException;
@@ -25,14 +28,14 @@ class PreviewController extends Controller
     /**
      * @inheritdoc
      */
-    public $allowAnonymous = [
+    protected array|bool|int $allowAnonymous = [
         'preview' => self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE,
     ];
 
     /**
      * @inheritdoc
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         // Don't require CSRF validation for POSTed preview requests
         if ($action->id === 'preview') {
@@ -47,13 +50,13 @@ class PreviewController extends Controller
      *
      * @throws ServerErrorHttpException if the token couldn't be created
      * @throws BadRequestHttpException
-     * @throws \Exception
+     * @throws Exception
      * @return Response
      */
     public function actionCreateToken(): Response
     {
         $elementType = $this->request->getRequiredParam('elementType');
-        $sourceId = $this->request->getRequiredParam('sourceId');
+        $canonicalId = $this->request->getParam('canonicalId') ?? $this->request->getRequiredBodyParam('sourceId');
         $siteId = $this->request->getRequiredParam('siteId');
         $draftId = $this->request->getParam('draftId');
         $revisionId = $this->request->getParam('revisionId');
@@ -62,17 +65,17 @@ class PreviewController extends Controller
 
         if ($draftId) {
             $this->requireAuthorization('previewDraft:' . $draftId);
-        } else if ($revisionId) {
+        } elseif ($revisionId) {
             $this->requireAuthorization('previewRevision:' . $revisionId);
         } else {
-            $this->requireAuthorization('previewElement:' . $sourceId);
+            $this->requireAuthorization('previewElement:' . $canonicalId);
         }
 
         // Create the token
         $token = Craft::$app->getTokens()->createPreviewToken([
             'preview/preview', [
                 'elementType' => $elementType,
-                'sourceId' => (int)$sourceId,
+                'canonicalId' => (int)$canonicalId,
                 'siteId' => (int)$siteId,
                 'draftId' => (int)$draftId ?: null,
                 'revisionId' => (int)$revisionId ?: null,
@@ -95,22 +98,23 @@ class PreviewController extends Controller
      * Substitutes an element for the element being previewed for the remainder of the request, and reroutes the request.
      *
      * @param string $elementType
-     * @param int $sourceId
+     * @phpstan-param class-string<ElementInterface> $elementType
+     * @param int $canonicalId
      * @param int $siteId
      * @param int|null $draftId
      * @param int|null $revisionId
      * @param int|null $userId
      * @return Response
      * @throws BadRequestHttpException
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function actionPreview(
         string $elementType,
-        int $sourceId,
+        int $canonicalId,
         int $siteId,
         ?int $draftId = null,
         ?int $revisionId = null,
-        ?int $userId = null
+        ?int $userId = null,
     ): Response {
         // Make sure a token was used to get here
         $this->requireToken();
@@ -118,13 +122,13 @@ class PreviewController extends Controller
         /** @var ElementInterface $elementType */
         $query = $elementType::find()
             ->siteId($siteId)
-            ->anyStatus();
+            ->status(null);
 
         if ($draftId) {
             $element = $query
                 ->draftId($draftId)
                 ->one();
-        } else if ($revisionId) {
+        } elseif ($revisionId) {
             $element = $query
                 ->revisionId($revisionId)
                 ->one();
@@ -132,7 +136,7 @@ class PreviewController extends Controller
             if ($userId) {
                 // First check if there's a provisional draft
                 $element = (clone $query)
-                    ->draftOf($sourceId)
+                    ->draftOf($canonicalId)
                     ->provisionalDrafts()
                     ->draftCreator($userId)
                     ->one();
@@ -140,7 +144,7 @@ class PreviewController extends Controller
 
             if (!isset($element)) {
                 $element = $query
-                    ->id($sourceId)
+                    ->id($canonicalId)
                     ->one();
             }
         }
@@ -167,10 +171,12 @@ class PreviewController extends Controller
         $this->request->checkIfActionRequest(true, false);
 
         // Re-route the request, this time ignoring the token
-        $urlManager = Craft::$app->getUrlManager();
+        /** @var Application $app */
+        $app = Craft::$app;
+        $urlManager = $app->getUrlManager();
         $urlManager->checkToken = false;
         $urlManager->setRouteParams([], false);
         $urlManager->setMatchedElement(null);
-        return Craft::$app->handleRequest($this->request, true);
+        return $app->handleRequest($this->request, true);
     }
 }

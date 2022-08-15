@@ -1,0 +1,49 @@
+{% import "_includes/forms" as forms %}
+
+<div id="site" class="screen hidden" data-inputs="name,baseUrl,language">
+    <h1>{{ "Set up your site"|t('app') }}</h1>
+
+    <form accept-charset="UTF-8">
+        {{ csrfInput() }}
+
+        {{ forms.textField({
+            first: true,
+            label: "System Name"|t('app'),
+            id: 'site-name',
+            value: defaultSystemName,
+            maxlength: 255
+        }) }}
+
+        {{ forms.autosuggestField({
+            label: "Base URL"|t('app'),
+            id: 'site-baseUrl',
+            class: 'ltr',
+            suggestEnvVars: true,
+            suggestAliases: true,
+            tip: null,
+            value: defaultSiteUrl
+        }) }}
+
+        {% set languageInput %}
+            <div class="select">
+                <select id="site-language">
+                    {% for locale in craft.app.i18n.getAllLocales() %}
+                        <option value="{{ locale.id }}"{% if locale.id == defaultSiteLanguage %} selected{% endif %}>{{ locale.id }} ({{ locale.getDisplayName(craft.app.language) }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+        {% endset %}
+        {{ forms.field({
+            label: "Language"|t('app'),
+            id: 'site-language'
+        }, languageInput) }}
+
+        <div class="buttons">
+            {{ forms.submitButton({
+                class: 'big',
+                label: 'Finish up'|t('app'),
+                spinner: true,
+            }) }}
+        </div>
+    </form>
+</div>

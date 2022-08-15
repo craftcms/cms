@@ -18,6 +18,8 @@ use craft\helpers\StringHelper;
 use craft\models\EntryType;
 use craft\models\Section;
 use craft\models\UserGroup;
+use DateTime;
+use Illuminate\Support\Collection;
 use yii\base\InvalidConfigException;
 use yii\db\Connection;
 
@@ -29,7 +31,7 @@ use yii\db\Connection;
  * @property-write string|string[]|UserGroup|null $authorGroup The user group(s) that resulting entries’ authors must belong to
  * @method Entry[]|array all($db = null)
  * @method Entry|array|null one($db = null)
- * @method Entry|array|null nth(int $n, Connection $db = null)
+ * @method Entry|array|null nth(int $n, ?Connection $db = null)
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  * @doc-path entries.md
@@ -56,10 +58,10 @@ class EntryQuery extends ElementQuery
      * @var bool Whether to only return entries that the user has permission to edit.
      * @used-by editable()
      */
-    public $editable = false;
+    public bool $editable = false;
 
     /**
-     * @var int|int[]|null The section ID(s) that the resulting entries must be in.
+     * @var mixed The section ID(s) that the resulting entries must be in.
      * ---
      * ```php
      * // fetch entries in the News section
@@ -76,10 +78,10 @@ class EntryQuery extends ElementQuery
      * @used-by section()
      * @used-by sectionId()
      */
-    public $sectionId;
+    public mixed $sectionId = null;
 
     /**
-     * @var int|int[]|null The entry type ID(s) that the resulting entries must have.
+     * @var mixed The entry type ID(s) that the resulting entries must have.
      * ---
      * ```php{4}
      * // fetch Article entries in the News section
@@ -98,16 +100,16 @@ class EntryQuery extends ElementQuery
      * @used-by EntryQuery::type()
      * @used-by typeId()
      */
-    public $typeId;
+    public mixed $typeId = null;
 
     /**
-     * @var int|int[]|null The user ID(s) that the resulting entries’ authors must have.
+     * @var mixed The user ID(s) that the resulting entries’ authors must have.
      * @used-by authorId()
      */
-    public $authorId;
+    public mixed $authorId = null;
 
     /**
-     * @var int|int[]|null The user group ID(s) that the resulting entries’ authors must be in.
+     * @var mixed The user group ID(s) that the resulting entries’ authors must be in.
      * ---
      * ```php
      * // fetch entries authored by people in the Authors group
@@ -124,7 +126,7 @@ class EntryQuery extends ElementQuery
      * @used-by authorGroup()
      * @used-by authorGroupId()
      */
-    public $authorGroupId;
+    public mixed $authorGroupId = null;
 
     /**
      * @var mixed The Post Date that the resulting entries must have.
@@ -143,10 +145,10 @@ class EntryQuery extends ElementQuery
      * ```
      * @used-by postDate()
      */
-    public $postDate;
+    public mixed $postDate = null;
 
     /**
-     * @var string|array|\DateTime The maximum Post Date that resulting entries can have.
+     * @var mixed The maximum Post Date that resulting entries can have.
      * ---
      * ```php
      * // fetch entries written before 4/4/2018
@@ -162,10 +164,10 @@ class EntryQuery extends ElementQuery
      * ```
      * @used-by before()
      */
-    public $before;
+    public mixed $before = null;
 
     /**
-     * @var string|array|\DateTime The minimum Post Date that resulting entries can have.
+     * @var mixed The minimum Post Date that resulting entries can have.
      * ---
      * ```php
      * // fetch entries written in the last 7 days
@@ -181,18 +183,18 @@ class EntryQuery extends ElementQuery
      * ```
      * @used-by after()
      */
-    public $after;
+    public mixed $after = null;
 
     /**
      * @var mixed The Expiry Date that the resulting entries must have.
      * @used-by expiryDate()
      */
-    public $expiryDate;
+    public mixed $expiryDate = null;
 
     /**
      * @inheritdoc
      */
-    protected $defaultOrderBy = ['entries.postDate' => SORT_DESC];
+    protected array $defaultOrderBy = ['entries.postDate' => SORT_DESC];
 
     /**
      * @inheritdoc
@@ -232,9 +234,9 @@ class EntryQuery extends ElementQuery
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
-        if ($this->withStructure === null) {
+        if (!isset($this->withStructure)) {
             $this->withStructure = true;
         }
 
@@ -245,10 +247,10 @@ class EntryQuery extends ElementQuery
      * Sets the [[$editable]] property.
      *
      * @param bool $value The property value (defaults to true)
-     * @return static self reference
+     * @return self self reference
      * @uses $editable
      */
-    public function editable(bool $value = true)
+    public function editable(bool $value = true): self
     {
         $this->editable = $value;
         return $this;
@@ -283,11 +285,11 @@ class EntryQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param string|string[]|Section|null $value The property value
-     * @return static self reference
+     * @param mixed $value The property value
+     * @return self self reference
      * @uses $sectionId
      */
-    public function section($value)
+    public function section(mixed $value): self
     {
         // If the value is a section handle, swap it with the section
         if (is_string($value) && ($section = Craft::$app->getSections()->getSectionByHandle($value))) {
@@ -295,20 +297,26 @@ class EntryQuery extends ElementQuery
         }
 
         if ($value instanceof Section) {
+            // Special case for a single section, since we also want to capture the structure ID
             $this->sectionId = [$value->id];
             if ($value->structureId) {
                 $this->structureId = $value->structureId;
             } else {
                 $this->withStructure = false;
             }
-        } else if ($value !== null) {
+        } elseif (Db::normalizeParam($value, function($item) {
+            if (is_string($item)) {
+                $item = Craft::$app->getSections()->getSectionByHandle($item);
+            }
+            return $item instanceof Section ? $item->id : null;
+        })) {
+            $this->sectionId = $value;
+        } else {
             $this->sectionId = (new Query())
                 ->select(['id'])
                 ->from([Table::SECTIONS])
                 ->where(Db::parseParam('handle', $value))
                 ->column();
-        } else {
-            $this->sectionId = null;
         }
 
         return $this;
@@ -342,11 +350,11 @@ class EntryQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param int|int[]|null $value The property value
-     * @return static self reference
+     * @param mixed $value The property value
+     * @return self self reference
      * @uses $sectionId
      */
-    public function sectionId($value)
+    public function sectionId(mixed $value): self
     {
         $this->sectionId = $value;
         return $this;
@@ -383,22 +391,25 @@ class EntryQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param string|string[]|EntryType|null $value The property value
-     * @return static self reference
+     * @param mixed $value The property value
+     * @return self self reference
      * @uses $typeId
      */
-    public function type($value)
+    public function type(mixed $value): self
     {
-        if ($value instanceof EntryType) {
-            $this->typeId = [$value->id];
-        } else if ($value !== null) {
+        if (Db::normalizeParam($value, function($item) {
+            if (is_string($item)) {
+                $item = Craft::$app->getSections()->getEntryTypesByHandle($item);
+            }
+            return $item instanceof EntryType ? $item->id : null;
+        })) {
+            $this->typeId = $value;
+        } else {
             $this->typeId = (new Query())
                 ->select(['id'])
                 ->from([Table::ENTRYTYPES])
                 ->where(Db::parseParam('handle', $value))
                 ->column();
-        } else {
-            $this->typeId = null;
         }
 
         return $this;
@@ -432,11 +443,11 @@ class EntryQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param int|int[]|null $value The property value
-     * @return static self reference
+     * @param mixed $value The property value
+     * @return self self reference
      * @uses $typeId
      */
-    public function typeId($value)
+    public function typeId(mixed $value): self
     {
         $this->typeId = $value;
         return $this;
@@ -470,11 +481,11 @@ class EntryQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param int|int[]|null $value The property value
-     * @return static self reference
+     * @param mixed $value The property value
+     * @return self self reference
      * @uses $authorId
      */
-    public function authorId($value)
+    public function authorId(mixed $value): self
     {
         $this->authorId = $value;
         return $this;
@@ -492,6 +503,7 @@ class EntryQuery extends ElementQuery
      * | `['foo', 'bar']` | with an author in a group with a handle of `foo` or `bar`.
      * | `['not', 'foo', 'bar']` | not with an author in a group with a handle of `foo` or `bar`.
      * | a [[UserGroup|UserGroup]] object | with an author in a group represented by the object.
+     * | an array of [[UserGroup|UserGroup]] objects | with an author in a group represented by the objects.
      *
      * ---
      *
@@ -509,15 +521,26 @@ class EntryQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param string|string[]|UserGroup|null $value The property value
-     * @return static self reference
+     * @param mixed $value The property value
+     * @return self self reference
      * @uses $authorGroupId
      */
-    public function authorGroup($value)
+    public function authorGroup(mixed $value): self
     {
         if ($value instanceof UserGroup) {
             $this->authorGroupId = $value->id;
-        } else if ($value !== null) {
+            return $this;
+        }
+
+        if (ArrayHelper::isTraversable($value)) {
+            $collection = Collection::make($value);
+            if ($collection->every(fn($v) => $v instanceof UserGroup)) {
+                $this->authorGroupId = $collection->map(fn(UserGroup $g) => $g->id)->all();
+                return $this;
+            }
+        }
+
+        if ($value !== null) {
             $this->authorGroupId = (new Query())
                 ->select(['id'])
                 ->from([Table::USERGROUPS])
@@ -558,11 +581,11 @@ class EntryQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param int|int[]|null $value The property value
-     * @return static self reference
+     * @param mixed $value The property value
+     * @return self self reference
      * @uses $authorGroupId
      */
-    public function authorGroupId($value)
+    public function authorGroupId(mixed $value): self
     {
         $this->authorGroupId = $value;
         return $this;
@@ -602,10 +625,10 @@ class EntryQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $postDate
      */
-    public function postDate($value)
+    public function postDate(mixed $value): self
     {
         $this->postDate = $value;
         return $this;
@@ -641,11 +664,11 @@ class EntryQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param string|\DateTime $value The property value
-     * @return static self reference
+     * @param mixed $value The property value
+     * @return self self reference
      * @uses $before
      */
-    public function before($value)
+    public function before(mixed $value): self
     {
         $this->before = $value;
         return $this;
@@ -681,11 +704,11 @@ class EntryQuery extends ElementQuery
      *     ->all();
      * ```
      *
-     * @param string|\DateTime $value The property value
-     * @return static self reference
+     * @param mixed $value The property value
+     * @return self self reference
      * @uses $after
      */
-    public function after($value)
+    public function after(mixed $value): self
     {
         $this->after = $value;
         return $this;
@@ -725,10 +748,10 @@ class EntryQuery extends ElementQuery
      * ```
      *
      * @param mixed $value The property value
-     * @return static self reference
+     * @return self self reference
      * @uses $expiryDate
      */
-    public function expiryDate($value)
+    public function expiryDate(mixed $value): self
     {
         $this->expiryDate = $value;
         return $this;
@@ -764,8 +787,9 @@ class EntryQuery extends ElementQuery
      *     ->all();
      * ```
      */
-    public function status($value)
+    public function status(array|string|null $value): self
     {
+        /** @var self */
         return parent::status($value);
     }
 
@@ -813,13 +837,13 @@ class EntryQuery extends ElementQuery
 
         if (Craft::$app->getEdition() === Craft::Pro) {
             if ($this->authorId) {
-                $this->subQuery->andWhere(Db::parseParam('entries.authorId', $this->authorId));
+                $this->subQuery->andWhere(Db::parseNumericParam('entries.authorId', $this->authorId));
             }
 
             if ($this->authorGroupId) {
                 $this->subQuery
                     ->innerJoin(['usergroups_users' => Table::USERGROUPS_USERS], '[[usergroups_users.userId]] = [[entries.authorId]]')
-                    ->andWhere(Db::parseParam('usergroups_users.groupId', $this->authorGroupId));
+                    ->andWhere(Db::parseNumericParam('usergroups_users.groupId', $this->authorGroupId));
             }
         }
 
@@ -833,47 +857,48 @@ class EntryQuery extends ElementQuery
     /**
      * @inheritdoc
      */
-    protected function statusCondition(string $status)
+    protected function statusCondition(string $status): mixed
     {
-        $currentTimeDb = Db::prepareDateForDb(new \DateTime());
+        // Always consider “now” to be the current time @ 59 seconds into the minute.
+        // This makes entry queries more cacheable, since they only change once every minute (https://github.com/craftcms/cms/issues/5389),
+        // while not excluding any entries that may have just been published in the past minute (https://github.com/craftcms/cms/issues/7853).
+        $now = new DateTime();
+        $now->setTime((int)$now->format('H'), (int)$now->format('i'), 59);
+        $currentTimeDb = Db::prepareDateForDb($now);
 
-        switch ($status) {
-            case Entry::STATUS_LIVE:
-                return [
-                    'and',
-                    [
-                        'elements.enabled' => true,
-                        'elements_sites.enabled' => true,
-                    ],
-                    ['<=', 'entries.postDate', $currentTimeDb],
-                    [
-                        'or',
-                        ['entries.expiryDate' => null],
-                        ['>', 'entries.expiryDate', $currentTimeDb],
-                    ],
-                ];
-            case Entry::STATUS_PENDING:
-                return [
-                    'and',
-                    [
-                        'elements.enabled' => true,
-                        'elements_sites.enabled' => true,
-                    ],
-                    ['>', 'entries.postDate', $currentTimeDb],
-                ];
-            case Entry::STATUS_EXPIRED:
-                return [
-                    'and',
-                    [
-                        'elements.enabled' => true,
-                        'elements_sites.enabled' => true,
-                    ],
-                    ['not', ['entries.expiryDate' => null]],
-                    ['<=', 'entries.expiryDate', $currentTimeDb],
-                ];
-            default:
-                return parent::statusCondition($status);
-        }
+        return match ($status) {
+            Entry::STATUS_LIVE => [
+                'and',
+                [
+                    'elements.enabled' => true,
+                    'elements_sites.enabled' => true,
+                ],
+                ['<=', 'entries.postDate', $currentTimeDb],
+                [
+                    'or',
+                    ['entries.expiryDate' => null],
+                    ['>', 'entries.expiryDate', $currentTimeDb],
+                ],
+            ],
+            Entry::STATUS_PENDING => [
+                'and',
+                [
+                    'elements.enabled' => true,
+                    'elements_sites.enabled' => true,
+                ],
+                ['>', 'entries.postDate', $currentTimeDb],
+            ],
+            Entry::STATUS_EXPIRED => [
+                'and',
+                [
+                    'elements.enabled' => true,
+                    'elements_sites.enabled' => true,
+                ],
+                ['not', ['entries.expiryDate' => null]],
+                ['<=', 'entries.expiryDate', $currentTimeDb],
+            ],
+            default => parent::statusCondition($status),
+        };
     }
 
     /**
@@ -881,7 +906,7 @@ class EntryQuery extends ElementQuery
      *
      * @throws QueryAbortedException
      */
-    private function _applyEditableParam()
+    private function _applyEditableParam(): void
     {
         if (!$this->editable) {
             return;
@@ -898,9 +923,9 @@ class EntryQuery extends ElementQuery
             'entries.sectionId' => Craft::$app->getSections()->getEditableSectionIds(),
         ]);
 
-        // Enforce the editPeerEntries permissions for non-Single sections
+        // Enforce the viewPeerEntries permissions for non-Single sections
         foreach (Craft::$app->getSections()->getEditableSections() as $section) {
-            if ($section->type != Section::TYPE_SINGLE && !$user->can('editPeerEntries:' . $section->uid)) {
+            if ($section->type != Section::TYPE_SINGLE && !$user->can("viewPeerEntries:$section->uid")) {
                 $this->subQuery->andWhere([
                     'or',
                     ['not', ['entries.sectionId' => $section->id]],
@@ -915,17 +940,17 @@ class EntryQuery extends ElementQuery
      *
      * @throws InvalidConfigException
      */
-    private function _normalizeTypeId()
+    private function _normalizeTypeId(): void
     {
         if (empty($this->typeId)) {
             $this->typeId = is_array($this->typeId) ? [] : null;
-        } else if (is_numeric($this->typeId)) {
+        } elseif (is_numeric($this->typeId)) {
             $this->typeId = [$this->typeId];
-        } else if (!is_array($this->typeId) || !ArrayHelper::isNumeric($this->typeId)) {
+        } elseif (!is_array($this->typeId) || !ArrayHelper::isNumeric($this->typeId)) {
             $this->typeId = (new Query())
                 ->select(['id'])
                 ->from([Table::ENTRYTYPES])
-                ->where(Db::parseParam('id', $this->typeId))
+                ->where(Db::parseNumericParam('id', $this->typeId))
                 ->column();
         }
     }
@@ -933,7 +958,7 @@ class EntryQuery extends ElementQuery
     /**
      * Applies the 'sectionId' param to the query being prepared.
      */
-    private function _applySectionIdParam()
+    private function _applySectionIdParam(): void
     {
         if ($this->sectionId) {
             $this->subQuery->andWhere(['entries.sectionId' => $this->sectionId]);
@@ -941,7 +966,7 @@ class EntryQuery extends ElementQuery
             // Should we set the structureId param?
             if (
                 $this->withStructure !== false &&
-                $this->structureId === null &&
+                !isset($this->structureId) &&
                 count($this->sectionId) === 1
             ) {
                 $section = Craft::$app->getSections()->getSectionById(reset($this->sectionId));
@@ -957,17 +982,17 @@ class EntryQuery extends ElementQuery
     /**
      * Normalizes the sectionId param to an array of IDs or null
      */
-    private function _normalizeSectionId()
+    private function _normalizeSectionId(): void
     {
         if (empty($this->sectionId)) {
             $this->sectionId = is_array($this->sectionId) ? [] : null;
-        } else if (is_numeric($this->sectionId)) {
+        } elseif (is_numeric($this->sectionId)) {
             $this->sectionId = [$this->sectionId];
-        } else if (!is_array($this->sectionId) || !ArrayHelper::isNumeric($this->sectionId)) {
+        } elseif (!is_array($this->sectionId) || !ArrayHelper::isNumeric($this->sectionId)) {
             $this->sectionId = (new Query())
                 ->select(['id'])
                 ->from([Table::SECTIONS])
-                ->where(Db::parseParam('id', $this->sectionId))
+                ->where(Db::parseNumericParam('id', $this->sectionId))
                 ->column();
         }
     }
@@ -975,7 +1000,7 @@ class EntryQuery extends ElementQuery
     /**
      * Applies the 'ref' param to the query being prepared.
      */
-    private function _applyRefParam()
+    private function _applyRefParam(): void
     {
         if (!$this->ref) {
             return;
@@ -1025,7 +1050,7 @@ class EntryQuery extends ElementQuery
             foreach ($this->typeId as $typeId) {
                 $tags[] = "entryType:$typeId";
             }
-        } else if ($this->sectionId) {
+        } elseif ($this->sectionId) {
             foreach ($this->sectionId as $sectionId) {
                 $tags[] = "section:$sectionId";
             }

@@ -10,9 +10,14 @@ namespace craft\console\controllers;
 use Craft;
 use craft\console\Controller;
 use craft\helpers\Console;
+use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
+use Throwable;
+use yii\base\NotSupportedException;
 use yii\console\ExitCode;
+use yii\db\Exception;
+use ZipArchive;
 
 /**
  * Performs database operations.
@@ -25,26 +30,121 @@ class DbController extends Controller
     /**
      * @var bool Whether the backup should be saved as a zip file.
      */
-    public $zip = false;
+    public bool $zip = false;
 
     /**
      * @var bool Whether to overwrite an existing backup file, if a specific file path is given.
      */
-    public $overwrite = false;
+    public bool $overwrite = false;
+
+    /**
+     * @var bool Whether to drop all preexisting tables in the database prior to restoring the backup.
+     * @since 4.1.0
+     */
+    public bool $dropAllTables = false;
 
     /**
      * @inheritdoc
      */
-    public function options($actionID)
+    public function options($actionID): array
     {
         $options = parent::options($actionID);
 
-        if ($actionID === 'backup') {
-            $options[] = 'zip';
-            $options[] = 'overwrite';
+        switch ($actionID) {
+            case 'backup':
+                $options[] = 'zip';
+                $options[] = 'overwrite';
+                break;
+            case 'restore':
+                $options[] = 'dropAllTables';
+                break;
         }
 
         return $options;
+    }
+
+    /**
+     * Drops all tables in the database.
+     *
+     * Example:
+     * ```
+     * php craft db/drop-all-tables
+     * ```
+     *
+     * @throws \yii\base\NotSupportedException
+     * @throws \yii\db\Exception
+     * @since 4.1.0
+     */
+    public function actionDropAllTables(): int
+    {
+        if (!$this->_tablesExist()) {
+            $this->stdout('No existing database tables found.' . PHP_EOL, Console::FG_YELLOW);
+            return ExitCode::OK;
+        }
+
+        if ($this->interactive && !$this->confirm('Are you sure you want to drop all tables from the database?')) {
+            $this->stdout('Aborted.' . PHP_EOL, Console::FG_YELLOW);
+            return ExitCode::OK;
+        }
+
+        $this->_backupPrompt();
+
+        try {
+            $this->_dropAllTables();
+        } catch (Throwable $e) {
+            Craft::$app->getErrorHandler()->logException($e);
+            $this->stderr('error: ' . $e->getMessage() . PHP_EOL, Console::FG_RED);
+            return ExitCode::UNSPECIFIED_ERROR;
+        }
+
+        return ExitCode::OK;
+    }
+
+    /**
+     * Returns whether any database tables exist currently.
+     *
+     * @return bool
+     */
+    private function _tablesExist(): bool
+    {
+        return !empty(Craft::$app->getDb()->getSchema()->getTableNames());
+    }
+
+    /**
+     * Prompts for whether the database should be backed up.
+     */
+    private function _backupPrompt(): void
+    {
+        if ($this->interactive && $this->confirm('Backup your database?')) {
+            $this->runAction('backup');
+            $this->stdout(PHP_EOL);
+        }
+    }
+
+    /**
+     * Drops all tables in the database.
+     *
+     * @throws NotSupportedException
+     * @throws Exception
+     */
+    private function _dropAllTables(): void
+    {
+        $tableNames = Craft::$app->getDb()->getSchema()->getTableNames();
+
+        $this->stdout('Dropping all database tables ... ' . PHP_EOL);
+
+        foreach ($tableNames as $tableName) {
+            $this->stdout('    - Dropping ');
+            $this->stdout($tableName, Console::FG_CYAN);
+            $this->stdout(' ... ');
+            Db::dropAllForeignKeysToTable($tableName);
+            Craft::$app->getDb()->createCommand()
+                ->dropTable($tableName)
+                ->execute();
+            $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
+        }
+
+        $this->stdout('Finished dropping all database tables.' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
     }
 
     /**
@@ -65,14 +165,14 @@ class DbController extends Controller
      *
      * @return int
      */
-    public function actionBackup(string $path = null): int
+    public function actionBackup(?string $path = null): int
     {
         $this->stdout('Backing up the database ... ');
         $db = Craft::$app->getDb();
 
         if ($path !== null) {
             // Prefix with the working directory if a relative path or no path is given
-            if (strpos($path, '.') === 0 || strpos(FileHelper::normalizePath($path, '/'), '/') === false) {
+            if (str_starts_with($path, '.') || !str_contains(FileHelper::normalizePath($path, '/'), '/')) {
                 $path = getcwd() . DIRECTORY_SEPARATOR . $path;
             }
 
@@ -80,7 +180,7 @@ class DbController extends Controller
 
             if (is_dir($path)) {
                 $path .= DIRECTORY_SEPARATOR . basename($db->getBackupFilePath());
-            } else if ($this->zip) {
+            } elseif ($this->zip) {
                 $path = preg_replace('/\.zip$/', '', $path);
             }
         } else {
@@ -95,13 +195,13 @@ class DbController extends Controller
         foreach ($checkPaths as $checkPath) {
             if (is_file($checkPath)) {
                 if (!$this->overwrite) {
-                    if (!$this->confirm("$checkPath already exists. Overwrite?")) {
-                        if ($this->interactive) {
-                            $this->stdout('Aborting' . PHP_EOL);
-                            return ExitCode::OK;
-                        }
+                    if (!$this->interactive) {
                         $this->stderr("$checkPath already exists. Retry with the --overwrite flag to overwrite it." . PHP_EOL, Console::FG_RED);
                         return ExitCode::UNSPECIFIED_ERROR;
+                    }
+                    if (!$this->confirm("$checkPath already exists. Overwrite?")) {
+                        $this->stdout('Aborting' . PHP_EOL);
+                        return ExitCode::OK;
                     }
                 }
                 unlink($checkPath);
@@ -115,7 +215,7 @@ class DbController extends Controller
                 unlink($path);
                 $path = $zipPath;
             }
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Craft::$app->getErrorHandler()->logException($e);
             $this->stderr('error: ' . $e->getMessage() . PHP_EOL, Console::FG_RED);
             return ExitCode::UNSPECIFIED_ERROR;
@@ -123,17 +223,22 @@ class DbController extends Controller
 
         $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
         $size = Craft::$app->getFormatter()->asShortSize(filesize($path));
-        $this->stdout("Backup file: {$path} ({$size})" . PHP_EOL);
+        $this->stdout("Backup file: $path ($size)" . PHP_EOL);
         return ExitCode::OK;
     }
 
     /**
      * Restores a database backup.
      *
+     * Example:
+     * ```
+     * php craft db/restore ./my-backup.sql
+     * ```
+     *
      * @param string|null $path The path to the database backup file.
      * @return int
      */
-    public function actionRestore(string $path = null): int
+    public function actionRestore(?string $path = null): int
     {
         if (!is_file($path)) {
             $this->stderr("Backup file doesn't exist: $path" . PHP_EOL);
@@ -141,7 +246,7 @@ class DbController extends Controller
         }
 
         if (strtolower(pathinfo($path, PATHINFO_EXTENSION)) === 'zip') {
-            $zip = new \ZipArchive();
+            $zip = new ZipArchive();
 
             if ($zip->open($path) !== true) {
                 $this->stderr("Unable to open the zip file at $path." . PHP_EOL, Console::FG_RED);
@@ -164,11 +269,28 @@ class DbController extends Controller
             $path = reset($files);
         }
 
+        if ($this->_tablesExist()) {
+            $this->_backupPrompt();
+
+            if (
+                $this->dropAllTables ||
+                ($this->interactive && $this->confirm('Drop all tables from the database first?'))
+            ) {
+                try {
+                    $this->_dropAllTables();
+                } catch (Throwable $e) {
+                    Craft::$app->getErrorHandler()->logException($e);
+                    $this->stderr('error: ' . $e->getMessage() . PHP_EOL, Console::FG_RED);
+                    return ExitCode::UNSPECIFIED_ERROR;
+                }
+            }
+        }
+
         $this->stdout('Restoring database backup ... ');
 
         try {
             Craft::$app->getDb()->restore($path);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Craft::$app->getErrorHandler()->logException($e);
             $this->stderr('error: ' . $e->getMessage() . PHP_EOL, Console::FG_RED);
             return ExitCode::UNSPECIFIED_ERROR;
@@ -182,11 +304,20 @@ class DbController extends Controller
             $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
         }
 
+        if ($this->interactive && $this->confirm('Clear data caches?', true)) {
+            $this->run('clear-caches/data');
+        }
+
         return ExitCode::OK;
     }
 
     /**
      * Converts tables’ character sets and collations. (MySQL only)
+     *
+     * Example:
+     * ```
+     * php craft db/convert-charset utf8 utf8_unicode_ci
+     * ```
      *
      * @param string|null $charset The target character set, which honors `DbConfig::$charset`
      *                               or defaults to `utf8`.

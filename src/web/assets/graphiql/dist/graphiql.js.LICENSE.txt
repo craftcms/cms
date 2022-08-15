@@ -12,7 +12,7 @@ object-assign
  * MIT Licensed
  */
 
-/*! https://mths.be/punycode v1.3.2 by @mathias */
+/*! https://mths.be/punycode v1.4.1 by @mathias */
 
 /** @license React v0.19.1
  * scheduler.production.min.js

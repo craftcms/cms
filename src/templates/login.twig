@@ -1,0 +1,139 @@
+{% extends "_layouts/basecp" %}
+{% import "_includes/forms" as forms %}
+{% set title = "Sign In"|t('app') %}
+{% set bodyClass = 'login' %}
+{% do view.registerAssetBundle("craft\\web\\assets\\login\\LoginAsset") %}
+
+{% set generalConfig = craft.app.config.general %}
+{% set username = generalConfig.rememberUsernameDuration ? craft.app.user.getRememberedUsername(): '' %}
+
+{% if generalConfig.useEmailAsUsername %}
+    {% set usernameLabel = 'Email'|t('app') %}
+    {% set usernameType = 'email' %}
+{% else %}
+    {% set usernameLabel = 'Username or Email'|t('app') %}
+    {% set usernameType = 'text' %}
+{% endif %}
+
+{% set hasLogo = CraftEdition == CraftPro and craft.rebrand.isLogoUploaded %}
+
+{% set formAttributes = {
+    id: 'login-form',
+    method: 'post',
+    class: generalConfig.rememberedUserSessionDuration ? 'remember-me' : '',
+    'accept-charset': 'UTF-8',
+} %}
+
+{% if hasLogo %}
+    {% set logo = craft.rebrand.logo %}
+{% endif %}
+
+{% set formHtml %}
+    <main>
+        <div id="login">
+
+            <h1>
+                {% if hasLogo %}
+                    {{ tag('img', {
+                        id: 'login-logo',
+                        src: logo.url,
+                        alt: systemName,
+                        width: logo.width,
+                        height: logo.height,
+                    }) }}
+                {% else %}
+                    {{ systemName }}
+                {% endif %}
+            </h1>
+
+            <form {{ attr(formAttributes) }}>
+
+                <div id="login-form-top">
+                    {{ forms.textField({
+                        id: 'loginName',
+                        name: 'username',
+                        placeholder: usernameLabel,
+                        value: username,
+                        autocomplete: 'username',
+                        autocapitalize: false,
+                        type: usernameType,
+                        inputAttributes: {
+                            aria: {
+                                label: usernameLabel,
+                                required: 'true',
+                            },
+                        },
+                    }) }}
+                    {{ forms.passwordField({
+                        id: 'password',
+                        name: 'password',
+                        placeholder: 'Password'|t('app'),
+                        autocomplete: 'current-password',
+                        inputAttributes: {
+                            aria: {
+                                label: 'Password'|t('app'),
+                                required: 'true',
+                            },
+                        },
+                    }) }}
+                </div>
+
+                <div id="login-form-bottom">
+                    {% if generalConfig.rememberedUserSessionDuration %}
+                        {{ forms.checkboxField({
+                            id: 'rememberMe',
+                            label: 'Keep me signed in for {duration}'|t('app', {
+                                duration: generalConfig.getRememberedUserSessionDuration()|duration,
+                            })
+                        }) }}
+                    {% endif %}
+                </div>
+
+                <div id="login-form-buttons" class="buttons">
+                    {{ forms.submitButton({
+                        id: 'submit',
+                        label: 'Sign in'|t('app'),
+                        spinner: true,
+                    }) }}
+                </div>
+
+                <div id="login-form-extra">
+                    <button id="forgot-password" type="button">{{ 'Forgot your password?'|t('app') }}</button>
+                    <button id="remember-password" type="button">{{ 'Remember your password?'|t('app') }}</button>
+                </div>
+            </form>
+
+            <div id="login-errors" role="alert">
+            </div>
+
+            <a id="poweredby" href="http://craftcms.com/" title="{{ 'Powered by Craft CMS'|t('app') }}" aria-label="Craft CMS">
+                {{ svg('@app/web/assets/cp/dist/images/craftcms.svg') }}
+            </a>
+
+        </div>
+
+    </main>
+{% endset %}
+
+{% set noCookiesHtml %}
+    <main>
+        <div class="message-container no-access">
+            <div class="pane notice">
+                <p>{{ 'Cookies must be enabled to access the Craft CMS control panel.'|t('app') }}</p>
+            </div>
+        </div>
+    </main>
+{% endset %}
+
+{% block body %}
+    <script type="text/javascript">
+        var cookieTest = 'CraftCookieTest='+Math.floor(Math.random() * 1000000);
+        document.cookie = cookieTest;
+        if (document.cookie.search(cookieTest) != -1) {
+            document.cookie = cookieTest + '=; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+            document.write({{ formHtml|json_encode|raw }});
+        } else {
+            document.write({{ noCookiesHtml|json_encode|raw }});
+        }
+    </script>
+{% endblock %}

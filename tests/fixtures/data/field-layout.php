@@ -23,9 +23,9 @@ return [
                         'type' => Number::class,
                         'required' => true,
                     ],
-                ]
-            ]
-        ]
+                ],
+            ],
+        ],
     ],
     [
         // Because User elements fetch layout by type
@@ -40,9 +40,9 @@ return [
                         'type' => PlainText::class,
                         'required' => true,
                     ],
-                ]
-            ]
-        ]
+                ],
+            ],
+        ],
     ],
     [
         'type' => 'volume_field_layout',
@@ -62,9 +62,9 @@ return [
                         'type' => PlainText::class,
                         'required' => true,
                     ],
-                ]
-            ]
-        ]
+                ],
+            ],
+        ],
     ],
     [
         'uid' => 'field-layout-1000----------------uid',
@@ -92,11 +92,11 @@ return [
                                         'instructions' => '',
                                         'required' => false,
                                         'typesettings' => [
-                                            'multiline' => ''
-                                        ]
-                                    ]
-                                ]
-                            ]
+                                            'multiline' => '',
+                                        ],
+                                    ],
+                                ],
+                            ],
                         ],
                         'required' => false,
                     ],
@@ -142,9 +142,9 @@ return [
                             ],
                         ],
                         'required' => true,
-                    ]
-                ]
-            ]
-        ]
-    ]
+                    ],
+                ],
+            ],
+        ],
+    ],
 ];

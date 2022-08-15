@@ -1,0 +1,10 @@
+{% apply spaceless %}
+
+{% for element in elements %}
+    <li data-id="{{ element.id }}" class="{% if element.id in disabledElementIds %}disabled{% endif %} {% if showCheckboxes %}has-checkbox{% endif %}">
+        {% include "_elements/element" %}
+        {% if showCheckboxes %}<div class="checkbox" title="{{ 'Select'|t('app') }}" aria-label="{{ 'Select'|t('app') }}"></div>{% endif %}
+    </li>
+{% endfor %}
+
+{% endapply -%}

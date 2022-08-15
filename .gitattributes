@@ -1,21 +1,39 @@
 # Do not export those files in the Composer archive (lighter dependency)
 /.browserslistrc export-ignore
 /.codecov.yml export-ignore
+/.ddev/ export-ignore
+/.env.example export-ignore
+/.git-blame-ignore-revs export-ignore
 /.gitattributes export-ignore
 /.github/ export-ignore
 /.gitignore export-ignore
+/.husky/ export-ignore
 /.lando.yml export-ignore
-/.travis.yml export-ignore
+/.lintstagedrc.json export-ignore
+/.nvmrc export-ignore
+/.prettierignore export-ignore
+/.prettierrc.json export-ignore
+/CHANGELOG-WIP.md export-ignore
 /CHANGELOG.md export-ignore
 /README.md export-ignore
-/SECURITY.md export-ignore
 /codeception.yml export-ignore
 /composer.lock export-ignore
 /crowdin.yml export-ignore
+/ecs.php export-ignore
 /gulpfile.js export-ignore
+/lerna.json export-ignore
+/lib/craft/behaviors/CustomFieldBehavior.php export-ignore
 /package-lock.json export-ignore
 /package.json export-ignore
 /packages/ export-ignore
+/phpstan.neon export-ignore
+/src/web/assets/**/src/ export-ignore
+/stubs/ export-ignore
+/tests/ export-ignore
+/tsconfig.json export-ignore
+/webpack.config.js export-ignore
+
+# Identify generated files
 /src/translations/a*/app.php linguist-generated=true
 /src/translations/c*/app.php linguist-generated=true
 /src/translations/d*/app.php linguist-generated=true
@@ -36,7 +54,6 @@
 /src/web/assets/**/dist/**/*.css.map linguist-generated=true
 /src/web/assets/**/dist/**/*.min.js linguist-generated=true
 /src/web/assets/**/dist/**/*.min.js.map linguist-generated=true
-/tests/ export-ignore
 
 # Auto detect text files and perform LF normalization
 * text=auto

@@ -3,8 +3,8 @@
 const {getConfig} = require('@craftcms/webpack');
 
 module.exports = getConfig({
-    context: __dirname,
-    config: {
-        entry: {'PluginManager': './PluginManager.js'},
-    }
+  context: __dirname,
+  config: {
+    entry: {PluginManager: './PluginManager.js'},
+  },
 });

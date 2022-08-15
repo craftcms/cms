@@ -38,7 +38,6 @@ class m220209_095604_add_indexes extends Migration
     {
         return [
             [Table::ELEMENTS, ['archived', 'dateDeleted', 'draftId', 'revisionId', 'canonicalId', 'enabled'], false],
-            [Table::ASSETTRANSFORMINDEX, ['assetId', 'format', 'location'], false],
         ];
     }
 }

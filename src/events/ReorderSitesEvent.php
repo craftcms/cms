@@ -18,7 +18,7 @@ use yii\base\Event;
 class ReorderSitesEvent extends Event
 {
     /**
-     * @var int[]|null The site IDs in their new order
+     * @var int[] The site IDs in their new order
      */
-    public $siteIds;
+    public ?array $siteIds = null;
 }

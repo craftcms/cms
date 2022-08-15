@@ -7,16 +7,15 @@
 
 namespace crafttests\unit\helpers;
 
-use Closure;
 use Codeception\Test\Unit;
 use Craft;
 use craft\helpers\DateTimeHelper;
+use craft\test\TestCase;
 use DateInterval;
 use DateTime;
 use DateTimeZone;
 use Exception;
 use UnitTester;
-use yii\base\InvalidArgumentException;
 
 /**
  * Unit tests for the DateTime Helper class.
@@ -25,46 +24,63 @@ use yii\base\InvalidArgumentException;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class DateTimeHelperTest extends Unit
+class DateTimeHelperTest extends TestCase
 {
     /**
      * @var UnitTester
      */
-    protected $tester;
+    protected UnitTester $tester;
 
     /**
      * @var DateTimeZone
      */
-    protected $systemTimezone;
+    protected DateTimeZone $systemTimezone;
 
     /**
      * @var DateTimeZone
      */
-    protected $utcTimezone;
+    protected DateTimeZone $utcTimezone;
 
     /**
      * @var DateTimeZone
      */
-    protected $asiaTokyoTimezone;
+    protected DateTimeZone $asiaTokyoTimezone;
 
     /**
      * @dataProvider constantsDataProvider
-     *
      * @param int $expected
      * @param int $actual
      */
-    public function testConstants(int $expected, int $actual)
+    public function testConstants(int $expected, int $actual): void
     {
         self::assertSame($expected, $actual);
     }
 
     /**
+     *
+     */
+    public function testPause(): void
+    {
+        // Use a slightly-off time so we don't have to sleep()
+        $now = (new DateTime('now'))->modify('-1 minute');
+        $timestamp = $now->getTimestamp();
+        DateTimeHelper::pause($now);
+        self::assertEquals($timestamp, DateTimeHelper::currentTimeStamp());
+        DateTimeHelper::pause();
+        self::assertEquals($timestamp, DateTimeHelper::currentTimeStamp());
+        DateTimeHelper::resume();
+        self::assertEquals($timestamp, DateTimeHelper::currentTimeStamp());
+        DateTimeHelper::resume();
+        self::assertNotEquals($timestamp, DateTimeHelper::currentTimeStamp());
+    }
+
+    /**
      * @throws Exception
      */
-    public function testCurrentUtcDateTime()
+    public function testCurrentUtcDateTime(): void
     {
         self::assertSame(
-            (new DateTime(null, $this->utcTimezone))->format('Y-m-d H:i:s'),
+            (new DateTime('now', $this->utcTimezone))->format('Y-m-d H:i:s'),
             DateTimeHelper::currentUTCDateTime()->format('Y-m-d H:i:s')
         );
     }
@@ -72,24 +88,12 @@ class DateTimeHelperTest extends Unit
     /**
      * @throws Exception
      */
-    public function testCurrentUtcDateTimeStamp()
+    public function testCurrentUtcDateTimeStamp(): void
     {
         self::assertSame(
             DateTimeHelper::currentTimeStamp(),
-            (new DateTime(null, $this->utcTimezone))->getTimestamp()
+            (new DateTime('now', $this->utcTimezone))->getTimestamp()
         );
-    }
-
-    /**
-     * @dataProvider secondsToHumanTimeDurationDataProvider
-     *
-     * @param string $expected
-     * @param int $seconds
-     * @param bool $showSeconds
-     */
-    public function testSecondsToHumanTimeDuration(string $expected, int $seconds, bool $showSeconds = true)
-    {
-        self::assertSame($expected, DateTimeHelper::secondsToHumanTimeDuration($seconds, $showSeconds));
     }
 
     /**
@@ -101,16 +105,15 @@ class DateTimeHelperTest extends Unit
      * toDateTime must start the DateTime from Asia/Tokyo instead of UTC(The default starting point) and then convert it to the system timezone.
      *
      * @dataProvider formatsWithTimezoneDataProvider
-     *
-     * @param         $format
-     * @param Closure $expectedResult
+     * @param mixed $value
+     * @param callable $expectedResult
      * @throws Exception
      */
-    public function testUtcIgnorance($format, Closure $expectedResult)
+    public function testUtcIgnorance(mixed $value, callable $expectedResult): void
     {
         $expectedResult = $expectedResult();
 
-        $toDateTime = DateTimeHelper::toDateTime($format);
+        $toDateTime = DateTimeHelper::toDateTime($value);
         $systemTz = $this->systemTimezone->getName();
 
         self::assertInstanceOf(DateTime::class, $toDateTime);
@@ -125,12 +128,11 @@ class DateTimeHelperTest extends Unit
 
     /**
      * @dataProvider toDateTimeDataProvider
-     *
      * @param callable|DateTime|false $expected
-     * @param $value
+     * @param mixed $value
      * @throws Exception
      */
-    public function testToDateTime($expected, $value)
+    public function testToDateTime(callable|DateTime|false $expected, mixed $value): void
     {
         if (is_callable($expected)) {
             $expected = $expected();
@@ -150,13 +152,12 @@ class DateTimeHelperTest extends Unit
      * Test that if we set the $setToSystemTimezone value to false that toDateTime creates a tz in UTC.
      *
      * @dataProvider simpleDateTimeFormatsDataProvider
-     *
-     * @param $format
+     * @param mixed $value
      * @throws Exception
      */
-    public function testUtcDefault($format)
+    public function testUtcDefault(mixed $value): void
     {
-        $toDateTime = DateTimeHelper::toDateTime($format, false, false);
+        $toDateTime = DateTimeHelper::toDateTime($value, false, false);
         self::assertSame($this->utcTimezone->getName(), $toDateTime->getTimezone()->getName());
     }
 
@@ -164,15 +165,14 @@ class DateTimeHelperTest extends Unit
      * Test that dateTime is created with the passed in timezone IF $setSystemTimezone is set to false.
      *
      * @dataProvider toDateTimeWithTzFormatsDataProvider
-     *
-     * @param              $format
+     * @param mixed $value
      * @param DateTime $expectedResult
      * @param DateTimeZone $expectedTimezone
      * @throws Exception
      */
-    public function testToDateTimeRespectsTz($format, DateTime $expectedResult, DateTimeZone $expectedTimezone)
+    public function testToDateTimeRespectsTz(mixed $value, DateTime $expectedResult, DateTimeZone $expectedTimezone): void
     {
-        $toDateTime = DateTimeHelper::toDateTime($format, false, false);
+        $toDateTime = DateTimeHelper::toDateTime($value, false, false);
 
         self::assertInstanceOf(DateTime::class, $toDateTime);
         self::assertSame($expectedTimezone->getName(), $toDateTime->getTimezone()->getName());
@@ -182,26 +182,25 @@ class DateTimeHelperTest extends Unit
 
     /**
      * @dataProvider toDateTimeFormatsDataProvider
-     *
-     * @param         $format
-     * @param Closure $expectedResult
-     * @param null $closureParam
+     * @param mixed $value
+     * @param callable $expectedResult
+     * @param string|null $closureParam
      * @throws Exception
      */
-    public function testToDateTimeCreation($format, Closure $expectedResult, $closureParam = null)
+    public function testToDateTimeCreation(mixed $value, callable $expectedResult, ?string $closureParam = null): void
     {
         $expectedResult = $closureParam ? $expectedResult($closureParam) : $expectedResult();
 
-        $toDateTime = DateTimeHelper::toDateTime($format);
+        $toDateTime = DateTimeHelper::toDateTime($value);
 
-        self::assertSame($expectedResult->format('Y-m-d H:i:s'), DateTimeHelper::toDateTime($format)->format('Y-m-d H:i:s'));
+        self::assertSame($expectedResult->format('Y-m-d H:i:s'), DateTimeHelper::toDateTime($value)->format('Y-m-d H:i:s'));
         self::assertInstanceOf(DateTime::class, $toDateTime);
     }
 
     /**
      * DateTimeHelper::toDateTime:145-148
      */
-    public function testEmptyArrayDateDefault()
+    public function testEmptyArrayDateDefault(): void
     {
         $dt = DateTimeHelper::toDateTime(['date' => '', 'time' => '08:00PM']);
 
@@ -214,44 +213,40 @@ class DateTimeHelperTest extends Unit
 
     /**
      * @dataProvider normalizeTimeZoneDataProvider
-     *
      * @param string|false $expected
      * @param string $timeZone
      */
-    public function testNormalizeTimeZone($expected, string $timeZone)
+    public function testNormalizeTimeZone(string|false $expected, string $timeZone): void
     {
         self::assertSame($expected, DateTimeHelper::normalizeTimeZone($timeZone));
     }
 
     /**
      * @dataProvider isIsIso8601DataProvider
-     *
      * @param bool $expected
      * @param mixed $value
      */
-    public function testIsIso8601(bool $expected, $value)
+    public function testIsIso8601(bool $expected, mixed $value): void
     {
         self::assertSame($expected, DateTimeHelper::isIso8601($value));
     }
 
     /**
-     * @dataProvider humanIntervalFromDurationDataProvider
-     *
+     * @dataProvider humanDurationDataProvider
      * @param string $expected
-     * @param string $duration
-     * @param bool $showSeconds
+     * @param string|int $duration
+     * @param bool|null $showSeconds
      * @throws Exception
      */
-    public function testHumanIntervalFromDuration(string $expected, string $duration, bool $showSeconds = true)
+    public function testHumanDuration(string $expected, string|int $duration, ?bool $showSeconds = null): void
     {
-        $dateInterval = new DateInterval($duration);
-        self::assertSame($expected, DateTimeHelper::humanDurationFromInterval($dateInterval, $showSeconds));
+        self::assertSame($expected, DateTimeHelper::humanDuration($duration, $showSeconds));
     }
 
     /**
      * @throws Exception
      */
-    public function testIsToday()
+    public function testIsToday(): void
     {
         $dateTime = new DateTime('now');
         self::assertTrue(DateTimeHelper::isToday($dateTime));
@@ -269,7 +264,7 @@ class DateTimeHelperTest extends Unit
     /**
      * @throws Exception
      */
-    public function testYesterday()
+    public function testYesterday(): void
     {
         $dateTime = new DateTime('now');
 
@@ -289,7 +284,7 @@ class DateTimeHelperTest extends Unit
     /**
      * @throws Exception
      */
-    public function testThisYearCheck()
+    public function testThisYearCheck(): void
     {
         $dateTime = new DateTime('now');
         self::assertTrue(DateTimeHelper::isThisYear($dateTime));
@@ -304,7 +299,7 @@ class DateTimeHelperTest extends Unit
     /**
      * @throws Exception
      */
-    public function testThisWeek()
+    public function testThisWeek(): void
     {
         $dateTime = new DateTime('now');
         self::assertTrue(DateTimeHelper::isThisWeek($dateTime));
@@ -323,7 +318,7 @@ class DateTimeHelperTest extends Unit
     /**
      * @throws Exception
      */
-    public function testIsInThePast()
+    public function testIsInThePast(): void
     {
         $systemTz = new DateTimeZone(Craft::$app->getTimeZone());
         $dateTime = new DateTime('now', $systemTz);
@@ -340,7 +335,7 @@ class DateTimeHelperTest extends Unit
     /**
      * @throws Exception
      */
-    public function testIsThisMonth()
+    public function testIsThisMonth(): void
     {
         $dateTime = new DateTime('now');
         self::assertTrue(DateTimeHelper::isThisMonth($dateTime));
@@ -350,30 +345,12 @@ class DateTimeHelperTest extends Unit
     }
 
     /**
-     * @dataProvider isWithinLastDataProvider
-     *
-     * @param bool|null $expected
-     * @param mixed $date
-     * @param mixed $timeInterval
-     */
-    public function testIsWithinLast(?bool $expected, $date, $timeInterval)
-    {
-        if (is_bool($expected)) {
-            self::assertSame($expected, DateTimeHelper::isWithinLast($date, $timeInterval));
-        } else {
-            self::expectException(InvalidArgumentException::class);
-            DateTimeHelper::isWithinLast($date, $timeInterval);
-        }
-    }
-
-    /**
      * @dataProvider secondsToIntervalDataProvider
-     *
-     * @param $shortResult
-     * @param $longResult
-     * @param $input
+     * @param int $shortResult
+     * @param int $longResult
+     * @param int $input
      */
-    public function testSecondsToInterval($shortResult, $longResult, $input)
+    public function testSecondsToInterval(int $shortResult, int $longResult, int $input): void
     {
         $interval = DateTimeHelper::secondsToInterval($input);
         self::assertSame($shortResult, $interval->s);
@@ -382,13 +359,11 @@ class DateTimeHelperTest extends Unit
 
     /**
      * @dataProvider intervalToSecondsDataProvider
-     *
      * @param int $expected
      * @param string $duration
-     *
      * @throws Exception
      */
-    public function testIntervalToSeconds(int $expected, string $duration)
+    public function testIntervalToSeconds(int $expected, string $duration): void
     {
         $dateInterval = new DateInterval($duration);
         self::assertSame($expected, DateTimeHelper::intervalToSeconds($dateInterval));
@@ -396,71 +371,56 @@ class DateTimeHelperTest extends Unit
 
     /**
      * @dataProvider toIso8601DataProvider
-     *
      * @param string|false $expected
      * @param mixed $date
      */
-    public function testToIso8601($expected, $date)
+    public function testToIso8601(string|false $expected, mixed $date): void
     {
         self::assertSame($expected, DateTimeHelper::toIso8601($date));
     }
 
     /**
      * @dataProvider timeZoneAbbreviationDataProvider
-     *
      * @param string $expected
      * @param string $timeZone
      */
-    public function testTimeZoneAbbreviation(string $expected, string $timeZone)
+    public function testTimeZoneAbbreviation(string $expected, string $timeZone): void
     {
         self::assertSame($expected, DateTimeHelper::timeZoneAbbreviation($timeZone));
     }
 
     /**
      * @dataProvider isValidTimeStampDataProvider
-     *
      * @param bool $expected
-     * @param string|int $timestamp
+     * @param mixed $timestamp
      */
-    public function testIsValidTimeStamp(bool $expected, $timestamp)
+    public function testIsValidTimeStamp(bool $expected, mixed $timestamp): void
     {
         self::assertSame($expected, DateTimeHelper::isValidTimeStamp($timestamp));
     }
 
     /**
      * @dataProvider isInvalidIntervalStringDataProvider
-     *
      * @param bool $expected
      * @param string $intervalString
      */
-    public function testIsValidIntervalString(bool $expected, string $intervalString)
+    public function testIsValidIntervalString(bool $expected, string $intervalString): void
     {
         self::assertSame($expected, DateTimeHelper::isValidIntervalString($intervalString));
     }
 
     /**
      * @dataProvider timeZoneOffsetDataDataProvider
-     *
      * @param string|string[] $expected
      * @param string $timeZone
      */
-    public function testTimeZoneOffset($expected, string $timeZone)
+    public function testTimeZoneOffset(string|array $expected, string $timeZone): void
     {
         if (is_string($expected)) {
             self::assertSame($expected, DateTimeHelper::timeZoneOffset($timeZone));
         } else {
             self::assertContains(DateTimeHelper::timeZoneOffset($timeZone), $expected);
         }
-    }
-
-    /**
-     *
-     */
-    public function testTimezoneOffsetException()
-    {
-        $this->tester->expect(Exception::class, function() {
-            DateTimeHelper::timeZoneOffset('invalid');
-        });
     }
 
     /**
@@ -474,25 +434,6 @@ class DateTimeHelperTest extends Unit
             [60, DateTimeHelper::SECONDS_MINUTE],
             [2629740, DateTimeHelper::SECONDS_MONTH],
             [31556874, DateTimeHelper::SECONDS_YEAR],
-        ];
-    }
-
-    /**
-     * @return array
-     */
-    public function secondsToHumanTimeDurationDataProvider(): array
-    {
-        return [
-            ['22 seconds', 22],
-            ['1 second', 1],
-            ['2 minutes', 120],
-            ['2 minutes, 5 seconds', 125],
-            ['2 minutes, 1 second', 121],
-            ['2 minutes', 121, false],
-            ['3 minutes', 179, false],
-            ['1 hour', 3600],
-            ['1 day', 86400],
-            ['1 week', 604800],
         ];
     }
 
@@ -714,7 +655,7 @@ class DateTimeHelperTest extends Unit
     /**
      * @return array
      */
-    public function humanIntervalFromDurationDataProvider(): array
+    public function humanDurationDataProvider(): array
     {
         return [
             ['1 day', 'P1D'],
@@ -726,36 +667,27 @@ class DateTimeHelperTest extends Unit
             ['1 hour and 1 minute', 'PT1H1M25S', false],
             ['1 hour and 2 minutes', 'PT1H1M55S', false],
             ['less than a minute', 'PT1S', false],
-        ];
-    }
-
-    /**
-     * @return array
-     * @throws Exception
-     */
-    public function isWithinLastDataProvider(): array
-    {
-        $tomorrow = new DateTime('tomorrow');
-        $yesterday = new DateTime('yesterday');
-        $aYearAgo = new DateTime('2010-08-8 20:00:00');
-
-        $modable = new DateTime('now');
-        $modable->modify('-2 days');
-
-        $hourAgo = new DateTime('now');
-        $hourAgo->modify('-1 hour');
-
-        return [
-            [true, $yesterday, 2],
-            [true, $modable->format('Y-m-d H:i:s'), 3],
-            [true, $hourAgo, '4 hours'],
-
-            [false, $aYearAgo, 25],
-            [false, $tomorrow, 0],
-
-            [null, $yesterday, 'somestring'],
-            [null, $yesterday, ''],
-            [null, 'notadate', 5],
+            ['1 minute', 82],
+            ['1 minute', 82, false],
+            ['1 minute and 22 seconds', 82, true],
+            ['22 seconds', 22, true],
+            ['22 seconds', 22],
+            ['less than a minute', 22, false],
+            ['1 second', 1],
+            ['2 minutes', 120],
+            ['2 minutes and 5 seconds', 125, true],
+            ['2 minutes and 1 second', 121, true],
+            ['2 minutes', 121, false],
+            ['3 minutes', 179, false],
+            ['1 hour', 3600],
+            ['1 day', 86400],
+            ['1 week', 604800],
+            ['8 days', 691200],
+            ['17 minutes', 999],
+            ['17 minutes', '999'],
+            ['16 minutes and 39 seconds', 999, true],
+            ['999 seconds', 'PT999S'],
+            ['27 minutes', 'PT10M999S'],
         ];
     }
 
@@ -768,7 +700,6 @@ class DateTimeHelperTest extends Unit
             [10, 10000, 10],
             [0, 0000, 0],
             [928172, 928172000, 928172],
-
         ];
     }
 
@@ -834,7 +765,7 @@ class DateTimeHelperTest extends Unit
     /**
      * @inheritdoc
      */
-    protected function _before()
+    protected function _before(): void
     {
         Craft::$app->setTimeZone('America/Los_Angeles');
         $this->systemTimezone = new DateTimeZone(Craft::$app->getTimeZone());

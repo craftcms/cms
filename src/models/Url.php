@@ -21,12 +21,12 @@ class Url extends Model
     /**
      * @var string|null URL
      */
-    public $url;
+    public ?string $url = null;
 
     /**
      * @inheritdoc
      */
-    public function attributeLabels()
+    public function attributeLabels(): array
     {
         return [
             'url' => Craft::t('app', 'URL'),

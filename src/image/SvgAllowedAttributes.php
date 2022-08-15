@@ -21,7 +21,7 @@ class SvgAllowedAttributes implements AttributeInterface
     /**
      * @inheritdoc
      */
-    public static function getAttributes()
+    public static function getAttributes(): array
     {
         return array_merge(AllowedAttributes::getAttributes(), ['filterUnits']);
     }

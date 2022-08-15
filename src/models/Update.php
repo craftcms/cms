@@ -20,74 +20,75 @@ use craft\base\Model;
  */
 class Update extends Model
 {
-    const STATUS_ELIGIBLE = 'eligible';
-    const STATUS_BREAKPOINT = 'breakpoint';
-    const STATUS_EXPIRED = 'expired';
+    public const STATUS_ELIGIBLE = 'eligible';
+    public const STATUS_BREAKPOINT = 'breakpoint';
+    public const STATUS_EXPIRED = 'expired';
 
     /**
      * @var string The status of the update (eligible, breakpoint, or expired)
+     * @phpstan-var self::STATUS_ELIGIBLE|self::STATUS_BREAKPOINT|self::STATUS_EXPIRED
      */
-    public $status = self::STATUS_ELIGIBLE;
+    public string $status = self::STATUS_ELIGIBLE;
 
     /**
      * @var float|null The price to renew the license, if expired
      */
-    public $renewalPrice;
+    public ?float $renewalPrice = null;
 
     /**
      * @var string|null The renewal price's currency
      */
-    public $renewalCurrency;
+    public ?string $renewalCurrency = null;
 
     /**
      * @var string|null The URL that the Renew button should link to
      */
-    public $renewalUrl;
+    public ?string $renewalUrl = null;
 
     /**
      * @var UpdateRelease[] The available releases
      */
-    public $releases = [];
+    public array $releases = [];
 
     /**
      * @var string|null The PHP version constraint required by this version
      * @since 3.5.15
      */
-    public $phpConstraint;
+    public ?string $phpConstraint = null;
 
     /**
      * @var string The package name that should be used when updating
      */
-    public $packageName;
+    public string $packageName;
 
     /**
      * @var bool Whether the package is abandoned
      * @since 3.6.7
      */
-    public $abandoned = false;
+    public bool $abandoned = false;
 
     /**
      * @var string|null The name of the suggested replacement package
      * @since 3.6.7
      */
-    public $replacementName;
+    public ?string $replacementName = null;
 
     /**
      * @var string|null The handle of the suggested replacement package
      * @since 3.6.7
      */
-    public $replacementHandle;
+    public ?string $replacementHandle = null;
 
     /**
      * @var string|null The URL of the suggested replacement package
      * @since 3.6.7
      */
-    public $replacementUrl;
+    public ?string $replacementUrl = null;
 
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -128,7 +129,7 @@ class Update extends Model
      *
      * @return UpdateRelease|null
      */
-    public function getLatest()
+    public function getLatest(): ?UpdateRelease
     {
         return $this->releases[0] ?? null;
     }

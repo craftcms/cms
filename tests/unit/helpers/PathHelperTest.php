@@ -1,15 +1,14 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace crafttests\unit\helpers;
 
-use Codeception\Test\Unit;
 use craft\helpers\Path;
-use UnitTester;
+use craft\test\TestCase;
 
 /**
  * Class PathHelperTest.
@@ -18,20 +17,14 @@ use UnitTester;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class PathHelperTest extends Unit
+class PathHelperTest extends TestCase
 {
     /**
-     * @var UnitTester
-     */
-    protected $tester;
-
-    /**
      * @dataProvider ensurePathIsContainedDataProvider
-     *
      * @param bool $expected
      * @param string $path
      */
-    public function testEnsurePathIsContained(bool $expected, string $path)
+    public function testEnsurePathIsContained(bool $expected, string $path): void
     {
         self::assertSame($expected, Path::ensurePathIsContained($path));
     }

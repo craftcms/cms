@@ -10,6 +10,7 @@ namespace craft\helpers;
 use Craft;
 use craft\base\ComponentInterface;
 use craft\errors\MissingComponentException;
+use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 
 /**
@@ -25,7 +26,9 @@ class Component
      * and doesn't belong to a disabled plugin.
      *
      * @param string $class The component’s class name.
+     * @phpstan-param class-string<ComponentInterface> $class
      * @param string|null $instanceOf The class or interface that the component must be an instance of.
+     * @phpstan-param class-string<ComponentInterface>|null $instanceOf
      * @param bool $throwException Whether an exception should be thrown if an issue is encountered
      * @return bool
      * @throws InvalidConfigException if $config doesn’t contain a `type` value, or the type isn’s compatible with|null $instanceOf.
@@ -39,21 +42,23 @@ class Component
             if (!$throwException) {
                 return false;
             }
-            throw new MissingComponentException("Unable to find component class '{$class}'.");
+            throw new MissingComponentException("Unable to find component class '$class'.");
         }
 
         if (!is_subclass_of($class, ComponentInterface::class)) {
             if (!$throwException) {
                 return false;
             }
-            throw new InvalidConfigException("Component class '{$class}' does not implement ComponentInterface.");
+            throw new InvalidConfigException("Component class '$class' does not implement ComponentInterface.");
         }
 
+        /** @var string $class */
+        /** @phpstan-var class-string $class */
         if ($instanceOf !== null && !is_subclass_of($class, $instanceOf)) {
             if (!$throwException) {
                 return false;
             }
-            throw new InvalidConfigException("Component class '{$class}' is not an instance of '{$instanceOf}'.");
+            throw new InvalidConfigException("Component class '$class' is not an instance of '$instanceOf'.");
         }
 
         // If it comes from a plugin, make sure the plugin is installed
@@ -66,9 +71,9 @@ class Component
             $pluginInfo = $pluginsService->getComposerPluginInfo($pluginHandle);
             $pluginName = $pluginInfo['name'] ?? $pluginHandle;
             if ($pluginsService->isPluginInstalled($pluginHandle)) {
-                $message = "Component class '{$class}' belongs to a disabled plugin ({$pluginName}).";
+                $message = "Component class '$class' belongs to a disabled plugin ($pluginName).";
             } else {
-                $message = "Component class '{$class}' belongs to an uninstalled plugin ({$pluginName}).";
+                $message = "Component class '$class' belongs to an uninstalled plugin ($pluginName).";
             }
             throw new MissingComponentException($message);
         }
@@ -79,13 +84,16 @@ class Component
     /**
      * Instantiates and populates a component, and ensures that it is an instance of a given interface.
      *
-     * @param mixed $config The component’s class name, or its config, with a `type` value and optionally a `settings` value.
+     * @template T of ComponentInterface
+     * @param string|array $config The component’s class name, or its config, with a `type` value and optionally a `settings` value.
+     * @phpstan-param class-string<T>|array{type:class-string<T>,__class?:string} $config
      * @param string|null $instanceOf The class or interface that the component must be an instance of.
-     * @return ComponentInterface The component
+     * @phpstan-param class-string<T>|null $instanceOf
+     * @return T The component
      * @throws InvalidConfigException if $config doesn’t contain a `type` value, or the type isn’s compatible with|null $instanceOf.
      * @throws MissingComponentException if the class specified by $config doesn’t exist, or belongs to an uninstalled plugin
      */
-    public static function createComponent($config, ?string $instanceOf = null): ComponentInterface
+    public static function createComponent(string|array $config, ?string $instanceOf = null): ComponentInterface
     {
         // Normalize the config
         if (is_string($config)) {
@@ -105,6 +113,9 @@ class Component
 
         // Merge the settings sub-key into the main config
         $config = self::mergeSettings($config);
+
+        // Typecast the properties
+        Typecast::properties($class, $config);
 
         // Instantiate and return
         $config['class'] = $class;
@@ -134,7 +145,7 @@ class Component
     }
 
     /**
-     * Returns an SVG icon’s contents.
+     * Returns an SVG icon’s contents, namespaced and with `aria-hidden="true"` added to it.
      *
      * @param string|null $icon The path to the SVG icon, or the actual SVG contents
      * @param string $label The label of the component
@@ -147,23 +158,35 @@ class Component
             return self::_defaultIconSvg($label);
         }
 
-        if (stripos($icon, '<svg') !== false) {
-            return $icon;
+        if (stripos($icon, '<svg') === false) {
+            $icon = Craft::getAlias($icon);
+
+            if (!is_file($icon)) {
+                Craft::warning("Icon file doesn't exist: $icon", __METHOD__);
+                return self::_defaultIconSvg($label);
+            }
+
+            if (!FileHelper::isSvg($icon)) {
+                Craft::warning("Icon file is not an SVG: $icon", __METHOD__);
+                return self::_defaultIconSvg($label);
+            }
+
+            $icon = file_get_contents($icon);
         }
 
-        $icon = Craft::getAlias($icon);
+        // Namespace it
+        $ns = StringHelper::randomString(10);
+        $icon = Html::namespaceAttributes($icon, $ns, true);
 
-        if (!is_file($icon)) {
-            Craft::warning("Icon file doesn't exist: {$icon}", __METHOD__);
-            return self::_defaultIconSvg($label);
+        // Add aria-hidden="true"
+        try {
+            $icon = Html::modifyTagAttributes($icon, [
+                'aria' => ['hidden' => 'true'],
+            ]);
+        } catch (InvalidArgumentException) {
         }
 
-        if (!FileHelper::isSvg($icon)) {
-            Craft::warning("Icon file is not an SVG: {$icon}", __METHOD__);
-            return self::_defaultIconSvg($label);
-        }
-
-        return file_get_contents($icon);
+        return $icon;
     }
 
     /**
@@ -174,7 +197,7 @@ class Component
      */
     private static function _defaultIconSvg(string $label): string
     {
-        return Craft::$app->getView()->renderTemplate('_includes/defaulticon.svg', [
+        return Craft::$app->getView()->renderTemplate('_includes/defaulticon.svg.twig', [
             'label' => $label,
         ]);
     }

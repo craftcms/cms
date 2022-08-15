@@ -20,10 +20,10 @@ class RegisterGqlSchemaComponentsEvent extends Event
     /**
      * @var array List of registered GraphQL query components.
      */
-    public $queries = [];
+    public array $queries = [];
 
     /**
      * @var array List of registered GraphQL mutation components.
      */
-    public $mutations = [];
+    public array $mutations = [];
 }

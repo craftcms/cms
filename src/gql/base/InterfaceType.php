@@ -9,6 +9,7 @@ namespace craft\gql\base;
 
 use craft\base\Element;
 use craft\gql\GqlEntityRegistry;
+use GraphQL\Type\Definition\Type;
 
 /**
  * Class InterfaceType
@@ -18,8 +19,6 @@ use craft\gql\GqlEntityRegistry;
  */
 abstract class InterfaceType
 {
-    use GqlTypeTrait;
-
     /**
      * Returns the schema object name
      *
@@ -44,5 +43,26 @@ abstract class InterfaceType
     public static function resolveElementTypeName(Element $element): string
     {
         return GqlEntityRegistry::prefixTypeName($element->getGqlTypeName());
+    }
+
+    /**
+     * List of fields for this type.
+     *
+     * @return array
+     */
+    public static function getFieldDefinitions(): array
+    {
+        return [
+            'id' => [
+                'name' => 'id',
+                'type' => Type::id(),
+                'description' => 'The ID of the entity',
+            ],
+            'uid' => [
+                'name' => 'uid',
+                'type' => Type::string(),
+                'description' => 'The UID of the entity',
+            ],
+        ];
     }
 }

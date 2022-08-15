@@ -10,7 +10,6 @@ namespace craft\web\twig\tokenparsers;
 use craft\web\twig\nodes\NavNode;
 use Twig\Node\Expression\AssignNameExpression;
 use Twig\Node\Node;
-use Twig\Parser;
 use Twig\Token;
 use Twig\TokenParser\AbstractTokenParser;
 
@@ -25,7 +24,7 @@ class NavTokenParser extends AbstractTokenParser
     /**
      * @inheritdoc
      */
-    public function getTag()
+    public function getTag(): string
     {
         return 'nav';
     }
@@ -33,10 +32,9 @@ class NavTokenParser extends AbstractTokenParser
     /**
      * @inheritdoc
      */
-    public function parse(Token $token)
+    public function parse(Token $token): NavNode
     {
         $lineno = $token->getLine();
-        /** @var Parser $parser */
         $parser = $this->parser;
         $stream = $parser->getStream();
 

@@ -1,0 +1,62 @@
+{% set systemName = craft.app.getSystemName()|t('site') -%}
+{% set docTitle = docTitle is defined ? docTitle : title|striptags -%}
+{% set orientation = craft.app.locale.getOrientation() -%}
+{% set a11yDefaults = craft.app.config.general.accessibilityDefaults %}
+{% set requestedSite = craft.cp.requestedSite %}
+
+{% set bodyClass = (bodyClass ?? [])|explodeClass|merge([
+    orientation,
+    not (currentUser.getPreference('alwaysShowFocusRings') ?? a11yDefaults['alwaysShowFocusRings'] ?? false) ? 'reduce-focus-visibility',
+    (currentUser.getPreference('useShapes') ?? a11yDefaults['useShapes'] ?? false) ? 'use-shapes',
+    (currentUser.getPreference('underlineLinks') ?? a11yDefaults['underlineLinks'] ?? false) ? 'underline-links',
+    requestedSite ? "site--#{requestedSite.handle}",
+])|filter -%}
+
+{% set bodyAttributes = {
+    class: bodyClass,
+    dir: orientation,
+}|merge(bodyAttributes ?? {}, recursive=true) -%}
+
+{% do view.registerAssetBundle('craft\\web\\assets\\cp\\CpAsset') -%}
+{% set cpAssetUrl = view.getAssetManager().getPublishedUrl('@app/web/assets/cp/dist', true) -%}
+
+{% hook "cp.layouts.base" -%}
+
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="{{ craft.app.language }}">
+<head>
+    {% block head %}
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta charset="utf-8">
+    <title>{{ docTitle ~ (docTitle|length and systemName|length ? ' - ') ~ systemName }}</title>
+    {{ head() }}
+    <meta name="referrer" content="origin-when-cross-origin">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    {% set hasCustomIcon = false %}
+    {% for tag in craft.app.config.general.cpHeadTags %}
+        {{ tag(tag[0], tag[1]) }}
+        {% if tag[0] == 'link' and (tag[1].rel ?? null) == 'icon' %}
+            {% set hasCustomIcon = true %}
+        {% endif %}
+    {% endfor %}
+    {% if not hasCustomIcon %}
+        <link rel="icon" href="{{ cpAssetUrl }}/images/icons/favicon.ico">
+        <link rel="icon" type="image/svg+xml" sizes="any" href="{{ cpAssetUrl }}/images/icons/icon.svg">
+        <link rel="apple-touch-icon" sizes="180x180" href="{{ cpAssetUrl }}/images/icons/apple-touch-icon.png">
+        <link rel="mask-icon" href="{{ cpAssetUrl }}/images/icons/safari-pinned-tab.svg" color="#e5422b">
+    {% endif %}
+
+    <script type="text/javascript">
+        // Fix for Firefox autofocus CSS bug
+        // See: http://stackoverflow.com/questions/18943276/html-5-autofocus-messes-up-css-loading/18945951#18945951
+    </script>
+    {% endblock %}
+</head>
+<body {{ attr(bodyAttributes) }}>
+    {{ beginBody() }}
+    {% block body %}{% endblock %}
+    {% block foot %}{% endblock %}
+    {{ endBody() }}
+</body>
+</html>

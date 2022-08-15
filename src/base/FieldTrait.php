@@ -18,76 +18,76 @@ trait FieldTrait
     /**
      * @var int|null The field’s group’s ID
      */
-    public $groupId;
+    public ?int $groupId = null;
 
     /**
      * @var string|null The field’s name
      */
-    public $name;
+    public ?string $name = null;
 
     /**
      * @var string|null The field’s handle
      */
-    public $handle;
+    public ?string $handle = null;
 
     /**
      * @var string|null The field’s context
      */
-    public $context;
+    public ?string $context = null;
 
     /**
      * @var string|null The field’s instructions
      */
-    public $instructions;
+    public ?string $instructions = null;
 
     /**
      * @var bool Whether the field's values should be registered as search keywords on the elements.
      */
-    public $searchable = false;
+    public bool $searchable = false;
 
     /**
      * @var string|null The `aria-describedby` attribute value that should be set on the focusable input(s).
      * @see FieldInterface::getInputHtml()
      * @since 3.7.24
      */
-    public $describedBy;
+    public ?string $describedBy = null;
 
     /**
      * @var string The field’s translation method
      */
-    public $translationMethod = Field::TRANSLATION_METHOD_NONE;
+    public string $translationMethod = Field::TRANSLATION_METHOD_NONE;
 
     /**
      * @var string|null The field’s translation key format, if [[translationMethod]] is "custom"
      */
-    public $translationKeyFormat;
+    public ?string $translationKeyFormat = null;
 
     /**
      * @var string|null The field’s previous handle
      */
-    public $oldHandle;
+    public ?string $oldHandle = null;
 
     /**
      * @var array|null The field’s previous settings
      * @since 3.1.2
      */
-    public $oldSettings;
+    public ?array $oldSettings = null;
 
     /**
      * @var string|null The field’s content column prefix
      */
-    public $columnPrefix;
+    public ?string $columnPrefix = null;
 
     /**
      * @var string|null The field’s content column suffix
      * @since 3.7.0
      */
-    public $columnSuffix;
+    public ?string $columnSuffix = null;
 
     /**
      * @var string|null The field's UID
      */
-    public $uid;
+    public ?string $uid = null;
 
     // These properties are only populated if the field was fetched via a Field Layout
     // -------------------------------------------------------------------------
@@ -95,20 +95,21 @@ trait FieldTrait
     /**
      * @var int|null The ID of the field layout that the field was fetched from
      */
-    public $layoutId;
+    public ?int $layoutId = null;
 
     /**
      * @var int|null The tab ID of the field layout that the field was fetched from
      */
-    public $tabId;
+    public ?int $tabId = null;
 
     /**
      * @var bool|null Whether the field is required in the field layout it was fetched from
+     * @deprecated in 4.1.4. [[\craft\fieldlayoutelements\BaseField::$required]] should be used instead
      */
-    public $required;
+    public ?bool $required = null;
 
     /**
      * @var int|null The field’s sort position in the field layout it was fetched from
      */
-    public $sortOrder;
+    public ?int $sortOrder = null;
 }

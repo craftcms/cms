@@ -31,13 +31,13 @@ class ColorData extends BaseObject implements Serializable
     /**
      * @var string The color’s hex value
      */
-    private $_hex;
+    private string $_hex;
 
     /**
      * @var array
      * @see _hsl()
      */
-    private $_hsl;
+    private array $_hsl;
 
     /**
      * Constructor.
@@ -54,7 +54,7 @@ class ColorData extends BaseObject implements Serializable
     /**
      * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
         return $this->_hex;
     }
@@ -62,7 +62,7 @@ class ColorData extends BaseObject implements Serializable
     /**
      * @inheritdoc
      */
-    public function serialize()
+    public function serialize(): mixed
     {
         return $this->_hex;
     }

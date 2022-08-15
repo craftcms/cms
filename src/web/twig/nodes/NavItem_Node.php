@@ -28,10 +28,10 @@ class NavItem_Node extends Node
      * @param Node|null $indent
      * @param Node|null $outdent
      * @param Node|null $lowerBody
-     * @param $lineno
-     * @param $tag
+     * @param int $lineno
+     * @param string|null $tag
      */
-    public function __construct(AssignNameExpression $valueTarget, ?Node $indent, ?Node $outdent, ?Node $lowerBody, $lineno, $tag = null)
+    public function __construct(AssignNameExpression $valueTarget, ?Node $indent, ?Node $outdent, ?Node $lowerBody, int $lineno, string $tag = null)
     {
         parent::__construct([
             'value_target' => $valueTarget,
@@ -44,16 +44,33 @@ class NavItem_Node extends Node
     /**
      * @inheritdoc
      */
-    public function compile(Compiler $compiler)
+    public function compile(Compiler $compiler): void
     {
         $compiler
             // Get this item's level
             ->write('$_thisItemLevel = (int)' . TemplateHelper::class . '::attribute($this->env, $this->getSourceContext(), ')
             ->subcompile($this->getNode('value_target'))
             ->raw(', \'level\', [], ' . Template::class . "::ANY_CALL, false, true);\n")
+            ->write('$_thisItemLft = (int)' . TemplateHelper::class . '::attribute($this->env, $this->getSourceContext(), ')
+            ->subcompile($this->getNode('value_target'))
+            ->raw(', \'lft\', [], ' . Template::class . "::ANY_CALL, false, true);\n")
+            ->write('$_thisItemRgt = (int)' . TemplateHelper::class . '::attribute($this->env, $this->getSourceContext(), ')
+            ->subcompile($this->getNode('value_target'))
+            ->raw(', \'rgt\', [], ' . Template::class . "::ANY_CALL, false, true);\n")
             // Was there a previous item?
             ->write("if (isset(\$_contextsByLevel)) {\n")
             ->indent()
+            // Make sure the current item is nested within the item at the previous level, if there was one
+            ->write("if (\n")
+            ->indent()
+            ->write("\$_thisItemLevel > \$context['nav']['level'] + 1 ||\n")
+            ->write("(isset(\$_contextsByLevel[\$_thisItemLevel-1]['nav']['rgt']) && \$_thisItemLft > \$_contextsByLevel[\$_thisItemLevel-1]['nav']['rgt'])\n")
+            ->outdent()
+            ->write(") {\n")
+            ->indent()
+            ->write("continue;\n")
+            ->outdent()
+            ->write("}\n")
             // Temporarily set the context to the previous one
             ->write("\$_tmpContext = \$context;\n")
             ->write("\$context = \$_contextsByLevel[\$context['nav']['level']];\n")
@@ -62,13 +79,13 @@ class NavItem_Node extends Node
             ->indent()
             ->write("for (\$_i = \$context['nav']['level']; \$_i < \$_thisItemLevel; \$_i++) {\n")
             ->indent()
-            ->subcompile($this->getNode('indent'), false)
+            ->subcompile($this->getNode('indent'))
             ->outdent()
             ->write("}\n")
             ->outdent()
             ->write("} else {\n")
             ->indent()
-            ->subcompile($this->getNode('lower_body'), false)
+            ->subcompile($this->getNode('lower_body'))
             // Does this one have a lower level than the last one?
             ->write("if (\$_thisItemLevel < \$context['nav']['level']) {\n")
             ->indent()
@@ -79,8 +96,8 @@ class NavItem_Node extends Node
             ->indent()
             // Temporarily set the context to the element at this level
             ->write("\$context = \$_contextsByLevel[\$_i];\n")
-            ->subcompile($this->getNode('outdent'), false)
-            ->subcompile($this->getNode('lower_body'), false)
+            ->subcompile($this->getNode('outdent'))
+            ->subcompile($this->getNode('lower_body'))
             ->write("unset(\$_contextsByLevel[\$_i]);\n")
             ->outdent()
             ->write("}\n")
@@ -101,7 +118,13 @@ class NavItem_Node extends Node
             ->outdent()
             ->write("}\n")
             // Create the nav array for this item
-            ->write("\$context['nav'] = ['level' => \$_thisItemLevel];\n")
+            ->write("\$context['nav'] = [\n")
+            ->indent()
+            ->write("'level' => \$_thisItemLevel,\n")
+            ->write("'lft' => \$_thisItemLft,\n")
+            ->write("'rgt' => \$_thisItemRgt,\n")
+            ->outdent()
+            ->write("];\n")
             ->write("if (isset(\$_contextsByLevel[\$_thisItemLevel-1])) {\n")
             ->indent()
             ->write("\$context['nav']['parent'] = \$_contextsByLevel[\$_thisItemLevel-1];\n")

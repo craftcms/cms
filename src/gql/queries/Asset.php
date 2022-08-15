@@ -25,7 +25,7 @@ class Asset extends Query
     /**
      * @inheritdoc
      */
-    public static function getQueries($checkToken = true): array
+    public static function getQueries(bool $checkToken = true): array
     {
         if ($checkToken && !GqlHelper::canQueryAssets()) {
             return [];

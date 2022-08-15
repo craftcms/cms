@@ -8,6 +8,7 @@
 namespace craft\web\twig;
 
 use Craft;
+use craft\helpers\Cp;
 use Twig\Extension\AbstractExtension;
 use Twig\Extension\GlobalsInterface;
 
@@ -28,6 +29,7 @@ class CpExtension extends AbstractExtension implements GlobalsInterface
             'CraftEdition' => Craft::$app->getEdition(),
             'CraftSolo' => Craft::Solo,
             'CraftPro' => Craft::Pro,
+            'requestedSite' => Cp::requestedSite(),
         ];
     }
 }

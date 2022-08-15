@@ -1,0 +1,22 @@
+{% set spinner = spinner ?? false -%}
+{% set label = label ?? null %}
+{% set attributes = {
+    type: type ?? 'button',
+    id: id ?? false,
+    class: (class ?? [])|explodeClass|merge([
+        'btn',
+        not label ? 'btn-empty' : null,
+    ]|filter),
+}|merge(attributes ?? {}) -%}
+
+{% apply spaceless %}
+    {% tag 'button' with attributes %}
+        {{ label ? tag('div', {
+            class: 'label',
+            text: label,
+        }) }}
+        {% if spinner %}
+            <div class="spinner spinner-absolute"></div>
+        {% endif %}
+    {% endtag %}
+{% endapply -%}

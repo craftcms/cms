@@ -8,6 +8,7 @@
 namespace craft\behaviors;
 
 use Craft;
+use craft\helpers\Json;
 use craft\web\Session;
 use craft\web\View;
 use yii\base\Behavior;
@@ -29,17 +30,17 @@ class SessionBehavior extends Behavior
      * @see deauthorize()
      * @see checkAuthorization()
      */
-    public $authAccessParam;
+    public ?string $authAccessParam = null;
 
     /**
      * @var string the name of the flash key that stores asset bundle data
      */
-    public $assetBundleFlashKey = '__ab';
+    public string $assetBundleFlashKey = '__ab';
 
     /**
      * @var string the name of the flash key that stores JS data
      */
-    public $jsFlashKey = '__js';
+    public string $jsFlashKey = '__js';
 
     // Flash Data
     // -------------------------------------------------------------------------
@@ -51,13 +52,42 @@ class SessionBehavior extends Behavior
      * [[getFlash()|`getFlash('notice')`]] or [[getAllFlashes()]].
      * Only one flash notice can be stored at a time.
      *
-     * @param string $message The message.
+     * @param string $message The message
+     * @param array $settings The control panel notification settings
      */
-    public function setNotice(string $message)
+    public function setNotice(string $message, array $settings = []): void
     {
         if (Craft::$app->getRequest()->getIsCpRequest()) {
+            $this->_setNotificationFlash('notice', $message, $settings + [
+                    'icon' => 'info',
+                    'iconLabel' => Craft::t('app', 'Notice'),
+                ]);
             $this->owner->setFlash('cp-notice', $message);
         } else {
+            $this->owner->setFlash('notice', $message);
+        }
+    }
+
+    /**
+     * Stores a success message in the user’s flash data.
+     *
+     * The message will be stored on the session, and can be retrieved by calling
+     * [[getFlash()|`getFlash('notice')`]] or [[getAllFlashes()]].
+     * Only one flash notice can be stored at a time.
+     *
+     * @param string $message The message
+     * @param array $settings The control panel notification settings
+     * @since 4.2.0
+     */
+    public function setSuccess(string $message, array $settings = []): void
+    {
+        if (Craft::$app->getRequest()->getIsCpRequest()) {
+            $this->_setNotificationFlash('success', $message, $settings + [
+                    'icon' => 'check',
+                    'iconLabel' => Craft::t('app', 'Success'),
+                ]);
+        } else {
+            // todo: switch to `success` in Craft 5
             $this->owner->setFlash('notice', $message);
         }
     }
@@ -69,15 +99,73 @@ class SessionBehavior extends Behavior
      * [[getFlash()|`getFlash('error')`]] or [[getAllFlashes()]].
      * Only one flash error message can be stored at a time.
      *
-     * @param string $message The message.
+     * @param string $message The message
+     * @param array $settings The control panel notification settings
      */
-    public function setError(string $message)
+    public function setError(string $message, array $settings = []): void
     {
         if (Craft::$app->getRequest()->getIsCpRequest()) {
-            $this->owner->setFlash('cp-error', $message);
+            $this->_setNotificationFlash('error', $message, $settings + [
+                    'icon' => 'alert',
+                    'iconLabel' => Craft::t('app', 'Error'),
+                ]);
         } else {
             $this->owner->setFlash('error', $message);
         }
+    }
+
+    /**
+     * Retrieves a notice from the user’s flash data.
+     *
+     * @return string|null
+     */
+    public function getNotice(): ?string
+    {
+        if (Craft::$app->getRequest()->getIsCpRequest()) {
+            return $this->_getNotificationFlashMessage('notice');
+        }
+
+        return $this->owner->getFlash('notice');
+    }
+
+    /**
+     * Retrieves a success message from the user’s flash data.
+     *
+     * @return string|null
+     * @since 4.2.0
+     */
+    public function getSuccess(): ?string
+    {
+        if (Craft::$app->getRequest()->getIsCpRequest()) {
+            return $this->_getNotificationFlashMessage('success');
+        }
+
+        // todo: switch to `success` in Craft 5
+        return $this->owner->getFlash('notice');
+    }
+
+    /**
+     * Retrieves an error message from the user’s flash data.
+     *
+     * @return string|null
+     */
+    public function getError(): ?string
+    {
+        if (Craft::$app->getRequest()->getIsCpRequest()) {
+            return $this->_getNotificationFlashMessage('error');
+        }
+
+        return $this->owner->getFlash('error');
+    }
+
+    private function _getNotificationFlashMessage(string $type)
+    {
+        return $this->owner->getFlash("cp-notification-$type")[0] ?? null;
+    }
+
+    private function _setNotificationFlash(string $type, string $message, array $settings = [])
+    {
+        $this->owner->setFlash("cp-notification-$type", [$message, $settings]);
     }
 
     /**
@@ -86,12 +174,13 @@ class SessionBehavior extends Behavior
      * Asset bundles that were queued with this method can be registered using [[getAssetBundleFlashes()]] or
      * [[\craft\web\View::getBodyHtml()]].
      *
-     * @param string $name the class name of the asset bundle (without the leading backslash)
-     * @param integer|null $position if set, this forces a minimum position for javascript files.
+     * @param string $name the class name of the asset bundle
+     * @phpstan-param class-string<AssetBundle> $name
+     * @param int|null $position if set, this forces a minimum position for javascript files.
      * @throws Exception if $name isn't an asset bundle class name
      * @see getAssetBundleFlashes()
      */
-    public function addAssetBundleFlash(string $name, int $position = null)
+    public function addAssetBundleFlash(string $name, ?int $position = null): void
     {
         if (!is_subclass_of($name, AssetBundle::class)) {
             throw new Exception("$name is not an asset bundle");
@@ -121,13 +210,13 @@ class SessionBehavior extends Behavior
      * by calling [[getJsFlashes()]] or [[\craft\web\View::getBodyHtml()]].
      *
      * @param string $js the JS code block to be registered
-     * @param integer $position the position at which the JS script tag should
+     * @param int $position the position at which the JS script tag should
      * be inserted in a page.
      * @param string|null $key the key that identifies the JS code block.
      * @see getJsFlashes()
      * @see View::registerJs()
      */
-    public function addJsFlash(string $js, int $position = View::POS_READY, string $key = null)
+    public function addJsFlash(string $js, int $position = View::POS_READY, ?string $key = null): void
     {
         $scripts = $this->getJsFlashes();
         $scripts[] = [$js, $position, $key];
@@ -146,6 +235,28 @@ class SessionBehavior extends Behavior
         return $this->owner->getFlash($this->jsFlashKey, [], $delete);
     }
 
+    /**
+     * Broadcasts a message to all tabs opened to the control panel.
+     *
+     * @param string|array $message The message to broadcast.
+     * @since 4.0.0
+     */
+    public function broadcastToJs(string|array $message): void
+    {
+        // This is a control panel-only feature
+        if (!Craft::$app->getRequest()->getIsCpRequest()) {
+            return;
+        }
+
+        $jsonMessage = Json::encode($message);
+        $this->addJsFlash(<<<JS
+if (Craft.broadcaster) {
+    Craft.broadcaster.postMessage($jsonMessage);
+}
+JS
+        );
+    }
+
     // Session-Based Authorization
     // -------------------------------------------------------------------------
 
@@ -154,7 +265,7 @@ class SessionBehavior extends Behavior
      *
      * @param string $action
      */
-    public function authorize(string $action)
+    public function authorize(string $action): void
     {
         $access = $this->owner->get($this->authAccessParam, []);
 
@@ -169,7 +280,7 @@ class SessionBehavior extends Behavior
      *
      * @param string $action
      */
-    public function deauthorize(string $action)
+    public function deauthorize(string $action): void
     {
         $access = $this->owner->get($this->authAccessParam, []);
         $index = array_search($action, $access, true);

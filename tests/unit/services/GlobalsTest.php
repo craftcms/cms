@@ -12,6 +12,7 @@ use Craft;
 use craft\errors\ElementNotFoundException;
 use craft\events\ConfigEvent;
 use craft\helpers\StringHelper;
+use craft\test\TestCase;
 use UnitTester;
 
 /**
@@ -20,14 +21,14 @@ use UnitTester;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.3.16
  */
-class GlobalsTest extends Unit
+class GlobalsTest extends TestCase
 {
     /**
      * @var UnitTester
      */
-    protected $tester;
+    protected UnitTester $tester;
 
-    protected function _before()
+    protected function _before(): void
     {
     }
 
@@ -36,7 +37,7 @@ class GlobalsTest extends Unit
     /**
      * Test if rebuilding project congif ignores the `readOnly` flag.
      */
-    public function testAbortOnUnsavedElement()
+    public function testAbortOnUnsavedElement(): void
     {
         $configEvent = new ConfigEvent([
             'path' => 'globalSets.testUid',
@@ -44,8 +45,8 @@ class GlobalsTest extends Unit
             'oldValue' => [],
             'newValue' => [
                 'name' => 'Test ' . StringHelper::UUID(),
-                'handle' => 'test' . StringHelper::UUID()
-            ]
+                'handle' => 'test' . StringHelper::UUID(),
+            ],
         ]);
 
         $this->tester->mockMethods(Craft::$app, 'elements', ['saveElement' => false]);

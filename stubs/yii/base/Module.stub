@@ -1,0 +1,17 @@
+<?php
+
+namespace yii\base;
+
+class Module
+{
+    /**
+     * @param string $id
+     * @param Module|\craft\base\PluginInterface|array{class: class-string<Module|\craft\base\PluginInterface>}|null $module
+     * @return void
+     */
+    public function setModule($id, $module) {}
+}
+
+namespace craft\base;
+
+interface PluginInterface {}

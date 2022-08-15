@@ -34,7 +34,7 @@ class SectionsController extends Controller
     /**
      * @inheritdoc
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         // All section actions require an admin
         $this->requireAdmin();
@@ -64,7 +64,7 @@ class SectionsController extends Controller
      * @throws NotFoundHttpException if the requested section cannot be found
      * @throws BadRequestHttpException if attempting to do something not allowed by the current Craft edition
      */
-    public function actionEditSection(int $sectionId = null, Section $section = null): Response
+    public function actionEditSection(?int $sectionId = null, ?Section $section = null): Response
     {
         $variables = [
             'sectionId' => $sectionId,
@@ -114,7 +114,7 @@ class SectionsController extends Controller
      * @return Response|null
      * @throws BadRequestHttpException if any invalid site IDs are specified in the request
      */
-    public function actionSaveSection()
+    public function actionSaveSection(): ?Response
     {
         $this->requirePostRequest();
 
@@ -138,7 +138,7 @@ class SectionsController extends Controller
         $section->previewTargets = $this->request->getBodyParam('previewTargets') ?: [];
 
         if ($section->type === Section::TYPE_STRUCTURE) {
-            $section->maxLevels = $this->request->getBodyParam('maxLevels');
+            $section->maxLevels = $this->request->getBodyParam('maxLevels') ?: null;
             $section->defaultPlacement = $this->request->getBodyParam('defaultPlacement') ?? $section->defaultPlacement;
         }
 
@@ -202,7 +202,7 @@ class SectionsController extends Controller
 
         Craft::$app->getSections()->deleteSectionById($sectionId);
 
-        return $this->asJson(['success' => true]);
+        return $this->asSuccess();
     }
 
     // Entry Types
@@ -242,7 +242,7 @@ class SectionsController extends Controller
      * @throws NotFoundHttpException if the requested section/entry type cannot be found
      * @throws BadRequestHttpException if the requested entry type does not belong to the requested section
      */
-    public function actionEditEntryType(int $sectionId, int $entryTypeId = null, EntryType $entryType = null): Response
+    public function actionEditEntryType(int $sectionId, ?int $entryTypeId = null, ?EntryType $entryType = null): Response
     {
         $section = Craft::$app->getSections()->getSectionById($sectionId);
 
@@ -311,7 +311,7 @@ class SectionsController extends Controller
      * @return Response|null
      * @throws BadRequestHttpException
      */
-    public function actionSaveEntryType()
+    public function actionSaveEntryType(): ?Response
     {
         $this->requirePostRequest();
 
@@ -370,7 +370,7 @@ class SectionsController extends Controller
         $entryTypeIds = Json::decode($this->request->getRequiredBodyParam('ids'));
         Craft::$app->getSections()->reorderEntryTypes($entryTypeIds);
 
-        return $this->asJson(['success' => true]);
+        return $this->asSuccess();
     }
 
     /**
@@ -386,6 +386,6 @@ class SectionsController extends Controller
         $entryTypeId = $this->request->getRequiredBodyParam('id');
 
         $success = Craft::$app->getSections()->deleteEntryTypeById($entryTypeId);
-        return $this->asJson(['success' => $success]);
+        return $success ? $this->asSuccess() : $this->asFailure();
     }
 }

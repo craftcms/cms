@@ -12,8 +12,6 @@ use craft\models\SystemMessage;
 use craft\web\Controller;
 use yii\web\Response;
 
-Craft::$app->requireEdition(Craft::Pro);
-
 /**
  * The SystemMessagesController class is a controller that handles various email message tasks such as saving email
  * messages.
@@ -27,8 +25,10 @@ class SystemMessagesController extends Controller
     /**
      * @inheritdoc
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
+        Craft::$app->requireEdition(Craft::Pro);
+
         // Make sure they have access to the System Messages utility
         $this->requirePermission('utility:system-messages');
 
@@ -82,10 +82,10 @@ class SystemMessagesController extends Controller
             $language = Craft::$app->getSites()->getPrimarySite()->language;
         }
 
-        if (Craft::$app->getSystemMessages()->saveMessage($message, $language)) {
-            return $this->asJson(['success' => true]);
+        if (!Craft::$app->getSystemMessages()->saveMessage($message, $language)) {
+            return $this->asFailure(Craft::t('app', 'There was a problem saving your message.'));
         }
 
-        return $this->asErrorJson(Craft::t('app', 'There was a problem saving your message.'));
+        return $this->asSuccess();
     }
 }

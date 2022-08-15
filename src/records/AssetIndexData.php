@@ -20,7 +20,7 @@ use yii\db\ActiveQueryInterface;
  * @property string $sessionId Session ID
  * @property string $uri URI
  * @property int $size Size
- * @property \DateTime $timestamp Timestamp
+ * @property string $timestamp Timestamp
  * @property bool $inProgress In progress
  * @property bool $completed Is completed
  * @property int $recordId Record ID
@@ -33,13 +33,12 @@ class AssetIndexData extends ActiveRecord
     /**
      * @inheritdoc
      */
-    public function rules()
+    public function rules(): array
     {
         return [
             [['volumeId', 'recordId', 'size'], 'number', 'integerOnly' => true],
             [['timestamp'], DateTimeValidator::class],
             [['sessionId', 'volumeId'], 'required'],
-            [['sessionId'], 'string', 'length' => 36],
             [['uri'], 'string'],
             [['completed', 'inProgress'], 'boolean'],
         ];

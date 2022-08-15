@@ -19,7 +19,7 @@ use craft\validators\DateTimeValidator;
  * @property array $route Route
  * @property int $usageLimit Usage limit
  * @property int $usageCount Usage count
- * @property \DateTime $expiryDate Expiry date
+ * @property string|null $expiryDate Expiry date
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
@@ -28,7 +28,7 @@ class Token extends ActiveRecord
     /**
      * @inheritdoc
      */
-    public function rules()
+    public function rules(): array
     {
         return [
             [['usageLimit', 'usageCount'], 'number', 'min' => 0, 'max' => 255, 'integerOnly' => true],

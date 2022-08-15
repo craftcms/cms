@@ -9,11 +9,14 @@ namespace craft\console\controllers;
 
 use Craft;
 use craft\console\Controller;
+use craft\db\Table;
 use craft\elements\User;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Console;
+use craft\helpers\Db;
 use craft\helpers\UrlHelper;
 use DateTime;
+use Throwable;
 use yii\base\InvalidArgumentException;
 use yii\console\ExitCode;
 
@@ -29,59 +32,65 @@ class UsersController extends Controller
      * @var string|null The user’s email address.
      * @since 3.7.0
      */
-    public $email;
+    public ?string $email = null;
 
     /**
      * @var string|null The user’s username.
      * @since 3.7.0
      */
-    public $username;
+    public ?string $username = null;
 
     /**
      * @var string|null The user’s new password.
      */
-    public $password;
+    public ?string $password = null;
 
     /**
      * @var bool|null Whether the user should be an admin.
      * @since 3.7.0
      */
-    public $admin;
+    public ?bool $admin = null;
+
+    /**
+     * @var bool|null Whether teh user account should be activated.
+     * @since 4.1.0
+     */
+    public ?bool $activate = null;
 
     /**
      * @var string[] The group handles to assign the created user to.
      * @since 3.7.0
      */
-    public $groups = [];
+    public array $groups = [];
 
     /**
      * @var int[] The group IDs to assign the user to the created user to.
      * @since 3.7.0
      */
-    public $groupIds = [];
+    public array $groupIds = [];
 
     /**
      * @var string|null The email or username of the user to inherit content when deleting a user.
      * @since 3.7.0
      */
-    public $inheritor;
+    public ?string $inheritor = null;
 
     /**
      * @var bool Whether to delete the user’s content if no inheritor is specified.
      * @since 3.7.0
      */
-    public $deleteContent = false;
+    public bool $deleteContent = false;
 
     /**
      * @var bool Whether the user should be hard-deleted immediately, instead of soft-deleted.
      * @since 3.7.0
      */
-    public $hard = false;
+    public bool $hard = false;
 
     /**
      * @inheritdoc
      */
-    public function options($actionID)
+    public function options($actionID): array
     {
         $options = parent::options($actionID);
 
@@ -114,9 +123,10 @@ class UsersController extends Controller
      */
     public function actionListAdmins(): int
     {
+        /** @var User[] $users */
         $users = User::find()
             ->admin()
-            ->anyStatus()
+            ->status(null)
             ->orderBy(['username' => SORT_ASC])
             ->all();
         $total = count($users);
@@ -187,16 +197,23 @@ class UsersController extends Controller
             ]);
         }
 
-        $user->admin = $this->admin ?? $this->confirm('Make this user an admin?', false);
+        $user->admin = $this->admin ?? ($this->interactive && $this->confirm('Make this user an admin?'));
 
         if ($this->password) {
             $user->newPassword = $this->password;
-        } else if ($this->interactive) {
-            if ($this->confirm('Set a password for this user?', false)) {
+        } elseif ($this->interactive) {
+            if ($this->confirm('Set a password for this user?')) {
                 $user->newPassword = $this->passwordPrompt([
                     'validator' => $this->createAttributeValidator($user, 'newPassword'),
                 ]);
             }
+        }
+
+        if ($this->activate !== null) {
+            $user->active = $this->activate;
+        } else {
+            $defaultActivate = $user->newPassword !== null;
+            $user->active = $this->interactive ? $this->confirm('Activate the account?', $defaultActivate) : $defaultActivate;
         }
 
         $this->stdout('Saving the user ... ');
@@ -222,7 +239,7 @@ class UsersController extends Controller
         // Most likely an invalid group ID will throw…
         try {
             Craft::$app->getUsers()->assignUserToGroups($user->id, $groupIds);
-        } catch (\Throwable $e) {
+        } catch (Throwable) {
             $this->stderr('failed: Couldn’t assign user to specified groups.' . PHP_EOL, Console::FG_RED);
             return ExitCode::UNSPECIFIED_ERROR;
         }
@@ -232,7 +249,7 @@ class UsersController extends Controller
     }
 
     /**
-     * Generate an activation URL for a pending user.
+     * Generates an activation URL for a pending user.
      *
      * @param string $user The ID, username, or email address of the user account.
      * @return int
@@ -260,7 +277,7 @@ class UsersController extends Controller
     }
 
     /**
-     * Generate a password reset URL for a user.
+     * Generates a password reset URL for a user.
      *
      * @param string $user The ID, username, or email address of the user account.
      * @return int
@@ -302,7 +319,7 @@ class UsersController extends Controller
             return ExitCode::USAGE;
         }
 
-        if (!$this->inheritor && $this->confirm('Transfer this user’s content to an existing user?', true)) {
+        if (!$this->inheritor && $this->interactive && $this->confirm('Transfer this user’s content to an existing user?', true)) {
             $this->inheritor = $this->prompt('Enter the email or username of the user to inherit the content:', [
                 'required' => true,
             ]);
@@ -316,13 +333,13 @@ class UsersController extends Controller
                 return ExitCode::UNSPECIFIED_ERROR;
             }
 
-            if (!$this->confirm("Delete user “{$user->username}” and transfer their content to user “{$inheritor->username}”?")) {
+            if ($this->interactive && !$this->confirm("Delete user “{$user->username}” and transfer their content to user “{$inheritor->username}”?")) {
                 $this->stdout('Aborting.' . PHP_EOL);
                 return ExitCode::OK;
             }
 
             $user->inheritorOnDelete = $inheritor;
-        } else if ($this->interactive) {
+        } elseif ($this->interactive) {
             $this->deleteContent = $this->confirm("Delete user “{$user->username}” and their content?");
 
             if (!$this->deleteContent) {
@@ -370,7 +387,7 @@ class UsersController extends Controller
                 $this->stderr('Unable to set new password on user: ' . $user->getFirstError('newPassword') . PHP_EOL, Console::FG_RED);
                 return ExitCode::UNSPECIFIED_ERROR;
             }
-        } else if ($this->interactive) {
+        } elseif ($this->interactive) {
             $this->passwordPrompt([
                 'validator' => $this->createAttributeValidator($user, 'newPassword'),
             ]);
@@ -384,7 +401,7 @@ class UsersController extends Controller
     }
 
     /**
-     * Generate a URL to impersonate a user.
+     * Generates a URL to impersonate a user.
      *
      * @param string $user The ID, username, or email address of the user account.
      * @return int
@@ -422,6 +439,20 @@ class UsersController extends Controller
     }
 
     /**
+     * Logs all users out of the system.
+     *
+     * @return int
+     * @since 3.7.33
+     */
+    public function actionLogoutAll(): int
+    {
+        $this->stdout('Logging all users out ... ');
+        Db::truncateTable(Table::SESSIONS);
+        $this->stdout("done\n", Console::FG_GREEN);
+        return ExitCode::OK;
+    }
+
+    /**
      * Resolves a `user` argument.
      *
      * @param string $value The `user` argument value
@@ -431,7 +462,7 @@ class UsersController extends Controller
     private function _user(string $value): User
     {
         if (is_numeric($value)) {
-            $user = Craft::$app->getUsers()->getUserById($value);
+            $user = Craft::$app->getUsers()->getUserById((int)$value);
             if (!$user) {
                 throw new InvalidArgumentException("No user exists with the ID: $value");
             }

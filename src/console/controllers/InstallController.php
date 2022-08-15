@@ -10,6 +10,7 @@ namespace craft\console\controllers;
 use Craft;
 use craft\console\Controller;
 use craft\elements\User;
+use craft\errors\MigrationException;
 use craft\helpers\Console;
 use craft\helpers\Install as InstallHelper;
 use craft\migrations\Install;
@@ -26,34 +27,34 @@ use yii\console\ExitCode;
 class InstallController extends Controller
 {
     /**
-     * @var string|null The default email address for the first user to create during install
+     * @var string|null The default email address for the first user to create during install.
      */
-    public $email;
+    public ?string $email = null;
 
     /**
-     * @var string|null The default username for the first user to create during install
+     * @var string|null The default username for the first user to create during install.
      */
-    public $username;
+    public ?string $username = null;
 
     /**
-     * @var string|null The default password for the first user to create during install
+     * @var string|null The default password for the first user to create during install.
      */
-    public $password;
+    public ?string $password = null;
 
     /**
-     * @var string|null The default site name for the first site to create during install
+     * @var string|null The default site name for the first site to create during install.
      */
-    public $siteName;
+    public ?string $siteName = null;
 
     /**
-     * @var string|null The default site url for the first site to create during install
+     * @var string|null The default site URL for the first site to create during install.
      */
-    public $siteUrl;
+    public ?string $siteUrl = null;
 
     /**
-     * @var string|null The default langcode for the first site to create during install
+     * @var string|null The default language for the first site to create during install.
      */
-    public $language;
+    public ?string $language = null;
 
     /** @inheritdoc */
     public $defaultAction = 'craft';
@@ -61,7 +62,7 @@ class InstallController extends Controller
     /**
      * @inheritdoc
      */
-    public function options($actionID)
+    public function options($actionID): array
     {
         $options = parent::options($actionID);
 
@@ -106,7 +107,16 @@ class InstallController extends Controller
             return ExitCode::OK;
         }
 
+        $configService = Craft::$app->getConfig();
+        $generalConfig = $configService->getGeneral();
+
         $user = new User();
+        $user->setScenario(User::SCENARIO_REGISTRATION);
+
+        $defaultSiteName = InstallHelper::defaultSiteName();
+        $defaultSiteUrl = InstallHelper::defaultSiteUrl();
+        $defaultSiteLanguage = InstallHelper::defaultSiteLanguage();
+
         $site = new Site([
             'handle' => 'default',
             'hasUrls' => true,
@@ -116,32 +126,52 @@ class InstallController extends Controller
         $errors = [];
         $currentError = null;
 
-        if ($this->username && !$this->createAttributeValidator($user, 'username')($this->username, $currentError)) {
-            $errors[] = $currentError;
+        if (
+            !$generalConfig->useEmailAsUsername &&
+            ($this->username || !$this->interactive) &&
+            !$this->createAttributeValidator($user, 'username')($this->username ?? '', $currentError)
+        ) {
+            $errors[] = ['username', $currentError];
         }
-        if ($this->email && !$this->createAttributeValidator($user, 'email')($this->email, $currentError)) {
-            $errors[] = $currentError;
+        if (
+            ($this->email || !$this->interactive) &&
+            !$this->createAttributeValidator($user, 'email')($this->email ?? '', $currentError)
+        ) {
+            $errors[] = ['email', $currentError];
         }
-        if ($this->password && !$this->createAttributeValidator($user, 'newPassword')($this->password, $currentError)) {
-            $errors[] = $currentError;
+        if (
+            ($this->password || !$this->interactive) &&
+            !$this->createAttributeValidator($user, 'newPassword')($this->password ?? '', $currentError)
+        ) {
+            $errors[] = ['password', $currentError];
         }
-        if ($this->siteName && !$this->createAttributeValidator($site, 'name')($this->siteName, $currentError)) {
-            $errors[] = $currentError;
+        if (
+            ($this->siteName || !$this->interactive) &&
+            !$this->createAttributeValidator($site, 'name')($this->siteName ?? $defaultSiteName ?? '', $currentError)
+        ) {
+            $errors[] = ['site-name', $currentError];
         }
-        if ($this->siteUrl && !$this->createAttributeValidator($site, 'baseUrl')($this->siteUrl, $currentError)) {
-            $errors[] = $currentError;
+        if (
+            ($this->siteUrl || !$this->interactive) &&
+            !$this->createAttributeValidator($site, 'baseUrl')($this->siteUrl ?? $defaultSiteUrl ?? '', $currentError)
+        ) {
+            $errors[] = ['site-url', $currentError];
         }
-        if ($this->language && !$this->createAttributeValidator($site, 'language')($this->language, $currentError)) {
-            $errors[] = $currentError;
+        if (
+            ($this->language || !$this->interactive) &&
+            !$this->createAttributeValidator($site, 'language')($this->language ?? $defaultSiteLanguage ?? '', $currentError)
+        ) {
+            $errors[] = ['language', $currentError];
         }
 
         if (!empty($errors)) {
-            $this->stderr('Invalid arguments:' . PHP_EOL . '    - ' . implode(PHP_EOL . '    - ', $errors) . PHP_EOL, Console::FG_RED);
+            $errorSummary = implode('', array_map(function($error) {
+                [$option, $error] = $error;
+                return "    --$option: $error\n";
+            }, $errors));
+            $this->stderr("Invalid options:\n$errorSummary", Console::FG_RED);
             return ExitCode::USAGE;
         }
-
-        $configService = Craft::$app->getConfig();
-        $generalConfig = $configService->getGeneral();
 
         if ($generalConfig->useEmailAsUsername) {
             $username = $email = $this->email ?: $this->prompt('Email:', ['required' => true, 'validator' => $this->createAttributeValidator($user, 'email')]);
@@ -150,17 +180,17 @@ class InstallController extends Controller
             $email = $this->email ?: $this->prompt('Email:', ['required' => true, 'validator' => $this->createAttributeValidator($user, 'email')]);
         }
         $password = $this->password ?: $this->passwordPrompt(['validator' => $this->createAttributeValidator($user, 'newPassword')]);
-        $site->name = $this->siteName ?: $this->prompt('Site name:', ['required' => true, 'default' => InstallHelper::defaultSiteName(), 'validator' => $this->createAttributeValidator($site, 'name')]);
-        $site->baseUrl = $this->siteUrl ?: $this->prompt('Site URL:', ['required' => true, 'default' => InstallHelper::defaultSiteUrl(), 'validator' => $this->createAttributeValidator($site, 'baseUrl')]);
-        $site->language = $this->language ?: $this->prompt('Site language:', ['default' => InstallHelper::defaultSiteLanguage(), 'validator' => $this->createAttributeValidator($site, 'language')]);
+        $site->name = $this->siteName ?: $this->prompt('Site name:', ['required' => true, 'default' => $defaultSiteName, 'validator' => $this->createAttributeValidator($site, 'name')]);
+        $site->baseUrl = $this->siteUrl ?: $this->prompt('Site URL:', ['required' => true, 'default' => $defaultSiteUrl, 'validator' => $this->createAttributeValidator($site, 'baseUrl')]);
+        $site->language = $this->language ?: $this->prompt('Site language:', ['default' => $defaultSiteLanguage ?? Craft::$app->language, 'validator' => $this->createAttributeValidator($site, 'language')]);
 
         // Try to save the site URL to a PRIMARY_SITE_URL environment variable
-        // if it's not already set to an alias or environment variable
+        // if it’s not already set to an alias or environment variable
         if (!in_array($site->getBaseUrl(false)[0], ['@', '$'])) {
             try {
                 $configService->setDotEnvVar('PRIMARY_SITE_URL', $site->baseUrl);
                 $site->baseUrl = '$PRIMARY_SITE_URL';
-            } catch (Exception $e) {
+            } catch (Exception) {
                 // that's fine, we'll just store the entered URL
             }
         }
@@ -176,10 +206,11 @@ class InstallController extends Controller
         $this->stdout('*** installing Craft' . PHP_EOL, Console::FG_YELLOW);
         $start = microtime(true);
         $migrator = Craft::$app->getMigrator();
-        $result = $migrator->migrateUp($migration);
 
-        if ($result === false) {
-            $this->stderr('*** failed to install Craft' . PHP_EOL . PHP_EOL, Console::FG_RED);
+        try {
+            $migrator->migrateUp($migration);
+        } catch (MigrationException $e) {
+            $this->stderr('*** failed to install Craft: ' . $e->getMessage() . PHP_EOL . PHP_EOL, Console::FG_RED);
             return ExitCode::UNSPECIFIED_ERROR;
         }
 

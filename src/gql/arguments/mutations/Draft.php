@@ -23,7 +23,7 @@ class Draft extends Entry
     public static function getArguments(): array
     {
         $parentArguments = parent::getArguments();
-        unset ($parentArguments['id'], $parentArguments['uid']);
+        unset($parentArguments['id'], $parentArguments['uid']);
 
         return array_merge($parentArguments, [
             'draftId' => [

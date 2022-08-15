@@ -21,25 +21,26 @@ class DefineEagerLoadingMapEvent extends Event
     /**
      * @var ElementInterface[] An array of the source elements
      */
-    public $sourceElements;
+    public array $sourceElements;
 
     /**
      * @var string The property handle used to identify which target elements should be included in the map
      */
-    public $handle;
+    public string $handle;
 
     /**
      * @var string|null The element type class to eager-load.
+     * @phpstan-var class-string<ElementInterface>|null
      */
-    public $elementType;
+    public ?string $elementType = null;
 
     /**
      * @var array|null An array of element ID mappings, where each element is a sub-array with `source` and `target` keys.
      */
-    public $map;
+    public ?array $map = null;
 
     /**
      * @var array|null Any criteria parameters that should be applied to the element query when fetching the eager-loaded elements.
      */
-    public $criteria;
+    public ?array $criteria = null;
 }

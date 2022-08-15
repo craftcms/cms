@@ -8,7 +8,9 @@
 namespace craft\queue;
 
 use Craft;
-use craft\log\FileTarget;
+use craft\log\Dispatcher;
+use craft\log\MonologTarget;
+use Illuminate\Support\Collection;
 use yii\queue\ExecEvent;
 
 /**
@@ -22,17 +24,17 @@ class QueueLogBehavior extends VerboseBehavior
     /**
      * @var float timestamp
      */
-    private $_jobStartedAt;
+    private float $_jobStartedAt;
 
     /**
      * @var bool Whether any jobs have executed yet
      */
-    private $_jobExecuted = false;
+    private bool $_jobExecuted = false;
 
     /**
      * @inheritdoc
      */
-    public function events()
+    public function events(): array
     {
         return [
             Queue::EVENT_BEFORE_EXEC => 'beforeExec',
@@ -44,10 +46,10 @@ class QueueLogBehavior extends VerboseBehavior
     /**
      * @param ExecEvent $event
      */
-    public function beforeExec(ExecEvent $event)
+    public function beforeExec(ExecEvent $event): void
     {
         if (!$this->_jobExecuted) {
-            $this->_changeLogFile();
+            $this->_enableLogTarget();
         }
 
         $this->_jobStartedAt = microtime(true);
@@ -57,53 +59,47 @@ class QueueLogBehavior extends VerboseBehavior
     /**
      * @inheritdoc
      */
-    public function afterExec(ExecEvent $event)
+    public function afterExec(ExecEvent $event): void
     {
-        $duration = $this->_formattedDuration();
-        Craft::info(sprintf('%s - Done (time: %s)', parent::jobTitle($event), $duration), __METHOD__);
+        if (isset($this->_jobStartedAt)) {
+            Craft::info(sprintf('%s - Done (time: %s)', parent::jobTitle($event), $this->_formattedDuration()), __METHOD__);
+        } else {
+            Craft::info(sprintf('%s - Done', parent::jobTitle($event)), __METHOD__);
+        }
     }
 
     /**
      * @inheritdoc
      */
-    public function afterError(ExecEvent $event)
+    public function afterError(ExecEvent $event): void
     {
-        $duration = $this->_formattedDuration();
+        $message = sprintf('%s - Error', parent::jobTitle($event));
 
-        if (!$event->error) {
-            Craft::error(sprintf('%s - Error (time: %s)', parent::jobTitle($event), $duration), __METHOD__);
-            return;
+        if (isset($this->_jobStartedAt)) {
+            $message .= sprintf(' (time: %s)', $this->_formattedDuration());
         }
 
-        $error = $event->error->getMessage();
-        Craft::error(sprintf('%s - Error (time: %s): %s', parent::jobTitle($event), $duration, $error), __METHOD__);
-        Craft::$app->getErrorHandler()->logException($event->error);
+        if ($event->error) {
+            $message .= sprintf(': %s', $event->error->getMessage());
+        }
+
+        Craft::error($message, __METHOD__);
+
+        if ($event->error) {
+            Craft::$app->getErrorHandler()->logException($event->error);
+        }
     }
 
     /**
-     * Changes the file that logs will get flushed to.
+     * Enables the log target logs will get flushed to.
      */
-    private function _changeLogFile()
+    private function _enableLogTarget(): void
     {
-        $logDispatcher = Craft::$app->getLog();
-
-        foreach ($logDispatcher->targets as $target) {
-            if ($target instanceof FileTarget) {
-                // Log to queue.log
-                $target->logFile = Craft::getAlias('@storage/logs/queue.log');
-
-                // Don't log global vars
-                $target->logVars = [];
-
-                // Prevent verbose system logs
-                if (!YII_DEBUG) {
-                    $target->except = ['yii\*'];
-                    $target->setLevels(['info', 'warning', 'error']);
-                }
-
-                break;
-            }
-        }
+        Collection::make(Craft::$app->getLog()->targets)
+            ->whereInstanceOf(MonologTarget::class)
+            ->each(function(MonologTarget $target) {
+                $target->enabled = $target->getLogger()->getName() === Dispatcher::TARGET_QUEUE;
+            });
     }
 
     /**

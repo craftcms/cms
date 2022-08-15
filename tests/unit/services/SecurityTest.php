@@ -10,7 +10,7 @@ namespace crafttests\unit\services;
 use Codeception\Test\Unit;
 use Craft;
 use craft\services\Security;
-use UnitTester;
+use craft\test\TestCase;
 
 /**
  * Unit tests for the security service
@@ -19,27 +19,21 @@ use UnitTester;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class SecurityTest extends Unit
+class SecurityTest extends TestCase
 {
-    /**
-     * @var UnitTester
-     */
-    protected $tester;
-
     /**
      * @var Security
      */
-    protected $security;
+    protected Security $security;
 
     /**
      * @dataProvider redactIfSensitiveDataProvider
-     *
-     * @param string|array $expected
+     * @param mixed $expected
      * @param string $name
-     * @param string|array $value
+     * @param mixed $value
      * @param string[] $characters
      */
-    public function testRedactIfSensitive($expected, string $name, $value, array $characters)
+    public function testRedactIfSensitive(mixed $expected, string $name, mixed $value, array $characters): void
     {
         $this->security->sensitiveKeywords = $characters;
         self::assertSame($expected, $this->security->redactIfSensitive($name, $value));
@@ -83,7 +77,7 @@ class SecurityTest extends Unit
     /**
      * @inheritdoc
      */
-    protected function _before()
+    protected function _before(): void
     {
         parent::_before();
 

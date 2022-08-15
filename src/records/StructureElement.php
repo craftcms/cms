@@ -35,7 +35,7 @@ class StructureElement extends ActiveRecord
     /**
      * @inheritdoc
      */
-    public function rules()
+    public function rules(): array
     {
         return [
             [['root', 'lft', 'rgt'], 'number', 'min' => 0, 'max' => 4294967295, 'integerOnly' => true],
@@ -86,7 +86,7 @@ class StructureElement extends ActiveRecord
     /**
      * @inheritdoc
      */
-    public function behaviors()
+    public function behaviors(): array
     {
         $behaviors = parent::behaviors();
         $behaviors['tree'] = [
@@ -102,7 +102,7 @@ class StructureElement extends ActiveRecord
     /**
      * @inheritdoc
      */
-    public function transactions()
+    public function transactions(): array
     {
         return [
             self::SCENARIO_DEFAULT => self::OP_ALL,

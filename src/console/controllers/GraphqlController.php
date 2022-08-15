@@ -16,6 +16,7 @@ use craft\helpers\Gql;
 use craft\models\GqlSchema;
 use craft\models\GqlToken;
 use GraphQL\Utils\SchemaPrinter;
+use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\console\ExitCode;
 use yii\helpers\Inflector;
@@ -29,40 +30,40 @@ use yii\web\BadRequestHttpException;
  */
 class GraphqlController extends Controller
 {
-    const GQL_SCHEMA_EXTENSION = ".graphql";
+    public const GQL_SCHEMA_EXTENSION = ".graphql";
 
     /**
      * @var string|null The GraphQL schema UUID.
      * @since 3.7.15
      */
-    public $schema;
+    public ?string $schema = null;
 
     /**
      * @var string|null The token to look up to determine the appropriate GraphQL schema.
      */
-    public $token;
+    public ?string $token = null;
 
     /**
      * @var bool Whether full schema should be printed or dumped.
      */
-    public $fullSchema = false;
+    public bool $fullSchema = false;
 
     /**
-     * @var string The schema name
+     * @var string|null The schema name
      * @since 3.7.15
      */
-    public $name;
+    public ?string $name = null;
 
     /**
-     * @var string Expiry date
+     * @var string|null Expiry date
      * @since 3.7.15
      */
-    public $expiry;
+    public ?string $expiry = null;
 
     /**
      * @inheritdoc
      */
-    public function options($actionID)
+    public function options($actionID): array
     {
         $options = parent::options($actionID);
 
@@ -85,7 +86,7 @@ class GraphqlController extends Controller
     /**
      * Lists all GraphQL schemas.
      *
-     * @retrun int
+     * @return int
      * @since 3.7.15
      */
     public function actionListSchemas(): int
@@ -146,7 +147,7 @@ class GraphqlController extends Controller
         // Output the schema
         $filename = Inflector::slug($schema->name, '_') . self::GQL_SCHEMA_EXTENSION;
         $schemaDump = SchemaPrinter::doPrint($schemaDef);
-        $this->stdout("Dumping GraphQL schema to {$filename} ... ", Console::FG_YELLOW);
+        $this->stdout("Dumping GraphQL schema to $filename ... ", Console::FG_YELLOW);
         file_put_contents($filename, $schemaDump);
         $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
 
@@ -157,7 +158,6 @@ class GraphqlController extends Controller
      * Creates a new authorization token for a schema.
      *
      * @param string $schemaUid The schema UUID
-     * @param string $name The token name
      * @return int
      * @since 3.7.15
      */
@@ -179,13 +179,13 @@ class GraphqlController extends Controller
             ]);
         $token->accessToken = Craft::$app->getSecurity()->generateRandomString(32);
 
-        if ($this->expiry !== null) {
+        if (isset($this->expiry)) {
             $token->expiryDate = DateTimeHelper::toDateTime($this->expiry);
             if (!$token->expiryDate) {
                 $this->stderr("Invalid expiry date: $this->expiry" . PHP_EOL, Console::FG_RED);
                 return ExitCode::UNSPECIFIED_ERROR;
             }
-        } else if ($this->confirm('Set an expiry date?')) {
+        } elseif ($this->interactive && $this->confirm('Set an expiry date?')) {
             $expiryDate = $this->prompt('Expiry date:', [
                 'required' => true,
                 'validator' => function(string $input): bool {
@@ -210,9 +210,9 @@ class GraphqlController extends Controller
     }
 
     /**
-     * @return \craft\models\GqlSchema|null
+     * @return GqlSchema|null
      * @throws BadRequestHttpException
-     * @throws \yii\base\Exception
+     * @throws Exception
      */
     protected function getGqlSchema(): ?GqlSchema
     {
@@ -223,7 +223,7 @@ class GraphqlController extends Controller
         $gqlService = Craft::$app->getGql();
 
         // Was a specific UID passed?
-        if ($this->schema !== null) {
+        if (isset($this->schema)) {
             $schema = $gqlService->getSchemaByUid($this->schema);
             if ($schema === null) {
                 $this->stderr("Invalid schema UUID: $this->schema" . PHP_EOL, Console::FG_RED);
@@ -232,18 +232,18 @@ class GraphqlController extends Controller
         }
 
         // First try to get the token from the passed in token
-        if ($this->token !== null) {
+        if (isset($this->token)) {
             try {
                 $token = $gqlService->getTokenByAccessToken($this->token);
-            } catch (InvalidArgumentException $e) {
-                $this->stderr("Invalid authorization token: {$this->token}" . PHP_EOL, Console::FG_RED);
+            } catch (InvalidArgumentException) {
+                $this->stderr("Invalid authorization token: $this->token" . PHP_EOL, Console::FG_RED);
                 return null;
             }
 
             $schema = $token->getSchema();
 
             if (!$schema) {
-                $this->stderr("No schema selected for token: {$this->token}" . PHP_EOL, Console::FG_RED);
+                $this->stderr("No schema selected for token: $this->token" . PHP_EOL, Console::FG_RED);
                 return null;
             }
 
@@ -253,7 +253,7 @@ class GraphqlController extends Controller
         // Next look up the active token
         try {
             return $gqlService->getActiveSchema();
-        } catch (GqlException $exception) {
+        } catch (GqlException) {
             // Well, go for the public token then.
             $schema = $gqlService->getPublicSchema();
 

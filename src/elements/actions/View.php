@@ -9,7 +9,6 @@ namespace craft\elements\actions;
 
 use Craft;
 use craft\base\ElementAction;
-use craft\helpers\Json;
 
 /**
  * View represents a View element action.
@@ -22,14 +21,14 @@ class View extends ElementAction
     /**
      * @var string|null The trigger label
      */
-    public $label;
+    public ?string $label = null;
 
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
-        if ($this->label === null) {
+        if (!isset($this->label)) {
             $this->label = Craft::t('app', 'View');
         }
     }
@@ -45,33 +44,27 @@ class View extends ElementAction
     /**
      * @inheritdoc
      */
-    public function getTriggerHtml()
+    public function getTriggerHtml(): ?string
     {
-        $type = Json::encode(static::class);
-
-        $js = <<<JS
+        Craft::$app->getView()->registerJsWithVars(fn($type) => <<<JS
 (() => {
     new Craft.ElementActionTrigger({
-        type: {$type},
+        type: $type,
         batch: false,
-        validateSelection: function(\$selectedItems)
-        {
-            var \$element = \$selectedItems.find('.element');
-
+        validateSelection: \$selectedItems => {
+            const \$element = \$selectedItems.find('.element');
             return (
                 \$element.data('url') &&
                 (\$element.data('status') === 'enabled' || \$element.data('status') === 'live')
             );
         },
-        activate: function(\$selectedItems)
-        {
+        activate: \$selectedItems => {
             window.open(\$selectedItems.find('.element').data('url'));
-        }
+        },
     });
 })();
-JS;
+JS, [static::class]);
 
-        Craft::$app->getView()->registerJs($js);
         return null;
     }
 }

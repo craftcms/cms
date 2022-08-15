@@ -21,7 +21,7 @@ use yii\validators\UrlValidator;
  * ---
  *
  * ```php
- * public function behaviors()
+ * public function behaviors(): array
  * {
  *     return [
  *         'parser' => [
@@ -59,17 +59,17 @@ class EnvAttributeParserBehavior extends Behavior
      * ],
      * ```
      */
-    public $attributes = [];
+    public array $attributes = [];
 
     /**
      * @var array Keeps track of the original attribute values
      */
-    private $_values;
+    private array $_values;
 
     /**
      * @inheritdoc
      */
-    public function events()
+    public function events(): array
     {
         return [
             Model::EVENT_BEFORE_VALIDATE => 'beforeValidate',
@@ -80,7 +80,7 @@ class EnvAttributeParserBehavior extends Behavior
     /**
      * Replaces attribute values before validation occurs.
      */
-    public function beforeValidate()
+    public function beforeValidate(): void
     {
         $this->_values = [];
         $securityService = Craft::$app->getSecurity();
@@ -117,7 +117,7 @@ class EnvAttributeParserBehavior extends Behavior
     /**
      * Restores the original attribute values after validation occurs.
      */
-    public function afterValidate()
+    public function afterValidate(): void
     {
         foreach ($this->_values as $attribute => $value) {
             $this->owner->$attribute = $value;

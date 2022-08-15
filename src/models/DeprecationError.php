@@ -8,7 +8,6 @@
 namespace craft\models;
 
 use craft\base\Model;
-use craft\helpers\Json;
 use craft\validators\DateTimeValidator;
 use DateTime;
 
@@ -23,64 +22,42 @@ class DeprecationError extends Model
     /**
      * @var int|null ID
      */
-    public $id;
+    public ?int $id = null;
 
     /**
      * @var string|null Key
      */
-    public $key;
+    public ?string $key = null;
 
     /**
      * @var string|null Fingerprint
      */
-    public $fingerprint;
+    public ?string $fingerprint = null;
 
     /**
      * @var DateTime|null Last occurrence
      */
-    public $lastOccurrence;
+    public ?DateTime $lastOccurrence = null;
 
     /**
      * @var string|null File
      */
-    public $file;
+    public ?string $file = null;
 
     /**
      * @var int|null Line
      */
-    public $line;
+    public ?int $line = null;
 
     /**
      * @var string|null Message
      */
-    public $message;
+    public ?string $message = null;
 
     /**
      * @var array|null Traces
      */
-    public $traces;
-
-    /**
-     * @inheritdoc
-     */
-    public function init()
-    {
-        parent::init();
-
-        if (is_string($this->traces)) {
-            $this->traces = Json::decode($this->traces);
-        }
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function datetimeAttributes(): array
-    {
-        $attributes = parent::datetimeAttributes();
-        $attributes[] = 'lastOccurrence';
-        return $attributes;
-    }
+    public ?array $traces = null;
 
     /**
      * @inheritdoc

@@ -18,8 +18,8 @@ use craft\gql\types\generators\CategoryType;
 use craft\helpers\Gql;
 use craft\helpers\Gql as GqlHelper;
 use craft\models\CategoryGroup;
-use craft\models\EntryType as EntryTypeModel;
 use GraphQL\Type\Definition\Type;
+use yii\base\InvalidConfigException;
 
 /**
  * Class Category
@@ -72,9 +72,9 @@ class Category extends Mutation
     /**
      * Create the per-category-group save mutation.
      *
-     * @param EntryTypeModel $categoryGroup
+     * @param CategoryGroup $categoryGroup
      * @return array
-     * @throws \yii\base\InvalidConfigException
+     * @throws InvalidConfigException
      */
     public static function createSaveMutation(CategoryGroup $categoryGroup): array
     {
@@ -82,9 +82,10 @@ class Category extends Mutation
         $mutationArguments = array_merge(ElementMutationArguments::getArguments(), StructureArguments::getArguments());
         $generatedType = CategoryType::generateType($categoryGroup);
 
+        /** @var CategoryResolver $resolver */
         $resolver = Craft::createObject(CategoryResolver::class);
         $resolver->setResolutionData('categoryGroup', $categoryGroup);
-        static::prepareResolver($resolver, $categoryGroup->getFields());
+        static::prepareResolver($resolver, $categoryGroup->getCustomFields());
 
         $mutationArguments = array_merge($mutationArguments, $resolver->getResolutionData(ElementMutationResolver::CONTENT_FIELD_KEY));
 

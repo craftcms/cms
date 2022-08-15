@@ -22,7 +22,7 @@ class Request extends \yii\console\Request
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -87,17 +87,6 @@ class Request extends \yii\console\Request
     }
 
     /**
-     * Returns whether the current request is solely an action request. (Narrator: It isn't.)
-     *
-     * @return bool
-     * @deprecated in 3.2.0
-     */
-    public function getIsSingleActionRequest(): bool
-    {
-        return false;
-    }
-
-    /**
      * Returns whether this is an element preview request.
      *
      * @return bool
@@ -109,7 +98,7 @@ class Request extends \yii\console\Request
     }
 
     /**
-     * Returns whether this is a Live Preview request. (Narrator: It isn't.)
+     * Returns whether this is a classic Live Preview request.
      *
      * @return bool Whether this is a Live Preview request.
      * @deprecated in 3.2.0

@@ -18,13 +18,13 @@ use yii\base\Event;
 class BackupEvent extends Event
 {
     /**
-     * @var string|null The file path to the backup.
+     * @var string The file path to the backup.
      */
-    public $file;
+    public string $file;
 
     /**
-     * @var string[] The table names whose data should be excluded from the backup.
+     * @var string[]|null The table names whose data should be excluded from the backup.
      * @since 3.4.0
      */
-    public $ignoreTables;
+    public ?array $ignoreTables = null;
 }

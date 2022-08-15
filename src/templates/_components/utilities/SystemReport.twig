@@ -1,0 +1,87 @@
+<div class="readable">
+    <h2>{{ "Application Info"|t('app') }}</h2>
+
+    <table class="data fullwidth fixed-layout" dir="ltr">
+        <tbody>
+            {% for label, value in appInfo %}
+                <tr>
+                    <th class="light">{{ label }}</th>
+                    <td>{{ value }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>{{ "Plugins"|t('app') }}</h2>
+
+    {% if plugins|length %}
+        <table class="data fullwidth fixed-layout" dir="ltr">
+            <tbody>
+                {% for plugin in plugins %}
+                    <tr>
+                        <th class="light">{{ plugin.name }}</th>
+                        <td>{{ plugin.version }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>{{ 'No plugins are enabled.'|t('app') }}</p>
+    {% endif %}
+
+    <h2>{{ 'Modules'|t('app') }}</h2>
+
+    {% if modules|length %}
+        <table class="data fullwidth fixed-layout" dir="ltr">
+            <tbody>
+                {% for id, class in modules %}
+                    <tr>
+                        <th class="light">{{ id }}</th>
+                        <td>{{ class }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>{{ 'No modules are installed.'|t('app') }}</p>
+    {% endif %}
+
+  <h2>{{ 'Aliases'|t('app') }}</h2>
+  <p>
+      {{ 'The following <a href="{url}">aliases</a> are defined:'|t('app', {
+          url: 'https://craftcms.com/docs/4.x/config/#aliases',
+      })|raw }}
+  </p>
+
+  <table class="data fullwidth fixed-layout" dir="ltr">
+      <tbody>
+          {% for alias, value in aliases %}
+              <tr>
+                  <th class="light">{{ alias }}</th>
+                  <td>{{ value }}</td>
+              </tr>
+          {% endfor %}
+      </tbody>
+  </table>
+
+    <h2>{{ "Requirements"|t('app') }}</h2>
+
+    <table class="data fullwidth" dir="ltr">
+        <tbody>
+        {% for requirement in requirements %}
+            <tr>
+                <td class="thin centeralign">
+                    {% if requirement.error %}
+                        <span class="error" title="{{ 'Failed'|t('app') }}" aria-label="{{ 'Failed'|t('app') }}" data-icon="error"></span>
+                    {% elseif requirement.warning %}
+                        <span class="warning" title="{{ 'Passed with warning'|t('app') }}" aria-label="{{ 'Passed with warning'|t('app') }}" data-icon="alert"></span>
+                    {% else %}
+                        <span class="success" title="{{ 'Passed'|t('app') }}" aria-label="{{ 'Passed'|t('app') }}" data-icon="check"></span>
+                    {% endif %}
+                </td>
+                <td>{{ requirement.name }}{% if requirement.memo %} <span class="info">{{ requirement.memo|raw }}</span>{% endif %}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>

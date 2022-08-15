@@ -3,8 +3,8 @@
 const {getConfig} = require('@craftcms/webpack');
 
 module.exports = getConfig({
-    context: __dirname,
-    config: {
-        entry: {'utilities': './utilities.js'},
-    },
+  context: __dirname,
+  config: {
+    entry: {utilities: './utilities.js'},
+  },
 });

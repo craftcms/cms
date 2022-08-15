@@ -20,190 +20,190 @@ trait ElementTrait
     /**
      * @var int|null The element’s ID
      */
-    public $id;
+    public ?int $id = null;
 
     /**
-     * @var string|null The element’s temporary ID (only used if the element's URI format contains {id})
+     * @var string|null The element’s temporary ID (only used if the element’s URI format contains {id})
      */
-    public $tempId;
+    public ?string $tempId = null;
 
     /**
      * @var int|null The ID of the draft’s row in the `drafts` table
      * @since 3.2.0
      */
-    public $draftId;
+    public ?int $draftId = null;
 
     /**
-     * @var int The ID of the revision’s row in the `revisions` table
+     * @var int|null The ID of the revision’s row in the `revisions` table
      * @since 3.2.0
      */
-    public $revisionId;
+    public ?int $revisionId = null;
 
     /**
      * @var bool Whether this is a provisional draft.
      * @since 3.7.0
      */
-    public $isProvisionalDraft = false;
+    public bool $isProvisionalDraft = false;
 
     /**
      * @var string|null The element’s UID
      */
-    public $uid;
+    public ?string $uid = null;
 
     /**
      * @var int|null The ID of the element’s record in the `elements_sites` table
      * @since 3.5.2
      */
-    public $siteSettingsId;
+    public ?int $siteSettingsId = null;
 
     /**
      * @var int|null The element’s field layout ID
      */
-    public $fieldLayoutId;
+    public ?int $fieldLayoutId = null;
 
     /**
      * @var int|null The element’s structure ID
      */
-    public $structureId;
+    public ?int $structureId = null;
 
     /**
      * @var int|null The element’s content row ID
      */
-    public $contentId;
+    public ?int $contentId = null;
 
     /**
      * @var bool Whether the element is enabled
      */
-    public $enabled = true;
+    public bool $enabled = true;
 
     /**
      * @var bool Whether the element is archived
      */
-    public $archived = false;
+    public bool $archived = false;
 
     /**
      * @var int|null The site ID the element is associated with
      */
-    public $siteId;
+    public ?int $siteId = null;
 
     /**
      * @var string|null The element’s title
      */
-    public $title;
+    public ?string $title = null;
 
     /**
      * @var string|null The element’s slug
      */
-    public $slug;
+    public ?string $slug = null;
 
     /**
      * @var string|null The element’s URI
      */
-    public $uri;
+    public ?string $uri = null;
 
     /**
      * @var DateTime|null The date that the element was created
      */
-    public $dateCreated;
+    public ?DateTime $dateCreated = null;
 
     /**
      * @var DateTime|null The date that the element was last updated
      */
-    public $dateUpdated;
+    public ?DateTime $dateUpdated = null;
 
     /**
      * @var DateTime|null The date that the canonical element was last merged into this one
      * @since 3.7.0
      */
-    public $dateLastMerged;
+    public ?DateTime $dateLastMerged = null;
 
     /**
      * @var DateTime|null The date that the element was trashed
      * @since 3.2.0
      */
-    public $dateDeleted;
+    public ?DateTime $dateDeleted = null;
 
     /**
      * @var int|null The element’s structure’s root ID
      */
-    public $root;
+    public ?int $root = null;
 
     /**
      * @var int|null The element’s left position within its structure
      */
-    public $lft;
+    public ?int $lft = null;
 
     /**
      * @var int|null The element’s right position within its structure
      */
-    public $rgt;
+    public ?int $rgt = null;
 
     /**
      * @var int|null The element’s level within its structure
      */
-    public $level;
+    public ?int $level = null;
 
     /**
      * @var int|null The element’s search score, if the [[\craft\elements\db\ElementQuery::search]] parameter was used when querying for the element
      */
-    public $searchScore;
+    public ?int $searchScore = null;
 
     /**
      * @var bool Whether the element has been soft-deleted.
      */
-    public $trashed = false;
+    public bool $trashed = false;
 
     /**
      * @var bool Whether the element is still awaiting its custom field values
      */
-    public $awaitingFieldValues = false;
+    public bool $awaitingFieldValues = false;
 
     /**
      * @var bool Whether the element is being saved in the context of propagating another site's version of the element.
      */
-    public $propagating = false;
+    public bool $propagating = false;
 
     /**
      * @var bool Whether all element attributes should be propagated across all its supported sites, even if that means
      * overwriting existing site-specific values.
      * @since 3.2.0
      */
-    public $propagateAll = false;
+    public bool $propagateAll = false;
 
     /**
      * @var int[] The site IDs that the element was just propagated to for the first time.
      * @since 3.2.9
      */
-    public $newSiteIds = [];
+    public array $newSiteIds = [];
 
     /**
      * @var bool Whether the element is being saved to the current site for the first time.
      * @since 3.7.15
      */
-    public $isNewForSite = false;
+    public bool $isNewForSite = false;
 
     /**
      * @var bool Whether the element is being resaved by a ResaveElement job or a `resave` console command.
      * @since 3.1.22
      */
-    public $resaving = false;
+    public bool $resaving = false;
 
     /**
      * @var ElementInterface|null The element that this element is being duplicated by.
      */
-    public $duplicateOf;
+    public ?ElementInterface $duplicateOf = null;
 
     /**
      * @var bool Whether the element is being saved for the first time in a normal state (not as a draft or revision).
      * @since 3.7.5
      */
-    public $firstSave = false;
+    public bool $firstSave = false;
 
     /**
      * @var bool Whether recent changes to the canonical element are being merged into this element.
      * @since 3.7.0
      */
-    public $mergingCanonicalChanges = false;
+    public bool $mergingCanonicalChanges = false;
 
     /**
      * @var bool Whether the element is being updated from a derivative element, such as a draft or revision.
@@ -212,17 +212,17 @@ trait ElementTrait
      *
      * @since 3.7.0
      */
-    public $updatingFromDerivative = false;
+    public bool $updatingFromDerivative = false;
 
     /**
      * @var bool Whether the element is currently being previewed.
      * @since 3.2.0
      */
-    public $previewing = false;
+    public bool $previewing = false;
 
     /**
      * @var bool Whether the element is being hard-deleted.
      * @since 3.2.0
      */
-    public $hardDelete = false;
+    public bool $hardDelete = false;
 }

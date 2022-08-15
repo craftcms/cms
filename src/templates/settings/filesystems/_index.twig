@@ -1,0 +1,66 @@
+{% extends "_layouts/cp" %}
+{% set title = 'Filesystems'|t('app') %}
+{% set crumbs = [
+    { label: "Settings"|t('app'), url: url('settings') }
+] %}
+
+{% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
+
+{% do view.registerTranslations('app', [
+    "Name",
+    "Handle",
+    "Type",
+    "No filesystems exist yet."
+]) %}
+
+{% block actionButton %}
+    <a class="btn submit add icon" href="{{ url('settings/filesystems/new') }}">{{ "New filesystem"|t('app') }}</a>
+{% endblock %}
+
+{% block content %}
+    <div id="fs-vue-admin-table"></div>
+{% endblock %}
+
+{% set tableData = [] %}
+{% for filesystem in filesystems %}
+    {% set filesystemIsMissing = false %}
+
+    {% if filesystem is missing %}
+        {% set filesystemIsMissing = true %}
+    {% endif %}
+
+    {% set tableData = tableData|merge([{
+        id: filesystem.handle,
+        title: filesystem.name|t('site'),
+        url: url('settings/filesystems/' ~ filesystem.handle),
+        name: filesystem.name|t('site')|e,
+        handle: filesystem.handle,
+        type: {
+            isMissing: filesystemIsMissing,
+            label: filesystemIsMissing ? filesystem.expectedType : filesystem.displayName()
+        },
+    }]) %}
+{% endfor %}
+
+{% js %}
+var columns = [
+    { name: '__slot:title', title: Craft.t('app', 'Name') },
+    { name: '__slot:handle', title: Craft.t('app', 'Handle') },
+    { name: 'type', title: Craft.t('app', 'Type'), callback: function(value) {
+            if (value.isMissing) {
+                return '<span class="error">' + value.label + '</span>'
+            }
+
+            return value.label
+        }
+    },
+];
+
+new Craft.VueAdminTable({
+    columns: columns,
+    container: '#fs-vue-admin-table',
+    deleteAction: 'fs/remove',
+    emptyMessage: Craft.t('app', 'No filesystems exist yet.'),
+    tableData: {{ tableData|json_encode|raw }}
+});
+{% endjs %}

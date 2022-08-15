@@ -20,10 +20,10 @@ class RegisterElementExportersEvent extends Event
     /**
      * @var string The selected source’s key
      */
-    public $source;
+    public string $source;
 
     /**
      * @var array List of registered exporters for the element type.
      */
-    public $exporters = [];
+    public array $exporters = [];
 }

@@ -1,33 +1,37 @@
 @charset "UTF-8";
-@import "@craftcms/sass/mixins";
+@import '@craftcms/sass/mixins';
 
-html, body {
+html,
+body {
   height: 100%;
 }
 
 body {
   overflow: hidden;
-  background: $grey100 url(images/installer-bg.png) no-repeat 50% 50%;
+  background: var(--gray-100) url(images/installer-bg.png) no-repeat 50% 50%;
   background-size: cover;
 }
 
 .beginbtncontainer {
   position: absolute;
   top: 50%;
-  margin-top: -15px;
+  margin-top: -25px;
   width: 100%;
   text-align: center;
 }
 
 #beginbtn {
   display: inline-block;
-  border-radius: 4px;
-  padding: 12px 15px;
-  font-weight: bold;
+  border-radius: var(--large-border-radius);
   font-size: 19px;
-  height: 42px;
-  line-height: 18px;
-  box-shadow: 0 0 0 4px $grey100;
+  height: 50px;
+  padding: 0 24px;
+  box-shadow: inset 0 1px #ffffff33, inset 0 -1px #00000022, 0 0 0 1px #21377066,
+    0 0 1px 2px #21377055, 0 10px 10px -10px #213770, 0 10px 20px -10px #213770;
+
+  &:after {
+    margin-top: -4px;
+  }
 }
 
 #install-modal {
@@ -45,16 +49,19 @@ body {
     .screen {
       padding: 35px;
       box-sizing: border-box;
+      background: no-repeat 0 50%;
+      background-size: 368px 477px;
 
-      .icon {
-        svg {
-          position: absolute;
-          bottom: -50px;
-          left: -100px;
-          width: 500px;
-          height: 500px;
-          @include svg-mask($grey050);
-        }
+      &#db {
+        background-image: url(./images/db.png);
+      }
+
+      &#site {
+        background-image: url(./images/site.png);
+      }
+
+      &#account {
+        background-image: url(./images/account.png);
       }
 
       h1 {
@@ -87,7 +94,7 @@ body {
     & > div {
       display: inline-block;
       border-radius: 4px;
-      border: 1px solid $hairlineColor;
+      border: 1px solid var(--hairline-color);
       width: 6px;
       height: 6px;
 
@@ -96,8 +103,8 @@ body {
       }
 
       &.sel {
-        border-color: $primaryColor;
-        background: $primaryColor;
+        border-color: var(--primary-color);
+        background: var(--primary-color);
       }
     }
   }
@@ -129,11 +136,6 @@ body {
       body.rtl & {
         content: 'larr';
       }
-    }
-
-    &.loading:after {
-      content: '' !important;
-      background: url(images/spinner_submit.gif) no-repeat 0 0;
     }
   }
 }
@@ -188,16 +190,5 @@ input.hidden {
       margin: 0;
       float: none;
     }
-  }
-}
-
-@media only screen and (-webkit-min-device-pixel-ratio: 1.5),
-only screen and (-moz-min-device-pixel-ratio: 1.5),
-only screen and (-o-min-device-pixel-ratio: 3/2),
-only screen and (min-device-pixel-ratio: 1.5),
-only screen and (min-resolution: 1.5dppx) {
-  .buttons .btn.loading:after {
-    background-image: url(images/spinner_submit_2x.gif);
-    background-size: 20px;
   }
 }

@@ -21,7 +21,7 @@ class UsernameValidator extends Validator
     /**
      * @inheritdoc
      */
-    public function validateValue($value)
+    public function validateValue($value): ?array
     {
         // Don't allow whitespace in the username
         if (preg_match('/\s+/', $value)) {

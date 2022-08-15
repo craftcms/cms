@@ -1,0 +1,27 @@
+@import '@craftcms/sass/mixins';
+
+.money-container {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: nowrap;
+  gap: 0;
+
+  .money-currency-label {
+    @include input-styles;
+    @include border-right(none);
+    @include border-top-right-radius(0);
+    @include border-bottom-right-radius(0);
+    align-items: center;
+    box-sizing: border-box;
+    background: transparent;
+    display: flex;
+    height: 100%;
+    padding: 6px 9px;
+    white-space: nowrap;
+
+    & + .text {
+      @include border-top-left-radius(0);
+      @include border-bottom-left-radius(0);
+    }
+  }
+}

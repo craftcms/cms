@@ -4,10 +4,10 @@
 
 actor: UnitTester
 modules:
-    enabled:
-        - Asserts
-        - \Helper\Unit
-        - \craft\test\Craft
-        - DataFactory:
-            factories: tests/_craft/config/factories
-            depends: \craft\test\Craft
+  enabled:
+    - Asserts
+    - \Helper\Unit
+    - \craft\test\Craft
+    - DataFactory:
+        factories: tests/_craft/config/factories
+        depends: \craft\test\Craft

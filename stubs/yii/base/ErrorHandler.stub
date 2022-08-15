@@ -1,0 +1,18 @@
+<?php
+
+namespace yii\base;
+
+class ErrorHandler
+{
+    /**
+     * @param \Throwable $exception
+     * @return void
+     */
+    public function handleException($exception) {}
+
+    /**
+     * @param \Throwable $exception
+     * @return void
+     */
+    public function logException($exception) {}
+}

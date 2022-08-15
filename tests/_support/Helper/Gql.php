@@ -16,5 +16,4 @@ use Codeception\Module;
  */
 class Gql extends Module
 {
-
 }

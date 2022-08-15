@@ -1,0 +1,11 @@
+<?php
+
+namespace samdark\log;
+
+class PsrTarget
+{
+    /**
+     * @var bool|null
+     */
+    public $addTimestampToContext;
+}

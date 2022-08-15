@@ -1,0 +1,66 @@
+{% requireAdmin %}
+
+{% extends "_layouts/cp" %}
+{% set title = "Routes"|t('app') %}
+
+{% block actionButton %}
+    <button type="button" id="add-route-btn" class="btn submit add icon">{{ "New route"|t('app') }}</button>
+{% endblock %}
+
+{% set crumbs = [
+    { label: "Settings"|t('app'), url: url('settings') }
+] %}
+
+{% do view.registerAssetBundle("craft\\web\\assets\\routes\\RoutesAsset") %}
+
+{% do view.registerTranslations('app', [
+    "Add a token",
+    "Are you sure you want to delete this route?",
+    "Couldn’t save new route order.",
+    "Couldn’t save route.",
+    "Create a new route",
+    "Edit Route",
+    "Global",
+    "If the URI looks like this",
+    "Load this template",
+    "New route order saved.",
+    "Route deleted.",
+    "Route Saved.",
+    "The URI can’t begin with the {setting} config setting.",
+]) %}
+
+
+{% set routes = craft.routes.getProjectConfigRoutes() %}
+
+
+{% block main %}
+    <p id="noroutes"{% if routes %} class="hidden"{% endif %}>
+        {{ "No routes exist yet."|t('app') }}
+    </p>
+
+    <div id="routes">
+        {% for route in routes %}
+            <div class="route" data-uid="{{ route.uid }}"{% if route.siteUid %} data-site-uid="{{ route.siteUid }}"{% endif %}>
+                <div class="uri-container">
+                    {%- apply spaceless %}
+                        {% if craft.app.getIsMultiSite() %}
+                            <span class="site">{{ route.siteUid ? craft.app.sites.getSiteByUid(route.siteUid).name|t('site') : "Global"|t('app') }}</span>
+                        {% endif %}
+                        <span class="uri">{{ route.uriDisplayHtml|raw }}</span>
+                    {% endapply -%}
+                </div>
+                <div class="template">{{ route.template }}</div>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}
+
+
+{% js %}
+    Craft.routes.tokens = {
+        {% for name, pattern in tokens %}
+            {% if not loop.first %},{% endif %}
+            "{{ name|e('js') }}": "{{ pattern|e('js') }}"
+        {% endfor %}
+    };
+{% endjs %}

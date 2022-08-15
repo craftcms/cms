@@ -24,6 +24,7 @@ use craft\helpers\FileHelper;
 use craft\helpers\Json;
 use Seld\JsonLint\DuplicateKeyException;
 use Seld\JsonLint\JsonParser;
+use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
 
@@ -40,24 +41,18 @@ class Composer extends Component
     /**
      * @var string
      */
-    public $composerRepoUrl = 'https://composer.craftcms.com';
-
-    /**
-     * @var bool
-     * @deprecated in 3.6.0
-     */
-    public $disablePackagist = false;
+    public string $composerRepoUrl = 'https://composer.craftcms.com';
 
     /**
      * @var bool Whether to generate a new Composer class map, rather than preloading all of the classes in the current class map
      */
-    public $updateComposerClassMap = false;
+    public bool $updateComposerClassMap = false;
 
     /**
      * @var int The maximum number of composer.json and composer.lock backups to store in storage/composer-backups/
      * @since 3.0.38
      */
-    public $maxBackups = 50;
+    public int $maxBackups = 50;
 
     /**
      * @var callable|null The previous error handler.
@@ -68,7 +63,7 @@ class Composer extends Component
     /**
      * @var string[]|null
      */
-    private $_composerClasses;
+    private ?array $_composerClasses = null;
 
     /**
      * Returns the path to composer.json.
@@ -91,7 +86,7 @@ class Composer extends Component
      * @return string|null
      * @throws Exception if composer.json can't be located
      */
-    public function getLockPath()
+    public function getLockPath(): ?string
     {
         $jsonPath = $this->getJsonPath();
         // Logic based on \Composer\Factory::createComposer()
@@ -111,7 +106,7 @@ class Composer extends Component
     {
         try {
             return Json::decode(file_get_contents($this->getJsonPath()));
-        } catch (\Throwable $e) {
+        } catch (Throwable) {
             return [];
         }
     }
@@ -121,9 +116,9 @@ class Composer extends Component
      *
      * @param array|null $requirements Package name/version pairs, or set to null to run the equivalent of `composer install`
      * @param IOInterface|null $io The IO object that Composer should be instantiated with
-     * @throws \Throwable if something goes wrong
+     * @throws Throwable if something goes wrong
      */
-    public function install(array $requirements = null, IOInterface $io = null)
+    public function install(?array $requirements, ?IOInterface $io = null): void
     {
         App::maxPowerCaptain();
 
@@ -147,6 +142,9 @@ class Composer extends Component
 
         // Create a backup of composer.json in case something goes wrong
         $backup = file_get_contents($jsonPath);
+
+        // Ensure craftcms/plugin-installer is allowed
+        $this->ensurePluginInstallerIsAllowed($jsonPath);
 
         // Update composer.json
         if ($requirements !== null) {
@@ -183,7 +181,7 @@ class Composer extends Component
         try {
             // Run the installer
             $status = $this->run($installer);
-        } catch (\Throwable $exception) {
+        } catch (Throwable $exception) {
             $status = 1;
         }
 
@@ -218,9 +216,9 @@ class Composer extends Component
      *
      * @param string[] $packages Package names
      * @param IOInterface|null $io The IO object that Composer should be instantiated with
-     * @throws \Throwable if something goes wrong
+     * @throws Throwable if something goes wrong
      */
-    public function uninstall(array $packages, IOInterface $io = null)
+    public function uninstall(array $packages, ?IOInterface $io = null): void
     {
         App::maxPowerCaptain();
         $this->backupComposerFiles();
@@ -241,6 +239,9 @@ class Composer extends Component
 
         // Ensure there's a home var
         $this->_ensureHomeVar();
+
+        // Ensure craftcms/plugin-installer is allowed
+        $this->ensurePluginInstallerIsAllowed($jsonPath);
 
         try {
             $jsonFile = new JsonFile($jsonPath);
@@ -273,7 +274,7 @@ class Composer extends Component
                 ->setRunScripts(false);
 
             $status = $this->run($installer);
-        } catch (\Throwable $exception) {
+        } catch (Throwable $exception) {
             $status = 1;
         }
 
@@ -292,57 +293,12 @@ class Composer extends Component
     }
 
     /**
-     * Optimizes the Composer autoloader.
-     *
-     * @param IOInterface|null $io The IO object that Composer should be instantiated with
-     * @throws \Throwable if something goes wrong
-     * @deprecated
-     */
-    public function optimize(IOInterface $io = null)
-    {
-        if ($io === null) {
-            $io = new NullIO();
-        }
-
-        $jsonPath = $this->getJsonPath();
-
-        // Set the working directory to the composer.json dir, in case there are any relative repo paths
-        $wd = getcwd();
-        chdir(dirname($jsonPath));
-
-        // Ensure there's a home var
-        $this->_ensureHomeVar();
-
-        try {
-            $composer = $this->createComposer($io, $jsonPath);
-
-            $installationManager = $composer->getInstallationManager();
-            $localRepo = $composer->getRepositoryManager()->getLocalRepository();
-            $package = $composer->getPackage();
-            $config = $composer->getConfig();
-            $authoritative = $config->get('classmap-authoritative');
-
-            $generator = $composer->getAutoloadGenerator();
-            $generator->setClassMapAuthoritative($authoritative);
-            $generator->dump($config, $localRepo, $package, $installationManager, 'composer', true);
-        } catch (\Throwable $exception) {
-            // Swallow exception.
-        }
-
-        // Change the working directory back
-        chdir($wd);
-
-        if (isset($exception)) {
-            throw $exception;
-        }
-    }
-
-    /**
      * Adds an autoloading class to the Composer class map
      *
      * @param string $className
+     * @phpstan-param class-string $className
      */
-    public function logComposerClass(string $className)
+    public function logComposerClass(string $className): void
     {
         $this->_composerClasses[] = $className;
     }
@@ -350,7 +306,7 @@ class Composer extends Component
     /**
      * Ensures that HOME/APPDATA or COMPOSER_HOME env vars have been set.
      */
-    protected function _ensureHomeVar()
+    protected function _ensureHomeVar(): void
     {
         // Must call getenv() instead of App::env() here because Composer\Factory doesn’t check $_SERVER
         if (!getenv('COMPOSER_HOME') && !getenv(Platform::isWindows() ? 'APPDATA' : 'HOME')) {
@@ -361,13 +317,72 @@ class Composer extends Component
     }
 
     /**
+     * Ensures composer.json has the craftcms/plugin-installer plugin marked as allowed.
+     *
+     * @param string $jsonPath
+     * @since 3.7.42
+     */
+    protected function ensurePluginInstallerIsAllowed(string $jsonPath): void
+    {
+        $json = new JsonFile($jsonPath);
+        $config = $json->read();
+        $allowPlugins = $config['config']['allow-plugins'] ?? [];
+
+        if ($allowPlugins === true) {
+            return;
+        }
+
+        $plugins = [
+            'craftcms/plugin-installer',
+            'yiisoft/yii2-composer',
+        ];
+
+        // See if everything is already in place
+        $hasAllPlugins = true;
+        foreach ($plugins as $plugin) {
+            if (($allowPlugins[$plugin] ?? false) !== true) {
+                $hasAllPlugins = false;
+                break;
+            }
+        }
+        if ($hasAllPlugins) {
+            return;
+        }
+
+        // First try using JsonManipulator
+        $success = true;
+        $manipulator = new JsonManipulator(file_get_contents($jsonPath));
+
+        foreach ($plugins as $plugin) {
+            if (($allowPlugins[$plugin] ?? false) !== true) {
+                $success = $manipulator->addConfigSetting("allow-plugins.$plugin", true);
+                if (!$success) {
+                    break;
+                }
+            }
+        }
+
+        if ($success) {
+            file_put_contents($jsonPath, $manipulator->getContents());
+            return;
+        }
+
+        // There was a problem so do it manually instead
+        foreach ($plugins as $plugin) {
+            $config['config']['allow-plugins'][$plugin] = true;
+        }
+
+        $json->write($config);
+    }
+
+    /**
      * Updates the composer.json file with new requirements
      *
      * @param IOInterface $io
      * @param string $jsonPath
      * @param array $requirements
      */
-    protected function updateRequirements(IOInterface $io, string $jsonPath, array $requirements)
+    protected function updateRequirements(IOInterface $io, string $jsonPath, array $requirements): void
     {
         $requireKey = 'require';
         $requireDevKey = 'require-dev';
@@ -428,7 +443,7 @@ class Composer extends Component
         // Copied from \Composer\Factory::createComposer()
         $file = new JsonFile($jsonPath, null, $io);
         $file->validateSchema(JsonFile::LAX_SCHEMA);
-        $jsonParser = new JsonParser;
+        $jsonParser = new JsonParser();
         try {
             $jsonParser->parse(file_get_contents($jsonPath), JsonParser::DETECT_KEY_CONFLICTS);
         } catch (DuplicateKeyException $e) {
@@ -438,7 +453,7 @@ class Composer extends Component
         $config = $file->read();
 
         if ($prepForUpdate) {
-            // Add composer.craftcms.com if it's not already in there
+            // Add composer.craftcms.com if it’s not already in there
             $craftRepoKey = $this->_findCraftRepo($config);
             if ($craftRepoKey === false) {
                 $config['repositories'][] = [
@@ -447,7 +462,7 @@ class Composer extends Component
                     'canonical' => false,
                 ];
             } else {
-                // Make sure it's not canonical
+                // Make sure it’s not canonical
                 $config['repositories'][$craftRepoKey]['canonical'] = false;
             }
 
@@ -457,7 +472,7 @@ class Composer extends Component
                 !isset($config['config']['cafile']) &&
                 CaBundle::getSystemCaRootBundlePath() === $bundledCaPath
             ) {
-                // Make a copy of it in case it's about to get updated
+                // Make a copy of it in case it’s about to get updated
                 $dir = Craft::$app->getPath()->getRuntimePath() . DIRECTORY_SEPARATOR . 'composer';
                 FileHelper::createDirectory($dir);
                 $dest = $dir . DIRECTORY_SEPARATOR . basename($bundledCaPath);
@@ -476,7 +491,7 @@ class Composer extends Component
      * @param array $config
      * @return int|string|false The key in `$config['repositories']` referencing composer.craftcms.com
      */
-    private function _findCraftRepo(array $config)
+    private function _findCraftRepo(array $config): int|string|false
     {
         if (!isset($config['repositories'])) {
             return false;
@@ -515,7 +530,7 @@ class Composer extends Component
     /**
      * Preloads Composer classes in case Composer needs to update itself
      */
-    protected function preloadComposerClasses()
+    protected function preloadComposerClasses(): void
     {
         $classes = require dirname(__DIR__) . '/config/composer-classes.php';
 
@@ -527,7 +542,7 @@ class Composer extends Component
     /**
      * Backs up the composer.json and composer.lock files to `storage/composer-backups/`
      */
-    protected function backupComposerFiles()
+    protected function backupComposerFiles(): void
     {
         $backupsDir = Craft::$app->getPath()->getComposerBackupsPath();
         $jsonBackupPath = $backupsDir . DIRECTORY_SEPARATOR . 'composer.json';
@@ -579,7 +594,7 @@ class Composer extends Component
         if ($code === E_USER_DEPRECATED) {
             return true;
         }
-        if ($this->_errorHandler !== null) {
+        if (isset($this->_errorHandler)) {
             return ($this->_errorHandler)($code, $message, $file, $line);
         }
         return false;

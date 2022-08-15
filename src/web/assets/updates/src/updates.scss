@@ -1,10 +1,12 @@
 @charset "UTF-8";
-@import "@craftcms/sass/mixins";
+@import '@craftcms/sass/mixins';
 
 #content {
   #graphic {
-    display: block;
+    display: flex;
     margin: 200px auto 0;
+    width: 48px;
+    height: 48px;
 
     &.success {
       background-image: url(images/success.png);
@@ -20,7 +22,7 @@
     text-align: center;
     font-size: 16px;
     line-height: 20px;
-    color: $grey500;
+    color: var(--gray-500);
   }
 
   .update {
@@ -32,7 +34,7 @@
       display: flex;
       align-items: center;
       padding-bottom: 10px;
-      border-bottom: 1px solid $hairlineColor;
+      border-bottom: 1px solid var(--hairline-color);
       margin-bottom: 16px;
 
       .readable {
@@ -57,7 +59,7 @@
 
         &.critical {
           h2 {
-            color: $red600;
+            color: var(--red-600);
           }
 
           .critical {
@@ -68,9 +70,9 @@
             padding: 0 5px;
             font-size: 14px;
             line-height: 24px;
-            color: $white;
+            color: var(--white);
             font-weight: normal;
-            background: $red500;
+            background: var(--red-500);
             text-transform: uppercase;
           }
         }
@@ -86,7 +88,7 @@
             &:before {
               @include left(20px);
               top: 29px;
-              border-color: $mediumTextColor;
+              border-color: var(--medium-text-color);
             }
           }
 
@@ -100,7 +102,7 @@
             @include margin-left(14px);
             font-size: 24px;
             line-height: 24px;
-            color: $lightTextColor;
+            color: var(--light-text-color);
           }
         }
 
@@ -115,10 +117,10 @@
 }
 
 @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
-only screen and (-moz-min-device-pixel-ratio: 1.5),
-only screen and (-o-min-device-pixel-ratio: 3/2),
-only screen and (min-device-pixel-ratio: 1.5),
-only screen and (min-resolution: 1.5dppx) {
+  only screen and (-moz-min-device-pixel-ratio: 1.5),
+  only screen and (-o-min-device-pixel-ratio: 3/2),
+  only screen and (min-device-pixel-ratio: 1.5),
+  only screen and (min-resolution: 1.5dppx) {
   #content {
     #graphic {
       &.success {

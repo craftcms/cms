@@ -20,5 +20,5 @@ class RebuildConfigEvent extends Event
     /**
      * @var array The rebuilt project config
      */
-    public $config = [];
+    public array $config = [];
 }

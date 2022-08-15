@@ -16,11 +16,11 @@ namespace craft\enums;
  */
 abstract class PeriodType
 {
-    const Seconds = 'seconds';
-    const Minutes = 'minutes';
-    const Hours = 'hours';
-    const Days = 'days';
-    const Weeks = 'weeks';
-    const Months = 'months';
-    const Years = 'years';
+    public const Seconds = 'seconds';
+    public const Minutes = 'minutes';
+    public const Hours = 'hours';
+    public const Days = 'days';
+    public const Weeks = 'weeks';
+    public const Months = 'months';
+    public const Years = 'years';
 }

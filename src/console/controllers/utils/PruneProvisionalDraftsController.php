@@ -27,12 +27,12 @@ class PruneProvisionalDraftsController extends Controller
     /**
      * @var bool Whether this is a dry run.
      */
-    public $dryRun = false;
+    public bool $dryRun = false;
 
     /**
      * @inheritdoc
      */
-    public function options($actionID)
+    public function options($actionID): array
     {
         $options = parent::options($actionID);
         $options[] = 'dryRun';
@@ -49,20 +49,20 @@ class PruneProvisionalDraftsController extends Controller
         $this->stdout('Finding elements with multiple provisional drafts per user ... ');
         $elements = (new Query())
             ->select([
-                'id' => 's.sourceId',
+                'id' => 's.canonicalId',
                 's.creatorId',
                 's.count',
                 'type' => (new Query())
                     ->select(['type'])
                     ->from([Table::ELEMENTS])
-                    ->where(new Expression('[[id]] = [[s.sourceId]]')),
+                    ->where(new Expression('[[id]] = [[s.canonicalId]]')),
             ])
             ->from([
                 's' => (new Query())
-                    ->select(['sourceId', 'creatorId', 'count' => 'COUNT(*)'])
+                    ->select(['canonicalId', 'creatorId', 'count' => 'COUNT(*)'])
                     ->from([Table::DRAFTS])
                     ->where(['provisional' => true])
-                    ->groupBy(['sourceId', 'creatorId'])
+                    ->groupBy(['canonicalId', 'creatorId'])
                     ->having('COUNT(*) > 1'),
             ])
             ->all();
@@ -94,7 +94,7 @@ class PruneProvisionalDraftsController extends Controller
                 ->draftCreator($element['creatorId'])
                 ->site('*')
                 ->unique()
-                ->anyStatus()
+                ->status(null)
                 ->orderBy(['dateUpdated' => SORT_DESC])
                 ->offset(1)
                 ->all();

@@ -23,29 +23,29 @@ use yii\base\Exception;
 class Path extends Component
 {
     /**
-     * @var
+     * @var string
      */
-    private $_configPath;
+    private string $_configPath;
 
     /**
-     * @var
+     * @var string
      */
-    private $_storagePath;
+    private string $_storagePath;
 
     /**
-     * @var
+     * @var string
      */
-    private $_testsPath;
+    private string $_testsPath;
 
     /**
-     * @var
+     * @var string
      */
-    private $_siteTranslationsPath;
+    private string $_siteTranslationsPath;
 
     /**
-     * @var
+     * @var string
      */
-    private $_vendorPath;
+    private string $_vendorPath;
 
     /**
      * Returns the path to the `config/` directory.
@@ -55,7 +55,7 @@ class Path extends Component
      */
     public function getConfigPath(): string
     {
-        if ($this->_configPath !== null) {
+        if (isset($this->_configPath)) {
             return $this->_configPath;
         }
 
@@ -107,7 +107,7 @@ class Path extends Component
      */
     public function getStoragePath(bool $create = true): string
     {
-        if ($this->_storagePath === null) {
+        if (!isset($this->_storagePath)) {
             $path = Craft::getAlias('@storage');
 
             if ($path === false) {
@@ -133,7 +133,7 @@ class Path extends Component
      */
     public function getTestsPath(): string
     {
-        if ($this->_testsPath !== null) {
+        if (isset($this->_testsPath)) {
             return $this->_testsPath;
         }
 
@@ -232,7 +232,7 @@ class Path extends Component
      */
     public function getVendorPath(): string
     {
-        if ($this->_vendorPath !== null) {
+        if (isset($this->_vendorPath)) {
             return $this->_vendorPath;
         }
 
@@ -368,23 +368,6 @@ class Path extends Component
     }
 
     /**
-     * Returns the path to the `storage/runtime/assets/thumbs/` directory.
-     *
-     * @param bool $create Whether the directory should be created if it doesn't exist
-     * @return string
-     */
-    public function getAssetThumbsPath(bool $create = true): string
-    {
-        $path = $this->getAssetsPath($create) . DIRECTORY_SEPARATOR . 'thumbs';
-
-        if ($create) {
-            FileHelper::createDirectory($path);
-        }
-
-        return $path;
-    }
-
-    /**
      * Returns the path to the `storage/runtime/assets/icons/` directory.
      *
      * @param bool $create Whether the directory should be created if it doesn't exist
@@ -454,7 +437,7 @@ class Path extends Component
      */
     public function getSiteTranslationsPath(): string
     {
-        if ($this->_siteTranslationsPath !== null) {
+        if (isset($this->_siteTranslationsPath)) {
             return $this->_siteTranslationsPath;
         }
 

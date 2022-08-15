@@ -1,0 +1,2 @@
+{% set fieldLayout = fieldLayout ?? create('craft\\models\\FieldLayout') %}
+{{ craft.cp.fieldLayoutDesigner(fieldLayout, _context)|raw }}

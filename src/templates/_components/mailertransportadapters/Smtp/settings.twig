@@ -1,0 +1,75 @@
+{% import "_includes/forms" as forms %}
+
+{{ forms.autosuggestField({
+    label: "Hostname"|t('app'),
+    id: 'host',
+    name: 'host',
+    suggestEnvVars: true,
+    value: adapter.host,
+    required: true,
+    errors: adapter.getErrors('host')
+}) }}
+
+{{ forms.autosuggestField({
+    label: "Port"|t('app'),
+    id: 'port',
+    name: 'port',
+    suggestEnvVars: true,
+    value: adapter.port,
+    size: 20,
+    required: true,
+    errors: adapter.getErrors('port')
+}) }}
+
+{{ forms.booleanMenuField({
+    label: "Use authentication"|t('app'),
+    id: 'useAuthentication',
+    name: 'useAuthentication',
+    includeEnvVars: true,
+    value: adapter.useAuthentication,
+    toggle: 'auth-credentials'
+}) }}
+
+<div id="auth-credentials" class="nested-fields{% if not adapter.useAuthentication %} hidden{% endif %}">
+    {{ forms.autosuggestField({
+        label: "Username"|t('app'),
+        id: 'username',
+        name: 'username',
+        suggestEnvVars: true,
+        value: adapter.username,
+        errors: adapter.getErrors('username')
+    }) }}
+
+    {{ forms.autosuggestField({
+        label: "Password"|t('app'),
+        id: 'password',
+        name: 'password',
+        suggestEnvVars: true,
+        value: adapter.password,
+        errors: adapter.getErrors('password')
+    }) }}
+</div>
+
+{{ forms.selectizeField({
+    label: "Encryption Method",
+    id: 'encryptionMethod',
+    name: 'encryptionMethod',
+    options: [
+        { value: 'none', label: "None"|t('app') },
+        { value: 'ssl', label: 'SSL' },
+        { value: 'tls', label: 'TLS' }
+    ],
+    includeEnvVars: true,
+    value: adapter.encryptionMethod ?: 'none',
+    errors: adapter.getErrors('encryptionMethod'),
+}) }}
+
+{{ forms.textField({
+    label: "Timeout"|t('app'),
+    id: 'timeout',
+    name: 'timeout',
+    value: adapter.timeout,
+    size: 2,
+    required: true,
+    errors: adapter.getErrors('timeout')
+}) }}

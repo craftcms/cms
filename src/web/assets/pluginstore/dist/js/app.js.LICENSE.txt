@@ -1,4 +1,10 @@
 /*!
+ * ApexCharts v3.35.0
+ * (c) 2018-2022 ApexCharts
+ * Released under the MIT License.
+ */
+
+/*!
  * accounting.js v0.4.1
  * Copyright 2014 Open Exchange Rates
  *
@@ -8,6 +14,36 @@
  * Full details and documentation:
  * http://openexchangerates.github.io/accounting.js/
  */
+
+/*!
+ * vue-awesome-swiper v4.1.1
+ * Copyright (c) Surmon. All rights reserved.
+ * Released under the MIT License.
+ * Surmon <https://github.com/surmon-china>
+ */
+
+/*! *****************************************************************************
+Copyright (c) Microsoft Corporation. All rights reserved.
+Licensed under the Apache License, Version 2.0 (the "License"); you may not use
+this file except in compliance with the License. You may obtain a copy of the
+License at http://www.apache.org/licenses/LICENSE-2.0
+
+THIS CODE IS PROVIDED ON AN *AS IS* BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+KIND, EITHER EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION ANY IMPLIED
+WARRANTIES OR CONDITIONS OF TITLE, FITNESS FOR A PARTICULAR PURPOSE,
+MERCHANTABLITY OR NON-INFRINGEMENT.
+
+See the Apache Version 2.0 License for specific language governing permissions
+and limitations under the License.
+***************************************************************************** */
+
+/*! svg.draggable.js - v2.2.2 - 2019-01-08
+  * https://github.com/svgdotjs/svg.draggable.js
+  * Copyright (c) 2019 Wout Fierens; Licensed MIT */
+
+/*! svg.filter.js - v2.0.2 - 2016-02-24
+  * https://github.com/wout/svg.filter.js
+  * Copyright (c) 2016 Wout Fierens; Licensed MIT */
 
 /**!
  * @fileOverview Kickass library to create and place poppers near their reference elements.

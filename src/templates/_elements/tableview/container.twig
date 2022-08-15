@@ -1,0 +1,37 @@
+{% set tableName = tableName ?? '' %}
+{% set instructionId = instructionId ?? "sort-instructions-#{random()}" %}
+
+<div class="tableview{% if context == 'index' %} tablepane{% endif %}">
+    <span class="visually-hidden" data-status-message aria-live="assertive"></span>
+    <table class="data fullwidth"{% if structureEditable is defined and structureEditable %} data-structure-id="{{ structure.id }}" data-max-levels="{{ structure.maxLevels }}"{% endif %} data-name="{{ tableName }}">
+        <caption class="visually-hidden">{{ tableName }}<span id="{{ instructionId }}" data-sort-instructions>, {{ 'Column headers with buttons are sortable'|t('app') }}</span></caption>
+        <thead>
+        <tr>
+            {% if showCheckboxes %}
+                <th class="checkbox-cell selectallcontainer"></th>
+            {% endif %}
+            {% for attribute in attributes %}
+                {% set icon = attribute[1].icon ?? false %}
+                {% tag 'th' with {
+                    scope: 'col',
+                    title: icon ? attribute[1].label : false,
+                    data: {
+                        attribute: attribute[0],
+                    },
+                } %}
+                    {% if icon %}
+                        <span data-icon="{{ icon }}" aria-hidden="true"></span>
+                        <span class="visually-hidden">{{ attribute[1].label }}</span>
+                    {% else %}
+                        {{ attribute[1].label|t('site') }}
+                    {% endif %}
+                    <div class="spinner"></div>
+                {% endtag %}
+            {% endfor %}
+        </tr>
+        </thead>
+        <tbody>
+            {% include "_elements/tableview/elements" %}
+        </tbody>
+    </table>
+</div>

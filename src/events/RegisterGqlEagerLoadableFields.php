@@ -31,5 +31,5 @@ class RegisterGqlEagerLoadableFields extends Event
      *  - 'canBeAliased' is used to configure whether the GraphQL field alias (if any) can be used when constructing the eager-loading parameters. Defaults to `true`.
      *    To invert the behavior, use `canBeAliased` as a key and set the value to the required boolean value.
      */
-    public $fieldList = [];
+    public array $fieldList = [];
 }

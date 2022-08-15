@@ -7,8 +7,8 @@
 
 namespace craft\models;
 
-use Craft;
 use craft\base\Model;
+use DateTime;
 
 /**
  * Class Info model.
@@ -21,48 +21,48 @@ class Info extends Model
     /**
      * @var int|null ID
      */
-    public $id;
+    public ?int $id = null;
 
     /**
      * @var string|null Version
      */
-    public $version;
+    public ?string $version = null;
 
     /**
      * @var string Schema version
      */
-    public $schemaVersion = '0';
+    public string $schemaVersion = '0';
 
     /**
      * @var bool Maintenance
      */
-    public $maintenance = false;
+    public bool $maintenance = false;
 
     /**
      * @var string|null Uid
      */
-    public $uid;
+    public ?string $uid = null;
 
     /**
      * @var string Field version
      * @since 3.5.6
      */
-    public $configVersion = '000000000000';
+    public string $configVersion = '000000000000';
 
     /**
      * @var string|null Field version
      */
-    public $fieldVersion;
+    public ?string $fieldVersion = null;
 
     /**
-     * @var \DateTime|null Date updated
+     * @var DateTime|null Date updated
      */
-    public $dateUpdated;
+    public ?DateTime $dateUpdated = null;
 
     /**
-     * @var \DateTime|null Date created
+     * @var DateTime|null Date created
      */
-    public $dateCreated;
+    public ?DateTime $dateCreated = null;
 
     /**
      * @inheritdoc
@@ -73,52 +73,5 @@ class Info extends Model
         $rules[] = [['id'], 'number', 'integerOnly' => true];
         $rules[] = [['version', 'schemaVersion'], 'required'];
         return $rules;
-    }
-
-    // Deprecated
-    // -------------------------------------------------------------------------
-
-    /**
-     * Returns the active Craft edition.
-     *
-     * @return int
-     * @deprecated in 3.1.0. Use `Craft::$app->getEdition()` instead.
-     */
-    public function getEdition(): int
-    {
-        return Craft::$app->getEdition();
-    }
-
-    /**
-     * Returns the system name.
-     *
-     * @return string
-     * @deprecated in 3.1.0. Use `Craft::$app->getSystemName()` instead.
-     */
-    public function getName(): string
-    {
-        return Craft::$app->getSystemName();
-    }
-
-    /**
-     * Returns the system time zone.
-     *
-     * @return string
-     * @deprecated in 3.1.0. Use `Craft::$app->getTimeZone()` instead.
-     */
-    public function getTimezone(): string
-    {
-        return Craft::$app->getTimeZone();
-    }
-
-    /**
-     * Returns whether the system is currently live.
-     *
-     * @return bool
-     * @deprecated in 3.1.0. Use `Craft::$app->getIsLive()` instead.
-     */
-    public function getOn(): bool
-    {
-        return Craft::$app->getIsLive();
     }
 }

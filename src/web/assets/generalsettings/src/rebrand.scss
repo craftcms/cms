@@ -1,21 +1,24 @@
 @charset "UTF-8";
-@import "@craftcms/sass/mixins";
+@import '@craftcms/sass/mixins';
+
+.cp-image {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
 
 .cp-current-image {
-  border-radius: $largeBorderRadius;
+  border-radius: var(--large-border-radius);
   width: 100px;
   height: 100px;
   background: no-repeat;
-  box-shadow: inset 0 0 0 1px $hairlineColor;
+  box-shadow: inset 0 0 0 1px var(--hairline-color);
 }
 
 .cp-image-controls {
   display: flex;
-  margin-top: 5px;
-
-  .btn + .btn {
-    @include margin-left(5px);
-  }
+  flex-direction: column;
+  gap: 14px;
 }
 
 .cp-image-controls .progress-shade {

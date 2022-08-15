@@ -6,8 +6,7 @@ const uiLayerManager = new Garnish.UiLayerManager();
  * @deprecated
  * Assign these here to avoid circular dependencies
  */
- Object.assign(Garnish, {
-  Menu: Garnish.CustomSelect,
+Object.assign(Garnish, {
   escManager: new Garnish.EscManager(),
   uiLayerManager,
   /**

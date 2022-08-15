@@ -9,17 +9,40 @@ return [
     [
         'id' => '1000',
         'name' => 'Sneakers',
-        'scope' => '["globalsets.globalset-1000-------------------uid:read","globalsets.globalset-1001-------------------uid:read","globalsets.globalset-1002-------------------uid:read","volumes.volume-1000----------------------uid:read","volumes.volume-1001----------------------uid:read","volumes.volume-1002----------------------uid:read","usergroups.everyone:read","sections.section-1000---------------------uid:read","sections.section-1001---------------------uid:read","sections.section-1002---------------------uid:read","sections.section-1003---------------------uid:read","sections.section-1004---------------------uid:read","sections.section-1005---------------------uid:read","entrytypes.entry-type-1000------------------uid:read","entrytypes.entry-type------------------1001-uid:read","entrytypes.entry-type-1002------------------uid:read","entrytypes.entry-type-1003------------------uid:read","entrytypes.entry-type-1004------------------uid:read","entrytypes.entry-type-1005------------------uid:read"]',
+        'scope' => [
+            'globalsets.globalset-1000-------------------uid:read',
+            'globalsets.globalset-1001-------------------uid:read',
+            'globalsets.globalset-1002-------------------uid:read',
+            'volumes.volume-1000----------------------uid:read',
+            'volumes.volume-1001----------------------uid:read',
+            'volumes.volume-1002----------------------uid:read',
+            'usergroups.everyone:read',
+            'sections.section-1000---------------------uid:read',
+            'sections.section-1001---------------------uid:read',
+            'sections.section-1002---------------------uid:read',
+            'sections.section-1003---------------------uid:read',
+            'sections.section-1004---------------------uid:read',
+            'sections.section-1005---------------------uid:read',
+            'entrytypes.entry-type-1000------------------uid:read',
+            'entrytypes.entry-type------------------1001-uid:read',
+            'entrytypes.entry-type-1002------------------uid:read',
+            'entrytypes.entry-type-1003------------------uid:read',
+            'entrytypes.entry-type-1004------------------uid:read',
+            'entrytypes.entry-type-1005------------------uid:read',
+        ],
         'dateCreated' => '2018-08-08 20:00:00',
         'dateUpdated' => '2018-08-08 20:00:00',
-        'uid' => 'gql-main-token-------------------uid'
+        'uid' => 'gql-main-token-------------------uid',
     ],
     [
         'id' => '1001',
         'name' => 'Peter Parker',
-        'scope' => '["globalsets.globalset-1001-------------------uid:read","globalsets.globalset-1002-------------------uid:read"]',
+        'scope' => [
+            'globalsets.globalset-1001-------------------uid:read',
+            'globalsets.globalset-1002-------------------uid:read',
+        ],
         'dateCreated' => '2018-08-08 20:00:00',
         'dateUpdated' => '2018-08-08 20:00:00',
-        'uid' => 'gql-sub-token--------------------uid'
-    ]
+        'uid' => 'gql-sub-token--------------------uid',
+    ],
 ];

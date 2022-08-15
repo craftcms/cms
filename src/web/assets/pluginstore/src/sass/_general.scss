@@ -1,39 +1,96 @@
 @charset "UTF-8";
-@import "@craftcms/sass/mixins";
+@import '@craftcms/sass/mixins';
 
 /* Basics */
 
-html, body, div, span,  object, iframe, table, caption, tbody, tfoot, thead, tr, th, td,
-del, dfn, em, font, img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var,
-h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code,
-dl, dt, dd, ol, ul, li, fieldset, form, label, legend, article, main, nav, ins {
+html,
+body,
+div,
+span,
+object,
+iframe,
+table,
+caption,
+tbody,
+tfoot,
+thead,
+tr,
+th,
+td,
+del,
+dfn,
+em,
+font,
+img,
+ins,
+kbd,
+q,
+s,
+samp,
+small,
+strike,
+strong,
+sub,
+sup,
+tt,
+var,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+blockquote,
+pre,
+a,
+abbr,
+acronym,
+address,
+big,
+cite,
+code,
+dl,
+dt,
+dd,
+ol,
+ul,
+li,
+fieldset,
+form,
+label,
+legend,
+article,
+main,
+nav,
+ins {
   min-width: 0;
 }
 
 hr {
-  @apply .border-grey-lighter;
+  @apply tw-border-gray-200;
 }
 
 h1 {
+  @apply tw-mb-0;
   font-size: 18px;
 }
 
 h2 {
-  @apply .mt-8 .mb-4;
+  @apply tw-mt-8 tw-mb-4;
 }
 
 p {
-  @apply .mb-4;
+  @apply tw-mb-4;
 }
 
 pre {
-  @apply .bg-grey-lighter .p-4 .mb-4 .overflow-auto .max-w-full min-w-0;
+  @apply tw-bg-gray-200 tw-p-4 tw-mb-4 tw-overflow-auto tw-max-w-full tw-min-w-0;
 }
 
 code {
-  @apply .bg-grey-lighter .p-1;
+  @apply tw-bg-gray-200 tw-p-1;
 }
-
 
 /* Classes */
 
@@ -42,24 +99,23 @@ code {
 }
 
 .input.success input {
-  border-color: $successColor;
+  border-color: var(--success-color);
 }
 
 .input.errors .select:not(.selectize) select {
-  box-shadow: inset 0 0 0 1px transparent, 0 0 0 1px $errorColor, 0 1px 1px rgba(0, 0, 0, 0.1);
+  box-shadow: inset 0 0 0 1px transparent, 0 0 0 1px var(--error-color),
+    0 1px 1px rgba(0, 0, 0, 0.1);
 }
 
 input.error {
-  @apply .border-red;
+  @apply tw-border-red-600;
 }
-
 
 /* Header */
 
 .ps-header {
-  @apply .border-b .border-solid .border-grey-light .py-2 .flex .justify-between;
+  @apply tw-border-b tw-border-solid tw-border-gray-200 tw-py-2 tw-flex tw-justify-between;
 }
-
 
 /* Swiper */
 
@@ -74,22 +130,21 @@ input.error {
 }
 
 #main-container {
-  @apply .relative;
+  @apply tw-relative;
 }
 
 #main-content #content {
-  @apply .relative;
+  @apply tw-relative;
 }
 
 #container {
   position: static !important; /* #container hack required for modal overlays */
 }
 
-
 /* Plugin Store actions */
 
 #pluginstore-actions {
-  @apply .flex .justify-between .items-center;
+  @apply tw-flex tw-justify-between tw-items-center;
 
   & > * {
     @include margin-left(18px);
@@ -97,7 +152,7 @@ input.error {
 
   #cart-button {
     svg {
-      @apply .inline-block;
+      @apply tw-inline-block;
       width: 18px;
       height: 18px;
       vertical-align: middle;
@@ -106,7 +161,7 @@ input.error {
     }
 
     svg {
-      @include svg-mask($secondaryColor);
+      @include svg-mask(var(--secondary-color));
     }
 
     &:hover svg {
@@ -115,24 +170,24 @@ input.error {
 
     .badge {
       @include margin(0, 0, 0, -6px);
-      @apply .relative .inline-block .flex-shrink .text-white;
+      @apply tw-relative tw-inline-block tw-flex-shrink tw-text-white;
       top: -1px;
       padding: 0 6px;
       font-size: 11px;
       line-height: 16px;
       border-radius: 1em;
-      background: $primaryColor;
+      background: var(--primary-color);
     }
   }
 
   #craftid-account {
     &:hover {
-      @apply .no-underline;
+      @apply tw-no-underline;
     }
 
     .photo {
       svg {
-        @apply .align-middle;
+        @apply tw-align-middle;
         @include margin-right(7px);
         width: 22px;
         height: 22px;
@@ -141,46 +196,13 @@ input.error {
     }
 
     &:hover .label {
-      @apply .no-underline;
+      @apply tw-no-underline;
     }
   }
 
   #craftid-connect-form {
     .ssl-status {
-      @apply .inline-block;
-    }
-  }
-}
-
-/* Tables */
-
-.readable {
-  table {
-    display: block;
-    overflow: auto;
-    width: 100%;
-
-    th {
-      font-weight: 600;
-    }
-
-    td,
-    th {
-      border: 1px solid #dfe2e5;
-      padding: 6px 13px;
-    }
-
-    tr {
-      background-color: $white;
-      border-top: 1px solid #c6cbd1;
-    }
-
-    tr:nth-child(2n) {
-      background-color: $grey050;
-    }
-
-    img {
-      background-color: transparent;
+      @apply tw-inline-block;
     }
   }
 }

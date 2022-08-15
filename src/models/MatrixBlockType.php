@@ -13,7 +13,6 @@ use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
 use craft\elements\MatrixBlock;
 use craft\fields\Matrix;
-use craft\helpers\StringHelper;
 use yii\base\InvalidConfigException;
 
 /**
@@ -29,54 +28,54 @@ class MatrixBlockType extends Model implements GqlInlineFragmentInterface
     /**
      * @var int|string|null ID The block ID. If unsaved, it will be in the format "newX".
      */
-    public $id;
+    public string|int|null $id = null;
 
     /**
      * @var int|null Field ID
      */
-    public $fieldId;
+    public ?int $fieldId = null;
 
     /**
      * @var int|null Field layout ID
      */
-    public $fieldLayoutId;
+    public ?int $fieldLayoutId = null;
 
     /**
      * @var string|null Name
      */
-    public $name;
+    public ?string $name = null;
 
     /**
      * @var string|null Handle
      */
-    public $handle;
+    public ?string $handle = null;
 
     /**
      * @var int|null Sort order
      */
-    public $sortOrder;
+    public ?int $sortOrder = null;
 
     /**
      * @var bool
      */
-    public $hasFieldErrors = false;
+    public bool $hasFieldErrors = false;
 
     /**
-     * @var string|mixed
+     * @var string|null
      */
-    public $uid;
+    public ?string $uid = null;
 
     /**
      * @inheritdoc
      */
-    public function behaviors()
+    protected function defineBehaviors(): array
     {
-        $behaviors = parent::behaviors();
-        $behaviors['fieldLayout'] = [
-            'class' => FieldLayoutBehavior::class,
-            'elementType' => MatrixBlock::class,
+        return [
+            'fieldLayout' => [
+                'class' => FieldLayoutBehavior::class,
+                'elementType' => MatrixBlock::class,
+            ],
         ];
-        return $behaviors;
     }
 
     /**
@@ -106,7 +105,7 @@ class MatrixBlockType extends Model implements GqlInlineFragmentInterface
      */
     public function getIsNew(): bool
     {
-        return (!$this->id || strpos($this->id, 'new') === 0);
+        return (!$this->id || str_starts_with($this->id, 'new'));
     }
 
     /**
@@ -118,15 +117,15 @@ class MatrixBlockType extends Model implements GqlInlineFragmentInterface
      */
     public function getField(): Matrix
     {
-        if ($this->fieldId === null) {
+        if (!isset($this->fieldId)) {
             throw new InvalidConfigException('Block type missing its field ID');
         }
 
-        /** @var Matrix $field */
         if (($field = Craft::$app->getFields()->getFieldById($this->fieldId)) === null) {
             throw new InvalidConfigException('Invalid field ID: ' . $this->fieldId);
         }
 
+        /** @var Matrix $field */
         return $field;
     }
 
@@ -166,18 +165,15 @@ class MatrixBlockType extends Model implements GqlInlineFragmentInterface
             'fields' => [],
         ];
 
-        if (
-            ($fieldLayout = $this->getFieldLayout()) &&
-            ($fieldLayoutConfig = $fieldLayout->getConfig())
-        ) {
-            if (!$fieldLayout->uid) {
-                $fieldLayout->uid = StringHelper::UUID();
-            }
+        $fieldLayout = $this->getFieldLayout();
+        $fieldLayoutConfig = $fieldLayout->getConfig();
+
+        if ($fieldLayoutConfig) {
             $config['fieldLayouts'][$fieldLayout->uid] = $fieldLayoutConfig;
         }
 
         $fieldsService = Craft::$app->getFields();
-        foreach ($this->getFields() as $field) {
+        foreach ($this->getCustomFields() as $field) {
             $config['fields'][$field->uid] = $fieldsService->createFieldConfig($field);
         }
 

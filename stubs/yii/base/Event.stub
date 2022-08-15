@@ -1,0 +1,39 @@
+<?php
+
+namespace yii\base;
+
+class Event
+{
+    /**
+     * @param class-string<Component> $class
+     * @param string $name
+     * @param callable $handler
+     * @param mixed $data
+     * @param bool $append
+     * @return void
+     */
+    public static function on($class, $name, $handler, $data = null, $append = true) {}
+
+    /**
+     * @param class-string<Component> $class
+     * @param string $name
+     * @param callable $handler
+     * @return bool
+     */
+    public static function off($class, $name, $handler = null) {}
+
+    /**
+     * @param class-string<Component>|Component $class
+     * @param string $name
+     * @return bool
+     */
+    public static function hasHandlers($class, $name) {}
+
+    /**
+     * @param class-string|object $class
+     * @param string $name
+     * @param Event $event
+     * @return void
+     */
+    public static function trigger($class, $name, $event = null) {}
+}

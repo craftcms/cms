@@ -8,7 +8,6 @@
 namespace craft\gql;
 
 use Craft;
-use craft\helpers\StringHelper;
 
 /**
  * Class GqlEntityRegistry
@@ -21,12 +20,12 @@ class GqlEntityRegistry
     /**
      * @var array
      */
-    private static $_entities = [];
+    private static array $_entities = [];
 
     /**
      * @var string
      */
-    private static $_prefix = null;
+    private static string $_prefix;
 
     /**
      * Prefix GQL type name with the configured prefix.
@@ -51,9 +50,9 @@ class GqlEntityRegistry
      * @return string|null
      * @since 3.6.0
      */
-    public static function getPrefix()
+    public static function getPrefix(): ?string
     {
-        if (self::$_prefix === null) {
+        if (!isset(self::$_prefix)) {
             self::$_prefix = Craft::$app->getConfig()->getGeneral()->gqlTypePrefix;
         }
 
@@ -66,7 +65,7 @@ class GqlEntityRegistry
      * @param string $prefix
      * @since 3.6.0
      */
-    public static function setPrefix(string $prefix)
+    public static function setPrefix(string $prefix): void
     {
         self::$_prefix = $prefix;
     }
@@ -75,13 +74,13 @@ class GqlEntityRegistry
      * Get a registered entity.
      *
      * @param string $entityName
-     * @return bool|mixed
+     * @return mixed
      */
-    public static function getEntity(string $entityName)
+    public static function getEntity(string $entityName): mixed
     {
         // Check if we need to apply the prefix.
         $prefix = self::getPrefix();
-        if ($prefix && !StringHelper::startsWith($entityName, $prefix)) {
+        if ($prefix && !str_starts_with($entityName, $prefix)) {
             $entityName = self::prefixTypeName($entityName);
         }
 
@@ -95,7 +94,7 @@ class GqlEntityRegistry
      * @param mixed $entity
      * @return mixed
      */
-    public static function createEntity(string $entityName, $entity)
+    public static function createEntity(string $entityName, mixed $entity): mixed
     {
         $entityName = self::prefixTypeName($entityName);
         $entity->name = self::prefixTypeName($entity->name);
@@ -112,7 +111,7 @@ class GqlEntityRegistry
     /**
      * Flush all registered entities.
      */
-    public static function flush()
+    public static function flush(): void
     {
         self::$_entities = [];
     }

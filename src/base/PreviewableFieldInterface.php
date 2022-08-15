@@ -23,5 +23,5 @@ interface PreviewableFieldInterface
      * @param ElementInterface $element The element the field is associated with
      * @return string The HTML that should be shown for this field in Table View
      */
-    public function getTableAttributeHtml($value, ElementInterface $element): string;
+    public function getTableAttributeHtml(mixed $value, ElementInterface $element): string;
 }

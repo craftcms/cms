@@ -1,0 +1,17 @@
+<?php
+
+namespace yii\db;
+
+class Migration
+{
+    /**
+     * @param string $table
+     * @param mixed[]|Query $insertColumns
+     * @param mixed[]|bool $updateColumns
+     * @param mixed[] $params
+     * @return void
+     */
+    public function upsert($table, $insertColumns, $updateColumns = true, $params = []) {}
+}
+
+class Query {}

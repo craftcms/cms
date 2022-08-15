@@ -7,9 +7,9 @@
 
 namespace craft\gql\interfaces\elements;
 
+use Craft;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\Element;
-use craft\gql\TypeManager;
 use craft\gql\types\generators\GlobalSetType;
 use GraphQL\Type\Definition\InterfaceType;
 use GraphQL\Type\Definition\Type;
@@ -33,7 +33,7 @@ class GlobalSet extends Element
     /**
      * @inheritdoc
      */
-    public static function getType($fields = null): Type
+    public static function getType(): Type
     {
         if ($type = GqlEntityRegistry::getEntity(self::getName())) {
             return $type;
@@ -64,15 +64,15 @@ class GlobalSet extends Element
      */
     public static function getFieldDefinitions(): array
     {
-        return TypeManager::prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), [
+        return Craft::$app->getGql()->prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), [
             'name' => [
                 'name' => 'name',
-                'type' => Type::string(),
+                'type' => Type::nonNull(Type::string()),
                 'description' => 'The name of the global set.',
             ],
             'handle' => [
                 'name' => 'handle',
-                'type' => Type::string(),
+                'type' => Type::nonNull(Type::string()),
                 'description' => 'The handle of the global set.',
             ],
         ]), self::getName());

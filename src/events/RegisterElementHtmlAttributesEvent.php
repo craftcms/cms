@@ -20,5 +20,5 @@ class RegisterElementHtmlAttributesEvent extends Event
     /**
      * @var array List of registered HTML attributes for the element
      */
-    public $htmlAttributes = [];
+    public array $htmlAttributes = [];
 }

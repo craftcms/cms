@@ -15,8 +15,6 @@ use craft\web\Controller;
 use craft\web\UploadedFile;
 use yii\web\Response;
 
-Craft::$app->requireEdition(Craft::Pro);
-
 /**
  * The RebrandController class is a controller that handles various control panel re-branding tasks such as uploading,
  * cropping and deleting site logos and icons.
@@ -30,7 +28,16 @@ class RebrandController extends Controller
     /**
      * @var array Allowed types of site images.
      */
-    private $_allowedTypes = ['logo', 'icon'];
+    private array $_allowedTypes = ['logo', 'icon'];
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeAction($action): bool
+    {
+        Craft::$app->requireEdition(Craft::Pro);
+        return parent::beforeAction($action);
+    }
 
     /**
      * Handles control panel logo and site icon uploads.
@@ -44,18 +51,18 @@ class RebrandController extends Controller
         $type = $this->request->getRequiredBodyParam('type');
 
         if (!in_array($type, $this->_allowedTypes, true)) {
-            return $this->asErrorJson(Craft::t('app', 'That is not an allowed image type.'));
+            return $this->asFailure(Craft::t('app', 'That is not an allowed image type.'));
         }
 
         // Grab the uploaded file
         if (($file = UploadedFile::getInstanceByName('image')) === null) {
-            return $this->asErrorJson(Craft::t('app', 'There was an error uploading your photo'));
+            return $this->asFailure(Craft::t('app', 'There was an error uploading your photo'));
         }
 
         $filename = Assets::prepareAssetName($file->name, true, true);
 
         if (!Image::canManipulateAsImage($file->getExtension())) {
-            return $this->asErrorJson(Craft::t('app', 'The uploaded file is not an image.'));
+            return $this->asFailure(Craft::t('app', 'The uploaded file is not an image.'));
         }
 
         $targetPath = Craft::$app->getPath()->getRebrandPath() . '/' . $type . '/';
@@ -87,15 +94,15 @@ class RebrandController extends Controller
     /**
      * Deletes control panel logo and site icon images.
      *
-     * @return Response
+     * @return Response|null
      */
-    public function actionDeleteSiteImage(): Response
+    public function actionDeleteSiteImage(): ?Response
     {
         $this->requireAdmin();
         $type = $this->request->getRequiredBodyParam('type');
 
         if (!in_array($type, $this->_allowedTypes, true)) {
-            $this->asErrorJson(Craft::t('app', 'That is not an allowed image type.'));
+            $this->asFailure(Craft::t('app', 'That is not an allowed image type.'));
         }
 
         FileHelper::clearDirectory(Craft::$app->getPath()->getRebrandPath() . '/' . $type);

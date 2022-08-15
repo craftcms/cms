@@ -40,12 +40,12 @@ class MyDrafts extends Widget
     /**
      * @var int The total number of drafts that the widget should show
      */
-    public $limit = 10;
+    public int $limit = 10;
 
     /**
      * @inheritdoc
      */
-    public static function icon()
+    public static function icon(): ?string
     {
         return Craft::getAlias('@appicons/draft.svg');
     }
@@ -63,7 +63,7 @@ class MyDrafts extends Widget
     /**
      * @inheritdoc
      */
-    public function getSettingsHtml()
+    public function getSettingsHtml(): ?string
     {
         return Cp::textFieldHtml([
             'label' => Craft::t('app', 'Limit'),
@@ -78,11 +78,12 @@ class MyDrafts extends Widget
     /**
      * @inheritdoc
      */
-    public function getBodyHtml()
+    public function getBodyHtml(): ?string
     {
+        /** @var Entry[] $drafts */
         $drafts = Entry::find()
             ->drafts()
-            ->anyStatus()
+            ->status(null)
             ->draftCreator(Craft::$app->getUser()->getId())
             ->site('*')
             ->unique()

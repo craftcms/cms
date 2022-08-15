@@ -22,7 +22,7 @@ class RemoveController extends BaseUpdaterController
     /**
      * @inheritdoc
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         if (!parent::beforeAction($action)) {
             return false;
@@ -55,7 +55,7 @@ class RemoveController extends BaseUpdaterController
     /**
      * @inheritdoc
      */
-    protected function initialState(): array
+    protected function initialState(bool $force = false): array
     {
         // Make sure we can find composer.json
         if (!$this->ensureComposerJson()) {

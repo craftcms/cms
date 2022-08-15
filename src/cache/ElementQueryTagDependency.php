@@ -21,7 +21,7 @@ class ElementQueryTagDependency extends TagDependency
     /**
      * @var ElementQuery|null
      */
-    public $elementQuery;
+    public ?ElementQuery $elementQuery = null;
 
     /**
      * Constructor

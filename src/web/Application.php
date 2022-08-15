@@ -15,17 +15,24 @@ use craft\debug\DeprecatedPanel;
 use craft\debug\Module as DebugModule;
 use craft\debug\RequestPanel;
 use craft\debug\UserPanel;
+use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\FileHelper;
 use craft\helpers\Path;
 use craft\helpers\UrlHelper;
 use craft\queue\QueueLogBehavior;
+use IntlDateFormatter;
+use IntlException;
+use Throwable;
 use yii\base\Component;
 use yii\base\ErrorException;
+use yii\base\Exception;
+use yii\base\ExitException;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\base\InvalidRouteException;
+use yii\base\Response as BaseResponse;
 use yii\db\Exception as DbException;
 use yii\debug\panels\AssetPanel;
 use yii\debug\panels\DbPanel;
@@ -50,11 +57,11 @@ use yii\web\UnauthorizedHttpException;
  * @property Session $session The session component
  * @property UrlManager $urlManager The URL manager for this application
  * @property User $user The user component
- * @method Request getRequest()      Returns the request component.
- * @method \craft\web\Response getResponse()     Returns the response component.
- * @method Session getSession()      Returns the session component.
- * @method UrlManager getUrlManager()   Returns the URL manager for this application.
- * @method User getUser()         Returns the user component.
+ * @method Request getRequest() Returns the request component.
+ * @method \craft\web\Response getResponse() Returns the response component.
+ * @method Session getSession() Returns the session component.
+ * @method UrlManager getUrlManager() Returns the URL manager for this application.
+ * @method User getUser() Returns the user component.
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
@@ -74,24 +81,24 @@ class Application extends \yii\web\Application
      * });
      * ```
      */
-    const EVENT_INIT = 'init';
+    public const EVENT_INIT = 'init';
 
     /**
      * @event \craft\events\EditionChangeEvent The event that is triggered after the edition changes
      */
-    const EVENT_AFTER_EDITION_CHANGE = 'afterEditionChange';
+    public const EVENT_AFTER_EDITION_CHANGE = 'afterEditionChange';
 
     /**
      * Initializes the application.
      */
-    public function init()
+    public function init(): void
     {
         $this->state = self::STATE_INIT;
         $this->_preInit();
 
         parent::init();
 
-        if (!defined('CRAFT_EPHEMERAL') || CRAFT_EPHEMERAL !== true) {
+        if (!App::isEphemeral()) {
             $this->ensureResourcePathExists();
         }
 
@@ -103,7 +110,7 @@ class Application extends \yii\web\Application
     /**
      * @inheritdoc
      */
-    public function bootstrap()
+    public function bootstrap(): void
     {
         // Ensure that the request component has been instantiated
         if (!$this->has('request', true)) {
@@ -118,16 +125,18 @@ class Application extends \yii\web\Application
     /**
      * @inheritdoc
      */
-    public function setTimeZone($value)
+    public function setTimeZone($value): void
     {
         parent::setTimeZone($value);
 
-        if ($value !== 'UTC' && $this->getI18n()->getIsIntlLoaded()) {
+        if ($value !== 'UTC') {
             // Make sure that ICU supports this timezone
             try {
-                new \IntlDateFormatter($this->language, \IntlDateFormatter::NONE, \IntlDateFormatter::NONE);
-            } catch (\IntlException $e) {
-                Craft::warning("Time zone \"{$value}\" does not appear to be supported by ICU: " . intl_get_error_message());
+                /** @noinspection PhpExpressionResultUnusedInspection */
+                /** @phpstan-ignore-next-line */
+                new IntlDateFormatter($this->language, IntlDateFormatter::NONE, IntlDateFormatter::NONE);
+            } catch (IntlException) {
+                Craft::warning("Time zone “{$value}” does not appear to be supported by ICU: " . intl_get_error_message());
                 parent::setTimeZone('UTC');
             }
         }
@@ -140,7 +149,7 @@ class Application extends \yii\web\Application
      * @param bool $skipSpecialHandling Whether to skip the special case request handling stuff and go straight to
      * the normal routing logic
      * @return Response the resulting response
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     public function handleRequest($request, bool $skipSpecialHandling = false): Response
     {
@@ -170,7 +179,7 @@ class Application extends \yii\web\Application
                 $headers->set('Permissions-Policy', $generalConfig->permissionsPolicyHeader);
             }
 
-            // Tell bots not to index/follow CP and tokenized pages
+            // Tell bots not to index/follow control panel and tokenized pages
             if (
                 $generalConfig->disallowRobots ||
                 $request->getIsCpRequest() ||
@@ -201,7 +210,7 @@ class Application extends \yii\web\Application
                 return $response;
             }
 
-            // Check if the app path has changed.  If so, run the requirements check again.
+            // Check if the app path has changed. If so, run the requirements check again.
             if (($response = $this->_processRequirementsCheck($request)) !== null) {
                 $this->_unregisterDebugModule();
 
@@ -223,21 +232,21 @@ class Application extends \yii\web\Application
                 throw new ServiceUnavailableHttpException();
             }
 
-            // getIsCraftDbMigrationNeeded will return true if we're in the middle of a manual or auto-update for Craft itself.
-            // If we're in maintenance mode and it's not a site request, show the manual update template.
-            if ($this->getUpdates()->getIsCraftDbMigrationNeeded()) {
+            // getIsCraftDbMigrationNeeded will return true if we’re in the middle of a manual or auto-update for Craft itself.
+            // If we’re in maintenance mode and it’s not a site request, show the manual update template.
+            if ($this->getUpdates()->getIsCraftUpdatePending()) {
                 return $this->_processUpdateLogic($request) ?: $this->getResponse();
             }
 
-            // If there's a new version, but the schema hasn't changed, just update the info table
+            // If there’s a new version, but the schema hasn’t changed, just update the info table
             if ($this->getUpdates()->getHasCraftVersionChanged()) {
                 $this->getUpdates()->updateCraftVersionInfo();
 
                 // Delete all compiled templates
                 try {
                     FileHelper::clearDirectory($this->getPath()->getCompiledTemplatesPath(false));
-                } catch (InvalidArgumentException $e) {
-                    // the directory doesn't exist
+                } catch (InvalidArgumentException) {
+                    // Directory does not exist
                 } catch (ErrorException $e) {
                     Craft::error('Could not delete compiled templates: ' . $e->getMessage());
                     Craft::$app->getErrorHandler()->logException($e);
@@ -245,12 +254,12 @@ class Application extends \yii\web\Application
             }
 
             // Check if a plugin needs to update the database.
-            if ($this->getUpdates()->getIsPluginDbUpdateNeeded()) {
+            if ($this->getUpdates()->getIsPluginUpdatePending()) {
                 return $this->_processUpdateLogic($request) ?: $this->getResponse();
             }
 
             // If this is a plugin template request, make sure the user has access to the plugin
-            // If this is a non-login, non-validate, non-setPassword CP request, make sure the user has access to the CP
+            // If this is a non-login, non-validate, non-setPassword control panel request, make sure the user has access to the control panel
             if (
                 $request->getIsCpRequest() &&
                 !$request->getIsActionRequest() &&
@@ -272,10 +281,10 @@ class Application extends \yii\web\Application
             return $response;
         }
 
-        // If we're still here, finally let Yii do it's thing.
+        // If we’re still here, finally let Yii do its thing.
         try {
             return parent::handleRequest($request);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $this->_unregisterDebugModule();
             throw $e;
         }
@@ -287,28 +296,23 @@ class Application extends \yii\web\Application
      * @param array $params
      * @return Response|null The result of the action, normalized into a Response object
      */
-    public function runAction($route, $params = [])
+    public function runAction($route, $params = []): ?BaseResponse
     {
         $result = parent::runAction($route, $params);
 
-        if ($result !== null) {
-            if ($result instanceof Response) {
-                return $result;
-            }
-
-            $response = $this->getResponse();
-            $response->data = $result;
-
-            return $response;
+        if ($result === null || $result instanceof Response) {
+            return $result;
         }
 
-        return null;
+        $response = $this->getResponse();
+        $response->data = $result;
+        return $response;
     }
 
     /**
      * @inheritdoc
      */
-    public function setVendorPath($path)
+    public function setVendorPath($path): void
     {
         parent::setVendorPath($path);
 
@@ -334,7 +338,7 @@ class Application extends \yii\web\Application
     /**
      * @inheritdoc
      */
-    public function get($id, $throwException = true)
+    public function get($id, $throwException = true): ?object
     {
         // Is this the first time the queue component is requested?
         $isFirstQueue = $id === 'queue' && !$this->has($id, true);
@@ -353,17 +357,18 @@ class Application extends \yii\web\Application
      *
      * @throws ErrorException
      * @throws InvalidConfigException
-     * @throws \yii\base\Exception
+     * @throws Exception
      */
-    protected function ensureResourcePathExists()
+    protected function ensureResourcePathExists(): void
     {
         $generalConfig = $this->getConfig()->getGeneral();
 
-        if ($generalConfig->resourceBasePath === false) {
+        $resourceBasePath = Craft::getAlias($generalConfig->resourceBasePath);
+
+        if ($resourceBasePath === false) {
             return;
         }
 
-        $resourceBasePath = Craft::getAlias($generalConfig->resourceBasePath);
         @FileHelper::createDirectory($resourceBasePath);
 
         if (!is_dir($resourceBasePath) || !FileHelper::isWritable($resourceBasePath)) {
@@ -377,7 +382,7 @@ class Application extends \yii\web\Application
      * @throws UnauthorizedHttpException
      * @since 3.5.0
      */
-    protected function authenticate()
+    protected function authenticate(): void
     {
         if (!Craft::$app->getConfig()->getGeneral()->enableBasicHttpAuth) {
             return;
@@ -406,7 +411,7 @@ class Application extends \yii\web\Application
     /**
      * Bootstraps the Debug Toolbar if necessary.
      */
-    protected function debugBootstrap()
+    protected function debugBootstrap(): void
     {
         $request = $this->getRequest();
 
@@ -419,13 +424,13 @@ class Application extends \yii\web\Application
         $pref = $request->getIsCpRequest() ? 'enableDebugToolbarForCp' : 'enableDebugToolbarForSite';
         if (!(
             ($user && $user->admin && $user->getPreference($pref)) ||
-            (YII_DEBUG && $request->getHeaders()->get('X-Debug') === 'enable')
+            (App::devMode() && $request->getHeaders()->get('X-Debug') === 'enable')
         )) {
             return;
         }
 
         $svg = rawurlencode(file_get_contents(dirname(__DIR__) . '/icons/c-debug.svg'));
-        DebugModule::setYiiLogo("data:image/svg+xml;charset=utf-8,{$svg}");
+        DebugModule::setYiiLogo("data:image/svg+xml;charset=utf-8,$svg");
 
         $this->setModule('debug', [
             'class' => DebugModule::class,
@@ -455,18 +460,21 @@ class Application extends \yii\web\Application
         /** @var DebugModule $module */
         $module = $this->getModule('debug');
         $module->bootstrap($this);
+
+        if ($config = Craft::$app->getConfig()->getConfigFromFile('debug')) {
+            Craft::configure($module, $config);
+        }
     }
 
     /**
      * Unregisters the Debug module's end body event.
      */
-    private function _unregisterDebugModule()
+    private function _unregisterDebugModule(): void
     {
         $debug = $this->getModule('debug', false);
 
         if ($debug !== null) {
-            $this->getView()->off(View::EVENT_END_BODY,
-                [$debug, 'renderToolbar']);
+            $this->getView()->off(View::EVENT_END_BODY, [$debug, 'renderToolbar']);
         }
     }
 
@@ -477,12 +485,14 @@ class Application extends \yii\web\Application
      * @throws BadRequestHttpException
      * @throws NotFoundHttpException
      */
-    private function _processResourceRequest(Request $request)
+    private function _processResourceRequest(Request $request): void
     {
+        $generalConfig = $this->getConfig()->getGeneral();
+
         // Does this look like a resource request?
-        $resourceBaseUri = parse_url(Craft::getAlias($this->getConfig()->getGeneral()->resourceBaseUrl), PHP_URL_PATH);
+        $resourceBaseUri = parse_url(Craft::getAlias($generalConfig->resourceBaseUrl), PHP_URL_PATH);
         $requestPath = $request->getFullPath();
-        if (strpos('/' . $requestPath, $resourceBaseUri . '/') !== 0) {
+        if (!str_starts_with('/' . $requestPath, $resourceBaseUri . '/')) {
             return;
         }
 
@@ -490,15 +500,22 @@ class Application extends \yii\web\Application
         $slash = strpos($resourceUri, '/');
         $hash = substr($resourceUri, 0, $slash);
 
-        try {
-            $sourcePath = (new Query())
-                ->select(['path'])
-                ->from(Table::RESOURCEPATHS)
-                ->where(['hash' => $hash])
-                ->scalar();
-        } catch (DbException $e) {
-            // Craft is either not installed or not updated to 3.0.3+ yet
-        }
+        $sourcePath = Craft::$app->getCache()->getOrSet(
+            Craft::$app->getAssetManager()->getCacheKeyForPathHash($hash),
+            function() use ($hash) {
+                try {
+                    return (new Query())
+                        ->select(['path'])
+                        ->from(Table::RESOURCEPATHS)
+                        ->where(['hash' => $hash])
+                        ->scalar();
+                } catch (DbException) {
+                    // Craft isn't installed yet
+                }
+
+                return false;
+            }
+        );
 
         if (empty($sourcePath)) {
             return;
@@ -517,10 +534,17 @@ class Application extends \yii\web\Application
             throw new NotFoundHttpException("$filePath does not exist.");
         }
 
-        // Don't send cache headers here, in case we're in the middle of deploying an update across multiple
-        // servers and this one hasn't been updated yet (https://github.com/craftcms/cms/issues/9140#issuecomment-877521916)
-        $this->getResponse()
-            ->sendFile($publishedPath, null, ['inline' => true]);
+        $response = $this->getResponse();
+
+        // Only set cache headers if GeneralConfig::buildId matches the requested URI.
+        // This is to prevent caching a stale asset during a rolling deployment (https://github.com/craftcms/cms/issues/9140#issuecomment-877521916)
+        if ($generalConfig->buildId && $generalConfig->buildId === $request->getQueryParam('buildId')) {
+            $response->setCacheHeaders();
+        }
+
+        $response->sendFile($publishedPath, null, [
+            'inline' => true,
+        ]);
         $this->end();
     }
 
@@ -531,9 +555,9 @@ class Application extends \yii\web\Application
      * @return null|Response
      * @throws NotFoundHttpException
      * @throws ServiceUnavailableHttpException
-     * @throws \yii\base\ExitException
+     * @throws ExitException
      */
-    private function _processInstallRequest(Request $request)
+    private function _processInstallRequest(Request $request): ?Response
     {
         $isCpRequest = $request->getIsCpRequest();
         $isInstalled = $this->getIsInstalled();
@@ -571,7 +595,7 @@ class Application extends \yii\web\Application
             }
 
             // Redirect to the installer if Dev Mode is enabled
-            if (YII_DEBUG) {
+            if (App::devMode()) {
                 $url = UrlHelper::url('install');
                 $this->getResponse()->redirect($url);
                 $this->end();
@@ -588,9 +612,9 @@ class Application extends \yii\web\Application
      *
      * @param Request $request
      * @return Response|null
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
-    private function _processActionRequest(Request $request)
+    private function _processActionRequest(Request $request): ?Response
     {
         if ($request->getIsActionRequest()) {
             $route = implode('/', $request->getActionSegments());
@@ -599,7 +623,7 @@ class Application extends \yii\web\Application
                 Craft::debug("Route requested: '$route'", __METHOD__);
                 $this->requestedRoute = $route;
                 return $this->runAction($route, $_GET);
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 $this->_unregisterDebugModule();
                 if ($e instanceof InvalidRouteException) {
                     throw new NotFoundHttpException(Craft::t('yii', 'Page not found.'), $e->getCode(), $e);
@@ -619,9 +643,9 @@ class Application extends \yii\web\Application
      * @param Request $request
      * @return Response|null
      */
-    private function _processRequirementsCheck(Request $request)
+    private function _processRequirementsCheck(Request $request): ?Response
     {
-        // Only run for CP requests and if we're not in the middle of an update.
+        // Only run for control panel requests and if we’re not in the middle of an update.
         if (
             $request->getIsCpRequest() &&
             !(
@@ -647,13 +671,12 @@ class Application extends \yii\web\Application
      * @return Response|null
      * @throws HttpException
      * @throws ServiceUnavailableHttpException
-     * @throws \yii\base\ExitException
      */
-    private function _processUpdateLogic(Request $request)
+    private function _processUpdateLogic(Request $request): ?Response
     {
         $this->_unregisterDebugModule();
 
-        // Let all non-action CP requests through.
+        // Let all non-action control panel requests through.
         if (
             $request->getIsCpRequest() &&
             (!$request->getIsActionRequest() || $request->getActionSegments() == ['users', 'login'])
@@ -669,7 +692,7 @@ class Application extends \yii\web\Application
             // Clear the template caches in case they've been compiled since this release was cut.
             try {
                 FileHelper::clearDirectory($this->getPath()->getCompiledTemplatesPath(false));
-            } catch (InvalidArgumentException $e) {
+            } catch (InvalidArgumentException) {
                 // the directory doesn't exist
             }
 
@@ -693,5 +716,21 @@ class Application extends \yii\web\Application
         // If an exception gets throw during the rendering of the 503 template, let
         // TemplatesController->actionRenderError() take care of it.
         throw new ServiceUnavailableHttpException();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function end($status = 0, $response = null)
+    {
+        // If we're already sending a template response, just throw an exception
+        if (
+            $this->state === self::STATE_SENDING_RESPONSE &&
+            $this->getResponse()->format === TemplateResponseFormatter::FORMAT
+        ) {
+            throw new ExitException();
+        }
+
+        parent::end($status, $response); // TODO: Change the autogenerated stub
     }
 }

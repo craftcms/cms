@@ -24,17 +24,17 @@ abstract class EntryFixture extends BaseElementFixture
     /**
      * @var array
      */
-    public $sectionIds = [];
+    public array $sectionIds = [];
 
     /**
      * @var array
      */
-    public $typeIds = [];
+    public array $typeIds = [];
 
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 

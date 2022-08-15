@@ -1,0 +1,42 @@
+{% set prevLabel = prevLabel ?? 'Previous Page'|t('app') %}
+{% set nextLabel = nextLabel ?? 'Next Page'|t('app') %}
+{% set itemLabel = itemLabel ?? null %}
+{% set itemsLabel = itemsLabel ?? null %}
+
+<div class="flex pagination">
+    <div class="page-info">
+        {% if pageInfo.total %}
+            {% if itemLabel and itemsLabel %}
+                {{ "{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}"|t('app', {
+                    first: pageInfo.first,
+                    last: pageInfo.last,
+                    total: pageInfo.total,
+                    item: itemLabel,
+                    items: itemsLabel
+                }) }}
+            {% else %}
+                {{ "{first}-{last} of {total}"|t('app', {
+                    first: pageInfo.first|number,
+                    last: pageInfo.last|number,
+                    total: pageInfo.total|number
+                }) }}
+            {% endif %}
+        {% else %}
+            {{ noResultsLabel ?? 'No results'|t('app') }}
+        {% endif %}
+    </div>
+
+    <nav class="flex" aria-label="{{ 'Pagination'|t('app') }}">
+        {% if pageInfo.prevUrl %}
+            <a class="page-link prev-page" href="{{ pageInfo.prevUrl }}" title="{{ prevLabel }}" aria-label="{{ prevLabel }}"></a>
+        {% else %}
+            <button class="page-link prev-page disabled" title="{{ prevLabel }}" aria-label="{{ prevLabel }}" role="button" disabled></button>
+        {% endif %}
+
+        {% if pageInfo.nextUrl %}
+            <a class="page-link next-page" href="{{ pageInfo.nextUrl }}" title="{{ nextLabel }}" aria-label="{{ nextLabel }}"></a>
+        {% else %}
+            <button class="page-link next-page disabled" title="{{ nextLabel }}" aria-label="{{ nextLabel }}" role="button" disabled></button>
+        {% endif %}
+    </nav>
+</div>

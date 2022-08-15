@@ -1,0 +1,53 @@
+{% import "_includes/forms" as forms %}
+{% set fieldNamespace = 'fields'~random() %}
+{% set fieldLayout = entryType.getFieldLayout() %}
+
+<form method="post" accept-charset="UTF-8">
+    {{ hiddenInput('fieldsLocation', fieldNamespace) }}
+    {{ csrfInput() }}
+
+    {% if section.type != 'single' and entryType.hasTitleField %}
+        {% set titleField = fieldLayout.getField('title') %}
+        {{ forms.textField({
+            label: titleField.label ? titleField.label|t('site') : 'Title'|t('app'),
+            instructions: titleField.instructions ? titleField.instructions|t('site'),
+            attribute: 'title',
+            id: 'title'~random(),
+            name: 'title',
+            required: true,
+            first: true
+        }) }}
+    {% endif %}
+
+    {% namespace fieldNamespace %}
+        {% for field in fieldLayout.getCustomFields() %}
+            {% if field.required or field.id in widget.fields %}
+                {% include "_includes/field" with {
+                    field: field,
+                    required: field.required,
+                    entry: null
+                } only %}
+            {% endif %}
+        {% endfor %}
+    {% endnamespace %}
+
+    <div class="buttons">
+        <div class="btngroup">
+            {{ forms.submitButton({label: 'Save'|t('app'), spinner: true}) }}
+            {% set menuId = "more-actions-menu-#{random()}" %}
+            <button type="button" class="btn submit menubtn" aria-label="{{ 'More actions'|t('app') }}" aria-controls="{{ menuId }}" data-disclosure-trigger></button>
+            <div id="{{ menuId }}" class="menu menu--disclosure">
+                <ul>
+                    <li>
+                        {{ tag('a', {
+                            tabindex: '0',
+                            role: 'button',
+                            type: 'button',
+                            text: "Save and continue editing"|t('app'),
+                        }) }}
+                </ul>
+            </div>
+        </div>
+        <div class="spinner hidden"></div>
+    </div>
+</form>

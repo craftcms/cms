@@ -21,5 +21,5 @@ interface Serializable
      *
      * @return mixed The serialized value
      */
-    public function serialize();
+    public function serialize(): mixed;
 }

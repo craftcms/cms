@@ -5,25 +5,26 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craftunit\gql;
+namespace crafttests\unit\gql;
 
-use Codeception\Test\Unit;
 use Craft;
 use craft\elements\Asset;
 use craft\elements\db\AssetQuery;
 use craft\gql\resolvers\elements\Asset as AssetResolver;
 use craft\helpers\StringHelper;
 use craft\models\GqlSchema;
+use craft\test\TestCase;
 use GraphQL\Type\Definition\ResolveInfo;
+use UnitTester;
 
-class ElementResolverTest extends Unit
+class ElementResolverTest extends TestCase
 {
     /**
-     * @var \UnitTester
+     * @var UnitTester
      */
-    protected $tester;
+    protected UnitTester $tester;
 
-    protected function _before()
+    protected function _before(): void
     {
         // Mock the GQL schema for the volumes below
         $this->tester->mockMethods(
@@ -33,21 +34,20 @@ class ElementResolverTest extends Unit
                 'getActiveSchema' => $this->make(GqlSchema::class, [
                     'scope' => [
                         'volumes.someUid:read',
-                    ]
-                ])
+                    ],
+                ]),
             ]
         );
-
     }
 
-    protected function _after()
+    protected function _after(): void
     {
     }
 
     /**
      * Test different query resolvers
      */
-    public function testResolveOneAndCount()
+    public function testResolveOneAndCount(): void
     {
         $testUid = StringHelper::UUID();
         $testCount = random_int(1, 1000);
@@ -55,7 +55,7 @@ class ElementResolverTest extends Unit
         // Mock the fetched Asset query
         $assetQuery = $this->make(AssetQuery::class, [
             'one' => new Asset(['uid' => $testUid]),
-            'count' => $testCount
+            'count' => $testCount,
         ]);
 
         // The only way we can mock with a provided element query (to avoid using slow fixtures or DB data), is to provide
@@ -64,7 +64,7 @@ class ElementResolverTest extends Unit
         // One slight caveat, though - in real life usages resolveOnce will only be called on null source, but it's impossible
         /// to test that scenario, because static methods are impossible/very hard to test. ¯\_(ツ)_/¯
         $source = (object)['url' => $assetQuery];
-        $resolveInfo = $this->make(ResolveInfo::class, ['fieldName' => 'url', 'fieldNodes' => [null]]);
+        $resolveInfo = $this->make(ResolveInfo::class, ['fieldName' => 'url', 'fieldNodes' => new \ArrayObject([null])]);
 
         self::assertSame($testUid, AssetResolver::resolveOne($source, [], null, $resolveInfo)->uid);
         self::assertSame($testCount, AssetResolver::resolveCount($source, [], null, $resolveInfo));

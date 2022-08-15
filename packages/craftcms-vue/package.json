@@ -1,0 +1,16 @@
+{
+  "name": "@craftcms/vue",
+  "version": "1.0.1",
+  "description": "Vue components for Craft CMS",
+  "main": "index.js",
+  "author": "Pixel & Tonic, Inc. <support@pixelandtonic.com>",
+  "license": "MIT",
+  "dependencies": {
+    "lodash": "^4.17.21",
+    "sortablejs": "^1.15.0",
+    "vuetable-2": "^1.7.5"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

@@ -7,10 +7,12 @@
 
 namespace craft\base;
 
+use craft\db\QueryAbortedException;
 use craft\elements\db\ElementQueryInterface;
 use craft\models\FieldGroup;
 use craft\models\GqlSchema;
 use GraphQL\Type\Definition\Type;
+use yii\base\Component as YiiComponent;
 use yii\validators\Validator;
 
 /**
@@ -18,11 +20,22 @@ use yii\validators\Validator;
  * A class implementing this interface should also use [[SavableComponentTrait]] and [[FieldTrait]].
  *
  * @mixin FieldTrait
+ * @mixin YiiComponent
+ * @mixin Model
+ * @mixin SavableComponentTrait
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
 interface FieldInterface extends SavableComponentInterface
 {
+    /**
+     * Returns whether the field can be marked as required.
+     *
+     * @return bool
+     * @since 4.0.0
+     */
+    public static function isRequirable(): bool;
+
     /**
      * Returns whether this field has a column in the content table.
      *
@@ -56,9 +69,9 @@ interface FieldInterface extends SavableComponentInterface
      * If the values can be of more than one type, return multiple types separated by `|`s.
      *
      * ```php
-     * public static function phpDocType()
+     * public static function valueType(): string
      * {
-     *      return 'int|mixed|\\craft\\elements\\db\\ElementQuery';
+     *      return 'int|string';
      * }
      * ```
      *
@@ -91,7 +104,7 @@ interface FieldInterface extends SavableComponentInterface
      * appended as well.
      * @see \yii\db\QueryBuilder::getColumnType()
      */
-    public function getContentColumnType();
+    public function getContentColumnType(): array|string;
 
     /**
      * Returns the orientation the field should use (`ltr` or `rtl`).
@@ -111,7 +124,7 @@ interface FieldInterface extends SavableComponentInterface
      * @param ElementInterface|null $element The element being edited
      * @return bool
      */
-    public function getIsTranslatable(ElementInterface $element = null): bool;
+    public function getIsTranslatable(?ElementInterface $element = null): bool;
 
     /**
      * Returns the description of this field’s translation support.
@@ -120,7 +133,7 @@ interface FieldInterface extends SavableComponentInterface
      * @return string|null
      * @since 3.4.0
      */
-    public function getTranslationDescription(ElementInterface $element = null);
+    public function getTranslationDescription(?ElementInterface $element = null): ?string;
 
     /**
      * Returns the field’s translation key, based on a given element.
@@ -162,6 +175,14 @@ interface FieldInterface extends SavableComponentInterface
      * @since 3.7.32
      */
     public function getInputId(): string;
+
+    /**
+     * Returns the input’s label ID.
+     *
+     * @return string
+     * @since 4.1.0
+     */
+    public function getLabelId(): string;
 
     /**
      * Returns whether the field should use a `<fieldset>` + `<legend>` instead of a `<div>` + `<label>`.
@@ -227,7 +248,7 @@ interface FieldInterface extends SavableComponentInterface
      * So here’s what a getInputHtml() method that includes field-targeting JavaScript code might look like:
      *
      * ```php
-     * public function getInputHtml($value, $element)
+     * public function getInputHtml($value, $element): string
      * {
      *     // Generate a valid ID based on the input name
      *     $id = craft\helpers\Html::id($name);
@@ -260,7 +281,7 @@ interface FieldInterface extends SavableComponentInterface
      * @param ElementInterface|null $element The element the field is associated with, if there is one
      * @return string The input HTML.
      */
-    public function getInputHtml($value, ElementInterface $element = null): string;
+    public function getInputHtml(mixed $value, ?ElementInterface $element = null): string;
 
     /**
      * Returns a static (non-editable) version of the field’s input HTML.
@@ -271,7 +292,7 @@ interface FieldInterface extends SavableComponentInterface
      * @param ElementInterface $element The element the field is associated with
      * @return string The static version of the field’s input HTML
      */
-    public function getStaticHtml($value, ElementInterface $element): string;
+    public function getStaticHtml(mixed $value, ElementInterface $element): string;
 
     /**
      * Returns the validation rules for an element with this field.
@@ -312,7 +333,7 @@ interface FieldInterface extends SavableComponentInterface
      * @return bool Whether the value should be considered “empty”
      * @see Validator::$isEmpty
      */
-    public function isValueEmpty($value, ElementInterface $element): bool;
+    public function isValueEmpty(mixed $value, ElementInterface $element): bool;
 
     /**
      * Returns the search keywords that should be associated with this field.
@@ -324,7 +345,7 @@ interface FieldInterface extends SavableComponentInterface
      * @param ElementInterface $element The element the field is associated with, if there is one
      * @return string A string of search keywords.
      */
-    public function getSearchKeywords($value, ElementInterface $element): string;
+    public function getSearchKeywords(mixed $value, ElementInterface $element): string;
 
     /**
      * Normalizes the field’s value for use.
@@ -349,7 +370,7 @@ interface FieldInterface extends SavableComponentInterface
      * @param ElementInterface|null $element The element the field is associated with, if there is one
      * @return mixed The prepared field value
      */
-    public function normalizeValue($value, ElementInterface $element = null);
+    public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed;
 
     /**
      * Prepares the field’s value to be stored somewhere, like the content table.
@@ -361,17 +382,26 @@ interface FieldInterface extends SavableComponentInterface
      * @param ElementInterface|null $element The element the field is associated with, if there is one
      * @return mixed The serialized field value
      */
-    public function serializeValue($value, ElementInterface $element = null);
+    public function serializeValue(mixed $value, ?ElementInterface $element = null): mixed;
 
     /**
      * Copies the field’s value from one element to another.
      *
      * @param ElementInterface $from
      * @param ElementInterface $to
-     * @return void
      * @since 3.7.0
      */
     public function copyValue(ElementInterface $from, ElementInterface $to): void;
+
+    /**
+     * Returns the element condition rule class that should be used for this field.
+     *
+     * The rule class must be an instance of [[\craft\fields\conditions\FieldConditionRuleInterface]].
+     *
+     * @return string|array|null
+     * @phpstan-return string|array{class:string}|null
+     */
+    public function getElementConditionRuleType(): array|string|null;
 
     /**
      * Modifies an element query.
@@ -383,10 +413,10 @@ interface FieldInterface extends SavableComponentInterface
      * @param ElementQueryInterface $query The element query
      * @param mixed $value The value that was set on this field’s corresponding
      * element query param, if any.
-     * @return null|false `false` in the event that the method is sure that no
-     * elements are going to be found.
+     * @throws QueryAbortedException in the event that the method is sure that
+     * no elements are going to be found.
      */
-    public function modifyElementsQuery(ElementQueryInterface $query, $value);
+    public function modifyElementsQuery(ElementQueryInterface $query, mixed $value): void;
 
     /**
      * Modifies an element index query.
@@ -397,26 +427,26 @@ interface FieldInterface extends SavableComponentInterface
      * @param ElementQueryInterface $query The element query
      * @since 3.0.9
      */
-    public function modifyElementIndexQuery(ElementQueryInterface $query);
+    public function modifyElementIndexQuery(ElementQueryInterface $query): void;
 
     /**
      * Sets whether the field is fresh.
      *
      * @param bool|null $isFresh Whether the field is fresh.
      */
-    public function setIsFresh(bool $isFresh = null);
+    public function setIsFresh(?bool $isFresh = null): void;
 
     /**
      * Returns the field’s group.
      *
      * @return FieldGroup|null
      */
-    public function getGroup();
+    public function getGroup(): ?FieldGroup;
 
     /**
      * Returns whether the field should be included in the given GraphQL schema.
      *
-     * @param GqlSchema
+     * @param GqlSchema $schema
      * @return bool
      * @since 3.6.0
      */
@@ -428,7 +458,7 @@ interface FieldInterface extends SavableComponentInterface
      * @return Type|array
      * @since 3.3.0
      */
-    public function getContentGqlType();
+    public function getContentGqlType(): Type|array;
 
     /**
      * Returns the GraphQL type to be used as an argument in mutations for this field type.
@@ -436,7 +466,7 @@ interface FieldInterface extends SavableComponentInterface
      * @return Type|array
      * @since 3.5.0
      */
-    public function getContentGqlMutationArgumentType();
+    public function getContentGqlMutationArgumentType(): Type|array;
 
     /**
      * Returns the GraphQL type to be used as an argument in queries for this field type.
@@ -444,7 +474,7 @@ interface FieldInterface extends SavableComponentInterface
      * @return Type|array
      * @since 3.5.0
      */
-    public function getContentGqlQueryArgumentType();
+    public function getContentGqlQueryArgumentType(): Type|array;
 
     // Events
     // -------------------------------------------------------------------------
@@ -464,7 +494,7 @@ interface FieldInterface extends SavableComponentInterface
      * @param ElementInterface $element The element that was just saved
      * @param bool $isNew Whether the element is brand new
      */
-    public function afterElementSave(ElementInterface $element, bool $isNew);
+    public function afterElementSave(ElementInterface $element, bool $isNew): void;
 
     /**
      * Performs actions after the element has been fully saved and propagated to other sites.
@@ -473,7 +503,7 @@ interface FieldInterface extends SavableComponentInterface
      * @param bool $isNew Whether the element is brand new
      * @since 3.2.0
      */
-    public function afterElementPropagate(ElementInterface $element, bool $isNew);
+    public function afterElementPropagate(ElementInterface $element, bool $isNew): void;
 
     /**
      * Performs actions before an element is deleted.
@@ -488,7 +518,7 @@ interface FieldInterface extends SavableComponentInterface
      *
      * @param ElementInterface $element The element that was just deleted
      */
-    public function afterElementDelete(ElementInterface $element);
+    public function afterElementDelete(ElementInterface $element): void;
 
     /**
      * Performs actions before an element is restored.
@@ -505,5 +535,5 @@ interface FieldInterface extends SavableComponentInterface
      * @param ElementInterface $element The element that was just restored
      * @since 3.1.0
      */
-    public function afterElementRestore(ElementInterface $element);
+    public function afterElementRestore(ElementInterface $element): void;
 }

@@ -21,28 +21,28 @@ use craft\helpers\Image as ImageHelper;
  */
 class Svg extends Image
 {
-    const SVG_WIDTH_RE = '/(<svg[^>]*\swidth=")([\d\.]+)([a-z]*)"/i';
-    const SVG_HEIGHT_RE = '/(<svg[^>]*\sheight=")([\d\.]+)([a-z]*)"/i';
-    const SVG_VIEWBOX_RE = '/(<svg[^>]*\sviewBox=")(-?[\d.]+(?:,|\s)-?[\d.]+(?:,|\s)-?([\d.]+)(?:,|\s)(-?[\d.]+))"/i';
-    const SVG_ASPECT_RE = '/(<svg[^>]*\spreserveAspectRatio=")([a-z]+\s[a-z]+)"/i';
-    const SVG_TAG_RE = '/<svg/i';
-    const SVG_CLEANUP_WIDTH_RE = '/(<svg[^>]*\s)width="[\d\.]+%"/i';
-    const SVG_CLEANUP_HEIGHT_RE = '/(<svg[^>]*\s)height="[\d\.]+%"/i';
+    public const SVG_WIDTH_RE = '/(<svg[^>]*\swidth=")([\d\.]+)([a-z]*)"/i';
+    public const SVG_HEIGHT_RE = '/(<svg[^>]*\sheight=")([\d\.]+)([a-z]*)"/i';
+    public const SVG_VIEWBOX_RE = '/(<svg[^>]*\sviewBox=")(-?[\d.]+(?:,|\s)-?[\d.]+(?:,|\s)-?([\d.]+)(?:,|\s)(-?[\d.]+))"/i';
+    public const SVG_ASPECT_RE = '/(<svg[^>]*\spreserveAspectRatio=")([a-z]+\s[a-z]+)"/i';
+    public const SVG_TAG_RE = '/<svg/i';
+    public const SVG_CLEANUP_WIDTH_RE = '/(<svg[^>]*\s)width="[\d\.]+%"/i';
+    public const SVG_CLEANUP_HEIGHT_RE = '/(<svg[^>]*\s)height="[\d\.]+%"/i';
 
     /**
      * @var string|null
      */
-    private $_svgContent;
+    private ?string $_svgContent = null;
 
     /**
      * @var int|null
      */
-    private $_height;
+    private ?int $_height = null;
 
     /**
      * @var int|null
      */
-    private $_width;
+    private ?int $_width = null;
 
     /**
      * @inheritdoc
@@ -71,7 +71,7 @@ class Svg extends Image
     /**
      * @inheritdoc
      */
-    public function loadImage(string $path)
+    public function loadImage(string $path): self
     {
         if (!is_file($path)) {
             Craft::error('Tried to load an image at ' . $path . ', but the file does not exist.', __METHOD__);
@@ -93,8 +93,8 @@ class Svg extends Image
                 "<svg width=\"{$width}px\" height=\"{$height}px\" ", $svg);
         }
 
-        $this->_height = (int)$height;
-        $this->_width = (int)$width;
+        $this->_height = $height;
+        $this->_width = $width;
 
         $this->_svgContent = $svg;
 
@@ -104,7 +104,7 @@ class Svg extends Image
     /**
      * @inheritdoc
      */
-    public function crop(int $x1, int $x2, int $y1, int $y2)
+    public function crop(int $x1, int $x2, int $y1, int $y2): self
     {
         $width = $x2 - $x1;
         $height = $y2 - $y1;
@@ -127,15 +127,15 @@ class Svg extends Image
         $width /= $viewBoxXFactor;
         $height /= $viewBoxYFactor;
 
-        $value = "{$x1} {$y1} {$width} {$height}";
+        $value = "$x1 $y1 $width $height";
 
         // Add/modify the viewbox to crop the image.
         if (preg_match(self::SVG_VIEWBOX_RE, $this->_svgContent)) {
             $this->_svgContent = preg_replace(self::SVG_VIEWBOX_RE,
-                "\${1}{$value}\"", $this->_svgContent);
+                "\${1}$value\"", $this->_svgContent);
         } else {
             $this->_svgContent = preg_replace(self::SVG_TAG_RE,
-                "<svg viewBox=\"{$value}\"", $this->_svgContent);
+                "<svg viewBox=\"$value\"", $this->_svgContent);
         }
 
         return $this;
@@ -144,7 +144,7 @@ class Svg extends Image
     /**
      * @inheritdoc
      */
-    public function scaleToFit(int $targetWidth = null, int $targetHeight = null, bool $scaleIfSmaller = true)
+    public function scaleToFit(?int $targetWidth, ?int $targetHeight, bool $scaleIfSmaller = true): self
     {
         $this->normalizeDimensions($targetWidth, $targetHeight);
 
@@ -160,7 +160,7 @@ class Svg extends Image
     /**
      * @inheritdoc
      */
-    public function scaleAndCrop(int $targetWidth = null, int $targetHeight = null, bool $scaleIfSmaller = true, $cropPosition = 'center-center')
+    public function scaleAndCrop(?int $targetWidth, ?int $targetHeight, bool $scaleIfSmaller = true, array|string $cropPosition = 'center-center'): self
     {
         // TODO If we encounter a focal point, rasterize and crop with focal.
         if (is_array($cropPosition)) {
@@ -188,10 +188,10 @@ class Svg extends Image
             // Add/modify aspect ratio information
             if (preg_match(self::SVG_ASPECT_RE, $this->_svgContent)) {
                 $this->_svgContent = preg_replace(self::SVG_ASPECT_RE,
-                    "\${1}{$value}\"", $this->_svgContent);
+                    "\${1}$value\"", $this->_svgContent);
             } else {
                 $this->_svgContent = preg_replace(self::SVG_TAG_RE,
-                    "<svg preserveAspectRatio=\"{$value}\"",
+                    "<svg preserveAspectRatio=\"$value\"",
                     $this->_svgContent);
             }
         }
@@ -202,7 +202,7 @@ class Svg extends Image
     /**
      * @inheritdoc
      */
-    public function resize(int $targetWidth = null, int $targetHeight = null)
+    public function resize(?int $targetWidth, ?int $targetHeight): self
     {
         $this->normalizeDimensions($targetWidth, $targetHeight);
 
@@ -220,8 +220,8 @@ class Svg extends Image
 
         // If viewbox does not exist, add it to retain the scale.
         if (!preg_match(static::SVG_VIEWBOX_RE, $this->_svgContent)) {
-            $viewBox = "0 0 {$this->_width} {$this->_height}";
-            $this->_svgContent = preg_replace(static::SVG_TAG_RE, "<svg viewBox=\"{$viewBox}\"", $this->_svgContent);
+            $viewBox = "0 0 $this->_width $this->_height";
+            $this->_svgContent = preg_replace(static::SVG_TAG_RE, "<svg viewBox=\"$viewBox\"", $this->_svgContent);
         }
 
         $this->_width = $targetWidth;

@@ -13,6 +13,7 @@ use craft\db\Paginator;
 use craft\db\Query;
 use craft\db\Table;
 use craft\records\Session;
+use craft\test\TestCase;
 use UnitTester;
 use yii\db\Exception;
 
@@ -23,22 +24,22 @@ use yii\db\Exception;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class PaginatorTest extends Unit
+class PaginatorTest extends TestCase
 {
     /**
      * @var Paginator
      */
-    private $paginator;
+    private Paginator $paginator;
 
     /**
      * @var UnitTester
      */
-    protected $tester;
+    protected UnitTester $tester;
 
     /**
      *
      */
-    public function testTotalResults()
+    public function testTotalResults(): void
     {
         $this->setPaginator([], [], 10);
         self::assertSame('10', (string)$this->paginator->getTotalResults());
@@ -48,7 +49,7 @@ class PaginatorTest extends Unit
     /**
      *
      */
-    public function testTotalResultsWithQueryLimit()
+    public function testTotalResultsWithQueryLimit(): void
     {
         $this->setPaginator(['limit' => 10], [], 25);
         self::assertSame(10, $this->paginator->getTotalResults());
@@ -58,7 +59,7 @@ class PaginatorTest extends Unit
     /**
      *
      */
-    public function testTotalResultsWithQueryOffset()
+    public function testTotalResultsWithQueryOffset(): void
     {
         $this->setPaginator(['offset' => 5], [], 10);
         self::assertSame(5, $this->paginator->getTotalResults());
@@ -68,7 +69,7 @@ class PaginatorTest extends Unit
     /**
      *
      */
-    public function testTotalPages()
+    public function testTotalPages(): void
     {
         $this->setPaginator([], ['pageSize' => '25']);
         self::assertSame(4, $this->paginator->getTotalPages());
@@ -78,7 +79,7 @@ class PaginatorTest extends Unit
     /**
      *
      */
-    public function testTotalPagesWithOneOverflow()
+    public function testTotalPagesWithOneOverflow(): void
     {
         $this->setPaginator([], ['pageSize' => '25'], 101);
         self::assertSame(5, $this->paginator->getTotalPages());
@@ -88,7 +89,7 @@ class PaginatorTest extends Unit
     /**
      *
      */
-    public function testGetPageResults()
+    public function testGetPageResults(): void
     {
         $this->setPaginator([], ['pageSize' => '2']);
 
@@ -100,7 +101,7 @@ class PaginatorTest extends Unit
     /**
      *
      */
-    public function testGetPageResultsSlices()
+    public function testGetPageResultsSlices(): void
     {
         $this->setPaginator([], ['pageSize' => '2'], 10);
 
@@ -118,7 +119,7 @@ class PaginatorTest extends Unit
     /**
      *
      */
-    public function testGetPageResultsIncompleteResults()
+    public function testGetPageResultsIncompleteResults(): void
     {
         $this->setPaginator([], ['pageSize' => '2'], 1);
 
@@ -130,17 +131,7 @@ class PaginatorTest extends Unit
     /**
      *
      */
-    public function testGetPageResultsNoPageSize()
-    {
-        $this->setPaginator([], ['pageSize' => null], 10);
-        self::assertSame([], $this->paginator->getPageResults());
-        $this->resetPaginator();
-    }
-
-    /**
-     *
-     */
-    public function testGetPageOffset()
+    public function testGetPageOffset(): void
     {
         $this->setPaginator([], [], 10);
         self::assertSame(0, $this->paginator->getPageOffset());
@@ -150,7 +141,7 @@ class PaginatorTest extends Unit
     /**
      *
      */
-    public function testSetPageResultValidation()
+    public function testSetPageResultValidation(): void
     {
         $this->setPaginator([], [], 10);
         $this->paginator->setCurrentPage(5);
@@ -161,7 +152,7 @@ class PaginatorTest extends Unit
     /**
      *
      */
-    public function testSetPageResultValidationLastPage()
+    public function testSetPageResultValidationLastPage(): void
     {
         $this->setPaginator([], ['pageSize' => '5'], 10);
         $this->paginator->setCurrentPage(2);

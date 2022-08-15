@@ -16,6 +16,7 @@ use craft\helpers\Json;
 use craft\web\assets\updater\UpdaterAsset;
 use craft\web\Controller;
 use craft\web\Response as CraftResponse;
+use Throwable;
 use yii\base\Exception;
 use yii\base\Exception as YiiException;
 use yii\web\BadRequestHttpException;
@@ -32,34 +33,30 @@ use yii\web\Response;
  */
 abstract class BaseUpdaterController extends Controller
 {
-    const ACTION_PRECHECK = 'precheck';
-    const ACTION_RECHECK_COMPOSER = 'recheck-composer';
-    const ACTION_COMPOSER_INSTALL = 'composer-install';
-    const ACTION_COMPOSER_REMOVE = 'composer-remove';
-    /**
-     * @deprecated
-     */
-    const ACTION_COMPOSER_OPTIMIZE = 'composer-optimize';
-    const ACTION_FINISH = 'finish';
+    public const ACTION_PRECHECK = 'precheck';
+    public const ACTION_RECHECK_COMPOSER = 'recheck-composer';
+    public const ACTION_COMPOSER_INSTALL = 'composer-install';
+    public const ACTION_COMPOSER_REMOVE = 'composer-remove';
+    public const ACTION_FINISH = 'finish';
 
     /**
      * @inheritdoc
      */
-    protected $allowAnonymous = self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE;
+    protected array|bool|int $allowAnonymous = self::ALLOW_ANONYMOUS_LIVE | self::ALLOW_ANONYMOUS_OFFLINE;
 
     /**
      * @var array The data associated with the current update
      */
-    protected $data = [];
+    protected array $data = [];
 
     /**
      * @inheritdoc
-     * @throws NotFoundHttpException if it's not a control panel request
-     * @throws BadRequestHttpException if there's invalid data in the request
+     * @throws NotFoundHttpException if it’s not a control panel request
+     * @throws BadRequestHttpException if there’s invalid data in the request
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
-        // This controller is only available to the CP
+        // This controller is only available to the control panel
         if (!$this->request->getIsCpRequest()) {
             throw new NotFoundHttpException();
         }
@@ -98,7 +95,7 @@ abstract class BaseUpdaterController extends Controller
         $state['data'] = $this->_hashedData();
         $idJs = Json::encode($this->id);
         $stateJs = Json::encode($state);
-        $this->getView()->registerJs("Craft.updater = (new Craft.Updater({$idJs})).setState($stateJs);");
+        $this->getView()->registerJs("Craft.updater = (new Craft.Updater($idJs)).setState($stateJs);");
 
         return $this->renderTemplate('_special/updater', [
             'title' => $this->pageTitle(),
@@ -176,12 +173,12 @@ abstract class BaseUpdaterController extends Controller
         try {
             Craft::$app->getComposer()->install($this->data['requirements'], $io);
             Craft::info("Updated Composer requirements.\nOutput: " . $io->getOutput(), __METHOD__);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Craft::error('Error updating Composer requirements: ' . $e->getMessage() . "\nOutput: " . $io->getOutput(), __METHOD__);
             Craft::$app->getErrorHandler()->logException($e);
 
             $output = $io->getOutput();
-            if (strpos($output, 'Your requirements could not be resolved to an installable set of packages.') !== false) {
+            if (str_contains($output, 'Your requirements could not be resolved to an installable set of packages.')) {
                 $error = Craft::t('app', 'Composer was unable to install the updates due to a dependency conflict.');
             } else {
                 $error = Craft::t('app', 'Composer was unable to install the updates.');
@@ -207,41 +204,10 @@ abstract class BaseUpdaterController extends Controller
             Craft::$app->getComposer()->uninstall($packages, $io);
             Craft::info("Updated Composer requirements.\nOutput: " . $io->getOutput(), __METHOD__);
             $this->data['removed'] = true;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Craft::error('Error updating Composer requirements: ' . $e->getMessage() . "\nOutput: " . $io->getOutput(), __METHOD__);
             Craft::$app->getErrorHandler()->logException($e);
             return $this->sendComposerError(Craft::t('app', 'Composer was unable to remove the plugin.'), $e, $io->getOutput());
-        }
-
-        return $this->send($this->postComposerInstallState());
-    }
-
-    /**
-     * Optimizes the Composer autoloader.
-     *
-     * @return Response
-     * @deprecated
-     */
-    public function actionComposerOptimize(): Response
-    {
-        $io = new BufferIO();
-
-        try {
-            Craft::$app->getComposer()->optimize($io);
-            Craft::info("Optimized the Composer autoloader.\nOutput: " . $io->getOutput(), __METHOD__);
-        } catch (\Throwable $e) {
-            Craft::error('Error optimizing the Composer autoloader: ' . $e->getMessage() . "\nOutput: " . $io->getOutput(), __METHOD__);
-            Craft::$app->getErrorHandler()->logException($e);
-            $continueOption = $this->postComposerInstallState();
-            $continueOption['label'] = Craft::t('app', 'Continue');
-            return $this->send([
-                'error' => Craft::t('app', 'Composer was unable to optimize the autoloader.'),
-                'errorDetails' => $this->_composerErrorDetails($e, $io->getOutput()),
-                'options' => [
-                    $this->actionOption(Craft::t('app', 'Try again'), self::ACTION_COMPOSER_OPTIMIZE),
-                    $continueOption,
-                ],
-            ]);
         }
 
         return $this->send($this->postComposerInstallState());
@@ -280,9 +246,10 @@ abstract class BaseUpdaterController extends Controller
     /**
      * Returns the initial state for the updater JS.
      *
+     * @param bool $force Whether to go through with the update even if Maintenance Mode is enabled
      * @return array
      */
-    abstract protected function initialState(): array;
+    abstract protected function initialState(bool $force = false): array;
 
     /**
      * Returns the real initial state for the updater JS.
@@ -327,7 +294,7 @@ abstract class BaseUpdaterController extends Controller
         if ($returnUrl === null) {
             return null;
         }
-        if (strpos($returnUrl, '{') !== false) {
+        if (str_contains($returnUrl, '{')) {
             throw new BadRequestHttpException("Invalid return URL: $returnUrl");
         }
         return $returnUrl;
@@ -345,12 +312,12 @@ abstract class BaseUpdaterController extends Controller
      *
      * @return bool Whether composer.json can be found
      */
-    protected function ensureComposerJson()
+    protected function ensureComposerJson(): bool
     {
         try {
             Craft::$app->getComposer()->getJsonPath();
             return true;
-        } catch (\Exception $e) {
+        } catch (\Exception) {
             return false;
         }
     }
@@ -415,12 +382,12 @@ abstract class BaseUpdaterController extends Controller
      * Sends an "error" state response for a Composer error
      *
      * @param string $error The status message to show
-     * @param \Throwable $e The exception that was thrown
+     * @param Throwable $e The exception that was thrown
      * @param string $output The Composer output
      * @param array $state
      * @return Response
      */
-    protected function sendComposerError(string $error, \Throwable $e, string $output, array $state = []): Response
+    protected function sendComposerError(string $error, Throwable $e, string $output, array $state = []): Response
     {
         $state['error'] = $error;
         $state['errorDetails'] = $this->_composerErrorDetails($e, $output);
@@ -481,24 +448,18 @@ abstract class BaseUpdaterController extends Controller
      */
     protected function actionStatus(string $action): string
     {
-        switch ($action) {
-            case self::ACTION_PRECHECK:
-                return Craft::t('app', 'Checking environment…');
-            case self::ACTION_RECHECK_COMPOSER:
-                return Craft::t('app', 'Checking…');
-            case self::ACTION_COMPOSER_INSTALL:
-                return Craft::t('app', 'Updating Composer dependencies (this may take a minute)…', [
-                    'command' => '`composer install`',
-                ]);
-            case self::ACTION_COMPOSER_REMOVE:
-                return Craft::t('app', 'Updating Composer dependencies (this may take a minute)…', [
-                    'command' => '`composer remove`',
-                ]);
-            case self::ACTION_FINISH:
-                return Craft::t('app', 'Finishing up…');
-            default:
-                throw new Exception('Invalid action: ' . $action);
-        }
+        return match ($action) {
+            self::ACTION_PRECHECK => Craft::t('app', 'Checking environment…'),
+            self::ACTION_RECHECK_COMPOSER => Craft::t('app', 'Checking…'),
+            self::ACTION_COMPOSER_INSTALL => Craft::t('app', 'Updating Composer dependencies (this may take a minute)…', [
+                'command' => '`composer install`',
+            ]),
+            self::ACTION_COMPOSER_REMOVE => Craft::t('app', 'Updating Composer dependencies (this may take a minute)…', [
+                'command' => '`composer remove`',
+            ]),
+            self::ACTION_FINISH => Craft::t('app', 'Finishing up…'),
+            default => throw new Exception('Invalid action: ' . $action),
+        };
     }
 
     /**
@@ -526,18 +487,18 @@ abstract class BaseUpdaterController extends Controller
      * @param string|null $restoreAction
      * @return Response|null
      */
-    protected function runMigrations(array $handles, string $restoreAction = null)
+    protected function runMigrations(array $handles, ?string $restoreAction = null): ?Response
     {
         try {
             Craft::$app->getUpdates()->runMigrations($handles);
         } catch (MigrateException $e) {
             $ownerName = $e->ownerName;
             $ownerHandle = $e->ownerHandle;
-            /** @var \Throwable $e */
+            /** @var Throwable $e */
             $e = $e->getPrevious();
 
             if ($e instanceof MigrationException) {
-                /** @var \Throwable|null $previous */
+                /** @var Throwable|null $previous */
                 $previous = $e->getPrevious();
                 $migration = $e->migration;
                 $output = $e->output;
@@ -600,7 +561,7 @@ abstract class BaseUpdaterController extends Controller
      * @param string|null $edition
      * @return array Array with installation results
      */
-    protected function installPlugin(string $handle, string $edition = null): array
+    protected function installPlugin(string $handle, ?string $edition = null): array
     {
         // Prevent the plugin from sending any headers, etc.
         $response = $this->response;
@@ -612,17 +573,17 @@ abstract class BaseUpdaterController extends Controller
             Craft::$app->getPlugins()->installPlugin($handle, $edition);
             $success = true;
             $errorDetails = null;
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $success = false;
             Craft::$app->set('response', $response);
             $this->response = $response;
             $migration = $output = null;
 
             if ($e instanceof MigrateException) {
-                /** @var \Throwable $e */
+                /** @var Throwable $e */
                 $e = $e->getPrevious();
                 if ($e instanceof MigrationException) {
-                    /** @var \Throwable|null $previous */
+                    /** @var Throwable|null $previous */
                     $previous = $e->getPrevious();
                     $migration = $e->migration;
                     $output = $e->output;
@@ -658,11 +619,11 @@ abstract class BaseUpdaterController extends Controller
     /**
      * Returns the error details for a Composer error.
      *
-     * @param \Throwable $e The exception that was thrown
+     * @param Throwable $e The exception that was thrown
      * @param string $output The Composer output
      * @return string
      */
-    private function _composerErrorDetails(\Throwable $e, string $output): string
+    private function _composerErrorDetails(Throwable $e, string $output): string
     {
         $details = [];
 

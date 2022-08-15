@@ -22,12 +22,12 @@ class SiteIdValidator extends Validator
      * @var bool|null $allowDisabled Whether to allow disabled sites.
      * @since 3.7.32
      */
-    public $allowDisabled;
+    public ?bool $allowDisabled = null;
 
     /**
      * @inheritdoc
      */
-    public function validateAttribute($model, $attribute)
+    public function validateAttribute($model, $attribute): void
     {
         $siteId = $model->$attribute;
 

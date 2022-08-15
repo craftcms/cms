@@ -25,17 +25,17 @@ interface EagerLoadingFieldInterface
      * - `criteria` *(optional)* – Any criteria parameters that should be applied to the element query when fetching the eager-loaded elements.
      *
      * @param ElementInterface[] $sourceElements An array of the source elements
-     * @return array|false|null The eager-loading element ID mappings, false if no mappings exist, or null if the result
+     * @return array|null|false The eager-loading element ID mappings, false if no mappings exist, or null if the result
      * should be ignored.
      */
-    public function getEagerLoadingMap(array $sourceElements);
+    public function getEagerLoadingMap(array $sourceElements): array|null|false;
 
     /**
-     * Returns an array that lists the scopes this custom field allows when eager-loading or false if eager-loading
+     * Returns an array that lists the scopes this custom field allows when eager-loading or null if eager-loading
      * should not be allowed in the GraphQL context.
      *
-     * @return array|false
+     * @return array|null
      * @since 3.3.0
      */
-    public function getEagerLoadingGqlConditions();
+    public function getEagerLoadingGqlConditions(): ?array;
 }

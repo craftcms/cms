@@ -10,15 +10,13 @@ namespace craft\elements;
 use Craft;
 use craft\base\Element;
 use craft\behaviors\FieldLayoutBehavior;
-use craft\db\Table;
-use craft\elements\db\ElementQueryInterface;
 use craft\elements\db\GlobalSetQuery;
-use craft\helpers\Db;
-use craft\helpers\StringHelper;
 use craft\helpers\UrlHelper;
+use craft\models\FieldLayout;
 use craft\records\GlobalSet as GlobalSetRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
+use yii\base\InvalidConfigException;
 
 /**
  * GlobalSet represents a global set element.
@@ -34,7 +32,7 @@ class GlobalSet extends Element
      */
     public static function displayName(): string
     {
-        return Craft::t('app', 'Global Set');
+        return Craft::t('app', 'Global set');
     }
 
     /**
@@ -50,7 +48,7 @@ class GlobalSet extends Element
      */
     public static function pluralDisplayName(): string
     {
-        return Craft::t('app', 'Global Sets');
+        return Craft::t('app', 'Global sets');
     }
 
     /**
@@ -64,7 +62,7 @@ class GlobalSet extends Element
     /**
      * @inheritdoc
      */
-    public static function refHandle()
+    public static function refHandle(): ?string
     {
         return 'globalset';
     }
@@ -88,7 +86,7 @@ class GlobalSet extends Element
     /**
      * @return string|null
      */
-    public function getRef()
+    public function getRef(): ?string
     {
         return $this->handle;
     }
@@ -96,16 +94,40 @@ class GlobalSet extends Element
     /**
      * @inheritdoc
      */
-    protected function isEditable(): bool
+    public function canView(User $user): bool
     {
-        return Craft::$app->getUser()->checkPermission("editGlobalSet:$this->uid");
+        return $user->can("editGlobalSet:$this->uid");
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function canSave(User $user): bool
+    {
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function canDuplicate(User $user): bool
+    {
+        return false;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function canDelete(User $user): bool
+    {
+        return false;
     }
 
     /**
      * @inheritdoc
      * @return GlobalSetQuery The newly created [[GlobalSetQuery]] instance.
      */
-    public static function find(): ElementQueryInterface
+    public static function find(): GlobalSetQuery
     {
         return new GlobalSetQuery(static::class);
     }
@@ -114,7 +136,7 @@ class GlobalSet extends Element
      * @inheritdoc
      * @since 3.3.0
      */
-    public static function gqlTypeNameByContext($context): string
+    public static function gqlTypeNameByContext(mixed $context): string
     {
         /** @var self $context */
         return $context->handle . '_GlobalSet';
@@ -124,7 +146,7 @@ class GlobalSet extends Element
      * @inheritdoc
      * @since 3.3.0
      */
-    public static function gqlScopesByContext($context): array
+    public static function gqlScopesByContext(mixed $context): array
     {
         /** @var self $context */
         return ['globalsets.' . $context->uid];
@@ -134,7 +156,7 @@ class GlobalSet extends Element
      * @inheritdoc
      * @since 3.5.0
      */
-    public static function gqlMutationNameByContext($context): string
+    public static function gqlMutationNameByContext(mixed $context): string
     {
         /** @var self $context */
         return 'save_' . $context->handle . '_GlobalSet';
@@ -143,18 +165,18 @@ class GlobalSet extends Element
     /**
      * @var string|null Name
      */
-    public $name;
+    public ?string $name = null;
 
     /**
      * @var string|null Handle
      */
-    public $handle;
+    public ?string $handle = null;
 
     /**
-     * @var int Sort order
+     * @var int|null Sort order
      * @since 3.7.0
      */
-    public $sortOrder;
+    public ?int $sortOrder = null;
 
     /**
      * Use the global set's name as its string representation.
@@ -163,20 +185,35 @@ class GlobalSet extends Element
      */
     public function __toString(): string
     {
-        return (string)$this->name ?: static::class;
+        if ($this->name) {
+            return $this->name;
+        }
+
+        return parent::__toString();
     }
 
     /**
      * @inheritdoc
      */
-    public function behaviors()
+    protected function defineBehaviors(): array
     {
-        $behaviors = parent::behaviors();
+        $behaviors = parent::defineBehaviors();
         $behaviors['fieldLayout'] = [
             'class' => FieldLayoutBehavior::class,
             'elementType' => __CLASS__,
         ];
         return $behaviors;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function attributeLabels(): array
+    {
+        return array_merge(parent::attributeLabels(), [
+            'handle' => Craft::t('app', 'Handle'),
+            'name' => Craft::t('app', 'Name'),
+        ]);
     }
 
     /**
@@ -209,7 +246,7 @@ class GlobalSet extends Element
     /**
      * @inheritdoc
      */
-    public function getFieldLayout()
+    public function getFieldLayout(): ?FieldLayout
     {
         /** @var FieldLayoutBehavior $behavior */
         $behavior = $this->getBehavior('fieldLayout');
@@ -221,10 +258,6 @@ class GlobalSet extends Element
      */
     protected function cpEditUrl(): ?string
     {
-        if (Craft::$app->getIsMultiSite()) {
-            return UrlHelper::cpUrl('globals/' . $this->getSite()->handle . '/' . $this->handle);
-        }
-
         return UrlHelper::cpUrl('globals/' . $this->handle);
     }
 
@@ -249,7 +282,13 @@ class GlobalSet extends Element
             return false;
         }
 
-        if (($fieldLayout = $this->getFieldLayout()) !== null) {
+        try {
+            $fieldLayout = $this->getFieldLayout();
+        } catch (InvalidConfigException $e) {
+            $fieldLayout = null;
+        }
+
+        if ($fieldLayout !== null) {
             Craft::$app->getFields()->deleteLayout($fieldLayout);
         }
 
@@ -259,14 +298,14 @@ class GlobalSet extends Element
     /**
      * @inheritdoc
      */
-    public function afterRestore()
+    public function afterRestore(): void
     {
         // Restore the field layout too
         if (
             $this->fieldLayoutId &&
             !Craft::$app->getFields()->restoreLayoutById($this->fieldLayoutId)
         ) {
-            Craft::warning("Global set {$this->id} restored, but its field layout ({$this->fieldLayoutId}) was not.");
+            Craft::warning("Global set $this->id restored, but its field layout ($this->fieldLayoutId) was not.");
         }
 
         parent::afterRestore();
@@ -289,9 +328,6 @@ class GlobalSet extends Element
         $fieldLayout = $this->getFieldLayout();
 
         if ($fieldLayoutConfig = $fieldLayout->getConfig()) {
-            if (!$fieldLayout->uid) {
-                $fieldLayout->uid = $fieldLayout->id ? Db::uidById(Table::FIELDLAYOUTS, $fieldLayout->id) : StringHelper::UUID();
-            }
             $config['fieldLayouts'] = [
                 $fieldLayout->uid => $fieldLayoutConfig,
             ];

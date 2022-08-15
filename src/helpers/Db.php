@@ -7,20 +7,26 @@
 
 namespace craft\helpers;
 
-use Closure;
 use Craft;
 use craft\base\Serializable;
 use craft\db\Connection;
 use craft\db\mysql\Schema as MysqlSchema;
+use craft\db\pgsql\Schema as PgsqlSchema;
 use craft\db\Query;
+use DateTime;
+use DateTimeZone;
+use Money\Money;
 use PDO;
+use Throwable;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\NotSupportedException;
 use yii\db\BatchQueryResult;
 use yii\db\Exception as DbException;
 use yii\db\ExpressionInterface;
+use yii\db\pgsql\Schema as YiiPgqslSchema;
 use yii\db\Query as YiiQuery;
+use yii\db\QueryInterface;
 use yii\db\Schema;
 
 /**
@@ -31,18 +37,26 @@ use yii\db\Schema;
  */
 class Db
 {
-    const SIMPLE_TYPE_NUMERIC = 'numeric';
-    const SIMPLE_TYPE_TEXTUAL = 'textual';
+    public const SIMPLE_TYPE_NUMERIC = 'numeric';
+    public const SIMPLE_TYPE_TEXTUAL = 'textual';
+
+    /** @since 3.7.40 */
+    public const GLUE_AND = 'and';
+    /** @since 3.7.40 */
+    public const GLUE_OR = 'or';
+    /** @since 3.7.40 */
+    public const GLUE_NOT = 'not';
 
     /**
      * @var array
      */
-    private static $_operators = ['not ', '!=', '<=', '>=', '<', '>', '='];
+    private static array $_operators = ['not ', '!=', '<=', '>=', '<', '>', '='];
 
     /**
      * @var string[] Numeric column types
      */
-    private static $_numericColumnTypes = [
+    private static array $_numericColumnTypes = [
+        Schema::TYPE_TINYINT,
         Schema::TYPE_SMALLINT,
         Schema::TYPE_INTEGER,
         Schema::TYPE_BIGINT,
@@ -54,7 +68,7 @@ class Db
     /**
      * @var string[] Textual column types
      */
-    private static $_textualColumnTypes = [
+    private static array $_textualColumnTypes = [
         Schema::TYPE_CHAR,
         Schema::TYPE_STRING,
         Schema::TYPE_TEXT,
@@ -69,7 +83,7 @@ class Db
     /**
      * @var array Types of integer columns and how many bytes they can store
      */
-    private static $_integerSizeRanges = [
+    private static array $_integerSizeRanges = [
         Schema::TYPE_SMALLINT => [-32768, 32767],
         Schema::TYPE_INTEGER => [-2147483648, 2147483647],
         Schema::TYPE_BIGINT => [-9223372036854775808, 9223372036854775807],
@@ -78,7 +92,7 @@ class Db
     /**
      * @var array Types of MySQL textual columns and how many bytes they can store
      */
-    private static $_mysqlTextSizes = [
+    private static array $_mysqlTextSizes = [
         MysqlSchema::TYPE_TINYTEXT => 255,
         Schema::TYPE_TEXT => 65535,
         MysqlSchema::TYPE_MEDIUMTEXT => 16777215,
@@ -91,7 +105,7 @@ class Db
      * @param mixed $values The values to be prepared
      * @return array The prepared values
      */
-    public static function prepareValuesForDb($values): array
+    public static function prepareValuesForDb(mixed $values): array
     {
         // Normalize to an array
         $values = ArrayHelper::toArray($values, [], false);
@@ -107,9 +121,10 @@ class Db
      * Prepares a value to be sent to the database.
      *
      * @param mixed $value The value to be prepared
+     * @param string|null $columnType The type of column the value will be stored in
      * @return mixed The prepped value
      */
-    public static function prepareValueForDb($value)
+    public static function prepareValueForDb(mixed $value, ?string $columnType = null): mixed
     {
         // Leave expressions alone
         if ($value instanceof ExpressionInterface) {
@@ -122,13 +137,20 @@ class Db
         }
 
         // Only DateTime objects and ISO-8601 strings should automatically be detected as dates
-        if ($value instanceof \DateTime || DateTimeHelper::isIso8601($value)) {
+        if ($value instanceof DateTime || DateTimeHelper::isIso8601($value)) {
             return static::prepareDateForDb($value);
         }
 
-        // If it's an object or array, just JSON-encode it
-        if (is_object($value) || is_array($value)) {
+        // If this isn’t a JSON column and the value is an object or array, JSON-encode it
+        if (
+            !in_array($columnType, [Schema::TYPE_JSON, YiiPgqslSchema::TYPE_JSONB]) &&
+            (is_object($value) || is_array($value))
+        ) {
             return Json::encode($value);
+        }
+
+        if ($columnType && static::isNumericColumnType($columnType) && is_bool($value)) {
+            return (int)$value;
         }
 
         return $value;
@@ -138,11 +160,9 @@ class Db
      * Prepares a date to be sent to the database.
      *
      * @param mixed $date The date to be prepared
-     * @param bool $stripSeconds Whether the seconds should be omitted from the formatted string
      * @return string|null The prepped date, or `null` if it could not be prepared
-     * @todo Remove the $stripSeconds argument in Craft 4
      */
-    public static function prepareDateForDb($date, bool $stripSeconds = false)
+    public static function prepareDateForDb(mixed $date): ?string
     {
         $date = DateTimeHelper::toDateTime($date);
 
@@ -151,11 +171,26 @@ class Db
         }
 
         $date = clone $date;
-        $date->setTimezone(new \DateTimeZone('UTC'));
-        if ($stripSeconds) {
-            return $date->format('Y-m-d H:i') . ':00';
-        }
+        $date->setTimezone(new DateTimeZone('UTC'));
         return $date->format('Y-m-d H:i:s');
+    }
+
+    /**
+     * Prepares a money object to be sent to the database.
+     *
+     * @param mixed $money The money to be prepared
+     * @return string|null The prepped date, or `null` if it could not be prepared
+     * @since 4.0.0
+     */
+    public static function prepareMoneyForDb(mixed $money): ?string
+    {
+        $money = MoneyHelper::toMoney($money);
+
+        if ($money === false) {
+            return null;
+        }
+
+        return $money->getAmount();
     }
 
     /**
@@ -164,7 +199,7 @@ class Db
      * @param string $columnType
      * @return int|false The min allowed number, or false if it can't be determined
      */
-    public static function getMinAllowedValueForNumericColumn(string $columnType)
+    public static function getMinAllowedValueForNumericColumn(string $columnType): int|false
     {
         $shortColumnType = self::parseColumnType($columnType);
 
@@ -182,7 +217,7 @@ class Db
      * @param string $columnType
      * @return int|false The max allowed number, or false if it can't be determined
      */
-    public static function getMaxAllowedValueForNumericColumn(string $columnType)
+    public static function getMaxAllowedValueForNumericColumn(string $columnType): int|false
     {
         $shortColumnType = self::parseColumnType($columnType);
 
@@ -218,21 +253,21 @@ class Db
 
         // Figure out the max length
         $maxAbsSize = (int)max(abs($min), abs($max));
-        $length = ($maxAbsSize ? mb_strlen($maxAbsSize) : 0) + $decimals;
+        $length = ($maxAbsSize ? mb_strlen((string)$maxAbsSize) : 0) + $decimals;
 
         // Decimal or int?
         if ($decimals > 0) {
-            return Schema::TYPE_DECIMAL . "({$length},{$decimals})";
+            return Schema::TYPE_DECIMAL . "($length,$decimals)";
         }
 
         // Figure out the smallest possible int column type that will fit our min/max
         foreach (self::$_integerSizeRanges as $type => [$typeMin, $typeMax]) {
             if ($min >= $typeMin && $max <= $typeMax) {
-                return $type . "({$length})";
+                return $type . "($length)";
             }
         }
 
-        throw new Exception("No integer column type can contain numbers between {$min} and {$max}");
+        throw new Exception("No integer column type can contain numbers between $min and $max");
     }
 
     /**
@@ -240,9 +275,9 @@ class Db
      *
      * @param string $columnType The textual column type to check
      * @param Connection|null $db The database connection
-     * @return int|null|false The storage capacity of the column type in bytes, null if unlimited, or false or it can't be determined.
+     * @return int|null|false The storage capacity of the column type in bytes, null if unlimited, or false if it can't be determined.
      */
-    public static function getTextualColumnStorageCapacity(string $columnType, ?Connection $db = null)
+    public static function getTextualColumnStorageCapacity(string $columnType, ?Connection $db = null): int|null|false
     {
         if ($db === null) {
             $db = self::db();
@@ -418,7 +453,7 @@ class Db
      */
     public static function escapeParam(string $value): string
     {
-        $value = str_replace([',', '*'], ['\,', '\*'], $value);
+        $value = preg_replace('/(?<!\\\)[,*]/', '\\\$0', $value);
 
         // If the value starts with an operator, escape that too.
         foreach (self::$_operators as $operator) {
@@ -432,14 +467,27 @@ class Db
     }
 
     /**
+     * Escapes commas in a string so the value doesn’t get interpreted as an array by [[Db::parseParam()]].
+     *
+     * @param string $value The param value.
+     * @return string The escaped param value.
+     * @since 4.0.0
+     */
+    public static function escapeCommas(string $value): string
+    {
+        return preg_replace('/(?<!\\\),/', '\\\$0', $value);
+    }
+
+    /**
      * Parses a query param value and returns a [[\yii\db\QueryInterface::where()]]-compatible condition.
      *
      * If the `$value` is a string, it will automatically be converted to an array, split on any commas within the
      * string (via [[ArrayHelper::toArray()]]). If that is not desired behavior, you can escape the comma
      * with a backslash before it.
      *
-     * The first value can be set to either `'and'` or `'or'` to define whether *all* of the values must match, or
-     * *any*. If it’s neither `'and'` nor `'or'`, then `'or'` will be assumed.
+     * The first value can be set to either `and`, `or`, or `not` to define whether *all*, *any*, or *none* of the values must match.
+     * (`or` will be assumed by default.)
+     *
      * Values can begin with the operators `'not '`, `'!='`, `'<='`, `'>='`, `'<'`, `'>'`, or `'='`. If they don’t,
      * `'='` will be assumed.
      *
@@ -452,10 +500,16 @@ class Db
      * (can be `not`, `!=`, `<=`, `>=`, `<`, `>`, or `=`)
      * @param bool $caseInsensitive Whether the resulting condition should be case-insensitive
      * @param string|null $columnType The database column type the param is targeting
-     * @return mixed
+     * @return string|array
+     * @throws InvalidArgumentException if the param value isn’t compatible with the column type.
      */
-    public static function parseParam(string $column, $value, string $defaultOperator = '=', bool $caseInsensitive = false, ?string $columnType = null)
-    {
+    public static function parseParam(
+        string $column,
+        mixed $value,
+        string $defaultOperator = '=',
+        bool $caseInsensitive = false,
+        string|null $columnType = null,
+    ): string|array {
         if (is_string($value) && preg_match('/^not\s*$/', $value)) {
             return '';
         }
@@ -468,22 +522,12 @@ class Db
 
         $parsedColumnType = $columnType ? static::parseColumnType($columnType) : null;
 
-        $firstVal = strtolower(reset($value));
-        $negate = false;
-
-        switch ($firstVal) {
-            case 'and':
-            case 'or':
-                $glue = $firstVal;
-                array_shift($value);
-                break;
-            case 'not':
-                $glue = 'and';
-                $negate = true;
-                array_shift($value);
-                break;
-            default:
-                $glue = 'or';
+        $glue = static::extractGlue($value) ?? self::GLUE_OR;
+        if ($glue === self::GLUE_NOT) {
+            $glue = self::GLUE_AND;
+            $negate = true;
+        } else {
+            $negate = false;
         }
 
         $condition = [$glue];
@@ -494,7 +538,7 @@ class Db
             $caseInsensitive = false;
         }
 
-        $caseColumn = $caseInsensitive ? "lower([[{$column}]])" : $column;
+        $caseColumn = $caseInsensitive ? "lower([[$column]])" : $column;
 
         $inVals = [];
         $notInVals = [];
@@ -503,14 +547,24 @@ class Db
             self::_normalizeEmptyValue($val);
             $operator = self::_parseParamOperator($val, $defaultOperator, $negate);
 
-            if ($parsedColumnType === Schema::TYPE_BOOLEAN) {
-                // Convert val to a boolean
-                $val = ($val && $val !== ':empty:');
-                if ($operator === '!=') {
-                    $val = !$val;
+            if ($columnType !== null) {
+                if ($parsedColumnType === Schema::TYPE_BOOLEAN) {
+                    // Convert val to a boolean
+                    $val = ($val && $val !== ':empty:');
+                    if ($operator === '!=') {
+                        $val = !$val;
+                    }
+                    $condition[] = [$column => $val];
+                    continue;
                 }
-                $condition[] = [$column => (bool)$val];
-                continue;
+
+                if (
+                    static::isNumericColumnType($columnType) &&
+                    $val !== ':empty:' &&
+                    !is_numeric($val)
+                ) {
+                    throw new InvalidArgumentException("Invalid numeric value: $val");
+                }
             }
 
             if ($val === ':empty:') {
@@ -565,13 +619,13 @@ class Db
             }
 
             // ['or', 1, 2, 3] => IN (1, 2, 3)
-            if ($glue == 'or' && $operator === '=') {
+            if ($glue == self::GLUE_OR && $operator === '=') {
                 $inVals[] = $val;
                 continue;
             }
 
             // ['and', '!=1', '!=2', '!=3'] => NOT IN (1, 2, 3)
-            if ($glue == 'and' && $operator === '!=') {
+            if ($glue == self::GLUE_AND && $operator === '!=') {
                 $notInVals[] = $val;
                 continue;
             }
@@ -600,13 +654,66 @@ class Db
      * [[\yii\db\QueryInterface::where()]]-compatible condition.
      *
      * @param string $column The database column that the param is targeting.
-     * @param string|array|\DateTime $value The param value
+     * @param string|array|DateTime $value The param value
      * @param string $defaultOperator The default operator to apply to the values
      * (can be `not`, `!=`, `<=`, `>=`, `<`, `>`, or `=`)
-     * @return mixed
+     * @return string|array
      */
-    public static function parseDateParam(string $column, $value, string $defaultOperator = '=')
+    public static function parseDateParam(string $column, mixed $value, string $defaultOperator = '='): string|array
     {
+        $normalizedValues = [];
+
+        $value = self::_toArray($value);
+        $glue = static::extractGlue($value);
+
+        if (empty($value)) {
+            return '';
+        }
+
+        if ($glue !== null) {
+            $normalizedValues[] = $glue;
+        }
+
+        foreach ($value as $val) {
+            // Is this an empty value?
+            self::_normalizeEmptyValue($val);
+
+            if ($val === ':empty:' || $val === 'not :empty:') {
+                $normalizedValues[] = $val;
+
+                // Sneak out early
+                continue;
+            }
+
+            $operator = self::_parseParamOperator($val, $defaultOperator);
+
+            // Assume that date params are set in the system timezone
+            $val = DateTimeHelper::toDateTime($val, true);
+
+            $normalizedValues[] = $operator . static::prepareDateForDb($val);
+        }
+
+        return static::parseParam($column, $normalizedValues, $defaultOperator, false, Schema::TYPE_DATETIME);
+    }
+
+    /**
+     * Parses a query param value for a money column, and returns a
+     * [[\yii\db\QueryInterface::where()]]-compatible condition.
+     *
+     * @param string $column The database column that the param is targeting.
+     * @param string $currency The currency code to use for the money object.
+     * @param string|array|Money $value The param value
+     * @param string $defaultOperator The default operator to apply to the values
+     * (can be `not`, `!=`, `<=`, `>=`, `<`, `>`, or `=`)
+     * @return string|array
+     * @since 4.0.0
+     */
+    public static function parseMoneyParam(
+        string $column,
+        string $currency,
+        mixed $value,
+        string $defaultOperator = '=',
+    ): string|array {
         $normalizedValues = [];
 
         $value = self::_toArray($value);
@@ -634,9 +741,9 @@ class Db
             $operator = self::_parseParamOperator($val, $defaultOperator);
 
             // Assume that date params are set in the system timezone
-            $val = DateTimeHelper::toDateTime($val, true);
+            $val = MoneyHelper::toMoney(['value' => $val, 'currency' => $currency]);
 
-            $normalizedValues[] = $operator . static::prepareDateForDb($val);
+            $normalizedValues[] = $operator . static::prepareMoneyForDb($val);
         }
 
         return static::parseParam($column, $normalizedValues, $defaultOperator, false, Schema::TYPE_DATETIME);
@@ -659,14 +766,14 @@ class Db
      * @param string $column The database column that the param is targeting.
      * @param string|bool $value The param value
      * @param bool|null $defaultValue How `null` values should be treated
-     * @return mixed
-     * @since 3.4.15
+     * @return array
+     * @since 3.4.14
      */
-    public static function parseBooleanParam(string $column, $value, ?bool $defaultValue = null)
+    public static function parseBooleanParam(string $column, mixed $value, ?bool $defaultValue = null): array
     {
         self::_normalizeEmptyValue($value);
         $operator = self::_parseParamOperator($value, '=');
-        $value = $value === ':empty:' ? false : (bool)$value;
+        $value = !($value === ':empty:') && $value;
         if ($operator === '!=') {
             $value = !$value;
         }
@@ -675,6 +782,117 @@ class Db
             $condition = ['or', $condition, [$column => null]];
         }
         return $condition;
+    }
+
+    /**
+     * Parses a query param value for a numeric column and returns a
+     * [[\yii\db\QueryInterface::where()]]-compatible condition.
+     *
+     * The follow values are supported:
+     *
+     * - A number
+     * - `:empty:` or `:notempty:`
+     * - `'not x'` or `'!= x'`
+     * - `'> x'`, `'>= x'`, `'< x'`, or `'<= x'`, or a combination of those
+     *
+     * @param string $column The database column that the param is targeting.
+     * @param string|string[] $value The param value
+     * @param string $defaultOperator The default operator to apply to the values
+     * (can be `not`, `!=`, `<=`, `>=`, `<`, `>`, or `=`)
+     * @param string|null $columnType The database column type the param is targeting
+     * @return string|array
+     * @throws InvalidArgumentException if the param value isn’t numeric
+     * @since 4.0.0
+     */
+    public static function parseNumericParam(
+        string $column,
+        mixed $value,
+        string $defaultOperator = '=',
+        string|null $columnType = Schema::TYPE_INTEGER,
+    ): string|array {
+        return static::parseParam($column, $value, $defaultOperator, false, $columnType);
+    }
+
+    /**
+     * Extracts a “glue” param from an a param value.
+     *
+     * Supported glue values are `and`, `or`, and `not`.
+     *
+     * @param mixed $value
+     * @return string|null
+     * @since 3.7.40
+     */
+    public static function extractGlue(&$value): ?string
+    {
+        if (!is_array($value)) {
+            return null;
+        }
+
+        $firstVal = reset($value);
+
+        if (!is_string($firstVal)) {
+            return null;
+        }
+
+        $firstVal = strtolower($firstVal);
+
+        if (!in_array($firstVal, [self::GLUE_AND, self::GLUE_OR, self::GLUE_NOT], true)) {
+            return null;
+        }
+
+        array_shift($value);
+        return $firstVal;
+    }
+
+    /**
+     * Normalizes a param value with a provided resolver function, unless the resolver function ever returns
+     * an empty value.
+     *
+     * If the original param value began with `and`, `or`, or `not`, that will be preserved.
+     *
+     * @param mixed $value The param value to be normalized
+     * @param callable $resolver Method to resolve non-model values to models
+     * @return bool Whether the value was normalized
+     * @since 3.7.40
+     */
+    public static function normalizeParam(&$value, callable $resolver): bool
+    {
+        if ($value === null) {
+            return true;
+        }
+
+        if (!is_array($value)) {
+            $testValue = [$value];
+            if (static::normalizeParam($testValue, $resolver)) {
+                $value = $testValue;
+                return true;
+            }
+            return false;
+        }
+
+        $normalized = [];
+
+        foreach ($value as $item) {
+            if (
+                empty($normalized) &&
+                is_string($item) &&
+                in_array(strtolower($item), [Db::GLUE_OR, Db::GLUE_AND, Db::GLUE_NOT], true)
+            ) {
+                $normalized[] = strtolower($item);
+                continue;
+            }
+
+            $item = $resolver($item);
+            if (!$item) {
+                // The value couldn't be normalized in full, so bail
+                return false;
+            }
+
+            $normalized[] = $item;
+        }
+
+        $value = $normalized;
+        return true;
     }
 
     /**
@@ -691,7 +909,7 @@ class Db
             $db = self::db();
         }
 
-        /** @var \craft\db\mysql\Schema|\craft\db\pgsql\Schema $schema */
+        /** @var MysqlSchema|PgsqlSchema $schema */
         $schema = $db->getSchema();
 
         return isset($schema->typeMap[$type]);
@@ -702,23 +920,24 @@ class Db
      *
      * The method will properly escape the column names, and bind the values to be inserted.
      *
+     * If the table contains `dateCreated`, `dateUpdated`, and/or `uid` columns, those values will be included
+     * automatically, if not already set.
+     *
      * @param string $table The table that new rows will be inserted into
      * @param array $columns The column data (name=>value) to be inserted into the table
-     * @param bool $includeAuditColumns Whether to include the data for the audit columns
-     * (`dateCreated`, `dateUpdated`, and `uid`)
      * @param Connection|null $db The database connection to use
      * @return int The number of rows affected by the execution
      * @throws DbException if execution failed
      * @since 3.5.0
      */
-    public static function insert(string $table, array $columns, bool $includeAuditColumns = true, ?Connection $db = null): int
+    public static function insert(string $table, array $columns, Connection|null $db = null): int
     {
         if ($db === null) {
             $db = self::db();
         }
 
         return $db->createCommand()
-            ->insert($table, $columns, $includeAuditColumns)
+            ->insert($table, $columns)
             ->execute();
     }
 
@@ -727,23 +946,25 @@ class Db
      *
      * The method will properly escape the column names, and bind the values to be inserted.
      *
+     * If the table contains `dateCreated`, `dateUpdated`, and/or `uid` columns, those values will be included
+     * automatically, if not already set.
+     *
      * @param string $table The table that new rows will be inserted into
      * @param array $columns The column names
      * @param array $rows The rows to be batch inserted into the table
-     * @param bool $includeAuditColumns Whether `dateCreated`, `dateUpdated`, and `uid` values should be added to $columns
      * @param Connection|null $db The database connection to use
      * @return int The number of rows affected by the execution
      * @throws DbException if execution failed
      * @since 3.5.0
      */
-    public static function batchInsert(string $table, array $columns, array $rows, bool $includeAuditColumns = true, ?Connection $db = null): int
+    public static function batchInsert(string $table, array $columns, array $rows, Connection|null $db = null): int
     {
         if ($db === null) {
             $db = self::db();
         }
 
         return $db->createCommand()
-            ->batchInsert($table, $columns, $rows, $includeAuditColumns)
+            ->batchInsert($table, $columns, $rows)
             ->execute();
     }
 
@@ -754,8 +975,11 @@ class Db
      *
      * The method will properly escape the column names, and bind the values to be inserted.
      *
+     * If the table contains `dateCreated`, `dateUpdated`, and/or `uid` columns, those values will be included
+     * for new rows automatically, if not already set.
+     *
      * @param string $table the table that new rows will be inserted into/updated in
-     * @param array|Query $insertColumns the column data (name => value) to be inserted into the table or instance
+     * @param array|YiiQuery $insertColumns the column data (name => value) to be inserted into the table or instance
      * of [[Query]] to perform `INSERT INTO ... SELECT` SQL statement
      * @param array|bool $updateColumns the column data (name => value) to be updated if they already exist
      *
@@ -763,20 +987,26 @@ class Db
      * - If `false` is passed, no update will be performed if the column data already exists.
      *
      * @param array $params the parameters to be bound to the command
-     * @param bool $includeAuditColumns Whether `dateCreated`, `dateUpdated`, and `uid` values should be added to $columns
+     * @param bool $updateTimestamp Whether the `dateUpdated` column should be updated for existing rows, if the table has one.
      * @param Connection|null $db The database connection to use
      * @return int The number of rows affected by the execution
      * @throws DbException if execution failed
      * @since 3.5.0
      */
-    public static function upsert(string $table, $insertColumns, $updateColumns = true, array $params = [], bool $includeAuditColumns = true, ?Connection $db = null): int
-    {
+    public static function upsert(
+        string $table,
+        array|YiiQuery $insertColumns,
+        array|bool $updateColumns = true,
+        array $params = [],
+        bool $updateTimestamp = true,
+        Connection|null $db = null,
+    ): int {
         if ($db === null) {
             $db = self::db();
         }
 
         return $db->createCommand()
-            ->upsert($table, $insertColumns, $updateColumns, $params, $includeAuditColumns)
+            ->upsert($table, $insertColumns, $updateColumns, $params, $updateTimestamp)
             ->execute();
     }
 
@@ -790,25 +1020,31 @@ class Db
      * @param string|array $condition The condition that will be put in the `WHERE` part. Please
      * refer to [[Query::where()]] on how to specify condition
      * @param array $params The parameters to be bound to the command
-     * @param bool $includeAuditColumns Whether the `dateUpdated` value should be added to $columns
+     * @param bool $updateTimestamp Whether the `dateUpdated` column should be updated, if the table has one.
      * @param Connection|null $db The database connection to use
      * @return int The number of rows affected by the execution
      * @throws DbException if execution failed
      * @since 3.5.0
      */
-    public static function update(string $table, array $columns, $condition = '', array $params = [], bool $includeAuditColumns = true, ?Connection $db = null): int
-    {
+    public static function update(
+        string $table,
+        array $columns,
+        string|array $condition = '',
+        array $params = [],
+        bool $updateTimestamp = true,
+        Connection|null $db = null,
+    ): int {
         if ($db === null) {
             $db = self::db();
         }
 
         return $db->createCommand()
-            ->update($table, $columns, $condition, $params, $includeAuditColumns)
+            ->update($table, $columns, $condition, $params, $updateTimestamp)
             ->execute();
     }
 
     /**
-     * Creates and executes a SQL statement for replacing some text with other text in a given table column.
+     * Creates and executes an SQL statement for replacing some text with other text in a given table column.
      *
      * @param string $table The table to be updated
      * @param string $column The column to be searched
@@ -822,8 +1058,15 @@ class Db
      * @throws DbException if execution failed
      * @since 3.5.0
      */
-    public static function replace(string $table, string $column, string $find, string $replace, $condition = '', array $params = [], ?Connection $db = null): int
-    {
+    public static function replace(
+        string $table,
+        string $column,
+        string $find,
+        string $replace,
+        string|array $condition = '',
+        array $params = [],
+        Connection|null $db = null,
+    ): int {
         if ($db === null) {
             $db = self::db();
         }
@@ -837,7 +1080,7 @@ class Db
      * Creates and executes a `DELETE` SQL statement.
      *
      * @param string $table the table where the data will be deleted from
-     * @param array|string $condition the conditions that will be put in the `WHERE` part. Please
+     * @param string|array $condition the conditions that will be put in the `WHERE` part. Please
      * refer to [[Query::where()]] on how to specify conditions.
      * @param array $params the parameters to be bound to the query.
      * @param Connection|null $db The database connection to use
@@ -845,8 +1088,12 @@ class Db
      * @throws DbException if execution failed
      * @since 3.5.0
      */
-    public static function delete(string $table, $condition = '', array $params = [], ?Connection $db = null): int
-    {
+    public static function delete(
+        string $table,
+        string|array $condition = '',
+        array $params = [],
+        Connection|null $db = null,
+    ): int {
         if ($db === null) {
             $db = self::db();
         }
@@ -869,8 +1116,12 @@ class Db
      * @throws DbException execution failed
      * @since 3.0.12
      */
-    public static function deleteIfExists(string $table, $condition = '', array $params = [], ?Connection $db = null): int
-    {
+    public static function deleteIfExists(
+        string $table,
+        string|array $condition = '',
+        array $params = [],
+        Connection|null $db = null,
+    ): int {
         if ($db === null) {
             $db = self::db();
         }
@@ -888,19 +1139,140 @@ class Db
      *
      * @param string $table the table where the data will be deleted from
      * @param Connection|null $db The database connection to use
-     * @return int The number of rows affected by the execution
      * @throws DbException if execution failed
      * @since 3.6.8
      */
-    public static function truncateTable(string $table, ?Connection $db = null): int
+    public static function truncateTable(string $table, ?Connection $db = null): void
     {
         if ($db === null) {
             $db = self::db();
         }
 
-        return $db->createCommand()
+        $db->createCommand()
             ->truncateTable($table)
             ->execute();
+    }
+
+    /**
+     * Creates and executes a SQL statement for dropping an index if it exists.
+     *
+     * @param string $table The table that the index was created for.
+     * @param string|string[] $columns The column(s) that are included in the index. If there are multiple columns, separate them
+     * by commas or use an array.
+     * @param bool $unique Whether the index has a UNIQUE constraint.
+     * @param Connection|null $db The database connection.
+     * @since 4.0.0
+     */
+    public static function dropIndexIfExists(
+        string $table,
+        string|array $columns,
+        bool $unique = false,
+        Connection|null $db = null,
+    ): void {
+        if ($db === null) {
+            $db = self::db();
+        }
+
+        $indexName = static::findIndex($table, $columns, $unique, $db);
+
+        if ($indexName) {
+            $db->createCommand()
+                ->dropIndex($indexName, $table)
+                ->execute();
+        }
+    }
+
+    /**
+     * Creates and executes a SQL statement for dropping a foreign key if it exists.
+     *
+     * @param string $table The table that the foreign key was created for.
+     * @param string|string[] $columns The column(s) that are included in the foreign key. If there are multiple columns, separate them
+     * by commas or use an array.
+     * @param Connection|null $db The database connection.
+     * @since 4.0.0
+     */
+    public static function dropForeignKeyIfExists(
+        string $table,
+        string|array $columns,
+        Connection|null $db = null,
+    ): void {
+        if ($db === null) {
+            $db = self::db();
+        }
+
+        $fkName = static::findForeignKey($table, $columns, $db);
+
+        if ($fkName) {
+            $db->createCommand()
+                ->dropForeignKey($fkName, $table)
+                ->execute();
+        }
+    }
+
+    /**
+     * Drops all the foreign keys that reference a table.
+     *
+     * @param string $table The table that the foreign keys should reference.
+     * @param Connection|null $db The database connection.
+     * @since 4.0.0
+     */
+    public static function dropAllForeignKeysToTable(string $table, ?Connection $db = null): void
+    {
+        if ($db === null) {
+            $db = self::db();
+        }
+
+        $schema = $db->getSchema();
+        $rawTableName = $schema->getRawTableName($table);
+
+        foreach ($schema->getTableSchemas() as $otherTable) {
+            foreach ($otherTable->foreignKeys as $fkName => $fk) {
+                if ($fk[0] === $rawTableName) {
+                    $db->createCommand()
+                        ->dropForeignKey($fkName, $otherTable->name)
+                        ->execute();
+                }
+            }
+        }
+    }
+
+    /**
+     * Renames a table and its corresponding sequence (if PostgreSQL).
+     *
+     * @param string $table The table to be renamed.
+     * @param string $newName The new table name.
+     * @param Connection|null $db The database connection.
+     * @since 4.0.0
+     */
+    public static function renameTable(string $table, string $newName, ?Connection $db = null): void
+    {
+        if ($db === null) {
+            $db = self::db();
+        }
+
+        $schema = $db->getSchema();
+        $rawOldName = $schema->getRawTableName($table);
+        $rawNewName = $schema->getRawTableName($newName);
+
+        // Rename the table
+        $db->createCommand()
+            ->renameTable($rawOldName, $rawNewName)
+            ->execute();
+
+        if ($db->getIsPgsql()) {
+            // Rename the corresponding sequence if there is one
+            // see https://www.postgresql.org/message-id/200308211224.06775.jgardner%40jonathangardner.net
+            $transaction = $db->beginTransaction();
+            try {
+                $db->createCommand()
+                    ->renameSequence("{$rawOldName}_id_seq", "{$rawNewName}_id_seq")
+                    ->execute();
+                $transaction->commit();
+            } catch (Throwable) {
+                // Silently fail. The sequence probably doesn't exist
+                $transaction->rollBack();
+            }
+        }
     }
 
     /**
@@ -912,7 +1284,7 @@ class Db
      * @return int|null
      * @since 3.1.0
      */
-    public static function idByUid(string $table, string $uid, ?Connection $db = null)
+    public static function idByUid(string $table, string $uid, ?Connection $db = null): ?int
     {
         if ($db === null) {
             $db = self::db();
@@ -933,7 +1305,7 @@ class Db
      * @param string $table
      * @param string[] $uids
      * @param Connection|null $db The database connection to use
-     * @return string[]
+     * @return int[]
      * @since 3.1.0
      */
     public static function idsByUids(string $table, array $uids, ?Connection $db = null): array
@@ -958,7 +1330,7 @@ class Db
      * @return string|null
      * @since 3.1.0
      */
-    public static function uidById(string $table, int $id, ?Connection $db = null)
+    public static function uidById(string $table, int $id, ?Connection $db = null): ?string
     {
         if ($db === null) {
             $db = self::db();
@@ -999,13 +1371,13 @@ class Db
      * Parses a DSN string and returns an array with the `driver` and any driver params, or just a single key.
      *
      * @param string $dsn
-     * @param string|null $key The key that is needed from the DSN. If this is
+     * @param string|null $key The key that is needed from the DSN, if only one param is needed.
      * @return array|string|false The full array, or the specific key value, or `false` if `$key` is a param that
      * doesn’t exist in the DSN string.
      * @throws InvalidArgumentException if $dsn is invalid
      * @since 3.4.0
      */
-    public static function parseDsn(string $dsn, ?string $key = null)
+    public static function parseDsn(string $dsn, ?string $key = null): array|string|false
     {
         if (($pos = strpos($dsn, ':')) === false) {
             throw new InvalidArgumentException('Invalid DSN: ' . $dsn);
@@ -1031,9 +1403,13 @@ class Db
                 $parsed[$n] = $v;
             }
         }
+
         if ($key === null) {
+            // todo: remove comment when phpstan#5401 is fixed
+            /** @phpstan-ignore-next-line */
             return $parsed;
         }
+
         return false;
     }
 
@@ -1067,7 +1443,7 @@ class Db
      * This can be used from `config/db.php`:
      * ---
      * ```php
-     * $url = craft\helpers\App::env('DB_URL');
+     * $url = craft\helpers\App::env('CRAFT_DB_URL');
      * return craft\helpers\Db::url2config($url);
      * ```
      *
@@ -1095,25 +1471,32 @@ class Db
 
         // URL scheme => driver
         if (in_array(strtolower($parsed['scheme']), ['pgsql', 'postgres', 'postgresql'], true)) {
-            $driver = Connection::DRIVER_PGSQL;
+            $config['driver'] = Connection::DRIVER_PGSQL;
         } else {
-            $driver = Connection::DRIVER_MYSQL;
+            $config['driver'] = Connection::DRIVER_MYSQL;
         }
 
-        // DSN params
-        $checkParams = [
-            'host' => 'host',
-            'port' => 'port',
-            'path' => 'dbname',
+        // Other URL params
+        $urlParams = [
+            'host' => ['server', 'host'],
+            'port' => ['port', 'port'],
+            'path' => ['database', 'dbname'],
         ];
         $dsnParams = [];
-        foreach ($checkParams as $urlParam => $dsnParam) {
+        foreach ($urlParams as $urlParam => [$configKey, $dsnParam]) {
             if (isset($parsed[$urlParam])) {
-                $dsnParams[] = $dsnParam . '=' . trim($parsed[$urlParam], '/');
+                $value = trim($parsed[$urlParam], '/');
+                $config[$configKey] = $value;
+                $dsnParams[] = sprintf('%s=%s', $dsnParam, $value);
             }
         }
 
-        $config['dsn'] = "{$driver}:" . implode(';', $dsnParams);
+        $config['dsn'] = "{$config['driver']}:" . implode(';', $dsnParams);
+
+        // Append any query params to the DSN
+        if (isset($parsed['query'])) {
+            $config['dsn'] .= ';' . $parsed['query'];
+        }
 
         return $config;
     }
@@ -1131,16 +1514,16 @@ class Db
     /**
      * @var Connection|null;
      */
-    private static $_db;
+    private static ?Connection $_db = null;
 
     /**
      * Resets the memoized database connection.
      *
      * @since 3.5.12.1
      */
-    public static function reset()
+    public static function reset(): void
     {
-        if (self::$_db) {
+        if (isset(self::$_db)) {
             self::$_db->close();
         }
         self::$_db = null;
@@ -1152,13 +1535,13 @@ class Db
      * @param mixed $value
      * @return array
      */
-    private static function _toArray($value): array
+    private static function _toArray(mixed $value): array
     {
         if ($value === null) {
             return [];
         }
 
-        if ($value instanceof \DateTime) {
+        if ($value instanceof DateTime) {
             return [$value];
         }
 
@@ -1187,9 +1570,9 @@ class Db
     /**
      * Normalizes “empty” values.
      *
-     * @param mixed &$value The param value.
+     * @param mixed $value The param value.
      */
-    private static function _normalizeEmptyValue(&$value)
+    private static function _normalizeEmptyValue(mixed &$value): void
     {
         if ($value === null) {
             $value = ':empty:';
@@ -1204,7 +1587,7 @@ class Db
 
         if ($lower === ':empty:') {
             $value = ':empty:';
-        } else if ($lower === ':notempty:' || $lower === 'not :empty:') {
+        } elseif ($lower === ':notempty:' || $lower === 'not :empty:') {
             $value = 'not :empty:';
         }
     }
@@ -1212,12 +1595,12 @@ class Db
     /**
      * Extracts the operator from a DB param and returns it.
      *
-     * @param mixed &$value Te param value.
+     * @param mixed $value Te param value.
      * @param string $default The default operator to use
      * @param bool $negate Whether to reverse whatever the selected operator is
      * @return string The operator ('!=', '<=', '>=', '<', '>', or '=')
      */
-    private static function _parseParamOperator(&$value, string $default, bool $negate = false): string
+    private static function _parseParamOperator(mixed &$value, string $default, bool $negate = false): string
     {
         $op = null;
 
@@ -1293,12 +1676,12 @@ class Db
      * reflect any changes that have been made over the main DB connection, if a transaction is currently
      * active.
      *
-     * @param YiiQuery $query The query that should be executed
+     * @param QueryInterface $query The query that should be executed
      * @param int $batchSize The number of rows to be fetched in each batch
      * @return BatchQueryResult The batched query to be iterated on
      * @since 3.7.0
      */
-    public static function batch(YiiQuery $query, int $batchSize = 100): BatchQueryResult
+    public static function batch(QueryInterface $query, int $batchSize = 100): BatchQueryResult
     {
         return self::_batch($query, $batchSize, false);
     }
@@ -1322,12 +1705,12 @@ class Db
      * reflect any changes that have been made over the main DB connection, if a transaction is currently
      * active.
      *
-     * @param YiiQuery $query The query that should be executed
+     * @param QueryInterface $query The query that should be executed
      * @param int $batchSize The number of rows to be fetched in each batch
      * @return BatchQueryResult The batched query to be iterated on
      * @since 3.7.0
      */
-    public static function each(YiiQuery $query, int $batchSize = 100): BatchQueryResult
+    public static function each(QueryInterface $query, int $batchSize = 100): BatchQueryResult
     {
         return self::_batch($query, $batchSize, true);
     }
@@ -1335,19 +1718,19 @@ class Db
     /**
      * Starts a new batch query for batch() and each().
      *
-     * @param YiiQuery $query
+     * @param QueryInterface $query
      * @param int $batchSize
      * @param bool $each
      * @return BatchQueryResult
      */
-    private static function _batch(YiiQuery $query, int $batchSize, bool $each): BatchQueryResult
+    private static function _batch(QueryInterface $query, int $batchSize, bool $each): BatchQueryResult
     {
         $db = self::db();
         $unbuffered = $db->getIsMysql() && Craft::$app->getConfig()->getDb()->useUnbufferedConnections;
 
         if ($unbuffered) {
             $db = Craft::$app->getComponents()['db'];
-            if (!is_object($db) || $db instanceof Closure) {
+            if (!is_object($db) || is_callable($db)) {
                 $db = Craft::createObject($db);
             }
             $db->on(Connection::EVENT_AFTER_OPEN, function() use ($db) {
@@ -1374,5 +1757,86 @@ class Db
         }
 
         return $result;
+    }
+
+    /**
+     * Looks for an index on the given table with the given columns and unique property, and returns its name,
+     * or null if no match is found.
+     *
+     * @param string $tableName The table that the index was created for.
+     * @param string|string[] $columns The column(s) that are included in the index. If there are multiple
+     * columns, separate them by commas or use an array.
+     * @param bool $unique Whether the index has a UNIQUE constraint.
+     * @param Connection|null $db The database connection.
+     * @return string|null The index name, or `null` if there isn’t a matching one.
+     * @since 4.0.0
+     */
+    public static function findIndex(
+        string $tableName,
+        string|array $columns,
+        bool $unique = false,
+        Connection|null $db = null,
+    ): ?string {
+        if (is_string($columns)) {
+            $columns = StringHelper::split($columns);
+        }
+
+        if ($db === null) {
+            $db = self::db();
+        }
+
+        foreach ($db->getSchema()->findIndexes($tableName) as $name => $index) {
+            if ($index['columns'] === $columns && $index['unique'] === $unique) {
+                return $name;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Looks for a foreign key on the given table with the given columns, and returns its name, or null if no
+     * match is found.
+     *
+     * @param string $tableName The table that the foreign key is on
+     * @param string|string[] $columns The column(s) that are included in the foreign key. If there are multiple
+     * columns, separate them by commas or use an array.
+     * @param Connection|null $db The database connection.
+     * @return string|null The foreign key name, or `null` if there isn’t a matching one.
+     * @since 4.0.0
+     */
+    public static function findForeignKey(
+        string $tableName,
+        string|array $columns,
+        Connection|null $db = null,
+    ): ?string {
+        if (is_string($columns)) {
+            $columns = StringHelper::split($columns);
+        }
+
+        if ($db === null) {
+            $db = self::db();
+        }
+
+        $schema = $db->getSchema();
+        $tableName = $schema->getRawTableName($tableName);
+        $table = $schema->getTableSchema($tableName);
+
+        foreach ($table->foreignKeys as $name => $fk) {
+            $fkColumns = [];
+
+            foreach ($fk as $count => $value) {
+                if ($count !== 0) {
+                    $fkColumns[] = $count;
+                }
+            }
+
+            // Could be a composite key, so make sure all required values exist!
+            if (count(array_intersect($fkColumns, $columns)) === count($columns)) {
+                return $name;
+            }
+        }
+
+        return null;
     }
 }

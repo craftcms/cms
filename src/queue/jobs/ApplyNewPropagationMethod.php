@@ -15,6 +15,7 @@ use craft\events\BatchElementActionEvent;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
+use craft\i18n\Translation;
 use craft\queue\BaseJob;
 use craft\services\Elements;
 use craft\services\Structures;
@@ -30,29 +31,33 @@ use craft\services\Structures;
 class ApplyNewPropagationMethod extends BaseJob
 {
     /**
-     * @var string|ElementInterface The element type to use
+     * @var string The element type to use
+     * @phpstan-var class-string<ElementInterface>
      */
-    public $elementType;
+    public string $elementType;
 
     /**
      * @var array|null The element criteria that determines which elements the
      * new propagation method should be applied to
      */
-    public $criteria;
+    public ?array $criteria = null;
 
     /**
      * @inheritdoc
      */
-    public function execute($queue)
+    public function execute($queue): void
     {
         /** @var string|ElementInterface $elementType */
+        /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
         $elementType = $this->elementType;
         $query = $elementType::find()
             ->site('*')
+            ->preferSites([Craft::$app->getSites()->getPrimarySite()->id])
             ->unique()
-            ->anyStatus()
+            ->status(null)
             ->drafts(null)
-            ->provisionalDrafts(null);
+            ->provisionalDrafts(null)
+            ->revisions(null);
 
         if (!empty($this->criteria)) {
             Craft::configure($query, $this->criteria);
@@ -76,7 +81,7 @@ class ApplyNewPropagationMethod extends BaseJob
             &$duplicatedElementIds
         ) {
             if ($e->query === $query) {
-                $this->setProgress($queue, ($e->position - 1) / $total, Craft::t('app', '{step, number} of {total, number}', [
+                $this->setProgress($queue, ($e->position - 1) / $total, Translation::prep('app', '{step, number} of {total, number}', [
                     'step' => $e->position,
                     'total' => $total,
                 ]));
@@ -97,10 +102,10 @@ class ApplyNewPropagationMethod extends BaseJob
                     ->id($element->id)
                     ->siteId($otherSiteIds)
                     ->structureId($element->structureId)
-                    ->anyStatus()
+                    ->status(null)
                     ->drafts(null)
                     ->provisionalDrafts(null)
-                    ->orderBy(null)
+                    ->orderBy([])
                     ->indexBy('siteId')
                     ->all();
 
@@ -117,17 +122,23 @@ class ApplyNewPropagationMethod extends BaseJob
 
                 // Duplicate those elements so their content can live on
                 while (!empty($otherSiteElements)) {
+                    /** @var ElementInterface $otherSiteElement */
                     $otherSiteElement = array_pop($otherSiteElements);
                     try {
                         $newElement = $elementsService->duplicateElement($otherSiteElement, [], false);
                     } catch (UnsupportedSiteException $e) {
                         // Just log it and move along
-                        Craft::warning("Unable to duplicate “{$otherSiteElement}” to site $otherSiteElement->siteId: " . $e->getMessage());
+                        Craft::warning(sprintf(
+                            "Unable to duplicate “%s” to site %d: %s",
+                            get_class($otherSiteElement),
+                            $otherSiteElement->siteId,
+                            $e->getMessage()
+                        ));
                         Craft::$app->getErrorHandler()->logException($e);
                         continue;
                     }
 
-                    // Should we add the clone to the source element's structure?
+                    // Should we add the clone to the source element’s structure?
                     if (
                         $element->structureId &&
                         $element->root &&
@@ -140,14 +151,14 @@ class ApplyNewPropagationMethod extends BaseJob
                         } else {
                             // Append the clone to the source's parent
                             $parentId = $elementType::find()
+                                ->site('*')
                                 ->ancestorOf($element->id)
                                 ->ancestorDist(1)
-                                ->select(['elements.id'])
-                                ->site('*')
                                 ->unique()
-                                ->anyStatus()
+                                ->status(null)
                                 ->drafts(null)
                                 ->provisionalDrafts(null)
+                                ->select(['elements.id'])
                                 ->scalar();
 
                             if ($parentId !== false) {
@@ -182,8 +193,8 @@ class ApplyNewPropagationMethod extends BaseJob
     /**
      * @inheritdoc
      */
-    protected function defaultDescription(): string
+    protected function defaultDescription(): ?string
     {
-        return Craft::t('app', 'Applying new propagation method to elements');
+        return Translation::prep('app', 'Applying new propagation method to elements');
     }
 }

@@ -1,16 +1,15 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace crafttests\unit\helpers;
 
-use Codeception\Test\Unit;
 use craft\helpers\Number;
 use craft\test\mockclasses\ToString;
-use UnitTester;
+use craft\test\TestCase;
 
 /**
  * Class NumberHelperTest.
@@ -19,77 +18,76 @@ use UnitTester;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class NumberHelperTest extends Unit
+class NumberHelperTest extends TestCase
 {
     /**
-     * @var UnitTester
-     */
-    protected $tester;
-
-    /**
      * @dataProvider wordDataProvider
-     *
      * @param string $expected
      * @param int $num
      */
-    public function testWord(string $expected, int $num)
+    public function testWord(string $expected, int $num): void
     {
         self::assertSame($expected, Number::word($num));
     }
 
     /**
      * @dataProvider upperAlphaDataProvider
-     *
      * @param string $expected
      * @param int $num
      */
-    public function testUpperAlpha(string $expected, int $num)
+    public function testUpperAlpha(string $expected, int $num): void
     {
         self::assertSame($expected, Number::upperAlpha($num));
     }
 
     /**
      * @dataProvider lowerAlphaDataProvider
-     *
      * @param string $expected
      * @param int $num
      */
-    public function testLowerAlpha(string $expected, int $num)
+    public function testLowerAlpha(string $expected, int $num): void
     {
         self::assertSame($expected, Number::lowerAlpha($num));
     }
 
     /**
      * @dataProvider upperRomanDataProvider
-     *
      * @param string $expected
      * @param int $num
      */
-    public function testUpperRoman(string $expected, int $num)
+    public function testUpperRoman(string $expected, int $num): void
     {
         self::assertSame($expected, Number::upperRoman($num));
     }
 
     /**
      * @dataProvider lowerRomanDataProvider
-     *
      * @param string $expected
      * @param int $num
      */
-    public function testLowerRoman(string $expected, int $num)
+    public function testLowerRoman(string $expected, int $num): void
     {
         self::assertSame($expected, Number::lowerRoman($num));
     }
 
     /**
      * @dataProvider makeNumericDataProvider
-     *
      * @param mixed $expected
      * @param mixed $var
      */
-    public function testMakeNumeric($expected, $var)
+    public function testMakeNumeric(mixed $expected, mixed $var): void
     {
         self::assertSame($expected, Number::makeNumeric($var));
+    }
+
+    /**
+     * @dataProvider isIntOrFloatDataProvider
+     * @param bool $expected
+     * @param mixed $value
+     */
+    public function testIsIntOrFloat(bool $expected, mixed $value): void
+    {
+        self::assertSame($expected, Number::isIntOrFloat($value));
     }
 
     /**
@@ -106,7 +104,7 @@ class NumberHelperTest extends Unit
             ['50', $toStringClass],
             [1, 'five'],
             [1, [false]],
-            [0, []]
+            [0, []],
         ];
     }
 
@@ -119,7 +117,7 @@ class NumberHelperTest extends Unit
             ['ii', 2],
             ['', 0],
             ['l', 50],
-            ['mi', 1001]
+            ['mi', 1001],
         ];
     }
 
@@ -132,7 +130,7 @@ class NumberHelperTest extends Unit
             ['II', 2],
             ['', 0],
             ['L', 50],
-            ['MI', 1001]
+            ['MI', 1001],
         ];
     }
 
@@ -146,7 +144,7 @@ class NumberHelperTest extends Unit
             ['two', 2],
             ['0', 0],
             ['10', 10],
-            ['nine', 9]
+            ['nine', 9],
         ];
     }
 
@@ -177,6 +175,32 @@ class NumberHelperTest extends Unit
             ['', 0],
             ['bc', 55],
             ['fhim', 111111],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function isIntOrFloatDataProvider(): array
+    {
+        return [
+            [true, 0],
+            [true, 0.5],
+            [true, 10],
+            [true, 10.5],
+            [true, '0'],
+            [true, '0.5'],
+            [true, '0.50'],
+            [true, '10'],
+            [true, '10.5'],
+            [false, '00'],
+            [false, ' 0'],
+            [false, '00.5'],
+            [false, ' 0.5'],
+            [false, ' '],
+            [false, 'y'],
+            [false, true],
+            [false, []],
         ];
     }
 }

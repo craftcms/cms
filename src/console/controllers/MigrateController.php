@@ -23,6 +23,7 @@ use yii\base\NotSupportedException;
 use yii\console\controllers\BaseMigrateController;
 use yii\console\Exception;
 use yii\console\ExitCode;
+use yii\db\MigrationInterface;
 use yii\helpers\Console;
 
 /**
@@ -79,47 +80,47 @@ class MigrateController extends BaseMigrateController
      *
      * @since 3.5.0
      */
-    const EVENT_REGISTER_MIGRATOR = 'registerMigrator';
+    public const EVENT_REGISTER_MIGRATOR = 'registerMigrator';
 
     /**
-     * @var string The migration track to work with (e.g. `craft`, `content`, `plugin:commerce`, etc.)
+     * @var string|null The migration track to work with (e.g. `craft`, `content`, `plugin:commerce`, etc.)
      *
      * Defaults to `content`, or automatically set to the plugin’s track when `--plugin` is passed.
      * @since 3.5.0
      */
-    public $track = MigrationManager::TRACK_CONTENT;
+    public ?string $track = MigrationManager::TRACK_CONTENT;
 
     /**
      * @var string|null DEPRECATED. Use `--track` instead.
      * @deprecated in 3.5.0. Use [[track]] instead.
      */
-    public $type;
+    public ?string $type = null;
 
     /**
      * @var string|PluginInterface|null The handle of the plugin to use during migration operations, or the plugin itself.
      */
-    public $plugin;
+    public PluginInterface|string|null $plugin = null;
 
     /**
      * @var bool Exclude pending content migrations.
      */
-    public $noContent = false;
+    public bool $noContent = false;
 
     /**
      * @var bool Skip backing up the database.
      * @since 3.4.3
      */
-    public $noBackup = false;
+    public bool $noBackup = false;
 
     /**
      * @var MigrationManager[] Migration managers that will be used in this request
      */
-    private $_migrators;
+    private array $_migrators;
 
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
         $this->checkTty();
@@ -139,7 +140,7 @@ class MigrateController extends BaseMigrateController
      * @param string $actionID the action id of the current request
      * @return string[] the names of the options valid for the action
      */
-    public function options($actionID)
+    public function options($actionID): array
     {
         $options = parent::options($actionID);
 
@@ -152,7 +153,6 @@ class MigrateController extends BaseMigrateController
             $options[] = 'noBackup';
             $options[] = 'noContent';
         } else {
-            $options[] = 'type';
             $options[] = 'track';
             $options[] = 'plugin';
         }
@@ -163,10 +163,9 @@ class MigrateController extends BaseMigrateController
     /**
      * @inheritdoc
      */
-    public function optionAliases()
+    public function optionAliases(): array
     {
         $aliases = parent::optionAliases();
-        $aliases['t'] = 'type';
         $aliases['p'] = 'plugin';
 
         return $aliases;
@@ -175,7 +174,7 @@ class MigrateController extends BaseMigrateController
     /**
      * @inheritdoc
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         // Make sure this isn't a root user
         if (!$this->checkRootUser()) {
@@ -183,32 +182,9 @@ class MigrateController extends BaseMigrateController
         }
 
         if ($action->id !== 'all') {
-            // Validate $type
-            if ($this->type) {
-                switch ($this->type) {
-                    case 'app':
-                        $this->track = MigrationManager::TRACK_CRAFT;
-                        $new = "--track=$this->track";
-                        break;
-                    case 'content':
-                        $this->track = MigrationManager::TRACK_CONTENT;
-                        $new = "--track=$this->track";
-                        break;
-                    case 'plugin':
-                        $this->track = null;
-                        $new = "--plugin=$this->plugin";
-                        break;
-                    default:
-                        $this->stderr("Invalid --type option. Allowed values are 'app', 'plugin', or 'content'." . PHP_EOL, Console::FG_RED);
-                        return false;
-                }
-
-                $this->stdout("The --type option has been deprecated. Use $new instead." . PHP_EOL, Console::FG_YELLOW);
-            }
-
             if ($this->plugin) {
                 $this->track = "plugin:$this->plugin";
-            } else if ($this->track && preg_match('/^plugin:([\w\-]+)$/', $this->track, $match)) {
+            } elseif ($this->track && preg_match('/^plugin:([\w\-]+)$/', $this->track, $match)) {
                 $this->plugin = $match[1];
             }
 
@@ -221,7 +197,7 @@ class MigrateController extends BaseMigrateController
                 }
                 try {
                     $this->plugin = $this->_plugin($this->plugin);
-                } catch (InvalidPluginException $e) {
+                } catch (InvalidPluginException) {
                     $this->stderr("Invalid plugin handle: $this->plugin" . PHP_EOL, Console::FG_RED);
                     return false;
                 }
@@ -233,8 +209,8 @@ class MigrateController extends BaseMigrateController
 
         // Make sure that the project config YAML exists in case any migrations need to check incoming YAML values
         $projectConfig = Craft::$app->getProjectConfig();
-        if ($projectConfig->writeYamlAutomatically && !$projectConfig->getDoesYamlExist()) {
-            $projectConfig->regenerateYamlFromConfig();
+        if ($projectConfig->writeYamlAutomatically && !$projectConfig->getDoesExternalConfigExist()) {
+            $projectConfig->regenerateExternalConfig();
         }
 
         if (!parent::beforeAction($action)) {
@@ -262,9 +238,10 @@ class MigrateController extends BaseMigrateController
      *
      * @param string $name the name of the new migration. This should only contain
      * letters, digits, and underscores.
+     * @return int
      * @throws Exception if the name argument is invalid.
      */
-    public function actionCreate($name)
+    public function actionCreate($name): int
     {
         if (!preg_match('/^\w+$/', $name)) {
             throw new Exception('The migration name should contain letters, digits and/or underscore characters only.');
@@ -278,7 +255,7 @@ class MigrateController extends BaseMigrateController
 
         $file = $this->migrationPath . DIRECTORY_SEPARATOR . $name . '.php';
 
-        if ($this->confirm("Create new migration '$file'?")) {
+        if (!$this->interactive || $this->confirm("Create new migration '$file'?", true)) {
             $templateFile = Craft::getAlias($this->templateFile);
 
             if ($templateFile === false) {
@@ -294,6 +271,8 @@ class MigrateController extends BaseMigrateController
             FileHelper::writeToFile($file, $content);
             $this->stdout('New migration created successfully.' . PHP_EOL, Console::FG_GREEN);
         }
+
+        return ExitCode::OK;
     }
 
     /**
@@ -314,7 +293,7 @@ class MigrateController extends BaseMigrateController
         $updatesService = Craft::$app->getUpdates();
 
         $craftMigrations = Craft::$app->getMigrator()->getNewMigrations();
-        if (!empty($craftMigrations) || $updatesService->getIsCraftDbMigrationNeeded()) {
+        if (!empty($craftMigrations) || $updatesService->getIsCraftUpdatePending()) {
             $migrationsByTrack[MigrationManager::TRACK_CRAFT] = $craftMigrations;
         }
 
@@ -322,7 +301,7 @@ class MigrateController extends BaseMigrateController
         $plugins = $pluginsService->getAllPlugins();
         foreach ($plugins as $plugin) {
             $pluginMigrations = $plugin->getMigrator()->getNewMigrations();
-            if (!empty($pluginMigrations) || $pluginsService->doesPluginRequireDatabaseUpdate($plugin)) {
+            if (!empty($pluginMigrations) || $pluginsService->isPluginUpdatePending($plugin)) {
                 $migrationsByTrack["plugin:$plugin->id"] = $pluginMigrations;
             }
         }
@@ -344,16 +323,11 @@ class MigrateController extends BaseMigrateController
         foreach ($migrationsByTrack as $track => $migrations) {
             $n = count($migrations);
 
-            switch ($track) {
-                case MigrationManager::TRACK_CRAFT:
-                    $which = 'Craft';
-                    break;
-                case MigrationManager::TRACK_CONTENT:
-                    $which = 'content';
-                    break;
-                default:
-                    $which = $plugins[substr($track, 7)]->name;
-            }
+            $which = match ($track) {
+                MigrationManager::TRACK_CRAFT => 'Craft',
+                MigrationManager::TRACK_CONTENT => 'content',
+                default => $plugins[substr($track, 7)]->name,
+            };
 
             $this->stdout("Total $n new $which " . ($n === 1 ? 'migration' : 'migrations') . ' to be applied:' . PHP_EOL, Console::FG_YELLOW);
             foreach ($migrations as $migration) {
@@ -364,7 +338,7 @@ class MigrateController extends BaseMigrateController
             $total += $n;
         }
 
-        if (!$this->confirm('Apply the above ' . ($total === 1 ? 'migration' : 'migrations') . '?')) {
+        if ($this->interactive && !$this->confirm('Apply the above ' . ($total === 1 ? 'migration' : 'migrations') . '?')) {
             return ExitCode::OK;
         }
 
@@ -395,7 +369,7 @@ class MigrateController extends BaseMigrateController
             // Update version info
             if ($track === MigrationManager::TRACK_CRAFT) {
                 Craft::$app->getUpdates()->updateCraftVersionInfo();
-            } else if ($track !== MigrationManager::TRACK_CONTENT) {
+            } elseif ($track !== MigrationManager::TRACK_CONTENT) {
                 Craft::$app->getPlugins()->updatePluginVersionInfo($plugins[substr($track, 7)]);
             }
         }
@@ -408,21 +382,20 @@ class MigrateController extends BaseMigrateController
     }
 
     /**
-     * Upgrades the application by applying new migrations.
+     * Upgrades Craft by applying new migrations.
      *
-     * For example,
-     *
+     * Example:
      * ```
-     * craft migrate     # apply all new migrations
-     * craft migrate 3   # apply the first 3 new migrations
+     * php craft migrate     # apply all new migrations
+     * php craft migrate 3   # apply the first 3 new migrations
      * ```
      *
-     * @param int $limit the number of new migrations to be applied. If 0, it means
-     * applying all available new migrations.
+     * @param int $limit The number of new migrations to be applied. If `0`, every new migration
+     * will be applied.
      *
      * @return int the status of the action execution. 0 means normal, other values mean abnormal.
      */
-    public function actionUp($limit = 0)
+    public function actionUp($limit = 0): int
     {
         switch ($this->track) {
             case MigrationManager::TRACK_CRAFT:
@@ -437,13 +410,13 @@ class MigrateController extends BaseMigrateController
                 }
         }
 
-        $res = parent::actionUp($limit) ?? ExitCode::OK;
+        $res = parent::actionUp($limit);
 
         if ($res === ExitCode::OK && empty($this->getNewMigrations())) {
             // Update any schema versions.
             if ($this->track === MigrationManager::TRACK_CRAFT) {
                 Craft::$app->getUpdates()->updateCraftVersionInfo();
-            } else if ($this->plugin) {
+            } elseif ($this->plugin) {
                 Craft::$app->getPlugins()->updatePluginVersionInfo($this->plugin);
             }
 
@@ -472,11 +445,11 @@ class MigrateController extends BaseMigrateController
     /**
      * Clears all compiled templates.
      */
-    private function _clearCompiledTemplates()
+    private function _clearCompiledTemplates(): void
     {
         try {
             FileHelper::clearDirectory(Craft::$app->getPath()->getCompiledTemplatesPath(false));
-        } catch (InvalidArgumentException $e) {
+        } catch (InvalidArgumentException) {
             // the directory doesn't exist
         } catch (ErrorException $e) {
             Craft::error('Could not delete compiled templates: ' . $e->getMessage());
@@ -529,7 +502,7 @@ class MigrateController extends BaseMigrateController
     /**
      * @inheritdoc
      */
-    protected function createMigration($class)
+    protected function createMigration($class): MigrationInterface
     {
         return $this->getMigrator()->createMigration($class);
     }
@@ -537,7 +510,7 @@ class MigrateController extends BaseMigrateController
     /**
      * @inheritdoc
      */
-    protected function getNewMigrations()
+    protected function getNewMigrations(): array
     {
         return $this->getMigrator()->getNewMigrations();
     }
@@ -545,20 +518,18 @@ class MigrateController extends BaseMigrateController
     /**
      * @inheritdoc
      */
-    protected function getMigrationHistory($limit)
+    protected function getMigrationHistory($limit): array
     {
         $history = $this->getMigrator()->getMigrationHistory((int)$limit);
 
         // Convert values to unix timestamps
-        $history = array_map('strtotime', $history);
-
-        return $history;
+        return array_map('strtotime', $history);
     }
 
     /**
      * @inheritdoc
      */
-    protected function addMigrationHistory($version)
+    protected function addMigrationHistory($version): void
     {
         $this->getMigrator()->addMigrationHistory($version);
     }
@@ -566,7 +537,7 @@ class MigrateController extends BaseMigrateController
     /**
      * @inheritdoc
      */
-    protected function removeMigrationHistory($version)
+    protected function removeMigrationHistory($version): void
     {
         $this->getMigrator()->removeMigrationHistory($version);
     }
@@ -574,7 +545,7 @@ class MigrateController extends BaseMigrateController
     /**
      * Not supported.
      */
-    public function actionFresh()
+    public function actionFresh(): int
     {
         $this->stderr('This command is not supported.' . PHP_EOL, Console::FG_RED);
         return ExitCode::OK;
@@ -583,7 +554,7 @@ class MigrateController extends BaseMigrateController
     /**
      * @inheritdoc
      */
-    protected function truncateDatabase()
+    protected function truncateDatabase(): void
     {
         throw new NotSupportedException('This command is not implemented in ' . get_class($this));
     }
@@ -591,9 +562,9 @@ class MigrateController extends BaseMigrateController
     /**
      * @inheritdoc
      */
-    public function stdout($string)
+    public function stdout($string): bool|int
     {
-        if (strpos($string, 'Yii Migration Tool') === 0) {
+        if (str_starts_with($string, 'Yii Migration Tool')) {
             return false;
         }
         return parent::stdout(...func_get_args());

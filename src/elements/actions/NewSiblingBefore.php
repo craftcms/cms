@@ -9,7 +9,6 @@ namespace craft\elements\actions;
 
 use Craft;
 use craft\base\ElementAction;
-use craft\helpers\Json;
 
 /**
  * NewSibling represents a “Create a new X before” element action.
@@ -22,12 +21,12 @@ class NewSiblingBefore extends ElementAction
     /**
      * @var string|null The trigger label
      */
-    public $label;
+    public ?string $label = null;
 
     /**
      * @var string|null The URL that the user should be taken to after clicking on this element action
      */
-    public $newSiblingUrl;
+    public ?string $newSiblingUrl = null;
 
     /**
      * @inheritdoc
@@ -40,25 +39,20 @@ class NewSiblingBefore extends ElementAction
     /**
      * @inheritdoc
      */
-    public function getTriggerHtml()
+    public function getTriggerHtml(): ?string
     {
-        $type = Json::encode(static::class);
-        $newSiblingUrl = Json::encode($this->newSiblingUrl);
-
-        $js = <<<JS
+        Craft::$app->getView()->registerJsWithVars(fn($type, $newSiblingUrl) => <<<JS
 (() => {
-    let trigger = new Craft.ElementActionTrigger({
-        type: {$type},
+    new Craft.ElementActionTrigger({
+        type: $type,
         batch: false,
-        activate: function(\$selectedItems)
-        {
-            Craft.redirectTo(Craft.getUrl($newSiblingUrl, 'before='+\$selectedItems.find('.element').data('id')));
-        }
+        activate: \$selectedItems => {
+            Craft.redirectTo(Craft.getUrl($newSiblingUrl, 'before=' + \$selectedItems.find('.element').data('id')));
+        },
     });
 })();
-JS;
+JS, [static::class, $this->newSiblingUrl]);
 
-        Craft::$app->getView()->registerJs($js);
         return null;
     }
 }

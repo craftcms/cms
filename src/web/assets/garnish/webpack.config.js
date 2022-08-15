@@ -1,6 +1,6 @@
 /* jshint esversion: 6 */
 /* globals module, require, __dirname */
-const { getConfig } = require('@craftcms/webpack');
+const {getConfig} = require('@craftcms/webpack');
 const {join} = require('path');
 
 module.exports = getConfig({
@@ -14,18 +14,17 @@ module.exports = getConfig({
       rules: [
         {
           test: require.resolve('./src/index.js'),
-          loader: "expose-loader",
+          loader: 'expose-loader',
           options: {
             exposes: [
               {
-                globalName: "Garnish",
-                moduleLocalName: "default",
-              }
-            ]
+                globalName: 'Garnish',
+                moduleLocalName: 'default',
+              },
+            ],
           },
         },
       ],
-
-    }
-  }
+    },
+  },
 });

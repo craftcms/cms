@@ -12,14 +12,14 @@ return [
             'new1' => [
                 'type' => 'aBlock',
                 'fields' => [
-                    'firstSubfield' => 'Some text'
+                    'firstSubfield' => 'Some text',
 
                 ],
             ],
             'new2' => [
                 'type' => 'aBlock',
                 'fields' => [
-                    'firstSubfield' => 'Some text'
+                    'firstSubfield' => 'Some text',
                 ],
             ],
         ],

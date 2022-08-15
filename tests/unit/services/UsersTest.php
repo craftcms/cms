@@ -42,46 +42,46 @@ class UsersTest extends TestCase
     /**
      * @var UnitTester
      */
-    protected $tester;
+    protected UnitTester $tester;
 
     /**
      * @var Users
      */
-    protected $users;
+    protected Users $users;
 
     /**
      * @var User
      */
-    protected $pendingUser;
+    protected User $pendingUser;
 
     /**
      * @var User
      */
-    protected $lockedUser;
+    protected User $lockedUser;
 
     /**
      * @var User
      */
-    protected $activeUser;
+    protected User $activeUser;
 
     /**
      * @var User
      */
-    protected $suspendedUser;
+    protected User $suspendedUser;
 
     public function _fixtures(): array
     {
         return [
             'user-groups' => [
-                'class' => UserGroupsFixture::class
-            ]
+                'class' => UserGroupsFixture::class,
+            ],
         ];
     }
 
     /**
      *
      */
-    public function testUserCreation()
+    public function testUserCreation(): void
     {
         self::assertSame(User::STATUS_ACTIVE, $this->lockedUser->getStatus());
         self::assertTrue($this->lockedUser->locked);
@@ -94,7 +94,7 @@ class UsersTest extends TestCase
     /**
      * @throws Throwable
      */
-    public function testUserActivation()
+    public function testUserActivation(): void
     {
         $this->users->activateUser($this->pendingUser);
 
@@ -107,7 +107,7 @@ class UsersTest extends TestCase
     /**
      * @throws Throwable
      */
-    public function testUserActivationEmailAsUsernameWithAnUnverifedEmail()
+    public function testUserActivationEmailAsUsernameWithAnUnverifedEmail(): void
     {
         // Set useEmailAsUsername to true and add an unverified email.
         Craft::$app->getConfig()->getGeneral()->useEmailAsUsername = true;
@@ -124,7 +124,7 @@ class UsersTest extends TestCase
     /**
      * @throws Throwable
      */
-    public function testUserActivationEmailAsUsernameWithNoUnverifedEmail()
+    public function testUserActivationEmailAsUsernameWithNoUnverifedEmail(): void
     {
         // Run the same test as above but without an unverified email.
         Craft::$app->getConfig()->getGeneral()->useEmailAsUsername = true;
@@ -143,7 +143,7 @@ class UsersTest extends TestCase
     /**
      * @throws Throwable
      */
-    public function testUserUnlocking()
+    public function testUserUnlocking(): void
     {
         $this->users->unlockUser($this->lockedUser);
 
@@ -156,7 +156,7 @@ class UsersTest extends TestCase
     /**
      * @throws Throwable
      */
-    public function testUserSuspending()
+    public function testUserSuspending(): void
     {
         $this->users->suspendUser($this->activeUser);
 
@@ -167,7 +167,7 @@ class UsersTest extends TestCase
     /**
      * @throws Throwable
      */
-    public function testUserUnSuspending()
+    public function testUserUnSuspending(): void
     {
         $this->users->unsuspendUser($this->suspendedUser);
 
@@ -179,7 +179,7 @@ class UsersTest extends TestCase
      * @todo Monitor this one doesn't break on travis
      * @throws \Exception
      */
-    public function testSetVerificationCodeOnUser()
+    public function testSetVerificationCodeOnUser(): void
     {
         $verificationCode = $this->users->setVerificationCodeOnUser($this->pendingUser);
         $dateTime = new DateTime('now', new DateTimeZone('UTC'));
@@ -201,14 +201,14 @@ class UsersTest extends TestCase
     /**
      *
      */
-    public function testUserGroupAssignment()
+    public function testUserGroupAssignment(): void
     {
         // Need fancy Craft for this.
         Craft::$app->setEdition(Craft::Pro);
 
         $this->users->assignUserToGroups(
             $this->activeUser->id,
-            ['1000', '1001', '1002']
+            [1000, 1001, 1002]
         );
 
         $groups = $this->activeUser->getGroups();
@@ -218,14 +218,14 @@ class UsersTest extends TestCase
     /**
      * @throws ReflectionException
      */
-    public function testUserGroupAssignmentInvalidation()
+    public function testUserGroupAssignmentInvalidation(): void
     {
         // Need fancy Craft for this.
         Craft::$app->setEdition(Craft::Pro);
 
         $this->users->assignUserToGroups(
             $this->activeUser->id,
-            ['1000']
+            [1000]
         );
 
         $groups = $this->activeUser->getGroups();
@@ -236,7 +236,7 @@ class UsersTest extends TestCase
 
         $this->users->assignUserToGroups(
             $this->activeUser->id,
-            ['1001', '1002']
+            [1001, 1002]
         );
 
         // There should now be 2 - not three.
@@ -250,7 +250,7 @@ class UsersTest extends TestCase
      * @throws NotSupportedException
      * @throws ServerErrorHttpException
      */
-    public function testUserAssignmentToDefaultGroup()
+    public function testUserAssignmentToDefaultGroup(): void
     {
         Craft::$app->setEdition(Craft::Pro);
         Craft::$app->getProjectConfig()->set('users.defaultGroup', 'usergroup-1002-------------------uid');
@@ -265,7 +265,7 @@ class UsersTest extends TestCase
     /**
      * @throws \Exception
      */
-    public function testHandleInvalidLogin()
+    public function testHandleInvalidLogin(): void
     {
         $this->users->handleInvalidLogin($this->activeUser);
         $dateTime = new DateTime('now', new DateTimeZone('UTC'));
@@ -280,11 +280,11 @@ class UsersTest extends TestCase
     /**
      *
      */
-    public function testHandleInvalidLoginUserIpStore()
+    public function testHandleInvalidLoginUserIpStore(): void
     {
         Craft::$app->getConfig()->getGeneral()->storeUserIps = true;
         $this->tester->mockCraftMethods('request', [
-            'getUserIP' => '127.0.0.1'
+            'getUserIP' => '127.0.0.1',
         ]);
 
         $this->users->handleInvalidLogin($this->activeUser);
@@ -296,12 +296,12 @@ class UsersTest extends TestCase
     /**
      *
      */
-    public function testHandleInvalidLoginWithoutLimit()
+    public function testHandleInvalidLoginWithoutLimit(): void
     {
         Craft::$app->getConfig()->getGeneral()->maxInvalidLogins = false;
         Craft::$app->getConfig()->getGeneral()->storeUserIps = true;
         $this->tester->mockCraftMethods('request', [
-            'getUserIP' => '127.0.0.1'
+            'getUserIP' => '127.0.0.1',
         ]);
 
         $this->users->handleInvalidLogin($this->activeUser);
@@ -317,7 +317,7 @@ class UsersTest extends TestCase
     /**
      * @throws YiiDbException
      */
-    public function testHandleInvalidLoginWithMaxOutsideWindow()
+    public function testHandleInvalidLoginWithMaxOutsideWindow(): void
     {
         $dateTime = new DateTime('now', new DateTimeZone('UTC'));
 
@@ -339,7 +339,7 @@ class UsersTest extends TestCase
     /**
      * @throws YiiDbException
      */
-    public function testHandleInvalidLoginInsideWindow()
+    public function testHandleInvalidLoginInsideWindow(): void
     {
         $dateTime = new DateTime('now', new DateTimeZone('UTC'));
 
@@ -378,16 +378,16 @@ class UsersTest extends TestCase
                 'desiredClass' => User::class,
                 'desiredValue' => [
                     'id' => $this->activeUser->id,
-                    'locked' => true
-                ]
-            ]
+                    'locked' => true,
+                ],
+            ],
         ]));
     }
 
     /**
      * @throws \Exception
      */
-    public function testHandleValidLogin()
+    public function testHandleValidLogin(): void
     {
         $dateTime = new DateTime('now', new DateTimeZone('UTC'));
 
@@ -402,10 +402,10 @@ class UsersTest extends TestCase
     /**
      *
      */
-    public function testHandleValidLoginIpCollection()
+    public function testHandleValidLoginIpCollection(): void
     {
         $this->tester->mockCraftMethods('request', [
-            'getUserIP' => '127.0.0.1'
+            'getUserIP' => '127.0.0.1',
         ]);
 
         Craft::$app->getConfig()->getGeneral()->storeUserIps = true;
@@ -420,7 +420,7 @@ class UsersTest extends TestCase
     /**
      * @throws YiiDbException
      */
-    public function testHandleValidLoginClearsValues()
+    public function testHandleValidLoginClearsValues(): void
     {
         $this->updateUser([
             'invalidLoginWindowStart' => '2019-06-06 20:00:00',
@@ -435,7 +435,7 @@ class UsersTest extends TestCase
         self::assertNull($user['invalidLoginCount']);
     }
 
-    public function testIsVerificationCodeValidForUser()
+    public function testIsVerificationCodeValidForUser(): void
     {
         // Ensure password validation is irrelevant
         $this->ensurePasswordValidationReturns(true);
@@ -444,7 +444,7 @@ class UsersTest extends TestCase
         $this->updateUser([
             // The past.
             'verificationCodeIssuedDate' => '2018-06-06 20:00:00',
-            'verificationCode' => 'irrelevant_code'
+            'verificationCode' => 'irrelevant_code',
         ], ['id' => $this->activeUser->id]);
 
         self::assertFalse(
@@ -455,7 +455,7 @@ class UsersTest extends TestCase
         $this->updateUser([
             // The present.
             'verificationCodeIssuedDate' => Db::prepareDateForDb(new DateTime('now')),
-            'verificationCode' => 'irrelevant_code'
+            'verificationCode' => 'irrelevant_code',
         ], ['id' => $this->activeUser->id]);
 
         self::assertTrue(
@@ -463,11 +463,11 @@ class UsersTest extends TestCase
         );
     }
 
-    public function testSendActivationEmail()
+    public function testSendActivationEmail(): void
     {
         // Ensure we know what the unhashed code is - so we can compare against it later.
         $this->tester->mockCraftMethods('security', [
-            'generateRandomString' => $string = StringHelper::randomString(32)
+            'generateRandomString' => $string = StringHelper::randomString(32),
         ]);
 
         // Test send activation email with password null
@@ -520,7 +520,7 @@ class UsersTest extends TestCase
     protected function ensurePasswordValidationReturns(bool $result)
     {
         $this->tester->mockCraftMethods('security', [
-            'validatePassword' => $result
+            'validatePassword' => $result,
         ]);
     }
 
@@ -539,10 +539,10 @@ class UsersTest extends TestCase
     }
 
     /**
-     * @param int $userId
-     * @return array|bool
+     * @param int|null $userId
+     * @return array|null
      */
-    protected function getUserQuery(int $userId)
+    protected function getUserQuery(?int $userId): ?array
     {
         return (new Query())
             ->select('*')
@@ -555,7 +555,7 @@ class UsersTest extends TestCase
      * @param int|null $userId
      * @return User|null
      */
-    protected function getUser(int $userId)
+    protected function getUser(?int $userId): ?User
     {
         return Craft::$app->getUsers()->getUserById($userId);
     }
@@ -563,7 +563,7 @@ class UsersTest extends TestCase
     /**
      * @inheritdoc
      */
-    protected function _before()
+    protected function _before(): void
     {
         parent::_before();
 
@@ -576,24 +576,26 @@ class UsersTest extends TestCase
                 'username' => 'jsmith',
                 'unverifiedEmail' => 'jsmith@gmail.com',
                 'email' => 'jsmith@gmail.com',
-                'pending' => true
+                'pending' => true,
             ]
         );
 
         $this->lockedUser = new User(
             [
+                'active' => true,
                 'firstName' => 'locked',
                 'lastName' => 'user',
                 'username' => 'lockedUser',
                 'email' => 'locked@user.com',
                 'locked' => true,
                 'invalidLoginCount' => 2,
-                'lockoutDate' => Db::prepareDateForDb(new DateTime('now'))
+                'lockoutDate' => Db::prepareDateForDb(new DateTime('now')),
             ]
         );
 
         $this->activeUser = new User(
             [
+                'active' => true,
                 'firstName' => 'active',
                 'lastName' => 'user',
                 'username' => 'activeUser',
@@ -603,11 +605,12 @@ class UsersTest extends TestCase
 
         $this->suspendedUser = new User(
             [
+                'active' => true,
                 'firstName' => 'suspended',
                 'lastName' => 'user',
                 'username' => 'suspendedUser',
                 'email' => 'suspended@user.com',
-                'suspended' => true
+                'suspended' => true,
             ]
         );
 
@@ -620,7 +623,7 @@ class UsersTest extends TestCase
     /**
      * @inheritdoc
      */
-    public function _after()
+    protected function _after()
     {
         parent::_after();
 

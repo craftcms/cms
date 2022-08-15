@@ -40,7 +40,7 @@ abstract class Widget extends SavableComponent implements WidgetInterface
     /**
      * @inheritdoc
      */
-    public static function icon()
+    public static function icon(): ?string
     {
         return null;
     }
@@ -48,18 +48,7 @@ abstract class Widget extends SavableComponent implements WidgetInterface
     /**
      * @inheritdoc
      */
-    public static function maxColspan()
-    {
-        return null;
-    }
-
-    /**
-     * Returns the path to the widget’s SVG icon.
-     *
-     * @return string|null
-     * @deprecated in 3.2.0. Use [[icon()]] instead.
-     */
-    public static function iconPath()
+    public static function maxColspan(): ?int
     {
         return null;
     }
@@ -71,7 +60,7 @@ abstract class Widget extends SavableComponent implements WidgetInterface
     {
         $rules = parent::defineRules();
 
-        // Only validate the ID if it's not a new widget
+        // Only validate the ID if it’s not a new widget
         if (!$this->getIsNew()) {
             $rules[] = [['id'], 'number', 'integerOnly' => true];
         }
@@ -82,7 +71,7 @@ abstract class Widget extends SavableComponent implements WidgetInterface
     /**
      * @inheritdoc
      */
-    public function getTitle(): string
+    public function getTitle(): ?string
     {
         // Default to the widget's display name
         return static::displayName();
@@ -91,7 +80,7 @@ abstract class Widget extends SavableComponent implements WidgetInterface
     /**
      * @inheritdoc
      */
-    public function getSubtitle()
+    public function getSubtitle(): ?string
     {
         return null;
     }
@@ -99,13 +88,13 @@ abstract class Widget extends SavableComponent implements WidgetInterface
     /**
      * @inheritdoc
      */
-    public function getBodyHtml()
+    public function getBodyHtml(): ?string
     {
         $url = Craft::$app->getAssetManager()->getPublishedUrl('@app/web/assets/cp/dist', true, 'images/prg.jpg');
 
         return <<<EOD
 <div style="margin: 0 -24px -24px;">
-    <img style="display: block; width: 100%; border-radius: 0 0 4px 4px" src="{$url}">
+    <img style="display: block; width: 100%; border-radius: 0 0 4px 4px" src="$url">
 </div>
 EOD;
     }

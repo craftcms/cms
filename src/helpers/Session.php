@@ -24,7 +24,7 @@ class Session
      * @param string $key the session variable name
      * @return mixed the session variable value, or `null` if it doesn’t exist
      */
-    public static function get(string $key)
+    public static function get(string $key): mixed
     {
         if (!static::exists()) {
             return null;
@@ -39,9 +39,8 @@ class Session
      *
      * @param string $key the session variable name
      * @param mixed $value the session variable value
-     * @return void
      */
-    public static function set(string $key, $value): void
+    public static function set(string $key, mixed $value): void
     {
         self::session()->set($key, $value);
     }
@@ -52,7 +51,7 @@ class Session
      * @param string $key the session variable name
      * @return mixed the old value, or `null` if it didn’t exist
      */
-    public static function remove(string $key)
+    public static function remove(string $key): mixed
     {
         if (!static::exists()) {
             return null;
@@ -63,7 +62,6 @@ class Session
     /**
      * Removes all session variables.
      *
-     * @return void
      */
     public static function removeAll(): void
     {
@@ -112,21 +110,21 @@ class Session
     }
 
     /**
-     * @var YiiSession
+     * @var YiiSession|null
      */
-    private static $_session;
+    private static ?YiiSession $_session = null;
 
     /**
      * @var bool
      */
-    private static $_exists = false;
+    private static bool $_exists = false;
 
     /**
      * Resets the memoized database connection.
      *
      * @since 3.5.12.1
      */
-    public static function reset()
+    public static function reset(): void
     {
         self::$_session = null;
         self::$_exists = false;

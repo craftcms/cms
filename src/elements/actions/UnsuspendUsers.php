@@ -11,6 +11,7 @@ use Craft;
 use craft\base\ElementAction;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\User;
+use Throwable;
 
 /**
  * UnsuspendUsers represents an Unsuspend Users element action.
@@ -31,7 +32,7 @@ class UnsuspendUsers extends ElementAction
     /**
      * @inheritdoc
      */
-    public function getTriggerHtml()
+    public function getTriggerHtml(): ?string
     {
         Craft::$app->getView()->registerJsWithVars(function($type) {
             return <<<JS
@@ -77,13 +78,13 @@ JS;
         $successCount = count(array_filter($users, function(User $user) use ($usersService, $currentUser) {
             try {
                 return $usersService->canSuspend($currentUser, $user) && $usersService->unsuspendUser($user);
-            } catch (\Throwable $e) {
+            } catch (Throwable) {
                 return false;
             }
         }));
 
         if ($successCount !== count($users)) {
-            $this->setMessage(Craft::t('app', 'Could not unsuspend all users.'));
+            $this->setMessage(Craft::t('app', 'Couldn’t unsuspend all users.'));
             return false;
         }
 

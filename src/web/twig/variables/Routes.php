@@ -9,7 +9,7 @@ namespace craft\web\twig\variables;
 
 use Craft;
 use craft\helpers\Html;
-use craft\services\Routes as RoutesService;
+use craft\services\ProjectConfig;
 
 /**
  * Route functions.
@@ -29,7 +29,7 @@ class Routes
         $routes = [];
         $sortOrders = [];
 
-        $results = Craft::$app->getProjectConfig()->get(RoutesService::CONFIG_ROUTES_KEY) ?? [];
+        $results = Craft::$app->getProjectConfig()->get(ProjectConfig::PATH_ROUTES) ?? [];
 
         foreach ($results as $routeUid => $route) {
             $uriDisplayHtml = '';

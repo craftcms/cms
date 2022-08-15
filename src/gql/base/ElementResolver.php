@@ -16,6 +16,7 @@ use craft\gql\ArgumentManager;
 use craft\gql\ElementQueryConditionBuilder;
 use craft\helpers\Gql as GqlHelper;
 use GraphQL\Type\Definition\ResolveInfo;
+use Illuminate\Support\Collection;
 
 /**
  * Class ElementResolver
@@ -28,13 +29,13 @@ abstract class ElementResolver extends Resolver
     /**
      * Resolve an element query to a single result.
      *
-     * @param $source
+     * @param mixed $source
      * @param array $arguments
-     * @param $context
+     * @param mixed $context
      * @param ResolveInfo $resolveInfo
-     * @return ElementInterface|null|mixed
+     * @return mixed
      */
-    public static function resolveOne($source, array $arguments, $context, ResolveInfo $resolveInfo)
+    public static function resolveOne(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): mixed
     {
         $query = self::prepareElementQuery($source, $arguments, $context, $resolveInfo);
         $value = $query instanceof ElementQuery ? $query->one() : $query;
@@ -44,7 +45,7 @@ abstract class ElementResolver extends Resolver
     /**
      * @inheritdoc
      */
-    public static function resolve($source, array $arguments, $context, ResolveInfo $resolveInfo)
+    public static function resolve(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): mixed
     {
         $query = self::prepareElementQuery($source, $arguments, $context, $resolveInfo);
         $value = $query instanceof ElementQuery ? $query->all() : $query;
@@ -54,13 +55,13 @@ abstract class ElementResolver extends Resolver
     /**
      * Resolve an element query to a total count of elements.
      *
-     * @param $source
+     * @param mixed $source
      * @param array $arguments
-     * @param $context
+     * @param array|null $context
      * @param ResolveInfo $resolveInfo
-     * @return ElementInterface|null|mixed
+     * @return mixed
      */
-    public static function resolveCount($source, array $arguments, $context, ResolveInfo $resolveInfo)
+    public static function resolveCount(mixed $source, array $arguments, ?array $context, ResolveInfo $resolveInfo): mixed
     {
         $query = self::prepareElementQuery($source, $arguments, $context, $resolveInfo);
         return $query->count();
@@ -69,13 +70,13 @@ abstract class ElementResolver extends Resolver
     /**
      * Prepare an element query for given resolution argument set.
      *
-     * @param $source
+     * @param mixed $source
      * @param array $arguments
-     * @param $context
+     * @param array|null $context
      * @param ResolveInfo $resolveInfo
-     * @return ElementQuery|array
+     * @return ElementQuery|Collection
      */
-    protected static function prepareElementQuery($source, array $arguments, $context, ResolveInfo $resolveInfo)
+    protected static function prepareElementQuery(mixed $source, array $arguments, ?array $context, ResolveInfo $resolveInfo): ElementQuery|Collection
     {
         /** @var ArgumentManager $argumentManager */
         $argumentManager = empty($context['argumentManager']) ? Craft::createObject(['class' => ArgumentManager::class]) : $context['argumentManager'];
@@ -83,10 +84,11 @@ abstract class ElementResolver extends Resolver
 
         $fieldName = GqlHelper::getFieldNameWithAlias($resolveInfo, $source, $context);
 
+        /** @var ElementQuery $query */
         $query = static::prepareQuery($source, $arguments, $fieldName);
 
         // If that's already preloaded, then, uhh, skip the preloading?
-        if (is_array($query)) {
+        if (!$query instanceof ElementQuery) {
             return $query;
         }
 
@@ -97,7 +99,7 @@ abstract class ElementResolver extends Resolver
             $field = Craft::$app->getFields()->getFieldByHandle($fieldName, $fieldContext);
 
             // This will happen if something is either dynamically added or is inside an block element that didn't support eager-loading
-            // and broke the eager-loading chain. In this case Craft has to provide the relevant context so the condition builder knows where it's at.
+            // and broke the eager-loading chain. In this case Craft has to provide the relevant context so the condition knows where it's at.
             if (($fieldContext !== 'global' && $field instanceof GqlInlineFragmentFieldInterface) || $field instanceof EagerLoadingFieldInterface) {
                 $parentField = $field;
             }
@@ -110,7 +112,6 @@ abstract class ElementResolver extends Resolver
 
         $conditions = $conditionBuilder->extractQueryConditions($parentField);
 
-        /** @var ElementQuery $query */
         foreach ($conditions as $method => $parameters) {
             if (method_exists($query, $method)) {
                 $query = $query->{$method}($parameters);
@@ -138,9 +139,8 @@ abstract class ElementResolver extends Resolver
      *
      * @param mixed $source The source. Null if top-level field being resolved.
      * @param array $arguments Arguments to apply to the query.
-     * @param null $fieldName Field name to resolve on the source, if not a top-level resolution.
-     *
+     * @param string|null $fieldName Field name to resolve on the source, if not a top-level resolution.
      * @return mixed
      */
-    abstract protected static function prepareQuery($source, array $arguments, $fieldName = null);
+    abstract protected static function prepareQuery(mixed $source, array $arguments, ?string $fieldName = null): mixed;
 }

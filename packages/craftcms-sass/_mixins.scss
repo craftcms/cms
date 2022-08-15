@@ -15,71 +15,71 @@ $grey800: hsl(209, 20%, 25%);
 $grey900: hsl(210, 24%, 16%);
 $grey1000: hsl(210, 24%, 10%);
 
-$blue050: #E3F8FF;
-$blue100: #B3ECFF;
-$blue200: #81DEFD;
-$blue300: #5ED0FA;
-$blue400: #40C3F7;
-$blue500: #2BB0ED;
-$blue600: #1992D4;
-$blue700: #127FBF;
-$blue800: #0B69A3;
+$blue050: #e3f8ff;
+$blue100: #b3ecff;
+$blue200: #81defd;
+$blue300: #5ed0fa;
+$blue400: #40c3f7;
+$blue500: #2bb0ed;
+$blue600: #1992d4;
+$blue700: #127fbf;
+$blue800: #0b69a3;
 $blue900: #035388;
 
-$cyan050: #E0FCFF;
-$cyan100: #BEF8FD;
-$cyan200: #87EAF2;
-$cyan300: #54D1DB;
-$cyan400: #38BEC9;
-$cyan500: #2CB1BC;
-$cyan600: #14919B;
-$cyan700: #0E7C86;
-$cyan800: #0A6C74;
-$cyan900: #044E54;
+$cyan050: #e0fcff;
+$cyan100: #bef8fd;
+$cyan200: #87eaf2;
+$cyan300: #54d1db;
+$cyan400: #38bec9;
+$cyan500: #2cb1bc;
+$cyan600: #14919b;
+$cyan700: #0e7c86;
+$cyan800: #0a6c74;
+$cyan900: #044e54;
 
-$pink050: #FFE3EC;
-$pink100: #FFB8D2;
-$pink200: #FF8CBA;
-$pink300: #F364A2;
-$pink400: #E8368F;
-$pink500: #DA127D;
-$pink600: #BC0A6F;
-$pink700: #A30664;
+$pink050: #ffe3ec;
+$pink100: #ffb8d2;
+$pink200: #ff8cba;
+$pink300: #f364a2;
+$pink400: #e8368f;
+$pink500: #da127d;
+$pink600: #bc0a6f;
+$pink700: #a30664;
 $pink800: #870557;
 $pink900: #620042;
 
-$red050: #FFE3E3;
-$red100: #FFBDBD;
-$red200: #FF9B9B;
-$red300: #F86A6A;
-$red400: #EF4E4E;
-$red500: #E12D39;
-$red600: #CF1124;
-$red700: #AB091E;
-$red800: #8A041A;
+$red050: #ffe3e3;
+$red100: #ffbdbd;
+$red200: #ff9b9b;
+$red300: #f86a6a;
+$red400: #ef4e4e;
+$red500: #e12d39;
+$red600: #cf1124;
+$red700: #ab091e;
+$red800: #8a041a;
 $red900: #610316;
 
-$yellow050: #FFFBEA;
-$yellow100: #FFF3C4;
-$yellow200: #FCE588;
-$yellow300: #FADB5F;
-$yellow400: #F7C948;
-$yellow500: #F0B429;
-$yellow600: #DE911D;
-$yellow700: #CB6E17;
-$yellow800: #B44D12;
-$yellow900: #8D2B0B;
+$yellow050: #fffbea;
+$yellow100: #fff3c4;
+$yellow200: #fce588;
+$yellow300: #fadb5f;
+$yellow400: #f7c948;
+$yellow500: #f0b429;
+$yellow600: #de911d;
+$yellow700: #cb6e17;
+$yellow800: #b44d12;
+$yellow900: #8d2b0b;
 
-$teal050: #EFFCF6;
-$teal100: #C6F7E2;
-$teal200: #8EEDC7;
-$teal300: #65D6AD;
-$teal400: #3EBD93;
-$teal500: #27AB83;
+$teal050: #effcf6;
+$teal100: #c6f7e2;
+$teal200: #8eedc7;
+$teal300: #65d6ad;
+$teal400: #3ebd93;
+$teal500: #27ab83;
 $teal600: #199473;
-$teal700: #147D64;
-$teal800: #0C6B58;
-$teal900: #014D40;
+$teal700: #147d64;
+$teal800: #0c6b58;
+$teal900: #014d40;
 
 // submit button colors
 $primaryColor: $red500;
@@ -92,12 +92,12 @@ $textColor: $grey700;
 $mediumDarkTextColor: $grey550;
 $mediumTextColor: $grey550;
 $lightTextColor: $grey500;
-$linkColor: $blue800;
+$linkColor: #2563eb;
 
 // menu colors
 $menuOptionColor: $textColor;
 $menuOptionActiveColor: $white;
-$menuOptionActiveBackgroundColor: $grey350;
+$menuOptionActiveBackgroundColor: $grey500;
 
 // hairline colors
 $hairlineColor: transparentize($grey800, 0.9);
@@ -107,12 +107,15 @@ $darkHairlineColor: transparentize($grey400, 0.5);
 // focus colors
 $lightFocusColor: $blue300;
 $mediumFocusColor: $blue500;
-$darkFocusColor: #0F74B1;
+$darkFocusColor: #0f74b1;
 
 // focus rings
-$lightFocusRing: 0 0 0 1px $lightFocusColor, 0 0 0 3px transparentize($lightFocusColor, 0.3);
-$mediumFocusRing: 0 0 0 1px $mediumFocusColor, 0 0 0 3px transparentize($mediumFocusColor, 0.3);
-$darkFocusRing: 0 0 0 1px $darkFocusColor, 0 0 0 3px transparentize($darkFocusColor, 0.3);
+$lightFocusRing: 0 0 0 1px $lightFocusColor,
+  0 0 0 3px transparentize($lightFocusColor, 0.3);
+$mediumFocusRing: 0 0 0 1px $mediumFocusColor,
+  0 0 0 3px transparentize($mediumFocusColor, 0.3);
+$darkFocusRing: 0 0 0 1px $darkFocusColor,
+  0 0 0 3px transparentize($darkFocusColor, 0.3);
 
 // selection colors
 $lightSelColor: $grey200;
@@ -134,33 +137,68 @@ $checkboxSize: 16px;
 $radioSize: 16px;
 
 @mixin sans-serif-font {
-  font-family: system-ui, BlinkMacSystemFont, -apple-system, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  font-family: system-ui, BlinkMacSystemFont, -apple-system, 'Segoe UI',
+    'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans',
+    'Helvetica Neue', sans-serif;
 }
 
 @mixin fixed-width-font {
-  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, Courier,
+    monospace;
   font-size: 0.9em !important;
+}
+
+@function toRem($values...) {
+  $max: length($values);
+  $remValues: '';
+
+  @for $i from 1 through $max {
+    $remValues: #{$remValues + calc(nth($values, $i) / 16)}rem;
+
+    @if $i < $max {
+      $remValues: #{$remValues + ' '};
+    }
+  }
+
+  @return $remValues;
+}
+
+@mixin fontSize($size) {
+  font-size: toRem($size);
 }
 
 // Other
 
+@mixin focus-styles {
+  body:not(.reduce-focus-visibility) &:focus,
+  body.reduce-focus-visibility &.focus-visible {
+    @content;
+  }
+}
+
 @mixin svg-mask($color) {
-  rect, circle, ellipse, line, polyline, polygon, path, text {
+  rect,
+  circle,
+  ellipse,
+  line,
+  polyline,
+  polygon,
+  path,
+  text {
     fill: $color;
     stroke-width: 0;
-    transition: fill linear 100ms;
   }
 }
 
 @mixin icon {
   font-family: 'Craft';
   speak: none;
-  -webkit-font-feature-settings: "liga", "dlig";
-  -moz-font-feature-settings: "liga=1, dlig=1";
-  -moz-font-feature-settings: "liga", "dlig";
-  -ms-font-feature-settings: "liga", "dlig";
-  -o-font-feature-settings: "liga", "dlig";
-  font-feature-settings: "liga", "dlig";
+  -webkit-font-feature-settings: 'liga', 'dlig';
+  -moz-font-feature-settings: 'liga=1, dlig=1';
+  -moz-font-feature-settings: 'liga', 'dlig';
+  -ms-font-feature-settings: 'liga', 'dlig';
+  -o-font-feature-settings: 'liga', 'dlig';
+  font-feature-settings: 'liga', 'dlig';
   text-rendering: optimizeLegibility;
   font-weight: normal;
   font-variant: normal;
@@ -177,17 +215,18 @@ $radioSize: 16px;
   word-wrap: normal !important;
   user-select: none;
 
-  opacity: 0.8;
+  opacity: var(--icon-opacity);
 }
 
-@mixin angle($dir: down, $color: var(--ui-control-color)) {
+@mixin angle($dir: down, $color: currentColor, $width: 2px) {
   display: block;
   content: '';
   font-size: 0;
-  width: 5px;
-  height: 5px;
+  width: 7px;
+  height: 7px;
   border: solid $color;
-  border-width: 0 2px 2px 0;
+  border-width: 0 $width $width 0;
+  opacity: 0.8;
 
   @if $dir == up {
     transform: rotate(225deg);
@@ -243,6 +282,25 @@ $radioSize: 16px;
   -moz-osx-font-smoothing: grayscale;
   -webkit-font-smoothing: antialiased;
   font-weight: 500;
+}
+
+@mixin light-focus-ring() {
+  --focus-ring: 0 0 0 1px hsl(var(--light-focus-hsl)),
+    0 0 0 3px hsla(var(--light-focus-hsl), 0.7);
+}
+
+@mixin two-color-focus-ring($light-button: true) {
+  // Creates a two-color focus ring, with a white
+  // If button is light, the dark box shadow is adjacent to the button
+  // Else the light box shadow is adjacent to the button
+  --light-color: var(--white);
+  --dark-color: var(--gray-800);
+
+  @if $light-button {
+    --focus-ring: 0 0 0 3px var(--dark-color), 0 0 0 6px var(--light-color);
+  } @else {
+    --focus-ring: 0 0 0 3px var(--light-color), 0 0 0 6px var(--dark-color);
+  }
 }
 
 // RTL stuff
@@ -466,7 +524,7 @@ $radioSize: 16px;
 }
 
 @mixin header-btn {
-  width: 34px;
+  width: 30px;
   height: 30px;
   padding-left: 0;
   padding-right: 0;
@@ -481,22 +539,24 @@ $radioSize: 16px;
 
 @mixin h6-styles {
   margin: 14px 0 3px;
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1.2;
   color: $lightTextColor;
   text-transform: uppercase;
-  font-weight: bold;
 }
 
 @mixin token-styles {
   display: inline-block;
-  border-radius: 10px;
-  padding: 2px 7px;
+  border-radius: $smallBorderRadius;
+  padding: 3px 7px;
   font-size: 12px;
   line-height: 14px;
   color: $textColor;
-  background-color: transparentize($white, 0.5);
-  box-shadow: 0 0 0 1px $darkHairlineColor;
+  background-color: $grey100;
+}
+
+@mixin active-token-styles {
+  background-color: $grey200;
 }
 
 @mixin menu-styles {
@@ -506,7 +566,8 @@ $radioSize: 16px;
   overflow: auto;
   background: $white;
   user-select: none;
-  box-shadow: 0 0 0 1px transparentize($grey900, 0.9), 0 5px 20px transparentize($grey900, 0.75);
+  box-shadow: 0 0 0 1px transparentize($grey900, 0.9),
+    0 5px 20px transparentize($grey900, 0.75);
 }
 
 @mixin menu-option-styles {
@@ -535,32 +596,37 @@ $radioSize: 16px;
 }
 
 @mixin input-focused-styles {
-  border-color: hsl(var(--focus-hsl));
-  box-shadow: 0 0 0 2px hsla(var(--focus-hsl), 0.7);
+  box-shadow: var(--focus-ring);
 }
 
 @mixin placeholder-styles($color) {
-  ::-webkit-input-placeholder {
+  input::-webkit-input-placeholder,
+  textarea::-webkit-input-placeholder {
     color: $color;
   }
 
-  input:-ms-input-placeholder {
+  input:-ms-input-placeholder,
+  textarea:-ms-input-placeholder {
     color: $color;
   }
 
-  ::-ms-input-placeholder {
+  input::-ms-input-placeholder,
+  textarea::-ms-input-placeholder {
     color: $color;
   }
 
-  :-moz-placeholder {
+  input:-moz-placeholder,
+  textarea:-moz-placeholder {
     color: $color;
   }
 
-  ::-moz-placeholder {
+  input::-moz-placeholder,
+  textarea::-moz-placeholder {
     color: $color;
   }
 
-  ::placeholder {
+  input::placeholder,
+  textarea::placeholder {
     color: $color;
   }
 }
@@ -598,7 +664,7 @@ $radioSize: 16px;
   font-size: 14px;
   line-height: 20px;
   color: $textColor;
-  background-color: transparentize($inputColor, 0.75);
+  background-color: hsl(212, 25%, 90%);
   appearance: none;
   // from https://stackoverflow.com/a/15933790/1688568
   &::-ms-expand {
@@ -612,15 +678,36 @@ $radioSize: 16px;
 
 @mixin select-input-focused-styles {
   outline-color: transparent;
-  background-color: transparentize($inputColor, 0.6);
+  background-color: hsl(212, 25%, 85%);
   box-shadow: var(--focus-ring);
+}
+
+@mixin touch-target {
+  height: var(--touch-target-size);
+  width: var(--touch-target-size);
+}
+
+@mixin visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
 }
 
 @mixin readable {
   font-size: 16px;
   line-height: 22px;
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     margin: 24px 0 16px;
     font-weight: 600;
   }

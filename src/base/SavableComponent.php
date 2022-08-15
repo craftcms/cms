@@ -26,36 +26,36 @@ abstract class SavableComponent extends ConfigurableComponent implements Savable
      *
      * You may set [[\yii\base\ModelEvent::$isValid]] to `false` to prevent the component from getting saved.
      */
-    const EVENT_BEFORE_SAVE = 'beforeSave';
+    public const EVENT_BEFORE_SAVE = 'beforeSave';
 
     /**
      * @event ModelEvent The event that is triggered after the component is saved.
      */
-    const EVENT_AFTER_SAVE = 'afterSave';
+    public const EVENT_AFTER_SAVE = 'afterSave';
 
     /**
      * @event ModelEvent The event that is triggered before the component is deleted.
      *
      * You may set [[\yii\base\ModelEvent::$isValid]] to `false` to prevent the component from getting deleted.
      */
-    const EVENT_BEFORE_DELETE = 'beforeDelete';
+    public const EVENT_BEFORE_DELETE = 'beforeDelete';
 
     /**
      * @event ModelEvent The event that is triggered before the delete is applied to the database.
      */
-    const EVENT_BEFORE_APPLY_DELETE = 'beforeApplyDelete';
+    public const EVENT_BEFORE_APPLY_DELETE = 'beforeApplyDelete';
 
     /**
      * @event \yii\base\Event The event that is triggered after the component is deleted.
      */
-    const EVENT_AFTER_DELETE = 'afterDelete';
+    public const EVENT_AFTER_DELETE = 'afterDelete';
 
     /**
      * @inheritdoc
      */
     public function getIsNew(): bool
     {
-        return (!$this->id || strpos($this->id, 'new') === 0);
+        return (!$this->id || str_starts_with($this->id, 'new'));
     }
 
     // Events
@@ -78,7 +78,7 @@ abstract class SavableComponent extends ConfigurableComponent implements Savable
     /**
      * @inheritdoc
      */
-    public function afterSave(bool $isNew)
+    public function afterSave(bool $isNew): void
     {
         // Trigger an 'afterSave' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE)) {
@@ -103,7 +103,7 @@ abstract class SavableComponent extends ConfigurableComponent implements Savable
     /**
      * @inheritdoc
      */
-    public function beforeApplyDelete()
+    public function beforeApplyDelete(): void
     {
         // Trigger an 'beforeApplyDelete' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_APPLY_DELETE)) {
@@ -114,7 +114,7 @@ abstract class SavableComponent extends ConfigurableComponent implements Savable
     /**
      * @inheritdoc
      */
-    public function afterDelete()
+    public function afterDelete(): void
     {
         // Trigger an 'afterDelete' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_DELETE)) {

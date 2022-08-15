@@ -20,10 +20,10 @@ class DefineGqlTypeFieldsEvent extends Event
     /**
      * @var array List of fields being defined for a GraphQL Type.
      */
-    public $fields = [];
+    public array $fields = [];
 
     /**
      * @var string The name of the GraphQL Type being defined.
      */
-    public $typeName;
+    public string $typeName;
 }

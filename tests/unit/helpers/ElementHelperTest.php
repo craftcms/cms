@@ -1,21 +1,19 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace crafttests\unit\helpers;
 
 use Codeception\Stub;
-use Codeception\Test\Unit;
 use Craft;
 use craft\db\Command;
-use craft\elements\Asset;
 use craft\errors\OperationAbortedException;
 use craft\helpers\ElementHelper;
 use craft\test\mockclasses\elements\ExampleElement;
-use craft\test\mockclasses\elements\MockElementQuery;
+use craft\test\TestCase;
 use crafttests\fixtures\EntryFixture;
 use Exception;
 use UnitTester;
@@ -27,31 +25,30 @@ use UnitTester;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class ElementHelperTest extends Unit
+class ElementHelperTest extends TestCase
 {
     /**
      * @var UnitTester
      */
-    protected $tester;
+    protected UnitTester $tester;
 
     public function _fixtures(): array
     {
         return [
             'entries' => [
-                'class' => EntryFixture::class
-            ]
+                'class' => EntryFixture::class,
+            ],
         ];
     }
 
     /**
      * @dataProvider generateSlugDataProvider
-     *
      * @param string $expected
      * @param string $input
      * @param bool|null $ascii
      * @param string|null $language
      */
-    public function testGenerateSlug(string $expected, string $input, ?bool $ascii = null, ?string $language = null)
+    public function testGenerateSlug(string $expected, string $input, ?bool $ascii = null, ?string $language = null): void
     {
         $glue = Craft::$app->getConfig()->getGeneral()->slugWordSeparator;
         $expected = str_replace('[separator-here]', $glue, $expected);
@@ -61,11 +58,10 @@ class ElementHelperTest extends Unit
 
     /**
      * @dataProvider normalizeSlugDataProvider
-     *
      * @param string $expected
      * @param string $slug
      */
-    public function testNormalizeSlug(string $expected, string $slug)
+    public function testNormalizeSlug(string $expected, string $slug): void
     {
         $glue = Craft::$app->getConfig()->getGeneral()->slugWordSeparator;
         $expected = str_replace('[separator-here]', $glue, $expected);
@@ -76,37 +72,35 @@ class ElementHelperTest extends Unit
     /**
      *
      */
-    public function testLowerRemoveFromCreateSlug()
+    public function testLowerRemoveFromCreateSlug(): void
     {
         $general = Craft::$app->getConfig()->getGeneral();
         $general->allowUppercaseInSlug = false;
 
-        self::assertSame('word' . $general->slugWordSeparator . 'word', ElementHelper::createSlug('word WORD'));
+        self::assertSame('word' . $general->slugWordSeparator . 'word', ElementHelper::normalizeSlug('word WORD'));
     }
 
     /**
      * @dataProvider doesUriHaveSlugTagDataProvider
-     *
      * @param bool $expected
      * @param string $uriFormat
      */
-    public function testDoesUriFormatHaveSlugTag(bool $expected, string $uriFormat)
+    public function testDoesUriFormatHaveSlugTag(bool $expected, string $uriFormat): void
     {
         self::assertSame($expected, ElementHelper::doesUriFormatHaveSlugTag($uriFormat));
     }
 
     /**
      * @dataProvider setUniqueUriDataProvider
-     *
      * @param array $expected
      * @param array $config
      * @param int $duplicates
      * @throws OperationAbortedException
      */
-    public function testSetUniqueUri(array $expected, array $config, int $duplicates = 0)
+    public function testSetUniqueUri(array $expected, array $config, int $duplicates = 0): void
     {
         if ($duplicates) {
-            $db = \Craft::$app->getDb();
+            $db = Craft::$app->getDb();
             $this->tester->mockDbMethods([
                 'createCommand' => function($sql, $params) use (&$duplicates, &$db) {
                     /* @var Command $command */
@@ -119,12 +113,12 @@ class ElementHelperTest extends Unit
                     ]);
                     $command->bindValues($params);
                     return $command;
-                }
+                },
             ]);
         }
 
         $example = new ExampleElement($config);
-        self::assertNull(ElementHelper::setUniqueUri($example));
+        ElementHelper::setUniqueUri($example);
 
         foreach ($expected as $key => $res) {
             self::assertSame($res, $example->$key);
@@ -134,7 +128,7 @@ class ElementHelperTest extends Unit
     /**
      *
      */
-    public function testMaxSlugIncrementDoesntThrow()
+    public function testMaxSlugIncrementDoesntThrow(): void
     {
         $oldValue = Craft::$app->getConfig()->getGeneral()->maxSlugIncrement;
         Craft::$app->getConfig()->getGeneral()->maxSlugIncrement = 0;
@@ -151,16 +145,16 @@ class ElementHelperTest extends Unit
     /**
      *
      */
-    public function testMaxLength()
+    public function testMaxLength(): void
     {
         try {
             $el = new ExampleElement([
                 'uriFormat' => 'test/{slug}',
-                'slug' => 'asdsadsadaasdasdadssssssssssssssssssssssssssssssssssssssssssssssadsasdsdaadsadsasddasadsdasasasdsadsadaasdasdadssssssssssssssssssssssssssssssssssssssssssssssadsasdsdaadsadsasddasadsdasasasdsadsadaasdasdadsssssssssssssssssssssssssssssssssssssssss22ssss'
+                'slug' => 'asdsadsadaasdasdadssssssssssssssssssssssssssssssssssssssssssssssadsasdsdaadsadsasddasadsdasasasdsadsadaasdasdadssssssssssssssssssssssssssssssssssssssssssssssadsasdsdaadsadsasddasadsdasasasdsadsadaasdasdadsssssssssssssssssssssssssssssssssssssssss22ssss',
             ]);
             ElementHelper::setUniqueUri($el);
             $result = true;
-        } catch (Exception $exception) {
+        } catch (Exception) {
             $result = false;
         }
 
@@ -170,12 +164,12 @@ class ElementHelperTest extends Unit
     /**
      *
      */
-    public function testSetNextOnPrevElement()
+    public function testSetNextOnPrevElement(): void
     {
         $editable = [
             $one = new ExampleElement(['id' => '1']),
             $two = new ExampleElement(['id' => '2']),
-            $three = new ExampleElement(['id' => '3'])
+            $three = new ExampleElement(['id' => '3']),
         ];
 
         ElementHelper::setNextPrevOnElements($editable);
@@ -191,7 +185,7 @@ class ElementHelperTest extends Unit
     /**
      * @dataProvider rootSourceDataProvider
      */
-    public function testRootSource(string $expected, string $sourceKey)
+    public function testRootSource(string $expected, string $sourceKey): void
     {
         $this->assertEquals($expected, ElementHelper::rootSourceKey($sourceKey));
     }

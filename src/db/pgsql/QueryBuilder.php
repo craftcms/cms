@@ -53,7 +53,7 @@ class QueryBuilder extends \yii\db\pgsql\QueryBuilder
      * They should be bound to the DB command later.
      * @return string The SQL statement for replacing some text in a given table.
      */
-    public function replace(string $table, string $column, string $find, string $replace, $condition, array &$params): string
+    public function replace(string $table, string $column, string $find, string $replace, array|string $condition, array &$params): string
     {
         $column = $this->db->quoteColumnName($column);
 
@@ -87,10 +87,10 @@ class QueryBuilder extends \yii\db\pgsql\QueryBuilder
         $key = -1;
 
         foreach ($values as $key => $value) {
-            $sql .= ' WHEN ' . $schema->quoteColumnName($column) . '=' . $schema->quoteValue($value) . ' THEN ' . $schema->quoteValue($key);
+            $sql .= sprintf(' WHEN %s=%s THEN %s', $schema->quoteColumnName($column), $schema->quoteValue($value), $schema->quoteValue($key));
         }
 
-        $sql .= ' ELSE ' . $schema->quoteValue($key + 1) . ' END';
+        $sql .= sprintf(' ELSE %s END', $schema->quoteValue((string)($key + 1)));
 
         return $sql;
     }

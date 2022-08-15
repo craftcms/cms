@@ -20,5 +20,5 @@ class DefineFieldsEvent extends Event
     /**
      * @var array The arrayable fields
      */
-    public $fields = [];
+    public array $fields = [];
 }

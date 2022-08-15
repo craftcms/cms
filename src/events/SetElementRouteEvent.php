@@ -20,5 +20,5 @@ class SetElementRouteEvent extends Event
     /**
      * @var mixed The route that should be used for the element, or `null` if no special action should be taken
      */
-    public $route;
+    public mixed $route = null;
 }

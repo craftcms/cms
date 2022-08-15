@@ -8,11 +8,14 @@
 namespace craft\helpers;
 
 use Craft;
+use HTMLPurifier_Config;
+use IteratorAggregate;
 use Normalizer;
 use Stringy\Stringy as BaseStringy;
 use voku\helper\ASCII;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
+use const ENT_COMPAT;
 
 /**
  * This helper class provides various multi-byte aware string related manipulation and encoding methods.
@@ -22,18 +25,18 @@ use yii\base\InvalidConfigException;
  */
 class StringHelper extends \yii\helpers\StringHelper
 {
-    const UTF8 = 'UTF-8';
+    public const UTF8 = 'UTF-8';
 
     /**
      * @since 3.0.37
      */
-    const UUID_PATTERN = '[A-Za-z0-9]{8}-[A-Za-z0-9]{4}-4[A-Za-z0-9]{3}-[89abAB][A-Za-z0-9]{3}-[A-Za-z0-9]{12}';
+    public const UUID_PATTERN = '[A-Za-z0-9]{8}-[A-Za-z0-9]{4}-4[A-Za-z0-9]{3}-[89abAB][A-Za-z0-9]{3}-[A-Za-z0-9]{12}';
 
     /**
      * @var array Character mappings
      * @see asciiCharMap()
      */
-    private static $_asciiCharMaps;
+    private static array $_asciiCharMaps;
 
     /**
      * Gets the substring after the first occurrence of a separator.
@@ -107,14 +110,14 @@ class StringHelper extends \yii\helpers\StringHelper
      * @return string The newly appended string.
      * @since 3.3.0
      */
-    public static function appendUniqueIdentifier(string $str, $entropyExtra = '', bool $md5 = true): string
+    public static function appendUniqueIdentifier(string $str, string $entropyExtra = '', bool $md5 = true): string
     {
         return (string)BaseStringy::create($str)->appendUniqueIdentifier($entropyExtra, $md5);
     }
 
     /**
      * Returns ASCII character mappings, merging in any custom defined mappings
-     * from the <config3:customAsciiCharMappings> config setting.
+     * from the <config4:customAsciiCharMappings> config setting.
      *
      * @param bool $flat Whether the mappings should be returned as a flat array (é => e)
      * @param string|null $language Whether to include language-specific mappings (only applied if $flat is true)
@@ -129,6 +132,7 @@ class StringHelper extends \yii\helpers\StringHelper
 
         $map = ASCII::charsArrayWithSingleLanguageValues(false, false);
         if ($language !== null) {
+            /** @var ASCII::*_LANGUAGE_CODE $language */
             $langSpecific = ASCII::charsArrayWithOneLanguage($language, false, false);
             if ($langSpecific !== []) {
                 $map = array_merge($map, $langSpecific);
@@ -298,7 +302,7 @@ class StringHelper extends \yii\helpers\StringHelper
      * but can be made insensitive by setting $caseSensitive to false.
      *
      * @param string $haystack The string being checked.
-     * @param array $needles The substrings to look for.
+     * @param string[] $needles The substrings to look for.
      * @param bool $caseSensitive Whether or not to force case-sensitivity.
      * @return bool Whether or not $haystack contains all $needles.
      */
@@ -312,7 +316,7 @@ class StringHelper extends \yii\helpers\StringHelper
      * but can be made insensitive by setting $caseSensitive to false.
      *
      * @param string $haystack The string being checked.
-     * @param array $needles The substrings to look for.
+     * @param string[] $needles The substrings to look for.
      * @param bool $caseSensitive Whether or not to force case-sensitivity.
      * @return bool Whether or not $haystack contains any $needles.
      */
@@ -335,7 +339,7 @@ class StringHelper extends \yii\helpers\StringHelper
         }
 
         // Otherwise set HTMLPurifier to the actual string encoding
-        $config = \HTMLPurifier_Config::createDefault();
+        $config = HTMLPurifier_Config::createDefault();
         $config->set('Core.Encoding', static::encoding($str));
 
         // Clean it
@@ -477,7 +481,7 @@ class StringHelper extends \yii\helpers\StringHelper
      * by setting $caseSensitive to false.
      *
      * @param string $str The string to check the end of.
-     * @param $substrings [] Substrings to look for.
+     * @param string[] $substrings Substrings to look for.
      * @param bool $caseSensitive Whether or not to force case-sensitivity.
      * @return bool Whether or not $str ends with $substring.
      * @since 3.3.0
@@ -593,7 +597,7 @@ class StringHelper extends \yii\helpers\StringHelper
      * @return string The encoded string.
      * @since 3.3.0
      */
-    public static function htmlEncode(string $str, int $flags = \ENT_COMPAT): string
+    public static function htmlEncode(string $str, int $flags = ENT_COMPAT): string
     {
         return (string)BaseStringy::create($str)->htmlEncode($flags);
     }
@@ -619,9 +623,9 @@ class StringHelper extends \yii\helpers\StringHelper
      * @param string $needle The substring to look for.
      * @param int $offset The offset from which to search.
      * @param bool $caseSensitive Whether to perform a case-sensitive search or not.
-     * @return int|bool The occurrence's index if found, otherwise false.
+     * @return int|false The occurrence's index if found, otherwise false.
      */
-    public static function indexOf(string $str, string $needle, int $offset = 0, bool $caseSensitive = true)
+    public static function indexOf(string $str, string $needle, int $offset = 0, bool $caseSensitive = true): int|false
     {
         if ($caseSensitive) {
             return BaseStringy::create($str)->indexOf($needle, $offset);
@@ -640,9 +644,9 @@ class StringHelper extends \yii\helpers\StringHelper
      * @param string $needle The substring to look for.
      * @param int $offset The offset from which to search.
      * @param bool $caseSensitive Whether to perform a case-sensitive search or not.
-     * @return int|bool The occurrence's last index if found, otherwise false.
+     * @return int|false The occurrence's last index if found, otherwise false.
      */
-    public static function indexOfLast(string $str, string $needle, int $offset = 0, bool $caseSensitive = true)
+    public static function indexOfLast(string $str, string $needle, int $offset = 0, bool $caseSensitive = true): int|false
     {
         if ($caseSensitive) {
             return BaseStringy::create($str)->indexOfLast($needle, $offset);
@@ -710,7 +714,7 @@ class StringHelper extends \yii\helpers\StringHelper
      * @return bool Whether or not $str is base64 encoded.
      * @since 3.3.0
      */
-    public static function isBase64(string $str, $emptyStringIsValid = true): bool
+    public static function isBase64(string $str, bool $emptyStringIsValid = true): bool
     {
         return BaseStringy::create($str)->isBase64($emptyStringIsValid);
     }
@@ -1042,7 +1046,7 @@ class StringHelper extends \yii\helpers\StringHelper
             // pick a random number from 1 up to the number of valid chars
             try {
                 $randomPick = random_int(0, $numValidChars - 1);
-            } catch (\Exception $e) {
+            } catch (\Exception) {
                 $randomPick = rand(0, $numValidChars - 1);
             }
 
@@ -1151,13 +1155,13 @@ class StringHelper extends \yii\helpers\StringHelper
      * Replaces all occurrences of $search in $str by $replacement.
      *
      * @param string $str The haystack to search through.
-     * @param array $search The needle(s) to search for.
-     * @param array|string $replacement The string(s) to replace with.
+     * @param string[] $search The needle(s) to search for.
+     * @param string|string[] $replacement The string(s) to replace with.
      * @param bool $caseSensitive Whether or not to perform a case-sensitive search.
      * @return string The resulting string after the replacements.
      * @since 3.3.0
      */
-    public static function replaceAll(string $str, array $search, $replacement, bool $caseSensitive = true): string
+    public static function replaceAll(string $str, array $search, string|array $replacement, bool $caseSensitive = true): string
     {
         return (string)BaseStringy::create($str)->replaceAll($search, $replacement, $caseSensitive);
     }
@@ -1236,11 +1240,11 @@ class StringHelper extends \yii\helpers\StringHelper
      * ```
      *
      * @param string $str The string
-     * @param string|callable $replace The replacement string, or callback function.
+     * @param callable|string $replace The replacement string, or callback function.
      * @return string The string with converted 4-byte UTF-8 characters
      * @since 3.1.13
      */
-    public static function replaceMb4(string $str, $replace): string
+    public static function replaceMb4(string $str, callable|string $replace): string
     {
         if (!static::containsMb4($str)) {
             return $str;
@@ -1341,7 +1345,9 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function slugify(string $str, string $replacement = '-', ?string $language = null): string
     {
-        return (string)BaseStringy::create($str)->slugify($replacement, $language ?? Craft::$app->language);
+        /** @var ASCII::*_LANGUAGE_CODE $language */
+        $language = $language ?? Craft::$app->language;
+        return (string)BaseStringy::create($str)->slugify($replacement, $language);
     }
 
     /**
@@ -1376,14 +1382,14 @@ class StringHelper extends \yii\helpers\StringHelper
      * Returns true if the string begins with $substring, false otherwise. By default, the comparison is case-sensitive,
      * but can be made insensitive by setting $caseSensitive to false.
      *
-     * @param string $str The string to check the start of.
-     * @param string $substring The substring to look for.
+     * @param string $string The string to check the start of.
+     * @param string $with The substring to look for.
      * @param bool $caseSensitive Whether or not to enforce case-sensitivity.
      * @return bool Whether or not $str starts with $substring.
      */
-    public static function startsWith($str, $substring, $caseSensitive = true): bool
+    public static function startsWith($string, $with, $caseSensitive = true): bool
     {
-        return BaseStringy::create($str)->startsWith($substring, $caseSensitive);
+        return BaseStringy::create($string)->startsWith($with, $caseSensitive);
     }
 
     /**
@@ -1392,12 +1398,12 @@ class StringHelper extends \yii\helpers\StringHelper
      * setting $caseSensitive to false.
      *
      * @param string $str The string to check the start of.
-     * @param array $substrings The substrings to look for.
+     * @param string[] $substrings The substrings to look for.
      * @param bool $caseSensitive Whether or not to enforce case-sensitivity.
      * @return bool Whether or not $str starts with $substring.
      * @since 3.3.0
      */
-    public static function startsWithAny($str, array $substrings, bool $caseSensitive = true): bool
+    public static function startsWithAny(string $str, array $substrings, bool $caseSensitive = true): bool
     {
         return BaseStringy::create($str)->startsWithAny($substrings, $caseSensitive);
     }
@@ -1528,7 +1534,7 @@ class StringHelper extends \yii\helpers\StringHelper
      * preserving any acronyms. Also accepts an array, $ignore, allowing you to list words not to be capitalized.
      *
      * @param string $str The string to titleize.
-     * @param array|null $ignore An array of words not to capitalize.
+     * @param string[]|null $ignore An array of words not to capitalize.
      * @return string The titleized string.
      */
     public static function titleize(string $str, ?array $ignore = null): string
@@ -1545,9 +1551,8 @@ class StringHelper extends \yii\helpers\StringHelper
      * Adapted from John Gruber's script.
      *
      * @see https://gist.github.com/gruber/9f9e8650d68b13ce4d78
-     *
      * @param string $str The string to titleize.
-     * @param array $ignore An array of words not to capitalize.
+     * @param string[] $ignore An array of words not to capitalize.
      * @return string The titleized string.
      * @since 3.3.0
      */
@@ -1566,12 +1571,13 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function toAscii(string $str, ?string $language = null): string
     {
-        // If Intl is installed, normalize NFD chars to NFC
-        if (class_exists(Normalizer::class)) {
-            $str = Normalizer::normalize($str, Normalizer::FORM_C);
-        }
+        // Normalize NFD chars to NFC
+        $str = Normalizer::normalize($str, Normalizer::FORM_C);
 
-        return (string)BaseStringy::create($str)->toAscii($language ?? Craft::$app->language);
+        /** @var ASCII::*_LANGUAGE_CODE $language */
+        $language = $language ?? Craft::$app->language;
+
+        return (string)BaseStringy::create($str)->toAscii($language);
     }
 
     /**
@@ -1642,12 +1648,10 @@ class StringHelper extends \yii\helpers\StringHelper
     public static function toPascalCase(string $str): string
     {
         $words = self::toWords($str, true, true);
-        $string = implode('', array_map([
+        return implode('', array_map([
             static::class,
             'upperCaseFirst',
         ], $words));
-
-        return $string;
     }
 
     /**
@@ -1683,13 +1687,13 @@ class StringHelper extends \yii\helpers\StringHelper
      * @param string $glue The glue to use if the object is an array.
      * @return string The string representation of the object.
      */
-    public static function toString($object, string $glue = ','): string
+    public static function toString(mixed $object, string $glue = ','): string
     {
         if (is_scalar($object) || (is_object($object) && method_exists($object, '__toString'))) {
             return (string)$object;
         }
 
-        if (is_array($object) || $object instanceof \IteratorAggregate) {
+        if (is_array($object) || $object instanceof IteratorAggregate) {
             $stringValues = [];
 
             foreach ($object as $value) {
@@ -1886,7 +1890,7 @@ class StringHelper extends \yii\helpers\StringHelper
     }
 
     /**
-     * Converts an email from IDNA ASCII to Unicode, if the Intl extension is installed.
+     * Converts an email from IDNA ASCII to Unicode, if the server supports IDNA ASCII strings.
      *
      * @param string $email
      * @return string
@@ -1894,9 +1898,10 @@ class StringHelper extends \yii\helpers\StringHelper
      */
     public static function idnToUtf8Email(string $email): string
     {
-        if (!function_exists('idn_to_utf8') || !defined('INTL_IDNA_VARIANT_UTS46')) {
+        if (!App::supportsIdn()) {
             return $email;
         }
+
         $parts = explode('@', $email, 2);
         foreach ($parts as &$part) {
             if (($part = idn_to_utf8($part, IDNA_DEFAULT, INTL_IDNA_VARIANT_UTS46)) === false) {

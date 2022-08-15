@@ -20,11 +20,11 @@ class AuthenticateUserEvent extends Event
     /**
      * @var string The password that was submitted
      */
-    public $password;
+    public string $password;
 
     /**
      * @var bool Whether authentication should continue. If not, and the user doesn’t authenticate, set `$event->sender->authError` to something,
      * to prevent Craft from considering the user to be authenticated.
      */
-    public $performAuthentication = true;
+    public bool $performAuthentication = true;
 }

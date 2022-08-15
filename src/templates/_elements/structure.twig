@@ -1,0 +1,50 @@
+{% set disabledElementIds = disabledElementIds is defined ? disabledElementIds : [] %}
+{% set collapsedElementIds = collapsedElementIds is defined ? collapsedElementIds : [] %}
+{% set sortable = (sortable is defined and sortable and structure.getIsSortable()) %}
+{% set newChildUrl = newChildUrl is defined ? newChildUrl : null %}
+{% set id = 'structure-'~structure.id~'-'~random() %}
+
+<ul id="{{ id }}" class="structure">
+    {% nav element in elements %}
+        <li{% if element.id in collapsedElementIds %} class="collapsed"{% endif %} data-level="{{ element.level }}">
+            {% set indent = 8 + (element.level - 1) * 35 %}
+            <div class="row{% if element.id in disabledElementIds %} disabled{% endif %}" style="margin-left: -{{ indent }}px; padding-left: {{ indent }}px;">
+                {%- apply spaceless %}
+                    {% block element %}
+                        {% include "_elements/element" %}
+
+                        {% if sortable %}
+                            <a class="move icon" title="{{ 'Move'|t('app') }}" aria-label="{{ 'Move'|t('app') }}"></a>
+                        {% endif %}
+
+                        {% if newChildUrl %}
+                            <a class="add icon" title="{{ 'New child'|t('app') }}" aria-label="{{ 'New child'|t('app') }}"></a>
+                        {% endif %}
+                    {% endblock %}
+                {% endapply -%}
+            </div>
+
+            {% ifchildren %}
+                <ul>
+                    {% children %}
+                </ul>
+            {% endifchildren %}
+        </li>
+    {% endnav %}
+</ul>
+
+{# Hide "Add child" menu buttons beyond the max level #}
+{% if structure.maxLevels %}
+    {% css %}
+        #{{ id }}{% if structure.maxLevels >= 2 %}{% for i in 2 .. structure.maxLevels  %} ul{% endfor %}{% endif%} .add { display: none; }
+    {% endcss %}
+{% endif %}
+
+{% js %}
+    new Craft.Structure({{ structure.id }}, '#{{ id|namespaceInputId }}', {
+        storageKey:  {{ (storageKey is defined ? storageKey|json_encode : '"Structure.'~structure.id~'"')|raw }},
+        sortable:    {{ sortable ? 'true' : 'false' }},
+        newChildUrl: {{ newChildUrl ? newChildUrl|json_encode|raw : 'null' }},
+        maxLevels:   {{ structure.maxLevels ?: 'null' }}
+    });
+{% endjs %}

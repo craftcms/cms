@@ -5,25 +5,26 @@
  * @license https://craftcms.github.io/license/
  */
 
-namespace craftunit\gql\mutations;
+namespace crafttests\unit\gql\mutations;
 
 use Codeception\Stub\Expected;
 use craft\elements\Category;
 use craft\gql\resolvers\mutations\Category as CategoryResolver;
 use craft\test\TestCase;
+use UnitTester;
 
 class StructureOperationMutationTest extends TestCase
 {
     /**
-     * @var \UnitTester
+     * @var UnitTester
      */
-    protected $tester;
+    protected UnitTester $tester;
 
-    protected function _before()
+    protected function _before(): void
     {
     }
 
-    protected function _after()
+    protected function _after(): void
     {
     }
 
@@ -31,8 +32,12 @@ class StructureOperationMutationTest extends TestCase
      * Test structure operations
      *
      * @dataProvider structureOperationDataProvider
+     * @param array $elementProperties
+     * @param array $arguments
+     * @param string|null $requiredMethod
+     * @param string|null $exception
      */
-    public function testStructureOperations($elementProperties, $arguments, $requiredMethod = '', $exception = '')
+    public function testStructureOperations(array $elementProperties, array $arguments, ?string $requiredMethod = null, ?string $exception = null): void
     {
         $element = $this->make(Category::class, $elementProperties);
 
@@ -51,9 +56,9 @@ class StructureOperationMutationTest extends TestCase
 
         $this->tester->mockCraftMethods('structures', $methods);
         $this->tester->mockCraftMethods('elements', [
-            'getElementById' => function ($elementId) {
-                return $elementId > 0 ? new Category() : null ;
-            }
+            'getElementById' => function($elementId) {
+                return $elementId > 0 ? new Category() : null;
+            },
         ]);
 
         if ($exception) {
@@ -65,7 +70,7 @@ class StructureOperationMutationTest extends TestCase
         $this->invokeMethod($resolver, 'performStructureOperations', [$element, $arguments]);
     }
 
-    public function structureOperationDataProvider()
+    public function structureOperationDataProvider(): array
     {
         return [
             [
@@ -102,7 +107,7 @@ class StructureOperationMutationTest extends TestCase
                 ['structureId' => 2],
                 ['prependTo' => -1],
                 '',
-                'Unable to move element in a structure'
+                'Unable to move element in a structure',
             ],
         ];
     }

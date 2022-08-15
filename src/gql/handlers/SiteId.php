@@ -15,5 +15,5 @@ namespace craft\gql\handlers;
  */
 class SiteId extends Site
 {
-    protected $argumentName = 'siteId';
+    protected string $argumentName = 'siteId';
 }

@@ -1,0 +1,87 @@
+{% import "_includes/forms" as forms %}
+
+<form id="asset-indexes" class="utility" method="post" accept-charset="UTF-8">
+
+    {{ csrfInput() }}
+
+    <table id="indexing-sessions" class="hidden fullwidth" style="margin-bottom: var(--xl)">
+        <thead>
+            <tr>
+                <th style="width: 10%">Volumes being indexed</th>
+                <th style="width: 15%">Last update</th>
+                <th style="width: 35%">Progress</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+
+    <h2 class="first">{{ 'Volumes'|t('app') }} </h2>
+    {{ checkboxSelectHtml|raw }}
+
+    <h2>{{ 'Options'|t('app') }} </h2>
+
+    {{ forms.lightswitchField({
+        name: 'cacheImages',
+        label: 'Cache remote images'|t('app'),
+        class: 'volume-selector',
+        instructions: 'Whether remotely-stored images should be downloaded and stored locally, to speed up transform generation.'|t('app'),
+        on: true,
+    }) }}
+
+    <div class="buttons">
+        <button type="submit" class="btn submit">{{ 'Update asset indexes'|t('app') }}</button>
+        <div class="utility-status"></div>
+    </div>
+</form>
+
+{% js %}
+
+    let indexingSessions = [];
+    let data = {};
+
+    {% for session in existingSessions %}
+        data = {
+            id: {{ session.id }},
+            indexedVolumes: {{ session.indexedVolumes|raw }},
+            totalEntries: {{ session.totalEntries }},
+            processedEntries: {{ session.processedEntries }},
+            actionRequired: {{ session.actionRequired + 0 }},
+            skippedEntries: [],
+            missingEntries: [],
+            dateCreated: "{{ session.dateCreated|date(dateFormat) }}",
+        };
+
+        indexingSessions.push(data);
+    {% endfor %}
+
+    const assetIndexer = new Craft.AssetIndexer($('#indexing-sessions'), indexingSessions);
+    $('form#asset-indexes').on('submit', function (ev) {
+        const anyVolumesSelected = $('input[name="volumes[]"]').is(':checked') || $('input[name="volumes"]').is(':checked');
+        if (!anyVolumesSelected) {
+            return false;
+        }
+
+        const $submitButton = $('form#asset-indexes button.submit:last');
+
+        if ($submitButton.hasClass('disabled')) {
+            return false;
+        }
+
+        const data = {
+            'cacheImages': !!$('input[name=cacheImages]').val(),
+            'volumes': $(ev.target).find('.checkbox-select input:checked:enabled').map(function(){return $(this).val();}).get()
+        };
+
+        $submitButton.addClass('disabled').after('<div class="spinner"></div>');
+
+        assetIndexer.startIndexing(data, () => {
+            $('form#asset-indexes .spinner').remove();
+            $submitButton.removeClass('disabled')
+        });
+
+        return false;
+    });
+{% endjs %}

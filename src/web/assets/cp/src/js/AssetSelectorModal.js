@@ -3,179 +3,222 @@
 /**
  * Asset selector modal class
  */
-Craft.AssetSelectorModal = Craft.BaseElementSelectorModal.extend({
+Craft.AssetSelectorModal = Craft.BaseElementSelectorModal.extend(
+  {
     $selectTransformBtn: null,
     _selectedTransform: null,
 
-    init: function(elementType, settings) {
-        settings = $.extend({}, Craft.AssetSelectorModal.defaults, settings);
+    init: function (elementType, settings) {
+      settings = $.extend({}, Craft.AssetSelectorModal.defaults, settings);
 
-        this.base(elementType, settings);
+      this.base(elementType, settings);
 
-        if (settings.transforms.length) {
-            this.createSelectTransformButton(settings.transforms);
-        }
+      if (settings.transforms.length) {
+        this.createSelectTransformButton(settings.transforms);
+      }
     },
 
-    createSelectTransformButton: function(transforms) {
-        if (!transforms || !transforms.length) {
-            return;
-        }
+    createSelectTransformButton: function (transforms) {
+      if (!transforms || !transforms.length) {
+        return;
+      }
 
-        var $btnGroup = $('<div class="btngroup"/>').appendTo(this.$primaryButtons);
-        this.$selectBtn.appendTo($btnGroup);
+      var $btnGroup = $('<div class="btngroup"/>').appendTo(
+        this.$primaryButtons
+      );
+      this.$selectBtn.appendTo($btnGroup);
 
-        this.$selectTransformBtn = $('<button/>', {
-            type: 'button',
-            class: 'btn menubtn disabled',
-            text: Craft.t('app', 'Select transform'),
-        }).appendTo($btnGroup);
+      this.$selectTransformBtn = $('<button/>', {
+        type: 'button',
+        class: 'btn menubtn disabled',
+        text: Craft.t('app', 'Select transform'),
+      }).appendTo($btnGroup);
 
-        var $menu = $('<div class="menu" data-align="right"></div>').insertAfter(this.$selectTransformBtn),
-            $menuList = $('<ul></ul>').appendTo($menu);
+      var $menu = $('<div class="menu" data-align="right"></div>').insertAfter(
+          this.$selectTransformBtn
+        ),
+        $menuList = $('<ul></ul>').appendTo($menu);
 
-        for (var i = 0; i < transforms.length; i++) {
-            $('<li><a data-transform="' + transforms[i].handle + '">' + transforms[i].name + '</a></li>').appendTo($menuList);
-        }
+      for (var i = 0; i < transforms.length; i++) {
+        $(
+          '<li><a data-transform="' +
+            transforms[i].handle +
+            '">' +
+            transforms[i].name +
+            '</a></li>'
+        ).appendTo($menuList);
+      }
 
-        var MenuButton = new Garnish.MenuBtn(this.$selectTransformBtn, {
-            onOptionSelect: this.onSelectTransform.bind(this),
-        });
-        MenuButton.disable();
+      var MenuButton = new Garnish.MenuBtn(this.$selectTransformBtn, {
+        onOptionSelect: this.onSelectTransform.bind(this),
+      });
+      MenuButton.disable();
 
-        this.$selectTransformBtn.data('menuButton', MenuButton);
+      this.$selectTransformBtn.data('menuButton', MenuButton);
     },
 
-    onSelectionChange: function(ev) {
-        var $selectedElements = this.elementIndex.getSelectedElements(),
-            allowTransforms = false;
+    onSelectionChange: function (ev) {
+      var $selectedElements = this.elementIndex.getSelectedElements(),
+        allowTransforms = false;
 
-        if ($selectedElements.length && this.settings.transforms.length) {
-            allowTransforms = true;
-
-            for (var i = 0; i < $selectedElements.length; i++) {
-                if (!$('.element.hasthumb:first', $selectedElements[i]).length) {
-                    break;
-                }
-            }
-        }
-
-        var MenuBtn = null;
-
-        if (this.$selectTransformBtn) {
-            MenuBtn = this.$selectTransformBtn.data('menuButton');
-        }
-
-        if (allowTransforms) {
-            if (MenuBtn) {
-                MenuBtn.enable();
-            }
-
-            this.$selectTransformBtn.removeClass('disabled');
-        } else if (this.$selectTransformBtn) {
-            if (MenuBtn) {
-                MenuBtn.disable();
-            }
-
-            this.$selectTransformBtn.addClass('disabled');
-        }
-
-        this.base();
-    },
-
-    onSelectTransform: function(option) {
-        var transform = $(option).data('transform');
-        this.selectImagesWithTransform(transform);
-    },
-
-    selectImagesWithTransform: function(transform) {
-        // First we must get any missing transform URLs
-        if (typeof Craft.AssetSelectorModal.transformUrls[transform] === 'undefined') {
-            Craft.AssetSelectorModal.transformUrls[transform] = {};
-        }
-
-        var $selectedElements = this.elementIndex.getSelectedElements(),
-            imageIdsWithMissingUrls = [];
+      if ($selectedElements.length && this.settings.transforms.length) {
+        allowTransforms = true;
 
         for (var i = 0; i < $selectedElements.length; i++) {
-            var $item = $($selectedElements[i]),
-                elementId = Craft.getElementInfo($item).id;
+          if (!$('.element.hasthumb:first', $selectedElements[i]).length) {
+            break;
+          }
+        }
+      }
 
-            if (typeof Craft.AssetSelectorModal.transformUrls[transform][elementId] === 'undefined') {
-                imageIdsWithMissingUrls.push(elementId);
-            }
+      var MenuBtn = null;
+
+      if (this.$selectTransformBtn) {
+        MenuBtn = this.$selectTransformBtn.data('menuButton');
+      }
+
+      if (allowTransforms) {
+        if (MenuBtn) {
+          MenuBtn.enable();
         }
 
-        if (imageIdsWithMissingUrls.length) {
-            this.showFooterSpinner();
-
-            this.fetchMissingTransformUrls(imageIdsWithMissingUrls, transform, () => {
-                this.hideFooterSpinner();
-                this.selectImagesWithTransform(transform);
-            });
-        } else {
-            this._selectedTransform = transform;
-            this.selectElements();
-            this._selectedTransform = null;
+        this.$selectTransformBtn.removeClass('disabled');
+      } else if (this.$selectTransformBtn) {
+        if (MenuBtn) {
+          MenuBtn.disable();
         }
+
+        this.$selectTransformBtn.addClass('disabled');
+      }
+
+      this.base();
     },
 
-    fetchMissingTransformUrls: function(imageIdsWithMissingUrls, transform, callback) {
-        var elementId = imageIdsWithMissingUrls.pop();
+    onSelectTransform: function (option) {
+      var transform = $(option).data('transform');
+      this.selectImagesWithTransform(transform);
+    },
 
-        var data = {
-            assetId: elementId,
-            handle: transform
-        };
+    selectImagesWithTransform: function (transform) {
+      // First we must get any missing transform URLs
+      if (
+        typeof Craft.AssetSelectorModal.transformUrls[transform] === 'undefined'
+      ) {
+        Craft.AssetSelectorModal.transformUrls[transform] = {};
+      }
 
-        Craft.postActionRequest('assets/generate-transform', data, (response, textStatus) => {
-            Craft.AssetSelectorModal.transformUrls[transform][elementId] = false;
+      var $selectedElements = this.elementIndex.getSelectedElements(),
+        imageIdsWithMissingUrls = [];
 
-            if (textStatus === 'success') {
-                if (response.url) {
-                    Craft.AssetSelectorModal.transformUrls[transform][elementId] = response.url;
-                }
-            }
+      for (var i = 0; i < $selectedElements.length; i++) {
+        var $item = $($selectedElements[i]),
+          elementId = Craft.getElementInfo($item).id;
 
-            // More to load?
-            if (imageIdsWithMissingUrls.length) {
-                this.fetchMissingTransformUrls(imageIdsWithMissingUrls, transform, callback);
-            } else {
-                callback();
-            }
+        if (
+          typeof Craft.AssetSelectorModal.transformUrls[transform][
+            elementId
+          ] === 'undefined'
+        ) {
+          imageIdsWithMissingUrls.push(elementId);
+        }
+      }
+
+      if (imageIdsWithMissingUrls.length) {
+        this.showFooterSpinner();
+
+        this.fetchMissingTransformUrls(
+          imageIdsWithMissingUrls,
+          transform,
+          () => {
+            this.hideFooterSpinner();
+            this.selectImagesWithTransform(transform);
+          }
+        );
+      } else {
+        this._selectedTransform = transform;
+        this.selectElements();
+        this._selectedTransform = null;
+      }
+    },
+
+    fetchMissingTransformUrls: function (
+      imageIdsWithMissingUrls,
+      transform,
+      callback
+    ) {
+      var elementId = imageIdsWithMissingUrls.pop();
+
+      var data = {
+        assetId: elementId,
+        handle: transform,
+      };
+
+      Craft.sendActionRequest('POST', 'assets/generate-transform', {data})
+        .then((response) => {
+          Craft.AssetSelectorModal.transformUrls[transform][elementId] = false;
+          if (response.data.url) {
+            Craft.AssetSelectorModal.transformUrls[transform][elementId] =
+              response.data.url;
+          }
+        })
+        .catch(({response}) => {
+          Craft.AssetSelectorModal.transformUrls[transform][elementId] = false;
+
+          // More to load?
+          if (imageIdsWithMissingUrls.length) {
+            this.fetchMissingTransformUrls(
+              imageIdsWithMissingUrls,
+              transform,
+              callback
+            );
+          } else {
+            callback();
+          }
         });
     },
 
-    getElementInfo: function($selectedElements) {
-        var info = this.base($selectedElements);
+    getElementInfo: function ($selectedElements) {
+      var info = this.base($selectedElements);
 
-        if (this._selectedTransform) {
-            for (var i = 0; i < info.length; i++) {
-                var elementId = info[i].id;
+      if (this._selectedTransform) {
+        for (var i = 0; i < info.length; i++) {
+          var elementId = info[i].id;
 
-                if (
-                    typeof Craft.AssetSelectorModal.transformUrls[this._selectedTransform][elementId] !== 'undefined' &&
-                    Craft.AssetSelectorModal.transformUrls[this._selectedTransform][elementId] !== false
-                ) {
-                    info[i].url = Craft.AssetSelectorModal.transformUrls[this._selectedTransform][elementId];
-                }
-            }
+          if (
+            typeof Craft.AssetSelectorModal.transformUrls[
+              this._selectedTransform
+            ][elementId] !== 'undefined' &&
+            Craft.AssetSelectorModal.transformUrls[this._selectedTransform][
+              elementId
+            ] !== false
+          ) {
+            info[i].url =
+              Craft.AssetSelectorModal.transformUrls[this._selectedTransform][
+                elementId
+              ];
+          }
         }
+      }
 
-        return info;
+      return info;
     },
 
-    onSelect: function(elementInfo) {
-        this.settings.onSelect(elementInfo, this._selectedTransform);
-    }
-}, {
+    onSelect: function (elementInfo) {
+      this.settings.onSelect(elementInfo, this._selectedTransform);
+    },
+  },
+  {
     defaults: {
-        canSelectImageTransforms: false,
-        transforms: []
+      canSelectImageTransforms: false,
+      transforms: [],
     },
 
-    transformUrls: {}
-});
+    transformUrls: {},
+  }
+);
 
 // Register it!
-Craft.registerElementSelectorModalClass('craft\\elements\\Asset', Craft.AssetSelectorModal);
+Craft.registerElementSelectorModalClass(
+  'craft\\elements\\Asset',
+  Craft.AssetSelectorModal
+);

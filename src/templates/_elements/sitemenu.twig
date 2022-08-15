@@ -1,0 +1,35 @@
+{% set siteIds = siteIds ?? craft.app.sites.getEditableSiteIds() %}
+{% if siteIds|length %}
+    {% if selectedSiteId is not defined %}
+        {% if requestedSite %}
+            {% set selectedSiteId = requestedSite.id %}
+        {% elseif craft.app.sites.currentSite.id in siteIds %}
+            {% set selectedSiteId = craft.app.sites.currentSite.id %}
+        {% else %}
+            {% set selectedSiteId = siteIds|first %}
+        {% endif %}
+    {% endif %}
+    {% set groups = craft.app.sites.getAllGroups() %}
+    <div>
+        <label id="context-label" class="visually-hidden">{{ "Site"|t('app') }}</label>
+        <button type="button" id="context-btn" class="btn menubtn sitemenubtn" data-icon="world" aria-labelledby="context-label">{{ selectedSiteId ? craft.app.sites.getSiteById(selectedSiteId).name|t('site') }}</button>
+        <div class="menu">
+            {% for group in groups %}
+                {% set groupSiteIds = group.getSiteIds()|intersect(siteIds) %}
+                {% if groupSiteIds %}
+                    {% if groups|length > 1 %}<h6>{{ group.name|t('site') }}</h6>{% endif %}
+                    <ul class="padded">
+                        {% for siteId in groupSiteIds %}
+                            {% set site = craft.app.sites.getSiteById(siteId) %}
+                            {% set url = urlFormat is defined ? url(urlFormat|replace({
+                                '{id}': siteId,
+                                '{handle}': site.handle
+                            })) %}
+                            <li><a{% if selectedSiteId and siteId == selectedSiteId %} class="sel"{% endif %} data-site-id="{{ siteId }}"{% if url %} href="{{ url }}"{% endif %}>{{ site.name|t('site') }}</a></li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+{% endif %}

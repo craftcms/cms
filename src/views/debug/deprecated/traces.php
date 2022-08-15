@@ -2,8 +2,8 @@
 
 use craft\models\DeprecationError;
 
-/** @var DeprecationError $log */ 
-/** @var craft\debug\DeprecatedPanel $panel */ 
+/** @var DeprecationError $log */
+/** @var craft\debug\DeprecatedPanel $panel */
 ?>
     <h1><?= $log->key ?></h1>
 

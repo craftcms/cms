@@ -22,13 +22,13 @@ class UrlValidator extends YiiUrlValidator
     /**
      * @since 3.6.0
      */
-    const URL_PATTERN = '^(?:(?:{schemes}:)?\/\/(([A-Z0-9][A-Z0-9_-]*)(\.[A-Z0-9][A-Z0-9_-]*)+)?|\/)[^\s]*$';
+    public const URL_PATTERN = '^(?:(?:{schemes}:)?\/\/(([A-Z0-9][A-Z0-9_-]*)(\.[A-Z0-9][A-Z0-9_-]*)+)?|\/)[^\s]*$';
 
     /**
      * @var bool Whether the value can begin with an alias
      * @deprecated
      */
-    public $allowAlias = false;
+    public bool $allowAlias = false;
 
     /**
      * @inheritdoc
@@ -40,7 +40,7 @@ class UrlValidator extends YiiUrlValidator
             $config['pattern'] = '/' . self::URL_PATTERN . '/i';
         }
 
-        // Enable support for validating international domain names if the intl extension is available.
+        // Enable support for validating international domain names if the server supports IDNA ASCII strings
         if (!isset($config['enableIDN']) && App::supportsIdn()) {
             $config['enableIDN'] = true;
         }
@@ -51,7 +51,7 @@ class UrlValidator extends YiiUrlValidator
     /**
      * @inheritdoc
      */
-    public function validateValue($value)
+    public function validateValue($value): ?array
     {
         if ($this->allowAlias && strncmp($value, '@', 1) === 0) {
             $value = Craft::getAlias($value);
@@ -61,7 +61,7 @@ class UrlValidator extends YiiUrlValidator
         }
 
         // Add support for protocol-relative URLs
-        if ($this->defaultScheme !== null && strpos($value, '/') === 0) {
+        if (isset($this->defaultScheme) && str_starts_with($value, '/')) {
             $this->defaultScheme = null;
         }
 

@@ -18,5 +18,5 @@ class DeleteSiteEvent extends SiteEvent
     /**
      * @var int|null The site ID that should take over the deleted site’s contents
      */
-    public $transferContentTo;
+    public ?int $transferContentTo = null;
 }

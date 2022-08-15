@@ -20,5 +20,5 @@ class RegisterUserPermissionsEvent extends Event
     /**
      * @var array List of registered user permissions.
      */
-    public $permissions = [];
+    public array $permissions = [];
 }

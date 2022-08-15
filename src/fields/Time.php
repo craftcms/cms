@@ -17,6 +17,7 @@ use craft\helpers\DateTimeHelper;
 use craft\i18n\Locale;
 use craft\validators\TimeValidator;
 use DateTime;
+use GraphQL\Type\Definition\Type;
 use yii\db\Schema;
 
 /**
@@ -46,41 +47,40 @@ class Time extends Field implements PreviewableFieldInterface, SortableFieldInte
     /**
      * @var string|null The minimum allowed time
      */
-    public $min;
+    public ?string $min = null;
 
     /**
      * @var string|null The maximum allowed time
      */
-    public $max;
+    public ?string $max = null;
 
     /**
      * @var int The number of minutes that the timepicker options should increment by
      */
-    public $minuteIncrement = 30;
+    public int $minuteIncrement = 30;
 
     /**
      * @inheritdoc
      */
-    public function init()
+    public function __construct($config = [])
     {
-        parent::init();
-
-        if (is_array($this->min)) {
-            $min = DateTimeHelper::toDateTime($this->min, true);
-            $this->min = $min ? $min->format('H:i') : null;
+        // Config normalization
+        foreach (['min', 'max'] as $name) {
+            if (isset($config[$name]) && is_array($config[$name])) {
+                if ($date = DateTimeHelper::toDateTime($config[$name], true)) {
+                    $config[$name] = $date->format('H:i');
+                } else {
+                    unset($config[$name]);
+                }
+            }
         }
-        if (is_array($this->max)) {
-            $max = DateTimeHelper::toDateTime($this->max, true);
-            $this->max = $max ? $max->format('H:i') : null;
-        }
-
-        $this->minuteIncrement = (int)$this->minuteIncrement;
+        parent::__construct($config);
     }
 
     /**
      * @inheritdoc
      */
-    public function attributeLabels()
+    public function attributeLabels(): array
     {
         return [
             'min' => Craft::t('app', 'Min Time'),
@@ -111,7 +111,7 @@ class Time extends Field implements PreviewableFieldInterface, SortableFieldInte
     /**
      * @inheritdoc
      */
-    public function getSettingsHtml()
+    public function getSettingsHtml(): ?string
     {
         $incrementOptions = [5, 10, 15, 30, 60];
         $incrementOptions = array_combine($incrementOptions, $incrementOptions);
@@ -135,7 +135,7 @@ class Time extends Field implements PreviewableFieldInterface, SortableFieldInte
     /**
      * @inheritdoc
      */
-    protected function inputHtml($value, ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
     {
         $id = $this->getInputId();
         return Craft::$app->getView()->renderTemplate('_includes/forms/time', [
@@ -163,7 +163,7 @@ class Time extends Field implements PreviewableFieldInterface, SortableFieldInte
     /**
      * @inheritdoc
      */
-    protected function searchKeywords($value, ElementInterface $element): string
+    protected function searchKeywords(mixed $value, ElementInterface $element): string
     {
         return '';
     }
@@ -171,7 +171,7 @@ class Time extends Field implements PreviewableFieldInterface, SortableFieldInte
     /**
      * @inheritdoc
      */
-    public function getTableAttributeHtml($value, ElementInterface $element): string
+    public function getTableAttributeHtml(mixed $value, ElementInterface $element): string
     {
         if (!$value) {
             return '';
@@ -183,7 +183,7 @@ class Time extends Field implements PreviewableFieldInterface, SortableFieldInte
     /**
      * @inheritdoc
      */
-    public function normalizeValue($value, ElementInterface $element = null)
+    public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
         if (!$value) {
             return null;
@@ -207,16 +207,16 @@ class Time extends Field implements PreviewableFieldInterface, SortableFieldInte
     /**
      * @inheritdoc
      */
-    public function serializeValue($value, ElementInterface $element = null)
+    public function serializeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
         /** @var DateTime|null $value */
-        return $value ? $value->format('H:i:s') : null;
+        return $value?->format('H:i:s');
     }
 
     /**
      * @inheritdoc
      */
-    public function getContentGqlType()
+    public function getContentGqlType(): Type|array
     {
         return DateTimeType::getType();
     }
@@ -225,7 +225,7 @@ class Time extends Field implements PreviewableFieldInterface, SortableFieldInte
      * @inheritdoc
      * @since 3.5.0
      */
-    public function getContentGqlMutationArgumentType()
+    public function getContentGqlMutationArgumentType(): Type|array
     {
         return [
             'name' => $this->handle,

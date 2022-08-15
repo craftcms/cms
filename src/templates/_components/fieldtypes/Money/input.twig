@@ -1,0 +1,14 @@
+{% import '_includes/forms' as forms %}
+
+{{ forms.money({
+    id: id ?? field.getInputId(),
+    name: field.handle,
+    value: value ?? '',
+    size: field.size,
+    currency: currency ? currency : field.defaultCurrency,
+    currencyLabel: currencyLabel,
+    showCurrency: showCurrency,
+    decimals: decimals,
+    size: field.size,
+    describedBy: field.describedBy,
+}) }}

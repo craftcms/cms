@@ -39,17 +39,17 @@ class MultiSelect extends BaseOptionsField
     /**
      * @inheritdoc
      */
-    public $multi = true;
+    protected bool $multi = true;
 
     /**
      * @inheritdoc
      */
-    public $optgroups = true;
+    protected bool $optgroups = true;
 
     /**
      * @inheritdoc
      */
-    protected function inputHtml($value, ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
     {
         /** @var MultiOptionsFieldData $value */
         if (ArrayHelper::contains($value, 'valid', false, true)) {
@@ -60,8 +60,8 @@ class MultiSelect extends BaseOptionsField
             'id' => $this->getInputId(),
             'describedBy' => $this->describedBy,
             'name' => $this->handle,
-            'values' => $value,
-            'options' => $this->translatedOptions(),
+            'values' => $this->encodeValue($value),
+            'options' => $this->translatedOptions(true),
         ]);
     }
 

@@ -1,0 +1,62 @@
+{%- set class = (class ?? [])|explodeClass|merge([
+    'select',
+    (disabled ?? false) ? 'disabled' : null,
+]|filter) %}
+
+{%- set options = options ?? [] %}
+{%- set value = value ?? null %}
+{%- set hasOptgroups = false -%}
+{% set labelledBy = labelledBy ?? null %}
+
+{%- set containerAttributes = {
+    class: class,
+}|merge(containerAttributes ?? [], recursive=true) %}
+
+{%- if block('attr') is defined %}
+    {%- set containerAttributes = containerAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
+{% endif %}
+
+{% set inputAttributes = {
+    id: id ?? false,
+    class: [
+        (toggle ?? false) ? 'fieldtoggle' : null,
+    ]|filter,
+    name: name ?? false,
+    autofocus: (autofocus ?? false) and not craft.app.request.isMobileBrowser(true),
+    disabled: disabled ?? false,
+    aria: {
+        describedby: describedBy ?? false,
+        labelledby: labelledBy ?? false,
+    },
+    data: {
+        'target-prefix': (toggle ?? false) ? (targetPrefix ?? '') : false,
+    },
+}|merge(inputAttributes ?? [], recursive=true) %}
+
+{% tag 'div' with containerAttributes %}
+    {% tag 'select' with inputAttributes %}
+        {% for key, option in options %}
+            {% if option.optgroup is defined %}
+                {% if hasOptgroups %}
+                    </optgroup>
+                {% else %}
+                    {% set hasOptgroups = true %}
+                {% endif %}
+                <optgroup label="{{ option.optgroup }}">
+            {% else %}
+                {% set optionValue = option.value is defined ? option.value : key %}
+                {{ tag('option', {
+                    value: optionValue ?? '',
+                    selected: (optionValue~'') is same as (value~''),
+                    disabled: option.disabled ?? false,
+                    hidden: option.hidden ?? false,
+                    text: option.label is defined ? option.label : option,
+                    data: option.data ?? false,
+                }) }}
+            {% endif %}
+        {% endfor %}
+        {% if hasOptgroups %}
+            </optgroup>
+        {% endif %}
+    {% endtag %}
+{% endtag %}

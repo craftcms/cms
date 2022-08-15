@@ -24,37 +24,37 @@ class CategoryGroup_SiteSettings extends Model
     /**
      * @var int|null ID
      */
-    public $id;
+    public ?int $id = null;
 
     /**
      * @var int|null Group ID
      */
-    public $groupId;
+    public ?int $groupId = null;
 
     /**
      * @var int|null Site ID
      */
-    public $siteId;
+    public ?int $siteId = null;
 
     /**
      * @var bool|null Has URLs?
      */
-    public $hasUrls;
+    public ?bool $hasUrls = null;
 
     /**
      * @var string|null URI format
      */
-    public $uriFormat;
+    public ?string $uriFormat = null;
 
     /**
      * @var string|null Entry template
      */
-    public $template;
+    public ?string $template = null;
 
     /**
      * @var CategoryGroup|null
      */
-    private $_group;
+    private ?CategoryGroup $_group = null;
 
     /**
      * Returns the group.
@@ -64,7 +64,7 @@ class CategoryGroup_SiteSettings extends Model
      */
     public function getGroup(): CategoryGroup
     {
-        if ($this->_group !== null) {
+        if (isset($this->_group)) {
             return $this->_group;
         }
 
@@ -84,7 +84,7 @@ class CategoryGroup_SiteSettings extends Model
      *
      * @param CategoryGroup $group
      */
-    public function setGroup(CategoryGroup $group)
+    public function setGroup(CategoryGroup $group): void
     {
         $this->_group = $group;
     }
@@ -111,7 +111,7 @@ class CategoryGroup_SiteSettings extends Model
     /**
      * @inheritdoc
      */
-    public function attributeLabels()
+    public function attributeLabels(): array
     {
         return [
             'template' => Craft::t('app', 'Template'),

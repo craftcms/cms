@@ -20,5 +20,5 @@ class RegisterUrlRulesEvent extends Event
     /**
      * @var array The registered URL rules.
      */
-    public $rules = [];
+    public array $rules = [];
 }

@@ -1,47 +1,48 @@
 <template>
-    <div class="info-hud">
-        <v-popover placement="right">
-            <icon icon="info-circle" />
+  <div class="info-hud">
+    <v-popover placement="right">
+      <c-icon icon="info-circle" />
 
-            <template slot="popover">
-                <slot></slot>
-            </template>
-        </v-popover>
-    </div>
+      <template slot="popover">
+        <slot></slot>
+      </template>
+    </v-popover>
+  </div>
 </template>
 
 <script>
-    import Vue from 'vue'
-    import VTooltip from 'v-tooltip'
+  import Vue from 'vue';
+  import VTooltip from 'v-tooltip';
 
-    Vue.use(VTooltip)
-    VTooltip.options.autoHide = false
+  Vue.use(VTooltip);
+  VTooltip.options.autoHide = false;
 
-    export default {}
+  export default {};
 </script>
 
 <style lang="scss">
-    @import "../../../../../../../packages/craftcms-sass/mixins";
+  @import '@craftcms/sass/mixins';
 
-    .info-hud {
-        @apply .inline-block;
+  .info-hud {
+    @apply tw-inline-block;
 
-        .v-popover {
-            @apply .text-grey;
-            display: inline-block;
-            line-height: 0;
+    .v-popover {
+      @apply tw-text-gray-400;
+      display: inline-block;
+      line-height: 0;
 
-            &:hover, &.open {
-                @apply .cursor-pointer .text-blue;
-            }
+      &:hover,
+      &.open {
+        @apply tw-cursor-pointer tw-text-blue-600;
+      }
 
-            & > span {
-                outline: none;
-            }
-        }
+      & > span {
+        outline: none;
+      }
     }
+  }
 
-    .tooltip {
-        max-width: 250px;
-    }
+  .tooltip {
+    max-width: 250px;
+  }
 </style>

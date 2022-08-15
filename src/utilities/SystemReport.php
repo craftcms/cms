@@ -14,6 +14,7 @@ use craft\base\Utility;
 use craft\db\Connection;
 use craft\helpers\App;
 use craft\helpers\Db;
+use OutOfBoundsException;
 use RequirementsChecker;
 use yii\base\Module;
 
@@ -44,7 +45,7 @@ class SystemReport extends Utility
     /**
      * @inheritdoc
      */
-    public static function iconPath()
+    public static function iconPath(): ?string
     {
         return Craft::getAlias('@appicons/check.svg');
     }
@@ -61,9 +62,9 @@ class SystemReport extends Utility
             }
             if ($module instanceof Module) {
                 $modules[$id] = get_class($module);
-            } else if (is_string($module)) {
+            } elseif (is_string($module)) {
                 $modules[$id] = $module;
-            } else if (is_array($module) && isset($module['class'])) {
+            } elseif (is_array($module) && isset($module['class'])) {
                 $modules[$id] = $module['class'];
             } else {
                 $modules[$id] = Craft::t('app', 'Unknown type');
@@ -131,7 +132,7 @@ class SystemReport extends Utility
     {
         try {
             $version = InstalledVersions::getPrettyVersion($packageName) ?? InstalledVersions::getVersion($packageName);
-        } catch (\OutOfBoundsException $e) {
+        } catch (OutOfBoundsException) {
             return;
         }
 

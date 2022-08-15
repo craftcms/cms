@@ -14,8 +14,12 @@ use craft\db\Table;
 use craft\errors\MissingComponentException;
 use craft\helpers\Console;
 use craft\queue\QueueLogBehavior;
+use IntlDateFormatter;
+use IntlException;
+use Throwable;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
+use yii\base\Response as BaseResponse;
 use yii\console\controllers\CacheController;
 use yii\console\controllers\HelpController;
 use yii\console\controllers\MigrateController;
@@ -28,8 +32,8 @@ use yii\console\Response;
  *
  * @property Request $request The request component
  * @property User $user The user component
- * @method Request getRequest()      Returns the request component.
- * @method Response getResponse()     Returns the response component.
+ * @method Request getRequest() Returns the request component.
+ * @method Response getResponse() Returns the response component.
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
@@ -38,9 +42,9 @@ class Application extends \yii\console\Application
     use ApplicationTrait;
 
     /**
-     * Initializes the console app by creating the command runner.
+     * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         $this->state = self::STATE_INIT;
         $this->_preInit();
@@ -51,7 +55,7 @@ class Application extends \yii\console\Application
     /**
      * @inheritdoc
      */
-    public function bootstrap()
+    public function bootstrap(): void
     {
         // Ensure that the request component has been instantiated
         if (!$this->has('request', true)) {
@@ -64,25 +68,22 @@ class Application extends \yii\console\Application
     /**
      * @inheritdoc
      */
-    public function runAction($route, $params = [])
+    public function runAction($route, $params = []): int|BaseResponse|null
     {
-        if (!$this->getIsInstalled()) {
-            [$firstSeg] = explode('/', $route, 2);
-            if ($route !== 'install/plugin' && !in_array($firstSeg, ['install', 'setup'], true)) {
-                // Is the connection valid at least?
-                if (!$this->getIsDbConnectionValid()) {
-                    Console::outputWarning('Craft can’t connect to the database. Check your connection settings.');
-                } else {
-                    $infoTable = $this->getDb()->getSchema()->getRawTableName(Table::INFO);
-                    // Figure out the exception that is getting thrown
-                    $e = null;
-                    try {
-                        (new Query())->from([Table::INFO])->where(['id' => 1])->one();
-                    } catch (\Throwable $e) {
-                        $e = $e->getPrevious() ?? $e;
-                    }
-                    Console::outputWarning("Craft can’t fetch the `$infoTable` table row." . ($e ? PHP_EOL . 'Exception: ' . $e->getMessage() : ''), false);
+        if (!$this->getIsInstalled() && $this->_requireInfoTable($route, $params)) {
+            // Is the connection valid at least?
+            if (!$this->getIsDbConnectionValid()) {
+                Console::outputWarning('Craft can’t connect to the database. Check your connection settings.');
+            } else {
+                $infoTable = $this->getDb()->getSchema()->getRawTableName(Table::INFO);
+                // Figure out the exception that is getting thrown
+                $e = null;
+                try {
+                    (new Query())->from([Table::INFO])->where(['id' => 1])->one();
+                } catch (Throwable $e) {
+                    $e = $e->getPrevious() ?? $e;
                 }
+                Console::outputWarning("Craft can’t fetch the `$infoTable` table row." . ($e ? PHP_EOL . 'Exception: ' . $e->getMessage() : ''), false);
             }
         }
 
@@ -92,19 +93,32 @@ class Application extends \yii\console\Application
     /**
      * @inheritdoc
      */
-    public function setTimeZone($value)
+    public function setTimeZone($value): void
     {
         parent::setTimeZone($value);
 
-        if ($value !== 'UTC' && $this->getI18n()->getIsIntlLoaded()) {
+        if ($value !== 'UTC') {
             // Make sure that ICU supports this timezone
             try {
-                new \IntlDateFormatter($this->language, \IntlDateFormatter::NONE, \IntlDateFormatter::NONE);
-            } catch (\IntlException $e) {
-                Craft::warning("Time zone \"{$value}\" does not appear to be supported by ICU: " . intl_get_error_message());
+                /** @noinspection PhpExpressionResultUnusedInspection */
+                /** @phpstan-ignore-next-line */
+                new IntlDateFormatter($this->language, IntlDateFormatter::NONE, IntlDateFormatter::NONE);
+            } catch (IntlException) {
+                Craft::warning("Time zone “{$value}” does not appear to be supported by ICU: " . intl_get_error_message());
                 parent::setTimeZone('UTC');
             }
         }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function handleRequest($request)
+    {
+        // Disable read/write splitting for all console requests
+        $this->getDb()->enableReplicas = false;
+
+        return parent::handleRequest($request);
     }
 
     /**
@@ -134,8 +148,9 @@ class Application extends \yii\console\Application
      *
      * @return User
      */
-    public function getUser()
+    public function getUser(): User
     {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('user');
     }
 
@@ -150,7 +165,7 @@ class Application extends \yii\console\Application
      * @see has()
      * @see set()
      */
-    public function get($id, $throwException = true)
+    public function get($id, $throwException = true): ?object
     {
         // Is this the first time the queue component is requested?
         $isFirstQueue = $id === 'queue' && !$this->has($id, true);
@@ -162,5 +177,15 @@ class Application extends \yii\console\Application
         }
 
         return $component;
+    }
+
+    private function _requireInfoTable(string $route, array $params): bool
+    {
+        if (isset($params['help'])) {
+            return false;
+        }
+
+        [$firstSeg] = explode('/', $route, 2);
+        return !in_array($firstSeg, ['install', 'setup', 'db', 'help'], true);
     }
 }

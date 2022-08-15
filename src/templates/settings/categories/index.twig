@@ -1,0 +1,64 @@
+{% extends "_layouts/cp" %}
+{% set title = "Category Groups"|t('app') %}
+
+{% do view.registerAssetBundle('craft\\web\\assets\\admintable\\AdminTableAsset') -%}
+
+{% do view.registerTranslations('app', [
+    "Name",
+    "Handle",
+    "Manage categories",
+    "No category groups exist yet.",
+]) %}
+
+{% block actionButton %}
+    {% set buttonLabel = "New category group"|t('app') %}
+    <a href="{{ url('settings/categories/new') }}" class="btn submit add icon" aria-label="{{ buttonLabel }}">{{ buttonLabel }}</a>
+{% endblock %}
+
+{% set crumbs = [
+    { label: "Settings"|t('app'), url: url('settings') }
+] %}
+
+{% block content %}
+    <div id="categorygroups-vue-admin-table"></div>
+{% endblock %}
+
+{% set tableData = [] %}
+{% for group in categoryGroups %}
+    {% set tableData = tableData|merge([{
+        id: group.id,
+        title: group.name|t('site'),
+        url: url('settings/categories/' ~ group.id),
+        name: group.name|t('site')|e,
+        handle: group.handle,
+        manageCategories: url('categories/'~group.handle),
+    }]) %}
+{% endfor %}
+
+{% js %}
+    var columns = [
+        {
+            name: '__slot:title',
+            title: Craft.t('app', 'Name'),
+        },
+        {
+            name: '__slot:handle',
+            title: Craft.t('app', 'Handle'),
+        },
+        {
+            name: 'manageCategories',
+            title: "",
+            callback: function(value) {
+                return '<a href="'+value+'">' + Craft.escapeHtml(Craft.t('app', "Manage categories")) + '</a>';
+            }
+        },
+    ];
+
+    new Craft.VueAdminTable({
+        columns: columns,
+        container: '#categorygroups-vue-admin-table',
+        deleteAction: 'categories/delete-category-group',
+        emptyMessage: Craft.t('app', 'No category groups exist yet.'),
+        tableData: {{ tableData|json_encode|raw }}
+    });
+{% endjs %}

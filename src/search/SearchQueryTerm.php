@@ -19,37 +19,37 @@ use yii\base\BaseObject;
 class SearchQueryTerm extends BaseObject
 {
     /**
-     * @var bool
+     * @var bool|null
      */
-    public $exclude = false;
-
-    /**
-     * @var bool
-     */
-    public $exact = false;
-
-    /**
-     * @var bool
-     */
-    public $subLeft = false;
-
-    /**
-     * @var bool
-     */
-    public $subRight = true;
-
-    /**
-     * @var null
-     */
-    public $attribute;
-
-    /**
-     * @var null
-     */
-    public $term;
+    public ?bool $subLeft = null;
 
     /**
      * @var bool|null
      */
-    public $phrase;
+    public ?bool $subRight = null;
+
+    /**
+     * @var bool|null
+     */
+    public ?bool $exclude = null;
+
+    /**
+     * @var bool|null
+     */
+    public ?bool $exact = null;
+
+    /**
+     * @var string|null
+     */
+    public ?string $attribute = null;
+
+    /**
+     * @var string|null
+     */
+    public ?string $term = null;
+
+    /**
+     * @var bool
+     */
+    public bool $phrase = false;
 }

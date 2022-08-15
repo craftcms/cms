@@ -12,6 +12,7 @@ use craft\elements\User;
 use craft\errors\WrongEditionException;
 use craft\helpers\UrlHelper;
 use FunctionalTester;
+use Throwable;
 use yii\base\InvalidConfigException;
 use yii\db\Exception;
 
@@ -27,21 +28,21 @@ class UserActionCest
     /**
      * @var string
      */
-    public $cpTrigger;
+    public string $cpTrigger;
 
     /**
-     * @var User
+     * @var User|null
      */
-    public $activeUser;
+    public ?User $activeUser;
 
     /**
-     * @var
+     * @var User|null
      */
-    public $currentUser;
+    public ?User $currentUser;
 
     /**
      * @param FunctionalTester $I
-     * @throws \Throwable
+     * @throws Throwable
      * @throws WrongEditionException
      * @throws Exception
      */
@@ -53,16 +54,22 @@ class UserActionCest
 
         $I->amLoggedInAs($this->currentUser);
         $this->cpTrigger = Craft::$app->getConfig()->getGeneral()->cpTrigger;
-        $user = new User(['username' => 'craftcmsfunctionaltest', 'email' => 'craft@cms.com']);
+        $user = new User([
+            'active' => true,
+            'username' => 'craftcmsfunctionaltest',
+            'email' => 'craft@cms.com',
+        ]);
 
         Craft::$app->setEdition(Craft::Pro);
         $I->saveElement($user);
         Craft::$app->getUsers()->activateUser($user);
         Craft::$app->getUserPermissions()->saveUserPermissions($user->id, ['accessCp']);
 
-        $this->activeUser = User::find()
+        /** @var User|null $user */
+        $user = User::find()
             ->id($user->id)
             ->one();
+        $this->activeUser = $user;
     }
 
     /**
@@ -74,19 +81,19 @@ class UserActionCest
     {
         $I->amOnPage('/' . $this->cpTrigger . '/users/' . $this->activeUser->id . '');
 
-        $I->see('Login as');
+        $I->see('Sign in as');
 
         Craft::$app->getConfig()->getGeneral()->requireUserAgentAndIpForSession = false;
         $I->submitForm('#userform', [
             'action' => 'users/impersonate',
-            'redirect' => Craft::$app->getSecurity()->hashData(UrlHelper::cpUrl('dashboard'))
+            'redirect' => Craft::$app->getSecurity()->hashData(UrlHelper::cpUrl('dashboard')),
         ]);
 
         $I->see('Dashboard');
 
         $I->assertSame(
             (string)$this->activeUser->id,
-            (string)$user = Craft::$app->getUser()->getId()
+            (string)Craft::$app->getUser()->getId()
         );
     }
 }

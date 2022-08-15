@@ -1,0 +1,46 @@
+{% from '_includes/forms' import text %}
+
+{%- set id = id ?? field.getInputId() %}
+{%- set descriptionId = descriptionId ?? "#{id}-desc" %}
+{%- set prefix = field.prefix ?? false %}
+{%- set suffix = field.suffix ?? false %}
+{%- set hasPrefix = prefix is not same as(false) %}
+{%- set hasSuffix = suffix is not same as(false) %}
+
+{% if formatNumber %}
+    {{ hiddenInput("#{field.handle}[locale]", craft.app.formattingLocale.id) }}
+{% endif %}
+
+{% if hasPrefix or hasSuffix %}
+    {{ tag('span', {
+        id: descriptionId,
+        class: 'visually-hidden',
+        text: [
+            hasPrefix ? 'Value prefixed by “{prefix}”.'|t('app', {prefix: prefix}),
+            hasSuffix ? 'Value suffixed by “{suffix}”.'|t('app', {suffix: suffix}),
+        ]|filter|join(' '),
+    }) }}
+{% endif %}
+
+<div class="flex">
+    {% if hasPrefix %}
+        <div aria-hidden="true">
+            {{ prefix|md(inlineOnly=true)|raw }}
+        </div>
+    {% endif %}
+    <div>
+        {{ text({
+            id: id,
+            name: formatNumber ? "#{field.handle}[value]" : field.handle,
+            value: value,
+            inputmode: field.decimals ? 'decimal' : 'numeric',
+            size: field.size,
+            describedBy: [describedBy ?? null, hasPrefix or hasSuffix ? descriptionId : null]|filter|join(' ') ?: false,
+        }) }}
+    </div>
+    {% if hasSuffix %}
+        <div aria-hidden="true">
+            {{ suffix|md(inlineOnly=true)|raw }}
+        </div>
+    {% endif %}
+</div>

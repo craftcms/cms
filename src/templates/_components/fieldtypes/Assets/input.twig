@@ -1,0 +1,72 @@
+{% if name ?? false %}
+    {{ hiddenInput(name, '') }}
+{% endif -%}
+
+{% set elements = elements ?? [] -%}
+{% set jsClass = jsClass ?? 'Craft.BaseElementSelectInput' -%}
+{% set sources = sources ?? null -%}
+{% set condition = condition ?? null -%}
+{% set criteria = criteria ?? null -%}
+{% set storageKey = storageKey ?? null -%}
+{% set disabled = (disabled ?? false) ? true : false %}
+
+<div id="{{ id }}" class="elementselect">
+    <div class="elements">
+        {% for element in elements %}
+            {% include "_elements/element" with {
+                context: 'field',
+                size: (viewMode == 'large' ? 'large' : 'small')
+            } %}
+        {% endfor %}
+    </div>
+
+    <div class="flex">
+        {% if sources %}
+            {{ tag('button', {
+                type: 'button',
+                text: selectionLabel,
+                class: [
+                    'btn',
+                    'add',
+                    'icon',
+                    'dashed',
+                    disabled ? 'disabled',
+                    limit and elements|length >= limit ? 'hidden',
+                ],
+                aria: {
+                    label: selectionLabel,
+                    describedby: describedBy ?? false,
+                },
+            }) }}
+        {% endif %}
+        <div class="spinner hidden"></div>
+    </div>
+</div>
+
+{% do view.registerAssetBundle("craft\\web\\assets\\prismjs\\PrismJsAsset") %}
+
+{% set jsSettings = {
+    id: id|namespaceInputId,
+    name: name|namespaceInputName,
+    elementType: elementType,
+    sources: sources,
+    condition: condition ? condition.getConfig() : null,
+    criteria: criteria,
+    sourceElementId: sourceElementId,
+    viewMode: viewMode,
+    limit: limit,
+    modalStorageKey: storageKey,
+    fieldId: fieldId,
+    prevalidate: prevalidate ?? false,
+    canUpload: canUpload,
+    defaultFieldLayoutId: defaultFieldLayoutId,
+    modalSettings: {
+        hideSidebar: hideSidebar,
+        defaultSource: defaultUploadLocation
+    },
+    describedBy: (describedBy ?? false) ? describedBy|split(' ')|map(id => id|namespaceInputId)|join(' ') : null,
+} %}
+
+{% js %}
+    new {{ jsClass }}({{ jsSettings|json_encode|raw }});
+{% endjs %}

@@ -13,6 +13,7 @@ use craft\console\Controller;
 use craft\db\Query;
 use craft\db\Table;
 use craft\helpers\Console;
+use craft\helpers\StringHelper;
 use yii\console\ExitCode;
 use yii\db\Expression;
 
@@ -25,22 +26,29 @@ use yii\db\Expression;
 class PruneRevisionsController extends Controller
 {
     /**
-     * @var int The maximum number of revisions an element can have.
+     * @var string|null The section handle(s) to prune revisions from. Can be set to multiple comma-separated sections.
+     * @since 4.2.0
      */
-    public $maxRevisions;
+    public ?string $section = null;
+
+    /**
+     * @var int|null The maximum number of revisions an element can have.
+     */
+    public ?int $maxRevisions = null;
 
     /**
      * @var bool Whether this is a dry run.
      * @since 3.7.9
      */
-    public $dryRun = false;
+    public bool $dryRun = false;
 
     /**
      * @inheritdoc
      */
-    public function options($actionID)
+    public function options($actionID): array
     {
         $options = parent::options($actionID);
+        $options[] = 'section';
         $options[] = 'maxRevisions';
         $options[] = 'dryRun';
         return $options;
@@ -53,8 +61,22 @@ class PruneRevisionsController extends Controller
      */
     public function actionIndex(): int
     {
-        if ($this->maxRevisions === null) {
-            $this->maxRevisions = $this->prompt('What is the max number of revisions an element can have?', [
+        $sectionIds = [];
+        if ($this->section) {
+            $sectionsService = Craft::$app->getSections();
+            $sectionHandles = StringHelper::split($this->section);
+            foreach ($sectionHandles as $sectionHandle) {
+                $section = $sectionsService->getSectionByHandle($sectionHandle);
+                if (!$section) {
+                    $this->stderr("$sectionHandle isn’t a valid section handle.\n", Console::FG_RED);
+                    return ExitCode::UNSPECIFIED_ERROR;
+                }
+                $sectionIds[] = $section->id;
+            }
+        }
+
+        if (!isset($this->maxRevisions)) {
+            $this->maxRevisions = (int)$this->prompt('What is the max number of revisions an element can have?', [
                 'default' => Craft::$app->getConfig()->getGeneral()->maxRevisions,
                 'validator' => function($input) {
                     return filter_var($input, FILTER_VALIDATE_INT, FILTER_NULL_ON_FAILURE) !== null && $input >= 0;
@@ -63,23 +85,29 @@ class PruneRevisionsController extends Controller
         }
 
         // Get the elements with too many revisions
+        $subQuery = (new Query())
+            ->select(['canonicalId', 'count' => 'COUNT(*)'])
+            ->from(['r' => Table::REVISIONS])
+            ->groupBy(['canonicalId'])
+            ->having(['>', 'COUNT(*)', $this->maxRevisions]);
+
+        if (!empty($sectionIds)) {
+            $subQuery
+                ->innerJoin(['entries' => Table::ENTRIES], '[[entries.id]] = [[r.canonicalId]]')
+                ->andWhere(['entries.sectionId' => $sectionIds]);
+        }
+
         $this->stdout('Finding elements with too many revisions ... ');
         $elements = (new Query())
             ->select([
-                'id' => 's.sourceId',
+                'id' => 's.canonicalId',
                 's.count',
                 'type' => (new Query())
                     ->select(['type'])
                     ->from([Table::ELEMENTS])
-                    ->where(new Expression('[[id]] = [[s.sourceId]]')),
+                    ->where(new Expression('[[id]] = [[s.canonicalId]]')),
             ])
-            ->from([
-                's' => (new Query())
-                    ->select(['sourceId', 'count' => 'COUNT(*)'])
-                    ->from(['r' => Table::REVISIONS])
-                    ->groupBy(['sourceId'])
-                    ->having(['>', 'COUNT(*)', $this->maxRevisions]),
-            ])
+            ->from(['s' => $subQuery])
             ->all();
         $this->stdout('done' . PHP_EOL . PHP_EOL, Console::FG_GREEN);
 
@@ -101,13 +129,13 @@ class PruneRevisionsController extends Controller
             $elementType = $element['type'];
             $deleteCount = $element['count'] - $this->maxRevisions;
 
-            $this->stdout('- ' . $elementType::displayName() . " {$element['id']} ({$deleteCount} revisions) ... ");
+            $this->stdout('- ' . $elementType::displayName() . " {$element['id']} ($deleteCount revisions) ... ");
 
             $extraRevisions = $elementType::find()
                 ->revisionOf($element['id'])
                 ->site('*')
                 ->unique()
-                ->anyStatus()
+                ->status(null)
                 ->orderBy(['num' => SORT_DESC])
                 ->offset($this->maxRevisions)
                 ->all();

@@ -1,0 +1,22 @@
+{% set id = id ?? "fs#{random()}" %}
+
+{% set addOptionFn %}
+(createOption, selectize) => {
+    const slideout = new Craft.CpScreenSlideout('fs/edit');
+    slideout.on('submit', ev => {
+        createOption({
+            text: ev.data.name,
+            value: ev.data.handle,
+            hint: ev.data.handle,
+        });
+    });
+    slideout.on('close', () => {
+        selectize.focus();
+    });
+}
+{% endset %}
+
+{% include '_includes/forms/selectize' with {
+    options: options ?? craft.cp.getFsOptions(),
+    addOptionLabel: 'Create a new filesystem…'|t('app'),
+} %}

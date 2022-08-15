@@ -37,65 +37,36 @@ class ExitNode extends Node
     /**
      * @inheritdoc
      */
-    public function compile(Compiler $compiler)
+    public function compile(Compiler $compiler): void
     {
         $compiler->addDebugInfo($this);
 
         if ($this->hasNode('status')) {
             $status = $this->getNode('status')->getAttribute('value');
-            switch ($status) {
-                case 400:
-                    $class = BadRequestHttpException::class;
-                    break;
-                case 401:
-                    $class = UnauthorizedHttpException::class;
-                    break;
-                case 403:
-                    $class = ForbiddenHttpException::class;
-                    break;
-                case 404:
-                    $class = NotFoundHttpException::class;
-                    break;
-                case 405:
-                    $class = MethodNotAllowedHttpException::class;
-                    break;
-                case 406:
-                    $class = NotAcceptableHttpException::class;
-                    break;
-                case 409:
-                    $class = ConflictHttpException::class;
-                    break;
-                case 410:
-                    $class = GoneHttpException::class;
-                    break;
-                case 415:
-                    $class = UnsupportedMediaTypeHttpException::class;
-                    break;
-                case 416:
-                    $class = RangeNotSatisfiableHttpException::class;
-                    break;
-                case 422:
-                    $class = UnprocessableEntityHttpException::class;
-                    break;
-                case 429:
-                    $class = TooManyRequestsHttpException::class;
-                    break;
-                case 500:
-                    $class = ServerErrorHttpException::class;
-                    break;
-                case 503:
-                    $class = ServiceUnavailableHttpException::class;
-                    break;
-                default:
-                    $class = HttpException::class;
-            }
+            $class = match ($status) {
+                400 => BadRequestHttpException::class,
+                401 => UnauthorizedHttpException::class,
+                403 => ForbiddenHttpException::class,
+                404 => NotFoundHttpException::class,
+                405 => MethodNotAllowedHttpException::class,
+                406 => NotAcceptableHttpException::class,
+                409 => ConflictHttpException::class,
+                410 => GoneHttpException::class,
+                415 => UnsupportedMediaTypeHttpException::class,
+                416 => RangeNotSatisfiableHttpException::class,
+                422 => UnprocessableEntityHttpException::class,
+                429 => TooManyRequestsHttpException::class,
+                500 => ServerErrorHttpException::class,
+                503 => ServiceUnavailableHttpException::class,
+                default => HttpException::class,
+            };
 
             if ($class === HttpException::class) {
                 $compiler
-                    ->write("throw new {$class}({$status});\n");
+                    ->write("throw new $class($status);\n");
             } else {
                 $compiler
-                    ->write("throw new {$class}();\n");
+                    ->write("throw new $class();\n");
             }
         } else {
             $compiler->write(Craft::class . "::\$app->end();\n");

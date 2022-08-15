@@ -9,18 +9,18 @@ namespace craft\fields;
 
 use Craft;
 use craft\base\ElementInterface;
-use craft\db\Table as DbTable;
 use craft\elements\Category;
 use craft\elements\db\CategoryQuery;
+use craft\elements\db\ElementQueryInterface;
 use craft\gql\arguments\elements\Category as CategoryArguments;
 use craft\gql\interfaces\elements\Category as CategoryInterface;
 use craft\gql\resolvers\elements\Category as CategoryResolver;
 use craft\helpers\ArrayHelper;
-use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Gql;
 use craft\helpers\Gql as GqlHelper;
 use craft\models\GqlSchema;
+use craft\services\ElementSources;
 use craft\services\Gql as GqlService;
 use GraphQL\Type\Definition\Type;
 
@@ -43,7 +43,7 @@ class Categories extends BaseRelationField
     /**
      * @inheritdoc
      */
-    protected static function elementType(): string
+    public static function elementType(): string
     {
         return Category::class;
     }
@@ -67,49 +67,49 @@ class Categories extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public $allowLimit = false;
+    public bool $allowLimit = false;
 
     /**
      * @inheritdoc
      */
-    public $allowMultipleSources = false;
+    public bool $allowMultipleSources = false;
 
     /**
      * @var int|null Branch limit
      */
-    public $branchLimit;
+    public ?int $branchLimit = null;
 
     /**
      * @inheritdoc
      */
-    protected $settingsTemplate = '_components/fieldtypes/Categories/settings';
+    protected string $settingsTemplate = '_components/fieldtypes/Categories/settings';
 
     /**
      * @inheritdoc
      */
-    protected $inputTemplate = '_components/fieldtypes/Categories/input';
+    protected string $inputTemplate = '_components/fieldtypes/Categories/input';
 
     /**
      * @inheritdoc
      */
-    protected $inputJsClass = 'Craft.CategorySelectInput';
+    protected ?string $inputJsClass = 'Craft.CategorySelectInput';
 
     /**
      * @inheritdoc
      */
-    protected $sortable = false;
+    protected bool $sortable = false;
 
     /**
      * @inheritdoc
      */
-    public function normalizeValue($value, ElementInterface $element = null)
+    public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
         if (is_array($value)) {
             /** @var Category[] $categories */
             $categories = Category::find()
                 ->siteId($this->targetSiteId($element))
                 ->id(array_values(array_filter($value)))
-                ->anyStatus()
+                ->status(null)
                 ->all();
 
             // Fill in any gaps
@@ -130,11 +130,11 @@ class Categories extends BaseRelationField
     /**
      * @inheritdoc
      */
-    protected function inputHtml($value, ElementInterface $element = null): string
+    protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
     {
         // Make sure the field is set to a valid category group
         if ($this->source) {
-            $source = ElementHelper::findSource(static::elementType(), $this->source, 'field');
+            $source = ElementHelper::findSource(static::elementType(), $this->source, ElementSources::CONTEXT_FIELD);
         }
 
         if (empty($source)) {
@@ -147,7 +147,7 @@ class Categories extends BaseRelationField
     /**
      * @inheritdoc
      */
-    protected function inputTemplateVariables($value = null, ElementInterface $element = null): array
+    protected function inputTemplateVariables(array|ElementQueryInterface $value = null, ?ElementInterface $element = null): array
     {
         $variables = parent::inputTemplateVariables($value, $element);
         $variables['branchLimit'] = $this->branchLimit;
@@ -155,7 +155,7 @@ class Categories extends BaseRelationField
         return $variables;
     }
 
-    public function getEagerLoadingMap(array $sourceElements)
+    public function getEagerLoadingMap(array $sourceElements): array|null|false
     {
         $map = parent::getEagerLoadingMap($sourceElements);
         $map['criteria']['orderBy'] = ['structureelements.lft' => SORT_ASC];
@@ -174,11 +174,11 @@ class Categories extends BaseRelationField
      * @inheritdoc
      * @since 3.3.0
      */
-    public function getContentGqlType()
+    public function getContentGqlType(): Type|array
     {
         return [
             'name' => $this->handle,
-            'type' => Type::listOf(CategoryInterface::getType()),
+            'type' => Type::nonNull(Type::listOf(CategoryInterface::getType())),
             'args' => CategoryArguments::getArguments(),
             'resolve' => CategoryResolver::class . '::resolve',
             'complexity' => GqlHelper::relatedArgumentComplexity(GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD),
@@ -189,17 +189,23 @@ class Categories extends BaseRelationField
      * @inheritdoc
      * @since 3.3.0
      */
-    public function getEagerLoadingGqlConditions()
+    public function getEagerLoadingGqlConditions(): ?array
     {
         $allowedEntities = Gql::extractAllowedEntitiesFromSchema();
-        $allowedCategoryUids = $allowedEntities['categorygroups'] ?? [];
+        $categoryGroupUids = $allowedEntities['categorygroups'] ?? [];
 
-        if (empty($allowedCategoryUids)) {
-            return false;
+        if (empty($categoryGroupUids)) {
+            return null;
         }
 
-        $categoryIds = Db::idsByUids(DbTable::CATEGORYGROUPS, $allowedCategoryUids);
+        $categoriesService = Craft::$app->getCategories();
+        $groupIds = array_filter(array_map(function(string $uid) use ($categoriesService) {
+            $group = $categoriesService->getGroupByUid($uid);
+            return $group->id ?? null;
+        }, $categoryGroupUids));
 
-        return ['groupId' => array_values($categoryIds)];
+        return [
+            'groupId' => $groupIds,
+        ];
     }
 }

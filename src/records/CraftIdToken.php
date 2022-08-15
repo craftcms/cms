@@ -17,7 +17,7 @@ use yii\db\ActiveQueryInterface;
  * @property int $id ID
  * @property int $userId User ID
  * @property string $accessToken Access Token
- * @property \DateTime $expiryDate Expiration Date
+ * @property string $expiryDate Expiration Date
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */

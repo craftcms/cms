@@ -11,6 +11,7 @@ use craft\db\ActiveRecord;
 use craft\db\SoftDeleteTrait;
 use craft\db\Table;
 use yii\db\ActiveQueryInterface;
+use yii2tech\ar\softdelete\SoftDeleteBehavior;
 
 /**
  * Field layout record class.
@@ -19,6 +20,7 @@ use yii\db\ActiveQueryInterface;
  * @property string $type Type
  * @property FieldLayoutTab[] $tabs Tabs
  * @property FieldLayoutField[] $fields Fields
+ * @mixin SoftDeleteBehavior
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */

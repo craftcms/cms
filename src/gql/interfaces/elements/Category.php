@@ -7,10 +7,10 @@
 
 namespace craft\gql\interfaces\elements;
 
+use Craft;
 use craft\gql\arguments\elements\Category as CategoryArguments;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\Structure;
-use craft\gql\TypeManager;
 use craft\gql\types\generators\CategoryType;
 use craft\helpers\Gql;
 use craft\services\Gql as GqlService;
@@ -36,7 +36,7 @@ class Category extends Structure
     /**
      * @inheritdoc
      */
-    public static function getType($fields = null): Type
+    public static function getType(): Type
     {
         if ($type = GqlEntityRegistry::getEntity(self::getName())) {
             return $type;
@@ -67,22 +67,22 @@ class Category extends Structure
      */
     public static function getFieldDefinitions(): array
     {
-        return TypeManager::prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), [
+        return Craft::$app->getGql()->prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), [
             'groupId' => [
                 'name' => 'groupId',
-                'type' => Type::int(),
+                'type' => Type::nonNull(Type::int()),
                 'description' => 'The ID of the group that contains the category.',
             ],
             'groupHandle' => [
                 'name' => 'groupHandle',
-                'type' => Type::string(),
+                'type' => Type::nonNull(Type::string()),
                 'description' => 'The handle of the group that contains the category.',
                 'complexity' => Gql::singleQueryComplexity(),
             ],
             'children' => [
                 'name' => 'children',
                 'args' => CategoryArguments::getArguments(),
-                'type' => Type::listOf(static::getType()),
+                'type' => Type::nonNull(Type::listOf(Type::nonNull(static::getType()))),
                 'description' => 'The category’s children.',
                 'complexity' => Gql::relatedArgumentComplexity(GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD),
             ],
@@ -101,7 +101,7 @@ class Category extends Structure
             'localized' => [
                 'name' => 'localized',
                 'args' => CategoryArguments::getArguments(),
-                'type' => Type::listOf(static::getType()),
+                'type' => Type::nonNull(Type::listOf(Type::nonNull(static::getType()))),
                 'description' => 'The same element in other locales.',
                 'complexity' => Gql::eagerLoadComplexity(),
             ],

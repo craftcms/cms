@@ -18,6 +18,7 @@ use craft\image\Svg;
 use craft\image\SvgAllowedAttributes;
 use enshrined\svgSanitize\Sanitizer;
 use Imagine\Imagick\Imagick;
+use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
 
@@ -34,33 +35,33 @@ use yii\base\Exception;
  */
 class Images extends Component
 {
-    const DRIVER_GD = 'gd';
-    const DRIVER_IMAGICK = 'imagick';
-    const MINIMUM_IMAGICK_VERSION = '6.2.9';
+    public const DRIVER_GD = 'gd';
+    public const DRIVER_IMAGICK = 'imagick';
+    public const MINIMUM_IMAGICK_VERSION = '6.2.9';
 
     /**
      * @var array Image formats that can be manipulated.
      */
-    public $supportedImageFormats = ['jpg', 'jpeg', 'gif', 'png'];
+    public array $supportedImageFormats = ['jpg', 'jpeg', 'gif', 'png'];
 
     /**
      * @var string Image driver.
      */
-    private $_driver = '';
+    private string $_driver = '';
 
     /**
      * @var string|null Imagick version being used, if any.
      */
-    private $_imagickVersion;
+    private ?string $_imagickVersion = null;
 
     /**
      * Decide on the image driver being used.
      */
-    public function init()
+    public function init(): void
     {
         if (strtolower(Craft::$app->getConfig()->getGeneral()->imageDriver) === 'gd') {
             $this->_driver = self::DRIVER_GD;
-        } else if ($this->getCanUseImagick()) {
+        } elseif ($this->getCanUseImagick()) {
             $this->_driver = self::DRIVER_IMAGICK;
         } else {
             $this->_driver = self::DRIVER_GD;
@@ -72,9 +73,9 @@ class Images extends Component
     /**
      * Returns whether image manipulations will be performed using GD or not.
      *
-     * @return bool|null
+     * @return bool
      */
-    public function getIsGd()
+    public function getIsGd(): bool
     {
         return $this->_driver === self::DRIVER_GD;
     }
@@ -103,7 +104,7 @@ class Images extends Component
         $version = App::extensionVersion('imagick');
         try {
             $version .= ' (ImageMagick ' . $this->getImageMagickApiVersion() . ')';
-        } catch (\Throwable $e) {
+        } catch (Throwable) {
         }
         return $version;
     }
@@ -136,7 +137,7 @@ class Images extends Component
      */
     public function getImageMagickApiVersion(): string
     {
-        if ($this->_imagickVersion !== null) {
+        if (isset($this->_imagickVersion)) {
             return $this->_imagickVersion;
         }
 
@@ -146,7 +147,6 @@ class Images extends Component
 
         // Taken from Imagick\Imagine() constructor.
         // Imagick::getVersion() is static only since Imagick PECL extension 3.2.0b1, so instantiate it.
-        /** @noinspection PhpStaticAsDynamicMethodCallInspection */
         $versionString = \Imagick::getVersion()['versionString'];
         [$this->_imagickVersion] = sscanf($versionString, 'ImageMagick %s %04d-%02d-%02d %s %s');
 
@@ -232,7 +232,7 @@ class Images extends Component
      * The code was adapted from http://www.php.net/manual/en/function.imagecreatefromjpeg.php#64155.
      * It will first attempt to do it with available memory. If that fails,
      * Craft will bump the memory to amount defined by the
-     * <config3:phpMaxMemoryLimit> config setting, then try again.
+     * <config4:phpMaxMemoryLimit> config setting, then try again.
      *
      * @param string $filePath The path to the image file.
      * @param bool $toTheMax If set to true, will set the PHP memory to the config setting phpMaxMemoryLimit.
@@ -294,7 +294,7 @@ class Images extends Component
      * @param string $filePath
      * @throws Exception if $filePath is a malformed SVG image
      */
-    public function cleanImage(string $filePath)
+    public function cleanImage(string $filePath): void
     {
         $cleanedByRotation = false;
         $cleanedByStripping = false;
@@ -328,7 +328,7 @@ class Images extends Component
             }
 
             $cleanedByStripping = $this->stripOrientationFromExifData($filePath);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             Craft::error('Tried to rotate or strip EXIF data from image and failed: ' . $e->getMessage(), __METHOD__);
         }
 
@@ -391,7 +391,7 @@ class Images extends Component
      * @param string $filePath
      * @return array|null
      */
-    public function getExifData(string $filePath)
+    public function getExifData(string $filePath): ?array
     {
         if (!ImageHelper::canHaveExifData($filePath)) {
             return null;

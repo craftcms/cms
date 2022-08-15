@@ -7,9 +7,9 @@
 
 namespace craft\gql\interfaces\elements;
 
+use Craft;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\Element;
-use craft\gql\TypeManager;
 use craft\gql\types\generators\TagType;
 use craft\helpers\Gql;
 use GraphQL\Type\Definition\InterfaceType;
@@ -34,7 +34,7 @@ class Tag extends Element
     /**
      * @inheritdoc
      */
-    public static function getType($fields = null): Type
+    public static function getType(): Type
     {
         if ($type = GqlEntityRegistry::getEntity(self::getName())) {
             return $type;
@@ -65,16 +65,15 @@ class Tag extends Element
      */
     public static function getFieldDefinitions(): array
     {
-        // @TODO Remove the `uri` field for Assets.
-        return TypeManager::prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), [
+        return Craft::$app->getGql()->prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), [
             'groupId' => [
                 'name' => 'groupId',
-                'type' => Type::int(),
+                'type' => Type::nonNull(Type::int()),
                 'description' => 'The ID of the group that contains the tag.',
             ],
             'groupHandle' => [
                 'name' => 'groupHandle',
-                'type' => Type::string(),
+                'type' => Type::nonNull(Type::string()),
                 'description' => 'The handle of the group that contains the tag.',
                 'complexity' => Gql::singleQueryComplexity(),
             ],

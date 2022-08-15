@@ -1,8 +1,9 @@
 @charset "UTF-8";
-@import "@craftcms/sass/mixins";
+@import '@craftcms/sass/mixins';
 
 /* No Scroll */
-html.noscroll, html.noscroll body {
+html.noscroll,
+html.noscroll body {
   overflow: hidden;
   height: 100%;
 }
@@ -10,9 +11,10 @@ html.noscroll, html.noscroll body {
 /* Image Editor */
 
 .modal.imageeditor {
-  background-color: $grey900;
-  color: $white;
+  background-color: var(--gray-900);
+  color: var(--white);
   @include light-on-dark-text;
+  @include light-focus-ring;
   opacity: 0;
   user-select: none;
 }
@@ -26,16 +28,16 @@ html.noscroll, html.noscroll body {
 }
 
 .modal.imageeditor .btn:not(.submit):not(.noborder) {
-  background-color: $grey600;
-  color: $white;
+  background-color: var(--gray-600);
+  color: var(--white);
 }
 
 .modal.imageeditor .btn:not(.submit):not(.noborder):hover {
-  background-color: $grey700;
+  background-color: var(--gray-700);
 }
 
 .modal.imageeditor .btn:not(.submit):not(.noborder).active {
-  background-color: $grey800;
+  background-color: var(--gray-800);
 }
 
 .modal.imageeditor .icon::before {
@@ -76,8 +78,12 @@ html.noscroll, html.noscroll body {
   padding: 0;
 }
 
+.modal.imageeditor input {
+  color: var(--text-color);
+}
+
 .modal.imageeditor .body .tabs {
-  border-right: 1px solid $grey1000;
+  border-right: 1px solid var(--gray-1000);
 }
 
 .modal.imageeditor .body .tabs ul {
@@ -87,9 +93,29 @@ html.noscroll, html.noscroll body {
 }
 
 .modal.imageeditor .body .tabs ul li {
+  position: relative;
   padding: 14px;
   text-align: center;
-  border-bottom: 1px solid $grey1000;
+  border-bottom: 1px solid var(--gray-1000);
+  cursor: pointer;
+
+  &::before {
+    position: absolute;
+    top: 0;
+    @include left(0);
+    content: '';
+    width: 0;
+    height: 100%;
+    background-color: currentColor;
+  }
+
+  &.selected {
+    background-color: darken($grey900, 5%);
+
+    &::before {
+      width: 2px;
+    }
+  }
 }
 
 .modal.imageeditor .body .tabs ul li i {
@@ -99,24 +125,20 @@ html.noscroll, html.noscroll body {
   height: 24px;
 }
 
-.modal.imageeditor .body .tabs ul li[data-view="rotate"] i {
+.modal.imageeditor .body .tabs ul li[data-view='rotate'] i {
   background-image: url(../images/image-editor/rotate-left.svg);
 }
 
-.modal.imageeditor .body .tabs ul li[data-view="crop"] i {
+.modal.imageeditor .body .tabs ul li[data-view='crop'] i {
   background-image: url(../images/image-editor/crop.svg);
 }
 
-.modal.imageeditor .body .tabs ul li[data-view="filters"] i {
+.modal.imageeditor .body .tabs ul li[data-view='filters'] i {
   background-image: url(../images/image-editor/filters.svg);
 }
 
 .modal.imageeditor .body .tabs ul li:hover {
   background-color: darken($grey900, 2%);
-}
-
-.modal.imageeditor .body .tabs ul li.selected {
-  background-color: darken($grey900, 5%);
 }
 
 .modal.imageeditor .body .tabs ul li:hover {
@@ -160,7 +182,7 @@ html.noscroll, html.noscroll body {
 }
 
 .modal.imageeditor .body .views .filters ul li.selected img {
-  border-color: $white;
+  border-color: var(--white);
 }
 
 .modal.imageeditor .body .image-container {
@@ -190,6 +212,7 @@ html.noscroll, html.noscroll body {
 
 .modal.imageeditor .body .image-container .image-tools .straightening {
   max-width: 400px;
+  min-height: toRem(60);
   display: block;
   margin: 0 auto;
   overflow: hidden;
@@ -205,21 +228,38 @@ html.noscroll, html.noscroll body {
 }
 
 .modal.imageeditor .body .views .crop {
+  fieldset .heading {
+    display: none;
+  }
+
+  .custom-constraint-spacer {
+    padding: 0 var(--xs);
+  }
+
+  .constraint-group {
+    display: grid;
+    grid-gap: var(--xs);
+  }
+
+  .custom {
+    @include padding-left($radioSize + 5);
+  }
+
   .orientation {
     display: flex;
     align-items: center;
     justify-content: center;
 
     input {
-      -webkit-appearance:none;
-      -moz-appearance:none;
-      appearance:none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
       background-position: center center;
       background-repeat: no-repeat;
       margin: 0 4px;
       cursor: pointer;
 
-      &[value="landscape"] {
+      &[value='landscape'] {
         width: 30px;
         height: 20px;
         background-image: url(../images/image-editor/orientation-landscape-unchecked.svg);
@@ -229,7 +269,7 @@ html.noscroll, html.noscroll body {
         }
       }
 
-      &[value="portrait"] {
+      &[value='portrait'] {
         width: 20px;
         height: 30px;
         background-image: url(../images/image-editor/orientation-portrait-unchecked.svg);
@@ -246,74 +286,27 @@ html.noscroll, html.noscroll body {
   & > .btngroup:first-child {
     justify-content: center;
   }
-
-  .constraint-buttons-container {
-    display: flex;
-    justify-content: center;
-
-    .constraint-buttons {
-      overflow: auto;
-      margin-left: -24px;
-      margin-right: -24px;
-      margin-bottom: 12px;
-      padding-left: 24px;
-      padding-right: 24px;
-      padding-bottom: 12px;
-
-      .constraint {
-        padding: 4px 12px;
-
-        &:hover {
-          cursor: pointer;
-        }
-
-        &.active {
-          color: #fff;
-          background: $darkSelColor;
-          border-radius: 1rem;
-        }
-      }
-
-      .constraint:last-child {
-        position: relative;
-
-        &:after {
-          content: '';
-          display: block;
-          position: absolute;
-          right: -24px;
-          width: 24px;
-          height: 1px;
-        }
-      }
-    }
-  }
 }
 
 .modal.imageeditor:not(.vertical) .body .views .crop {
-  .constraint-buttons {
-    flex-direction: column;
-    align-items: stretch;
-    text-align: center;
-
-    .constraint {
-      text-align: left;
-      padding: 4px 0 4px 24px;
-      cursor: pointer;
-
-      &.active {
-        background-position: left center;
-        background-repeat: no-repeat;
-        background-image: url(../images/image-editor/check.svg);
-      }
-    }
+  .constraint.custom {
+    margin-top: var(--xs);
   }
 }
 
 /* Vertical */
 
 .vertical.imageeditor .body {
-  flex-direction: column-reverse;
+  flex-direction: column;
+
+  .image-container {
+    flex-basis: 30vh;
+    flex-shrink: 0;
+  }
+
+  .constraint-group {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 
 .vertical.imageeditor .body .tabs ul {
@@ -328,7 +321,19 @@ html.noscroll, html.noscroll body {
   flex-grow: 1;
   border: 0;
   border-right: 1px solid #000;
-  padding: 7px;
+  padding: 10px 7px;
+
+  &::before {
+    top: unset;
+    top: 0;
+    width: 100%;
+    height: 0;
+  }
+
+  &.selected::before {
+    width: 100%;
+    height: 2px;
+  }
 }
 
 .vertical.imageeditor .body .views {
@@ -354,7 +359,7 @@ html.noscroll, html.noscroll body {
   margin: 0 -24px;
   margin-bottom: -24px;
   padding: 24px;
-  text-align: center
+  text-align: center;
 }
 
 .vertical.imageeditor .body .views .filters ul li {
@@ -367,19 +372,41 @@ html.noscroll, html.noscroll body {
 .slide-rule {
   position: relative;
   padding: 10px 0;
+
+  &:focus {
+    box-shadow: none;
+  }
+
+  @include focus-styles {
+    .cursor::after {
+      box-shadow: var(--focus-ring);
+    }
+  }
+
+  .cursor {
+    &::after {
+      content: '';
+      width: toRem(20);
+      height: toRem(50);
+      position: absolute;
+      top: -15px;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+  }
 }
 
 .slide-rule .cursor {
   position: absolute;
-  margin-left: -4px;
+  margin-left: toRem(-4);
   margin-top: 4px;
   left: 50%;
   z-index: 1;
   width: 0;
   height: 0;
-  border-left: 5px solid transparent;
-  border-right: 5px solid transparent;
-  border-top: 5px solid #63A6E1;
+  border-left: toRem(5) solid transparent;
+  border-right: toRem(5) solid transparent;
+  border-top: toRem(5) solid #63a6e1;
 }
 
 .slide-rule .graduations {
@@ -414,13 +441,13 @@ html.noscroll, html.noscroll body {
 }
 
 .slide-rule .graduations ul li.selected:before {
-  border-left-color: #63A6E1;
+  border-left-color: #63a6e1;
 }
 
 .slide-rule .graduations ul li:before {
   content: '';
   position: absolute;
-  border-left: 1px solid $white;
+  border-left: 1px solid var(--white);
   height: 10px;
   top: 0px;
   left: 0;
@@ -445,7 +472,7 @@ html.noscroll, html.noscroll body {
   padding: 5px;
   width: 50px;
   margin-left: -25px;
-  background: $grey600;
+  background: var(--gray-600);
 }
 
 .slide-rule .overlay {
@@ -455,22 +482,28 @@ html.noscroll, html.noscroll body {
   right: 0;
   bottom: 1px;
   left: 0;
-  background-image: linear-gradient(to right, $grey900 0%, transparentize($grey900, 1) 15%, transparentize($grey900, 1) 85%, $grey900 100%);
+  background-image: linear-gradient(
+    to right,
+    var(--gray-900) 0%,
+    transparentize($grey900, 1) 15%,
+    transparentize($grey900, 1) 85%,
+    var(--gray-900) 100%
+  );
 }
 
 /* Misc */
 
 .menu.dark {
-  background-color: $grey600;
+  background-color: var(--gray-600);
   @include light-on-dark-text;
 
   ul {
     li {
       a {
-        color: $white !important;
+        color: var(--white) !important;
 
         &:not(.sel):not(.disabled):hover {
-          background-color: $grey700;
+          background-color: var(--gray-700);
         }
       }
     }

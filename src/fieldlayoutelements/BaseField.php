@@ -15,7 +15,7 @@ use craft\helpers\Cp;
 use craft\helpers\Html;
 
 /**
- * BaseField is the base class for custom and standard fields that can be included in field layouts.
+ * BaseField is the base class for native and custom fields that can be included in field layouts.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.0
@@ -25,27 +25,27 @@ abstract class BaseField extends FieldLayoutElement
     /**
      * @var string|null The field’s label
      */
-    public $label;
+    public ?string $label = null;
 
     /**
      * @var string|null The field’s instructions
      */
-    public $instructions;
+    public ?string $instructions = null;
 
     /**
      * @var string|null The field’s tip text
      */
-    public $tip;
+    public ?string $tip = null;
 
     /**
      * @var string|null The field’s warning text
      */
-    public $warning;
+    public ?string $warning = null;
 
     /**
      * @var bool Whether the field is required.
      */
-    public $required = false;
+    public bool $required = false;
 
     /**
      * @inheritdoc
@@ -72,7 +72,7 @@ abstract class BaseField extends FieldLayoutElement
      * @param ElementInterface|null $element
      * @return mixed
      */
-    protected function value(ElementInterface $element = null)
+    protected function value(?ElementInterface $element = null): mixed
     {
         return $element->{$this->attribute()} ?? null;
     }
@@ -83,7 +83,7 @@ abstract class BaseField extends FieldLayoutElement
      * @param ElementInterface|null $element
      * @return string[]
      */
-    protected function errors(ElementInterface $element = null): array
+    protected function errors(?ElementInterface $element = null): array
     {
         if (!$element) {
             return [];
@@ -128,10 +128,12 @@ abstract class BaseField extends FieldLayoutElement
     {
         $innerHtml = '';
 
-        $label = $this->showLabel() ? $this->label() : null;
-        $requiredHtml = $this->required ? Html::tag('span', '', [
+        $label = $this->selectorLabel();
+        $requiredHtml = $this->required ? Html::tag('div', '', [
             'class' => 'fld-required-indicator',
             'title' => Craft::t('app', 'This field is required'),
+            'aria' => ['label' => Craft::t('app', 'This field is required')],
+            'data' => ['icon' => 'asterisk'],
         ]) : '';
 
         if ($label !== null) {
@@ -175,6 +177,16 @@ abstract class BaseField extends FieldLayoutElement
     }
 
     /**
+     * Returns the selector label.
+     *
+     * @since 4.0.0
+     */
+    protected function selectorLabel(): ?string
+    {
+        return $this->showLabel() ? $this->label() : null;
+    }
+
+    /**
      * @inheritdoc
      */
     public function hasCustomWidth(): bool
@@ -185,7 +197,7 @@ abstract class BaseField extends FieldLayoutElement
     /**
      * @inheritdoc
      */
-    public function settingsHtml()
+    protected function settingsHtml(): ?string
     {
         return Craft::$app->getView()->renderTemplate('_includes/forms/fld/field-settings', [
             'field' => $this,
@@ -198,7 +210,7 @@ abstract class BaseField extends FieldLayoutElement
     /**
      * @inheritdoc
      */
-    public function formHtml(ElementInterface $element = null, bool $static = false)
+    public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
         $inputHtml = $this->inputHtml($element, $static);
         if ($inputHtml === null) {
@@ -211,6 +223,7 @@ abstract class BaseField extends FieldLayoutElement
         return Cp::fieldHtml($inputHtml, [
             'fieldset' => $this->useFieldset(),
             'id' => $this->id(),
+            'labelId' => $this->labelId(),
             'instructionsId' => $this->instructionsId(),
             'tipId' => $this->tipId(),
             'warningId' => $this->warningId(),
@@ -266,6 +279,17 @@ abstract class BaseField extends FieldLayoutElement
     protected function id(): string
     {
         return $this->attribute();
+    }
+
+    /**
+     * Returns the `id` of the field label.
+     *
+     * @return string
+     * @since 4.1.0
+     */
+    protected function labelId(): string
+    {
+        return sprintf('%s-label', $this->id());
     }
 
     /**
@@ -352,7 +376,7 @@ abstract class BaseField extends FieldLayoutElement
      * @param bool $static Whether the form should be static (non-interactive)
      * @return array
      */
-    protected function inputContainerAttributes(ElementInterface $element = null, bool $static = false): array
+    protected function inputContainerAttributes(?ElementInterface $element = null, bool $static = false): array
     {
         return [];
     }
@@ -364,7 +388,7 @@ abstract class BaseField extends FieldLayoutElement
      * @param bool $static Whether the form should be static (non-interactive)
      * @return array
      */
-    protected function labelAttributes(ElementInterface $element = null, bool $static = false): array
+    protected function labelAttributes(?ElementInterface $element = null, bool $static = false): array
     {
         return [];
     }
@@ -374,9 +398,9 @@ abstract class BaseField extends FieldLayoutElement
      *
      * @return string|null
      */
-    public function label()
+    public function label(): ?string
     {
-        if ($this->label !== null && $this->label !== '' && $this->label !== '__blank__') {
+        if (isset($this->label) && $this->label !== '' && $this->label !== '__blank__') {
             return Craft::t('site', $this->label);
         }
         return $this->defaultLabel();
@@ -389,7 +413,7 @@ abstract class BaseField extends FieldLayoutElement
      * @param bool $static Whether the form should be static (non-interactive)
      * @return string|null
      */
-    protected function defaultLabel(ElementInterface $element = null, bool $static = false)
+    protected function defaultLabel(?ElementInterface $element = null, bool $static = false): ?string
     {
         return null;
     }
@@ -412,7 +436,7 @@ abstract class BaseField extends FieldLayoutElement
      * @param bool $static Whether the form should be static (non-interactive)
      * @return string|null
      */
-    protected function statusClass(ElementInterface $element = null, bool $static = false)
+    protected function statusClass(?ElementInterface $element = null, bool $static = false): ?string
     {
         return null;
     }
@@ -424,7 +448,7 @@ abstract class BaseField extends FieldLayoutElement
      * @param bool $static Whether the form should be static (non-interactive)
      * @return string|null
      */
-    protected function statusLabel(ElementInterface $element = null, bool $static = false)
+    protected function statusLabel(?ElementInterface $element = null, bool $static = false): ?string
     {
         return null;
     }
@@ -449,7 +473,7 @@ abstract class BaseField extends FieldLayoutElement
      * @param bool $static Whether the form should be static (non-interactive)
      * @return string|null
      */
-    protected function defaultInstructions(ElementInterface $element = null, bool $static = false)
+    protected function defaultInstructions(?ElementInterface $element = null, bool $static = false): ?string
     {
         return null;
     }
@@ -461,7 +485,7 @@ abstract class BaseField extends FieldLayoutElement
      * @param bool $static Whether the form should be static (non-interactive)
      * @return string|null
      */
-    abstract protected function inputHtml(ElementInterface $element = null, bool $static = false);
+    abstract protected function inputHtml(?ElementInterface $element = null, bool $static = false): ?string;
 
     /**
      * Returns the field’s tip text.
@@ -470,7 +494,7 @@ abstract class BaseField extends FieldLayoutElement
      * @param bool $static Whether the form should be static (non-interactive)
      * @return string|null
      */
-    protected function tip(ElementInterface $element = null, bool $static = false)
+    protected function tip(?ElementInterface $element = null, bool $static = false): ?string
     {
         return $this->tip ? Craft::t('site', $this->tip) : null;
     }
@@ -482,7 +506,7 @@ abstract class BaseField extends FieldLayoutElement
      * @param bool $static Whether the form should be static (non-interactive)
      * @return string|null
      */
-    protected function warning(ElementInterface $element = null, bool $static = false)
+    protected function warning(?ElementInterface $element = null, bool $static = false): ?string
     {
         return $this->warning ? Craft::t('site', $this->warning) : null;
     }
@@ -494,13 +518,13 @@ abstract class BaseField extends FieldLayoutElement
      * @param bool $static Whether the form should be static (non-interactive)
      * @return string
      */
-    protected function orientation(ElementInterface $element = null, bool $static = false): string
+    protected function orientation(?ElementInterface $element = null, bool $static = false): string
     {
         // If there’s only one site, go with its language
         if (!Craft::$app->getIsMultiSite()) {
             // Only one site so use its language
             $locale = Craft::$app->getSites()->getPrimarySite()->getLocale();
-        } else if (!$element || !$this->translatable($element, $static)) {
+        } elseif (!$element || !$this->translatable($element, $static)) {
             // Not translatable, so use the user’s language
             $locale = Craft::$app->getLocale();
         } else {
@@ -518,7 +542,7 @@ abstract class BaseField extends FieldLayoutElement
      * @param bool $static Whether the form should be static (non-interactive)
      * @return bool
      */
-    protected function translatable(ElementInterface $element = null, bool $static = false): bool
+    protected function translatable(?ElementInterface $element = null, bool $static = false): bool
     {
         return false;
     }
@@ -530,7 +554,7 @@ abstract class BaseField extends FieldLayoutElement
      * @param bool $static Whether the form should be static (non-interactive)
      * @return string|null
      */
-    protected function translationDescription(ElementInterface $element = null, bool $static = false)
+    protected function translationDescription(?ElementInterface $element = null, bool $static = false): ?string
     {
         return null;
     }

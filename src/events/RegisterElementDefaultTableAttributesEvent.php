@@ -20,10 +20,10 @@ class RegisterElementDefaultTableAttributesEvent extends Event
     /**
      * @var string The selected source’s key
      */
-    public $source;
+    public string $source;
 
     /**
      * @var string[] List of registered default table attributes for the element type.
      */
-    public $tableAttributes = [];
+    public array $tableAttributes = [];
 }

@@ -1,0 +1,273 @@
+{% extends 'settings/sections/_layout' %}
+{% set selectedTab = 'settings' %}
+{% set fullPageForm = true %}
+{% set formActions = [
+    {
+        label: 'Save and continue editing'|t('app'),
+        redirect: 'settings/sections/{id}'|hash,
+        shortcut: true,
+        retainScroll: true,
+    },
+] %}
+
+{% import "_includes/forms" as forms %}
+
+{% set headlessMode = craft.app.config.general.headlessMode %}
+
+
+{% block submitButton %}
+    {% if section.id %}
+        {{ parent() }}
+    {% else %}
+        <button type="submit" class="btn submit">{{ 'Save and edit entry types'|t('app') }}</button>
+    {% endif %}
+{% endblock %}
+
+
+{% block content %}
+    {{ actionInput('sections/save-section') }}
+    {{ redirectInput(section.id ? 'settings/sections' : "settings/sections/{id}/entrytypes") }}
+
+    {% if section.id %}{{ hiddenInput('sectionId', section.id) }}{% endif %}
+
+    {{ forms.textField({
+        first: true,
+        label: "Name"|t('app'),
+        instructions: "What this section will be called in the control panel."|t('app'),
+        id: 'name',
+        name: 'name',
+        value: section.name,
+        errors: section.getErrors('name'),
+        autofocus: true,
+        required: true,
+    }) }}
+
+    {{ forms.textField({
+        label: "Handle"|t('app'),
+        instructions: "How you’ll refer to this section in the templates."|t('app'),
+        id: 'handle',
+        name: 'handle',
+        class: 'code',
+        autocorrect: false,
+        autocapitalize: false,
+        value: section.handle,
+        errors: section.getErrors('handle'),
+        required: true
+    }) }}
+
+    {{ forms.checkboxField({
+        label: 'Enable versioning for entries in this section'|t('app'),
+        id: 'enableVersioning',
+        name: 'enableVersioning',
+        checked: section.enableVersioning
+    }) }}
+
+    {{ forms.selectField({
+        label: "Section Type"|t('app'),
+        instructions: "What type of section is this?"|t('app'),
+        warning: section.id and section.type != 'single' ? 'Changing this may result in data loss.'|t('app'),
+        id: 'type',
+        name: 'type',
+        options: typeOptions,
+        value: section.type,
+        toggle: true,
+        targetPrefix: '.type-',
+        errors: section.getErrors('type')
+    }) }}
+
+    <hr>
+
+    {% set siteRows = [] %}
+    {% set siteErrors = section.getErrors('siteSettings') %}
+
+    {% for site in craft.app.sites.getAllSites() %}
+        {% set siteSettings = section.siteSettings[site.id] ?? null %}
+        {% if siteSettings %}
+            {% for attribute, errors in siteSettings.getErrors() %}
+                {% set siteErrors = siteErrors|merge(errors) %}
+            {% endfor %}
+        {% endif %}
+        {% set siteRows = siteRows|merge({
+            (site.handle): {
+                heading: site.name|t('site')|e,
+                enabled: include('_includes/forms/lightswitch', {
+                    name: 'sites['~site.handle~'][enabled]',
+                    on: brandNewSection or siteSettings,
+                    value: site.id,
+                    small: true
+                }),
+                singleHomepage: {
+                    value: (section.type == 'single' and siteSettings and siteSettings.uriFormat == '__home__')
+                },
+                singleUri: {
+                   value: (section.type == 'single' and siteSettings and siteSettings.uriFormat != '__home__') ? siteSettings.uriFormat,
+                   hasErrors: (section.type == 'single' and siteSettings ? siteSettings.hasErrors('uriFormat'))
+                },
+                uriFormat: {
+                    value: siteSettings ? siteSettings.uriFormat,
+                    hasErrors: (section.type != 'single' and siteSettings ? siteSettings.hasErrors('uriFormat'))
+                },
+                template: not headlessMode ? {
+                    value: siteSettings ? siteSettings.template,
+                    hasErrors: siteSettings ? siteSettings.hasErrors('template'),
+                },
+                enabledByDefault: siteSettings ? siteSettings.enabledByDefault : true,
+            }|filter
+        }) %}
+    {% endfor %}
+
+    {{ forms.editableTableField({
+        label: "Site Settings"|t('app'),
+        instructions: "Choose which sites this section should be available in, and configure the site-specific settings."|t('app'),
+        id: 'sites',
+        name: 'sites',
+        cols: {
+            heading: {
+                type: 'heading',
+                heading: "Site"|t('app'),
+                thin: true
+            },
+            enabled: {
+                type: 'heading',
+                thin: true,
+                class: not craft.app.getIsMultiSite() ? 'hidden'
+            },
+            singleHomepage: {
+                type: 'checkbox',
+                headingHtml: tag('div', {
+                    data: {icon: 'home'},
+                    title: 'Homepage'|t('app')
+                }),
+                thin: true,
+                class: ['single-homepage', 'type-single', section.type != 'single' ? 'hidden']|filter
+            },
+            singleUri: {
+                type: 'singleline',
+                heading: "URI"|t('app'),
+                info: "What the entry URI should be for the site. Leave blank if the entry doesn’t have a URL."|t('app'),
+                placeholder: 'Leave blank if the entry doesn’t have a URL'|t('app'),
+                code: true,
+                width: headlessMode ? 500,
+                class: ['single-uri', 'type-single', section.type != 'single' ? 'hidden']|filter
+            },
+            uriFormat: {
+                type: 'singleline',
+                heading: "Entry URI Format"|t('app'),
+                info: "What entry URIs should look like for the site. Leave blank if entries don’t have URLs."|t('app'),
+                placeholder: 'Leave blank if entries don’t have URLs'|t('app'),
+                code: true,
+                width: headlessMode ? 500,
+                class: ['type-channel', 'type-structure', section.type == 'single' ? ' hidden']|filter
+            },
+            template: not headlessMode ? {
+                type: 'template',
+                heading: "Template"|t('app'),
+                info: "Which template should be loaded when an entry’s URL is requested."|t('app'),
+                code: true
+            },
+            enabledByDefault: {
+                type: 'lightswitch',
+                heading: "Default Status"|t('app'),
+                thin: true,
+                class: ['type-channel', 'type-structure', section.type == 'single' ? ' hidden']|filter
+            }
+        }|filter,
+        rows: siteRows,
+        fullWidth: true,
+        allowAdd: false,
+        allowDelete: false,
+        allowReorder: false,
+        errors: siteErrors|unique
+    }) }}
+
+    {% if craft.app.getIsMultiSite() %}
+        <div class="field type-channel type-structure {% if section.type == 'single' %}hidden{% endif %}">
+            {{ forms.selectField({
+                label: 'Propagation Method'|t('app'),
+                instructions: 'Of the enabled sites above, which sites should entries in this section be saved to?'|t('app'),
+                warning: section.id and section.propagationMethod != 'none' and section.siteSettings|length > 1 ? 'Changing this may result in data loss.'|t('app'),
+                id: 'propagationMethod',
+                name: 'propagationMethod',
+                options: [
+                    { value: 'none', label: 'Only save entries to the site they were created in'|t('app') },
+                    { value: 'siteGroup', label: 'Save entries to other sites in the same site group'|t('app') },
+                    { value: 'language', label: 'Save entries to other sites with the same language'|t('app') },
+                    { value: 'all', label: 'Save entries to all sites enabled for this section'|t('app') },
+                    { value: 'custom', label: 'Let each entry choose which sites it should be saved to'|t('app') },
+                ],
+                value: section.propagationMethod
+            }) }}
+        </div>
+    {% endif %}
+
+    <div class="field type-structure {% if section.type != 'structure' %}hidden{% endif %}">
+        {{ forms.textField({
+            label: "Max Levels"|t('app'),
+            instructions: "The maximum number of levels this section can have. Leave blank if you don’t care."|t('app'),
+            id: 'maxLevels',
+            name: 'maxLevels',
+            value: section.maxLevels,
+            size: 5,
+            errors: section.getErrors('maxLevels')
+        }) }}
+
+        {{ forms.selectField({
+            label: 'Default {type} Placement'|t('app', {type: 'Entry'|t('app')}),
+            instructions: 'Where new {type} should be placed by default in the structure.'|t('app', {type: 'entries'|t('app')}),
+            id: 'default-placement',
+            name: 'defaultPlacement',
+            options: [
+                {label: 'Before other {type}'|t('app', {type: 'entries'|t('app')}), value: 'beginning'},
+                {label: 'After other {type}'|t('app', {type: 'entries'|t('app')}), value: 'end'},
+            ],
+            value: section.defaultPlacement,
+        }) }}
+    </div>
+
+    {% if CraftEdition == CraftPro %}
+        {{ forms.editableTableField({
+            label: 'Preview Targets'|t('app'),
+            instructions: 'Locations that should be available for previewing entries in this section.'|t('app'),
+            id: 'previewTargets',
+            name: 'previewTargets',
+            cols: {
+                label: {
+                    type: 'singleline',
+                    heading: 'Label'|t('app'),
+                },
+                urlFormat: {
+                    type: 'singleline',
+                    heading: 'URL Format'|t('app'),
+                    info: 'The URL/URI to use for this target.'|t('app'),
+                    code: true,
+                },
+                refresh: {
+                    type: 'checkbox',
+                    heading: 'Auto-refresh'|t('app'),
+                    info: 'Whether preview frames should be automatically refreshed when content changes.'|t('app'),
+                    thin: true,
+                }
+            },
+            defaultValues: {
+                refresh: true,
+            },
+            allowAdd: true,
+            allowReorder: true,
+            allowDelete: true,
+            rows: section.previewTargets,
+            errors: section.getErrors('previewTargets')
+        }) }}
+    {% endif %}
+{% endblock %}
+
+{% if brandNewSection %}
+    {% js on ready %}
+        new Craft.HandleGenerator('#name', '#handle');
+
+        {% for site in craft.app.sites.getAllSites() %}
+            new Craft.UriFormatGenerator('#name', '#sites tr[data-id="{{ site.handle }}"] textarea[name$="[singleUri]"]');
+            new Craft.UriFormatGenerator('#name', '#sites tr[data-id="{{ site.handle }}"] textarea[name$="[uriFormat]"]', { suffix: '/{slug}' });
+            new Craft.UriFormatGenerator('#name', '#sites tr[data-id="{{ site.handle }}"] input[name$="[template]"]', { suffix: '/_entry' });
+        {% endfor %}
+    {% endjs %}
+{% endif %}

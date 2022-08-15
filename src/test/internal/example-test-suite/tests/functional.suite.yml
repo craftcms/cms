@@ -3,4 +3,3 @@ modules:
   enabled:
     - \craft\test\Craft
     - \Helper\Functional
-

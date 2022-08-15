@@ -8,8 +8,10 @@
 namespace craft\gql\resolvers\mutations;
 
 use Craft;
+use craft\elements\GlobalSet as GlobalSetElement;
 use craft\gql\base\ElementMutationResolver;
 use GraphQL\Type\Definition\ResolveInfo;
+use Throwable;
 
 /**
  * Class SaveGlobalSet
@@ -22,14 +24,14 @@ class GlobalSet extends ElementMutationResolver
     /**
      * Save the global set identified by resolver data.
      *
-     * @param $source
+     * @param mixed $source
      * @param array $arguments
-     * @param $context
+     * @param mixed $context
      * @param ResolveInfo $resolveInfo
-     * @return mixed
-     * @throws \Throwable if reasons.
+     * @return GlobalSetElement
+     * @throws Throwable if reasons.
      */
-    public function saveGlobalSet($source, array $arguments, $context, ResolveInfo $resolveInfo)
+    public function saveGlobalSet(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): GlobalSetElement
     {
         $globalSet = $this->getResolutionData('globalSet');
 

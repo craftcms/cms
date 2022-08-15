@@ -12,7 +12,7 @@ use Craft;
 use craft\events\RegisterTemplateRootsEvent;
 use craft\helpers\Json;
 use craft\test\Craft as CraftTest;
-use craft\test\mockclasses\arrayable\ExampleArrayble;
+use craft\test\mockclasses\arrayable\ExampleArrayable;
 use craft\test\mockclasses\models\ExampleModel;
 use craft\test\TestCase;
 use craft\web\View;
@@ -38,12 +38,12 @@ class ViewTest extends TestCase
     /**
      * @var UnitTester
      */
-    protected $tester;
+    protected UnitTester $tester;
 
     /**
      * @var View
      */
-    protected $view;
+    protected View $view;
 
     /**
      * @return array
@@ -52,18 +52,17 @@ class ViewTest extends TestCase
     {
         return [
             'sites' => [
-                'class' => SitesFixture::class
-            ]
+                'class' => SitesFixture::class,
+            ],
         ];
     }
 
     /**
      * @dataProvider normalizeObjectTemplateDataProvider
-     *
      * @param string $expected
      * @param string $template
      */
-    public function testNormalizeObjectTemplate(string $expected, string $template)
+    public function testNormalizeObjectTemplate(string $expected, string $template): void
     {
         self::assertSame($expected, $this->view->normalizeObjectTemplate($template));
     }
@@ -71,7 +70,7 @@ class ViewTest extends TestCase
     /**
      *
      */
-    public function testDoesTemplateExistWithCustomSite()
+    public function testDoesTemplateExistWithCustomSite(): void
     {
         // Ensure that the current site is the one with the testSite3 handle
         Craft::$app->getSites()->setCurrentSite(Craft::$app->getSites()->getSiteByHandle('testSite3'));
@@ -84,13 +83,12 @@ class ViewTest extends TestCase
 
     /**
      * @dataProvider resolveTemplateDataProvider
-     *
      * @param string|false $expected
      * @param string $name
      * @param string|null $templateMode
      * @throws Exception
      */
-    public function testResolveTemplate($expected, string $name, ?string $templateMode = null)
+    public function testResolveTemplate(string|false $expected, string $name, ?string $templateMode = null): void
     {
         if ($templateMode !== null) {
             $this->view->setTemplateMode($templateMode);
@@ -105,7 +103,6 @@ class ViewTest extends TestCase
 
     /**
      * @dataProvider privateResolveTemplateDataProvider
-     *
      * @param string|null $expected
      * @param string $basePath
      * @param string $name
@@ -118,7 +115,7 @@ class ViewTest extends TestCase
         string $basePath,
         string $name,
         ?array $defaultTemplateExtensions = null,
-        ?array $indexTemplateFilenames = null
+        ?array $indexTemplateFilenames = null,
     ) {
         // If the data wants to set something custom? Set it as a prop.
         if ($defaultTemplateExtensions !== null) {
@@ -147,7 +144,7 @@ class ViewTest extends TestCase
      * @throws SyntaxError
      * @throws ReflectionException
      */
-    public function testRenderTemplate()
+    public function testRenderTemplate(): void
     {
         // Assert that the _renderingTemplate prop goes in and comes out as null.
         self::assertNull($this->getInaccessibleProperty($this->view, '_renderingTemplate'));
@@ -167,7 +164,7 @@ class ViewTest extends TestCase
      * @throws LoaderError
      * @throws SyntaxError
      */
-    public function testRenderString()
+    public function testRenderString(): void
     {
         $result = $this->view->renderString('{{ arg1 }}-{{ arg2 }}', ['arg1' => 'Craft', 'arg2' => 'CMS']);
         self::assertSame('Craft-CMS', $result);
@@ -175,7 +172,6 @@ class ViewTest extends TestCase
 
     /**
      * @dataProvider renderObjectTemplateDataProvider
-     *
      * @param string $expected
      * @param string $template
      * @param mixed $object
@@ -183,7 +179,7 @@ class ViewTest extends TestCase
      * @throws Exception
      * @throws Throwable
      */
-    public function testRenderObjectTemplate(string $expected, string $template, $object, array $variables = [])
+    public function testRenderObjectTemplate(string $expected, string $template, mixed $object, array $variables = []): void
     {
         self::assertSame($expected, $this->view->renderObjectTemplate($template, $object, $variables));
     }
@@ -192,7 +188,7 @@ class ViewTest extends TestCase
      * @throws Exception
      * @throws ReflectionException
      */
-    public function testSetSiteTemplateMode()
+    public function testSetSiteTemplateMode(): void
     {
         $this->view->setTemplateMode(View::TEMPLATE_MODE_SITE);
         self::assertSame(
@@ -214,7 +210,7 @@ class ViewTest extends TestCase
      * @throws Exception
      * @throws ReflectionException
      */
-    public function testSetCpTemplateMode()
+    public function testSetCpTemplateMode(): void
     {
         $this->view->setTemplateMode(View::TEMPLATE_MODE_CP);
         self::assertSame(
@@ -236,7 +232,7 @@ class ViewTest extends TestCase
     /**
      *
      */
-    public function testTemplateModeException()
+    public function testTemplateModeException(): void
     {
         $this->tester->expectThrowable(Exception::class, function() {
             $this->view->setTemplateMode('i dont exist');
@@ -246,7 +242,7 @@ class ViewTest extends TestCase
     /**
      *
      */
-    public function testRegisterTranslations()
+    public function testRegisterTranslations(): void
     {
         Craft::$app->language = 'nl';
 
@@ -259,7 +255,7 @@ class ViewTest extends TestCase
     /**
      *
      */
-    public function testHookInvocation()
+    public function testHookInvocation(): void
     {
         $this->setInaccessibleProperty($this->view, '_hooks', [
             'demoHook' => [
@@ -268,8 +264,8 @@ class ViewTest extends TestCase
                 },
                 function($val) {
                     return $val[0];
-                }
-            ]
+                },
+            ],
         ]);
 
         $var = ['333'];
@@ -279,50 +275,46 @@ class ViewTest extends TestCase
 
     /**
      * @dataProvider namespaceInputsDataProvider
-     *
      * @param string $expected
      * @param string $html
      * @param string|null $namespace
      * @param bool $otherAttributes
      */
-    public function testNamespaceInputs(string $expected, string $html, ?string $namespace = null, bool $otherAttributes = true)
+    public function testNamespaceInputs(string $expected, string $html, ?string $namespace = null, bool $otherAttributes = true): void
     {
         self::assertSame($expected, $this->view->namespaceInputs($html, $namespace, $otherAttributes));
     }
 
     /**
      * @dataProvider namespaceInputNameDataProvider
-     *
      * @param string $expected
      * @param string $string
      * @param string|null $namespace
      */
-    public function testNamespaceInputName(string $expected, string $string, ?string $namespace = null)
+    public function testNamespaceInputName(string $expected, string $string, ?string $namespace = null): void
     {
         self::assertSame($expected, $this->view->namespaceInputName($string, $namespace));
     }
 
     /**
      * @dataProvider namespaceInputIdDataProvider
-     *
      * @param string $expected
      * @param string $string
      * @param string|null $namespace
      */
-    public function testNamespaceInputId(string $expected, string $string, ?string $namespace = null)
+    public function testNamespaceInputId(string $expected, string $string, ?string $namespace = null): void
     {
         self::assertSame($expected, $this->view->namespaceInputId($string, $namespace));
     }
 
     /**
      * @dataProvider getTemplateRootsDataProvider
-     *
      * @param array $expected
      * @param string $which
      * @param array $roots
      * @throws ReflectionException
      */
-    public function testGetTemplateRoots(array $expected, string $which, array $roots)
+    public function testGetTemplateRoots(array $expected, string $which, array $roots): void
     {
         Event::on(View::class, View::EVENT_REGISTER_SITE_TEMPLATE_ROOTS, function(RegisterTemplateRootsEvent $event) use ($roots) {
             $event->roots = $roots;
@@ -334,7 +326,7 @@ class ViewTest extends TestCase
     /**
      * Testing these events is quite important as they are quite integral to this function working.
      */
-    public function testGetTemplateRootsEvents()
+    public function testGetTemplateRootsEvents(): void
     {
         $this->tester->expectEvent(View::class, View::EVENT_REGISTER_CP_TEMPLATE_ROOTS, function() {
             $this->_getTemplateRoots('cp');
@@ -380,7 +372,7 @@ class ViewTest extends TestCase
             ],
             View::POS_BEGIN => [
                 'bar' => 'var bar = true;',
-            ]
+            ],
         ], $view->clearJsBuffer(false, false));
     }
 
@@ -486,9 +478,9 @@ TWIG;
             ['@craftunittemplates/testSite3/index.twig', 'testSite3/'],
 
             // Cp Paths
-            ['@craft/templates/index.html', '', View::TEMPLATE_MODE_CP],
-            ['@craft/templates/index.html', 'index', View::TEMPLATE_MODE_CP],
-            ['@craft/templates/entries/index.html', 'entries', View::TEMPLATE_MODE_CP],
+            ['@craft/templates/index.twig', '', View::TEMPLATE_MODE_CP],
+            ['@craft/templates/index.twig', 'index', View::TEMPLATE_MODE_CP],
+            ['@craft/templates/entries/index.twig', 'entries', View::TEMPLATE_MODE_CP],
         ];
     }
 
@@ -523,7 +515,7 @@ TWIG;
         $model = new ExampleModel();
         $model->exampleParam = 'Example Param';
 
-        $arrayable = new ExampleArrayble();
+        $arrayable = new ExampleArrayable();
         $arrayable->exampleArrayableParam = 'Example param';
         $arrayable->extraField = 'ExtraField';
 
@@ -621,7 +613,7 @@ TWIG;
     /**
      * @inheritdoc
      */
-    protected function _before()
+    protected function _before(): void
     {
         parent::_before();
 
@@ -632,29 +624,29 @@ TWIG;
     }
 
     /**
-     * @param $category
+     * @param mixed $category
      * @param array $messages
      * @return string
      */
-    private function _generateTranslationJs($category, array $messages): string
+    private function _generateTranslationJs(mixed $category, array $messages): string
     {
         $category = Json::encode($category);
         $js = '';
         foreach ($messages as $message => $translation) {
             $translation = Json::encode($translation);
             $message = Json::encode($message);
-            $js .= ($js !== '' ? PHP_EOL : '') . "Craft.translations[{$category}][{$message}] = {$translation};";
+            $js .= ($js !== '' ? PHP_EOL : '') . "Craft.translations[$category][$message] = $translation;";
         }
 
-        return "if (typeof Craft.translations[{$category}] === 'undefined') {" . PHP_EOL . "    Craft.translations[{$category}] = {};" . PHP_EOL . '}' . PHP_EOL . $js;
+        return "if (typeof Craft.translations[$category] === 'undefined') {" . PHP_EOL . "    Craft.translations[$category] = {};" . PHP_EOL . '}' . PHP_EOL . $js;
     }
 
     /**
-     * @param $desiredJs
-     * @param $desiredPosition
+     * @param mixed $desiredJs
+     * @param mixed $desiredPosition
      * @throws \Exception
      */
-    private function _assertRegisterJsInputValues($desiredJs, $desiredPosition)
+    private function _assertRegisterJsInputValues(mixed $desiredJs, mixed $desiredPosition)
     {
         $this->view = Stub::construct(
             View::class,
@@ -663,7 +655,7 @@ TWIG;
                 'registerJs' => function($inputJs, $inputPosition) use ($desiredJs, $desiredPosition) {
                     self::assertSame($desiredJs, $inputJs);
                     self::assertSame($desiredPosition, $inputPosition);
-                }
+                },
             ]
         );
     }

@@ -9,7 +9,6 @@ namespace craft\elements\actions;
 
 use Craft;
 use craft\base\ElementAction;
-use craft\helpers\Json;
 
 /**
  * EditImage represents an Edit Image action
@@ -22,14 +21,14 @@ class EditImage extends ElementAction
     /**
      * @var string The trigger label
      */
-    public $label;
+    public string $label;
 
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
-        if ($this->label === null) {
+        if (!isset($this->label)) {
             $this->label = Craft::t('app', 'Edit Image');
         }
     }
@@ -45,38 +44,22 @@ class EditImage extends ElementAction
     /**
      * @inheritdoc
      */
-    public function getTriggerHtml()
+    public function getTriggerHtml(): ?string
     {
-        $type = Json::encode(static::class);
-
-        $js = <<<JS
+        Craft::$app->getView()->registerJsWithVars(fn($type) => <<<JS
 (() => {
     new Craft.ElementActionTrigger({
-        type: {$type},
+        type: $type,
         batch: false,
-        _imageEditor: null,
-        validateSelection: function(\$selectedItems)
-        {
-            return Garnish.hasAttr(\$selectedItems.find('.element'), 'data-editable-image');
+        validateSelection: \$selectedItems => Garnish.hasAttr(\$selectedItems.find('.element'), 'data-editable-image'),
+        activate: \$selectedItems => {
+            const \$element = \$selectedItems.find('.element:first');
+            new Craft.AssetImageEditor(\$element.data('id'));
         },
-        activate: function(\$selectedItems)
-        {
-            var \$element = \$selectedItems.find('.element:first'),
-                element = Craft.getElementInfo(\$element);
-
-            var settings = {
-                onSave: function () {
-                    Craft.elementIndex.updateElements();
-                },
-            };
-            
-            new Craft.AssetImageEditor(element.id, settings);
-        }
     });
 })();
-JS;
+JS, [static::class]);
 
-        Craft::$app->getView()->registerJs($js);
         return null;
     }
 }

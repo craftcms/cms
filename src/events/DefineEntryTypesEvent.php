@@ -20,5 +20,5 @@ class DefineEntryTypesEvent extends Event
     /**
      * @var array The available entry types
      */
-    public $entryTypes = [];
+    public array $entryTypes = [];
 }

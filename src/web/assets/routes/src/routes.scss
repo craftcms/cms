@@ -1,5 +1,5 @@
 @charset "UTF-8";
-@import "@craftcms/sass/mixins";
+@import '@craftcms/sass/mixins';
 
 #routes {
   margin: 0 1px 25px;
@@ -10,8 +10,8 @@
   position: relative;
   margin: 14px 0;
   padding: 0;
-  border-radius: $largeBorderRadius;
-  background-color: $grey050;
+  border-radius: var(--large-border-radius);
+  background-color: var(--gray-050);
   cursor: pointer;
 
   &:hover:after {
@@ -20,7 +20,7 @@
     @include right(5px);
     @include icon;
     content: 'edit';
-    color: $linkColor;
+    color: var(--link-color);
   }
 
   .uri-container,
@@ -34,10 +34,15 @@
     position: relative;
     @include margin-right(20px);
     @include padding-right(10px);
-    @include border-radius($largeBorderRadius, 0, 0, $largeBorderRadius);
+    @include border-radius(
+      var(--large-border-radius),
+      0,
+      0,
+      var(--large-border-radius)
+    );
     @include floatleft;
-    color: $linkColor;
-    background: $white;
+    color: var(--link-color);
+    background: var(--white);
 
     &:after {
       display: block;
@@ -61,11 +66,11 @@
     .site {
       display: inline-block;
       @include margin(-1px, 8px, -1px, 0);
-      border-radius: $smallBorderRadius;
+      border-radius: var(--small-border-radius);
       padding: 1px 5px;
-      background: $grey050;
-      box-shadow: inset 0 0 0 1px $hairlineColor;
-      color: $mediumTextColor;
+      background: var(--gray-050);
+      box-shadow: inset 0 0 0 1px var(--hairline-color);
+      color: var(--medium-text-color);
     }
 
     .uri .token {
@@ -74,7 +79,7 @@
   }
 
   .template {
-    color: $mediumTextColor;
+    color: var(--medium-text-color);
 
     &:before {
       @include icon;
@@ -90,22 +95,30 @@
   align-items: stretch;
 
   .body {
-    height: calc(100% - 131px);
+    height: calc(100% - 119px);
     overflow: auto;
 
     .uri {
       width: auto;
       cursor: text;
 
+      input[type='text'] {
+        box-shadow: none;
+      }
+
       .token {
         cursor: default;
+
+        &:focus {
+          box-shadow: var(--focus-ring);
+        }
       }
     }
   }
 
   .uri-tokens {
     margin-top: 10px;
-    border-radius: $largeBorderRadius;
+    border-radius: var(--large-border-radius);
     padding: 15px 25px;
     box-shadow: inset 0 1px 3px -1px darken($grey100, 10%);
 
@@ -124,15 +137,15 @@
     display: block;
     @include floatleft;
     margin-top: 7px;
-    color: $red600;
+    color: var(--disabled-color);
   }
 }
 
 @media only screen and (-webkit-min-device-pixel-ratio: 1.5),
-only screen and (-moz-min-device-pixel-ratio: 1.5),
-only screen and (-o-min-device-pixel-ratio: 3/2),
-only screen and (min-device-pixel-ratio: 1.5),
-only screen and (min-resolution: 1.5dppx) {
+  only screen and (-moz-min-device-pixel-ratio: 1.5),
+  only screen and (-o-min-device-pixel-ratio: 3/2),
+  only screen and (min-device-pixel-ratio: 1.5),
+  only screen and (min-resolution: 1.5dppx) {
   .route .uri-container:after {
     background-size: 15px 32px;
     body.ltr & {

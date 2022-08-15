@@ -1,0 +1,155 @@
+{% set id = id ?? "selectize#{random()}" %}
+{% set selectizeOptions = {
+    dropdownParent: 'body',
+}|merge(selectizeOptions ?? []) %}
+
+{# Normalize the options #}
+{% set options = (options ?? [])|map((o, k) => (o.optgroup is defined or o.value is defined) ? o : {
+    value: k,
+    label: o.label is defined ? o.label : o,
+}) %}
+
+{% if includeEnvVars ?? false %}
+    {% if allowedEnvValues is not defined %}
+        {% set allowedEnvValues = options|filter(o => o.optgroup is not defined)|map(o => o.value) %}
+    {% endif %}
+    {% set options = options|map(o => o.data.data.hint is defined ? o : o|merge({
+        data: {
+            data: {
+                hint: o.value,
+            }
+        },
+    }, recursive=true)) %}
+{% endif %}
+
+{% if addOptionFn is defined and addOptionLabel is defined %}
+    {% if options is empty %}
+        {% set selectizeOptions = selectizeOptions|merge({
+            allowEmptyOption: true,
+        }) %}
+        {% set options = [
+            {value: '', label: ' '},
+        ] %}
+    {% endif %}
+    {% set options = options|merge([
+        {
+            label: addOptionLabel ,
+            value: '__add__',
+            data: {
+                data: {
+                    addOption: true,
+                },
+            },
+        },
+    ]) %}
+{% endif %}
+
+{% if includeEnvVars ?? false %}
+    {% set options = options|merge(craft.cp.getEnvOptions(allowedEnvValues)) %}
+{% endif %}
+
+{% include '_includes/forms/select' with {
+    class: (class ?? [])|explodeClass|push('selectize')|unique,
+} %}
+
+{% js %}
+(() => {
+    const label = (data, showHint) => {
+        let label = '';
+        if (data.addOption) {
+            label += '<span class="icon add"></span> ';
+        }
+        const status = (() => {
+            if (typeof data.status !== 'undefined') {
+                return data.status;
+            }
+            if (typeof data.boolean !== 'undefined') {
+                return data.boolean ? 'green' : 'white';
+            }
+            return null;
+        })();
+        if (status) {
+            label += `<span class="status ${status}"></span>`;
+        }
+        label += `<span>${Craft.escapeHtml(data.text)}</span>`;
+        if (showHint && typeof data.hint === 'string' && data.hint !== '') {
+            label += `<span class="light">– ${Craft.escapeHtml(data.hint)}</span>`;
+        }
+        return `<div class="flex flex-nowrap">${label}</div>`;
+    };
+
+    const $select = $("#{{ id|namespaceInputId|e('js') }}");
+
+    const onChange = () => {
+        const selectize = $select.data('selectize');
+        const $item = selectize.$wrapper.find('.item');
+
+        const boolean = $item.data('boolean');
+        if (typeof boolean !== 'undefined') {
+            $select.data('boolean', !!boolean);
+        } else {
+            $select.removeData('boolean');
+        }
+
+        {% if addOptionFn is defined and addOptionLabel is defined %}
+        if ($item.data('add-option')) {
+            selectize.setValue('', true);
+            ({{ addOptionFn|raw }})(item => {
+                selectize.addOption(item);
+
+                // Remove the “Create” option and re-place it at the end
+                selectize.removeOption('__add__', true);
+                selectize.addOption({
+                    text: {{ addOptionLabel|json_encode|raw }} ,
+                    value: '__add__',
+                    addOption: true,
+                    hint: null,
+                });
+
+                selectize.refreshOptions(false);
+                selectize.setValue(item.value);
+            }, selectize);
+        }
+        {% endif %}
+    };
+
+    $select.selectize($.extend({
+        searchField: ['text', 'hint', 'value', 'keywords'],
+        render: {
+            option: data => {
+                const classes = ['option'];
+                if (data.value === '') {
+                    classes.push('selectize-dropdown-emptyoptionlabel');
+                }
+                return `<div class="${classes.join(' ')}">${label(data, true)}</div>`;
+            },
+            item: data => {
+                const attrs = ['class="item"'];
+                if (typeof data.boolean !== 'undefined') {
+                    attrs.push(`data-boolean="${data.boolean ? '1' : ''}"`);
+                }
+                if (typeof data.addOption !== 'undefined') {
+                    attrs.push('data-add-option="1"');
+                }
+                return `<div ${attrs.join(' ')}>${label(data, false)}</div>`;
+            },
+        },
+        onChange: onChange,
+        onInitialize: function () {
+            // Copy all ARIA attributes from initial select to selectize
+            var s = this;
+            var attrs = {}
+            var initialSelect = $(this.$input)[0];
+            $(initialSelect.attributes).filter(function (index, attribute) {
+                return /^aria-/.test(attribute.name);
+            })
+            .each(function (index, attribute) {
+                attrs[attribute.name] = attribute.value;
+            });
+            $(this.$control_input).attr(attrs);
+        }
+    }, {{ selectizeOptions|json_encode|raw }}));
+
+    onChange();
+})()
+{% endjs %}

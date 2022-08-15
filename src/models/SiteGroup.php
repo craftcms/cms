@@ -26,17 +26,17 @@ class SiteGroup extends Model
     /**
      * @var int|null ID
      */
-    public $id;
+    public ?int $id = null;
 
     /**
      * @var string|null UID
      */
-    public $uid;
+    public ?string $uid = null;
 
     /**
      * @var string|null Name
      */
-    private $_name;
+    private ?string $_name = null;
 
     /**
      * Returns the site group’s name.
@@ -64,7 +64,7 @@ class SiteGroup extends Model
     /**
      * @inheritdoc
      */
-    public function attributes()
+    public function attributes(): array
     {
         $attributes = parent::attributes();
         $attributes[] = 'name';
@@ -74,7 +74,7 @@ class SiteGroup extends Model
     /**
      * @inheritdoc
      */
-    public function attributeLabels()
+    public function attributeLabels(): array
     {
         return [
             'name' => Craft::t('app', 'Name'),

@@ -8,13 +8,12 @@
 namespace craft\fields;
 
 use Craft;
-use craft\db\Table as DbTable;
+use craft\elements\conditions\ElementCondition;
 use craft\elements\db\UserQuery;
 use craft\elements\User;
 use craft\gql\arguments\elements\User as UserArguments;
 use craft\gql\interfaces\elements\User as UserInterface;
 use craft\gql\resolvers\elements\User as UserResolver;
-use craft\helpers\Db;
 use craft\helpers\Gql;
 use craft\helpers\Gql as GqlHelper;
 use craft\models\GqlSchema;
@@ -40,7 +39,7 @@ class Users extends BaseRelationField
     /**
      * @inheritdoc
      */
-    protected static function elementType(): string
+    public static function elementType(): string
     {
         return User::class;
     }
@@ -73,11 +72,11 @@ class Users extends BaseRelationField
      * @inheritdoc
      * @since 3.3.0
      */
-    public function getContentGqlType()
+    public function getContentGqlType(): Type|array
     {
         return [
             'name' => $this->handle,
-            'type' => Type::listOf(UserInterface::getType()),
+            'type' => Type::nonNull(Type::listOf(UserInterface::getType())),
             'args' => UserArguments::getArguments(),
             'resolve' => UserResolver::class . '::resolve',
             'complexity' => GqlHelper::relatedArgumentComplexity(GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD),
@@ -88,21 +87,37 @@ class Users extends BaseRelationField
      * @inheritdoc
      * @since 3.3.0
      */
-    public function getEagerLoadingGqlConditions()
+    public function getEagerLoadingGqlConditions(): ?array
     {
         $allowedEntities = Gql::extractAllowedEntitiesFromSchema();
-        $allowedGroupUids = $allowedEntities['usergroups'] ?? [];
+        $userGroupUids = $allowedEntities['usergroups'] ?? [];
 
-        if (in_array('everyone', $allowedGroupUids, false)) {
+        if (in_array('everyone', $userGroupUids, false)) {
             return [];
         }
 
-        if (empty($allowedGroupUids)) {
-            return false;
+        if (empty($userGroupUids)) {
+            return null;
         }
 
-        $groupIds = Db::idsByUids(DbTable::USERGROUPS, $allowedGroupUids);
+        $userGroupsService = Craft::$app->getUserGroups();
+        $userGroupIds = array_filter(array_map(function(string $uid) use ($userGroupsService) {
+            $userGroupsService = $userGroupsService->getGroupByUid($uid);
+            return $userGroupsService->id ?? null;
+        }, $userGroupUids));
 
-        return ['groupId' => array_values($groupIds)];
+        return [
+            'groupId' => $userGroupIds,
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function createSelectionCondition(): ?ElementCondition
+    {
+        $condition = User::createCondition();
+        $condition->queryParams = ['group', 'groupId'];
+        return $condition;
     }
 }

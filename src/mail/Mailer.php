@@ -12,6 +12,8 @@ use craft\elements\User;
 use craft\helpers\App;
 use craft\helpers\Template;
 use craft\web\View;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
+use Throwable;
 use yii\base\InvalidConfigException;
 use yii\helpers\Markdown;
 use yii\mail\MailEvent;
@@ -23,29 +25,29 @@ use yii\mail\MailEvent;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Mailer extends \yii\swiftmailer\Mailer
+class Mailer extends \yii\symfonymailer\Mailer
 {
     /**
      * @event MailEvent The event that is triggered before a message is prepped to be sent.
      * @since 3.6.5
      */
-    const EVENT_BEFORE_PREP = 'beforePrep';
+    public const EVENT_BEFORE_PREP = 'beforePrep';
 
     /**
      * @var string|null The email template that should be used
      */
-    public $template;
+    public ?string $template = null;
 
     /**
      * @var string|array|User|User[]|null The default sender’s email address, or their user model(s).
      */
-    public $from;
+    public User|string|array|null $from = null;
 
     /**
      * @var string|array|User|User[]|null The default Reply-To email address, or their user model(s).
      * @since 3.4.0
      */
-    public $replyTo;
+    public User|string|array|null $replyTo = null;
 
     /**
      * Composes a new email based on a given key.
@@ -83,7 +85,7 @@ class Mailer extends \yii\swiftmailer\Mailer
     /**
      * @inheritdoc
      */
-    public function send($message)
+    public function send($message): bool
     {
         // fire a beforePrep event
         $this->trigger(self::EVENT_BEFORE_PREP, new MailEvent([
@@ -121,10 +123,11 @@ class Mailer extends \yii\swiftmailer\Mailer
             // Render the subject and body text
             $view = Craft::$app->getView();
             $subject = $view->renderString($systemMessage->subject, $variables, View::TEMPLATE_MODE_SITE);
-            $body = $view->renderString($systemMessage->body, $variables, View::TEMPLATE_MODE_SITE);
+            $textBody = $view->renderString($systemMessage->body, $variables, View::TEMPLATE_MODE_SITE);
+            $htmlBody = $view->renderString($systemMessage->body, $variables, View::TEMPLATE_MODE_SITE, true);
 
             // Remove </> from around URLs, so they’re not interpreted as HTML tags
-            $textBody = preg_replace('/<(https?:\/\/.+?)>/', '$1', $body);
+            $textBody = preg_replace('/<(https?:\/\/.+?)>/', '$1', $textBody);
 
             $message->setSubject($subject);
             $message->setTextBody($textBody);
@@ -141,9 +144,9 @@ class Mailer extends \yii\swiftmailer\Mailer
 
             try {
                 $message->setHtmlBody($view->renderTemplate($template, array_merge($variables, [
-                    'body' => Template::raw(Markdown::process($body)),
+                    'body' => Template::raw(Markdown::process($htmlBody)),
                 ]), $templateMode));
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 // Just log it and don't worry about the HTML body
                 Craft::warning('Error rendering email template: ' . $e->getMessage(), __METHOD__);
                 Craft::$app->getErrorHandler()->logException($e);
@@ -167,17 +170,16 @@ class Mailer extends \yii\swiftmailer\Mailer
         $testToEmailAddress = $generalConfig->getTestToEmailAddress();
         if (!empty($testToEmailAddress)) {
             $message->setTo($testToEmailAddress);
-            $message->setCc(null);
-            $message->setBcc(null);
+            $message->setCc([]);
+            $message->setBcc([]);
         }
 
         try {
             return parent::send($message);
-        } catch (\Throwable $e) {
+        } catch (TransportExceptionInterface $e) {
             $eMessage = $e->getMessage();
 
-            // Remove the stack trace to get rid of any sensitive info. Note that Swiftmailer includes a debug
-            // backlog in the exception message. :-/
+            // Remove the stack trace to get rid of any sensitive info.
             $eMessage = substr($eMessage, 0, strpos($eMessage, 'Stack trace:') - 1);
             Craft::warning('Error sending email: ' . $eMessage);
 

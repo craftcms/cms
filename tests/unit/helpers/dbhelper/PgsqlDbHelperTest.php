@@ -11,7 +11,7 @@ use Codeception\Test\Unit;
 use Craft;
 use craft\db\pgsql\Schema;
 use craft\helpers\Db;
-use UnitTester;
+use craft\test\TestCase;
 use yii\base\Exception;
 use yii\base\NotSupportedException;
 
@@ -22,21 +22,15 @@ use yii\base\NotSupportedException;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class PgsqlDbHelperTest extends Unit
+class PgsqlDbHelperTest extends TestCase
 {
     /**
-     * @var UnitTester
-     */
-    protected $tester;
-
-    /**
      * @dataProvider sqlTypesDataProvider
-     *
-     * @param $type
-     * @param $supported
+     * @param string $type
+     * @param bool $supported
      * @throws NotSupportedException
      */
-    public function testTypeSupport($type, $supported)
+    public function testTypeSupport(string $type, bool $supported): void
     {
         $isSupported = Db::isTypeSupported($type);
         self::assertSame($supported, Db::isTypeSupported($type));
@@ -45,37 +39,34 @@ class PgsqlDbHelperTest extends Unit
 
     /**
      * @dataProvider getTextualColumnStorageCapacityDataProvider
-     *
      * @param int|null|false $expected
      * @param string $columnType
      */
-    public function testGetTextualColumnStorageCapacity($expected, string $columnType)
+    public function testGetTextualColumnStorageCapacity(int|null|false $expected, string $columnType): void
     {
         self::assertSame($expected, Db::getTextualColumnStorageCapacity($columnType));
     }
 
     /**
      * @dataProvider parseParamDataProvider
-     *
-     * @param mixed $expected
+     * @param string|array $expected
      * @param string $column
-     * @param string|int|array $value
+     * @param mixed $value
      * @param string $defaultOperator
      * @param bool $caseInsensitive
      */
-    public function testParseParam($expected, string $column, $value, string $defaultOperator = '=', bool $caseInsensitive = false)
+    public function testParseParam(string|array $expected, string $column, mixed $value, string $defaultOperator = '=', bool $caseInsensitive = false): void
     {
         self::assertSame($expected, Db::parseParam($column, $value, $defaultOperator, $caseInsensitive));
     }
 
     /**
      * @dataProvider getTextualColumnTypeByContentLengthDataProvider
-     *
      * @param string $expected
      * @param int $contentLength
      * @throws Exception
      */
-    public function testGetTextualColumnTypeByContentLength(string $expected, int $contentLength)
+    public function testGetTextualColumnTypeByContentLength(string $expected, int $contentLength): void
     {
         self::assertSame($expected, Db::getTextualColumnTypeByContentLength($contentLength));
     }
@@ -89,28 +80,28 @@ class PgsqlDbHelperTest extends Unit
             'multi-:empty:-param' => [
                 [
                     'or',
-                    ['not', ['content_table' => null],],
-                    ['!=', 'content_table', 'field_2']
+                    ['not', ['content_table' => null], ],
+                    ['!=', 'content_table', 'field_2'],
                 ],
-                'content_table', ':empty:, field_2', '!='
+                'content_table', ':empty:, field_2', '!=',
             ],
             [
-                ['foo' => null], 'foo', ':empty:'
+                ['foo' => null], 'foo', ':empty:',
             ],
             [
-                ['foo' => null], 'foo', ':EMPTY:'
+                ['foo' => null], 'foo', ':EMPTY:',
             ],
             [
-                ['not', ['foo' => null]], 'foo', ':notempty:'
+                ['not', ['foo' => null]], 'foo', ':notempty:',
             ],
             [
-                ['not', ['foo' => null]], 'foo', ':NOTEMPTY:'
+                ['not', ['foo' => null]], 'foo', ':NOTEMPTY:',
             ],
             [
-                ['not', ['foo' => null]], 'foo', 'not :empty:'
+                ['not', ['foo' => null]], 'foo', 'not :empty:',
             ],
             [
-                ['not', ['foo' => null]], 'foo', 'NOT :EMPTY:'
+                ['not', ['foo' => null]], 'foo', 'NOT :EMPTY:',
             ],
         ];
     }
@@ -162,11 +153,10 @@ class PgsqlDbHelperTest extends Unit
     /**
      * @inheritdoc
      */
-    protected function _before()
+    protected function _before(): void
     {
         if (!Craft::$app->getDb()->getIsPgsql()) {
             $this->markTestSkipped();
         }
     }
-
 }

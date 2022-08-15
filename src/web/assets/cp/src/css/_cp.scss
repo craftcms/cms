@@ -1,9 +1,14 @@
 @charset "UTF-8";
-@import "@craftcms/sass/mixins";
+@import '@craftcms/sass/mixins';
 
 :root {
-  --padding: 24px;
-  --neg-padding: -24px;
+  --xs: 4px;
+  --s: 8px;
+  --m: 14px;
+  --l: 18px;
+  --xl: 24px;
+  --padding: var(--xl);
+  --neg-padding: calc(var(--padding) * -1);
 }
 
 $sidebarWidth: 226px;
@@ -11,11 +16,12 @@ $sidebarZIndex: 100;
 $detailsWidth: 350px;
 $minFullUiWidth: 1200px;
 $minXlUiWidth: 1536px;
+$minDesktopWidth: 600px;
 $minHorizontalUiWidth: $minFullUiWidth - $sidebarWidth;
 
 // Colors
-$badgeBackgroundColor: $grey200;
-$badgeColor: $grey800;
+$badgeBackgroundColor: var(--gray-200);
+$badgeColor: var(--gray-800);
 
 html {
   -webkit-text-size-adjust: 100%;
@@ -46,18 +52,26 @@ body {
 
 .skip-link {
   position: absolute;
+  margin: 5px;
   left: -10000px;
-  top: auto;
+  top: 0;
   width: 1px;
   height: 1px;
   overflow: hidden;
   z-index: $sidebarZIndex + 1;
 
   &:focus {
-    left: 0;
+    left: unset;
+    @include left(0);
     width: auto;
     height: auto;
-    background-color: $grey100 !important;
+    background-color: var(--gray-100) !important;
+  }
+}
+
+#global-skip-link {
+  @media only screen and (min-width: $minFullUiWidth) {
+    @include two-color-focus-ring;
   }
 }
 
@@ -68,18 +82,20 @@ body {
   min-height: 100vh;
   @include left(0);
 
-  body.ltr & {
-    transition: left 250ms ease-out;
-  }
+  @media screen and (prefers-reduced-motion: no-preference) {
+    body.ltr & {
+      transition: left 250ms ease-out;
+    }
 
-  body.rtl & {
-    transition: right 250ms ease-out;
+    body.rtl & {
+      transition: right 250ms ease-out;
+    }
   }
 }
 
 /* global sidebar */
-$sidebarLinkStaticColor: $grey100;
-$sidebarLinkSecondaryColor: $grey200;
+$sidebarLinkStaticColor: var(--gray-100);
+$sidebarLinkSecondaryColor: var(--gray-200);
 
 #global-sidebar {
   --is-always-visible: true;
@@ -93,42 +109,19 @@ $sidebarLinkSecondaryColor: $grey200;
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
   @include light-on-dark-text;
-  background-color: $grey800;
-
-  body:not(.reduce-focus-visibility) & :focus,
-  body.reduce-focus-visibility & .focus-visible {
-    --focus-hsl: var(--light-focus-hsl);
-  }
+  @include light-focus-ring;
+  background-color: var(--gray-800);
 
   a {
     color: $sidebarLinkStaticColor;
-    transition: color linear 100ms;
     text-decoration: none;
   }
 
   & > a,
   *:not(.has-subnav) > a {
-    transition: background-color linear 100ms;
-
     &[href] {
-      &:hover,
-      &.active,
-      &:active {
-        color: $white;
-      }
-
       &:not(.sel):hover {
         background-color: darken($grey800, 5%);
-        transition: none;
-
-        .icon {
-          opacity: 1;
-        }
-      }
-
-      &.active,
-      &:active {
-        background-color: darken($grey800, 10%);
       }
     }
 
@@ -136,14 +129,10 @@ $sidebarLinkSecondaryColor: $grey200;
       cursor: default;
       background-color: transparent;
     }
-
-    .icon {
-      transition: opacity linear 100ms;
-    }
   }
 
   .light {
-    color: $grey400;
+    color: var(--gray-400);
   }
 
   @media only screen and (max-width: $minFullUiWidth - 1px) {
@@ -158,6 +147,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   display: grid;
   grid-template-columns: 30px auto;
   grid-gap: 10px;
+  height: 50px;
   padding: 0 10px;
   position: relative;
   flex: 0 0 50px;
@@ -187,7 +177,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   }
 
   svg {
-    @include svg-mask($mediumTextColor);
+    @include svg-mask(var(--medium-text-color));
   }
 }
 
@@ -213,11 +203,19 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
       position: absolute;
       top: 0;
       @include right(0);
-      width: 14px;
-      background-image: linear-gradient(to right, transparentize($systemInfoBgColor, 1), $systemInfoBgColor);
+      width: var(--m);
+      background-image: linear-gradient(
+        to right,
+        transparentize($systemInfoBgColor, 1),
+        $systemInfoBgColor
+      );
 
       #system-info:hover & {
-        background-image: linear-gradient(to right, transparentize($systemInfoHoverBgColor, 1), $systemInfoHoverBgColor);
+        background-image: linear-gradient(
+          to right,
+          transparentize($systemInfoHoverBgColor, 1),
+          $systemInfoHoverBgColor
+        );
       }
     }
   }
@@ -241,7 +239,6 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
       &#job-icon-hover {
         opacity: 0;
-        transition: opacity linear 100ms;
       }
     }
   }
@@ -254,7 +251,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
   .progress-label {
     display: block;
-    color: $grey300;
+    color: var(--gray-300);
     font-size: 11px;
     line-height: 1.5;
   }
@@ -262,14 +259,14 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
 #nav {
   flex: 1;
-  margin: 27px 0 0;
-  padding-bottom: 24px;
+  margin: 22px 0 0;
+  padding-bottom: var(--xl);
   overflow: visible;
 
   li {
     &:not(.has-subnav) > a.sel {
-      color: $white;
-      background-color: $grey900;
+      color: var(--gray-800);
+      background-color: var(--gray-100);
       opacity: 1;
 
       .icon {
@@ -279,8 +276,8 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
     a {
       position: relative;
-      padding-left: 14px;
-      padding-right: 14px;
+      padding-left: var(--m);
+      padding-right: var(--m);
 
       &:focus {
         z-index: 1;
@@ -294,24 +291,6 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
         @include margin-left(5px);
         @include icon;
         content: 'external';
-      }
-
-      &:active .icon {
-        opacity: 1;
-      }
-
-      .icon {
-        opacity: 0.5;
-
-        &.icon-mask {
-          svg {
-            @include svg-mask($white);
-          }
-
-          span[data-icon] {
-            color: $white;
-          }
-        }
       }
 
       .label {
@@ -335,7 +314,7 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
       margin-bottom: 10px;
 
       li a {
-        @include padding(3px, 14px, 3px, 42px, !important);
+        @include padding(3px, var(--m), 3px, 42px, !important);
         font-size: 12px;
 
         &:not(.active) {
@@ -350,53 +329,49 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 14px 14px 24px;
+  padding: var(--m) var(--m) var(--xl);
 }
 
 #app-info {
-  margin-top: 7px;
+  margin-top: var(--xs);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 12px;
-  color: $grey600;
+  color: var(--gray-600);
   text-align: center;
+  gap: var(--s);
 
-  li {
-    margin: 0 7px;
+  a {
+    color: var(--gray-600);
+    text-decoration: underline;
 
-    a {
-      color: $grey600;
-      text-decoration: underline;
-
-      &.go:hover:after {
-        color: $grey600;
-      }
+    &.go:hover:after {
+      color: var(--gray-600);
     }
   }
 }
 
 #edition-logo {
   user-select: none;
-  border: 1px solid $grey600;
+  border: 1px solid var(--gray-600);
   border-radius: 3px;
   display: inline-flex;
-  height: 20px;
+  height: toRem(20);
   box-sizing: content-box;
   font-size: 11px;
 
   & > .edition-name,
   & > .edition-trial {
-    padding: 6px 7px 5px;
-    line-height: 8px;
+    padding: toRem(6, 7, 5);
+    line-height: var(--s);
   }
 
   & > .edition-name {
     font-weight: 600;
     letter-spacing: 1.7px;
-    padding-right: 5px;
+    padding-right: toRem(5);
     text-transform: uppercase;
-    transition: color linear 100ms;
   }
 
   & > .edition-trial {
@@ -404,13 +379,12 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
     position: relative;
     @include margin-left(5px);
     @include padding-left(5px);
-    background-color: $grey600;
-    color: $grey200;
+    background-color: var(--gray-600);
+    color: var(--gray-200);
     border-radius: 0 1px 1px 0;
     letter-spacing: 1px;
     @include padding-right(7px);
     text-transform: lowercase;
-    transition: background linear 100ms;
 
     &:before {
       display: block;
@@ -421,18 +395,17 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
       width: 0;
       height: 0;
       border-style: solid;
-      transition: border-color linear 100ms;
 
       body.ltr & {
         left: -10px;
         border-width: 0 10px 20px 0;
-        border-color: transparent $grey600 transparent transparent;
+        border-color: transparent var(--gray-600) transparent transparent;
       }
 
       body.rtl & {
         right: -10px;
         border-width: 0 0 20px 10px;
-        border-color: transparent transparent transparent $grey600;
+        border-color: transparent transparent transparent var(--gray-600);
       }
     }
   }
@@ -455,34 +428,33 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
 #alerts {
   position: relative; // to keep it above #global-header's shadow
-  background-color: $red050;
-  border-left: 5px solid $errorColor;
+  background-color: var(--red-050);
+  border-left: 5px solid var(--error-color);
   padding: 11px 0;
   text-align: center;
-  color: $errorColor;
+  color: var(--error-color);
 
   li {
-    padding: 4px 24px;
+    padding: 4px var(--xl);
 
     a {
-      color: $errorColor;
+      color: var(--error-color);
       text-decoration: underline;
 
       &.go {
         text-decoration: none;
         white-space: nowrap;
         border: 1px solid transparentize($errorColor, 0.5);
-        border-radius: $mediumBorderRadius;
+        border-radius: var(--medium-border-radius);
         padding: 3px 5px;
         margin: 0 2px;
 
         &:after {
-          color: $errorColor;
+          color: var(--error-color);
         }
 
         &:hover {
-          border-color: $errorColor;
-          transition: border-color linear 100ms;
+          border-color: var(--error-color);
         }
       }
     }
@@ -491,18 +463,41 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
 #global-header {
   width: 100%;
-  margin-bottom: 14px;
+  margin-bottom: var(--m);
   @include pane;
-  background: $grey050;
+  background: var(--gray-050);
 
   .flex {
     align-items: center;
   }
 
   .btn {
-    --ui-control-color: #{$grey400};
-    --ui-control-hover-color: #{$grey500};
-    --ui-control-active-color: #{$grey600};
+    --ui-control-color: var(--gray-400);
+    --ui-control-hover-color: var(--gray-500);
+    --ui-control-active-color: var(--gray-600);
+  }
+}
+
+.nav-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 50px;
+  line-height: 26px;
+  color: currentColor;
+  text-align: center;
+  @include margin-left(-10px);
+
+  &:before {
+    @include icon;
+    content: 'menu';
+    font-size: 16px;
+    line-height: 0;
+  }
+
+  &:hover {
+    color: var(--gray-400);
   }
 }
 
@@ -519,11 +514,11 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
 
   a,
   button {
-    color: $lightTextColor;
+    color: var(--light-text-color);
     transition: color linear 100ms;
 
     &:hover {
-      color: $linkColor;
+      color: var(--link-color);
       text-decoration: none;
     }
   }
@@ -553,8 +548,8 @@ $systemInfoHoverBgColor: darken($grey800, 10%);
     }
 
     &:after {
-      margin: 0 7px;
-      @include angle(right, $mediumHairlineColor);
+      @include margin(0, 8px, 0, 7px);
+      @include angle(right, var(--medium-hairline-color));
     }
   }
 
@@ -575,8 +570,14 @@ li.breadcrumb-toggle-wrapper {
   }
 }
 
-#nav-toggle {
-  display: none;
+#account-menu {
+  ul {
+    li {
+      a {
+        max-width: calc(100% + 28px) !important;
+      }
+    }
+  }
 }
 
 #announcements-btn {
@@ -593,7 +594,7 @@ li.breadcrumb-toggle-wrapper {
     width: 7px;
     height: 7px;
     border-radius: 4px;
-    background-color: $blue600;
+    background-color: var(--blue-600);
   }
 
   svg {
@@ -606,7 +607,7 @@ li.breadcrumb-toggle-wrapper {
   &:active,
   &.active {
     svg {
-      @include svg-mask($linkColor);
+      @include svg-mask(var(--link-color));
     }
   }
 }
@@ -619,11 +620,23 @@ li.breadcrumb-toggle-wrapper {
       margin-top: 20px;
     }
 
-    .timestamp {
+    .announcement-label-container {
       margin-top: -3px;
-      font-size: 12px;
-      color: $lightTextColor;
+      display: flex;
+      align-items: center;
       margin-bottom: 3px;
+
+      .announcement-icon svg {
+        display: block;
+        width: 15px;
+        height: 15px;
+      }
+
+      .announcement-label {
+        margin-left: 5px;
+        font-size: 12px;
+        color: var(--light-text-color);
+      }
     }
 
     h2 {
@@ -640,18 +653,13 @@ li.breadcrumb-toggle-wrapper {
       width: 7px;
       height: 7px;
       border-radius: 4px;
-      background-color: $blue600;
+      background-color: var(--blue-600);
     }
 
     p {
       margin: 0;
     }
   }
-}
-
-.breadcrumb-toggle-wrapper,
-.account-toggle-wrapper {
-  position: relative;
 }
 
 #user-info {
@@ -674,7 +682,7 @@ li.breadcrumb-toggle-wrapper {
     border-color: var(--ui-control-hover-color);
   }
 
-  &[aria-expanded=true]:after {
+  &[aria-expanded='true']:after {
     border-color: var(--ui-control-active-color);
   }
 }
@@ -688,11 +696,13 @@ li.breadcrumb-toggle-wrapper {
     height: 30px;
     max-width: none;
     border-radius: 50%;
-    box-shadow: 0 0 0 1px transparentize($grey900, 0.95), 0 0 0 transparentize($grey900, 1);
+    box-shadow: 0 0 0 1px transparentize($grey900, 0.95),
+      0 0 0 transparentize($grey900, 1);
     transition: box-shadow linear 150ms;
 
     #user-info:hover & {
-      box-shadow: 0 0 0 1px transparentize($grey900, 0.95), 0 2px 10px -2px transparentize($grey900, 0.7);
+      box-shadow: 0 0 0 1px transparentize($grey900, 0.95),
+        0 2px 10px -2px transparentize($grey900, 0.7);
     }
   }
 }
@@ -706,56 +716,93 @@ li.breadcrumb-toggle-wrapper {
 
 #notifications {
   position: fixed;
-  top: 0;
-  width: 100%;
+  bottom: 8px;
+  @include left(8px);
+  width: calc(100% - 16px);
   z-index: 101;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  pointer-events: none;
 
-  @media only screen and (min-width: $minFullUiWidth) {
-    width: calc(100% - #{$sidebarWidth});
+  @media only screen and (min-width: $minHorizontalUiWidth) {
+    width: 350px;
   }
 
   .notification {
-    padding: 5px 10px;
-    border-radius: 0 0 3px 3px;
-    border-width: 0 1px 1px;
-    color: $white !important;
-    pointer-events: auto;
-    @include light-on-dark-text;
-    @include shadow;
-    background-color: $noticeColor;
+    display: flex;
+    position: relative;
+    @include pane;
+    padding: 10px 14px;
+    border-radius: var(--large-border-radius);
+    box-shadow: 0 0 0 1px transparentize($grey1000, 0.85),
+      0 2px 12px transparentize($grey1000, 0.85);
+    --color: var(--notice-color);
 
-    &.error {
-      background-color: $primaryColor;
+    &[data-type='success'] {
+      --color: var(--success-color);
+    }
+
+    &[data-type='error'] {
+      --color: var(--error-color);
+    }
+
+    & + .notification {
+      margin-top: 12px;
+    }
+
+    .notification-icon {
+      width: 18px;
+      margin-top: -2px;
+      @include margin-right(10px);
+      font-size: 18px;
+      color: var(--color);
+    }
+
+    .notification-body {
+      display: flex;
+      flex: 1;
+
+      .notification-message {
+        font-weight: bold;
+      }
+
+      .notification-details {
+        margin-top: var(--xs);
+
+        .element {
+          border: 1px solid $hairlineColor;
+        }
+      }
+    }
+
+    .notification-close-btn {
+      position: relative;
+      top: -2px;
+      @include margin-left(10px);
     }
   }
 }
 
 #header-container {
-  margin-bottom: 14px;
+  margin-bottom: var(--m);
 }
 
 #crumbs,
 #header {
-  @include padding-left(30px);
-  @include padding-right(24px);
+  padding-left: var(--xl);
+  padding-right: var(--xl);
+}
+
+#primary-nav-toggle {
+  @media only screen and (min-width: $minFullUiWidth) {
+    display: none;
+  }
 }
 
 #global-header,
 #header {
   .flex {
-    flex-wrap: nowrap;
     max-width: 100%;
 
     &.flex-nowrap {
       min-width: 0;
-    }
-
-    & > * {
-      margin-bottom: 0;
     }
   }
 }
@@ -766,8 +813,9 @@ li.breadcrumb-toggle-wrapper {
   align-content: stretch;
   flex-wrap: nowrap;
   justify-content: space-between;
-  padding-top: 8px;
-  padding-bottom: 8px;
+  gap: var(--s);
+  padding-top: var(--s);
+  padding-bottom: var(--s);
   position: relative;
   z-index: 2;
   width: calc(100vw - #{$sidebarWidth});
@@ -780,25 +828,18 @@ li.breadcrumb-toggle-wrapper {
     position: fixed;
     z-index: 12;
     top: 0;
-    background-color: $grey100;
+    background-color: var(--gray-100);
     box-shadow: inset 0 -1px 0 transparentize($grey700, 0.9);
   }
 
   @supports (backdrop-filter: blur(10px)) {
     & {
-      transition: background-color linear 100ms, box-shadow linear 100ms, backdrop-filter linear 100ms;
+      transition: background-color linear 100ms, box-shadow linear 100ms,
+        backdrop-filter linear 100ms;
 
       body.fixed-header & {
         background-color: transparentize($grey100, 0.25);
         backdrop-filter: blur(10px);
-      }
-    }
-  }
-
-  .flex {
-    &:not(:last-child) {
-      @media only screen and (min-width: $minHorizontalUiWidth) {
-        @include margin-right(7px);
       }
     }
   }
@@ -808,13 +849,6 @@ li.breadcrumb-toggle-wrapper {
     margin-top: 0;
     margin-bottom: 0;
     min-width: 0;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-
-    &:not(:last-child) {
-      @include margin-right(14px !important);
-    }
   }
 
   .buttons,
@@ -826,7 +860,7 @@ li.breadcrumb-toggle-wrapper {
 #page-title {
   &.has-toolbar {
     @media only screen and (min-width: $minHorizontalUiWidth) {
-      min-width: #{$sidebarWidth - 30 - 7} !important;
+      min-width: calc(#{$sidebarWidth} - var(--xl) - var(--s)) !important;
     }
   }
 }
@@ -835,58 +869,51 @@ li.breadcrumb-toggle-wrapper {
   flex: 1;
   align-items: flex-start;
 
-  .btn,
-  .text {
-    color: darken($inputColor, 20%);
-  }
-
   .icon:before,
   .texticon:before,
   .menubtn:after,
   [data-icon]:before,
   [data-icon-after]:after {
-    color: var(--ui-control-color);
+    color: currentColor;
+    opacity: 0.8;
+  }
+
+  .btn[aria-pressed='true'] {
+    background-color: var(--gray-500);
+    color: var(--white);
   }
 
   .text {
-    border-radius: $largeBorderRadius;
+    border-radius: var(--large-border-radius);
 
     &::-webkit-input-placeholder {
-      color: $lightTextColor;
+      color: var(--light-text-color);
     }
 
     &:-ms-input-placeholder {
-      color: $lightTextColor;
+      color: var(--light-text-color);
     }
 
     &::-ms-input-placeholder {
-      color: $lightTextColor;
+      color: var(--light-text-color);
     }
 
     &:-moz-placeholder {
-      color: $lightTextColor;
+      color: var(--light-text-color);
     }
 
     &::-moz-placeholder {
-      color: $lightTextColor;
+      color: var(--light-text-color);
     }
 
     &::placeholder {
-      color: $lightTextColor;
+      color: var(--light-text-color);
     }
 
     &:not(:focus) {
       background-clip: border-box;
     }
   }
-
-  .spinner {
-    background-image: url(../images/spinner_toolbar.gif);
-  }
-}
-
-#action-button {
-  height: 34px;
 }
 
 #main-content {
@@ -894,7 +921,7 @@ li.breadcrumb-toggle-wrapper {
   flex-direction: row;
   align-items: flex-start;
   width: calc(100vw - #{$sidebarWidth});
-  padding: 0 24px 48px;
+  padding: 0 var(--xl) 48px;
   box-sizing: border-box;
 
   // for the Dashboard and any other full-page grids:
@@ -911,7 +938,10 @@ li.breadcrumb-toggle-wrapper {
   flex: 0 0 $sidebarWidth;
   width: $sidebarWidth;
   box-sizing: border-box;
-  @include margin-left(-24px);
+
+  @media only screen and (min-width: $minFullUiWidth) {
+    @include margin-left(calc(var(--xl) * -1));
+  }
 }
 
 #sidebar {
@@ -923,8 +953,8 @@ li.breadcrumb-toggle-wrapper {
   &.fixed {
     position: fixed;
     overflow-y: auto;
-    padding-top: 14px;
-    padding-bottom: 14px;
+    padding-top: var(--m);
+    padding-bottom: var(--m);
   }
 
   nav {
@@ -940,12 +970,8 @@ li.breadcrumb-toggle-wrapper {
         }
         &:not(.sel) {
           &:hover {
-            background-color: $grey200;
+            background-color: var(--gray-200);
           }
-        }
-        &.sel {
-          @include pane;
-          background-color: $grey050;
         }
       }
     }
@@ -955,14 +981,19 @@ li.breadcrumb-toggle-wrapper {
 #content-container {
   flex: 1;
 
+  #main-content:not(.has-sidebar):not(.has-details) & {
+    width: 100%;
+    max-width: 100%;
+  }
+
   #main-content.has-sidebar & {
     width: calc(100% - #{$sidebarWidth - 24});
     max-width: calc(100% - #{$sidebarWidth - 24});
   }
 
   #main-content.has-details & {
-    width: calc(100% - #{$detailsWidth} - 14px);
-    max-width: calc(100% - #{$detailsWidth} - 14px);
+    width: calc(100% - #{$detailsWidth} - var(--m));
+    max-width: calc(100% - #{$detailsWidth} - var(--m));
   }
 
   #main-content.has-sidebar.has-details {
@@ -971,26 +1002,36 @@ li.breadcrumb-toggle-wrapper {
   }
 }
 
+#content-heading {
+  margin-top: var(--xl) !important;
+
+  @media only screen and (min-width: $minHorizontalUiWidth) {
+    @include visually-hidden;
+  }
+}
+
 .content-pane {
   @include pane;
-  border-radius: $largeBorderRadius;
+  border-radius: var(--large-border-radius);
   position: relative;
   background-clip: padding-box;
-  padding: 24px;
+  padding: var(--xl);
   word-wrap: break-word;
 
   & > hr {
-    margin-left: -24px;
-    margin-right: -24px;
+    margin-left: calc(var(--xl) * -1);
+    margin-right: calc(var(--xl) * -1);
   }
 }
 
 #footer {
   z-index: 1;
-  margin: 25px -24px -24px; // 1px extra on top is intentional
-  padding: 10px 24px;
-  background-color: $grey050;
-  border-radius: 0 0 $largeBorderRadius $largeBorderRadius;
+  margin: 25px calc(var(--xl) * -1) calc(var(--xl) * -1); // 1px extra on top is intentional
+  padding: var(--s) var(--xl);
+  background-color: var(--gray-050);
+  border-radius: 0 0 var(--large-border-radius) var(--large-border-radius);
+  box-sizing: border-box;
+  min-height: 50px;
 
   &:empty {
     display: none;
@@ -1005,130 +1046,65 @@ li.breadcrumb-toggle-wrapper {
 #details-container {
   flex: 0 0 #{$detailsWidth + 38};
   width: $detailsWidth + 38;
-  @include margin-right(-24px);
+  @include margin-right(calc(var(--xl) * -1));
   box-sizing: border-box;
 }
 
 #details {
   box-sizing: border-box;
-  padding-bottom: 24px;
-  @include padding-right(24px);
-  @include padding-left(14px);
+  @include padding-right(var(--xl));
+  @include padding-left(var(--m));
   width: $detailsWidth + 38;
 
   &.fixed {
     position: fixed;
     overflow-y: auto;
-    padding-top: 14px;
+    padding-top: var(--m);
   }
 
-  .meta {
-    margin-bottom: 14px;
-    border-radius: $largeBorderRadius;
-    padding: 0 24px;
+  .details {
+    .meta {
+      border-radius: var(--large-border-radius);
 
-    &:not(.warning) {
-      @include pane;
-    }
-
-    &:not(.read-only):not(.warning) {
-      background-color: $grey050;
-    }
-
-    &.read-only {
-      padding-top: 8px;
-      padding-bottom: 8px;
-      color: $mediumTextColor;
-      background-color: transparent;
-    }
-
-    &.warning {
-      border: 2px solid $yellow300;
-      padding: 19px 22px;
-      background: $white;
-      color: $textColor !important;
-
-      p {
-        margin-bottom: 5px;
+      &:not(.read-only):not(.warning) {
+        @include pane;
       }
 
-      .btn {
-        background-color: $yellow300;
+      &.read-only {
+        color: var(--medium-text-color);
+        background-color: transparent !important;
+      }
 
-        &:hover,
-        &:focus {
-          background-color: darken($yellow300, 10%);
+      & > .field,
+      & > .data {
+        &:first-child {
+          &,
+          & > .status-badge {
+            border-top-left-radius: var(--large-border-radius);
+          }
+          border-top-right-radius: var(--large-border-radius);
         }
 
-        &:active {
-          background-color: darken($yellow300, 15%);
+        &:last-child {
+          &,
+          & > .status-badge {
+            border-bottom-left-radius: var(--large-border-radius);
+          }
+          border-bottom-right-radius: var(--large-border-radius);
         }
       }
     }
 
-    & > .field,
-    & > .data {
-      margin: 0 -24px !important;
-
-      &:first-child {
-        &,
-        & > .status-badge {
-          border-top-left-radius: $largeBorderRadius;
-        }
-        border-top-right-radius: $largeBorderRadius;
-      }
-
-      &:last-child {
-        &,
-        & > .status-badge {
-          border-bottom-left-radius: $largeBorderRadius;
-        }
-        border-bottom-right-radius: $largeBorderRadius;
-      }
-
-      & > .heading > label,
-      & > .heading {
-        color: $grey600;
+    & > .field {
+      & > .input > .text.fullwidth {
+        @include pane;
       }
     }
 
-    & > .field  > .status-badge {
-      @include left(-1px);
-    }
-
-    .text::placeholder,
-    .datewrapper .text + div[data-icon],
-    .timewrapper .text + div[data-icon] {
-      color: $grey300;
-    }
-
-    .ui-datepicker {
-      @include margin(0, 0, 0, -8px);
-    }
-  }
-
-  hr {
-    margin: 14px 0;
-    border-top-color: $hairlineColor;
-  }
-
-  .spinner {
-    background-image: url(../images/spinner_details.gif);
-  }
-
-  @include placeholder-styles($grey500);
-
-  .text {
-    background-color: transparent;
-    resize: none;
-  }
-
-  & > .text {
-    border-radius: $largeBorderRadius;
-    margin-bottom: 14px;
-
-    &:not(:focus) {
-      border-color: transparentize($inputColor, 0.6);
+    .notes {
+      border-radius: 5px;
+      padding-top: 15px;
+      padding-bottom: 15px;
     }
   }
 }
@@ -1154,29 +1130,6 @@ li.breadcrumb-toggle-wrapper {
 
   #header {
     width: 100vw;
-  }
-
-  #nav-toggle {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 36px;
-    height: 50px;
-    line-height: 26px;
-    color: $grey300;
-    text-align: center;
-    @include margin-left(-10px);
-
-    &:before {
-      @include icon;
-      content: 'menu';
-      font-size: 16px;
-      line-height: 0;
-    }
-
-    &:hover {
-      color: $grey400;
-    }
   }
 
   #main-content {
@@ -1212,16 +1165,24 @@ li.breadcrumb-toggle-wrapper {
 
   #sidebar-toggle-container {
     display: block;
-    margin-bottom: 14px;
+    margin-bottom: var(--m);
   }
 
   #sidebar-toggle {
+    &:after {
+      top: 0;
+      transform: rotate(-45deg);
+
+      body.rtl & {
+        transform: rotate(135deg);
+      }
+    }
+
     body.showing-sidebar & {
       background-color: darken($grey200, 10%) !important;
 
       &:after {
-        transform: rotate(225deg);
-        top: 1px;
+        transform: rotate(45deg);
       }
     }
   }
@@ -1244,7 +1205,7 @@ li.breadcrumb-toggle-wrapper {
   }
 
   #sidebar {
-    margin-bottom: 14px;
+    margin-bottom: var(--m);
 
     body:not(.showing-sidebar) & {
       display: none;
@@ -1262,7 +1223,7 @@ li.breadcrumb-toggle-wrapper {
 
   #details {
     padding: 0 !important;
-    margin-top: 14px;
+    margin-top: var(--m);
   }
 }
 
@@ -1277,8 +1238,8 @@ li.breadcrumb-toggle-wrapper {
 
   #tabs ul li {
     a {
-      padding-left: 14px;
-      padding-right: 14px;
+      padding-left: var(--m);
+      padding-right: var(--m);
     }
 
     & + li {
@@ -1324,15 +1285,18 @@ li.breadcrumb-toggle-wrapper {
 
 /* Sidebar */
 .sidebar {
-  padding: 14px 0;
   width: $sidebarWidth;
   box-sizing: border-box;
   font-size: 13px;
-  background-color: $grey050;
+
+  &:not(.drag-helper) {
+    padding: var(--m) 0;
+    background-color: var(--gray-050);
+  }
 
   .heading {
     position: relative;
-    margin: 14px 24px 2px;
+    margin: var(--m) var(--xl) 2px;
 
     span {
       display: inline-block;
@@ -1341,7 +1305,7 @@ li.breadcrumb-toggle-wrapper {
       padding: 0 5px;
       margin: 0 -5px;
       text-transform: uppercase;
-      color: $mediumTextColor;
+      color: var(--medium-text-color);
       font-size: 11px;
       font-weight: bold;
     }
@@ -1353,12 +1317,12 @@ li.breadcrumb-toggle-wrapper {
     }
 
     & > .toggle {
-      @include left(14px * $level);
+      @include left(calc(var(--m) * #{$level}));
     }
   }
 
   nav {
-    padding: 0 7px;
+    padding: 0 var(--s);
 
     & > ul > li {
       @include nav-level(0);
@@ -1380,16 +1344,20 @@ li.breadcrumb-toggle-wrapper {
       position: relative;
 
       &:not(.has-subnav) > a {
-        transition: background-color linear 100ms;
-
-        &:hover {
+        &:not(.sel):hover {
           text-decoration: none;
-          background-color: $grey100;
+          background-color: var(--gray-100);
         }
 
         &.sel {
           cursor: default;
-          background-color: $grey200;
+          background-color: var(--gray-500);
+          @include light-on-dark-text;
+
+          &,
+          & + .toggle {
+            color: var(--white);
+          }
         }
       }
 
@@ -1399,12 +1367,13 @@ li.breadcrumb-toggle-wrapper {
         display: flex;
         flex-direction: row;
         align-items: center;
-        padding: 7px 24px;
-        min-height: 24px;
+        padding: 7px var(--xl);
+        min-height: var(--xl);
         box-sizing: border-box;
-        color: $textColor;
+        color: var(--text-color);
         user-select: none;
-        border-radius: $largeBorderRadius;
+        border-radius: var(--large-border-radius);
+        word-break: break-word;
 
         .status {
           flex-shrink: 1;
@@ -1413,17 +1382,19 @@ li.breadcrumb-toggle-wrapper {
         .icon {
           @include margin-right(10px);
           flex-shrink: 1;
-          width: 18px;
-          height: 18px;
+          width: toRem(18);
+          height: toRem(18);
+          word-break: normal;
           transition: margin-left linear 150ms, margin-right linear 150ms;
+          opacity: 0.85;
 
           &.icon-mask {
             svg {
-              @include svg-mask(var(--ui-control-color));
+              @include svg-mask(currentColor);
             }
 
             span[data-icon] {
-              color: var(--ui-control-color);
+              color: currentColor;
             }
           }
 
@@ -1451,17 +1422,18 @@ li.breadcrumb-toggle-wrapper {
           padding: 0 6px;
           font-size: 11px;
           line-height: 16px;
-          border-radius: 8px;
-          background-color: $mediumTextColor;
-          color: $white;
+          border-radius: var(--s);
+          background-color: var(--medium-text-color);
+          color: var(--white);
         }
       }
 
       .toggle {
         position: absolute;
+        z-index: 1;
         height: 34px;
         top: 0;
-        width: 24px;
+        width: var(--xl);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -1482,62 +1454,62 @@ li.breadcrumb-toggle-wrapper {
   @include margin-left($sidebarWidth);
 }
 
+#content-notice {
+  margin: 0 calc(var(--xl) * -1);
+  padding: 0 var(--xl);
+
+  &:not(:last-child) {
+    padding-bottom: var(--s);
+    border-bottom: 1px solid var(--hairline-color);
+    margin-bottom: var(--s);
+  }
+}
+
 /* flexbox field layouts */
-#content :not(.meta) > .flex-fields {
+#content :not(.meta) > .flex-fields,
+#content > .flex-fields,
+.so-content .flex-fields {
+  --row-gap: var(--xl);
   display: flex;
   flex-wrap: wrap;
   align-content: flex-start;
-  margin: 0 -24px -24px;
-  width: calc(100% + 48px);
+  margin: 0 calc(var(--row-gap) * -1) calc(var(--row-gap) * -1);
+  width: calc(100% + var(--row-gap) * 2);
+
+  & > * {
+    margin: 0 0 var(--row-gap) !important;
+    padding: 0 var(--row-gap);
+    box-sizing: border-box;
+  }
 
   & > h2 {
-    margin: 0 0 24px !important;
-    padding: 0 24px;
-    width: 100%;
+    flex: 4 0 100%;
 
     &:not(:first-child) {
-      padding-top: 24px;
-      border-top: 1px solid $hairlineColor;
+      padding-top: var(--xl);
+      border-top: 1px solid var(--hairline-color);
     }
   }
 
-  & > hr {
-    margin: 0 0 24px;
-    width: calc(100% + 48px);
+  & > hr,
+  & > .line-break {
+    flex: 4 0 100%;
   }
 
-  & > :not(h2):not(hr) {
-    &, &:last-child {
+  & > .line-break:not(:first-child) {
+    margin-bottom: 0 !important;
+  }
+
+  & > :not(h2):not(hr):not(.line-break) {
+    &,
+    &:last-child {
       position: relative;
-      margin: 0 24px 24px !important;
-      width: calc(100% - 48px);
-      box-sizing: border-box;
-
-      // 4 cols for >= 1536px
-      @media only screen and (min-width: $minXlUiWidth) {
-        &.width-25 {
-          width: calc(25% - 48px);
-        }
-        &.width-50 {
-          width: calc(50% - 48px);
-        }
-        &.width-75 {
-          width: calc(75% - 48px);
-        }
-      }
-
-      // 2 cols fol 712 - 1536px
-      @media only screen and (min-width: 500px) and (max-width: $minXlUiWidth - 1px) {
-        &.width-25,
-        &.width-50 {
-          width: calc(50% - 48px);
-        }
-      }
+      width: 100%;
 
       &:before {
         position: absolute;
         top: 0;
-        @include left(-25px);
+        @include left(-1px);
         width: 1px;
         height: 100%;
         content: '';
@@ -1548,32 +1520,46 @@ li.breadcrumb-toggle-wrapper {
   }
 }
 
-/* retina */
-@media only screen and (-webkit-min-device-pixel-ratio: 1.5),
-only screen and (-moz-min-device-pixel-ratio: 1.5),
-only screen and (-o-min-device-pixel-ratio: 3/2),
-only screen and (min-device-pixel-ratio: 1.5),
-only screen and (min-resolution: 1.5dppx) {
-  #details {
-    .spinner {
-      background-image: url(../images/spinner_details_2x.gif);
-      background-size: 20px;
+#content :not(.meta) > .flex-fields,
+#content > .flex-fields {
+  & > :not(h2):not(hr):not(.line-break) {
+    &,
+    &:last-child {
+      // 4 cols for >= 1536px
+      @media only screen and (min-width: $minXlUiWidth) {
+        &.width-25 {
+          width: 25%;
+        }
+        &.width-50 {
+          width: 50%;
+        }
+        &.width-75 {
+          width: 75%;
+        }
+      }
+
+      // 2 cols for 600 - 1535px
+      @media only screen and (min-width: $minDesktopWidth) and (max-width: $minXlUiWidth - 1px) {
+        &.width-25,
+        &.width-50 {
+          width: 50%;
+        }
+      }
     }
   }
-  #toolbar {
-    .spinner {
-      background-image: url(../images/spinner_toolbar_2x.gif);
-      background-size: 20px;
-    }
-  }
-  #upgrademodal.loading {
-    background-image: url(../images/spinner_big_2x.gif);
-    background-size: 48px;
-  }
-  #upgrademodal-success {
-    .message {
-      background-image: url(../images/success_2x.png);
-      background-size: 48px;
+}
+
+.so-content .flex-fields {
+  & > :not(h2):not(hr):not(.line-break) {
+    &,
+    &:last-child {
+      // 2 cols for >= 1200
+      @media only screen and (min-width: $minDesktopWidth * 2) {
+        &.width-25,
+        &.width-50 {
+          width: 50%;
+        }
+      }
     }
   }
 }

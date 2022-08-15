@@ -9,8 +9,6 @@ namespace craft\console;
 
 use craft\elements\User as UserElement;
 use yii\base\Component;
-use yii\base\InvalidValueException;
-use yii\web\IdentityInterface;
 
 /**
  * The User component provides APIs for managing the user authentication status.
@@ -22,9 +20,11 @@ use yii\web\IdentityInterface;
 class User extends Component
 {
     /**
-     * @var UserElement|IdentityInterface|false
+     * @var UserElement|null
+     * @see getIdentity()
+     * @see setIdentity()
      */
-    private $_identity = false;
+    private ?UserElement $_identity = null;
 
     /**
      * Returns whether the current user is an admin.
@@ -54,29 +54,23 @@ class User extends Component
     /**
      * Returns the current identity object.
      *
-     * @return UserElement|IdentityInterface|false|null
+     * @param bool $autoRenew
+     * @return UserElement|null
      */
-    public function getIdentity()
+    public function getIdentity(bool $autoRenew = true): UserElement|null
     {
-        return $this->_identity ?: null;
+        return $this->_identity;
     }
 
     /**
      * Sets the user identity object.
      *
-     * @param IdentityInterface|null $identity The identity object. If null, it
+     * @param UserElement|null $identity The identity object. If null, it
      * means the current user will be a guest without any associated identity.
-     * @throws InvalidValueException If `$identity` object does not implement [[IdentityInterface]].
      */
-    public function setIdentity(IdentityInterface $identity = null)
+    public function setIdentity(?UserElement $identity = null): void
     {
-        if ($identity instanceof IdentityInterface) {
-            $this->_identity = $identity;
-        } else if ($identity === null) {
-            $this->_identity = null;
-        } else {
-            throw new InvalidValueException('The identity object must implement IdentityInterface.');
-        }
+        $this->_identity = $identity;
     }
 
     /**
@@ -95,10 +89,10 @@ class User extends Component
      * @return int|null
      * @see getIdentity()
      */
-    public function getId()
+    public function getId(): ?int
     {
         $identity = $this->getIdentity();
 
-        return $identity !== null ? $identity->getId() : null;
+        return $identity?->getId();
     }
 }

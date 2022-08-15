@@ -10,6 +10,7 @@ namespace craft\assetpreviews;
 use Craft;
 use craft\base\AssetPreviewHandler;
 use craft\helpers\UrlHelper;
+use yii\base\NotSupportedException;
 
 /**
  * Provides functionality to preview images.
@@ -22,23 +23,22 @@ class Image extends AssetPreviewHandler
     /**
      * @inheritdoc
      */
-    public function getPreviewHtml(): string
+    public function getPreviewHtml(array $variables = []): string
     {
-        $volume = $this->asset->getVolume();
-
-        if ($volume->hasUrls) {
-            $url = $this->asset->getUrl();
-        } else {
-            $url = UrlHelper::actionUrl('assets/thumb', [
-                'uid' => $this->asset->uid,
-                'width' => $this->asset->getWidth(),
-                'height' => $this->asset->getHeight(),
-            ], null, false);
+        try {
+            $url = Craft::$app->getAssets()->getImagePreviewUrl($this->asset, 1000, 1000);
+        } catch (NotSupportedException) {
+            $url = UrlHelper::actionUrl('assets/edit-image', [
+                'assetId' => $this->asset->id,
+                'size' => 1000,
+            ]);
         }
 
-        return Craft::$app->getView()->renderTemplate('assets/_previews/image', [
-            'asset' => $this->asset,
-            'url' => $url,
-        ]);
+        return Craft::$app->getView()->renderTemplate('assets/_previews/image',
+            array_merge([
+                'asset' => $this->asset,
+                'url' => $url,
+            ], $variables)
+        );
     }
 }

@@ -1,8 +1,8 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace craft\test\mockclasses\components;
@@ -14,24 +14,15 @@ use craft\base\Component;
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
- * @since  3.2
+ * @since 3.2
  */
 class DependencyHeavyComponentExample extends Component
 {
-    /**
-     * @var
-     */
-    public $dependency1;
+    public mixed $dependency1 = null;
 
-    /**
-     * @var
-     */
-    public $dependency2;
+    public mixed $dependency2 = null;
 
-    /**
-     * @var
-     */
-    public $settingsdependency1;
+    public mixed $settingsdependency1 = null;
 
     /**
      * @return string

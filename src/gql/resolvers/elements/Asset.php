@@ -7,10 +7,10 @@
 
 namespace craft\gql\resolvers\elements;
 
-use craft\db\Table;
+use Craft;
 use craft\elements\Asset as AssetElement;
+use craft\elements\db\ElementQuery;
 use craft\gql\base\ElementResolver;
-use craft\helpers\Db;
 use craft\helpers\Gql as GqlHelper;
 
 /**
@@ -24,18 +24,18 @@ class Asset extends ElementResolver
     /**
      * @inheritdoc
      */
-    public static function prepareQuery($source, array $arguments, $fieldName = null)
+    public static function prepareQuery(mixed $source, array $arguments, ?string $fieldName = null): mixed
     {
         // If this is the beginning of a resolver chain, start fresh
         if ($source === null) {
             $query = AssetElement::find();
-            // If not, get the prepared element query
+        // If not, get the prepared element query
         } else {
             $query = $source->$fieldName;
         }
 
         // If it's preloaded, it's preloaded.
-        if (is_array($query)) {
+        if (!$query instanceof ElementQuery) {
             return $query;
         }
 
@@ -49,7 +49,13 @@ class Asset extends ElementResolver
             return [];
         }
 
-        $query->andWhere(['in', 'assets.volumeId', array_values(Db::idsByUids(Table::VOLUMES, $pairs['volumes']))]);
+        $volumesService = Craft::$app->getVolumes();
+        $volumeIds = array_filter(array_map(function(string $uid) use ($volumesService) {
+            $volume = $volumesService->getVolumeByUid($uid);
+            return $volume->id ?? null;
+        }, $pairs['volumes']));
+
+        $query->andWhere(['in', 'assets.volumeId', $volumeIds]);
 
         return $query;
     }

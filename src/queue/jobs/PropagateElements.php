@@ -12,6 +12,7 @@ use craft\base\ElementInterface;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\events\BatchElementActionEvent;
+use craft\i18n\Translation;
 use craft\queue\BaseJob;
 use craft\services\Elements;
 
@@ -24,26 +25,27 @@ use craft\services\Elements;
 class PropagateElements extends BaseJob
 {
     /**
-     * @var string|ElementInterface The element type that should be propagated
+     * @var string The element type that should be propagated
+     * @phpstan-var class-string<ElementInterface>
      */
-    public $elementType;
+    public string $elementType;
 
     /**
      * @var array|null The element criteria that determines which elements should be propagated
      */
-    public $criteria;
+    public ?array $criteria = null;
 
     /**
      * @var int|int[]|null The site ID(s) that the elements should be propagated to
      *
      * If this is `null`, then elements will be propagated to all supported sites, except the one they were queried in.
      */
-    public $siteId;
+    public array|int|null $siteId = null;
 
     /**
      * @inheritdoc
      */
-    public function execute($queue)
+    public function execute($queue): void
     {
         /** @var ElementQuery $query */
         $query = $this->_query();
@@ -52,7 +54,7 @@ class PropagateElements extends BaseJob
 
         $callback = function(BatchElementActionEvent $e) use ($queue, $query, $total) {
             if ($e->query === $query) {
-                $this->setProgress($queue, ($e->position - 1) / $total, Craft::t('app', '{step, number} of {total, number}', [
+                $this->setProgress($queue, ($e->position - 1) / $total, Translation::prep('app', '{step, number} of {total, number}', [
                     'step' => $e->position,
                     'total' => $total,
                 ]));
@@ -67,14 +69,14 @@ class PropagateElements extends BaseJob
     /**
      * @inheritdoc
      */
-    protected function defaultDescription(): string
+    protected function defaultDescription(): ?string
     {
         /** @var ElementQuery $query */
         $query = $this->_query();
         /** @var ElementInterface $elementType */
         $elementType = $query->elementType;
         $total = $query->count();
-        return Craft::t('app', 'Propagating {type}', [
+        return Translation::prep('app', 'Propagating {type}', [
             'type' => $total == 1 ? $elementType::lowerDisplayName() : $elementType::pluralLowerDisplayName(),
         ]);
     }
@@ -86,6 +88,8 @@ class PropagateElements extends BaseJob
      */
     private function _query(): ElementQueryInterface
     {
+        /** @var string|ElementInterface $elementType */
+        /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
         $elementType = $this->elementType;
         $query = $elementType::find();
 
@@ -96,7 +100,7 @@ class PropagateElements extends BaseJob
         $query
             ->offset(null)
             ->limit(null)
-            ->orderBy(null);
+            ->orderBy([]);
 
         return $query;
     }

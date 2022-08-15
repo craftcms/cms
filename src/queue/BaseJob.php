@@ -18,24 +18,29 @@ use yii\base\BaseObject;
 abstract class BaseJob extends BaseObject implements JobInterface
 {
     /**
-     * @var string|null The configured job description
+     * @var string|null The configured job description.
+     *
+     * ::: tip
+     * Run the description through [[\craft\i18n\Translation::prep()]] rather than [[\yii\BaseYii::t()|Craft::t()]]
+     * so it can be lazy-translated for users’ preferred languages rather that the current app language.
+     * :::
      */
-    public $description;
+    public ?string $description = null;
 
     /**
-     * @var int The current progress
+     * @var int|float The current progress
      */
-    private $_progress;
+    private int|float $_progress;
 
     /**
      * @var string|null The current progress label
      */
-    private $_progressLabel;
+    private ?string $_progressLabel = null;
 
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
         parent::init();
 
@@ -46,7 +51,7 @@ abstract class BaseJob extends BaseObject implements JobInterface
     /**
      * @inheritdoc
      */
-    public function getDescription()
+    public function getDescription(): ?string
     {
         return $this->description ?? $this->defaultDescription();
     }
@@ -54,9 +59,14 @@ abstract class BaseJob extends BaseObject implements JobInterface
     /**
      * Returns a default description for [[getDescription()]].
      *
+     * ::: tip
+     * Run the description through [[\craft\i18n\Translation::prep()]] rather than [[\yii\BaseYii::t()|Craft::t()]]
+     * so it can be lazy-translated for users’ preferred languages rather that the current app language.
+     * :::
+     *
      * @return string|null
      */
-    protected function defaultDescription()
+    protected function defaultDescription(): ?string
     {
         return null;
     }
@@ -64,11 +74,16 @@ abstract class BaseJob extends BaseObject implements JobInterface
     /**
      * Sets the job progress on the queue.
      *
+     * ::: tip
+     * Run the label through [[\craft\i18n\Translation::prep()]] rather than [[\yii\BaseYii::t()|Craft::t()]]
+     * so it can be lazy-translated for users’ preferred languages rather that the current app language.
+     * :::
+     *
      * @param \yii\queue\Queue|QueueInterface $queue
      * @param float $progress A number between 0 and 1
      * @param string|null $label The progress label
      */
-    protected function setProgress($queue, float $progress, string $label = null)
+    protected function setProgress(\yii\queue\Queue|QueueInterface $queue, float $progress, ?string $label = null): void
     {
         $progress = round(100 * $progress);
 
@@ -84,7 +99,7 @@ abstract class BaseJob extends BaseObject implements JobInterface
             }
 
             if ($queue instanceof QueueInterface) {
-                $queue->setProgress($progress, $label);
+                $queue->setProgress((int)$progress, $label);
             }
         }
     }

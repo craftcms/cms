@@ -1,0 +1,129 @@
+@charset "UTF-8";
+@import '@craftcms/sass/mixins';
+
+$iconSize: 46px;
+
+#content {
+  #graphic {
+    display: block;
+    margin: 200px auto 0;
+
+    &.success {
+      background-image: url(images/success.png);
+    }
+
+    &.error {
+      background-image: url(images/error.png);
+    }
+  }
+
+  #status {
+    margin: 20px auto 250px;
+    text-align: center;
+    font-size: 16px;
+    color: $grey500;
+  }
+
+  .readable:not(:first-child) {
+    margin-top: 24px;
+  }
+
+  #plugins {
+    margin-top: 24px;
+
+    tbody {
+      th {
+        position: relative;
+        padding-left: $iconSize + 12 + 12;
+        height: $iconSize + 20;
+
+        .plugin-icon {
+          position: absolute;
+          top: 10px;
+          left: 12px;
+          width: $iconSize;
+          height: $iconSize;
+
+          svg {
+            display: block;
+            width: $iconSize;
+            height: $iconSize;
+          }
+        }
+      }
+
+      .plugin-developer {
+        margin-top: 3px;
+        &:before {
+          @include icon;
+          content: 'building';
+          margin-top: -3px;
+          @include margin-right(4px);
+          color: $grey300;
+        }
+
+        &,
+        a {
+          font-weight: normal;
+        }
+      }
+
+      .plugin-status,
+      .plugin-version {
+        display: inline-block;
+        border: 1px solid $grey600;
+        border-radius: $smallBorderRadius;
+        padding: 0 7px 1px;
+      }
+      .plugin-status {
+        @include margin-right(5px);
+        text-transform: uppercase;
+        color: $grey600;
+        background-color: transparentize($grey600, 0.95);
+
+        &.plugin-ready {
+          border-color: $teal600;
+          color: $teal600;
+          background-color: transparentize($teal600, 0.95);
+        }
+
+        &.plugin-not-ready {
+          border-color: $yellow600;
+          color: $yellow600;
+          background-color: transparentize($yellow600, 0.95);
+        }
+
+        &.plugin-abandoned {
+          border-color: $red600;
+          color: $red600;
+          background-color: transparentize($red600, 0.95);
+        }
+      }
+
+      .plugin-note {
+        margin-top: 3px;
+        color: $lightTextColor;
+      }
+    }
+  }
+}
+
+@media only screen and (-webkit-min-device-pixel-ratio: 1.5),
+  only screen and (-moz-min-device-pixel-ratio: 1.5),
+  only screen and (-o-min-device-pixel-ratio: 3/2),
+  only screen and (min-device-pixel-ratio: 1.5),
+  only screen and (min-resolution: 1.5dppx) {
+  #content {
+    #graphic {
+      &.success {
+        background-image: url(images/success_2x.png);
+        background-size: 48px;
+      }
+
+      &.error {
+        background-image: url(images/error_2x.png);
+        background-size: 48px;
+      }
+    }
+  }
+}

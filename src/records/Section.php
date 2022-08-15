@@ -11,21 +11,23 @@ use craft\db\ActiveRecord;
 use craft\db\SoftDeleteTrait;
 use craft\db\Table;
 use yii\db\ActiveQueryInterface;
+use yii2tech\ar\softdelete\SoftDeleteBehavior;
 
 /**
  * Class Section record.
  *
  * @property int $id ID
- * @property int $structureId Structure ID
+ * @property int|null $structureId Structure ID
  * @property string $name Name
  * @property string $handle Handle
  * @property string $type Type
  * @property bool $enableVersioning Enable versioning
  * @property bool $propagationMethod Propagation method
  * @property string $defaultPlacement Default placement
- * @property array $previewTargets Preview targets
+ * @property array|null $previewTargets Preview targets
  * @property Section_SiteSettings[] $siteSettings Site settings
  * @property Structure $structure Structure
+ * @mixin SoftDeleteBehavior
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */

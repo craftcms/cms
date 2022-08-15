@@ -8,12 +8,14 @@
 namespace craft\services;
 
 use Craft;
+use craft\config\BaseConfig;
 use craft\config\DbConfig;
 use craft\config\GeneralConfig;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
+use craft\helpers\Typecast;
 use yii\base\BaseObject;
 use yii\base\Component;
 use yii\base\ErrorException;
@@ -27,15 +29,20 @@ use yii\base\InvalidConfigException;
  *
  * An instance of the service is available via [[\craft\base\ApplicationTrait::getConfig()|`Craft::$app->config`]].
  *
- * @property DbConfig $db the DB config settings
- * @property GeneralConfig $general the general config settings
+ * @property-read DbConfig $db the DB config settings
+ * @property-read GeneralConfig $general the general config settings
+ * @property-read object $custom the custom config settings
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
 class Config extends Component
 {
-    const CATEGORY_DB = 'db';
-    const CATEGORY_GENERAL = 'general';
+    /**
+     * @since 4.0.0
+     */
+    public const CATEGORY_CUSTOM = 'custom';
+    public const CATEGORY_DB = 'db';
+    public const CATEGORY_GENERAL = 'general';
 
     /**
      * @var string|null The environment ID Craft is currently running in.
@@ -50,64 +57,54 @@ class Config extends Component
      * {% endif %}
      * ```
      */
-    public $env;
+    public ?string $env = null;
 
     /**
      * @var string The path to the config directory
      */
-    public $configDir = '';
+    public string $configDir = '';
 
     /**
      * @var string The path to the directory containing the default application config settings
      */
-    public $appDefaultsDir = '';
+    public string $appDefaultsDir = '';
 
     /**
      * @var array
      */
-    private $_configSettings = [];
+    private array $_configSettings = [];
 
     /**
-     * @var bool|null
+     * @var string|null
      */
-    private $_dotEnvPath;
+    private ?string $_dotEnvPath = null;
+
+    /**
+     * @var string|null
+     * @see getConfigFromFile()
+     * @see getLoadingConfigFile()
+     */
+    private ?string $_loadingConfigFile = null;
 
     /**
      * Returns all of the config settings for a given category.
      *
      * @param string $category The config category
-     * @return BaseObject The config settings
+     * @return object The config settings
      * @throws InvalidArgumentException if $category is invalid
      * @throws InvalidConfigException if the securityKey general config setting is not set, and a auto-generated one could not be saved
      */
-    public function getConfigSettings(string $category): BaseObject
+    public function getConfigSettings(string $category): object
     {
-        if (isset($this->_configSettings[$category])) {
-            return $this->_configSettings[$category];
-        }
+        if (!isset($this->_configSettings[$category])) {
+            $this->_configSettings[$category] = $this->_createConfigObj($category);
 
-        switch ($category) {
-            case self::CATEGORY_DB:
-                $class = DbConfig::class;
-                break;
-            case self::CATEGORY_GENERAL:
-                $class = GeneralConfig::class;
-                break;
-            default:
-                throw new InvalidArgumentException('Invalid config category: ' . $category);
-        }
-
-        // Get any custom config settings
-        $config = $this->getConfigFromFile($category);
-        $config = $this->_configSettings[$category] = new $class($config);
-
-        // todo: remove this eventually
-        if ($category === self::CATEGORY_GENERAL) {
-            /** @var GeneralConfig $config */
-            if ($config->securityKey === null) {
+            // This needs to happen here – after `$this->_configSettings[$category]` has been set – to avoid
+            // an infinite recursion bug
+            if ($category === self::CATEGORY_GENERAL && !isset($this->_configSettings[$category]->securityKey)) {
                 $keyPath = Craft::$app->getPath()->getRuntimePath() . DIRECTORY_SEPARATOR . 'validation.key';
                 if (file_exists($keyPath)) {
-                    $config->securityKey = trim(file_get_contents($keyPath));
+                    $this->_configSettings[$category]->securityKey = trim(file_get_contents($keyPath));
                 } else {
                     $key = Craft::$app->getSecurity()->generateRandomString();
                     try {
@@ -115,19 +112,80 @@ class Config extends Component
                     } catch (ErrorException $e) {
                         throw new InvalidConfigException('The securityKey config setting is required, and an auto-generated value could not be generated: ' . $e->getMessage());
                     }
-                    $config->securityKey = $key;
+                    $this->_configSettings[$category]->securityKey = $key;
                 }
-                Craft::$app->getDeprecator()->log('validation.key', "The auto-generated validation key stored at `{$keyPath}` has been deprecated. Copy its value to the `securityKey` config setting in `config/general.php`.");
-            }
-            if ($config->siteUrl === null && defined('CRAFT_SITE_URL')) {
-                Craft::$app->getDeprecator()->log('CRAFT_SITE_URL', 'The `CRAFT_SITE_URL` constant has been deprecated. ' .
-                    'You can set your sites’ Base URL settings on a per-environment basis using aliases or environment variables. ' .
-                    'See [Environmental Configuration](https://craftcms.com/docs/3.x/config/#environmental-configuration) for more info.');
-                $config->siteUrl = CRAFT_SITE_URL;
+                Craft::$app->getDeprecator()->log('validation.key', "The auto-generated validation key stored at `$keyPath` has been deprecated. Copy its value to the `securityKey` config setting in `config/general.php`.");
             }
         }
 
+        return $this->_configSettings[$category];
+    }
+
+    /**
+     * Creates a new config object.
+     *
+     * @param string $category The config category
+     * @return object
+     */
+    private function _createConfigObj(string $category): object
+    {
+        $config = $this->getConfigFromFile($category);
+
+        switch ($category) {
+            case self::CATEGORY_CUSTOM:
+                return (object)$config;
+            case self::CATEGORY_DB:
+                $configClass = DbConfig::class;
+                $envPrefix = 'CRAFT_DB_';
+                break;
+            case self::CATEGORY_GENERAL:
+                $configClass = GeneralConfig::class;
+                $envPrefix = 'CRAFT_';
+                break;
+            default:
+                throw new InvalidArgumentException("Invalid config category: $category");
+        }
+
+        // Get any environment value overrides
+        $envConfig = App::envConfig($configClass, $envPrefix);
+
+        // If $config is already a BaseConfig object, assign the env overrides to it and return
+        if ($config instanceof BaseConfig) {
+            Typecast::properties($configClass, $envConfig);
+            Craft::configure($config, $envConfig);
+            return $config;
+        }
+
+        $loadingConfig = $this->_loadingConfigFile;
+        $this->_loadingConfigFile = $category;
+
+        $config = array_merge($config, $envConfig);
+        Typecast::properties($configClass, $config);
+        /** @var BaseObject $config */
+        $config = new $configClass($config);
+
+        $this->_loadingConfigFile = $loadingConfig;
         return $config;
+    }
+
+    /**
+     * Returns the custom config settings.
+     *
+     * ---
+     *
+     * ```php
+     * $myCustomSetting = Craft::$app->config->custom->myCustomSetting;
+     * ```
+     * ```twig
+     * {% set myCustomSetting = craft.app.config.custom.myCustomSetting %}
+     * ```
+     *
+     * @return object
+     * @since 4.0.0
+     */
+    public function getCustom(): object
+    {
+        return $this->getConfigSettings(self::CATEGORY_CUSTOM);
     }
 
     /**
@@ -146,6 +204,7 @@ class Config extends Component
      */
     public function getDb(): DbConfig
     {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->getConfigSettings(self::CATEGORY_DB);
     }
 
@@ -167,6 +226,7 @@ class Config extends Component
      */
     public function getGeneral(): GeneralConfig
     {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->getConfigSettings(self::CATEGORY_GENERAL);
     }
 
@@ -192,10 +252,10 @@ class Config extends Component
      * $settings = Craft::$app->config->getConfigFromFile('foo');
      * ```
      *
-     * @param $filename
-     * @return array
+     * @param string $filename
+     * @return array|BaseConfig
      */
-    public function getConfigFromFile(string $filename): array
+    public function getConfigFromFile(string $filename): array|BaseConfig
     {
         $path = $this->getConfigFilePath($filename);
 
@@ -203,17 +263,34 @@ class Config extends Component
             return [];
         }
 
-        if (!is_array($config = @include $path)) {
+        $loadingConfig = $this->_loadingConfigFile;
+        $this->_loadingConfigFile = $filename;
+
+        $config = $this->_configFromFileInternal($path);
+
+        $this->_loadingConfigFile = $loadingConfig;
+        return $config;
+    }
+
+    private function _configFromFileInternal(string $path): array|BaseConfig
+    {
+        $config = @include $path;
+
+        if ($config instanceof BaseConfig) {
+            return $config;
+        }
+
+        if (!is_array($config)) {
             return [];
         }
 
-        // If it's not a multi-environment config, return the whole thing
+        // If it’s not a multi-environment config, return the whole thing
         if (!array_key_exists('*', $config)) {
             return $config;
         }
 
         // If no environment was specified, just look in the '*' array
-        if ($this->env === null) {
+        if (!isset($this->env)) {
             return $config['*'];
         }
 
@@ -225,6 +302,17 @@ class Config extends Component
         }
 
         return $mergedConfig;
+    }
+
+    /**
+     * Returns the config filename currently being loaded.
+     *
+     * @return string|null
+     * @since 4.2.0
+     */
+    public function getLoadingConfigFile(): ?string
+    {
+        return $this->_loadingConfigFile;
     }
 
     /**
@@ -244,12 +332,12 @@ class Config extends Component
      * @param string $value The environment variable value
      * @throws Exception if the .env file doesn't exist
      */
-    public function setDotEnvVar($name, $value)
+    public function setDotEnvVar(string $name, string $value): void
     {
         $path = $this->getDotEnvPath();
 
         if (!file_exists($path)) {
-            throw new Exception("No .env file exists at {$path}");
+            throw new Exception("No .env file exists at $path");
         }
 
         $contents = file_get_contents($path);
@@ -257,13 +345,13 @@ class Config extends Component
         $slashedValue = addslashes($value);
 
         // Only surround with quotes if the value contains a space
-        if (strpos($slashedValue, ' ') !== false || strpos($slashedValue, '#') !== false) {
+        if (str_contains($slashedValue, ' ') || str_contains($slashedValue, '#')) {
             $slashedValue = "\"$slashedValue\"";
         }
 
         $def = "$name=$slashedValue";
         $token = StringHelper::randomString();
-        $contents = preg_replace("/^(\s*){$qName}=.*/m", $token, $contents, -1, $count);
+        $contents = preg_replace("/^(\s*)$qName=.*/m", $token, $contents, -1, $count);
 
         if ($count !== 0) {
             $contents = str_replace($token, $def, $contents);
@@ -275,7 +363,7 @@ class Config extends Component
         FileHelper::writeToFile($path, $contents);
 
         // Now actually set the environment variable
-        putenv("{$name}={$value}");
+        $_SERVER[$name] = $value;
     }
 
     /**
@@ -291,23 +379,12 @@ class Config extends Component
      */
     public function setBooleanDotEnvVar(string $name, bool $value): void
     {
-        switch (strtolower((string)App::env($name))) {
-            case 'yes':
-            case 'no':
-                $value = $value ? 'yes' : 'no';
-                break;
-            case 'on':
-            case 'off':
-                $value = $value ? 'on' : 'off';
-                break;
-            case '1':
-            case '0':
-                $value = $value ? '1' : '0';
-                break;
-            default:
-                $value = $value ? 'true' : 'false';
-                break;
-        }
+        $value = match (strtolower((string)App::env($name))) {
+            'yes', 'no' => $value ? 'yes' : 'no',
+            'on', 'off' => $value ? 'on' : 'off',
+            '1', '0' => $value ? '1' : '0',
+            default => $value ? 'true' : 'false',
+        };
 
         $this->setDotEnvVar($name, $value);
     }

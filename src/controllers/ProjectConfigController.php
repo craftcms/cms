@@ -29,7 +29,7 @@ class ProjectConfigController extends Controller
     /**
      * @inheritdoc
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         if (!parent::beforeAction($action)) {
             return false;
@@ -40,9 +40,9 @@ class ProjectConfigController extends Controller
     }
 
     /**
-     * Returns a diff of the pending project config YAML changes, compared to the currently loaded project config.
+     * Returns a diff of the pending external project config changes, compared to the currently loaded project config.
      *
-     * @param bool $invert Whether to treat the loaded project config as the source of truth, rather than the YAML files
+     * @param bool $invert Whether to treat the loaded project config as the source of truth, rather than the external config
      * @since 3.5.8
      */
     public function actionDiff(bool $invert = false): string
@@ -66,8 +66,8 @@ class ProjectConfigController extends Controller
             throw new ForbiddenHttpException('Rebuilding the project config is not allowed while it’s in read-only mode.');
         }
 
-        $projectConfig->regenerateYamlFromConfig();
-        $this->setSuccessFlash(Craft::t('app', 'Project config YAML changes discarded.'));
+        $projectConfig->regenerateExternalConfig();
+        $this->setSuccessFlash(Craft::t('app', 'External project config changes discarded.'));
         return $this->redirectToPostedUrl();
     }
 

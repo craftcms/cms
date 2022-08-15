@@ -12,6 +12,7 @@ use craft\errors\GqlException;
 use craft\helpers\Gql as GqlHelper;
 use GraphQL\Type\Definition\ObjectType as GqlObjectType;
 use GraphQL\Type\Definition\ResolveInfo;
+use Throwable;
 
 /**
  * Class ObjectType
@@ -37,16 +38,15 @@ abstract class ObjectType extends GqlObjectType
      * @param array $arguments arguments for resolving this field.
      * @param mixed $context The context shared between all resolvers
      * @param ResolveInfo $resolveInfo The resolve information
-     *
      * @return mixed $result
      * @throws GqlException if an error occurs
      */
-    public function resolveWithDirectives($source, $arguments, $context, ResolveInfo $resolveInfo)
+    public function resolveWithDirectives(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): mixed
     {
         try {
             $value = $this->resolve($source, $arguments, $context, $resolveInfo);
             $value = GqlHelper::applyDirectives($source, $resolveInfo, $value);
-        } catch (\Throwable $exception) {
+        } catch (Throwable $exception) {
             throw new GqlException($exception->getMessage(), 0, $exception);
         }
 
@@ -60,10 +60,9 @@ abstract class ObjectType extends GqlObjectType
      * @param array $arguments arguments for resolving this field.
      * @param mixed $context The context shared between all resolvers
      * @param ResolveInfo $resolveInfo The resolve information
-     *
      * @return mixed $result
      */
-    protected function resolve($source, $arguments, $context, ResolveInfo $resolveInfo)
+    protected function resolve(mixed $source, array $arguments, mixed $context, ResolveInfo $resolveInfo): mixed
     {
         $fieldName = GqlHelper::getFieldNameWithAlias($resolveInfo, $source, $context);
 
@@ -71,12 +70,10 @@ abstract class ObjectType extends GqlObjectType
 
         if (is_object($source)) {
             $result = $source->$fieldName;
-        } else if (is_array($source)) {
+        } elseif (is_array($source)) {
             $result = $source[$fieldName] ?? null;
         }
 
-        $result = $result instanceof ElementQueryInterface ? $result->all() : $result;
-
-        return $result;
+        return $result instanceof ElementQueryInterface ? $result->all() : $result;
     }
 }

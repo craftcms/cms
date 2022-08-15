@@ -1,0 +1,92 @@
+{% set containerAttributes = {
+    class: ['pane-tabs']|merge((class ?? [])|explodeClass),
+}|merge(containerAttributes ?? [], recursive=true) %}
+
+{% set selectedTab = selectedTab ?? tabs|keys|first %}
+{% set tablistLabel = tablistLabel ?? 'Primary fields'|t('app') %}
+{% set tabs = tabs|map((tab, tabId) => tab|merge({
+    selected: tabId == selectedTab,
+        class: (tab.class ?? [])|explodeClass,
+})) %}
+
+{% tag 'div' with containerAttributes %}
+    {% tag 'div'  with {
+        class: 'scrollable',
+        role: 'tablist',
+        aria: {
+            label: tablistLabel,
+        },
+    } %}
+        {% for containerId, tab in tabs %}
+            {% tag 'a' with {
+                id: tab.tabId ?? "tab-#{containerId}",
+                class: (tab.selected ? ['sel'] : [])|merge(tab.class),
+                tabindex: tab.selected ? '0' : '-1',
+                href: tab.url,
+                role: 'tab',
+                data: {
+                    id: containerId,
+                },
+                aria: {
+                    controls: containerId,
+                    selected: tab.selected ? 'true' : 'false',
+                },
+            } %}
+                {% tag 'span' with {
+                    class: 'tab-label',
+                } %}
+                    {{ tab.label }}
+                    {% if 'error' in tab.class %}
+                        {% tag 'span' with {
+                            data: {
+                                icon: 'alert',
+                            },
+                        } %}
+                            {{ tag('span', {
+                                text: 'This tab contains errors'|t('app'),
+                                class: 'visually-hidden',
+                            }) }}
+                        {% endtag %}
+                    {% endif %}
+                {% endtag %}
+            {% endtag %}
+        {% endfor %}
+    {%  endtag %}
+    {{ tag('button', {
+        type: 'button',
+        class: 'btn menubtn hidden',
+        title: 'List all tabs'|t('app'),
+        aria: {
+            label: 'List all tabs'|t('app'),
+        },
+    }) }}
+    <div class="menu">
+        <ul class="padded" role="listbox">
+            {% for containerId, tab in tabs %}
+                <li>
+                    {% tag 'a' with {
+                        class: tab.selected ? 'sel' : null,
+                        href: tab.url,
+                        data: {
+                            id: containerId,
+                        },
+                    } %}
+                        {{ tab.label }}
+                        {% if 'error' in tab.class %}
+                            {% tag 'span' with {
+                                data: {
+                                    icon: 'alert',
+                                },
+                            } %}
+                                {{ tag('span', {
+                                    text: 'This tab contains errors'|t('app'),
+                                    class: 'visually-hidden',
+                                }) }}
+                            {% endtag %}
+                        {% endif %}
+                    {% endtag %}
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endtag %}

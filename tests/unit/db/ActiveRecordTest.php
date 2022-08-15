@@ -12,12 +12,10 @@ use craft\db\ActiveRecord;
 use craft\helpers\StringHelper;
 use craft\records\Session;
 use craft\records\Volume;
-use craft\test\mockclasses\serializable\Serializable;
-use craft\volumes\Local;
+use craft\test\TestCase;
 use DateTime;
 use DateTimeZone;
 use Exception;
-use stdClass;
 use UnitTester;
 
 /**
@@ -27,17 +25,17 @@ use UnitTester;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class ActiveRecordTest extends Unit
+class ActiveRecordTest extends TestCase
 {
     /**
      * @var UnitTester
      */
-    public $tester;
+    public UnitTester $tester;
 
     /**
      * Note this test is just here to verify that these are indeed craft\db\ActiveRecord classes.
      */
-    public function testIsCraftAr()
+    public function testIsCraftAr(): void
     {
         self::assertInstanceOf(ActiveRecord::class, new Volume());
         self::assertInstanceOf(ActiveRecord::class, new Session());
@@ -46,7 +44,7 @@ class ActiveRecordTest extends Unit
     /**
      * @throws Exception
      */
-    public function testDateCreated()
+    public function testDateCreated(): void
     {
         $date = new DateTime('now', new DateTimeZone('UTC'));
         $session = $this->ensureSession();
@@ -59,7 +57,7 @@ class ActiveRecordTest extends Unit
     /**
      * @throws Exception
      */
-    public function testDateUpdated()
+    public function testDateUpdated(): void
     {
         $session = $this->ensureSession();
 
@@ -87,7 +85,7 @@ class ActiveRecordTest extends Unit
     /**
      *
      */
-    public function testUuid()
+    public function testUuid(): void
     {
         $session = $this->ensureSession();
 
@@ -97,59 +95,9 @@ class ActiveRecordTest extends Unit
     }
 
     /**
-     * @dataProvider prepValForDbDataProvider
-     *
-     * @param string $expected
-     * @param mixed $input
-     * @throws \Throwable
-     * @throws \yii\db\StaleObjectException
-     */
-    public function testPrepValForDb(string $expected, $input)
-    {
-        $vol = new Volume();
-        $vol->name = 'NaN';
-        $vol->handle = 'NaN';
-        $vol->name = 'nan';
-        $vol->type = Local::class;
-        $vol->settings = $input;
-
-        $save = $vol->save();
-
-        self::assertTrue($save);
-        self::assertSame($expected, $vol->settings);
-
-        $vol->delete();
-    }
-
-    /**
-     * @return array
-     * @throws Exception
-     */
-    public function prepValForDbDataProvider(): array
-    {
-        $jsonableArray = ['JsonArray' => 'SomeArray'];
-        $jsonableClass = new stdClass();
-        $jsonableClass->name = 'name';
-        $serializable = new Serializable();
-
-        $expectedDateTime = new DateTime('2018-06-06 18:00:00');
-        $expectedDateTime->setTimezone(new DateTimeZone('UTC'));
-
-        $dateTime = new DateTime('2018-06-06 18:00:00');
-
-        return [
-            [$expectedDateTime->format('Y-m-d H:i:s'), $dateTime],
-            ['{"name":"name"}', $jsonableClass],
-            ['{"JsonArray":"SomeArray"}', $jsonableArray],
-            ['Serialized data', $serializable],
-            ['', ''],
-        ];
-    }
-
-    /**
      *
      */
-    public function testUUIDThatIsntValid()
+    public function testUUIDThatIsntValid(): void
     {
         $session = new Session();
         $session->userId = 1;
@@ -166,7 +114,7 @@ class ActiveRecordTest extends Unit
     /**
      *
      */
-    public function testNoUUid()
+    public function testNoUUid(): void
     {
         $session = new Session();
         $session->userId = 1;

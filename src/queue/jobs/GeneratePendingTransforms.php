@@ -8,7 +8,11 @@
 namespace craft\queue\jobs;
 
 use Craft;
+use craft\elements\Asset;
+use craft\i18n\Translation;
+use craft\imagetransforms\ImageTransformer;
 use craft\queue\BaseJob;
+use Throwable;
 
 /**
  * GeneratePendingTransforms job
@@ -21,25 +25,28 @@ class GeneratePendingTransforms extends BaseJob
     /**
      * @inheritdoc
      */
-    public function execute($queue)
+    public function execute($queue): void
     {
-        // Get all of the pending transform index IDs
-        $indexIds = Craft::$app->getAssetTransforms()->getPendingTransformIndexIds();
+        $transformer = Craft::createObject(ImageTransformer::class);
 
+        // Get all the pending transform index IDs
+        $indexIds = $transformer->getPendingTransformIndexIds();
         $totalIndexes = count($indexIds);
-        $assetTransformsService = Craft::$app->getAssetTransforms();
 
         foreach ($indexIds as $i => $id) {
-            if ($index = $assetTransformsService->getTransformIndexModelById($id)) {
-                $this->setProgress($queue, $i / $totalIndexes, Craft::t('app', '{step, number} of {total, number}', [
+            if ($index = $transformer->getTransformIndexModelById($id)) {
+                $this->setProgress($queue, $i / $totalIndexes, Translation::prep('app', '{step, number} of {total, number}', [
                     'step' => $i + 1,
                     'total' => $totalIndexes,
                 ]));
 
                 // Don't let an exception stop us from processing the rest
                 try {
-                    $assetTransformsService->ensureTransformUrlByIndexModel($index);
-                } catch (\Throwable $e) {
+                    $asset = Asset::findOne(['id' => $index->assetId]);
+                    if ($asset) {
+                        $transformer->getTransformUrl($asset, $index->getTransform(), true);
+                    }
+                } catch (Throwable) {
                 }
             }
         }
@@ -48,8 +55,8 @@ class GeneratePendingTransforms extends BaseJob
     /**
      * @inheritdoc
      */
-    protected function defaultDescription(): string
+    protected function defaultDescription(): ?string
     {
-        return Craft::t('app', 'Generating pending image transforms');
+        return Translation::prep('app', 'Generating pending image transforms');
     }
 }

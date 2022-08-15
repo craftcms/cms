@@ -10,6 +10,9 @@ namespace craft\helpers;
 use Craft;
 use craft\errors\ImageException;
 use craft\image\Svg;
+use Imagick;
+use Throwable;
+use TypeError;
 use yii\base\InvalidArgumentException;
 
 /**
@@ -20,20 +23,20 @@ use yii\base\InvalidArgumentException;
  */
 class Image
 {
-    const EXIF_IFD0_ROTATE_180 = 3;
-    const EXIF_IFD0_ROTATE_90 = 6;
-    const EXIF_IFD0_ROTATE_270 = 8;
+    public const EXIF_IFD0_ROTATE_180 = 3;
+    public const EXIF_IFD0_ROTATE_90 = 6;
+    public const EXIF_IFD0_ROTATE_270 = 8;
 
     /**
      * Calculates a missing target dimension for an image.
      *
-     * @param int|float|null $targetWidth
-     * @param int|float|null $targetHeight
-     * @param int|float $sourceWidth
-     * @param int|float $sourceHeight
+     * @param float|int|null $targetWidth
+     * @param float|int|null $targetHeight
+     * @param float|int $sourceWidth
+     * @param float|int $sourceHeight
      * @return int[] Array of the width and height.
      */
-    public static function calculateMissingDimension($targetWidth, $targetHeight, $sourceWidth, $sourceHeight): array
+    public static function calculateMissingDimension(float|int|null $targetWidth, float|int|null $targetHeight, float|int $sourceWidth, float|int $sourceHeight): array
     {
         // If the target width & height are both present, return them
         if ($targetWidth && $targetHeight) {
@@ -92,13 +95,10 @@ class Image
      * Adapted from https://github.com/ktomk/Miscellaneous/tree/master/get_png_imageinfo.
      *
      * @param string $file The path to the PNG file.
-     * @return array|bool Info embedded in the PNG file, or `false` if it wasn’t found.
-     * @license Apache 2.0
-     * @version 0.1.0
+     * @return array|false Info embedded in the PNG file, or `false` if it wasn’t found.
      * @link http://www.libpng.org/pub/png/spec/iso/index-object.html#11IHDR
-     * @author Tom Klingenberg <lastflood.net>
      */
-    public static function pngImageInfo(string $file)
+    public static function pngImageInfo(string $file): array|false
     {
         if (empty($file)) {
             return false;
@@ -106,7 +106,7 @@ class Image
 
         $info = unpack(
             'A8sig/Nchunksize/A4chunktype/Nwidth/Nheight/Cbit-depth/Ccolor/Ccompression/Cfilter/Cinterface',
-            file_get_contents($file, 0, null, 0, 29)
+            file_get_contents($file, false, null, 0, 29)
         );
 
         if (empty($info)) {
@@ -170,7 +170,7 @@ class Image
      *
      * @param string $imagePath
      */
-    public static function cleanImageByPath(string $imagePath)
+    public static function cleanImageByPath(string $imagePath): void
     {
         $extension = pathinfo($imagePath, PATHINFO_EXTENSION);
 
@@ -184,6 +184,7 @@ class Image
      *
      * @param string $filePath The path to the image
      * @return array [width, height]
+     * @phpstan-return array{int,int}
      */
     public static function imageSize(string $filePath): array
     {
@@ -195,7 +196,7 @@ class Image
 
             $image = Craft::$app->getImages()->loadImage($filePath);
             return [$image->getWidth(), $image->getHeight()];
-        } catch (\Throwable $exception) {
+        } catch (Throwable) {
             return [0, 0];
         }
     }
@@ -205,12 +206,12 @@ class Image
      *
      * @param resource $stream
      * @return array|false
-     * @throws \TypeError
+     * @throws TypeError
      */
-    public static function imageSizeByStream($stream)
+    public static function imageSizeByStream($stream): array|false
     {
         if (!is_resource($stream)) {
-            throw new \TypeError('Argument passed should be a resource.');
+            throw new TypeError('Argument passed should be a resource.');
         }
 
         $dimensions = [];
@@ -307,6 +308,7 @@ class Image
      *
      * @param string $svg The SVG data
      * @return array [width, height]
+     * @phpstan-return array{int,int}
      */
     public static function parseSvgSize(string $svg): array
     {
@@ -316,15 +318,15 @@ class Image
             ($matchedWidth = (float)$widthMatch[2]) &&
             ($matchedHeight = (float)$heightMatch[2])
         ) {
-            $width = floor(
+            $width = (int)floor(
                 $matchedWidth * self::_getSizeUnitMultiplier($widthMatch[3])
             );
-            $height = floor(
+            $height = (int)floor(
                 $matchedHeight * self::_getSizeUnitMultiplier($heightMatch[3])
             );
-        } else if (preg_match(Svg::SVG_VIEWBOX_RE, $svg, $viewboxMatch)) {
-            $width = floor($viewboxMatch[3]);
-            $height = floor($viewboxMatch[4]);
+        } elseif (preg_match(Svg::SVG_VIEWBOX_RE, $svg, $viewboxMatch)) {
+            $width = (int)floor($viewboxMatch[3]);
+            $height = (int)floor($viewboxMatch[4]);
         } else {
             // Just pretend it's 100x100
             $width = 100;
@@ -338,9 +340,9 @@ class Image
      * Clean EXIF data from an image loaded inside an Imagick instance, taking
      * care not to wipe the ICC profile.
      *
-     * @param \Imagick $imagick
+     * @param Imagick $imagick
      */
-    public static function cleanExifDataFromImagickImage(\Imagick $imagick)
+    public static function cleanExifDataFromImagickImage(Imagick $imagick): void
     {
         $config = Craft::$app->getConfig()->getGeneral();
 
@@ -370,23 +372,15 @@ class Image
     {
         $ppi = 72;
 
-        switch ($unit) {
-            case 'in':
-                return $ppi;
-            case 'pt':
-                return $ppi / 72;
-            case 'pc':
-                return $ppi / 6;
-            case 'cm':
-                return $ppi / 2.54;
-            case 'mm':
-                return $ppi / 25.4;
-            case 'em':
-                return 16;
-            case 'ex':
-                return 10;
-            default:
-                return 1;
-        }
+        return match ($unit) {
+            'in' => $ppi,
+            'pt' => $ppi / 72,
+            'pc' => $ppi / 6,
+            'cm' => $ppi / 2.54,
+            'mm' => $ppi / 25.4,
+            'em' => 16,
+            'ex' => 10,
+            default => 1,
+        };
     }
 }

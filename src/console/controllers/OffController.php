@@ -40,12 +40,12 @@ class OffController extends BaseSystemStatusController
      * The retry duration is now set to 60.
      * ```
      */
-    public $retry;
+    public ?int $retry = null;
 
     /**
      * @inheritdoc
      */
-    public function options($actionID)
+    public function options($actionID): array
     {
         $options = parent::options($actionID);
         $options[] = 'retry';
@@ -53,8 +53,8 @@ class OffController extends BaseSystemStatusController
     }
 
     /**
-     * Disables `system.live` project config value—bypassing any `allowAdminChanges` config setting restrictions—
-     * meant for temporary use during the deployment process.
+     * Disables `system.live` project config value—bypassing any `allowAdminChanges` config setting
+     * restrictions—meant for temporary use during the deployment process.
      *
      * @return int
      */
@@ -80,7 +80,7 @@ class OffController extends BaseSystemStatusController
 
         $this->stdout('The system is now offline.' . PHP_EOL, Console::FG_GREEN);
 
-        if ($this->retry !== null) {
+        if (isset($this->retry)) {
             try {
                 $this->set('system.retryDuration', (int)$this->retry ?: null);
             } catch (Throwable $e) {

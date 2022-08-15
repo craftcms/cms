@@ -9,7 +9,7 @@ namespace crafttests\unit\helpers;
 
 use Codeception\Test\Unit;
 use craft\helpers\Html;
-use UnitTester;
+use craft\test\TestCase;
 use yii\base\InvalidArgumentException;
 
 /**
@@ -19,32 +19,35 @@ use yii\base\InvalidArgumentException;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class HtmlHelperTest extends Unit
+class HtmlHelperTest extends TestCase
 {
     /**
-     * @var UnitTester
-     */
-    protected $tester;
-
-    /**
      * @dataProvider encodeParamsDataProvider
-     *
      * @param string $expected
      * @param string $html
      * @param array $variables
      */
-    public function testEncodeParams(string $expected, string $html, array $variables)
+    public function testEncodeParams(string $expected, string $html, array $variables): void
     {
         self::assertSame($expected, Html::encodeParams($html, $variables));
     }
 
     /**
+     * @dataProvider encodeSpacesDataProvider
+     * @param string $expected
+     * @param string $str
+     */
+    public function testEncodeSpaces(string $expected, string $str): void
+    {
+        self::assertSame($expected, Html::encodeSpaces($str));
+    }
+
+    /**
      * @dataProvider parseTagDataProvider
-     *
      * @param array|false $expected
      * @param string $tag
      */
-    public function testParseTag($expected, string $tag)
+    public function testParseTag(array|false $expected, string $tag): void
     {
         if ($expected === false) {
             $this->expectException(InvalidArgumentException::class);
@@ -69,13 +72,12 @@ class HtmlHelperTest extends Unit
 
     /**
      * @dataProvider appendToTagDataProvider
-     *
      * @param string|false $expected
      * @param string $tag
      * @param string $html
      * @param string|null $ifExists
      */
-    public function testAppendToTag($expected, string $tag, string $html, ?string $ifExists)
+    public function testAppendToTag(string|false $expected, string $tag, string $html, ?string $ifExists): void
     {
         if ($expected === false) {
             $this->expectException(InvalidArgumentException::class);
@@ -87,13 +89,12 @@ class HtmlHelperTest extends Unit
 
     /**
      * @dataProvider prependToTagDataProvider
-     *
      * @param string|false $expected
      * @param string $tag
      * @param string $html
      * @param string|null $ifExists
      */
-    public function testPrependToTag($expected, string $tag, string $html, ?string $ifExists)
+    public function testPrependToTag(string|false $expected, string $tag, string $html, ?string $ifExists): void
     {
         if ($expected === false) {
             $this->expectException(InvalidArgumentException::class);
@@ -105,11 +106,10 @@ class HtmlHelperTest extends Unit
 
     /**
      * @dataProvider parseTagAttributesDataProvider
-     *
      * @param array|false $expected
      * @param string $tag
      */
-    public function testParseTagAttributes($expected, string $tag)
+    public function testParseTagAttributes(array|false $expected, string $tag): void
     {
         if ($expected === false) {
             $this->expectException(InvalidArgumentException::class);
@@ -121,12 +121,11 @@ class HtmlHelperTest extends Unit
 
     /**
      * @dataProvider modifyTagAttributesDataProvider
-     *
      * @param string|false $expected
      * @param string $tag
      * @param array $attributes
      */
-    public function testModifyTagAttributes($expected, string $tag, array $attributes)
+    public function testModifyTagAttributes(string|false $expected, string $tag, array $attributes): void
     {
         if ($expected === false) {
             $this->expectException(InvalidArgumentException::class);
@@ -138,95 +137,132 @@ class HtmlHelperTest extends Unit
 
     /**
      * @dataProvider normalizeTagAttributesDataProvider
-     *
      * @param array $expected
      * @param array $attributes
      */
-    public function testNormalizeTagAttributes(array $expected, array $attributes)
+    public function testNormalizeTagAttributes(array $expected, array $attributes): void
     {
         self::assertSame($expected, Html::normalizeTagAttributes($attributes));
     }
 
     /**
      * @dataProvider idDataProvider
-     *
      * @param string $expected
      * @param string $id
      */
-    public function testId(string $expected, string $id)
+    public function testId(string $expected, string $id): void
     {
         self::assertSame($expected, Html::id($id));
     }
 
     /**
      * @dataProvider namespaceInputNameDataProvider
-     *
      * @param string $expected
      * @param string $name
-     * @param string $namespace
+     * @param string|null $namespace
      */
-    public function testNamespaceInputName(string $expected, string $name, string $namespace)
+    public function testNamespaceInputName(string $expected, string $name, ?string $namespace): void
     {
         self::assertSame($expected, Html::namespaceInputName($name, $namespace));
     }
 
     /**
      * @dataProvider namespaceIdDataProvider
-     *
      * @param string $expected
      * @param string $name
-     * @param string $namespace
+     * @param string|null $namespace
      */
-    public function testNamespaceId(string $expected, string $name, string $namespace)
+    public function testNamespaceId(string $expected, string $name, ?string $namespace): void
     {
         self::assertSame($expected, Html::namespaceId($name, $namespace));
     }
 
     /**
      * @dataProvider namespaceInputsDataProvider
-     *
      * @param string $expected
      * @param string $html
      * @param string $namespace
      */
-    public function testNamespaceInputs(string $expected, string $html, string $namespace)
+    public function testNamespaceInputs(string $expected, string $html, string $namespace): void
     {
         self::assertSame($expected, Html::namespaceInputs($html, $namespace));
     }
 
     /**
      * @dataProvider namespaceAttributesDataProvider
-     *
      * @param string $expected
      * @param string $html
      * @param string $namespace
      * @param bool $classNames
      */
-    public function testNamespaceAttributes(string $expected, string $html, string $namespace, bool $classNames)
+    public function testNamespaceAttributes(string $expected, string $html, string $namespace, bool $classNames): void
     {
         self::assertSame($expected, Html::namespaceAttributes($html, $namespace, $classNames));
     }
 
     /**
      * @dataProvider widontDataProvider
-     *
      * @param string $expected
      * @param string $string
      */
-    public function testWidont(string $expected, string $string)
+    public function testWidont(string $expected, string $string): void
     {
         self::assertSame($expected, Html::widont($string));
     }
 
     /**
      * @dataProvider encodeInvalidTagsDataProvider
-     *
      * @param string $expected
      * @param string $html
      */
     public function testEncodeInvalidTags(string $expected, string $html): void
     {
         self::assertSame($expected, Html::encodeInvalidTags($html));
+    }
+
+    /**
+     *
+     */
+    public function testUnwrapCondition(): void
+    {
+        // No condition
+        $jsFile = Html::jsFile('foo.js');
+        self::assertSame([$jsFile, null], Html::unwrapCondition($jsFile));
+
+        // Positive condition
+        $condition = 'lt IE 9';
+        $conditionalJsFile = Html::jsFile('foo.js', ['condition' => $condition]);
+        self::assertSame([$jsFile, $condition], Html::unwrapCondition($conditionalJsFile));
+
+        // Negative condition
+        $condition = '!IE 9';
+        $conditionalJsFile = Html::jsFile('foo.js', ['condition' => $condition]);
+        self::assertSame([$jsFile, $condition], Html::unwrapCondition($conditionalJsFile));
+
+        // Content with newlines
+        $condition = 'lt IE 9';
+        $content = "foo\nbar\nbaz";
+        $conditionalContent = str_replace($jsFile, $content, Html::jsFile('foo.js', ['condition' => $condition]));
+        self::assertSame([$content, $condition], Html::unwrapCondition($conditionalContent));
+    }
+
+    /**
+     *
+     */
+    public function testUnwrapNoscript(): void
+    {
+        // Without <noscript>>
+        $cssFile = Html::cssFile('foo.css');
+        self::assertSame([$cssFile, false], Html::unwrapNoscript($cssFile));
+
+        // With <noscript>
+        $noscriptCssFile = Html::cssFile('foo.css', ['noscript' => true]);
+        self::assertSame([$cssFile, true], Html::unwrapNoscript($noscriptCssFile));
+
+        // Content with newlines
+        $content = "foo\nbar\nbaz";
+        $noscriptContent = str_replace($cssFile, $content, Html::cssFile('foo.css', ['noscript' => true]));
+        self::assertSame([$content, true], Html::unwrapNoscript($noscriptContent));
     }
 
     /**
@@ -250,9 +286,20 @@ class HtmlHelperTest extends Unit
             [
                 '<p>Im a paragraph. What am i, !@#$%^&amp;*(){}|::&quot;&lt;&gt;&lt;?&gt;/*-~`</p>!@#$%^&*(){}|::"<><?>/*-~`',
                 $htmlTagString . '!@#$%^&*(){}|::"<><?>/*-~`',
-                ['whatIsThis' => '!@#$%^&*(){}|::"<><?>/*-~`']
+                ['whatIsThis' => '!@#$%^&*(){}|::"<><?>/*-~`'],
             ],
-            ['😘!@#$%^&amp;*(){}|::&quot;&lt;&gt;&lt;?&gt;/*-~`, {variable2}', $pureVariableString, ['variable1' => '😘!@#$%^&*(){}|::"<><?>/*-~`']]
+            ['😘!@#$%^&amp;*(){}|::&quot;&lt;&gt;&lt;?&gt;/*-~`, {variable2}', $pureVariableString, ['variable1' => '😘!@#$%^&*(){}|::"<><?>/*-~`']],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function encodeSpacesDataProvider(): array
+    {
+        return [
+            ['foo%20bar', 'foo bar'],
+            ['foo%20%20bar', 'foo  bar'],
         ];
     }
 
@@ -262,20 +309,32 @@ class HtmlHelperTest extends Unit
     public function parseTagDataProvider(): array
     {
         return [
-            [['p', ['class' => ['foo']], [
-                ['text', 'Hello'],
-                ['br', [], []],
-                ['text', 'there'],
-            ]], '<p class="foo">Hello<br>there</p>'],
-            [['div', [], [
-                ['div', [], [['text', 'Nested']]],
-            ]], '<div><div>Nested</div></div>'],
+            [
+                [
+                    'p', ['class' => ['foo']], [
+                    ['text', 'Hello'],
+                    ['br', [], []],
+                    ['text', 'there'],
+                ],
+                ], '<p class="foo">Hello<br>there</p>',
+            ],
+            [
+                [
+                    'div', [], [
+                    ['div', [], [['text', 'Nested']]],
+                ],
+                ], '<div><div>Nested</div></div>',
+            ],
             [['br', [], []], '<br>'],
             [['br', [], []], '<br />'],
             [['div', [], []], '<div />'],
-            [['script', ['type' => 'text/javascript'], [
-                ['text', "var \$p = $('<p>Hello</p>');\n"],
-            ]], "<script type=\"text/javascript\">var \$p = $('<p>Hello</p>');\n</script>"],
+            [
+                [
+                    'script', ['type' => 'text/javascript'], [
+                    ['text', "var \$p = $('<p>Hello</p>');\n"],
+                ],
+                ], "<script type=\"text/javascript\">var \$p = $('<p>Hello</p>');\n</script>",
+            ],
             [false, '<div>'],
         ];
     }
@@ -412,6 +471,7 @@ class HtmlHelperTest extends Unit
         return [
             ['foo[bar]', 'bar', 'foo'],
             ['foo[bar][baz]', 'bar[baz]', 'foo'],
+            ['foo', 'foo', null],
         ];
     }
 
@@ -424,6 +484,7 @@ class HtmlHelperTest extends Unit
             ['foo-bar', 'bar', 'foo'],
             ['foo-bar-baz', 'bar[baz]', 'foo'],
             ['foo-bar-baz', 'baz', 'foo[bar]'],
+            ['foo-bar', 'foo[bar]', null],
         ];
     }
 
@@ -500,6 +561,7 @@ class HtmlHelperTest extends Unit
             ['foo<br>bar&lt;p&gt;baz', 'foo<br>bar<p>baz'],
             ['foo&lt;p&gt;bar<br>baz', 'foo<p>bar<br>baz'],
             ['This text goes within the &lt;title&gt; tag in the &lt;head&gt; of the HTML file.', 'This text goes within the <title> tag in the <head> of the HTML file.'],
+            ['Foo &lt;p&gt; bar <input type="hidden"', 'Foo <p> bar <input type="hidden"'],
         ];
     }
 }

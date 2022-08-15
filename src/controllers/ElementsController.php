@@ -10,236 +10,1406 @@ namespace craft\controllers;
 use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
-use craft\elements\Category;
+use craft\base\FieldLayoutComponent;
+use craft\behaviors\DraftBehavior;
+use craft\behaviors\RevisionBehavior;
+use craft\db\Table;
+use craft\elements\User;
+use craft\errors\InvalidElementException;
 use craft\errors\InvalidTypeException;
-use craft\fieldlayoutelements\BaseField;
+use craft\errors\UnsupportedSiteException;
+use craft\events\DefineElementEditorHtmlEvent;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Component;
 use craft\helpers\Cp;
-use craft\helpers\DateTimeHelper;
+use craft\helpers\Db;
 use craft\helpers\ElementHelper;
 use craft\helpers\Html;
-use craft\helpers\StringHelper;
+use craft\helpers\UrlHelper;
+use craft\models\FieldLayoutForm;
+use craft\services\Elements;
+use craft\web\Controller;
+use craft\web\CpScreenResponseBehavior;
+use craft\web\View;
+use Throwable;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
-use yii\web\NotFoundHttpException;
 use yii\web\Response;
+use yii\web\ServerErrorHttpException;
 
 /**
- * The ElementsController class is a controller that handles various element related actions including retrieving and
- * saving element and their corresponding HTML.
- * Note that all actions in the controller require an authenticated Craft session via [[allowAnonymous]].
+ * Elements controller.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class ElementsController extends BaseElementsController
+class ElementsController extends Controller
 {
+    /**
+     * @event DefineElementEditorHtmlEvent The event that is triggered when rendering an element editor’s content.
+     * @see _editorContent()
+     */
+    public const EVENT_DEFINE_EDITOR_CONTENT = 'defineEditorContent';
+
+    private array $_attributes;
+    private ?string $_elementType = null;
+    private ?int $_elementId = null;
+    private ?string $_elementUid = null;
+    private ?int $_draftId = null;
+    private ?int $_revisionId = null;
+    private ?int $_siteId = null;
+
+    private ?bool $_enabled = null;
+    /**
+     * @var bool|bool[]|null
+     */
+    private array|bool|null $_enabledForSite = null;
+    private ?string $_slug = null;
+    private bool $_fresh;
+    private ?string $_draftName = null;
+    private ?string $_notes = null;
+    private string $_fieldsLocation;
+    private bool $_provisional;
+    private bool $_dropProvisional;
+    private bool $_addAnother;
+    private array $_visibleLayoutElements;
+    private ?string $_selectedTab = null;
+    private bool $_prevalidate;
+    private ?string $_context = null;
+    private ?string $_thumbSize = null;
+    private ?string $_viewMode = null;
+
     /**
      * @inheritdoc
      */
-    public function beforeAction($action)
+    public function beforeAction($action): bool
     {
         if (!parent::beforeAction($action)) {
             return false;
         }
 
-        $this->requireAcceptsJson();
+        $this->_attributes = $this->request->getBodyParams();
+
+        // No funny business
+        if (isset($this->_attributes['id']) || isset($this->_attributes['canonicalId'])) {
+            throw new BadRequestHttpException('Changing an element’s ID is not allowed.');
+        }
+
+        $this->_elementType = $this->_param('elementType');
+        $this->_elementId = $this->_param('elementId');
+        $this->_elementUid = $this->_param('elementUid');
+        $this->_draftId = $this->_param('draftId');
+        $this->_revisionId = $this->_param('revisionId');
+        $this->_siteId = $this->_param('siteId');
+        $this->_enabled = $this->_param('enabled');
+        $this->_enabledForSite = $this->_param('enabledForSite');
+        $this->_slug = $this->_param('slug');
+        $this->_fresh = (bool)$this->_param('fresh');
+        $this->_draftName = $this->_param('draftName');
+        $this->_notes = $this->_param('notes');
+        $this->_fieldsLocation = $this->_param('fieldsLocation') ?? 'fields';
+        $this->_provisional = (bool)$this->_param('provisional');
+        $this->_dropProvisional = (bool)$this->_param('dropProvisional');
+        $this->_addAnother = (bool)$this->_param('addAnother');
+        $this->_visibleLayoutElements = $this->_param('visibleLayoutElements') ?? [];
+        $this->_selectedTab = $this->_param('selectedTab');
+        $this->_prevalidate = (bool)$this->_param('prevalidate');
+        $this->_context = $this->_param('context');
+        $this->_thumbSize = $this->_param('thumbSize');
+        $this->_viewMode = $this->_param('viewMode');
+
+        unset($this->_attributes['failMessage']);
+        unset($this->_attributes['redirect']);
+        unset($this->_attributes['successMessage']);
+        unset($this->_attributes[$this->_fieldsLocation]);
 
         return true;
     }
 
     /**
-     * Renders and returns the body of an ElementSelectorModal.
-     *
-     * @return Response
+     * @param string $name
+     * @return mixed
      */
-    public function actionGetModalBody(): Response
+    private function _param(string $name): mixed
     {
-        $sourceKeys = $this->request->getParam('sources');
-        $elementType = $this->elementType();
-        $context = $this->context();
-
-        $showSiteMenu = $this->request->getParam('showSiteMenu', 'auto');
-
-        if ($showSiteMenu !== 'auto') {
-            $showSiteMenu = (bool)$showSiteMenu;
-        }
-
-        if (is_array($sourceKeys)) {
-            $sourceKeys = array_flip($sourceKeys);
-            $allSources = Craft::$app->getElementIndexes()->getSources($elementType);
-            $sources = [];
-            $nextHeading = null;
-
-            foreach ($allSources as $source) {
-                if (isset($source['heading'])) {
-                    // Queue the heading up to be included only if one of the following sources were requested
-                    $nextHeading = $source;
-                } else if (isset($sourceKeys[$source['key']])) {
-                    if ($nextHeading !== null) {
-                        $sources[] = $nextHeading;
-                        $nextHeading = null;
-                    }
-                    $sources[] = $source;
-                    unset($sourceKeys[$source['key']]);
-                }
-            }
-
-            // Did we miss any source keys? (This could happen if some are nested)
-            if (!empty($sourceKeys)) {
-                foreach (array_keys($sourceKeys) as $key) {
-                    $source = ElementHelper::findSource($elementType, $key, $context);
-                    if ($source !== null) {
-                        $sources[$key] = $source;
-                    }
-                }
-            }
-        } else {
-            $sources = Craft::$app->getElementIndexes()->getSources($elementType);
-        }
-
-        // Figure out if we should be showing the sidebar
-        $foundSource = false;
-        $showSidebar = false;
-        foreach ($sources as $source) {
-            // Make sure it's not a heading
-            if (!isset($source['heading'])) {
-                // If this is the second non-heading source we've come across, or it has nested sources, then we've seen enough
-                if ($foundSource || !empty($source['nested'])) {
-                    $showSidebar = true;
-                    break;
-                }
-                $foundSource = true;
-            }
-        }
-
-        return $this->asJson([
-            'html' => $this->getView()->renderTemplate('_elements/modalbody', [
-                'context' => $context,
-                'elementType' => $elementType,
-                'sources' => $sources,
-                'showSidebar' => $showSidebar,
-                'showSiteMenu' => $showSiteMenu,
-            ]),
-        ]);
+        return ArrayHelper::remove($this->_attributes, $name) ?? $this->request->getQueryParam($name);
     }
 
     /**
-     * Returns the HTML for an element editor HUD.
+     * Redirects to an element’s edit page.
+     *
+     * @param int|null $elementId
+     * @param string|null $elementUid
+     * @return Response
+     * @throws BadRequestHttpException
+     * @throws ForbiddenHttpException
+     * @throws ServerErrorHttpException
+     * @since 4.0.0
+     */
+    public function actionRedirect(?int $elementId = null, ?string $elementUid = null): Response
+    {
+        $element = $this->_element($elementId, $elementUid);
+        $url = $element->getCpEditUrl();
+
+        if (!$url) {
+            throw new ServerErrorHttpException('The element doesn’t have an edit page.');
+        }
+
+        return $this->redirect($url);
+    }
+
+    /**
+     * Creates a new element and redirects to its edit page.
      *
      * @return Response
-     * @throws NotFoundHttpException if the requested element cannot be found
-     * @throws ForbiddenHttpException if the user is not permitted to edit the requested element
+     * @throws BadRequestHttpException
+     * @throws ForbiddenHttpException
+     * @throws ServerErrorHttpException
+     * @since 4.0.0
      */
-    public function actionGetEditorHtml(): Response
+    public function actionCreate(): Response
     {
-        $element = $this->_getEditorElement();
-        $includeSites = (bool)$this->request->getBodyParam('includeSites', false);
+        if (!$this->_elementType) {
+            throw new BadRequestHttpException('Request missing required body param.');
+        }
 
-        return $this->_getEditorHtmlResponse($element, $includeSites);
+        $this->_validateElementType($this->_elementType);
+
+        /** @var ElementInterface $element */
+        $element = Craft::createObject($this->_elementType);
+        if ($this->_siteId) {
+            $element->siteId = $this->_siteId;
+        }
+        $element->setAttributes($this->_attributes);
+
+        $user = $this->getCurrentUser();
+
+        if (!$element->canSave($user)) {
+            throw new ForbiddenHttpException('User not authorized to create this element.');
+        }
+
+        if (!$element->slug) {
+            $element->slug = ElementHelper::tempSlug();
+        }
+
+        // Save it
+        $element->setScenario(Element::SCENARIO_ESSENTIALS);
+        if (!Craft::$app->getDrafts()->saveElementAsDraft($element, $user->id, null, null, false)) {
+            return $this->_asFailure($element, Craft::t('app', 'Couldn’t create {type}.', [
+                'type' => $element::lowerDisplayName(),
+            ]));
+        }
+
+        // Redirect to its edit page
+        $editUrl = $element->getCpEditUrl() ?? UrlHelper::actionUrl('elements/edit', [
+                'draftId' => $element->draftId,
+                'siteId' => $element->siteId,
+            ]);
+
+        $response = $this->_asSuccess(Craft::t('app', '{type} created.', [
+            'type' => Craft::t('app', 'Draft'),
+        ]), $element, array_filter([
+            'cpEditUrl' => $this->request->isCpRequest ? $editUrl : null,
+        ]));
+
+        if (!$this->request->getAcceptsJson()) {
+            $response->redirect(UrlHelper::urlWithParams($editUrl, [
+                'fresh' => '1',
+            ]));
+        }
+
+        return $response;
+    }
+
+    /**
+     * Returns an element edit screen.
+     *
+     * @param ElementInterface|null $element
+     * @param int|null $elementId
+     * @return Response
+     * @throws BadRequestHttpException
+     * @throws ForbiddenHttpException
+     * @since 4.0.0
+     */
+    public function actionEdit(?ElementInterface $element, ?int $elementId = null): Response
+    {
+        $this->requireCpRequest();
+
+        $strictSite = $this->request->getAcceptsJson();
+
+        if ($element === null) {
+            /** @var Element|DraftBehavior|RevisionBehavior|Response|null $element */
+            $element = $this->_element($elementId, null, true, $strictSite);
+
+            if ($element instanceof Response) {
+                return $element;
+            }
+
+            if (!$element) {
+                throw new BadRequestHttpException('No element was identified by the request.');
+            }
+
+            // If this is an outdated draft, merge in the latest canonical changes
+            $mergeCanonicalChanges = $element->getIsDraft() && !$element->getIsUnpublishedDraft() && ElementHelper::isOutdated($element);
+            if ($mergeCanonicalChanges) {
+                Craft::$app->getElements()->mergeCanonicalChanges($element);
+            }
+
+            $this->_applyParamsToElement($element);
+
+            // Prevalidate?
+            if ($this->_prevalidate && $element->enabled && $element->getEnabledForSite()) {
+                $element->setScenario(Element::SCENARIO_LIVE);
+                $element->validate();
+            }
+        } else {
+            $mergeCanonicalChanges = false;
+        }
+
+        $user = $this->getCurrentUser();
+
+        // Figure out what we're dealing with here
+        $isCanonical = $element->getIsCanonical();
+        $isDraft = $element->getIsDraft();
+        $isUnpublishedDraft = $element->getIsUnpublishedDraft();
+        $isRevision = $element->getIsRevision();
+        $isCurrent = $isCanonical || $element->isProvisionalDraft;
+        $canonical = $element->getCanonical(true);
+
+        // Site info
+        $supportedSites = ElementHelper::supportedSitesForElement($element, true);
+        $allEditableSiteIds = Craft::$app->getSites()->getEditableSiteIds();
+        $propSites = array_values(array_filter($supportedSites, fn($site) => $site['propagate']));
+        $propSiteIds = array_column($propSites, 'siteId');
+        $propEditableSiteIds = array_intersect($propSiteIds, $allEditableSiteIds);
+        $isMultiSiteElement = count($supportedSites) > 1;
+        $addlEditableSites = array_values(array_filter($supportedSites, fn($site) => !$site['propagate'] && in_array($site['siteId'], $allEditableSiteIds)));
+        $canEditMultipleSites = count($propEditableSiteIds) > 1 || $addlEditableSites;
+
+        // Is this a new site that isn’t supported by the canonical element yet?
+        if ($isUnpublishedDraft) {
+            $isNewSite = true;
+        } elseif ($isDraft) {
+            $isNewSite = !$element::find()
+                ->id($element->getCanonicalId())
+                ->siteId($element->siteId)
+                ->status(null)
+                ->exists();
+        } else {
+            $isNewSite = false;
+        }
+
+        // Permissions
+        $canSave = $this->_canSave($element, $user);
+
+        if ($isUnpublishedDraft) {
+            $canSaveCanonical = $this->_canApplyUnpublishedDraft($element, $user);
+        } else {
+            $canSaveCanonical = $isCanonical || $element->isProvisionalDraft ? $canSave : $canonical->canSave($user);
+        }
+
+        $canCreateDrafts = $canonical->canCreateDrafts($user);
+        $canDeleteDraft = $isDraft && !$element->isProvisionalDraft && $element->canDelete($user);
+        $canDuplicateCanonical = $canonical->canDuplicate($user);
+        $canDeleteCanonical = $canonical->canDelete($user);
+        $canDeleteForSite = (
+            $isMultiSiteElement &&
+            count($propSiteIds) > 1 &&
+            (($isCurrent && $canDeleteCanonical) || ($canDeleteDraft && $isNewSite)) &&
+            $element->canDelete($user) &&
+            $element->canDeleteForSite($user)
+        );
+
+        // Preview targets
+        $previewTargets = (
+            $element->id &&
+            (
+                ($isDraft && $canSave) ||
+                ($isCurrent && $canCreateDrafts)
+            )
+        ) ? $element->getPreviewTargets() : [];
+        $enablePreview = $previewTargets && !$this->request->isMobileBrowser(true);
+
+        if ($previewTargets) {
+            if ($isDraft && !$element->isProvisionalDraft) {
+                Craft::$app->getSession()->authorize("previewDraft:$element->draftId");
+            } elseif ($isRevision) {
+                Craft::$app->getSession()->authorize("previewRevision:$element->revisionId");
+            } else {
+                Craft::$app->getSession()->authorize("previewElement:$canonical->id");
+            }
+        }
+
+        // Screen prep
+        [$docTitle, $title] = $this->_editElementTitles($element);
+        $type = $element::lowerDisplayName();
+        $enabledForSite = $element->getEnabledForSite();
+        $hasRoute = $element->getRoute() !== null;
+        $redirectUrl = $element->getPostEditUrl() ?? Craft::$app->getConfig()->getGeneral()->getPostCpLoginRedirect();
+
+        // Site statuses
+        if ($canEditMultipleSites) {
+            if ($element->enabled && $element->id) {
+                $siteStatusesQuery = $element::find()
+                    ->drafts($isDraft)
+                    ->provisionalDrafts($element->isProvisionalDraft)
+                    ->revisions($isRevision)
+                    ->id($element->id)
+                    ->siteId($propEditableSiteIds)
+                    ->status(null)
+                    ->asArray()
+                    ->select(['elements_sites.siteId', 'elements_sites.enabled']);
+                $siteStatuses = array_map(fn($enabled) => (bool)$enabled, $siteStatusesQuery->pairs());
+            } else {
+                // If the element isn't saved yet, assume other sites will share its current status
+                $defaultStatus = !$element->id && $element->enabled && $enabledForSite;
+                $siteStatuses = array_combine($propEditableSiteIds, array_map(fn() => $defaultStatus, $propEditableSiteIds));
+            }
+        } else {
+            $siteStatuses = [
+                $element->siteId => $element->enabled,
+            ];
+        }
+
+        $security = Craft::$app->getSecurity();
+
+        $response = $this->asCpScreen()
+            ->editUrl($element->getCpEditUrl())
+            ->docTitle($docTitle)
+            ->title($title)
+            ->contextMenu(fn() => $this->_contextMenu(
+                $element,
+                $isMultiSiteElement,
+                $isUnpublishedDraft,
+                $propSiteIds
+            ))
+            ->additionalButtons(fn() => $this->_additionalButtons(
+                $element,
+                $canonical,
+                $isRevision,
+                $canSave,
+                $canSaveCanonical,
+                $canCreateDrafts,
+                $previewTargets,
+                $enablePreview,
+                $isCurrent,
+                $isUnpublishedDraft,
+                $isDraft
+            ))
+            ->notice($element->isProvisionalDraft ? fn() => $this->_draftNotice() : null)
+            ->prepareScreen(
+                fn(Response $response, string $containerId) => $this->_prepareEditor(
+                    $element,
+                    $canSave,
+                    $response,
+                    $containerId,
+                    fn(?FieldLayoutForm $form) => $this->_editorContent($element, $isUnpublishedDraft, $canSave, $form),
+                    fn(?FieldLayoutForm $form) => $this->_editorSidebar($element, $mergeCanonicalChanges, $canSave),
+                    fn(?FieldLayoutForm $form) => [
+                        'additionalSites' => $addlEditableSites,
+                        'canCreateDrafts' => $canCreateDrafts,
+                        'canEditMultipleSites' => $canEditMultipleSites,
+                        'canSaveCanonical' => $canSaveCanonical,
+                        'canonicalId' => $canonical->id,
+                        'draftId' => $element->draftId,
+                        'draftName' => $isDraft ? $element->draftName : null,
+                        'elementType' => get_class($element),
+                        'enablePreview' => $enablePreview,
+                        'enabledForSite' => $element->enabled && $enabledForSite,
+                        'hashedCpEditUrl' => $security->hashData('{cpEditUrl}'),
+                        'isLive' => $isCurrent && !$element->getIsDraft() && $element->enabled && $enabledForSite && $hasRoute,
+                        'isProvisionalDraft' => $element->isProvisionalDraft,
+                        'isUnpublishedDraft' => $isUnpublishedDraft,
+                        'previewTargets' => $previewTargets,
+                        'previewToken' => $previewTargets ? $security->generateRandomString() : null,
+                        'revisionId' => $element->revisionId,
+                        'siteId' => $element->siteId,
+                        'siteStatuses' => $siteStatuses,
+                        'siteToken' => !$element->getSite()->enabled ? $security->hashData((string)$element->siteId) : null,
+                        'visibleLayoutElements' => $form ? $form->getVisibleElements() : [],
+                    ]
+                )
+            );
+
+        if ($canSave) {
+            if ($isUnpublishedDraft) {
+                if ($canSaveCanonical) {
+                    $response
+                        ->submitButtonLabel(Craft::t('app', 'Create {type}', [
+                            'type' => $element::lowerDisplayName(),
+                        ]))
+                        ->action('elements/apply-draft')
+                        ->redirectUrl("$redirectUrl#");
+                } else {
+                    $response
+                        ->action('elements/save-draft')
+                        ->redirectUrl("$redirectUrl#");
+                }
+            } elseif ($element->isProvisionalDraft) {
+                $response
+                    ->action('elements/apply-draft')
+                    ->redirectUrl("$redirectUrl#");
+            } elseif ($isDraft) {
+                $response
+                    ->submitButtonLabel(Craft::t('app', 'Save {type}', [
+                        'type' => Craft::t('app', 'draft'),
+                    ]))
+                    ->action('elements/save-draft')
+                    ->redirectUrl("{cpEditUrl}");
+            } else {
+                $response
+                    ->action('elements/save')
+                    ->redirectUrl("$redirectUrl#");
+            }
+
+            $response
+                ->saveShortcutRedirectUrl('{cpEditUrl}')
+                ->addAltAction(
+                    $isUnpublishedDraft && $canSaveCanonical
+                        ? Craft::t('app', 'Create and continue editing')
+                        : Craft::t('app', 'Save and continue editing'),
+                    [
+                        'redirect' => '{cpEditUrl}',
+                        'shortcut' => true,
+                        'retainScroll' => true,
+                        'eventData' => ['autosave' => false],
+                    ]
+                );
+
+            if ($isCurrent) {
+                $newElement = $element->createAnother();
+                if ($newElement && $newElement->canSave($user)) {
+                    $response->addAltAction(
+                        $isUnpublishedDraft && $canSaveCanonical
+                            ? Craft::t('app', 'Create and add another')
+                            : Craft::t('app', 'Save and add another'),
+                        [
+                            'shortcut' => true,
+                            'shift' => true,
+                            'eventData' => ['autosave' => false],
+                            'params' => ['addAnother' => 1],
+                        ]
+                    );
+                }
+
+                if ($canSaveCanonical) {
+                    if ($isUnpublishedDraft) {
+                        $response->addAltAction(Craft::t('app', 'Save {type}', [
+                            'type' => Craft::t('app', 'draft'),
+                        ]), [
+                            'action' => 'elements/save-draft',
+                            'redirect' => "$redirectUrl#",
+                            'eventData' => ['autosave' => false],
+                        ]);
+                    } elseif ($canDuplicateCanonical) {
+                        $response->addAltAction(Craft::t('app', 'Save as a new {type}', compact('type')), [
+                            'action' => 'elements/duplicate', // todo
+                            'redirect' => '{cpEditUrl}',
+                        ]);
+                    }
+                }
+
+                if ($canDeleteForSite) {
+                    $response->addAltAction(Craft::t('app', 'Delete {type} for this site', [
+                        'type' => $isUnpublishedDraft ? Craft::t('app', 'draft') : $type,
+                    ]), [
+                        'destructive' => true,
+                        'action' => 'elements/delete-for-site',
+                        'redirect' => "$redirectUrl#",
+                        'confirm' => Craft::t('app', 'Are you sure you want to delete the {type} for this site?', [
+                            'type' => $isUnpublishedDraft ? Craft::t('app', 'draft') : $type,
+                        ]),
+                    ]);
+                }
+
+                if ($canDeleteCanonical) {
+                    $response->addAltAction(Craft::t('app', 'Delete {type}', [
+                        'type' => $isUnpublishedDraft ? Craft::t('app', 'draft') : $type,
+                    ]), [
+                        'destructive' => true,
+                        'action' => $isUnpublishedDraft ? 'elements/delete-draft' : 'elements/delete',
+                        'redirect' => "$redirectUrl#",
+                        'confirm' => Craft::t('app', 'Are you sure you want to delete this {type}?', [
+                            'type' => $isUnpublishedDraft ? Craft::t('app', 'draft') : $type,
+                        ]),
+                    ]);
+                }
+            } elseif ($isDraft && $canDeleteDraft) {
+                if ($canDeleteForSite) {
+                    $response->addAltAction(Craft::t('app', 'Delete {type} for this site', [
+                        'type' => Craft::t('app', 'draft'),
+                    ]), [
+                        'destructive' => true,
+                        'action' => 'elements/delete-for-site',
+                        'redirect' => "$redirectUrl#",
+                        'confirm' => Craft::t('app', 'Are you sure you want to delete the {type} for this site?', compact('type')),
+                    ]);
+                }
+
+                $response->addAltAction(Craft::t('app', 'Delete {type}', [
+                    'type' => Craft::t('app', 'draft'),
+                ]), [
+                    'destructive' => true,
+                    'action' => 'elements/delete-draft',
+                    'redirect' => $canonical->getCpEditUrl(),
+                    'confirm' => Craft::t('app', 'Are you sure you want to delete this {type}?', [
+                        'type' => Craft::t('app', 'draft'),
+                    ]),
+                ]);
+            }
+        }
+
+        return $response;
+    }
+
+    /**
+     * Returns the page title and document title that should be used for Edit Element pages.
+     *
+     * @param ElementInterface $element
+     * @return string[]
+     * @since 3.7.0
+     */
+    private function _editElementTitles(ElementInterface $element): array
+    {
+        $title = trim((string)$element->title);
+
+        if ($title === '') {
+            if (!$element->id || $element->getIsUnpublishedDraft()) {
+                $title = Craft::t('app', 'Create a new {type}', [
+                    'type' => $element::lowerDisplayName(),
+                ]);
+            } else {
+                $title = Craft::t('app', 'Edit {type}', [
+                    'type' => $element::displayName(),
+                ]);
+            }
+        }
+
+        $docTitle = $title;
+
+        if ($element->getIsDraft()) {
+            /** @var ElementInterface|DraftBehavior $element */
+            if ($element->isProvisionalDraft) {
+                $docTitle .= ' — ' . Craft::t('app', 'Edited');
+            } else {
+                $docTitle .= " ($element->draftName)";
+            }
+        } elseif ($element->getIsRevision()) {
+            /** @var ElementInterface|RevisionBehavior $element */
+            $docTitle .= ' (' . $element->getRevisionLabel() . ')';
+        }
+
+        return [$docTitle, $title];
+    }
+
+    private function _contextMenu(
+        ElementInterface $element,
+        bool $isMultiSiteElement,
+        bool $isUnpublishedDraft,
+        array $propSiteIds,
+    ): ?string {
+        $showDrafts = !$isUnpublishedDraft;
+
+        if (
+            $isMultiSiteElement ||
+            $showDrafts ||
+            ($element->hasRevisions() && $element::find()->revisionOf($element)->status(null)->exists())
+        ) {
+            return Craft::$app->getView()->renderTemplate('_includes/revisionmenu', [
+                'element' => $element,
+                'showDrafts' => $showDrafts,
+                'supportedSiteIds' => $propSiteIds,
+                'showSiteLabel' => $isMultiSiteElement,
+            ], View::TEMPLATE_MODE_CP);
+        }
+
+        return null;
+    }
+
+    private function _additionalButtons(
+        ElementInterface $element,
+        ElementInterface $canonical,
+        bool $isRevision,
+        bool $canSave,
+        bool $canSaveCanonical,
+        bool $canCreateDrafts,
+        ?array $previewTargets,
+        bool $enablePreview,
+        bool $isCurrent,
+        bool $isUnpublishedDraft,
+        bool $isDraft,
+    ): string {
+        $components = [];
+
+        // Preview (View will be added later by JS)
+        if ($canSave && $previewTargets) {
+            $components[] =
+                Html::beginTag('div', [
+                    'class' => ['preview-btn-container', 'btngroup'],
+                ]) .
+                ($enablePreview
+                    ? Html::button(Craft::t('app', 'Preview'), [
+                        'class' => ['preview-btn', 'btn'],
+                        'aria' => [
+                            'label' => Craft::t('app', 'Preview'),
+                        ],
+                    ])
+                    : '') .
+                Html::endTag('div');
+        }
+
+        // Create a draft
+        if ($isCurrent && !$isUnpublishedDraft && $canCreateDrafts) {
+            if ($canSave) {
+                $components[] = Html::button(Craft::t('app', 'Create a draft'), [
+                    'class' => ['btn', 'formsubmit'],
+                    'data' => [
+                        'action' => 'elements/save-draft',
+                        'redirect' => Craft::$app->getSecurity()->hashData('{cpEditUrl}'),
+                        'params' => ['dropProvisional' => 1],
+                    ],
+                ]);
+            } else {
+                $components[] = Html::beginForm() .
+                    Html::actionInput('elements/save-draft') .
+                    Html::redirectInput('{cpEditUrl}') .
+                    Html::hiddenInput('elementId', (string)$canonical->id) .
+                    Html::beginTag('div', ['class' => 'secondary-buttons']) .
+                    Html::button(Craft::t('app', 'Create a draft'), [
+                        'class' => ['btn', 'secondary', 'formsubmit'],
+                    ]) .
+                    Html::endTag('div') .
+                    Html::endForm();
+            }
+        }
+
+        // Apply draft
+        if ($isDraft && !$isCurrent && $canSave && $canSaveCanonical) {
+            $components[] = Html::button(Craft::t('app', 'Apply draft'), [
+                'class' => ['btn', 'secondary', 'formsubmit'],
+                'data' => [
+                    'action' => 'elements/apply-draft',
+                    'redirect' => Craft::$app->getSecurity()->hashData('{cpEditUrl}'),
+                ],
+            ]);
+        }
+
+        // Revert content from this revision
+        if ($isRevision && $canSaveCanonical) {
+            $components[] = Html::beginForm() .
+                Html::actionInput('elements/revert') .
+                Html::redirectInput('{cpEditUrl}') .
+                Html::hiddenInput('elementId', (string)$canonical->id) .
+                Html::hiddenInput('revisionId', (string)$element->revisionId) .
+                Html::beginTag('div', ['class' => 'secondary-buttons']) .
+                Html::button(Craft::t('app', 'Revert content from this revision'), [
+                    'class' => ['btn', 'secondary', 'formsubmit'],
+                ]) .
+                Html::endTag('div') .
+                Html::endForm();
+        }
+
+        $components[] = $element->getAdditionalButtons();
+
+        return implode("\n", array_filter($components));
+    }
+
+    private function _prepareEditor(
+        ElementInterface $element,
+        bool $canSave,
+        Response $response,
+        string $containerId,
+        callable $contentFn,
+        callable $sidebarFn,
+        callable $jsSettingsFn,
+    ) {
+        $fieldLayout = $element->getFieldLayout();
+        $form = $fieldLayout?->createForm($element, !$canSave, [
+            'registerDeltas' => true,
+        ]);
+
+        /** @var Response|CpScreenResponseBehavior $response */
+        $response
+            ->tabs($form?->getTabMenu() ?? [])
+            ->content($contentFn($form))
+            ->sidebar($sidebarFn($form));
+
+        if ($canSave && !$element->getIsRevision()) {
+            $this->view->registerJsWithVars(fn($settingsJs) => <<<JS
+new Craft.ElementEditor($('#$containerId'), $settingsJs);
+JS, [
+                $jsSettingsFn($form),
+            ]);
+        }
+
+        // Give the element a chance to do things here too
+        $element->prepareEditScreen($response, $containerId);
+    }
+
+    private function _editorContent(
+        ElementInterface $element,
+        bool $isUnpublishedDraft,
+        bool $canSave,
+        ?FieldLayoutForm $form,
+    ): string {
+        $components = [];
+
+        if ($form) {
+            $components[] = $form->render();
+        }
+
+        if ($canSave) {
+            if ($element->id) {
+                $components[] = Html::hiddenInput('elementId', (string)$element->getCanonicalId());
+            }
+
+            if ($element->siteId) {
+                $components[] = Html::hiddenInput('siteId', (string)$element->siteId);
+            }
+
+            if ($element->fieldLayoutId) {
+                $components[] = Html::hiddenInput('fieldLayoutId', (string)$element->fieldLayoutId);
+            }
+
+            if ($isUnpublishedDraft && $this->_fresh) {
+                $components[] = Html::hiddenInput('fresh', '1');
+            }
+        }
+
+        $html = implode("\n", $components);
+
+        // Trigger a defineEditorContent event
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_EDITOR_CONTENT)) {
+            $event = new DefineElementEditorHtmlEvent([
+                'element' => $element,
+                'html' => $html,
+                'static' => !$canSave,
+            ]);
+            $this->trigger(self::EVENT_DEFINE_EDITOR_CONTENT, $event);
+            $html = $event->html;
+        }
+
+        return $html;
+    }
+
+    private function _editorSidebar(
+        ElementInterface $element,
+        bool $mergedCanonicalChanges,
+        bool $canSave,
+    ): string {
+        $components = [];
+
+        if ($mergedCanonicalChanges) {
+            $components[] =
+                Html::beginTag('div', [
+                    'class' => ['meta', 'warning'],
+                ]) .
+                Html::tag('p', Craft::t('app', 'Recent changes to the Current revision have been merged into this draft.')) .
+                Html::endTag('div');
+        }
+
+        /** @var ElementInterface|DraftBehavior|RevisionBehavior $element */
+        $components[] = $element->getSidebarHtml(!$canSave);
+
+        if ($this->id) {
+            $components[] = Cp::metadataHtml($element->getMetadata());
+        }
+
+        return implode("\n", $components);
+    }
+
+    private function _draftNotice(): string
+    {
+        return
+            Html::beginTag('div', [
+                'class' => 'draft-notice',
+            ]) .
+            Html::tag('div', '', [
+                'class' => ['draft-icon'],
+                'aria' => ['hidden' => 'true'],
+                'data' => ['icon' => 'edit'],
+            ]) .
+            Html::tag('p', Craft::t('app', 'Showing your unsaved changes.')) .
+            Html::button(Craft::t('app', 'Discard'), [
+                'class' => ['discard-changes-btn', 'btn'],
+            ]) .
+            Html::endTag('div');
     }
 
     /**
      * Saves an element.
      *
-     * @return Response
-     * @throws NotFoundHttpException if the requested element cannot be found
-     * @throws ForbiddenHttpException if the user is not permitted to edit the requested element
+     * @return Response|null
+     * @throws BadRequestHttpException
+     * @throws ForbiddenHttpException
+     * @throws ServerErrorHttpException
+     * @since 4.0.0
      */
-    public function actionSaveElement(): Response
+    public function actionSave(): ?Response
     {
-        $element = $this->_getEditorElement();
+        $this->requirePostRequest();
 
-        // Get the params
-        $namespace = $this->request->getRequiredBodyParam('namespace');
-        $params = $this->request->getBodyParam($namespace, []);
-        ArrayHelper::remove($params, 'fields');
+        /** @var Element|null $element */
+        $element = $this->_element();
 
-        // Normalize the DateTime attributes
-        foreach ($element->datetimeAttributes() as $attribute) {
-            if (isset($params[$attribute])) {
-                $params[$attribute] = DateTimeHelper::toDateTime($params[$attribute]);
+        if (!$element || $element->getIsDraft() || $element->getIsRevision()) {
+            throw new BadRequestHttpException('No element was identified by the request.');
+        }
+
+        $this->_applyParamsToElement($element);
+        $user = $this->getCurrentUser();
+
+        if (!$element->canSave($user)) {
+            throw new ForbiddenHttpException('User not authorized to save this element.');
+        }
+
+        if ($element->enabled && $element->getEnabledForSite()) {
+            $element->setScenario(Element::SCENARIO_LIVE);
+        }
+
+        $isNotNew = $element->id;
+        if ($isNotNew) {
+            $lockKey = "element:$element->id";
+            $mutex = Craft::$app->getMutex();
+            if (!$mutex->acquire($lockKey, 15)) {
+                throw new ServerErrorHttpException('Could not acquire a lock to save the element.');
             }
         }
 
-        // Configure the element
-        Craft::configure($element, $params);
-        $element->setFieldValuesFromRequest($namespace . '.fields');
+        $elementsService = Craft::$app->getElements();
 
-        // Now save it
+        try {
+            $success = $elementsService->saveElement($element);
+        } catch (UnsupportedSiteException $e) {
+            $element->addError('siteId', $e->getMessage());
+            $success = false;
+        } finally {
+            if ($isNotNew) {
+                $mutex->release($lockKey);
+            }
+        }
+
+        if (!$success) {
+            return $this->_asFailure($element, Craft::t('app', 'Couldn’t save {type}.', [
+                'type' => $element::lowerDisplayName(),
+            ]));
+        }
+
+        // See if the user happens to have a provisional element. If so delete it.
+        $provisional = $element::find()
+            ->provisionalDrafts()
+            ->draftOf($element->id)
+            ->draftCreator($user)
+            ->siteId($element->siteId)
+            ->status(null)
+            ->one();
+
+        if ($provisional) {
+            $elementsService->deleteElement($provisional, true);
+        }
+
+        if (!$this->request->getAcceptsJson()) {
+            // Tell all browser windows about the element save
+            Craft::$app->getSession()->broadcastToJs([
+                'event' => 'saveElement',
+                'id' => $element->id,
+            ]);
+        }
+
+        return $this->_asSuccess(Craft::t('app', '{type} saved.', [
+            'type' => $element::displayName(),
+        ]), $element, addAnother: true);
+    }
+
+    /**
+     * Duplicates an element.
+     *
+     * @return Response|null
+     * @throws BadRequestHttpException
+     * @throws ForbiddenHttpException
+     * @throws ServerErrorHttpException
+     * @since 4.0.0
+     */
+    public function actionDuplicate(): ?Response
+    {
+        $this->requirePostRequest();
+
+        /** @var Element|DraftBehavior|null $element */
+        $element = $this->_element();
+
+        if (
+            !$element ||
+            ($element->getIsDraft() && !$element->isProvisionalDraft && !$element->getIsUnpublishedDraft()) ||
+            $element->getIsRevision()
+        ) {
+            throw new BadRequestHttpException('No element was identified by the request.');
+        }
+
+        if (!$element->canDuplicate($this->getCurrentUser())) {
+            throw new ForbiddenHttpException('User not authorized to duplicate this element.');
+        }
+
+        $element->draftId = null;
+        $element->isProvisionalDraft = false;
+
+        try {
+            $newElement = Craft::$app->getElements()->duplicateElement($element);
+        } catch (InvalidElementException $e) {
+            return $this->_asFailure($e->element, Craft::t('app', 'Couldn’t duplicate {type}.', [
+                'type' => $element::lowerDisplayName(),
+            ]));
+        } catch (Throwable $e) {
+            /** @phpstan-ignore-next-line */
+            throw new ServerErrorHttpException('An error occurred when duplicating the element.', 0, $e);
+        }
+
+        return $this->_asSuccess(Craft::t('app', '{type} duplicated.', [
+            'type' => $element::displayName(),
+        ]), $newElement);
+    }
+
+    /**
+     * Deletes an element.
+     *
+     * @return Response|null
+     * @throws BadRequestHttpException
+     * @throws ForbiddenHttpException
+     * @since 4.0.0
+     */
+    public function actionDelete(): ?Response
+    {
+        $this->requirePostRequest();
+
+        /** @var Element|null $element */
+        $element = $this->_element();
+
+        // If this is a provisional draft, delete the canonical
+        if ($element && $element->isProvisionalDraft) {
+            $element = $element->getcanonical(true);
+        }
+
+        if (!$element || $element->getIsDraft() || $element->getIsRevision()) {
+            throw new BadRequestHttpException('No element was identified by the request.');
+        }
+
+        $user = $this->getCurrentUser();
+
+        if (!$element->canDelete($user)) {
+            throw new ForbiddenHttpException('User not authorized to delete this element.');
+        }
+
+        if (!Craft::$app->getElements()->deleteElement($element)) {
+            return $this->_asFailure($element, Craft::t('app', 'Couldn’t delete {type}.', [
+                'type' => $element::lowerDisplayName(),
+            ]));
+        }
+
+        return $this->_asSuccess(Craft::t('app', '{type} deleted.', [
+            'type' => $element::displayName(),
+        ]), $element);
+    }
+
+    /**
+     * Deletes an element for a single site.
+     *
+     * @return Response
+     * @throws BadRequestHttpException
+     * @throws ForbiddenHttpException
+     * @since 4.0.0
+     */
+    public function actionDeleteForSite(): Response
+    {
+        $this->requirePostRequest();
+
+        /** @var Element|null $element */
+        $element = $this->_element();
+
+        if (!$element || $element->getIsRevision()) {
+            throw new BadRequestHttpException('No element was identified by the request.');
+        }
+
+        $user = $this->getCurrentUser();
+
+        if (!$element->canDeleteForSite($user)) {
+            throw new ForbiddenHttpException('User not authorized to delete the element for this site.');
+        }
+
+        // Fetch the element in any other site (preferably one the user has access to)
+        $editableSiteIds = Craft::$app->getSites()->getEditableSiteIds();
+
+        $otherSiteElement = $element::find()
+            ->id($element->id)
+            ->drafts($element->getIsDraft())
+            ->revisions($element->getIsRevision())
+            ->provisionalDrafts($element->isProvisionalDraft)
+            ->siteId(['not', $element->siteId])
+            ->preferSites($editableSiteIds)
+            ->unique()
+            ->status(null)
+            ->one();
+
+        if (!$otherSiteElement) {
+            throw new BadRequestHttpException('The element doesn’t belong to multiple sites.');
+        }
+
+        // Delete the row in elements_sites
+        Db::delete(Table::ELEMENTS_SITES, [
+            'elementId' => $element->id,
+            'siteId' => $element->siteId,
+        ]);
+
+        // Resave the element
+        $otherSiteElement->setScenario(Element::SCENARIO_ESSENTIALS);
+        $otherSiteElement->resaving = true;
+        Craft::$app->getElements()->saveElement($otherSiteElement, false, true, false);
+
+        return $this->_asSuccess(Craft::t('app', '{type} deleted for site.', [
+            'type' => $element->getIsDraft() && !$element->isProvisionalDraft ? Craft::t('app', 'Draft') : $element::displayName(),
+        ]), $element);
+    }
+
+    /**
+     * Saves a draft.
+     *
+     * @return Response|null
+     * @throws BadRequestHttpException
+     * @throws ForbiddenHttpException
+     * @throws ServerErrorHttpException
+     * @since 4.0.0
+     */
+    public function actionSaveDraft(): ?Response
+    {
+        $this->requirePostRequest();
+
+        /** @var Element|DraftBehavior|null $element */
+        $element = $this->_element();
+
+        if (!$element || $element->getIsRevision()) {
+            throw new BadRequestHttpException('No element was identified by the request.');
+        }
+
+        $user = $this->getCurrentUser();
+
+        if (!$element->getIsDraft() && !$this->_provisional) {
+            if (!$element->canCreateDrafts($user)) {
+                throw new ForbiddenHttpException('User not authorized to create drafts for this element.');
+            }
+        } elseif (!$this->_canSave($element, $user)) {
+            throw new ForbiddenHttpException('User not authorized to save this element.');
+        }
+
+        if (!$element->getIsDraft() && $this->_provisional) {
+            // Make sure a provisional draft doesn't already exist for this element/user combo
+            $provisionalExists = $element::find()
+                ->provisionalDrafts()
+                ->draftOf($element->id)
+                ->draftCreator($user->id)
+                ->site('*')
+                ->status(null)
+                ->exists();
+
+            if ($provisionalExists) {
+                throw new BadRequestHttpException("A provisional draft already exists for element/user $element->id/$user->id.");
+            }
+        }
+
+        return Craft::$app->getDb()->transaction(function() use ($element, $user): ?Response {
+            // Are we creating the draft here?
+            if (!$element->getIsDraft()) {
+                /** @var Element|DraftBehavior $element */
+                $draft = Craft::$app->getDrafts()->createDraft($element, $user->id, null, null, [], $this->_provisional);
+                $draft->setCanonical($element);
+                $element = $draft;
+            }
+
+            $this->_applyParamsToElement($element);
+
+            // Make sure nothing just changed that would prevent the user from saving
+            if (!$this->_canSave($element, $user)) {
+                throw new ForbiddenHttpException('User not authorized to save this element.');
+            }
+
+            if ($this->_dropProvisional) {
+                $element->isProvisionalDraft = false;
+            }
+
+            $element->setScenario(Element::SCENARIO_ESSENTIALS);
+
+            if (!Craft::$app->getElements()->saveElement($element)) {
+                return $this->_asFailure($element, Craft::t('app', 'Couldn’t save {type}.', [
+                    'type' => Craft::t('app', 'draft'),
+                ]));
+            }
+
+            $creator = $element->getCreator();
+            [$docTitle, $title] = $this->_editElementTitles($element);
+
+            $view = Craft::$app->getView();
+
+            $namespace = $this->request->getHeaders()->get('X-Craft-Namespace');
+            $fieldLayout = $element->getFieldLayout();
+            $form = $fieldLayout->createForm($element, false, [
+                'namespace' => $namespace,
+                'registerDeltas' => false,
+                'visibleElements' => $this->_visibleLayoutElements,
+            ]);
+            $missingElements = [];
+            foreach ($form->tabs as $tab) {
+                if (!$tab->getUid()) {
+                    continue;
+                }
+
+                $elementInfo = [];
+
+                foreach ($tab->elements as [$layoutElement, $isConditional, $elementHtml]) {
+                    /** @var FieldLayoutComponent $layoutElement */
+                    /** @var bool $isConditional */
+                    /** @var string|bool $elementHtml */
+                    if ($isConditional) {
+                        $elementInfo[] = [
+                            'uid' => $layoutElement->uid,
+                            'html' => $elementHtml,
+                        ];
+                    }
+                }
+
+                $missingElements[] = [
+                    'uid' => $tab->getUid(),
+                    'id' => $tab->getId(),
+                    'elements' => $elementInfo,
+                ];
+            }
+
+            $tabs = $form->getTabMenu();
+            if (count($tabs) > 1) {
+                $selectedTab = isset($tabs[$this->_selectedTab]) ? $this->_selectedTab : null;
+                $tabHtml = $view->namespaceInputs(fn() => $view->renderTemplate('_includes/tabs', [
+                    'tabs' => $tabs,
+                    'selectedTab' => $selectedTab,
+                ], View::TEMPLATE_MODE_CP), $namespace);
+            } else {
+                $tabHtml = null;
+            }
+
+            // Make sure the user is authorized to preview the draft
+            Craft::$app->getSession()->authorize("previewDraft:$element->draftId");
+
+            return $this->_asSuccess(Craft::t('app', '{type} saved.', [
+                'type' => Craft::t('app', 'Draft'),
+            ]), $element, [
+                'canonicalId' => $element->getCanonicalId(),
+                'draftId' => $element->draftId,
+                'timestamp' => Craft::$app->getFormatter()->asTimestamp($element->dateUpdated, 'short', true),
+                'creator' => $creator?->getName(),
+                'draftName' => $element->draftName,
+                'draftNotes' => $element->draftNotes,
+                'docTitle' => $docTitle,
+                'title' => $title,
+                'tabs' => $tabHtml,
+                'duplicatedElements' => Elements::$duplicatedElementIds,
+                'previewTargets' => $element->getPreviewTargets(),
+                'modifiedAttributes' => $element->getModifiedAttributes(),
+                'missingElements' => $missingElements,
+                'initialDeltaValues' => $view->getInitialDeltaValues(),
+                'headHtml' => $view->getHeadHtml(),
+                'bodyHtml' => $view->getBodyHtml(),
+            ]);
+        });
+    }
+
+    /**
+     * Applies a draft to its canonical element.
+     *
+     * @return Response|null
+     * @throws BadRequestHttpException
+     * @throws ForbiddenHttpException
+     * @throws ServerErrorHttpException
+     * @since 4.0.0
+     */
+    public function actionApplyDraft(): ?Response
+    {
+        $this->requirePostRequest();
+
+        /** @var Element|DraftBehavior|null $element */
+        $element = $this->_element();
+
+        if (!$element || !$element->getIsDraft()) {
+            throw new BadRequestHttpException('No draft was identified by the request.');
+        }
+
+        $this->_applyParamsToElement($element);
+        $user = $this->getCurrentUser();
+
+        if (!$element->canSave($user)) {
+            throw new ForbiddenHttpException('User not authorized to save this draft.');
+        }
+
+        $isUnpublishedDraft = $element->getIsUnpublishedDraft();
+
+        if ($isUnpublishedDraft) {
+            if (!$this->_canApplyUnpublishedDraft($element, $user)) {
+                throw new ForbiddenHttpException('User not authorized to create this element.');
+            }
+        } elseif (!$element->getCanonical(true)->canSave($user)) {
+            throw new ForbiddenHttpException('User not authorized to save this element.');
+        }
+
+        // Validate and save the draft
         if ($element->enabled && $element->getEnabledForSite()) {
             $element->setScenario(Element::SCENARIO_LIVE);
         }
 
         if (!Craft::$app->getElements()->saveElement($element)) {
-            return $this->_getEditorHtmlResponse($element, false);
+            return $this->_asAppyDraftFailure($element);
         }
 
-        $response = [
-            'success' => true,
-            'id' => $element->id,
-            'siteId' => $element->siteId,
-            'newTitle' => (string)$element,
-            'cpEditUrl' => $element->getCpEditUrl(),
-        ];
-
-        // Should we be including table attributes too?
-        $sourceKey = $this->request->getBodyParam('includeTableAttributesForSource');
-
-        if ($sourceKey) {
-            $attributes = Craft::$app->getElementIndexes()->getTableAttributes(get_class($element), $sourceKey);
-
-            // Drop the first one
-            array_shift($attributes);
-
-            foreach ($attributes as $attribute) {
-                $response['tableAttributes'][$attribute[0]] = $element->getTableAttributeHtml($attribute[0]);
+        if (!$isUnpublishedDraft) {
+            $lockKey = "element:$element->canonicalId";
+            $mutex = Craft::$app->getMutex();
+            if (!$mutex->acquire($lockKey, 15)) {
+                throw new ServerErrorHttpException('Could not acquire a lock to save the element.');
             }
         }
 
-        return $this->asJson($response);
+        try {
+            $canonical = Craft::$app->getDrafts()->applyDraft($element);
+        } catch (InvalidElementException) {
+            return $this->_asAppyDraftFailure($element);
+        } finally {
+            if (!$isUnpublishedDraft) {
+                $mutex->release($lockKey);
+            }
+        }
+
+        if (!$this->request->getAcceptsJson()) {
+            // Tell all browser windows about the element save
+            $session = Craft::$app->getSession();
+            $session->broadcastToJs([
+                'event' => 'saveElement',
+                'id' => $canonical->id,
+            ]);
+            if (!$isUnpublishedDraft) {
+                $session->broadcastToJs([
+                    'event' => 'deleteDraft',
+                    'canonicalId' => $element->getCanonicalId(),
+                    'draftId' => $element->draftId,
+                ]);
+            }
+        }
+
+        if ($isUnpublishedDraft) {
+            $message = Craft::t('app', '{type} created.', [
+                'type' => $element::displayName(),
+            ]);
+        } elseif ($element->isProvisionalDraft) {
+            $message = Craft::t('app', '{type} saved.', [
+                'type' => $element::displayName(),
+            ]);
+        } else {
+            $message = Craft::t('app', 'Draft applied.');
+        }
+
+        return $this->_asSuccess($message, $canonical, addAnother: true);
+    }
+
+    private function _asAppyDraftFailure(ElementInterface $element): ?Response
+    {
+        if ($element->getIsUnpublishedDraft()) {
+            $message = Craft::t('app', 'Couldn’t create {type}.', [
+                'type' => $element::lowerDisplayName(),
+            ]);
+        } elseif ($element->isProvisionalDraft) {
+            $message = Craft::t('app', 'Couldn’t save {type}.', [
+                'type' => $element::lowerDisplayName(),
+            ]);
+        } else {
+            $message = Craft::t('app', 'Couldn’t apply draft.');
+        }
+
+        return $this->_asFailure($element, $message);
     }
 
     /**
-     * Returns the HTML for a Categories field input, based on a given list of selected category IDs.
+     * Deletes a draft.
      *
-     * @return Response
+     * @return Response|null
+     * @throws BadRequestHttpException
+     * @throws ForbiddenHttpException
+     * @since 4.0.0
      */
-    public function actionGetCategoriesInputHtml(): Response
+    public function actionDeleteDraft(): ?Response
     {
-        $categoryIds = $this->request->getParam('categoryIds', []);
+        $this->requirePostRequest();
 
-        /** @var Category[] $categories */
-        $categories = [];
+        /** @var Element|DraftBehavior|null $element */
+        $element = $this->_element();
 
-        if (!empty($categoryIds)) {
-            $categories = Category::find()
-                ->id($categoryIds)
-                ->siteId($this->request->getParam('siteId'))
-                ->anyStatus()
-                ->all();
-
-            // Fill in the gaps
-            $structuresService = Craft::$app->getStructures();
-            $structuresService->fillGapsInElements($categories);
-
-            // Enforce the branch limit
-            if ($branchLimit = $this->request->getParam('branchLimit')) {
-                $structuresService->applyBranchLimitToElements($categories, $branchLimit);
-            }
+        if (!$element || !$element->getIsDraft()) {
+            throw new BadRequestHttpException('No draft was identified by the request.');
         }
 
-        $html = $this->getView()->renderTemplate('_components/fieldtypes/Categories/input',
-            [
-                'elements' => $categories,
-                'id' => $this->request->getParam('id'),
-                'name' => $this->request->getParam('name'),
-                'selectionLabel' => $this->request->getParam('selectionLabel'),
-            ]);
+        $user = $this->getCurrentUser();
 
-        return $this->asJson([
-            'html' => $html,
-        ]);
+        if (!$element->canDelete($user)) {
+            throw new ForbiddenHttpException('User not authorized to delete this draft.');
+        }
+
+        if (!Craft::$app->getElements()->deleteElement($element, true)) {
+            return $this->_asFailure($element, Craft::t('app', 'Couldn’t delete {type}.', [
+                'type' => Craft::t('app', 'draft'),
+            ]));
+        }
+
+        if ($element->isProvisionalDraft) {
+            $message = Craft::t('app', 'Changes discarded.');
+        } else {
+            $message = Craft::t('app', '{type} deleted.', [
+                'type' => Craft::t('app', 'Draft'),
+            ]);
+        }
+
+        if (!$this->request->getAcceptsJson()) {
+            // Tell all browser windows about the draft deletion
+            Craft::$app->getSession()->broadcastToJs([
+                'event' => 'deleteDraft',
+                'canonicalId' => $element->getCanonicalId(),
+                'draftId' => $element->draftId,
+            ]);
+        }
+
+        return $this->_asSuccess($message, $element);
+    }
+
+    /**
+     * Reverts an element’s content to a revision.
+     *
+     * @return Response
+     * @throws BadRequestHttpException
+     * @throws ForbiddenHttpException
+     * @since 4.0.0
+     */
+    public function actionRevert(): Response
+    {
+        $this->requirePostRequest();
+
+        /** @var Element|RevisionBehavior|null $element */
+        $element = $this->_element();
+
+        if (!$element || !$element->getIsRevision()) {
+            throw new BadRequestHttpException('No revision was identified by the request.');
+        }
+
+        $user = $this->getCurrentUser();
+
+        if (!$element->getCanonical(true)->canSave($user)) {
+            throw new ForbiddenHttpException('User not authorized to save this element.');
+        }
+
+        $canonical = Craft::$app->getRevisions()->revertToRevision($element, $user->id);
+
+        return $this->_asSuccess(Craft::t('app', '{type} reverted to past revision.', [
+            'type' => $element::displayName(),
+        ]), $canonical);
     }
 
     /**
@@ -247,259 +1417,325 @@ class ElementsController extends BaseElementsController
      *
      * @return Response
      * @throws BadRequestHttpException
+     * @throws ForbiddenHttpException
      */
     public function actionGetElementHtml(): Response
     {
-        $elementId = $this->request->getRequiredBodyParam('elementId');
-        $siteId = $this->request->getBodyParam('siteId');
-        $element = Craft::$app->getElements()->getElementById($elementId, null, $siteId);
+        $this->requireAcceptsJson();
+
+        $element = $this->_element();
 
         if (!$element) {
-            throw new BadRequestHttpException('Invalid element ID or site ID');
+            throw new BadRequestHttpException('No element was identified by the request.');
         }
 
-        $context = $this->request->getBodyParam('context', 'field');
-        $size = $this->request->getBodyParam('size');
+        $context = $this->_context ?? 'field';
+        $thumbSize = $this->_thumbSize;
 
-        if ($size === null || !in_array($size, [Cp::ELEMENT_SIZE_SMALL, Cp::ELEMENT_SIZE_LARGE], true)) {
-            $viewMode = $this->request->getBodyParam('viewMode');
-            $size = $viewMode === 'thumbs' ? Cp::ELEMENT_SIZE_LARGE : Cp::ELEMENT_SIZE_SMALL;
+        if (!in_array($thumbSize, [Cp::ELEMENT_SIZE_SMALL, Cp::ELEMENT_SIZE_LARGE], true)) {
+            $thumbSize = $this->_viewMode === 'thumbs' ? Cp::ELEMENT_SIZE_LARGE : Cp::ELEMENT_SIZE_SMALL;
         }
 
-        $html = Cp::elementHtml($element, $context, $size);
+        $html = Cp::elementHtml($element, $context, $thumbSize);
         $headHtml = $this->getView()->getHeadHtml();
 
         return $this->asJson(compact('html', 'headHtml'));
     }
 
     /**
-     * Returns the element that is currently being edited.
+     * Returns the requested element, populated with any posted attributes.
      *
-     * @return ElementInterface
+     * @param int|null $elementId
+     * @param string|null $elementUid
+     * @param bool|null $provisional
+     * @param bool $strictSite
+     * @return ElementInterface|Response|null
      * @throws BadRequestHttpException
      * @throws ForbiddenHttpException
      */
-    private function _getEditorElement(): ElementInterface
+    private function _element(?int $elementId = null, ?string $elementUid = null, ?bool $provisional = null, bool $strictSite = true): ElementInterface|Response|null
     {
+        $elementId = $elementId ?? $this->_elementId;
+        $elementUid = $elementUid ?? $this->_elementUid;
+
+        $sitesService = Craft::$app->getSites();
         $elementsService = Craft::$app->getElements();
+        $user = $this->getCurrentUser();
 
-        $elementId = $this->request->getBodyParam('elementId');
-        /** @noinspection PhpUnhandledExceptionInspection */
-        $siteId = $this->request->getBodyParam('siteId') ?: Craft::$app->getSites()->getCurrentSite()->id;
+        if ($this->_siteId) {
+            $site = $sitesService->getSiteById($this->_siteId, true);
+            if (!$site) {
+                throw new BadRequestHttpException("Invalid side ID: $this->_siteId");
+            }
+            if (Craft::$app->getIsMultiSite() && !$user->can("editSite:$site->uid")) {
+                throw new ForbiddenHttpException('User not authorized to edit content for this site.');
+            }
+        } else {
+            $site = Cp::requestedSite();
+            if (!$site) {
+                throw new ForbiddenHttpException('User not authorized to edit content in any sites.');
+            }
+        }
 
-        // Determine the element type
-        $elementType = $this->request->getBodyParam('elementType');
-
-        if ($elementType === null && $elementId !== null) {
+        if ($this->_elementType) {
+            $elementType = $this->_elementType;
+        } elseif ($elementId) {
             $elementType = $elementsService->getElementTypeById($elementId);
+        } elseif ($elementUid) {
+            $elementType = $elementsService->getElementTypeByUid($elementUid);
+        } else {
+            throw new BadRequestHttpException('Request missing required param.');
         }
 
-        if ($elementType === null) {
-            throw new BadRequestHttpException('Request missing required body param');
+        /** @var string|ElementInterface $elementType */
+        /** @phpstan-var class-string<ElementInterface>|ElementInterface $elementType */
+        $this->_validateElementType($elementType);
+
+        if ($strictSite) {
+            $siteId = $site->id;
+            $preferSites = null;
+        } else {
+            $siteId = $sitesService->getEditableSiteIds();
+            $preferSites = [$site->id];
         }
 
-        // Make sure it's a valid element type
-        // TODO: should probably move the code inside try{} to a helper method
-        try {
-            if (!is_subclass_of($elementType, ElementInterface::class)) {
-                throw new InvalidTypeException($elementType, ElementInterface::class);
-            }
-        } catch (InvalidTypeException $e) {
-            throw new BadRequestHttpException($e->getMessage());
-        }
-
-        // Instantiate the element
-        $attributes = $this->request->getBodyParam('attributes', []);
-        $element = $this->_getEditorElementInternal($elementId, $elementType, $siteId, $attributes);
-
-        $site = Craft::$app->getSites()->getSiteById($siteId);
-
-        // Make sure the user is allowed to edit this site
-        $userSession = Craft::$app->getUser();
-        if (Craft::$app->getIsMultiSite() && $elementType::isLocalized() && !$userSession->checkPermission('editSite:' . $site->uid)) {
-            // Find the first site the user does have permission to edit
-            $elementSiteIds = [];
-            $newSiteId = null;
-
-            foreach (ElementHelper::supportedSitesForElement($element) as $siteInfo) {
-                $elementSiteIds[] = $siteInfo['siteId'];
-            }
-
-            foreach (Craft::$app->getSites()->getAllSiteIds() as $siteId) {
-                if (in_array($siteId, $elementSiteIds, false) && $userSession->checkPermission('editSite:' . $site->uid)) {
-                    $newSiteId = $siteId;
-                    break;
-                }
-            }
-
-            if ($newSiteId === null) {
-                // Couldn't find an editable site supported by the element
-                throw new ForbiddenHttpException('The user doesn’t have permission to edit this element');
-            }
-
-            // Apply the new site
-            $siteId = $newSiteId;
-
-            if ($elementId !== null) {
-                $element = $this->_getEditorElementInternal($elementId, $elementType, $siteId, $attributes);
-            } else {
-                $element->siteId = $siteId;
-            }
-        }
-
-        // Make sure it's editable
-        // (ElementHelper::isElementEditable() is overkill here since we've already verified the user can edit the element's site)
-        if (!$element->getIsEditable()) {
-            throw new ForbiddenHttpException('The user doesn’t have permission to edit this element');
-        }
-
-        // Prevalidate?
-        if ($this->request->getBodyParam('prevalidate') && $element->enabled && $element->getEnabledForSite()) {
-            $element->setScenario(Element::SCENARIO_LIVE);
-            $element->validate();
-        }
-
-        return $element;
-    }
-
-    /**
-     * Returns the editor element populated with the posted attributes.
-     *
-     * @param int|null $elementId
-     * @param string $elementType
-     * @param int $siteId
-     * @param array $attributes
-     * @return ElementInterface
-     * @throws BadRequestHttpException
-     */
-    private function _getEditorElementInternal(?int $elementId, string $elementType, int $siteId, array $attributes): ElementInterface
-    {
-        if ($elementId !== null) {
-            $element = Craft::$app->getElements()->getElementById($elementId, $elementType, $siteId);
+        // Loading an existing element?
+        if ($this->_draftId || $this->_revisionId) {
+            $element = $elementType::find()
+                ->draftId($this->_draftId)
+                ->revisionId($this->_revisionId)
+                ->provisionalDrafts($this->_provisional)
+                ->siteId($siteId)
+                ->preferSites($preferSites)
+                ->unique()
+                ->status(null)
+                ->one();
 
             if (!$element) {
-                throw new BadRequestHttpException('No element exists with the ID ' . $elementId);
+                throw new BadRequestHttpException($this->_draftId ? "Invalid draft ID: $this->_draftId" : "Invalid revision ID: $this->_revisionId");
+            }
+        } elseif ($elementId || $elementUid) {
+            if ($elementId) {
+                // First check for a provisional draft, if we're open to it
+                if ($provisional) {
+                    $element = $elementType::find()
+                        ->provisionalDrafts()
+                        ->draftOf($elementId)
+                        ->draftCreator($user)
+                        ->siteId($siteId)
+                        ->preferSites($preferSites)
+                        ->unique()
+                        ->status(null)
+                        ->one();
+                }
+
+                if (!isset($element)) {
+                    $element = $elementType::find()
+                        ->id($elementId)
+                        ->siteId($siteId)
+                        ->preferSites($preferSites)
+                        ->unique()
+                        ->status(null)
+                        ->one();
+                }
+            } else {
+                $element = $elementType::find()
+                    ->uid($elementUid)
+                    ->siteId($siteId)
+                    ->preferSites($preferSites)
+                    ->unique()
+                    ->status(null)
+                    ->one();
+            }
+
+            if (!$element) {
+                throw new BadRequestHttpException($elementId ? "Invalid element ID: $elementId" : "Invalid element UUID: $elementUid");
             }
         } else {
-            $element = new $elementType();
+            return null;
         }
 
-        // Populate it with any posted attributes
-        Craft::configure($element, $attributes);
-        $element->siteId = $siteId;
+        if (!$element->canView($this->getCurrentUser())) {
+            throw new ForbiddenHttpException('User not authorized to edit this element.');
+        }
+
+        if (!$strictSite && $element->siteId !== $site->id) {
+            return $this->redirect($element->getCpEditUrl());
+        }
 
         return $element;
     }
 
     /**
-     * Returns the editor HTML response for a given element.
+     * Ensures the given element type is valid.
+     *
+     * @param string $elementType
+     * @phpstan-param class-string<ElementInterface> $elementType
+     * @throws BadRequestHttpException
+     */
+    private function _validateElementType(string $elementType): void
+    {
+        if (!Component::validateComponentClass($elementType, ElementInterface::class)) {
+            $message = (new InvalidTypeException($elementType, ElementInterface::class))->getMessage();
+            throw new BadRequestHttpException($message);
+        }
+    }
+
+    /**
+     * Applies the request params to the given element.
      *
      * @param ElementInterface $element
-     * @param bool $includeSites
-     * @return Response
-     * @throws ForbiddenHttpException if the user is not permitted to edit content in any of the sites supported by this element
+     * @throws ForbiddenHttpException
      */
-    private function _getEditorHtmlResponse(ElementInterface $element, bool $includeSites): Response
+    private function _applyParamsToElement(ElementInterface $element): void
     {
-        $siteIds = ElementHelper::editableSiteIdsForElement($element);
-
-        if (empty($siteIds)) {
-            throw new ForbiddenHttpException('User not permitted to edit content in any of the sites supported by this element');
-        }
-
-        $view = $this->getView();
-        $namespace = 'editor_' . StringHelper::randomString(10);
-
-        $editorHtml = $view->namespaceInputs(function() use ($element) {
-            return $element->getEditorHtml();
-        }, $namespace);
-        $fieldLayout = $element->getFieldLayout();
-
-        if ($fieldLayout) {
-            // If only the placeholder was returned, wa can safely pull in the full field layout form render
-            if ($editorHtml === '<!-- FIELD LAYOUT -->') {
-                $form = $fieldLayout->createForm($element, false, [
-                    'namespace' => $namespace,
-                    'tabIdPrefix' => "$namespace-tab",
-                    'registerDeltas' => true,
-                ]);
-                $editorHtml = $form->render();
-
-                if (count($form->tabs) !== 1) {
-                    $tabHtml = Craft::$app->getView()->renderTemplate('_includes/tabs', [
-                        'tabs' => $form->getTabMenu(),
-                    ]);
+        if (isset($this->_enabledForSite)) {
+            if (is_array($this->_enabledForSite)) {
+                // Make sure they are allowed to edit all of the posted site IDs
+                $editableSiteIds = Craft::$app->getSites()->getEditableSiteIds();
+                if (array_diff(array_keys($this->_enabledForSite), $editableSiteIds)) {
+                    throw new ForbiddenHttpException('User not authorized to edit element statuses for all the submitted site IDs.');
                 }
-            } else {
-                $isDeltaRegistrationActive = $view->getIsDeltaRegistrationActive();
-                $view->setIsDeltaRegistrationActive(true);
-                $editorHtml = preg_replace_callback('/<!-- FIELD LAYOUT -->/', function() use ($element, $view, $namespace) {
-                    return $view->namespaceInputs(function() use ($element) {
-                        $fieldLayout = $element->getFieldLayout();
-                        if (!$fieldLayout) {
-                            return '';
-                        }
 
-                        $fields = [];
-
-                        foreach ($fieldLayout->getTabs() as $tab) {
-                            foreach ($tab->elements as $layoutElement) {
-                                if ($layoutElement instanceof BaseField) {
-                                    $fields[] = $layoutElement->formHtml($element);
-                                }
-                            }
-                        }
-
-                        return implode("\n", $fields);
-                    }, $namespace);
-                }, $editorHtml, 1);
-                $view->setIsDeltaRegistrationActive($isDeltaRegistrationActive);
+                // Set the global status to true if it's enabled for *any* sites, or if already enabled.
+                $element->enabled = in_array(true, $this->_enabledForSite) || $element->enabled;
             }
-        } else {
-            $editorHtml = preg_replace('<!-- FIELD LAYOUT -->', '', $editorHtml, 1);
+
+            $element->setEnabledForSite($this->_enabledForSite);
+        } elseif (isset($this->_enabled)) {
+            $element->enabled = $this->_enabled;
         }
 
-        $fieldHtml = [];
-        if ($editorHtml !== '') {
-            $fieldHtml[] = $editorHtml;
-        }
-        $fieldHtml[] = Html::hiddenInput('namespace', $namespace);
-        if ($element->id !== null) {
-            $fieldHtml[] = Html::hiddenInput('elementId', $element->id);
-        }
-        if ($element->siteId !== null) {
-            $fieldHtml[] = Html::hiddenInput('siteId', $element->siteId);
-        }
-        if ($element->fieldLayoutId !== null) {
-            $fieldHtml[] = Html::hiddenInput('fieldLayoutId', $element->fieldLayoutId);
+        if ($this->_fresh) {
+            $element->setIsFresh();
+
+            if ($element->getIsUnpublishedDraft()) {
+                $element->propagateAll = true;
+            }
         }
 
-        $sidebarHtml = $view->namespaceInputs(function() use ($element) {
-            return $element->getSidebarHtml();
-        }, $namespace);
+        if ($element->getIsDraft()) {
+            /** @var ElementInterface|DraftBehavior $element */
+            if (isset($this->_draftName)) {
+                $element->draftName = $this->_draftName;
+            }
+            if (isset($this->_notes)) {
+                $element->draftNotes = $this->_notes;
+            }
+        } elseif (isset($this->_notes)) {
+            $element->setRevisionNotes($this->_notes);
+        }
 
-        $response = [
-            'siteId' => $element->siteId,
-            'tabHtml' => $tabHtml ?? null,
-            'fieldHtml' => implode("\n", $fieldHtml),
-            'sidebarHtml' => $sidebarHtml,
-            'headHtml' => $view->getHeadHtml(),
-            'footHtml' => $view->getBodyHtml(),
-            'deltaNames' => $view->getDeltaNames(),
-            'initialDeltaValues' => $view->getInitialDeltaValues(),
-            'editUrl' => $element->getCpEditUrl(),
+        $scenario = $element->getScenario();
+        $element->setScenario(Element::SCENARIO_LIVE);
+        $element->setAttributes($this->_attributes);
+
+        if ($this->_slug !== null) {
+            $element->slug = $this->_slug;
+        }
+
+        $element->setScenario($scenario);
+
+        // Now that the element is fully configured, make sure the user can actually view it
+        if (!$element->canView($this->getCurrentUser())) {
+            throw new ForbiddenHttpException('User not authorized to edit this element.');
+        }
+
+        // Set the custom field values
+        $element->setFieldValuesFromRequest($this->_fieldsLocation);
+    }
+
+    /**
+     * Returns whether an element can be saved by the given user.
+     *
+     * If the element is a provisional draft, the canonical element will be used instead.
+     *
+     * @param ElementInterface $element
+     * @param User $user
+     * @return bool
+     */
+    private function _canSave(ElementInterface $element, User $user): bool
+    {
+        if ($element->getIsRevision()) {
+            return false;
+        }
+
+        if ($element->isProvisionalDraft) {
+            $element = $element->getCanonical(true);
+        }
+
+        return $element->canSave($user);
+    }
+
+    /**
+     * Returns whether an unpublished draft can shed its draft status by the given user.
+     *
+     * @param ElementInterface $element
+     * @param User $user
+     * @return bool
+     */
+    private function _canApplyUnpublishedDraft(ElementInterface $element, User $user): bool
+    {
+        $fakeCanonical = clone $element;
+        $fakeCanonical->draftId = null;
+        return $fakeCanonical->canSave($user);
+    }
+
+    /**
+     * @throws Throwable
+     * @throws ServerErrorHttpException
+     */
+    private function _asSuccess(string $message, ElementInterface $element, array $data = [], bool $addAnother = false): Response
+    {
+        /** @var Element $element */
+        // Don't call asModelSuccess() here so we can avoid including custom fields in the element data
+        $data += [
+            'modelName' => 'element',
+            'element' => $element->toArray($element->attributes()),
         ];
+        $response = $this->asSuccess($message, $data, $this->getPostedRedirectUrl($element), [
+            'details' => !$element->dateDeleted ? Cp::elementHtml($element) : null,
+        ]);
 
-        if ($includeSites) {
-            $sitesService = Craft::$app->getSites();
-            $response['sites'] = array_map(function(int $siteId) use ($sitesService) {
-                return [
-                    'id' => $siteId,
-                    'name' => Craft::t('site', $sitesService->getSiteById($siteId)->getName()),
-                ];
-            }, $siteIds);
+        if ($addAnother && $this->_addAnother) {
+            $user = $this->getCurrentUser();
+            $newElement = $element->createAnother();
+
+            if (!$newElement || !$newElement->canSave($user)) {
+                throw new ServerErrorHttpException('Unable to create a new element.');
+            }
+
+            if (!$newElement->slug) {
+                $newElement->slug = ElementHelper::tempSlug();
+            }
+
+            $newElement->setScenario(Element::SCENARIO_ESSENTIALS);
+
+            if (!Craft::$app->getDrafts()->saveElementAsDraft($newElement, $user->id, null, null, false)) {
+                throw new ServerErrorHttpException(sprintf('Unable to create a new element: %s', implode(', ', $element->getErrorSummary(true))));
+            }
+
+            $url = $newElement->getCpEditUrl();
+
+            if ($url) {
+                $url = UrlHelper::urlWithParams($url, ['fresh' => 1]);
+            } else {
+                $url = UrlHelper::actionUrl('elements/edit', [
+                    'draftId' => $newElement->draftId,
+                    'siteId' => $newElement->siteId,
+                    'fresh' => 1,
+                ]);
+            }
+
+            $response->redirect($url);
         }
 
-        return $this->asJson($response);
+        return $response;
+    }
+
+    private function _asFailure(ElementInterface $element, string $message): ?Response
+    {
+        /** @var Element $element */
+        return $this->asModelFailure($element, $message, 'element');
     }
 }

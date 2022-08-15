@@ -31,7 +31,7 @@ class FieldLayoutField extends ActiveRecord
     /**
      * @inheritdoc
      */
-    public function rules()
+    public function rules(): array
     {
         return [
             [['layoutId'], 'unique', 'targetAttribute' => ['layoutId', 'fieldId']],

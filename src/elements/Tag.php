@@ -10,12 +10,13 @@ namespace craft\elements;
 use Craft;
 use craft\base\Element;
 use craft\db\Table;
-use craft\elements\db\ElementQueryInterface;
+use craft\elements\conditions\ElementConditionInterface;
+use craft\elements\conditions\tags\TagCondition;
 use craft\elements\db\TagQuery;
 use craft\helpers\Db;
+use craft\models\FieldLayout;
 use craft\models\TagGroup;
 use craft\records\Tag as TagRecord;
-use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\validators\InlineValidator;
 
@@ -63,7 +64,7 @@ class Tag extends Element
     /**
      * @inheritdoc
      */
-    public static function refHandle()
+    public static function refHandle(): ?string
     {
         return 'tag';
     }
@@ -104,15 +105,24 @@ class Tag extends Element
      * @inheritdoc
      * @return TagQuery The newly created [[TagQuery]] instance.
      */
-    public static function find(): ElementQueryInterface
+    public static function find(): TagQuery
     {
         return new TagQuery(static::class);
     }
 
     /**
      * @inheritdoc
+     * @return TagCondition
      */
-    protected static function defineSources(string $context = null): array
+    public static function createCondition(): ElementConditionInterface
+    {
+        return Craft::createObject(TagCondition::class, [static::class]);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected static function defineSources(string $context): array
     {
         $sources = [];
 
@@ -131,7 +141,7 @@ class Tag extends Element
      * @inheritdoc
      * @since 3.3.0
      */
-    public static function gqlTypeNameByContext($context): string
+    public static function gqlTypeNameByContext(mixed $context): string
     {
         /** @var TagGroup $context */
         return $context->handle . '_Tag';
@@ -141,7 +151,7 @@ class Tag extends Element
      * @inheritdoc
      * @since 3.3.0
      */
-    public static function gqlScopesByContext($context): array
+    public static function gqlScopesByContext(mixed $context): array
     {
         /** @var TagGroup $context */
         return ['taggroups.' . $context->uid];
@@ -151,7 +161,7 @@ class Tag extends Element
      * @inheritdoc
      * @since 3.5.0
      */
-    public static function gqlMutationNameByContext($context): string
+    public static function gqlMutationNameByContext(mixed $context): string
     {
         /** @var TagGroup $context */
         return 'save_' . $context->handle . '_Tag';
@@ -160,18 +170,18 @@ class Tag extends Element
     /**
      * @var int|null Group ID
      */
-    public $groupId;
+    public ?int $groupId = null;
 
     /**
      * @var bool Whether the tag was deleted along with its group
      * @see beforeDelete()
      */
-    public $deletedWithGroup = false;
+    public bool $deletedWithGroup = false;
 
     /**
      * @inheritdoc
      */
-    public function extraFields()
+    public function extraFields(): array
     {
         $names = parent::extraFields();
         $names[] = 'group';
@@ -203,9 +213,9 @@ class Tag extends Element
      * @param InlineValidator $validator
      * @since 3.4.12
      */
-    public function validateTitle(string $attribute, ?array $params, InlineValidator $validator)
+    public function validateTitle(string $attribute, ?array $params, InlineValidator $validator): void
     {
-        $query = static::find()
+        $query = self::find()
             ->groupId($this->groupId)
             ->siteId($this->siteId)
             ->title(Db::escapeParam($this->title));
@@ -223,7 +233,7 @@ class Tag extends Element
      * @inheritdoc
      * @since 3.5.0
      */
-    public function getCacheTags(): array
+    protected function cacheTags(): array
     {
         return [
             "group:$this->groupId",
@@ -233,7 +243,7 @@ class Tag extends Element
     /**
      * @inheritdoc
      */
-    protected function isEditable(): bool
+    public function canView(User $user): bool
     {
         return true;
     }
@@ -241,7 +251,31 @@ class Tag extends Element
     /**
      * @inheritdoc
      */
-    public function getFieldLayout()
+    public function canSave(User $user): bool
+    {
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function canDuplicate(User $user): bool
+    {
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function canDelete(User $user): bool
+    {
+        return true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getFieldLayout(): ?FieldLayout
     {
         return parent::getFieldLayout() ?? $this->getGroup()->getFieldLayout();
     }
@@ -254,7 +288,7 @@ class Tag extends Element
      */
     public function getGroup(): TagGroup
     {
-        if ($this->groupId === null) {
+        if (!isset($this->groupId)) {
             throw new InvalidConfigException('Tag is missing its group ID');
         }
 
@@ -279,9 +313,9 @@ class Tag extends Element
 
     /**
      * @inheritdoc
-     * @throws Exception if reasons
+     * @throws InvalidConfigException
      */
-    public function afterSave(bool $isNew)
+    public function afterSave(bool $isNew): void
     {
         if (!$this->propagating) {
             // Get the tag record
@@ -289,7 +323,7 @@ class Tag extends Element
                 $record = TagRecord::findOne($this->id);
 
                 if (!$record) {
-                    throw new Exception('Invalid tag ID: ' . $this->id);
+                    throw new InvalidConfigException("Invalid tag ID: $this->id");
                 }
             } else {
                 $record = new TagRecord();

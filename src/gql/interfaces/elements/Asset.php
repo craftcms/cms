@@ -7,12 +7,12 @@
 
 namespace craft\gql\interfaces\elements;
 
+use Craft;
 use craft\gql\arguments\elements\Asset as AssetArguments;
 use craft\gql\arguments\elements\User as UserArguments;
 use craft\gql\arguments\Transform;
 use craft\gql\GqlEntityRegistry;
 use craft\gql\interfaces\Element;
-use craft\gql\TypeManager;
 use craft\gql\types\DateTime;
 use craft\gql\types\generators\AssetType;
 use craft\helpers\Gql;
@@ -39,7 +39,7 @@ class Asset extends Element
     /**
      * @inheritdoc
      */
-    public static function getType($fields = null): Type
+    public static function getType(): Type
     {
         if ($type = GqlEntityRegistry::getEntity(self::getName())) {
             return $type;
@@ -71,7 +71,12 @@ class Asset extends Element
     public static function getFieldDefinitions(): array
     {
         // @TODO Remove the `uri` field for Assets.
-        return TypeManager::prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), self::getConditionalFields(), [
+        return Craft::$app->getGql()->prepareFieldDefinitions(array_merge(parent::getFieldDefinitions(), self::getConditionalFields(), [
+            'alt' => [
+                'name' => 'alt',
+                'type' => Type::string(),
+                'description' => 'Alternative text for the asset.',
+            ],
             'volumeId' => [
                 'name' => 'volumeId',
                 'type' => Type::int(),
@@ -79,32 +84,32 @@ class Asset extends Element
             ],
             'folderId' => [
                 'name' => 'folderId',
-                'type' => Type::int(),
+                'type' => Type::nonNull(Type::int()),
                 'description' => 'The ID of the folder that the asset belongs to.',
             ],
             'filename' => [
                 'name' => 'filename',
-                'type' => Type::string(),
+                'type' => Type::nonNull(Type::string()),
                 'description' => 'The filename of the asset file.',
             ],
             'extension' => [
                 'name' => 'extension',
-                'type' => Type::string(),
+                'type' => Type::nonNull(Type::string()),
                 'description' => 'The file extension for the asset file.',
             ],
             'hasFocalPoint' => [
                 'name' => 'hasFocalPoint',
-                'type' => Type::boolean(),
+                'type' => Type::nonNull(Type::boolean()),
                 'description' => 'Whether a user-defined focal point is set on the asset.',
             ],
             'focalPoint' => [
                 'name' => 'focalPoint',
                 'type' => Type::listOf(Type::float()),
-                'description' => 'The focal point represented as an array with `x` and `y` keys, or null if it\'s not an image.',
+                'description' => 'The focal point represented as an array with `x` and `y` keys, or null if it’s not an image.',
             ],
             'kind' => [
                 'name' => 'kind',
-                'type' => Type::string(),
+                'type' => Type::nonNull(Type::string()),
                 'description' => 'The file kind.',
             ],
             'size' => [
@@ -116,7 +121,7 @@ class Asset extends Element
                 'name' => 'height',
                 'args' => Transform::getArguments(),
                 'type' => Type::int(),
-                'description' => 'The height in pixels or null if it\'s not an image.',
+                'description' => 'The height in pixels or null if it’s not an image.',
                 'complexity' => function($childrenComplexity, $args) {
                     if (empty($args)) {
                         return $childrenComplexity + GqlService::GRAPHQL_COMPLEXITY_SIMPLE_FIELD;
@@ -134,7 +139,7 @@ class Asset extends Element
                 'name' => 'width',
                 'args' => Transform::getArguments(),
                 'type' => Type::int(),
-                'description' => 'The width in pixels or null if it\'s not an image.',
+                'description' => 'The width in pixels or null if it’s not an image.',
                 'complexity' => function($childrenComplexity, $args) {
                     if (empty($args)) {
                         return $childrenComplexity + GqlService::GRAPHQL_COMPLEXITY_SIMPLE_FIELD;
@@ -190,8 +195,8 @@ class Asset extends Element
             ],
             'path' => [
                 'name' => 'path',
-                'type' => Type::string(),
-                'description' => 'The asset\'s path in the volume.',
+                'type' => Type::nonNull(Type::string()),
+                'description' => 'The asset’s path in the volume.',
             ],
             'dateModified' => [
                 'name' => 'dateModified',

@@ -20,5 +20,5 @@ class DefineRulesEvent extends Event
     /**
      * @var array The model rules
      */
-    public $rules = [];
+    public array $rules = [];
 }

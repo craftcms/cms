@@ -21,10 +21,10 @@ class RegisterMigratorEvent extends Event
     /**
      * @var string The requested migration track
      */
-    public $track;
+    public string $track;
 
     /**
      * @var MigrationManager|null $migrator The migration manager to use
      */
-    public $migrator;
+    public ?MigrationManager $migrator = null;
 }

@@ -1,5 +1,5 @@
 @charset "UTF-8";
-@import "@craftcms/sass/mixins";
+@import '@craftcms/sass/mixins';
 
 $base: 24px;
 $tabPadding: 14px;
@@ -7,9 +7,9 @@ $tabWidth: $base * 10;
 $gridColor: hsl(212, 50%, 95%);
 
 @mixin workspaceBg {
-  background-color: $grey050;
+  background-color: var(--gray-050);
   background-image: linear-gradient(to right, $gridColor 1px, transparent 0px),
-  linear-gradient(to bottom, $gridColor 1px, transparent 1px);
+    linear-gradient(to bottom, $gridColor 1px, transparent 1px);
   background-size: $base $base;
 }
 
@@ -24,12 +24,17 @@ $gridColor: hsl(212, 50%, 95%);
   min-height: 500px;
 
   .errors > & {
-    border: 1px solid $errorColor !important;
+    border: 1px solid var(--error-color) !important;
   }
 
   .fld-workspace {
     flex: 1;
-    @include border-radius($smallBorderRadius, 0, 0, $smallBorderRadius);
+    @include border-radius(
+      var(--small-border-radius),
+      0,
+      0,
+      var(--small-border-radius)
+    );
     @include padding($base, 0, $base, $base);
     @include workspaceBg;
     background-position: -1px -1px;
@@ -72,7 +77,7 @@ $gridColor: hsl(212, 50%, 95%);
   }
 
   .fld-new-tab-btn:active {
-    background-color: $grey050;
+    background-color: var(--gray-050);
   }
 }
 
@@ -81,8 +86,9 @@ $gridColor: hsl(212, 50%, 95%);
 .fld-tab .fld-tabcontent,
 .fld-new-tab-btn,
 .fld-new-tab-btn:hover {
-  background-color: $white;
-  box-shadow: 0 0 0 1px transparentize($grey900, 0.9), 0 2px 5px -2px transparentize($grey900, 0.8);
+  background-color: var(--white);
+  box-shadow: 0 0 0 1px transparentize($grey900, 0.9),
+    0 2px 5px -2px transparentize($grey900, 0.8);
 }
 
 .fld-tab .settings,
@@ -121,7 +127,7 @@ $gridColor: hsl(212, 50%, 95%);
       max-width: calc(100% - 10px);
       box-sizing: border-box;
       padding: 8px $tabPadding;
-      border-radius: $mediumBorderRadius $mediumBorderRadius 0 0;
+      border-radius: var(--medium-border-radius) var(--medium-border-radius) 0 0;
 
       body:not(.dragging) &.draggable {
         cursor: move;
@@ -138,14 +144,19 @@ $gridColor: hsl(212, 50%, 95%);
 
   .fld-tabcontent {
     padding: $tabPadding;
-    @include border-radius(0, $mediumBorderRadius, $mediumBorderRadius, $mediumBorderRadius);
+    @include border-radius(
+      0,
+      var(--medium-border-radius),
+      var(--medium-border-radius),
+      var(--medium-border-radius)
+    );
   }
 
   &.fld-insertion {
     .tabs .tab,
     .fld-tabcontent {
       margin: -2px;
-      border: 2px dashed $hairlineColor;
+      border: 2px dashed var(--hairline-color);
       box-shadow: none;
       @include workspaceBg;
     }
@@ -162,14 +173,48 @@ $gridColor: hsl(212, 50%, 95%);
   min-height: 24px;
 }
 
+.fld-required-indicator {
+  display: inline-flex;
+  font-size: 9px;
+  color: var(--link-color);
+  @include margin-left(4px);
+}
+
+@mixin striped-bg($color) {
+  background-color: $color;
+
+  &.has-conditions:after {
+    position: absolute;
+    content: ' ';
+    top: 2px;
+    right: 2px;
+    bottom: 2px;
+    left: 2px;
+    z-index: -1;
+    border: 2px solid transparent;
+    border-radius: var(--medium-border-radius);
+    background-image: linear-gradient($color, $color),
+      repeating-linear-gradient(
+        -45deg,
+        var(--white),
+        var(--white) 5px,
+        transparent 5px,
+        transparent 10px
+      );
+    background-origin: border-box;
+    background-clip: content-box, border-box;
+  }
+}
+
 .fld-element {
   position: relative;
+  z-index: 0; // required for the striped-bg
   display: flex;
   align-items: center;
   padding: 7px 10px;
-  box-shadow: inset 0 0 0 1px $hairlineColor;
-  background-color: $white;
-  border-radius: $mediumBorderRadius;
+  box-shadow: inset 0 0 0 1px var(--hairline-color);
+  border-radius: var(--medium-border-radius);
+  @include striped-bg(var(--white));
 
   body:not(.dragging) & {
     cursor: move;
@@ -182,8 +227,8 @@ $gridColor: hsl(212, 50%, 95%);
 
   &.fld-insertion {
     box-sizing: border-box;
-    border: 2px dashed $hairlineColor;
-    border-radius: $mediumBorderRadius;
+    border: 2px dashed var(--hairline-color);
+    border-radius: var(--medium-border-radius);
     background: none;
     box-shadow: none;
   }
@@ -193,8 +238,8 @@ $gridColor: hsl(212, 50%, 95%);
   }
 
   &.fld-field {
-    color: $mediumTextColor;
-    background-color: $grey100;
+    color: var(--medium-text-color);
+    @include striped-bg(var(--gray-100));
 
     &:not(.draghelper) {
       box-shadow: none;
@@ -240,6 +285,7 @@ $gridColor: hsl(212, 50%, 95%);
     .fld-attribute {
       flex: 1;
       display: flex;
+      align-items: center;
     }
 
     .fld-element-label h4,
@@ -251,28 +297,8 @@ $gridColor: hsl(212, 50%, 95%);
 
     .fld-element-label h4 {
       font-weight: normal;
-      color: $textColor;
+      color: var(--text-color);
       margin: 0;
-
-      & + .fld-required-indicator {
-        color: var(--ui-control-color);
-      }
-    }
-
-    .fld-attribute .fld-required-indicator {
-      margin-top: -1px;
-    }
-  }
-
-  &.fld-required .fld-required-indicator {
-    @include margin-left(2px);
-    line-height: 1;
-
-    &:after {
-      @include icon;
-      content: 'asterisk';
-      font-size: 8px;
-      line-height: 1;
     }
   }
 }
@@ -282,7 +308,8 @@ body.dragging {
   cursor: grabbing !important;
 }
 
-.fld-hr {
+.fld-hr,
+.fld-br {
   display: flex;
   justify-content: center;
   padding: 9px 10px;
@@ -296,18 +323,59 @@ body.dragging {
     height: 4px;
     content: '';
     font-size: 0;
-    background-color: $grey100;
     border-radius: 2px;
   }
 
   .smalltext {
     position: relative;
-    background-color: $grey100;
+    background-color: var(--gray-100);
     border-radius: 8px;
     padding: 1px 7px;
   }
 }
 
-.fld-element-settings {
-  width: $tabWidth;
+.fld-hr:before {
+  background-color: var(--gray-100);
+}
+
+.fld-br:before {
+  background-image: repeating-linear-gradient(
+    to right,
+    var(--gray-100),
+    var(--gray-100) calc(100% / 19),
+    transparent calc(100% / 19),
+    transparent calc(100% / 9.5),
+    var(--gray-100) calc(100% / 9.5)
+  );
+}
+
+.fld-element-settings-body {
+  flex: 1;
+  margin: -24px var(--neg-padding) 0;
+  padding: 24px var(--padding);
+  overflow: hidden auto;
+  position: relative;
+}
+
+.fld-element-settings-footer {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  margin: 0 var(--neg-padding) -24px;
+  padding: var(--padding);
+  @include pane;
+  background-color: var(--gray-050);
+  z-index: 3;
+
+  & > .ee-site-select {
+    flex: 1;
+  }
+
+  & > .btn {
+    @include margin-left(5px);
+  }
+
+  & > .spinner {
+    @include margin(0, var(--neg-padding), 0, 0);
+  }
 }

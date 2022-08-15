@@ -1,16 +1,17 @@
 <?php
 /**
- * @link      https://craftcms.com/
+ * @link https://craftcms.com/
  * @copyright Copyright (c) Pixel & Tonic, Inc.
- * @license   https://craftcms.github.io/license/
+ * @license https://craftcms.github.io/license/
  */
 
 namespace crafttests\unit\validators;
 
-use Codeception\Test\Unit;
 use craft\test\mockclasses\models\ExampleModel;
+use craft\test\TestCase;
 use craft\validators\ColorValidator;
 use ErrorException;
+use UnitTester;
 
 /**
  * Class ColorValidatorTest.
@@ -19,38 +20,37 @@ use ErrorException;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class ColorValidatorTest extends Unit
+class ColorValidatorTest extends TestCase
 {
     /**
      * @var ColorValidator
      */
-    protected $colorValidator;
+    protected ColorValidator $colorValidator;
 
     /**
      * @var ExampleModel
      */
-    protected $model;
+    protected ExampleModel $model;
 
-    /*
-     * @var \UnitTester
+    /**
+     * @var UnitTester
      */
-    protected $tester;
+    protected UnitTester $tester;
 
     /**
      *
      */
-    public function testPattern()
+    public function testPattern(): void
     {
         self::assertSame('/^#[0-9a-f]{6}$/', $this->colorValidator->pattern);
     }
 
     /**
      * @dataProvider normalizeColorDataProvider
-     *
      * @param string $expected
      * @param string $color
      */
-    public function testNormalizeColor(string $expected, string $color)
+    public function testNormalizeColor(string $expected, string $color): void
     {
         self::assertSame($expected, ColorValidator::normalizeColor($color));
     }
@@ -58,7 +58,7 @@ class ColorValidatorTest extends Unit
     /**
      * Passing an empty string will return an exception.
      */
-    public function testNormalizeColorException()
+    public function testNormalizeColorException(): void
     {
         $this->tester->expectThrowable(ErrorException::class, function() {
             ColorValidator::normalizeColor('');
@@ -67,11 +67,10 @@ class ColorValidatorTest extends Unit
 
     /**
      * @dataProvider colorValidatorAttributesDataProvider
-     *
-     * @param $input
+     * @param string $input
      * @param bool $mustValidate
      */
-    public function testAttributeValidation($input, bool $mustValidate)
+    public function testAttributeValidation(string $input, bool $mustValidate): void
     {
         $this->model->exampleParam = $input;
 
@@ -100,7 +99,7 @@ class ColorValidatorTest extends Unit
             ['#!!@@##', '!@#'],
             'three-chars-becomes-six' => ['#aassdd', 'asd'],
             ['#aassdd', 'ASD'],
-            ['#a22d', 'a22d']
+            ['#a22d', 'a22d'],
         ];
     }
 
@@ -122,14 +121,14 @@ class ColorValidatorTest extends Unit
             ['#f', false],
             ['#', false],
             ['rgba(255, 0, 0, 0.2)', false],
-            ['255, 0, 0, 0.2', false]
+            ['255, 0, 0, 0.2', false],
         ];
     }
 
     /**
      * @inheritdoc
      */
-    protected function _before()
+    protected function _before(): void
     {
         $this->model = new ExampleModel();
         $this->colorValidator = new ColorValidator();

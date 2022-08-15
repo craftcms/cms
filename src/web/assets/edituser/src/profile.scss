@@ -1,13 +1,14 @@
 @charset "UTF-8";
-@import "@craftcms/sass/mixins";
+@import '@craftcms/sass/mixins';
 
 div.user-photo {
-  height: 100px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
 }
 
 div.user-photo #current-photo {
   position: relative;
-  @include floatleft;
 }
 
 div.user-photo #current-photo:after {
@@ -19,20 +20,21 @@ div.user-photo #current-photo:after {
   font-size: 0;
   width: 100%;
   height: 100%;
-  border-radius: $largeBorderRadius;
-  box-shadow: inset 0 0 0 1px $hairlineColor;
+  border-radius: var(--large-border-radius);
+  box-shadow: inset 0 0 0 1px var(--hairline-color);
 }
 
 div.user-photo #current-photo img {
   max-width: 100px;
   max-height: 100px;
   display: block;
-  border-radius: $largeBorderRadius;
+  border-radius: var(--large-border-radius);
 }
 
 div.user-photo div.user-photo-controls {
-  @include margin-left(15px);
-  @include floatleft;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
   position: relative;
 }
 

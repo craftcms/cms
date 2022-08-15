@@ -1,0 +1,22 @@
+{% requireAdmin %}
+
+{% extends "settings/users/_layout" %}
+{% set selectedNavItem = 'addressFields' %}
+{% import "_includes/forms" as forms %}
+
+
+{% block content %}
+    <form method="post" accept-charset="UTF-8" data-saveshortcut data-confirm-unload>
+        {{ actionInput('addresses/save-field-layout') }}
+        {{ csrfInput() }}
+
+        {{ forms.fieldLayoutDesignerField({
+            first: true,
+            fieldLayout: fieldLayout ?? craft.app.addresses.getLayout(),
+        }) }}
+
+        <div class="buttons">
+            <button type="submit" class="btn submit">{{ 'Save'|t('app') }}</button>
+        </div>
+    </form>
+{% endblock %}

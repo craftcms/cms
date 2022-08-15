@@ -10,18 +10,23 @@ namespace craft\models;
 use Craft;
 use craft\base\ElementInterface;
 use craft\base\FieldInterface;
-use craft\base\FieldLayoutElementInterface;
+use craft\base\FieldLayoutElement;
 use craft\base\Model;
 use craft\events\CreateFieldLayoutFormEvent;
+use craft\events\DefineFieldLayoutCustomFieldsEvent;
 use craft\events\DefineFieldLayoutElementsEvent;
 use craft\events\DefineFieldLayoutFieldsEvent;
 use craft\fieldlayoutelements\BaseField;
 use craft\fieldlayoutelements\CustomField;
 use craft\fieldlayoutelements\Heading;
 use craft\fieldlayoutelements\HorizontalRule;
+use craft\fieldlayoutelements\LineBreak;
 use craft\fieldlayoutelements\Template;
 use craft\fieldlayoutelements\Tip;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Html;
+use craft\helpers\StringHelper;
+use Generator;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 
@@ -34,7 +39,7 @@ use yii\base\InvalidConfigException;
 class FieldLayout extends Model
 {
     /**
-     * @event DefineFieldLayoutFieldsEvent The event that is triggered when defining the standard (not custom) fields for the layout.
+     * @event DefineFieldLayoutFieldsEvent The event that is triggered when defining the native (not custom) fields for the layout.
      *
      * ```php
      * use craft\models\FieldLayout;
@@ -43,22 +48,55 @@ class FieldLayout extends Model
      *
      * Event::on(
      *     FieldLayout::class,
-     *     FieldLayout::EVENT_DEFINE_STANDARD_FIELDS,
+     *     FieldLayout::EVENT_DEFINE_NATIVE_FIELDS,
      *     function(DefineFieldLayoutFieldsEvent $event) {
      *         // @var FieldLayout $layout
      *         $layout = $event->sender;
      *
      *         if ($layout->type === MyElementType::class) {
-     *             $event->fields[] = MyStandardField::class;
+     *             $event->fields[] = MyNativeField::class;
      *         }
      *     }
      * );
      * ```
      *
-     * @see getAvailableStandardFields()
-     * @since 3.5.0
+     * @see getAvailableNativeFields()
+     * @since 4.0.0
      */
-    const EVENT_DEFINE_STANDARD_FIELDS = 'defineStandardFields';
+    public const EVENT_DEFINE_NATIVE_FIELDS = 'defineNativeFields';
+
+    /**
+     * @event DefineFieldLayoutCustomFieldsEvent The event that is triggered when defining the custom fields for the layout.
+     *
+     * Note that fields set on [[DefineFieldLayoutCustomFieldsEvent::$fields]] will be grouped by field group, indexed by the group names.
+     *
+     * ```php
+     * use craft\models\FieldLayout;
+     * use craft\events\DefineFieldLayoutFieldsEvent;
+     * use craft\fields\PlainText;
+     * use yii\base\Event;
+     *
+     * Event::on(
+     *     FieldLayout::class,
+     *     FieldLayout::EVENT_DEFINE_CUSTOM_FIELDS,
+     *     function(DefineFieldLayoutFieldsEvent $event) {
+     *         // @var FieldLayout $layout
+     *         $layout = $event->sender;
+     *
+     *         if ($layout->type === MyElementType::class) {
+     *             // Only allow Plain Text fields
+     *             foreach ($event->fields as $groupName => &$fields) {
+     *                 $fields = array_filter($fields, fn($field) => $field instanceof PlainText);
+     *             }
+     *         }
+     *     }
+     * );
+     * ```
+     *
+     * @see getAvailableCustomFields()
+     * @since 4.2.0
+     */
+    public const EVENT_DEFINE_CUSTOM_FIELDS = 'defineCustomFields';
 
     /**
      * @event DefineFieldLayoutElementsEvent The event that is triggered when defining UI elements for the layout.
@@ -80,7 +118,7 @@ class FieldLayout extends Model
      * @see getAvailableUiElements()
      * @since 3.5.0
      */
-    const EVENT_DEFINE_UI_ELEMENTS = 'defineUiElements';
+    public const EVENT_DEFINE_UI_ELEMENTS = 'defineUiElements';
 
     /**
      * @event CreateFieldLayoutFormEvent The event that is triggered when creating a new field layout form.
@@ -121,7 +159,7 @@ class FieldLayout extends Model
      * @see createForm()
      * @since 3.6.0
      */
-    const EVENT_CREATE_FORM = 'createForm';
+    public const EVENT_CREATE_FORM = 'createForm';
 
     /**
      * Creates a new field layout from the given config.
@@ -137,10 +175,10 @@ class FieldLayout extends Model
 
         if (!empty($config['tabs']) && is_array($config['tabs'])) {
             foreach ($config['tabs'] as $tabConfig) {
-                $tab = FieldLayoutTab::createFromConfig($tabConfig);
+                $tab = FieldLayoutTab::createFromConfig(['layout' => $layout] + $tabConfig);
 
                 // Ignore empty tabs
-                if (!empty($tab->elements)) {
+                if (!empty($tab->getElements())) {
                     $tabs[] = $tab;
                 }
             }
@@ -153,54 +191,53 @@ class FieldLayout extends Model
     /**
      * @var int|null ID
      */
-    public $id;
+    public ?int $id = null;
 
     /**
      * @var string|null The element type
+     * @phpstan-var class-string<ElementInterface>|null
      */
-    public $type;
+    public ?string $type = null;
 
     /**
-     * @var string|null UID
+     * @var string UID
      */
-    public $uid;
+    public string $uid;
 
     /**
      * @var string[]|null Reserved custom field handles
      * @since 3.7.0
      */
-    public $reservedFieldHandles;
+    public ?array $reservedFieldHandles = null;
 
     /**
      * @var BaseField[][]
      * @see getAvailableCustomFields()
      */
-    private $_availableCustomFields;
+    private array $_availableCustomFields;
 
     /**
-     * @var BaseField[][]
-     * @see getAvailableStandardFields()
+     * @var BaseField[]
+     * @see getAvailableNativeFields()
      */
-    private $_availableStandardFields;
+    private array $_availableNativeFields;
 
     /**
      * @var FieldLayoutTab[]
      */
-    private $_tabs;
+    private array $_tabs;
 
     /**
-     * @var BaseField[]
-     * @see getTabs()
-     * @see isFieldIncluded()
+     * @inheritdoc
      */
-    private $_fields;
+    public function init(): void
+    {
+        parent::init();
 
-    /**
-     * @var FieldInterface[]
-     * @see getFields()
-     * @see setFields()
-     */
-    private $_customFields;
+        if (!isset($this->uid)) {
+            $this->uid = StringHelper::UUID();
+        }
+    }
 
     /**
      * @inheritdoc
@@ -209,14 +246,13 @@ class FieldLayout extends Model
     {
         $rules = parent::defineRules();
         $rules[] = [['id'], 'number', 'integerOnly' => true];
-        $rules[] = [['fields'], 'validateFields'];
+        $rules[] = [['customFields'], 'validateFields'];
         return $rules;
     }
 
     /**
      * Validates the field selections.
      *
-     * @return void
      * @since 3.7.0
      */
     public function validateFields(): void
@@ -227,7 +263,7 @@ class FieldLayout extends Model
 
         // Make sure no fields are using one of our reserved attribute names
         foreach ($this->getTabs() as $tab) {
-            foreach ($tab->elements as $layoutElement) {
+            foreach ($tab->getElements() as $layoutElement) {
                 if (
                     $layoutElement instanceof CustomField &&
                     in_array($layoutElement->attribute(), $this->reservedFieldHandles, true)
@@ -261,38 +297,43 @@ class FieldLayout extends Model
     /**
      * Sets the layout’s tabs.
      *
-     * @param array|FieldLayoutTab[] $tabs An array of the layout’s tabs, which can either be FieldLayoutTab
-     * objects or arrays defining the tab’s attributes.
+     * @param array $tabs An array of the layout’s tabs, which can either be FieldLayoutTab objects or arrays defining the tab’s attributes.
+     * @phpstan-param array<array|FieldLayoutTab> $tabs
      */
-    public function setTabs(array $tabs)
+    public function setTabs(array $tabs): void
     {
         $this->_tabs = [];
-        $this->_fields = [];
+
+        $index = 0;
 
         foreach ($tabs as $tab) {
             if (is_array($tab)) {
+                // Set the layout before anything else
+                $tab = ['layout' => $this] + $tab;
                 $tab = new FieldLayoutTab($tab);
+            } else {
+                $tab->setLayout($this);
             }
-            $tab->setLayout($this);
+            $tab->sortOrder = ++$index;
             $this->_tabs[] = $tab;
         }
 
-        // Take stock of all the selected layout elements
-        foreach ($this->_tabs as $tab) {
-            foreach ($tab->elements as $layoutElement) {
-                if ($layoutElement instanceof BaseField) {
-                    $this->_fields[$layoutElement->attribute()] = $layoutElement;
-                }
-            }
+        // Make sure that we aren't missing any mandatory fields
+        $includedFields = [];
+        $missingFields = [];
+
+        foreach ($this->getElementsByType(BaseField::class) as $field) {
+            /** @var BaseField $field */
+            $includedFields[$field->attribute()] = true;
         }
 
-        // Make sure that we aren't missing any mandatory fields
-        /** @var BaseField[] $missingFields */
-        $missingFields = [];
-        foreach ($this->getAvailableStandardFields() as $field) {
-            if ($field->mandatory() && !isset($this->_fields[$field->attribute()])) {
-                $missingFields[$field->attribute()] = $field;
-                $this->_fields[$field->attribute()] = $field;
+        foreach ($this->getAvailableNativeFields() as $field) {
+            if ($field->mandatory()) {
+                $attribute = $field->attribute();
+                if (!isset($includedFields[$attribute])) {
+                    $missingFields[] = $field;
+                    $includedFields[$attribute] = true;
+                }
             }
         }
 
@@ -308,7 +349,10 @@ class FieldLayout extends Model
                     'elements' => [],
                 ]);
             }
-            array_unshift($tab->elements, ...array_values($missingFields));
+
+            $layoutElements = $tab->getElements();
+            array_unshift($layoutElements, ...array_values($missingFields));
+            $tab->setElements($layoutElements);
         }
     }
 
@@ -320,50 +364,62 @@ class FieldLayout extends Model
      */
     public function getAvailableCustomFields(): array
     {
-        if ($this->_availableCustomFields === null) {
-            $this->_availableCustomFields = [];
+        if (!isset($this->_availableCustomFields)) {
+            $fields = [];
 
             foreach (Craft::$app->getFields()->getAllGroups() as $group) {
                 $groupName = Craft::t('site', $group->name);
                 foreach ($group->getFields() as $field) {
-                    $this->_availableCustomFields[$groupName][] = Craft::createObject(CustomField::class, [$field]);
+                    $fields[$groupName][] = Craft::createObject([
+                        'class' => CustomField::class,
+                        'layout' => $this,
+                    ], [$field]);
                 }
             }
+
+            // Allow changes
+            $event = new DefineFieldLayoutCustomFieldsEvent(['fields' => $fields]);
+            $this->trigger(self::EVENT_DEFINE_CUSTOM_FIELDS, $event);
+
+            $this->_availableCustomFields = $event->fields;
         }
 
         return $this->_availableCustomFields;
     }
 
     /**
-     * Returns the available standard fields.
+     * Returns the available native fields.
      *
      * @return BaseField[]
      * @since 3.5.0
      */
-    public function getAvailableStandardFields(): array
+    public function getAvailableNativeFields(): array
     {
-        if ($this->_availableStandardFields === null) {
+        if (!isset($this->_availableNativeFields)) {
+            $this->_availableNativeFields = [];
+
             $event = new DefineFieldLayoutFieldsEvent();
-            $this->trigger(self::EVENT_DEFINE_STANDARD_FIELDS, $event);
-            $this->_availableStandardFields = $event->fields;
+            $this->trigger(self::EVENT_DEFINE_NATIVE_FIELDS, $event);
 
             // Instantiate them
-            foreach ($this->_availableStandardFields as &$field) {
+            foreach ($event->fields as $field) {
                 if (is_string($field) || is_array($field)) {
                     $field = Craft::createObject($field);
                 }
                 if (!$field instanceof BaseField) {
                     throw new InvalidConfigException('Invalid standard field config');
                 }
+                $field->setLayout($this);
+                $this->_availableNativeFields[] = $field;
             }
         }
-        return $this->_availableStandardFields;
+        return $this->_availableNativeFields;
     }
 
     /**
      * Returns the layout elements that are available to the field layout, grouped by the type name and (optionally) group name.
      *
-     * @return FieldLayoutElementInterface[]
+     * @return FieldLayoutElement[]
      * @since 3.5.0
      */
     public function getAvailableUiElements(): array
@@ -383,15 +439,16 @@ class FieldLayout extends Model
 
         $this->trigger(self::EVENT_DEFINE_UI_ELEMENTS, $event);
 
-        // HR should always be last
+        // HR and Line Break should always be last
         $event->elements[] = new HorizontalRule();
+        $event->elements[] = new LineBreak();
 
         // Instantiate them
         foreach ($event->elements as &$element) {
             if (is_string($element) || is_array($element)) {
                 $element = Craft::createObject($element);
             }
-            if (!$element instanceof FieldLayoutElementInterface) {
+            if (!$element instanceof FieldLayoutElement) {
                 throw new InvalidConfigException('Invalid UI element config');
             }
         }
@@ -408,8 +465,12 @@ class FieldLayout extends Model
      */
     public function isFieldIncluded(string $attribute): bool
     {
-        $this->getTabs();
-        return isset($this->_fields[$attribute]);
+        try {
+            $this->getField($attribute);
+            return true;
+        } catch (InvalidArgumentException) {
+            return false;
+        }
     }
 
     /**
@@ -422,11 +483,16 @@ class FieldLayout extends Model
      */
     public function getField(string $attribute): BaseField
     {
-        $this->getTabs();
-        if (!isset($this->_fields[$attribute])) {
+        $filter = fn(FieldLayoutElement $layoutElement) => (
+            $layoutElement instanceof BaseField &&
+            $layoutElement->attribute() === $attribute
+        );
+        /** @var BaseField|null $field */
+        $field = $this->_element($filter);
+        if (!$field) {
             throw new InvalidArgumentException("Invalid field: $attribute");
         }
-        return $this->_fields[$attribute];
+        return $field;
     }
 
     /**
@@ -435,13 +501,13 @@ class FieldLayout extends Model
      * @return array|null
      * @since 3.1.0
      */
-    public function getConfig()
+    public function getConfig(): ?array
     {
         $tabConfigs = [];
 
         foreach ($this->getTabs() as $tab) {
             $tabConfig = $tab->getConfig();
-            if ($tabConfig) {
+            if (!empty($tabConfig['elements'])) {
                 $tabConfigs[] = $tabConfig;
             }
         }
@@ -456,21 +522,65 @@ class FieldLayout extends Model
     }
 
     /**
-     * Returns the custom fields included in the layout.
+     * Returns the layout elements of a given type.
      *
-     * @return FieldInterface[]
+     * @template T
+     * @param string $class
+     * @phpstan-param class-string<T> $class
+     * @return T[]
+     * @since 4.0.0
      */
-    public function getFields(): array
+    public function getElementsByType(string $class): array
     {
-        if ($this->_customFields !== null) {
-            return $this->_customFields;
-        }
+        $filter = fn(FieldLayoutElement $layoutElement) => $layoutElement instanceof $class;
+        return iterator_to_array($this->_elements($filter));
+    }
 
-        if (!$this->id) {
-            return [];
-        }
+    /**
+     * Returns the visible layout elements of a given type, taking conditions into account.
+     *
+     * @template T
+     * @param string $class
+     * @phpstan-param class-string<T> $class
+     * @param ElementInterface $element
+     * @return T[]
+     * @since 4.0.0
+     */
+    public function getVisibleElementsByType(string $class, ElementInterface $element): array
+    {
+        $filter = fn(FieldLayoutElement $layoutElement) => $layoutElement instanceof $class;
+        return iterator_to_array($this->_elements($filter, $element));
+    }
 
-        return $this->_customFields = Craft::$app->getFields()->getFieldsByLayoutId($this->id);
+    /**
+     * Returns the first layout element of a given type.
+     *
+     * @template T of FieldLayoutElement
+     * @param string $class
+     * @phpstan-param class-string<T> $class
+     * @return T|null The layout element, or `null` if none were found
+     * @since 4.0.0
+     */
+    public function getFirstElementByType(string $class): ?FieldLayoutElement
+    {
+        $filter = fn(FieldLayoutElement $layoutElement) => $layoutElement instanceof $class;
+        return $this->_element($filter);
+    }
+
+    /**
+     * Returns the first visible layout element of a given type, taking conditions into account.
+     *
+     * @template T of FieldLayoutElement
+     * @param string $class
+     * @phpstan-param class-string<T> $class
+     * @param ElementInterface $element
+     * @return T|null The layout element, or `null` if none were found
+     * @since 4.0.0
+     */
+    public function getFirstVisibleElementByType(string $class, ElementInterface $element): ?FieldLayoutElement
+    {
+        $filter = fn(FieldLayoutElement $layoutElement) => $layoutElement instanceof $class;
+        return $this->_element($filter, $element);
     }
 
     /**
@@ -481,35 +591,60 @@ class FieldLayout extends Model
      */
     public function getCustomFieldElements(): array
     {
-        $response = [];
-
-        foreach ($this->getTabs() as $tab) {
-            foreach ($tab->elements as $element) {
-                if ($element instanceof CustomField) {
-                    $response[] = $element;
-                }
-            }
-        }
-
-        return $response;
+        return $this->getElementsByType(CustomField::class);
     }
 
+    /**
+     * Returns the visible layout elements representing custom fields, taking conditions into account.
+     *
+     * @param ElementInterface $element
+     * @return CustomField[]
+     * @since 4.1.4
+     */
+    public function getVisibleCustomFieldElements(ElementInterface $element): array
+    {
+        $filter = fn(FieldLayoutElement $layoutElement) => $layoutElement instanceof CustomField;
+        return iterator_to_array($this->_elements($filter, $element));
+    }
 
     /**
-     * Returns the IDs of the custom fields included in the layout.
+     * Returns the custom fields included in the layout.
      *
-     * @return int[]
-     * @deprecated in 3.5.0.
+     * @return FieldInterface[]
+     * @since 4.0.0
      */
-    public function getFieldIds(): array
+    public function getCustomFields(): array
     {
-        $ids = [];
+        return $this->_customFields();
+    }
 
-        foreach ($this->getFields() as $field) {
-            $ids[] = $field->id;
+    /**
+     * Returns the visible custom fields included in the layout, taking conditions into account.
+     *
+     * @param ElementInterface $element
+     * @return FieldInterface[]
+     * @since 4.0.0
+     */
+    public function getVisibleCustomFields(ElementInterface $element): array
+    {
+        return $this->_customFields($element);
+    }
+
+    /**
+     * @param ElementInterface|null $element
+     * @return FieldInterface[]
+     */
+    private function _customFields(?ElementInterface $element = null): array
+    {
+        $fields = [];
+        $filter = fn(FieldLayoutElement $layoutElement) => $layoutElement instanceof CustomField;
+        foreach ($this->_elements($filter, $element) as $layoutElement) {
+            /** @var CustomField $layoutElement */
+            $field = $layoutElement->getField();
+            $field->required = $layoutElement->required;
+            $fields[] = $field;
         }
-
-        return $ids;
+        return $fields;
     }
 
     /**
@@ -518,25 +653,15 @@ class FieldLayout extends Model
      * @param string $handle The field handle.
      * @return FieldInterface|null
      */
-    public function getFieldByHandle(string $handle)
+    public function getFieldByHandle(string $handle): ?FieldInterface
     {
-        foreach ($this->getFields() as $field) {
+        foreach ($this->getCustomFields() as $field) {
             if ($field->handle === $handle) {
                 return $field;
             }
         }
 
         return null;
-    }
-
-    /**
-     * Sets the custom fields included in this layout.
-     *
-     * @param FieldInterface[]|null $fields
-     */
-    public function setFields(array $fields = null)
-    {
-        $this->_customFields = $fields;
     }
 
     /**
@@ -547,6 +672,7 @@ class FieldLayout extends Model
      * - `tabIdPrefix` – prefix that should be applied to the tab content containers’ `id` attributes
      * - `namespace` – Namespace that should be applied to the tab contents
      * - `registerDeltas` – Whether delta name registration should be enabled/disabled for the form (by default its state will be left alone)
+     * - `visibleElements` – Lists of already-visible layout elements from [[FieldLayoutForm::getVisibleElements()]]
      *
      * @param ElementInterface|null $element The element the form is being rendered for
      * @param bool $static Whether the form should be static (non-interactive)
@@ -554,7 +680,7 @@ class FieldLayout extends Model
      * @return FieldLayoutForm
      * @since 3.5.0
      */
-    public function createForm(ElementInterface $element = null, bool $static = false, array $config = []): FieldLayoutForm
+    public function createForm(?ElementInterface $element = null, bool $static = false, array $config = []): FieldLayoutForm
     {
         $view = Craft::$app->getView();
 
@@ -570,6 +696,9 @@ class FieldLayout extends Model
             $isDeltaRegistrationActive = $view->getIsDeltaRegistrationActive();
             $view->setIsDeltaRegistrationActive($registerDeltas);
         }
+
+        // Any already-included layout elements?
+        $visibleElements = ArrayHelper::remove($config, 'visibleElements');
 
         $form = new FieldLayoutForm($config);
         $tabs = $this->getTabs();
@@ -587,31 +716,87 @@ class FieldLayout extends Model
         }
 
         foreach ($tabs as $tab) {
-            $tabHtml = [];
+            $layoutElements = [];
+            $showTab = !isset($tab->uid) || $tab->showInForm($element);
+            $hasVisibleFields = false;
 
-            foreach ($tab->elements as $layoutElement) {
-                $elementHtml = $view->namespaceInputs(function() use ($layoutElement, $element, $static) {
-                    return (string)$layoutElement->formHtml($element, $static);
-                }, $namespace);
-                if ($elementHtml !== '') {
-                    $tabHtml[] = $elementHtml;
+            foreach ($tab->getElements() as $layoutElement) {
+                // Only tabs + elements that were saved with UUIDs can be conditional
+                $isConditional = isset($tab->uid, $layoutElement->uid);
+
+                if ($showTab && (!$isConditional || $layoutElement->showInForm($element))) {
+                    // If it was already included and we just need the missing elements, only keep track that it’s still included
+                    if (
+                        $visibleElements !== null &&
+                        (!$isConditional || (isset($visibleElements[$tab->uid]) && in_array($layoutElement->uid, $visibleElements[$tab->uid])))
+                    ) {
+                        $layoutElements[] = [$layoutElement, $isConditional, true];
+                        $hasVisibleFields = true;
+                    } else {
+                        $html = $view->namespaceInputs(function() use ($layoutElement, $element, $static) {
+                            return $layoutElement->formHtml($element, $static) ?? '';
+                        }, $namespace);
+
+                        if ($html) {
+                            $html = Html::modifyTagAttributes($html, [
+                                'data' => [
+                                    'layout-element' => $isConditional ? $layoutElement->uid : true,
+                                ],
+                            ]);
+
+                            $layoutElements[] = [$layoutElement, $isConditional, $html];
+                            $hasVisibleFields = true;
+                        } else {
+                            $layoutElements[] = [$layoutElement, $isConditional, false];
+                        }
+                    }
+                } else {
+                    $layoutElements[] = [$layoutElement, $isConditional, false];
                 }
             }
 
-            if (!empty($tabHtml)) {
+            if ($hasVisibleFields) {
                 $form->tabs[] = new FieldLayoutFormTab([
-                    'name' => Craft::t('site', $tab->name),
-                    'id' => $tab->getHtmlId(),
+                    'layoutTab' => $tab,
                     'hasErrors' => $element && $tab->elementHasErrors($element),
-                    'content' => implode("\n", $tabHtml),
+                    'elements' => $layoutElements,
                 ]);
             }
         }
 
         if ($changeDeltaRegistration) {
+            /** @phpstan-ignore-next-line */
             $view->setIsDeltaRegistrationActive($isDeltaRegistrationActive);
         }
 
         return $form;
+    }
+
+    /**
+     * @param callable $filter
+     * @param ElementInterface|null $element
+     * @return FieldLayoutElement|null
+     */
+    private function _element(callable $filter, ?ElementInterface $element = null): ?FieldLayoutElement
+    {
+        return $this->_elements($filter, $element)->current();
+    }
+
+    /**
+     * @param callable $filter
+     * @param ElementInterface|null $element
+     * @return Generator
+     */
+    private function _elements(callable $filter, ?ElementInterface $element = null): Generator
+    {
+        foreach ($this->getTabs() as $tab) {
+            if (!$element || !isset($tab->uid) || $tab->showInForm($element)) {
+                foreach ($tab->getElements() as $layoutElement) {
+                    if ($filter($layoutElement) && (!$element || !isset($layoutElement->uid) || $layoutElement->showInForm($element))) {
+                        yield $layoutElement;
+                    }
+                }
+            }
+        }
     }
 }

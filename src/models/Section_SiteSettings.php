@@ -25,58 +25,42 @@ class Section_SiteSettings extends Model
     /**
      * @var int|null ID
      */
-    public $id;
+    public ?int $id = null;
 
     /**
      * @var int|null Section ID
      */
-    public $sectionId;
+    public ?int $sectionId = null;
 
     /**
      * @var int|null Site ID
      */
-    public $siteId;
+    public ?int $siteId = null;
 
     /**
      * @var bool Enabled by default
      */
-    public $enabledByDefault = true;
+    public bool $enabledByDefault = true;
 
     /**
-     * @var bool|null Has URLs?
+     * @var bool Has URLs?
      */
-    public $hasUrls;
+    public bool $hasUrls = false;
 
     /**
      * @var string|null URI format
      */
-    public $uriFormat;
+    public ?string $uriFormat = null;
 
     /**
      * @var string|null Entry template
      */
-    public $template;
+    public ?string $template = null;
 
     /**
      * @var Section|null
      */
-    private $_section;
-
-    /**
-     * @inheritdoc
-     * @since 3.5.0
-     */
-    public function init()
-    {
-        // Typecast DB values
-        $this->id = (int)$this->id ?: null;
-        $this->sectionId = (int)$this->sectionId ?: null;
-        $this->siteId = (int)$this->siteId ?: null;
-        $this->enabledByDefault = (bool)$this->enabledByDefault;
-        $this->hasUrls = (bool)$this->hasUrls;
-
-        parent::init();
-    }
+    private ?Section $_section = null;
 
     /**
      * Returns the section.
@@ -86,7 +70,7 @@ class Section_SiteSettings extends Model
      */
     public function getSection(): Section
     {
-        if ($this->_section !== null) {
+        if (isset($this->_section)) {
             return $this->_section;
         }
 
@@ -106,7 +90,7 @@ class Section_SiteSettings extends Model
      *
      * @param Section $section
      */
-    public function setSection(Section $section)
+    public function setSection(Section $section): void
     {
         $this->_section = $section;
     }
@@ -133,7 +117,7 @@ class Section_SiteSettings extends Model
     /**
      * @inheritdoc
      */
-    public function attributeLabels()
+    public function attributeLabels(): array
     {
         $labels = [
             'template' => Craft::t('app', 'Template'),

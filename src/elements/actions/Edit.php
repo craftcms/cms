@@ -9,7 +9,6 @@ namespace craft\elements\actions;
 
 use Craft;
 use craft\base\ElementAction;
-use craft\helpers\Json;
 
 /**
  * Edit represents an Edit element action.
@@ -22,14 +21,14 @@ class Edit extends ElementAction
     /**
      * @var string|null The trigger label
      */
-    public $label;
+    public ?string $label = null;
 
     /**
      * @inheritdoc
      */
-    public function init()
+    public function init(): void
     {
-        if ($this->label === null) {
+        if (!isset($this->label)) {
             $this->label = Craft::t('app', 'Edit');
         }
     }
@@ -45,43 +44,22 @@ class Edit extends ElementAction
     /**
      * @inheritdoc
      */
-    public function getTriggerHtml()
+    public function getTriggerHtml(): ?string
     {
-        $type = Json::encode(static::class);
-
-        $js = <<<JS
+        Craft::$app->getView()->registerJsWithVars(fn($type) => <<<JS
 (() => {
     new Craft.ElementActionTrigger({
-        type: {$type},
+        type: $type,
         batch: false,
-        validateSelection: function(\$selectedItems)
-        {
-            return Garnish.hasAttr(\$selectedItems.find('.element'), 'data-editable');
+        validateSelection: \$selectedItems => Garnish.hasAttr(\$selectedItems.find('.element'), 'data-savable'),
+        activate: \$selectedItems => {
+            const \$element = \$selectedItems.find('.element:first');
+            Craft.createElementEditor(\$element.data('type'), \$element);
         },
-        activate: function(\$selectedItems)
-        {
-            var \$element = \$selectedItems.find('.element:first');
-
-            if (Craft.elementIndex.viewMode === 'table') {
-                Craft.createElementEditor(\$element.data('type'), \$element, {
-                    params: {
-                        includeTableAttributesForSource: Craft.elementIndex.sourceKey
-                    },
-                    onSaveElement: $.proxy(function(response) {
-                        if (response.tableAttributes) {
-                            Craft.elementIndex.view._updateTableAttributes(\$element, response.tableAttributes);
-                        }
-                    }, this)
-                });
-            } else {
-                Craft.createElementEditor(\$element.data('type'), \$element);
-            }
-        }
     });
 })();
-JS;
+JS, [static::class]);
 
-        Craft::$app->getView()->registerJs($js);
         return null;
     }
 }

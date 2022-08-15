@@ -1,0 +1,31 @@
+{%- set options = options ?? [] %}
+{%- set values = values ?? [] %}
+{%- set optionName = (name ?? false) ? "#{name}[]" : null %}
+
+{% set fieldsetAttributes = {
+    class: ['checkbox-group'],
+} %}
+
+{% if block('attr') is defined %}
+    {%- set fieldsetAttributes = fieldsetAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
+{% endif %}
+
+{% tag 'div' with fieldsetAttributes %}
+    {% if name ?? false %}
+        {{ hiddenInput(name, '') }}
+    {% endif -%}
+
+    {%- for key, option in options %}
+        {%- if option is not iterable %}
+            {%- set option = {label: option, value: key} %}
+        {%- endif %}
+        <div class="checkboxfield">
+            {% include "_includes/forms/checkbox" with {
+                describedBy: describedBy ?? false,
+                name: optionName,
+                checked: (option.value is defined and option.value in values),
+                autofocus: loop.first and (autofocus ?? false) and not craft.app.request.isMobileBrowser(true)
+            }|merge(option) only %}
+        </div>
+    {%- endfor %}
+{% endtag %}

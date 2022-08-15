@@ -9,7 +9,6 @@ namespace craft\elements\actions;
 
 use Craft;
 use craft\base\ElementAction;
-use craft\helpers\Json;
 
 /**
  * ReplaceFile represents a Replace File element action.
@@ -30,44 +29,37 @@ class ReplaceFile extends ElementAction
     /**
      * @inheritdoc
      */
-    public function getTriggerHtml()
+    public function getTriggerHtml(): ?string
     {
-        $type = Json::encode(static::class);
-
-        $js = <<<JS
+        Craft::$app->getView()->registerJsWithVars(fn($type) => <<<JS
 (() => {
     new Craft.ElementActionTrigger({
-        type: {$type},
+        type: $type,
         batch: false,
-        validateSelection: function(\$selectedItems)
-        {
-            return Garnish.hasAttr(\$selectedItems.find('.element'), 'data-replaceable');
-        },
-        activate: function(\$selectedItems)
-        {
+        validateSelection: \$selectedItems => Garnish.hasAttr(\$selectedItems.find('.element'), 'data-replaceable'),
+        activate: \$selectedItems => {
             $('.replaceFile').remove();
 
-            var \$element = \$selectedItems.find('.element'),
-                \$fileInput = $('<input type="file" name="replaceFile" class="replaceFile" style="display: none;"/>').appendTo(Garnish.\$bod),
-                options = Craft.elementIndex._currentUploaderSettings;
+            const \$element = \$selectedItems.find('.element');
+            const \$fileInput = $('<input type="file" name="replaceFile" class="replaceFile" style="display: none;"/>').appendTo(Garnish.\$bod);
+            const options = Craft.elementIndex._currentUploaderSettings;
 
             options.url = Craft.getActionUrl('assets/replace-file');
             options.dropZone = null;
             options.fileInput = \$fileInput;
             options.paramName = 'replaceFile';
 
-            var tempUploader = new Craft.Uploader(\$fileInput, options);
+            const tempUploader = new Craft.Uploader(\$fileInput, options);
             tempUploader.setParams({
                 assetId: \$element.data('id')
             });
 
             \$fileInput.click();
-        }
+        },
     });
 })();
-JS;
+JS, [static::class]);
 
-        Craft::$app->getView()->registerJs($js);
         return null;
     }
 }

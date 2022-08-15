@@ -108,7 +108,7 @@ return [
     'Composer was unable to remove the plugin.' => 'Forfatteren kunne ikkje fjerne programtillegget.',
     'Composer was unable to revert the updates.' => 'Forfatteren kunne ikkje omgjere oppdateringa.',
     'Compressed' => 'Komprimert',
-    'Congrats! You’re up to date.' => 'Gratulerer, alt er oppdatert!',
+    'Congrats! You’re up-to-date.' => 'Gratulerer, alt er oppdatert!',
     'Connected to craftcms.com.' => 'Kople til craftcms.com.',
     'Content' => 'Innhald',
     'Continue' => 'Hald fram',
@@ -680,7 +680,7 @@ return [
     'Your session has ended.' => 'Økta di er utgått.',
     'Your session will expire in {time}.' => 'Økta di går ut om {time}.',
     'Your system isn’t set up to save content for the site “{site}”.' => 'Systemet ditt er ikkje konfigurert til å lagre innhald for nettstaden "{site}".',
-    'You’re all up to date!' => 'Alt er oppdatert!',
+    'You’re all up-to-date!' => 'Alt er oppdatert!',
     'You’re running Craft {edition} with a Craft {licensedEdition} license.' => 'Du køyrer Craft {edition} med ein Craft {licensedEdition}-lisens.',
     'account_activation_body' => 'Hei {{user.friendlyName}},
 

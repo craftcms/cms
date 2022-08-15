@@ -40,7 +40,7 @@
 +                 step: null
 +                 tip: null
 +                 title: null
-+                 type: craft\fieldlayoutelements\EntryTitleField
++                 type: craft\fieldlayoutelements\entries\EntryTitleField
 +                 warning: null
 +                 width: 100
 +               -

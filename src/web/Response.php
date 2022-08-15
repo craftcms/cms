@@ -9,12 +9,15 @@ namespace craft\web;
 
 use Craft;
 use craft\helpers\UrlHelper;
+use Throwable;
+use yii\base\Application as BaseApplication;
 use yii\web\Cookie;
 use yii\web\CookieCollection;
 use yii\web\HttpException;
 
 /**
  * @inheritdoc
+ * @mixin CpScreenResponseBehavior
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
@@ -23,25 +26,25 @@ class Response extends \yii\web\Response
     /**
      * @since 3.4.0
      */
-    const FORMAT_CSV = 'csv';
+    public const FORMAT_CSV = 'csv';
 
     /**
      * @var bool whether the response has been prepared.
      */
-    private $_isPrepared = false;
+    private bool $_isPrepared = false;
 
     /**
      * @var CookieCollection Collection of raw cookies
      * @see getRawCookies()
      */
-    private $_rawCookies;
+    private CookieCollection $_rawCookies;
 
     /**
      * Returns the Content-Type header (sans `charset=X`) that the response will most likely include.
      *
      * @return string|null
      */
-    public function getContentType()
+    public function getContentType(): ?string
     {
         // If the response hasn't been prepared yet, go with what the formatter is going to set
         if (!$this->_isPrepared) {
@@ -74,9 +77,9 @@ class Response extends \yii\web\Response
     /**
      * Sets headers that will instruct the client to cache this response.
      *
-     * @return static self reference
+     * @return self self reference
      */
-    public function setCacheHeaders()
+    public function setCacheHeaders(): self
     {
         $cacheTime = 31536000; // 1 year
         $this->getHeaders()
@@ -89,10 +92,10 @@ class Response extends \yii\web\Response
     /**
      * Sets headers that will instruct the client to not cache this response.
      *
-     * @return static self reference
+     * @return self self reference
      * @since 3.5.0
      */
-    public function setNoCacheHeaders()
+    public function setNoCacheHeaders(): self
     {
         $this->getHeaders()
             ->set('Expires', '0')
@@ -105,9 +108,9 @@ class Response extends \yii\web\Response
      * Sets a Last-Modified header based on a given file path.
      *
      * @param string $path The file to read the last modified date from.
-     * @return static self reference
+     * @return self self reference
      */
-    public function setLastModifiedHeader(string $path)
+    public function setLastModifiedHeader(string $path): self
     {
         $modifiedTime = filemtime($path);
 
@@ -127,9 +130,9 @@ class Response extends \yii\web\Response
      * @return CookieCollection the cookie collection.
      * @since 3.5.0
      */
-    public function getRawCookies()
+    public function getRawCookies(): CookieCollection
     {
-        if ($this->_rawCookies === null) {
+        if (!isset($this->_rawCookies)) {
             $this->_rawCookies = new CookieCollection();
         }
         return $this->_rawCookies;
@@ -139,45 +142,46 @@ class Response extends \yii\web\Response
      * @inheritdoc
      * @since 3.5.0
      */
-    protected function sendCookies()
+    protected function sendCookies(): void
     {
         parent::sendCookies();
 
-        if ($this->_rawCookies === null) {
+        if (!isset($this->_rawCookies)) {
             return;
         }
         foreach ($this->getRawCookies() as $cookie) {
             /** @var Cookie $cookie */
-            if (PHP_VERSION_ID >= 70300) {
-                setcookie($cookie->name, $cookie->value, [
-                    'expires' => $cookie->expire,
-                    'path' => $cookie->path,
-                    'domain' => $cookie->domain,
-                    'secure' => $cookie->secure,
-                    'httpOnly' => $cookie->httpOnly,
-                    'sameSite' => !empty($cookie->sameSite) ? $cookie->sameSite : null,
-                ]);
-            } else {
-                // Work around for setting sameSite cookie prior PHP 7.3
-                // https://stackoverflow.com/questions/39750906/php-setcookie-samesite-strict/46971326#46971326
-                if (!is_null($cookie->sameSite)) {
-                    $cookie->path .= '; samesite=' . $cookie->sameSite;
-                }
-                setcookie($cookie->name, $cookie->value, $cookie->expire, $cookie->path, $cookie->domain, $cookie->secure, $cookie->httpOnly);
-            }
+            setcookie($cookie->name, $cookie->value, [
+                'expires' => $cookie->expire,
+                'path' => $cookie->path,
+                'domain' => $cookie->domain,
+                'secure' => $cookie->secure,
+                'httpOnly' => $cookie->httpOnly,
+                'sameSite' => !empty($cookie->sameSite) ? $cookie->sameSite : null,
+            ]);
         }
     }
 
     /**
      * @inheritdoc
      */
-    public function redirect($url, $statusCode = 302, $checkAjax = true)
+    public function redirect($url, $statusCode = 302, $checkAjax = true): self
     {
         if (is_string($url)) {
             $url = UrlHelper::url($url);
         }
 
-        return parent::redirect($url, $statusCode, $checkAjax);
+        if ($this->format === TemplateResponseFormatter::FORMAT) {
+            $this->format = self::FORMAT_HTML;
+        }
+
+        parent::redirect($url, $statusCode, $checkAjax);
+
+        if (Craft::$app->state === BaseApplication::STATE_SENDING_RESPONSE) {
+            $this->send();
+        }
+
+        return $this;
     }
 
     /**
@@ -185,13 +189,12 @@ class Response extends \yii\web\Response
      * @param string $filePath
      * @param string|null $attachmentName
      * @param array $options
-     * @return static self reference
+     * @return self self reference
      */
-    public function sendFile($filePath, $attachmentName = null, $options = [])
+    public function sendFile($filePath, $attachmentName = null, $options = []): self
     {
         $this->_clearOutputBuffer();
         parent::sendFile($filePath, $attachmentName, $options);
-
         return $this;
     }
 
@@ -200,14 +203,13 @@ class Response extends \yii\web\Response
      * @param string $content
      * @param string $attachmentName
      * @param array $options
-     * @return static self reference
+     * @return self self reference
      * @throws HttpException
      */
-    public function sendContentAsFile($content, $attachmentName, $options = [])
+    public function sendContentAsFile($content, $attachmentName, $options = []): self
     {
         $this->_clearOutputBuffer();
         parent::sendContentAsFile($content, $attachmentName, $options);
-
         return $this;
     }
 
@@ -218,9 +220,9 @@ class Response extends \yii\web\Response
      * mod_deflate or mod_gzip is installed, or if this is a Win32 server.
      *
      * @see http://stackoverflow.com/a/141026
-     * @throws \Throwable An exception will be thrown if content has already been output.
+     * @throws Throwable An exception will be thrown if content has already been output.
      */
-    public function sendAndClose()
+    public function sendAndClose(): void
     {
         // Make sure nothing has been output yet
         if (headers_sent()) {
@@ -247,10 +249,10 @@ class Response extends \yii\web\Response
         }
 
         // Tell the browser to close the connection
-        $length = $this->content !== null ? strlen($this->content) : 0;
+        $length = isset($this->content) ? strlen($this->content) : 0;
         $this->getHeaders()
             ->set('Connection', 'close')
-            ->set('Content-Length', $length);
+            ->set('Content-Length', (string)$length);
 
         $this->send();
 
@@ -267,7 +269,7 @@ class Response extends \yii\web\Response
      * @inheritdoc
      * @since 3.4.0
      */
-    protected function defaultFormatters()
+    protected function defaultFormatters(): array
     {
         $formatters = parent::defaultFormatters();
         $formatters[self::FORMAT_CSV] = [
@@ -279,12 +281,10 @@ class Response extends \yii\web\Response
     /**
      * @inheritdoc
      */
-    protected function prepare()
+    protected function prepare(): void
     {
-        $return = parent::prepare();
+        parent::prepare();
         $this->_isPrepared = true;
-
-        return $return;
     }
 
     /**
@@ -292,8 +292,9 @@ class Response extends \yii\web\Response
      *
      * Need to check the OB status first, or else some PHP versions will throw an E_NOTICE
      * since we have a custom error handler (http://pear.php.net/bugs/bug.php?id=9670).
+     *
      */
-    private function _clearOutputBuffer()
+    private function _clearOutputBuffer(): void
     {
         if (ob_get_length() !== false) {
             // If zlib.output_compression is enabled, then ob_clean() will corrupt the results of output buffering.

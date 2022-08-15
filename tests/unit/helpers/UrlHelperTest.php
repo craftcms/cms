@@ -10,6 +10,7 @@ namespace crafttests\unit\helpers;
 use Codeception\Test\Unit;
 use Craft;
 use craft\helpers\UrlHelper;
+use craft\test\TestCase;
 use craft\test\TestSetup;
 use UnitTester;
 use yii\base\Exception;
@@ -21,66 +22,62 @@ use yii\base\Exception;
  * @author Global Network Group | Giel Tettelaar <giel@yellowflash.net>
  * @since 3.2
  */
-class UrlHelperTest extends Unit
+class UrlHelperTest extends TestCase
 {
-    const ABSOLUTE_URL = 'http://craftcms.com/';
-    const ABSOLUTE_URL_HTTPS = 'https://craftcms.com/';
-    const ABSOLUTE_URL_WWW = 'http://www.craftcms.com/';
-    const ABSOLUTE_URL_HTTPS_WWW = 'https://www.craftcms.com/';
-    const NON_ABSOLUTE_URL = 'craftcms.com/';
-    const NON_ABSOLUTE_URL_WWW = 'www.craftcms.com/';
-    const PROTOCOL_RELATIVE_URL = '//craftcms.com/';
+    public const ABSOLUTE_URL = 'http://craftcms.com/';
+    public const ABSOLUTE_URL_HTTPS = 'https://craftcms.com/';
+    public const ABSOLUTE_URL_WWW = 'http://www.craftcms.com/';
+    public const ABSOLUTE_URL_HTTPS_WWW = 'https://www.craftcms.com/';
+    public const NON_ABSOLUTE_URL = 'craftcms.com/';
+    public const NON_ABSOLUTE_URL_WWW = 'www.craftcms.com/';
+    public const PROTOCOL_RELATIVE_URL = '//craftcms.com/';
 
     /**
      * @var UnitTester
      */
-    protected $tester;
+    protected UnitTester $tester;
 
     /**
      * @var string
      */
-    protected $cpTrigger;
+    protected string $cpTrigger;
 
     /**
      * @dataProvider buildQueryDataProvider
-     *
      * @param string $expected
      * @param array $params
      */
-    public function testBuildQuery(string $expected, array $params)
+    public function testBuildQuery(string $expected, array $params): void
     {
         self::assertSame($expected, UrlHelper::buildQuery($params));
     }
 
     /**
      * @dataProvider isRootRelativeUrlDataProvider
-     *
      * @param string $url
      * @param bool $expected
      */
-    public function testIsRootRelativeUrl(bool $expected, string $url)
+    public function testIsRootRelativeUrl(bool $expected, string $url): void
     {
         self::assertSame($expected, UrlHelper::isRootRelativeUrl($url));
     }
 
     /**
      * @dataProvider isAbsoluteUrlDataProvider
-     *
      * @param bool $expected
      * @param string $url
      */
-    public function testIsAbsoluteUrl(bool $expected, string $url)
+    public function testIsAbsoluteUrl(bool $expected, string $url): void
     {
         self::assertSame($expected, UrlHelper::isAbsoluteUrl($url));
     }
 
     /**
      * @dataProvider isFulUrlDataProvider
-     *
      * @param bool $expected
      * @param string $url
      */
-    public function testIsFullUrl(bool $expected, string $url)
+    public function testIsFullUrl(bool $expected, string $url): void
     {
         self::assertSame($expected, UrlHelper::isFullUrl($url));
     }
@@ -91,13 +88,12 @@ class UrlHelperTest extends Unit
      * the cpTrigger variable inst easily accessible in the dataProvider methods.
      *
      * @dataProvider cpUrlCreationDataProvider
-     *
      * @param string $expected
      * @param string $path
      * @param array $params
      * @param string $scheme
      */
-    public function testCpUrlCreation(string $expected, string $path, array $params, string $scheme = 'https')
+    public function testCpUrlCreation(string $expected, string $path, array $params, string $scheme = 'https'): void
     {
         $this->tester->mockCraftMethods('request', [
             'getIsSecureConnection' => false,
@@ -116,24 +112,22 @@ class UrlHelperTest extends Unit
 
     /**
      * @dataProvider urlWithSchemeDataProvider
-     *
      * @param string $expected
      * @param string $url
      * @param string $scheme
      */
-    public function testUrlWithScheme(string $expected, string $url, string $scheme)
+    public function testUrlWithScheme(string $expected, string $url, string $scheme): void
     {
         self::assertSame($expected, UrlHelper::urlWithScheme($url, $scheme));
     }
 
     /**
      * @dataProvider urlWithTokenDataProvider
-     *
      * @param string $expected
      * @param string $url
      * @param string $token
      */
-    public function testUrlWithToken(string $expected, string $url, string $token)
+    public function testUrlWithToken(string $expected, string $url, string $token): void
     {
         Craft::$app->getConfig()->getGeneral()->useSslOnTokenizedUrls = true;
         self::assertSame($expected, UrlHelper::urlWithToken($url, $token));
@@ -141,23 +135,21 @@ class UrlHelperTest extends Unit
 
     /**
      * @dataProvider urlWithParametersDataProvider
-     *
      * @param string $expected
      * @param string $url
      * @param array|string $params
      */
-    public function testUrlWithParams(string $expected, string $url, $params)
+    public function testUrlWithParams(string $expected, string $url, array|string $params): void
     {
         self::assertSame($expected, UrlHelper::urlWithParams($url, $params));
     }
 
     /**
      * @dataProvider stripQueryStringDataProvider
-     *
      * @param string $expected
      * @param string $url
      */
-    public function testStripQueryString(string $expected, string $url)
+    public function testStripQueryString(string $expected, string $url): void
     {
         self::assertSame($expected, UrlHelper::stripQueryString($url));
     }
@@ -165,7 +157,7 @@ class UrlHelperTest extends Unit
     /**
      * @dataProvider encodeParamsDataProvider
      */
-    public function testEncodeParams(string $expected, string $url)
+    public function testEncodeParams(string $expected, string $url): void
     {
         $this->assertSame($expected, UrlHelper::encodeParams($url));
     }
@@ -174,11 +166,10 @@ class UrlHelperTest extends Unit
      * Tests the UrlHelper::rootRelativeUrl() method.
      *
      * @dataProvider rootRelativeUrlDataProvider
-     *
      * @param string $url
      * @param string $expected
      */
-    public function testRootRelativeUrl(string $expected, string $url)
+    public function testRootRelativeUrl(string $expected, string $url): void
     {
         self::assertSame($expected, UrlHelper::rootRelativeUrl($url));
     }
@@ -187,14 +178,13 @@ class UrlHelperTest extends Unit
      * Tests the UrlHelper::url() method.
      *
      * @dataProvider urlFunctionDataProvider
-     *
      * @param string $expected
      * @param string $path
      * @param array|null $params
      * @param string|null $scheme
      * @param bool|null $showScriptName
      */
-    public function testUrlFunction(string $expected, string $path = '', ?array $params = null, ?string $scheme = null, ?bool $showScriptName = null)
+    public function testUrlFunction(string $expected, string $path = '', ?array $params = null, ?string $scheme = null, ?bool $showScriptName = null): void
     {
         $scheme = $scheme ?? 'https';
         $expected = $this->_prepExpectedUrl($expected, $scheme);
@@ -203,11 +193,10 @@ class UrlHelperTest extends Unit
 
     /**
      * @dataProvider hostInfoDataProvider
-     *
      * @param string $expected
      * @param string $url
      */
-    public function testHostInfoRetrieval(string $expected, string $url)
+    public function testHostInfoRetrieval(string $expected, string $url): void
     {
         self::assertSame($expected, UrlHelper::hostInfo($url));
     }
@@ -215,7 +204,7 @@ class UrlHelperTest extends Unit
     /**
      *
      */
-    public function testSchemeForTokenizedBasedOnConfig()
+    public function testSchemeForTokenizedBasedOnConfig(): void
     {
         // Run down the logic to see what we will need to require.
         $config = Craft::$app->getConfig()->getGeneral();
@@ -229,14 +218,13 @@ class UrlHelperTest extends Unit
 
     /**
      * @dataProvider siteUrlDataProvider
-     *
      * @param string $expected
      * @param string $path
      * @param array|string|null $params
      * @param string|null $scheme
      * @param int|null $siteId
      */
-    public function testSiteUrl(string $expected, string $path, $params = null, ?string $scheme = null, ?int $siteId = null)
+    public function testSiteUrl(string $expected, string $path, array|string|null $params = null, ?string $scheme = null, ?int $siteId = null): void
     {
         $scheme = $scheme ?? 'https';
         $expected = $this->_prepExpectedUrl($expected, $scheme);
@@ -246,7 +234,7 @@ class UrlHelperTest extends Unit
     /**
      *
      */
-    public function testTokenizedSiteUrl()
+    public function testTokenizedSiteUrl(): void
     {
         $this->tester->mockCraftMethods('request', [
             'getToken' => 't0k3n',
@@ -272,7 +260,7 @@ class UrlHelperTest extends Unit
     /**
      *
      */
-    public function testSiteUrlExceptions()
+    public function testSiteUrlExceptions(): void
     {
         $this->tester->expectThrowable(Exception::class, function() {
             UrlHelper::siteUrl('', null, null, 12892);
@@ -357,31 +345,31 @@ class UrlHelperTest extends Unit
     public function cpUrlCreationDataProvider(): array
     {
         return [
-            'test-empty' => ['{siteUrl}{cpTrigger}', '', []],
+            'test-empty' => ['{cpUrl}', '', []],
             'test-simple-endpoint' => [
-                '{siteUrl}{cpTrigger}/nav?param1=entry1&param2=entry2',
+                '{cpUrl}/nav?param1=entry1&param2=entry2',
                 'nav',
-                ['param1' => 'entry1', 'param2' => 'entry2']
+                ['param1' => 'entry1', 'param2' => 'entry2'],
             ],
             'test-preexisting-endpoints' => [
-                '{siteUrl}{cpTrigger}/nav?param3=entry3&param1=entry1&param2=entry2',
+                '{cpUrl}/nav?param3=entry3&param1=entry1&param2=entry2',
                 'nav?param3=entry3',
-                ['param1' => 'entry1', 'param2' => 'entry2']
+                ['param1' => 'entry1', 'param2' => 'entry2'],
             ],
             [
-                '{siteUrl}{cpTrigger}/nav?param1=entry1&param2=entry2',
+                '{cpUrl}/nav?param1=entry1&param2=entry2',
                 'nav',
                 [
                     'param1' => 'entry1',
-                    'param2' => 'entry2'
+                    'param2' => 'entry2',
                 ],
-                'https'
+                'https',
             ],
             [
                 '{siteUrl}?param1=entry1&param2=entry2',
                 TestSetup::SITE_URL,
                 ['param1' => 'entry1', 'param2' => 'entry2'],
-                'https'
+                'https',
             ],
         ];
     }
@@ -501,8 +489,8 @@ class UrlHelperTest extends Unit
                 '',
             ],
             'ensure-scheme-is-overridden' => [
-                $https ? self::ABSOLUTE_URL_HTTPS . '?token=value' : self::ABSOLUTE_URL . '?token=value',
-                $https ? self::ABSOLUTE_URL : self::ABSOLUTE_URL_HTTPS,
+                self::ABSOLUTE_URL_HTTPS . '?token=value',
+                self::ABSOLUTE_URL,
                 'value',
             ],
             'no-protocol' => [
@@ -618,19 +606,19 @@ class UrlHelperTest extends Unit
                 'endpoint',
                 null,
                 null,
-                null
+                null,
             ],
             'full-url-scheme' => [
                 self::ABSOLUTE_URL_HTTPS,
                 self::ABSOLUTE_URL,
                 null,
-                'https'
+                'https',
             ],
             'scheme-override-param-add' => [
                 self::ABSOLUTE_URL_HTTPS . '?param1=entry1&param2=entry2',
                 self::ABSOLUTE_URL,
                 ['param1' => 'entry1', 'param2' => 'entry2'],
-                'https'
+                'https',
             ],
         ];
     }
@@ -658,7 +646,7 @@ class UrlHelperTest extends Unit
     /**
      * @inheritdoc
      */
-    protected function _before()
+    protected function _before(): void
     {
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         $this->cpTrigger = $generalConfig->cpTrigger;
@@ -668,7 +656,7 @@ class UrlHelperTest extends Unit
      * Swaps URL tokens.
      *
      * @param string $url
-     * @param string|null $scheme
+     * @param string $scheme
      * @return string
      */
     private function _prepExpectedUrl(string $url, string $scheme): string
@@ -677,6 +665,7 @@ class UrlHelperTest extends Unit
         if ($scheme === 'http') {
             $siteUrl = str_replace('https', 'http', $siteUrl);
         }
-        return str_replace(['{siteUrl}', '{cpTrigger}'], [$siteUrl, $this->cpTrigger], $url);
+        $cpUrl = rtrim($siteUrl, '/') . ":80/$this->cpTrigger";
+        return str_replace(['{siteUrl}', '{cpUrl}'], [$siteUrl, $cpUrl], $url);
     }
 }

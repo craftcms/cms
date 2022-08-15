@@ -1,88 +1,195 @@
 <template>
-    <div class="ps-container">
-        <template v-if="!loading">
-            <plugin-index
-                    action="pluginStore/getPluginsByDeveloperId"
-                    :requestData="requestData"
-                    :plugins="plugins"
-            >
-                <template v-slot:header>
-                    <div v-if="developer" class="developer-card tw-flex pb-2 items-center">
-                        <div class="avatar inline-block overflow-hidden rounded-full bg-grey mr-6 no-line-height">
-                            <img :src="developer.photoUrl" width="120" height="120" />
-                        </div>
+  <div class="ps-container">
+    <template v-if="!loading">
+      <plugin-index
+        action="pluginStore/getPluginsByDeveloperId"
+        :requestData="requestData"
+        :plugins="plugins"
+      >
+        <template v-slot:header>
+          <div
+            v-if="developer"
+            class="developer-card tw-flex tw-pb-6 tw-items-center"
+          >
+            <template v-if="developer.photoUrl">
+              <div
+                class="avatar tw-w-28 tw-h-28 tw-inline-block tw-overflow-hidden tw-rounded-full tw-bg-gray-100 tw-mr-8 tw-no-line-height"
+              >
+                <img :src="developer.photoUrl" class="tw-w-full tw-h-full" />
+              </div>
+            </template>
 
-                        <div class="flex-1">
-                            <h1 class="text-lg font-bold mb-2">{{developer.developerName}}</h1>
+            <div class="tw-flex-1">
+              <h1 class="tw-text-lg tw-font-bold">
+                {{ developer.developerName }}
+              </h1>
 
-                            <p class="mb-1" v-if="developer.location">{{ developer.location }}</p>
+              <div v-if="developer.location" class="tw-mt-1">
+                {{ developer.location }}
+              </div>
 
-                            <ul v-if="developer.developerUrl">
-                                <li class="mr-4 inline-block"><btn :href="developer.developerUrl" block>{{ "Website"|t('app') }}</btn></li>
-                            </ul>
-                        </div>
-                    </div>
-                </template>
-            </plugin-index>
+              <!-- Partner badges -->
+              <template
+                v-if="
+                  developer.partnerInfo &&
+                  (developer.partnerInfo.isCraftVerified ||
+                    developer.partnerInfo.isCommerceVerified ||
+                    developer.partnerInfo.isEnterpriseVerified)
+                "
+              >
+                <div class="tw-mt-4 tw-text-sm">
+                  <ul
+                    class="xl:tw-flex tw-space-y-2 xl:tw-space-y-0 xl:tw-space-x-6 tw-text-gray-600"
+                  >
+                    <template
+                      v-if="
+                        developer.partnerInfo &&
+                        developer.partnerInfo.isCraftVerified
+                      "
+                    >
+                      <li class="tw-flex tw-items-center">
+                        <partner-badge
+                          kind="craft"
+                          class="tw-shrink-0 tw-mr-2"
+                        />
+                        Craft Verified
+                      </li>
+                    </template>
+                    <template
+                      v-if="
+                        developer.partnerInfo &&
+                        developer.partnerInfo.isCommerceVerified
+                      "
+                    >
+                      <li class="tw-flex tw-items-center">
+                        <partner-badge
+                          kind="commerce"
+                          class="tw-shrink-0 tw-mr-2"
+                        />
+                        Craft Commerce Verified
+                      </li>
+                    </template>
+                    <template
+                      v-if="
+                        developer.partnerInfo &&
+                        developer.partnerInfo.isEnterpriseVerified
+                      "
+                    >
+                      <li class="tw-flex tw-items-center">
+                        <partner-badge
+                          kind="enterprise"
+                          class="tw-shrink-0 tw-mr-2"
+                        />
+                        Enterprise Verified
+                      </li>
+                    </template>
+                  </ul>
+                </div>
+              </template>
+
+              <!-- Developer URL and partner profile URL-->
+              <template
+                v-if="
+                  developer.developerUrl ||
+                  (developer.partnerInfo && developer.partnerInfo.profileUrl)
+                "
+              >
+                <div class="tw-mt-4 tw-text-sm">
+                  <ul
+                    class="developer-buttons xl:tw-flex tw-space-y-2 xl:tw-space-y-0 xl:tw-space-x-3 tw-text-gray-600 tw-space-y-2"
+                  >
+                    <!-- Developer URL -->
+                    <template v-if="developer.developerUrl">
+                      <li>
+                        <c-btn target="_blank" :href="developer.developerUrl"
+                          >{{ 'Website' | t('app') }}
+                          <c-icon
+                            icon="external-link"
+                            class="tw-w-3 tw-h-3 tw-text-grey-dark tw-ml-1"
+                            :size="null"
+                          />
+                        </c-btn>
+                      </li>
+                    </template>
+
+                    <!-- Partner profile URL -->
+                    <template
+                      v-if="
+                        developer.partnerInfo &&
+                        developer.partnerInfo.profileUrl
+                      "
+                    >
+                      <li class="tw-inline-block tw-mr-2">
+                        <c-btn
+                          class="tw-inline-block"
+                          target="_blank"
+                          :href="developer.partnerInfo.profileUrl"
+                        >
+                          {{ 'Partner Profile' }}
+                          <c-icon
+                            icon="external-link"
+                            class="tw-w-3 tw-h-3 tw-text-grey-dark tw-ml-1"
+                            :size="null"
+                          />
+                        </c-btn>
+                      </li>
+                    </template>
+                  </ul>
+                </div>
+              </template>
+            </div>
+          </div>
         </template>
-        <template v-else>
-            <spinner></spinner>
-        </template>
-    </div>
+      </plugin-index>
+    </template>
+    <template v-else>
+      <c-spinner />
+    </template>
+  </div>
 </template>
 
 <script>
-    import {mapState} from 'vuex'
-    import PluginIndex from '../../components/PluginIndex'
+  import {mapState} from 'vuex';
+  import PluginIndex from '../../components/PluginIndex';
+  import PartnerBadge from '../../components/partner/PartnerBadge';
 
-    export default {
-        data() {
-            return {
-                loading: true,
-            }
-        },
+  export default {
+    data() {
+      return {
+        loading: true,
+      };
+    },
 
-        components: {
-            PluginIndex,
-        },
+    components: {
+      PartnerBadge,
+      PluginIndex,
+    },
 
-        computed: {
-            ...mapState({
-                developer: state => state.pluginStore.developer,
-                plugins: state => state.pluginStore.plugins,
-            }),
+    computed: {
+      ...mapState({
+        developer: (state) => state.pluginStore.developer,
+        plugins: (state) => state.pluginStore.plugins,
+      }),
 
-            requestData() {
-                return {
-                    developerId: this.$route.params.id,
-                }
-            },
-        },
+      requestData() {
+        return {
+          developerId: this.$route.params.id,
+        };
+      },
+    },
 
-        mounted() {
-            const developerId = this.$route.params.id
+    mounted() {
+      const developerId = this.$route.params.id;
 
-            // load developer details
-            this.$store.dispatch('pluginStore/getDeveloper', developerId)
-                .then(() => {
-                    this.loading = false
-                })
-                .catch(() => {
-                    this.loading = false
-                })
-        },
-    }
+      // load developer details
+      this.$store
+        .dispatch('pluginStore/getDeveloper', developerId)
+        .then(() => {
+          this.loading = false;
+        })
+        .catch(() => {
+          this.loading = false;
+        });
+    },
+  };
 </script>
-
-<style lang="scss" scoped>
-    .developer-card {
-        .avatar {
-            width: 120px;
-            height: 120px;
-        }
-
-        h1 {
-            border-bottom: 0;
-        }
-    }
-</style>

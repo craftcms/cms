@@ -1,0 +1,44 @@
+{% extends "_layouts/cp" %}
+
+{% set title = 'Plugin Store'|t('app') %}
+
+{% block actionButton %}
+    <div id="pluginstore-actions-spinner" class="spinner lg hidden"></div>
+
+    <div id="pluginstore-actions" class="hidden">
+
+        <a id="cart-button" role="button" tabindex="0">{{ svg('@appicons/shopping-cart.svg', namespace=true) }} <span class="badge">0</span></a>
+
+        <a id="craftid-account" class="menubtn hidden"><span class="photo">{{ svg('@appicons/craftid.svg', namespace=true) }}</span><span class="label">Account</span></a>
+
+        <div class="menu">
+            <ul>
+                <li><a href="{{ craft.cp.craftIdAccountUrl() }}" rel="noopener" target="_blank">{{ "Manage your Craft ID"|t('app') }}</a></li>
+                {#
+                <li>
+                    <form method="post" id="disconnect">
+                        {{ csrfInput() }}
+                        {{ actionInput('plugin-store/disconnect') }}
+                        <a onclick="document.getElementById('disconnect').submit();">{{ "Sign out from Craft ID"|t('app') }}</a>
+                    </form>
+                </li>
+                #}
+            </ul>
+        </div>
+
+        {#
+        <form id="craftid-connect-form" method="post">
+            {{ csrfInput() }}
+            {{ actionInput('plugin-store/connect') }}
+            <div class="ssl-status light" title="{{ craft.app.request.isSecureConnection ? "Your connection is secure"|t('app') : "Your connection is insecure"|t('app') }}" aria-label="{{ craft.app.request.isSecureConnection ? "Your connection is secure"|t('app') : "Your connection is insecure"|t('app') }}">
+                <i class="{{ craft.app.request.isSecureConnection ? "secure" : "insecure" }} icon"></i>
+            </div>
+            <a onclick="document.getElementById('craftid-connect-form').submit();">{{ 'Sign into Craft ID'|t('app') }}</a>
+        </form>
+        #}
+    </div>
+{% endblock %}
+
+{% set content %}
+    <div id="app"></div>
+{% endset %}

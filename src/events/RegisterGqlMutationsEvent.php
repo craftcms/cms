@@ -20,5 +20,5 @@ class RegisterGqlMutationsEvent extends Event
     /**
      * @var array[] List of GraphQL mutation definitions
      */
-    public $mutations = [];
+    public array $mutations = [];
 }

@@ -8,11 +8,16 @@
 namespace craft\services;
 
 use Craft;
+use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
+use Exception;
 use GuzzleHttp\Exception\GuzzleException;
+use ReflectionClass;
+use ReflectionException;
 use yii\base\Component;
+use yii\web\AssetBundle;
 
 /**
  * Webpack service.
@@ -27,42 +32,64 @@ class Webpack extends Component
     /**
      * @var array Dev servers public addresses
      */
-    private $_devServers = [];
+    private array $_devServers = [];
 
     /**
      * @var array Dev servers running statuses
      */
-    private $_isDevServerRunning = [];
+    private array $_isDevServerRunning = [];
 
     /**
      * @var array
      */
-    private $_envFileVariables = [];
+    private array $_envFileVariables = [];
 
     /**
      * @var array
      */
-    private $_serverResponse = [];
+    private array $_serverResponse = [];
+
+    /**
+     * @var boolean[]
+     */
+    private array $_checkedEnvDirs = [];
 
     /**
      * Returns the environment file.
      *
      * @param string $class
+     * @phpstan-param class-string<AssetBundle> $class
      * @return string|null
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     private function _getEnvFilePath(string $class): ?string
     {
-        $assetPath = $this->_getDirectory($class) . DIRECTORY_SEPARATOR . '.env';
-        $rootPath = FileHelper::normalizePath(Craft::getAlias('@craft') . DIRECTORY_SEPARATOR . '..');
-        $rootPath .= DIRECTORY_SEPARATOR . '.env';
+        $assetDir = $this->_getDirectory($class);
 
-        if (file_exists($assetPath)) {
-            return $assetPath;
-        }
+        // Search up the directory tree for the .env file in $assetPath
+        while ($assetDir) {
+            $assetDir = FileHelper::normalizePath($assetDir);
+            $assetPath = $assetDir . DIRECTORY_SEPARATOR . '.env';
 
-        if (file_exists($rootPath)) {
-            return $rootPath;
+            if (!isset($this->_checkedEnvDirs[$assetDir])) {
+                // Make sure it's within the allowed base paths
+                if (!App::isPathAllowed($assetDir)) {
+                    $this->_checkedEnvDirs[$assetDir] = false;
+                    break;
+                }
+
+                $this->_checkedEnvDirs[$assetDir] = file_exists($assetPath);
+            }
+
+            if ($this->_checkedEnvDirs[$assetDir]) {
+                return $assetPath;
+            }
+
+            if ($assetDir === DIRECTORY_SEPARATOR || $assetDir === dirname($assetDir)) {
+                break;
+            }
+
+            $assetDir = dirname($assetDir);
         }
 
         return null;
@@ -70,12 +97,13 @@ class Webpack extends Component
 
     /**
      * @param string $class
+     * @phpstan-param class-string<AssetBundle> $class
      * @return string
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     private function _getDirectory(string $class): string
     {
-        $reflector = new \ReflectionClass($class);
+        $reflector = new ReflectionClass($class);
         $dir = dirname($reflector->getFileName());
 
         return FileHelper::normalizePath($dir);
@@ -85,8 +113,9 @@ class Webpack extends Component
      * Load the environment variables.
      *
      * @param string $class
+     * @phpstan-param class-string<AssetBundle> $class
      * @return array|null
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     private function _getEnvVars(string $class): ?array
     {
@@ -119,8 +148,9 @@ class Webpack extends Component
 
     /**
      * @param string $class
+     * @phpstan-param class-string<AssetBundle> $class
      * @return string|null
-     * @throws \Exception
+     * @throws Exception
      */
     private function _getDevServerLoopback(string $class): ?string
     {
@@ -129,8 +159,9 @@ class Webpack extends Component
 
     /**
      * @param string $class
+     * @phpstan-param class-string<AssetBundle> $class
      * @return string|null
-     * @throws \Exception
+     * @throws Exception
      */
     private function _getDevServerPublic(string $class): ?string
     {
@@ -141,8 +172,9 @@ class Webpack extends Component
      * Get the dev server public path.
      *
      * @param string $class
+     * @phpstan-param class-string<AssetBundle> $class
      * @return string
-     * @throws \Exception
+     * @throws Exception
      */
     public function getDevServer(string $class): string
     {
@@ -170,7 +202,6 @@ class Webpack extends Component
      * @param string $loopback
      * @return bool
      * @throws GuzzleException
-     * @throws \ReflectionException
      */
     private function _isDevServerRunning(string $class, string $loopback): bool
     {
@@ -183,23 +214,21 @@ class Webpack extends Component
             return $this->_isDevServerRunning[$class] = $this->_matchAsset($this->_serverResponse[$loopback], $class);
         }
 
-        $client = Craft::createGuzzleClient();
+        // Make sure the request isn't too strict for people running the dev server using https and outside the container
+        $client = Craft::createGuzzleClient(['verify' => false]);
         try {
             $res = $client->get(StringHelper::ensureRight($loopback, '/') . 'which-asset');
             if ($res->getStatusCode() !== 200) {
-                throw new \Exception('Could not connect to dev server.');
+                throw new Exception('Could not connect to dev server.');
             }
 
-            if (!$body = $res->getBody()) {
-                throw new \Exception('Response has no body.');
-            }
-
+            $body = $res->getBody();
             $contents = $body->getContents();
             $json = json_decode($contents, true);
 
             $this->_serverResponse[$loopback] = $json;
             $this->_isDevServerRunning[$class] = $this->_matchAsset($this->_serverResponse[$loopback], $class);
-        } catch (\Exception $e) {
+        } catch (Exception) {
             return $this->_isDevServerRunning[$class] = false;
         }
 
@@ -209,6 +238,7 @@ class Webpack extends Component
     /**
      * @param array $json
      * @param string $class
+     * @phpstan-param class-string<AssetBundle> $class
      * @return bool
      */
     private function _matchAsset(array $json, string $class): bool

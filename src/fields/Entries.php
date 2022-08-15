@@ -8,13 +8,12 @@
 namespace craft\fields;
 
 use Craft;
-use craft\db\Table as DbTable;
+use craft\elements\conditions\ElementCondition;
 use craft\elements\db\EntryQuery;
 use craft\elements\Entry;
 use craft\gql\arguments\elements\Entry as EntryArguments;
 use craft\gql\interfaces\elements\Entry as EntryInterface;
 use craft\gql\resolvers\elements\Entry as EntryResolver;
-use craft\helpers\Db;
 use craft\helpers\Gql;
 use craft\helpers\Gql as GqlHelper;
 use craft\models\GqlSchema;
@@ -40,7 +39,7 @@ class Entries extends BaseRelationField
     /**
      * @inheritdoc
      */
-    protected static function elementType(): string
+    public static function elementType(): string
     {
         return Entry::class;
     }
@@ -73,11 +72,11 @@ class Entries extends BaseRelationField
      * @inheritdoc
      * @since 3.3.0
      */
-    public function getContentGqlType()
+    public function getContentGqlType(): Type|array
     {
         return [
             'name' => $this->handle,
-            'type' => Type::listOf(EntryInterface::getType()),
+            'type' => Type::nonNull(Type::listOf(EntryInterface::getType())),
             'args' => EntryArguments::getArguments(),
             'resolve' => EntryResolver::class . '::resolve',
             'complexity' => GqlHelper::relatedArgumentComplexity(GqlService::GRAPHQL_COMPLEXITY_EAGER_LOAD),
@@ -88,22 +87,39 @@ class Entries extends BaseRelationField
      * @inheritdoc
      * @since 3.3.0
      */
-    public function getEagerLoadingGqlConditions()
+    public function getEagerLoadingGqlConditions(): ?array
     {
         $allowedEntities = Gql::extractAllowedEntitiesFromSchema();
-        $allowedSectionUids = $allowedEntities['sections'] ?? [];
-        $allowedEntryTypeUids = $allowedEntities['entrytypes'] ?? [];
+        $sectionUids = $allowedEntities['sections'] ?? [];
+        $entryTypeUids = $allowedEntities['entrytypes'] ?? [];
 
-        if (empty($allowedSectionUids) || empty($allowedEntryTypeUids)) {
-            return false;
+        if (empty($sectionUids) || empty($entryTypeUids)) {
+            return null;
         }
 
-        $entryTypeIds = Db::idsByUids(DbTable::ENTRYTYPES, $allowedEntryTypeUids);
-        $sectionIds = Db::idsByUids(DbTable::SECTIONS, $allowedSectionUids);
+        $sectionsService = Craft::$app->getSections();
+        $sectionIds = array_filter(array_map(function(string $uid) use ($sectionsService) {
+            $section = $sectionsService->getSectionByUid($uid);
+            return $section->id ?? null;
+        }, $sectionUids));
+        $entryTypeIds = array_filter(array_map(function(string $uid) use ($sectionsService) {
+            $entryType = $sectionsService->getEntryTypeByUid($uid);
+            return $entryType->id ?? null;
+        }, $entryTypeUids));
 
         return [
-            'typeId' => array_values($entryTypeIds),
-            'sectionId' => array_values($sectionIds),
+            'sectionId' => $sectionIds,
+            'typeId' => $entryTypeIds,
         ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function createSelectionCondition(): ?ElementCondition
+    {
+        $condition = Entry::createCondition();
+        $condition->queryParams = ['section', 'sectionId'];
+        return $condition;
     }
 }

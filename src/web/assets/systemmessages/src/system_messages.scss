@@ -1,5 +1,5 @@
 @charset "UTF-8";
-@import "@craftcms/sass/mixins";
+@import '@craftcms/sass/mixins';
 
 .message {
   position: relative;
@@ -14,7 +14,7 @@
       @include right(15px);
       @include icon;
       content: 'edit';
-      color: $linkColor;
+      color: var(--link-color);
     }
   }
 
@@ -28,7 +28,7 @@
     font-size: 12px;
     line-height: 16px;
     font-family: Courier, monospace;
-    color: $mediumTextColor;
+    color: var(--medium-text-color);
   }
 }
 

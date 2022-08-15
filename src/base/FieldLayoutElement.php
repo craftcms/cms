@@ -7,40 +7,40 @@
 
 namespace craft\base;
 
-use yii\base\ArrayableTrait;
-use yii\base\BaseObject;
+use craft\models\FieldLayout;
 
 /**
  * FieldLayoutElement is the base class for classes representing field layout elements in terms of objects.
  *
+ * @property FieldLayout $layout The layout this element belongs to
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.0
  */
-abstract class FieldLayoutElement extends BaseObject implements FieldLayoutElementInterface
+abstract class FieldLayoutElement extends FieldLayoutComponent
 {
-    use ArrayableTrait {
-        fields as baseFields;
-    }
-
     /**
      * @var int The width (%) of the field
      */
-    public $width = 100;
+    public int $width = 100;
 
     /**
      * @inheritdoc
      */
-    public function fields()
+    public function fields(): array
     {
-        $fields = $this->baseFields();
+        $fields = parent::fields();
+
         if (!$this->hasCustomWidth()) {
             unset($fields['width']);
         }
+
         return $fields;
     }
 
     /**
-     * @inheritdoc
+     * Returns whether the element can have a custom width.
+     *
+     * @return bool
      */
     public function hasCustomWidth(): bool
     {
@@ -48,12 +48,22 @@ abstract class FieldLayoutElement extends BaseObject implements FieldLayoutEleme
     }
 
     /**
-     * @inheritdoc
+     * Returns the selector HTML that should be displayed within field layout designers.
+     *
+     * @return string
      */
-    public function settingsHtml()
-    {
-        return null;
-    }
+    abstract public function selectorHtml(): string;
+
+    /**
+     * Returns the element’s form HTMl.
+     *
+     * Return `null` if the element should not be present within the form.
+     *
+     * @param ElementInterface|null $element The element the form is being rendered for
+     * @param bool $static Whether the form should be static (non-interactive)
+     * @return string|null
+     */
+    abstract public function formHtml(?ElementInterface $element = null, bool $static = false): ?string;
 
     /**
      * Returns the element container HTML attributes.
@@ -62,7 +72,7 @@ abstract class FieldLayoutElement extends BaseObject implements FieldLayoutEleme
      * @param bool $static Whether the form should be static (non-interactive)
      * @return array
      */
-    protected function containerAttributes(ElementInterface $element = null, bool $static = false): array
+    protected function containerAttributes(?ElementInterface $element = null, bool $static = false): array
     {
         $attributes = [];
         if ($this->hasCustomWidth()) {

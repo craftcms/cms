@@ -10,6 +10,7 @@ namespace craft\helpers;
 use Craft;
 use craft\db\Query;
 use craft\db\Table;
+use Throwable;
 use yii\db\Exception;
 
 /**
@@ -25,10 +26,10 @@ class Sequence
      *
      * @param string $name The sequence name.
      * @param int|null $length The minimum string length that should be returned. (Numbers that are too short will be left-padded with `0`s.)
-     * @return integer|string
+     * @return int|string
      * @since 3.0.32
      */
-    public static function current(string $name, ?int $length = null)
+    public static function current(string $name, ?int $length = null): int|string
     {
         $next = self::_next($name);
         return self::_format($next - 1, $length);
@@ -39,11 +40,11 @@ class Sequence
      *
      * @param string $name The sequence name.
      * @param int|null $length The minimum string length that should be returned. (Numbers that are too short will be left-padded with `0`s.)
-     * @return integer|string
+     * @return int|string
      * @throws Exception if a lock could not be acquired for the sequence
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
-    public static function next(string $name, ?int $length = null)
+    public static function next(string $name, ?int $length = null): int|string
     {
         $mutex = Craft::$app->getMutex();
         $lockName = 'seq--' . str_replace(['/', '\\'], '-', $name);
@@ -59,15 +60,15 @@ class Sequence
                 Db::insert(Table::SEQUENCES, [
                     'name' => $name,
                     'next' => $num + 1,
-                ], false);
+                ]);
             } else {
                 Db::update(Table::SEQUENCES, [
                     'next' => $num + 1,
                 ], [
                     'name' => $name,
-                ], [], false);
+                ]);
             }
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $mutex->release($lockName);
             throw $e;
         }
@@ -96,12 +97,12 @@ class Sequence
      *
      * @param int $num
      * @param int|null $length
-     * @return integer|string
+     * @return int|string
      */
-    private static function _format(int $num, ?int $length = null)
+    private static function _format(int $num, ?int $length = null): int|string
     {
         if ($length !== null) {
-            return str_pad($num, $length, '0', STR_PAD_LEFT);
+            return str_pad((string)$num, $length, '0', STR_PAD_LEFT);
         }
         return $num;
     }

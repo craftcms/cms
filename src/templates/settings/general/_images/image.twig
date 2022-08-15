@@ -1,0 +1,27 @@
+{% requireEdition CraftPro %}
+
+<div class="cp-image cp-image-{{ imageType }}" data-type="{{ imageType }}">
+    <div class="cp-current-image"
+        {% if craft.rebrand.isImageUploaded(imageType) -%}
+            {% set image = craft.rebrand.getImageVariable(imageType) %}
+            {% if image.width > 0 and image.height > 0 %}
+                 style="background-image: url('{{ image.url|e('css') }}'); width: {{ image.width }}px; height: {{ image.height }}px;"
+                 data-url="{{ image.url }}"
+             {% endif %}
+        {%- endif %}>
+    </div>
+
+    <div class="cp-image-controls">
+        <input type="file" name="image" class="hidden" />
+        {% if craft.rebrand.isImageUploaded(imageType) %}
+            <div class="flex flex-nowrap">
+                <button type="button" class="btn upload">{% if imageType == 'logo' %}{{ block('changeLogoLabel') }}{% else %}{{ block('changeIconLabel') }}{% endif %}</button>
+                <button type="button" class="btn delete">{% if imageType == 'logo' %}{{ block('deleteLogoLabel') }}{% else %}{{ block('deleteIconLabel') }}{% endif %}</button>
+            </div>
+        {% else %}
+            <div class="flex flex-nowrap">
+                <button type="button" class="btn upload">{% if imageType == 'logo' %}{{ block('uploadLogoLabel') }}{% else %}{{ block('uploadIconLabel') }}{% endif %}</button>
+            </div>
+        {% endif %}
+    </div>
+</div>

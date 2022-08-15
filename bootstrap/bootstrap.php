@@ -7,6 +7,7 @@
  * @license https://craftcms.github.io/license/
  */
 
+use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\services\Config;
 use yii\base\ErrorException;
@@ -23,28 +24,8 @@ if (!isset($appType) || ($appType !== 'web' && $appType !== 'console')) {
     throw new Exception('$appType must be set to "web" or "console".');
 }
 
-$findConfig = function($constName, $argName) {
-    if (defined($constName)) {
-        return constant($constName);
-    }
-
-    if (!empty($_SERVER['argv'])) {
-        foreach ($_SERVER['argv'] as $key => $arg) {
-            if (strpos($arg, "--{$argName}=") !== false) {
-                $parts = explode('=', $arg);
-                $value = $parts[1];
-                unset($_SERVER['argv'][$key]);
-                return $value;
-            }
-        }
-    }
-
-    return null;
-};
-
-$findConfigPath = function($constName, $argName) use ($findConfig) {
-    $path = $findConfig($constName, $argName);
-    return $path ? realpath($path) : null;
+$findConfig = function($cliName, $envName) {
+    return App::cliOption($cliName, true) ?? App::env($envName);
 };
 
 $createFolder = function($path) {
@@ -62,6 +43,15 @@ $createFolder = function($path) {
         chmod($path, 0755);
         umask($oldumask);
     }
+};
+
+$findConfigPath = function($cliName, $envName) use ($findConfig, $createFolder) {
+    $path = $findConfig($cliName, $envName);
+    if (!$path) {
+        return null;
+    }
+    $createFolder($path);
+    return realpath($path);
 };
 
 $ensureFolderIsReadable = function($path, $writableToo = false) {
@@ -85,30 +75,32 @@ $ensureFolderIsReadable = function($path, $writableToo = false) {
 // -----------------------------------------------------------------------------
 
 // Set the vendor path. By default assume that it's 4 levels up from here
-$vendorPath = $findConfigPath('CRAFT_VENDOR_PATH', 'vendorPath') ?: dirname(__DIR__, 3);
+$vendorPath = $findConfigPath('--vendorPath', 'CRAFT_VENDOR_PATH') ?? dirname(__DIR__, 3);
 
 // Set the "project root" path that contains config/, storage/, etc. By default assume that it's up a level from vendor/.
-$rootPath = $findConfigPath('CRAFT_BASE_PATH', 'basePath') ?: dirname($vendorPath);
+$rootPath = $findConfigPath('--basePath', 'CRAFT_BASE_PATH') ?? dirname($vendorPath);
 
 // By default the remaining directories will be in the base directory
-$configPath = $findConfigPath('CRAFT_CONFIG_PATH', 'configPath') ?: $rootPath . DIRECTORY_SEPARATOR . 'config';
-$contentMigrationsPath = $findConfigPath('CRAFT_CONTENT_MIGRATIONS_PATH', 'contentMigrationsPath') ?: $rootPath . DIRECTORY_SEPARATOR . 'migrations';
-$storagePath = $findConfigPath('CRAFT_STORAGE_PATH', 'storagePath') ?: $rootPath . DIRECTORY_SEPARATOR . 'storage';
-$templatesPath = $findConfigPath('CRAFT_TEMPLATES_PATH', 'templatesPath') ?: $rootPath . DIRECTORY_SEPARATOR . 'templates';
-$translationsPath = $findConfigPath('CRAFT_TRANSLATIONS_PATH', 'translationsPath') ?: $rootPath . DIRECTORY_SEPARATOR . 'translations';
-$testsPath = $findConfigPath('CRAFT_TESTS_PATH', 'testsPath') ?: $rootPath . DIRECTORY_SEPARATOR . 'tests';
+$configPath = $findConfigPath('--configPath', 'CRAFT_CONFIG_PATH') ?? "$rootPath/config";
+$contentMigrationsPath = $findConfigPath('--contentMigrationsPath', 'CRAFT_CONTENT_MIGRATIONS_PATH') ?? "$rootPath/migrations";
+$storagePath = $findConfigPath('--storagePath', 'CRAFT_STORAGE_PATH') ?? "$rootPath/storage";
+$templatesPath = $findConfigPath('--templatesPath', 'CRAFT_TEMPLATES_PATH') ?? "$rootPath/templates";
+$translationsPath = $findConfigPath('--translationsPath', 'CRAFT_TRANSLATIONS_PATH') ?? "$rootPath/translations";
+$testsPath = $findConfigPath('--testsPath', 'CRAFT_TESTS_PATH') ?? "$rootPath/tests";
 
 // Set the environment
-$environment = $findConfig('CRAFT_ENVIRONMENT', 'env') ?: ($_SERVER['SERVER_NAME'] ?? null);
+$environment = $findConfig('--env', 'CRAFT_ENVIRONMENT') ?? $_SERVER['SERVER_NAME'] ?? null;
 
 // Validate the paths
 // -----------------------------------------------------------------------------
 
-if (!defined('CRAFT_LICENSE_KEY')) {
+if (!App::env('CRAFT_LICENSE_KEY') && !App::isEphemeral()) {
+    $licenseKeyPath = App::env('CRAFT_LICENSE_KEY_PATH');
+
     // Validate permissions on the license key file path (default config/) and storage/
-    if (defined('CRAFT_LICENSE_KEY_PATH')) {
-        $licensePath = dirname(CRAFT_LICENSE_KEY_PATH);
-        $licenseKeyName = basename(CRAFT_LICENSE_KEY_PATH);
+    if ($licenseKeyPath) {
+        $licensePath = dirname($licenseKeyPath);
+        $licenseKeyName = basename($licenseKeyPath);
     } else {
         $licensePath = $configPath;
         $licenseKeyName = 'license.key';
@@ -130,7 +122,7 @@ if (!defined('CRAFT_LICENSE_KEY')) {
             @file_put_contents($licenseFullPath, 'temp');
 
             // See if it worked.
-            if (!file_exists($licenseFullPath) || (file_exists($licenseFullPath) && file_get_contents($licenseFullPath) !== 'temp')) {
+            if (!file_exists($licenseFullPath) || file_get_contents($licenseFullPath) !== 'temp') {
                 // Set a 503 response header so things like Varnish won't cache a bad page.
                 http_response_code(503);
                 exit($licensePath . ' isn\'t writable by PHP. Please fix that.' . PHP_EOL);
@@ -139,25 +131,26 @@ if (!defined('CRAFT_LICENSE_KEY')) {
     }
 }
 
-if (!defined('CRAFT_EPHEMERAL') || CRAFT_EPHEMERAL === false) {
-    $ensureFolderIsReadable($storagePath, true);
+$ensureFolderIsReadable($storagePath, true);
 
-    // Create the storage/runtime/ folder if it doesn't already exist
-    $createFolder($storagePath . DIRECTORY_SEPARATOR . 'runtime');
-    $ensureFolderIsReadable($storagePath . DIRECTORY_SEPARATOR . 'runtime', true);
+// Create the storage/runtime/ folder if it doesn't already exist
+$createFolder($storagePath . DIRECTORY_SEPARATOR . 'runtime');
+$ensureFolderIsReadable($storagePath . DIRECTORY_SEPARATOR . 'runtime', true);
 
-    // Create the storage/logs/ folder if it doesn't already exist
+// Create the storage/logs/ folder if it doesn't already exist
+if (!App::isStreamLog()) {
     $createFolder($storagePath . DIRECTORY_SEPARATOR . 'logs');
     $ensureFolderIsReadable($storagePath . DIRECTORY_SEPARATOR . 'logs', true);
 }
 
 // Log errors to storage/logs/phperrors.log or php://stderr
-if (!defined('CRAFT_LOG_PHP_ERRORS') || CRAFT_LOG_PHP_ERRORS) {
-    ini_set('log_errors', 1);
-    ini_set('error_log', $storagePath . DIRECTORY_SEPARATOR . 'logs' . DIRECTORY_SEPARATOR . 'phperrors.log');
+if (!App::parseBooleanEnv('$CRAFT_LOG_PHP_ERRORS')) {
+    ini_set('log_errors', '1');
 
-    if (defined('CRAFT_STREAM_LOG') && CRAFT_STREAM_LOG) {
+    if (App::isStreamLog()) {
         ini_set('error_log', 'php://stderr');
+    } else {
+        ini_set('error_log', $storagePath . DIRECTORY_SEPARATOR . 'logs' . DIRECTORY_SEPARATOR . 'phperrors.log');
     }
 }
 
@@ -175,14 +168,14 @@ $generalConfig = $configService->getConfigFromFile('general');
 // Determine if Craft is running in Dev Mode
 // -----------------------------------------------------------------------------
 
-$devMode = ArrayHelper::getValue($generalConfig, 'devMode', false);
+$devMode = App::env('CRAFT_DEV_MODE') ?? $generalConfig['devMode'] ?? false;
 
 if ($devMode) {
-    ini_set('display_errors', 1);
+    ini_set('display_errors', '1');
     defined('YII_DEBUG') || define('YII_DEBUG', true);
     defined('YII_ENV') || define('YII_ENV', 'dev');
 } else {
-    ini_set('display_errors', 0);
+    ini_set('display_errors', '0');
     defined('YII_DEBUG') || define('YII_DEBUG', false);
     defined('YII_ENV') || define('YII_ENV', 'prod');
 }

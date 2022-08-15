@@ -1,0 +1,49 @@
+{%- set options = options ?? [] %}
+{%- set values = values ?? [] -%}
+
+{%- set showAllOption = showAllOption ?? false %}
+{%- if showAllOption %}
+    {%- set allLabel = allLabel ?? "All"|t('app') %}
+    {%- set allValue = allValue ?? '*' %}
+    {%- set allChecked = (values == allValue) %}
+{%- endif %}
+
+{% set containerAttributes = {
+    class: ['checkbox-select']|merge((class ?? [])|explodeClass),
+}|merge(containerAttributes ?? [], recursive=true) %}
+
+{%- if block('attr') is defined %}
+    {%- set containerAttributes = containerAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
+{% endif %}
+
+{% tag 'fieldset' with containerAttributes %}
+    {%- if showAllOption %}
+        <div>
+            {% include "_includes/forms/checkbox" with {
+                describedBy: describedBy ?? false,
+                class: 'all',
+                label: raw("<b>#{allLabel}</b>"),
+                name: name ?? null,
+                value: allValue,
+                checked: allChecked,
+                autofocus: (autofocus ?? false) and not craft.app.request.isMobileBrowser(true),
+            } only %}
+        </div>
+    {%- elseif name is defined and (name|length < 3 or name|slice(-2) != '[]') %}
+        {{- hiddenInput(name, '') }}
+    {%- endif %}
+    {%- for key, option in options %}
+        {%- if option is not iterable %}
+            {%- set option = {label: option, value: key} %}
+        {%- endif %}
+        {% if not showAllOption or option.value is not defined or option.value != allValue %}
+            <div>
+                {% include "_includes/forms/checkbox" with {
+                    name: (name ?? false) ? "#{name}[]" : null,
+                    checked: ((showAllOption and allChecked) or (option.value is defined and option.value in values)),
+                    disabled: (showAllOption and allChecked)
+                }|merge(option) only %}
+            </div>
+        {% endif %}
+    {% endfor %}
+{% endtag %}

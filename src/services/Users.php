@@ -8,7 +8,6 @@
 namespace craft\services;
 
 use Craft;
-use craft\base\VolumeInterface;
 use craft\db\Query;
 use craft\db\Table;
 use craft\elements\Asset;
@@ -18,7 +17,6 @@ use craft\errors\InvalidSubpathException;
 use craft\errors\UserNotFoundException;
 use craft\errors\VolumeException;
 use craft\events\ConfigEvent;
-use craft\events\FieldEvent;
 use craft\events\UserAssignGroupEvent;
 use craft\events\UserEvent;
 use craft\events\UserGroupsAssignEvent;
@@ -32,12 +30,15 @@ use craft\helpers\StringHelper;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
 use craft\models\FieldLayout;
+use craft\models\Volume;
 use craft\records\User as UserRecord;
 use craft\web\Request;
 use DateTime;
+use DateTimeZone;
+use Throwable;
 use yii\base\Component;
+use yii\base\Exception;
 use yii\base\InvalidArgumentException;
-use yii\db\Exception as DbException;
 
 /**
  * The Users service provides APIs for managing users.
@@ -50,79 +51,94 @@ use yii\db\Exception as DbException;
 class Users extends Component
 {
     /**
-     * @event UserEvent The event that is triggered before a user's email is verified.
+     * @event UserEvent The event that is triggered before a user’s email is verified.
      */
-    const EVENT_BEFORE_VERIFY_EMAIL = 'beforeVerifyEmail';
+    public const EVENT_BEFORE_VERIFY_EMAIL = 'beforeVerifyEmail';
 
     /**
-     * @event UserEvent The event that is triggered after a user's email is verified.
+     * @event UserEvent The event that is triggered after a user’s email is verified.
      */
-    const EVENT_AFTER_VERIFY_EMAIL = 'afterVerifyEmail';
+    public const EVENT_AFTER_VERIFY_EMAIL = 'afterVerifyEmail';
 
     /**
      * @event UserEvent The event that is triggered before a user is activated.
      *
      * You may set [[\craft\events\CancelableEvent::$isValid]] to `false` to prevent the user from getting activated.
      */
-    const EVENT_BEFORE_ACTIVATE_USER = 'beforeActivateUser';
+    public const EVENT_BEFORE_ACTIVATE_USER = 'beforeActivateUser';
 
     /**
      * @event UserEvent The event that is triggered after a user is activated.
      */
-    const EVENT_AFTER_ACTIVATE_USER = 'afterActivateUser';
+    public const EVENT_AFTER_ACTIVATE_USER = 'afterActivateUser';
+
+    /**
+     * @event UserEvent The event that is triggered before a user is deactivated.
+     *
+     * You may set [[UserEvent::isValid]] to `false` to prevent the user from getting deactivated.
+     *
+     * @since 4.0.0
+     */
+    public const EVENT_BEFORE_DEACTIVATE_USER = 'beforeDeactivateUser';
+
+    /**
+     * @event UserEvent The event that is triggered after a user is deactivated.
+     * @since 4.0.0
+     */
+    public const EVENT_AFTER_DEACTIVATE_USER = 'afterDeactivateUser';
 
     /**
      * @event UserEvent The event that is triggered after a user is locked.
      */
-    const EVENT_AFTER_LOCK_USER = 'afterLockUser';
+    public const EVENT_AFTER_LOCK_USER = 'afterLockUser';
 
     /**
      * @event UserEvent The event that is triggered before a user is unlocked.
      *
      * You may set [[\craft\events\CancelableEvent::$isValid]] to `false` to prevent the user from getting unlocked.
      */
-    const EVENT_BEFORE_UNLOCK_USER = 'beforeUnlockUser';
+    public const EVENT_BEFORE_UNLOCK_USER = 'beforeUnlockUser';
 
     /**
      * @event UserEvent The event that is triggered after a user is unlocked.
      */
-    const EVENT_AFTER_UNLOCK_USER = 'afterUnlockUser';
+    public const EVENT_AFTER_UNLOCK_USER = 'afterUnlockUser';
 
     /**
      * @event UserEvent The event that is triggered before a user is suspended.
      *
      * You may set [[\craft\events\CancelableEvent::$isValid]] to `false` to prevent the user from getting suspended.
      */
-    const EVENT_BEFORE_SUSPEND_USER = 'beforeSuspendUser';
+    public const EVENT_BEFORE_SUSPEND_USER = 'beforeSuspendUser';
 
     /**
      * @event UserEvent The event that is triggered after a user is suspended.
      */
-    const EVENT_AFTER_SUSPEND_USER = 'afterSuspendUser';
+    public const EVENT_AFTER_SUSPEND_USER = 'afterSuspendUser';
 
     /**
      * @event UserEvent The event that is triggered before a user is unsuspended.
      *
      * You may set [[\craft\events\CancelableEvent::isValid]] to `false` to prevent the user from getting unsuspended.
      */
-    const EVENT_BEFORE_UNSUSPEND_USER = 'beforeUnsuspendUser';
+    public const EVENT_BEFORE_UNSUSPEND_USER = 'beforeUnsuspendUser';
 
     /**
      * @event UserEvent The event that is triggered after a user is unsuspended.
      */
-    const EVENT_AFTER_UNSUSPEND_USER = 'afterUnsuspendUser';
+    public const EVENT_AFTER_UNSUSPEND_USER = 'afterUnsuspendUser';
 
     /**
      * @event UserGroupsAssignEvent The event that is triggered before a user is assigned to some user groups.
      *
      * You may set [[\craft\events\CancelableEvent::$isValid]] to `false` to prevent the user from getting assigned to the groups.
      */
-    const EVENT_BEFORE_ASSIGN_USER_TO_GROUPS = 'beforeAssignUserToGroups';
+    public const EVENT_BEFORE_ASSIGN_USER_TO_GROUPS = 'beforeAssignUserToGroups';
 
     /**
      * @event UserGroupsAssignEvent The event that is triggered after a user is assigned to some user groups.
      */
-    const EVENT_AFTER_ASSIGN_USER_TO_GROUPS = 'afterAssignUserToGroups';
+    public const EVENT_AFTER_ASSIGN_USER_TO_GROUPS = 'afterAssignUserToGroups';
 
     /**
      * @event UserAssignGroupEvent The event that is triggered before a user is assigned to the default user group.
@@ -130,28 +146,49 @@ class Users extends Component
      * You may set [[\craft\events\CancelableEvent::$isValid]] to `false` to prevent the user from getting assigned to the default
      * user group.
      */
-    const EVENT_BEFORE_ASSIGN_USER_TO_DEFAULT_GROUP = 'beforeAssignUserToDefaultGroup';
+    public const EVENT_BEFORE_ASSIGN_USER_TO_DEFAULT_GROUP = 'beforeAssignUserToDefaultGroup';
 
     /**
      * @event UserAssignGroupEvent The event that is triggered after a user is assigned to the default user group.
      */
-    const EVENT_AFTER_ASSIGN_USER_TO_DEFAULT_GROUP = 'afterAssignUserToDefaultGroup';
+    public const EVENT_AFTER_ASSIGN_USER_TO_DEFAULT_GROUP = 'afterAssignUserToDefaultGroup';
 
     /**
-     * @since 3.5.0
+     * Returns a user by an email address, creating one if none already exists.
+     *
+     * @param string $email
+     * @return User
+     * @throws InvalidArgumentException if `$email` is invalid
+     * @throws Exception if the user couldn’t be saved for some unexpected reason
+     * @since 4.0.0
      */
-    const CONFIG_USERS_KEY = 'users';
+    public function ensureUserByEmail(string $email): User
+    {
+        /** @var User|null $user */
+        $user = User::find()
+            ->email($email)
+            ->status(null)
+            ->one();
 
-    /**
-     * @since 3.1.0
-     */
-    const CONFIG_USERLAYOUT_KEY = self::CONFIG_USERS_KEY . '.' . 'fieldLayouts';
+        if (!$user) {
+            $user = new User();
+            $user->email = $email;
+            if (!$user->validate(['email'])) {
+                throw new InvalidArgumentException($user->getFirstError('email'));
+            }
+            if (!Craft::$app->getElements()->saveElement($user, false)) {
+                throw new Exception('Unable to save user: ' . implode(', ', $user->getFirstErrors()));
+            }
+        }
+
+        return $user;
+    }
 
     /**
      * @var array Cached user preferences.
      * @see getUserPreferences()
      */
-    private $_userPreferences = [];
+    private array $_userPreferences = [];
 
     /**
      * Returns a user by their ID.
@@ -163,9 +200,8 @@ class Users extends Component
      * @param int $userId The user’s ID.
      * @return User|null The user with the given ID, or `null` if a user could not be found.
      */
-    public function getUserById(int $userId)
+    public function getUserById(int $userId): ?User
     {
-        /** @noinspection PhpIncompatibleReturnTypeInspection */
         return Craft::$app->getElements()->getElementById($userId, User::class);
     }
 
@@ -179,11 +215,11 @@ class Users extends Component
      * @param string $usernameOrEmail The user’s username or email.
      * @return User|null The user with the given username/email, or `null` if a user could not be found.
      */
-    public function getUserByUsernameOrEmail(string $usernameOrEmail)
+    public function getUserByUsernameOrEmail(string $usernameOrEmail): ?User
     {
         $query = User::find()
             ->addSelect(['users.password', 'users.passwordResetRequired'])
-            ->anyStatus();
+            ->status(null);
 
         if (Craft::$app->getDb()->getIsMysql()) {
             $query
@@ -204,6 +240,7 @@ class Users extends Component
                 ]);
         }
 
+        /** @var User|null */
         return $query->one();
     }
 
@@ -217,11 +254,12 @@ class Users extends Component
      * @param string $uid The user’s UID.
      * @return User|null The user with the given UID, or `null` if a user could not be found.
      */
-    public function getUserByUid(string $uid)
+    public function getUserByUid(string $uid): ?User
     {
+        /** @var User|null */
         return User::find()
             ->uid($uid)
-            ->anyStatus()
+            ->status(null)
             ->one();
     }
 
@@ -229,7 +267,7 @@ class Users extends Component
      * Returns whether a verification code is valid for the given user.
      *
      * This method first checks if the code has expired past the
-     * <config3:verificationCodeDuration> config setting. If it is still valid,
+     * <config4:verificationCodeDuration> config setting. If it is still valid,
      * then, the checks the validity of the contents of the code.
      *
      * @param User $user The user to check the code for.
@@ -243,7 +281,7 @@ class Users extends Component
             $userRecord = $this->_getUserRecordById($user->id);
             $user->verificationCode = $userRecord->verificationCode;
             $user->verificationCodeIssuedDate = $userRecord->verificationCodeIssuedDate
-                ? new \DateTime($userRecord->verificationCodeIssuedDate, new \DateTimeZone('UTC'))
+                ? new DateTime($userRecord->verificationCodeIssuedDate, new DateTimeZone('UTC'))
                 : null;
 
             if (!$user->verificationCode || !$user->verificationCodeIssuedDate) {
@@ -257,7 +295,7 @@ class Users extends Component
         $interval = DateTimeHelper::secondsToInterval($generalConfig->verificationCodeDuration);
         $minCodeIssueDate->sub($interval);
 
-        // Make sure it's not expired
+        // Make sure it’s not expired
         if ($user->verificationCodeIssuedDate < $minCodeIssueDate) {
             $userRecord = $userRecord ?? $this->_getUserRecordById($user->id);
             $userRecord->verificationCode = $user->verificationCode = null;
@@ -270,7 +308,7 @@ class Users extends Component
 
         try {
             $valid = Craft::$app->getSecurity()->validatePassword($code, $user->verificationCode);
-        } catch (InvalidArgumentException $e) {
+        } catch (InvalidArgumentException) {
             $valid = false;
         }
 
@@ -291,18 +329,13 @@ class Users extends Component
     public function getUserPreferences(int $userId): array
     {
         if (!isset($this->_userPreferences[$userId])) {
-            // TODO: Remove try/catch after next breakpoint
-            try {
-                $preferences = (new Query())
-                    ->select(['preferences'])
-                    ->from([Table::USERPREFERENCES])
-                    ->where(['userId' => $userId])
-                    ->scalar();
+            $preferences = (new Query())
+                ->select(['preferences'])
+                ->from([Table::USERPREFERENCES])
+                ->where(['userId' => $userId])
+                ->scalar();
 
-                $this->_userPreferences[$userId] = $preferences ? Json::decode($preferences) : [];
-            } catch (DbException $e) {
-                $this->_userPreferences[$userId] = [];
-            }
+            $this->_userPreferences[$userId] = $preferences ? Json::decode($preferences) : [];
         }
 
         return $this->_userPreferences[$userId];
@@ -314,16 +347,15 @@ class Users extends Component
      * @param User $user The user
      * @param array $preferences The user’s new preferences
      */
-    public function saveUserPreferences(User $user, array $preferences)
+    public function saveUserPreferences(User $user, array $preferences): void
     {
         // Merge in any other saved preferences
         $preferences += $this->getUserPreferences($user->id);
 
         Db::upsert(Table::USERPREFERENCES, [
             'userId' => $user->id,
-        ], [
             'preferences' => Json::encode($preferences),
-        ], [], false);
+        ]);
 
         $this->_userPreferences[$user->id] = $preferences;
     }
@@ -336,7 +368,7 @@ class Users extends Component
      * @param mixed $default The default value, if the preference hasn’t been set
      * @return mixed The user’s preference
      */
-    public function getUserPreference(int $userId, string $key, $default = null)
+    public function getUserPreference(int $userId, string $key, mixed $default = null): mixed
     {
         $preferences = $this->getUserPreferences($userId);
         return $preferences[$key] ?? $default;
@@ -437,6 +469,33 @@ class Users extends Component
     }
 
     /**
+     * Removes credentials for a user.
+     *
+     * @param User $user The user that should have credentials removed.
+     * @return bool Whether the user’s credentials were successfully removed.
+     * @throws UserNotFoundException
+     * @since 4.0.0
+     */
+    public function removeCredentials(User $user): bool
+    {
+        $userRecord = $this->_getUserRecordById($user->id);
+        $userRecord->active = false;
+        $userRecord->pending = false;
+        $userRecord->password = null;
+        $userRecord->verificationCode = null;
+
+        if (!$userRecord->save()) {
+            return false;
+        }
+
+        $user->active = false;
+        $user->pending = false;
+        $user->password = null;
+        $user->verificationCode = null;
+        return true;
+    }
+
+    /**
      * Crops and saves a user’s photo.
      *
      * @param User $user the user.
@@ -445,7 +504,7 @@ class Users extends Component
      * @throws ImageException if the file provided is not a manipulatable image
      * @throws VolumeException if the user photo Volume is not provided or is invalid
      */
-    public function saveUserPhoto(string $fileLocation, User $user, string $filename = null)
+    public function saveUserPhoto(string $fileLocation, User $user, ?string $filename = null): void
     {
         $filename = AssetsHelper::prepareAssetName($filename ?? pathinfo($fileLocation, PATHINFO_BASENAME), true, true);
 
@@ -466,7 +525,7 @@ class Users extends Component
             $photo = new Asset();
             $photo->setScenario(Asset::SCENARIO_CREATE);
             $photo->tempFilePath = $fileLocation;
-            $photo->filename = $filename;
+            $photo->setFilename($filename);
             $photo->newFolderId = $folderId;
             $photo->setVolumeId($volume->id);
 
@@ -485,7 +544,7 @@ class Users extends Component
      * @param User $user
      * @since 3.5.14
      */
-    public function relocateUserPhoto(User $user)
+    public function relocateUserPhoto(User $user): void
     {
         if (!$user->photoId || ($photo = $user->getPhoto()) === null) {
             return;
@@ -507,10 +566,10 @@ class Users extends Component
     /**
      * Returns the user photo volume.
      *
-     * @return VolumeInterface
+     * @return Volume
      * @throws VolumeException if no user photo volume is set, or it's set to an invalid volume UID
      */
-    private function _userPhotoVolume(): VolumeInterface
+    private function _userPhotoVolume(): Volume
     {
         $uid = Craft::$app->getProjectConfig()->get('users.photoVolumeUid');
         if (!$uid) {
@@ -529,24 +588,24 @@ class Users extends Component
      * Returns the folder that a user’s photo should be stored.
      *
      * @param User $user
-     * @param VolumeInterface $volume The user photo volume
+     * @param Volume $volume The user photo volume
      * @return int
      * @throws VolumeException if the user photo volume doesn’t exist
      * @throws InvalidSubpathException if the user photo subpath can’t be resolved
      */
-    private function _userPhotoFolderId(User $user, VolumeInterface $volume): int
+    private function _userPhotoFolderId(User $user, Volume $volume): int
     {
         $subpath = (string)Craft::$app->getProjectConfig()->get('users.photoSubpath');
 
         if ($subpath !== '') {
             try {
                 $subpath = Craft::$app->getView()->renderObjectTemplate($subpath, $user);
-            } catch (\Throwable $e) {
+            } catch (Throwable) {
                 throw new InvalidSubpathException($subpath);
             }
         }
 
-        return Craft::$app->getAssets()->ensureFolderByFullPathAndVolume($subpath, $volume);
+        return Craft::$app->getAssets()->ensureFolderByFullPathAndVolume($subpath, $volume)->id;
     }
 
     /**
@@ -571,13 +630,13 @@ class Users extends Component
      *
      * @param User $user The user
      */
-    public function handleValidLogin(User $user)
+    public function handleValidLogin(User $user): void
     {
         $now = DateTimeHelper::currentUTCDateTime();
 
         // Update the User record
         $userRecord = $this->_getUserRecordById($user->id);
-        $userRecord->lastLoginDate = $now;
+        $userRecord->lastLoginDate = Db::prepareDateForDb($now);
         $userRecord->invalidLoginWindowStart = null;
         $userRecord->invalidLoginCount = null;
 
@@ -600,12 +659,12 @@ class Users extends Component
      *
      * @param User $user The user
      */
-    public function handleInvalidLogin(User $user)
+    public function handleInvalidLogin(User $user): void
     {
         $userRecord = $this->_getUserRecordById($user->id);
         $now = DateTimeHelper::currentUTCDateTime();
 
-        $userRecord->lastInvalidLoginDate = $now;
+        $userRecord->lastInvalidLoginDate = Db::prepareDateForDb($now);
 
         if (Craft::$app->getConfig()->getGeneral()->storeUserIps) {
             $userRecord->lastLoginAttemptIp = Craft::$app->getRequest()->getUserIP();
@@ -624,14 +683,14 @@ class Users extends Component
                     $userRecord->locked = true;
                     $userRecord->invalidLoginCount = null;
                     $userRecord->invalidLoginWindowStart = null;
-                    $userRecord->lockoutDate = $now;
+                    $userRecord->lockoutDate = Db::prepareDateForDb($now);
 
                     $user->locked = true;
                     $user->lockoutDate = $now;
                 }
             } else {
                 // Start the invalid login window and counter
-                $userRecord->invalidLoginWindowStart = $now;
+                $userRecord->invalidLoginWindowStart = Db::prepareDateForDb($now);
                 $userRecord->invalidLoginCount = 1;
             }
 
@@ -660,7 +719,7 @@ class Users extends Component
      *
      * @param User $user The user.
      * @return bool Whether the user was activated successfully.
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     public function activateUser(User $user): bool
     {
@@ -677,18 +736,33 @@ class Users extends Component
         $transaction = Craft::$app->getDb()->beginTransaction();
         try {
             $userRecord = $this->_getUserRecordById($user->id);
+            $userRecord->active = true;
             $userRecord->pending = false;
+            $userRecord->locked = false;
+            $userRecord->suspended = false;
             $userRecord->verificationCode = null;
             $userRecord->verificationCodeIssuedDate = null;
+            $userRecord->invalidLoginWindowStart = null;
+            $userRecord->invalidLoginCount = null;
+            $userRecord->lastInvalidLoginDate = null;
+            $userRecord->lockoutDate = null;
             $userRecord->save();
 
+            $user->active = true;
             $user->pending = false;
+            $user->locked = false;
+            $user->suspended = false;
+            $user->verificationCode = null;
+            $user->verificationCodeIssuedDate = null;
+            $user->invalidLoginCount = null;
+            $user->lastInvalidLoginDate = null;
+            $user->lockoutDate = null;
 
             // If they have an unverified email address, now is the time to set it to their primary email address
             $this->verifyEmailForUser($user);
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }
@@ -696,6 +770,70 @@ class Users extends Component
         // Fire an 'afterActivateUser' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_ACTIVATE_USER)) {
             $this->trigger(self::EVENT_AFTER_ACTIVATE_USER, new UserEvent([
+                'user' => $user,
+            ]));
+        }
+
+        // Invalidate caches
+        Craft::$app->getElements()->invalidateCachesForElement($user);
+
+        return true;
+    }
+
+    /**
+     * Deactivates a user.
+     *
+     * @param User $user The user.
+     * @return bool Whether the user was deactivated successfully.
+     * @throws Throwable if reasons
+     * @since 4.0.0
+     */
+    public function deactivateUser(User $user): bool
+    {
+        // Fire a 'beforeActivateUser' event
+        $event = new UserEvent([
+            'user' => $user,
+        ]);
+        $this->trigger(self::EVENT_BEFORE_DEACTIVATE_USER, $event);
+
+        if (!$event->isValid) {
+            return false;
+        }
+
+        $transaction = Craft::$app->getDb()->beginTransaction();
+        try {
+            $userRecord = $this->_getUserRecordById($user->id);
+            $userRecord->active = false;
+            $userRecord->pending = false;
+            $userRecord->locked = false;
+            $userRecord->suspended = false;
+            $userRecord->verificationCode = null;
+            $userRecord->verificationCodeIssuedDate = null;
+            $userRecord->invalidLoginWindowStart = null;
+            $userRecord->invalidLoginCount = null;
+            $userRecord->lastInvalidLoginDate = null;
+            $userRecord->lockoutDate = null;
+            $userRecord->save();
+
+            $user->active = false;
+            $user->pending = false;
+            $user->locked = false;
+            $user->suspended = false;
+            $user->verificationCode = null;
+            $user->verificationCodeIssuedDate = null;
+            $user->invalidLoginCount = null;
+            $user->lastInvalidLoginDate = null;
+            $user->lockoutDate = null;
+
+            $transaction->commit();
+        } catch (Throwable $e) {
+            $transaction->rollBack();
+            throw $e;
+        }
+
+        // Fire an 'afterActivateUser' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_DEACTIVATE_USER)) {
+            $this->trigger(self::EVENT_AFTER_DEACTIVATE_USER, new UserEvent([
                 'user' => $user,
             ]));
         }
@@ -734,7 +872,7 @@ class Users extends Component
         }
 
         // If the user status is pending, let's activate them.
-        if ($userRecord->pending == true) {
+        if ($userRecord->pending) {
             $this->activateUser($user);
         }
 
@@ -746,7 +884,7 @@ class Users extends Component
      *
      * @param User $user The user.
      * @return bool Whether the user was unlocked successfully.
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     public function unlockUser(User $user): bool
     {
@@ -770,7 +908,7 @@ class Users extends Component
             $userRecord->save();
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }
@@ -798,7 +936,7 @@ class Users extends Component
      *
      * @param User $user The user.
      * @return bool Whether the user was suspended successfully.
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     public function suspendUser(User $user): bool
     {
@@ -812,18 +950,13 @@ class Users extends Component
             return false;
         }
 
-        $transaction = Craft::$app->getDb()->beginTransaction();
-        try {
-            $userRecord = $this->_getUserRecordById($user->id);
-            $userRecord->suspended = true;
-            $user->suspended = true;
-            $userRecord->save();
+        $userRecord = $this->_getUserRecordById($user->id);
+        $userRecord->suspended = true;
+        $user->suspended = true;
+        $userRecord->save();
 
-            $transaction->commit();
-        } catch (\Throwable $e) {
-            $transaction->rollBack();
-            throw $e;
-        }
+        // Destroy all sessions for this user
+        Db::delete(Table::SESSIONS, ['userId' => $user->id]);
 
         // Fire an 'afterSuspendUser' event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SUSPEND_USER)) {
@@ -843,7 +976,7 @@ class Users extends Component
      *
      * @param User $user The user.
      * @return bool Whether the user was unsuspended successfully.
-     * @throws \Throwable if reasons
+     * @throws Throwable if reasons
      */
     public function unsuspendUser(User $user): bool
     {
@@ -865,7 +998,7 @@ class Users extends Component
             $userRecord->save();
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
 
             throw $e;
@@ -895,12 +1028,11 @@ class Users extends Component
      * @param DateTime|null $expiryDate When the message should be un-shunned. Defaults to `null` (never un-shun).
      * @return bool Whether the message was shunned successfully.
      */
-    public function shunMessageForUser(int $userId, string $message, DateTime $expiryDate = null): bool
+    public function shunMessageForUser(int $userId, string $message, ?DateTime $expiryDate = null): bool
     {
         return (bool)Db::upsert(Table::SHUNNEDMESSAGES, [
             'userId' => $userId,
             'message' => $message,
-        ], [
             'expiryDate' => Db::prepareDateForDb($expiryDate),
         ]);
     }
@@ -940,14 +1072,14 @@ class Users extends Component
                 [
                     'or',
                     ['expiryDate' => null],
-                    ['>', 'expiryDate', Db::prepareDateForDb(new \DateTime())],
+                    ['>', 'expiryDate', Db::prepareDateForDb(new DateTime())],
                 ],
             ])
             ->exists();
     }
 
     /**
-     * Sets a new verification code on the user's record.
+     * Sets a new verification code on the user’s record.
      *
      * @param User $user The user.
      * @return string The user’s brand new verification code.
@@ -955,22 +1087,46 @@ class Users extends Component
     public function setVerificationCodeOnUser(User $user): string
     {
         $userRecord = $this->_getUserRecordById($user->id);
-        $unhashedVerificationCode = $this->_setVerificationCodeOnUserRecord($userRecord);
+
+        $securityService = Craft::$app->getSecurity();
+        $unhashedCode = $securityService->generateRandomString(32);
+
+        // Strip underscores so they don't get interpreted as italics markers in the Markdown parser
+        $unhashedCode = str_replace('_', StringHelper::randomString(1), $unhashedCode);
+        $issueDate = DateTimeHelper::currentUTCDateTime();
+
+        $hashedCode = $securityService->hashPassword($unhashedCode);
+        $userRecord->verificationCode = $hashedCode;
+        $userRecord->verificationCodeIssuedDate = Db::prepareDateForDb($issueDate);
+
+        // Make sure they are set to pending, if not already active
+        if (!$userRecord->active) {
+            $userRecord->pending = true;
+        }
+
         $userRecord->save();
 
-        return $unhashedVerificationCode;
+        $user->pending = $userRecord->pending;
+        $user->verificationCode = $hashedCode;
+        $user->verificationCodeIssuedDate = $issueDate;
+
+        // Invalidate caches
+        Craft::$app->getElements()->invalidateCachesForElement($user);
+
+        return $unhashedCode;
     }
 
     /**
      * Deletes any pending users that have shown zero sense of urgency and are
      * just taking up space.
      *
-     * This method will check the <config3:purgePendingUsersDuration> config
+     * This method will check the <config4:purgePendingUsersDuration> config
      * setting, and if it is set to a valid duration, it will delete any user
      * accounts that were created that duration ago, and have still not
      * activated their account.
+     *
      */
-    public function purgeExpiredPendingUsers()
+    public function purgeExpiredPendingUsers(): void
     {
         $generalConfig = Craft::$app->getConfig()->getGeneral();
 
@@ -989,8 +1145,9 @@ class Users extends Component
         $elementsService = Craft::$app->getElements();
 
         foreach (Db::each($query) as $user) {
+            /** @var User $user */
             $elementsService->deleteElement($user);
-            Craft::info("Just deleted pending user {$user->username} ({$user->id}), because they took too long to activate their account.", __METHOD__);
+            Craft::info("Just deleted pending user $user->username ($user->id), because they took too long to activate their account.", __METHOD__);
         }
     }
 
@@ -1058,7 +1215,7 @@ class Users extends Component
                 foreach ($event->newGroupIds as $groupId) {
                     $values[] = [$groupId, $userId];
                 }
-                Db::batchInsert(Table::USERGROUPS_USERS, ['groupId', 'userId'], $values, true, $db);
+                Db::batchInsert(Table::USERGROUPS_USERS, ['groupId', 'userId'], $values, $db);
             }
 
             if (!empty($event->removedGroupIds)) {
@@ -1069,7 +1226,7 @@ class Users extends Component
             }
 
             $transaction->commit();
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
         }
@@ -1139,16 +1296,9 @@ class Users extends Component
      *
      * @param ConfigEvent $event
      */
-    public function handleChangedUserFieldLayout(ConfigEvent $event)
+    public function handleChangedUserFieldLayout(ConfigEvent $event): void
     {
-        // Use this because we want this to trigger this if anything changes inside but ONLY ONCE
-        static $parsed = false;
-        if ($parsed) {
-            return;
-        }
-
-        $parsed = true;
-        $data = Craft::$app->getProjectConfig()->get(self::CONFIG_USERLAYOUT_KEY, true);
+        $data = $event->newValue;
 
         $fieldsService = Craft::$app->getFields();
 
@@ -1165,7 +1315,7 @@ class Users extends Component
         $layout->id = $fieldsService->getLayoutByType(User::class)->id;
         $layout->type = User::class;
         $layout->uid = key($data);
-        $fieldsService->saveLayout($layout);
+        $fieldsService->saveLayout($layout, false);
 
         // Invalidate user caches
         Craft::$app->getElements()->invalidateCachesForElementType(User::class);
@@ -1178,7 +1328,7 @@ class Users extends Component
      * @param bool $runValidation Whether the layout should be validated
      * @return bool
      */
-    public function saveLayout(FieldLayout $layout, bool $runValidation = true)
+    public function saveLayout(FieldLayout $layout, bool $runValidation = true): bool
     {
         if ($runValidation && !$layout->validate()) {
             Craft::info('Field layout not saved due to validation error.', __METHOD__);
@@ -1189,7 +1339,7 @@ class Users extends Component
         $fieldLayoutConfig = $layout->getConfig();
         $uid = StringHelper::UUID();
 
-        $projectConfig->set(self::CONFIG_USERLAYOUT_KEY, [$uid => $fieldLayoutConfig], "Save the user field layout");
+        $projectConfig->set(ProjectConfig::PATH_USER_FIELD_LAYOUTS, [$uid => $fieldLayoutConfig], "Save the user field layout");
         return true;
     }
 
@@ -1255,39 +1405,10 @@ class Users extends Component
     }
 
     /**
-     * Prune a deleted field from user group layout.
-     *
-     * @param FieldEvent $event
+     * @deprecated in 4.0.5. Unused fields will be pruned automatically as field layouts are resaved.
      */
-    public function pruneDeletedField(FieldEvent $event)
+    public function pruneDeletedField(): void
     {
-        $field = $event->field;
-        $fieldUid = $field->uid;
-
-        $projectConfig = Craft::$app->getProjectConfig();
-        $fieldLayouts = $projectConfig->get(self::CONFIG_USERLAYOUT_KEY);
-
-        // Engage stealth mode
-        $projectConfig->muteEvents = true;
-
-        // Prune the user field layout.
-        if (is_array($fieldLayouts)) {
-            foreach ($fieldLayouts as $layoutUid => $layout) {
-                if (!empty($layout['tabs'])) {
-                    foreach ($layout['tabs'] as $tabUid => $tab) {
-                        $projectConfig->remove(self::CONFIG_USERLAYOUT_KEY . '.' . $layoutUid . '.tabs.' . $tabUid . '.fields.' . $fieldUid, 'Prune deleted field');
-                    }
-                }
-            }
-        }
-
-        // Nuke all the layout fields from the DB
-        Db::delete(Table::FIELDLAYOUTFIELDS, [
-            'fieldId' => $field->id,
-        ]);
-
-        // Allow events again
-        $projectConfig->muteEvents = false;
     }
 
     /**
@@ -1302,31 +1423,10 @@ class Users extends Component
         $userRecord = UserRecord::findOne($userId);
 
         if (!$userRecord) {
-            throw new UserNotFoundException("No user exists with the ID '{$userId}'");
+            throw new UserNotFoundException("No user exists with the ID '$userId'");
         }
 
         return $userRecord;
-    }
-
-    /**
-     * Sets a user record up for a new verification code without saving it.
-     *
-     * @param UserRecord $userRecord
-     * @return string
-     */
-    private function _setVerificationCodeOnUserRecord(UserRecord $userRecord): string
-    {
-        $securityService = Craft::$app->getSecurity();
-        $unhashedCode = $securityService->generateRandomString(32);
-
-        // Strip underscores so they don't get interpreted as italics markers in the Markdown parser
-        $unhashedCode = str_replace('_', StringHelper::randomString(1), $unhashedCode);
-
-        $hashedCode = $securityService->hashPassword($unhashedCode);
-        $userRecord->verificationCode = $hashedCode;
-        $userRecord->verificationCodeIssuedDate = DateTimeHelper::currentUTCDateTime();
-
-        return $unhashedCode;
     }
 
     /**
@@ -1362,9 +1462,7 @@ class Users extends Component
      */
     private function _getUserUrl(User $user, string $fePath, string $cpPath): string
     {
-        $userRecord = $this->_getUserRecordById($user->id);
-        $unhashedVerificationCode = $this->_setVerificationCodeOnUserRecord($userRecord);
-        $userRecord->save();
+        $unhashedVerificationCode = $this->setVerificationCodeOnUser($user);
 
         $params = [
             'code' => $unhashedVerificationCode,
@@ -1382,7 +1480,7 @@ class Users extends Component
             return UrlHelper::siteUrl($fePath, $params, $scheme);
         }
 
-        // Only use cpUrl() if this is a CP request, or the base CP URL has been explicitly set,
+        // Only use cpUrl() if this is a control panel request, or the base control panel URL has been explicitly set,
         // so UrlHelper won't use HTTP_HOST
         if ($generalConfig->baseCpUrl || Craft::$app->getRequest()->getIsCpRequest()) {
             return UrlHelper::cpUrl($cpPath, $params, $scheme);
