@@ -1417,13 +1417,7 @@ ul.icons {
 
     &:active,
     &.active {
-      background-color: transparentize($inputColor, 0.5);
-
-      &:focus,
-      &.focus,
-      .btngroup:focus & {
-        background-color: transparentize($inputColor, 0.4);
-      }
+      background-color: transparentize($inputColor, 0.6);
     }
   }
 
@@ -5470,7 +5464,7 @@ fieldset {
       }
     }
 
-    & > .t9n-indicator {
+    .t9n-indicator {
       @include margin-left(7px);
       color: var(--light-text-color);
     }

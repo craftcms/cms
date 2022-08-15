@@ -999,17 +999,17 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           if (totalSelected === this.view.getEnabledElements().length) {
             this.$selectAllCheckbox.removeClass('indeterminate');
             this.$selectAllCheckbox.addClass('checked');
-            this.$selectAllContainer.attr('aria-checked', 'true');
+            this.$selectAllCheckbox.attr('aria-checked', 'true');
           } else {
             this.$selectAllCheckbox.addClass('indeterminate');
             this.$selectAllCheckbox.removeClass('checked');
-            this.$selectAllContainer.attr('aria-checked', 'mixed');
+            this.$selectAllCheckbox.attr('aria-checked', 'mixed');
           }
 
           this.showActionTriggers();
         } else {
           this.$selectAllCheckbox.removeClass('indeterminate checked');
-          this.$selectAllContainer.attr('aria-checked', 'false');
+          this.$selectAllCheckbox.attr('aria-checked', 'false');
           this.hideActionTriggers();
         }
       }
@@ -2032,18 +2032,16 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           this.actionsBodyHtml = response.actionsBodyHtml;
 
           // Create the select all checkbox
-          this.$selectAllCheckbox = $('<div class="checkbox"/>').prependTo(
-            this.$selectAllContainer
-          );
+          this.$selectAllCheckbox = $('<div class="checkbox"/>')
+            .prependTo(this.$selectAllContainer)
+            .attr({
+              role: 'checkbox',
+              tabindex: '0',
+              'aria-checked': 'false',
+              'aria-label': Craft.t('app', 'Select all'),
+            });
 
-          this.$selectAllContainer.attr({
-            role: 'checkbox',
-            tabindex: '0',
-            'aria-checked': 'false',
-            'aria-label': Craft.t('app', 'Select all'),
-          });
-
-          this.addListener(this.$selectAllContainer, 'click', function () {
+          this.addListener(this.$selectAllCheckbox, 'click', function () {
             if (this.view.getSelectedElements().length === 0) {
               this.view.selectAllElements();
             } else {
@@ -2051,7 +2049,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             }
           });
 
-          this.addListener(this.$selectAllContainer, 'keydown', function (ev) {
+          this.addListener(this.$selectAllCheckbox, 'keydown', function (ev) {
             if (ev.keyCode === Garnish.SPACE_KEY) {
               ev.preventDefault();
 
