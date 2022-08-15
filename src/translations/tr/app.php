@@ -1589,6 +1589,7 @@ return [
     'Unformatted' => 'Biçimlendirilmemiş',
     'Uninstall' => 'Kaldır',
     'Uninstalling {name}' => '{name} kaldırılıyor',
+    'Unit' => 'Unit',
     'Unknown type' => 'Bilinmeyen tip',
     'Unknown' => 'Bilinmiyor',
     'Unlimited video training' => 'Sınırsız video eğitimi',
