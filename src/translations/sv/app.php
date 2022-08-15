@@ -1589,6 +1589,7 @@ return [
     'Unformatted' => 'Oformaterad',
     'Uninstall' => 'Avinstallera',
     'Uninstalling {name}' => 'Avinstallerar {name}',
+    'Unit' => 'Unit',
     'Unknown type' => 'Okänd typ',
     'Unknown' => 'Okänt',
     'Unlimited video training' => 'Obegränsad videoundervisning',
