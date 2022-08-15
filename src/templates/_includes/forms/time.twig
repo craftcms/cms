@@ -5,7 +5,6 @@
 {% set outputTzParam = outputTzParam ?? true %}
 {% set isMobile = craft.app.request.isMobileBrowser %}
 {% set labelledBy = labelledBy ?? null %}
-{% set formatLabelId = "#{id}-format" %}
 {% set isDateTime = isDateTime ?? false %}
 
 {% do view.registerAssetBundle('craft\\web\\assets\\timepicker\\TimepickerAsset') -%}
@@ -21,7 +20,13 @@
 {% if not hasOuterContainer %}<div class="datetimewrapper">{% endif %}
 
 {% tag 'div' with containerAttributes %}
-    <span id="{{ formatLabelId }}" class="visually-hidden"><!-- TODO add human-readable format string -->HH:MM AM/PM</span>
+    {% if not isMobile %}
+        {% set formatLabelId = "#{id}-format" %}
+        {% set labelledBy = [labelledBy ?? null, formatLabelId]|filter|join(' ') %}
+        <span id="{{ formatLabelId }}" class="visually-hidden">
+            {{ craft.app.getFormattingLocale().getTimeFormat('short', 'human') }}
+        </span>
+    {% endif %}
     {%- include "_includes/forms/text" with {
         type: isMobile ? 'time' : 'text',
         class: isMobile and not value ? 'empty-value' : false,
@@ -30,7 +35,6 @@
         size: 10,
         placeholder: ' ',
         value: value ? value|time(isMobile ? 'H:i' : 'short') : '',
-        labelledBy: [labelledBy, formatLabelId]|filter|join(' '),
         inputAttributes: {
             aria: {
                 label: isDateTime ? 'Time'|t('app') : false,

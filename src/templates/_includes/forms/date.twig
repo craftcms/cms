@@ -5,8 +5,6 @@
 {% set outputTzParam = outputTzParam ?? true %}
 {% set isMobile = craft.app.request.isMobileBrowser %}
 {% set describedBy = describedBy ?? null %}
-{% set labelledBy = labelledBy ?? null %}
-{% set formatLabelId = "#{id}-format" %}
 {% set isDateTime = isDateTime ?? false %}
 
 {% set containerAttributes = {
@@ -20,7 +18,13 @@
 {% if not hasOuterContainer %}<div class="datetimewrapper">{% endif %}
 
 {% tag 'div' with containerAttributes %}
-    <span id="{{ formatLabelId }}" class="visually-hidden"><!--TODO Add human readable format based on locale-->MM/DD/YYYY</span>
+    {% if not isMobile %}
+        {% set formatLabelId = "#{id}-format" %}
+        {% set labelledBy = [labelledBy ?? null, formatLabelId]|filter|join(' ') %}
+        <span id="{{ formatLabelId }}" class="visually-hidden">
+            {{ craft.app.getFormattingLocale().getDateFormat('short', 'human') }}
+        </span>
+    {% endif %}
     {%- include "_includes/forms/text" with {
         type: isMobile ? 'date' : 'text',
         class: isMobile and not value ? 'empty-value' : false,
@@ -29,7 +33,6 @@
         size: 10,
         placeholder: ' ',
         value: value ? value|date(isMobile ? 'Y-m-d' : 'short') : '',
-        labelledBy: [labelledBy, formatLabelId]|filter|join(' '),
         inputAttributes: {
             aria: {
                 label: isDateTime ? 'Date'|t('app') : false,
