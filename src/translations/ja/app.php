@@ -1589,6 +1589,7 @@ return [
     'Unformatted' => '未フォーマット',
     'Uninstall' => 'アンインストール',
     'Uninstalling {name}' => '{name} のアンインストール中',
+    'Unit' => 'Unit',
     'Unknown type' => '不明なタイプ',
     'Unknown' => '不明な',
     'Unlimited video training' => '無制限のビデオトレーニング',
