@@ -1151,9 +1151,9 @@ li.breadcrumb-toggle-wrapper {
     }
 
     .notes {
-      border-radius: 5px;
-      padding-top: 15px;
-      padding-bottom: 15px;
+      border-radius: var(--large-border-radius);
+      padding-top: var(--m);
+      padding-bottom: var(--m);
     }
   }
 }

@@ -4257,6 +4257,11 @@ ul.tree,
           border-radius: 0;
         }
       }
+
+      .notes {
+        padding-top: var(--m);
+        padding-bottom: var(--m);
+      }
     }
   }
 
