@@ -237,6 +237,24 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
     protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
     {
         /** @var DateTime|null $value */
+        $view = Craft::$app->getView();
+        $timezone = $this->showTimeZone && $value ? $value->getTimezone()->getName() : Craft::$app->getTimeZone();
+
+        if ($value === null) {
+            // Override the initial value being set to null by _includes/forms/field
+            $initialValue = [];
+            if ($this->showDate) {
+                $initialValue['date'] = '';
+            }
+            if ($this->showTime) {
+                $initialValue['time'] = '';
+            }
+            $initialValue['timezone'] = $timezone;
+            $view->setInitialDeltaValue($this->handle, $initialValue);
+        }
+
+        $components = [];
+
         $id = $this->getInputId();
         $variables = [
             'id' => $id,
@@ -260,10 +278,10 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
 
         if ($this->showTimeZone) {
             $components[] = $view->renderTemplate('_includes/forms/timeZone', [
-                    'describedBy' => $this->describedBy,
-                    'name' => "$this->handle[timezone]",
-                    'value' => $timezone,
-                ]);
+                'describedBy' => $this->describedBy,
+                'name' => "$this->handle[timezone]",
+                'value' => $timezone,
+            ]);
         } else {
             $components[] = Html::hiddenInput("$this->handle[timezone]", $timezone);
         }
