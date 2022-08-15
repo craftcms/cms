@@ -1589,6 +1589,7 @@ return [
     'Unformatted' => 'Неотформатировано',
     'Uninstall' => 'Удалить',
     'Uninstalling {name}' => 'Удаление {name}',
+    'Unit' => 'Unit',
     'Unknown type' => 'Неизвестный тип',
     'Unknown' => 'Неизвестно',
     'Unlimited video training' => 'Неограниченный видео-тренинг',
