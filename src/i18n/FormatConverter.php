@@ -51,7 +51,7 @@ class FormatConverter extends \yii\helpers\FormatConverter
      * @return string The converted date format pattern.
      * @since 4.3.0
      */
-    public static function convertDatePhpToHuman($pattern)
+    public static function convertDatePhpToHuman(string $pattern): string
     {
         // https://www.php.net/manual/en/function.date.php
         return strtr($pattern, [
