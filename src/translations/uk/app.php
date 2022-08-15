@@ -1589,6 +1589,7 @@ return [
     'Unformatted' => 'Без форматування',
     'Uninstall' => 'Видалити',
     'Uninstalling {name}' => 'Видалення {name}',
+    'Unit' => 'Unit',
     'Unknown type' => 'Невідомий тип',
     'Unknown' => 'Невідомо',
     'Unlimited video training' => 'Необмежений доступ до навчальних відео',
