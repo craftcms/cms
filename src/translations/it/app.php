@@ -1589,6 +1589,7 @@ return [
     'Unformatted' => 'Non formattato',
     'Uninstall' => 'Disinstalla',
     'Uninstalling {name}' => 'Disinstallazione di {name}',
+    'Unit' => 'Unit',
     'Unknown type' => 'Tipo sconosciuto',
     'Unknown' => 'Sconosciuto',
     'Unlimited video training' => 'Formazione video illimitata',
