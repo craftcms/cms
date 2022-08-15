@@ -1589,6 +1589,7 @@ return [
     'Unformatted' => '형식이 지정되지 않음',
     'Uninstall' => '제거',
     'Uninstalling {name}' => '{name} 제거 중',
+    'Unit' => 'Unit',
     'Unknown type' => '알 수 없는 유형',
     'Unknown' => '알 수 없음',
     'Unlimited video training' => '무제한 비디오 교육',
