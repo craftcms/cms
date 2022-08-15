@@ -2961,7 +2961,7 @@ $checkboxPadding: $checkboxSize + 4;
 
       &:not(:last-child):not(.last) {
         @include padding-left(37px);
-        @include border-left(1px solid var(--hairline-color));
+        @include border-left(1px solid var(--gray-200));
 
         body.ltr & {
           background-position: -1px 0;
