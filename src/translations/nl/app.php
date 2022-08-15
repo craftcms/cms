@@ -1589,6 +1589,7 @@ return [
     'Unformatted' => 'Niet opgemaakt',
     'Uninstall' => 'Verwijderen',
     'Uninstalling {name}' => '{name} Verwijderen',
+    'Unit' => 'Unit',
     'Unknown type' => 'Onbekend type',
     'Unknown' => 'Onbekend',
     'Unlimited video training' => 'Onbeperkte videotraining',
