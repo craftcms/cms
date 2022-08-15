@@ -69,6 +69,7 @@ class RelatedToConditionRule extends BaseElementSelectConditionRule implements E
     {
         return Html::tag('div',
             Cp::selectHtml([
+                'id' => 'element-type',
                 'name' => 'elementType',
                 'options' => $this->_elementTypeOptions(),
                 'value' => $this->elementType,
