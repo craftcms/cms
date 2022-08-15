@@ -1,5 +1,8 @@
 # Release Notes for Craft CMS 3.x
 
+## Fixed
+- Fixed a bug where `iframeResizer.contentWindow.js` was getting loaded for all preview requests, not just Live Preview, and even when `useIframeResizer` was disabled. ([#11778](https://github.com/craftcms/cms/issues/11778))
+
 ## 3.7.51 - 2022-08-09
 
 ### Added

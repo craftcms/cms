@@ -189,8 +189,11 @@ abstract class Controller extends \yii\web\Controller
     {
         $view = $this->getView();
 
-        // If this is a preview request, register the iframe resizer script
-        if ($this->request->getIsPreview()) {
+        // If this is a preview request and `useIframeResizer` is enabled, register the iframe resizer script
+        if (
+            $this->request->getQueryParam('x-craft-live-preview') !== null &&
+            Craft::$app->getConfig()->getGeneral()->useIframeResizer
+        ) {
             $view->registerAssetBundle(ContentWindowAsset::class);
         }
 
