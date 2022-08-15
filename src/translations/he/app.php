@@ -1589,6 +1589,7 @@ return [
     'Unformatted' => 'לא מפורמט',
     'Uninstall' => 'הסר',
     'Uninstalling {name}' => 'מסיר התקנה של {name}',
+    'Unit' => 'Unit',
     'Unknown type' => 'סוג לא ידוע',
     'Unknown' => 'לא ידוע',
     'Unlimited video training' => 'הדרכות וידיאו ללא הגבלה',
