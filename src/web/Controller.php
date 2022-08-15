@@ -188,11 +188,12 @@ abstract class Controller extends \yii\web\Controller
     public function renderTemplate(string $template, array $variables = [], string $templateMode = null): YiiResponse
     {
         $view = $this->getView();
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
 
         // If this is a preview request and `useIframeResizer` is enabled, register the iframe resizer script
         if (
             $this->request->getQueryParam('x-craft-live-preview') !== null &&
-            Craft::$app->getConfig()->getGeneral()->useIframeResizer
+            $generalConfig->useIframeResizer
         ) {
             $view->registerAssetBundle(ContentWindowAsset::class);
         }
@@ -205,7 +206,7 @@ abstract class Controller extends \yii\web\Controller
 
         $headers = $this->response->getHeaders();
 
-        if (Craft::$app->getConfig()->getGeneral()->sendContentLengthHeader) {
+        if ($generalConfig->sendContentLengthHeader) {
             $headers->setDefault('content-length', strlen($this->response->data));
         }
 
