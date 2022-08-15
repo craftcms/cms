@@ -1590,6 +1590,7 @@ return [
     'Unformatted' => 'Ikke-formateret',
     'Uninstall' => 'Afinstaller',
     'Uninstalling {name}' => 'Afinstallere {name}',
+    'Unit' => 'Unit',
     'Unknown type' => 'Ukendt type',
     'Unknown' => 'Ukendt',
     'Unlimited video training' => 'Ubegrænset videoundervisning',
