@@ -1589,6 +1589,7 @@ return [
     'Unformatted' => 'Unformatiert',
     'Uninstall' => 'Deinstallieren',
     'Uninstalling {name}' => '{name} wird deinstalliert',
+    'Unit' => 'Unit',
     'Unknown type' => 'Unbekannter Typ',
     'Unknown' => 'Unbekannt',
     'Unlimited video training' => 'Unbegrenztes Video-Training',
