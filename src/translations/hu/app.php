@@ -1589,6 +1589,7 @@ return [
     'Unformatted' => 'Formázás nélkül',
     'Uninstall' => 'Eltávolítás',
     'Uninstalling {name}' => '{name} eltávolítása',
+    'Unit' => 'Unit',
     'Unknown type' => 'Ismeretlen típus',
     'Unknown' => 'Ismeretlen',
     'Unlimited video training' => 'Korlátlan videós oktatás',
