@@ -1589,6 +1589,7 @@ return [
     'Unformatted' => 'غير منسق',
     'Uninstall' => 'إلغاء التثبيت',
     'Uninstalling {name}' => 'إلغاء تثبيت {name}',
+    'Unit' => 'Unit',
     'Unknown type' => 'نوع مجهول',
     'Unknown' => 'غير معروف',
     'Unlimited video training' => 'تدريب فيديو غير محدود',
