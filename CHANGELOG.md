@@ -9,6 +9,7 @@
 ### Fixed
 - Fixed a bug where keyboard focus wasn’t being maintained when changing the element type within a “Related To” condition rule.
 - Fixed a bug where keyboard focus wasn’t being maintained when changing the country within an address’s “Administrative Area” condition rule.
+- Fixed a bug where Date fields’ Timezone menus could be clipped. ([#11780](https://github.com/craftcms/cms/pull/11780))
 
 ## 4.2.1.1 - 2022-08-10
 
