@@ -4,7 +4,6 @@
 {% set value = value ?? null -%}
 {% set outputTzParam = outputTzParam ?? true %}
 {% set isMobile = craft.app.request.isMobileBrowser %}
-{% set labelId = labelId ?? null %}
 {% set labelledBy = labelledBy ?? null %}
 {% set formatLabelId = "#{id}-format" %}
 {% set isDateTime = isDateTime ?? false %}
@@ -31,7 +30,7 @@
         size: 10,
         placeholder: ' ',
         value: value ? value|time(isMobile ? 'H:i' : 'short') : '',
-        labelledBy: [labelId, labelledBy, formatLabelId]|filter|join(' '),
+        labelledBy: [labelledBy, formatLabelId]|filter|join(' '),
         inputAttributes: {
             aria: {
                 label: isDateTime ? 'Time'|t('app') : false,

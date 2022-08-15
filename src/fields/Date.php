@@ -255,11 +255,10 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
 
         $components = [];
 
-        $id = $this->getInputId();
         $variables = [
-            'id' => $id,
+            'id' => parent::getInputId(), // can't use $this->getInputId() here because the template adds the "-date"
             'describedBy' => $this->describedBy,
-            'labelId' => "$id-label",
+            'labelledBy' => $this->getLabelId(),
             'name' => $this->handle,
             'value' => $value,
             'outputTzParam' => false,
