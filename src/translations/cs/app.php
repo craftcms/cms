@@ -1589,6 +1589,7 @@ return [
     'Unformatted' => 'Neformátované',
     'Uninstall' => 'Odinstalovat',
     'Uninstalling {name}' => 'Odinstalace {name}',
+    'Unit' => 'Unit',
     'Unknown type' => 'Neznámý typ',
     'Unknown' => 'Neznámý',
     'Unlimited video training' => 'Neomezený videotrénink',
