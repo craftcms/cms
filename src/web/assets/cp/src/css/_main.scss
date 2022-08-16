@@ -3089,7 +3089,9 @@ table.editable {
 
           textarea,
           input.text {
-            @include border-bottom-left-radius(var(--large-border-radius) - 1);
+            @include border-bottom-left-radius(
+              calc(var(--large-border-radius) - 1px)
+            );
           }
         }
       }
@@ -5265,14 +5267,14 @@ table.editable {
       td:first-child {
         &,
         &.disabled:after {
-          border-bottom-left-radius: var(--large-border-radius) - 1;
+          border-bottom-left-radius: calc(var(--large-border-radius) - 1px);
         }
       }
       th:last-child,
       td:last-child {
         &,
         &.disabled:after {
-          border-bottom-right-radius: var(--large-border-radius) - 1;
+          border-bottom-right-radius: calc(var(--large-border-radius) - 1px);
         }
       }
     }
@@ -6718,7 +6720,7 @@ ul.errors li {
   }
 }
 
-$titlebarBorderRadius: var(--large-border-radius) - 1;
+$titlebarBorderRadius: calc(var(--large-border-radius) - 1px);
 
 .matrixblock {
   position: relative;
