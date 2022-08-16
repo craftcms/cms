@@ -36,6 +36,12 @@ class Restore extends ElementAction
     public ?string $failMessage = null;
 
     /**
+     * @var bool Whether the action should only be available for elements with a `data-restorable` attribute
+     * @since 4.3.0
+     */
+    public bool $restorableElementsOnly = false;
+
+    /**
      * @inheritdoc
      */
     public function init(): void
@@ -78,6 +84,25 @@ class Restore extends ElementAction
      */
     public function getTriggerHtml(): ?string
     {
+        if ($this->restorableElementsOnly) {
+            // Only enable for deletable elements, per canDelete()
+            Craft::$app->getView()->registerJsWithVars(fn($type) => <<<JS
+(() => {
+    new Craft.ElementActionTrigger({
+        type: $type,
+        validateSelection: \$selectedItems => {
+            for (let i = 0; i < \$selectedItems.length; i++) {
+                if (!Garnish.hasAttr(\$selectedItems.eq(i).find('.element'), 'data-restorable')) {
+                    return false;
+                }
+            }
+            return true;
+        },
+    });
+})();
+JS, [static::class]);
+        }
+
         return '<div class="btn formsubmit">' . $this->getTriggerLabel() . '</div>';
     }
 
