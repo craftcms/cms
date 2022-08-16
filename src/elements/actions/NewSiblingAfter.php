@@ -9,6 +9,7 @@ namespace craft\elements\actions;
 
 use Craft;
 use craft\base\ElementAction;
+use craft\base\ElementInterface;
 
 /**
  * NewSibling represents a “Create a new X after” element action.
@@ -27,6 +28,24 @@ class NewSiblingAfter extends ElementAction
      * @var string|null The URL that the user should be taken to after clicking on this element action
      */
     public ?string $newSiblingUrl = null;
+
+    /**
+     * @inheritdoc
+     */
+    public function init(): void
+    {
+        parent::init();
+
+        /** @var string|ElementInterface $elementType */
+        /** @phpstan-var class-string<ElementInterface> $elementType */
+        $elementType = $this->elementType;
+
+        if (!isset($this->label)) {
+            $this->label = Craft::t('app', 'Create a new {type} after', [
+                'type' => $elementType::lowerDisplayName(),
+            ]);
+        }
+    }
 
     /**
      * @inheritdoc

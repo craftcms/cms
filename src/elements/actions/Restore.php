@@ -9,6 +9,7 @@ namespace craft\elements\actions;
 
 use Craft;
 use craft\base\ElementAction;
+use craft\base\ElementInterface;
 use craft\elements\db\ElementQueryInterface;
 
 /**
@@ -33,6 +34,36 @@ class Restore extends ElementAction
      * @var string|null The message that should be shown if no elements get restored
      */
     public ?string $failMessage = null;
+
+    /**
+     * @inheritdoc
+     */
+    public function init(): void
+    {
+        parent::init();
+
+        /** @var string|ElementInterface $elementType */
+        /** @phpstan-var class-string<ElementInterface> $elementType */
+        $elementType = $this->elementType;
+
+        if (!isset($this->successMessage)) {
+            $this->successMessage = Craft::t('app', '{type} restored.', [
+                'type' => $elementType::pluralDisplayName(),
+            ]);
+        }
+
+        if (!isset($this->partialSuccessMessage)) {
+            $this->partialSuccessMessage = Craft::t('app', 'Some {type} restored.', [
+                'type' => $elementType::pluralLowerDisplayName(),
+            ]);
+        }
+
+        if (!isset($this->failMessage)) {
+            $this->failMessage = Craft::t('app', '{type} not restored.', [
+                'type' => $elementType::pluralDisplayName(),
+            ]);
+        }
+    }
 
     /**
      * @inheritdoc
