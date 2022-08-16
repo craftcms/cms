@@ -18,7 +18,7 @@ use craft\helpers\Db;
 /**
  * Delete represents a “Delete for site” element action.
  *
- * Element types that make this action available should implement [[ElementInterface::getIsDeletable()]] to explicitly state whether they can be
+ * Element types that make this action available should implement [[ElementInterface::canDelete()]] to explicitly state whether they can be
  * deleted by the current user.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -41,7 +41,7 @@ class DeleteForSite extends ElementAction
      */
     public function getTriggerHtml(): ?string
     {
-        // Only enable for deletable elements, per getIsDeletable()
+        // Only enable for deletable elements, per canDelete()
         Craft::$app->getView()->registerJsWithVars(fn($type) => <<<JS
 (() => {
     new Craft.ElementActionTrigger({

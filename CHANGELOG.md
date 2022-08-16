@@ -5,10 +5,16 @@
 ### Changed
 - Improved the styling of Categories fields.
 - The first field group is now automatically selected by default when creating a new custom field.
+- Improved the console output for the `gc` command.
+- The `gc` command now runs garbage collection for data caches.
 
 ### Fixed
 - Fixed a bug where keyboard focus wasn’t being maintained when changing the element type within a “Related To” condition rule.
 - Fixed a bug where keyboard focus wasn’t being maintained when changing the country within an address’s “Administrative Area” condition rule.
+- Fixed a bug where Date fields’ Timezone menus could be clipped. ([#11780](https://github.com/craftcms/cms/pull/11780))
+- Fixed a bug where `iframeResizer.contentWindow.js` was getting loaded for all preview requests, not just Live Preview, and even when `useIframeResizer` was disabled. ([#11778](https://github.com/craftcms/cms/issues/11778))
+- Fixed an error that could occur when saving an unpublished draft, if any custom validation errors were added to it after its draft status had been removed. ([#11407](https://github.com/craftcms/cms/issues/11407))
+- Fixed a bug where custom validation errors would be shown twice for unpublished drafts, if they were added to it after its draft status had been removed. ([#11407](https://github.com/craftcms/cms/issues/11407))
 
 ## 4.2.1.1 - 2022-08-10
 
