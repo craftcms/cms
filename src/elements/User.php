@@ -315,7 +315,6 @@ class User extends Element implements IdentityInterface
     protected static function defineActions(string $source): array
     {
         $actions = [];
-        $elementsService = Craft::$app->getElements();
 
         if (Craft::$app->getUser()->checkPermission('moderateUsers')) {
             // Suspend
@@ -331,12 +330,7 @@ class User extends Element implements IdentityInterface
         }
 
         // Restore
-        $actions[] = $elementsService->createAction([
-            'type' => Restore::class,
-            'successMessage' => Craft::t('app', 'Users restored.'),
-            'partialSuccessMessage' => Craft::t('app', 'Some users restored.'),
-            'failMessage' => Craft::t('app', 'Users not restored.'),
-        ]);
+        $actions[] = Restore::class;
 
         return $actions;
     }

@@ -9,6 +9,7 @@ namespace craft\elements\actions;
 
 use Craft;
 use craft\base\ElementAction;
+use craft\base\ElementInterface;
 use craft\elements\db\ElementQueryInterface;
 
 /**
@@ -35,6 +36,42 @@ class Restore extends ElementAction
     public ?string $failMessage = null;
 
     /**
+     * @var bool Whether the action should only be available for elements with a `data-restorable` attribute
+     * @since 4.3.0
+     */
+    public bool $restorableElementsOnly = false;
+
+    /**
+     * @inheritdoc
+     */
+    public function init(): void
+    {
+        parent::init();
+
+        /** @var string|ElementInterface $elementType */
+        /** @phpstan-var class-string<ElementInterface> $elementType */
+        $elementType = $this->elementType;
+
+        if (!isset($this->successMessage)) {
+            $this->successMessage = Craft::t('app', '{type} restored.', [
+                'type' => $elementType::pluralDisplayName(),
+            ]);
+        }
+
+        if (!isset($this->partialSuccessMessage)) {
+            $this->partialSuccessMessage = Craft::t('app', 'Some {type} restored.', [
+                'type' => $elementType::pluralLowerDisplayName(),
+            ]);
+        }
+
+        if (!isset($this->failMessage)) {
+            $this->failMessage = Craft::t('app', '{type} not restored.', [
+                'type' => $elementType::pluralDisplayName(),
+            ]);
+        }
+    }
+
+    /**
      * @inheritdoc
      */
     public function getTriggerLabel(): string
@@ -47,6 +84,25 @@ class Restore extends ElementAction
      */
     public function getTriggerHtml(): ?string
     {
+        if ($this->restorableElementsOnly) {
+            // Only enable for deletable elements, per canDelete()
+            Craft::$app->getView()->registerJsWithVars(fn($type) => <<<JS
+(() => {
+    new Craft.ElementActionTrigger({
+        type: $type,
+        validateSelection: \$selectedItems => {
+            for (let i = 0; i < \$selectedItems.length; i++) {
+                if (!Garnish.hasAttr(\$selectedItems.eq(i).find('.element'), 'data-restorable')) {
+                    return false;
+                }
+            }
+            return true;
+        },
+    });
+})();
+JS, [static::class]);
+        }
+
         return '<div class="btn formsubmit">' . $this->getTriggerLabel() . '</div>';
     }
 

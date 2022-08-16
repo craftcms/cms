@@ -366,20 +366,17 @@ class Entry extends Element
 
                 $actions[] = $elementsService->createAction([
                     'type' => NewSiblingBefore::class,
-                    'label' => Craft::t('app', 'Create a new entry before'),
                     'newSiblingUrl' => $newEntryUrl,
                 ]);
 
                 $actions[] = $elementsService->createAction([
                     'type' => NewSiblingAfter::class,
-                    'label' => Craft::t('app', 'Create a new entry after'),
                     'newSiblingUrl' => $newEntryUrl,
                 ]);
 
                 if ($section->maxLevels != 1) {
                     $actions[] = $elementsService->createAction([
                         'type' => NewChild::class,
-                        'label' => Craft::t('app', 'Create a new child entry'),
                         'maxLevels' => $section->maxLevels,
                         'newChildUrl' => $newEntryUrl,
                     ]);
@@ -423,12 +420,7 @@ class Entry extends Element
         }
 
         // Restore
-        $actions[] = $elementsService->createAction([
-            'type' => Restore::class,
-            'successMessage' => Craft::t('app', 'Entries restored.'),
-            'partialSuccessMessage' => Craft::t('app', 'Some entries restored.'),
-            'failMessage' => Craft::t('app', 'Entries not restored.'),
-        ]);
+        $actions[] = Restore::class;
 
         return $actions;
     }
@@ -1656,6 +1648,7 @@ EOD;
                     'limit' => 1,
                     'elements' => $parent ? [$parent] : [],
                     'disabled' => $static,
+                    'describedBy' => 'parentId-label',
                 ]);
             })();
         }

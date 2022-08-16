@@ -688,6 +688,8 @@ class DateTimeHelperTest extends TestCase
             ['16 minutes and 39 seconds', 999, true],
             ['999 seconds', 'PT999S'],
             ['27 minutes', 'PT10M999S'],
+            ['0 seconds', 0],
+            ['less than a minute', 0, false],
         ];
     }
 
