@@ -4,7 +4,6 @@
 {% set value = (value ?? false) ? date(value, false) : null -%}
 {% set outputTzParam = outputTzParam ?? true %}
 {% set isMobile = craft.app.request.isMobileBrowser %}
-{% set describedBy = describedBy ?? null %}
 {% set isDateTime = isDateTime ?? false %}
 
 {% set containerAttributes = {
@@ -19,9 +18,9 @@
 
 {% tag 'div' with containerAttributes %}
     {% if not isMobile %}
-        {% set formatLabelId = "#{id}-format" %}
-        {% set labelledBy = [labelledBy ?? null, formatLabelId]|filter|join(' ') %}
-        <span id="{{ formatLabelId }}" class="visually-hidden">
+        {% set formatRefId = "#{id}-format" %}
+        {% set describedBy = [formatRefId, describedBy ?? null]|filter|join(' ') %}
+        <span id="{{ formatRefId }}" class="visually-hidden">
             {{ craft.app.getFormattingLocale().getDateFormat('short', 'human') }}
         </span>
     {% endif %}

@@ -140,7 +140,6 @@ class Time extends Field implements PreviewableFieldInterface, SortableFieldInte
         return Craft::$app->getView()->renderTemplate('_includes/forms/time', [
             'id' => parent::getInputId(), // can't use $this->getInputId() here because the template adds the "-time"
             'describedBy' => $this->describedBy,
-            'labelledBy' => $this->getLabelId(),
             'name' => $this->handle,
             'value' => $value,
             'minTime' => $this->min,
