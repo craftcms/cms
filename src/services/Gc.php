@@ -8,6 +8,7 @@
 namespace craft\services;
 
 use Craft;
+use craft\base\ElementInterface;
 use craft\config\GeneralConfig;
 use craft\db\Query;
 use craft\db\Table;
@@ -18,6 +19,7 @@ use craft\elements\GlobalSet;
 use craft\elements\MatrixBlock;
 use craft\elements\Tag;
 use craft\elements\User;
+use craft\helpers\Console;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\records\Volume;
@@ -67,9 +69,10 @@ class Gc extends Component
             return;
         }
 
-        Craft::$app->getDrafts()->purgeUnsavedDrafts();
-        Craft::$app->getUsers()->purgeExpiredPendingUsers();
-        $this->_deleteStaleSessions();
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $this->_purgeUnsavedDrafts($generalConfig);
+        $this->_purgePendingUsers($generalConfig);
+        $this->_deleteStaleSessions($generalConfig);
         $this->_deleteStaleAnnouncements();
 
         $this->hardDelete([
@@ -97,7 +100,7 @@ class Gc extends Component
         $this->deletePartialElements(User::class, Table::CONTENT, 'elementId');
 
         $this->_deleteOrphanedDraftsAndRevisions();
-        Craft::$app->getSearch()->deleteOrphanedIndexes();
+        $this->_deleteOrphanedSearchIndexes();
 
         // Fire a 'run' event
         if ($this->hasEventHandlers(self::EVENT_RUN)) {
@@ -123,6 +126,7 @@ class Gc extends Component
             return;
         }
 
+        Console::stdout("    > deleting trashed volumes and their folders ... ");
         $condition = $this->getHardDeleteConditions($generalConfig);
 
         $volumes = (new Query())->select(['id'])->from([Table::VOLUMES])->where($condition)->all();
@@ -142,6 +146,7 @@ class Gc extends Component
         }
 
         Volume::deleteAll(['id' => $volumeIds]);
+        Console::stdout("done\n", Console::FG_GREEN);
     }
 
     /**
@@ -163,7 +168,9 @@ class Gc extends Component
         }
 
         foreach ($tables as $table) {
+            Console::stdout("    > deleting trashed rows in the `$table` table ... ");
             Db::delete($table, $condition);
+            Console::stdout("done\n", Console::FG_GREEN);
         }
     }
 
@@ -173,11 +180,12 @@ class Gc extends Component
      * @param string $elementType The element type
      * @param string $table The extension table name
      * @param string $fk The column name that contains the foreign key to `elements.id`
-     * @return void
      * @since 3.6.6
      */
     public function deletePartialElements(string $elementType, string $table, string $fk): void
     {
+        /** @var string|ElementInterface $elementType */
+        Console::stdout(sprintf('    > deleting partial %s data in the `%s` table ... ', $elementType::lowerDisplayName(), $table));
         $db = Craft::$app->getDb();
         $elementsTable = Table::ELEMENTS;
 
@@ -202,44 +210,65 @@ SQL;
         }
 
         $db->createCommand($sql, ['type' => $elementType])->execute();
+        Console::stdout("done\n", Console::FG_GREEN);
+    }
+
+    private function _purgeUnsavedDrafts(GeneralConfig $generalConfig)
+    {
+        if ($generalConfig->purgeUnsavedDraftsDuration === 0) {
+            return;
+        }
+
+        Console::stdout('    > purging unsaved drafts that have gone stale ... ');
+        Craft::$app->getDrafts()->purgeUnsavedDrafts();
+        Console::stdout("done\n", Console::FG_GREEN);
+    }
+
+    private function _purgePendingUsers(GeneralConfig $generalConfig)
+    {
+        if ($generalConfig->purgePendingUsersDuration === 0) {
+            return;
+        }
+
+        Console::stdout('    > purging pending users with stale activation codes ... ');
+        Craft::$app->getUsers()->purgeExpiredPendingUsers();
+        Console::stdout("done\n", Console::FG_GREEN);
     }
 
     /**
      * Deletes any session rows that have gone stale.
      */
-    private function _deleteStaleSessions()
+    private function _deleteStaleSessions(GeneralConfig $generalConfig)
     {
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
-
         if ($generalConfig->purgeStaleUserSessionDuration === 0) {
             return;
         }
 
+        Console::stdout('    > deleting stale user sessions ... ');
         $interval = DateTimeHelper::secondsToInterval($generalConfig->purgeStaleUserSessionDuration);
         $expire = DateTimeHelper::currentUTCDateTime();
         $pastTime = $expire->sub($interval);
-
         Db::delete(Table::SESSIONS, ['<', 'dateUpdated', Db::prepareDateForDb($pastTime)]);
+        Console::stdout("done\n", Console::FG_GREEN);
     }
 
     /**
      * Deletes any feature announcement rows that have gone stale.
-     *
-     * @return void
      */
     private function _deleteStaleAnnouncements(): void
     {
+        Console::stdout('    > deleting stale feature announcements ... ');
         Db::delete(Table::ANNOUNCEMENTS, ['<', 'dateRead', Db::prepareDateForDb(new DateTime('7 days ago'))]);
+        Console::stdout("done\n", Console::FG_GREEN);
     }
 
 
     /**
      * Deletes any orphaned rows in the `drafts` and `revisions` tables.
-     *
-     * @return void
      */
     private function _deleteOrphanedDraftsAndRevisions(): void
     {
+        Console::stdout('    > deleting orphaned drafts and revisions ... ');
         $db = Craft::$app->getDb();
         $elementsTable = Table::ELEMENTS;
 
@@ -263,6 +292,15 @@ SQL;
 
             $db->createCommand($sql)->execute();
         }
+
+        Console::stdout("done\n", Console::FG_GREEN);
+    }
+
+    private function _deleteOrphanedSearchIndexes(): void
+    {
+        Console::stdout('    > deleting orphaned search indexes ... ');
+        Craft::$app->getSearch()->deleteOrphanedIndexes();
+        Console::stdout("done\n", Console::FG_GREEN);
     }
 
     /**

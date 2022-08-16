@@ -76,9 +76,9 @@ class GcController extends Controller
         $gc = Craft::$app->getGc();
         $deleteAllTrashed = $gc->deleteAllTrashed;
         $gc->deleteAllTrashed = $this->deleteAllTrashed || ($this->interactive && $this->confirm('Delete all trashed items?'));
-        $this->stdout('Running garbage collection ... ');
+        $this->stdout("Running garbage collection ...\n");
         $gc->run(true);
-        $this->stdout('done' . PHP_EOL, Console::FG_GREEN);
+        $this->stdout('Finished running garbage collection.' . PHP_EOL, Console::FG_GREEN);
         $gc->deleteAllTrashed = $deleteAllTrashed;
 
         if ($this->_emptyDeprecatedTables()) {
