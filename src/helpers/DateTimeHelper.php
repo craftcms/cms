@@ -555,7 +555,7 @@ class DateTimeHelper
      */
     public static function humanDuration(mixed $dateInterval, ?bool $showSeconds = null): string
     {
-        $dateInterval = static::toDateInterval($dateInterval);
+        $dateInterval = static::toDateInterval($dateInterval) ?: new DateInterval('PT0S');
         $secondsOnly = !$dateInterval->y && !$dateInterval->m && !$dateInterval->d && !$dateInterval->h && !$dateInterval->i;
 
         if ($showSeconds === null) {
@@ -600,7 +600,7 @@ class DateTimeHelper
             $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{minute} other{minutes}}', ['num' => $minutes]);
         }
 
-        if ($showSeconds && $dateInterval->s) {
+        if ($showSeconds && ($dateInterval->s || empty($timeComponents))) {
             $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{second} other{seconds}}', ['num' => $dateInterval->s]);
         }
 
