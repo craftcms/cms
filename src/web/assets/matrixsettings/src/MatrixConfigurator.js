@@ -528,8 +528,8 @@
         this.$settingsBtn.removeClass('error');
       }
 
-      this.$nameLabel.text(name);
-      this.$handleLabel.text(handle);
+      this.$nameLabel.attr('title', name).text(name);
+      this.$handleLabel.attr('title', handle).text(handle);
       this.$nameHiddenInput.val(name);
       this.$handleHiddenInput.val(handle);
     },
@@ -708,16 +708,19 @@
     },
 
     updateNameLabel: function () {
-      var val = this.$nameInput.val();
-      this.$nameLabel.html(
-        val
-          ? Craft.escapeHtml(val)
-          : '<em class="light">' + Craft.t('app', '(blank)') + '</em>'
-      );
+      const name = this.$nameInput.val();
+      this.$nameLabel
+        .attr('title', name)
+        .html(
+          name
+            ? Craft.escapeHtml(name)
+            : '<em class="light">' + Craft.t('app', '(blank)') + '</em>'
+        );
     },
 
     updateHandleLabel: function () {
-      this.$handleLabel.html(Craft.escapeHtml(this.$handleInput.val()));
+      const handle = this.$handleInput.val();
+      this.$handleLabel.attr('title', handle).html(Craft.escapeHtml(handle));
     },
 
     updateRequiredIcon: function () {
