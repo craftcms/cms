@@ -32,13 +32,11 @@ class NewSiblingAfter extends ElementAction
     /**
      * @inheritdoc
      */
-    public function init(): void
+    public function setElementType(string $elementType): void
     {
-        parent::init();
-
         /** @var string|ElementInterface $elementType */
         /** @phpstan-var class-string<ElementInterface> $elementType */
-        $elementType = $this->elementType;
+        parent::setElementType($elementType);
 
         if (!isset($this->label)) {
             $this->label = Craft::t('app', 'Create a new {type} after', [
