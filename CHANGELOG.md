@@ -4,6 +4,7 @@
 
 ### Changed
 - Improved the console output for the `gc` command.
+- The `gc` command now runs garbage collection for data caches.
 
 ### Fixed
 - Fixed a bug where `iframeResizer.contentWindow.js` was getting loaded for all preview requests, not just Live Preview, and even when `useIframeResizer` was disabled. ([#11778](https://github.com/craftcms/cms/issues/11778))

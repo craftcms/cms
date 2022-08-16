@@ -25,6 +25,7 @@ use craft\helpers\Db;
 use craft\records\Volume;
 use craft\records\VolumeFolder;
 use DateTime;
+use ReflectionMethod;
 use yii\base\Component;
 
 /**
@@ -114,6 +115,8 @@ class Gc extends Component
         ]);
 
         $this->hardDeleteVolumes();
+
+        $this->_gcCache();
     }
 
     /**
@@ -300,6 +303,42 @@ SQL;
     {
         Console::stdout('    > deleting orphaned search indexes ... ');
         Craft::$app->getSearch()->deleteOrphanedIndexes();
+        Console::stdout("done\n", Console::FG_GREEN);
+    }
+
+    private function _gcCache(): void
+    {
+        $cache = Craft::$app->getCache();
+
+        // gc() isn't always implemented, or defined by an interface,
+        // so we have to be super defensive here :-/
+
+        if (!method_exists($cache, 'gc')) {
+            return;
+        }
+
+        $method = new ReflectionMethod($cache, 'gc');
+
+        if (!$method->isPublic()) {
+            return;
+        }
+
+        $requiredArgs = $method->getNumberOfRequiredParameters();
+        $firstArg = $method->getParameters()[0] ?? null;
+        $hasForceArg = $firstArg && $firstArg->getName() === 'force';
+
+        if ($requiredArgs > 1 || ($requiredArgs === 1 && !$hasForceArg)) {
+            return;
+        }
+
+        Console::stdout('    > garbage-collecting data caches ... ');
+
+        if ($hasForceArg) {
+            $cache->gc(true);
+        } else {
+            $cache->gc();
+        }
+
         Console::stdout("done\n", Console::FG_GREEN);
     }
 
