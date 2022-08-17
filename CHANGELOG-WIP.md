@@ -1,12 +1,12 @@
 # Release Notes for Craft CMS 4.3 (WIP)
 
 ### Added
+- Added `craft\elements\actions\Restore::$restorableElementsOnly`.
 - Added `craft\events\CreateTwigEvent`.
 - Added `craft\i18n\FormatConverter::convertDatePhpToHuman()`. ([#10546](https://github.com/craftcms/cms/pull/10546))
 - Added `craft\i18n\Locale::FORMAT_HUMAN`.
 - Added `craft\web\Controller::getCurrentUser()`. ([#11754](https://github.com/craftcms/cms/pull/11754))
 - Added `craft\web\View::EVENT_AFTER_CREATE_TWIG`. ([#11774](https://github.com/craftcms/cms/pull/11774))
-- Added `craft\elements\actions\Restore::$restorableElementsOnly`.
 - Added the `Craft.useMobileStyles()` JavaScript method. ([#11636](https://github.com/craftcms/cms/pull/11636))
 
 ### Changed
