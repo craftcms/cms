@@ -1951,6 +1951,33 @@ class ElementQuery extends Query implements ElementQueryInterface
     }
 
     /**
+     * @inerhitdoc
+     */
+    protected function normalizeSelect($columns)
+    {
+        $select = parent::normalizeSelect($columns);
+        /** @var string|ElementInterface $class */
+        /** @phpstan-var class-string<ElementInterface>|ElementInterface $class */
+        $class = $this->elementType;
+        if ($class::hasContent() && isset($this->contentTable)) {
+            $this->customFields = $this->customFields();
+        }
+        // Swap in the actual field column name for custom fields
+        if (is_array($this->customFields)) {
+            foreach ($this->customFields as $field) {
+                $handle = $field->handle;
+                if (!empty($select[$handle])) {
+                    $column = ElementHelper::fieldColumnFromField($field);
+                    unset($select[$handle]);
+                    $select[$handle] = $column;
+                }
+            }
+        }
+
+        return $select;
+    }
+
+    /**
      * Returns any cache invalidation tags that caches involving this element query should use as dependencies.
      *
      * Use the most specific tag(s) possible, to reduce the likelihood of pointless cache clearing.
