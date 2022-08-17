@@ -321,6 +321,9 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
     },
 
     removeElement: function ($element) {
+      // Remove any inputs from the form data
+      $('[name]', $element).removeAttr('name');
+
       this.removeElements($element);
       this.animateElementAway($element, () => {
         $element.remove();
@@ -343,22 +346,12 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
         );
       }
 
-      // Pause the draft editor
-      if (window.draftEditor) {
-        window.draftEditor.pause();
-      }
-
       $element.velocity(
         animateCss,
         Craft.BaseElementSelectInput.REMOVE_FX_DURATION,
         () => {
           if (callback) {
             callback();
-          }
-
-          // Resume the draft editor
-          if (window.draftEditor) {
-            window.draftEditor.resume();
           }
         }
       );
