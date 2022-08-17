@@ -236,6 +236,8 @@ Craft.ui = {
     let modal = new Garnish.Modal($container, {
       closeOtherModals: false,
     });
+
+    console.log(modal);
     $container.on('copy', () => {
       modal.hide();
     });
