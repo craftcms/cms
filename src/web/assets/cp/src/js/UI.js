@@ -1,4 +1,6 @@
 /** global: Craft */
+import Garnish from '../../../garnish/src';
+
 /** global: Garnish */
 Craft.ui = {
   createButton: function (config) {
@@ -237,7 +239,6 @@ Craft.ui = {
       closeOtherModals: false,
     });
 
-    console.log(modal);
     $container.on('copy', () => {
       modal.hide();
     });
