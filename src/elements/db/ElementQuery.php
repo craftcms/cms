@@ -1968,8 +1968,10 @@ class ElementQuery extends Query implements ElementQueryInterface
                 $handle = $field->handle;
                 if (!empty($select[$handle])) {
                     $column = ElementHelper::fieldColumnFromField($field);
-                    unset($select[$handle]);
-                    $select[$handle] = $column;
+                    if ($column) {
+                        unset($select[$handle]);
+                        $select[$handle] = $column;
+                    }
                 }
             }
         }
