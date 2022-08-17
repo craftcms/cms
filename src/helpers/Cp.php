@@ -1270,8 +1270,6 @@ JS, [
      */
     public static function addressFieldsHtml(Address $address): string
     {
-        $formatRepo = Craft::$app->getAddresses()->getAddressFormatRepository()->get($address->countryCode);
-
         $requiredFields = [];
         $scenario = $address->getScenario();
         $address->setScenario(Element::SCENARIO_LIVE);
@@ -1288,9 +1286,10 @@ JS, [
             }
         }
 
+        $addressesService = Craft::$app->getAddresses();
         $visibleFields = array_flip(array_merge(
-                $formatRepo->getUsedFields(),
-                $formatRepo->getUsedSubdivisionFields(),
+                $addressesService->getUsedFields($address->countryCode),
+                $addressesService->getUsedSubdivisionFields($address->countryCode),
             )) + $requiredFields;
 
         return
