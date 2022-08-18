@@ -1373,12 +1373,32 @@ class ElementQuery extends Query implements ElementQueryInterface
             $this->subQuery->andWhere(Db::parseParam('elements_sites.uri', $this->uri, '=', true));
         }
 
+        // Map ambiguous column names to the `elements` table
+        // (for use in SELECT and ORDER BY clauses)
+        $columnMap = [
+            'id' => 'elements.id',
+            'enabled' => 'elements.enabled',
+            'dateCreated' => 'elements.dateCreated',
+            'dateUpdated' => 'elements.dateUpdated',
+            'uid' => 'elements.uid',
+        ];
+
+        if (is_array($this->customFields)) {
+            // Map custom field handles to their content columns
+            foreach ($this->customFields as $field) {
+                if (($column = $this->_fieldColumn($field)) !== null) {
+                    $firstCol = is_string($column) ? $column : reset($column);
+                    $columnMap[$field->handle] = "content.$firstCol";
+                }
+            }
+        }
+
         $this->_applyRelatedToParam();
         $this->_applyStructureParams($class);
         $this->_applyRevisionParams();
         $this->_applySearchParam($builder->db);
-        $this->_applyOrderByParams($builder->db);
-        $this->_applySelectParam();
+        $this->_applyOrderByParams($builder->db, $columnMap);
+        $this->_applySelectParam($columnMap);
         $this->_applyJoinParams();
 
         // Give other classes a chance to make changes up front
@@ -2617,10 +2637,12 @@ class ElementQuery extends Query implements ElementQueryInterface
      * Applies the 'fixedOrder' and 'orderBy' params to the query being prepared.
      *
      * @param Connection $db
+     * @param string[] $columnMap
+     * @phpstan-param array<string,string> $columnMap
      * @throws Exception if the DB connection doesn't support fixed ordering
      * @throws QueryAbortedException
      */
-    private function _applyOrderByParams(Connection $db): void
+    private function _applyOrderByParams(Connection $db, array $columnMap): void
     {
         if (!isset($this->orderBy) || !empty($this->query->orderBy)) {
             return;
@@ -2653,31 +2675,13 @@ class ElementQuery extends Query implements ElementQueryInterface
             }
         }
 
-        // Define the real column name mapping (e.g. `fieldHandle` => `field_fieldHandle`)
-        $orderColumnMap = [];
-
-        if (is_array($this->customFields)) {
-            // Add the field column prefixes
-            foreach ($this->customFields as $field) {
-                if (($column = $this->_fieldColumn($field)) !== null) {
-                    $firstCol = is_string($column) ? $column : reset($column);
-                    $orderColumnMap[$field->handle] = "content.$firstCol";
-                }
-            }
-        }
-
-        // Prevent “1052 Column 'id' in order clause is ambiguous” MySQL error
-        $orderColumnMap['id'] = 'elements.id';
-        $orderColumnMap['dateCreated'] = 'elements.dateCreated';
-        $orderColumnMap['dateUpdated'] = 'elements.dateUpdated';
-
         // Rename orderBy keys based on the real column name mapping
         // (yes this is awkward but we need to preserve the order of the keys!)
         /** @var array $orderBy */
         $orderBy = array_merge($this->orderBy);
         $orderByColumns = array_keys($orderBy);
 
-        foreach ($orderColumnMap as $orderValue => $columnName) {
+        foreach ($columnMap as $orderValue => $columnName) {
             // Are we ordering by this column name?
             $pos = array_search($orderValue, $orderByColumns, true);
 
@@ -2742,16 +2746,31 @@ class ElementQuery extends Query implements ElementQueryInterface
 
     /**
      * Applies the 'select' param to the query being prepared.
+     *
+     * @param string[] $columnMap
+     * @phpstan-param array<string,string> $columnMap
      */
-    private function _applySelectParam(): void
+    private function _applySelectParam(array $columnMap): void
     {
-        // Select all columns defined by [[select]]
-        $select = array_merge((array)$this->select);
+        // Select all columns defined by [[select]], swapping out any mapped column names
+        $select = [];
+        $includeDefaults = false;
+
+        foreach ((array)$this->select as $key => $column) {
+            if ($key === '**') {
+                $includeDefaults = true;
+            } else {
+                // Is this a mapped column name (without a custom alias)?
+                if ($key === $column && isset($columnMap[$key])) {
+                    $key = $column = $columnMap[$key];
+                }
+
+                $select[$key] = $column;
+            }
+        }
 
         // Is there still a ** placeholder param?
-        if (isset($select['**'])) {
-            unset($select['**']);
-
+        if ($includeDefaults) {
             // Merge in the default columns
             $select = array_merge($select, [
                 'elements.id' => 'elements.id',
