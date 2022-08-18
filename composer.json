@@ -92,6 +92,9 @@
     "ext-imagick": "Adds support for more image processing formats and options.",
     "ext-iconv": "Adds support for more character encodings than PHP’s built-in mb_convert_encoding() function, which Craft will take advantage of when converting strings to UTF-8."
   },
+  "bin": [
+    "bin/craft"
+  ],
   "autoload": {
     "psr-4": {
       "craft\\": "src/",
