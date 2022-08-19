@@ -2756,16 +2756,21 @@ class ElementQuery extends Query implements ElementQueryInterface
         $select = [];
         $includeDefaults = false;
 
-        foreach ((array)$this->select as $key => $column) {
-            if ($key === '**') {
+        foreach ((array)$this->select as $alias => $column) {
+            if ($alias === '**') {
                 $includeDefaults = true;
             } else {
                 // Is this a mapped column name (without a custom alias)?
-                if ($key === $column && isset($columnMap[$key])) {
-                    $key = $column = $columnMap[$key];
+                if ($alias === $column && isset($columnMap[$alias])) {
+                    $column = $columnMap[$alias];
+
+                    // Completely ditch the mapped name if instantiated elements are going to be returned
+                    if (!$this->asArray) {
+                        $alias = $columnMap[$alias];
+                    }
                 }
 
-                $select[$key] = $column;
+                $select[$alias] = $column;
             }
         }
 
