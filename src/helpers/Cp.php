@@ -8,6 +8,7 @@
 namespace craft\helpers;
 
 use Craft;
+use craft\base\Element;
 use craft\base\ElementInterface;
 use craft\base\FieldLayoutElement;
 use craft\behaviors\DraftBehavior;
@@ -24,6 +25,7 @@ use craft\web\View;
 use yii\base\Event;
 use yii\base\InvalidArgumentException;
 use yii\helpers\Markdown;
+use yii\validators\RequiredValidator;
 
 /**
  * Class Cp
@@ -353,12 +355,20 @@ class Cp
 
         $user = Craft::$app->getUser()->getIdentity();
 
-        if ($user && $element->canView($user)) {
-            $attributes['data']['editable'] = true;
-        }
+        if ($user) {
+            if ($element->canView($user)) {
+                $attributes['data']['editable'] = true;
+            }
 
-        if ($user && $context === 'index' && $element->canDelete($user)) {
-            $attributes['data']['deletable'] = true;
+            if ($context === 'index') {
+                if ($element->canSave($user)) {
+                    $attributes['data']['savable'] = true;
+                }
+
+                if ($element->canDelete($user)) {
+                    $attributes['data']['deletable'] = true;
+                }
+            }
         }
 
         if ($element->trashed) {
@@ -505,6 +515,7 @@ class Cp
     {
         $attribute = $config['attribute'] ?? $config['id'] ?? null;
         $id = $config['id'] = $config['id'] ?? 'field' . mt_rand();
+        $labelId = $config['labelId'] ?? "$id-label";
         $instructionsId = $config['instructionsId'] ?? "$id-instructions";
         $tipId = $config['tipId'] ?? "$id-tip";
         $warningId = $config['warningId'] ?? "$id-warning";
@@ -518,7 +529,10 @@ class Cp
         $status = $config['status'] ?? null;
 
         if (str_starts_with($input, 'template:')) {
-            // Set a describedBy value in case the input template supports it
+            // Set labelledBy and describedBy values in case the input template supports it
+            if (!isset($config['labelledBy'])) {
+                $config['labelledBy'] = $labelId;
+            }
             if (!isset($config['describedBy'])) {
                 $descriptorIds = array_filter([
                     $errors ? $errorsId : null,
@@ -535,7 +549,6 @@ class Cp
 
         $fieldset = $config['fieldset'] ?? false;
         $fieldId = $config['fieldId'] ?? "$id-field";
-        $labelId = $config['labelId'] ?? "$id-" . ($fieldset ? 'legend' : 'label');
         $label = $config['fieldLabel'] ?? $config['label'] ?? null;
 
         if ($label === '__blank__') {
@@ -638,16 +651,22 @@ class Cp
                         ], $config['labelAttributes'] ?? []))
                         : '') .
                     ($translatable
-                        ? Html::tag('div', '', [
+                        ? Html::beginTag('div', [
                             'class' => ['t9n-indicator'],
                             'title' => $config['translationDescription'] ?? Craft::t('app', 'This field is translatable.'),
-                            'aria' => [
-                                'label' => $config['translationDescription'] ?? Craft::t('app', 'This field is translatable.'),
-                            ],
+                        ]) .
+                        Html::tag('span', '', [
                             'data' => [
                                 'icon' => 'language',
                             ],
-                        ])
+                            'aria' => [
+                                'hidden' => 'true',
+                            ],
+                        ]) .
+                        Html::tag('span', $config['translationDescription'] ?? Craft::t('app', 'This field is translatable.'), [
+                            'class' => 'visually-hidden',
+                        ]) .
+                        Html::endTag('div')
                         : '') .
                     ($showAttribute
                         ? Html::tag('div', '', [
@@ -1115,14 +1134,15 @@ JS, [
         ]);
 
         return
-            Html::beginTag('div', [
+            Html::beginTag('ul', [
                 'id' => $config['id'],
                 'class' => 'address-cards',
             ]) .
             implode("\n", array_map(fn(Address $address) => static::addressCardHtml($address, $config), $addresses)) .
+            Html::beginTag('li') .
             Html::beginTag('button', [
                 'type' => 'button',
-                'class' => ['btn', 'dashed', 'add', 'icon'],
+                'class' => ['btn', 'dashed', 'add', 'icon', 'address-cards__add-btn'],
             ]) .
             Html::tag('div', '', [
                 'class' => ['spinner', 'spinner-absolute'],
@@ -1130,8 +1150,9 @@ JS, [
             Html::tag('div', Craft::t('app', 'Add an address'), [
                 'class' => 'label',
             ]) .
-            Html::endTag('button') .
-            Html::endTag('div'); // .address-cards
+            Html::endTag('button') . // .add
+            Html::endTag('li') .
+            Html::endTag('ul'); // .address-cards
     }
 
     /**
@@ -1148,12 +1169,11 @@ JS, [
             'name' => null,
         ];
 
-        $label = $address->title;
         $canDelete = $address->canDelete(Craft::$app->getUser()->getIdentity());
         $actionMenuId = sprintf('address-card-action-menu-%s', mt_rand());
 
         return
-            Html::beginTag('div', [
+            Html::beginTag('li', [
                 'class' => 'address-card',
                 'data' => [
                     'id' => $address->id,
@@ -1162,10 +1182,10 @@ JS, [
             ]) .
             ($config['name'] ? Html::hiddenInput("{$config['name']}[]", (string)$address->id) : '') .
             Html::beginTag('div', ['class' => 'address-card-header']) .
-            Html::tag('div', $address->title, [
+            Html::tag('h2', Html::encode($address->title), [
                 'class' => array_filter([
                     'address-card-label',
-                    !$label ? 'hidden' : null,
+                    !$address->title ? 'hidden' : null,
                 ]),
             ]) .
             ($canDelete
@@ -1180,7 +1200,7 @@ JS, [
                     'title' => Craft::t('app', 'Actions'),
                     'aria' => [
                         'controls' => $actionMenuId,
-                        'label' => sprintf('%s %s', $label ?? Craft::t('app', 'New Address'), Craft::t('app', 'Settings')),
+                        'label' => sprintf('%s %s', $address->title ? Html::encode($address->title) : Craft::t('app', 'New Address'), Craft::t('app', 'Settings')),
                     ],
                     'data' => [
                         'icon' => 'settings',
@@ -1193,10 +1213,22 @@ JS, [
                 ]) .
                 Html::beginTag('ul', ['class' => 'padded']) .
                 Html::beginTag('li') .
-                Html::a(Craft::t('app', 'Delete'), '#', [
-                    'class' => 'error',
+                Html::button(Craft::t('app', 'Edit'), [
+                    'class' => 'menu-option',
                     'type' => 'button',
-                    'role' => 'button',
+                    'aria' => [
+                        'label' => Craft::t('app', 'Edit'),
+                    ],
+                    'data' => [
+                        'icon' => 'edit',
+                        'action' => 'edit',
+                    ],
+                ]) .
+                Html::endTag('li') .
+                Html::beginTag('li') .
+                Html::button(Craft::t('app', 'Delete'), [
+                    'class' => 'error menu-option',
+                    'type' => 'button',
                     'aria' => [
                         'label' => Craft::t('app', 'Delete'),
                     ],
@@ -1215,7 +1247,7 @@ JS, [
             Html::tag('div', Craft::$app->getAddresses()->formatAddress($address), [
                 'class' => 'address-card-body',
             ]) .
-            Html::endTag('div'); // .address-card
+            Html::endTag('li'); // .address-card
     }
 
     /**
@@ -1229,7 +1261,22 @@ JS, [
     {
         $formatRepo = Craft::$app->getAddresses()->getAddressFormatRepository()->get($address->countryCode);
 
-        $requiredFields = array_flip($formatRepo->getRequiredFields());
+        $requiredFields = [];
+        $scenario = $address->getScenario();
+        $address->setScenario(Element::SCENARIO_LIVE);
+        $activeValidators = $address->getActiveValidators();
+        $address->setScenario($scenario);
+
+        foreach ($activeValidators as $validator) {
+            if ($validator instanceof RequiredValidator) {
+                foreach ($validator->getAttributeNames() as $attr) {
+                    if ($validator->when === null || call_user_func($validator->when, $address, $attr)) {
+                        $requiredFields[$attr] = true;
+                    }
+                }
+            }
+        }
+
         $visibleFields = array_flip(array_merge(
                 $formatRepo->getUsedFields(),
                 $formatRepo->getUsedSubdivisionFields(),
@@ -1489,7 +1536,7 @@ JS;
                 : '') .
             Html::endTag('div') . // .fld-workspace
             Html::beginTag('div', ['class' => 'fld-sidebar']) .
-            ($config['customizableTabs']
+            ($config['customizableUi']
                 ? Html::beginTag('div', [
                     'role' => 'listbox',
                     'class' => ['btngroup', 'small', 'fullwidth'],
@@ -1572,7 +1619,7 @@ JS;
                     $customizable ? 'draggable' : null,
                 ]),
             ]) .
-            Html::tag('span', $tab->name) .
+            Html::tag('span', Html::encode($tab->name)) .
             ($customizable
                 ? Html::a('', null, [
                     'role' => 'button',
@@ -1674,7 +1721,7 @@ JS;
                 ]),
                 'data' => ['name' => mb_strtolower($groupName)],
             ]) .
-            Html::tag('h6', $groupName) .
+            Html::tag('h6', Html::encode($groupName)) .
             implode('', array_map(fn(BaseField $field) => self::_fldElementSelectorHtml($field, true, [
                 'class' => array_filter([
                     $fieldLayout->isFieldIncluded($field->attribute()) ? 'hidden' : null,

@@ -164,7 +164,7 @@ Craft.AuthManager = Garnish.Base.extend(
         let $renewSessionBtn = $('<button/>', {
           type: 'submit',
           class: 'btn submit',
-          text: Craft.t('app', 'Keep me logged in'),
+          text: Craft.t('app', 'Keep me signed in'),
         }).appendTo($buttons);
 
         this.$logoutWarningPara = $('<p/>').prependTo($body);
@@ -283,7 +283,7 @@ Craft.AuthManager = Garnish.Base.extend(
           );
 
         this.$passwordInput = $(
-          '<input type="password" class="text password fullwidth" placeholder="' +
+          '<input type="password" class="text password fullwidth" autocomplete="current-password" placeholder="' +
             Craft.t('app', 'Password') +
             '"/>'
         ).appendTo($passwordWrapper);
@@ -293,6 +293,7 @@ Craft.AuthManager = Garnish.Base.extend(
             label: Craft.t('app', 'Sign in'),
             spinner: true,
           })
+          .attr('aria-disabled', 'true')
           .appendTo($buttonContainer);
         this.$loginErrorPara = $('<p class="error"/>').appendTo($body);
 
@@ -369,9 +370,11 @@ Craft.AuthManager = Garnish.Base.extend(
     validatePassword: function () {
       if (this.$passwordInput.val().length >= 6) {
         this.$loginBtn.removeClass('disabled');
+        this.$loginBtn.removeAttr('aria-disabled');
         return true;
       } else {
         this.$loginBtn.addClass('disabled');
+        this.$loginBtn.attr('aria-disabled', 'true');
         return false;
       }
     },

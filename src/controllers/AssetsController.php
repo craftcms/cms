@@ -36,6 +36,7 @@ use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\base\InvalidRouteException;
 use yii\base\NotSupportedException;
+use yii\base\UserException;
 use yii\web\BadRequestHttpException;
 use yii\web\ForbiddenHttpException;
 use yii\web\HttpException;
@@ -173,6 +174,7 @@ class AssetsController extends Controller
     {
         $this->requireAcceptsJson();
 
+        $elementsService = Craft::$app->getElements();
         $uploadedFile = UploadedFile::getInstanceByName('assets-upload');
 
         if (!$uploadedFile) {
@@ -192,6 +194,7 @@ class AssetsController extends Controller
             $tempPath = $this->_getUploadedFileTempPath($uploadedFile);
 
             if (empty($folderId)) {
+                /** @var AssetsField|null $field */
                 $field = Craft::$app->getFields()->getFieldById((int)$fieldId);
 
                 if (!($field instanceof AssetsField)) {
@@ -200,11 +203,15 @@ class AssetsController extends Controller
 
                 if ($elementId = $this->request->getBodyParam('elementId')) {
                     $siteId = $this->request->getBodyParam('siteId') ?: null;
-                    $element = Craft::$app->getElements()->getElementById($elementId, null, $siteId);
+                    $element = $elementsService->getElementById($elementId, null, $siteId);
                 } else {
                     $element = null;
                 }
                 $folderId = $field->resolveDynamicPathToFolderId($element);
+
+                $selectionCondition = $field->getSelectionCondition();
+            } else {
+                $selectionCondition = null;
             }
 
             if (empty($folderId)) {
@@ -222,6 +229,17 @@ class AssetsController extends Controller
 
             $filename = Assets::prepareAssetName($uploadedFile->name);
 
+            if ($selectionCondition) {
+                $tempFolder = Craft::$app->getAssets()->getUserTemporaryUploadFolder();
+                if ($folder->id !== $tempFolder->id) {
+                    // upload to the user's temp folder initially, with a temp name
+                    $originalFolder = $folder;
+                    $originalFilename = $filename;
+                    $folder = $tempFolder;
+                    $filename = uniqid('asset', true) . '.' . pathinfo($filename, PATHINFO_EXTENSION);
+                }
+            }
+
             $asset = new Asset();
             $asset->tempFilePath = $tempPath;
             $asset->setFilename($filename);
@@ -231,13 +249,37 @@ class AssetsController extends Controller
             $asset->avoidFilenameConflicts = true;
             $asset->setScenario(Asset::SCENARIO_CREATE);
 
-            $result = Craft::$app->getElements()->saveElement($asset);
+            $result = $elementsService->saveElement($asset);
 
             // In case of error, let user know about it.
             if (!$result) {
                 $errors = $asset->getFirstErrors();
-                // TODO: use asModelFailure, output errors in js
-                return $this->asFailure(Craft::t('app', 'Failed to save the asset:') . ' ' . implode(";\n", $errors));
+                return $this->asFailure(implode("\n", $errors));
+            }
+
+            if ($selectionCondition) {
+                if (!$selectionCondition->matchElement($asset)) {
+                    // delete and reject it
+                    $elementsService->deleteElement($asset, true);
+                    return $this->asFailure(Craft::t('app', '{filename} isn’t selectable for this field.', [
+                        'filename' => $uploadedFile->name,
+                    ]));
+                }
+
+                if (isset($originalFilename, $originalFolder)) {
+                    // move it into the original target destination
+                    $asset->title = Assets::filename2Title(pathinfo($originalFilename, PATHINFO_FILENAME));
+                    $asset->newFilename = $originalFilename;
+                    $asset->newFolderId = $originalFolder->id;
+                    $asset->setScenario(Asset::SCENARIO_MOVE);
+
+                    if (!$elementsService->saveElement($asset)) {
+                        $errors = $asset->getFirstErrors();
+                        return $this->asJson([
+                            'error' => $this->asFailure(implode("\n", $errors)),
+                        ]);
+                    }
+                }
             }
 
             if ($asset->conflictingFilename !== null) {
@@ -257,7 +299,7 @@ class AssetsController extends Controller
                 'filename' => $asset->getFilename(),
                 'assetId' => $asset->id,
             ]);
-        } catch (Throwable $e) {
+        } catch (UserException $e) {
             Craft::error('An error occurred when saving an asset: ' . $e->getMessage(), __METHOD__);
             Craft::$app->getErrorHandler()->logException($e);
             return $this->asFailure($e->getMessage());
@@ -348,7 +390,7 @@ class AssetsController extends Controller
                     $assetId = $sourceAsset->id;
                 }
             }
-        } catch (Throwable $e) {
+        } catch (UserException $e) {
             Craft::error('An error occurred when replacing an asset: ' . $e->getMessage(), __METHOD__);
             Craft::$app->getErrorHandler()->logException($e);
             return $this->asFailure($e->getMessage());
@@ -404,7 +446,7 @@ class AssetsController extends Controller
                 'folderUid' => $folderModel->uid,
                 'folderId' => $folderModel->id,
             ]);
-        } catch (FsException|ForbiddenHttpException $exception) {
+        } catch (UserException $exception) {
             return $this->asFailure($exception->getMessage());
         }
     }
@@ -435,7 +477,7 @@ class AssetsController extends Controller
         $this->requireVolumePermissionByFolder('deleteAssets', $folder);
         try {
             $assets->deleteFoldersByIds($folderId);
-        } catch (FsException $exception) {
+        } catch (UserException $exception) {
             return $this->asFailure($exception->getMessage());
         }
 
@@ -467,7 +509,7 @@ class AssetsController extends Controller
 
         try {
             $success = Craft::$app->getElements()->deleteElement($asset);
-        } catch (Throwable $e) {
+        } catch (UserException $e) {
             if ($this->request->getAcceptsJson()) {
                 return $this->asFailure($e->getMessage());
             }
@@ -516,7 +558,7 @@ class AssetsController extends Controller
 
         try {
             $newName = Craft::$app->getAssets()->renameFolderById($folderId, $newName);
-        } catch (FsException|AssetException $exception) {
+        } catch (UserException $exception) {
             return $this->asFailure($exception->getMessage());
         }
 
@@ -772,8 +814,14 @@ class AssetsController extends Controller
             throw new BadRequestHttpException('The Asset cannot be found');
         }
 
-        $url = Craft::$app->getAssets()->getImagePreviewUrl($asset, $size, $size);
-        return $this->response->redirect($url);
+        try {
+            $url = Craft::$app->getAssets()->getImagePreviewUrl($asset, $size, $size);
+            return $this->response->redirect($url);
+        } catch (NotSupportedException) {
+            // just output the file contents
+            $path = ImageTransforms::getLocalImageSource($asset);
+            return $this->response->sendFile($path, $asset->getFilename());
+        }
     }
 
     /**
@@ -922,7 +970,7 @@ class AssetsController extends Controller
 
                 $output['newAssetId'] = $newAsset->id;
             }
-        } catch (Throwable $exception) {
+        } catch (UserException $exception) {
             return $this->asFailure($exception->getMessage());
         }
 
@@ -1034,7 +1082,7 @@ class AssetsController extends Controller
             }
         } catch (\Exception $exception) {
             Craft::$app->getErrorHandler()->logException($exception);
-            throw new ServerErrorHttpException('Image transform cannot be created.');
+            throw new ServerErrorHttpException('Image transform cannot be created.', 0, $exception);
         }
 
         $asset = Asset::findOne(['id' => $assetId]);

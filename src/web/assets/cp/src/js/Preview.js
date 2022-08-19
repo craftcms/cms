@@ -86,6 +86,8 @@ Craft.Preview = Garnish.Base.extend(
         Craft.Preview.defaultEditorWidth
       );
       this.setAnimationDuration();
+
+      Craft.Preview.instances.push(this);
     },
 
     get editorWidth() {
@@ -255,11 +257,10 @@ Craft.Preview = Garnish.Base.extend(
           // Refresh button
           this.$refreshBtn = $('<button/>', {
             type: 'button',
-            class: 'btn hidden',
+            class: 'btn',
             text: Craft.t('app', 'Refresh'),
             'data-icon': 'refresh',
           }).appendTo($buttonContainer);
-          this._updateRefreshBtn();
           this.addListener(this.$refreshBtn, 'click', () => {
             this.updateIframe(false, true);
           });
@@ -346,12 +347,6 @@ Craft.Preview = Garnish.Base.extend(
       this.updateIframe();
 
       this.elementEditor.on('update', this._updateIframeProxy);
-      Garnish.on(
-        Craft.ElementEditorSlideout,
-        'submit',
-        this._updateIframeProxy
-      );
-      Garnish.on(Craft.AssetImageEditor, 'save', this._updateIframeProxy);
 
       Craft.ElementThumbLoader.retryAll();
 
@@ -494,21 +489,12 @@ Craft.Preview = Garnish.Base.extend(
       return typeof typeof target.refresh === 'undefined' || !!target.refresh;
     },
 
-    _updateRefreshBtn: function () {
-      if (!this._autoRefresh()) {
-        this.$refreshBtn.removeClass('hidden');
-      } else {
-        this.$refreshBtn.addClass('hidden');
-      }
-    },
-
     switchTarget: function (i) {
       this.activeTarget = i;
       this.$targetBtn.text(this.elementEditor.settings.previewTargets[i].label);
       this.$targetMenu.find('a.sel').removeClass('sel');
       this.$targetMenu.find('a').eq(i).addClass('sel');
       this.updateIframe(true);
-      this._updateRefreshBtn();
       this.trigger('switchTarget', {
         previewTarget: this.elementEditor.settings.previewTargets[i],
       });
@@ -597,12 +583,6 @@ Craft.Preview = Garnish.Base.extend(
         });
 
       this.elementEditor.off('update', this._updateIframeProxy);
-      Garnish.off(
-        Craft.ElementEditorSlideout,
-        'submit',
-        this._updateIframeProxy
-      );
-      Garnish.off(Craft.AssetImageEditor, 'save', this._updateIframeProxy);
 
       Craft.ElementThumbLoader.retryAll();
 
@@ -1005,9 +985,26 @@ Craft.Preview = Garnish.Base.extend(
       this.$previewContainer.removeClass('dragging');
       Craft.setLocalStorage('LivePreview.editorWidth', this.editorWidth);
     },
+
+    destroy: function () {
+      Craft.Preview.instances = Craft.Preview.instances.filter(
+        (o) => o !== this
+      );
+      this.base();
+    },
   },
   {
     defaultEditorWidth: 0.33,
     minEditorWidthInPx: 320,
+    instances: [],
+
+    refresh: function () {
+      for (preview of Craft.Preview.instances) {
+        preview.updateIframe();
+      }
+      for (preview of Craft.LivePreview.instances) {
+        preview.forceUpdateIframe();
+      }
+    },
   }
 );

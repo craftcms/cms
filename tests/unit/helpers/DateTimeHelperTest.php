@@ -57,6 +57,24 @@ class DateTimeHelperTest extends TestCase
     }
 
     /**
+     *
+     */
+    public function testPause(): void
+    {
+        // Use a slightly-off time so we don't have to sleep()
+        $now = (new DateTime('now'))->modify('-1 minute');
+        $timestamp = $now->getTimestamp();
+        DateTimeHelper::pause($now);
+        self::assertEquals($timestamp, DateTimeHelper::currentTimeStamp());
+        DateTimeHelper::pause();
+        self::assertEquals($timestamp, DateTimeHelper::currentTimeStamp());
+        DateTimeHelper::resume();
+        self::assertEquals($timestamp, DateTimeHelper::currentTimeStamp());
+        DateTimeHelper::resume();
+        self::assertNotEquals($timestamp, DateTimeHelper::currentTimeStamp());
+    }
+
+    /**
      * @throws Exception
      */
     public function testCurrentUtcDateTime(): void
@@ -76,17 +94,6 @@ class DateTimeHelperTest extends TestCase
             DateTimeHelper::currentTimeStamp(),
             (new DateTime('now', $this->utcTimezone))->getTimestamp()
         );
-    }
-
-    /**
-     * @dataProvider secondsToHumanTimeDurationDataProvider
-     * @param string $expected
-     * @param int $seconds
-     * @param bool $showSeconds
-     */
-    public function testSecondsToHumanTimeDuration(string $expected, int $seconds, bool $showSeconds = true): void
-    {
-        self::assertSame($expected, DateTimeHelper::secondsToHumanTimeDuration($seconds, $showSeconds));
     }
 
     /**
@@ -225,16 +232,15 @@ class DateTimeHelperTest extends TestCase
     }
 
     /**
-     * @dataProvider humanIntervalFromDurationDataProvider
+     * @dataProvider humanDurationDataProvider
      * @param string $expected
-     * @param string $duration
-     * @param bool $showSeconds
+     * @param string|int $duration
+     * @param bool|null $showSeconds
      * @throws Exception
      */
-    public function testHumanIntervalFromDuration(string $expected, string $duration, bool $showSeconds = true): void
+    public function testHumanDuration(string $expected, string|int $duration, ?bool $showSeconds = null): void
     {
-        $dateInterval = new DateInterval($duration);
-        self::assertSame($expected, DateTimeHelper::humanDurationFromInterval($dateInterval, $showSeconds));
+        self::assertSame($expected, DateTimeHelper::humanDuration($duration, $showSeconds));
     }
 
     /**
@@ -428,25 +434,6 @@ class DateTimeHelperTest extends TestCase
             [60, DateTimeHelper::SECONDS_MINUTE],
             [2629740, DateTimeHelper::SECONDS_MONTH],
             [31556874, DateTimeHelper::SECONDS_YEAR],
-        ];
-    }
-
-    /**
-     * @return array
-     */
-    public function secondsToHumanTimeDurationDataProvider(): array
-    {
-        return [
-            ['22 seconds', 22],
-            ['1 second', 1],
-            ['2 minutes', 120],
-            ['2 minutes, 5 seconds', 125],
-            ['2 minutes, 1 second', 121],
-            ['2 minutes', 121, false],
-            ['3 minutes', 179, false],
-            ['1 hour', 3600],
-            ['1 day', 86400],
-            ['1 week', 604800],
         ];
     }
 
@@ -668,7 +655,7 @@ class DateTimeHelperTest extends TestCase
     /**
      * @return array
      */
-    public function humanIntervalFromDurationDataProvider(): array
+    public function humanDurationDataProvider(): array
     {
         return [
             ['1 day', 'P1D'],
@@ -680,6 +667,29 @@ class DateTimeHelperTest extends TestCase
             ['1 hour and 1 minute', 'PT1H1M25S', false],
             ['1 hour and 2 minutes', 'PT1H1M55S', false],
             ['less than a minute', 'PT1S', false],
+            ['1 minute', 82],
+            ['1 minute', 82, false],
+            ['1 minute and 22 seconds', 82, true],
+            ['22 seconds', 22, true],
+            ['22 seconds', 22],
+            ['less than a minute', 22, false],
+            ['1 second', 1],
+            ['2 minutes', 120],
+            ['2 minutes and 5 seconds', 125, true],
+            ['2 minutes and 1 second', 121, true],
+            ['2 minutes', 121, false],
+            ['3 minutes', 179, false],
+            ['1 hour', 3600],
+            ['1 day', 86400],
+            ['1 week', 604800],
+            ['8 days', 691200],
+            ['17 minutes', 999],
+            ['17 minutes', '999'],
+            ['16 minutes and 39 seconds', 999, true],
+            ['999 seconds', 'PT999S'],
+            ['27 minutes', 'PT10M999S'],
+            ['0 seconds', 0],
+            ['less than a minute', 0, false],
         ];
     }
 
@@ -692,7 +702,6 @@ class DateTimeHelperTest extends TestCase
             [10, 10000, 10],
             [0, 0000, 0],
             [928172, 928172000, 928172],
-
         ];
     }
 

@@ -104,8 +104,8 @@
           this.plugin.editions.length > 1
         ) {
           tabs.push({
-            name: this.$options.filters.t('Pricing', 'app'),
-            slug: 'pricing',
+            name: this.$options.filters.t('Editions', 'app'),
+            slug: 'editions',
           });
         }
 

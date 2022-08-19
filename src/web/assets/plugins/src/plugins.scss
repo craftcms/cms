@@ -14,14 +14,14 @@
       display: table;
 
       .icon,
-      .details {
+      .plugin-details {
         display: table-cell;
       }
 
       .icon {
         display: block;
         vertical-align: top;
-        @include padding-right(14px);
+        @include margin-right(14px);
         position: relative;
 
         a {
@@ -52,7 +52,7 @@
         }
       }
 
-      .details {
+      .plugin-details {
         vertical-align: middle;
 
         .plugin-id {
@@ -224,7 +224,7 @@
           .pane {
             margin: 0;
             padding: 3px;
-            background: var(--gray-050);
+            background: transparentize($inputColor, 0.75);
             border-radius: var(--medium-border-radius);
 
             input.text {
@@ -232,6 +232,7 @@
               font-size: 11px !important;
               padding: 3px 7px 1px;
               width: 19em;
+              min-height: 0;
             }
           }
 
@@ -249,7 +250,7 @@
 
     &:not(.collapsed) {
       .plugin-infos {
-        .details {
+        .plugin-details {
           min-width: 150px;
         }
       }

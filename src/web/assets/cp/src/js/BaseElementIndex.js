@@ -1,5 +1,7 @@
 /** global: Craft */
 /** global: Garnish */
+import Garnish from '../../../garnish/src';
+
 /**
  * Element index class
  */
@@ -783,10 +785,12 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       }
 
       if (
-        this.filterHuds[this.sourceKey] &&
-        this.filterHuds[this.sourceKey].serialized
+        this.filterHuds[this.siteId] &&
+        this.filterHuds[this.siteId][this.sourceKey] &&
+        this.filterHuds[this.siteId][this.sourceKey].serialized
       ) {
-        params.filters = this.filterHuds[this.sourceKey].serialized;
+        params.filters =
+          this.filterHuds[this.siteId][this.sourceKey].serialized;
       }
 
       // Give plugins a chance to hook in here
@@ -936,7 +940,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             }
 
             if (response.data.message) {
-              Craft.cp.displayNotice(response.data.message);
+              Craft.cp.displaySuccess(response.data.message);
             }
 
             this.afterAction(action, params);
@@ -1138,7 +1142,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.setInstanceState('selectedSource', this.sourceKey);
       this.sourceSelect.selectItem($source);
 
-      Craft.cp.updateSidebarMenuLabel();
+      Craft.cp.updateContentHeading();
 
       if (this.searching) {
         // Clear the search value without causing it to update elements
@@ -1688,7 +1692,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       var $headings = this.getSourceContainer().children('.heading');
       var $heading;
 
-      for (i = 0; i < $headings.length; i++) {
+      for (let i = 0; i < $headings.length; i++) {
         $heading = $headings.eq(i);
         if ($heading.nextUntil('.heading', ':not(.hidden)').length !== 0) {
           $heading.removeClass('hidden');
@@ -1705,6 +1709,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
         // Update the elements
         this.updateElements();
+        this.updateFilterBtn();
       }
     },
 
@@ -1941,17 +1946,28 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                 1
               );
 
-              let $prevBtn = $('<div/>', {
+              const $paginationNav = $('<nav/>', {
+                class: 'flex',
+                'aria-label': Craft.t('app', '{element} pagination', {
+                  element: itemLabel,
+                }),
+              }).appendTo($paginationContainer);
+
+              let $prevBtn = $('<button/>', {
+                role: 'button',
                 class:
                   'page-link prev-page' + (this.page > 1 ? '' : ' disabled'),
+                disabled: this.page === 1,
                 title: Craft.t('app', 'Previous Page'),
-              }).appendTo($paginationContainer);
-              let $nextBtn = $('<div/>', {
+              }).appendTo($paginationNav);
+              let $nextBtn = $('<button/>', {
+                role: 'button',
                 class:
                   'page-link next-page' +
                   (this.page < totalPages ? '' : ' disabled'),
+                disabled: this.page === totalPages,
                 title: Craft.t('app', 'Next Page'),
-              }).appendTo($paginationContainer);
+              }).appendTo($paginationNav);
 
               $('<div/>', {
                 class: 'page-info',
@@ -2236,6 +2252,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
     _showExportHud: function () {
       this.$exportBtn.addClass('active');
+      this.$exportBtn.attr('aria-expanded', 'true');
 
       var $form = $('<form/>', {
         class: 'export-form',
@@ -2305,6 +2322,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
       hud.on('hide', () => {
         this.$exportBtn.removeClass('active');
+        this.$exportBtn.attr('aria-expanded', 'false');
       });
 
       var submitting = false;
@@ -2380,33 +2398,48 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     showFilterHud: function () {
-      if (!this.filterHuds[this.sourceKey]) {
-        this.filterHuds[this.sourceKey] = new FilterHud(this, this.sourceKey);
+      if (!this.filterHuds[this.siteId]) {
+        this.filterHuds[this.siteId] = {};
+      }
+      if (!this.filterHuds[this.siteId][this.sourceKey]) {
+        this.filterHuds[this.siteId][this.sourceKey] = new FilterHud(
+          this,
+          this.sourceKey,
+          this.siteId
+        );
         this.updateFilterBtn();
       } else {
-        this.filterHuds[this.sourceKey].show();
+        this.filterHuds[this.siteId][this.sourceKey].show();
       }
     },
 
     updateFilterBtn: function () {
       this.$filterBtn.removeClass('active');
 
-      if (this.filterHuds[this.sourceKey]) {
+      if (
+        this.filterHuds[this.siteId] &&
+        this.filterHuds[this.siteId][this.sourceKey]
+      ) {
         this.$filterBtn
-          .attr('aria-controls', this.filterHuds[this.sourceKey].id)
+          .attr(
+            'aria-controls',
+            this.filterHuds[this.siteId][this.sourceKey].id
+          )
           .attr(
             'aria-expanded',
-            this.filterHuds[this.sourceKey].showing ? 'true' : 'false'
+            this.filterHuds[this.siteId][this.sourceKey].showing
+              ? 'true'
+              : 'false'
           );
 
         if (
-          this.filterHuds[this.sourceKey].showing ||
-          this.filterHuds[this.sourceKey].hasRules()
+          this.filterHuds[this.siteId][this.sourceKey].showing ||
+          this.filterHuds[this.siteId][this.sourceKey].hasRules()
         ) {
           this.$filterBtn.addClass('active');
         }
       } else {
-        this.$filterBtn.attr('aria-controls', null).attr('aria-expanded', null);
+        this.$filterBtn.attr('aria-controls', null);
       }
     },
   },
@@ -2447,15 +2480,17 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 const FilterHud = Garnish.HUD.extend({
   elementIndex: null,
   sourceKey: null,
+  siteId: null,
   id: null,
   loading: true,
   serialized: null,
   $clearBtn: null,
   cleared: false,
 
-  init: function (elementIndex, sourceKey) {
+  init: function (elementIndex, sourceKey, siteId) {
     this.elementIndex = elementIndex;
     this.sourceKey = sourceKey;
+    this.siteId = siteId;
     this.id = `filter-${Math.floor(Math.random() * 1000000000)}`;
 
     const $loadingContent = $('<div/>')
@@ -2533,12 +2568,17 @@ const FilterHud = Garnish.HUD.extend({
         this.$hud.find('.condition-container').on('htmx:load', () => {
           this.setReady();
         });
-
         this.setFocus();
       })
       .catch(() => {
         Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
       });
+
+    this.$hud.css('position', 'fixed');
+
+    this.addListener(Garnish.$win, 'scroll,resize', () => {
+      this.updateSizeAndPosition(true);
+    });
   },
 
   addListener: function (elem, events, data, func) {
@@ -2562,7 +2602,7 @@ const FilterHud = Garnish.HUD.extend({
   },
 
   setFocus: function () {
-    this.$main.find('.condition-footer .add').focus();
+    Garnish.setFocusWithin(this.$main);
   },
 
   clear: function () {
@@ -2571,7 +2611,9 @@ const FilterHud = Garnish.HUD.extend({
   },
 
   updateSizeAndPositionInternal: function () {
-    const searchOffset = this.elementIndex.$searchContainer.offset();
+    // const searchOffset = this.elementIndex.$searchContainer.offset();
+    const searchOffset =
+      this.elementIndex.$searchContainer[0].getBoundingClientRect();
 
     this.$hud.css({
       width: this.elementIndex.$searchContainer.outerWidth() - 2,
@@ -2601,7 +2643,6 @@ const FilterHud = Garnish.HUD.extend({
     }
 
     if (this.cleared) {
-      delete this.elementIndex.filterHuds[this.elementIndex.sourceKey];
       this.destroy();
     }
 
@@ -2615,5 +2656,10 @@ const FilterHud = Garnish.HUD.extend({
 
   serialize: function () {
     return !this.cleared && this.hasRules() ? this.$body.serialize() : null;
+  },
+
+  destroy: function () {
+    this.base();
+    delete this.elementIndex.filterHuds[this.siteId][this.sourceKey];
   },
 });

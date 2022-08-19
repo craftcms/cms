@@ -7,17 +7,29 @@ Craft.ui = {
       class: 'btn',
     });
     if (config.id) {
-      $btn.attr('id', id);
+      $btn.attr('id', config.id);
     }
     if (config.class) {
       $btn.addClass(config.class);
     }
+    if (config.ariaLabel) {
+      $btn.attr('aria-label', config.ariaLabel);
+    }
+    if (config.role) {
+      $btn.attr('role', config.role);
+    }
     if (config.html) {
-      $btn.html(html);
+      $btn.html(config.html);
     } else if (config.label) {
       $btn.append($('<div class="label"/>').text(config.label));
     } else {
       $btn.addClass('btn-empty');
+    }
+    if (config.toggle) {
+      $btn.attr('aria-expanded', 'false');
+    }
+    if (config.controls) {
+      $btn.attr('aria-controls', config.controls);
     }
     if (config.spinner) {
       $btn.append($('<div class="spinner spinner-absolute"/>'));
@@ -281,6 +293,7 @@ Craft.ui = {
       autofocus: config.autofocus && Garnish.isMobileBrowser(true),
       disabled: config.disabled,
       'data-target-prefix': config.targetPrefix,
+      'aria-labelledby': config.labelledBy,
     }).appendTo($container);
 
     // Normalize the options into an array
@@ -501,7 +514,7 @@ Craft.ui = {
       'data-value': value,
       'data-indeterminate-value': indeterminateValue,
       id: config.id,
-      role: 'checkbox',
+      role: 'switch',
       'aria-checked': config.on
         ? 'true'
         : config.indeterminate
@@ -560,6 +573,9 @@ Craft.ui = {
   createLightswitchField: function (config) {
     if (!config.id) {
       config.id = 'lightswitch' + Math.floor(Math.random() * 1000000000);
+    }
+    if (!config.labelId) {
+      config.labelId = `${config.id}-label`;
     }
     return this.createField(this.createLightswitch(config), config).addClass(
       'lightswitch-field'
@@ -846,6 +862,7 @@ Craft.ui = {
     $dateInputs.on('keyup', function (ev) {
       if (
         ev.keyCode === Garnish.ESC_KEY &&
+        $(this).data('datepicker') &&
         $(this).data('datepicker').dpDiv.is(':visible')
       ) {
         ev.stopPropagation();
@@ -853,12 +870,16 @@ Craft.ui = {
     });
 
     // prevent clicks in the datepicker divs from closing the menu
-    $startDate.data('datepicker').dpDiv.on('mousedown', function (ev) {
-      ev.stopPropagation();
-    });
-    $endDate.data('datepicker').dpDiv.on('mousedown', function (ev) {
-      ev.stopPropagation();
-    });
+    if ($startDate.data('datepicker')) {
+      $startDate.data('datepicker').dpDiv.on('mousedown', function (ev) {
+        ev.stopPropagation();
+      });
+    }
+    if ($endDate.data('datepicker')) {
+      $endDate.data('datepicker').dpDiv.on('mousedown', function (ev) {
+        ev.stopPropagation();
+      });
+    }
 
     var menu = new Garnish.Menu($menu, {
       onOptionSelect: function (option) {

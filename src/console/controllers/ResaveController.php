@@ -135,7 +135,7 @@ class ResaveController extends Controller
      * - An attribute name: `--to myCustomField`
      * - An object template: `--to "={myCustomField|lower}"`
      * - A raw value: `--to "=foo bar"`
-     * - A PHP arrow function: `--to "fn(\$element) => \$element->callSomething()"`
+     * - A PHP arrow function: `--to "fn(\\$element) => \\$element->callSomething()"`
      * - An empty value: `--to :empty:`
      *
      * @since 3.7.29

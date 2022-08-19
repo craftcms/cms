@@ -1,14 +1,12 @@
 /*! ../adapters/xhr */
 
-/*! ../cancel/Cancel */
+/*! ../cancel/CanceledError */
 
 /*! ../cancel/isCancel */
 
+/*! ../core/AxiosError */
+
 /*! ../core/buildFullPath */
-
-/*! ../core/createError */
-
-/*! ../core/enhanceError */
 
 /*! ../defaults */
 
@@ -24,7 +22,13 @@
 
 /*! ../helpers/normalizeHeaderName */
 
+/*! ../helpers/parseProtocol */
+
+/*! ../helpers/toFormData */
+
 /*! ../helpers/validator */
+
+/*! ../lib/core/AxiosError */
 
 /*! ../utils */
 
@@ -40,13 +44,17 @@
 
 /*! ./../utils */
 
-/*! ./Cancel */
+/*! ./AxiosError */
+
+/*! ./CanceledError */
 
 /*! ./InterceptorManager */
 
-/*! ./cancel/Cancel */
+/*! ./buildFullPath */
 
 /*! ./cancel/CancelToken */
+
+/*! ./cancel/CanceledError */
 
 /*! ./cancel/isCancel */
 
@@ -54,13 +62,11 @@
 
 /*! ./core/mergeConfig */
 
-/*! ./createError */
-
 /*! ./defaults */
 
 /*! ./dispatchRequest */
 
-/*! ./enhanceError */
+/*! ./env/FormData */
 
 /*! ./env/data */
 
@@ -69,6 +75,8 @@
 /*! ./helpers/isAxiosError */
 
 /*! ./helpers/spread */
+
+/*! ./helpers/toFormData */
 
 /*! ./lib/axios */
 
@@ -114,9 +122,9 @@
   !*** ./lib/helpers/bind.js ***!
   \*****************************/
 
-/*!******************************!*\
-  !*** ./lib/cancel/Cancel.js ***!
-  \******************************/
+/*!*****************************!*\
+  !*** ./lib/helpers/null.js ***!
+  \*****************************/
 
 /*!*******************************!*\
   !*** ./lib/defaults/index.js ***!
@@ -131,12 +139,12 @@
   \********************************/
 
 /*!********************************!*\
-  !*** ./lib/helpers/cookies.js ***!
+  !*** ./lib/core/AxiosError.js ***!
   \********************************/
 
-/*!*********************************!*\
-  !*** ./lib/core/createError.js ***!
-  \*********************************/
+/*!********************************!*\
+  !*** ./lib/helpers/cookies.js ***!
+  \********************************/
 
 /*!*********************************!*\
   !*** ./lib/core/mergeConfig.js ***!
@@ -145,10 +153,6 @@
 /*!*********************************!*\
   !*** ./lib/helpers/buildURL.js ***!
   \*********************************/
-
-/*!**********************************!*\
-  !*** ./lib/core/enhanceError.js ***!
-  \**********************************/
 
 /*!**********************************!*\
   !*** ./lib/helpers/validator.js ***!
@@ -166,9 +170,17 @@
   !*** ./lib/core/transformData.js ***!
   \***********************************/
 
+/*!***********************************!*\
+  !*** ./lib/helpers/toFormData.js ***!
+  \***********************************/
+
 /*!************************************!*\
   !*** ./lib/helpers/combineURLs.js ***!
   \************************************/
+
+/*!*************************************!*\
+  !*** ./lib/cancel/CanceledError.js ***!
+  \*************************************/
 
 /*!*************************************!*\
   !*** ./lib/core/dispatchRequest.js ***!
@@ -188,6 +200,10 @@
 
 /*!**************************************!*\
   !*** ./lib/helpers/isAbsoluteURL.js ***!
+  \**************************************/
+
+/*!**************************************!*\
+  !*** ./lib/helpers/parseProtocol.js ***!
   \**************************************/
 
 /*!****************************************!*\

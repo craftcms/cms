@@ -92,7 +92,10 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
                 $imageTransformIndex->fileExists = false;
                 $this->storeTransformIndexData($imageTransformIndex);
             } else {
-                return $fs->getRootUrl() . $uri . AssetsHelper::urlAppendix($asset, $imageTransformIndex->dateUpdated);
+                return UrlHelper::urlWithParams(
+                    $fs->getRootUrl() . $uri,
+                    AssetsHelper::revParams($asset, $imageTransformIndex->dateUpdated),
+                );
             }
         }
 
@@ -130,7 +133,11 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
             ]));
         }
 
-        $asset->getVolume()->getTransformFs()->deleteFile($path);
+        try {
+            $asset->getVolume()->getTransformFs()->deleteFile($path);
+        } catch (InvalidConfigException) {
+            // nbd
+        }
     }
 
     /**
@@ -337,7 +344,8 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
         $quality = $transform->quality ?: Craft::$app->getConfig()->getGeneral()->defaultImageQuality;
 
         if (strtolower($asset->getExtension()) === 'svg' && $index->detectedFormat !== 'svg') {
-            $image = $images->loadImage($imageSource, true, max($transform->width, $transform->height));
+            $size = max($transform->width, $transform->height) ?? 1000;
+            $image = $images->loadImage($imageSource, true, $size);
         } else {
             $image = $images->loadImage($imageSource);
         }

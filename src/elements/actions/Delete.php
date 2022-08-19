@@ -13,12 +13,12 @@ use craft\base\ElementInterface;
 use craft\db\Table;
 use craft\elements\db\ElementQueryInterface;
 use craft\helpers\Db;
-use craft\helpers\Json;
+use craft\helpers\Html;
 
 /**
  * Delete represents a Delete element action.
  *
- * Element types that make this action available should implement [[ElementInterface::getIsDeletable()]] to explicitly state whether they can be
+ * Element types that make this action available should implement [[ElementInterface::canDelete()]] to explicitly state whether they can be
  * deleted by the current user.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -70,14 +70,12 @@ class Delete extends ElementAction implements DeleteActionInterface
      */
     public function getTriggerHtml(): ?string
     {
-        // Only enable for deletable elements, per getIsDeletable()
-        $type = Json::encode(static::class);
-        $js = <<<JS
+        // Only enable for deletable elements, per canDelete()
+        Craft::$app->getView()->registerJsWithVars(fn($type) => <<<JS
 (() => {
     new Craft.ElementActionTrigger({
         type: $type,
-        validateSelection: function(\$selectedItems)
-        {
+        validateSelection: \$selectedItems => {
             for (let i = 0; i < \$selectedItems.length; i++) {
                 if (!Garnish.hasAttr(\$selectedItems.eq(i).find('.element'), 'data-deletable')) {
                     return false;
@@ -87,12 +85,14 @@ class Delete extends ElementAction implements DeleteActionInterface
         },
     });
 })();
-JS;
-        Craft::$app->getView()->registerJs($js);
+JS, [static::class]);
 
         if ($this->hard) {
-            return '<div class="btn formsubmit">' . $this->getTriggerLabel() . '</div>';
+            return Html::tag('div', $this->getTriggerLabel(), [
+                'class' => ['btn', 'formsubmit'],
+            ]);
         }
+
         return null;
     }
 

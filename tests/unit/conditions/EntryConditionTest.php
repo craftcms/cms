@@ -10,8 +10,8 @@ namespace crafttests\unit\conditions;
 
 use Codeception\Test\Unit;
 use Craft;
-use craft\elements\conditions\entries\AuthorGroupConditionRule;
 use craft\elements\conditions\entries\EntryCondition;
+use craft\elements\conditions\entries\ExpiryDateConditionRule;
 use craft\elements\conditions\SlugConditionRule;
 use craft\test\TestCase;
 
@@ -40,7 +40,7 @@ class EntryConditionTest extends TestCase
         self::assertCount(1, $condition->getConditionRules());
 
         $ruleConfig2 = [
-            'class' => AuthorGroupConditionRule::class,
+            'class' => ExpiryDateConditionRule::class,
         ];
         $rule1 = Craft::$app->getConditions()->createConditionRule($ruleConfig2);
         $condition->addConditionRule($rule1);

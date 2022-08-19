@@ -33,7 +33,7 @@ class UtilitiesController extends Controller
      * Index
      *
      * @return Response
-     * @throws ForbiddenHttpException if the user doesn't have access to any utilities
+     * @throws ForbiddenHttpException if the user doesn’t have access to any utilities
      */
     public function actionIndex(): Response
     {
@@ -43,7 +43,7 @@ class UtilitiesController extends Controller
             throw new ForbiddenHttpException('User not permitted to view Utilities');
         }
 
-        // Don't go to the Updates or Upgrade utilities by default if there are any others
+        // Don’t go to the Updates or Upgrade utilities by default if there are any others
         $firstUtility = null;
         foreach ($utilities as $utility) {
             if (!in_array($utility, [Updates::class, Upgrade::class])) {
@@ -65,7 +65,7 @@ class UtilitiesController extends Controller
      * @param string $id
      * @return Response
      * @throws NotFoundHttpException if $id is invalid
-     * @throws ForbiddenHttpException if the user doesn't have access to the requested utility
+     * @throws ForbiddenHttpException if the user doesn’t have access to the requested utility
      * @throws Exception in case of failure
      */
     public function actionShowUtility(string $id): Response
@@ -98,7 +98,7 @@ class UtilitiesController extends Controller
      * View stack trace for a deprecator log entry.
      *
      * @return Response
-     * @throws ForbiddenHttpException if the user doesn't have access to the Deprecation Warnings utility
+     * @throws ForbiddenHttpException if the user doesn’t have access to the Deprecation Warnings utility
      */
     public function actionGetDeprecationErrorTracesModal(): Response
     {
@@ -117,10 +117,10 @@ class UtilitiesController extends Controller
     }
 
     /**
-     * Deletes all deprecation errors.
+     * Deletes all deprecation warnings.
      *
      * @return Response
-     * @throws ForbiddenHttpException if the user doesn't have access to the Deprecation Warnings utility
+     * @throws ForbiddenHttpException if the user doesn’t have access to the Deprecation Warnings utility
      */
     public function actionDeleteAllDeprecationErrors(): Response
     {
@@ -137,7 +137,7 @@ class UtilitiesController extends Controller
      * Deletes a deprecation error.
      *
      * @return Response
-     * @throws ForbiddenHttpException if the user doesn't have access to the Deprecation Warnings utility
+     * @throws ForbiddenHttpException if the user doesn’t have access to the Deprecation Warnings utility
      */
     public function actionDeleteDeprecationError(): Response
     {
@@ -155,7 +155,7 @@ class UtilitiesController extends Controller
      * Performs a Clear Caches action
      *
      * @return Response
-     * @throws ForbiddenHttpException if the user doesn't have access to the Clear Caches utility
+     * @throws ForbiddenHttpException if the user doesn’t have access to the Clear Caches utility
      * @throws BadRequestHttpException
      */
     public function actionClearCachesPerformAction(): Response
@@ -193,7 +193,7 @@ class UtilitiesController extends Controller
      * Performs an Invalidate Data Caches action.
      *
      * @return Response
-     * @throws ForbiddenHttpException if the user doesn't have access to the Clear Caches utility
+     * @throws ForbiddenHttpException if the user doesn’t have access to the Clear Caches utility
      * @throws BadRequestHttpException
      * @since 3.5.0
      */
@@ -215,7 +215,7 @@ class UtilitiesController extends Controller
      * Performs a DB Backup action
      *
      * @return Response|null
-     * @throws ForbiddenHttpException if the user doesn't have access to the DB Backup utility
+     * @throws ForbiddenHttpException if the user doesn’t have access to the DB Backup utility
      * @throws Exception if the backup could not be created
      */
     public function actionDbBackupPerformAction(): ?Response
@@ -249,7 +249,7 @@ class UtilitiesController extends Controller
      * Performs a Find And Replace action
      *
      * @return Response
-     * @throws ForbiddenHttpException if the user doesn't have access to the Find an Replace utility
+     * @throws ForbiddenHttpException if the user doesn’t have access to the Find and Replace utility
      */
     public function actionFindAndReplacePerformAction(): Response
     {
@@ -271,7 +271,7 @@ class UtilitiesController extends Controller
      * Applies new migrations
      *
      * @return Response
-     * @throws ForbiddenHttpException if the user doesn't have access to the Migrations utility
+     * @throws ForbiddenHttpException if the user doesn’t have access to the Migrations utility
      */
     public function actionApplyNewMigrations(): Response
     {

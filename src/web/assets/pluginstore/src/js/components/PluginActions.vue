@@ -1,5 +1,5 @@
 <template>
-  <div v-if="plugin" class="plugin-actions tw-relative">
+  <div v-if="plugin" class="plugin-actions tw-relative tw-space-y-2">
     <template v-if="!isPluginEditionFree">
       <template v-if="isInCart(plugin, edition)">
         <!-- Already in cart -->
@@ -31,7 +31,8 @@
           "
           block
           large
-          >{{ 'Add to cart' | t('app') }}
+        >
+          <plugin-edition-price :edition="edition" />
         </c-btn>
 
         <!-- Licensed -->
@@ -230,11 +231,22 @@
 
   import {mapGetters} from 'vuex';
   import licensesMixin from '../mixins/licenses';
+  import PluginEditionPrice from './PluginEditionPrice';
 
   export default {
+    components: {PluginEditionPrice},
     mixins: [licensesMixin],
 
-    props: ['plugin', 'edition'],
+    props: {
+      edition: {
+        type: Object,
+        required: true,
+      },
+      plugin: {
+        type: Object,
+        required: true,
+      },
+    },
 
     data() {
       return {
@@ -379,10 +391,6 @@
     .c-spinner {
       @apply tw-absolute tw-left-1/2;
       bottom: -32px;
-    }
-
-    .c-btn {
-      @apply tw-mt-3;
     }
   }
 </style>

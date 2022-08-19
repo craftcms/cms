@@ -39,6 +39,14 @@ class AuthorGroupConditionRule extends BaseMultiSelectConditionRule implements E
     /**
      * @inheritdoc
      */
+    public static function isSelectable(): bool
+    {
+        return !empty(Craft::$app->getUserGroups()->getAllGroups());
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function options(): array
     {
         $sections = Craft::$app->getUserGroups()->getAllGroups();

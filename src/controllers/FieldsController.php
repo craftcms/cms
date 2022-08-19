@@ -192,17 +192,26 @@ class FieldsController extends Controller
             throw new ServerErrorHttpException('No field groups exist');
         }
 
-        if ($groupId === null) {
-            $groupId = ($field !== null && $field->groupId !== null) ? $field->groupId : $allGroups[0]->id;
+        if ($groupId === null && isset($field->groupId)) {
+            $groupId = $field->groupId;
         }
 
-        $fieldGroup = $fieldsService->getGroupById($groupId);
-
-        if ($fieldGroup === null) {
-            throw new NotFoundHttpException('Field group not found');
+        if ($groupId) {
+            $fieldGroup = $fieldsService->getGroupById($groupId);
+            if ($fieldGroup === null) {
+                throw new NotFoundHttpException('Field group not found');
+            }
+        } elseif (!$field->id && !$field->hasErrors()) {
+            $fieldGroup = reset($allGroups);
+        } else {
+            $fieldGroup = null;
         }
 
         $groupOptions = [];
+
+        if (!$fieldGroup) {
+            $groupOptions[] = ['value' => '', 'label' => ''];
+        }
 
         foreach ($allGroups as $group) {
             $groupOptions[] = [
@@ -223,11 +232,14 @@ class FieldsController extends Controller
                 'label' => Craft::t('app', 'Fields'),
                 'url' => UrlHelper::url('settings/fields'),
             ],
-            [
+        ];
+
+        if ($fieldGroup) {
+            $crumbs[] = [
                 'label' => Craft::t('site', $fieldGroup->name),
                 'url' => UrlHelper::url('settings/fields/' . $groupId),
-            ],
-        ];
+            ];
+        }
 
         if ($fieldId !== null) {
             $title = trim($field->name) ?: Craft::t('app', 'Edit Field');

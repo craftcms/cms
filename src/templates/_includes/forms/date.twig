@@ -2,6 +2,7 @@
 {% set id = (id ?? "date#{random()}") ~ '-date' -%}
 {% set name = name ?? null -%}
 {% set value = (value ?? false) ? date(value, false) : null -%}
+{% set outputTzParam = outputTzParam ?? true %}
 {% set isMobile = craft.app.request.isMobileBrowser %}
 {% set describedBy = describedBy ?? null %}
 {% set isDateTime = isDateTime ?? false %}
@@ -32,7 +33,7 @@
         },
     } -%}
     <div data-icon="date"></div>
-    {%- if name -%}
+    {%- if name and outputTzParam -%}
         {{- hiddenInput("#{name}[timezone]", craft.app.getTimeZone()) -}}
     {%- endif -%}
 {% endtag %}

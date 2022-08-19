@@ -55,6 +55,7 @@ class UpgradeAsset extends AssetBundle
             $view->registerTranslations('app', [
                 'All plugins must be compatible with Craft {version} before you can upgrade.',
                 'No plugins are installed.',
+                'Not installed',
                 'Not ready',
                 'Plugin',
                 'Plugins',
@@ -64,6 +65,7 @@ class UpgradeAsset extends AssetBundle
                 'Status',
                 'The developer recommends using <a href="{url}">{name}</a> instead.',
                 'Unable to fetch upgrade info at this time.',
+                'Unknown',
                 'View the <a>upgrade guide</a>',
             ]);
         }

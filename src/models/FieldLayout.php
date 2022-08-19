@@ -13,12 +13,14 @@ use craft\base\FieldInterface;
 use craft\base\FieldLayoutElement;
 use craft\base\Model;
 use craft\events\CreateFieldLayoutFormEvent;
+use craft\events\DefineFieldLayoutCustomFieldsEvent;
 use craft\events\DefineFieldLayoutElementsEvent;
 use craft\events\DefineFieldLayoutFieldsEvent;
 use craft\fieldlayoutelements\BaseField;
 use craft\fieldlayoutelements\CustomField;
 use craft\fieldlayoutelements\Heading;
 use craft\fieldlayoutelements\HorizontalRule;
+use craft\fieldlayoutelements\LineBreak;
 use craft\fieldlayoutelements\Template;
 use craft\fieldlayoutelements\Tip;
 use craft\helpers\ArrayHelper;
@@ -62,6 +64,39 @@ class FieldLayout extends Model
      * @since 4.0.0
      */
     public const EVENT_DEFINE_NATIVE_FIELDS = 'defineNativeFields';
+
+    /**
+     * @event DefineFieldLayoutCustomFieldsEvent The event that is triggered when defining the custom fields for the layout.
+     *
+     * Note that fields set on [[DefineFieldLayoutCustomFieldsEvent::$fields]] will be grouped by field group, indexed by the group names.
+     *
+     * ```php
+     * use craft\models\FieldLayout;
+     * use craft\events\DefineFieldLayoutFieldsEvent;
+     * use craft\fields\PlainText;
+     * use yii\base\Event;
+     *
+     * Event::on(
+     *     FieldLayout::class,
+     *     FieldLayout::EVENT_DEFINE_CUSTOM_FIELDS,
+     *     function(DefineFieldLayoutFieldsEvent $event) {
+     *         // @var FieldLayout $layout
+     *         $layout = $event->sender;
+     *
+     *         if ($layout->type === MyElementType::class) {
+     *             // Only allow Plain Text fields
+     *             foreach ($event->fields as $groupName => &$fields) {
+     *                 $fields = array_filter($fields, fn($field) => $field instanceof PlainText);
+     *             }
+     *         }
+     *     }
+     * );
+     * ```
+     *
+     * @see getAvailableCustomFields()
+     * @since 4.2.0
+     */
+    public const EVENT_DEFINE_CUSTOM_FIELDS = 'defineCustomFields';
 
     /**
      * @event DefineFieldLayoutElementsEvent The event that is triggered when defining UI elements for the layout.
@@ -182,11 +217,10 @@ class FieldLayout extends Model
     private array $_availableCustomFields;
 
     /**
-     * @var array
-     * @phpstan-var array<BaseField|class-string<BaseField>|array{class:class-string<BaseField>}>
+     * @var BaseField[]
      * @see getAvailableNativeFields()
      */
-    private array $_availableStandardFields;
+    private array $_availableNativeFields;
 
     /**
      * @var FieldLayoutTab[]
@@ -331,17 +365,23 @@ class FieldLayout extends Model
     public function getAvailableCustomFields(): array
     {
         if (!isset($this->_availableCustomFields)) {
-            $this->_availableCustomFields = [];
+            $fields = [];
 
             foreach (Craft::$app->getFields()->getAllGroups() as $group) {
                 $groupName = Craft::t('site', $group->name);
                 foreach ($group->getFields() as $field) {
-                    $this->_availableCustomFields[$groupName][] = Craft::createObject([
+                    $fields[$groupName][] = Craft::createObject([
                         'class' => CustomField::class,
                         'layout' => $this,
                     ], [$field]);
                 }
             }
+
+            // Allow changes
+            $event = new DefineFieldLayoutCustomFieldsEvent(['fields' => $fields]);
+            $this->trigger(self::EVENT_DEFINE_CUSTOM_FIELDS, $event);
+
+            $this->_availableCustomFields = $event->fields;
         }
 
         return $this->_availableCustomFields;
@@ -355,13 +395,14 @@ class FieldLayout extends Model
      */
     public function getAvailableNativeFields(): array
     {
-        if (!isset($this->_availableStandardFields)) {
+        if (!isset($this->_availableNativeFields)) {
+            $this->_availableNativeFields = [];
+
             $event = new DefineFieldLayoutFieldsEvent();
             $this->trigger(self::EVENT_DEFINE_NATIVE_FIELDS, $event);
-            $this->_availableStandardFields = $event->fields;
 
             // Instantiate them
-            foreach ($this->_availableStandardFields as &$field) {
+            foreach ($event->fields as $field) {
                 if (is_string($field) || is_array($field)) {
                     $field = Craft::createObject($field);
                 }
@@ -369,9 +410,10 @@ class FieldLayout extends Model
                     throw new InvalidConfigException('Invalid standard field config');
                 }
                 $field->setLayout($this);
+                $this->_availableNativeFields[] = $field;
             }
         }
-        return $this->_availableStandardFields;
+        return $this->_availableNativeFields;
     }
 
     /**
@@ -397,8 +439,9 @@ class FieldLayout extends Model
 
         $this->trigger(self::EVENT_DEFINE_UI_ELEMENTS, $event);
 
-        // HR should always be last
+        // HR and Line Break should always be last
         $event->elements[] = new HorizontalRule();
+        $event->elements[] = new LineBreak();
 
         // Instantiate them
         foreach ($event->elements as &$element) {
@@ -549,6 +592,19 @@ class FieldLayout extends Model
     public function getCustomFieldElements(): array
     {
         return $this->getElementsByType(CustomField::class);
+    }
+
+    /**
+     * Returns the visible layout elements representing custom fields, taking conditions into account.
+     *
+     * @param ElementInterface $element
+     * @return CustomField[]
+     * @since 4.1.4
+     */
+    public function getVisibleCustomFieldElements(ElementInterface $element): array
+    {
+        $filter = fn(FieldLayoutElement $layoutElement) => $layoutElement instanceof CustomField;
+        return iterator_to_array($this->_elements($filter, $element));
     }
 
     /**

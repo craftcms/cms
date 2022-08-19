@@ -1,6 +1,5 @@
 /** global: Craft */
 /** global: Garnish */
-import Garnish from '../../../garnish/src';
 
 /**
  * Element Editor
@@ -137,6 +136,7 @@ Craft.ElementEditor = Garnish.Base.extend(
           const [target] = this.settings.previewTargets;
           this.createPreviewLink(target)
             .addClass('view-btn btn')
+            .attr('aria-label', Craft.t('app', 'View'))
             .appendTo($previewBtnContainer);
         } else {
           this.createShareMenu($previewBtnContainer);
@@ -178,12 +178,8 @@ Craft.ElementEditor = Garnish.Base.extend(
       });
 
       if (this.isFullPage && Craft.messageReceiver) {
-        Craft.messageReceiver.addEventListener('message', (ev) => {
-          // Ignore broadcasts from this page
-          if (ev.data.pageId === Craft.pageId) {
-            return;
-          }
-
+        // Listen on Craft.broadcaster to ignore any messages sent by this very page
+        Craft.broadcaster.addEventListener('message', (ev) => {
           if (
             (ev.data.event === 'saveDraft' &&
               ev.data.canonicalId === this.settings.canonicalId &&
@@ -309,12 +305,13 @@ Craft.ElementEditor = Garnish.Base.extend(
       let $discardButton = this.$container.find('.discard-changes-btn');
 
       if (!$discardButton.length) {
-        let initialHeight;
+        let initialHeight, scrollTop;
 
         let $noticeContainer;
         if (this.isFullPage) {
+          initialHeight = $('#content').height();
+          scrollTop = Garnish.$win.scrollTop();
           $noticeContainer = Craft.cp.$noticeContainer;
-          initialHeight = $noticeContainer.height();
         } else {
           $noticeContainer = this.$container.find('.so-notice');
         }
@@ -343,14 +340,28 @@ Craft.ElementEditor = Garnish.Base.extend(
         }).appendTo($notice);
 
         if (this.isFullPage) {
-          $('#content-header').css('min-height', 'auto');
-          const height = $noticeContainer.height();
-          $noticeContainer
-            .css({height: initialHeight, overflow: 'hidden'})
-            .velocity({height: height}, 'fast', () => {
-              $('#content-header').css('min-height', '');
-              $noticeContainer.css({height: '', overflow: ''});
-            });
+          const heightDiff = $('#content').height() - initialHeight;
+          console.log(heightDiff);
+          Garnish.$win.scrollTop(scrollTop + heightDiff);
+
+          // If there isn’t enough content to simulate the same scroll position, slide it down instead
+          if (Garnish.$win.scrollTop() === scrollTop) {
+            // Disable pointer events until half a second after the animation is complete
+            Craft.cp.$contentContainer.css('pointer-events', 'none');
+
+            $('#content-header').css('min-height', 'auto');
+            const height = $noticeContainer.height();
+            $noticeContainer
+              .css({height: height - heightDiff, overflow: 'hidden'})
+              .velocity({height: height}, 'fast', () => {
+                $('#content-header').css('min-height', '');
+                $noticeContainer.css({height: '', overflow: ''});
+
+                setTimeout(() => {
+                  Craft.cp.$contentContainer.css('pointer-events', '');
+                }, 300);
+              });
+          }
         }
       }
 
@@ -389,7 +400,7 @@ Craft.ElementEditor = Garnish.Base.extend(
                     },
                   })
                     .then((response) => {
-                      Craft.cp.displayNotice(response.data.message);
+                      Craft.cp.displaySuccess(response.data.message);
                       this.slideout.close();
                     })
                     .catch(reject);
@@ -444,8 +455,8 @@ Craft.ElementEditor = Garnish.Base.extend(
       $enabledForSiteField.addClass('nested');
       const $globalField = Craft.ui
         .createLightswitchField({
-          label: Craft.t('app', 'Enabled'),
-          name: 'enabled',
+          label: Craft.t('app', 'Enabled for all sites'),
+          name: this.namespaceInputName('enabled'),
         })
         .insertBefore($enabledForSiteField);
       $globalField.find('label').css('font-weight', 'bold');
@@ -477,7 +488,8 @@ Craft.ElementEditor = Garnish.Base.extend(
       );
 
       let serializedStatuses =
-        this.namespaceInputName('enabled') + `=${originalEnabledValue}`;
+        encodeURIComponent(this.namespaceInputName('enabled')) +
+        `=${originalEnabledValue}`;
       for (let i = 0; i < this.$siteLightswitches.length; i++) {
         const $input = this.$siteLightswitches.eq(i).data('lightswitch').$input;
         serializedStatuses +=
@@ -491,6 +503,7 @@ Craft.ElementEditor = Garnish.Base.extend(
           .replace(originalSerializedStatus, serializedStatuses)
       );
 
+      debugger;
       if (this.lastSerializedValue) {
         this.lastSerializedValue = this.lastSerializedValue.replace(
           originalSerializedStatus,
@@ -506,6 +519,9 @@ Craft.ElementEditor = Garnish.Base.extend(
       ) {
         this._createAddlSiteField();
       }
+
+      // Focus on first lightswitch
+      this.$globalLightswitch.focus();
 
       this.$globalLightswitch.on('change', this._updateSiteStatuses.bind(this));
       this._updateGlobalStatus();
@@ -585,8 +601,8 @@ Craft.ElementEditor = Garnish.Base.extend(
     _createSiteStatusField: function (site, status) {
       const $field = Craft.ui.createLightswitchField({
         fieldClass: `enabled-for-site-${site.id}-field`,
-        label: Craft.t('app', 'Enabled for {site}', {site: site.name}),
-        name: `enabledForSite[${site.id}]`,
+        label: site.name,
+        name: this.namespaceInputName(`enabledForSite[${site.id}]`),
         on:
           typeof status != 'undefined'
             ? status
@@ -627,6 +643,14 @@ Craft.ElementEditor = Garnish.Base.extend(
         return;
       }
 
+      const selectLabelId = 'add-site-label';
+
+      const $addlSiteSelectLabel = $('<span/>', {
+        text: Craft.t('app', 'Add a site...'),
+        class: 'visually-hidden',
+        id: selectLabelId,
+      });
+
       const $addlSiteSelectContainer = Craft.ui
         .createSelect({
           options: [
@@ -635,6 +659,7 @@ Craft.ElementEditor = Garnish.Base.extend(
               return {label: s.name, value: s.id};
             }),
           ],
+          labelledBy: selectLabelId,
         })
         .addClass('fullwidth');
 
@@ -642,6 +667,8 @@ Craft.ElementEditor = Garnish.Base.extend(
         .createField($addlSiteSelectContainer, {})
         .addClass('nested add')
         .appendTo(this.$siteStatusPane);
+
+      $addlSiteSelectLabel.prependTo(this.$additionalSiteField);
 
       const $addlSiteSelect = $addlSiteSelectContainer.find('select');
 
@@ -762,6 +789,8 @@ Craft.ElementEditor = Garnish.Base.extend(
       this.$editMetaBtn = $('<button/>', {
         type: 'button',
         class: 'btn edit icon',
+        'aria-expanded': 'false',
+        'aria-label': Craft.t('app', 'Edit draft settings'),
         title: Craft.t('app', 'Edit draft settings'),
       }).appendTo($btnGroup);
       $btnGroup.find('.btngroup-btn-last').removeClass('btngroup-btn-last');
@@ -1043,10 +1072,20 @@ Craft.ElementEditor = Garnish.Base.extend(
               !this.settings.canCreateDrafts
             ) {
               resolve();
+              return;
             }
 
             clearTimeout(this.timeout);
             this.timeout = null;
+
+            // If we haven't had a chance to fetch the initial data yet, try again in a bit
+            if (
+              typeof this.$container.data('initialSerializedValue') ===
+              'undefined'
+            ) {
+              this.timeout = setTimeout(this.checkForm.bind(this), 500);
+              return;
+            }
 
             // Has anything changed?
             const data = this.serializeForm(true);
@@ -1277,7 +1316,7 @@ Craft.ElementEditor = Garnish.Base.extend(
 
             for (const oldId in response.data.duplicatedElements) {
               if (
-                oldId !== this.settings.canonicalId &&
+                oldId != this.settings.canonicalId &&
                 response.data.duplicatedElements.hasOwnProperty(oldId)
               ) {
                 this.duplicatedElements[oldId] =
@@ -1496,7 +1535,8 @@ Craft.ElementEditor = Garnish.Base.extend(
         data,
         this.$container.data('delta-names'),
         deltaCallback,
-        this.$container.data('initial-delta-values')
+        this.$container.data('initial-delta-values'),
+        this.$container.data('modified-delta-names')
       );
 
       // Swap out element IDs with their duplicated ones
@@ -1575,7 +1615,7 @@ Craft.ElementEditor = Garnish.Base.extend(
                 // (`[sortOrder]` should pass here, which could be set to a specific order index, but *not* `[sortOrder][]`!)
                 if (
                   name.match(
-                    new RegExp(`${lb}(enabled|sordOrder|type|typeId)${rb}$`)
+                    new RegExp(`${lb}(enabled|sortOrder|type|typeId)${rb}$`)
                   )
                 ) {
                   return m;
@@ -1691,6 +1731,7 @@ Craft.ElementEditor = Garnish.Base.extend(
       this.$saveMetaBtn = $('<button/>', {
         type: 'submit',
         class: 'btn submit disabled',
+        'aria-disabled': 'true',
         text: Craft.t('app', 'Save'),
       }).appendTo($footer);
 
@@ -1707,10 +1748,16 @@ Craft.ElementEditor = Garnish.Base.extend(
 
     onMetaHudShow: function () {
       this.$editMetaBtn.addClass('active');
+      this.$editMetaBtn.attr('aria-expanded', 'true');
     },
 
     onMetaHudHide: function () {
       this.$editMetaBtn.removeClass('active');
+      this.$editMetaBtn.attr('aria-expanded', 'false');
+
+      if (Garnish.focusIsInside(this.metaHud.$body)) {
+        this.$editMetaBtn.trigger('focus');
+      }
     },
 
     onMetaHudEscape: function () {
@@ -1723,10 +1770,12 @@ Craft.ElementEditor = Garnish.Base.extend(
         this.$nameTextInput.val() !== this.settings.draftName
       ) {
         this.$saveMetaBtn.removeClass('disabled');
+        this.$saveMetaBtn.removeAttr('aria-disabled');
         return true;
       }
 
       this.$saveMetaBtn.addClass('disabled');
+      this.$saveMetaBtn.attr('aria-disabled', 'true');
       return false;
     },
 

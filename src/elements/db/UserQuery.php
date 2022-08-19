@@ -12,7 +12,6 @@ use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\db\Table;
 use craft\elements\User;
-use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\models\UserGroup;
 use yii\db\Connection;
@@ -37,6 +36,11 @@ use yii\db\Expression;
  */
 class UserQuery extends ElementQuery
 {
+    /**
+     * @since 4.0.4
+     */
+    public const STATUS_CREDENTIALED = 'credentialed';
+
     /**
      * @inheritdoc
      */
@@ -413,52 +417,25 @@ class UserQuery extends ElementQuery
      */
     public function group(mixed $value): self
     {
-        // If the value is a group handle, swap it with the section
+        // If the value is a group handle, swap it with the user group
         if (is_string($value) && ($group = Craft::$app->getUserGroups()->getGroupByHandle($value))) {
             $value = $group;
         }
 
-        if ($value instanceof UserGroup) {
-            $this->groupId = $value->id;
-            return $this;
-        }
-
-        if ($value === null) {
-            $this->groupId = null;
-            return $this;
-        }
-
-        if (is_array($value)) {
-            // See if it's exclusively made up of user group models, except possibly for the first value
-            $firstVal = reset($value);
-            if (is_string($firstVal) && in_array(strtolower($firstVal), ['and', 'or', 'not'])) {
-                $glue = $firstVal;
-                array_shift($value);
-            } else {
-                $glue = 'or';
+        if (Db::normalizeParam($value, function($item) {
+            return $item instanceof UserGroup ? $item->id : null;
+        })) {
+            $this->groupId = $value;
+        } else {
+            $glue = Db::extractGlue($value);
+            $this->groupId = (new Query())
+                ->select(['id'])
+                ->from([Table::USERGROUPS])
+                ->where(Db::parseParam('handle', $value))
+                ->column();
+            if ($this->groupId && $glue !== null) {
+                array_unshift($this->groupId, $glue);
             }
-
-            if (
-                ArrayHelper::onlyContains($value, function($value) {
-                    return $value instanceof UserQuery;
-                })
-            ) {
-                $value = array_map(function(UserGroup $group) {
-                    return $group->id;
-                }, $value);
-                array_unshift($value, $glue);
-                return $this;
-            }
-        }
-
-        $this->groupId = (new Query())
-            ->select(['id'])
-            ->from([Table::USERGROUPS])
-            ->where(Db::parseParam('handle', $value))
-            ->column();
-
-        if ($this->groupId && isset($glue)) {
-            array_unshift($this->groupId, $glue);
         }
 
         return $this;
@@ -510,9 +487,9 @@ class UserQuery extends ElementQuery
      *
      * | Value | Fetches users…
      * | - | -
-     * | `'foo@bar.baz'` | with an email of `foo@bar.baz`.
-     * | `'not foo@bar.baz'` | not with an email of `foo@bar.baz`.
-     * | `'*@bar.baz'` | with an email that ends with `@bar.baz`.
+     * | `'me@domain.tld'` | with an email of `me@domain.tld`.
+     * | `'not me@domain.tld'` | not with an email of `me@domain.tld`.
+     * | `'*@domain.tld'` | with an email that ends with `@domain.tld`.
      *
      * ---
      *
@@ -739,9 +716,11 @@ class UserQuery extends ElementQuery
      *
      * | Value | Fetches users…
      * | - | -
-     * | `'active'` _(default)_ | with active accounts.
-     * | `'suspended'` | with suspended accounts.
+     * | `'inactive'` | with inactive accounts.
+     * | `'active'` | with active accounts.
      * | `'pending'` | with accounts that are still pending activation.
+     * | `'credentialed'` | with either active or pending accounts.
+     * | `'suspended'` | with suspended accounts.
      * | `'locked'` | with locked accounts (regardless of whether they’re active or suspended).
      * | `['active', 'suspended']` | with active or suspended accounts.
      * | `['not', 'active', 'suspended']` | without active or suspended accounts.
@@ -895,8 +874,22 @@ class UserQuery extends ElementQuery
             }
 
             foreach ($groupIdChecks as $i => $groupIdCheck) {
+                if (
+                    is_array($groupIdCheck) &&
+                    is_string(reset($groupIdCheck)) &&
+                    strtolower(reset($groupIdCheck)) === 'not'
+                ) {
+                    $groupIdOperator = 'not exists';
+                    array_shift($groupIdCheck);
+                    if (empty($groupIdCheck)) {
+                        continue;
+                    }
+                } else {
+                    $groupIdOperator = 'exists';
+                }
+
                 $this->subQuery->andWhere([
-                    'exists', (new Query())
+                    $groupIdOperator, (new Query())
                         ->from(["ugu$i" => Table::USERGROUPS_USERS])
                         ->where("[[elements.id]] = [[ugu$i.userId]]")
                         ->andWhere(Db::parseNumericParam('groupId', $groupIdCheck)),
@@ -952,15 +945,21 @@ class UserQuery extends ElementQuery
             ],
             User::STATUS_ACTIVE => [
                 'users.active' => true,
+                'users.suspended' => false,
             ],
             User::STATUS_PENDING => [
                 'users.pending' => true,
             ],
-            User::STATUS_LOCKED => [
-                'users.locked' => true,
+            self::STATUS_CREDENTIALED => [
+                'or',
+                ['users.active' => true],
+                ['users.pending' => true],
             ],
             User::STATUS_SUSPENDED => [
                 'users.suspended' => true,
+            ],
+            User::STATUS_LOCKED => [
+                'users.locked' => true,
             ],
             default => parent::statusCondition($status),
         };

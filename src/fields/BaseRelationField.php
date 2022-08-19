@@ -40,6 +40,7 @@ use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
 use yii\base\Event;
 use yii\base\InvalidConfigException;
+use yii\db\Expression;
 use yii\validators\NumberValidator;
 
 /**
@@ -365,11 +366,11 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         $sourceValidates = self::$_relatedElementValidates[$sourceId][$element->siteId] ?? null;
         self::$_relatedElementValidates[$sourceId][$element->siteId] = true;
 
-        /** @var ElementQueryInterface $query */
-        $query = $element->getFieldValue($this->handle);
+        /** @var ElementQueryInterface|Collection $value */
+        $value = $element->getFieldValue($this->handle);
         $errorCount = 0;
 
-        foreach ($query->all() as $i => $related) {
+        foreach ($value->all() as $i => $related) {
             /** @var Element $related */
             if ($related->enabled && $related->getEnabledForSite()) {
                 if (!self::_validateRelatedElement($related)) {
@@ -429,12 +430,12 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      */
     public function isValueEmpty(mixed $value, ElementInterface $element): bool
     {
-        /** @var ElementQueryInterface|ElementInterface[] $value */
+        /** @var ElementQueryInterface|Collection $value */
         if ($value instanceof ElementQueryInterface) {
             return !$this->_all($value, $element)->exists();
         }
 
-        return empty($value);
+        return $value->isEmpty();
     }
 
     /**
@@ -504,7 +505,11 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      */
     public function serializeValue(mixed $value, ?ElementInterface $element = null): mixed
     {
-        /** @var ElementQueryInterface $value */
+        /** @var ElementQueryInterface|Collection $value */
+        if ($value instanceof Collection) {
+            return $value->map(fn(ElementInterface $element) => $element->id)->all();
+        }
+
         return $this->_all($value, $element)->ids();
     }
 
@@ -543,18 +548,20 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
                 'exists', (new Query())
                     ->from(["relations_$ns" => DbTable::RELATIONS])
                     ->innerJoin(["elements_$ns" => DbTable::ELEMENTS], "[[elements_$ns.id]] = [[relations_$ns.targetId]]")
-                    ->leftJoin(["elements_sites_$ns" => DbTable::ELEMENTS_SITES], [
-                        'and',
-                        "[[elements_sites_$ns.elementId]] = [[elements_$ns.id]]",
-                        ["elements_sites_$ns.siteId" => $query->siteId],
-                    ])
+                    ->leftJoin(["elements_sites_$ns" => DbTable::ELEMENTS_SITES], "[[elements_sites_$ns.elementId]] = [[elements_$ns.id]]")
                     ->where("[[relations_$ns.sourceId]] = [[elements.id]]")
+                    ->andWhere([
+                        'or',
+                        ["relations_$ns.sourceSiteId" => null],
+                        ["relations_$ns.sourceSiteId" => new Expression('[[elements_sites.siteId]]')],
+                    ])
                     ->andWhere([
                         "relations_$ns.fieldId" => $this->id,
                         "elements_$ns.enabled" => true,
                         "elements_$ns.dateDeleted" => null,
-                    ])
-                    ->andWhere(['not', ["elements_sites_$ns.enabled" => false]]),
+                        "elements_sites_$ns.siteId" => $this->_targetSiteId() ?? new Expression('[[elements_sites.siteId]]'),
+                        "elements_sites_$ns.enabled" => true,
+                    ]),
             ];
 
             if ($emptyCondition === ':notempty:') {
@@ -640,7 +647,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      */
     protected function searchKeywords(mixed $value, ElementInterface $element): string
     {
-        /** @var ElementQuery $value */
+        /** @var ElementQuery|Collection $value */
         $titles = [];
 
         foreach ($this->_all($value, $element)->all() as $relatedElement) {
@@ -655,7 +662,12 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      */
     public function getStaticHtml(mixed $value, ElementInterface $element): string
     {
-        $value = $this->_all($value, $element)->all();
+        /** @var ElementQueryInterface|Collection $value */
+        if ($value instanceof Collection) {
+            $value = $value->all();
+        } else {
+            $value = $this->_all($value, $element)->all();
+        }
 
         if (empty($value)) {
             return '<p class="light">' . Craft::t('app', 'Nothing selected.') . '</p>';
@@ -685,6 +697,7 @@ JS;
      */
     public function getTableAttributeHtml(mixed $value, ElementInterface $element): string
     {
+        /** @var ElementQueryInterface|Collection $value */
         if ($value instanceof ElementQueryInterface) {
             $value = $this->_all($value, $element)->collect();
         }
@@ -795,11 +808,16 @@ JS;
             $element->isFieldDirty($this->handle) &&
             (!$element->propagating || $this->localizeRelations)
         ) {
-            /** @var ElementQuery $value */
+            /** @var ElementQueryInterface|Collection $value */
             $value = $element->getFieldValue($this->handle);
 
-            // $id will be set if we're saving new relations
-            if ($value->id !== null) {
+            // $value will be an element query and its $id will be set if we're saving new relations
+            if ($value instanceof Collection) {
+                $targetIds = $value->map(fn(ElementInterface $element) => $element->id)->all();
+            } elseif (
+                is_array($value->id) &&
+                ArrayHelper::isNumeric($value->id)
+            ) {
                 $targetIds = $value->id ?: [];
             } else {
                 $targetIds = $this->_all($value, $element)->ids();
@@ -1145,21 +1163,29 @@ JS;
      */
     protected function targetSiteId(?ElementInterface $element = null): int
     {
-        if (Craft::$app->getIsMultiSite()) {
-            if ($this->targetSiteId) {
-                try {
-                    return Craft::$app->getSites()->getSiteByUid($this->targetSiteId)->id;
-                } catch (SiteNotFoundException $exception) {
-                    Craft::warning($exception->getMessage(), __METHOD__);
-                }
-            }
+        $targetSiteId = $this->_targetSiteId();
+        if ($targetSiteId) {
+            return $targetSiteId;
+        }
 
-            if ($element !== null && $element::isLocalized()) {
-                return $element->siteId;
-            }
+        if ($element !== null && $element::isLocalized()) {
+            return $element->siteId;
         }
 
         return Craft::$app->getSites()->getCurrentSite()->id;
+    }
+
+    private function _targetSiteId(): ?int
+    {
+        if ($this->targetSiteId && Craft::$app->getIsMultiSite()) {
+            try {
+                return Craft::$app->getSites()->getSiteByUid($this->targetSiteId)->id;
+            } catch (SiteNotFoundException $exception) {
+                Craft::warning($exception->getMessage(), __METHOD__);
+            }
+        }
+
+        return null;
     }
 
     /**

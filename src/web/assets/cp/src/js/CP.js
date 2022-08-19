@@ -1,5 +1,7 @@
 /** global: Craft */
 /** global: Garnish */
+import $ from 'jquery';
+
 /**
  * CP class
  */
@@ -24,6 +26,7 @@ Craft.CP = Garnish.Base.extend(
     $mainContent: null,
     $details: null,
     $sidebarContainer: null,
+    $sidebarToggle: null,
     $sidebar: null,
     $contentContainer: null,
     $edition: null,
@@ -66,7 +69,7 @@ Craft.CP = Garnish.Base.extend(
 
       // Find all the key elements
       this.$nav = $('#nav');
-      this.$navToggle = $('#nav-toggle');
+      this.$navToggle = $('#primary-nav-toggle');
       this.$globalSidebar = $('#global-sidebar');
       this.$globalContainer = $('#global-container');
       this.$mainContainer = $('#main-container');
@@ -82,13 +85,14 @@ Craft.CP = Garnish.Base.extend(
       this.$mainContent = $('#main-content');
       this.$details = $('#details');
       this.$sidebarContainer = $('#sidebar-container');
+      this.$sidebarToggle = $('#sidebar-toggle');
       this.$sidebar = $('#sidebar');
       this.$contentContainer = $('#content-container');
       this.$collapsibleTables = $('table.collapsible');
 
       this.isMobile = Garnish.isMobileBrowser();
 
-      this.updateSidebarMenuLabel();
+      this.updateContentHeading();
 
       // Swap any instruction text with info icons
       let $allInstructions = this.$details.find(
@@ -127,19 +131,6 @@ Craft.CP = Garnish.Base.extend(
         this.handleWindowResize();
         this.setSidebarNavAttributes();
 
-        // Fade the notification out two seconds after page load
-        var $errorNotifications =
-            this.$notificationContainer.children('.error'),
-          $otherNotifications =
-            this.$notificationContainer.children(':not(.error)');
-
-        $errorNotifications
-          .delay(Craft.CP.notificationDuration * 2)
-          .velocity('fadeOut');
-        $otherNotifications
-          .delay(Craft.CP.notificationDuration)
-          .velocity('fadeOut');
-
         // Wait a frame before initializing any confirm-unload forms,
         // so other JS that runs on ready() has a chance to initialize
         Garnish.requestAnimationFrame(this.initSpecialForms.bind(this));
@@ -152,7 +143,7 @@ Craft.CP = Garnish.Base.extend(
 
       // Toggles
       this.addListener(this.$navToggle, 'click', 'toggleNav');
-      this.addListener($('#sidebar-toggle'), 'click', 'toggleSidebar');
+      this.addListener(this.$sidebarToggle, 'click', 'toggleSidebar');
 
       // Does this page have a primary form?
       if (!this.$primaryForm.length) {
@@ -328,7 +319,9 @@ Craft.CP = Garnish.Base.extend(
       if ($noticeContainer.length) {
         return $noticeContainer;
       }
-      return $('<div id="content-notice"/>').prependTo(this.$contentHeader);
+      return $('<div id="content-notice"/>')
+        .attr('role', 'status')
+        .prependTo(this.$contentHeader);
     },
 
     initSpecialForms: function () {
@@ -457,11 +450,13 @@ Craft.CP = Garnish.Base.extend(
     },
 
     updateSidebarMenuLabel: function () {
-      var $item = this.$sidebar.find('a.sel:first');
-      var $label = $item.children('.label');
-      $('#selected-sidebar-item-label').text(
-        $label.length ? $label.text() : $item.text()
-      );
+      this.updateContentHeading();
+    },
+
+    updateContentHeading: function () {
+      const $item = this.$sidebar.find('a.sel:first');
+      const $label = $item.children('.label');
+      $('#content-heading').text($label.length ? $label.text() : $item.text());
       Garnish.$bod.removeClass('showing-sidebar');
     },
 
@@ -525,6 +520,9 @@ Craft.CP = Garnish.Base.extend(
     },
 
     toggleSidebar: function () {
+      const expanded = this.$sidebarToggle.attr('aria-expanded') === 'true';
+      const newState = expanded ? 'false' : 'true';
+      this.$sidebarToggle.attr('aria-expanded', newState);
       Garnish.$bod.toggleClass('showing-sidebar');
     },
 
@@ -545,7 +543,7 @@ Craft.CP = Garnish.Base.extend(
         const href = ev.$tab.attr('href');
 
         // Show its content area
-        if (href.charAt(0) === '#') {
+        if (href && href.charAt(0) === '#') {
           $(href).removeClass('hidden');
         }
 
@@ -577,7 +575,8 @@ Craft.CP = Garnish.Base.extend(
       });
 
       this.tabManager.on('deselectTab', (ev) => {
-        if (ev.$tab.attr('href').charAt(0) === '#') {
+        const href = ev.$tab.attr('href');
+        if (href && href.charAt(0) === '#') {
           // Hide its content area
           $(ev.$tab.attr('href')).addClass('hidden');
         }
@@ -854,77 +853,101 @@ Craft.CP = Garnish.Base.extend(
     /**
      * Dispays a notification.
      *
-     * @param {string} type
+     * @param {string} type `notice`, `success`, or `error`
      * @param {string} message
+     * @param {Object} [settings]
+     * @param {string} [settings.icon] The icon to show on the notification
+     * @param {string} [settings.iconLabel] The icon’s ARIA label
+     * @param {string} [settings.details] Any additional HTML that should be included below the message
+     * @return {Object} The notification
      */
-    displayNotification: function (type, message) {
-      var notificationDuration = Craft.CP.notificationDuration;
-
-      if (['cp-error', 'error'].includes(type)) {
-        notificationDuration *= 2;
-        icon = 'alert';
-        label = Craft.t('app', 'Error');
-      } else {
-        icon = 'info';
-        label = Craft.t('app', 'Notice');
-      }
-
-      var $notification = $(`
-            <div class="notification ${type.replace('cp-', '')}">
-                <span data-icon="${icon}" aria-label="${label}"></span>
-                ${message}
-            </div>
-            `).appendTo(this.$notificationContainer);
-
-      var fadedMargin = -($notification.outerWidth() / 2) + 'px';
-
-      $notification
-        .hide()
-        .css({
-          opacity: 0,
-          'margin-left': fadedMargin,
-          'margin-right': fadedMargin,
-        })
-        .velocity(
-          {opacity: 1, 'margin-left': '2px', 'margin-right': '2px'},
-          {display: 'inline-block', duration: 'fast'}
-        )
-        .delay(notificationDuration)
-        .velocity(
-          {opacity: 0, 'margin-left': fadedMargin, 'margin-right': fadedMargin},
-          {
-            complete: function () {
-              $notification.remove();
-            },
-          }
-        );
+    displayNotification: function (type, message, settings) {
+      const notification = new Craft.CP.Notification(type, message, settings);
 
       this.trigger('displayNotification', {
         notificationType: type,
-        message: message,
+        message,
+        notification,
       });
+
+      return notification;
     },
 
     /**
      * Displays a notice.
      *
      * @param {string} message
+     * @param {Object} [settings]
+     * @param {string} [settings.icon] The icon to show on the notification
+     * @param {string} [settings.iconLabel] The icon’s ARIA label
+     * @param {string} [settings.details] Any additional HTML that should be included below the message
+     * @return {Object} The notification
      */
-    displayNotice: function (message) {
-      this.displayNotification('notice', message);
+    displayNotice: function (message, settings) {
+      return this.displayNotification(
+        'notice',
+        message,
+        Object.assign(
+          {
+            icon: 'info',
+            iconLabel: Craft.t('app', 'Notice'),
+          },
+          settings
+        )
+      );
+    },
+
+    /**
+     * Displays a success notification.
+     *
+     * @param {string} message
+     * @param {Object} [settings]
+     * @param {string} [settings.icon] The icon to show on the notification
+     * @param {string} [settings.iconLabel] The icon’s ARIA label
+     * @param {string} [settings.details] Any additional HTML that should be included below the message
+     * @return {Object} The notification
+     */
+    displaySuccess: function (message, settings) {
+      return this.displayNotification(
+        'success',
+        message,
+        Object.assign(
+          {
+            icon: 'check',
+            iconLabel: Craft.t('app', 'Success'),
+          },
+          settings
+        )
+      );
     },
 
     /**
      * Displays an error.
      *
      * @param {string} message
+     * @param {Object} [settings]
+     * @param {string} [settings.icon] The icon to show on the notification
+     * @param {string} [settings.iconLabel] The icon’s ARIA label
+     * @param {string} [settings.details] Any additional HTML that should be included below the message
+     * @return {Object} The notification
      */
-    displayError: function (message) {
-      if (!message) {
+    displayError: function (message, settings) {
+      if (!message || typeof message === 'object') {
+        settings = message;
         message = Craft.t('app', 'A server error occurred.');
       }
 
-      this.displayNotification('error', message);
+      return this.displayNotification(
+        'error',
+        message,
+        Object.assign(
+          {
+            icon: 'alert',
+            iconLabel: Craft.t('app', 'Error'),
+          },
+          settings
+        )
+      );
     },
 
     fetchAlerts: function () {
@@ -1054,19 +1077,20 @@ Craft.CP = Garnish.Base.extend(
     _checkForUpdates: function (forceRefresh, includeDetails) {
       return new Promise((resolve, reject) => {
         if (!forceRefresh) {
-          this._checkForCachedUpdates(includeDetails).then((info) => {
-            if (info.cached !== false) {
-              resolve(info);
-            }
+          this._checkForCachedUpdates(includeDetails)
+            .then((info) => {
+              if (info.cached) {
+                resolve(info);
+                return;
+              }
 
-            this._getUpdates(includeDetails).then((info) => {
-              resolve(info);
-            });
-          });
+              this._getUpdates(includeDetails).then((info) => {
+                resolve(info);
+              });
+            })
+            .catch(reject);
         } else {
-          this._getUpdates(includeDetails).then((info) => {
-            resolve(info);
-          });
+          this._getUpdates(includeDetails).then(resolve).catch(reject);
         }
       });
     },
@@ -1079,8 +1103,12 @@ Craft.CP = Garnish.Base.extend(
         };
 
         Craft.sendActionRequest('POST', 'app/check-for-updates', {data})
-          .then((response) => resolve(response.data))
-          .catch(({response}) => resolve({cached: false}));
+          .then(({data}) => {
+            resolve(data);
+          })
+          .catch(() => {
+            resolve({cached: false});
+          });
       });
     },
 
@@ -1088,21 +1116,27 @@ Craft.CP = Garnish.Base.extend(
       return new Promise((resolve, reject) => {
         Craft.sendApiRequest('GET', 'updates')
           .then((updates) => {
-            this._cacheUpdates(updates, includeDetails).then(resolve);
+            this._cacheUpdates(updates, includeDetails).then((data) => {
+              resolve(data);
+            });
           })
-          .catch((e) => {
-            this._cacheUpdates({}).then(resolve);
-          });
+          .catch(reject);
       });
     },
 
     _cacheUpdates: function (updates, includeDetails) {
-      const data = {
-        updates,
-        includeDetails,
-      };
+      return new Promise((resolve, reject) => {
+        const data = {
+          updates,
+          includeDetails,
+        };
 
-      return Craft.sendActionRequest('POST', 'app/cache-updates', {data});
+        Craft.sendActionRequest('POST', 'app/cache-updates', {data})
+          .then(({data}) => {
+            resolve(data);
+          })
+          .catch(reject);
+      });
     },
 
     updateUtilitiesBadge: function () {
@@ -1118,18 +1152,38 @@ Craft.CP = Garnish.Base.extend(
           new Promise((resolve, reject) => {
             Craft.sendActionRequest('POST', 'app/get-utilities-badge-count')
               .then(({data}) => {
-                // Get the existing utility nav badge, if any
+                // Get the existing utility nav badge and screen reader text, if any
                 let $badge = $utilitiesLink.children('.badge');
+                let $screenReaderText = $utilitiesLink.children(
+                  '[data-notification]'
+                );
 
                 if (data.badgeCount) {
                   if (!$badge.length) {
-                    $badge = $('<span class="badge"/>').appendTo(
-                      $utilitiesLink
-                    );
+                    $badge = $(
+                      '<span class="badge" aria-hidden="true"/>'
+                    ).appendTo($utilitiesLink);
                   }
+
+                  if (!$screenReaderText.length) {
+                    $screenReaderText = $(
+                      '<span class="visually-hidden" data-notification/>'
+                    ).appendTo($utilitiesLink);
+                  }
+
                   $badge.text(data.badgeCount);
-                } else if ($badge.length) {
+                  $screenReaderText.text(
+                    Craft.t(
+                      'app',
+                      '{num, number} {num, plural, =1{notification} other{notifications}}',
+                      {
+                        num: data.badgeCount,
+                      }
+                    )
+                  );
+                } else if ($badge.length && $screenReaderText.length) {
                   $badge.remove();
+                  $screenReaderText.remove();
                 }
                 resolve();
               })
@@ -1312,8 +1366,9 @@ Craft.CP = Garnish.Base.extend(
       let siteId = Craft.getLocalStorage('BaseElementIndex.siteId');
       if (typeof siteId !== 'undefined') {
         Craft.removeLocalStorage('BaseElementIndex.siteId');
-        this.setSiteId(siteId);
-        return siteId;
+        try {
+          this.setSiteId(siteId);
+        } catch (e) {}
       }
       return Craft.siteId;
     },
@@ -1324,27 +1379,49 @@ Craft.CP = Garnish.Base.extend(
      */
     setSiteId: function (siteId) {
       const site = Craft.sites.find((s) => s.id === siteId);
-      if (site) {
-        // update the current URL
-        const url = Craft.getUrl(document.location.href, {site: site.handle});
-        history.replaceState({}, '', url);
 
-        // update other URLs on the page
-        $('a').each(function () {
-          if (
-            this.hostname.length &&
-            this.hostname === location.hostname &&
-            this.href.indexOf(Craft.cpTrigger) !== -1
-          ) {
-            this.href = Craft.getUrl(this.href, {site: site.handle});
-          }
-        });
+      if (!site) {
+        throw `Invalid site ID: ${siteId}`;
       }
+
+      Craft.siteId = siteId;
+
+      // update the base URLs used get Craft.getUrl(), etc.
+      Craft.actionUrl = Craft.getUrl(Craft.actionUrl, {site: site.handle});
+      Craft.baseCpUrl = Craft.getUrl(Craft.baseCpUrl, {site: site.handle});
+      Craft.baseUrl = Craft.getUrl(Craft.baseUrl, {site: site.handle});
+
+      // update the current URL
+      const url = Craft.getUrl(document.location.href, {site: site.handle});
+      history.replaceState({}, '', url);
+
+      // update the site--x body class
+      for (let className of document.body.classList) {
+        if (className.match(/^site--/)) {
+          document.body.classList.remove(className);
+        }
+      }
+      document.body.classList.add(`site--${site.handle}`);
+
+      // update other URLs on the page
+      $('a').each(function () {
+        if (
+          this.hostname.length &&
+          this.hostname === location.hostname &&
+          this.href.indexOf(Craft.cpTrigger) !== -1
+        ) {
+          this.href = Craft.getUrl(this.href, {site: site.handle});
+        }
+      });
     },
   },
   {
     //maxWidth: 1051, //1024,
-    notificationDuration: 2000,
+
+    /**
+     * @deprecated in 4.2.0. Use Craft.notificationDuration instead.
+     */
+    notificationDuration: 5000,
 
     JOB_STATUS_WAITING: 1,
     JOB_STATUS_RESERVED: 2,
@@ -1352,6 +1429,193 @@ Craft.CP = Garnish.Base.extend(
     JOB_STATUS_FAILED: 4,
   }
 );
+
+Craft.CP.Notification = Garnish.Base.extend({
+  type: null,
+  message: null,
+  settings: null,
+  closing: false,
+  closeTimeout: null,
+  _preventDelayedClose: false,
+  $container: null,
+  $closeBtn: null,
+  originalActiveElement: null,
+
+  init: function (type, message, settings) {
+    this.type = type;
+    this.message = message;
+    this.settings = settings || {};
+
+    this.$container = $('<div/>', {
+      class: 'notification',
+      'data-type': this.type,
+    }).appendTo(Craft.cp.$notificationContainer);
+
+    const $body = $('<div class="notification-body"/>')
+      .appendTo(this.$container)
+      .attr('role', 'status');
+
+    if (this.settings.icon) {
+      const $icon = $('<span/>', {
+        class: 'notification-icon',
+        'data-icon': this.settings.icon,
+      }).appendTo($body);
+      if (this.settings.iconLabel) {
+        $icon.attr({
+          'aria-label': this.settings.iconLabel,
+          role: 'img',
+        });
+      } else {
+        $icon.attr('aria-hidden', 'true');
+      }
+    }
+
+    const $main = $('<div class="notification-main"/>').appendTo($body);
+
+    $('<div/>', {
+      class: 'notification-message',
+      text: this.message,
+    }).appendTo($main);
+
+    const $closeBtnContainer = $('<div/>').appendTo(this.$container);
+    this.$closeBtn = $('<button/>', {
+      type: 'button',
+      class: 'notification-close-btn',
+      'aria-label': Craft.t('app', 'Close'),
+      'data-icon': 'remove',
+    }).appendTo($closeBtnContainer);
+
+    if (this.settings.details) {
+      const $detailsContainer = $('<div class="notification-details"/>')
+        .append(this.settings.details)
+        .appendTo($main);
+
+      const $focusableElement = $detailsContainer.find('button,input');
+      if ($focusableElement.length) {
+        Garnish.uiLayerManager.addLayer(this.$container);
+        Garnish.uiLayerManager.registerShortcut(Garnish.ESC_KEY, () => {
+          this.close();
+        });
+        this.originalActiveElement = document.activeElement;
+        this.$container.attr('tabindex', '-1').focus();
+        this.$container.on('keydown', (ev) => {
+          if (ev.keyCode === Garnish.ESC_KEY) {
+            ev.stopPropagation();
+            this.close();
+          }
+        });
+      }
+    }
+
+    this.$container
+      .css({
+        opacity: 0,
+        'margin-bottom': this._negMargin(),
+      })
+      .velocity({opacity: 1, 'margin-bottom': 0}, {duration: 'fast'});
+
+    Craft.initUiElements(this.$container);
+
+    this.addListener(this.$closeBtn, 'click', 'close');
+
+    if (Craft.notificationDuration) {
+      this._initDelayedClose();
+    }
+  },
+
+  _initDelayedClose: function () {
+    if (this._preventDelayedClose) {
+      return;
+    }
+
+    if (!Craft.isVisible()) {
+      Garnish.$doc.one('visibilitychange', () => {
+        this._initDelayedClose();
+      });
+      return;
+    }
+
+    this.delayedClose();
+
+    this.$container.on(
+      'keypress keyup change focus blur click mousedown mouseup',
+      (ev) => {
+        if (ev.target != this.$closeBtn[0]) {
+          this.$container.off(
+            'keypress keyup change focus blur click mousedown mouseup'
+          );
+          this.preventDelayedClose();
+        }
+      }
+    );
+  },
+
+  _negMargin: function () {
+    return `-${this.$container.outerHeight() + 12}px`;
+  },
+
+  close: function () {
+    if (this.closing) {
+      return;
+    }
+
+    if (this.closeTimeout) {
+      clearTimeout(this.closeTimeout);
+      this.closeTimeout = null;
+    }
+
+    this.closing = true;
+
+    if (
+      this.originalActiveElement &&
+      document.activeElement &&
+      (document.activeElement === this.$container[0] ||
+        $.contains(this.$container[0], document.activeElement))
+    ) {
+      $(this.originalActiveElement).focus();
+    }
+
+    this.$container.velocity(
+      {opacity: 0, 'margin-bottom': this._negMargin()},
+      {
+        duration: 'fast',
+        complete: () => {
+          this.$container.remove();
+        },
+      }
+    );
+  },
+
+  delayedClose: function () {
+    this.closeTimeout = setTimeout(() => {
+      this.close();
+    }, Craft.notificationDuration);
+
+    // Hold off on closing automatically on hover
+    this.$container.one('mouseover', () => {
+      clearTimeout(this.closeTimeout);
+      this.closeTimeout = null;
+
+      this.$container.on('mouseout', (ev) => {
+        if (ev.target == this.$container[0]) {
+          this.$container.off('mouseout');
+          this.delayedClose();
+        }
+      });
+    });
+  },
+
+  preventDelayedClose: function () {
+    this._preventDelayedClose = true;
+
+    if (this.closeTimeout) {
+      clearTimeout(this.closeTimeout);
+      this.closeTimeout = null;
+    }
+
+    this.$container.off('mouseover mouseout');
+  },
+});
 
 Garnish.$scrollContainer = Garnish.$win;
 Craft.cp = new Craft.CP();

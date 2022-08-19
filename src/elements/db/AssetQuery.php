@@ -267,8 +267,13 @@ class AssetQuery extends ElementQuery
      */
     public function volume(mixed $value): self
     {
-        if ($value instanceof Volume) {
-            $this->volumeId = [$value->id];
+        if (Db::normalizeParam($value, function($item) {
+            if (is_string($item)) {
+                $item = Craft::$app->getVolumes()->getVolumeByHandle($item);
+            }
+            return $item instanceof Volume ? $item->id : null;
+        })) {
+            $this->volumeId = $value;
         } elseif ($value !== null) {
             $this->volumeId = (new Query())
                 ->select(['id'])

@@ -4,6 +4,7 @@ namespace craft\log;
 
 use Craft;
 use craft\helpers\App;
+use Illuminate\Support\Collection;
 use Monolog\Formatter\FormatterInterface;
 use Monolog\Formatter\LineFormatter;
 use Monolog\Handler\RotatingFileHandler;
@@ -121,27 +122,20 @@ class MonologTarget extends PsrTarget
      */
     public function export(): void
     {
+        $this->messages = $this->_filterMessagesByPsrLevel($this->messages, $this->level);
         parent::export();
 
-        if (!$this->logContext) {
+        if (!$this->logContext || empty($this->messages)) {
             return;
         }
 
-        $message = 'Request context:';
-        $vars = [];
-
-        if ($this->allowLineBreaks) {
-            $message .= "\n" . trim(parent::getContextMessage());
-        } else {
-            $vars = $this->logVars;
-        }
-
         $this->logger->pushProcessor(new ContextProcessor(
-            vars: $vars,
+            vars: $this->logVars,
+            dumpVars: $this->allowLineBreaks,
         ));
 
         // Log at default level, so it doesn't get filtered
-        $this->logger->log($this->level, $message);
+        $this->logger->log($this->level, 'Request context:');
         $this->logger->popProcessor();
     }
 
@@ -152,6 +146,27 @@ class MonologTarget extends PsrTarget
     protected function getContextMessage(): string
     {
         return '';
+    }
+
+    /**
+     * @param array $messages
+     * @param string $level
+     * @phpstan-param LogLevel::* $level
+     * @return array
+     */
+    private function _filterMessagesByPsrLevel(array $messages, string $level): array
+    {
+        $levelMap = Collection::make((array) $this->getLevels());
+        $monologLevel = Logger::toMonologLevel($level);
+        $messages = Collection::make($messages)
+            ->filter(function($message) use ($levelMap, $monologLevel) {
+                $level = $message[1];
+                $psrLevel = is_int($level) ? $levelMap->get($level) : $level;
+
+                return Logger::toMonologLevel($psrLevel) >= $monologLevel;
+            });
+
+        return $messages->all();
     }
 
     private function _createLogger(string $name): Logger
@@ -171,7 +186,7 @@ class MonologTarget extends PsrTarget
             $logger->pushHandler((new StreamHandler(
                 'php://stderr',
                 Logger::WARNING,
-                bubble: false
+                bubble: false,
             ))->setFormatter($this->formatter));
 
             // Don't pollute console request output
@@ -179,6 +194,7 @@ class MonologTarget extends PsrTarget
                 $logger->pushHandler((new StreamHandler(
                     'php://stdout',
                     $this->level,
+                    bubble: false,
                 ))->setFormatter($this->formatter));
             }
         } else {

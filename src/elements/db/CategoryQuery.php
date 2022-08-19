@@ -131,16 +131,22 @@ class CategoryQuery extends ElementQuery
     public function group(mixed $value): self
     {
         if ($value instanceof CategoryGroup) {
+            // Special case for a single category group, since we also want to capture the structure ID
             $this->structureId = ($value->structureId ?: false);
             $this->groupId = [$value->id];
-        } elseif ($value !== null) {
+        } elseif (Db::normalizeParam($value, function($item) {
+            if (is_string($item)) {
+                $item = Craft::$app->getCategories()->getGroupByHandle($item);
+            }
+            return $item instanceof CategoryGroup ? $item->id : null;
+        })) {
+            $this->groupId = $value;
+        } else {
             $this->groupId = (new Query())
                 ->select(['id'])
                 ->from(Table::CATEGORYGROUPS)
                 ->where(Db::parseParam('handle', $value))
                 ->column();
-        } else {
-            $this->groupId = null;
         }
 
         return $this;

@@ -3,6 +3,7 @@
 namespace craft\base\conditions;
 
 use craft\base\ComponentInterface;
+use yii\base\InvalidConfigException;
 
 /**
  * ConditionRuleInterface defines the common interface to be implemented by condition rule classes.
@@ -33,9 +34,17 @@ interface ConditionRuleInterface extends ComponentInterface
     public function getLabel(): string;
 
     /**
+     * Returns the optgroup label the condition rule should be grouped under.
+     *
+     * @return string|null
+     */
+    public function getGroupLabel(): ?string;
+
+    /**
      * Returns the rule’s portable config.
      *
      * @return array
+     * @throws InvalidConfigException if the rule is misconfigured
      */
     public function getConfig(): array;
 

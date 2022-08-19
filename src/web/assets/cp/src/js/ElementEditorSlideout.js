@@ -55,6 +55,9 @@ Craft.ElementEditorSlideout = Craft.CpScreenSlideout.extend(
           delete data.message;
           this.settings.onSaveElement(data);
         }
+
+        // Refresh Live Preview
+        Craft.Preview.refresh();
       });
     },
 

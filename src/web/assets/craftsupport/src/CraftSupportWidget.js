@@ -253,8 +253,10 @@ import './CraftSupportWidget.scss';
               }
             }
             this.$searchSubmit.removeClass('disabled');
+            this.$searchSubmit.removeAttr('aria-disabled');
           } else {
             this.$searchSubmit.addClass('disabled');
+            this.$searchSubmit.attr('aria-disabled', true);
           }
         } else {
           if (text) {
@@ -528,7 +530,7 @@ import './CraftSupportWidget.scss';
         }
 
         if (response.success) {
-          Craft.cp.displayNotice(Craft.t('app', 'Message sent successfully.'));
+          Craft.cp.displaySuccess(Craft.t('app', 'Message sent successfully.'));
           this.$body.val('');
           this.$supportMessage.val('');
           this.$supportAttachment.val('');

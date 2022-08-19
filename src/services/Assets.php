@@ -35,7 +35,6 @@ use craft\helpers\FileHelper;
 use craft\helpers\Image;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
-use craft\helpers\UrlHelper;
 use craft\models\FolderCriteria;
 use craft\models\ImageTransform;
 use craft\models\Volume;
@@ -45,6 +44,7 @@ use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
+use yii\base\NotSupportedException;
 use yii\db\Expression;
 
 /**
@@ -90,6 +90,12 @@ class Assets extends Component
      * @var array
      */
     private array $_foldersByUid = [];
+
+    /**
+     * @var VolumeFolder[]
+     * @see getUserTemporaryUploadFolder
+     */
+    private $_userTempFolders = [];
 
     /**
      * Returns a file by its ID.
@@ -171,14 +177,22 @@ class Assets extends Component
      */
     public function moveAsset(Asset $asset, VolumeFolder $folder, string $filename = ''): bool
     {
-        $asset->newFolderId = $folder->id;
+        $folderChanging = $asset->folderId != $folder->id;
+        $filenameChanging = $filename !== '' && $filename !== $asset->getFilename();
 
-        // If the filename hasn’t changed, then we can use the `move` scenario
-        if ($filename === '' || $filename === $asset->getFilename()) {
-            $asset->setScenario(Asset::SCENARIO_MOVE);
-        } else {
+        if (!$folderChanging && !$filenameChanging) {
+            return true;
+        }
+
+        if ($folderChanging) {
+            $asset->newFolderId = $folder->id;
+        }
+
+        if ($filenameChanging) {
             $asset->newFilename = $filename;
             $asset->setScenario(Asset::SCENARIO_FILEOPS);
+        } else {
+            $asset->setScenario(Asset::SCENARIO_MOVE);
         }
 
         return Craft::$app->getElements()->saveElement($asset);
@@ -341,7 +355,7 @@ class Assets extends Component
             // Add additional criteria but prevent overriding volumeId and order.
             $criteria = array_merge($additionalCriteria, [
                 'volumeId' => $volumeId,
-                'order' => [new Expression('path IS NULL DESC'), 'path' => SORT_ASC],
+                'order' => [new Expression('[[path]] IS NULL DESC'), 'path' => SORT_ASC],
             ]);
             $cacheKey = md5(Json::encode($criteria));
 
@@ -583,10 +597,6 @@ class Assets extends Component
             $height = $width;
         }
 
-        $params = [
-            'v' => $asset->dateModified->getTimestamp(),
-        ];
-
         // Maybe a plugin wants to do something here
         if ($this->hasEventHandlers(self::EVENT_DEFINE_THUMB_URL)) {
             $event = new DefineAssetThumbUrlEvent([
@@ -598,13 +608,24 @@ class Assets extends Component
 
             // If a plugin set the url, we'll just use that.
             if ($event->url !== null) {
-                return UrlHelper::urlWithParams($event->url, $params);
+                return $event->url;
             }
         }
 
         // If it’s not an image, return a generic file extension icon
         $extension = $asset->getExtension();
-        if (!Image::canManipulateAsImage($extension) || !$asset->getVolume()->getTransformFs()->hasUrls) {
+        if (!Image::canManipulateAsImage($extension)) {
+            return AssetsHelper::iconUrl($extension);
+        }
+
+        $volume = $asset->getVolume();
+        try {
+            $transformFs = $volume->getTransformFs();
+        } catch (InvalidConfigException) {
+            $transformFs = null;
+        }
+
+        if (!$transformFs?->hasUrls) {
             return AssetsHelper::iconUrl($extension);
         }
 
@@ -614,9 +635,7 @@ class Assets extends Component
             'mode' => 'crop',
         ]);
 
-        $transformUrl = $asset->getUrl($transform, false);
-
-        return UrlHelper::urlWithParams($transformUrl, $params);
+        return $asset->getUrl($transform, false) ?? AssetsHelper::iconUrl($extension);
     }
 
     /**
@@ -627,6 +646,7 @@ class Assets extends Component
      * @param int $maxHeight
      * @return string
      * @since 4.0.0
+     * @throws NotSupportedException if the asset’s volume doesn’t have a filesystem with public URLs
      */
     public function getImagePreviewUrl(Asset $asset, int $maxWidth, int $maxHeight): string
     {
@@ -650,9 +670,11 @@ class Assets extends Component
 
         $url = $asset->getUrl($transform, true);
 
-        return UrlHelper::urlWithParams($url, [
-            'v' => $asset->dateModified->getTimestamp(),
-        ]);
+        if (!$url) {
+            throw new NotSupportedException('A preview URL couldn’t be generated for the asset.');
+        }
+
+        return $url;
     }
 
     /**
@@ -769,9 +791,9 @@ class Assets extends Component
         $folderModel = $parentFolder;
         $parentId = $parentFolder->id;
 
-        if ($fullPath) {
+        if ($fullPath !== '') {
             // If we don't have a folder matching these, create a new one
-            $parts = explode('/', trim($fullPath, '/'));
+            $parts = preg_split('/\\\\|\//', trim($fullPath, '/\\'));
 
             // creep up the folder path
             $path = '';
@@ -898,6 +920,10 @@ class Assets extends Component
             $user = Craft::$app->getUser()->getIdentity();
         }
 
+        if ($user && isset($this->_userTempFolders[$user->id])) {
+            return $this->_userTempFolders[$user->id];
+        }
+
         if ($user) {
             $folderName = 'user_' . $user->id;
         } elseif (Craft::$app->getRequest()->getIsConsoleRequest()) {
@@ -919,7 +945,7 @@ class Assets extends Component
 
         if ($tempVolume) {
             $path = ($tempSubpath ? "$tempSubpath/" : '') . $folderName;
-            return $this->ensureFolderByFullPathAndVolume($path, $tempVolume, false);
+            return $this->_userTempFolders[$user->id] = $this->ensureFolderByFullPathAndVolume($path, $tempVolume);
         }
 
         $volumeTopFolder = $this->findFolder([
@@ -954,7 +980,7 @@ class Assets extends Component
             throw new VolumeException('Unable to create directory for temporary volume.');
         }
 
-        return $folder;
+        return $this->_userTempFolders[$user->id] = $folder;
     }
 
     /**

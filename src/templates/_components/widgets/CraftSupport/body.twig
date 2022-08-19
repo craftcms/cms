@@ -25,15 +25,15 @@
                 <h2>{{ 'More Resources'|t('app') }}</h2>
                 <div class="cs-logo-resources">
                     <a href="https://craftcms.com/partners" target="_blank" rel="noopener">
-                        <h3><img src="{{ bundleUrl }}/logos/craft-partners.svg" alt="Craft Support"></h3>
+                        <h3><img class="cs-logo-image" src="{{ bundleUrl }}/logos/craft-partners.svg" alt="Craft Partners"></h3>
                         <p>{{ 'Find an official Craft Partner'|t('app') }}</p>
                     </a>
                     <a href="https://craftcms.com/discord" target="_blank" rel="noopener">
-                        <h3><img src="{{ bundleUrl }}/logos/discord.svg" alt="Discord"></h3>
+                        <h3><img class="cs-logo-image" src="{{ bundleUrl }}/logos/discord.svg" alt="Discord"></h3>
                         <p>{{ 'Meet the Craft community'|t('app') }}</p>
                     </a>
                     <a href="https://craftquest.io" target="_blank" rel="noopener">
-                        <h3><img src="{{ bundleUrl }}/logos/craftquest.svg" alt="CraftQuest"></h3>
+                        <h3><img class="cs-logo-image" src="{{ bundleUrl }}/logos/craftquest.svg" alt="CraftQuest"></h3>
                         <p>{{ 'Unlimited video training'|t('app') }}</p>
                     </a>
                 </div>
@@ -43,7 +43,7 @@
                         <span>{{ 'Documentation'|t('app') }}</span>
                     </a>
                     <a href="https://craftcms.com/knowledge-base" target="_blank" rel="noopener">
-                        {{ svg('@appicons/magnifying-glass.svg') }}
+                        {{ svg('@appicons/magnifying-glass.svg', namespace=true) }}
                         <span>{{ 'Knowledge Base'|t('app') }}</span>
                     </a>
                 </div>

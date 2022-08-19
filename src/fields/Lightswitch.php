@@ -105,18 +105,18 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
                 'on' => $this->default,
             ]) .
             Cp::textFieldHtml([
-                'label' => Craft::t('app', 'ON Label'),
-                'instructions' => Craft::t('app', 'The label text to display beside the lightswitch’s enabled state.'),
-                'id' => 'on-label',
-                'name' => 'onLabel',
-                'value' => $this->onLabel,
-            ]) .
-            Cp::textFieldHtml([
                 'label' => Craft::t('app', 'OFF Label'),
                 'instructions' => Craft::t('app', 'The label text to display beside the lightswitch’s disabled state.'),
                 'id' => 'off-label',
                 'name' => 'offLabel',
                 'value' => $this->offLabel,
+            ]) .
+            Cp::textFieldHtml([
+                'label' => Craft::t('app', 'ON Label'),
+                'instructions' => Craft::t('app', 'The label text to display beside the lightswitch’s enabled state.'),
+                'id' => 'on-label',
+                'name' => 'onLabel',
+                'value' => $this->onLabel,
             ]);
     }
 
@@ -128,7 +128,7 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
         $id = $this->getInputId();
         return Craft::$app->getView()->renderTemplate('_includes/forms/lightswitch', [
             'id' => $id,
-            'labelId' => "$id-label",
+            'labelId' => $this->getLabelId(),
             'describedBy' => $this->describedBy,
             'name' => $this->handle,
             'on' => (bool)$value,

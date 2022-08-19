@@ -207,13 +207,13 @@
 <script>
   /* global Craft, Vue */
   import Vuetable from 'vuetable-2/src/components/Vuetable';
-  import AdminTablePagination from './js/components/AdminTablePagination';
-  import AdminTableDeleteButton from './js/components/AdminTableDeleteButton';
-  import AdminTableCheckbox from './js/components/AdminTableCheckbox';
-  import AdminTableActionButton from './js/components/AdminTableActionButton';
-  import AdminTableDetailRow from './js/components/AdminTableDetailRow';
-  import AdminTableButton from './js/components/AdminTableButton';
-  import AdminTableCopyTextButton from './js/components/AdminTableCopyTextButton';
+  import AdminTablePagination from './components/AdminTablePagination';
+  import AdminTableDeleteButton from './components/AdminTableDeleteButton';
+  import AdminTableCheckbox from './components/AdminTableCheckbox';
+  import AdminTableActionButton from './components/AdminTableActionButton';
+  import AdminTableDetailRow from './components/AdminTableDetailRow';
+  import AdminTableButton from './components/AdminTableButton';
+  import AdminTableCopyTextButton from './components/AdminTableCopyTextButton';
   import Sortable from 'sortablejs';
   import {debounce, map} from 'lodash';
 
@@ -405,6 +405,10 @@
             );
             if (this.selectAll && this.allowMultipleSelections) {
               this.selectAll.addEventListener('click', this.handleSelectAll);
+            }
+
+            if (this.tableDataEndpoint) {
+              Craft.initUiElements(this.container);
             }
           }
         });
@@ -637,6 +641,10 @@
       },
 
       detailRowComponent() {
+        if (this.tableDataEndpoint) {
+          return this.detailRow;
+        }
+
         if (!this.tableData || this.tableData.length == 0) {
           return '';
         }
@@ -763,6 +771,16 @@
             checkbox.classList.remove('checked');
             checkbox.classList.remove('indeterminate');
           }
+        }
+      },
+
+      dragging(newVal) {
+        // Update pointer events while dragging to allow sortable JS to drag to top
+        let $contentHeader = document.querySelector('header#header');
+        if (newVal) {
+          $contentHeader.style.pointerEvents = 'none';
+        } else {
+          $contentHeader.style.pointerEvents = '';
         }
       },
     },

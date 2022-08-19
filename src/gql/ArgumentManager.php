@@ -123,12 +123,15 @@ class ArgumentManager extends Component
     {
         $orderBy = $arguments['orderBy'] ?? null;
         if ($orderBy) {
-            if (StringHelper::containsAny($orderBy, ['(', ')'])) {
-                throw new GqlException('Illegal value for `orderBy` argument: `' . $orderBy . '`');
-            }
-            $chunks = StringHelper::split($orderBy);
-            foreach ($chunks as $chunk) {
-                if (!preg_match('/^\w+(\.\w+)?( (asc|desc))?$/i', $chunk)) {
+            foreach (StringHelper::split($orderBy) as $chunk) {
+                // Special case for rand()/random()
+                if (in_array(strtolower($chunk), ['rand()', 'random()'], true)) {
+                    continue;
+                }
+                if (
+                    StringHelper::containsAny($orderBy, ['(', ')']) ||
+                    !preg_match('/^\w+(\.\w+)?( (asc|desc))?$/i', $chunk)
+                ) {
                     throw new GqlException('Illegal value for `orderBy` argument: `' . $orderBy . '`');
                 }
             }

@@ -72,15 +72,27 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend({
       // If they are, show a primary "New category" button, and a dropdown of the other groups (if any).
       // Otherwise only show a menu button
       if (selectedGroup) {
+        const visibleLabel =
+          this.settings.context === 'index'
+            ? Craft.t('app', 'New category')
+            : Craft.t('app', 'New {group} category', {
+                group: selectedGroup.name,
+              });
+        const ariaLabel =
+          this.settings.context === 'index'
+            ? Craft.t('app', 'New category in the {group} category group', {
+                group: selectedGroup.name,
+              })
+            : visibleLabel;
+
+        const role = this.settings.context === 'index' ? 'link' : null;
+
         this.$newCategoryBtn = Craft.ui
           .createButton({
-            label:
-              this.settings.context === 'index'
-                ? Craft.t('app', 'New category')
-                : Craft.t('app', 'New {group} category', {
-                    group: selectedGroup.name,
-                  }),
+            label: visibleLabel,
+            ariaLabel: ariaLabel,
             spinner: true,
+            role: role,
           })
           .addClass('submit add icon')
           .appendTo(this.$newCategoryBtnGroup);
@@ -95,12 +107,17 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend({
             class: 'btn submit menubtn btngroup-btn-last',
             'aria-controls': menuId,
             'data-disclosure-trigger': '',
+            'aria-label': Craft.t(
+              'app',
+              'New category, choose a category group'
+            ),
           }).appendTo(this.$newCategoryBtnGroup);
         }
       } else {
         this.$newCategoryBtn = $menuBtn = Craft.ui
           .createButton({
             label: Craft.t('app', 'New category'),
+            ariaLabel: Craft.t('app', 'New category, choose a category group'),
             spinner: true,
           })
           .addClass('submit add icon menubtn btngroup-btn-last')
@@ -119,11 +136,14 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend({
         const $ul = $('<ul/>').appendTo($menuContainer);
 
         for (const group of this.editableGroups) {
+          const anchorRole =
+            this.settings.context === 'index' ? 'link' : 'button';
           if (this.settings.context === 'index' || group !== selectedGroup) {
             const $li = $('<li/>').appendTo($ul);
             const $a = $('<a/>', {
-              role: 'button',
-              tabindex: '0',
+              role: anchorRole === 'button' ? 'button' : null,
+              href: '#', // Allows for click listener and tab order
+              type: anchorRole === 'button' ? 'button' : null,
               text: Craft.t('app', 'New {group} category', {
                 group: group.name,
               }),
@@ -132,6 +152,16 @@ Craft.CategoryIndex = Craft.BaseElementIndex.extend({
               $menuBtn.data('trigger').hide();
               this._createCategory(group.id);
             });
+
+            if (anchorRole === 'button') {
+              this.addListener($a, 'keydown', (event) => {
+                if (event.keyCode === Garnish.SPACE_KEY) {
+                  event.preventDefault();
+                  $menuBtn.data('trigger').hide();
+                  this._createCategory(group.id);
+                }
+              });
+            }
           }
         }
 

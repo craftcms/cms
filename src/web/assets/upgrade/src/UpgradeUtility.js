@@ -5,13 +5,15 @@ import './upgrade.scss';
   /** global: Garnish */
   Craft.UpgradeUtility = Garnish.Base.extend({
     version: null,
+    installedPlugins: null,
 
     $body: null,
     $graphic: null,
     $status: null,
 
-    init: function (version) {
+    init: function (version, installedPlugins) {
       this.version = version;
+      this.installedPlugins = installedPlugins;
 
       this.$body = $('#content');
       this.$graphic = $('#graphic');
@@ -33,6 +35,15 @@ import './upgrade.scss';
     showUpgradeInfo: function (data) {
       this.$graphic.remove();
       this.$status.remove();
+
+      const handles = data.plugins.map((info) => info.handle);
+      const missingPluginInfo = this.installedPlugins.filter((info) => {
+        return !handles.includes(info.handle);
+      });
+
+      data.plugins.push(
+        ...missingPluginInfo.map((info) => Object.assign(info, {unknown: true}))
+      );
 
       const $pluginIntro = $('<div class="readable"/>')
         .append(
@@ -76,11 +87,18 @@ import './upgrade.scss';
           if (plugin.icon) {
             $(`<div class="plugin-icon">${plugin.icon}</div>`).appendTo($th);
           }
-          $('<a/>', {
-            class: 'plugin-name',
-            href: `https://plugins.craftcms.com/${plugin.handle}`,
-            text: plugin.name,
-          }).appendTo($th);
+          if (plugin.unknown) {
+            $('<span/>', {
+              class: 'plugin-name',
+              text: plugin.name,
+            }).appendTo($th);
+          } else {
+            $('<a/>', {
+              class: 'plugin-name',
+              href: `https://plugins.craftcms.com/${plugin.handle}?cmsConstraint=^${this.version}.0`,
+              text: plugin.name,
+            }).appendTo($th);
+          }
           const $devContainer = $('<div class="plugin-developer"/>').appendTo(
             $th
           );
@@ -117,7 +135,7 @@ import './upgrade.scss';
               text: Craft.t('app', 'Ready'),
             }).appendTo($tdStatus);
             $('<div/>', {
-              class: 'plugin-status',
+              class: 'plugin-version',
               text: plugin.latestVersion,
             }).appendTo($tdStatus);
             if (
@@ -128,6 +146,13 @@ import './upgrade.scss';
                 version: plugin.phpConstraint,
               });
             }
+          } else if (plugin.unknown) {
+            $('<div/>', {
+              class: 'plugin-status',
+              text: plugin.isInstalled
+                ? Craft.t('app', 'Unknown')
+                : Craft.t('app', 'Not installed'),
+            }).appendTo($tdStatus);
           } else {
             $('<div/>', {
               class: 'plugin-status plugin-not-ready',

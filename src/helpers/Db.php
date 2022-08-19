@@ -40,6 +40,13 @@ class Db
     public const SIMPLE_TYPE_NUMERIC = 'numeric';
     public const SIMPLE_TYPE_TEXTUAL = 'textual';
 
+    /** @since 3.7.40 */
+    public const GLUE_AND = 'and';
+    /** @since 3.7.40 */
+    public const GLUE_OR = 'or';
+    /** @since 3.7.40 */
+    public const GLUE_NOT = 'not';
+
     /**
      * @var array
      */
@@ -478,8 +485,9 @@ class Db
      * string (via [[ArrayHelper::toArray()]]). If that is not desired behavior, you can escape the comma
      * with a backslash before it.
      *
-     * The first value can be set to either `'and'` or `'or'` to define whether *all* of the values must match, or
-     * *any*. If it’s neither `'and'` nor `'or'`, then `'or'` will be assumed.
+     * The first value can be set to either `and`, `or`, or `not` to define whether *all*, *any*, or *none* of the values must match.
+     * (`or` will be assumed by default.)
+     *
      * Values can begin with the operators `'not '`, `'!='`, `'<='`, `'>='`, `'<'`, `'>'`, or `'='`. If they don’t,
      * `'='` will be assumed.
      *
@@ -514,22 +522,12 @@ class Db
 
         $parsedColumnType = $columnType ? static::parseColumnType($columnType) : null;
 
-        $firstVal = strtolower(reset($value));
-        $negate = false;
-
-        switch ($firstVal) {
-            case 'and':
-            case 'or':
-                $glue = $firstVal;
-                array_shift($value);
-                break;
-            case 'not':
-                $glue = 'and';
-                $negate = true;
-                array_shift($value);
-                break;
-            default:
-                $glue = 'or';
+        $glue = static::extractGlue($value) ?? self::GLUE_OR;
+        if ($glue === self::GLUE_NOT) {
+            $glue = self::GLUE_AND;
+            $negate = true;
+        } else {
+            $negate = false;
         }
 
         $condition = [$glue];
@@ -621,13 +619,13 @@ class Db
             }
 
             // ['or', 1, 2, 3] => IN (1, 2, 3)
-            if ($glue == 'or' && $operator === '=') {
+            if ($glue == self::GLUE_OR && $operator === '=') {
                 $inVals[] = $val;
                 continue;
             }
 
             // ['and', '!=1', '!=2', '!=3'] => NOT IN (1, 2, 3)
-            if ($glue == 'and' && $operator === '!=') {
+            if ($glue == self::GLUE_AND && $operator === '!=') {
                 $notInVals[] = $val;
                 continue;
             }
@@ -666,14 +664,14 @@ class Db
         $normalizedValues = [];
 
         $value = self::_toArray($value);
+        $glue = static::extractGlue($value);
 
-        if (!count($value)) {
+        if (empty($value)) {
             return '';
         }
 
-        if (in_array($value[0], ['and', 'or', 'not'], true)) {
-            $normalizedValues[] = $value[0];
-            array_shift($value);
+        if ($glue !== null) {
+            $normalizedValues[] = $glue;
         }
 
         foreach ($value as $val) {
@@ -769,7 +767,7 @@ class Db
      * @param string|bool $value The param value
      * @param bool|null $defaultValue How `null` values should be treated
      * @return array
-     * @since 3.4.15
+     * @since 3.4.14
      */
     public static function parseBooleanParam(string $column, mixed $value, ?bool $defaultValue = null): array
     {
@@ -813,6 +811,88 @@ class Db
         string|null $columnType = Schema::TYPE_INTEGER,
     ): string|array {
         return static::parseParam($column, $value, $defaultOperator, false, $columnType);
+    }
+
+    /**
+     * Extracts a “glue” param from an a param value.
+     *
+     * Supported glue values are `and`, `or`, and `not`.
+     *
+     * @param mixed $value
+     * @return string|null
+     * @since 3.7.40
+     */
+    public static function extractGlue(&$value): ?string
+    {
+        if (!is_array($value)) {
+            return null;
+        }
+
+        $firstVal = reset($value);
+
+        if (!is_string($firstVal)) {
+            return null;
+        }
+
+        $firstVal = strtolower($firstVal);
+
+        if (!in_array($firstVal, [self::GLUE_AND, self::GLUE_OR, self::GLUE_NOT], true)) {
+            return null;
+        }
+
+        array_shift($value);
+        return $firstVal;
+    }
+
+    /**
+     * Normalizes a param value with a provided resolver function, unless the resolver function ever returns
+     * an empty value.
+     *
+     * If the original param value began with `and`, `or`, or `not`, that will be preserved.
+     *
+     * @param mixed $value The param value to be normalized
+     * @param callable $resolver Method to resolve non-model values to models
+     * @return bool Whether the value was normalized
+     * @since 3.7.40
+     */
+    public static function normalizeParam(&$value, callable $resolver): bool
+    {
+        if ($value === null) {
+            return true;
+        }
+
+        if (!is_array($value)) {
+            $testValue = [$value];
+            if (static::normalizeParam($testValue, $resolver)) {
+                $value = $testValue;
+                return true;
+            }
+            return false;
+        }
+
+        $normalized = [];
+
+        foreach ($value as $item) {
+            if (
+                empty($normalized) &&
+                is_string($item) &&
+                in_array(strtolower($item), [Db::GLUE_OR, Db::GLUE_AND, Db::GLUE_NOT], true)
+            ) {
+                $normalized[] = strtolower($item);
+                continue;
+            }
+
+            $item = $resolver($item);
+            if (!$item) {
+                // The value couldn't be normalized in full, so bail
+                return false;
+            }
+
+            $normalized[] = $item;
+        }
+
+        $value = $normalized;
+        return true;
     }
 
     /**
@@ -1291,7 +1371,7 @@ class Db
      * Parses a DSN string and returns an array with the `driver` and any driver params, or just a single key.
      *
      * @param string $dsn
-     * @param string|null $key The key that is needed from the DSN. If this is
+     * @param string|null $key The key that is needed from the DSN, if only one param is needed.
      * @return array|string|false The full array, or the specific key value, or `false` if `$key` is a param that
      * doesn’t exist in the DSN string.
      * @throws InvalidArgumentException if $dsn is invalid
@@ -1391,25 +1471,27 @@ class Db
 
         // URL scheme => driver
         if (in_array(strtolower($parsed['scheme']), ['pgsql', 'postgres', 'postgresql'], true)) {
-            $driver = Connection::DRIVER_PGSQL;
+            $config['driver'] = Connection::DRIVER_PGSQL;
         } else {
-            $driver = Connection::DRIVER_MYSQL;
+            $config['driver'] = Connection::DRIVER_MYSQL;
         }
 
-        // DSN params
-        $checkParams = [
-            'host' => 'host',
-            'port' => 'port',
-            'path' => 'dbname',
+        // Other URL params
+        $urlParams = [
+            'host' => ['server', 'host'],
+            'port' => ['port', 'port'],
+            'path' => ['database', 'dbname'],
         ];
         $dsnParams = [];
-        foreach ($checkParams as $urlParam => $dsnParam) {
+        foreach ($urlParams as $urlParam => [$configKey, $dsnParam]) {
             if (isset($parsed[$urlParam])) {
-                $dsnParams[] = $dsnParam . '=' . trim($parsed[$urlParam], '/');
+                $value = trim($parsed[$urlParam], '/');
+                $config[$configKey] = $value;
+                $dsnParams[] = sprintf('%s=%s', $dsnParam, $value);
             }
         }
 
-        $config['dsn'] = "$driver:" . implode(';', $dsnParams);
+        $config['dsn'] = "{$config['driver']}:" . implode(';', $dsnParams);
 
         // Append any query params to the DSN
         if (isset($parsed['query'])) {

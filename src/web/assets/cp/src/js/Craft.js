@@ -403,7 +403,7 @@ $.extend(Craft, {
    * @return string
    */
   formatInputId: function (inputName) {
-    return this.rtrim(inputName.replace(/[^\w]+/g, '-'), '-');
+    return this.rtrim(inputName.replace(/[^\w\-]+/g, '-'), '-');
   },
 
   /**
@@ -419,9 +419,11 @@ $.extend(Craft, {
 
     // Normalize the params
     let anchor = null;
-    if ($.isPlainObject(params) && typeof params['#'] !== 'undefined') {
-      anchor = params['#'];
-      delete params['#'];
+    if ($.isPlainObject(params)) {
+      if (typeof params['#'] !== 'undefined') {
+        anchor = params['#'];
+        delete params['#'];
+      }
     } else if (typeof params === 'string') {
       let anchorPos = params.indexOf('#');
       if (anchorPos !== -1) {
@@ -429,6 +431,8 @@ $.extend(Craft, {
         params = params.substring(0, anchorPos);
       }
       params = Object.fromEntries(new URLSearchParams(params).entries());
+    } else {
+      params = {};
     }
 
     // Was there already an anchor on the path?
@@ -457,8 +461,8 @@ $.extend(Craft, {
     if (path.search('://') !== -1 || path[0] === '/') {
       return (
         path +
-        (params ? '?' + $.param(params) : '') +
-        (anchor ? '#' + anchor : '')
+        (!$.isEmptyObject(params) ? `?${$.param(params)}` : '') +
+        (anchor ? `#${anchor}` : '')
       );
     }
 
@@ -509,14 +513,9 @@ $.extend(Craft, {
         // Move the path into the query string params
 
         // Is the path param already set?
-        if (params && typeof params[Craft.pathParam] !== 'undefined') {
+        if (typeof params[Craft.pathParam] !== 'undefined') {
           let basePath = Craft.rtrim(params[Craft.pathParam]);
           path = basePath + (path ? '/' + path : '');
-        }
-
-        // Now move the path into the params
-        if (typeof params !== 'object') {
-          params = {};
         }
 
         params[Craft.pathParam] = path;
@@ -528,12 +527,12 @@ $.extend(Craft, {
       url = Craft.rtrim(url, '/') + '/' + path;
     }
 
-    if (params) {
-      url += '?' + $.param(params);
+    if (!$.isEmptyObject(params)) {
+      url += `?${$.param(params)}`;
     }
 
     if (anchor) {
-      url += '#' + anchor;
+      url += `#${anchor}`;
     }
 
     return url;
@@ -728,14 +727,20 @@ $.extend(Craft, {
               return;
             }
 
-            if (typeof Craft.cp !== 'undefined') {
-              Craft.cp.displayError();
-            } else {
-              alert(Craft.t('app', 'A server error occurred.'));
+            if (jqXHR.status !== 400) {
+              if (typeof Craft.cp !== 'undefined') {
+                Craft.cp.displayError();
+              } else {
+                alert(Craft.t('app', 'A server error occurred.'));
+              }
             }
 
             if (callback) {
-              callback(null, textStatus, jqXHR);
+              callback(
+                jqXHR.status === 400 ? jqXHR.responseJSON : null,
+                textStatus,
+                jqXHR
+              );
             }
           },
         },
@@ -1165,11 +1170,34 @@ $.extend(Craft, {
     }
 
     if (initialValues) {
+      const serializeParam = (name, value) => {
+        if ($.isArray(value) || $.isPlainObject(value)) {
+          value = $.param(value);
+        } else if (typeof value === 'string') {
+          value = encodeURIComponent(value);
+        } else if (value === null) {
+          value = '';
+        }
+        return `${encodeURIComponent(name)}=${value}`;
+      };
+
       for (let name in initialValues) {
         if (initialValues.hasOwnProperty(name)) {
-          grouped[name] = [
-            encodeURIComponent(name) + '=' + $.param(initialValues[name]),
-          ];
+          if ($.isPlainObject(initialValues[name])) {
+            grouped[name] = [];
+            for (let subName in initialValues[name]) {
+              if (initialValues[name].hasOwnProperty(subName)) {
+                grouped[name].push(
+                  serializeParam(
+                    `${name}[${subName}]`,
+                    initialValues[name][subName]
+                  )
+                );
+              }
+            }
+          } else {
+            grouped[name] = [serializeParam(name, initialValues[name])];
+          }
         }
       }
     }
@@ -2267,6 +2295,13 @@ $.extend(Craft, {
         $element.attr(name, this.escapeHtml(value));
       }
     }
+  },
+
+  isVisible: function () {
+    return (
+      typeof document.visibilityState === 'undefined' ||
+      document.visibilityState === 'visible'
+    );
   },
 });
 

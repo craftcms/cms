@@ -12,6 +12,7 @@ use Craft;
 use craft\db\Query;
 use craft\db\Table;
 use craft\helpers\Db;
+use craft\models\UserGroup;
 use craft\test\mockclasses\serializable\Serializable;
 use craft\test\TestCase;
 use DateTime;
@@ -103,6 +104,53 @@ class DbHelperTest extends TestCase
     public function testEscapeCommas(string $expected, string $value): void
     {
         self::assertSame($expected, Db::escapeCommas($value));
+    }
+
+    /**
+     * @dataProvider extractGlueDataProvider
+     *
+     * @param string|null $expectedGlue
+     * @param mixed $expectedValue
+     * @param mixed $value
+     */
+    public function testExtractGlue(?string $expectedGlue, $expectedValue, $value): void
+    {
+        $glue = Db::extractGlue($value);
+        self::assertEquals($expectedGlue, $glue);
+        self::assertEquals($expectedValue, $value);
+    }
+
+    /**
+     *
+     */
+    public function testNormalizeModelParam(): void
+    {
+        $group1 = new UserGroup(['id' => 1]);
+        $group2 = new UserGroup(['id' => 2]);
+
+        $normalizeUserGroup = function($item) {
+            return $item instanceof UserGroup ? $item->id : null;
+        };
+
+        $value = $group1;
+        self::assertEquals(true, Db::normalizeParam($value, $normalizeUserGroup));
+        self::assertEquals([1], $value);
+
+        $value = ['and', $group1, $group2];
+        self::assertEquals(true, Db::normalizeParam($value, $normalizeUserGroup));
+        self::assertEquals(['and', 1, 2], $value);
+
+        $value = null;
+        self::assertEquals(true, Db::normalizeParam($value, $normalizeUserGroup));
+        self::assertNull($value);
+
+        $value = 'foo';
+        self::assertEquals(false, Db::normalizeParam($value, $normalizeUserGroup));
+        self::assertEquals('foo', $value);
+
+        $value = ['foo'];
+        self::assertEquals(false, Db::normalizeParam($value, $normalizeUserGroup));
+        self::assertEquals(['foo'], $value);
     }
 
     /**
@@ -421,6 +469,21 @@ class DbHelperTest extends TestCase
             ['foo\, bar', 'foo, bar'],
             ['foo\, bar*', 'foo, bar*'],
             ['foo\, bar', 'foo\, bar'],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function extractGlueDataProvider(): array
+    {
+        return [
+            ['and', ['foo', 'bar'], ['and', 'foo', 'bar']],
+            ['or', ['foo', 'bar'], ['or', 'foo', 'bar']],
+            ['not', ['foo', 'bar'], ['not', 'foo', 'bar']],
+            ['and', ['foo', 'bar'], ['AND', 'foo', 'bar']],
+            [null, ['foo', 'bar'], ['foo', 'bar']],
+            [null, 'foo', 'foo'],
         ];
     }
 

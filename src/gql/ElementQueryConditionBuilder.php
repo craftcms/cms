@@ -226,7 +226,6 @@ class ElementQueryConditionBuilder extends Component
             }
         }
 
-        /** @phpstan-ignore-next-line */
         $value = $argumentNode->value ?? null;
         return $argumentNode->kind === 'IntValue' ? (int)$value : $value;
     }
@@ -390,7 +389,6 @@ class ElementQueryConditionBuilder extends Component
      */
     private function _traversAndBuildPlans(Node $parentNode, EagerLoadPlan $parentPlan, ?FieldInterface $parentField = null, ?Node $wrappingFragment = null, string $context = 'global'): array
     {
-        /** @phpstan-ignore-next-line */
         $subNodes = $parentNode->selectionSet->selections ?? [];
         $plans = [];
 

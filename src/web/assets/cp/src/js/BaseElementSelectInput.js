@@ -290,6 +290,17 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
         ev.stopPropagation();
       });
 
+      $elements.on('keydown', (ev) => {
+        if ([Garnish.BACKSPACE_KEY, Garnish.DELETE_KEY].includes(ev.keyCode)) {
+          ev.stopPropagation();
+          ev.preventDefault();
+          const $elements = this.elementSelect.getSelectedItems();
+          for (let i = 0; i < $elements.length; i++) {
+            this.removeElement($elements.eq(i));
+          }
+        }
+      });
+
       this.$elements = this.$elements.add($elements);
 
       this.updateAddElementsBtn();
@@ -375,6 +386,20 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
       // Disable the hidden input in case the form is submitted before this element gets removed from the DOM
       $elements.children('input').prop('disabled', true);
 
+      // Move the focus to the next element in the list, if there is one
+      let $nextDeleteBtn;
+      if (this.settings.selectable) {
+        const lastElementIndex = this.$elements.index($elements.last());
+        $nextDeleteBtn = this.$elements
+          .eq(lastElementIndex + 1)
+          .find('.delete');
+      }
+      if ($nextDeleteBtn.length) {
+        $nextDeleteBtn.focus();
+      } else {
+        this.focusNextLogicalElement();
+      }
+
       this.$elements = this.$elements.not($elements);
       this.updateAddElementsBtn();
 
@@ -382,6 +407,9 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
     },
 
     removeElement: function ($element) {
+      // Remove any inputs from the form data
+      $('[name]', $element).removeAttr('name');
+
       this.removeElements($element);
       this.animateElementAway($element, () => {
         $element.remove();
@@ -404,20 +432,12 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
         );
       }
 
-      // Pause the draft editor
-      if (this.$form.data('elementEditor')) {
-        this.$form.data('elementEditor').pause();
-      }
-
       $element.velocity(
         animateCss,
         Craft.BaseElementSelectInput.REMOVE_FX_DURATION,
         () => {
-          callback();
-
-          // Resume the draft editor
-          if (this.$form.data('elementEditor')) {
-            this.$form.data('elementEditor').resume();
+          if (callback) {
+            callback();
           }
         }
       );
@@ -531,7 +551,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
     createNewElement: function (elementInfo) {
       var $element = elementInfo.$element.clone();
       var removeText = Craft.t('app', 'Remove {label}', {
-        label: elementInfo.label,
+        label: Craft.escapeHtml(elementInfo.label),
       });
       // Make a couple tweaks
       Craft.setElementSize(
@@ -618,7 +638,6 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
     onRemoveElements: function () {
       this.trigger('removeElements');
       this.settings.onRemoveElements();
-      this.focusNextLogicalElement();
     },
   },
   {

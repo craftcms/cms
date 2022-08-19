@@ -16,6 +16,7 @@ use craft\models\FieldLayout;
 use craft\records\GlobalSet as GlobalSetRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
+use yii\base\InvalidConfigException;
 
 /**
  * GlobalSet represents a global set element.
@@ -281,7 +282,13 @@ class GlobalSet extends Element
             return false;
         }
 
-        if (($fieldLayout = $this->getFieldLayout()) !== null) {
+        try {
+            $fieldLayout = $this->getFieldLayout();
+        } catch (InvalidConfigException $e) {
+            $fieldLayout = null;
+        }
+
+        if ($fieldLayout !== null) {
             Craft::$app->getFields()->deleteLayout($fieldLayout);
         }
 

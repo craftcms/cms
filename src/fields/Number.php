@@ -218,28 +218,41 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
      */
     protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
     {
+        $view = Craft::$app->getView();
         $formatter = Craft::$app->getFormatter();
-        $formatNumber = !$formatter->willBeMisrepresented($value);
 
-        if ($formatNumber && $value !== null) {
-            if ($this->previewFormat !== self::FORMAT_NONE) {
-                try {
-                    $value = Craft::$app->getFormatter()->asDecimal($value, $this->decimals);
-                } catch (InvalidArgumentException) {
+        try {
+            $formatNumber = !$formatter->willBeMisrepresented($value);
+        } catch (InvalidArgumentException $e) {
+            $formatNumber = false;
+        }
+
+        if ($formatNumber) {
+            if ($value !== null) {
+                if ($this->previewFormat !== self::FORMAT_NONE) {
+                    try {
+                        $value = Craft::$app->getFormatter()->asDecimal($value, $this->decimals);
+                    } catch (InvalidArgumentException) {
+                    }
+                } elseif ($this->decimals) {
+                    // Just make sure we're using the right decimal symbol
+                    $decimalSeparator = Craft::$app->getFormattingLocale()->getNumberSymbol(Locale::SYMBOL_DECIMAL_SEPARATOR);
+                    try {
+                        $value = number_format($value, $this->decimals, $decimalSeparator, '');
+                    } catch (Throwable) {
+                        // NaN
+                    }
                 }
-            } elseif ($this->decimals) {
-                // Just make sure we're using the right decimal symbol
-                $decimalSeparator = Craft::$app->getFormattingLocale()->getNumberSymbol(Locale::SYMBOL_DECIMAL_SEPARATOR);
-                try {
-                    $value = number_format($value, $this->decimals, $decimalSeparator, '');
-                } catch (Throwable) {
-                    // NaN
-                }
+            } else {
+                // Override the initial value being set to null by _includes/forms/field
+                $view->setInitialDeltaValue($this->handle, [
+                    'locale' => Craft::$app->getFormattingLocale()->id,
+                    'value' => '',
+                ]);
             }
         }
 
         $id = $this->getInputId();
-        $view = Craft::$app->getView();
         $namespacedId = $view->namespaceInputId($id);
 
         $js = <<<JS

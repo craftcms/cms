@@ -297,20 +297,26 @@ class EntryQuery extends ElementQuery
         }
 
         if ($value instanceof Section) {
+            // Special case for a single section, since we also want to capture the structure ID
             $this->sectionId = [$value->id];
             if ($value->structureId) {
                 $this->structureId = $value->structureId;
             } else {
                 $this->withStructure = false;
             }
-        } elseif ($value !== null) {
+        } elseif (Db::normalizeParam($value, function($item) {
+            if (is_string($item)) {
+                $item = Craft::$app->getSections()->getSectionByHandle($item);
+            }
+            return $item instanceof Section ? $item->id : null;
+        })) {
+            $this->sectionId = $value;
+        } else {
             $this->sectionId = (new Query())
                 ->select(['id'])
                 ->from([Table::SECTIONS])
                 ->where(Db::parseParam('handle', $value))
                 ->column();
-        } else {
-            $this->sectionId = null;
         }
 
         return $this;
@@ -391,16 +397,19 @@ class EntryQuery extends ElementQuery
      */
     public function type(mixed $value): self
     {
-        if ($value instanceof EntryType) {
-            $this->typeId = [$value->id];
-        } elseif ($value !== null) {
+        if (Db::normalizeParam($value, function($item) {
+            if (is_string($item)) {
+                $item = Craft::$app->getSections()->getEntryTypesByHandle($item);
+            }
+            return $item instanceof EntryType ? $item->id : null;
+        })) {
+            $this->typeId = $value;
+        } else {
             $this->typeId = (new Query())
                 ->select(['id'])
                 ->from([Table::ENTRYTYPES])
                 ->where(Db::parseParam('handle', $value))
                 ->column();
-        } else {
-            $this->typeId = null;
         }
 
         return $this;
@@ -850,7 +859,12 @@ class EntryQuery extends ElementQuery
      */
     protected function statusCondition(string $status): mixed
     {
-        $currentTimeDb = Db::prepareDateForDb(new DateTime());
+        // Always consider “now” to be the current time @ 59 seconds into the minute.
+        // This makes entry queries more cacheable, since they only change once every minute (https://github.com/craftcms/cms/issues/5389),
+        // while not excluding any entries that may have just been published in the past minute (https://github.com/craftcms/cms/issues/7853).
+        $now = new DateTime();
+        $now->setTime((int)$now->format('H'), (int)$now->format('i'), 59);
+        $currentTimeDb = Db::prepareDateForDb($now);
 
         return match ($status) {
             Entry::STATUS_LIVE => [

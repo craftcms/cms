@@ -143,6 +143,9 @@ class Composer extends Component
         // Create a backup of composer.json in case something goes wrong
         $backup = file_get_contents($jsonPath);
 
+        // Ensure craftcms/plugin-installer is allowed
+        $this->ensurePluginInstallerIsAllowed($jsonPath);
+
         // Update composer.json
         if ($requirements !== null) {
             $this->updateRequirements($io, $jsonPath, $requirements);
@@ -237,6 +240,9 @@ class Composer extends Component
         // Ensure there's a home var
         $this->_ensureHomeVar();
 
+        // Ensure craftcms/plugin-installer is allowed
+        $this->ensurePluginInstallerIsAllowed($jsonPath);
+
         try {
             $jsonFile = new JsonFile($jsonPath);
             $jsonSource = new JsonConfigSource($jsonFile);
@@ -308,6 +314,65 @@ class Composer extends Component
             FileHelper::createDirectory($path);
             putenv("COMPOSER_HOME=$path");
         }
+    }
+
+    /**
+     * Ensures composer.json has the craftcms/plugin-installer plugin marked as allowed.
+     *
+     * @param string $jsonPath
+     * @since 3.7.42
+     */
+    protected function ensurePluginInstallerIsAllowed(string $jsonPath): void
+    {
+        $json = new JsonFile($jsonPath);
+        $config = $json->read();
+        $allowPlugins = $config['config']['allow-plugins'] ?? [];
+
+        if ($allowPlugins === true) {
+            return;
+        }
+
+        $plugins = [
+            'craftcms/plugin-installer',
+            'yiisoft/yii2-composer',
+        ];
+
+        // See if everything is already in place
+        $hasAllPlugins = true;
+        foreach ($plugins as $plugin) {
+            if (($allowPlugins[$plugin] ?? false) !== true) {
+                $hasAllPlugins = false;
+                break;
+            }
+        }
+        if ($hasAllPlugins) {
+            return;
+        }
+
+        // First try using JsonManipulator
+        $success = true;
+        $manipulator = new JsonManipulator(file_get_contents($jsonPath));
+
+        foreach ($plugins as $plugin) {
+            if (($allowPlugins[$plugin] ?? false) !== true) {
+                $success = $manipulator->addConfigSetting("allow-plugins.$plugin", true);
+                if (!$success) {
+                    break;
+                }
+            }
+        }
+
+        if ($success) {
+            file_put_contents($jsonPath, $manipulator->getContents());
+            return;
+        }
+
+        // There was a problem so do it manually instead
+        foreach ($plugins as $plugin) {
+            $config['config']['allow-plugins'][$plugin] = true;
+        }
+
+        $json->write($config);
     }
 
     /**

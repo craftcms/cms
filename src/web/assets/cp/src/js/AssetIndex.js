@@ -870,7 +870,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
           }
         );
       } else {
-        this.$includeSubfoldersContainer.velocity('stop');
+        this.$includeSubfoldersContainer.velocity('stop').removeClass('hidden');
       }
 
       var checked = this.getSelectedSourceState('includeSubfolders', false);
@@ -899,7 +899,12 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
           marginBottom: -25,
           opacity: 0,
         },
-        'fast'
+        {
+          duration: 'fast',
+          complete: () => {
+            this.$includeSubfoldersContainer.addClass('hidden');
+          },
+        }
       );
 
       this.showingIncludeSubfoldersCheckbox = false;
@@ -946,22 +951,6 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
   },
 
   /**
-   * On Upload Failure.
-   */
-  _onUploadFailure: function (event, data) {
-    const {result} = data;
-    const {message, filename} = result;
-    if (message) {
-      alert(
-        Craft.t('app', 'Upload failed. The error message was: “{message}”', {
-          message,
-        })
-      );
-    } else {
-      alert(Craft.t('app', 'Upload failed for {filename}.', {filename}));
-    }
-  },
-  /**
    * On Upload Complete.
    */
   _onUploadComplete: function (event, data) {
@@ -984,8 +973,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 
     // For the last file, display prompts, if any. If not - just update the element view.
     if (this.uploader.isLastUpload()) {
-      this.setIndexAvailable();
       this.progressBar.hideProgressBar();
+      this.setIndexAvailable();
 
       if (this.promptHandler.getPromptCount()) {
         this.promptHandler.showBatchPrompts(this._uploadFollowup.bind(this));
@@ -993,6 +982,24 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
         this._updateAfterUpload();
       }
     }
+  },
+
+  /**
+   * On Upload Failure.
+   */
+  _onUploadFailure: function (event, data) {
+    const response = data.response();
+    let {message, filename} = response?.jqXHR?.responseJSON || {};
+
+    if (!message) {
+      message = filename
+        ? Craft.t('app', 'Upload failed for “{filename}”.', {filename})
+        : Craft.t('app', 'Upload failed.');
+    }
+
+    alert(message);
+    this.progressBar.hideProgressBar();
+    this.setIndexAvailable();
   },
 
   /**
@@ -1022,8 +1029,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
     this.promptHandler.resetPrompts();
 
     var finalCallback = () => {
-      this.setIndexAvailable();
       this.progressBar.hideProgressBar();
+      this.setIndexAvailable();
       this._updateAfterUpload();
     };
 

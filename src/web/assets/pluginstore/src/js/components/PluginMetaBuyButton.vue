@@ -1,27 +1,20 @@
 <template>
-  <div>
-    <template v-if="plugin.editions.length === 1">
-      <plugin-edition
-        :plugin="plugin"
-        :edition="plugin.editions[0]"
-        context="meta"
-      />
-    </template>
-    <template v-else>
-      <c-btn
-        kind="primary"
-        :to="'/' + plugin.handle + '/pricing'"
-        class="text-center"
-        block
-      >
-        Buy {{ getPriceRangeLabel(plugin) }}
-      </c-btn>
+  <div
+    :class="{
+      'tw-space-y-2 tw-mb-2': isPluginFree(plugin),
+      'tw-space-y-4 tw-mb-4': !isPluginFree(plugin),
+    }"
+  >
+    <template v-for="(edition, key) in plugin.editions">
+      <div :key="key">
+        <plugin-edition :plugin="plugin" :edition="edition" context="meta" />
+      </div>
     </template>
   </div>
 </template>
 
 <script>
-  import {isPluginFree, getPriceRangeLabel} from '../utils/plugins';
+  import {isPluginFree} from '../utils/plugins';
   import PluginEdition from './PluginEdition';
 
   export default {
@@ -35,7 +28,6 @@
 
     methods: {
       isPluginFree,
-      getPriceRangeLabel,
     },
   };
 </script>

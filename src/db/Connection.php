@@ -145,10 +145,10 @@ class Connection extends \yii\db\Connection
             }
 
             Craft::error($e->getMessage(), __METHOD__);
-            throw new DbConnectException('Craft CMS can’t connect to the database with the credentials in config/db.php.', 0, $e);
+            throw new DbConnectException('Craft CMS can’t connect to the database.', 0, $e);
         } catch (Throwable $e) {
             Craft::error($e->getMessage(), __METHOD__);
-            throw new DbConnectException('Craft CMS can’t connect to the database with the credentials in config/db.php.', 0, $e);
+            throw new DbConnectException('Craft CMS can’t connect to the database.', 0, $e);
         }
     }
 
@@ -265,7 +265,10 @@ class Connection extends \yii\db\Connection
             $backupPath = Craft::$app->getPath()->getDbBackupPath();
 
             // Grab all .sql files in the backup folder.
-            $files = glob($backupPath . DIRECTORY_SEPARATOR . '*.sql');
+            $files = array_merge(
+                glob($backupPath . DIRECTORY_SEPARATOR . '*.sql'),
+                glob($backupPath . DIRECTORY_SEPARATOR . '*.sql.zip'),
+            );
 
             // Sort them by file modified time descending (newest first).
             usort($files, static function($a, $b) {
@@ -448,7 +451,7 @@ class Connection extends \yii\db\Connection
             '{port}' => $parsed['port'] ?? '',
             '{server}' => $parsed['host'] ?? '',
             '{user}' => $username,
-            '{password}' => addslashes(str_replace('$', '\\$', $password)),
+            '{password}' => str_replace('$', '\\$', addslashes($password)),
             '{database}' => $parsed['dbname'] ?? '',
             '{schema}' => $this->getSchema()->defaultSchema ?? '',
         ];

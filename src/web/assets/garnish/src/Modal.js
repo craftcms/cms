@@ -9,6 +9,7 @@ export default Base.extend(
   {
     $container: null,
     $shade: null,
+    $triggerElement: null,
 
     visible: false,
 
@@ -47,6 +48,12 @@ export default Base.extend(
         if (this.settings.autoShow) {
           this.show();
         }
+      }
+
+      if (this.settings.triggerElement) {
+        this.$triggerElement = this.settings.triggerElement;
+      } else {
+        this.$triggerElement = Garnish.getFocusedElement();
       }
 
       Garnish.Modal.instances.push(this);
@@ -149,9 +156,13 @@ export default Base.extend(
           );
         }
 
-        this.trigger('show');
-        this.settings.onShow();
+        this.onShow();
       }
+    },
+
+    onShow: function () {
+      this.trigger('show');
+      this.settings.onShow();
     },
 
     quickShow: function () {
@@ -191,15 +202,17 @@ export default Base.extend(
         this.removeListener(Garnish.$win, 'resize');
       }
 
-      if (this.settings.triggerElement) {
-        this.settings.triggerElement.focus();
-      }
+      this.$triggerElement.focus();
 
       this.visible = false;
       Garnish.Modal.visibleModal = null;
       Garnish.uiLayerManager.removeLayer();
-      this.trigger('hide');
       Garnish.resetModalBackgroundLayerVisibility();
+      this.onHide();
+    },
+
+    onHide: function () {
+      this.trigger('hide');
       this.settings.onHide();
     },
 

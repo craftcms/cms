@@ -97,7 +97,8 @@ Craft.Tabs = Garnish.Base.extend({
     // Prevent menu options from updating the URL
     this.menu.$options.on('click', (ev) => {
       const $option = $(ev.currentTarget);
-      if ($option.attr('href').charAt(0) === '#') {
+      const href = $option.attr('href');
+      if (href && href.charAt(0) === '#') {
         ev.preventDefault();
       }
     });

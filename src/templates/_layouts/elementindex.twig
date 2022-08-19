@@ -1,6 +1,7 @@
 {% extends "_layouts/cp" %}
 
 {% set elementInstance = craft.app.elements.createElement(elementType) %}
+{% set title = title ?? elementInstance.pluralDisplayName() %}
 {% set context = 'index' %}
 
 {% if not elementInstance %}
@@ -47,6 +48,7 @@
 
 {% block content %}
     <div class="main">
+        <a class="skip-link btn" href="#footer">{{ 'Skip to {title}'|t('app', { title: 'Footer'|t }) }}</a>
         <div class="elements busy">
             <div class="update-spinner spinner spinner-absolute"></div>
         </div>
@@ -57,7 +59,7 @@
 {% block footer %}
     <div id="count-spinner" class="spinner small hidden"></div>
     <div id="count-container" class="light flex-grow">&nbsp;</div>
-    <button type="button" id="export-btn" class="btn hidden">{{ 'Export…'|t('app') }}</button>
+    <button type="button" id="export-btn" class="btn hidden" aria-expanded="false">{{ 'Export…'|t('app') }}</button>
 {% endblock %}
 
 

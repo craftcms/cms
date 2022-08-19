@@ -148,10 +148,16 @@ class EntriesController extends BaseEntriesController
             $entry->slug = ElementHelper::tempSlug();
         }
 
+        // Pause time so postDate will definitely be equal to dateCreated, if not explicitly defined
+        DateTimeHelper::pause();
+
         // Post & expiry dates
         if (($postDate = $this->request->getQueryParam('postDate')) !== null) {
             $entry->postDate = DateTimeHelper::toDateTime($postDate);
+        } else {
+            $entry->postDate = DateTimeHelper::now();
         }
+
         if (($expiryDate = $this->request->getQueryParam('expiryDate')) !== null) {
             $entry->expiryDate = DateTimeHelper::toDateTime($expiryDate);
         }
@@ -165,7 +171,12 @@ class EntriesController extends BaseEntriesController
 
         // Save it
         $entry->setScenario(Element::SCENARIO_ESSENTIALS);
-        if (!Craft::$app->getDrafts()->saveElementAsDraft($entry, Craft::$app->getUser()->getId(), null, null, false)) {
+        $success = Craft::$app->getDrafts()->saveElementAsDraft($entry, Craft::$app->getUser()->getId(), null, null, false);
+
+        // Resume time
+        DateTimeHelper::resume();
+
+        if (!$success) {
             return $this->asModelFailure($entry, Craft::t('app', 'Couldn’t create {type}.', [
                 'type' => Entry::lowerDisplayName(),
             ]), 'entry');
@@ -353,6 +364,10 @@ class EntriesController extends BaseEntriesController
             $data['dateCreated'] = DateTimeHelper::toIso8601($entry->dateCreated);
             $data['dateUpdated'] = DateTimeHelper::toIso8601($entry->dateUpdated);
             $data['postDate'] = ($entry->postDate ? DateTimeHelper::toIso8601($entry->postDate) : null);
+
+            if ($this->request->getIsCpRequest()) {
+                $data['elementHtml'] = Cp::elementHtml($entry);
+            }
         }
 
         return $this->asModelSuccess(

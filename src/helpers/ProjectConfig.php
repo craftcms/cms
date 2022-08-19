@@ -10,6 +10,7 @@ namespace craft\helpers;
 use Craft;
 use craft\services\ProjectConfig as ProjectConfigService;
 use StdClass;
+use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\caching\ChainedDependency;
 use yii\caching\ExpressionDependency;
@@ -33,6 +34,12 @@ class ProjectConfig
     {
         return Json::encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRESERVE_ZERO_FRACTION);
     }
+
+    /**
+     * @var bool Whether we've already processed all filesystem configs.
+     * @see ensureAllFilesystemsProcessed()
+     */
+    private static bool $_processedFilesystems = false;
 
     /**
      * @var bool Whether we've already processed all field configs.
@@ -65,10 +72,29 @@ class ProjectConfig
     private static bool $_processedGqlSchemas = false;
 
     /**
+     * Ensures all filesystem config changes are processed immediately in a safe manner.
+     *
+     * @since 4.1.2
+     */
+    public static function ensureAllFilesystemsProcessed(): void
+    {
+        $projectConfig = Craft::$app->getProjectConfig();
+
+        if (self::$_processedFilesystems || !$projectConfig->getIsApplyingExternalChanges()) {
+            return;
+        }
+
+        self::$_processedFilesystems = true;
+        $projectConfig->processConfigChanges(ProjectConfigService::PATH_FS);
+    }
+
+    /**
      * Ensures all field config changes are processed immediately in a safe manner.
      */
     public static function ensureAllFieldsProcessed(): void
     {
+        static::ensureAllFilesystemsProcessed();
+
         $projectConfig = Craft::$app->getProjectConfig();
 
         if (self::$_processedFields || !$projectConfig->getIsApplyingExternalChanges()) {
@@ -705,5 +731,50 @@ class ProjectConfig
         }
 
         FileHelper::writeToFile($path, $newContents);
+    }
+
+    /**
+     * Returns an array of the individual segments in a given project config path.
+     *
+     * @param string $path
+     * @return string[]
+     * @throws InvalidArgumentException if `$path` is an empty string
+     * @since 3.7.44
+     */
+    public static function pathSegments(string $path): array
+    {
+        if ($path === '') {
+            throw new InvalidArgumentException('No project config path provided.');
+        }
+        return explode('.', $path);
+    }
+
+    /**
+     * Returns the last segment in a given project config path.
+     *
+     * @param string $path
+     * @return string|null
+     * @throws InvalidArgumentException if `$path` is an empty string
+     * @since 3.7.44
+     */
+    public static function lastPathSegment(string $path): ?string
+    {
+        $segments = static::pathSegments($path);
+        return end($segments);
+    }
+
+    /**
+     * Returns the given project config path with all but its last segment, or `null` if the path only had one segment.
+     *
+     * @param string $path
+     * @return string|null
+     * @throws InvalidArgumentException if `$path` is an empty string
+     * @since 3.7.44
+     */
+    public static function pathWithoutLastSegment(string $path): ?string
+    {
+        $segments = static::pathSegments($path);
+        array_pop($segments);
+        return !empty($segments) ? implode('.', $segments) : null;
     }
 }

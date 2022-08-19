@@ -53,12 +53,27 @@ class Upgrade extends Utility
         $view = Craft::$app->getView();
         $view->registerAssetBundle(UpgradeAsset::class);
 
+        $pluginsService = Craft::$app->getPlugins();
+        $allPlugins = [];
+        foreach ($pluginsService->getAllPluginInfo() as $handle => $info) {
+            $allPlugins[] = [
+                'name' => $info['name'],
+                'handle' => $handle,
+                'developerName' => $info['developer'] ?? null,
+                'developerUrl' => $info['developerUrl'] ?? null,
+                'icon' => $pluginsService->getPluginIconSvg($handle),
+                'isInstalled' => $info['isInstalled'],
+            ];
+        }
+
         $version = (int)Craft::$app->version + 1;
-        $view->registerJsWithVars(function($version) {
+        $view->registerJsWithVars(function($args) {
             return <<<JS
-new Craft.UpgradeUtility($version);
+window.upgardeUtility = new Craft.UpgradeUtility(...$args);
 JS;
-        }, [$version]);
+        }, [
+            [$version, $allPlugins],
+        ]);
 
         return $view->renderTemplate('_components/utilities/Upgrade');
     }

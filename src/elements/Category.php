@@ -15,11 +15,9 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\elements\actions\Delete;
 use craft\elements\actions\Duplicate;
-use craft\elements\actions\Edit;
 use craft\elements\actions\NewChild;
 use craft\elements\actions\Restore;
 use craft\elements\actions\SetStatus;
-use craft\elements\actions\View;
 use craft\elements\conditions\categories\CategoryCondition;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\CategoryQuery;
@@ -84,6 +82,14 @@ class Category extends Element
     public static function refHandle(): ?string
     {
         return 'category';
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function trackChanges(): bool
+    {
+        return true;
     }
 
     /**
@@ -239,30 +245,17 @@ class Category extends Element
             $group = Craft::$app->getCategories()->getGroupById($matches[1]);
         } elseif (preg_match('/^group:(.+)$/', $source, $matches)) {
             $group = Craft::$app->getCategories()->getGroupByUid($matches[1]);
+        } else {
+            $group = null;
         }
 
         // Now figure out what we can do with it
         $actions = [];
         $elementsService = Craft::$app->getElements();
 
-        if (!empty($group)) {
+        if ($group) {
             // Set Status
             $actions[] = SetStatus::class;
-
-            // View
-            // They are viewing a specific category group. See if it has URLs for the requested site
-            if (isset($group->siteSettings[$site->id]) && $group->siteSettings[$site->id]->hasUrls) {
-                $actions[] = $elementsService->createAction([
-                    'type' => View::class,
-                    'label' => Craft::t('app', 'View category'),
-                ]);
-            }
-
-            // Edit
-            $actions[] = $elementsService->createAction([
-                'type' => Edit::class,
-                'label' => Craft::t('app', 'Edit category'),
-            ]);
 
             // New Child
             if ($group->maxLevels != 1) {
@@ -402,7 +395,7 @@ class Category extends Element
      * @inheritdoc
      * @since 3.5.0
      */
-    public function getCacheTags(): array
+    protected function cacheTags(): array
     {
         return [
             "group:$this->groupId",

@@ -27,9 +27,9 @@ class LanguageValidator extends Validator
     public bool $onlySiteLanguages = true;
 
     /**
-     * @var string The error message to use if the value isn't allowed
+     * @var string|null The error message to use if the value isn't allowed
      */
-    public string $notAllowed;
+    public ?string $notAllowed = null;
 
     /**
      * @inheritdoc

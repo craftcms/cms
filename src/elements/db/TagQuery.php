@@ -7,6 +7,7 @@
 
 namespace craft\elements\db;
 
+use Craft;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\db\Table;
@@ -112,16 +113,19 @@ class TagQuery extends ElementQuery
      */
     public function group(mixed $value): self
     {
-        if ($value instanceof TagGroup) {
-            $this->groupId = [$value->id];
-        } elseif ($value !== null) {
+        if (Db::normalizeParam($value, function($item) {
+            if (is_string($item)) {
+                $item = Craft::$app->getTags()->getTagGroupByHandle($item);
+            }
+            return $item instanceof TagGroup ? $item->id : null;
+        })) {
+            $this->groupId = $value;
+        } else {
             $this->groupId = (new Query())
                 ->select(['id'])
                 ->from([Table::TAGGROUPS])
                 ->where(Db::parseParam('handle', $value))
                 ->column() ?: false;
-        } else {
-            $this->groupId = null;
         }
 
         return $this;

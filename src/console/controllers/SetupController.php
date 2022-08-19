@@ -192,7 +192,7 @@ EOD;
     {
         $this->stdout('Generating an application ID ... ', Console::FG_YELLOW);
         $key = 'CraftCMS--' . StringHelper::UUID();
-        if (!$this->_setEnvVar('APP_ID', $key)) {
+        if (!$this->_setEnvVar('CRAFT_APP_ID', $key)) {
             return ExitCode::UNSPECIFIED_ERROR;
         }
         $this->stdout("done ($key)" . PHP_EOL, Console::FG_YELLOW);
@@ -208,7 +208,7 @@ EOD;
     {
         $this->stdout('Generating a security key ... ', Console::FG_YELLOW);
         $key = Craft::$app->getSecurity()->generateRandomString();
-        if (!$this->_setEnvVar('SECURITY_KEY', $key)) {
+        if (!$this->_setEnvVar('CRAFT_SECURITY_KEY', $key)) {
             return ExitCode::UNSPECIFIED_ERROR;
         }
 
@@ -558,7 +558,7 @@ EOD;
         $path = $configService->getDotEnvPath();
 
         if (!file_exists($path)) {
-            if ($this->confirm(PHP_EOL . "A .env file doesn't exist at $path. Would you like to create one?", true)) {
+            if (!$this->interactive || $this->confirm(PHP_EOL . "A .env file doesn't exist at $path. Would you like to create one?", true)) {
                 try {
                     FileHelper::writeToFile($path, '');
                 } catch (Throwable $e) {

@@ -131,6 +131,10 @@ class ImageTransformIndex extends Model
             throw new InvalidConfigException('Invalid transform string: ' . $this->transformString);
         }
 
+        if ($this->format) {
+            $this->_transform->format = $this->format;
+        }
+
         return $this->_transform;
     }
 

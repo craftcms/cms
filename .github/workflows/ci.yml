@@ -4,7 +4,8 @@ on:
   push:
     branches:
       - develop
-      - '4.0'
+      - v3
+      - '5.0'
   pull_request:
 concurrency:
   group: ci-${{ github.ref }}
@@ -14,7 +15,7 @@ jobs:
     name: ECS
     uses: craftcms/.github/.github/workflows/ecs.yml@v2
     with:
-      php_version: '8.0'
+      php_version: '8.1'
   prettier:
     name: Prettier
     uses: craftcms/.github/.github/workflows/prettier.yml@v2
@@ -22,13 +23,13 @@ jobs:
     name: PHPStan
     uses: craftcms/.github/.github/workflows/phpstan.yml@v2
     with:
-      php_version: '8.0'
+      php_version: '8.1'
   codecept:
     name: Codeception
     needs: [ecs, prettier, phpstan]
     uses: craftcms/.github/.github/workflows/codecept.yml@v2
     with:
-      php_versions: '["8.0", "8.1"]'
+      php_versions: '["8.1"]'
   notify-slack:
     name: Notify Slack
     needs: [ecs, prettier, phpstan, codecept]

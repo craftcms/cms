@@ -11,7 +11,7 @@ use Craft;
 use craft\helpers\FileHelper;
 use craft\helpers\StringHelper;
 use craft\web\assets\iframeresizer\ContentWindowAsset;
-use Twig\Error\RuntimeError;
+use Throwable;
 use yii\base\Component;
 use yii\base\ExitException;
 use yii\base\InvalidConfigException;
@@ -41,16 +41,20 @@ class TemplateResponseFormatter extends Component implements ResponseFormatterIn
         }
 
         $view = Craft::$app->getView();
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
 
-        // If this is a preview request, register the iframe resizer script
-        if (Craft::$app->getRequest()->getIsPreview()) {
+        // If this is a preview request and `useIframeResizer` is enabled, register the iframe resizer script
+        if (
+            Craft::$app->getRequest()->getQueryParam('x-craft-live-preview') !== null &&
+            $generalConfig->useIframeResizer
+        ) {
             $view->registerAssetBundle(ContentWindowAsset::class);
         }
 
         // Render and return the template
         try {
             $response->content = $view->renderPageTemplate($behavior->template, $behavior->variables, $behavior->templateMode);
-        } catch (RuntimeError $e) {
+        } catch (Throwable $e) {
             if (!$e->getPrevious() instanceof ExitException) {
                 // Bail on the template response
                 $response->format = Response::FORMAT_HTML;
@@ -63,7 +67,7 @@ class TemplateResponseFormatter extends Component implements ResponseFormatterIn
 
         $headers = $response->getHeaders();
 
-        if (Craft::$app->getConfig()->getGeneral()->sendContentLengthHeader) {
+        if ($generalConfig->sendContentLengthHeader) {
             $headers->setDefault('content-length', (string)strlen($response->content));
         }
 

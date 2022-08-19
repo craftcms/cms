@@ -255,7 +255,7 @@ class MigrateController extends BaseMigrateController
 
         $file = $this->migrationPath . DIRECTORY_SEPARATOR . $name . '.php';
 
-        if ($this->confirm("Create new migration '$file'?", true)) {
+        if (!$this->interactive || $this->confirm("Create new migration '$file'?", true)) {
             $templateFile = Craft::getAlias($this->templateFile);
 
             if ($templateFile === false) {
@@ -338,7 +338,7 @@ class MigrateController extends BaseMigrateController
             $total += $n;
         }
 
-        if (!$this->confirm('Apply the above ' . ($total === 1 ? 'migration' : 'migrations') . '?')) {
+        if ($this->interactive && !$this->confirm('Apply the above ' . ($total === 1 ? 'migration' : 'migrations') . '?')) {
             return ExitCode::OK;
         }
 

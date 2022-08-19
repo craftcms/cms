@@ -6,17 +6,30 @@
 
 <script>
   export default {
-    props: ['name', 'block', 'big'],
+    props: {
+      name: {
+        type: String,
+        required: true,
+      },
+      block: {
+        type: Boolean,
+        default: false,
+      },
+      big: {
+        type: Boolean,
+        default: false,
+      },
+    },
 
     computed: {
       cssClass() {
         const cssClasses = {};
 
-        if (typeof this.block !== 'undefined') {
+        if (this.block) {
           cssClasses['is-block'] = true;
         }
 
-        if (typeof this.big !== 'undefined') {
+        if (this.big) {
           cssClasses['is-big'] = true;
         }
 
