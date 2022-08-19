@@ -2950,7 +2950,7 @@ $checkboxPadding: $checkboxSize + 4;
 
       &:not(:last-child):not(.last) {
         @include padding-left(37px);
-        @include border-left(1px solid var(--hairline-color));
+        @include border-left(1px solid var(--gray-200));
 
         body.ltr & {
           background-position: -1px 0;
@@ -3084,7 +3084,9 @@ table.editable {
 
           textarea,
           input.text {
-            @include border-bottom-left-radius(var(--large-border-radius) - 1);
+            @include border-bottom-left-radius(
+              calc(var(--large-border-radius) - 1px)
+            );
           }
         }
       }
@@ -4257,6 +4259,11 @@ ul.tree,
           border-radius: 0;
         }
       }
+
+      .notes {
+        padding-top: var(--m);
+        padding-bottom: var(--m);
+      }
     }
   }
 
@@ -5245,14 +5252,14 @@ table.editable {
       td:first-child {
         &,
         &.disabled:after {
-          border-bottom-left-radius: var(--large-border-radius) - 1;
+          border-bottom-left-radius: calc(var(--large-border-radius) - 1px);
         }
       }
       th:last-child,
       td:last-child {
         &,
         &.disabled:after {
-          border-bottom-right-radius: var(--large-border-radius) - 1;
+          border-bottom-right-radius: calc(var(--large-border-radius) - 1px);
         }
       }
     }
@@ -6142,7 +6149,7 @@ body .selectize-dropdown {
   height: 34px;
 
   &:not(.fullwidth) {
-    max-width: 25em;
+    width: 25em;
   }
 }
 
@@ -6697,7 +6704,7 @@ ul.errors li {
   }
 }
 
-$titlebarBorderRadius: var(--large-border-radius) - 1;
+$titlebarBorderRadius: calc(var(--large-border-radius) - 1px);
 
 .matrixblock {
   position: relative;

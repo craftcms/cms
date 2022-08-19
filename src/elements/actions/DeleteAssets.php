@@ -51,7 +51,7 @@ class DeleteAssets extends ElementAction
      */
     public function getTriggerHtml(): ?string
     {
-        // Only enable for deletable elements, per getIsDeletable()
+        // Only enable for deletable elements, per canDelete()
         Craft::$app->getView()->registerJsWithVars(fn($type) => <<<JS
 (() => {
     new Craft.ElementActionTrigger({
