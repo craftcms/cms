@@ -1,6 +1,10 @@
 # Release Notes for Craft CMS 4.3 (WIP)
 
 ### Added
+- Added the `|boolean` Twig filter. ([#11792](https://github.com/craftcms/cms/pull/11792))
+- Added the `|float` Twig filter. ([#11792](https://github.com/craftcms/cms/pull/11792))
+- Added the `|integer` Twig filter. ([#11792](https://github.com/craftcms/cms/pull/11792))
+- Added the `|string` Twig filter. ([#11792](https://github.com/craftcms/cms/pull/11792))
 - Added `craft\elements\actions\Restore::$restorableElementsOnly`.
 - Added `craft\events\CreateTwigEvent`.
 - Added `craft\events\DefineAddressFieldLabelEvent`.
