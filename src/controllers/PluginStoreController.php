@@ -212,7 +212,7 @@ class PluginStoreController extends Controller
             Craft::$app->getPluginStore()->saveToken($token);
         } catch (Throwable $e) {
             // Send the message regardless of Dev Mode
-            if (!YII_DEBUG) {
+            if (!App::devMode()) {
                 return $this->asFailure($e->getMessage());
             }
             throw $e;
