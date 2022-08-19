@@ -390,29 +390,6 @@ class Cp
                 ]);
         }
 
-        if ($showStatus) {
-            if ($isDraft) {
-                $innerHtml .= Html::tag('span', '', [
-                    'class' => ['icon'],
-                    'aria' => [
-                        'hidden' => 'true',
-                    ],
-                    'data' => [
-                        'icon' => 'draft',
-                    ],
-                ]);
-            } else {
-                $status = !$isRevision ? $element->getStatus() : null;
-                $innerHtml .= Html::tag('span', '', [
-                    'class' => array_filter([
-                        'status',
-                        $status,
-                        $status ? ($element::statuses()[$status]['color'] ?? null) : null,
-                    ]),
-                ]);
-            }
-        }
-
         $innerHtml .= $imgHtml;
 
         if ($showLabel) {
@@ -439,7 +416,46 @@ class Cp
                 $innerHtml .= $encodedLabel;
             }
 
+            if ($element->hasErrors()) {
+                $innerHtml .= Html::tag('span', '', [
+                    'data' => [
+                        'icon' => 'alert',
+                    ],
+                    'aria' => [
+                        'label' => Craft::t('app', 'Error'),
+                    ],
+                    'role' => 'img',
+                ]);
+            }
+
             $innerHtml .= '</span></div>';
+        }
+
+        if ($showStatus) {
+            if ($isDraft) {
+                $innerHtml .= Html::tag('span', '', [
+                    'data' => ['icon' => 'draft'],
+                    'class' => 'icon',
+                    'role' => 'img',
+                    'aria' => [
+                        'label' => sprintf('%s %s', Craft::t('app', 'Status:'), Craft::t('app', 'Draft')),
+                    ],
+                ]);
+            } else {
+                $status = $element->getStatus();
+                $statusDef = $element::statuses()[$status] ?? null;
+                $innerHtml .= Html::tag('span', '', [
+                    'class' => array_filter([
+                        'status',
+                        $status,
+                        $statusDef['color'] ?? null,
+                    ]),
+                    'role' => 'img',
+                    'aria' => [
+                        'label' => sprintf('%s %s', Craft::t('app', 'Status:'), $statusDef['label'] ?? $statusDef ?? ucfirst($status)),
+                    ],
+                ]);
+            }
         }
 
         // Allow plugins to modify the inner HTML
@@ -591,7 +607,7 @@ class Cp
             : '';
 
         $labelHtml = $label . (
-            $required
+            ($required
                 ? Html::tag('span', Craft::t('app', 'Required'), [
                     'class' => ['visually-hidden'],
                 ]) .
@@ -601,7 +617,20 @@ class Cp
                         'hidden' => 'true',
                     ],
                 ])
-                : ''
+                : '') .
+            ($translatable
+                ? Html::tag('span', '', [
+                    'class' => ['t9n-indicator'],
+                    'title' => $config['translationDescription'] ?? Craft::t('app', 'This field is translatable.'),
+                    'data' => [
+                        'icon' => 'language',
+                    ],
+                    'aria' => [
+                        'label' => $config['translationDescription'] ?? Craft::t('app', 'This field is translatable.'),
+                    ],
+                    'role' => 'img',
+                ])
+                : '')
             );
 
         $containerTag = $fieldset ? 'fieldset' : 'div';
@@ -649,24 +678,6 @@ class Cp
                                 'hidden' => $fieldset ? 'true' : null,
                             ],
                         ], $config['labelAttributes'] ?? []))
-                        : '') .
-                    ($translatable
-                        ? Html::beginTag('div', [
-                            'class' => ['t9n-indicator'],
-                            'title' => $config['translationDescription'] ?? Craft::t('app', 'This field is translatable.'),
-                        ]) .
-                        Html::tag('span', '', [
-                            'data' => [
-                                'icon' => 'language',
-                            ],
-                            'aria' => [
-                                'hidden' => 'true',
-                            ],
-                        ]) .
-                        Html::tag('span', $config['translationDescription'] ?? Craft::t('app', 'This field is translatable.'), [
-                            'class' => 'visually-hidden',
-                        ]) .
-                        Html::endTag('div')
                         : '') .
                     ($showAttribute
                         ? Html::tag('div', '', [
@@ -1259,8 +1270,6 @@ JS, [
      */
     public static function addressFieldsHtml(Address $address): string
     {
-        $formatRepo = Craft::$app->getAddresses()->getAddressFormatRepository()->get($address->countryCode);
-
         $requiredFields = [];
         $scenario = $address->getScenario();
         $address->setScenario(Element::SCENARIO_LIVE);
@@ -1277,9 +1286,10 @@ JS, [
             }
         }
 
+        $addressesService = Craft::$app->getAddresses();
         $visibleFields = array_flip(array_merge(
-                $formatRepo->getUsedFields(),
-                $formatRepo->getUsedSubdivisionFields(),
+                $addressesService->getUsedFields($address->countryCode),
+                $addressesService->getUsedSubdivisionFields($address->countryCode),
             )) + $requiredFields;
 
         return
@@ -1290,6 +1300,7 @@ JS, [
                 'value' => $address->addressLine1,
                 'required' => isset($requiredFields['addressLine1']),
                 'errors' => $address->getErrors('addressLine1'),
+                'autocomplete' => 'address-line1',
             ]) .
             static::textFieldHtml([
                 'label' => $address->getAttributeLabel('addressLine2'),
@@ -1298,6 +1309,7 @@ JS, [
                 'value' => $address->addressLine2,
                 'required' => isset($requiredFields['addressLine2']),
                 'errors' => $address->getErrors('addressLine2'),
+                'autocomplete' => 'address-line2',
             ]) .
             self::_subdivisionField(
                 $address,
@@ -1335,6 +1347,7 @@ JS, [
                 'value' => $address->postalCode,
                 'required' => isset($requiredFields['postalCode']),
                 'errors' => $address->getErrors('postalCode'),
+                'autocomplete' => 'postal-code',
             ]) .
             static::textFieldHtml([
                 'fieldClass' => array_filter([

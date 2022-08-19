@@ -996,10 +996,8 @@
     },
 
     selfDestruct: function () {
-      // Pause the draft editor
-      if (this.matrix.$form.data('elementEditor')) {
-        this.matrix.$form.data('elementEditor').pause();
-      }
+      // Remove any inputs from the form data
+      $('[name]', this.$container).removeAttr('name');
 
       this.$container.velocity(
         this.matrix.getHiddenBlockCss(this.$container),
@@ -1007,11 +1005,6 @@
         () => {
           this.$container.remove();
           this.matrix.updateAddBlockBtn();
-
-          // Resume the draft editor
-          if (this.matrix.$form.data('elementEditor')) {
-            this.matrix.$form.data('elementEditor').resume();
-          }
 
           this.matrix.trigger('blockDeleted', {
             $block: this.$container,
