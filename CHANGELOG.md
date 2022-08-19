@@ -1300,6 +1300,7 @@
 - Removed `craft\models\EntryDraft`.
 - Removed `craft\models\EntryVersion`.
 - Removed `craft\models\FieldLayout::setFields()`.
+- Removed `craft\models\FieldLayoutTab::getFields()`.
 - Removed `craft\models\Site::$originalBaseUrl`.
 - Removed `craft\models\Site::$originalName`.
 - Removed `craft\models\Site::overrideBaseUrl()`.
