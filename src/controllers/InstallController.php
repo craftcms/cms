@@ -303,11 +303,7 @@ class InstallController extends Controller
             'site' => $site,
         ]);
 
-        try {
-            $migrator->migrateUp($migration);
-        } catch (MigrationException $e) {
-            return $this->asFailure($e->getMessage());
-        }
+        $migrator->migrateUp($migration);
 
         // Mark all existing migrations as applied
         foreach ($migrator->getNewMigrations() as $name) {

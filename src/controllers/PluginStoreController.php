@@ -211,7 +211,11 @@ class PluginStoreController extends Controller
         try {
             Craft::$app->getPluginStore()->saveToken($token);
         } catch (Throwable $e) {
-            return $this->asFailure($e->getMessage());
+            // Send the message regardless of Dev Mode
+            if (!YII_DEBUG) {
+                return $this->asFailure($e->getMessage());
+            }
+            throw $e;
         }
 
         return $this->asSuccess(
