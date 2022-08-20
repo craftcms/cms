@@ -138,8 +138,12 @@ class ErrorHandler extends \yii\web\ErrorHandler
             if ($this->_showExceptionView()) {
                 $response->data = $this->_exceptionAsArray($exception);
             } else {
+                $message = $exception instanceof UserException ? $exception->getMessage() : Craft::t('app', 'A server error occurred.');
                 $response->data = [
-                    'error' => $exception instanceof UserException ? $exception->getMessage() : Craft::t('app', 'A server error occurred.'),
+                    'message' => $message,
+
+                    // TODO: remove in v5; error message should only be in `message`
+                    'error' => $message,
                 ];
             }
 
@@ -187,7 +191,7 @@ class ErrorHandler extends \yii\web\ErrorHandler
     private function _exceptionAsArray(Throwable  $exception)
     {
         $array = [
-            'error' => $exception->getMessage(),
+            'message' => $exception->getMessage(),
             'exception' => get_class($exception),
             'file' => $exception->getFile(),
             'line' => $exception->getLine(),
@@ -195,6 +199,9 @@ class ErrorHandler extends \yii\web\ErrorHandler
                 unset($step['args']);
                 return $step;
             }, $exception->getTrace()),
+
+            // TODO: remove in v5; error message should only be in `message`
+            'error' => $exception->getMessage(),
         ];
 
         $prev = $exception->getPrevious();
