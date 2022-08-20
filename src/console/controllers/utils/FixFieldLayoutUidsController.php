@@ -53,7 +53,7 @@ class FixFieldLayoutUidsController extends Controller
             foreach ($config['fieldLayouts'] as $fieldLayoutUid => &$fieldLayoutConfig) {
                 if (isset($fieldLayoutConfig['tabs']) && is_array($fieldLayoutConfig['tabs'])) {
                     foreach ($fieldLayoutConfig['tabs'] as $tabIndex => &$tabConfig) {
-                        $tabPath = ($path ? "$path.": '') . "fieldLayouts.$fieldLayoutUid.tabs.$tabIndex";
+                        $tabPath = ($path ? "$path." : '') . "fieldLayouts.$fieldLayoutUid.tabs.$tabIndex";
                         $this->_checkUid($tabConfig, $count, $uids, $modified, $tabPath);
 
                         if (isset($tabConfig['elements']) && is_array($tabConfig['elements'])) {
