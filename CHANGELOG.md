@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Added
+- Added the `utils/fix-field-layout-uids` command. ([#11746](https://github.com/craftcms/cms/issues/11746))
+
 ### Changed
 - Improved the styling of Categories fields.
 - The first field group is now automatically selected by default when creating a new custom field.
