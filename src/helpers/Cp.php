@@ -356,16 +356,18 @@ class Cp
         $user = Craft::$app->getUser()->getIdentity();
 
         if ($user) {
-            if ($element->canView($user)) {
+            $elementsService = Craft::$app->getElements();
+
+            if ($elementsService->canView($element, $user)) {
                 $attributes['data']['editable'] = true;
             }
 
             if ($context === 'index') {
-                if ($element->canSave($user)) {
+                if ($elementsService->canSave($element, $user)) {
                     $attributes['data']['savable'] = true;
                 }
 
-                if ($element->canDelete($user)) {
+                if ($elementsService->canDelete($element, $user)) {
                     $attributes['data']['deletable'] = true;
                 }
             }
@@ -1180,7 +1182,7 @@ JS, [
             'name' => null,
         ];
 
-        $canDelete = $address->canDelete(Craft::$app->getUser()->getIdentity());
+        $canDelete = Craft::$app->getElements()->canDelete($address);
         $actionMenuId = sprintf('address-card-action-menu-%s', mt_rand());
 
         return

@@ -75,14 +75,14 @@ abstract class BaseEntriesController extends Controller
             $entry->id = null;
         }
 
-        try {
-            if (!$entry->canSave($this->getCurrentUser())) {
-                throw new ForbiddenHttpException('User is not authorized to perform this action.');
-            }
-        } finally {
-            if ($duplicate) {
-                $entry->id = $id;
-            }
+        $canSave = Craft::$app->getElements()->canSave($entry);
+
+        if ($duplicate) {
+            $entry->id = $id;
+        }
+
+        if (!$canSave) {
+            throw new ForbiddenHttpException('User is not authorized to perform this action.');
         }
     }
 

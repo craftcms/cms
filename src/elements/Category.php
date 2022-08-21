@@ -604,9 +604,11 @@ class Category extends Element
             ],
         ];
 
+        $elementsService = Craft::$app->getElements();
         $user = Craft::$app->getUser()->getIdentity();
+
         foreach ($this->getCanonical()->getAncestors()->all() as $ancestor) {
-            if ($ancestor->canView($user)) {
+            if ($elementsService->canView($ancestor, $user)) {
                 $crumbs[] = [
                     'label' => $ancestor->title,
                     'url' => $ancestor->getCpEditUrl(),
