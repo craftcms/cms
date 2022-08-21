@@ -1861,6 +1861,7 @@ JS,
      */
     public function actionSaveAddress(): ?Response
     {
+        $elementsService = Craft::$app->getElements();
         $user = $this->getCurrentUser();
         $userId = (int)($this->request->getBodyParam('userId') ?? $user->id);
         $addressId = $this->request->getBodyParam('addressId');
@@ -1881,7 +1882,7 @@ JS,
             ]);
         }
 
-        if (!$address->canSave($user)) {
+        if (!$elementsService->canSave($address, $user)) {
             throw new ForbiddenHttpException('User is not permitted to edit this address.');
         }
 
@@ -1902,7 +1903,7 @@ JS,
         $fieldsLocation = $this->request->getParam('fieldsLocation') ?? 'fields';
         $address->setFieldValuesFromRequest($fieldsLocation);
 
-        if (!Craft::$app->getElements()->saveElement($address)) {
+        if (!$elementsService->saveElement($address)) {
             return $this->asModelFailure($address, Craft::t('app', 'Couldn’t save {type}.', [
                 'type' => Address::lowerDisplayName(),
             ]), 'address');
@@ -1921,20 +1922,20 @@ JS,
      */
     public function actionDeleteAddress(): ?Response
     {
-        $user = $this->getCurrentUser();
         $addressId = $this->request->getRequiredBodyParam('addressId');
-
         $address = Address::findOne($addressId);
 
         if (!$address) {
             throw new BadRequestHttpException("Invalid address ID: $addressId");
         }
 
-        if (!$address->canDelete($user)) {
+        $elementsService = Craft::$app->getElements();
+
+        if (!$elementsService->canDelete($address)) {
             throw new ForbiddenHttpException('User is not permitted to delete this address.');
         }
 
-        if (!Craft::$app->getElements()->deleteElement($address)) {
+        if (!$elementsService->deleteElement($address)) {
             return $this->asModelFailure($address, Craft::t('app', 'Couldn’t delete {type}.', [
                 'type' => Address::lowerDisplayName(),
             ]), 'address');

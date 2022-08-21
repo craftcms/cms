@@ -48,7 +48,7 @@ class AddressesController extends Controller
             throw new BadRequestHttpException("Invalid address ID: $addressId");
         }
 
-        if (!$address->canView($this->getCurrentUser())) {
+        if (!Craft::$app->getElements()->canView($address)) {
             throw new ForbiddenHttpException('User not authorized to view this address.');
         }
 

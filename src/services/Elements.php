@@ -33,6 +33,7 @@ use craft\errors\InvalidElementException;
 use craft\errors\OperationAbortedException;
 use craft\errors\SiteNotFoundException;
 use craft\errors\UnsupportedSiteException;
+use craft\events\AuthorizationCheckEvent;
 use craft\events\BatchElementActionEvent;
 use craft\events\DeleteElementEvent;
 use craft\events\EagerLoadElementsEvent;
@@ -264,6 +265,150 @@ class Elements extends Component
      * @since 4.2.0
      */
     public const EVENT_INVALIDATE_CACHES = 'invalidateCaches';
+
+    /**
+     * @event AuthorizationCheckEvent The event that is triggered when determining whether a user is authorized to view an element’s edit page.
+     *
+     * To authorize the user, set [[AuthorizationCheckEvent::$authorized]] to `true`.
+     *
+     * ```php
+     * use craft\events\AuthorizationCheckEvent;
+     * use craft\services\Elements;
+     * use yii\base\Event;
+     *
+     * Event::on(
+     *     Elements::class,
+     *     Elements::EVENT_AUTHORIZE_VIEW,
+     *     function(AuthorizationCheckEvent $event) {
+     *         $event->authorized = true;
+     *     }
+     * );
+     * ```
+     *
+     * @see canView()
+     * @since 4.3.0
+     */
+    public const EVENT_AUTHORIZE_VIEW = 'authorizeView';
+
+    /**
+     * @event AuthorizationCheckEvent The event that is triggered when determining whether a user is authorized to save an element in its current state.
+     *
+     * To authorize the user, set [[AuthorizationCheckEvent::$authorized]] to `true`.
+     *
+     * ```php
+     * use craft\events\AuthorizationCheckEvent;
+     * use craft\services\Elements;
+     * use yii\base\Event;
+     *
+     * Event::on(
+     *     Elements::class,
+     *     Elements::EVENT_AUTHORIZE_SAVE,
+     *     function(AuthorizationCheckEvent $event) {
+     *         $event->authorized = true;
+     *     }
+     * );
+     * ```
+     *
+     * @see canSave()
+     * @since 4.3.0
+     */
+    public const EVENT_AUTHORIZE_SAVE = 'authorizeSave';
+
+    /**
+     * @event AuthorizationCheckEvent The event that is triggered when determining whether a user is authorized to create drafts for an element.
+     *
+     * To authorize the user, set [[AuthorizationCheckEvent::$authorized]] to `true`.
+     *
+     * ```php
+     * use craft\events\AuthorizationCheckEvent;
+     * use craft\services\Elements;
+     * use yii\base\Event;
+     *
+     * Event::on(
+     *     Elements::class,
+     *     Elements::EVENT_AUTHORIZE_CREATE_DRAFTS,
+     *     function(AuthorizationCheckEvent $event) {
+     *         $event->authorized = true;
+     *     }
+     * );
+     * ```
+     *
+     * @see canCreateDrafts()
+     * @since 4.3.0
+     */
+    public const EVENT_AUTHORIZE_CREATE_DRAFTS = 'authorizeCreateDrafts';
+
+    /**
+     * @event AuthorizationCheckEvent The event that is triggered when determining whether a user is authorized to duplicate an element.
+     *
+     * To authorize the user, set [[AuthorizationCheckEvent::$authorized]] to `true`.
+     *
+     * ```php
+     * use craft\events\AuthorizationCheckEvent;
+     * use craft\services\Elements;
+     * use yii\base\Event;
+     *
+     * Event::on(
+     *     Elements::class,
+     *     Elements::EVENT_AUTHORIZE_DUPLICATE,
+     *     function(AuthorizationCheckEvent $event) {
+     *         $event->authorized = true;
+     *     }
+     * );
+     * ```
+     *
+     * @see canDuplicate()
+     * @since 4.3.0
+     */
+    public const EVENT_AUTHORIZE_DUPLICATE = 'authorizeDuplicate';
+
+    /**
+     * @event AuthorizationCheckEvent The event that is triggered when determining whether a user is authorized to delete an element.
+     *
+     * To authorize the user, set [[AuthorizationCheckEvent::$authorized]] to `true`.
+     *
+     * ```php
+     * use craft\events\AuthorizationCheckEvent;
+     * use craft\services\Elements;
+     * use yii\base\Event;
+     *
+     * Event::on(
+     *     Elements::class,
+     *     Elements::EVENT_AUTHORIZE_DELETE,
+     *     function(AuthorizationCheckEvent $event) {
+     *         $event->authorized = true;
+     *     }
+     * );
+     * ```
+     *
+     * @see canDelete()
+     * @since 4.3.0
+     */
+    public const EVENT_AUTHORIZE_DELETE = 'authorizeDelete';
+
+    /**
+     * @event AuthorizationCheckEvent The event that is triggered when determining whether a user is authorized to delete an element for its current site.
+     *
+     * To authorize the user, set [[AuthorizationCheckEvent::$authorized]] to `true`.
+     *
+     * ```php
+     * use craft\events\AuthorizationCheckEvent;
+     * use craft\services\Elements;
+     * use yii\base\Event;
+     *
+     * Event::on(
+     *     Elements::class,
+     *     Elements::EVENT_AUTHORIZE_DELETE_FOR_SITE,
+     *     function(AuthorizationCheckEvent $event) {
+     *         $event->authorized = true;
+     *     }
+     * );
+     * ```
+     *
+     * @see canDeleteForSite()
+     * @since 4.3.0
+     */
+    public const EVENT_AUTHORIZE_DELETE_FOR_SITE = 'authorizeDeleteForSite';
 
     /**
      * @var int[] Stores a mapping of source element IDs to their duplicated element IDs.
@@ -3061,5 +3206,140 @@ SQL;
             // Replace the token with the default value
             return $fallback;
         }
+    }
+
+    /**
+     * Returns whether a user is authorized to view the given element’s edit page.
+     *
+     * @param ElementInterface $element
+     * @param User|null $user
+     * @return bool
+     * @since 4.3.0
+     */
+    public function canView(ElementInterface $element, ?User $user = null): bool
+    {
+        if (!$user) {
+            $user = Craft::$app->getUser()->getIdentity();
+            if (!$user) {
+                return false;
+            }
+        }
+
+        return $this->_authCheck($element, $user, self::EVENT_AUTHORIZE_VIEW) ?? $element->canView($user);
+    }
+
+    /**
+     * Returns whether a user is authorized to save the given element in its current form.
+     *
+     * @param ElementInterface $element
+     * @param User|null $user
+     * @return bool
+     * @since 4.3.0
+     */
+    public function canSave(ElementInterface $element, ?User $user = null): bool
+    {
+        if (!$user) {
+            $user = Craft::$app->getUser()->getIdentity();
+            if (!$user) {
+                return false;
+            }
+        }
+
+        return $this->_authCheck($element, $user, self::EVENT_AUTHORIZE_SAVE) ?? $element->canSave($user);
+    }
+
+    /**
+     * Returns whether a user is authorized to duplicate the given element.
+     *
+     * @param ElementInterface $element
+     * @param User|null $user
+     * @return bool
+     * @since 4.3.0
+     */
+    public function canDuplicate(ElementInterface $element, ?User $user = null): bool
+    {
+        if (!$user) {
+            $user = Craft::$app->getUser()->getIdentity();
+            if (!$user) {
+                return false;
+            }
+        }
+
+        return $this->_authCheck($element, $user, self::EVENT_AUTHORIZE_DUPLICATE) ?? $element->canDuplicate($user);
+    }
+
+    /**
+     * Returns whether a user is authorized to delete the given element.
+     *
+     * @param ElementInterface $element
+     * @param User|null $user
+     * @return bool
+     * @since 4.3.0
+     */
+    public function canDelete(ElementInterface $element, ?User $user = null): bool
+    {
+        if (!$user) {
+            $user = Craft::$app->getUser()->getIdentity();
+            if (!$user) {
+                return false;
+            }
+        }
+
+        return $this->_authCheck($element, $user, self::EVENT_AUTHORIZE_DELETE) ?? $element->canDelete($user);
+    }
+
+    /**
+     * Returns whether a user is authorized to delete the given element for its current site.
+     *
+     * @param ElementInterface $element
+     * @param User|null $user
+     * @return bool
+     * @since 4.3.0
+     */
+    public function canDeleteForSite(ElementInterface $element, ?User $user = null): bool
+    {
+        if (!$user) {
+            $user = Craft::$app->getUser()->getIdentity();
+            if (!$user) {
+                return false;
+            }
+        }
+
+        return $this->_authCheck($element, $user, self::EVENT_AUTHORIZE_DELETE_FOR_SITE) ?? $element->canDeleteForSite($user);
+    }
+
+    /**
+     * Returns whether a user is authorized to create drafts for the given element.
+     *
+     * @param ElementInterface $element
+     * @param User|null $user
+     * @return bool
+     * @since 4.3.0
+     */
+    public function canCreateDrafts(ElementInterface $element, ?User $user = null): bool
+    {
+        if (!$user) {
+            $user = Craft::$app->getUser()->getIdentity();
+            if (!$user) {
+                return false;
+            }
+        }
+
+        return $this->_authCheck($element, $user, self::EVENT_AUTHORIZE_CREATE_DRAFTS) ?? $element->canCreateDrafts($user);
+    }
+
+    private function _authCheck(ElementInterface $element, User $user, string $eventName): ?bool
+    {
+        if (!$this->hasEventHandlers($eventName)) {
+            return null;
+        }
+
+        $event = new AuthorizationCheckEvent($user, [
+            'element' => $element,
+            'authorized' => null,
+        ]);
+
+        $this->trigger($eventName, $event);
+        return $event->authorized;
     }
 }

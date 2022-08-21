@@ -300,10 +300,16 @@ class Address extends Element implements AddressInterface, BlockElementInterface
      */
     public function canView(User $user): bool
     {
-        return (
-            parent::canView($user) ||
-            ($this->getOwner()?->getCanonical(true)->canView($user) ?? false)
-        );
+        if (parent::canView($user)) {
+            return true;
+        }
+
+        $owner = $this->getOwner()?->getCanonical(true);
+        if (!$owner) {
+            return false;
+        }
+
+        return Craft::$app->getElements()->canView($owner, $user);
     }
 
     /**
@@ -311,10 +317,16 @@ class Address extends Element implements AddressInterface, BlockElementInterface
      */
     public function canSave(User $user): bool
     {
-        return (
-            parent::canSave($user) ||
-            ($this->getOwner()?->getcanonical(true)->canSave($user) ?? false)
-        );
+        if (parent::canSave($user)) {
+            return true;
+        }
+
+        $owner = $this->getOwner()?->getCanonical(true);
+        if (!$owner) {
+            return false;
+        }
+
+        return Craft::$app->getElements()->canSave($owner, $user);
     }
 
     /**
@@ -322,10 +334,16 @@ class Address extends Element implements AddressInterface, BlockElementInterface
      */
     public function canDelete(User $user): bool
     {
-        return (
-            parent::canDelete($user) ||
-            ($this->getOwner()?->getCanonical(true)->canSave($user) ?? false)
-        );
+        if (parent::canDelete($user)) {
+            return true;
+        }
+
+        $owner = $this->getOwner()?->getCanonical(true);
+        if (!$owner) {
+            return false;
+        }
+
+        return Craft::$app->getElements()->canDelete($owner, $user);
     }
 
     /**
