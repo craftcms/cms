@@ -9,6 +9,9 @@
 - Added `craft\events\CreateTwigEvent`.
 - Added `craft\events\DefineAddressFieldLabelEvent`.
 - Added `craft\events\DefineAddressFieldsEvent`.
+- Added `craft\helpers\DateTimeHelper::today()`.
+- Added `craft\helpers\DateTimeHelper::tomorrow()`.
+- Added `craft\helpers\DateTimeHelper::yesterday()`.
 - Added `craft\i18n\FormatConverter::convertDatePhpToHuman()`. ([#10546](https://github.com/craftcms/cms/pull/10546))
 - Added `craft\i18n\Locale::FORMAT_HUMAN`.
 - Added `craft\services\Addresses::EVENT_DEFINE_FIELD_LABEL`. ([#11788](https://github.com/craftcms/cms/discussions/11788))
@@ -19,9 +22,6 @@
 - Added `craft\services\Addresses::getUsedSubdivisionFields()`.
 - Added `craft\web\Controller::getCurrentUser()`. ([#11754](https://github.com/craftcms/cms/pull/11754))
 - Added `craft\web\View::EVENT_AFTER_CREATE_TWIG`. ([#11774](https://github.com/craftcms/cms/pull/11774))
-- Added `craft\helpers\DateTimeHelper::today()`.
-- Added `craft\helpers\DateTimeHelper::yesterday()`.
-- Added `craft\helpers\DateTimeHelper::tomorrow()`.
 - Added the `Craft.useMobileStyles()` JavaScript method. ([#11636](https://github.com/craftcms/cms/pull/11636))
 
 ### Changed
