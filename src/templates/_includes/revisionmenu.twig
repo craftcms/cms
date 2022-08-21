@@ -13,7 +13,7 @@
     .status(null)
     .orderBy({dateUpdated: SORT_DESC})
     .with(['draftCreator'])
-    .all()|filter(d => craft.app.elements.canView(d)) : [] %}
+    .all()|filter(d => canView(d)) : [] %}
 
 {% set maxRevisions = craft.app.config.general.maxRevisions %}
 {% if element.id and (not maxRevisions or maxRevisions > 1) %}
