@@ -16,10 +16,10 @@
 - Fixed a bug where keyboard focus wasn’t being maintained when changing the element type within a “Related To” condition rule.
 - Fixed a bug where keyboard focus wasn’t being maintained when changing the country within an address’s “Administrative Area” condition rule.
 - Fixed a bug where Date fields’ Timezone menus could be clipped. ([#11780](https://github.com/craftcms/cms/pull/11780))
-- Fixed a bug where `iframeResizer.contentWindow.js` was getting loaded for all preview requests, not just Live Preview, and even when `useIframeResizer` was disabled. ([#11778](https://github.com/craftcms/cms/issues/11778))
 - Fixed an error that could occur when saving an unpublished draft, if any custom validation errors were added to it after its draft status had been removed. ([#11407](https://github.com/craftcms/cms/issues/11407))
 - Fixed a bug where custom validation errors would be shown twice for unpublished drafts, if they were added to it after its draft status had been removed. ([#11407](https://github.com/craftcms/cms/issues/11407))
 - Fixed PHP warnings that would occur when passing `0` into `craft\helpers\DateTimeHelper::humanDuration()`. ([#11787](https://github.com/craftcms/cms/issues/11787))
+- Fixed a bug where `iframeResizer.contentWindow.js` was getting loaded for all preview requests, not just Live Preview, and even when `useIframeResizer` was disabled. ([#11778](https://github.com/craftcms/cms/issues/11778))
 - Fixed a bug where deleted relations and Matrix blocks could persist if the edit form was submitted before they had been fully animated away. ([#11789](https://github.com/craftcms/cms/issues/11789))
 - Fixed a PHP error that could occur if `craft\services\Assets::getUserTemporaryUploadFolder()` was called when there was no logged-in user account. ([#11751](https://github.com/craftcms/cms/issues/11751))
 
