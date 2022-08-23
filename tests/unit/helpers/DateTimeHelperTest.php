@@ -709,7 +709,7 @@ class DateTimeHelperTest extends TestCase
     /**
      * @return array
      */
-    public function testToDateIntervalDataProvider(): array
+    public function toDateIntervalDataProvider(): array
     {
         return [
             [10, 10000, 10],
