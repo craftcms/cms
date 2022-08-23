@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.7.52 - 2022-08-23
 
 ### Changed
 - Improved console output for the `gc` command.
