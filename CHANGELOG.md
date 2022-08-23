@@ -3,7 +3,7 @@
 ## Unreleased
 
 ### Changed
-- Improved the console output for the `gc` command.
+- Improved console output for the `gc` command.
 - The `gc` command now runs garbage collection for data caches.
 - Exception JSON responses now include `name` and `code` keys. ([#11799](https://github.com/craftcms/cms/discussions/11799))
 
