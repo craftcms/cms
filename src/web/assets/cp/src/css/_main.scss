@@ -4853,6 +4853,10 @@ ul.tree,
   gap: var(--m) var(--m);
   grid-template-columns: repeat(1, minmax(0, 1fr));
   grid-auto-rows: minmax(0, 1fr);
+
+  .so-content & {
+    grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+  }
 }
 
 .address-cards__add-btn {
@@ -4879,6 +4883,10 @@ ul.tree,
 @media (min-width: 1280px) {
   .address-cards {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+
+    .so-content & {
+      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
   }
 }
 

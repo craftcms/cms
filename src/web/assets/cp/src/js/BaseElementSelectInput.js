@@ -311,6 +311,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
     createElementEditor: function ($element, settings) {
       settings = Object.assign(
         {
+          elementSelectInput: this,
           prevalidate: this.settings.prevalidate,
         },
         settings
