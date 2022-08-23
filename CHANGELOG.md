@@ -8,7 +8,7 @@
 ### Changed
 - Improved the styling of Categories fields.
 - The first field group is now automatically selected by default when creating a new custom field.
-- Improved the console output for the `gc` command.
+- Improved console output for the `gc` command.
 - The `gc` command now runs garbage collection for data caches.
 - Exception JSON responses now include `name` and `code` keys. ([#11799](https://github.com/craftcms/cms/discussions/11799))
 - `elements/*` actions no longer include custom field values in the failure response data, improving performance. ([#11807](https://github.com/craftcms/cms/discussions/11807))
