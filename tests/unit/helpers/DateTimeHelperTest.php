@@ -345,6 +345,17 @@ class DateTimeHelperTest extends TestCase
     }
 
     /**
+     * @dataProvider toDateIntervalDataProvider
+     * @param int $result
+     * @param int $input
+     */
+    public function testToDateInterval(int $result, int $input): void
+    {
+        $interval = DateTimeHelper::toDateInterval($input);
+        self::assertSame($result, DateTimeHelper::intervalToSeconds($interval));
+    }
+
+    /**
      * @dataProvider secondsToIntervalDataProvider
      * @param int $shortResult
      * @param int $longResult
@@ -690,6 +701,16 @@ class DateTimeHelperTest extends TestCase
             ['27 minutes', 'PT10M999S'],
             ['0 seconds', 0],
             ['less than a minute', 0, false],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function toDateIntervalDataProvider(): array
+    {
+        return [
+            [10, 10],
         ];
     }
 
