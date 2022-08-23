@@ -1735,7 +1735,12 @@ JS, [
 
     private function _asFailure(ElementInterface $element, string $message): ?Response
     {
-        /** @var Element $element */
-        return $this->asModelFailure($element, $message, 'element');
+        $data = [
+            'modelName' => 'element',
+            'element' => $element->toArray($element->attributes()),
+            'errors' => $element->getErrors(),
+        ];
+
+        return $this->asFailure($message, $data, ['element' => $element]);
     }
 }

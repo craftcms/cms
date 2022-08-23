@@ -468,7 +468,7 @@ abstract class Element extends Component implements ElementInterface
      * );
      * ```
      *
-     * @see canDelete()
+     * @see canDeleteForSite()
      * @since 4.0.0
      */
     public const EVENT_AUTHORIZE_DELETE_FOR_SITE = 'authorizeDeleteForSite';
