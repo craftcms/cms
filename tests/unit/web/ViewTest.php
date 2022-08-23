@@ -196,7 +196,7 @@ class ViewTest extends TestCase
             CraftTest::normalizePathSeparators($this->view->templatesPath)
         );
         self::assertSame(
-            ['html', 'twig'],
+            ['twig', 'html'],
             $this->getInaccessibleProperty($this->view, '_defaultTemplateExtensions')
         );
 
