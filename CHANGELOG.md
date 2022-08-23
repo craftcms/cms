@@ -11,6 +11,7 @@
 - Improved the console output for the `gc` command.
 - The `gc` command now runs garbage collection for data caches.
 - Exception JSON responses now include `name` and `code` keys. ([#11799](https://github.com/craftcms/cms/discussions/11799))
+- `elements/*` actions no longer include custom field values in the failure response data, improving performance. ([#11807](https://github.com/craftcms/cms/discussions/11807))
 
 ### Fixed
 - Fixed a bug where keyboard focus wasn’t being maintained when changing the element type within a “Related To” condition rule.
