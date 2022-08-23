@@ -276,10 +276,10 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
 
         if ($this->showTimeZone) {
             $components[] = $view->renderTemplate('_includes/forms/timeZone', [
-                    'describedBy' => $this->describedBy,
-                    'name' => "$this->handle[timezone]",
-                    'value' => $timezone,
-                ]);
+                'describedBy' => $this->describedBy,
+                'name' => "$this->handle[timezone]",
+                'value' => $timezone,
+            ]);
         } else {
             $components[] = Html::hiddenInput("$this->handle[timezone]", $timezone);
         }

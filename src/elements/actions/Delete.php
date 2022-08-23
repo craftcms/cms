@@ -18,7 +18,7 @@ use craft\helpers\Html;
 /**
  * Delete represents a Delete element action.
  *
- * Element types that make this action available should implement [[ElementInterface::getIsDeletable()]] to explicitly state whether they can be
+ * Element types that make this action available should implement [[ElementInterface::canDelete()]] to explicitly state whether they can be
  * deleted by the current user.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
@@ -70,7 +70,7 @@ class Delete extends ElementAction implements DeleteActionInterface
      */
     public function getTriggerHtml(): ?string
     {
-        // Only enable for deletable elements, per getIsDeletable()
+        // Only enable for deletable elements, per canDelete()
         Craft::$app->getView()->registerJsWithVars(fn($type) => <<<JS
 (() => {
     new Craft.ElementActionTrigger({
@@ -174,13 +174,13 @@ JS, [static::class]);
         $user = Craft::$app->getUser()->getIdentity();
 
         foreach ($query->all() as $element) {
-            if (!$element->canDelete($user)) {
+            if (!$elementsService->canDelete($element, $user)) {
                 continue;
             }
             if (!isset($deletedElementIds[$element->id])) {
                 if ($withDescendants) {
                     foreach ($element->getDescendants()->all() as $descendant) {
-                        if (!isset($deletedElementIds[$descendant->id]) && $descendant->canDelete($user)) {
+                        if (!isset($deletedElementIds[$descendant->id]) && $elementsService->canDelete($descendant, $user)) {
                             $elementsService->deleteElement($descendant);
                             $deletedElementIds[$descendant->id] = true;
                         }

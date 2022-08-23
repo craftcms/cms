@@ -71,7 +71,7 @@ class DateTimeHelper
      *  - MySQL DATE and DATETIME formats (http://dev.mysql.com/doc/refman/5.1/en/datetime.html)
      *  - Relaxed versions of W3C and MySQL formats (single-digit months, days, and hours)
      *  - Unix timestamps
-     * - `now`
+     * - `now`/`today`/`tomorrow`/`yesterday` (midnight of the specified relative date)
      *  - An array with at least one of these keys defined: `datetime`, `date`, or `time`. Supported keys include:
      *      - `date` – a date string in `YYYY-MM-DD` or `YYYY-MM-DD HH:MM:SS.MU` formats or the current locale’s short date format
      *      - `time` – a time string in `HH:MM` or `HH:MM:SS` (24-hour) format or the current locale’s short time format
@@ -296,6 +296,42 @@ class DateTimeHelper
         }
 
         return new DateTime('now', $timeZone);
+    }
+
+    /**
+     * Returns a [[DateTime]] object set to midnight of the current day (factoring in whether time is [[pause()|paused]]).
+     *
+     * @param DateTimeZone|null $timeZone The time zone to return the `DateTime` object in. (Defaults to the system time zone.)
+     * @return DateTime
+     * @since 4.3.0
+     */
+    public static function today(?DateTimeZone $timeZone = null): DateTime
+    {
+        return static::now($timeZone)->setTime(0, 0);
+    }
+
+    /**
+     * Returns a [[DateTime]] object set to midnight of the following day (factoring in whether time is [[pause()|paused]]).
+     *
+     * @param DateTimeZone|null $timeZone The time zone to return the `DateTime` object in. (Defaults to the system time zone.)
+     * @return DateTime
+     * @since 4.3.0
+     */
+    public static function tomorrow(?DateTimeZone $timeZone = null): DateTime
+    {
+        return static::today($timeZone)->modify('+1 day');
+    }
+
+    /**
+     * Returns a [[DateTime]] object set to midnight of the previous day (factoring in whether time is [[pause()|paused]]).
+     *
+     * @param DateTimeZone|null $timeZone The time zone to return the `DateTime` object in. (Defaults to the system time zone.)
+     * @return DateTime
+     * @since 4.3.0
+     */
+    public static function yesterday(?DateTimeZone $timeZone = null): DateTime
+    {
+        return static::today($timeZone)->modify('-1 day');
     }
 
     /**
@@ -555,7 +591,7 @@ class DateTimeHelper
      */
     public static function humanDuration(mixed $dateInterval, ?bool $showSeconds = null): string
     {
-        $dateInterval = static::toDateInterval($dateInterval);
+        $dateInterval = static::toDateInterval($dateInterval) ?: new DateInterval('PT0S');
         $secondsOnly = !$dateInterval->y && !$dateInterval->m && !$dateInterval->d && !$dateInterval->h && !$dateInterval->i;
 
         if ($showSeconds === null) {
@@ -600,7 +636,7 @@ class DateTimeHelper
             $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{minute} other{minutes}}', ['num' => $minutes]);
         }
 
-        if ($showSeconds && $dateInterval->s) {
+        if ($showSeconds && ($dateInterval->s || empty($timeComponents))) {
             $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{second} other{seconds}}', ['num' => $dateInterval->s]);
         }
 
@@ -724,8 +760,16 @@ class DateTimeHelper
     {
         $value = trim($value);
 
-        if ($value === 'now') {
-            return static::now();
+        $date = match (strtolower($value)) {
+            'now' => static::now(),
+            'today' => static::today(),
+            'tomorrow' => static::tomorrow(),
+            'yesterday' => static::yesterday(),
+            default => null,
+        };
+
+        if ($date !== null) {
+            return $date;
         }
 
         if (preg_match('/^

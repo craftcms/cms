@@ -311,6 +311,7 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
     createElementEditor: function ($element, settings) {
       settings = Object.assign(
         {
+          elementSelectInput: this,
           prevalidate: this.settings.prevalidate,
         },
         settings
@@ -413,6 +414,9 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
           $element.parent().siblings('ul').find('.element')
         );
 
+        // Remove any inputs from the form data
+        $('[name]', $allElements).removeAttr('name');
+
         // Remove our record of them all at once
         this.removeElements($allElements);
 
@@ -421,6 +425,8 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
           this._animateStructureElementAway($allElements, i);
         }
       } else {
+        // Remove any inputs from the form data
+        $('[name]', $element).removeAttr('name');
         this.removeElements($element);
         this.animateElementAway($element, () => {
           $element.remove();
@@ -444,22 +450,12 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
         );
       }
 
-      // Pause the draft editor
-      if (this.$form.data('elementEditor')) {
-        this.$form.data('elementEditor').pause();
-      }
-
       $element.velocity(
         animateCss,
         Craft.BaseElementSelectInput.REMOVE_FX_DURATION,
         () => {
           if (callback) {
             callback();
-          }
-
-          // Resume the draft editor
-          if (this.$form.data('elementEditor')) {
-            this.$form.data('elementEditor').resume();
           }
         }
       );

@@ -254,8 +254,6 @@ class CategoriesController extends Controller
             throw new ForbiddenHttpException('User not authorized to edit content in any sites.');
         }
 
-        $user = Craft::$app->getUser()->getIdentity();
-
         // Create & populate the draft
         $category = Craft::createObject(Category::class);
         $category->siteId = $site->id;
@@ -268,7 +266,7 @@ class CategoriesController extends Controller
         }
 
         // Make sure the user is allowed to create this category
-        if (!$category->canSave($user)) {
+        if (!Craft::$app->getElements()->canSave($category)) {
             throw new ForbiddenHttpException('User not authorized to save this category.');
         }
 

@@ -194,6 +194,10 @@ Craft.EditableTable = Garnish.Base.extend(
 
       if (this.rowCount === 0) {
         this.$table.addClass('hidden');
+        this.$addRowBtn.trigger('focus');
+      } else {
+        // Focus element in previous row
+        this.$tbody.find(':focusable').last().trigger('focus');
       }
 
       // onDeleteRow callback

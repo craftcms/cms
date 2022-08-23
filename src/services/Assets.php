@@ -920,8 +920,10 @@ class Assets extends Component
             $user = Craft::$app->getUser()->getIdentity();
         }
 
-        if (isset($this->_userTempFolders[$user->id])) {
-            return $this->_userTempFolders[$user->id];
+        $cacheKey = $user->id ?? '__GUEST__';
+
+        if (isset($this->_userTempFolders[$cacheKey])) {
+            return $this->_userTempFolders[$cacheKey];
         }
 
         if ($user) {
@@ -945,7 +947,7 @@ class Assets extends Component
 
         if ($tempVolume) {
             $path = ($tempSubpath ? "$tempSubpath/" : '') . $folderName;
-            return $this->_userTempFolders[$user->id] = $this->ensureFolderByFullPathAndVolume($path, $tempVolume);
+            return $this->_userTempFolders[$cacheKey] = $this->ensureFolderByFullPathAndVolume($path, $tempVolume);
         }
 
         $volumeTopFolder = $this->findFolder([
@@ -980,7 +982,7 @@ class Assets extends Component
             throw new VolumeException('Unable to create directory for temporary volume.');
         }
 
-        return $this->_userTempFolders[$user->id] = $folder;
+        return $this->_userTempFolders[$cacheKey] = $folder;
     }
 
     /**

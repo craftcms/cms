@@ -211,7 +211,11 @@ class PluginStoreController extends Controller
         try {
             Craft::$app->getPluginStore()->saveToken($token);
         } catch (Throwable $e) {
-            return $this->asFailure($e->getMessage());
+            // Send the message regardless of Dev Mode
+            if (!App::devMode()) {
+                return $this->asFailure($e->getMessage());
+            }
+            throw $e;
         }
 
         return $this->asSuccess(
@@ -233,7 +237,7 @@ class PluginStoreController extends Controller
         $data = [];
 
         // Current user
-        $currentUser = Craft::$app->getUser()->getIdentity();
+        $currentUser = $this->getCurrentUser();
         $data['currentUser'] = $currentUser->getAttributes(['email']);
 
         // Craft license/edition info

@@ -67,22 +67,25 @@ class RelatedToConditionRule extends BaseElementSelectConditionRule implements E
      */
     protected function inputHtml(): string
     {
-        return Html::tag('div',
-            Cp::selectHtml([
-                'name' => 'elementType',
-                'options' => $this->_elementTypeOptions(),
-                'value' => $this->elementType,
-                'inputAttributes' => [
-                    'hx' => [
-                        'post' => UrlHelper::actionUrl('conditions/render'),
+        $id = 'element-type';
+        return Html::hiddenLabel($this->getLabel(), $id) .
+            Html::tag('div',
+                Cp::selectHtml([
+                    'id' => $id,
+                    'name' => 'elementType',
+                    'options' => $this->_elementTypeOptions(),
+                    'value' => $this->elementType,
+                    'inputAttributes' => [
+                        'hx' => [
+                            'post' => UrlHelper::actionUrl('conditions/render'),
+                        ],
                     ],
-                ],
-            ]) .
-            parent::inputHtml(),
-            [
-                'class' => ['flex'],
-            ]
-        );
+                ]) .
+                parent::inputHtml(),
+                [
+                    'class' => ['flex', 'flex-start'],
+                ]
+            );
     }
 
     /**

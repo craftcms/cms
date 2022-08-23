@@ -347,7 +347,7 @@ class ElementHelper
     {
         $user = Craft::$app->getUser()->getIdentity();
 
-        if ($element->canView($user)) {
+        if ($user && Craft::$app->getElements()->canView($element, $user)) {
             if (!Craft::$app->getIsMultiSite()) {
                 return true;
             }
@@ -373,7 +373,7 @@ class ElementHelper
         $siteIds = [];
         $user = Craft::$app->getUser()->getIdentity();
 
-        if ($element->canView($user)) {
+        if ($user && Craft::$app->getElements()->canView($element, $user)) {
             if (Craft::$app->getIsMultiSite()) {
                 foreach (static::supportedSitesForElement($element) as $siteInfo) {
                     if ($user->can(sprintf('editSite:%s', $siteInfo['siteUid']))) {
