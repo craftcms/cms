@@ -346,8 +346,7 @@ class DateTimeHelperTest extends TestCase
 
     /**
      * @dataProvider toDateIntervalDataProvider
-     * @param int $shortResult
-     * @param int $longResult
+     * @param int $result
      * @param int $input
      */
     public function testToDateInterval(int $result, int $input): void
