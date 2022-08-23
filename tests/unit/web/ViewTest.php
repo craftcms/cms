@@ -492,7 +492,7 @@ TWIG;
         return [
             ['@craftunittemplates/template.twig', '@craftunittemplates', 'template'],
             ['@craftunittemplates/index.html', '@craftunittemplates', 'index'],
-            ['@craftunittemplates/doubleindex/index.html', '@craftunittemplates/doubleindex', 'index'],
+            ['@craftunittemplates/doubleindex/index.twig', '@craftunittemplates/doubleindex', 'index'],
 
             // Index is found by default
             ['@craftunittemplates/index.html', '@craftunittemplates', ''],
