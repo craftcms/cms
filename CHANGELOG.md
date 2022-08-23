@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.2.2 - 2022-08-23
 
 ### Added
 - Added the `utils/fix-field-layout-uids` command. ([#11746](https://github.com/craftcms/cms/issues/11746))
