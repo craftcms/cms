@@ -144,7 +144,7 @@
                 autosave: false,
             },
         }) %}
-        {% if addAnotherRedirectUrl %}
+        {% if canAddAnother and addAnotherRedirectUrl %}
             {% set formActions = formActions|push({
                 label: isUnpublishedDraft ? 'Create and add another'|t('app') : 'Save and add another'|t('app'),
                 action: isUnpublishedDraft ? publishDraftAction : null,
