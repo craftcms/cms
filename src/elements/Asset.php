@@ -876,10 +876,13 @@ class Asset extends Element
     {
         $volume = $this->getVolume();
         $userSession = Craft::$app->getUser();
-        return (
-            $userSession->checkPermission("saveAssetInVolume:$volume->uid") &&
-            ($userSession->getId() == $this->uploaderId || $userSession->checkPermission("editPeerFilesInVolume:$volume->uid"))
-        );
+        $isUploader = $this->uploaderId && $this->uploaderId == $userSession->getId();
+
+        if ($isUploader) {
+            return $userSession->checkPermission("saveAssetInVolume:$volume->uid");
+        }
+
+        return $userSession->checkPermission("editPeerFilesInVolume:$volume->uid");
     }
 
     /**

@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where the “Edit files uploaded by other users” volume permission was useless unless the “Upload files” permission had been granted. ([#11818](https://github.com/craftcms/cms/issues/11818))
+
 ## 3.7.52 - 2022-08-23
 
 ### Changed

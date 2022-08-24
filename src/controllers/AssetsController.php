@@ -210,8 +210,13 @@ class AssetsController extends Controller
             throw new BadRequestHttpException("Invalid asset ID: {$assetId}");
         }
 
-        $this->requireVolumePermissionByAsset('saveAssetInVolume', $asset);
-        $this->requirePeerVolumePermissionByAsset('editPeerFilesInVolume', $asset);
+        $isUploader = $asset->uploaderId && $asset->uploaderId == Craft::$app->getUser()->getId();
+
+        if ($isUploader) {
+            $this->requireVolumePermissionByAsset('saveAssetInVolume', $asset);
+        } else {
+            $this->requirePeerVolumePermissionByAsset('editPeerFilesInVolume', $asset);
+        }
 
         if (Craft::$app->getIsMultiSite()) {
             // Make sure they have access to this site
