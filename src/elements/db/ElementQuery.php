@@ -2315,8 +2315,16 @@ class ElementQuery extends Query implements ElementQueryInterface
                     '[[structureelements.elementId]] = [[subquery.elementsId]]',
                     '[[structureelements.structureId]] = [[subquery.structureId]]',
                 ]);
-            $existsQuery = (new Query())
-                ->from([Table::STRUCTURES])
+            // Use index hints to specify index so Mysql does not select the less
+            // performant index.
+            if (Craft::$app->getDb()->getIsMysql()) {
+                $existsQuery = (new Query())
+                    ->from([new Expression('[[structures]] use index(primary)')]);
+            } else {
+                $existsQuery = (new Query())
+                    ->from([Table::STRUCTURES]);
+            }
+            $existsQuery
                 ->where('[[id]] = [[structureelements.structureId]]')
                 ->andWhere(['dateDeleted' => null]);
             $this->subQuery
