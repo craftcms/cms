@@ -2316,7 +2316,7 @@ class ElementQuery extends Query implements ElementQueryInterface
                     '[[structureelements.structureId]] = [[subquery.structureId]]',
                 ]);
             // Use index hints to specify index so Mysql does not select the less
-            // performant index.
+            // performant one (dateDeleted).
             if (Craft::$app->getDb()->getIsMysql()) {
                 $existsQuery = (new Query())
                     ->from([new Expression('[[structures]] use index(primary)')]);
