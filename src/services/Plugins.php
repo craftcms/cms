@@ -1152,7 +1152,8 @@ class Plugins extends Component
      */
     public function getPluginLicenseKey(string $handle): ?string
     {
-        return $this->normalizePluginLicenseKey(App::parseEnv($this->getStoredPluginInfo($handle)['licenseKey'] ?? null));
+        $licenseKey = $this->getStoredPluginInfo($handle)['licenseKey'] ?? null;
+        return $this->normalizePluginLicenseKey(App::parseEnv($licenseKey) ?: $licenseKey);
     }
 
     /**

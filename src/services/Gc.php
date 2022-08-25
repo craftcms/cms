@@ -346,6 +346,8 @@ SQL;
      */
     public function removeEmptyTempFolders(): void
     {
+        Console::stdout('    > removing empty temp folders ... ');
+
         $emptyFolders = (new Query())
             ->from(['folders' => Table::VOLUMEFOLDERS])
             ->select(['folders.id', 'folders.path'])
@@ -366,6 +368,7 @@ SQL;
         }
 
         VolumeFolder::deleteAll(['id' => array_keys($emptyFolders)]);
+        Console::stdout("done\n", Console::FG_GREEN);
     }
 
     /**
