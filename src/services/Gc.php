@@ -24,6 +24,7 @@ use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\records\Volume;
 use craft\records\VolumeFolder;
+use craft\volumes\Temp;
 use DateTime;
 use ReflectionMethod;
 use yii\base\Component;
@@ -115,7 +116,7 @@ class Gc extends Component
         ]);
 
         $this->hardDeleteVolumes();
-
+        $this->removeEmptyTempFolders();
         $this->_gcCache();
     }
 
@@ -235,6 +236,38 @@ SQL;
 
         Console::stdout('    > purging pending users with stale activation codes ... ');
         Craft::$app->getUsers()->purgeExpiredPendingUsers();
+        Console::stdout("done\n", Console::FG_GREEN);
+    }
+
+    /**
+     * Removes any temp upload folders with no assets in them.
+     *
+     * @since 3.7.53
+     */
+    public function removeEmptyTempFolders(): void
+    {
+        Console::stdout('    > removing empty temp folders ... ');
+
+        $emptyFolders = (new Query())
+            ->from(['folders' => Table::VOLUMEFOLDERS])
+            ->select(['folders.id', 'folders.path'])
+            ->leftJoin(['assets' => Table::ASSETS], '[[assets.folderId]] = [[folders.id]]')
+            ->where([
+                'folders.volumeId' => null,
+                'assets.id' => null,
+            ])
+            ->andWhere(['not', ['folders.parentId' => null]])
+            ->pairs();
+
+        $volume = Craft::createObject(Temp::class);
+
+        foreach ($emptyFolders as $emptyFolderPath) {
+            if ($volume->directoryExists($emptyFolderPath)) {
+                $volume->deleteDirectory($emptyFolderPath);
+            }
+        }
+
+        VolumeFolder::deleteAll(['id' => array_keys($emptyFolders)]);
         Console::stdout("done\n", Console::FG_GREEN);
     }
 

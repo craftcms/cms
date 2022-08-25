@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\services\Gc::removeEmptyTempFolders()`.
+
+### Changed
+- Empty subfolders within the temporary upload volume are now removed during garbage collection. ([#10746](https://github.com/craftcms/cms/issues/10746))
+
 ### Fixed
 - Fixed a bug where the “Edit files uploaded by other users” volume permission was useless unless the “Upload files” permission had been granted. ([#11818](https://github.com/craftcms/cms/issues/11818))
 - Fixed a bug where the “Save and add another” entry action was being shown for users without the “Create entries” section permission. ([#11819](https://github.com/craftcms/cms/issues/11819))
