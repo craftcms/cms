@@ -287,7 +287,7 @@ SQL;
     public function deletePartialElements(string $elementType, string $table, string $fk): void
     {
         /** @var string|ElementInterface $elementType */
-        Console::stdout(sprintf('    > deleting partial %s data in the `%s` table ... ', $elementType::lowerDisplayName(), $table));
+        $this->_stdout(sprintf('    > deleting partial %s data in the `%s` table ... ', $elementType::lowerDisplayName(), $table));
 
         $elementsTable = Table::ELEMENTS;
 
