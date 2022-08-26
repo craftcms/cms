@@ -6,12 +6,12 @@
 - Added `craft\services\Gc::removeEmptyTempFolders()`.
 
 ### Changed
+- If a plugin’s license key is set to an empty environment variable, its trial license key will now be stored in `.env` rather than the project config. ([#11830](https://github.com/craftcms/cms/issues/11830))
 - Empty subfolders within the temporary upload volume are now removed during garbage collection. ([#10746](https://github.com/craftcms/cms/issues/10746))
 
 ### Fixed
 - Fixed a bug where the “Edit files uploaded by other users” volume permission was useless unless the “Upload files” permission had been granted. ([#11818](https://github.com/craftcms/cms/issues/11818))
 - Fixed a bug where the “Save and add another” entry action was being shown for users without the “Create entries” section permission. ([#11819](https://github.com/craftcms/cms/issues/11819))
-- Fixed a bug where Craft was overwriting plugin license keys set to an environment variable, if the environment variable didn’t have a value. ([#11830](https://github.com/craftcms/cms/issues/11830))
 
 ## 3.7.52 - 2022-08-23
 

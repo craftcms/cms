@@ -1152,7 +1152,7 @@ class Plugins extends Component
     public function getPluginLicenseKey(string $handle)
     {
         $licenseKey = $this->getStoredPluginInfo($handle)['licenseKey'] ?? null;
-        return $this->normalizePluginLicenseKey(App::parseEnv($licenseKey) ?: $licenseKey);
+        return $this->normalizePluginLicenseKey(App::parseEnv($licenseKey));
     }
 
     /**
@@ -1171,13 +1171,19 @@ class Plugins extends Component
         // Validate the license key
         $normalizedLicenseKey = $this->normalizePluginLicenseKey($licenseKey);
 
-        // Set the plugin's license key in the project config
-        Craft::$app->getProjectConfig()->set(self::CONFIG_PLUGINS_KEY . '.' . $handle . '.licenseKey', $normalizedLicenseKey, "Set license key for plugin “{$handle}”");
+        // If the license key is set to an empty environment variable, set the environment variable's value
+        $oldLicenseKey = $this->getStoredPluginInfo($handle)['licenseKey'] ?? null;
+        if (preg_match('/^\$(\w+)$/', $oldLicenseKey, $matches) && App::env($matches[1]) === '') {
+            Craft::$app->getConfig()->setDotEnvVar($matches[1], $normalizedLicenseKey);
+        } else {
+            // Set the plugin's license key in the project config
+            Craft::$app->getProjectConfig()->set(sprintf('%s.%s.licenseKey', self::CONFIG_PLUGINS_KEY, $handle), $normalizedLicenseKey, "Set license key for plugin “{$handle}”");
 
-        // Update our cache of it
-        $this->loadPlugins();
-        if (isset($this->_storedPluginInfo[$handle])) {
-            $this->_storedPluginInfo[$handle]['licenseKey'] = $normalizedLicenseKey;
+            // Update our cache of it
+            $this->loadPlugins();
+            if (isset($this->_storedPluginInfo[$handle])) {
+                $this->_storedPluginInfo[$handle]['licenseKey'] = $normalizedLicenseKey;
+            }
         }
 
         // If we've cached the plugin's license key status, update the cache
