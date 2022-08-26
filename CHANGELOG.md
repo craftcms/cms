@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.7.53 - 2022-08-26
 
 ### Added
 - Added `craft\services\Gc::removeEmptyTempFolders()`.
