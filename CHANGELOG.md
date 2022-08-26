@@ -5,6 +5,9 @@
 ### Changed
 - If a plugin’s license key is set to an empty environment variable, its trial license key will now be stored in `.env` rather than the project config. ([#11830](https://github.com/craftcms/cms/issues/11830))
 
+### Fixed
+- Fixed a PHP error that occurred when garbage collection was run on web requests. ([#11829](https://github.com/craftcms/cms/issues/11829))
+
 ## 4.2.2 - 2022-08-23
 
 ### Added
