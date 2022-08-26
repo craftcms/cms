@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.7.53.1 - 2022-08-26
+
+### Fixed
+- Fixed a PHP error that occurred when garbage collection was run on web requests. ([#11829](https://github.com/craftcms/cms/issues/11829))
+
 ## 3.7.53 - 2022-08-26
 
 ### Added
@@ -12,7 +17,6 @@
 ### Fixed
 - Fixed a bug where the “Edit files uploaded by other users” volume permission was useless unless the “Upload files” permission had been granted. ([#11818](https://github.com/craftcms/cms/issues/11818))
 - Fixed a bug where the “Save and add another” entry action was being shown for users without the “Create entries” section permission. ([#11819](https://github.com/craftcms/cms/issues/11819))
-- Fixed a PHP error that occurred when garbage collection was run on web requests. ([#11829](https://github.com/craftcms/cms/issues/11829))
 
 ## 3.7.52 - 2022-08-23
 
