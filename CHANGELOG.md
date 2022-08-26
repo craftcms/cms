@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.2.3 - 2022-08-26
 
 ### Changed
 - If a plugin’s license key is set to an empty environment variable, its trial license key will now be stored in `.env` rather than the project config. ([#11830](https://github.com/craftcms/cms/issues/11830))
