@@ -11,6 +11,7 @@
 ### Fixed
 - Fixed a bug where the “Edit files uploaded by other users” volume permission was useless unless the “Upload files” permission had been granted. ([#11818](https://github.com/craftcms/cms/issues/11818))
 - Fixed a bug where the “Save and add another” entry action was being shown for users without the “Create entries” section permission. ([#11819](https://github.com/craftcms/cms/issues/11819))
+- Fixed a bug where Craft was overwriting plugin license keys set to an environment variable, if the environment variable didn’t have a value. ([#11830](https://github.com/craftcms/cms/issues/11830))
 
 ## 3.7.52 - 2022-08-23
 
@@ -2017,7 +2018,6 @@
 ### Fixed
 - Fixed a bug where the `migrate/all` command wasn’t working when executed from a Composer script in a non-interactive shell, unless `--interactive=0` was explicitly passed. ([#7381](https://github.com/craftcms/cms/issues/7381))
 - Fixed an error that occurred when saving a Categories field with a branch limit. ([#7449](https://github.com/craftcms/cms/pull/7449))
-- Fixed a bug where Craft was overwriting plugin license keys set to an environment variable, if the environment variable didn’t have a value. ([#11830](https://github.com/craftcms/cms/issues/11830))
 
 ## 3.6.0.1 - 2021-01-26
 
