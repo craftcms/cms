@@ -209,7 +209,9 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
           }
 
           this.$container.removeClass('zilch');
+          this.$container.attr('data-asset-id', this.assetId);
           this.$container.append(response.data.previewHtml);
+
           this._addBumperButtons();
           Craft.appendHeadHtml(response.data.headHtml);
           Craft.appendBodyHtml(response.data.bodyHtml);
