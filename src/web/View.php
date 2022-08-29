@@ -1162,7 +1162,7 @@ class View extends \yii\web\View
     /**
      * Starts a buffer for any html tags registered with [[registerHtml()]].
      *
-     * @return void
+     * @since 4.3.0
      */
     public function startHtmlBuffer(): void
     {
@@ -1175,6 +1175,7 @@ class View extends \yii\web\View
      * while the buffer was active.
      *
      * @return array|false The html that was registered while the buffer was active or `false` if there wasn't an active buffer.
+     * @since 4.3.0
      */
     public function clearHtmlBuffer(): array|false
     {
