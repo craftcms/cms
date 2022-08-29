@@ -219,7 +219,7 @@ class ViewTest extends TestCase
         );
 
         self::assertSame(
-            ['html', 'twig'],
+            ['twig', 'html'],
             $this->getInaccessibleProperty($this->view, '_defaultTemplateExtensions')
         );
 
