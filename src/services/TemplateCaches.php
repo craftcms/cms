@@ -222,7 +222,7 @@ class TemplateCaches extends Component
         array $bufferedCss,
         array $bufferedJsFiles,
         array $bufferedCssFiles,
-        array $bufferedHtml
+        array $bufferedHtml,
     ): void {
         $view = Craft::$app->getView();
 
