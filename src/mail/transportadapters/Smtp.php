@@ -138,7 +138,7 @@ class Smtp extends BaseTransportAdapter
      */
     public function getSettingsHtml(): ?string
     {
-        return Craft::$app->getView()->renderTemplate('_components/mailertransportadapters/Smtp/settings', [
+        return Craft::$app->getView()->renderTemplate('_components/mailertransportadapters/Smtp/settings.twig', [
             'adapter' => $this,
         ]);
     }

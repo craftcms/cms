@@ -126,7 +126,7 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
     protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
     {
         $id = $this->getInputId();
-        return Craft::$app->getView()->renderTemplate('_includes/forms/lightswitch', [
+        return Craft::$app->getView()->renderTemplate('_includes/forms/lightswitch.twig', [
             'id' => $id,
             'labelId' => $this->getLabelId(),
             'describedBy' => $this->describedBy,

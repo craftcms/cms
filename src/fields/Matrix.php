@@ -480,7 +480,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
             }
         }
 
-        return $view->renderTemplate('_components/fieldtypes/Matrix/settings',
+        return $view->renderTemplate('_components/fieldtypes/Matrix/settings.twig',
             [
                 'matrixField' => $this,
                 'fieldTypes' => $fieldTypeOptions,
@@ -735,7 +735,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
 
         $view->registerJs($js);
 
-        return $view->renderTemplate('_components/fieldtypes/Matrix/input',
+        return $view->renderTemplate('_components/fieldtypes/Matrix/input.twig',
             [
                 'id' => $id,
                 'name' => $this->handle,
@@ -863,7 +863,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
 
         $id = StringHelper::randomString();
 
-        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Matrix/input', [
+        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Matrix/input.twig', [
             'id' => $id,
             'name' => $id,
             'blockTypes' => $this->getBlockTypes(),

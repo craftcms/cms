@@ -58,7 +58,7 @@ class CategoriesController extends Controller
 
         $groups = Craft::$app->getCategories()->getAllGroups();
 
-        return $this->renderTemplate('settings/categories/index', [
+        return $this->renderTemplate('settings/categories/index.twig', [
             'categoryGroups' => $groups,
         ]);
     }
@@ -113,7 +113,7 @@ class CategoriesController extends Controller
         $variables['groupId'] = $groupId;
         $variables['categoryGroup'] = $categoryGroup;
 
-        return $this->renderTemplate('settings/categories/_edit', $variables);
+        return $this->renderTemplate('settings/categories/_edit.twig', $variables);
     }
 
     /**
@@ -225,7 +225,7 @@ class CategoriesController extends Controller
             'New category',
         ]);
 
-        return $this->renderTemplate('categories/_index', [
+        return $this->renderTemplate('categories/_index.twig', [
             'groupHandle' => $groupHandle,
             'groups' => $groups,
         ]);
@@ -549,7 +549,7 @@ class CategoriesController extends Controller
             }
         }
 
-        $html = $this->getView()->renderTemplate('_components/fieldtypes/Categories/input',
+        $html = $this->getView()->renderTemplate('_components/fieldtypes/Categories/input.twig',
             [
                 'elements' => $categories,
                 'id' => $this->request->getParam('id'),

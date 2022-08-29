@@ -40,7 +40,7 @@ class TagsController extends Controller
 
         $tagGroups = Craft::$app->getTags()->getAllTagGroups();
 
-        return $this->renderTemplate('settings/tags/index', [
+        return $this->renderTemplate('settings/tags/index.twig', [
             'tagGroups' => $tagGroups,
         ]);
     }
@@ -87,7 +87,7 @@ class TagsController extends Controller
             ],
         ];
 
-        return $this->renderTemplate('settings/tags/_edit', [
+        return $this->renderTemplate('settings/tags/_edit.twig', [
             'tagGroupId' => $tagGroupId,
             'tagGroup' => $tagGroup,
             'title' => $title,
