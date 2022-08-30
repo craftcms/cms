@@ -79,7 +79,7 @@ class PluginStoreController extends Controller
 
         $view->registerAssetBundle(PluginStoreAsset::class);
 
-        return $this->renderTemplate('plugin-store/_index');
+        return $this->renderTemplate('plugin-store/_index.twig');
     }
 
     /**
@@ -170,7 +170,7 @@ class PluginStoreController extends Controller
 
         $this->getView()->registerJs('new Craft.PluginStoreOauthCallback(' . Json::encode($options) . ');');
 
-        return $this->renderTemplate('plugin-store/_special/oauth/callback');
+        return $this->renderTemplate('plugin-store/_special/oauth/callback.twig');
     }
 
     /**
@@ -182,7 +182,7 @@ class PluginStoreController extends Controller
     {
         $craftIdAccessToken = $this->getCraftIdAccessToken();
 
-        return $this->renderTemplate('plugin-store/_special/oauth/modal-callback', [
+        return $this->renderTemplate('plugin-store/_special/oauth/modal-callback.twig', [
             'craftIdAccessToken' => $craftIdAccessToken,
         ]);
     }

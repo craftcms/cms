@@ -233,7 +233,7 @@ class Url extends Field implements PreviewableFieldInterface
             }
         }
 
-        $input = Craft::$app->getView()->renderTemplate('_includes/forms/text', [
+        $input = Craft::$app->getView()->renderTemplate('_includes/forms/text.twig', [
             'id' => $id,
             'describedBy' => $this->describedBy,
             'class' => ['flex-grow', 'fullwidth'],

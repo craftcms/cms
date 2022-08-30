@@ -670,7 +670,7 @@ class UsersController extends Controller
         // Do they have an unverified email?
         if ($user->unverifiedEmail) {
             if (!$usersService->verifyEmailForUser($user)) {
-                return $this->renderTemplate('_special/emailtaken', [
+                return $this->renderTemplate('_special/emailtaken.twig', [
                     'email' => $user->unverifiedEmail,
                 ]);
             }
@@ -1092,7 +1092,7 @@ JS,
             View::POS_END
         );
 
-        return $this->renderTemplate('users/_edit', compact(
+        return $this->renderTemplate('users/_edit.twig', compact(
             'user',
             'isNewUser',
             'statusLabel',
@@ -2092,7 +2092,7 @@ JS,
         }
 
         // Otherwise go with the control panel’s template
-        return $this->renderTemplate('setpassword', $variables, View::TEMPLATE_MODE_CP);
+        return $this->renderTemplate('setpassword.twig', $variables, View::TEMPLATE_MODE_CP);
     }
 
     /**
@@ -2496,7 +2496,7 @@ JS,
             $templateMode = View::TEMPLATE_MODE_CP;
         }
 
-        return $view->renderTemplate('users/_photo', [
+        return $view->renderTemplate('users/_photo.twig', [
             'user' => $user,
         ], $templateMode);
     }

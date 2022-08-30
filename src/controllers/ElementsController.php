@@ -616,7 +616,7 @@ class ElementsController extends Controller
             $showDrafts ||
             ($element->hasRevisions() && $element::find()->revisionOf($element)->status(null)->exists())
         ) {
-            return Craft::$app->getView()->renderTemplate('_includes/revisionmenu', [
+            return Craft::$app->getView()->renderTemplate('_includes/revisionmenu.twig', [
                 'element' => $element,
                 'showDrafts' => $showDrafts,
                 'supportedSiteIds' => $propSiteIds,
@@ -961,7 +961,6 @@ JS, [
                 'type' => $element::lowerDisplayName(),
             ]));
         } catch (Throwable $e) {
-            /** @phpstan-ignore-next-line */
             throw new ServerErrorHttpException('An error occurred when duplicating the element.', 0, $e);
         }
 
@@ -1187,7 +1186,7 @@ JS, [
             $tabs = $form->getTabMenu();
             if (count($tabs) > 1) {
                 $selectedTab = isset($tabs[$this->_selectedTab]) ? $this->_selectedTab : null;
-                $tabHtml = $view->namespaceInputs(fn() => $view->renderTemplate('_includes/tabs', [
+                $tabHtml = $view->namespaceInputs(fn() => $view->renderTemplate('_includes/tabs.twig', [
                     'tabs' => $tabs,
                     'selectedTab' => $selectedTab,
                 ], View::TEMPLATE_MODE_CP), $namespace);

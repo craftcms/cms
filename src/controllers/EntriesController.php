@@ -78,7 +78,7 @@ class EntriesController extends BaseEntriesController
         if (!in_array($site->id, $editableSiteIds)) {
             // If there’s more than one possibility and entries doesn’t propagate to all sites, let the user choose
             if (count($editableSiteIds) > 1 && $section->propagationMethod !== Section::PROPAGATION_METHOD_ALL) {
-                return $this->renderTemplate('_special/sitepicker', [
+                return $this->renderTemplate('_special/sitepicker.twig', [
                     'siteIds' => $editableSiteIds,
                     'baseUrl' => "entries/$section->handle/new",
                 ]);
@@ -276,7 +276,6 @@ class EntriesController extends BaseEntriesController
                     'entry'
                 );
             } catch (Throwable $e) {
-                /** @phpstan-ignore-next-line */
                 throw new ServerErrorHttpException(Craft::t('app', 'An error occurred when duplicating the entry.'), 0, $e);
             }
         }

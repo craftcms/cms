@@ -684,7 +684,7 @@ class Cp
                     ($showAttribute
                         ? Html::tag('div', '', [
                             'class' => ['flex-grow'],
-                        ]) . static::renderTemplate('_includes/forms/copytextbtn', [
+                        ]) . static::renderTemplate('_includes/forms/copytextbtn.twig', [
                             'id' => "$id-attribute",
                             'class' => ['code', 'small', 'light'],
                             'value' => $config['attribute'],
@@ -709,7 +709,7 @@ class Cp
             self::_noticeHtml($tipId, 'notice', Craft::t('app', 'Tip:'), $tip) .
             self::_noticeHtml($warningId, 'warning', Craft::t('app', 'Warning:'), $warning) .
             ($errors
-                ? static::renderTemplate('_includes/forms/errorList', [
+                ? static::renderTemplate('_includes/forms/errorList.twig', [
                     'id' => $errorsId,
                     'errors' => $errors,
                 ])
@@ -772,7 +772,7 @@ class Cp
         // Don't pass along `label` since it's ambiguous
         unset($config['label']);
 
-        return static::fieldHtml('template:_includes/forms/checkbox', $config);
+        return static::fieldHtml('template:_includes/forms/checkbox.twig', $config);
     }
 
     /**
@@ -787,7 +787,7 @@ class Cp
     {
         $config['id'] = $config['id'] ?? 'checkboxselect' . mt_rand();
         $config['fieldset'] = true;
-        return static::fieldHtml('template:_includes/forms/checkboxSelect', $config);
+        return static::fieldHtml('template:_includes/forms/checkboxSelect.twig', $config);
     }
 
     /**
@@ -802,7 +802,7 @@ class Cp
     {
         $config['id'] = $config['id'] ?? 'color' . mt_rand();
         $config['fieldset'] = true;
-        return static::fieldHtml('template:_includes/forms/color', $config);
+        return static::fieldHtml('template:_includes/forms/color.twig', $config);
     }
 
     /**
@@ -816,7 +816,7 @@ class Cp
     public static function editableTableFieldHtml(array $config): string
     {
         $config['id'] = $config['id'] ?? 'editabletable' . mt_rand();
-        return static::fieldHtml('template:_includes/forms/editableTable', $config);
+        return static::fieldHtml('template:_includes/forms/editableTable.twig', $config);
     }
 
     /**
@@ -829,7 +829,7 @@ class Cp
      */
     public static function lightswitchHtml(array $config): string
     {
-        return static::renderTemplate('_includes/forms/lightswitch', $config);
+        return static::renderTemplate('_includes/forms/lightswitch.twig', $config);
     }
 
     /**
@@ -851,7 +851,7 @@ class Cp
         $config['fieldLabel'] = $config['fieldLabel'] ?? $config['label'] ?? null;
         unset($config['label']);
 
-        return static::fieldHtml('template:_includes/forms/lightswitch', $config);
+        return static::fieldHtml('template:_includes/forms/lightswitch.twig', $config);
     }
 
     /**
@@ -863,7 +863,7 @@ class Cp
      */
     public static function selectHtml(array $config): string
     {
-        return static::renderTemplate('_includes/forms/select', $config);
+        return static::renderTemplate('_includes/forms/select.twig', $config);
     }
 
     /**
@@ -877,7 +877,7 @@ class Cp
     public static function selectFieldHtml(array $config): string
     {
         $config['id'] = $config['id'] ?? 'select' . mt_rand();
-        return static::fieldHtml('template:_includes/forms/select', $config);
+        return static::fieldHtml('template:_includes/forms/select.twig', $config);
     }
 
     /**
@@ -889,7 +889,7 @@ class Cp
      */
     public static function selectizeHtml(array $config): string
     {
-        return static::renderTemplate('_includes/forms/selectize', $config);
+        return static::renderTemplate('_includes/forms/selectize.twig', $config);
     }
 
     /**
@@ -903,7 +903,7 @@ class Cp
     public static function selectizeFieldHtml(array $config): string
     {
         $config['id'] = $config['id'] ?? 'selectize' . mt_rand();
-        return static::fieldHtml('template:_includes/forms/selectize', $config);
+        return static::fieldHtml('template:_includes/forms/selectize.twig', $config);
     }
 
     /**
@@ -915,7 +915,7 @@ class Cp
      */
     public static function multiSelectHtml(array $config): string
     {
-        return static::renderTemplate('_includes/forms/multiselect', $config);
+        return static::renderTemplate('_includes/forms/multiselect.twig', $config);
     }
 
     /**
@@ -929,7 +929,7 @@ class Cp
     public static function multiSelectFieldHtml(array $config): string
     {
         $config['id'] = $config['id'] ?? 'multiselect' . mt_rand();
-        return static::fieldHtml('template:_includes/forms/multiselect', $config);
+        return static::fieldHtml('template:_includes/forms/multiselect.twig', $config);
     }
 
     /**
@@ -942,7 +942,7 @@ class Cp
      */
     public static function textHtml(array $config): string
     {
-        return static::renderTemplate('_includes/forms/text', $config);
+        return static::renderTemplate('_includes/forms/text.twig', $config);
     }
 
     /**
@@ -956,7 +956,7 @@ class Cp
     public static function textFieldHtml(array $config): string
     {
         $config['id'] = $config['id'] ?? 'text' . mt_rand();
-        return static::fieldHtml('template:_includes/forms/text', $config);
+        return static::fieldHtml('template:_includes/forms/text.twig', $config);
     }
 
     /**
@@ -969,7 +969,7 @@ class Cp
      */
     public static function textareaHtml(array $config): string
     {
-        return static::renderTemplate('_includes/forms/textarea', $config);
+        return static::renderTemplate('_includes/forms/textarea.twig', $config);
     }
 
     /**
@@ -983,7 +983,7 @@ class Cp
     public static function textareaFieldHtml(array $config): string
     {
         $config['id'] = $config['id'] ?? 'textarea' . mt_rand();
-        return static::fieldHtml('template:_includes/forms/textarea', $config);
+        return static::fieldHtml('template:_includes/forms/textarea.twig', $config);
     }
 
     /**
@@ -996,7 +996,7 @@ class Cp
      */
     public static function dateHtml(array $config): string
     {
-        return static::renderTemplate('_includes/forms/date', $config);
+        return static::renderTemplate('_includes/forms/date.twig', $config);
     }
 
     /**
@@ -1010,7 +1010,7 @@ class Cp
     public static function dateFieldHtml(array $config): string
     {
         $config['id'] = $config['id'] ?? 'date' . mt_rand();
-        return static::fieldHtml('template:_includes/forms/date', $config);
+        return static::fieldHtml('template:_includes/forms/date.twig', $config);
     }
 
     /**
@@ -1023,7 +1023,7 @@ class Cp
      */
     public static function timeHtml(array $config): string
     {
-        return static::renderTemplate('_includes/forms/time', $config);
+        return static::renderTemplate('_includes/forms/time.twig', $config);
     }
 
     /**
@@ -1037,7 +1037,7 @@ class Cp
     public static function timeFieldHtml(array $config): string
     {
         $config['id'] = $config['id'] ?? 'time' . mt_rand();
-        return static::fieldHtml('template:_includes/forms/time', $config);
+        return static::fieldHtml('template:_includes/forms/time.twig', $config);
     }
 
     /**
@@ -1051,7 +1051,7 @@ class Cp
     public static function dateTimeFieldHtml(array $config): string
     {
         $config['id'] = $config['id'] ?? 'datetime' . mt_rand();
-        return static::fieldHtml('template:_includes/forms/datetime', $config);
+        return static::fieldHtml('template:_includes/forms/datetime.twig', $config);
     }
 
     /**
@@ -1064,7 +1064,7 @@ class Cp
      */
     public static function elementSelectHtml(array $config): string
     {
-        return static::renderTemplate('_includes/forms/elementSelect', $config);
+        return static::renderTemplate('_includes/forms/elementSelect.twig', $config);
     }
 
     /**
@@ -1078,7 +1078,7 @@ class Cp
     public static function elementSelectFieldHtml(array $config): string
     {
         $config['id'] = $config['id'] ?? 'elementselect' . mt_rand();
-        return static::fieldHtml('template:_includes/forms/elementSelect', $config);
+        return static::fieldHtml('template:_includes/forms/elementSelect.twig', $config);
     }
 
     /**
@@ -1115,7 +1115,7 @@ class Cp
             }
         }
 
-        return static::fieldHtml('template:_includes/forms/autosuggest', $config);
+        return static::fieldHtml('template:_includes/forms/autosuggest.twig', $config);
     }
 
     /**

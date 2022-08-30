@@ -97,7 +97,7 @@ abstract class BaseUpdaterController extends Controller
         $stateJs = Json::encode($state);
         $this->getView()->registerJs("Craft.updater = (new Craft.Updater($idJs)).setState($stateJs);");
 
-        return $this->renderTemplate('_special/updater', [
+        return $this->renderTemplate('_special/updater.twig', [
             'title' => $this->pageTitle(),
         ]);
     }

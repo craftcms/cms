@@ -206,12 +206,12 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @var string Template to use for settings rendering
      */
-    protected string $settingsTemplate = '_components/fieldtypes/elementfieldsettings';
+    protected string $settingsTemplate = '_components/fieldtypes/elementfieldsettings.twig';
 
     /**
      * @var string Template to use for field rendering
      */
-    protected string $inputTemplate = '_includes/forms/elementSelect';
+    protected string $inputTemplate = '_includes/forms/elementSelect.twig';
 
     /**
      * @var string|null The JS class that should be initialized for the input

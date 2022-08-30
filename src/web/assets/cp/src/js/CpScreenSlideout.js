@@ -480,8 +480,8 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
         .then((response) => {
           this.handleSubmitResponse(response);
         })
-        .catch(() => {
-          this.handleSubmitError();
+        .catch((error) => {
+          this.handleSubmitError(error);
         })
         .finally(() => {
           this.hideSubmitSpinner();

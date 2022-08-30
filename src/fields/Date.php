@@ -215,7 +215,7 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
             'value' => 'showBoth',
         ];
 
-        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Date/settings', [
+        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Date/settings.twig', [
             'options' => $options,
             'value' => $dateTimeValue,
             'incrementOptions' => $incrementOptions,
@@ -267,15 +267,15 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
         ];
 
         if ($this->showDate) {
-            $components[] = $view->renderTemplate('_includes/forms/date', $variables);
+            $components[] = $view->renderTemplate('_includes/forms/date.twig', $variables);
         }
 
         if ($this->showTime) {
-            $components[] = $view->renderTemplate('_includes/forms/time', $variables);
+            $components[] = $view->renderTemplate('_includes/forms/time.twig', $variables);
         }
 
         if ($this->showTimeZone) {
-            $components[] = $view->renderTemplate('_includes/forms/timeZone', [
+            $components[] = $view->renderTemplate('_includes/forms/timeZone.twig', [
                 'describedBy' => $this->describedBy,
                 'name' => "$this->handle[timezone]",
                 'value' => $timezone,

@@ -5,16 +5,6 @@ namespace yii\validators;
 class Validator
 {
     /**
-     * @var string|null
-     */
-    public $message;
-
-    /**
-     * @var callable|null
-     */
-    public $isEmpty;
-
-    /**
      * @param string|\Closure $type
      * @param \yii\base\Model|\craft\base\ModelInterface $model
      * @param string[]|string $attributes
