@@ -4,6 +4,7 @@
 
 ### Fixed
 - Fixed an error that could occur when upgrading to Craft 4, if any Matrix blocks contained null `sortOrder` values. ([#11843](https://github.com/craftcms/cms/issues/11843))
+- Fixed an issue where image dimensions could be calculated incorrectly when `upscaleImages` was false ([#11837](https://github.com/craftcms/cms/issues/11837))
 
 ## 4.2.3 - 2022-08-26
 
