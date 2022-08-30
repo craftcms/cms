@@ -35,6 +35,7 @@ use craft\helpers\StringHelper;
 use craft\queue\jobs\LocalizeRelations;
 use craft\services\Elements;
 use craft\services\ElementSources;
+use craft\web\assets\elementfieldsettings\ElementFieldSettingsAsset;
 use DateTime;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
@@ -263,6 +264,14 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
             $config['showSiteMenu'] = true;
         }
 
+		// if relating ancestors, then clear min/max limits, otherwise clear branch limit
+		if (isset($config['relateAncestors']) && !empty($config['relateAncestors'])) {
+			$config['maxRelations'] = null;
+			$config['minRelations'] = null;
+		} else {
+			$config['branchLimit'] = null;
+		}
+
         parent::__construct($config);
     }
 
@@ -273,7 +282,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     protected function defineRules(): array
     {
         $rules = parent::defineRules();
-        $rules[] = [['minRelations', 'maxRelations'], 'number', 'integerOnly' => true];
+        $rules[] = [['minRelations', 'maxRelations', 'branchLimit'], 'number', 'integerOnly' => true];
         return $rules;
     }
 
@@ -321,7 +330,18 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     public function getSettingsHtml(): ?string
     {
         $variables = $this->settingsTemplateVariables();
-        return Craft::$app->getView()->renderTemplate($this->settingsTemplate, $variables);
+        $view = Craft::$app->getView();
+
+        $view->registerAssetBundle(ElementFieldSettingsAsset::class);
+        $view->registerJs("new Craft.ElementFieldSettings(
+            '{$view->namespaceInputId('relate-ancestors')}',
+	        '{$view->namespaceInputId('sources-field')}',
+	        '{$view->namespaceInputId('branch-limit')}',
+	        '{$view->namespaceInputId('min-relations')}',
+	        '{$view->namespaceInputId('max-relations')}',
+        )");
+
+        return $view->renderTemplate($this->settingsTemplate, $variables);
     }
 
     /**
@@ -507,7 +527,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
                 }
             }
 
-            if ($this->relateAncestors || $this->branchLimit) {
+            if ($this->relateAncestors) {
                 $structuresService = Craft::$app->getStructures();
 
                 /** @var ElementInterface[] $structureElements */
@@ -516,9 +536,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
                     ->all();
 
                 // Fill in any gaps
-                if ($this->relateAncestors) {
-                    $structuresService->fillGapsInElements($structureElements);
-                }
+                $structuresService->fillGapsInElements($structureElements);
 
                 // Enforce the branch limit
                 if ($this->branchLimit) {
@@ -1109,7 +1127,7 @@ JS;
             'showSiteMenu' => ($this->targetSiteId || !$this->showSiteMenu) ? false : 'auto',
             'allowSelfRelations' => (bool)$this->allowSelfRelations,
             'relateAncestors' => (bool)$this->relateAncestors,
-            'branchLimit' => (int)$this->branchLimit,
+            'branchLimit' => $this->branchLimit,
             'sourceElementId' => !empty($element->id) ? $element->id : null,
             'disabledElementIds' => $disabledElementIds,
             'limit' => $this->allowLimit ? $this->maxRelations : null,

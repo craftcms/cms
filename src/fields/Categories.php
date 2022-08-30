@@ -76,27 +76,17 @@ class Categories extends BaseRelationField
     /**
      * @inheritdoc
      */
-    protected string $settingsTemplate = '_components/fieldtypes/Categories/settings';
+    public bool $relateAncestors = true;
+
+    /**
+     * @inheritdoc
+     */
+    protected string $settingsTemplate = '_components/fieldtypes/elementfieldsettings';
 
     /**
      * @inheritdoc
      */
     protected bool $sortable = false;
-
-    /**
-     * Force relateAncestors to true.
-     *
-     * @inheritdoc
-     * @since 4.0.0
-     */
-    public function __construct($config)
-    {
-        if (isset($config['relateAncestors'])) {
-            $config['relateAncestors'] = true;
-        }
-
-        parent::__construct($config);
-    }
 
     /**
      * @inheritdoc

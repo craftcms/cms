@@ -37,6 +37,16 @@
         {{ (selectionCondition ?? false) ? selectionCondition|raw }}
     {% endblock %}
 
+    {% block relateAncestors %}
+        {{ forms.checkboxField({
+            label: 'Relate ancestors',
+            instructions: 'Whether structural ancestors of {type} should be added to the selection. Only one source allowed if checked.'|t('app', { type: pluralElementType }),
+            id: 'relate-ancestors',
+            name: 'relateAncestors',
+            checked: field.relateAncestors
+        }) }}
+    {% endblock %}
+
     {% block limitFields %}
         {% if field.allowLimit %}
             {{ forms.textField({
@@ -63,6 +73,16 @@
                 errors: field.getErrors('maxRelations'),
             }) }}
         {% endif %}
+
+        {{ forms.textField({
+            label: "Branch Limit"|t('app'),
+            instructions: "Limit the number of selectable {type} branches."|t('app', { type: elementType }),
+            id: 'branch-limit',
+            name: 'branchLimit',
+            value: field.branchLimit,
+            size: 2,
+            errors: field.getErrors('branchLimit')
+        }) }}
     {% endblock %}
 
     {% block viewModeField %}
@@ -73,7 +93,7 @@
         {{ forms.textField({
             label: "Selection Label"|t('app'),
             instructions: "Enter the text you want to appear on the {type} selection input."|t('app', { type: elementType }),
-            id: 'selectionLabel',
+            id: 'selection-label',
             name: 'selectionLabel',
             value: field.selectionLabel,
             placeholder: field.defaultSelectionLabel(),
@@ -88,28 +108,6 @@
             id: 'validate-related-elements',
             name: 'validateRelatedElements',
             checked: field.validateRelatedElements
-        }) }}
-    {% endblock %}
-
-    {% block relateAncestors %}
-        {{ forms.checkboxField({
-            label: 'Relate ancestors',
-            instructions: 'Whether structural ancestors of {type} should be added to the selection.'|t('app', { type: pluralElementType }),
-            id: 'relate-ancestors',
-            name: 'relateAncestors',
-            checked: field.relateAncestors
-        }) }}
-    {% endblock %}
-
-    {% block branchLimitField %}
-        {{ forms.textField({
-            label: "Branch Limit"|t('app'),
-            instructions: "Limit the number of selectable {type} branches."|t('app', { type: elementType }),
-            id: 'branchLimit',
-            name: 'branchLimit',
-            value: field.branchLimit,
-            size: 2,
-            errors: field.getErrors('branchLimit')
         }) }}
     {% endblock %}
 
