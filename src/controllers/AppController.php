@@ -252,7 +252,6 @@ class AppController extends Controller
                 $backupPath = $db->backup();
             } catch (Throwable $e) {
                 Craft::$app->disableMaintenanceMode();
-                /** @phpstan-ignore-next-line */
                 throw new ServerErrorHttpException('Error backing up the database.', 0, $e);
             }
         }
@@ -304,7 +303,6 @@ class AppController extends Controller
             }
 
             Craft::$app->disableMaintenanceMode();
-            /** @phpstan-ignore-next-line */
             throw new ServerErrorHttpException($error, 0, $e);
         }
 

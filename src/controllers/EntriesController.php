@@ -276,7 +276,6 @@ class EntriesController extends BaseEntriesController
                     'entry'
                 );
             } catch (Throwable $e) {
-                /** @phpstan-ignore-next-line */
                 throw new ServerErrorHttpException(Craft::t('app', 'An error occurred when duplicating the entry.'), 0, $e);
             }
         }
