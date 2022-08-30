@@ -66,11 +66,6 @@ class Categories extends BaseRelationField
     /**
      * @inheritdoc
      */
-    public bool $allowLimit = false;
-
-    /**
-     * @inheritdoc
-     */
     public bool $allowMultipleSources = false;
 
     /**
@@ -88,7 +83,18 @@ class Categories extends BaseRelationField
      */
     protected bool $sortable = false;
 
-    /**
+	/**
+	 * @inheritdoc
+	 */
+	public function __construct(array $config = [])
+	{
+		// allow categories to limit selection if `relateAncestors` isn't checked
+		$config['allowLimit'] = true;
+
+		parent::__construct($config);
+	}
+
+	/**
      * @inheritdoc
      */
     public function normalizeValue(mixed $value, ?ElementInterface $element = null): mixed
