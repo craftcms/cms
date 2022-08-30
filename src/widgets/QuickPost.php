@@ -117,7 +117,7 @@ class QuickPost extends Widget
             }
         }
 
-        return Craft::$app->getView()->renderTemplate('_components/widgets/QuickPost/settings',
+        return Craft::$app->getView()->renderTemplate('_components/widgets/QuickPost/settings.twig',
             [
                 'sections' => $sections,
                 'fieldsByEntryTypeId' => $fieldsByEntryTypeId,
@@ -175,7 +175,7 @@ class QuickPost extends Widget
 
         $view->startJsBuffer();
 
-        $html = $view->renderTemplate('_components/widgets/QuickPost/body',
+        $html = $view->renderTemplate('_components/widgets/QuickPost/body.twig',
             [
                 'section' => $section,
                 'entryType' => $entryType,

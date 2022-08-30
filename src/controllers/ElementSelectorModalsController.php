@@ -99,7 +99,7 @@ class ElementSelectorModalsController extends BaseElementsController
         })();
 
         return $this->asJson([
-            'html' => $this->getView()->renderTemplate('_elements/modalbody', [
+            'html' => $this->getView()->renderTemplate('_elements/modalbody.twig', [
                 'context' => $context,
                 'elementType' => $elementType,
                 'sources' => $sources,

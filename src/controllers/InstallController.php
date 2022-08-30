@@ -99,7 +99,7 @@ class InstallController extends Controller
         $userIcon = file_get_contents($iconsPath . DIRECTORY_SEPARATOR . 'user.svg');
         $worldIcon = file_get_contents($iconsPath . DIRECTORY_SEPARATOR . 'world.svg');
 
-        return $this->renderTemplate('_special/install', compact(
+        return $this->renderTemplate('_special/install/index.twig', compact(
             'showDbScreen',
             'license',
             'defaultSystemName',

@@ -764,7 +764,7 @@ class AssetsController extends Controller
 
         $focal = $asset->getHasFocalPoint() ? $asset->getFocalPoint() : null;
 
-        $html = $this->getView()->renderTemplate('_special/image_editor');
+        $html = $this->getView()->renderTemplate('_special/image_editor.twig');
 
         return $this->asJson(['html' => $html, 'focalPoint' => $focal]);
     }

@@ -48,7 +48,7 @@ class ImageTransformsController extends Controller
         $variables['transforms'] = Craft::$app->getImageTransforms()->getAllTransforms();
         $variables['modes'] = ImageTransform::modes();
 
-        return $this->renderTemplate('settings/assets/transforms/_index', $variables);
+        return $this->renderTemplate('settings/assets/transforms/_index.twig', $variables);
     }
 
     /**
@@ -81,7 +81,7 @@ class ImageTransformsController extends Controller
             $title = Craft::t('app', 'Create a new image transform');
         }
 
-        return $this->renderTemplate('settings/assets/transforms/_settings', [
+        return $this->renderTemplate('settings/assets/transforms/_settings.twig', [
             'handle' => $transformHandle,
             'transform' => $transform,
             'title' => $title,

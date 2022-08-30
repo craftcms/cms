@@ -1514,7 +1514,7 @@ JS;
         // Update everything
         if ($templateMode == self::TEMPLATE_MODE_CP) {
             $this->setTemplatesPath(Craft::$app->getPath()->getCpTemplatesPath());
-            $this->_defaultTemplateExtensions = ['html', 'twig'];
+            $this->_defaultTemplateExtensions = ['twig', 'html'];
             $this->_indexTemplateFilenames = ['index'];
         } else {
             $this->setTemplatesPath(Craft::$app->getPath()->getSiteTemplatesPath());
