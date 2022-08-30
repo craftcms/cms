@@ -2198,7 +2198,7 @@ class Asset extends Element
                 return [$this->_width, $this->_height];
             }
 
-            return $transformRatio > 1 ? [$this->_width, round($this->_height / $transformRatio)] : [round($this->_width * $transformRatio), $this->_height];
+            return $transformRatio > 1 ? [$this->_width, round($this->_width / $transformRatio)] : [round($this->_width * $transformRatio), $this->_height];
         }
 
         [$width, $height] = Image::calculateMissingDimension($transform->width, $transform->height, $this->_width, $this->_height);
