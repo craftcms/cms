@@ -11,6 +11,7 @@
 - Added the `|float` Twig filter. ([#11792](https://github.com/craftcms/cms/pull/11792))
 - Added the `|integer` Twig filter. ([#11792](https://github.com/craftcms/cms/pull/11792))
 - Added the `|string` Twig filter. ([#11792](https://github.com/craftcms/cms/pull/11792))
+- Added `craft\db\ActiveQuery::collect()`. ([#11842](https://github.com/craftcms/cms/pull/11842))
 - Added `craft\elements\actions\Restore::$restorableElementsOnly`.
 - Added `craft\events\AuthorizationCheckEvent::$element`.
 - Added `craft\events\CreateTwigEvent`.
