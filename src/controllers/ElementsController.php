@@ -961,7 +961,6 @@ JS, [
                 'type' => $element::lowerDisplayName(),
             ]));
         } catch (Throwable $e) {
-            /** @phpstan-ignore-next-line */
             throw new ServerErrorHttpException('An error occurred when duplicating the element.', 0, $e);
         }
 
