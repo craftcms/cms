@@ -62,7 +62,7 @@ class ImageTransforms
             'mode' => $matches['mode'],
             'position' => $matches['position'],
             'quality' => $matches['quality'] ?? null,
-            'interlace' => $matches['interlace'],
+            'interlace' => $matches['interlace'] ?? 'none',
             'transformer' => ImageTransform::DEFAULT_TRANSFORMER,
         ]);
     }
