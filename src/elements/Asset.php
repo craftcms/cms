@@ -1229,7 +1229,7 @@ JS;
      * image-url@200w.ext 200w
      * ```
      *
-     * If you pass x-descriptors, it will be assumed that the image’s current width is the indented 1x width.
+     * If you pass x-descriptors, it will be assumed that the image’s current width is the `1x` width.
      * So if you pass `['1x', '2x']` on an image with a 100px-wide transform applied, you will get:
      *
      * ```
@@ -2571,7 +2571,7 @@ JS;
                 return [$this->_width, $this->_height];
             }
 
-            return $transformRatio > 1 ? [$this->_width, round($this->_height / $transformRatio)] : [round($this->_width * $transformRatio), $this->_height];
+            return $transformRatio > 1 ? [$this->_width, round($this->_width / $transformRatio)] : [round($this->_width * $transformRatio), $this->_height];
         }
 
         [$width, $height] = Image::calculateMissingDimension($transform->width, $transform->height, $this->_width, $this->_height);
