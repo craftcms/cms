@@ -489,7 +489,7 @@ class DateTimeHelper
             // Use DateTime::diff() so the years/months/days/hours/minutes values are all populated correctly
             $now = static::now();
             $then = (clone $now)->modify("+$value seconds");
-            return $then->diff($now);
+            return $now->diff($then);
         }
 
         if (is_string($value)) {

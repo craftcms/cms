@@ -2,13 +2,28 @@
 
 ## Unreleased
 
+### Fixed
+- Fixed an error that could occur when upgrading to Craft 4, if any Matrix blocks contained null `sortOrder` values. ([#11843](https://github.com/craftcms/cms/issues/11843))
+- Fixed a bug where image transform dimensions could be calculated incorrectly when `upscaleImages` was `false`. ([#11837](https://github.com/craftcms/cms/issues/11837))
+- Fixed an error that occurred when parsing an image transform string that was missing an interlace type. ([#11834](https://github.com/craftcms/cms/pull/11834))
+
+## 4.2.3 - 2022-08-26
+
+### Changed
+- If a plugin’s license key is set to an empty environment variable, its trial license key will now be stored in `.env` rather than the project config. ([#11830](https://github.com/craftcms/cms/issues/11830))
+
+### Fixed
+- Fixed a PHP error that occurred when garbage collection was run on web requests. ([#11829](https://github.com/craftcms/cms/issues/11829))
+
+## 4.2.2 - 2022-08-23
+
 ### Added
 - Added the `utils/fix-field-layout-uids` command. ([#11746](https://github.com/craftcms/cms/issues/11746))
 
 ### Changed
 - Improved the styling of Categories fields.
 - The first field group is now automatically selected by default when creating a new custom field.
-- Improved the console output for the `gc` command.
+- Improved console output for the `gc` command.
 - The `gc` command now runs garbage collection for data caches.
 - Exception JSON responses now include `name` and `code` keys. ([#11799](https://github.com/craftcms/cms/discussions/11799))
 - `elements/*` actions no longer include custom field values in the failure response data, improving performance. ([#11807](https://github.com/craftcms/cms/discussions/11807))
@@ -20,7 +35,10 @@
 - Fixed an error that could occur when saving an unpublished draft, if any custom validation errors were added to it after its draft status had been removed. ([#11407](https://github.com/craftcms/cms/issues/11407))
 - Fixed a bug where custom validation errors would be shown twice for unpublished drafts, if they were added to it after its draft status had been removed. ([#11407](https://github.com/craftcms/cms/issues/11407))
 - Fixed PHP warnings that would occur when passing `0` into `craft\helpers\DateTimeHelper::humanDuration()`. ([#11787](https://github.com/craftcms/cms/issues/11787))
-- Fixed a bug where selected assets weren’t getting automatically replaced when an image was edited and “save as a new asset” was chosen. ([#11805](https://github.com/craftcms/cms/issues/11805))
+- Fixed a bug where selected assets weren’t getting automatically replaced when an image was edited and “Save as a new asset” was chosen. ([#11805](https://github.com/craftcms/cms/issues/11805))
+- Fixed a JavaScript error that occurred when editing a user via a slideout, if the user had any addresses. ([#11810](https://github.com/craftcms/cms/issues/11810))
+- Fixed a bug where some invalid slideout submissions weren’t being handled properly. ([#11812](https://github.com/craftcms/cms/issues/11812))
+- Fixed a bug where `craft\helpers\DateTimeHelper::toDateInterval()` was returning negative interval durations when integers were passed in. ([#11814](https://github.com/craftcms/cms/pull/11814))
 - Fixed a bug where `iframeResizer.contentWindow.js` was getting loaded for all preview requests, not just Live Preview, and even when `useIframeResizer` was disabled. ([#11778](https://github.com/craftcms/cms/issues/11778))
 - Fixed a bug where deleted relations and Matrix blocks could persist if the edit form was submitted before they had been fully animated away. ([#11789](https://github.com/craftcms/cms/issues/11789))
 - Fixed a PHP error that could occur if `craft\services\Assets::getUserTemporaryUploadFolder()` was called when there was no logged-in user account. ([#11751](https://github.com/craftcms/cms/issues/11751))
