@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Changed
+- `resave/*` commands now have a `--touch` option. When passed, elements’ `dateUpdated` timestamps will be updated as they’re resaved. ([#11849](https://github.com/craftcms/cms/discussions/11849))
+- `craft\services\Elements::resaveElements()` now has a `$touch` argument.
+
 ### Fixed
 - Fixed a bug where image transform dimensions could be calculated incorrectly when `upscaleImages` was `false`. ([#11837](https://github.com/craftcms/cms/issues/11837))
 
