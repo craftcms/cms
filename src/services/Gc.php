@@ -11,6 +11,7 @@ use Craft;
 use craft\base\BlockElementInterface;
 use craft\base\ElementInterface;
 use craft\config\GeneralConfig;
+use craft\console\Application as ConsoleApplication;
 use craft\db\Connection;
 use craft\db\Query;
 use craft\db\Table;
@@ -146,6 +147,9 @@ class Gc extends Component
         $this->hardDeleteVolumes();
         $this->removeEmptyTempFolders();
         $this->_gcCache();
+
+        // Invalidate all element caches so any hard-deleted elements don't look like they still exist
+        Craft::$app->getElements()->invalidateAllCaches();
     }
 
     /**
@@ -157,7 +161,7 @@ class Gc extends Component
             return;
         }
 
-        Console::stdout("    > deleting trashed volumes and their folders ... ");
+        $this->_stdout("    > deleting trashed volumes and their folders ... ");
         $condition = $this->_hardDeleteCondition();
 
         $volumes = (new Query())->select(['id'])->from([Table::VOLUMES])->where($condition)->all();
@@ -177,7 +181,7 @@ class Gc extends Component
         }
 
         Volume::deleteAll(['id' => $volumeIds]);
-        Console::stdout("done\n", Console::FG_GREEN);
+        $this->_stdout("done\n", Console::FG_GREEN);
     }
 
     /**
@@ -204,7 +208,7 @@ class Gc extends Component
             }
         }
 
-        Console::stdout('    > deleting trashed elements ... ');
+        $this->_stdout('    > deleting trashed elements ... ');
 
         if ($normalElementTypes) {
             Db::delete(Table::ELEMENTS, [
@@ -247,7 +251,7 @@ SQL;
             $this->db->createCommand($sql, $params)->execute();
         }
 
-        Console::stdout("done\n", Console::FG_GREEN);
+        $this->_stdout("done\n", Console::FG_GREEN);
     }
 
     /**
@@ -268,9 +272,9 @@ SQL;
         }
 
         foreach ($tables as $table) {
-            Console::stdout("    > deleting trashed rows in the `$table` table ... ");
+            $this->_stdout("    > deleting trashed rows in the `$table` table ... ");
             Db::delete($table, $condition);
-            Console::stdout("done\n", Console::FG_GREEN);
+            $this->_stdout("done\n", Console::FG_GREEN);
         }
     }
 
@@ -286,7 +290,7 @@ SQL;
     public function deletePartialElements(string $elementType, string $table, string $fk): void
     {
         /** @var string|ElementInterface $elementType */
-        Console::stdout(sprintf('    > deleting partial %s data in the `%s` table ... ', $elementType::lowerDisplayName(), $table));
+        $this->_stdout(sprintf('    > deleting partial %s data in the `%s` table ... ', $elementType::lowerDisplayName(), $table));
 
         $elementsTable = Table::ELEMENTS;
 
@@ -311,7 +315,7 @@ SQL;
         }
 
         $this->db->createCommand($sql, ['type' => $elementType])->execute();
-        Console::stdout("done\n", Console::FG_GREEN);
+        $this->_stdout("done\n", Console::FG_GREEN);
     }
 
     private function _purgeUnsavedDrafts()
@@ -320,9 +324,9 @@ SQL;
             return;
         }
 
-        Console::stdout('    > purging unsaved drafts that have gone stale ... ');
+        $this->_stdout('    > purging unsaved drafts that have gone stale ... ');
         Craft::$app->getDrafts()->purgeUnsavedDrafts();
-        Console::stdout("done\n", Console::FG_GREEN);
+        $this->_stdout("done\n", Console::FG_GREEN);
     }
 
     private function _purgePendingUsers()
@@ -331,9 +335,9 @@ SQL;
             return;
         }
 
-        Console::stdout('    > purging pending users with stale activation codes ... ');
+        $this->_stdout('    > purging pending users with stale activation codes ... ');
         Craft::$app->getUsers()->purgeExpiredPendingUsers();
-        Console::stdout("done\n", Console::FG_GREEN);
+        $this->_stdout("done\n", Console::FG_GREEN);
     }
 
     /**
@@ -346,6 +350,8 @@ SQL;
      */
     public function removeEmptyTempFolders(): void
     {
+        $this->_stdout('    > removing empty temp folders ... ');
+
         $emptyFolders = (new Query())
             ->from(['folders' => Table::VOLUMEFOLDERS])
             ->select(['folders.id', 'folders.path'])
@@ -366,6 +372,7 @@ SQL;
         }
 
         VolumeFolder::deleteAll(['id' => array_keys($emptyFolders)]);
+        $this->_stdout("done\n", Console::FG_GREEN);
     }
 
     /**
@@ -387,12 +394,12 @@ SQL;
             return;
         }
 
-        Console::stdout('    > deleting stale user sessions ... ');
+        $this->_stdout('    > deleting stale user sessions ... ');
         $interval = DateTimeHelper::secondsToInterval($this->_generalConfig->purgeStaleUserSessionDuration);
         $expire = DateTimeHelper::currentUTCDateTime();
         $pastTime = $expire->sub($interval);
         Db::delete(Table::SESSIONS, ['<', 'dateUpdated', Db::prepareDateForDb($pastTime)]);
-        Console::stdout("done\n", Console::FG_GREEN);
+        $this->_stdout("done\n", Console::FG_GREEN);
     }
 
     /**
@@ -400,9 +407,9 @@ SQL;
      */
     private function _deleteStaleAnnouncements(): void
     {
-        Console::stdout('    > deleting stale feature announcements ... ');
+        $this->_stdout('    > deleting stale feature announcements ... ');
         Db::delete(Table::ANNOUNCEMENTS, ['<', 'dateRead', Db::prepareDateForDb(new DateTime('7 days ago'))]);
-        Console::stdout("done\n", Console::FG_GREEN);
+        $this->_stdout("done\n", Console::FG_GREEN);
     }
 
 
@@ -411,7 +418,7 @@ SQL;
      */
     private function _deleteOrphanedDraftsAndRevisions(): void
     {
-        Console::stdout('    > deleting orphaned drafts and revisions ... ');
+        $this->_stdout('    > deleting orphaned drafts and revisions ... ');
 
         $elementsTable = Table::ELEMENTS;
 
@@ -436,14 +443,14 @@ SQL;
             $this->db->createCommand($sql)->execute();
         }
 
-        Console::stdout("done\n", Console::FG_GREEN);
+        $this->_stdout("done\n", Console::FG_GREEN);
     }
 
     private function _deleteOrphanedSearchIndexes(): void
     {
-        Console::stdout('    > deleting orphaned search indexes ... ');
+        $this->_stdout('    > deleting orphaned search indexes ... ');
         Craft::$app->getSearch()->deleteOrphanedIndexes();
-        Console::stdout("done\n", Console::FG_GREEN);
+        $this->_stdout("done\n", Console::FG_GREEN);
     }
 
     private function _gcCache(): void
@@ -471,7 +478,7 @@ SQL;
             return;
         }
 
-        Console::stdout('    > garbage-collecting data caches ... ');
+        $this->_stdout('    > garbage-collecting data caches ... ');
 
         if ($hasForceArg) {
             $cache->gc(true);
@@ -479,7 +486,7 @@ SQL;
             $cache->gc();
         }
 
-        Console::stdout("done\n", Console::FG_GREEN);
+        $this->_stdout("done\n", Console::FG_GREEN);
     }
 
     /**
@@ -503,5 +510,12 @@ SQL;
         }
 
         return $condition;
+    }
+
+    private function _stdout(string $string, ...$format): void
+    {
+        if (Craft::$app instanceof ConsoleApplication) {
+            Console::stdout($string, ...$format);
+        }
     }
 }
