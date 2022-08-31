@@ -119,6 +119,9 @@ class Gc extends Component
         $this->hardDeleteVolumes();
         $this->removeEmptyTempFolders();
         $this->_gcCache();
+
+        // Invalidate all element caches so any hard-deleted elements don't look like they still exist
+        Craft::$app->getElements()->invalidateAllCaches();
     }
 
     /**
