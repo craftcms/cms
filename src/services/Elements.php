@@ -2580,7 +2580,6 @@ class Elements extends Component
                 } else {
                     $elementRecord = new ElementRecord();
                     $elementRecord->type = get_class($element);
-                    $elementRecord->uid = $element->uid;
                 }
 
                 // Set the attributes
