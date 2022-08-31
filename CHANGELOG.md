@@ -236,7 +236,8 @@
 
 ## 3.7.40 - 2022-05-03
 
-> {warning} If you are currently running Craft 3.7.39, you will need to [perform this update with Composer](https://craftcms.com/knowledge-base/updating-from-craft-3-7-39).
+> **Warning**
+> If you are currently running Craft 3.7.39, you will need to [perform this update with Composer](https://craftcms.com/knowledge-base/updating-from-craft-3-7-39).
 
 ### Added
 - Added the “Craft 4 Upgrade” utility.
@@ -395,7 +396,8 @@
 
 ## 3.7.33 - 2022-02-15 [CRITICAL]
 
-> {tip} The way CSRF tokens are generated has changed in this release, so all users will be logged out during the update.
+> **Note**
+> The way CSRF tokens are generated has changed in this release, so all users will be logged out during the update.
 
 ### Added
 - Added support for PHP 8.1.
@@ -494,7 +496,8 @@
 
 ## 3.7.30 - 2022-01-20
 
-> {warning} The `mutex` component now uses a file-based driver by default. Load-balanced environments should [switch to a different driver](https://craftcms.com/knowledge-base/configuring-load-balanced-environments#mutex-locks).
+> **Warning**
+> The `mutex` component now uses a file-based driver by default. Load-balanced environments should [switch to a different driver](https://craftcms.com/knowledge-base/configuring-load-balanced-environments#mutex-locks).
 
 ### Added
 - Added `craft\mutex\Mutex`.
@@ -805,7 +808,8 @@
 
 ## 3.7.19 - 2021-11-02
 
-> {tip} After updating, run the following command for each Structure section, to prune unneeded structure data for drafts and revisions.
+> **Note**
+> After updating, run the following command for each Structure section, to prune unneeded structure data for drafts and revisions.
 >
 > ```
 > php craft utils/repair/section-structure <sectionHandle>
@@ -1319,7 +1323,8 @@
 
 ## 3.7.0 - 2021-07-13
 
-> {tip} Read through the [Upgrading to Craft 3.7](https://craftcms.com/knowledge-base/upgrading-to-craft-3-7) guide before updating.
+> **Note**
+> Read through the [Upgrading to Craft 3.7](https://craftcms.com/knowledge-base/upgrading-to-craft-3-7) guide before updating.
 
 ### Added
 - The control panel now displays new feature announcements. ([#8056](https://github.com/craftcms/cms/pull/8056))
@@ -2041,7 +2046,8 @@
 
 ## 3.6.0 - 2021-01-26
 
-> {warning} Read through the [Upgrading to Craft 3.6](https://craftcms.com/knowledge-base/upgrading-to-craft-3-6) guide before updating.
+> **Warning**
+> Read through the [Upgrading to Craft 3.6](https://craftcms.com/knowledge-base/upgrading-to-craft-3-6) guide before updating.
 
 ### Added
 - Craft now supports PHP 8. ([#7050](https://github.com/craftcms/cms/issues/7050))
@@ -2975,7 +2981,8 @@
 
 ## 3.5.0 - 2020-08-04
 
-> {warning} Read through the [Upgrading to Craft 3.5](https://craftcms.com/knowledge-base/upgrading-to-craft-3-5) guide before updating.
+> **Warning**
+> Read through the [Upgrading to Craft 3.5](https://craftcms.com/knowledge-base/upgrading-to-craft-3-5) guide before updating.
 
 ### Added
 - It’s now possible to customize the labels and author instructions for all fields (including Title fields), from within field layout designers. ([#806](https://github.com/craftcms/cms/issues/806), [#841](https://github.com/craftcms/cms/issues/841))
@@ -4248,11 +4255,14 @@
 
 ## 3.4.0 - 2020-01-28
 
-> {warning} If `useProjectConfigFile` is enabled and you are using the GraphQL API, restore a fresh database backup from your production environment before updating your development environment. Otherwise you may lose your GraphQL schema data when updating production.
+> **Warning**
+> If `useProjectConfigFile` is enabled and you are using the GraphQL API, restore a fresh database backup from your production environment before updating your development environment. Otherwise you may lose your GraphQL schema data when updating production.
 
-> {warning} There have been some changes in behavior that plugin developers should be aware of! See [Updating Plugins for Craft 3.4](https://craftcms.com/knowledge-base/updating-plugins-for-craft-34) for details.
+> **Warning**
+> There have been some changes in behavior that plugin developers should be aware of! See [Updating Plugins for Craft 3.4](https://craftcms.com/knowledge-base/updating-plugins-for-craft-34) for details.
 
-> {tip} Element search indexing is a little smarter in Craft 3.4. It’s recommended that you resave all your entries from your terminal **after** you’ve finished updating.
+> **Note**
+> Element search indexing is a little smarter in Craft 3.4. It’s recommended that you resave all your entries from your terminal **after** you’ve finished updating.
 >
 > ```bash
 > > ./craft resave/entries --update-search-index
@@ -5529,11 +5539,14 @@
 
 ## 3.2.0 - 2019-07-09
 
-> {warning} If you’ve ever run the `project-config/rebuild` command, it’s highly recommended that you run it again with Craft 3.1.34.2, before updating to Craft 3.2.
+> **Warning**
+> If you’ve ever run the `project-config/rebuild` command, it’s highly recommended that you run it again with Craft 3.1.34.2, before updating to Craft 3.2.
 
-> {warning} Custom login controllers must now explicitly set their `$allowAnonymous` values to include `self::ALLOW_ANONYMOUS_OFFLINE` if they wish to be available when the system is offline.
+> **Warning**
+> Custom login controllers must now explicitly set their `$allowAnonymous` values to include `self::ALLOW_ANONYMOUS_OFFLINE` if they wish to be available when the system is offline.
 
-> {tip} If you have Super Table or Neo installed, you should update those **at the same time** as Craft, to avoid unnecessary search index jobs from being added to the queue.
+> **Note**
+> If you have Super Table or Neo installed, you should update those **at the same time** as Craft, to avoid unnecessary search index jobs from being added to the queue.
 
 ### Added
 - All element types now have the option to support drafts and revisions.
@@ -6459,7 +6472,8 @@
 
 ## 3.1.0 - 2019-01-15
 
-> {warning} This is a more complex update than usual, and failed update attempts are not uncommon. Please ensure you have a recent database backup, and we recommend you test the update on a local/staging environment before updating your production server.
+> **Warning**
+> This is a more complex update than usual, and failed update attempts are not uncommon. Please ensure you have a recent database backup, and we recommend you test the update on a local/staging environment before updating your production server.
 
 ### Added
 - Added the Project Config, a portable and centralized configuration for system settings. ([#1429](https://github.com/craftcms/cms/issues/1429))
