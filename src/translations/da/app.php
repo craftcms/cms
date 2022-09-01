@@ -893,7 +893,6 @@ return [
     'No GraphQL tokens exist yet.' => 'Der findes ingen GraphQL-tokens endnu.',
     'No blocks.' => 'Ingen blokke.',
     'No category groups exist yet.' => 'Ingen kategori-grupper eksisterer endnu.',
-    'No content migrations.' => 'Ingen indholdsmigrering.',
     'No deprecation errors to report!' => 'Ingen forældet (deprecated) kode fejl at rapportere!',
     'No entries exist yet.' => 'Ingen indgange oprettet endnu.',
     'No entry types exist for this section.' => 'Ingen indgangstyper findes for denne sektion.',
