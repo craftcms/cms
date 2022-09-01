@@ -19,7 +19,7 @@ use craft\elements\Asset;
 use craft\errors\FsException;
 use craft\errors\ImageTransformException;
 use craft\events\ImageTransformerOperationEvent;
-use craft\gql\types\DateTime;
+use DateTime;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Assets as AssetsHelper;
