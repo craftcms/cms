@@ -892,7 +892,6 @@ return [
     'No GraphQL tokens exist yet.' => 'Aucun jeton GraphQL n’existe à l’heure actuelle.',
     'No blocks.' => 'Aucun bloc.',
     'No category groups exist yet.' => 'Il n’existe pas encore de groupes de catégories.',
-    'No content migrations.' => 'Aucune migration de contenu.',
     'No deprecation errors to report!' => 'Aucune erreur d’obsolescence à signaler!',
     'No entries exist yet.' => 'Il n’existe pas encore d’entrée.',
     'No entry types exist for this section.' => 'Aucun type d’entrée n’existe pour cette section.',
