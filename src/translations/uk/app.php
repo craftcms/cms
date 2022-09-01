@@ -892,7 +892,6 @@ return [
     'No GraphQL tokens exist yet.' => 'Токенів GraphQL ще не існує.',
     'No blocks.' => 'Блоків немає.',
     'No category groups exist yet.' => 'Груп категорій ще не існує.',
-    'No content migrations.' => 'Немає перенесення контенту.',
     'No deprecation errors to report!' => 'Помилок застарівання не виявлено!',
     'No entries exist yet.' => 'Записів ще немає.',
     'No entry types exist for this section.' => 'У цьому розділі немає типів записів.',
