@@ -213,7 +213,7 @@ class PageRenderChecksCest
             ],
             [
                 'url' => '/utilities/migrations', 'title' => 'Migrations', 'extraContent' => [
-                ['rendered' => 'No content migrations.'],
+                ['rendered' => 'No pending content migrations.'],
             ],
             ],
             [
