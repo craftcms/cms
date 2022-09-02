@@ -210,11 +210,11 @@ Craft.ElementEditor = Garnish.Base.extend(
     _createQueue: function () {
       const queue = new Craft.Queue();
       queue.on('beforeRun', () => {
-        this.disablePreview();
+        this.disablePreviewButton();
         this.showSpinner();
       });
       queue.on('afterRun', () => {
-        this.enablePreview();
+        this.enablePreviewButton();
         this.hideSpinner();
       });
       return queue;
@@ -774,12 +774,12 @@ Craft.ElementEditor = Garnish.Base.extend(
       this.spinners().addClass('hidden');
     },
 
-    disablePreview: function () {
+    disablePreviewButton: function () {
       this.$previewBtn.attr('disabled', true);
       this.$previewBtn.addClass('disabled');
     },
 
-    enablePreview: function () {
+    enablePreviewButton: function () {
       this.$previewBtn.attr('disabled', false);
       this.$previewBtn.removeClass('disabled');
     },
