@@ -1659,7 +1659,7 @@ return [
     'Verify email addresses' => 'Перевіряти адреси електронної пошти',
     'Version {version}' => 'Версія {version}',
     'Version' => 'Версія',
-    'Very High (Recommended)' => 'Дуже висока (рекомендується)',
+    'Very High' => 'Very High',
     'Video' => 'Відео',
     'View Mode' => 'Режим перегляду',
     'View all users' => 'Переглянути всіх користувачів',
