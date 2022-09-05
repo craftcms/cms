@@ -568,7 +568,7 @@ class Application extends \yii\web\Application
         // Should they be accessing the installer?
         if (!$isInstalled) {
             if (!$isCpRequest) {
-                throw new ServiceUnavailableHttpException(Craft::t('app', 'Craft isn’t installed yet.'));
+                throw new ServiceUnavailableHttpException();
             }
 
             // Redirect to the installer if Dev Mode is enabled
