@@ -952,7 +952,6 @@ return [
     'No GraphQL tokens exist yet.' => 'Det finns inga GraphQL-tokens ännu.',
     'No blocks.' => 'Inga block.',
     'No category groups exist yet.' => 'Inga kategorigrupper existerar än.',
-    'No content migrations.' => 'Inga innehållsmigreringar.',
     'No deprecation warnings to report!' => 'Inga utfasningsvarningar att rapportera!',
     'No entries exist yet.' => 'Inga poster finns ännu.',
     'No entry types exist for this section.' => 'Det finns inte några inläggstyper för den här sektionen.',
