@@ -1659,7 +1659,7 @@ return [
     'Verify email addresses' => '이메일 주소를 검증할까요',
     'Version {version}' => '버전 {version}',
     'Version' => '버전',
-    'Very High (Recommended)' => '매우 높음(권장)',
+    'Very High' => 'Very High',
     'Video' => '비디오',
     'View Mode' => '보기 모드',
     'View all users' => '모든 사용자 표시',
