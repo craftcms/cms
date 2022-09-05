@@ -1101,11 +1101,17 @@ class Elements extends Component
      * @param bool $skipRevisions Whether elements that are (or belong to) a revision should be skipped
      * @param bool|null $updateSearchIndex Whether to update the element search index for the element
      * (this will happen via a background job if this is a web request)
+     * @param bool $touch Whether to update the `dateUpdated` timestamps for the elements
      * @throws Throwable if reasons
      * @since 3.2.0
      */
-    public function resaveElements(ElementQueryInterface $query, bool $continueOnError = false, bool $skipRevisions = true, ?bool $updateSearchIndex = null): void
-    {
+    public function resaveElements(
+        ElementQueryInterface $query,
+        bool $continueOnError = false,
+        bool $skipRevisions = true,
+        ?bool $updateSearchIndex = null,
+        bool $touch = false,
+    ): void {
         /** @var ElementQuery $query */
         // Fire a 'beforeResaveElements' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_RESAVE_ELEMENTS)) {
@@ -1155,7 +1161,7 @@ class Elements extends Component
 
                 if ($e === null) {
                     try {
-                        $this->_saveElementInternal($element, true, true, $updateSearchIndex);
+                        $this->_saveElementInternal($element, true, true, $updateSearchIndex, forceTouch: $touch);
                     } catch (Throwable $e) {
                         if (!$continueOnError) {
                             throw $e;
@@ -2626,6 +2632,8 @@ class Elements extends Component
      * @param bool|null $updateSearchIndex Whether to update the element search index for the element
      * (this will happen via a background job if this is a web request)
      * @param array|null $supportedSites The element’s supported site info, indexed by site ID
+     * @param bool $forceTouch Whether to force the `dateUpdated` timestamps to be updated for the elements,
+     * regardless of whether they’re being resaved
      * @return bool
      * @throws ElementNotFoundException if $element has an invalid $id
      * @throws UnsupportedSiteException if the element is being saved for a site it doesn’t support
@@ -2637,6 +2645,7 @@ class Elements extends Component
         bool $propagate = true,
         ?bool $updateSearchIndex = null,
         ?array $supportedSites = null,
+        bool $forceTouch = false,
     ): bool {
         /** @var ElementInterface|DraftBehavior|RevisionBehavior $element */
         $isNewElement = !$element->id;
@@ -2765,7 +2774,7 @@ class Elements extends Component
                     if (isset($element->dateUpdated)) {
                         $elementRecord->dateUpdated = Db::prepareValueForDb($element->dateUpdated);
                     }
-                } elseif ($element->resaving) {
+                } elseif ($element->resaving && !$forceTouch) {
                     // Prevent ActiveRecord::prepareForDb() from changing the dateUpdated
                     $elementRecord->markAttributeDirty('dateUpdated');
                 } else {
