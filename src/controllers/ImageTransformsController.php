@@ -81,10 +81,35 @@ class ImageTransformsController extends Controller
             $title = Craft::t('app', 'Create a new image transform');
         }
 
+        $qualityPickerOptions = [
+            ['label' => Craft::t('app', 'Low'), 'value' => 10],
+            ['label' => Craft::t('app', 'Medium'), 'value' => 30],
+            ['label' => Craft::t('app', 'High'), 'value' => 60],
+            ['label' => Craft::t('app', 'Very High'), 'value' => 80],
+            ['label' => Craft::t('app', 'Maximum'), 'value' => 100],
+        ];
+
+        if ($transform->quality) {
+            // Default to Low, even if quality is < 10
+            $qualityPickerValue = 10;
+            foreach ($qualityPickerOptions as $option) {
+                if ($transform->quality >= $option['value']) {
+                    $qualityPickerValue = $option['value'];
+                } else {
+                    break;
+                }
+            }
+        } else {
+            // Auto
+            $qualityPickerValue = 0;
+        }
+
         return $this->renderTemplate('settings/assets/transforms/_settings.twig', [
             'handle' => $transformHandle,
             'transform' => $transform,
             'title' => $title,
+            'qualityPickerOptions' => $qualityPickerOptions,
+            'qualityPickerValue' => $qualityPickerValue,
         ]);
     }
 
