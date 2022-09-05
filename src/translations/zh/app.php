@@ -892,7 +892,6 @@ return [
     'No GraphQL tokens exist yet.' => '尚不存在任何 GraphQL 令牌。',
     'No blocks.' => '无区块。',
     'No category groups exist yet.' => '暂无分类群组。',
-    'No content migrations.' => '没有内容需要迁移。',
     'No deprecation errors to report!' => '没有可报告的已废弃特性报错！',
     'No entries exist yet.' => '暂无条目。',
     'No entry types exist for this section.' => '此板块没有已存在的条目类型。',

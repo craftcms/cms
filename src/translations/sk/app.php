@@ -892,7 +892,6 @@ return [
     'No GraphQL tokens exist yet.' => 'Zatiaľ neexistujú tokeny No GraphQL.',
     'No blocks.' => 'Žiadne bloky.',
     'No category groups exist yet.' => 'Žiadne skupiny kategórií zatiaľ neexistujú.',
-    'No content migrations.' => 'Žiadne migrácie obsahu.',
     'No deprecation errors to report!' => 'Žiadne zaznamenané chyby!',
     'No entries exist yet.' => 'Žiadne záznamy zatiaľ neexistujú.',
     'No entry types exist for this section.' => 'Pre túto sekciu neexistujú žiadne typy záznamov.',

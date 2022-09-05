@@ -892,7 +892,6 @@ return [
     'No GraphQL tokens exist yet.' => 'Токенов GraphQL пока не существует.',
     'No blocks.' => 'Блоков нет.',
     'No category groups exist yet.' => 'Пока что не существует ни одной группы категорий.',
-    'No content migrations.' => 'Нет переносов контента.',
     'No deprecation errors to report!' => 'Ошибок устаревания не обнаружено!',
     'No entries exist yet.' => 'Пока что не существует ни одной записи.',
     'No entry types exist for this section.' => 'В этом разделе нет типов записей.',

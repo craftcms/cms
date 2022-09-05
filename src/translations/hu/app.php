@@ -892,7 +892,6 @@ return [
     'No GraphQL tokens exist yet.' => 'Még nincsenek GraphQL tokenek.',
     'No blocks.' => 'Nincsenek blokkok.',
     'No category groups exist yet.' => 'Nem létezik még kategória csoport.',
-    'No content migrations.' => 'Nincs tartalomáttelepítés.',
     'No deprecation errors to report!' => 'Nincs jelentendő elavulási hiba!',
     'No entries exist yet.' => 'Nincs még bejegyzés.',
     'No entry types exist for this section.' => 'Nincsenek bejegyzéstípusok ezen a szakaszon.',
