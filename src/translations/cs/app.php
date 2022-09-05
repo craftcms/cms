@@ -952,7 +952,6 @@ return [
     'No GraphQL tokens exist yet.' => 'Zatím neexistují žádné tokeny GraphQL.',
     'No blocks.' => 'Žádné bloky.',
     'No category groups exist yet.' => 'Žádná skupina kategorií zatím neexistuje.',
-    'No content migrations.' => 'Žádné migrace obsahu.',
     'No deprecation warnings to report!' => 'Žádná varování o zastaralosti!',
     'No entries exist yet.' => 'Žádné záznamy zatím neexistují.',
     'No entry types exist for this section.' => 'V této sekci neexistují žádné typy záznamů.',
