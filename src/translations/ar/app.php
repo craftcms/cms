@@ -953,7 +953,6 @@ return [
     'No GraphQL tokens exist yet.' => 'لا توجد رموز GraphQL موجودة حتى الآن.',
     'No blocks.' => 'لا توجد كتل.',
     'No category groups exist yet.' => 'لا توجد مجموعات فئات بعد.',
-    'No content migrations.' => 'لا توجد أية ترحيلات محتويات.',
     'No deprecation warnings to report!' => 'لا توجد تحذيرات إهمال للإبلاغ عنها!',
     'No entries exist yet.' => 'لا توجد إدخالات بعد.',
     'No entry types exist for this section.' => 'لا توجد أنواع إدخال لهذا القسم.',
