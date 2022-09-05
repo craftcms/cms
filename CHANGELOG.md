@@ -14,6 +14,7 @@
 - Fixed a bug where element caches weren’t being invalidated during garbage collection, so hard-deleted elements could appear to still exist.
 - Fixed a bug where image transforms were always getting saved with `dateIndexed` set to `null`. ([#11863](https://github.com/craftcms/cms/pull/11863))
 - Fixed an error that could occur when rendering front-end templates if there was a problem connecting to the database. ([#11855](https://github.com/craftcms/cms/issues/11855))
+- Fixed a bug where Edit Asset pages were showing the “View” button for assets in volumes without public URLs. ([#11860](https://github.com/craftcms/cms/issues/11860))
 
 ## 4.2.3 - 2022-08-26
 
