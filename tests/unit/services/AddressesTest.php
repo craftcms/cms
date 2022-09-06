@@ -37,7 +37,7 @@ class AddressesTest extends TestCase
         $addressesService = Craft::$app->getAddresses();
 
         $formatted = $addressesService->formatAddress($address);
-        $this->assertStringContainsString('<span class="given-name">Wile E. Coyote</span>', $formatted);
+        $this->assertStringContainsString('<span class="full-name">Wile E. Coyote</span>', $formatted);
 
         $formatted = $addressesService->formatAddress($address, ['html' => false]);
         $this->assertStringContainsString('Wile E. Coyote', $formatted);
