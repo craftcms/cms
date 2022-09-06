@@ -727,7 +727,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
     options.events = {
       fileuploadstart: this._onUploadStart.bind(this),
       fileuploadprogressall: this._onUploadProgress.bind(this),
-      fileuploaddone: this._onUploadComplete.bind(this),
+      fileuploaddone: this._onUploadSuccess.bind(this),
+      fileuploadalways: this._onUploadAlways.bind(this),
       fileuploadfail: this._onUploadFailure.bind(this),
     };
 
@@ -951,9 +952,13 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
   },
 
   /**
-   * On Upload Complete.
+   * On upload success.
+   *
+   * @param event
+   * @param data
+   * @private
    */
-  _onUploadComplete: function (event, data) {
+  _onUploadSuccess: function (event, data) {
     const {result} = data;
 
     // Add the uploaded file to the selected ones, if appropriate
@@ -970,8 +975,12 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
     }
 
     Craft.cp.runQueue();
+  },
 
-    // For the last file, display prompts, if any. If not - just update the element view.
+  /**
+   * On upload complete no matter what (success, fail, or abort).
+   */
+  _onUploadAlways: function () {
     if (this.uploader.isLastUpload()) {
       this.progressBar.hideProgressBar();
       this.setIndexAvailable();
@@ -998,8 +1007,6 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
     }
 
     alert(message);
-    this.progressBar.hideProgressBar();
-    this.setIndexAvailable();
   },
 
   /**
