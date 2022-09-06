@@ -1074,8 +1074,11 @@ class Asset extends Element
 
         $html = Html::beginTag('div', ['class' => 'btngroup']);
 
-        if (in_array($this->kind, [Asset::KIND_IMAGE, Asset::KIND_PDF, Asset::KIND_TEXT])) {
-            $html .= Html::a(Craft::t('app', 'View'), $this->getUrl(), [
+        if (
+            in_array($this->kind, [Asset::KIND_IMAGE, Asset::KIND_PDF, Asset::KIND_TEXT]) &&
+            ($url = $this->getUrl()) !== null
+        ) {
+            $html .= Html::a(Craft::t('app', 'View'), $url, [
                 'class' => 'btn',
                 'target' => '_blank',
                 'data' => [
@@ -1955,6 +1958,15 @@ JS;
                 'x' => (float)$focal[0],
                 'y' => (float)$focal[1],
             ];
+        }
+
+        if ($value !== null && (
+            $value['x'] < 0 ||
+            $value['x'] > 1 ||
+            $value['y'] < 0 ||
+            $value['y'] > 1
+        )) {
+            $value = null;
         }
 
         $this->_focalPoint = $value;

@@ -29,12 +29,11 @@ use yii\base\Component;
  * Addresses service.
  * An instance of the Addresses service is globally accessible in Craft via [[\craft\base\ApplicationTrait::getAddresses()|`Craft::$app->addresses`]].
  *
- * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.0.0
- *
  * @property-read AddressFormatRepository $addressFormatRepository
  * @property-read CountryRepository $countryRepository
  * @property-read SubdivisionRepository $subdivisionRepository
+ * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
+ * @since 4.0.0
  */
 class Addresses extends Component
 {
@@ -103,9 +102,9 @@ class Addresses extends Component
 
         if ($formatter === null) {
             $formatter = new DefaultFormatter(
-                $this->addressFormatRepository,
-                $this->countryRepository,
-                $this->subdivisionRepository
+                $this->getAddressFormatRepository(),
+                $this->getCountryRepository(),
+                $this->getSubdivisionRepository()
             );
         }
 

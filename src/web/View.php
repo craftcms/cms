@@ -338,7 +338,7 @@ class View extends \yii\web\View
 
         if ($this->_templateMode === self::TEMPLATE_MODE_CP) {
             $twig->addExtension(new CpExtension());
-        } else {
+        } elseif (Craft::$app->getIsInstalled()) {
             $twig->addExtension(new GlobalsExtension());
         }
 
