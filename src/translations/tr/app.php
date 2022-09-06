@@ -953,7 +953,6 @@ return [
     'No GraphQL tokens exist yet.' => 'Henüz hiç GraphQL belirteci yok.',
     'No blocks.' => 'Blok yok.',
     'No category groups exist yet.' => 'Daha kategori grubu yok.',
-    'No content migrations.' => 'İçerik geçişi yok.',
     'No deprecation warnings to report!' => 'Raporlanacak kullanımdan kaldırma uyarısı yok!',
     'No entries exist yet.' => 'Daha hiç bir kayıt yok.',
     'No entry types exist for this section.' => 'Bu bölüm için hiçbir kayıt tipi bulunamadı.',
