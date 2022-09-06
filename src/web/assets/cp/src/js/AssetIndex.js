@@ -727,6 +727,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
     options.events = {
       fileuploadstart: this._onUploadStart.bind(this),
       fileuploadprogressall: this._onUploadProgress.bind(this),
+      fileuploadalways: this._onUploadAlways.bind(this),
       fileuploaddone: this._onUploadComplete.bind(this),
       fileuploadfail: this._onUploadFailure.bind(this),
     };
@@ -950,13 +951,29 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
   },
 
   /**
+   * On upload complete no matter what
+   * @private
+   */
+  _onUploadAlways: function () {
+    // For the last file, display prompts, if any. If not - just update the element view.
+    if (this.uploader.isLastUpload()) {
+      this.progressBar.hideProgressBar();
+      this.setIndexAvailable();
+
+      if (this.promptHandler.getPromptCount()) {
+        this.promptHandler.showBatchPrompts(this._uploadFollowup.bind(this));
+      } else {
+        this._updateAfterUpload();
+      }
+    }
+  },
+
+  /**
    * On Upload Complete.
    */
   _onUploadComplete: function (event, data) {
     var response = data.result;
     var filename = data.files[0].name;
-
-    var doReload = true;
 
     if (response.success || response.conflict) {
       // Add the uploaded file to the selected ones, if appropriate
@@ -982,22 +999,6 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
         );
       } else {
         alert(Craft.t('app', 'Upload failed for {filename}.', {filename}));
-      }
-
-      doReload = false;
-    }
-
-    // For the last file, display prompts, if any. If not - just update the element view.
-    if (this.uploader.isLastUpload()) {
-      this.progressBar.hideProgressBar();
-      this.setIndexAvailable();
-
-      if (this.promptHandler.getPromptCount()) {
-        this.promptHandler.showBatchPrompts(this._uploadFollowup.bind(this));
-      } else {
-        if (doReload) {
-          this._updateAfterUpload();
-        }
       }
     }
   },
