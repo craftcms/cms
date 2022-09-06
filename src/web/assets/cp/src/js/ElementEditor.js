@@ -210,12 +210,11 @@ Craft.ElementEditor = Garnish.Base.extend(
     _createQueue: function () {
       const queue = new Craft.Queue();
       queue.on('beforeRun', () => {
-        this.disablePreviewButton();
         this.showSpinner();
       });
       queue.on('afterRun', () => {
-        this.enablePreviewButton();
         this.hideSpinner();
+        this.enablePreviewButton();
       });
       return queue;
     },
@@ -776,11 +775,13 @@ Craft.ElementEditor = Garnish.Base.extend(
 
     disablePreviewButton: function () {
       this.$previewBtn.attr('disabled', true);
+      this.$previewBtn.addClass('loading');
       this.$previewBtn.addClass('disabled');
     },
 
     enablePreviewButton: function () {
       this.$previewBtn.attr('disabled', false);
+      this.$previewBtn.removeClass('loading');
       this.$previewBtn.removeClass('disabled');
     },
 
@@ -1008,17 +1009,21 @@ Craft.ElementEditor = Garnish.Base.extend(
     },
 
     openPreview: function () {
-      return new Promise((resolve, reject) => {
-        this.openingPreview = true;
-        this.ensureIsDraftOrRevision(true)
-          .then(() => {
-            this.scrollY = window.scrollY;
-            this.getPreview().open();
-            this.openingPreview = false;
-            resolve();
+      this.disablePreviewButton();
+      this.queue.push(
+        () =>
+          new Promise((resolve, reject) => {
+            this.openingPreview = true;
+            this.ensureIsDraftOrRevision(true)
+              .then(() => {
+                this.scrollY = window.scrollY;
+                this.getPreview().open();
+                this.openingPreview = false;
+                resolve();
+              })
+              .catch(reject);
           })
-          .catch(reject);
-      });
+      );
     },
 
     ensureIsDraftOrRevision: function (onlyIfChanged) {

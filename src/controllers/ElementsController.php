@@ -647,13 +647,17 @@ class ElementsController extends Controller
                 Html::beginTag('div', [
                     'class' => ['preview-btn-container', 'btngroup'],
                 ]) .
-                ($enablePreview
-                    ? Html::button(Craft::t('app', 'Preview'), [
+                ($enablePreview ?
+                    Html::beginTag('button', [
+                        'type' => 'button',
                         'class' => ['preview-btn', 'btn'],
                         'aria' => [
                             'label' => Craft::t('app', 'Preview'),
                         ],
-                    ])
+                    ]) .
+                    Html::tag('span', Craft::t('app', 'Preview'), ['class' => 'label']) .
+                    Html::tag('span', options: ['class' => ['spinner', 'spinner-absolute']]) .
+                    Html::endTag('button')
                     : '') .
                 Html::endTag('div');
         }
