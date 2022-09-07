@@ -19,6 +19,9 @@
 - Fixed a bug where the Assets index page wasn’t handling failed uploads properly. ([#11866](https://github.com/craftcms/cms/issues/11866))
 - Fixed a bug where it was possible to save an asset with a focal point outside its cropped area. ([#11875](https://github.com/craftcms/cms/issues/11875))
 
+### Security
+- Fixed XSS vulnerabilities.
+
 ## 4.2.3 - 2022-08-26
 
 ### Changed

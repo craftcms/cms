@@ -67,7 +67,7 @@ abstract class BaseTextConditionRule extends BaseConditionRule
     protected function inputHtml(): string
     {
         return
-            Html::hiddenLabel($this->getLabel(), 'value') .
+            Html::hiddenLabel(Html::encode($this->getLabel()), 'value') .
             Cp::textHtml([
                 'type' => $this->inputType(),
                 'id' => 'value',
