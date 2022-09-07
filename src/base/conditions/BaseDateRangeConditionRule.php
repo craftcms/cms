@@ -42,7 +42,7 @@ abstract class BaseDateRangeConditionRule extends BaseConditionRule
      * @var float|null
      * @since 4.3.0
      */
-    public ?float $periodTypeValue = null;
+    public ?float $periodValue = null;
 
     /**
      * @var string|null
@@ -119,7 +119,7 @@ abstract class BaseDateRangeConditionRule extends BaseConditionRule
         return array_merge(parent::getConfig(), [
             'rangeType' => $this->rangeType,
             'periodType' => $this->periodType,
-            'periodTypeValue' => $this->periodTypeValue,
+            'periodValue' => $this->periodValue,
             'startDate' => $this->getStartDate(),
             'endDate' => $this->getEndDate(),
         ]);
@@ -222,8 +222,8 @@ JS,
                 options: ['class' => ['flex', 'flex-nowrap']],
                 content:
                 Cp::textHtml([
-                    'name' => 'periodTypeValue',
-                    'value' => $this->periodTypeValue,
+                    'name' => 'periodValue',
+                    'value' => $this->periodValue,
                     'size' => '5',
                 ]) .
                 Cp::selectHtml([
@@ -246,7 +246,7 @@ JS,
             [['startDate', 'endDate', 'rangeType', 'timeFrameUnits', 'timeFrameValue'], 'safe'],
             [['rangeType'], 'in', 'range' => array_keys(DateRangeHelper::rangeTypeOptions())],
             [['periodType'], 'in', 'range' => array_keys(DateRangeHelper::periodTypeOptions())],
-            [['periodTypeValue'], 'number', 'skipOnEmpty' => true],
+            [['periodValue'], 'number', 'skipOnEmpty' => true],
         ]);
     }
 
@@ -265,8 +265,8 @@ JS,
             ]);
         }
 
-        if (in_array($this->rangeType, [DateRangeType::Before, DateRangeType::After]) && $this->periodTypeValue && $this->periodType) {
-            $dateInterval = DateRangeHelper::dateIntervalByTimePeriod($this->periodTypeValue, $this->periodType);
+        if (in_array($this->rangeType, [DateRangeType::Before, DateRangeType::After]) && $this->periodValue && $this->periodType) {
+            $dateInterval = DateRangeHelper::dateIntervalByTimePeriod($this->periodValue, $this->periodType);
 
             return ($this->rangeType === DateRangeType::After ? '>=' : '<') . ' ' . DateTimeHelper::toIso8601(DateTimeHelper::now()->sub($dateInterval));
         }
@@ -302,8 +302,8 @@ JS,
             );
         }
 
-        if (in_array($this->rangeType, [DateRangeType::Before, DateRangeType::After]) && $this->periodTypeValue && $this->periodType) {
-            $date = DateTimeHelper::now()->sub(DateRangeHelper::dateIntervalByTimePeriod($this->periodTypeValue, $this->periodType));
+        if (in_array($this->rangeType, [DateRangeType::Before, DateRangeType::After]) && $this->periodValue && $this->periodType) {
+            $date = DateTimeHelper::now()->sub(DateRangeHelper::dateIntervalByTimePeriod($this->periodValue, $this->periodType));
 
             if ($this->rangeType === DateRangeType::After) {
                 return $value && $value >= $date;
