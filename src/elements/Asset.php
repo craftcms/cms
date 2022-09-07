@@ -1967,6 +1967,15 @@ JS;
             ];
         }
 
+        if ($value !== null && (
+            $value['x'] < 0 ||
+            $value['x'] > 1 ||
+            $value['y'] < 0 ||
+            $value['y'] > 1
+        )) {
+            $value = null;
+        }
+
         $this->_focalPoint = $value;
     }
 
