@@ -56,8 +56,21 @@ class Search extends Component
 
     /**
      * @event SearchEvent The event that is triggered after a search is performed.
+     *
+     * Any modifications to [[SearchEvent::$scores]] will be respected.
      */
     public const EVENT_AFTER_SEARCH = 'afterSearch';
+
+    /**
+     * @event SearchEvent The event that is triggered before the results are scored.
+     *
+     * Any modifications to [[SearchEvent::$results]] will be respected when results are scored.
+     *
+     * Event handlers can set [[SearchEvent::$scores]] to override the resulting element scores returned by [[searchElements()]].
+     *
+     * @since 4.3.0
+     */
+    public const EVENT_BEFORE_SCORE_RESULTS = 'beforeScoreResults';
 
     /**
      * @var bool Whether fulltext searches should be used ever. (MySQL only.)
@@ -264,33 +277,63 @@ class Search extends Component
         $results = $query->all();
 
         // Score the results
-        $scoresByElementId = [];
+        $scores = null;
 
-        // Loop through results and calculate score per element
-        foreach ($results as $row) {
-            $elementId = $row['elementId'];
-            $score = $this->_scoreRow($row, $elementQuery->siteId);
-
-            if (!isset($scoresByElementId[$elementId])) {
-                $scoresByElementId[$elementId] = $score;
-            } else {
-                $scoresByElementId[$elementId] += $score;
-            }
-        }
-
-        arsort($scoresByElementId);
-
-        // Fire an 'afterSearch' event
-        if ($this->hasEventHandlers(self::EVENT_AFTER_SEARCH)) {
-            $this->trigger(self::EVENT_AFTER_SEARCH, new SearchEvent([
+        // Fire a 'beforeScoreResults' event
+        if ($this->hasEventHandlers(self::EVENT_BEFORE_SCORE_RESULTS)) {
+            $event = new SearchEvent([
                 'elementQuery' => $elementQuery,
                 'query' => $searchQuery,
                 'siteId' => $elementQuery->siteId,
                 'results' => $results,
-            ]));
+            ]);
+            $this->trigger(self::EVENT_BEFORE_SCORE_RESULTS, $event);
+
+            // Use whatever changes may have been made to the results (unless it was set to null for some reason)
+            if ($event->results !== null) {
+                $results = $event->results;
+            }
+
+            // If a handler set the scores, use that instead of figuring it out for ourselves.
+            $scores = $event->scores;
         }
 
-        return $scoresByElementId;
+        if ($scores === null) {
+            $scores = [];
+
+            // Loop through results and calculate score per element
+            foreach ($results as $row) {
+                $elementId = $row['elementId'];
+                $score = $this->_scoreRow($row, $elementQuery->siteId);
+
+                if (!isset($scores[$elementId])) {
+                    $scores[$elementId] = $score;
+                } else {
+                    $scores[$elementId] += $score;
+                }
+            }
+        }
+
+        arsort($scores);
+
+        // Fire an 'afterSearch' event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_SEARCH)) {
+            $event = new SearchEvent([
+                'elementQuery' => $elementQuery,
+                'query' => $searchQuery,
+                'siteId' => $elementQuery->siteId,
+                'results' => $results,
+                'scores' => $scores,
+            ]);
+            $this->trigger(self::EVENT_AFTER_SEARCH, $event);
+
+            // Return the scores from the event, in case any last minute changes were made to it
+            if ($event->scores !== null) {
+                return $event->scores;
+            }
+        }
+
+        return $scores;
     }
 
     /**
