@@ -49,7 +49,7 @@ class FsController extends Controller
         $variables = [];
         $variables['filesystems'] = Craft::$app->getFs()->getAllFilesystems();
 
-        return $this->renderTemplate('settings/filesystems/_index', $variables);
+        return $this->renderTemplate('settings/filesystems/_index.twig', $variables);
     }
 
     /**
@@ -112,7 +112,7 @@ class FsController extends Controller
             ->addCrumb(Craft::t('app', 'Filesystems'), 'settings/filesystems')
             ->action('fs/save')
             ->redirectUrl('settings/filesystems')
-            ->contentTemplate('settings/filesystems/_edit', [
+            ->contentTemplate('settings/filesystems/_edit.twig', [
                 'oldHandle' => $handle,
                 'filesystem' => $filesystem,
                 'fsOptions' => $fsOptions,

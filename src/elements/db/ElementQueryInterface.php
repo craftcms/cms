@@ -585,8 +585,9 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      * | Value | Fetches {elements}…
      * | - | -
      * | `'>= 2018-04-01'` | that were created on or after 2018-04-01.
-     * | `'< 2018-05-01'` | that were created before 2018-05-01
+     * | `'< 2018-05-01'` | that were created before 2018-05-01.
      * | `['and', '>= 2018-04-04', '< 2018-05-01']` | that were created between 2018-04-01 and 2018-05-01.
+     * | `now`/`today`/`tomorrow`/`yesterday` | that were created at midnight of the specified relative date.
      *
      * ---
      *
@@ -623,8 +624,9 @@ interface ElementQueryInterface extends QueryInterface, Arrayable
      * | Value | Fetches {elements}…
      * | - | -
      * | `'>= 2018-04-01'` | that were updated on or after 2018-04-01.
-     * | `'< 2018-05-01'` | that were updated before 2018-05-01
+     * | `'< 2018-05-01'` | that were updated before 2018-05-01.
      * | `['and', '>= 2018-04-04', '< 2018-05-01']` | that were updated between 2018-04-01 and 2018-05-01.
+     * | `now`/`today`/`tomorrow`/`yesterday` | that were updated at midnight of the specified relative date.
      *
      * ---
      *
