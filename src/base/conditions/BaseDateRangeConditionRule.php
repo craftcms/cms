@@ -270,11 +270,11 @@ JS,
             return ($this->rangeType === DateRangeType::After ? '>=' : '<') . ' ' . DateTimeHelper::toIso8601(DateTimeHelper::now()->sub($dateInterval));
         }
 
-        $dateRangeOptions = DateRangeHelper::rangeTypeOptions();
-        ArrayHelper::remove($dateRangeOptions, DateRangeType::Before);
-        ArrayHelper::remove($dateRangeOptions, DateRangeType::After);
-        ArrayHelper::remove($dateRangeOptions, DateRangeType::Range);
-        if (array_key_exists($this->rangeType, $dateRangeOptions)) {
+        $rangeTypeOptions = DateRangeHelper::rangeTypeOptions();
+        ArrayHelper::remove($rangeTypeOptions, DateRangeType::Before);
+        ArrayHelper::remove($rangeTypeOptions, DateRangeType::After);
+        ArrayHelper::remove($rangeTypeOptions, DateRangeType::Range);
+        if (array_key_exists($this->rangeType, $rangeTypeOptions)) {
             $dateRange = DateRangeHelper::getDatesByDateRange($this->rangeType);
             $startDate = DateTimeHelper::toIso8601($dateRange['startDate']);
             $endDate = DateTimeHelper::toIso8601($dateRange['endDate']);
@@ -311,11 +311,11 @@ JS,
             return $value && $value < $date;
         }
 
-        $dateRangeOptions = DateRangeHelper::rangeTypeOptions();
-        ArrayHelper::remove($dateRangeOptions, DateRangeType::Before);
-        ArrayHelper::remove($dateRangeOptions, DateRangeType::After);
-        ArrayHelper::remove($dateRangeOptions, DateRangeType::Range);
-        if (array_key_exists($this->rangeType, $dateRangeOptions)) {
+        $rangeTypeOptions = DateRangeHelper::rangeTypeOptions();
+        ArrayHelper::remove($rangeTypeOptions, DateRangeType::Before);
+        ArrayHelper::remove($rangeTypeOptions, DateRangeType::After);
+        ArrayHelper::remove($rangeTypeOptions, DateRangeType::Range);
+        if (array_key_exists($this->rangeType, $rangeTypeOptions)) {
             $dateRange = DateRangeHelper::getDatesByDateRange($this->rangeType);
             return $value && $value >= $dateRange['startDate'] && $value < $dateRange['endDate'];
         }

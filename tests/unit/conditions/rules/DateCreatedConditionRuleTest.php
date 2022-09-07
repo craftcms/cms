@@ -55,7 +55,7 @@ class DateCreatedConditionRuleTest extends TestCase
                 ['startDate' => DateTimeHelper::now()->sub(new DateInterval('P1D'))->format(DateTime::ATOM), 'endDate' => DateTimeHelper::now()->add(new DateInterval('P1D'))->format(DateTime::ATOM)],
             ],
             [
-                ['dateRange' => 'before', 'periodTypeValue' => 99, 'periodType' => 'hours'],
+                ['rangeType' => 'before', 'periodTypeValue' => 99, 'periodType' => 'hours'],
             ],
         ];
     }
@@ -103,11 +103,11 @@ class DateCreatedConditionRuleTest extends TestCase
 
         return [
             'start-and-end' => [
-                ['dateRange' => DateRangeType::Range, 'startDate' => $startDate, 'endDate' => $endDate],
+                ['rangeType' => DateRangeType::Range, 'startDate' => $startDate, 'endDate' => $endDate],
                 ['and', '>= ' . $startDate->format(DateTime::ATOM), '< ' . $endDate->format(DateTime::ATOM)],
             ],
             'today' => [
-                ['dateRange' => DateRangeType::Today],
+                ['rangeType' => DateRangeType::Today],
                 [
                     static function() {
                         return (new DateTime('now', new DateTimeZone('America/Los_Angeles')))->setTime(0, 0);
@@ -118,7 +118,7 @@ class DateCreatedConditionRuleTest extends TestCase
                 ],
             ],
             'thisMonth' => [
-                ['dateRange' => DateRangeType::ThisMonth],
+                ['rangeType' => DateRangeType::ThisMonth],
                 [
                     static function() {
                         return (new DateTime('now', new DateTimeZone('America/Los_Angeles')))
@@ -133,7 +133,7 @@ class DateCreatedConditionRuleTest extends TestCase
                 ],
             ],
             'thisYear' => [
-                ['dateRange' => DateRangeType::ThisYear],
+                ['rangeType' => DateRangeType::ThisYear],
                 [
                     static function() {
                         return (new DateTime('now', new DateTimeZone('America/Los_Angeles')))
@@ -148,7 +148,7 @@ class DateCreatedConditionRuleTest extends TestCase
                 ],
             ],
             'past7Days' => [
-                ['dateRange' => DateRangeType::Past7Days],
+                ['rangeType' => DateRangeType::Past7Days],
                 [
                     static function() {
                         return (new DateTime('now', new DateTimeZone('America/Los_Angeles')))
@@ -160,7 +160,7 @@ class DateCreatedConditionRuleTest extends TestCase
                 ],
             ],
             'past30Days' => [
-                ['dateRange' => DateRangeType::Past30Days],
+                ['rangeType' => DateRangeType::Past30Days],
                 [
                     static function() {
                         return (new DateTime('now', new DateTimeZone('America/Los_Angeles')))
@@ -172,7 +172,7 @@ class DateCreatedConditionRuleTest extends TestCase
                 ],
             ],
             'past90Days' => [
-                ['dateRange' => DateRangeType::Past90Days],
+                ['rangeType' => DateRangeType::Past90Days],
                 [
                     static function() {
                         return (new DateTime('now', new DateTimeZone('America/Los_Angeles')))
@@ -184,7 +184,7 @@ class DateCreatedConditionRuleTest extends TestCase
                 ],
             ],
             'pastYear' => [
-                ['dateRange' => DateRangeType::PastYear],
+                ['rangeType' => DateRangeType::PastYear],
                 [
                     static function() {
                         return (new DateTime('now', new DateTimeZone('America/Los_Angeles')))
@@ -196,7 +196,7 @@ class DateCreatedConditionRuleTest extends TestCase
                 ],
             ],
             'periodTypeHoursAfter' => [
-                ['dateRange' => DateRangeType::After, 'periodTypeValue' => 10, 'periodType' => PeriodType::Hours],
+                ['rangeType' => DateRangeType::After, 'periodTypeValue' => 10, 'periodType' => PeriodType::Hours],
                 [
                     static function() {
                         return '>= ' . (new DateTime('now', new DateTimeZone('America/Los_Angeles')))->modify('-10 hours')->format(DATE_ATOM);
@@ -204,7 +204,7 @@ class DateCreatedConditionRuleTest extends TestCase
                 ],
             ],
             'periodTypeMinutesAfter' => [
-                ['dateRange' => DateRangeType::After, 'periodTypeValue' => 10, 'periodType' => PeriodType::Minutes],
+                ['rangeType' => DateRangeType::After, 'periodTypeValue' => 10, 'periodType' => PeriodType::Minutes],
                 [
                     static function() {
                         return '>= ' . (new DateTime('now', new DateTimeZone('America/Los_Angeles')))->modify('-10 minutes')->format(DATE_ATOM);
@@ -212,7 +212,7 @@ class DateCreatedConditionRuleTest extends TestCase
                 ],
             ],
             'periodTypeDaysAfter' => [
-                ['dateRange' => DateRangeType::After, 'periodTypeValue' => 10, 'periodType' => PeriodType::Days],
+                ['rangeType' => DateRangeType::After, 'periodTypeValue' => 10, 'periodType' => PeriodType::Days],
                 [
                     static function() {
                         return '>= ' . (new DateTime('now', new DateTimeZone('America/Los_Angeles')))->modify('-10 days')->format(DATE_ATOM);
@@ -220,7 +220,7 @@ class DateCreatedConditionRuleTest extends TestCase
                 ],
             ],
             'periodTypeHoursBefore' => [
-                ['dateRange' => DateRangeType::Before, 'periodTypeValue' => 10, 'periodType' => PeriodType::Hours],
+                ['rangeType' => DateRangeType::Before, 'periodTypeValue' => 10, 'periodType' => PeriodType::Hours],
                 [
                     static function() {
                         return '<= ' . (new DateTime('now', new DateTimeZone('America/Los_Angeles')))->modify('-10 hours')->format(DATE_ATOM);
@@ -228,7 +228,7 @@ class DateCreatedConditionRuleTest extends TestCase
                 ],
             ],
             'periodTypeMinutesBefore' => [
-                ['dateRange' => DateRangeType::Before, 'periodTypeValue' => 10, 'periodType' => PeriodType::Minutes],
+                ['rangeType' => DateRangeType::Before, 'periodTypeValue' => 10, 'periodType' => PeriodType::Minutes],
                 [
                     static function() {
                         return '<= ' . (new DateTime('now', new DateTimeZone('America/Los_Angeles')))->modify('-10 minutes')->format(DATE_ATOM);
@@ -236,7 +236,7 @@ class DateCreatedConditionRuleTest extends TestCase
                 ],
             ],
             'periodTypeDaysBefore' => [
-                ['dateRange' => DateRangeType::Before, 'periodTypeValue' => 10, 'periodType' => PeriodType::Days],
+                ['rangeType' => DateRangeType::Before, 'periodTypeValue' => 10, 'periodType' => PeriodType::Days],
                 [
                     static function() {
                         return '<= ' . (new DateTime('now', new DateTimeZone('America/Los_Angeles')))->modify('-10 days')->format(DATE_ATOM);

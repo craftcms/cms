@@ -73,15 +73,15 @@ class DateRangeHelper
     /**
      * Returns the start and end date for a date range.
      *
-     * @param string $dateRange
+     * @param string $rangeType
      * @param DateTime|null $date If no date is passed, returned dates are based on the current timestamp
      * @return array
      */
-    public static function getDatesByDateRange(string $dateRange, ?DateTime $date = null): array
+    public static function getDatesByDateRange(string $rangeType, ?DateTime $date = null): array
     {
         $startDate = $date ?? DateTimeHelper::now();
         $endDate = clone $startDate;
-        switch ($dateRange) {
+        switch ($rangeType) {
             case DateRangeType::Today:
                 $startDate->setTime(0, 0);
                 $endDate->setTime(23, 59, 59);
