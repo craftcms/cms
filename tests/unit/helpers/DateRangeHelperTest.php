@@ -10,7 +10,7 @@ namespace crafttests\unit\helpers;
 use Closure;
 use Codeception\Test\Unit;
 use Craft;
-use craft\enums\DateRange;
+use craft\enums\DateRangeType;
 use craft\enums\PeriodType;
 use craft\helpers\DateRangeHelper;
 use craft\test\TestCase;
@@ -49,117 +49,6 @@ class DateRangeHelperTest extends TestCase
     protected DateTimeZone $asiaTokyoTimezone;
 
     /**
-     * @dataProvider constantsDataProvider
-     * @param string $expected
-     * @param string $actual
-     */
-    public function testConstants(string $expected, string $actual): void
-    {
-        self::assertSame($expected, $actual);
-    }
-
-    /**
-     * @return array
-     */
-    public function constantsDataProvider(): array
-    {
-        return [
-            ['range', DateRangeHelper::RANGE],
-            ['before', DateRangeHelper::BEFORE],
-            ['after', DateRangeHelper::AFTER],
-        ];
-    }
-
-    /**
-     * @param string $expected
-     * @return void
-     * @dataProvider getDateRangeOptionsDataProvider
-     */
-    public function testGetDateRangeOptions(string $expected): void
-    {
-        self::assertArrayHasKey($expected, DateRangeHelper::getDateRangeOptions());
-    }
-
-    /**
-     * @return array[]
-     */
-    public function getDateRangeOptionsDataProvider(): array
-    {
-        return [
-            ['today'],
-            ['thisWeek'],
-            ['thisMonth'],
-            ['thisYear'],
-            ['past7Days'],
-            ['past30Days'],
-            ['past90Days'],
-            ['pastYear'],
-            ['range'],
-            ['before'],
-            ['after'],
-        ];
-    }
-
-    /**
-     * @param string $expected
-     * @return void
-     * @dataProvider getPeriodTypeOptionsDataProvider
-     */
-    public function testGetPeriodTypeOptions(string $expected): void
-    {
-        self::assertArrayHasKey($expected, DateRangeHelper::getPeriodTypeOptions());
-    }
-
-    /**
-     * @return array
-     */
-    public function getPeriodTypeOptionsDataProvider(): array
-    {
-        return [
-            ['minutes'],
-            ['hours'],
-            ['days'],
-        ];
-    }
-
-    /**
-     * @param bool $start
-     * @param int|null $userStartDay
-     * @param string $expected
-     * @return void
-     * @dataProvider getWeekDayStringDataProvider
-     */
-    public function testGetWeekDayString(bool $start, ?int $userStartDay, string $expected): void
-    {
-        if ($userStartDay !== null) {
-            $user = Craft::$app->getUser()->getIdentity();
-            $originalPrefs = $user->getPreferences();
-            Craft::$app->getUsers()->saveUserPreferences($user, array_merge($originalPrefs, ['weekDayStart' => $userStartDay]));
-        }
-
-        self::assertSame(DateRangeHelper::getWeekDayString($start), $expected);
-
-        if ($userStartDay !== null) {
-            Craft::$app->getUsers()->saveUserPreferences($user, $originalPrefs);
-        }
-    }
-
-    /**
-     * @return array[]
-     */
-    public function getWeekDayStringDataProvider(): array
-    {
-        return [
-            [true, null, 'Monday'],
-            [false, null, 'Sunday'],
-            [true, 2, 'Tuesday'],
-            [false, 2, 'Monday'],
-            [true, 0, 'Sunday'],
-            [false, 0, 'Saturday'],
-        ];
-    }
-
-    /**
      * @param string $range
      * @param Closure $startDate
      * @param Closure $endDate
@@ -189,7 +78,7 @@ class DateRangeHelperTest extends TestCase
     {
         return [
             'today' => [
-                DateRange::Today, // Range
+                DateRangeType::Today, // Range
                 static function() {
                     return (new DateTime('now', new DateTimeZone('America/Los_Angeles')))->setTime(0, 0);
                 }, // Start Date
@@ -198,7 +87,7 @@ class DateRangeHelperTest extends TestCase
                 }, // End Date
             ],
             'thisMonth' => [
-                DateRange::ThisMonth,
+                DateRangeType::ThisMonth,
                 static function() {
                     return (new DateTime('now', new DateTimeZone('America/Los_Angeles')))
                         ->modify('first day of this month')
@@ -211,7 +100,7 @@ class DateRangeHelperTest extends TestCase
                 },
             ],
             'thisYear' => [
-                DateRange::ThisYear,
+                DateRangeType::ThisYear,
                 static function() {
                     return (new DateTime('now', new DateTimeZone('America/Los_Angeles')))
                         ->modify('1st January ' . date('Y'))
@@ -224,7 +113,7 @@ class DateRangeHelperTest extends TestCase
                 },
             ],
             'past7Days' => [
-                DateRange::Past7Days,
+                DateRangeType::Past7Days,
                 static function() {
                     return (new DateTime('now', new DateTimeZone('America/Los_Angeles')))
                         ->sub(new DateInterval('P7D'));
@@ -234,7 +123,7 @@ class DateRangeHelperTest extends TestCase
                 },
             ],
             'past30Days' => [
-                DateRange::Past30Days,
+                DateRangeType::Past30Days,
                 static function() {
                     return (new DateTime('now', new DateTimeZone('America/Los_Angeles')))
                         ->sub(new DateInterval('P30D'));
@@ -244,7 +133,7 @@ class DateRangeHelperTest extends TestCase
                 },
             ],
             'past90Days' => [
-                DateRange::Past90Days,
+                DateRangeType::Past90Days,
                 static function() {
                     return (new DateTime('now', new DateTimeZone('America/Los_Angeles')))
                         ->sub(new DateInterval('P90D'));
@@ -254,7 +143,7 @@ class DateRangeHelperTest extends TestCase
                 },
             ],
             'pastYear' => [
-                DateRange::PastYear,
+                DateRangeType::PastYear,
                 static function() {
                     return (new DateTime('now', new DateTimeZone('America/Los_Angeles')))
                         ->sub(new DateInterval('P1Y'));

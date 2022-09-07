@@ -8,13 +8,12 @@
 namespace craft\enums;
 
 /**
- * The DateRange class is an abstract class that defines the various date ranges that are available in Craft.
- * This class is a poor man's version of an enum, since PHP does not have support for native enumerations.
+ * The DateRangeType class is an abstract class that defines the various date ranges that are available in Craft.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.3.0
  */
-abstract class DateRange
+abstract class DateRangeType
 {
     public const Today = 'today';
     public const ThisWeek = 'thisWeek';
@@ -24,4 +23,7 @@ abstract class DateRange
     public const Past30Days = 'past30Days';
     public const Past90Days = 'past90Days';
     public const PastYear = 'pastYear';
+    public const Before = 'before';
+    public const After = 'after';
+    public const Range = 'range';
 }

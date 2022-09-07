@@ -3,6 +3,7 @@
 namespace craft\base\conditions;
 
 use Craft;
+use craft\enums\DateRangeType;
 use craft\enums\PeriodType;
 use craft\fields\Date;
 use craft\helpers\ArrayHelper;
@@ -28,13 +29,13 @@ abstract class BaseDateRangeConditionRule extends BaseConditionRule
      * @var string
      * @since 4.3.0
      */
-    public string $dateRange = DateRangeHelper::RANGE;
+    public string $rangeType = DateRangeType::Today;
 
     /**
      * @var string
      * @since 4.3.0
      */
-    public string $periodType = PeriodType::Hours;
+    public string $periodType = PeriodType::Days;
 
     /**
      * @var float|null
@@ -51,6 +52,21 @@ abstract class BaseDateRangeConditionRule extends BaseConditionRule
      * @var string|null
      */
     private ?string $_endDate = null;
+
+    /**
+     * @inheritdoc
+     */
+    public function __construct($config = [])
+    {
+        if (
+            !isset($config['attributes']['rangeType']) &&
+            (!empty($config['attributes']['startDate']) || !empty($config['attributes']['endDate']))
+        ) {
+            $config['attributes']['rangeType'] = DateRangeType::Range;
+        }
+
+        parent::__construct($config);
+    }
 
     /**
      * @return string|null
@@ -100,7 +116,7 @@ abstract class BaseDateRangeConditionRule extends BaseConditionRule
     public function getConfig(): array
     {
         return array_merge(parent::getConfig(), [
-            'dateRange' => $this->dateRange,
+            'rangeType' => $this->rangeType,
             'periodType' => $this->periodType,
             'periodTypeValue' => $this->periodTypeValue,
             'startDate' => $this->getStartDate(),
@@ -114,20 +130,23 @@ abstract class BaseDateRangeConditionRule extends BaseConditionRule
      */
     protected function inputHtml(): string
     {
-        $dateRangeOptionsHtml = Html::beginTag('ul', ['class' => 'padded']);
-        foreach (DateRangeHelper::getDateRangeOptions() as $value => $label) {
-            if ($value === DateRangeHelper::RANGE) {
-                $dateRangeOptionsHtml .= Html::tag('hr', options: ['class' => 'padded']);
+        $rangeTypeOptionsHtml = Html::beginTag('ul', ['class' => 'padded']);
+        $foundAdvancedRuleType = false;
+
+        foreach (DateRangeHelper::rangeTypeOptions() as $value => $label) {
+            if (!$foundAdvancedRuleType && in_array($value, [DateRangeType::Before, DateRangeType::After, DateRangeType::Range])) {
+                $rangeTypeOptionsHtml .= Html::tag('hr', options: ['class' => 'padded']);
+                $foundAdvancedRuleType = true;
             }
 
-            $dateRangeOptionsHtml .= Html::tag('li',
+            $rangeTypeOptionsHtml .= Html::tag('li',
                 Html::a($label, options: [
-                    'class' => $value === $this->dateRange ? 'sel' : false,
+                    'class' => $value === $this->rangeType ? 'sel' : false,
                     'data' => ['value' => $value],
                 ])
             );
         }
-        $dateRangeOptionsHtml .= Html::endTag('ul');
+        $rangeTypeOptionsHtml .= Html::endTag('ul');
 
         $buttonId = 'date-range-btn';
         $inputId = 'date-range-input';
@@ -153,23 +172,23 @@ JS,
             ]
         );
 
-        $html = Html::button(DateRangeHelper::getDateRangeOptions()[$this->dateRange], [
+        $html = Html::button(DateRangeHelper::rangeTypeOptions()[$this->rangeType], [
             'id' => $buttonId,
             'class' => ['btn', 'menubtn'],
             'autofocus' => false,
         ]) .
-        Html::tag('div', $dateRangeOptionsHtml, [
+        Html::tag('div', $rangeTypeOptionsHtml, [
             'id' => $menuId,
             'class' => 'menu',
         ]) .
-        Html::hiddenInput('dateRange', $this->dateRange, [
+        Html::hiddenInput('rangeType', $this->rangeType, [
             'id' => $inputId,
             'hx' => [
                 'post' => UrlHelper::actionUrl('conditions/render'),
             ],
         ]);
 
-        if ($this->dateRange === DateRangeHelper::RANGE) {
+        if ($this->rangeType === DateRangeType::Range) {
             $html .= Html::tag(
                     'div',
                     options: ['class' => ['flex', 'flex-nowrap']],
@@ -196,7 +215,7 @@ JS,
                         ])
                     )
                 );
-        } elseif ($this->dateRange === DateRangeHelper::BEFORE || $this->dateRange === DateRangeHelper::AFTER) {
+        } elseif (in_array($this->rangeType, [DateRangeType::Before, DateRangeType::After])) {
             $html .= Html::tag(
                 'div',
                 options: ['class' => ['flex', 'flex-nowrap']],
@@ -204,12 +223,12 @@ JS,
                 Cp::textHtml([
                     'name' => 'periodTypeValue',
                     'value' => $this->periodTypeValue,
-                    'placeholder' => '4',
+                    'size' => '5',
                 ]) .
                 Cp::selectHtml([
                     'name' => 'periodType',
                     'value' => $this->periodType,
-                    'options' => DateRangeHelper::getPeriodTypeOptions(),
+                    'options' => DateRangeHelper::periodTypeOptions(),
                 ])
             );
         }
@@ -223,9 +242,9 @@ JS,
     protected function defineRules(): array
     {
         return array_merge(parent::defineRules(), [
-            [['startDate', 'endDate', 'dateRange', 'timeFrameUnits', 'timeFrameValue'], 'safe'],
-            [['dateRange'], 'in', 'range' => array_keys(DateRangeHelper::getDateRangeOptions())],
-            [['periodType'], 'in', 'range' => array_keys(DateRangeHelper::getPeriodTypeOptions())],
+            [['startDate', 'endDate', 'rangeType', 'timeFrameUnits', 'timeFrameValue'], 'safe'],
+            [['rangeType'], 'in', 'range' => array_keys(DateRangeHelper::rangeTypeOptions())],
+            [['periodType'], 'in', 'range' => array_keys(DateRangeHelper::periodTypeOptions())],
             [['periodTypeValue'], 'number', 'skipOnEmpty' => true],
         ]);
     }
@@ -237,7 +256,7 @@ JS,
      */
     protected function queryParamValue(): array|string|null
     {
-        if ($this->dateRange === DateRangeHelper::RANGE && ($this->_startDate || $this->_endDate)) {
+        if ($this->rangeType === DateRangeType::Range && ($this->_startDate || $this->_endDate)) {
             return array_filter([
                 'and',
                 $this->_startDate ? ">= $this->_startDate" : null,
@@ -245,18 +264,18 @@ JS,
             ]);
         }
 
-        if (($this->dateRange === DateRangeHelper::BEFORE || $this->dateRange === DateRangeHelper::AFTER) && $this->periodTypeValue && $this->periodType) {
+        if (in_array($this->rangeType, [DateRangeType::Before, DateRangeType::After]) && $this->periodTypeValue && $this->periodType) {
             $dateInterval = DateRangeHelper::getDateIntervalByTimePeriod($this->periodTypeValue, $this->periodType);
 
-            return ($this->dateRange === DateRangeHelper::AFTER ? '>=' : '<=') . ' ' . DateTimeHelper::toIso8601(DateTimeHelper::now()->sub($dateInterval));
+            return ($this->rangeType === DateRangeType::After ? '>=' : '<=') . ' ' . DateTimeHelper::toIso8601(DateTimeHelper::now()->sub($dateInterval));
         }
 
-        $dateRangeOptions = DateRangeHelper::getDateRangeOptions();
-        ArrayHelper::remove($dateRangeOptions, DateRangeHelper::BEFORE);
-        ArrayHelper::remove($dateRangeOptions, DateRangeHelper::AFTER);
-        ArrayHelper::remove($dateRangeOptions, DateRangeHelper::RANGE);
-        if (array_key_exists($this->dateRange, $dateRangeOptions)) {
-            $dateRange = DateRangeHelper::getDatesByDateRange($this->dateRange);
+        $dateRangeOptions = DateRangeHelper::rangeTypeOptions();
+        ArrayHelper::remove($dateRangeOptions, DateRangeType::Before);
+        ArrayHelper::remove($dateRangeOptions, DateRangeType::After);
+        ArrayHelper::remove($dateRangeOptions, DateRangeType::Range);
+        if (array_key_exists($this->rangeType, $dateRangeOptions)) {
+            $dateRange = DateRangeHelper::getDatesByDateRange($this->rangeType);
             $startDate = DateTimeHelper::toIso8601($dateRange['startDate']);
             $endDate = DateTimeHelper::toIso8601($dateRange['endDate']);
 
@@ -275,29 +294,29 @@ JS,
      */
     protected function matchValue(?DateTime $value): bool
     {
-        if ($this->dateRange === DateRangeHelper::RANGE) {
+        if ($this->rangeType === DateRangeType::Range) {
             return (
                 (!$this->_startDate || ($value && $value >= DateTimeHelper::toDateTime($this->_startDate))) &&
                 (!$this->_endDate || ($value && $value < DateTimeHelper::toDateTime($this->_endDate)))
             );
         }
 
-        if (($this->dateRange === DateRangeHelper::BEFORE || $this->dateRange === DateRangeHelper::AFTER) && $this->periodTypeValue && $this->periodType) {
+        if (in_array($this->rangeType, [DateRangeType::Before, DateRangeType::After]) && $this->periodTypeValue && $this->periodType) {
             $date = DateTimeHelper::now()->sub(DateRangeHelper::getDateIntervalByTimePeriod($this->periodTypeValue, $this->periodType));
 
-            if ($this->dateRange === DateRangeHelper::AFTER) {
+            if ($this->rangeType === DateRangeType::After) {
                 return $value && $value >= $date;
             }
 
             return $value && $value <= $date;
         }
 
-        $dateRangeOptions = DateRangeHelper::getDateRangeOptions();
-        ArrayHelper::remove($dateRangeOptions, DateRangeHelper::BEFORE);
-        ArrayHelper::remove($dateRangeOptions, DateRangeHelper::AFTER);
-        ArrayHelper::remove($dateRangeOptions, DateRangeHelper::RANGE);
-        if (array_key_exists($this->dateRange, $dateRangeOptions)) {
-            $dateRange = DateRangeHelper::getDatesByDateRange($this->dateRange);
+        $dateRangeOptions = DateRangeHelper::rangeTypeOptions();
+        ArrayHelper::remove($dateRangeOptions, DateRangeType::Before);
+        ArrayHelper::remove($dateRangeOptions, DateRangeType::After);
+        ArrayHelper::remove($dateRangeOptions, DateRangeType::Range);
+        if (array_key_exists($this->rangeType, $dateRangeOptions)) {
+            $dateRange = DateRangeHelper::getDatesByDateRange($this->rangeType);
             return $value && $value >= $dateRange['startDate'] && $value <= $dateRange['endDate'];
         }
 

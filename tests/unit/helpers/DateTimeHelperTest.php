@@ -435,6 +435,48 @@ class DateTimeHelperTest extends TestCase
     }
 
     /**
+     * @param int $expected
+     * @param int|null $userStartDay
+     * @return void
+     * @dataProvider weekStartDayDataProvider
+     */
+    public function testWeekStartDay(int $expected, ?int $userStartDay = null): void
+    {
+        if ($userStartDay !== null) {
+            $user = Craft::$app->getUser()->getIdentity();
+            $originalPrefs = $user->getPreferences();
+            Craft::$app->getUsers()->saveUserPreferences($user, array_merge($originalPrefs, ['weekDayStart' => $userStartDay]));
+        }
+
+        self::assertSame(DateTimeHelper::weekStartDay(), $expected);
+
+        if ($userStartDay !== null) {
+            Craft::$app->getUsers()->saveUserPreferences($user, $originalPrefs);
+        }
+    }
+
+    /**
+     * @param int $expected
+     * @param int|null $userStartDay
+     * @return void
+     * @dataProvider weekEndDayDataProvider
+     */
+    public function testWeekEndDay(int $expected, ?int $userStartDay): void
+    {
+        if ($userStartDay !== null) {
+            $user = Craft::$app->getUser()->getIdentity();
+            $originalPrefs = $user->getPreferences();
+            Craft::$app->getUsers()->saveUserPreferences($user, array_merge($originalPrefs, ['weekDayStart' => $userStartDay]));
+        }
+
+        self::assertSame(DateTimeHelper::weekEndDay(), $expected);
+
+        if ($userStartDay !== null) {
+            Craft::$app->getUsers()->saveUserPreferences($user, $originalPrefs);
+        }
+    }
+
+    /**
      * @return array
      */
     public function constantsDataProvider(): array
@@ -794,5 +836,29 @@ class DateTimeHelperTest extends TestCase
         $this->systemTimezone = new DateTimeZone(Craft::$app->getTimeZone());
         $this->utcTimezone = new DateTimeZone('UTC');
         $this->asiaTokyoTimezone = new DateTimeZone('Asia/Tokyo');
+    }
+
+    /**
+     * @return array[]
+     */
+    public function weekStartDayDataProvider(): array
+    {
+        return [
+            [1],
+            [2, 2],
+            [0, 0],
+        ];
+    }
+
+    /**
+     * @return array[]
+     */
+    public function weekEndDayDataProvider(): array
+    {
+        return [
+            [0],
+            [1, 2],
+            [6, 0],
+        ];
     }
 }

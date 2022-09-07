@@ -8,7 +8,7 @@
 namespace craft\helpers;
 
 use Craft;
-use craft\enums\DateRange;
+use craft\enums\DateRangeType;
 use craft\enums\PeriodType;
 use DateInterval;
 use DateTime;
@@ -22,51 +22,44 @@ use yii\base\InvalidArgumentException;
  */
 class DateRangeHelper
 {
-    public const RANGE = 'range';
-    public const BEFORE = 'before';
-    public const AFTER = 'after';
-
     /**
      * @return array
      */
-    public static function getDateRangeOptions(): array
+    public static function rangeTypeOptions(): array
     {
         return [
-            DateRange::Today => Craft::t('app', 'Today'),
-            DateRange::ThisWeek => Craft::t('app', 'This week'),
-            DateRange::ThisMonth => Craft::t('app', 'This month'),
-            DateRange::ThisYear => Craft::t('app', 'This year'),
-            DateRange::Past7Days => Craft::t('app', 'Past {num} days', ['num' => 7]),
-            DateRange::Past30Days => Craft::t('app', 'Past {num} days', ['num' => 30]),
-            DateRange::Past90Days => Craft::t('app', 'Past {num} days', ['num' => 90]),
-            DateRange::PastYear => Craft::t('app', 'Past year'),
-            self::RANGE => Craft::t('app', 'Date range'),
-            self::BEFORE => Craft::t('app', 'Before…'),
-            self::AFTER => Craft::t('app', 'After…'),
+            DateRangeType::Today => Craft::t('app', 'Today'),
+            DateRangeType::ThisWeek => Craft::t('app', 'This week'),
+            DateRangeType::ThisMonth => Craft::t('app', 'This month'),
+            DateRangeType::ThisYear => Craft::t('app', 'This year'),
+            DateRangeType::Past7Days => Craft::t('app', 'Past {num} days', ['num' => 7]),
+            DateRangeType::Past30Days => Craft::t('app', 'Past {num} days', ['num' => 30]),
+            DateRangeType::Past90Days => Craft::t('app', 'Past {num} days', ['num' => 90]),
+            DateRangeType::PastYear => Craft::t('app', 'Past year'),
+            DateRangeType::Before => Craft::t('app', 'Before…'),
+            DateRangeType::After => Craft::t('app', 'After…'),
+            DateRangeType::Range => Craft::t('app', 'Range…'),
         ];
     }
 
     /**
      * @return array
      */
-    public static function getPeriodTypeOptions(): array
+    public static function periodTypeOptions(): array
     {
         return [
-            PeriodType::Minutes => Craft::t('app', 'Minutes'),
-            PeriodType::Hours => Craft::t('app', 'Hours'),
-            PeriodType::Days => Craft::t('app', 'Days'),
+            PeriodType::Minutes => Craft::t('app', 'minutes ago'),
+            PeriodType::Hours => Craft::t('app', 'hours ago'),
+            PeriodType::Days => Craft::t('app', 'days ago'),
         ];
     }
 
     /**
-     * Returns the start or end name of the day for the week based on user preference.
-     *
-     * @param bool $start
-     * @return int|string
+     * @phpstan-param int<0,6> $day
      */
-    public static function getWeekDayString(bool $start = true): int|string
+    private static function _dayName(int $day): string
     {
-        $dayMap = [
+        return match ($day) {
             0 => 'Sunday',
             1 => 'Monday',
             2 => 'Tuesday',
@@ -74,21 +67,7 @@ class DateRangeHelper
             4 => 'Thursday',
             5 => 'Friday',
             6 => 'Saturday',
-        ];
-
-        $startDay = 1;
-        $user = Craft::$app->getUser()->getIdentity();
-        if ($user && ($user->getPreference('weekDayStart') || $user->getPreference('weekDayStart') === 0)) {
-            $startDay = $user->getPreference('weekDayStart');
-        }
-
-        // We are looking for the end day of the week
-        if ($start === false) {
-            --$startDay;
-            $startDay = $startDay < 0 ? count($dayMap) - 1 : $startDay;
-        }
-
-        return $dayMap[$startDay];
+        };
     }
 
     /**
@@ -103,45 +82,49 @@ class DateRangeHelper
         $startDate = $date ?? DateTimeHelper::now();
         $endDate = clone $startDate;
         switch ($dateRange) {
-            case DateRange::Today:
+            case DateRangeType::Today:
                 $startDate->setTime(0, 0);
                 $endDate->setTime(23, 59, 59);
                 break;
-            case DateRange::ThisWeek:
-                if (DateTimeHelper::now()->format('l') != self::getWeekDayString()) {
-                    $startDate->modify('last ' . self::getWeekDayString());
+            case DateRangeType::ThisWeek:
+                $dayName = DateTimeHelper::now()->format('l');
+
+                $startDayName = self::_dayName(DateTimeHelper::weekStartDay());
+                if ($dayName != $startDayName) {
+                    $startDate->modify("last $startDayName");
                 }
                 $startDate->setTime(0, 0);
 
-                if (DateTimeHelper::now()->format('l') != self::getWeekDayString(false)) {
-                    $endDate->modify('next ' . self::getWeekDayString(false));
+                $endDayName = self::_dayName(DateTimeHelper::weekEndDay());
+                if ($dayName != $endDayName) {
+                    $endDate->modify("next $endDayName");
                 }
                 $endDate->setTime(23, 59, 59);
                 break;
-            case DateRange::ThisMonth:
+            case DateRangeType::ThisMonth:
                 $startDate->modify('first day of this month');
                 $startDate->setTime(0, 0);
 
                 $endDate->modify('last day of this month');
                 $endDate->setTime(23, 59, 59);
                 break;
-            case DateRange::ThisYear:
+            case DateRangeType::ThisYear:
                 $startDate->setDate((int)$startDate->format('Y'), 1, 1);
                 $startDate->setTime(0, 0);
 
                 $endDate->setDate((int)$endDate->format('Y'), 12, 31);
                 $endDate->setTime(23, 59, 59);
                 break;
-            case DateRange::Past7Days:
+            case DateRangeType::Past7Days:
                 $startDate->sub(DateTimeHelper::toDateInterval('P7D'));
                 break;
-            case DateRange::Past30Days:
+            case DateRangeType::Past30Days:
                 $startDate->sub(DateTimeHelper::toDateInterval('P30D'));
                 break;
-            case DateRange::Past90Days:
+            case DateRangeType::Past90Days:
                 $startDate->sub(DateTimeHelper::toDateInterval('P90D'));
                 break;
-            case DateRange::PastYear:
+            case DateRangeType::PastYear:
                 $startDate->sub(DateTimeHelper::toDateInterval('P1Y'));
                 break;
         }
