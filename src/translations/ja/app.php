@@ -1659,7 +1659,7 @@ return [
     'Verify email addresses' => 'メールアドレスを確認する',
     'Version {version}' => 'バージョン {version}',
     'Version' => 'バージョン',
-    'Very High (Recommended)' => '非常に高い(推奨)',
+    'Very High' => 'Very High',
     'Video' => 'ビデオ',
     'View Mode' => 'モードを見る。',
     'View all users' => 'すべてのユーザを表示',

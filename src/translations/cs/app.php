@@ -1659,7 +1659,7 @@ return [
     'Verify email addresses' => 'Ověřit emailovou adresu',
     'Version {version}' => 'Verze {version}',
     'Version' => 'Verze',
-    'Very High (Recommended)' => 'Velmi vysoké (Doporučeno)',
+    'Very High' => 'Very High',
     'Video' => 'Video',
     'View Mode' => 'Zobrazit mód',
     'View all users' => 'Zobrazit všechny uživatele',

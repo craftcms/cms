@@ -1659,7 +1659,7 @@ return [
     'Verify email addresses' => 'Verifica gli indirizzi email',
     'Version {version}' => 'Versione {version}',
     'Version' => 'Versione',
-    'Very High (Recommended)' => 'Molto grande (consigliato)',
+    'Very High' => 'Very High',
     'Video' => 'Video',
     'View Mode' => 'Visualizzazione',
     'View all users' => 'Visualizza tutti gli utenti',

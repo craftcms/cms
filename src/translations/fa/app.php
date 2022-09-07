@@ -1659,7 +1659,7 @@ return [
     'Verify email addresses' => 'اعتبارسنجی آدرس های پست الکترونیکی',
     'Version {version}' => 'نسخه {version}',
     'Version' => 'نسخه',
-    'Very High (Recommended)' => 'خیلی بالا (توصیه شده)',
+    'Very High' => 'Very High',
     'Video' => 'ویدیو',
     'View Mode' => 'نحوه نمایش',
     'View all users' => 'مشاهده تمامی کاربرها',

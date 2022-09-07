@@ -1659,7 +1659,7 @@ return [
     'Verify email addresses' => 'Ellenőrzi az e-mail címet',
     'Version {version}' => 'Verzió {version}',
     'Version' => 'Verzió',
-    'Very High (Recommended)' => 'Nagyon magas (ajánlott)',
+    'Very High' => 'Very High',
     'Video' => 'Videó',
     'View Mode' => 'Megtekintő mód',
     'View all users' => 'Az összes felhasználó megtekintése',

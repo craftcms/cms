@@ -1659,7 +1659,7 @@ return [
     'Verify email addresses' => 'Eposta adreslerini doğrula',
     'Version {version}' => 'Sürüm {version}',
     'Version' => 'Sürüm',
-    'Very High (Recommended)' => 'Çok Yüksek (Tavsiye edilen)',
+    'Very High' => 'Very High',
     'Video' => 'Vidyo',
     'View Mode' => 'Görünüm Modu',
     'View all users' => 'Tüm kullanıcıları göster',

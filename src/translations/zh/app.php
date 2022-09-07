@@ -1659,7 +1659,7 @@ return [
     'Verify email addresses' => '验证电子邮件地址',
     'Version {version}' => '版本 {version}',
     'Version' => '版本',
-    'Very High (Recommended)' => '很高（推荐）',
+    'Very High' => 'Very High',
     'Video' => '视频',
     'View Mode' => '查看模式',
     'View all users' => '查看所有用户',

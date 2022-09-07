@@ -1659,7 +1659,7 @@ return [
     'Verify email addresses' => 'E-mailadres controleren',
     'Version {version}' => 'Versie {version}',
     'Version' => 'Versie',
-    'Very High (Recommended)' => 'Zeer hoog (Aanbevolen)',
+    'Very High' => 'Very High',
     'Video' => 'Video',
     'View Mode' => 'Bekijk modus',
     'View all users' => 'Alle gebruikers weergeven',

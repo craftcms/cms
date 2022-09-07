@@ -1660,7 +1660,7 @@ return [
     'Verify email addresses' => 'Verificer email adresse',
     'Version {version}' => 'Version {version}',
     'Version' => 'Version',
-    'Very High (Recommended)' => 'Meget høj (anbefalet)',
+    'Very High' => 'Very High',
     'Video' => 'Video',
     'View Mode' => 'Se tilstand',
     'View all users' => 'Vis alle brugere',
