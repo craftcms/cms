@@ -7,12 +7,8 @@
 
 namespace craft\db;
 
-use Craft;
 use craft\db\mysql\Schema as MysqlSchema;
 use craft\db\pgsql\Schema as PgsqlSchema;
-use craft\helpers\Db;
-use DateTime;
-use yii2tech\ar\softdelete\SoftDeleteBehavior;
 
 /**
  * SchemaTrait
