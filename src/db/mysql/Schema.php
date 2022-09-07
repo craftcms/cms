@@ -10,6 +10,7 @@ namespace craft\db\mysql;
 use Composer\Util\Platform;
 use Craft;
 use craft\db\Connection;
+use craft\db\SchemaTrait;
 use craft\db\TableSchema;
 use craft\helpers\App;
 use craft\helpers\Db;
@@ -30,6 +31,8 @@ use yii\db\Exception;
  */
 class Schema extends \yii\db\mysql\Schema
 {
+    use SchemaTrait;
+
     public const TYPE_TINYTEXT = 'tinytext';
     public const TYPE_MEDIUMTEXT = 'mediumtext';
     public const TYPE_LONGTEXT = 'longtext';
