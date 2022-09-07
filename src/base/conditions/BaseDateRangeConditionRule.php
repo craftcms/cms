@@ -27,6 +27,7 @@ abstract class BaseDateRangeConditionRule extends BaseConditionRule
 {
     /**
      * @var string
+     * @phpstan-var DateRangeType::*
      * @since 4.3.0
      */
     public string $rangeType = DateRangeType::Today;
@@ -265,7 +266,7 @@ JS,
         }
 
         if (in_array($this->rangeType, [DateRangeType::Before, DateRangeType::After]) && $this->periodTypeValue && $this->periodType) {
-            $dateInterval = DateRangeHelper::getDateIntervalByTimePeriod($this->periodTypeValue, $this->periodType);
+            $dateInterval = DateRangeHelper::dateIntervalByTimePeriod($this->periodTypeValue, $this->periodType);
 
             return ($this->rangeType === DateRangeType::After ? '>=' : '<') . ' ' . DateTimeHelper::toIso8601(DateTimeHelper::now()->sub($dateInterval));
         }
@@ -274,11 +275,11 @@ JS,
         ArrayHelper::remove($rangeTypeOptions, DateRangeType::Before);
         ArrayHelper::remove($rangeTypeOptions, DateRangeType::After);
         ArrayHelper::remove($rangeTypeOptions, DateRangeType::Range);
-        if (array_key_exists($this->rangeType, $rangeTypeOptions)) {
-            $dateRange = DateRangeHelper::getDatesByDateRange($this->rangeType);
-            $startDate = DateTimeHelper::toIso8601($dateRange['startDate']);
-            $endDate = DateTimeHelper::toIso8601($dateRange['endDate']);
 
+        if (array_key_exists($this->rangeType, $rangeTypeOptions)) {
+            [$startDate, $endDate] = DateRangeHelper::dateRangeByType($this->rangeType);
+            $startDate = DateTimeHelper::toIso8601($startDate);
+            $endDate = DateTimeHelper::toIso8601($endDate);
             return ['and', ">= $startDate", "< $endDate"];
         }
 
@@ -302,7 +303,7 @@ JS,
         }
 
         if (in_array($this->rangeType, [DateRangeType::Before, DateRangeType::After]) && $this->periodTypeValue && $this->periodType) {
-            $date = DateTimeHelper::now()->sub(DateRangeHelper::getDateIntervalByTimePeriod($this->periodTypeValue, $this->periodType));
+            $date = DateTimeHelper::now()->sub(DateRangeHelper::dateIntervalByTimePeriod($this->periodTypeValue, $this->periodType));
 
             if ($this->rangeType === DateRangeType::After) {
                 return $value && $value >= $date;
@@ -316,8 +317,8 @@ JS,
         ArrayHelper::remove($rangeTypeOptions, DateRangeType::After);
         ArrayHelper::remove($rangeTypeOptions, DateRangeType::Range);
         if (array_key_exists($this->rangeType, $rangeTypeOptions)) {
-            $dateRange = DateRangeHelper::getDatesByDateRange($this->rangeType);
-            return $value && $value >= $dateRange['startDate'] && $value < $dateRange['endDate'];
+            [$startDate, $endDate] = DateRangeHelper::dateRangeByType($this->rangeType);
+            return $value && $value >= $startDate && $value < $endDate;
         }
 
         return false;

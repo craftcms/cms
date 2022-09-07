@@ -264,7 +264,7 @@ class DateTimeHelperTest extends TestCase
     /**
      * @throws Exception
      */
-    public function testYesterday(): void
+    public function testIsYesterday(): void
     {
         $dateTime = new DateTime('now');
 
@@ -284,7 +284,7 @@ class DateTimeHelperTest extends TestCase
     /**
      * @throws Exception
      */
-    public function testThisYearCheck(): void
+    public function testIsThisYear(): void
     {
         $dateTime = new DateTime('now');
         self::assertTrue(DateTimeHelper::isThisYear($dateTime));
@@ -299,7 +299,7 @@ class DateTimeHelperTest extends TestCase
     /**
      * @throws Exception
      */
-    public function testThisWeek(): void
+    public function testIsThisWeek(): void
     {
         $dateTime = new DateTime('now');
         self::assertTrue(DateTimeHelper::isThisWeek($dateTime));
@@ -438,9 +438,9 @@ class DateTimeHelperTest extends TestCase
      * @param int $expected
      * @param int|null $userStartDay
      * @return void
-     * @dataProvider weekStartDayDataProvider
+     * @dataProvider firstWeekDayDataProvider
      */
-    public function testWeekStartDay(int $expected, ?int $userStartDay = null): void
+    public function testFirstWeekDay(int $expected, ?int $userStartDay = null): void
     {
         if ($userStartDay !== null) {
             $user = Craft::$app->getUser()->getIdentity();
@@ -448,7 +448,7 @@ class DateTimeHelperTest extends TestCase
             Craft::$app->getUsers()->saveUserPreferences($user, array_merge($originalPrefs, ['weekDayStart' => $userStartDay]));
         }
 
-        self::assertSame(DateTimeHelper::weekStartDay(), $expected);
+        self::assertSame(DateTimeHelper::firstWeekDay(), $expected);
 
         if ($userStartDay !== null) {
             Craft::$app->getUsers()->saveUserPreferences($user, $originalPrefs);
@@ -459,9 +459,9 @@ class DateTimeHelperTest extends TestCase
      * @param int $expected
      * @param int|null $userStartDay
      * @return void
-     * @dataProvider weekEndDayDataProvider
+     * @dataProvider lastWeekDayDataProvider
      */
-    public function testWeekEndDay(int $expected, ?int $userStartDay): void
+    public function testLastWeekDay(int $expected, ?int $userStartDay): void
     {
         if ($userStartDay !== null) {
             $user = Craft::$app->getUser()->getIdentity();
@@ -469,7 +469,7 @@ class DateTimeHelperTest extends TestCase
             Craft::$app->getUsers()->saveUserPreferences($user, array_merge($originalPrefs, ['weekDayStart' => $userStartDay]));
         }
 
-        self::assertSame(DateTimeHelper::weekEndDay(), $expected);
+        self::assertSame(DateTimeHelper::lastWeekDay(), $expected);
 
         if ($userStartDay !== null) {
             Craft::$app->getUsers()->saveUserPreferences($user, $originalPrefs);
@@ -841,7 +841,7 @@ class DateTimeHelperTest extends TestCase
     /**
      * @return array[]
      */
-    public function weekStartDayDataProvider(): array
+    public function firstWeekDayDataProvider(): array
     {
         return [
             [1],
@@ -853,7 +853,7 @@ class DateTimeHelperTest extends TestCase
     /**
      * @return array[]
      */
-    public function weekEndDayDataProvider(): array
+    public function lastWeekDayDataProvider(): array
     {
         return [
             [0],

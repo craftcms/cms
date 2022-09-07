@@ -55,81 +55,50 @@ class DateRangeHelper
     }
 
     /**
-     * @phpstan-param int<0,6> $day
-     */
-    private static function _dayName(int $day): string
-    {
-        return match ($day) {
-            0 => 'Sunday',
-            1 => 'Monday',
-            2 => 'Tuesday',
-            3 => 'Wednesday',
-            4 => 'Thursday',
-            5 => 'Friday',
-            6 => 'Saturday',
-        };
-    }
-
-    /**
-     * Returns the start and end date for a date range.
+     * Returns the start and end dates for a date range by its type.
      *
      * @param string $rangeType
-     * @param DateTime|null $date If no date is passed, returned dates are based on the current timestamp
-     * @return array
+     * @phpstan-param DateRangeType::* $rangeType
+     * @return DateTime[]
+     * @phpstan-return array{DateTime,DateTime}
      */
-    public static function getDatesByDateRange(string $rangeType, ?DateTime $date = null): array
+    public static function dateRangeByType(string $rangeType): array
     {
-        $startDate = $date ?? DateTimeHelper::now();
-        $endDate = clone $startDate;
-        switch ($rangeType) {
-            case DateRangeType::Today:
-                $startDate->setTime(0, 0);
-                $endDate->setTime(23, 59, 59);
-                break;
-            case DateRangeType::ThisWeek:
-                $dayName = DateTimeHelper::now()->format('l');
-
-                $startDayName = self::_dayName(DateTimeHelper::weekStartDay());
-                if ($dayName != $startDayName) {
-                    $startDate->modify("last $startDayName");
-                }
-                $startDate->setTime(0, 0);
-
-                $endDayName = self::_dayName(DateTimeHelper::weekEndDay());
-                if ($dayName != $endDayName) {
-                    $endDate->modify("next $endDayName");
-                }
-                $endDate->setTime(23, 59, 59);
-                break;
-            case DateRangeType::ThisMonth:
-                $startDate->modify('first day of this month');
-                $startDate->setTime(0, 0);
-
-                $endDate->modify('last day of this month');
-                $endDate->setTime(23, 59, 59);
-                break;
-            case DateRangeType::ThisYear:
-                $startDate->setDate((int)$startDate->format('Y'), 1, 1);
-                $startDate->setTime(0, 0);
-
-                $endDate->setDate((int)$endDate->format('Y'), 12, 31);
-                $endDate->setTime(23, 59, 59);
-                break;
-            case DateRangeType::Past7Days:
-                $startDate->sub(DateTimeHelper::toDateInterval('P7D'));
-                break;
-            case DateRangeType::Past30Days:
-                $startDate->sub(DateTimeHelper::toDateInterval('P30D'));
-                break;
-            case DateRangeType::Past90Days:
-                $startDate->sub(DateTimeHelper::toDateInterval('P90D'));
-                break;
-            case DateRangeType::PastYear:
-                $startDate->sub(DateTimeHelper::toDateInterval('P1Y'));
-                break;
-        }
-
-        return compact('startDate', 'endDate');
+        return match ($rangeType) {
+            DateRangeType::Today => [
+                DateTimeHelper::today(),
+                DateTimeHelper::tomorrow(),
+            ],
+            DateRangeType::ThisWeek => [
+                DateTimeHelper::thisWeek(),
+                DateTimeHelper::nextWeek(),
+            ],
+            DateRangeType::ThisMonth => [
+                DateTimeHelper::thisMonth(),
+                DateTimeHelper::nextMonth(),
+            ],
+            DateRangeType::ThisYear => [
+                DateTimeHelper::thisYear(),
+                DateTimeHelper::nextYear(),
+            ],
+            DateRangeType::Past7Days => [
+                DateTimeHelper::today()->modify('-7 days'),
+                DateTimeHelper::now(),
+            ],
+            DateRangeType::Past30Days => [
+                DateTimeHelper::today()->modify('-30 days'),
+                DateTimeHelper::now(),
+            ],
+            DateRangeType::Past90Days => [
+                DateTimeHelper::today()->modify('-90 days'),
+                DateTimeHelper::now(),
+            ],
+            DateRangeType::PastYear => [
+                DateTimeHelper::today()->modify('-1 year'),
+                DateTimeHelper::now(),
+            ],
+            default => throw new InvalidArgumentException("Invalid range type: $rangeType"),
+        };
     }
 
     /**
@@ -138,7 +107,7 @@ class DateRangeHelper
      * @return DateInterval
      * @since 4.3.0
      */
-    public static function getDateIntervalByTimePeriod(float|int $length, string $periodType): DateInterval
+    public static function dateIntervalByTimePeriod(float|int $length, string $periodType): DateInterval
     {
         // Cannot support months or years as they are variable in length
         if (!in_array($periodType, [
@@ -148,7 +117,7 @@ class DateRangeHelper
             PeriodType::Days,
             PeriodType::Weeks,
         ], true)) {
-            throw new InvalidArgumentException('Invalid period type');
+            throw new InvalidArgumentException("Invalid period type: $periodType");
         }
 
         $interval = $length;

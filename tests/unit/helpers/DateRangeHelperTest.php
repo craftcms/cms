@@ -7,12 +7,11 @@
 
 namespace crafttests\unit\helpers;
 
-use Closure;
-use Codeception\Test\Unit;
 use Craft;
 use craft\enums\DateRangeType;
 use craft\enums\PeriodType;
 use craft\helpers\DateRangeHelper;
+use craft\helpers\DateTimeHelper;
 use craft\test\TestCase;
 use DateInterval;
 use DateTime;
@@ -49,108 +48,64 @@ class DateRangeHelperTest extends TestCase
     protected DateTimeZone $asiaTokyoTimezone;
 
     /**
-     * @param string $range
-     * @param Closure $startDate
-     * @param Closure $endDate
+     * @param string $rangeType
+     * @phpstan-param DateRangeType::* $rangeType
+     * @param callable $expectedStartDate
+     * @phpstan-param callable():DateTime $expectedStartDate
+     * @param callable $expectedEndDate
+     * @phpstan-param callable():DateTime $expectedEndDate
      * @return void
-     * @dataProvider getDatesByDateRangeDataProvider
+     * @dataProvider dateRangeByTypeDataProvider
      */
-    public function testGetDatesByDateRange(string $range, Closure $startDate, Closure $endDate): void
+    public function testDateRangeByType(string $rangeType, callable $expectedStartDate, callable $expectedEndDate): void
     {
-        /** @var DateTime $start */
-        $start = $startDate();
-        /** @var DateTime $end */
-        $end = $endDate();
-        $dates = DateRangeHelper::getDatesByDateRange($range);
-
-        self::assertArrayHasKey('startDate', $dates);
-        self::assertArrayHasKey('endDate', $dates);
+        [$startDate, $endDate] = DateRangeHelper::dateRangeByType($rangeType);
 
         // Simplify the comparison to avoid any micro differences due to slow tests
-        self::assertEquals($start->format('Y-m-d H:i:s'), $dates['startDate']->format('Y-m-d H:i:s'));
-        self::assertEquals($end->format('Y-m-d H:i:s'), $dates['endDate']->format('Y-m-d H:i:s'));
+        self::assertEquals($expectedStartDate()->getTimestamp(), $startDate->getTimestamp());
+        self::assertEquals($expectedEndDate()->getTimestamp(), $endDate->getTimestamp());
     }
 
     /**
      * @return array[]
      */
-    public function getDatesByDateRangeDataProvider(): array
+    public function dateRangeByTypeDataProvider(): array
     {
         return [
             'today' => [
-                DateRangeType::Today, // Range
-                static function() {
-                    return (new DateTime('now', new DateTimeZone('America/Los_Angeles')))->setTime(0, 0);
-                }, // Start Date
-                static function() {
-                    return (new DateTime('now', new DateTimeZone('America/Los_Angeles')))->setTime(23, 59, 59);
-                }, // End Date
+                DateRangeType::Today,
+                fn() => DateTimeHelper::today(),
+                fn() => DateTimeHelper::tomorrow(),
             ],
             'thisMonth' => [
                 DateRangeType::ThisMonth,
-                static function() {
-                    return (new DateTime('now', new DateTimeZone('America/Los_Angeles')))
-                        ->modify('first day of this month')
-                        ->setTime(0, 0);
-                },
-                static function() {
-                    return (new DateTime('now', new DateTimeZone('America/Los_Angeles')))
-                        ->modify('last day of this month')
-                        ->setTime(23, 59, 59);
-                },
+                fn() => DateTimeHelper::thisMonth(),
+                fn() => DateTimeHelper::nextMonth(),
             ],
             'thisYear' => [
                 DateRangeType::ThisYear,
-                static function() {
-                    return (new DateTime('now', new DateTimeZone('America/Los_Angeles')))
-                        ->modify('1st January ' . date('Y'))
-                        ->setTime(0, 0);
-                },
-                static function() {
-                    return (new DateTime('now', new DateTimeZone('America/Los_Angeles')))
-                        ->modify('last day of December ' . date('Y'))
-                        ->setTime(23, 59, 59);
-                },
+                fn() => DateTimeHelper::thisYear(),
+                fn() => DateTimeHelper::nextYear(),
             ],
             'past7Days' => [
                 DateRangeType::Past7Days,
-                static function() {
-                    return (new DateTime('now', new DateTimeZone('America/Los_Angeles')))
-                        ->sub(new DateInterval('P7D'));
-                },
-                static function() {
-                    return (new DateTime('now', new DateTimeZone('America/Los_Angeles')));
-                },
+                fn() => DateTimeHelper::today()->modify('-7 days'),
+                fn() => DateTimeHelper::now(),
             ],
             'past30Days' => [
                 DateRangeType::Past30Days,
-                static function() {
-                    return (new DateTime('now', new DateTimeZone('America/Los_Angeles')))
-                        ->sub(new DateInterval('P30D'));
-                },
-                static function() {
-                    return (new DateTime('now', new DateTimeZone('America/Los_Angeles')));
-                },
+                fn() => DateTimeHelper::today()->modify('-30 days'),
+                fn() => DateTimeHelper::now(),
             ],
             'past90Days' => [
                 DateRangeType::Past90Days,
-                static function() {
-                    return (new DateTime('now', new DateTimeZone('America/Los_Angeles')))
-                        ->sub(new DateInterval('P90D'));
-                },
-                static function() {
-                    return (new DateTime('now', new DateTimeZone('America/Los_Angeles')));
-                },
+                fn() => DateTimeHelper::today()->modify('-90 days'),
+                fn() => DateTimeHelper::now(),
             ],
             'pastYear' => [
                 DateRangeType::PastYear,
-                static function() {
-                    return (new DateTime('now', new DateTimeZone('America/Los_Angeles')))
-                        ->sub(new DateInterval('P1Y'));
-                },
-                static function() {
-                    return (new DateTime('now', new DateTimeZone('America/Los_Angeles')));
-                },
+                fn() => DateTimeHelper::today()->modify('-1 year'),
+                fn() => DateTimeHelper::now(),
             ],
         ];
     }
@@ -164,7 +119,7 @@ class DateRangeHelperTest extends TestCase
      */
     public function testGetDateIntervalByTimePeriod(float|int $length, string $periodType, DateInterval $expected): void
     {
-        $dateInterval = DateRangeHelper::getDateIntervalByTimePeriod($length, $periodType);
+        $dateInterval = DateRangeHelper::dateIntervalByTimePeriod($length, $periodType);
 
         self::assertEquals($expected, $dateInterval);
     }
@@ -209,5 +164,12 @@ class DateRangeHelperTest extends TestCase
         $this->systemTimezone = new DateTimeZone(Craft::$app->getTimeZone());
         $this->utcTimezone = new DateTimeZone('UTC');
         $this->asiaTokyoTimezone = new DateTimeZone('Asia/Tokyo');
+
+        DateTimeHelper::pause();
+    }
+
+    protected function _after(): void
+    {
+        DateTimeHelper::resume();
     }
 }

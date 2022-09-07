@@ -85,7 +85,7 @@ class DateCreatedConditionRuleTest extends TestCase
                 $expected = [
                     'and',
                     $startDate instanceof DateTime ? '>= ' . $startDate->format(DateTime::ATOM) : $startDate,
-                    $endDate instanceof DateTime ? '<= ' . $endDate->format(DateTime::ATOM) : $endDate,
+                    $endDate instanceof DateTime ? '< ' . $endDate->format(DateTime::ATOM) : $endDate,
                 ];
             }
         }

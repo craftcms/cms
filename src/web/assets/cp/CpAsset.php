@@ -452,7 +452,7 @@ JS;
             'dayNames' => $locale->getWeekDayNames(Locale::LENGTH_FULL),
             'dayNamesMin' => $locale->getWeekDayNames(Locale::LENGTH_ABBREVIATED),
             'dayNamesShort' => $locale->getWeekDayNames(Locale::LENGTH_SHORT),
-            'firstDay' => DateTimeHelper::weekStartDay(),
+            'firstDay' => DateTimeHelper::firstWeekDay(),
             'monthNames' => $locale->getMonthNames(Locale::LENGTH_FULL),
             'monthNamesShort' => $locale->getMonthNames(Locale::LENGTH_ABBREVIATED),
             'nextText' => Craft::t('app', 'Next'),
