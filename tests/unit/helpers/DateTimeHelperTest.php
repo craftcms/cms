@@ -456,27 +456,6 @@ class DateTimeHelperTest extends TestCase
     }
 
     /**
-     * @param int $expected
-     * @param int|null $userStartDay
-     * @return void
-     * @dataProvider lastWeekDayDataProvider
-     */
-    public function testLastWeekDay(int $expected, ?int $userStartDay): void
-    {
-        if ($userStartDay !== null) {
-            $user = Craft::$app->getUser()->getIdentity();
-            $originalPrefs = $user->getPreferences();
-            Craft::$app->getUsers()->saveUserPreferences($user, array_merge($originalPrefs, ['weekDayStart' => $userStartDay]));
-        }
-
-        self::assertSame(DateTimeHelper::lastWeekDay(), $expected);
-
-        if ($userStartDay !== null) {
-            Craft::$app->getUsers()->saveUserPreferences($user, $originalPrefs);
-        }
-    }
-
-    /**
      * @return array
      */
     public function constantsDataProvider(): array
@@ -847,18 +826,6 @@ class DateTimeHelperTest extends TestCase
             [1],
             [2, 2],
             [0, 0],
-        ];
-    }
-
-    /**
-     * @return array[]
-     */
-    public function lastWeekDayDataProvider(): array
-    {
-        return [
-            [0],
-            [1, 2],
-            [6, 0],
         ];
     }
 }

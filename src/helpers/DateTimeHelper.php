@@ -968,16 +968,4 @@ class DateTimeHelper
         $user = Craft::$app->getUser()->getIdentity();
         return (int)(($user?->getPreference('weekStartDay')) ?? Craft::$app->getConfig()->getGeneral()->defaultWeekStartDay);
     }
-
-    /**
-     * Returns the index of the last day of the week (0-6), according to the user’s preferences.
-     *
-     * @return int
-     * @since 4.3.0
-     */
-    public static function lastWeekDay(): int
-    {
-        $startDay = static::firstWeekDay();
-        return $startDay === 0 ? 6 : $startDay - 1;
-    }
 }
