@@ -435,24 +435,11 @@ class DateTimeHelperTest extends TestCase
     }
 
     /**
-     * @param int $expected
-     * @param int|null $userStartDay
      * @return void
-     * @dataProvider firstWeekDayDataProvider
      */
-    public function testFirstWeekDay(int $expected, ?int $userStartDay = null): void
+    public function testFirstWeekDay(): void
     {
-        if ($userStartDay !== null) {
-            $user = Craft::$app->getUser()->getIdentity();
-            $originalPrefs = $user->getPreferences();
-            Craft::$app->getUsers()->saveUserPreferences($user, array_merge($originalPrefs, ['weekDayStart' => $userStartDay]));
-        }
-
-        self::assertSame(DateTimeHelper::firstWeekDay(), $expected);
-
-        if ($userStartDay !== null) {
-            Craft::$app->getUsers()->saveUserPreferences($user, $originalPrefs);
-        }
+        self::assertSame(DateTimeHelper::firstWeekDay(), 1);
     }
 
     /**
@@ -815,17 +802,5 @@ class DateTimeHelperTest extends TestCase
         $this->systemTimezone = new DateTimeZone(Craft::$app->getTimeZone());
         $this->utcTimezone = new DateTimeZone('UTC');
         $this->asiaTokyoTimezone = new DateTimeZone('Asia/Tokyo');
-    }
-
-    /**
-     * @return array[]
-     */
-    public function firstWeekDayDataProvider(): array
-    {
-        return [
-            [1],
-            [2, 2],
-            [0, 0],
-        ];
     }
 }
