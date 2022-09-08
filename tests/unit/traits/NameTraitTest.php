@@ -7,13 +7,9 @@
 
 namespace crafttests\unit\traits;
 
-use craft\base\NameParserLanguage;
+use Craft;
 use craft\base\NameTrait;
-use craft\events\DefineLastNamePrefixesEvent;
-use craft\events\DefineNameSalutationsEvent;
-use craft\events\DefineNameSuffixesEvent;
 use craft\test\TestCase;
-use yii\base\Event;
 
 /**
  * Class NameTraitTest.
@@ -28,18 +24,21 @@ class NameTraitTest extends TestCase
     /**
      * @param array $config
      * @param array $expected
-     * @return void
+     * @param array $suffixes
+     * @param array $salutations
+     * @param array $lastNamePrefixes
      * @dataProvider namesDataProvider
      */
-    public function testNames(array $config, array $expected, mixed $eventFn = null): void
+    public function testNames(array $config, array $expected, array $suffixes = [], array $salutations = [], array $lastNamePrefixes = []): void
     {
         foreach ($config as $attr => $val) {
             $this->_class->$attr = $val;
         }
 
-        if ($eventFn) {
-            $eventFn();
-        }
+        Craft::$app->getConfig()->getGeneral()
+            ->extraNameSuffixes($suffixes)
+            ->extraNameSalutations($salutations)
+            ->extraLastNamePrefixes($lastNamePrefixes);
 
         $this->_class->save();
 
@@ -76,37 +75,28 @@ class NameTraitTest extends TestCase
                 ['fullName' => 'Emmett Prefix Brown', 'firstName' => 'Emmett', 'lastName' => 'Brown'],
                 // The following test solves this case
             ],
-            'prefixFromEvent' => [
-                ['fullName' => 'Emmett Prefix Brown'],
-                ['fullName' => 'Emmett Prefix Brown', 'firstName' => 'Emmett', 'lastName' => 'Prefix Brown'],
-                fn() => Event::on(
-                    NameParserLanguage::class,
-                    NameParserLanguage::EVENT_DEFINE_LASTNAME_PREFIXES,
-                    static fn(DefineLastNamePrefixesEvent$event) => $event->lastNamePrefixes['prefix'] = 'Prefix',
-                ),
+            'suffixFromEvent' => [
+                ['fullName' => 'Emmett Brown Suffix'],
+                ['fullName' => 'Emmett Brown Suffix', 'firstName' => 'Emmett', 'lastName' => 'Brown'],
+                ['Suffix'],
             ],
             'salutationFromEvent' => [
                 ['fullName' => 'Salutation Emmett Brown'],
                 ['fullName' => 'Salutation Emmett Brown', 'firstName' => 'Emmett', 'lastName' => 'Brown'],
-                fn() => Event::on(
-                    NameParserLanguage::class,
-                    NameParserLanguage::EVENT_DEFINE_SALUTATIONS,
-                    static fn(DefineNameSalutationsEvent $event) => $event->salutations['salutation'] = 'Salutation',
-                ),
+                [],
+                ['Salutation'],
             ],
-            'suffixFromEvent' => [
-                ['fullName' => 'Emmett Brown Suffix'],
-                ['fullName' => 'Emmett Brown Suffix', 'firstName' => 'Emmett', 'lastName' => 'Brown'],
-                fn() => Event::on(
-                    NameParserLanguage::class,
-                    NameParserLanguage::EVENT_DEFINE_SUFFIXES,
-                    static fn(DefineNameSuffixesEvent $event) => $event->suffixes['suffix'] = 'Suffix',
-                ),
+            'prefixFromEvent' => [
+                ['fullName' => 'Emmett Prefix Brown'],
+                ['fullName' => 'Emmett Prefix Brown', 'firstName' => 'Emmett', 'lastName' => 'Prefix Brown'],
+                [],
+                [],
+                ['Prefix'],
             ],
         ];
     }
 
-    public function _before(): void
+    protected function _before(): void
     {
         $this->_class = new class() {
             use NameTrait;
@@ -116,5 +106,13 @@ class NameTraitTest extends TestCase
                 $this->prepareNamesForSave();
             }
         };
+    }
+
+    protected function _after(): void
+    {
+        Craft::$app->getConfig()->getGeneral()
+            ->extraNameSuffixes([])
+            ->extraNameSalutations([])
+            ->extraLastNamePrefixes([]);
     }
 }
