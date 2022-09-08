@@ -11,7 +11,7 @@
 - Added the `|float` Twig filter. ([#11792](https://github.com/craftcms/cms/pull/11792))
 - Added the `|integer` Twig filter. ([#11792](https://github.com/craftcms/cms/pull/11792))
 - Added the `|string` Twig filter. ([#11792](https://github.com/craftcms/cms/pull/11792))
-- Added support for the `CRAFT_DOTENV_PATH` PHP constant. ([#11894](https://github.com/craftcms/cms/discussions/11894)) 
+- Added support for the `CRAFT_DOTENV_PATH` PHP constant. ([#11894](https://github.com/craftcms/cms/discussions/11894))
 - Added the `version` database connection setting. ([#11900](https://github.com/craftcms/cms/pull/11900))
 - Added `craft\db\ActiveQuery::collect()`. ([#11842](https://github.com/craftcms/cms/pull/11842))
 - Added `craft\db\SchemaTrait`.
@@ -64,8 +64,8 @@
 
 ### Changed
 - Improved the control panel accessibility. ([#10546](https://github.com/craftcms/cms/pull/10546), [#11534](https://github.com/craftcms/cms/pull/11534), [#11565](https://github.com/craftcms/cms/pull/11565), [#11578](https://github.com/craftcms/cms/pull/11578), [#11589](https://github.com/craftcms/cms/pull/11589), [#11604](https://github.com/craftcms/cms/pull/11604), [#11610](https://github.com/craftcms/cms/pull/11610), [#11611](https://github.com/craftcms/cms/pull/11611), [#11613](https://github.com/craftcms/cms/pull/11613), [#11636](https://github.com/craftcms/cms/pull/11636), [#11662](https://github.com/craftcms/cms/pull/11662)[#11703](https://github.com/craftcms/cms/pull/11703), [#11727](https://github.com/craftcms/cms/pull/11727), [#11763](https://github.com/craftcms/cms/pull/11763), [#11768](https://github.com/craftcms/cms/pull/11768), [#11775](https://github.com/craftcms/cms/pull/11775))
-- Date range condition rules now support “Today”, “This week”, “This month”, “This year”, “Past 7 days”, “Past 30 days”, “Past 30 days”, “Past year”, “Before…”, and “After…” relative range types, in addition to specifyng a custom date range. ([#11888](https://github.com/craftcms/cms/pull/11888)) 
-- It’s now possible to restore assets that were deleted programmatically, with `craft\elements\Asset::$keepFile` set to `true`. ([#11761](https://github.com/craftcms/cms/issues/11761))
+- Date range condition rules now support “Today”, “This week”, “This month”, “This year”, “Past 7 days”, “Past 30 days”, “Past 30 days”, “Past year”, “Before…”, and “After…” relative range types, in addition to specifyng a custom date range. ([#11888](https://github.com/craftcms/cms/pull/11888))
+- It’s now possible to restore assets that were deleted programmatically with `craft\elements\Asset::$keepFile` set to `true`. ([#11761](https://github.com/craftcms/cms/issues/11761))
 - Control panel-defined image transforms can now have custom quality values. ([#9622](https://github.com/craftcms/cms/discussions/9622))
 - `users/session-info` responses now include a `csrfTokenName` key. ([#11706](https://github.com/craftcms/cms/pull/11706), [#11767](https://github.com/craftcms/cms/pull/11767))
 - Twig templates now have `today`, `tomorrow`, and `yesterday` global variables available to them.
