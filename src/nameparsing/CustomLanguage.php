@@ -30,9 +30,21 @@ class CustomLanguage implements LanguageInterface
      */
     public function __construct(array $suffixes, array $salutations, array $lastNamePrefixes)
     {
-        $this->suffixes = array_combine(array_map('mb_strtolower', $suffixes), $suffixes);
-        $this->salutations = array_combine(array_map('mb_strtolower', $salutations), $salutations);
-        $this->lastNamePrefixes = array_combine(array_map('mb_strtolower', $lastNamePrefixes), $lastNamePrefixes);
+        $this->suffixes = $this->normalizeKeys($suffixes);
+        $this->salutations = $this->normalizeKeys($salutations);
+        $this->lastNamePrefixes = $this->normalizeKeys($lastNamePrefixes);
+    }
+
+    private function normalizeKeys(array $strings): array
+    {
+        $normalized = [];
+        foreach ($strings as $key => $string) {
+            if (is_int($key)) {
+                $key = $string;
+            }
+            $normalized[mb_strtolower($key)] = $string;
+        }
+        return $normalized;
     }
 
     public function getSuffixes(): array
