@@ -3286,6 +3286,7 @@ ul.tree,
 /* status icons */
 .status {
   display: inline-block;
+  position: relative;
   @include margin-right(10px);
   width: 10px;
   height: 10px;
@@ -3320,6 +3321,22 @@ ul.tree,
 .status.active,
 .status.enabled {
   background-color: var(--enabled-color);
+}
+
+.status.all {
+  --fill-size: 3px;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: var(--ui-control-color);
+    height: var(--fill-size);
+    width: var(--fill-size);
+    border-radius: 50%;
+  }
 }
 
 .orange,
