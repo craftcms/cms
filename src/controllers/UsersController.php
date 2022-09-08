@@ -8,7 +8,6 @@
 namespace craft\controllers;
 
 use Craft;
-use craft\authenticators\LoginFormAuthenticator;
 use craft\base\Element;
 use craft\base\NameTrait;
 use craft\elements\Address;
@@ -192,9 +191,8 @@ class UsersController extends Controller
             return null;
         }
 
-        $authenticatorType = $this->request->getBodyParam('authenticatorType', LoginFormAuthenticator::class);
-
-        $authenticator = Craft::createObject($authenticatorType);
+        $authenticatorHandle = $this->request->getRequiredBodyParam('authenticatorHandle');
+        $authenticator = Craft::$app->getAuthentication()->getAuthenticatorByHandle($authenticatorHandle);
         $result = $authenticator->authenticate();
 
         if ($authError = $result->getAuthError()) {

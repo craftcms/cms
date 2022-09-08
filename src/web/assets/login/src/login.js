@@ -137,6 +137,7 @@ import './login.scss';
         loginName: this.$loginNameInput.val(),
         password: this.$passwordInput.val(),
         rememberMe: this.$rememberMeCheckbox.prop('checked') ? 'y' : '',
+        authenticatorHandle: 'loginForm',
       };
 
       Craft.sendActionRequest('POST', 'users/login', {data})

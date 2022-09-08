@@ -403,6 +403,7 @@ Craft.AuthManager = Garnish.Base.extend(
       var data = {
         loginName: Craft.username,
         password: this.$passwordInput.val(),
+        authenticatorHandle: 'loginForm',
       };
 
       Craft.sendActionRequest('POST', 'users/login', {data})
