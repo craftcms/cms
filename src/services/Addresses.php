@@ -218,18 +218,7 @@ class Addresses extends Component
             );
         }
 
-        $formatted = $formatter->format($address, $options);
-
-        // If the address includes the givenName + familyName, replace them with the full name
-        if (($address->firstName || $address->lastName) && $address->fullName) {
-            if ($options['html'] ?? true) {
-                $formatted = str_replace(sprintf('<span class="given-name">%s</span> <span class="family-name">%s</span>', $address->firstName, $address->lastName), sprintf('<span class="full-name">%s</span>', $address->fullName), $formatted);
-            } else {
-                $formatted = str_replace(sprintf('%s %s', $address->firstName, $address->lastName), $address->fullName, $formatted);
-            }
-        }
-
-        return $formatted;
+        return $formatter->format($address, $options);
     }
 
     /**
