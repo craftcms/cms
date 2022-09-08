@@ -14,6 +14,7 @@
 - Added support for the `CRAFT_DOTENV_PATH` PHP constant. ([#11894](https://github.com/craftcms/cms/discussions/11894))
 - Added the `version` database connection setting. ([#11900](https://github.com/craftcms/cms/pull/11900))
 - Added `craft\base\ExpirableElementInterface`. ([#11901](https://github.com/craftcms/cms/pull/11901))
+- Added `craft\base\NameParserLanguage`.
 - Added `craft\db\ActiveQuery::collect()`. ([#11842](https://github.com/craftcms/cms/pull/11842))
 - Added `craft\db\SchemaTrait`.
 - Added `craft\elements\actions\Restore::$restorableElementsOnly`.
@@ -22,6 +23,9 @@
 - Added `craft\events\CreateTwigEvent`.
 - Added `craft\events\DefineAddressFieldLabelEvent`.
 - Added `craft\events\DefineAddressFieldsEvent`.
+- Added `craft\events\DefineLastNamePrefixesEvent`.
+- Added `craft\events\DefineNameSalutationsEvent`.
+- Added `craft\events\DefineNameSuffixesEvent`.
 - Added `craft\events\SearchEvent::$scores`. ([#11882](https://github.com/craftcms/cms/discussions/11882))
 - Added `craft\helpers\DateRange`.
 - Added `craft\helpers\DateTimeHelper::firstWeekDay()`.

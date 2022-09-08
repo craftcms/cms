@@ -53,7 +53,7 @@ trait NameTrait
     protected function prepareNamesForSave(): void
     {
         if ($this->fullName !== null) {
-            $name = (new NameParser())->parse($this->fullName);
+            $name = (new NameParser([new NameParserLanguage()]))->parse($this->fullName);
             $this->firstName = $name->getFirstname() ?: null;
             $this->lastName = $name->getLastname() ?: null;
         } elseif ($this->firstName !== null || $this->lastName !== null) {
