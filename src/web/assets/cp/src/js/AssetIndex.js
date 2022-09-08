@@ -1404,17 +1404,13 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
           this._prepareParentForChildren($parentFolder);
           var $subfolder = $(
             '<li>' +
-              '<a data-key="' +
-              $parentFolder.data('key') +
-              '/folder:' +
-              data.folderUid +
-              '"' +
+              `<a data-key="${$parentFolder.data('key')}/folder:${
+                data.folderUid
+              }" data-default-sort="${$parentFolder.data('default-sort')}"` +
               (Garnish.hasAttr($parentFolder, 'data-has-thumbs')
                 ? ' data-has-thumbs'
                 : '') +
-              ' data-folder-id="' +
-              data.folderId +
-              '"' +
+              ` data-folder-id="${data.folderId}"` +
               (Garnish.hasAttr($parentFolder, 'data-can-upload')
                 ? ' data-can-upload'
                 : '') +
@@ -1425,7 +1421,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
                 ? ' data-can-move-peer-files-to'
                 : '') +
               '>' +
-              data.folderName +
+              `<span class="label">${data.folderName}</span>` +
               '</a>' +
               '</li>'
           );
