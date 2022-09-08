@@ -18,7 +18,6 @@ use craft\helpers\DateTimeHelper;
 use craft\test\TestCase;
 use DateInterval;
 use DateTime;
-use DateTimeZone;
 
 /**
  * Unit tests for DateCreatedConditionRule.
@@ -158,49 +157,37 @@ class DateCreatedConditionRuleTest extends TestCase
             'periodTypeHoursAfter' => [
                 ['rangeType' => DateRangeType::After, 'periodValue' => 10, 'periodType' => PeriodType::Hours],
                 [
-                    static function() {
-                        return '>= ' . (new DateTime('now', new DateTimeZone('America/Los_Angeles')))->modify('-10 hours')->format(DATE_ATOM);
-                    },
+                    fn() => '>= ' . DateTimeHelper::now()->modify('-10 hours')->format(DATE_ATOM),
                 ],
             ],
             'periodTypeMinutesAfter' => [
                 ['rangeType' => DateRangeType::After, 'periodValue' => 10, 'periodType' => PeriodType::Minutes],
                 [
-                    static function() {
-                        return '>= ' . (new DateTime('now', new DateTimeZone('America/Los_Angeles')))->modify('-10 minutes')->format(DATE_ATOM);
-                    },
+                    fn() => '>= ' . DateTimeHelper::now()->modify('-10 minutes')->format(DATE_ATOM),
                 ],
             ],
             'periodTypeDaysAfter' => [
                 ['rangeType' => DateRangeType::After, 'periodValue' => 10, 'periodType' => PeriodType::Days],
                 [
-                    static function() {
-                        return '>= ' . (new DateTime('now', new DateTimeZone('America/Los_Angeles')))->modify('-10 days')->format(DATE_ATOM);
-                    },
+                    fn() => '>= ' . DateTimeHelper::now()->modify('-10 days')->format(DATE_ATOM),
                 ],
             ],
             'periodTypeHoursBefore' => [
                 ['rangeType' => DateRangeType::Before, 'periodValue' => 10, 'periodType' => PeriodType::Hours],
                 [
-                    static function() {
-                        return '< ' . (new DateTime('now', new DateTimeZone('America/Los_Angeles')))->modify('-10 hours')->format(DATE_ATOM);
-                    },
+                    fn() => '< ' . DateTimeHelper::now()->modify('-10 hours')->format(DATE_ATOM),
                 ],
             ],
             'periodTypeMinutesBefore' => [
                 ['rangeType' => DateRangeType::Before, 'periodValue' => 10, 'periodType' => PeriodType::Minutes],
                 [
-                    static function() {
-                        return '< ' . (new DateTime('now', new DateTimeZone('America/Los_Angeles')))->modify('-10 minutes')->format(DATE_ATOM);
-                    },
+                    fn() => '< ' . DateTimeHelper::now()->modify('-10 minutes')->format(DATE_ATOM),
                 ],
             ],
             'periodTypeDaysBefore' => [
                 ['rangeType' => DateRangeType::Before, 'periodValue' => 10, 'periodType' => PeriodType::Days],
                 [
-                    static function() {
-                        return '< ' . (new DateTime('now', new DateTimeZone('America/Los_Angeles')))->modify('-10 days')->format(DATE_ATOM);
-                    },
+                    fn() => '< ' . DateTimeHelper::now()->modify('-10 days')->format(DATE_ATOM),
                 ],
             ],
         ];
