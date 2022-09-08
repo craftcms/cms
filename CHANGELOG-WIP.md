@@ -1,6 +1,9 @@
 # Release Notes for Craft CMS 4.3 (WIP)
 
 ### Added
+- Added the `extraLastNamePrefixes` config setting. ([#11903](https://github.com/craftcms/cms/pull/11903))
+- Added the `extraNameSalutations` config setting. ([#11903](https://github.com/craftcms/cms/pull/11903))
+- Added the `extraNameSuffixes` config setting. ([#11903](https://github.com/craftcms/cms/pull/11903))
 - Added the `canCreateDrafts()` Twig function. ([#11797](https://github.com/craftcms/cms/discussions/11797), [#11808](https://github.com/craftcms/cms/pull/11808))
 - Added the `canDelete()` Twig function. ([#11797](https://github.com/craftcms/cms/discussions/11797), [#11808](https://github.com/craftcms/cms/pull/11808))
 - Added the `canDeleteForSite()` Twig function. ([#11797](https://github.com/craftcms/cms/discussions/11797), [#11808](https://github.com/craftcms/cms/pull/11808))
@@ -14,6 +17,7 @@
 - Added support for the `CRAFT_DOTENV_PATH` PHP constant. ([#11894](https://github.com/craftcms/cms/discussions/11894))
 - Added the `version` database connection setting. ([#11900](https://github.com/craftcms/cms/pull/11900))
 - Added `craft\base\ExpirableElementInterface`. ([#11901](https://github.com/craftcms/cms/pull/11901))
+- Added `craft\nameparsing\CustomLanguage`.
 - Added `craft\db\ActiveQuery::collect()`. ([#11842](https://github.com/craftcms/cms/pull/11842))
 - Added `craft\db\SchemaTrait`.
 - Added `craft\elements\actions\Restore::$restorableElementsOnly`.
@@ -72,6 +76,7 @@
 - Date range condition rules now support “Today”, “This week”, “This month”, “This year”, “Past 7 days”, “Past 30 days”, “Past 30 days”, “Past year”, “Before…”, and “After…” relative range types, in addition to specifyng a custom date range. ([#11888](https://github.com/craftcms/cms/pull/11888))
 - It’s now possible to restore assets that were deleted programmatically with `craft\elements\Asset::$keepFile` set to `true`. ([#11761](https://github.com/craftcms/cms/issues/11761))
 - Control panel-defined image transforms can now have custom quality values. ([#9622](https://github.com/craftcms/cms/discussions/9622))
+- Name parsing now checks for common German salutations, suffixes, and last name prefixes.
 - Addresses formatted with `craft\services\Addresses::formatAddress()` or the `|address` Twig filter now include the full name from the address, rather than the parsed first and last names. ([#11893](https://github.com/craftcms/cms/pull/11893))
 - `users/session-info` responses now include a `csrfTokenName` key. ([#11706](https://github.com/craftcms/cms/pull/11706), [#11767](https://github.com/craftcms/cms/pull/11767))
 - Twig templates now have `today`, `tomorrow`, and `yesterday` global variables available to them.
