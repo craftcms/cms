@@ -23,7 +23,7 @@
 - Added `craft\events\DefineAddressFieldLabelEvent`.
 - Added `craft\events\DefineAddressFieldsEvent`.
 - Added `craft\events\SearchEvent::$scores`. ([#11882](https://github.com/craftcms/cms/discussions/11882))
-- Added `craft\helpers\DateRange`.
+- Added `craft\helpers\DateRangeHelper`.
 - Added `craft\helpers\DateTimeHelper::firstWeekDay()`.
 - Added `craft\helpers\DateTimeHelper::lastMonth()`.
 - Added `craft\helpers\DateTimeHelper::lastWeek()`.
