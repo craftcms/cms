@@ -10,6 +10,7 @@ namespace craft\base;
 use Craft;
 use craft\nameparsing\CustomLanguage;
 use TheIconic\NameParser\Language\English;
+use TheIconic\NameParser\Language\German;
 use TheIconic\NameParser\Parser as NameParser;
 
 /**
@@ -59,6 +60,7 @@ trait NameTrait
             $generalConfig = Craft::$app->getConfig()->getGeneral();
             $languages = [
                 new English(),
+                new German(),
                 new CustomLanguage(
                     $generalConfig->extraNameSuffixes,
                     $generalConfig->extraNameSalutations,
