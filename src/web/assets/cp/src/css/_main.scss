@@ -1408,7 +1408,7 @@ ul.icons {
     }
   }
 
-  &:not(.disabled):not(.loading):not(.dashed) {
+  &:not(.disabled):not(.loading):not(.dashed):not([aria-disabled]) {
     &:focus,
     &.focus,
     &:hover {
