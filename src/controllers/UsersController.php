@@ -18,7 +18,6 @@ use craft\elements\User;
 use craft\errors\UploadFailedException;
 use craft\errors\UserLockedException;
 use craft\events\DefineUserContentSummaryEvent;
-use craft\events\FindLoginUserEvent;
 use craft\events\InvalidUserTokenEvent;
 use craft\events\LoginFailureEvent;
 use craft\events\RegisterUserActionsEvent;
@@ -193,50 +192,16 @@ class UsersController extends Controller
             return null;
         }
 
-        $loginName = $this->request->getRequiredBodyParam('loginName');
         $authenticatorType = $this->request->getBodyParam('authenticatorType', LoginFormAuthenticator::class);
-        $rememberMe = (bool)$this->request->getBodyParam('rememberMe');
 
         $authenticator = Craft::createObject($authenticatorType);
+        $result = $authenticator->authenticate();
 
-        $user = $this->_findLoginUser($loginName);
-        $response = $authenticator->authenticate($user);
-
-        if ($response->hasErrors('authError')) {
-            return $this->_handleLoginFailure($response->getFirstError('authError'), $user);
-        }
-
-        $generalConfig = Craft::$app->getConfig()->getGeneral();
-        if ($rememberMe && $generalConfig->rememberedUserSessionDuration !== 0) {
-            $duration = $generalConfig->rememberedUserSessionDuration;
-        } else {
-            $duration = $generalConfig->userSessionDuration;
-        }
-
-        // Try logging them in
-        if (!$userSession->login($user, $duration)) {
-            // Unknown error
-            return $this->_handleLoginFailure(null, $user);
+        if ($authError = $result->getAuthError()) {
+            return $this->_handleLoginFailure($authError, $result->user);
         }
 
         return $this->_handleSuccessfulLogin();
-    }
-
-    private function _findLoginUser(string $loginName): ?User
-    {
-        $event = new FindLoginUserEvent([
-            'loginName' => $loginName,
-        ]);
-        $this->trigger(self::EVENT_BEFORE_FIND_LOGIN_USER, $event);
-
-        $user = $event->user ?? Craft::$app->getUsers()->getUserByUsernameOrEmail($loginName);
-
-        $event = new FindLoginUserEvent([
-            'loginName' => $loginName,
-            'user' => $user,
-        ]);
-        $this->trigger(self::EVENT_AFTER_FIND_LOGIN_USER, $event);
-        return $event->user;
     }
 
     /**
@@ -601,14 +566,14 @@ class UsersController extends Controller
 
         if (!Craft::$app->getElements()->saveElement($user)) {
             return $this->asFailure(
-                    Craft::t('app', 'Couldn’t update password.'),
-                    $user->getErrors('newPassword'),
-                ) ?? $this->_renderSetPasswordTemplate([
-                    'errors' => $user->getErrors('newPassword'),
-                    'code' => $code,
-                    'id' => $uid,
-                    'newUser' => !$user->password,
-                ]);
+                Craft::t('app', 'Couldn’t update password.'),
+                $user->getErrors('newPassword'),
+            ) ?? $this->_renderSetPasswordTemplate([
+                'errors' => $user->getErrors('newPassword'),
+                'code' => $code,
+                'id' => $uid,
+                'newUser' => !$user->password,
+            ]);
         }
 
         // If they're pending, try to activate them, and maybe treat this as an activation request
