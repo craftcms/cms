@@ -15,12 +15,12 @@ use DateTime;
 use yii\base\InvalidArgumentException;
 
 /**
- * Class DateRange
+ * Class DateRangeHelper
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.3.0
  */
-class DateRange
+class DateRangeHelper
 {
     /**
      * @return array

@@ -10,7 +10,7 @@ namespace crafttests\unit\helpers;
 use Craft;
 use craft\enums\DateRangeType;
 use craft\enums\PeriodType;
-use craft\helpers\DateRange;
+use craft\helpers\DateRangeHelper;
 use craft\helpers\DateTimeHelper;
 use craft\test\TestCase;
 use DateInterval;
@@ -59,7 +59,7 @@ class DateRangeHelperTest extends TestCase
      */
     public function testDateRangeByType(string $rangeType, callable $expectedStartDate, callable $expectedEndDate): void
     {
-        [$startDate, $endDate] = DateRange::dateRangeByType($rangeType);
+        [$startDate, $endDate] = DateRangeHelper::dateRangeByType($rangeType);
 
         // Simplify the comparison to avoid any micro differences due to slow tests
         self::assertEquals($expectedStartDate()->getTimestamp(), $startDate->getTimestamp());
@@ -119,7 +119,7 @@ class DateRangeHelperTest extends TestCase
      */
     public function testGetDateIntervalByTimePeriod(float|int $length, string $periodType, DateInterval $expected): void
     {
-        $dateInterval = DateRange::dateIntervalByTimePeriod($length, $periodType);
+        $dateInterval = DateRangeHelper::dateIntervalByTimePeriod($length, $periodType);
 
         self::assertEquals($expected, $dateInterval);
     }
