@@ -301,6 +301,22 @@ Craft.CP = Garnish.Base.extend(
           }
         });
       }
+
+      // Add .stuck class to #footer when stuck
+      // h/t https://stackoverflow.com/a/61115077/1688568
+      const footer = document.getElementById('footer');
+      if (footer) {
+        const observer = new IntersectionObserver(
+          ([ev]) => {
+            ev.target.classList.toggle('stuck', ev.intersectionRatio < 1);
+          },
+          {
+            rootMargin: '0px 0px -1px 0px',
+            threshold: [1],
+          }
+        );
+        observer.observe(footer);
+      }
     },
 
     get $contentHeader() {

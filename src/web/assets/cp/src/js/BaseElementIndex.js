@@ -69,6 +69,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     _autoSelectElements: null,
     $countSpinner: null,
     $countContainer: null,
+    $actionsContainer: null,
     page: 1,
     resultSet: null,
     totalResults: null,
@@ -82,7 +83,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     showingActionTriggers: false,
     exporters: null,
     exportersByType: null,
-    _$detachedToolbarItems: null,
     _$triggers: null,
 
     _ignoreFailedRequest: false,
@@ -156,6 +156,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
       this.$countSpinner = this.$container.find('#count-spinner');
       this.$countContainer = this.$container.find('#count-container');
+      this.$actionsContainer = this.$container.find('#actions-container');
       this.$exportBtn = this.$container.find('#export-btn');
 
       // Hide sidebar if needed
@@ -864,18 +865,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         return;
       }
 
-      // Hard-code the min toolbar height in case it was taller than the actions toolbar
-      // (prevents the elements from jumping if this ends up being a double-click)
-      this.$toolbar.css('min-height', this.$toolbar.height());
-
-      // Hide any toolbar inputs
-      this._$detachedToolbarItems = this.$toolbar.children();
-      this._$detachedToolbarItems.detach();
-
       if (!this._$triggers) {
         this._createTriggers();
       } else {
-        this._$triggers.appendTo(this.$toolbar);
+        this._$triggers.appendTo(this.$actionsContainer);
       }
 
       this.showingActionTriggers = true;
@@ -980,12 +973,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         return;
       }
 
-      this._$detachedToolbarItems.appendTo(this.$toolbar);
       this._$triggers.detach();
-      // this._$detachedToolbarItems.removeClass('hidden');
-
-      // Unset the min toolbar height
-      this.$toolbar.css('min-height', '');
 
       this.showingActionTriggers = false;
     },
@@ -2248,7 +2236,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         this._$triggers = this._$triggers.add($div);
       }
 
-      this._$triggers.appendTo(this.$toolbar);
+      this._$triggers.appendTo(this.$actionsContainer);
       Craft.appendHeadHtml(this.actionsHeadHtml);
       Craft.appendBodyHtml(this.actionsBodyHtml);
 

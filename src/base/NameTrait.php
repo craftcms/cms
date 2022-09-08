@@ -59,13 +59,14 @@ trait NameTrait
         if ($this->fullName !== null) {
             $generalConfig = Craft::$app->getConfig()->getGeneral();
             $languages = [
-                new English(),
-                new German(),
+                // Load our custom language file first so config settings can override the defaults
                 new CustomLanguage(
                     $generalConfig->extraNameSuffixes,
                     $generalConfig->extraNameSalutations,
                     $generalConfig->extraLastNamePrefixes,
                 ),
+                new English(),
+                new German(),
             ];
             $name = (new NameParser($languages))->parse($this->fullName);
             $this->firstName = $name->getFirstname() ?: null;
