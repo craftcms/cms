@@ -142,11 +142,13 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
      */
     public function getTableAttributeHtml(mixed $value, ElementInterface $element): string
     {
-        if ($value) {
-            return '<div class="status enabled" title="' . Craft::t('app', 'Enabled') . '"></div>';
+        if (!$value) {
+            return '';
         }
 
-        return '<div class="status" title="' . Craft::t('app', 'Not enabled') . '"></div>';
+        $label = Craft::t('app', 'Enabled');
+
+        return '<div class="checkbox-icon" role="img" aria-label="' . $label . '" title="' . $label . '"></div>';
     }
 
     /**

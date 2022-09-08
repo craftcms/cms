@@ -5686,6 +5686,14 @@ body.reduce-focus-visibility {
   }
 }
 
+.checkbox-icon:before {
+  @include icon;
+  line-height: var(--checkbox-size);
+  color: var(--gray-900);
+  content: 'check';
+  font-size: 15px;
+}
+
 .monaco-mouse-cursor-text {
   &:focus,
   &.focus-visible {
