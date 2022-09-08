@@ -20,6 +20,7 @@
 - Fixed a bug where the Assets index page wasn’t handling failed uploads properly. ([#11866](https://github.com/craftcms/cms/issues/11866))
 - Fixed a bug where it was possible to save an asset with a focal point outside its cropped area. ([#11875](https://github.com/craftcms/cms/issues/11875))
 - Fixed a bug where element index filter HUDs were unresponsive if another one was already active for a different site/source. ([#11880](https://github.com/craftcms/cms/issues/11880))
+- Fixed a bug where newly-created subfolders on the Assets index page could appear to have the wrong indentation.
 
 ### Security
 - Fixed XSS vulnerabilities.

@@ -1523,7 +1523,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
       $parentFolder
         .parent()
         .addClass('expanded')
-        .append('<div class="toggle"></div><ul></ul>');
+        .append('<div class="toggle"></div><ul class="nested"></ul>');
       this.initSourceToggle($parentFolder);
     }
   },
