@@ -1390,7 +1390,6 @@ ul.icons {
   color: currentColor;
   font-size: inherit;
   background-color: transparentize($inputColor, 0.75);
-  transition: opacity linear 100ms;
 
   &.chromeless {
     background-color: transparent;
