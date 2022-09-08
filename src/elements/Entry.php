@@ -10,6 +10,7 @@ namespace craft\elements;
 use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
+use craft\base\ExpirableElementInterface;
 use craft\base\Field;
 use craft\behaviors\DraftBehavior;
 use craft\behaviors\RevisionBehavior;
@@ -67,7 +68,7 @@ use yii\web\Response;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Entry extends Element
+class Entry extends Element implements ExpirableElementInterface
 {
     public const STATUS_LIVE = 'live';
     public const STATUS_PENDING = 'pending';
@@ -1012,6 +1013,14 @@ class Entry extends Element
             return null;
         }
         return $entryType->getFieldLayout();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getExpiryDate(): ?DateTime
+    {
+        return $this->expiryDate;
     }
 
     /**
