@@ -110,8 +110,7 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
 
       this.$container
         .prepend(
-          $('<h1>')
-            .appendTo(this.$container)
+          $('h1')
             .attr({
               class: 'visually-hidden',
               id: headingId,
