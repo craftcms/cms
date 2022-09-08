@@ -65,7 +65,7 @@ class NameTraitTest extends TestCase
                 ['fullName' => 'Emmett von Brown'],
                 ['fullName' => 'Emmett von Brown', 'firstName' => 'Emmett', 'lastName' => 'von Brown'],
             ],
-            'lastNamePrefix' => [
+            'lastNamePrefixWithCasingChange' => [
                 ['fullName' => 'Emmett von Brown'],
                 ['fullName' => 'Emmett von Brown', 'firstName' => 'Emmett', 'lastName' => 'Von Brown'],
                 [],
@@ -82,18 +82,18 @@ class NameTraitTest extends TestCase
                 ['fullName' => 'Emmett Prefix Brown', 'firstName' => 'Emmett', 'lastName' => 'Brown'],
                 // The following test solves this case
             ],
-            'suffixFromEvent' => [
+            'suffixFromConfig' => [
                 ['fullName' => 'Emmett Brown Suffix'],
                 ['fullName' => 'Emmett Brown Suffix', 'firstName' => 'Emmett', 'lastName' => 'Brown'],
                 ['Suffix'],
             ],
-            'salutationFromEvent' => [
+            'salutationFromConfig' => [
                 ['fullName' => 'Salutation Emmett Brown'],
                 ['fullName' => 'Salutation Emmett Brown', 'firstName' => 'Emmett', 'lastName' => 'Brown'],
                 [],
                 ['Salutation'],
             ],
-            'prefixFromEvent' => [
+            'prefixFromConfig' => [
                 ['fullName' => 'Emmett Prefix Brown'],
                 ['fullName' => 'Emmett Prefix Brown', 'firstName' => 'Emmett', 'lastName' => 'Prefix Brown'],
                 [],
