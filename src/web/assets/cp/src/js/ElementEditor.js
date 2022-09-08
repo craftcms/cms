@@ -775,11 +775,13 @@ Craft.ElementEditor = Garnish.Base.extend(
 
     disablePreviewButton: function () {
       this.$previewBtn.attr('aria-disabled', true);
+      this.removeListener(this.$previewBtn, 'click');
       this.$previewBtn.addClass('loading');
     },
 
     enablePreviewButton: function () {
       this.$previewBtn.removeAttr('aria-disabled');
+      this.addListener(this.$previewBtn, 'click', 'openPreview');
       this.$previewBtn.removeClass('loading');
     },
 
