@@ -233,7 +233,7 @@ class Url extends Field implements PreviewableFieldInterface
             }
         }
 
-        $input = Craft::$app->getView()->renderTemplate('_includes/forms/text', [
+        $input = Craft::$app->getView()->renderTemplate('_includes/forms/text.twig', [
             'id' => $id,
             'describedBy' => $this->describedBy,
             'class' => ['flex-grow', 'fullwidth'],
@@ -270,6 +270,7 @@ JS;
             'div',
             Cp::selectHtml([
                 'id' => "$id-type",
+                'describedBy' => $this->describedBy,
                 'name' => "$this->handle[type]",
                 'options' => $typeOptions,
                 'value' => $valueType,

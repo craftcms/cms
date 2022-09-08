@@ -328,6 +328,13 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
 
           // Remove any additional sources (most likely just old headings)
           if ($lastSourceItem) {
+            // Swap $lastSourceItem with the top level <li> if it's nested
+            const $lastTopLevelSource = $lastSourceItem
+              .parentsUntil(this.$elementIndexSourcesContainer, 'li')
+              .last();
+            if ($lastTopLevelSource.length) {
+              $lastSourceItem = $lastTopLevelSource;
+            }
             const $extraSources = $lastSourceItem.nextAll();
             this.elementIndex.sourceSelect.removeItems($extraSources);
             $extraSources.remove();
@@ -370,7 +377,22 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
     if (!$lastSourceItem) {
       $sourceItem.prependTo(this.$elementIndexSourcesContainer);
     } else {
-      $sourceItem.insertAfter($lastSourceItem);
+      const isHeading = $sourceItem.hasClass('heading');
+      if ($lastSourceItem.hasClass('heading') && !isHeading) {
+        // First source to be placed below a new heading
+        $sourceItem.appendTo($lastSourceItem.children('ul'));
+      } else {
+        if (isHeading) {
+          // New heading. Swap $lastSourceItem with the top level <li> if it's nested
+          const $lastTopLevelSource = $lastSourceItem
+            .parentsUntil(this.$elementIndexSourcesContainer, 'li')
+            .last();
+          if ($lastTopLevelSource.length) {
+            $lastSourceItem = $lastTopLevelSource;
+          }
+        }
+        $sourceItem.insertAfter($lastSourceItem);
+      }
     }
   },
 
@@ -758,6 +780,8 @@ Craft.CustomizeSourcesModal.Heading =
         (this.$labelInput ? this.$labelInput.val() : null) ||
         this.sourceData.heading ||
         '';
-      return $('<li class="heading"/>').append($('<span/>').text(label));
+      return $('<li class="heading"/>')
+        .append($('<span/>').text(label))
+        .append('<ul/>');
     },
   });

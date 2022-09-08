@@ -31,7 +31,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     $visibleSources: null,
 
     $customizeSourcesBtn: null,
-    customizeSourcesModal: null,
 
     $toolbar: null,
     toolbarOffset: null,
@@ -414,7 +413,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     initSources: function () {
-      var $sources = this._getSourcesInList(this.getSourceContainer());
+      var $sources = this._getSourcesInList(this.getSourceContainer(), true);
 
       // No source, no party.
       if ($sources.length === 0) {
@@ -801,7 +800,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       return params;
     },
 
-    updateElements: function (preservePagination) {
+    updateElements: function (preservePagination, pageChanged) {
       // Ignore if we're not fully initialized yet
       if (!this.initialized) {
         return;
@@ -836,6 +835,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             : this.$main
           ).scrollTop(0);
           this._updateView(params, response.data);
+
+          if (pageChanged) {
+            const $elementContainer = this.view.getElementContainer();
+            Garnish.firstFocusableElement($elementContainer).trigger('focus');
+          }
         })
         .catch((e) => {
           this.setIndexAvailable();
@@ -995,17 +999,17 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           if (totalSelected === this.view.getEnabledElements().length) {
             this.$selectAllCheckbox.removeClass('indeterminate');
             this.$selectAllCheckbox.addClass('checked');
-            this.$selectAllContainer.attr('aria-checked', 'true');
+            this.$selectAllCheckbox.attr('aria-checked', 'true');
           } else {
             this.$selectAllCheckbox.addClass('indeterminate');
             this.$selectAllCheckbox.removeClass('checked');
-            this.$selectAllContainer.attr('aria-checked', 'mixed');
+            this.$selectAllCheckbox.attr('aria-checked', 'mixed');
           }
 
           this.showActionTriggers();
         } else {
           this.$selectAllCheckbox.removeClass('indeterminate checked');
-          this.$selectAllContainer.attr('aria-checked', 'false');
+          this.$selectAllCheckbox.attr('aria-checked', 'false');
           this.hideActionTriggers();
         }
       }
@@ -1227,9 +1231,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
       // Create the buttons if there's more than one mode available to this source
       if (this.sourceViewModes.length > 1) {
-        this.$viewModeBtnContainer = $('<div class="btngroup"/>').appendTo(
-          this.$toolbar
-        );
+        this.$viewModeBtnContainer = $('<section class="btngroup"/>')
+          .appendTo(this.$toolbar)
+          .attr('aria-label', Craft.t('app', 'View'));
 
         for (var i = 0; i < this.sourceViewModes.length; i++) {
           let sourceViewMode = this.sourceViewModes[i];
@@ -1244,6 +1248,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             'data-view': sourceViewMode.mode,
             'data-icon': sourceViewMode.icon,
             'aria-label': sourceViewMode.title,
+            'aria-pressed': 'false',
             title: sourceViewMode.title,
           }).appendTo(this.$viewModeBtnContainer);
 
@@ -1375,14 +1380,18 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         this.viewMode &&
         typeof this.viewModeBtns[this.viewMode] !== 'undefined'
       ) {
-        this.viewModeBtns[this.viewMode].removeClass('active');
+        this.viewModeBtns[this.viewMode]
+          .removeClass('active')
+          .attr('aria-pressed', 'false');
       }
 
       this.viewMode = viewMode;
       this.setSelecetedSourceState('mode', this.viewMode);
 
       if (typeof this.viewModeBtns[this.viewMode] !== 'undefined') {
-        this.viewModeBtns[this.viewMode].addClass('active');
+        this.viewModeBtns[this.viewMode]
+          .addClass('active')
+          .attr('aria-pressed', 'true');
       }
     },
 
@@ -1694,7 +1703,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
       for (let i = 0; i < $headings.length; i++) {
         $heading = $headings.eq(i);
-        if ($heading.nextUntil('.heading', ':not(.hidden)').length !== 0) {
+        if ($heading.has('> ul > li:not(.hidden)')) {
           $heading.removeClass('hidden');
         } else {
           $heading.addClass('hidden');
@@ -1801,8 +1810,12 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     // Source managemnet
     // -------------------------------------------------------------------------
 
-    _getSourcesInList: function ($list) {
-      return $list.children('li').children('a');
+    _getSourcesInList: function ($list, topLevel) {
+      let $sources = $list.find('> li:not(.heading) > a');
+      if (topLevel) {
+        $sources = $sources.add($list.find('> li.heading > ul > li > a'));
+      }
+      return $sources;
     },
 
     _getChildSources: function ($source) {
@@ -1979,7 +1992,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                   this.removeListener($prevBtn, 'click');
                   this.removeListener($nextBtn, 'click');
                   this.setPage(this.page - 1);
-                  this.updateElements(true);
+                  this.updateElements(true, true);
                 });
               }
 
@@ -1988,7 +2001,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                   this.removeListener($prevBtn, 'click');
                   this.removeListener($nextBtn, 'click');
                   this.setPage(this.page + 1);
-                  this.updateElements(true);
+                  this.updateElements(true, true);
                 });
               }
             }
@@ -2019,18 +2032,16 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           this.actionsBodyHtml = response.actionsBodyHtml;
 
           // Create the select all checkbox
-          this.$selectAllCheckbox = $('<div class="checkbox"/>').prependTo(
-            this.$selectAllContainer
-          );
+          this.$selectAllCheckbox = $('<div class="checkbox"/>')
+            .prependTo(this.$selectAllContainer)
+            .attr({
+              role: 'checkbox',
+              tabindex: '0',
+              'aria-checked': 'false',
+              'aria-label': Craft.t('app', 'Select all'),
+            });
 
-          this.$selectAllContainer.attr({
-            role: 'checkbox',
-            tabindex: '0',
-            'aria-checked': 'false',
-            'aria-label': Craft.t('app', 'Select all'),
-          });
-
-          this.addListener(this.$selectAllContainer, 'click', function () {
+          this.addListener(this.$selectAllCheckbox, 'click', function () {
             if (this.view.getSelectedElements().length === 0) {
               this.view.selectAllElements();
             } else {
@@ -2038,7 +2049,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             }
           });
 
-          this.addListener(this.$selectAllContainer, 'keydown', function (ev) {
+          this.addListener(this.$selectAllCheckbox, 'keydown', function (ev) {
             if (ev.keyCode === Garnish.SPACE_KEY) {
               ev.preventDefault();
 
@@ -2644,6 +2655,9 @@ const FilterHud = Garnish.HUD.extend({
 
     if (this.cleared) {
       this.destroy();
+    } else {
+      this.$hud.detach();
+      this.$shade.detach();
     }
 
     this.elementIndex.updateFilterBtn();

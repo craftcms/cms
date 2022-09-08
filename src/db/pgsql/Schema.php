@@ -10,6 +10,7 @@ namespace craft\db\pgsql;
 use Composer\Util\Platform;
 use Craft;
 use craft\db\Connection;
+use craft\db\SchemaTrait;
 use craft\db\TableSchema;
 use yii\db\Exception;
 
@@ -22,6 +23,8 @@ use yii\db\Exception;
  */
 class Schema extends \yii\db\pgsql\Schema
 {
+    use SchemaTrait;
+
     /**
      * @var int The maximum length that objects' names can be.
      */

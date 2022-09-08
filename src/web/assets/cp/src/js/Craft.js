@@ -2303,6 +2303,10 @@ $.extend(Craft, {
       document.visibilityState === 'visible'
     );
   },
+
+  useMobileStyles: function () {
+    return Garnish.isMobileBrowser() || document.body.clientWidth < 600;
+  },
 });
 
 // -------------------------------------------

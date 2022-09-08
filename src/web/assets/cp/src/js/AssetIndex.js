@@ -120,7 +120,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
   },
 
   _getSourceLevel: function ($source) {
-    return $source.parentsUntil('nav', 'ul').length;
+    return $source.parentsUntil('nav', 'ul.nested').length + 1;
   },
 
   /**

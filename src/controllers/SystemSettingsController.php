@@ -55,7 +55,7 @@ class SystemSettingsController extends Controller
     {
         $this->getView()->registerAssetBundle(GeneralSettingsAsset::class);
 
-        return $this->renderTemplate('settings/general/_index', [
+        return $this->renderTemplate('settings/general/_index.twig', [
             'system' => Craft::$app->getProjectConfig()->get('system') ?? [],
         ]);
     }
@@ -147,7 +147,7 @@ class SystemSettingsController extends Controller
             }
         }
 
-        return $this->renderTemplate('settings/email/_index', [
+        return $this->renderTemplate('settings/email/_index.twig', [
             'settings' => $settings,
             'adapter' => $adapter,
             'transportTypeOptions' => $transportTypeOptions,
@@ -212,7 +212,7 @@ class SystemSettingsController extends Controller
                 ->composeFromKey('test_email', [
                     'settings' => MailerHelper::settingsReport($mailer, $adapter),
                 ])
-                ->setTo(Craft::$app->getUser()->getIdentity());
+                ->setTo($this->getCurrentUser());
 
             if ($message->send()) {
                 $this->setSuccessFlash(Craft::t('app', 'Email sent successfully! Check your inbox.'));
@@ -271,7 +271,7 @@ class SystemSettingsController extends Controller
         ];
 
         // Render the template!
-        return $this->renderTemplate('settings/globals/_edit', [
+        return $this->renderTemplate('settings/globals/_edit.twig', [
             'globalSetId' => $globalSetId,
             'globalSet' => $globalSet,
             'title' => $title,
