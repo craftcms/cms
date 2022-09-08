@@ -12,6 +12,7 @@ use craft\base\Element;
 use craft\base\ElementActionInterface;
 use craft\base\ElementExporterInterface;
 use craft\base\ElementInterface;
+use craft\base\ExpirableElementInterface;
 use craft\behaviors\DraftBehavior;
 use craft\behaviors\RevisionBehavior;
 use craft\db\Query;
@@ -59,6 +60,7 @@ use craft\records\StructureElement as StructureElementRecord;
 use craft\validators\HandleValidator;
 use craft\validators\SlugValidator;
 use craft\web\Application;
+use DateTime;
 use Throwable;
 use yii\base\Behavior;
 use yii\base\Component;
@@ -486,36 +488,71 @@ class Elements extends Component
      * @var array[]
      */
     private array $_cacheTagBuffers = [];
+
     /**
      * @var string[]|null
      */
     private ?array $_cacheTags = null;
 
     /**
+     * @var array
+     * @phpstan-var array<int|null>
+     */
+    private array $_cacheDurationBuffers = [];
+
+    private ?int $_cacheDuration = null;
+
+    /**
+     * Returns whether we are currently collecting element cache invalidation info.
+     *
+     * @return bool
+     * @since 4.3.0
+     * @see startCollectingCacheInfo()
+     * @see stopCollectingCacheInfo()
+     */
+    public function getIsCollectingCacheInfo(): bool
+    {
+        return isset($this->_cacheTags);
+    }
+
+    /**
      * Returns whether we are currently collecting element cache invalidation tags.
      *
      * @return bool
      * @since 3.5.0
-     * @see startCollectingCacheTags()
-     * @see stopCollectingCacheTags()
+     * @deprecated in 4.3.0. [[getIsCollectingCacheInfo()]] should be used instead.
      */
     public function getIsCollectingCacheTags(): bool
     {
-        return isset($this->_cacheTags);
+        return $this->getIsCollectingCacheInfo();
+    }
+
+    /**
+     * Starts collecting element cache invalidation info.
+     *
+     * @since 4.3.0
+     */
+    public function startCollectingCacheInfo(): void
+    {
+        // Save any currently-collected info into new buffers
+        if (isset($this->_cacheTags)) {
+            $this->_cacheTagBuffers[] = $this->_cacheTags;
+            $this->_cacheDurationBuffers[] = $this->_cacheDuration;
+        }
+
+        $this->_cacheTags = [];
+        $this->_cacheDuration = null;
     }
 
     /**
      * Starts collecting element cache invalidation tags.
      *
      * @since 3.5.0
+     * @deprecated in 4.3.0. [[startCollectingCacheInfo()]] should be used instead.
      */
     public function startCollectingCacheTags(): void
     {
-        // Save any currently-collected tags into a new buffer, and reset the array
-        if (isset($this->_cacheTags)) {
-            $this->_cacheTagBuffers[] = $this->_cacheTags;
-        }
-        $this->_cacheTags = [];
+        $this->startCollectingCacheInfo();
     }
 
     /**
@@ -538,29 +575,90 @@ class Elements extends Component
     }
 
     /**
-     * Stops collecting element cache invalidation tags, and returns a cache dependency object.
+     * Sets a possible cache expiration date that [[stopCollectingCacheInfo()]] should return.
      *
-     * @return TagDependency
-     * @since 3.5.0
+     * The value will only be used if it is less than the currently stored expiration date.
+     *
+     * @param DateTime $expiryDate
+     * @since 4.3.0
      */
-    public function stopCollectingCacheTags(): TagDependency
+    public function setCacheExpiryDate(DateTime $expiryDate): void
+    {
+        if (!isset($this->_cacheTags)) {
+            return;
+        }
+
+        $duration = $expiryDate->getTimestamp() - time();
+
+        if ($duration > 0 && (!$this->_cacheDuration || $duration < $this->_cacheDuration)) {
+            $this->_cacheDuration = $duration;
+        }
+    }
+
+    /**
+     * Stops collecting element invalidation info, and returns a [[TagDependency]] and recommended max cache duration
+     * that should be used when saving the cache data.
+     *
+     * If no cache tags were registered, `[null, null]` will be returned.
+     *
+     * @return array
+     * @phpstan-return array{TagDependency|null,int|null}
+     */
+    public function stopCollectingCacheInfo(): array
     {
         if (!isset($this->_cacheTags)) {
             throw new InvalidCallException('Element cache invalidation tags are not currently being collected.');
         }
 
         $tags = $this->_cacheTags;
+        $duration = $this->_cacheDuration;
 
         // Was there another active collection?
         if (!empty($this->_cacheTagBuffers)) {
             $this->_cacheTags = array_merge(array_pop($this->_cacheTagBuffers), $tags);
+
+            // Override the parent duration if ours is shorter
+            $this->_cacheDuration = array_pop($this->_cacheDurationBuffers);
+            if ($duration && $duration < $this->_cacheDuration) {
+                $this->_cacheDuration = $duration;
+            }
         } else {
             $this->_cacheTags = null;
+            $this->_cacheDuration = null;
         }
 
-        return new TagDependency([
+        if (empty($tags)) {
+            return [null, null];
+        }
+
+        // Only use the duration if it's less than the cacheDuration config setting
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        if ($generalConfig->cacheDuration) {
+            if ($duration) {
+                $duration = min($duration, $generalConfig->cacheDuration);
+            } else {
+                $duration = $generalConfig->cacheDuration;
+            }
+        }
+
+        $dep = new TagDependency([
             'tags' => array_keys($tags),
         ]);
+
+        return [$dep, $duration];
+    }
+
+    /**
+     * Stops collecting element cache invalidation tags, and returns a cache dependency object.
+     *
+     * @return TagDependency
+     * @since 3.5.0
+     * @deprecated in 4.3.0. [[stopCollectingCacheInfo()]] should be used instead.
+     */
+    public function stopCollectingCacheTags(): TagDependency
+    {
+        [$dep] = $this->stopCollectingCacheInfo();
+        return $dep ?? new TagDependency();
     }
 
     /**
@@ -2422,6 +2520,8 @@ class Elements extends Component
      */
     private function _eagerLoadElementsInternal(string $elementType, array $elementsBySite, array $with): void
     {
+        $elementsService = Craft::$app->getElements();
+
         foreach ($elementsBySite as $siteId => $elements) {
             // In case the elements were
             $elements = array_values($elements);
@@ -2574,7 +2674,17 @@ class Elements extends Component
                                 if (!isset($targetElements[$targetSiteId][$elementId])) {
                                     $targetElements[$targetSiteId][$elementId] = $query->createElement($result);
                                 }
-                                $targetElementsForSource[] = $targetElements[$targetSiteId][$elementId];
+                                $targetElementsForSource[] = $element = $targetElements[$targetSiteId][$elementId];
+
+                                // If we're collecting cache info and the element is expirable, register its expiry date
+                                if (
+                                    $element instanceof ExpirableElementInterface &&
+                                    $elementsService->getIsCollectingCacheInfo() &&
+                                    ($expiryDate = $element->getExpiryDate()) !== null
+                                ) {
+                                    $elementsService->setCacheExpiryDate($expiryDate);
+                                }
+
                                 if ($limit && ++$count == $limit) {
                                     break 2;
                                 }

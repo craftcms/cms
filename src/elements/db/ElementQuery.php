@@ -10,6 +10,7 @@ namespace craft\elements\db;
 use Craft;
 use craft\base\Element;
 use craft\base\ElementInterface;
+use craft\base\ExpirableElementInterface;
 use craft\base\FieldInterface;
 use craft\behaviors\CustomFieldBehavior;
 use craft\behaviors\DraftBehavior;
@@ -1918,7 +1919,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         }
 
         $elementsService = Craft::$app->getElements();
-        if ($elementsService->getIsCollectingCacheTags()) {
+        if ($elementsService->getIsCollectingCacheInfo()) {
             $elementsService->collectCacheTags($this->getCacheTags());
         }
 
@@ -2926,6 +2927,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      */
     private function _createElements(array $rows): array
     {
+        $elementsService = Craft::$app->getElements();
         $elements = [];
 
         if ($this->asArray === true) {
@@ -2957,6 +2959,15 @@ class ElementQuery extends Query implements ElementQueryInterface
                     }
 
                     $elements[$key] = $element;
+                }
+
+                // If we're collecting cache info and the element is expirable, register its expiry date
+                if (
+                    $element instanceof ExpirableElementInterface &&
+                    $elementsService->getIsCollectingCacheInfo() &&
+                    ($expiryDate = $element->getExpiryDate()) !== null
+                ) {
+                    $elementsService->setCacheExpiryDate($expiryDate);
                 }
             }
 

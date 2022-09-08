@@ -609,6 +609,10 @@ class Db
                     } else {
                         $operator = $operator === '=' ? 'like' : 'not like';
                     }
+
+                    // Escape underscores as they are treated as wildcards by LIKE in MySQL and PostgreSQL
+                    $val = preg_replace('/(?<!\\\)_/', '\\_', $val);
+
                     $condition[] = [$operator, $column, $val, false];
                     continue;
                 }

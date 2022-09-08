@@ -16,6 +16,7 @@ use DateTime;
 use Throwable;
 use yii\base\Component;
 use yii\base\Exception;
+use yii\caching\TagDependency;
 
 /**
  * Template Caches service.
@@ -62,10 +63,18 @@ class TemplateCaches extends Component
             return null;
         }
 
-        [$body, $tags, $bufferedJs, $bufferedScripts, $bufferedCss, $bufferedJsFiles, $bufferedCssFiles, $bufferedHtml] = array_pad($data, 8, null);
+        [$body, $cacheInfo, $bufferedJs, $bufferedScripts, $bufferedCss, $bufferedJsFiles, $bufferedCssFiles, $bufferedHtml] = array_pad($data, 8, null);
 
-        // If we're actively collecting element cache tags, add this cache's tags to the collection
-        Craft::$app->getElements()->collectCacheTags($tags);
+        // If we're actively collecting element cache info, register this cache's tags and duration
+        $elementsService = Craft::$app->getElements();
+        if ($elementsService->getIsCollectingCacheInfo()) {
+            if (isset($cacheInfo['tags'])) {
+                $elementsService->collectCacheTags($cacheInfo['tags']);
+                $elementsService->setCacheExpiryDate(DateTimeHelper::toDateTime($cacheInfo['expiryDate']));
+            } else {
+                $elementsService->collectCacheTags($cacheInfo);
+            }
+        }
 
         // Register JS and CSS tags
         if ($registerResources) {
@@ -99,7 +108,7 @@ class TemplateCaches extends Component
             return;
         }
 
-        Craft::$app->getElements()->startCollectingCacheTags();
+        Craft::$app->getElements()->startCollectingCacheInfo();
 
         if ($withResources) {
             $view = Craft::$app->getView();
@@ -134,7 +143,7 @@ class TemplateCaches extends Component
             return;
         }
 
-        $dep = Craft::$app->getElements()->stopCollectingCacheTags();
+        [$dep, $maxDuration] = Craft::$app->getElements()->stopCollectingCacheInfo();
 
         if ($withResources) {
             $view = Craft::$app->getView();
@@ -151,10 +160,24 @@ class TemplateCaches extends Component
         $saveCache = !StringHelper::contains(stripslashes($body), 'assets/generate-transform');
 
         if ($saveCache) {
+            if (!$dep) {
+                $dep = new TagDependency();
+            }
+
             // Always add a `template` tag
             $dep->tags[] = 'template';
 
-            $cacheValue = [$body, $dep->tags];
+            if ($maxDuration) {
+                $expiryDate = DateTimeHelper::now()->modify("+$maxDuration seconds");
+                $cacheInfo = [
+                    'tags' => $dep->tags,
+                    'expiryDate' => DateTimeHelper::toIso8601($expiryDate),
+                ];
+            } else {
+                $cacheInfo = $dep->tags;
+            }
+
+            $cacheValue = [$body, $cacheInfo];
         }
 
         if ($withResources) {
@@ -178,12 +201,20 @@ class TemplateCaches extends Component
 
         $cacheKey = $this->_cacheKey($key, $global);
 
+        // Normalize duration/expiration into an integer duration
         if ($duration !== null) {
             $expiration = (new DateTime($duration));
         }
-
         if ($expiration !== null) {
             $duration = DateTimeHelper::toDateTime($expiration)->getTimestamp() - time();
+        }
+
+        if ($duration <= 0) {
+            $duration = null;
+        }
+
+        if ($maxDuration) {
+            $duration = $duration ? min($duration, $maxDuration) : $maxDuration;
         }
 
         /** @phpstan-ignore-next-line */
