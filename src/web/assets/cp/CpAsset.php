@@ -149,6 +149,7 @@ JS;
             'Couldn’t delete “{name}”.',
             'Couldn’t save new order.',
             'Create',
+            'Customize sources',
             'Delete custom source',
             'Delete folder',
             'Delete heading',
@@ -433,6 +434,7 @@ JS;
             'tokenParam' => $generalConfig->tokenParam,
             'translations' => ['' => ''], // force encode as JS object
             'usePathInfo' => $generalConfig->usePathInfo,
+            'userIsAdmin' => $currentUser->admin ?? false,
             'username' => $currentUser->username ?? null,
         ];
 

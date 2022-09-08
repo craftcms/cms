@@ -1031,42 +1031,6 @@ td.right {
   @include clearafter;
 }
 
-/* Customize Sources */
-.sidebar {
-  .customize-sources {
-    display: block;
-    margin: 14px -24px 4px;
-    @include padding(7px, 14px, 7px, 24px);
-    color: var(--light-text-color) !important;
-    transition: color linear 100ms;
-    cursor: pointer;
-
-    .icon {
-      @include margin-right(4px);
-      color: currentColor;
-    }
-
-    .label {
-      opacity: 0;
-      transition: opacity linear 100ms;
-    }
-
-    &:hover,
-    &:focus {
-      color: var(--medium-text-color) !important;
-      text-decoration: none;
-
-      .label {
-        opacity: 1;
-      }
-    }
-  }
-}
-
-.sidebar .customize-sources:hover {
-  color: var(--link-color);
-}
-
 .customize-sources-modal {
   @include padding-left(200px);
   overflow: visible !important;

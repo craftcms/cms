@@ -29,12 +29,7 @@
             {% include "_elements/sources" %}
         </nav>
 
-        {% if currentUser.admin and craft.app.config.general.allowAdminChanges %}
-            <button class="customize-sources" type="button">
-                <span class="settings icon"></span>
-                <span class="label">{{ 'Customize'|t('app') }}</span>
-            </button>
-        {% endif %}
+        <div id="source-actions" class="buttons"></div>
     {% endif %}
 {% endblock %}
 

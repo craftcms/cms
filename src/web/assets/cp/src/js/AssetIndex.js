@@ -1349,6 +1349,39 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
     }
   },
 
+  getSourceActions: function () {
+    const actions = this.base();
+
+    // Make sure it's a volume folder
+    if (this._getVolumeOrFolderUidFromSourceKey(this.sourceKey)) {
+      actions.push({
+        label: Craft.t('app', 'New subfolder'),
+        onSelect: () => {
+          this._createSubfolder(this.$source);
+        },
+      });
+
+      // For all folders that are not top folders
+      if (this._getSourceLevel(this.$source) > 1) {
+        actions.push({
+          label: Craft.t('app', 'Rename folder'),
+          onSelect: () => {
+            this._renameFolder(this.$source);
+          },
+        });
+        actions.push({
+          label: Craft.t('app', 'Delete folder'),
+          destructive: true,
+          onSelect: () => {
+            this._deleteFolder(this.$source);
+          },
+        });
+      }
+    }
+
+    return actions;
+  },
+
   _createFolderContextMenu: function ($source) {
     // Make sure it's a volume folder
     if (!this._getVolumeOrFolderUidFromSourceKey($source.data('key'))) {
