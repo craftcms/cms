@@ -65,6 +65,13 @@ class NameTraitTest extends TestCase
                 ['fullName' => 'Emmett von Brown'],
                 ['fullName' => 'Emmett von Brown', 'firstName' => 'Emmett', 'lastName' => 'von Brown'],
             ],
+            'lastNamePrefix' => [
+                ['fullName' => 'Emmett von Brown'],
+                ['fullName' => 'Emmett von Brown', 'firstName' => 'Emmett', 'lastName' => 'Von Brown'],
+                [],
+                [],
+                ['Von'],
+            ],
             'joinedFirstAndLast' => [
                 ['firstName' => 'Emmett', 'lastName' => 'Brown'],
                 ['fullName' => 'Emmett Brown', 'firstName' => 'Emmett', 'lastName' => 'Brown'],
