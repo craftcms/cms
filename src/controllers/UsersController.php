@@ -8,6 +8,7 @@
 namespace craft\controllers;
 
 use Craft;
+use craft\authenticators\LoginFormAuthenticator;
 use craft\base\Element;
 use craft\base\NameTrait;
 use craft\elements\Address;
@@ -193,23 +194,18 @@ class UsersController extends Controller
         }
 
         $loginName = $this->request->getRequiredBodyParam('loginName');
-        $password = $this->request->getRequiredBodyParam('password');
+        $authenticatorType = $this->request->getBodyParam('authenticatorType', LoginFormAuthenticator::class);
         $rememberMe = (bool)$this->request->getBodyParam('rememberMe');
 
+        $authenticator = Craft::createObject($authenticatorType);
+
         $user = $this->_findLoginUser($loginName);
+        $response = $authenticator->authenticate($user);
 
-        if (!$user || $user->password === null) {
-            // Delay again to match $user->authenticate()'s delay
-            Craft::$app->getSecurity()->validatePassword('p@ss1w0rd', '$2y$13$nj9aiBeb7RfEfYP3Cum6Revyu14QelGGxwcnFUKXIrQUitSodEPRi');
-            return $this->_handleLoginFailure(User::AUTH_INVALID_CREDENTIALS);
+        if ($response->hasErrors('authError')) {
+            return $this->_handleLoginFailure($response->getFirstError('authError'), $user);
         }
 
-        // Did they submit a valid password, and is the user capable of being logged-in?
-        if (!$user->authenticate($password)) {
-            return $this->_handleLoginFailure($user->authError, $user);
-        }
-
-        // Get the session duration
         $generalConfig = Craft::$app->getConfig()->getGeneral();
         if ($rememberMe && $generalConfig->rememberedUserSessionDuration !== 0) {
             $duration = $generalConfig->rememberedUserSessionDuration;
