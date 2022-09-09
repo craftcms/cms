@@ -22,6 +22,7 @@
 - Fixed a bug where element index filter HUDs were unresponsive if another one was already active for a different site/source. ([#11880](https://github.com/craftcms/cms/issues/11880))
 - Fixed a bug where newly-created subfolders on the Assets index page could appear to have the wrong indentation.
 - Fixed a UI bug where renaming a newly-created volume subfolder didn’t appear to have any effect.
+- Fixed a UI bug where autocomplete dropdowns were not filtered on initial click ([#11896](https://github.com/craftcms/cms/issues/11896))
 
 ### Security
 - Fixed XSS vulnerabilities.
