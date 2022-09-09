@@ -30,7 +30,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     sourcesByKey: null,
     $visibleSources: null,
 
-    $customizeSourcesBtn: null,
+    $sourceActionsContainer: null,
+    $sourceActionsBtn: null,
 
     $toolbar: null,
     toolbarOffset: null,
@@ -143,7 +144,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.$clearSearchBtn = this.$searchContainer.children('.clear-btn:first');
 
       this.$sidebar = this.$container.find('.sidebar:first');
-      this.$customizeSourcesBtn = this.$sidebar.find('.customize-sources');
+      this.$sourceActionsContainer = this.$sidebar.find('#source-actions');
 
       this.$elements = this.$container.find('.elements:first');
       this.$updateSpinner = this.$elements.find('.spinner');
@@ -170,15 +171,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
       if (!this.initSources()) {
         return;
-      }
-
-      // Customize button
-      if (this.$customizeSourcesBtn.length) {
-        this.addListener(
-          this.$customizeSourcesBtn,
-          'click',
-          'createCustomizeSourcesModal'
-        );
       }
 
       // Initialize the status menu
@@ -729,6 +721,90 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.totalResults = null;
     },
 
+    updateSourceMenu: function () {
+      if (this.$sourceActionsBtn) {
+        this.$sourceActionsBtn.data('trigger').hide();
+        this.$sourceActionsBtn.data('trigger').destroy();
+        this.$sourceActionsContainer.empty();
+        this.$sourceActionsBtn = null;
+      }
+
+      const actions = this.getSourceActions();
+      if (!actions.length) {
+        return;
+      }
+
+      const groupedActions = [
+        actions.filter((a) => !a.destructive && !a.administrative),
+        actions.filter((a) => a.destructive && !a.administrative),
+        actions.filter((a) => a.administrative),
+      ].filter((group) => group.length);
+
+      this.$sourceActionsBtn = $('<button/>', {
+        type: 'button',
+        class: 'btn settings icon menubtn',
+        title: Craft.t('app', 'Source settings'),
+        'aria-label': Craft.t('app', 'Source settings'),
+        'aria-controls': 'source-actions-menu',
+      }).appendTo(this.$sourceActionsContainer);
+
+      const $menu = $('<div/>', {
+        id: 'source-actions-menu',
+        class: 'menu menu--disclosure',
+      }).appendTo(this.$sourceActionsContainer);
+
+      groupedActions.forEach((group, index) => {
+        if (index !== 0) {
+          $('<hr/>').appendTo($menu);
+        }
+
+        this._buildActionList(group).appendTo($menu);
+      });
+
+      this.$sourceActionsBtn.disclosureMenu();
+    },
+
+    _buildActionList: function (actions) {
+      const $ul = $('<ul/>');
+
+      actions.forEach((action) => {
+        const $button = $('<button/>', {
+          type: 'button',
+          class: 'menu-option',
+          text: action.label,
+        }).on('click', () => {
+          this.$sourceActionsBtn.data('trigger').hide();
+          if (action.onSelect) {
+            action.onSelect();
+          }
+        });
+
+        if (action.destructive) {
+          $button.addClass('error');
+        }
+
+        $('<li/>').append($button).appendTo($ul);
+      });
+
+      return $ul;
+    },
+
+    getSourceActions: function () {
+      let actions = [];
+
+      if (Craft.userIsAdmin && Craft.allowAdminChanges) {
+        actions.push({
+          label: Craft.t('app', 'Customize sources'),
+          administrative: true,
+          onSelect: () => {
+            this.createCustomizeSourcesModal();
+          },
+        });
+      }
+
+      return actions;
+    },
+
     /**
      * Returns the data that should be passed to the elementIndex/getElements controller action
      * when loading elements.
@@ -1270,9 +1346,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
       this.selectViewMode(viewMode);
 
-      // Filter HUD
-      // ----------------------------------------------------------------------
-
+      this.updateSourceMenu();
       this.updateFilterBtn();
 
       this.onSelectSource();

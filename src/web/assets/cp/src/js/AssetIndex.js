@@ -1349,6 +1349,39 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
     }
   },
 
+  getSourceActions: function () {
+    const actions = this.base();
+
+    // Make sure it's a volume folder
+    if (this._getVolumeOrFolderUidFromSourceKey(this.sourceKey)) {
+      actions.push({
+        label: Craft.t('app', 'New subfolder'),
+        onSelect: () => {
+          this._createSubfolder(this.$source);
+        },
+      });
+
+      // For all folders that are not top folders
+      if (this._getSourceLevel(this.$source) > 1) {
+        actions.push({
+          label: Craft.t('app', 'Rename folder'),
+          onSelect: () => {
+            this._renameFolder(this.$source);
+          },
+        });
+        actions.push({
+          label: Craft.t('app', 'Delete folder'),
+          destructive: true,
+          onSelect: () => {
+            this._deleteFolder(this.$source);
+          },
+        });
+      }
+    }
+
+    return actions;
+  },
+
   _createFolderContextMenu: function ($source) {
     // Make sure it's a volume folder
     if (!this._getVolumeOrFolderUidFromSourceKey($source.data('key'))) {
@@ -1429,6 +1462,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
           var $a = $subfolder.children('a:first');
           this._appendSubfolder($parentFolder, $subfolder);
           this.initSource($a);
+
+          Craft.cp.displayNotice(Craft.t('app', 'Folder created.'));
         })
         .catch(({response}) => {
           this.setIndexAvailable();
@@ -1461,6 +1496,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 
           $targetFolder.parent().remove();
           this._cleanUpTree($parentFolder);
+
+          Craft.cp.displayNotice(Craft.t('app', 'Folder deleted.'));
         })
         .catch(({response}) => {
           this.setIndexAvailable();
@@ -1495,6 +1532,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
         // Is this the selected source?
         if ($source.data('key') === this.$source.data('key')) {
           this.updateElements();
+
+          Craft.cp.displayNotice(Craft.t('app', 'Folder renamed.'));
 
           // Update the URL if we're on the Assets index
           if (this.settings.context === 'index') {
