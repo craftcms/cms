@@ -68,6 +68,10 @@ export default Base.extend(
     },
 
     addDisclosureMenuEventListeners: function () {
+      this.addListener(this.$trigger, 'mousedown', function (event) {
+        event.stopPropagation();
+      });
+
       this.addListener(this.$trigger, 'click', () => {
         this.handleTriggerClick();
       });
