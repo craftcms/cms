@@ -197,7 +197,7 @@ export default Base.extend(
       this.$container.velocity('stop');
       this.$container.css({
         opacity: 1,
-        display: 'block',
+        display: '',
       });
 
       // Set ARIA attribute for expanded
