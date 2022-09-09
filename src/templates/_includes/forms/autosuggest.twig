@@ -47,7 +47,7 @@ new Vue({
     data() {
         {% block data %}
         var data = {{ {
-            query: '',
+            query: (value ?? '') | lower,
             selected: '',
             filteredOptions: [],
             suggestions: suggestions ?? [],
