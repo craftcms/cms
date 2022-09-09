@@ -743,8 +743,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.$sourceActionsBtn = $('<button/>', {
         type: 'button',
         class: 'btn settings icon menubtn',
-        title: Craft.t('app', 'Settings'),
-        'aria-label': Craft.t('app', 'Settings'),
+        title: Craft.t('app', 'Source settings'),
+        'aria-label': Craft.t('app', 'Source settings'),
         'aria-controls': 'source-actions-menu',
       }).appendTo(this.$sourceActionsContainer);
 

@@ -1462,6 +1462,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
           var $a = $subfolder.children('a:first');
           this._appendSubfolder($parentFolder, $subfolder);
           this.initSource($a);
+
+          Craft.cp.displayNotice(Craft.t('app', 'Folder created.'));
         })
         .catch(({response}) => {
           this.setIndexAvailable();
@@ -1494,6 +1496,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
 
           $targetFolder.parent().remove();
           this._cleanUpTree($parentFolder);
+
+          Craft.cp.displayNotice(Craft.t('app', 'Folder deleted.'));
         })
         .catch(({response}) => {
           this.setIndexAvailable();
@@ -1528,6 +1532,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
         // Is this the selected source?
         if ($source.data('key') === this.$source.data('key')) {
           this.updateElements();
+
+          Craft.cp.displayNotice(Craft.t('app', 'Folder renamed.'));
 
           // Update the URL if we're on the Assets index
           if (this.settings.context === 'index') {
