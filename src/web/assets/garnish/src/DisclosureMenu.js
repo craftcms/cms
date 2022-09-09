@@ -200,6 +200,11 @@ export default Base.extend(
         display: '',
       });
 
+      // In case its default display is set to none
+      if (this.$container.css('display') === 'none') {
+        this.$container.css('display', 'block');
+      }
+
       // Set ARIA attribute for expanded
       this.$trigger.attr('aria-expanded', 'true');
 
