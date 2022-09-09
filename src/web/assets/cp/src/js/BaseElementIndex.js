@@ -761,7 +761,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         this._buildActionList(group).appendTo($menu);
       });
 
-      new Garnish.DisclosureMenu(this.$sourceActionsBtn);
+      this.$sourceActionsBtn.disclosureMenu();
     },
 
     _buildActionList: function (actions) {
@@ -1683,7 +1683,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       }
 
       if (this.selectSource(this.sourceSelect.$selectedItems)) {
-        this.updateSourceMenu();
         this.updateElements();
       }
     },
