@@ -723,9 +723,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
     updateSourceMenu: function () {
       if (this.$sourceActionsBtn) {
-        this.$sourceActionsBtn.data('trigger').hide();
         this.$sourceActionsBtn.data('trigger').destroy();
         this.$sourceActionsContainer.empty();
+        $('#source-actions-menu').remove();
         this.$sourceActionsBtn = null;
       }
 
