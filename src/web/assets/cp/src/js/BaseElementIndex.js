@@ -25,8 +25,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     $sidebar: null,
     showingSidebar: null,
     sourceKey: null,
+    rootSourceKey: null,
     sourceViewModes: null,
     $source: null,
+    $rootSource: null,
     sourcesByKey: null,
     $visibleSources: null,
 
@@ -1210,26 +1212,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       return $source;
     },
 
-    /**
-     * Returns the root level source for the currently selected source.
-     * @returns {jQuery|null}
-     */
-    getRootSelectedSource: function () {
-      if (this.$source) {
-        return this.getRootSource(this.$source);
-      }
-      return null;
-    },
-
-    /**
-     * Returns the key of the root level selected source.
-     * @returns {*|jQuery|null}
-     */
-    getRootSelectedSourceKey: function () {
-      const $source = this.getRootSelectedSource();
-      return $source ? $source.data('key') : null;
-    },
-
     getSourceByKey: function (key) {
       return this.sourcesByKey[key] || null;
     },
@@ -1254,7 +1236,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.hideActionTriggers();
 
       this.$source = $source;
+      this.$rootSource = this.getRootSource($source);
       this.sourceKey = $source.data('key');
+      this.rootSourceKey = this.$rootSource.data('key');
       this.setInstanceState('selectedSource', this.sourceKey);
       this.sourceSelect.selectItem($source);
 
@@ -1274,8 +1258,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.$sortAttributesList.children('li[data-extra]').remove();
 
       // Does this source have any custom sort options?
-      let $rootSource = this.getRootSelectedSource();
-      let sortOptions = $rootSource.data('sort-options');
+      let sortOptions = this.$rootSource.data('sort-options');
       if (sortOptions) {
         for (let i = 0; i < sortOptions.length; i++) {
           let $option = $('<li/>', {
@@ -1855,7 +1838,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           // Is this the currently selected source?
           if (this.$source && this.$source.get(0) === $source.get(0)) {
             this.$source = null;
+            this.$rootSource = null;
             this.sourceKey = null;
+            this.rootSourceKey = null;
           }
         }
       }

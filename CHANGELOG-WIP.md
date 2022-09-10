@@ -70,8 +70,6 @@
 - Added `craft\web\View::EVENT_AFTER_CREATE_TWIG`. ([#11774](https://github.com/craftcms/cms/pull/11774))
 - Added the `Craft.useMobileStyles()` JavaScript method. ([#11636](https://github.com/craftcms/cms/pull/11636))
 - Added `Craft.BaseElementIndex::getParentSource()`.
-- Added `Craft.BaseElementIndex::getRootSelectedSource()`.
-- Added `Craft.BaseElementIndex::getRootSelectedSourceKey()`.
 - Added `Craft.BaseElementIndex::getRootSource()`.
 - Added `Craft.BaseElementIndex::getSourceActions()`. ([#11906](https://github.com/craftcms/cms/pull/11906))
 - Added `Craft.BaseElementIndex::getSourceLevel()`.
