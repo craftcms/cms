@@ -84,7 +84,7 @@ siteGroups:
     name: 'Craft CMS Test Site Group'
 sites:
   2fa19d28-c359-4955-8b0d-35a35e3f1128:
-    baseUrl: $DEFAULT_SITE_URL
+    baseUrl: '@web'
     handle: default
     hasUrls: true
     language: en-US
