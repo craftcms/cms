@@ -207,6 +207,16 @@ Craft::setAlias('@templates', $templatesPath);
 Craft::setAlias('@translations', $translationsPath);
 Craft::setAlias('@tests', $testsPath);
 
+$webUrl = App::env('CRAFT_WEB_URL');
+if ($webUrl) {
+    Craft::setAlias('@web', $webUrl);
+}
+
+$webRoot = App::env('CRAFT_WEB_ROOT');
+if ($webRoot) {
+    Craft::setAlias('@webroot', $webRoot);
+}
+
 // Set any custom aliases
 $customAliases = $generalConfig['aliases'] ?? $generalConfig['environmentVariables'] ?? null;
 if (is_array($customAliases)) {
