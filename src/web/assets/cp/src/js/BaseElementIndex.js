@@ -1178,12 +1178,60 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       }
     },
 
-    getSourceByKey: function (key) {
-      if (typeof this.sourcesByKey[key] === 'undefined') {
-        return null;
-      }
+    /**
+     * Returns the nesting level for a given source, where 1 = the root level
+     * @param $source
+     * @returns {number}
+     */
+    getSourceLevel: function ($source) {
+      return $source.parentsUntil('nav', 'ul.nested').length + 1;
+    },
 
-      return this.sourcesByKey[key];
+    /**
+     * Returns a source’s parent, or null if it’s the root source
+     * @param $source
+     * @returns {jQuery|null}
+     */
+    getParentSource: function ($source) {
+      const $parent = $source.parent().parent().siblings('a');
+      return $parent.length ? $parent : null;
+    },
+
+    /**
+     * Returns the root level source for a given source.
+     * @param $source
+     * @returns {jQuery}
+     */
+    getRootSource: function ($source) {
+      let $parent;
+      while (($parent = this.getParentSource($source))) {
+        $source = $parent;
+      }
+      return $source;
+    },
+
+    /**
+     * Returns the root level source for the currently selected source.
+     * @returns {jQuery|null}
+     */
+    getRootSelectedSource: function () {
+      if (this.$source) {
+        return this.getRootSource(this.$source);
+      }
+      return null;
+    },
+
+    /**
+     * Returns the key of the root level selected source.
+     * @returns {*|jQuery|null}
+     */
+    getRootSelectedSourceKey: function () {
+      const $source = this.getRootSelectedSource();
+      return $source ? $source.data('key') : null;
+    },
+
+    getSourceByKey: function (key) {
+      return this.sourcesByKey[key] || null;
     },
 
     selectSource: function (source) {
@@ -1226,8 +1274,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.$sortAttributesList.children('li[data-extra]').remove();
 
       // Does this source have any custom sort options?
-      let $topSource = this.$source.closest('nav > ul > li').children('a');
-      let sortOptions = $topSource.data('sort-options');
+      let $rootSource = this.getRootSelectedSource();
+      let sortOptions = $rootSource.data('sort-options');
       if (sortOptions) {
         for (let i = 0; i < sortOptions.length; i++) {
           let $option = $('<li/>', {

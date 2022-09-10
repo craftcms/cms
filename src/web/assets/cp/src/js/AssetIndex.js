@@ -86,7 +86,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
     this._createFolderContextMenu($source);
 
     if (this.settings.context === 'index') {
-      if (this._folderDrag && this._getSourceLevel($source) > 1) {
+      if (this._folderDrag && this.getSourceLevel($source) > 1) {
         if ($source.data('folder-id')) {
           this._folderDrag.addItems($source.parent());
         }
@@ -109,7 +109,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
     }
 
     if (this.settings.context === 'index') {
-      if (this._folderDrag && this._getSourceLevel($source) > 1) {
+      if (this._folderDrag && this.getSourceLevel($source) > 1) {
         this._folderDrag.removeItems($source.parent());
       }
 
@@ -117,10 +117,6 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
         this._assetDrag.updateDropTargets();
       }
     }
-  },
-
-  _getSourceLevel: function ($source) {
-    return $source.parentsUntil('nav', 'ul.nested').length + 1;
   },
 
   /**
@@ -646,34 +642,6 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
     }
   },
 
-  /**
-   * Returns the root level source for a source.
-   *
-   * @param $source
-   * @returns {*}
-   * @private
-   */
-  _getRootSource: function ($source) {
-    var $parent;
-    while (($parent = this._getParentSource($source)) && $parent.length) {
-      $source = $parent;
-    }
-    return $source;
-  },
-
-  /**
-   * Get parent source for a source.
-   *
-   * @param $source
-   * @returns {*}
-   * @private
-   */
-  _getParentSource: function ($source) {
-    if (this._getSourceLevel($source) > 1) {
-      return $source.parent().parent().siblings('a');
-    }
-  },
-
   _selectSourceByFolderId: function (targetFolderId) {
     var $targetSource = this._getSourceByKey(targetFolderId);
 
@@ -818,7 +786,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
     let nestedSources = [];
     let $thisSource = $source;
     let $parent;
-    while (($parent = this._getParentSource($thisSource)) && $parent.length) {
+    while (($parent = this.getParentSource($thisSource)) && $parent.length) {
       nestedSources.unshift($thisSource);
       $thisSource = $parent;
     }
@@ -1362,7 +1330,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
       });
 
       // For all folders that are not top folders
-      if (this._getSourceLevel(this.$source) > 1) {
+      if (this.getSourceLevel(this.$source) > 1) {
         actions.push({
           label: Craft.t('app', 'Rename folder'),
           onSelect: () => {
@@ -1398,10 +1366,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
     ];
 
     // For all folders that are not top folders
-    if (
-      this.settings.context === 'index' &&
-      this._getSourceLevel($source) > 1
-    ) {
+    if (this.settings.context === 'index' && this.getSourceLevel($source) > 1) {
       menuOptions.push({
         label: Craft.t('app', 'Rename folder'),
         onClick: () => {
@@ -1489,7 +1454,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
       Craft.sendActionRequest('POST', 'assets/delete-folder', {data})
         .then((response) => {
           this.setIndexAvailable();
-          var $parentFolder = this._getParentSource($targetFolder);
+          var $parentFolder = this.getParentSource($targetFolder);
 
           // Remove folder and any trace from its parent, if needed
           this.deinitSource($targetFolder);
