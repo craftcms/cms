@@ -566,10 +566,10 @@ Craft.CustomizeSourcesModal.Source =
 
       Craft.ui
         .createField($columnCheckboxes, {
-          label: Craft.t('app', 'Table Columns'),
+          label: Craft.t('app', 'Default Table Columns'),
           instructions: Craft.t(
             'app',
-            'Choose which table columns should be visible for this source, and in which order.'
+            'Choose which table columns should be visible for this source by default.'
           ),
         })
         .appendTo($container);

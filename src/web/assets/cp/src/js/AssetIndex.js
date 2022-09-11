@@ -985,8 +985,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
   _updateAfterUpload: function () {
     if (this.settings.context !== 'index') {
       this.clearSearch();
-      this.setSortAttribute('dateCreated');
-      this.setSortDirection('desc');
+      this.setSelectedSortAttribute('dateCreated', 'desc');
     }
     this.updateElements();
   },
