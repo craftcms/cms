@@ -51,7 +51,7 @@ Craft.ElementActionTrigger = Garnish.Base.extend(
     /**
      * Determines if this action can be performed on the currently selected elements.
      *
-     * @return boolean
+     * @returns {boolean}
      */
     validateSelection: function () {
       var valid = true;

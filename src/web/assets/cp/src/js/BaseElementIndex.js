@@ -1182,7 +1182,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
     /**
      * Returns the nesting level for a given source, where 1 = the root level
-     * @param $source
+     * @param {jQuery} $source
      * @returns {number}
      */
     getSourceLevel: function ($source) {
@@ -1191,8 +1191,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
     /**
      * Returns a source’s parent, or null if it’s the root source
-     * @param $source
-     * @returns {jQuery|null}
+     * @param {jQuery} $source
+     * @returns {?jQuery}
      */
     getParentSource: function ($source) {
       const $parent = $source.parent().parent().siblings('a');
@@ -1201,7 +1201,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
     /**
      * Returns the root level source for a given source.
-     * @param $source
+     * @param {jQuery} $source
      * @returns {jQuery}
      */
     getRootSource: function ($source) {

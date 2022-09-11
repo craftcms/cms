@@ -658,7 +658,7 @@ Craft.CP = Garnish.Base.extend(
       return this.tabManager ? this.tabManager.$focusableTab : undefined;
     },
     /**
-     * @param {object} tab
+     * @param {(jQuery|HTMLElement|string)} tab
      * @deprecated in 3.7.0
      */
     selectTab: function (tab) {
@@ -875,7 +875,7 @@ Craft.CP = Garnish.Base.extend(
      * @param {string} [settings.icon] The icon to show on the notification
      * @param {string} [settings.iconLabel] The icon’s ARIA label
      * @param {string} [settings.details] Any additional HTML that should be included below the message
-     * @return {Object} The notification
+     * @returns {Object} The notification
      */
     displayNotification: function (type, message, settings) {
       const notification = new Craft.CP.Notification(type, message, settings);
@@ -897,7 +897,7 @@ Craft.CP = Garnish.Base.extend(
      * @param {string} [settings.icon] The icon to show on the notification
      * @param {string} [settings.iconLabel] The icon’s ARIA label
      * @param {string} [settings.details] Any additional HTML that should be included below the message
-     * @return {Object} The notification
+     * @returns {Object} The notification
      */
     displayNotice: function (message, settings) {
       return this.displayNotification(
@@ -921,7 +921,7 @@ Craft.CP = Garnish.Base.extend(
      * @param {string} [settings.icon] The icon to show on the notification
      * @param {string} [settings.iconLabel] The icon’s ARIA label
      * @param {string} [settings.details] Any additional HTML that should be included below the message
-     * @return {Object} The notification
+     * @returns {Object} The notification
      */
     displaySuccess: function (message, settings) {
       return this.displayNotification(
@@ -945,7 +945,7 @@ Craft.CP = Garnish.Base.extend(
      * @param {string} [settings.icon] The icon to show on the notification
      * @param {string} [settings.iconLabel] The icon’s ARIA label
      * @param {string} [settings.details] Any additional HTML that should be included below the message
-     * @return {Object} The notification
+     * @returns {Object} The notification
      */
     displayError: function (message, settings) {
       if (!message || typeof message === 'object') {
@@ -1375,7 +1375,7 @@ Craft.CP = Garnish.Base.extend(
     /**
      * Returns the active site for the control panel
      *
-     * @return {number}
+     * @returns {number}
      */
     getSiteId: function () {
       // If the old BaseElementIndex.siteId value is in localStorage, go aheand and remove & return that

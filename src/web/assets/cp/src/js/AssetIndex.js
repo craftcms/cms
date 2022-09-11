@@ -922,8 +922,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
   /**
    * On upload success.
    *
-   * @param event
-   * @param data
+   * @param {Object} event
+   * @param {Object} data
    * @private
    */
   _onUploadSuccess: function (event, data) {
@@ -994,7 +994,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
   /**
    * Follow up to an upload that triggered at least one conflict resolution prompt.
    *
-   * @param returnData
+   * @param {Object} returnData
    * @private
    */
   _uploadFollowup: function (returnData) {
@@ -1515,7 +1515,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
   /**
    * Prepare a source folder for children folder.
    *
-   * @param $parentFolder
+   * @param {jQuery} $parentFolder
    * @private
    */
   _prepareParentForChildren: function ($parentFolder) {
@@ -1531,8 +1531,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
   /**
    * Appends a subfolder to the parent folder at the correct spot.
    *
-   * @param $parentFolder
-   * @param $subfolder
+   * @param {jQuery} $parentFolder
+   * @param {jQuery} $subfolder
    * @private
    */
   _appendSubfolder: function ($parentFolder, $subfolder) {
