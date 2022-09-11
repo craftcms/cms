@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Changed
+- Control panel menus now automatically reposition themselves when the window is resized.
 - `resave/*` commands now have a `--touch` option. When passed, elements’ `dateUpdated` timestamps will be updated as they’re resaved. ([#11849](https://github.com/craftcms/cms/discussions/11849))
 - Underscores within query param values that begin/end with `*` are now escaped, so they aren’t treated as wildcard characters by the `like` condition. ([#11898](https://github.com/craftcms/cms/issues/11898))
 - `craft\services\Elements::resaveElements()` now has a `$touch` argument.

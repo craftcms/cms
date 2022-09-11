@@ -189,6 +189,7 @@ export default Base.extend(
         'scroll',
         'setContainerPosition'
       );
+      this.addListener(Garnish.$win, 'resize', 'setContainerPosition');
 
       this.$container.velocity('stop');
       this.$container.css({
