@@ -2682,6 +2682,7 @@ const ViewMenu = Garnish.Base.extend({
   $tableColumnsContainer: null,
   $revertContainer: null,
   $revertBtn: null,
+  $closeBtn: null,
 
   init: function (elementIndex, $source) {
     this.elementIndex = elementIndex;
@@ -2721,10 +2722,7 @@ const ViewMenu = Garnish.Base.extend({
 
       // Move all checked table column checkboxes to the top once it's fully faded out
       setTimeout(() => {
-        const $checkboxes = this._getTableColumnCheckboxes().filter(':checked');
-        for (let i = $checkboxes.length - 1; i >= 0; i--) {
-          $checkboxes.eq(i).parent().prependTo(this.$tableColumnsContainer);
-        }
+        this.tidyTableColumnCheckboxes();
       }, Garnish.FX_DURATION);
     });
   },
@@ -2786,7 +2784,7 @@ const ViewMenu = Garnish.Base.extend({
 
       // Do we need to move it up?
       if ($lastContainer && $container.index() < lastIndex) {
-        $checkbox.insertAfter($lastCheckbox);
+        $container.insertAfter($lastContainer);
       }
 
       $lastContainer = $container;
@@ -2803,21 +2801,48 @@ const ViewMenu = Garnish.Base.extend({
     }
   },
 
+  tidyTableColumnCheckboxes: function () {
+    const defaultOrder = this.elementIndex
+      .getTableColumnOptions(this.$source)
+      .map((column) => column.attr)
+      .reduce((obj, attr, index) => {
+        return {...obj, [attr]: index};
+      }, {});
+
+    this.$tableColumnsContainer
+      .children()
+      .sort((a, b) => {
+        const checkboxA = $(a).children('input[type="checkbox"]')[0];
+        const checkboxB = $(b).children('input[type="checkbox"]')[0];
+        if (checkboxA.checked && checkboxB.checked) {
+          return 0;
+        }
+        if (checkboxA.checked || checkboxB.checked) {
+          return checkboxA.checked ? -1 : 1;
+        }
+        return defaultOrder[checkboxA.value] < defaultOrder[checkboxB.value]
+          ? -1
+          : 1;
+      })
+      .appendTo(this.$tableColumnsContainer);
+  },
+
   revert: function () {
     this.elementIndex.setSelecetedSourceState({
       order: null,
       sort: null,
       tableColumns: null,
     });
+
+    this.updateSortSelects();
+    this.updateTableColumnCheckboxes();
+    this.tidyTableColumnCheckboxes();
+
+    this.$revertBtn.remove();
+    this.$revertBtn = null;
+
+    this.$closeBtn.focus();
     this.elementIndex.updateElements();
-
-    // Destroy and recreate the menu
-    delete this.elementIndex.viewMenus[this.sourceKey];
-    this.elementIndex.updateViewMenu();
-
-    setTimeout(() => {
-      this.destroy();
-    }, Garnish.FX_DURATION);
   },
 
   _buildMenu: function () {
@@ -2844,7 +2869,7 @@ const ViewMenu = Garnish.Base.extend({
       this._createRevertBtn();
     }
 
-    $('<button/>', {
+    this.$closeBtn = $('<button/>', {
       type: 'button',
       class: 'btn',
       text: Craft.t('app', 'Close'),
@@ -2923,22 +2948,21 @@ const ViewMenu = Garnish.Base.extend({
     }
 
     this.$tableColumnsContainer = $('<div/>');
-    const selectedColumnAttributes = this.elementIndex.getSelectedTableColumns(
-      this.$source
-    );
-    const selectedColumns = selectedColumnAttributes
-      .map((a) => columns.find((c) => c.attr === a))
-      .filter((c) => !!c);
-    const unselectedColumns = columns.filter(
-      (c) => !selectedColumnAttributes.includes(c.attr)
-    );
 
-    this._createTableColumnCheckboxes(selectedColumns, true).appendTo(
-      this.$tableColumnsContainer
-    );
-    this._createTableColumnCheckboxes(unselectedColumns, false).appendTo(
-      this.$tableColumnsContainer
-    );
+    columns.forEach((column) => {
+      $('<div class="element-index-view-menu-table-column"/>')
+        .append('<div class="icon move"/>')
+        .append(
+          Craft.ui.createCheckbox({
+            label: Craft.escapeHtml(column.label),
+            value: column.attr,
+          })
+        )
+        .appendTo(this.$tableColumnsContainer);
+    });
+
+    this.updateTableColumnCheckboxes();
+    this.tidyTableColumnCheckboxes();
 
     new Garnish.DragSort(this.$tableColumnsContainer.children(), {
       handle: '.move',
@@ -2957,26 +2981,6 @@ const ViewMenu = Garnish.Base.extend({
     });
     $field.addClass('table-columns-field');
     return $field;
-  },
-
-  _createTableColumnCheckboxes: function (columns, selected) {
-    let $checkboxes = $();
-
-    columns.forEach((column) => {
-      $checkboxes = $checkboxes.add(
-        $('<div class="element-index-view-menu-table-column"/>')
-          .append('<div class="icon move"/>')
-          .append(
-            Craft.ui.createCheckbox({
-              label: Craft.escapeHtml(column.label),
-              value: column.attr,
-              checked: selected,
-            })
-          )
-      );
-    });
-
-    return $checkboxes;
   },
 
   _onTableColumnChange: function () {
