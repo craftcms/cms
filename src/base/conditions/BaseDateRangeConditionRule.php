@@ -177,6 +177,9 @@ JS,
             'id' => $buttonId,
             'class' => ['btn', 'menubtn'],
             'autofocus' => false,
+            'aria' => [
+                'label' => Craft::t('app', 'Date Range'),
+            ],
         ]) .
         Html::tag('div', $rangeTypeOptionsHtml, [
             'id' => $menuId,
