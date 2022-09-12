@@ -283,51 +283,51 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     {
         $rules = parent::defineRules();
         $rules[] = [['minRelations', 'maxRelations', 'branchLimit'], 'number', 'integerOnly' => true];
-		$rules[] = [['source', 'sources'], 'validateSources'];
+        $rules[] = [['source', 'sources'], 'validateSources'];
         return $rules;
     }
 
-	/**
-	 * Ensure only one structured source is selected when relateAncestors is true.
-	 *
-	 * @param string $attribute
-	 */
-	public function validateSources($attribute): void
-	{
-		if (!$this->relateAncestors) {
-			return;
-		}
+    /**
+     * Ensure only one structured source is selected when relateAncestors is true.
+     *
+     * @param string $attribute
+     */
+    public function validateSources($attribute): void
+    {
+        if (!$this->relateAncestors) {
+            return;
+        }
 
-		$inputSources = $this->getInputSources();
+        $inputSources = $this->getInputSources();
 
-		if ($inputSources === null) {
-			$this->addError($attribute, 'At least one source needs to be selected when relating ancestors.');
-			return;
-		}
+        if ($inputSources === null) {
+            $this->addError($attribute, 'At least one source needs to be selected when relating ancestors.');
+            return;
+        }
 
-		if (is_string($inputSources)) {
-			$inputSources = [$inputSources];
-		}
+        if (is_string($inputSources)) {
+            $inputSources = [$inputSources];
+        }
 
-		$elementSources = ArrayHelper::whereIn(
-				Craft::$app->elementSources->getSources(static::elementType()),
-				'key',
-				$inputSources
-		);
+        $elementSources = ArrayHelper::whereIn(
+            Craft::$app->elementSources->getSources(static::elementType()),
+            'key',
+            $inputSources
+        );
 
-		if (count($elementSources) > 1) {
-			$this->addError($attribute, 'Only one source allowed when relating ancestors.');
-		}
+        if (count($elementSources) > 1) {
+            $this->addError($attribute, 'Only one source allowed when relating ancestors.');
+        }
 
-		foreach ($elementSources as $elementSource) {
-			if (!isset($elementSource['structureId'])) {
-				$this->addError(
-					$attribute,
-					"{$elementSource['label']} is not a structured source. Only structured sources may be used when relating ancestors."
-				);
-			}
-		}
-	}
+        foreach ($elementSources as $elementSource) {
+            if (!isset($elementSource['structureId'])) {
+                $this->addError(
+                    $attribute,
+                    "{$elementSource['label']} is not a structured source. Only structured sources may be used when relating ancestors."
+                );
+            }
+        }
+    }
 
     /**
      * @inheritdoc
