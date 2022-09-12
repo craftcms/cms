@@ -184,12 +184,12 @@ class InstallController extends Controller
         $site->baseUrl = $this->siteUrl ?: $this->prompt('Site URL:', ['required' => true, 'default' => $defaultSiteUrl, 'validator' => $this->createAttributeValidator($site, 'baseUrl')]);
         $site->language = $this->language ?: $this->prompt('Site language:', ['default' => $defaultSiteLanguage ?? Craft::$app->language, 'validator' => $this->createAttributeValidator($site, 'language')]);
 
-        // Try to save the site URL to a CRAFT_WEB_URL environment variable
+        // Try to save the site URL to a PRIMARY_SITE_URL environment variable
         // if it’s not already set to an alias or environment variable
         if (!in_array($site->getBaseUrl(false)[0], ['@', '$'])) {
             try {
-                $configService->setDotEnvVar('CRAFT_WEB_URL', $site->baseUrl);
-                $site->baseUrl = '@web';
+                $configService->setDotEnvVar('PRIMARY_SITE_URL', $site->baseUrl);
+                $site->baseUrl = '$PRIMARY_SITE_URL';
             } catch (Exception) {
                 // that's fine, we'll just store the entered URL
             }

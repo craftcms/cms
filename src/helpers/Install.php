@@ -62,6 +62,11 @@ class Install
             return $primarySite['baseUrl'];
         }
 
+        // Is there a PRIMARY_SITE_URL environment variable set?
+        if ($envValue = App::env('PRIMARY_SITE_URL')) {
+            return $envValue;
+        }
+
         // If this is a console request, give up now
         if (Craft::$app->getRequest()->getIsConsoleRequest()) {
             return null;
