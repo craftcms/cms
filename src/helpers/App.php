@@ -843,6 +843,13 @@ class App
     public static function mailSettings(): MailSettings
     {
         $settings = Craft::$app->getProjectConfig()->get('email') ?? [];
+        $key = $settings['transport'] ?? null;
+        $transport = $settings['transports'][$key] ?? null;
+        $settings['transportType'] = $transport['type'] ?? null;
+        $settings['transportSettings'] = $transport['settings'] ?? null;
+
+        unset($settings['transport'], $settings['transports']);
+
         return new MailSettings($settings);
     }
 
