@@ -185,7 +185,7 @@ abstract class Controller extends \yii\web\Controller
      * @see \yii\web\User::getIdentity()
      * @since 4.3.0
      */
-    public function getCurrentUser(bool $autoRenew = true): ?User
+    public static function getCurrentUser(bool $autoRenew = true): ?User
     {
         return Craft::$app->getUser()->getIdentity($autoRenew);
     }

@@ -360,7 +360,7 @@ class AppController extends Controller
         $this->requirePermission('accessCp');
 
         $message = $this->request->getRequiredBodyParam('message');
-        $user = $this->getCurrentUser();
+        $user = self::getCurrentUser();
 
         $currentTime = DateTimeHelper::currentUTCDateTime();
         $tomorrow = $currentTime->add(new DateInterval('P1D'));
