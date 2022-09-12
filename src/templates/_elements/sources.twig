@@ -36,7 +36,10 @@
                     |values
                 : false,
             'default-table-cols': isTopLevel
-                ? craft.app.elementSources.getTableAttributes(elementType, key)|map(a => a[0])
+                ? craft.app.elementSources.getTableAttributes(elementType, key)
+                    |map(a => a[0])
+                    |filter(a => a != 'title')
+                    |values
                 : false,
             sites: (source.sites ?? false) ? source.sites|join(',') : false,
             'override-status': (source.criteria.status ?? false) ? true : false,
