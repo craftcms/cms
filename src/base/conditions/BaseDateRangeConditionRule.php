@@ -220,16 +220,23 @@ JS,
                     )
                 );
         } elseif (in_array($this->rangeType, [DateRangeType::Before, DateRangeType::After])) {
-            $html .= Html::tag(
+            $periodValueId = 'period-value';
+            $periodTypeId = 'period-type';
+
+            $html .= Html::hiddenLabel(Craft::t('app', 'Period Value'), $periodValueId) .
+                Html::tag(
                 'div',
                 options: ['class' => ['flex', 'flex-nowrap']],
                 content:
                 Cp::textHtml([
+                    'id' => $periodValueId,
                     'name' => 'periodValue',
                     'value' => $this->periodValue,
                     'size' => '5',
                 ]) .
+                Html::hiddenLabel(Craft::t('app', 'Period Type'), $periodTypeId) .
                 Cp::selectHtml([
+                    'id' => $periodTypeId,
                     'name' => 'periodType',
                     'value' => $this->periodType,
                     'options' => DateRange::periodTypeOptions(),
