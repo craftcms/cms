@@ -15,6 +15,7 @@
                     options: sourceOptions,
                     values: field.sources,
                     showAllOption: true,
+                    errors: field.getErrors('sources')
                 }) }}
             {% else %}
                 {{ forms.selectField({
@@ -23,7 +24,8 @@
                     id: 'source',
                     name: 'source',
                     options: sourceOptions,
-                    value: field.source
+                    value: field.source,
+                    errors: field.getErrors('source')
                 }) }}
             {% endif %}
         {% else %}
