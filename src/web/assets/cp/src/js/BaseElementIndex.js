@@ -47,9 +47,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     drafts: false,
     $clearSearchBtn: null,
 
-    disableStructureSort: false,
-    avoidingStructureSort: false,
-
     $statusMenuBtn: null,
     $statusMenuContainer: null,
     statusMenu: null,
@@ -550,7 +547,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       // Show the clear button
       this.$clearSearchBtn.removeClass('hidden');
       this.searching = true;
-      this._updateStructureSortOption();
+
+      if (this.activeViewMenu) {
+        this.activeViewMenu.updateSortSelects();
+      }
     },
 
     clearSearch: function (updateElements) {
@@ -577,7 +577,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       // Hide the clear button
       this.$clearSearchBtn.addClass('hidden');
       this.searching = false;
-      this._updateStructureSortOption();
+
+      if (this.activeViewMenu) {
+        this.activeViewMenu.updateSortSelects();
+      }
     },
 
     setInstanceState: function (key, value) {
@@ -821,14 +824,12 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       };
 
       // Possible that the order/sort isn't entirely accurate if we're sorting by Score
-      params.viewState.order = this.searching
-        ? 'score'
-        : this.getSelectedSortAttribute();
-      params.viewState.sort = this.searching
-        ? 'desc'
-        : this.getSelectedSortDirection();
+      const [sortAttribute, sortDirection] =
+        this.getSortAttributeAndDirection();
+      params.viewState.order = sortAttribute;
+      params.viewState.sort = sortDirection;
 
-      if (params.viewState.order === 'structure') {
+      if (sortAttribute === 'structure') {
         if (typeof this.instanceState.collapsedElementIds === 'undefined') {
           this.instanceState.collapsedElementIds = [];
         }
@@ -1194,15 +1195,36 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     /**
+     * Returns whether sorting by a structure is permitted for the current state.
+     * @returns {boolean}
+     */
+    canSortByStructure: function () {
+      return !this.trashed && !this.drafts && !this.searching;
+    },
+
+    /**
      * Returns the actual sort attribute, which may be different from what's selected.
      * @returns {string[]}
      */
-    getSortAttribute: function () {
+    getSortAttributeAndDirection: function () {
       if (this.searching) {
         return ['score', 'asc'];
       }
 
-      return [this.getSelectedSortAttribute(), this.getSelectedSortDirection()];
+      let attribute = this.getSelectedSortAttribute();
+      let direction = this.getSelectedSortDirection();
+
+      if (attribute === 'structure') {
+        if (!this.canSortByStructure()) {
+          const alt = this.getSortOptions().find((a) => a.attr !== 'structure');
+          attribute = alt.attr;
+          direction = alt.defaultDir;
+        } else {
+          direction = 'asc';
+        }
+      }
+
+      return [attribute, direction];
     },
 
     getSortLabel: function (attr) {
@@ -1863,8 +1885,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         this.status = queryParam = $option.data('status') || null;
       }
 
+      if (this.activeViewMenu) {
+        this.activeViewMenu.updateSortSelects();
+      }
+
       Craft.setQueryParam('status', queryParam);
-      this._updateStructureSortOption();
       this.updateElements();
     },
 
@@ -1962,38 +1987,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       ev.stopPropagation();
     },
 
-    _updateStructureSortOption: function () {
-      if (
-        this.disableStructureSort !==
-        (this.disableStructureSort =
-          this.trashed || this.drafts || this.searching)
-      ) {
-        let updatedViewSelects = false;
-
-        if (this.disableStructureSort) {
-          if (this.getSelectedSortAttribute() === 'structure') {
-            this.avoidingStructureSort = true;
-            const altSortOption = this.getSortOptions().find(
-              (a) => a.attr !== 'structure'
-            );
-            this.setSelectedSortAttribute(
-              altSortOption.attr,
-              altSortOption.defaultDir
-            );
-            updatedViewSelects = true;
-          }
-        } else if (this.avoidingStructureSort) {
-          this.avoidingStructureSort = false;
-          this.setSelectedSortAttribute('structure');
-          updatedViewSelects = true;
-        }
-
-        if (!updatedViewSelects && this.activeViewMenu) {
-          this.activeViewMenu.updateSortSelects();
-        }
-      }
-    },
-
     // Source managemnet
     // -------------------------------------------------------------------------
 
@@ -2070,7 +2063,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     _isViewPaginated: function () {
       return (
         this.settings.context === 'index' &&
-        this.getSelectedSortAttribute() !== 'structure'
+        this.getSortAttributeAndDirection()[0] !== 'structure'
       );
     },
 
@@ -2273,7 +2266,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         context: this.settings.context,
         batchSize:
           this.settings.context !== 'index' ||
-          this.getSelectedSortAttribute() === 'structure'
+          this.getSortAttributeAndDirection()[0] === 'structure'
             ? this.settings.batchSize
             : null,
         params: params,
@@ -2747,16 +2740,19 @@ const ViewMenu = Garnish.Base.extend({
   },
 
   updateSortSelects: function () {
-    const attribute = this.elementIndex.getSelectedSortAttribute(this.$source);
-    const isStructure = attribute === 'structure';
-    const direction = isStructure
-      ? 'asc'
-      : this.elementIndex.getSelectedSortDirection(this.$source);
+    let [attribute, direction] =
+      this.elementIndex.getSortAttributeAndDirection();
+
+    // If searching by score, just keep showing the actual selection
+    if (attribute === 'score') {
+      attribute = this.elementIndex.getSelectedSortAttribute(this.$source);
+      direction = this.elementIndex.getSelectedSortDirection(this.$source);
+    }
 
     this.$sortAttributeSelect.val(attribute);
     this.$sortDirectionSelect.val(direction);
 
-    if (isStructure) {
+    if (attribute === 'structure') {
       this.$sortDirectionSelect
         .addClass('disabled')
         .attr('disabled', 'disabled');
@@ -2764,7 +2760,7 @@ const ViewMenu = Garnish.Base.extend({
       this.$sortDirectionSelect.removeClass('disabled').removeAttr('disabled');
     }
 
-    if (this.elementIndex.disableStructureSort) {
+    if (!this.elementIndex.canSortByStructure()) {
       this.$sortAttributeSelect
         .children('option[value="structure"]')
         .attr('disabled', 'disabled');
