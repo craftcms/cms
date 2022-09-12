@@ -1460,7 +1460,7 @@ JS, [
     {
         $this->requireAcceptsJson();
 
-        $elementType = $this->request->getRequiredParam('elementType', null);
+        $elementType = $this->request->getRequiredParam('elementType');
         $elementIds = $this->request->getParam('elementIds', []);
 
         $elements = [];
@@ -1490,7 +1490,7 @@ JS, [
                 'name' => $this->request->getParam('name'),
                 'selectionLabel' => $this->request->getParam('selectionLabel'),
                 'elementType' => $elementType,
-                'relateAncestors' => true
+                'relateAncestors' => true,
             ]);
 
         return $this->asJson([

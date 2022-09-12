@@ -62,10 +62,12 @@
 
       if (disableRelatAncestors) {
         this.$relatedAncestorsInput.prop('disabled', true);
+        this.$relatedAncestorsInput.closest('.field').addClass('disabled');
         this.$relatedAncestorsInput.prop('checked', false);
         this.$relatedAncestorsInput.trigger('change');
       } else {
         this.$relatedAncestorsInput.prop('disabled', false);
+        this.$relatedAncestorsInput.closest('.field').removeClass('disabled');
       }
     },
   });

@@ -264,13 +264,13 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
             $config['showSiteMenu'] = true;
         }
 
-		// if relating ancestors, then clear min/max limits, otherwise clear branch limit
-		if (isset($config['relateAncestors']) && !empty($config['relateAncestors'])) {
-			$config['maxRelations'] = null;
-			$config['minRelations'] = null;
-		} else {
-			$config['branchLimit'] = null;
-		}
+        // if relating ancestors, then clear min/max limits, otherwise clear branch limit
+        if (isset($config['relateAncestors']) && !empty($config['relateAncestors'])) {
+            $config['maxRelations'] = null;
+            $config['minRelations'] = null;
+        } else {
+            $config['branchLimit'] = null;
+        }
 
         parent::__construct($config);
     }
