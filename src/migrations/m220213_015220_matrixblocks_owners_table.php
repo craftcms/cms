@@ -32,7 +32,7 @@ class m220213_015220_matrixblocks_owners_table extends Migration
 
         $this->execute(<<<SQL
 INSERT INTO $ownersTable ([[blockId]], [[ownerId]], [[sortOrder]]) 
-SELECT [[id]], [[ownerId]], [[sortOrder]] 
+SELECT [[id]], [[ownerId]], COALESCE([[sortOrder]], 1) 
 FROM $blocksTable
 SQL
         );

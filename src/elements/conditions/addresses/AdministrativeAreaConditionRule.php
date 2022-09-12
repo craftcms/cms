@@ -125,7 +125,7 @@ JS;
         Craft::$app->getView()->registerJs($js);
 
         $adminSelectize =
-            Html::hiddenLabel($this->getLabel(), $multiSelectId) .
+            Html::hiddenLabel(Html::encode($this->getLabel()), $multiSelectId) .
             Cp::multiSelectHtml([
                 'id' => $multiSelectId,
                 'class' => 'selectize fullwidth',

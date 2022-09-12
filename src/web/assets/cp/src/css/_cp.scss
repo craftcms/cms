@@ -1025,6 +1025,8 @@ li.breadcrumb-toggle-wrapper {
 }
 
 #footer {
+  position: sticky;
+  bottom: 0;
   z-index: 1;
   margin: 25px calc(var(--xl) * -1) calc(var(--xl) * -1); // 1px extra on top is intentional
   padding: var(--s) var(--xl);
@@ -1035,6 +1037,17 @@ li.breadcrumb-toggle-wrapper {
 
   &:empty {
     display: none;
+  }
+
+  &.stuck {
+    border-radius: 0;
+
+    @supports (backdrop-filter: blur(10px)) {
+      & {
+        background-color: transparentize($grey100, 0.25);
+        backdrop-filter: blur(10px);
+      }
+    }
   }
 
   & > *,
