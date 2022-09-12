@@ -908,7 +908,7 @@ JS;
     {
         // Skip if nothing changed, or the element is just propagating and we're not localizing relations
         if (
-            $element->isFieldDirty($this->handle) &&
+            ($element->isFieldDirty($this->handle) || $this->relateAncestors) &&
             (!$element->propagating || $this->localizeRelations)
         ) {
             /** @var ElementQueryInterface|Collection $value */
@@ -924,6 +924,32 @@ JS;
                 $targetIds = $value->id ?: [];
             } else {
                 $targetIds = $this->_all($value, $element)->ids();
+            }
+
+            if ($this->relateAncestors) {
+                $structuresService = Craft::$app->getStructures();
+
+                /** @var ElementInterface $class */
+                $class = static::elementType();
+
+                /** @var ElementInterface[] $structureElements */
+                $structureElements = $class::find()
+                    ->id($targetIds)
+                    ->drafts(null)
+                    ->revisions(null)
+                    ->provisionalDrafts(null)
+                    ->status(null)
+                    ->all();
+
+                // Fill in any gaps
+                $structuresService->fillGapsInElements($structureElements);
+
+                // Enforce the branch limit
+                if ($this->branchLimit) {
+                    $structuresService->applyBranchLimitToElements($structureElements, $this->branchLimit);
+                }
+
+                $targetIds = ArrayHelper::getColumn($structureElements, 'id');
             }
 
             /** @var int|int[]|false|null $targetIds */
