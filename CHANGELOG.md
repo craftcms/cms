@@ -23,6 +23,7 @@
 - Fixed a bug where element index filter HUDs were unresponsive if another one was already active for a different site/source. ([#11880](https://github.com/craftcms/cms/issues/11880))
 - Fixed a bug where newly-created subfolders on the Assets index page could appear to have the wrong indentation.
 - Fixed a UI bug where renaming a newly-created volume subfolder didn’t appear to have any effect.
+- Fixed an issue where matrix blocks couldn't be saved when `creatorId` was null ([#11904](https://github.com/craftcms/cms/issues/11904))
 
 ### Security
 - Fixed XSS vulnerabilities.
