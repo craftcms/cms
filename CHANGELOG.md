@@ -33,6 +33,7 @@
 
 ### Security
 - Fixed XSS vulnerabilities.
+- Password inputs no longer temporarily reveal the password when the <kbd>Alt</kbd> key is pressed. ([#11930](https://github.com/craftcms/cms/issues/11930))
 
 ## 4.2.3 - 2022-08-26
 
