@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.7.54 - 2022-09-13
 
 ### Changed
 - Control panel menus now automatically reposition themselves when the window is resized.
