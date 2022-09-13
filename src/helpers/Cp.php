@@ -1103,7 +1103,7 @@ class Cp
                     $config['tip'] = Craft::t('app', 'This can be set to an environment variable.');
                 }
                 $config['tip'] .= ' ' .
-                    Html::a(Craft::t('app', 'Learn more'), 'https://craftcms.com/docs/4.x/config/#environmental-configuration', [
+                    Html::a(Craft::t('app', 'Learn more'), 'https://craftcms.com/docs/4.x/config#control-panel-settings', [
                         'class' => 'go',
                     ]);
             } elseif (

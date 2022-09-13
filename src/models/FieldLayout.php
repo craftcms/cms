@@ -170,11 +170,12 @@ class FieldLayout extends Model
      */
     public static function createFromConfig(array $config): self
     {
-        $layout = new self();
+        $tabConfigs = ArrayHelper::remove($config, 'tabs');
+        $layout = new self($config);
         $tabs = [];
 
-        if (!empty($config['tabs']) && is_array($config['tabs'])) {
-            foreach ($config['tabs'] as $tabConfig) {
+        if (is_array($tabConfigs)) {
+            foreach ($tabConfigs as $tabConfig) {
                 $tab = FieldLayoutTab::createFromConfig(['layout' => $layout] + $tabConfig);
 
                 // Ignore empty tabs

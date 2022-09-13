@@ -139,6 +139,7 @@ class RelatedToConditionRule extends BaseElementSelectConditionRule implements E
 
         return $element::find()
             ->id($element->id ?: false)
+            ->site('*')
             ->drafts($element->getIsDraft())
             ->provisionalDrafts($element->isProvisionalDraft)
             ->revisions($element->getIsRevision())
