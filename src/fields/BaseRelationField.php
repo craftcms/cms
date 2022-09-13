@@ -265,7 +265,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         }
 
         // if relating ancestors, then clear min/max limits, otherwise clear branch limit
-        if (isset($config['relateAncestors']) && !empty($config['relateAncestors'])) {
+        if ($config['relateAncestors'] ?? false) {
             $config['maxRelations'] = null;
             $config['minRelations'] = null;
         } else {
