@@ -108,8 +108,17 @@ Craft.EntryIndex = Craft.BaseElementIndex.extend({
           .addClass('submit add icon')
           .appendTo(this.$newEntryBtnGroup);
 
-        this.addListener(this.$newEntryBtn, 'click', () => {
-          this._createEntry(selectedSection.id);
+        this.addListener(this.$newEntryBtn, 'click mousedown', (ev) => {
+          // If this is the element index, check for Ctrl+clicks and middle button clicks
+          if (
+            this.settings.context === 'index' &&
+            ((ev.type === 'click' && Garnish.isCtrlKeyPressed(ev)) ||
+              (ev.type === 'mousedown' && ev.originalEvent.button === 1))
+          ) {
+            window.open(Craft.getUrl(`entries/${selectedSection.handle}/new`));
+          } else if (ev.type === 'click') {
+            this._createEntry(selectedSection.id);
+          }
         });
 
         if (this.publishableSections.length > 1) {

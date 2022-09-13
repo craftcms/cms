@@ -119,6 +119,10 @@ export default Base.extend(
     },
 
     onKeyDown: function (ev) {
+      if (Garnish.isCtrlKeyPressed(ev)) {
+        return;
+      }
+
       // Searching for an option?
       if (
         ev.key &&
