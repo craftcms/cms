@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.2.4 - 2022-09-13
 
 ### Changed
 - The “New entry” and “New category” buttons on the Entries and Categories index pages now support <kbd>Ctrl</kbd>/<kbd>Command</kbd>/middle-clicking to open the edit page in a new window. ([#11870](https://github.com/craftcms/cms/issues/11870))
@@ -9,6 +9,7 @@
 - `resave/*` commands now have a `--touch` option. When passed, elements’ `dateUpdated` timestamps will be updated as they’re resaved. ([#11849](https://github.com/craftcms/cms/discussions/11849))
 - Underscores within query param values that begin/end with `*` are now escaped, so they aren’t treated as wildcard characters by the `like` condition. ([#11898](https://github.com/craftcms/cms/issues/11898))
 - `craft\services\Elements::resaveElements()` now has a `$touch` argument.
+- Disable the preview button while drafts are saving ([#11858](https://github.com/craftcms/cms/issues/11858))
 
 ### Fixed
 - Fixed an error that could occur when upgrading to Craft 4, if any Matrix blocks contained null `sortOrder` values. ([#11843](https://github.com/craftcms/cms/issues/11843))
@@ -23,9 +24,17 @@
 - Fixed a bug where element index filter HUDs were unresponsive if another one was already active for a different site/source. ([#11880](https://github.com/craftcms/cms/issues/11880))
 - Fixed a bug where newly-created subfolders on the Assets index page could appear to have the wrong indentation.
 - Fixed a UI bug where renaming a newly-created volume subfolder didn’t appear to have any effect.
+- Fixed a bug where empty URL fields would be marked as changed, even when no change was made to them. ([#11908](https://github.com/craftcms/cms/issues/11908))
+- Fixed a UI bug where autosuggest menus weren’t getting filtered when first opened for inputs with existing values. ([#11896](https://github.com/craftcms/cms/issues/11896))
+- Fixed a bug where Entry Type condition rules weren’t working for conditions that were applied to a single element. ([#11914](https://github.com/craftcms/cms/issues/11914))
+- Fixed a bug where Related To condition rules weren’t working for conditions that were applied to a single element, for cross-site relations. ([#11892](https://github.com/craftcms/cms/issues/11892))
+- Fixed a bug where form action keyboard shortcuts weren’t available when a custom select menu was focused. ([#11919](https://github.com/craftcms/cms/issues/11919))
+- Fixed a bug where transforming an animated GIF into a WebP file would only include the first frame. ([#11889](https://github.com/craftcms/cms/issues/11889))
+- Fixed a bug where `craft\models\FieldLayout::createFromConfig()` was ignoring `id`, `uid`, `type`, and `reservedFieldHandles` keys, if set. ([#11929](https://github.com/craftcms/cms/issues/11929))
 
 ### Security
 - Fixed XSS vulnerabilities.
+- Password inputs no longer temporarily reveal the password when the <kbd>Alt</kbd> key is pressed. ([#11930](https://github.com/craftcms/cms/issues/11930))
 
 ## 4.2.3 - 2022-08-26
 

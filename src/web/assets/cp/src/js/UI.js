@@ -233,6 +233,14 @@ Craft.ui = {
         config
       )
     ).appendTo($body);
+
+    const $label = $body.find('label');
+
+    // Provide accessible name for modal dialog
+    if ($label.length > 0 && $label.attr('id')) {
+      $container.attr('aria-labelledby', $label.attr('id'));
+    }
+
     let modal = new Garnish.Modal($container, {
       closeOtherModals: false,
     });
