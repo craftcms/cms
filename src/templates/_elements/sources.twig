@@ -53,10 +53,21 @@
 
 {% from _self import sourceLink %}
 
-<ul>
+{% set nestedUnderHeading = false %}
+
+{% tag 'ul' with {
+    class: keyPrefix ? 'nested' : null,
+} %}
     {% for source in sources %}
         {% if (source.type ?? null) == 'heading' %}
-            <li class="heading"><span>{{ source.heading|t('site') }}</span></li>
+            {% if nestedUnderHeading %}
+                    </ul>
+                </li>
+            {% endif %}
+            <li class="heading">
+                <span>{{ source.heading|t('site') }}</span>
+                <ul>
+            {% set nestedUnderHeading = true %}
         {% else %}
             {% set key = source.keyPath ?? (keyPrefix ~ source.key) %}
             {% tag 'li' with {
@@ -75,5 +86,9 @@
             {% endtag %}
         {% endif %}
     {% endfor %}
-</ul>
+    {% if nestedUnderHeading %}
+            </ul>
+        </li>
+    {% endif %}
+{% endtag %}
 {% endapply %}

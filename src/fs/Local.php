@@ -114,7 +114,7 @@ class Local extends Fs implements LocalFsInterface
      */
     public function getSettingsHtml(): ?string
     {
-        return Craft::$app->getView()->renderTemplate('_components/fs/Local/settings',
+        return Craft::$app->getView()->renderTemplate('_components/fs/Local/settings.twig',
             [
                 'volume' => $this,
             ]);

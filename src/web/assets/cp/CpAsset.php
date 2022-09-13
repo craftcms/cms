@@ -13,6 +13,7 @@ use craft\config\GeneralConfig;
 use craft\elements\User;
 use craft\helpers\Assets;
 use craft\helpers\Cp;
+use craft\helpers\DateTimeHelper;
 use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\StringHelper;
@@ -148,6 +149,7 @@ JS;
             'Couldn’t delete “{name}”.',
             'Couldn’t save new order.',
             'Create',
+            'Customize sources',
             'Delete custom source',
             'Delete folder',
             'Delete heading',
@@ -179,6 +181,9 @@ JS;
             'Export',
             'Export…',
             'Failed',
+            'Folder created.',
+            'Folder deleted.',
+            'Folder renamed.',
             'Format',
             'From {date}',
             'From',
@@ -213,14 +218,14 @@ JS;
             'Move up',
             'Move',
             'Name',
+            'New category in the {group} category group',
             'New category',
             'New category, choose a category group',
-            'New category in the {group} category group',
             'New child',
             'New custom source',
+            'New entry in the {section} section',
             'New entry',
             'New entry, choose a section',
-            'New entry in the {section} section',
             'New heading',
             'New order saved.',
             'New position saved.',
@@ -242,6 +247,7 @@ JS;
             'Phone',
             'Portrait',
             'Preview',
+            'Preview file',
             'Previewing {type} device in {orientation}',
             'Previewing {type} device',
             'Previous Page',
@@ -273,8 +279,8 @@ JS;
             'Show nav',
             'Show nested sources',
             'Show sidebar',
-            'Show',
             'Show {title} children',
+            'Show',
             'Show/hide children',
             'Showing your unsaved changes.',
             'Sign in',
@@ -282,6 +288,7 @@ JS;
             'Skip to {title}',
             'Sort by {attribute}',
             'Source settings saved',
+            'Source settings',
             'Structure',
             'Submit',
             'Success',
@@ -432,6 +439,7 @@ JS;
             'tokenParam' => $generalConfig->tokenParam,
             'translations' => ['' => ''], // force encode as JS object
             'usePathInfo' => $generalConfig->usePathInfo,
+            'userIsAdmin' => $currentUser->admin ?? false,
             'username' => $currentUser->username ?? null,
         ];
 
@@ -451,7 +459,7 @@ JS;
             'dayNames' => $locale->getWeekDayNames(Locale::LENGTH_FULL),
             'dayNamesMin' => $locale->getWeekDayNames(Locale::LENGTH_ABBREVIATED),
             'dayNamesShort' => $locale->getWeekDayNames(Locale::LENGTH_SHORT),
-            'firstDay' => (int)(($currentUser?->getPreference('weekStartDay')) ?? $generalConfig->defaultWeekStartDay),
+            'firstDay' => DateTimeHelper::firstWeekDay(),
             'monthNames' => $locale->getMonthNames(Locale::LENGTH_FULL),
             'monthNamesShort' => $locale->getMonthNames(Locale::LENGTH_ABBREVIATED),
             'nextText' => Craft::t('app', 'Next'),

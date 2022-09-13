@@ -142,7 +142,7 @@ class DashboardController extends Controller
 
         $variables['widgetTypes'] = $widgetTypeInfo;
 
-        return $this->renderTemplate('dashboard/_index', $variables);
+        return $this->renderTemplate('dashboard/_index.twig', $variables);
     }
 
     /**
@@ -301,7 +301,7 @@ class DashboardController extends Controller
         $getHelpModel->attachment = UploadedFile::getInstanceByName($namespace . 'attachAdditionalFile');
 
         if (!$getHelpModel->validate()) {
-            return $this->renderTemplate('_components/widgets/CraftSupport/response', [
+            return $this->renderTemplate('_components/widgets/CraftSupport/response.twig', [
                 'widgetId' => $widgetId,
                 'success' => false,
                 'errors' => $getHelpModel->getErrors(),
@@ -315,7 +315,7 @@ class DashboardController extends Controller
             ],
             [
                 'name' => 'name',
-                'contents' => Craft::$app->getUser()->getIdentity()->getName(),
+                'contents' => $this->getCurrentUser()->getName(),
             ],
             [
                 'name' => 'message',
@@ -434,7 +434,7 @@ class DashboardController extends Controller
         }
 
         if (isset($requestException)) {
-            return $this->renderTemplate('_components/widgets/CraftSupport/response', [
+            return $this->renderTemplate('_components/widgets/CraftSupport/response.twig', [
                 'widgetId' => $widgetId,
                 'success' => false,
                 'errors' => [
@@ -445,7 +445,7 @@ class DashboardController extends Controller
             ]);
         }
 
-        return $this->renderTemplate('_components/widgets/CraftSupport/response', [
+        return $this->renderTemplate('_components/widgets/CraftSupport/response.twig', [
             'widgetId' => $widgetId,
             'success' => true,
             'errors' => [],

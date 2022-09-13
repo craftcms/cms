@@ -289,7 +289,7 @@ h2,
   margin: 14px 0;
   font-size: 16px;
   font-weight: bold;
-  line-height: 20px;
+  line-height: 1.2;
 }
 
 h3,
@@ -1031,42 +1031,6 @@ td.right {
   @include clearafter;
 }
 
-/* Customize Sources */
-.sidebar {
-  .customize-sources {
-    display: block;
-    margin: 14px -24px 4px;
-    @include padding(7px, 14px, 7px, 24px);
-    color: var(--light-text-color) !important;
-    transition: color linear 100ms;
-    cursor: pointer;
-
-    .icon {
-      @include margin-right(4px);
-      color: currentColor;
-    }
-
-    .label {
-      opacity: 0;
-      transition: opacity linear 100ms;
-    }
-
-    &:hover,
-    &:focus {
-      color: var(--medium-text-color) !important;
-      text-decoration: none;
-
-      .label {
-        opacity: 1;
-      }
-    }
-  }
-}
-
-.sidebar .customize-sources:hover {
-  color: var(--link-color);
-}
-
 .customize-sources-modal {
   @include padding-left(200px);
   overflow: visible !important;
@@ -1408,7 +1372,7 @@ ul.icons {
     }
   }
 
-  &:not(.disabled):not(.loading):not(.dashed) {
+  &:not(.disabled):not(.loading):not(.dashed):not([aria-disabled]) {
     &:focus,
     &.focus,
     &:hover {
@@ -1417,13 +1381,7 @@ ul.icons {
 
     &:active,
     &.active {
-      background-color: transparentize($inputColor, 0.5);
-
-      &:focus,
-      &.focus,
-      .btngroup:focus & {
-        background-color: transparentize($inputColor, 0.4);
-      }
+      background-color: transparentize($inputColor, 0.6);
     }
   }
 
@@ -2553,6 +2511,12 @@ $elementInnerSpacing: 5px;
     }
   }
 
+  &.error {
+    [data-icon='alert'] {
+      margin-left: var(--xs);
+    }
+  }
+
   .label {
     display: inline-block;
 
@@ -2651,9 +2615,6 @@ $elementInnerSpacing: 5px;
 
     .label {
       display: block;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
       word-wrap: normal;
     }
   }
@@ -2784,9 +2745,9 @@ $checkboxPadding: $checkboxSize + 4;
     width: calc(
       100% + #{$baseElementSidePadding + $baseElementSidePadding + 1px}
     );
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
+    display: grid;
+    gap: 5px;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
 
     li {
       position: relative;
@@ -2795,6 +2756,14 @@ $checkboxPadding: $checkboxSize + 4;
       &:hover {
         .element {
           background-color: var(--gray-050);
+        }
+      }
+
+      .element.large.hasthumb {
+        width: unset;
+
+        .elementthumb:not(:empty) {
+          width: 100%;
         }
       }
 
@@ -4487,13 +4456,23 @@ ul.tree,
     @include right(0);
     width: 24px;
     height: 24px;
-    background: no-repeat 50% 50%;
     cursor: nwse-resize;
-    body.ltr & {
-      background-image: url(../images/resizehandle.png);
+    padding: var(--xs);
+
+    path {
+      fill: var(--ui-control-color);
     }
+
     body.rtl & {
-      background-image: url(../images/resizehandle_rtl.png);
+      .ltr {
+        display: none;
+      }
+    }
+
+    body.ltr & {
+      .rtl {
+        display: none;
+      }
     }
   }
 }
@@ -5459,7 +5438,7 @@ fieldset {
       }
     }
 
-    & > .t9n-indicator {
+    .t9n-indicator {
       @include margin-left(7px);
       color: var(--light-text-color);
     }
@@ -6154,6 +6133,7 @@ body .selectize-dropdown {
 
 /* single select styles */
 .selectize.select {
+  @include placeholder-styles(var(--gray-700));
   height: 34px;
 
   &:not(.fullwidth) {
@@ -6330,7 +6310,7 @@ body .selectize-dropdown .active {
 .ui-datepicker-calendar th span,
 .ui-datepicker-calendar td a {
   display: block;
-  width: 26px;
+  width: toRem(26);
   line-height: 26px;
   text-align: center;
   color: var(--text-color);
@@ -7005,16 +6985,6 @@ body.sitepicker {
     }
     body.rtl & {
       background-image: url(../images/branch_rtl_2x.png);
-    }
-  }
-
-  .modal .resizehandle {
-    background-size: 13px;
-    body.ltr & {
-      background-image: url(../images/resizehandle_2x.png);
-    }
-    body.rtl & {
-      background-image: url(../images/resizehandle_rtl_2x.png);
     }
   }
 

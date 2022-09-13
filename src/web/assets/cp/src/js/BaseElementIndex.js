@@ -25,13 +25,15 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     $sidebar: null,
     showingSidebar: null,
     sourceKey: null,
+    rootSourceKey: null,
     sourceViewModes: null,
     $source: null,
+    $rootSource: null,
     sourcesByKey: null,
     $visibleSources: null,
 
-    $customizeSourcesBtn: null,
-    customizeSourcesModal: null,
+    $sourceActionsContainer: null,
+    $sourceActionsBtn: null,
 
     $toolbar: null,
     toolbarOffset: null,
@@ -70,6 +72,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     _autoSelectElements: null,
     $countSpinner: null,
     $countContainer: null,
+    $actionsContainer: null,
     page: 1,
     resultSet: null,
     totalResults: null,
@@ -83,7 +86,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     showingActionTriggers: false,
     exporters: null,
     exportersByType: null,
-    _$detachedToolbarItems: null,
     _$triggers: null,
 
     _ignoreFailedRequest: false,
@@ -144,7 +146,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.$clearSearchBtn = this.$searchContainer.children('.clear-btn:first');
 
       this.$sidebar = this.$container.find('.sidebar:first');
-      this.$customizeSourcesBtn = this.$sidebar.find('.customize-sources');
+      this.$sourceActionsContainer = this.$sidebar.find('#source-actions');
 
       this.$elements = this.$container.find('.elements:first');
       this.$updateSpinner = this.$elements.find('.spinner');
@@ -157,6 +159,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
       this.$countSpinner = this.$container.find('#count-spinner');
       this.$countContainer = this.$container.find('#count-container');
+      this.$actionsContainer = this.$container.find('#actions-container');
       this.$exportBtn = this.$container.find('#export-btn');
 
       // Hide sidebar if needed
@@ -170,15 +173,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
       if (!this.initSources()) {
         return;
-      }
-
-      // Customize button
-      if (this.$customizeSourcesBtn.length) {
-        this.addListener(
-          this.$customizeSourcesBtn,
-          'click',
-          'createCustomizeSourcesModal'
-        );
       }
 
       // Initialize the status menu
@@ -414,7 +408,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     initSources: function () {
-      var $sources = this._getSourcesInList(this.getSourceContainer());
+      var $sources = this._getSourcesInList(this.getSourceContainer(), true);
 
       // No source, no party.
       if ($sources.length === 0) {
@@ -729,6 +723,94 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.totalResults = null;
     },
 
+    updateSourceMenu: function () {
+      if (!this.$sourceActionsContainer.length) {
+        return;
+      }
+
+      if (this.$sourceActionsBtn) {
+        this.$sourceActionsBtn.data('trigger').destroy();
+        this.$sourceActionsContainer.empty();
+        $('#source-actions-menu').remove();
+        this.$sourceActionsBtn = null;
+      }
+
+      const actions = this.getSourceActions();
+      if (!actions.length) {
+        return;
+      }
+
+      const groupedActions = [
+        actions.filter((a) => !a.destructive && !a.administrative),
+        actions.filter((a) => a.destructive && !a.administrative),
+        actions.filter((a) => a.administrative),
+      ].filter((group) => group.length);
+
+      this.$sourceActionsBtn = $('<button/>', {
+        type: 'button',
+        class: 'btn settings icon menubtn',
+        title: Craft.t('app', 'Source settings'),
+        'aria-label': Craft.t('app', 'Source settings'),
+        'aria-controls': 'source-actions-menu',
+      }).appendTo(this.$sourceActionsContainer);
+
+      const $menu = $('<div/>', {
+        id: 'source-actions-menu',
+        class: 'menu menu--disclosure',
+      }).appendTo(this.$sourceActionsContainer);
+
+      groupedActions.forEach((group, index) => {
+        if (index !== 0) {
+          $('<hr/>').appendTo($menu);
+        }
+
+        this._buildActionList(group).appendTo($menu);
+      });
+
+      this.$sourceActionsBtn.disclosureMenu();
+    },
+
+    _buildActionList: function (actions) {
+      const $ul = $('<ul/>');
+
+      actions.forEach((action) => {
+        const $button = $('<button/>', {
+          type: 'button',
+          class: 'menu-option',
+          text: action.label,
+        }).on('click', () => {
+          this.$sourceActionsBtn.data('trigger').hide();
+          if (action.onSelect) {
+            action.onSelect();
+          }
+        });
+
+        if (action.destructive) {
+          $button.addClass('error');
+        }
+
+        $('<li/>').append($button).appendTo($ul);
+      });
+
+      return $ul;
+    },
+
+    getSourceActions: function () {
+      let actions = [];
+
+      if (Craft.userIsAdmin && Craft.allowAdminChanges) {
+        actions.push({
+          label: Craft.t('app', 'Customize sources'),
+          administrative: true,
+          onSelect: () => {
+            this.createCustomizeSourcesModal();
+          },
+        });
+      }
+
+      return actions;
+    },
+
     /**
      * Returns the data that should be passed to the elementIndex/getElements controller action
      * when loading elements.
@@ -801,7 +883,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       return params;
     },
 
-    updateElements: function (preservePagination) {
+    updateElements: function (preservePagination, pageChanged) {
       // Ignore if we're not fully initialized yet
       if (!this.initialized) {
         return;
@@ -836,6 +918,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             : this.$main
           ).scrollTop(0);
           this._updateView(params, response.data);
+
+          if (pageChanged) {
+            const $elementContainer = this.view.getElementContainer();
+            Garnish.firstFocusableElement($elementContainer).trigger('focus');
+          }
         })
         .catch((e) => {
           this.setIndexAvailable();
@@ -860,18 +947,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         return;
       }
 
-      // Hard-code the min toolbar height in case it was taller than the actions toolbar
-      // (prevents the elements from jumping if this ends up being a double-click)
-      this.$toolbar.css('min-height', this.$toolbar.height());
-
-      // Hide any toolbar inputs
-      this._$detachedToolbarItems = this.$toolbar.children();
-      this._$detachedToolbarItems.detach();
-
       if (!this._$triggers) {
         this._createTriggers();
       } else {
-        this._$triggers.appendTo(this.$toolbar);
+        this._$triggers.appendTo(this.$actionsContainer);
       }
 
       this.showingActionTriggers = true;
@@ -976,12 +1055,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         return;
       }
 
-      this._$detachedToolbarItems.appendTo(this.$toolbar);
       this._$triggers.detach();
-      // this._$detachedToolbarItems.removeClass('hidden');
-
-      // Unset the min toolbar height
-      this.$toolbar.css('min-height', '');
 
       this.showingActionTriggers = false;
     },
@@ -995,17 +1069,17 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           if (totalSelected === this.view.getEnabledElements().length) {
             this.$selectAllCheckbox.removeClass('indeterminate');
             this.$selectAllCheckbox.addClass('checked');
-            this.$selectAllContainer.attr('aria-checked', 'true');
+            this.$selectAllCheckbox.attr('aria-checked', 'true');
           } else {
             this.$selectAllCheckbox.addClass('indeterminate');
             this.$selectAllCheckbox.removeClass('checked');
-            this.$selectAllContainer.attr('aria-checked', 'mixed');
+            this.$selectAllCheckbox.attr('aria-checked', 'mixed');
           }
 
           this.showActionTriggers();
         } else {
           this.$selectAllCheckbox.removeClass('indeterminate checked');
-          this.$selectAllContainer.attr('aria-checked', 'false');
+          this.$selectAllCheckbox.attr('aria-checked', 'false');
           this.hideActionTriggers();
         }
       }
@@ -1110,12 +1184,40 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       }
     },
 
-    getSourceByKey: function (key) {
-      if (typeof this.sourcesByKey[key] === 'undefined') {
-        return null;
-      }
+    /**
+     * Returns the nesting level for a given source, where 1 = the root level
+     * @param {jQuery} $source
+     * @returns {number}
+     */
+    getSourceLevel: function ($source) {
+      return $source.parentsUntil('nav', 'ul.nested').length + 1;
+    },
 
-      return this.sourcesByKey[key];
+    /**
+     * Returns a source’s parent, or null if it’s the root source
+     * @param {jQuery} $source
+     * @returns {?jQuery}
+     */
+    getParentSource: function ($source) {
+      const $parent = $source.parent().parent().siblings('a');
+      return $parent.length ? $parent : null;
+    },
+
+    /**
+     * Returns the root level source for a given source.
+     * @param {jQuery} $source
+     * @returns {jQuery}
+     */
+    getRootSource: function ($source) {
+      let $parent;
+      while (($parent = this.getParentSource($source))) {
+        $source = $parent;
+      }
+      return $source;
+    },
+
+    getSourceByKey: function (key) {
+      return this.sourcesByKey[key] || null;
     },
 
     selectSource: function (source) {
@@ -1138,7 +1240,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.hideActionTriggers();
 
       this.$source = $source;
+      this.$rootSource = this.getRootSource($source);
       this.sourceKey = $source.data('key');
+      this.rootSourceKey = this.$rootSource.data('key');
       this.setInstanceState('selectedSource', this.sourceKey);
       this.sourceSelect.selectItem($source);
 
@@ -1158,8 +1262,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.$sortAttributesList.children('li[data-extra]').remove();
 
       // Does this source have any custom sort options?
-      let $topSource = this.$source.closest('nav > ul > li').children('a');
-      let sortOptions = $topSource.data('sort-options');
+      let sortOptions = this.$rootSource.data('sort-options');
       if (sortOptions) {
         for (let i = 0; i < sortOptions.length; i++) {
           let $option = $('<li/>', {
@@ -1227,9 +1330,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
       // Create the buttons if there's more than one mode available to this source
       if (this.sourceViewModes.length > 1) {
-        this.$viewModeBtnContainer = $('<div class="btngroup"/>').appendTo(
-          this.$toolbar
-        );
+        this.$viewModeBtnContainer = $('<section class="btngroup"/>')
+          .appendTo(this.$toolbar)
+          .attr('aria-label', Craft.t('app', 'View'));
 
         for (var i = 0; i < this.sourceViewModes.length; i++) {
           let sourceViewMode = this.sourceViewModes[i];
@@ -1244,6 +1347,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             'data-view': sourceViewMode.mode,
             'data-icon': sourceViewMode.icon,
             'aria-label': sourceViewMode.title,
+            'aria-pressed': 'false',
             title: sourceViewMode.title,
           }).appendTo(this.$viewModeBtnContainer);
 
@@ -1277,9 +1381,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
       this.selectViewMode(viewMode);
 
-      // Filter HUD
-      // ----------------------------------------------------------------------
-
+      this.updateSourceMenu();
       this.updateFilterBtn();
 
       this.onSelectSource();
@@ -1375,14 +1477,18 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         this.viewMode &&
         typeof this.viewModeBtns[this.viewMode] !== 'undefined'
       ) {
-        this.viewModeBtns[this.viewMode].removeClass('active');
+        this.viewModeBtns[this.viewMode]
+          .removeClass('active')
+          .attr('aria-pressed', 'false');
       }
 
       this.viewMode = viewMode;
       this.setSelecetedSourceState('mode', this.viewMode);
 
       if (typeof this.viewModeBtns[this.viewMode] !== 'undefined') {
-        this.viewModeBtns[this.viewMode].addClass('active');
+        this.viewModeBtns[this.viewMode]
+          .addClass('active')
+          .attr('aria-pressed', 'true');
       }
     },
 
@@ -1694,7 +1800,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
       for (let i = 0; i < $headings.length; i++) {
         $heading = $headings.eq(i);
-        if ($heading.nextUntil('.heading', ':not(.hidden)').length !== 0) {
+        if ($heading.has('> ul > li:not(.hidden)')) {
           $heading.removeClass('hidden');
         } else {
           $heading.addClass('hidden');
@@ -1736,7 +1842,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           // Is this the currently selected source?
           if (this.$source && this.$source.get(0) === $source.get(0)) {
             this.$source = null;
+            this.$rootSource = null;
             this.sourceKey = null;
+            this.rootSourceKey = null;
           }
         }
       }
@@ -1801,8 +1909,12 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     // Source managemnet
     // -------------------------------------------------------------------------
 
-    _getSourcesInList: function ($list) {
-      return $list.children('li').children('a');
+    _getSourcesInList: function ($list, topLevel) {
+      let $sources = $list.find('> li:not(.heading) > a');
+      if (topLevel) {
+        $sources = $sources.add($list.find('> li.heading > ul > li > a'));
+      }
+      return $sources;
     },
 
     _getChildSources: function ($source) {
@@ -1979,7 +2091,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                   this.removeListener($prevBtn, 'click');
                   this.removeListener($nextBtn, 'click');
                   this.setPage(this.page - 1);
-                  this.updateElements(true);
+                  this.updateElements(true, true);
                 });
               }
 
@@ -1988,7 +2100,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                   this.removeListener($prevBtn, 'click');
                   this.removeListener($nextBtn, 'click');
                   this.setPage(this.page + 1);
-                  this.updateElements(true);
+                  this.updateElements(true, true);
                 });
               }
             }
@@ -2019,18 +2131,16 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           this.actionsBodyHtml = response.actionsBodyHtml;
 
           // Create the select all checkbox
-          this.$selectAllCheckbox = $('<div class="checkbox"/>').prependTo(
-            this.$selectAllContainer
-          );
+          this.$selectAllCheckbox = $('<div class="checkbox"/>')
+            .prependTo(this.$selectAllContainer)
+            .attr({
+              role: 'checkbox',
+              tabindex: '0',
+              'aria-checked': 'false',
+              'aria-label': Craft.t('app', 'Select all'),
+            });
 
-          this.$selectAllContainer.attr({
-            role: 'checkbox',
-            tabindex: '0',
-            'aria-checked': 'false',
-            'aria-label': Craft.t('app', 'Select all'),
-          });
-
-          this.addListener(this.$selectAllContainer, 'click', function () {
+          this.addListener(this.$selectAllCheckbox, 'click', function () {
             if (this.view.getSelectedElements().length === 0) {
               this.view.selectAllElements();
             } else {
@@ -2038,7 +2148,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             }
           });
 
-          this.addListener(this.$selectAllContainer, 'keydown', function (ev) {
+          this.addListener(this.$selectAllCheckbox, 'keydown', function (ev) {
             if (ev.keyCode === Garnish.SPACE_KEY) {
               ev.preventDefault();
 
@@ -2237,7 +2347,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         this._$triggers = this._$triggers.add($div);
       }
 
-      this._$triggers.appendTo(this.$toolbar);
+      this._$triggers.appendTo(this.$actionsContainer);
       Craft.appendHeadHtml(this.actionsHeadHtml);
       Craft.appendBodyHtml(this.actionsBodyHtml);
 
