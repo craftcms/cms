@@ -4,6 +4,7 @@
 
 ### Changed
 - The “New entry” and “New category” buttons on the Entries and Categories index pages now support <kbd>Ctrl</kbd>/<kbd>Command</kbd>/middle-clicking to open the edit page in a new window. ([#11870](https://github.com/craftcms/cms/issues/11870))
+- Control panel menus now automatically reposition themselves when the window is resized.
 - Improved the performance of some element queries on MySQL. ([#11825](https://github.com/craftcms/cms/pull/11825))
 - `resave/*` commands now have a `--touch` option. When passed, elements’ `dateUpdated` timestamps will be updated as they’re resaved. ([#11849](https://github.com/craftcms/cms/discussions/11849))
 - Underscores within query param values that begin/end with `*` are now escaped, so they aren’t treated as wildcard characters by the `like` condition. ([#11898](https://github.com/craftcms/cms/issues/11898))
@@ -22,6 +23,7 @@
 - Fixed a bug where element index filter HUDs were unresponsive if another one was already active for a different site/source. ([#11880](https://github.com/craftcms/cms/issues/11880))
 - Fixed a bug where newly-created subfolders on the Assets index page could appear to have the wrong indentation.
 - Fixed a UI bug where renaming a newly-created volume subfolder didn’t appear to have any effect.
+- Fixed a bug where empty URL fields would be marked as changed, even when no change was made to them. ([#11908](https://github.com/craftcms/cms/issues/11908))
 - Fixed a UI bug where autocomplete dropdowns were not filtered on initial click ([#11896](https://github.com/craftcms/cms/issues/11896))
 
 ### Security
