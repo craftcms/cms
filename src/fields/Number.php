@@ -244,7 +244,7 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
                     }
                 }
             } else {
-                // Override the initial value being set to null by _includes/forms/field
+                // Override the initial value being set to null by CustomField::inputHtml()
                 $view->setInitialDeltaValue($this->handle, [
                     'locale' => Craft::$app->getFormattingLocale()->id,
                     'value' => '',

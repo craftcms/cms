@@ -25,12 +25,15 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     $sidebar: null,
     showingSidebar: null,
     sourceKey: null,
+    rootSourceKey: null,
     sourceViewModes: null,
     $source: null,
+    $rootSource: null,
     sourcesByKey: null,
     $visibleSources: null,
 
-    $customizeSourcesBtn: null,
+    $sourceActionsContainer: null,
+    $sourceActionsBtn: null,
 
     $toolbar: null,
     toolbarOffset: null,
@@ -143,7 +146,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.$clearSearchBtn = this.$searchContainer.children('.clear-btn:first');
 
       this.$sidebar = this.$container.find('.sidebar:first');
-      this.$customizeSourcesBtn = this.$sidebar.find('.customize-sources');
+      this.$sourceActionsContainer = this.$sidebar.find('#source-actions');
 
       this.$elements = this.$container.find('.elements:first');
       this.$updateSpinner = this.$elements.find('.spinner');
@@ -170,15 +173,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
       if (!this.initSources()) {
         return;
-      }
-
-      // Customize button
-      if (this.$customizeSourcesBtn.length) {
-        this.addListener(
-          this.$customizeSourcesBtn,
-          'click',
-          'createCustomizeSourcesModal'
-        );
       }
 
       // Initialize the status menu
@@ -729,6 +723,94 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.totalResults = null;
     },
 
+    updateSourceMenu: function () {
+      if (!this.$sourceActionsContainer.length) {
+        return;
+      }
+
+      if (this.$sourceActionsBtn) {
+        this.$sourceActionsBtn.data('trigger').destroy();
+        this.$sourceActionsContainer.empty();
+        $('#source-actions-menu').remove();
+        this.$sourceActionsBtn = null;
+      }
+
+      const actions = this.getSourceActions();
+      if (!actions.length) {
+        return;
+      }
+
+      const groupedActions = [
+        actions.filter((a) => !a.destructive && !a.administrative),
+        actions.filter((a) => a.destructive && !a.administrative),
+        actions.filter((a) => a.administrative),
+      ].filter((group) => group.length);
+
+      this.$sourceActionsBtn = $('<button/>', {
+        type: 'button',
+        class: 'btn settings icon menubtn',
+        title: Craft.t('app', 'Source settings'),
+        'aria-label': Craft.t('app', 'Source settings'),
+        'aria-controls': 'source-actions-menu',
+      }).appendTo(this.$sourceActionsContainer);
+
+      const $menu = $('<div/>', {
+        id: 'source-actions-menu',
+        class: 'menu menu--disclosure',
+      }).appendTo(this.$sourceActionsContainer);
+
+      groupedActions.forEach((group, index) => {
+        if (index !== 0) {
+          $('<hr/>').appendTo($menu);
+        }
+
+        this._buildActionList(group).appendTo($menu);
+      });
+
+      this.$sourceActionsBtn.disclosureMenu();
+    },
+
+    _buildActionList: function (actions) {
+      const $ul = $('<ul/>');
+
+      actions.forEach((action) => {
+        const $button = $('<button/>', {
+          type: 'button',
+          class: 'menu-option',
+          text: action.label,
+        }).on('click', () => {
+          this.$sourceActionsBtn.data('trigger').hide();
+          if (action.onSelect) {
+            action.onSelect();
+          }
+        });
+
+        if (action.destructive) {
+          $button.addClass('error');
+        }
+
+        $('<li/>').append($button).appendTo($ul);
+      });
+
+      return $ul;
+    },
+
+    getSourceActions: function () {
+      let actions = [];
+
+      if (Craft.userIsAdmin && Craft.allowAdminChanges) {
+        actions.push({
+          label: Craft.t('app', 'Customize sources'),
+          administrative: true,
+          onSelect: () => {
+            this.createCustomizeSourcesModal();
+          },
+        });
+      }
+
+      return actions;
+    },
+
     /**
      * Returns the data that should be passed to the elementIndex/getElements controller action
      * when loading elements.
@@ -1102,12 +1184,40 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       }
     },
 
-    getSourceByKey: function (key) {
-      if (typeof this.sourcesByKey[key] === 'undefined') {
-        return null;
-      }
+    /**
+     * Returns the nesting level for a given source, where 1 = the root level
+     * @param {jQuery} $source
+     * @returns {number}
+     */
+    getSourceLevel: function ($source) {
+      return $source.parentsUntil('nav', 'ul.nested').length + 1;
+    },
 
-      return this.sourcesByKey[key];
+    /**
+     * Returns a source’s parent, or null if it’s the root source
+     * @param {jQuery} $source
+     * @returns {?jQuery}
+     */
+    getParentSource: function ($source) {
+      const $parent = $source.parent().parent().siblings('a');
+      return $parent.length ? $parent : null;
+    },
+
+    /**
+     * Returns the root level source for a given source.
+     * @param {jQuery} $source
+     * @returns {jQuery}
+     */
+    getRootSource: function ($source) {
+      let $parent;
+      while (($parent = this.getParentSource($source))) {
+        $source = $parent;
+      }
+      return $source;
+    },
+
+    getSourceByKey: function (key) {
+      return this.sourcesByKey[key] || null;
     },
 
     selectSource: function (source) {
@@ -1130,7 +1240,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.hideActionTriggers();
 
       this.$source = $source;
+      this.$rootSource = this.getRootSource($source);
       this.sourceKey = $source.data('key');
+      this.rootSourceKey = this.$rootSource.data('key');
       this.setInstanceState('selectedSource', this.sourceKey);
       this.sourceSelect.selectItem($source);
 
@@ -1150,8 +1262,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.$sortAttributesList.children('li[data-extra]').remove();
 
       // Does this source have any custom sort options?
-      let $topSource = this.$source.closest('nav > ul > li').children('a');
-      let sortOptions = $topSource.data('sort-options');
+      let sortOptions = this.$rootSource.data('sort-options');
       if (sortOptions) {
         for (let i = 0; i < sortOptions.length; i++) {
           let $option = $('<li/>', {
@@ -1270,9 +1381,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
       this.selectViewMode(viewMode);
 
-      // Filter HUD
-      // ----------------------------------------------------------------------
-
+      this.updateSourceMenu();
       this.updateFilterBtn();
 
       this.onSelectSource();
@@ -1733,7 +1842,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
           // Is this the currently selected source?
           if (this.$source && this.$source.get(0) === $source.get(0)) {
             this.$source = null;
+            this.$rootSource = null;
             this.sourceKey = null;
+            this.rootSourceKey = null;
           }
         }
       }
