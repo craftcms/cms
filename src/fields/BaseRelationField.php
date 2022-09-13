@@ -301,7 +301,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         $inputSources = $this->getInputSources();
 
         if ($inputSources === null) {
-            $this->addError($attribute, 'At least one source needs to be selected when relating ancestors.');
+            $this->addError($attribute, Craft::t('app', 'At least one source needs to be selected when relating ancestors.'));
             return;
         }
 
@@ -316,14 +316,18 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         );
 
         if (count($elementSources) > 1) {
-            $this->addError($attribute, 'Only one source allowed when relating ancestors.');
+            $this->addError($attribute, Craft::t('app', 'Only one source allowed when relating ancestors.'));
         }
 
         foreach ($elementSources as $elementSource) {
             if (!isset($elementSource['structureId'])) {
                 $this->addError(
                     $attribute,
-                    "{$elementSource['label']} is not a structured source. Only structured sources may be used when relating ancestors."
+                    Craft::t(
+                        'app',
+                        '{source} is not a structured source. Only structured sources may be used when relating ancestors.',
+                        ['source' => $elementSource['label']]
+                    )
                 );
             }
         }
