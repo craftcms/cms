@@ -1465,6 +1465,7 @@ ul.icons {
   display: flex;
   white-space: nowrap;
   align-items: center;
+  border-radius: var(--large-border-radius);
 
   &.fullwidth .btn {
     flex: 1;
@@ -3850,6 +3851,8 @@ ul.tree,
 }
 
 /* meta panes */
+$min2ColWidth: 400px;
+
 .meta {
   padding: 0 var(--padding);
   overflow: visible;
@@ -3891,9 +3894,13 @@ ul.tree,
       }
 
       & > .heading {
-        flex: 0 0 104px;
-        @include margin(0, var(--s), 0, 0);
-        line-height: 18px;
+        margin: 0;
+
+        @media screen and (min-width: $min2ColWidth) {
+          flex: 0 0 104px;
+          @include margin-right(var(--s));
+          line-height: 18px;
+        }
       }
 
       &.lightswitch-field > .heading {
@@ -3912,7 +3919,11 @@ ul.tree,
     }
 
     & > .field > .heading {
-      padding: 14px 0;
+      padding-top: var(--s);
+
+      @media screen and (min-width: $min2ColWidth) {
+        padding: 14px 0;
+      }
 
       & > .copytextbtn {
         display: none;
@@ -3931,7 +3942,11 @@ ul.tree,
     & > .field > .input,
     & > .data > .value {
       padding: var(--s) 0;
-      width: calc(100% - 112px);
+      width: 100%;
+
+      @media screen and (min-width: $min2ColWidth) {
+        width: calc(100% - 112px);
+      }
     }
 
     & > .data > .value {
@@ -4807,6 +4822,64 @@ ul.tree,
       @include right(-24px);
     }
   }
+}
+
+/* element index view menu */
+.element-index-view-menu {
+  width: 400px;
+  max-width: calc(100% - 20px);
+  padding: 0 !important;
+
+  .meta {
+    padding-top: var(--s);
+    padding-bottom: var(--s);
+  }
+
+  .sort-field {
+    .input {
+      .flex {
+        .btngroup {
+          .btn {
+            width: 42px;
+          }
+        }
+
+        .flex-grow {
+          max-width: calc(100% - 85px - var(--s));
+        }
+
+        @media screen and (max-width: 350px) {
+          flex-direction: column;
+
+          & > * {
+            width: 100%;
+          }
+
+          .flex-grow {
+            max-width: none;
+          }
+        }
+      }
+    }
+  }
+
+  .table-columns-field {
+    align-items: flex-start;
+
+    .input {
+      padding: 13px 0;
+    }
+  }
+
+  .menu-footer {
+    margin: 0 !important;
+    padding: var(--s) var(--xl) !important;
+    background-color: var(--gray-050);
+  }
+}
+
+.element-index-view-menu-table-column .icon.move {
+  @include margin-right(10px);
 }
 
 /* element filter HUD */
@@ -5871,7 +5944,7 @@ body.reduce-focus-visibility {
 
       &:before {
         @include icon;
-        content: 'sliders';
+        content: 'filter';
         color: var(--medium-text-color);
       }
 

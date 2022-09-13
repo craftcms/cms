@@ -868,6 +868,7 @@ li.breadcrumb-toggle-wrapper {
 #toolbar {
   flex: 1;
   align-items: flex-start;
+  justify-content: space-between;
 
   .icon:before,
   .texticon:before,
