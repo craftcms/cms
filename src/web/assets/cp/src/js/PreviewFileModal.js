@@ -140,9 +140,9 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
 
     /**
      * Load an asset, using starting width and height, if applicable
-     * @param assetId
-     * @param startingWidth
-     * @param startingHeight
+     * @param {number} assetId
+     * @param {number} [startingWidth]
+     * @param {number} [startingHeight]
      */
     loadAsset: function (assetId, startingWidth, startingHeight) {
       this.assetId = assetId;
@@ -240,8 +240,8 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
 
     /**
      * Resize the container to specified dimensions
-     * @param containerWidth
-     * @param containerHeight
+     * @param {number} containerWidth
+     * @param {number} containerHeight
      * @private
      */
     _resizeContainer: function (containerWidth, containerHeight) {

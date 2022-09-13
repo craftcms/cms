@@ -803,10 +803,6 @@ class App
             ];
         }
 
-        if ($dbConfig->version) {
-            $schemaConfig['serverVersion'] = $dbConfig->version;
-        }
-
         $config = [
             'class' => Connection::class,
             'driverName' => $driver,
