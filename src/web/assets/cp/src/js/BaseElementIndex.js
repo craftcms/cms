@@ -1,6 +1,5 @@
 /** global: Craft */
 /** global: Garnish */
-import Garnish from '../../../garnish/src';
 
 /**
  * Element index class
@@ -549,7 +548,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.searching = true;
 
       if (this.activeViewMenu) {
-        this.activeViewMenu.updateSortSelects();
+        this.activeViewMenu.updateSortField();
       }
     },
 
@@ -579,7 +578,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.searching = false;
 
       if (this.activeViewMenu) {
-        this.activeViewMenu.updateSortSelects();
+        this.activeViewMenu.updateSortField();
       }
     },
 
@@ -1172,7 +1171,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
       // Update the view menu
       if (this.activeViewMenu) {
-        this.activeViewMenu.updateSortSelects();
+        this.activeViewMenu.updateSortField();
       }
 
       // Update the query string
@@ -1546,7 +1545,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
       // Update the view menu
       if (this.activeViewMenu) {
-        this.activeViewMenu.updateTableColumnCheckboxes();
+        this.activeViewMenu.updateTableColumnField();
       }
     },
 
@@ -1886,7 +1885,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       }
 
       if (this.activeViewMenu) {
-        this.activeViewMenu.updateSortSelects();
+        this.activeViewMenu.updateSortField();
       }
 
       Craft.setQueryParam('status', queryParam);
@@ -2678,7 +2677,8 @@ const ViewMenu = Garnish.Base.extend({
   $trigger: null,
   $container: null,
   $sortAttributeSelect: null,
-  $sortDirectionSelect: null,
+  $sortDirectionPicker: null,
+  sortDirectionListbox: null,
   $tableColumnsContainer: null,
   $revertContainer: null,
   $revertBtn: null,
@@ -2722,7 +2722,7 @@ const ViewMenu = Garnish.Base.extend({
 
       // Move all checked table column checkboxes to the top once it's fully faded out
       setTimeout(() => {
-        this.tidyTableColumnCheckboxes();
+        this.tidyTableColumnField();
       }, Garnish.FX_DURATION);
     });
   },
@@ -2737,9 +2737,10 @@ const ViewMenu = Garnish.Base.extend({
     this.menu.hide();
   },
 
-  updateSortSelects: function () {
+  updateSortField: function () {
     let [attribute, direction] =
       this.elementIndex.getSortAttributeAndDirection();
+    console.log(attribute, direction);
 
     // If searching by score, just keep showing the actual selection
     if (attribute === 'score') {
@@ -2748,14 +2749,14 @@ const ViewMenu = Garnish.Base.extend({
     }
 
     this.$sortAttributeSelect.val(attribute);
-    this.$sortDirectionSelect.val(direction);
+    this.sortDirectionListbox.select(direction === 'asc' ? 0 : 1);
 
     if (attribute === 'structure') {
-      this.$sortDirectionSelect
-        .addClass('disabled')
-        .attr('disabled', 'disabled');
+      this.sortDirectionListbox.disable();
+      this.$sortDirectionPicker.addClass('disabled');
     } else {
-      this.$sortDirectionSelect.removeClass('disabled').removeAttr('disabled');
+      this.sortDirectionListbox.enable();
+      this.$sortDirectionPicker.removeClass('disabled');
     }
 
     if (!this.elementIndex.canSortByStructure()) {
@@ -2769,7 +2770,7 @@ const ViewMenu = Garnish.Base.extend({
     }
   },
 
-  updateTableColumnCheckboxes: function () {
+  updateTableColumnField: function () {
     const attributes = this.elementIndex.getSelectedTableColumns();
     let $lastContainer, lastIndex;
 
@@ -2801,7 +2802,7 @@ const ViewMenu = Garnish.Base.extend({
     }
   },
 
-  tidyTableColumnCheckboxes: function () {
+  tidyTableColumnField: function () {
     const defaultOrder = this.elementIndex
       .getTableColumnOptions(this.$source)
       .map((column) => column.attr)
@@ -2834,9 +2835,9 @@ const ViewMenu = Garnish.Base.extend({
       tableColumns: null,
     });
 
-    this.updateSortSelects();
-    this.updateTableColumnCheckboxes();
-    this.tidyTableColumnCheckboxes();
+    this.updateSortField();
+    this.updateTableColumnField();
+    this.tidyTableColumnField();
 
     this.$revertBtn.remove();
     this.$revertBtn = null;
@@ -2892,22 +2893,59 @@ const ViewMenu = Garnish.Base.extend({
           };
         }),
       })
+      .addClass('fullwidth')
+      .appendTo($('<div class="flex-grow"/>').appendTo($container));
+
+    this.$sortAttributeSelect = $sortAttributeSelectContainer
+      .children('select')
+      .attr({
+        'aria-label': Craft.t('app', 'Sort attribute'),
+      });
+
+    this.$sortDirectionPicker = $('<div/>', {
+      role: 'listbox',
+      class: 'btngroup',
+      'aria-label': Craft.t('app', 'Sort direction'),
+      tabindex: '0',
+    })
+      .append(
+        $('<button/>', {
+          role: 'option',
+          type: 'button',
+          class: 'btn',
+          title: Craft.t('app', 'Sort ascending'),
+          'aria-label': Craft.t('app', 'Sort ascending'),
+          'aria-selected': 'false',
+          'data-icon': 'asc',
+          'data-dir': 'asc',
+          tabindex: '-1',
+        })
+      )
+      .append(
+        $('<button/>', {
+          role: 'option',
+          type: 'button',
+          class: 'btn',
+          title: Craft.t('app', 'Sort descending'),
+          'aria-label': Craft.t('app', 'Sort descending'),
+          'aria-selected': 'false',
+          'data-icon': 'desc',
+          'data-dir': 'desc',
+          tabindex: '-1',
+        })
+      )
       .appendTo($container);
 
-    const $sortDirectionSelectContainer = Craft.ui
-      .createSelect({
-        options: [
-          {label: Craft.t('app', 'Ascending'), value: 'asc'},
-          {label: Craft.t('app', 'Descending'), value: 'desc'},
-        ],
-      })
-      .appendTo($container);
-
-    this.$sortAttributeSelect =
-      $sortAttributeSelectContainer.children('select');
-    this.$sortDirectionSelect =
-      $sortDirectionSelectContainer.children('select');
-    this.updateSortSelects();
+    this.sortDirectionListbox = new Craft.Listbox(this.$sortDirectionPicker, {
+      onChange: ($selectedOption) => {
+        this.elementIndex.setSelectedSortAttribute(
+          this.$sortAttributeSelect.val(),
+          $selectedOption.data('dir')
+        );
+        this.elementIndex.updateElements();
+        this._createRevertBtn();
+      },
+    });
 
     this.$sortAttributeSelect.on('change', () => {
       this.elementIndex.setSelectedSortAttribute(
@@ -2919,18 +2957,11 @@ const ViewMenu = Garnish.Base.extend({
       this._createRevertBtn();
     });
 
-    this.$sortDirectionSelect.on('change', () => {
-      this.elementIndex.setSelectedSortAttribute(
-        this.$sortAttributeSelect.val(),
-        this.$sortDirectionSelect.val(),
-        false
-      );
-      this.elementIndex.updateElements();
-      this._createRevertBtn();
-    });
+    this.updateSortField();
 
     const $field = Craft.ui.createField($container, {
       label: Craft.t('app', 'Sort by'),
+      fieldset: true,
     });
     $field.addClass('sort-field');
     return $field;
@@ -2961,8 +2992,8 @@ const ViewMenu = Garnish.Base.extend({
         .appendTo(this.$tableColumnsContainer);
     });
 
-    this.updateTableColumnCheckboxes();
-    this.tidyTableColumnCheckboxes();
+    this.updateTableColumnField();
+    this.tidyTableColumnField();
 
     new Garnish.DragSort(this.$tableColumnsContainer.children(), {
       handle: '.move',
@@ -2978,6 +3009,7 @@ const ViewMenu = Garnish.Base.extend({
 
     const $field = Craft.ui.createField(this.$tableColumnsContainer, {
       label: Craft.t('app', 'Table Columns'),
+      fieldset: true,
     });
     $field.addClass('table-columns-field');
     return $field;
