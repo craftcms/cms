@@ -35,7 +35,6 @@ use craft\helpers\StringHelper;
 use craft\queue\jobs\LocalizeRelations;
 use craft\services\Elements;
 use craft\services\ElementSources;
-use craft\web\assets\elementfieldsettings\ElementFieldSettingsAsset;
 use DateTime;
 use GraphQL\Type\Definition\Type;
 use Illuminate\Support\Collection;
@@ -379,7 +378,6 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         $variables = $this->settingsTemplateVariables();
         $view = Craft::$app->getView();
 
-        $view->registerAssetBundle(ElementFieldSettingsAsset::class);
         $view->registerJs("new Craft.ElementFieldSettings(
             '{$view->namespaceInputId('relate-ancestors')}',
 	        '{$view->namespaceInputId('sources-field')}',
