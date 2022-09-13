@@ -13,6 +13,7 @@ use craft\base\PreviewableFieldInterface;
 use craft\base\SortableFieldInterface;
 use craft\events\DefineSourceSortOptionsEvent;
 use craft\events\DefineSourceTableAttributesEvent;
+use craft\fieldlayoutelements\CustomField;
 use craft\helpers\ArrayHelper;
 use craft\models\FieldLayout;
 use yii\base\Component;
@@ -307,17 +308,35 @@ class ElementSources extends Component
         ]);
 
         $processedFieldIds = [];
+        $user = Craft::$app->getUser()->getIdentity();
 
         foreach ($this->getFieldLayoutsForSource($elementType, $sourceKey) as $fieldLayout) {
-            foreach ($fieldLayout->getCustomFields() as $field) {
-                if (
-                    $field instanceof PreviewableFieldInterface &&
-                    !isset($processedFieldIds[$field->id])
-                ) {
-                    $event->attributes["field:$field->uid"] = [
-                        'label' => Craft::t('site', $field->name),
-                    ];
-                    $processedFieldIds[$field->id] = true;
+            foreach ($fieldLayout->getTabs() as $tab) {
+                // Factor in the user condition for non-admins
+                if ($user && !$user->admin && !($tab->getUserCondition()?->matchElement($user) ?? true)) {
+                    continue;
+                }
+
+                foreach ($tab->getElements() as $layoutElement) {
+                    if (!$layoutElement instanceof CustomField) {
+                        continue;
+                    }
+
+                    $field = $layoutElement->getField();
+                    if (
+                        $field instanceof PreviewableFieldInterface &&
+                        !isset($processedFieldIds[$field->id])
+                    ) {
+                        // Factor in the user condition for non-admins
+                        if ($user && !$user->admin && !($layoutElement->getUserCondition()?->matchElement($user) ?? true)) {
+                            continue;
+                        }
+
+                        $event->attributes["field:$field->uid"] = [
+                            'label' => Craft::t('site', $field->name),
+                        ];
+                        $processedFieldIds[$field->id] = true;
+                    }
                 }
             }
         }

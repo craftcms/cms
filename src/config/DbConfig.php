@@ -128,24 +128,6 @@ class DbConfig extends BaseConfig
     public ?string $dsn = null;
 
     /**
-     * @var string|null The database server version in use.
-     *
-     * This should only be set if `PDO::ATTR_SERVER_VERSION` is returning the incorrect version.
-     *
-     * ::: code
-     * ```php Static Config
-     * 'version' => '8.0.31',
-     * ```
-     * ```shell Environment Override
-     * CRAFT_DB_VERSION=8.0.31
-     * ```
-     * :::
-     *
-     * @since 4.3.0
-     */
-    public ?string $version = null;
-
-    /**
      * @var string The database password to connect with.
      *
      * ::: code
@@ -473,26 +455,6 @@ class DbConfig extends BaseConfig
             $this->database = $parsed['dbname'] ?? null;
         }
 
-        return $this;
-    }
-
-    /**
-     * The database server version in use.
-     *
-     * This should only be set if `PDO::ATTR_SERVER_VERSION` is returning the incorrect version.
-     *
-     * ```php
-     * ->version('8.0.31')
-     * ```
-     *
-     * @param string $value
-     * @return self
-     * @see $version
-     * @since 4.3.0
-     */
-    public function version(string $value): self
-    {
-        $this->version = $value;
         return $this;
     }
 

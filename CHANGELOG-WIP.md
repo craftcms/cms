@@ -1,6 +1,7 @@
 # Release Notes for Craft CMS 4.3 (WIP)
 
 ### Added
+- Added source setting menus to element index pages, which now contain the “Customize sources” option when allowed, and “New subfolder”, “Rename folder”, and “Delete folder” actions on the Assets index page. ([#11906/](https://github.com/craftcms/cms/pull/11906))
 - Added the `extraLastNamePrefixes` config setting. ([#11903](https://github.com/craftcms/cms/pull/11903))
 - Added the `extraNameSalutations` config setting. ([#11903](https://github.com/craftcms/cms/pull/11903))
 - Added the `extraNameSuffixes` config setting. ([#11903](https://github.com/craftcms/cms/pull/11903))
@@ -15,11 +16,9 @@
 - Added the `|integer` Twig filter. ([#11792](https://github.com/craftcms/cms/pull/11792))
 - Added the `|string` Twig filter. ([#11792](https://github.com/craftcms/cms/pull/11792))
 - Added support for the `CRAFT_DOTENV_PATH` PHP constant. ([#11894](https://github.com/craftcms/cms/discussions/11894))
-- Added the `version` database connection setting. ([#11900](https://github.com/craftcms/cms/pull/11900))
 - Added `craft\base\ExpirableElementInterface`. ([#11901](https://github.com/craftcms/cms/pull/11901))
 - Added `craft\nameparsing\CustomLanguage`.
 - Added `craft\db\ActiveQuery::collect()`. ([#11842](https://github.com/craftcms/cms/pull/11842))
-- Added `craft\db\SchemaTrait`.
 - Added `craft\elements\actions\Restore::$restorableElementsOnly`.
 - Added `craft\enums\DateRangeType`.
 - Added `craft\events\AuthorizationCheckEvent::$element`.
@@ -70,10 +69,16 @@
 - Added `craft\web\Controller::getCurrentUser()`. ([#11754](https://github.com/craftcms/cms/pull/11754))
 - Added `craft\web\View::EVENT_AFTER_CREATE_TWIG`. ([#11774](https://github.com/craftcms/cms/pull/11774))
 - Added the `Craft.useMobileStyles()` JavaScript method. ([#11636](https://github.com/craftcms/cms/pull/11636))
+- Added `Craft.BaseElementIndex::getParentSource()`.
+- Added `Craft.BaseElementIndex::getRootSource()`.
+- Added `Craft.BaseElementIndex::getSourceActions()`. ([#11906](https://github.com/craftcms/cms/pull/11906))
+- Added `Craft.BaseElementIndex::getSourceLevel()`.
 
 ### Changed
-- Improved the control panel accessibility. ([#10546](https://github.com/craftcms/cms/pull/10546), [#11534](https://github.com/craftcms/cms/pull/11534), [#11565](https://github.com/craftcms/cms/pull/11565), [#11578](https://github.com/craftcms/cms/pull/11578), [#11589](https://github.com/craftcms/cms/pull/11589), [#11604](https://github.com/craftcms/cms/pull/11604), [#11610](https://github.com/craftcms/cms/pull/11610), [#11611](https://github.com/craftcms/cms/pull/11611), [#11613](https://github.com/craftcms/cms/pull/11613), [#11636](https://github.com/craftcms/cms/pull/11636), [#11662](https://github.com/craftcms/cms/pull/11662)[#11703](https://github.com/craftcms/cms/pull/11703), [#11727](https://github.com/craftcms/cms/pull/11727), [#11763](https://github.com/craftcms/cms/pull/11763), [#11768](https://github.com/craftcms/cms/pull/11768), [#11775](https://github.com/craftcms/cms/pull/11775), [#11844](https://github.com/craftcms/cms/pull/11844))
+- Improved the control panel accessibility. ([#10546](https://github.com/craftcms/cms/pull/10546), [#11534](https://github.com/craftcms/cms/pull/11534), [#11565](https://github.com/craftcms/cms/pull/11565), [#11578](https://github.com/craftcms/cms/pull/11578), [#11589](https://github.com/craftcms/cms/pull/11589), [#11604](https://github.com/craftcms/cms/pull/11604), [#11610](https://github.com/craftcms/cms/pull/11610), [#11611](https://github.com/craftcms/cms/pull/11611), [#11613](https://github.com/craftcms/cms/pull/11613), [#11636](https://github.com/craftcms/cms/pull/11636), [#11662](https://github.com/craftcms/cms/pull/11662)[#11703](https://github.com/craftcms/cms/pull/11703), [#11727](https://github.com/craftcms/cms/pull/11727), [#11763](https://github.com/craftcms/cms/pull/11763), [#11768](https://github.com/craftcms/cms/pull/11768), [#11775](https://github.com/craftcms/cms/pull/11775), [#11844](https://github.com/craftcms/cms/pull/11844), [#11906/](https://github.com/craftcms/cms/pull/11906))
+- Element indexes now respect field layouts’ user conditions when determining which custom field columns to show. ([#11913](https://github.com/craftcms/cms/pull/11913))  
 - Element index footers now stick to the bottom of the window, and element action triggers are now inserted into the footer rather than replacing the contents of the page’s toolbar. ([#11844](https://github.com/craftcms/cms/pull/11844))
+- Notifications are now shown after executing folder actions on the Assets index page. ([#11906/](https://github.com/craftcms/cms/pull/11906))
 - Date range condition rules now support “Today”, “This week”, “This month”, “This year”, “Past 7 days”, “Past 30 days”, “Past 30 days”, “Past year”, “Before…”, and “After…” relative range types, in addition to specifyng a custom date range. ([#11888](https://github.com/craftcms/cms/pull/11888))
 - It’s now possible to restore assets that were deleted programmatically with `craft\elements\Asset::$keepFile` set to `true`. ([#11761](https://github.com/craftcms/cms/issues/11761))
 - Control panel-defined image transforms can now have custom quality values. ([#9622](https://github.com/craftcms/cms/discussions/9622))

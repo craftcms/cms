@@ -740,7 +740,7 @@ Craft.ElementEditor = Garnish.Base.extend(
     },
 
     /**
-     * @return {string}
+     * @returns {string}
      */
     _saveSuccessMessage: function () {
       return this.settings.isProvisionalDraft ||
@@ -750,7 +750,7 @@ Craft.ElementEditor = Garnish.Base.extend(
     },
 
     /**
-     * @return {string}
+     * @returns {string}
      */
     _saveFailMessage: function () {
       return this.settings.isProvisionalDraft ||
@@ -912,9 +912,9 @@ Craft.ElementEditor = Garnish.Base.extend(
 
     /**
      * @param {string} url
-     * @param {string|null} [randoParam]
+     * @param {?string} [randoParam]
      * @param {boolean} [asPromise=false]
-     * @return Promise|string
+     * @returns {(Promise|string)}
      */
     getTokenizedPreviewUrl: function (url, randoParam, asPromise) {
       if (typeof asPromise === 'undefined') {
@@ -1144,8 +1144,8 @@ Craft.ElementEditor = Garnish.Base.extend(
     },
 
     /**
-     * @param {object} data
-     * @returns {Promise<unknown>}
+     * @param {Object} data
+     * @returns {Promise}
      */
     saveDraft: function (data) {
       return new Promise((resolve, reject) => {
@@ -1544,7 +1544,7 @@ Craft.ElementEditor = Garnish.Base.extend(
 
     /**
      * @param {string} data
-     * @param {function|null} [deltaCallback] Callback function that should be passed to `Craft.findDeltaData()`
+     * @param {findDeltaDataCallback} [deltaCallback] Callback function that should be passed to `Craft.findDeltaData()`
      * @returns {string}
      */
     prepareData: function (data, deltaCallback) {
