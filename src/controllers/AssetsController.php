@@ -827,7 +827,7 @@ class AssetsController extends Controller
         $folder = $asset->getFolder();
 
         // Do what you want with your own photo.
-        if ($asset->id != self::getCurrentUser()->photoId) {
+        if ($asset->id != static::currentUser()->photoId) {
             $this->requireVolumePermissionByAsset('editImages', $asset);
             $this->requirePeerVolumePermissionByAsset('editPeerImages', $asset);
         }
@@ -1095,7 +1095,7 @@ class AssetsController extends Controller
         $variables = [];
 
         if ($previewHandler instanceof ImagePreview) {
-            if ($asset->id != self::getCurrentUser()->photoId) {
+            if ($asset->id != static::currentUser()->photoId) {
                 $variables['editFocal'] = true;
 
                 try {

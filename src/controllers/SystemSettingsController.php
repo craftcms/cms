@@ -212,7 +212,7 @@ class SystemSettingsController extends Controller
                 ->composeFromKey('test_email', [
                     'settings' => MailerHelper::settingsReport($mailer, $adapter),
                 ])
-                ->setTo(self::getCurrentUser());
+                ->setTo(static::currentUser());
 
             if ($message->send()) {
                 $this->setSuccessFlash(Craft::t('app', 'Email sent successfully! Check your inbox.'));

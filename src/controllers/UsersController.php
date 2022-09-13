@@ -358,7 +358,7 @@ class UsersController extends Controller
      */
     private function _enforceImpersonatePermission(User $user): void
     {
-        if (!Craft::$app->getUsers()->canImpersonate(self::getCurrentUser(), $user)) {
+        if (!Craft::$app->getUsers()->canImpersonate(static::currentUser(), $user)) {
             throw new ForbiddenHttpException('You do not have sufficient permissions to impersonate this user');
         }
     }
@@ -738,7 +738,7 @@ class UsersController extends Controller
         // ---------------------------------------------------------------------
 
         $edition = Craft::$app->getEdition();
-        $currentUser = self::getCurrentUser();
+        $currentUser = static::currentUser();
 
         if ($user === null) {
             // Are we editing a specific user account?
@@ -1510,7 +1510,7 @@ JS,
 
         $userId = $this->request->getRequiredBodyParam('userId');
 
-        if ($userId != self::getCurrentUser()->id) {
+        if ($userId != static::currentUser()->id) {
             $this->requirePermission('editUsers');
         }
 
@@ -1559,7 +1559,7 @@ JS,
 
         $userId = $this->request->getRequiredBodyParam('userId');
 
-        if ($userId != self::getCurrentUser()->id) {
+        if ($userId != static::currentUser()->id) {
             $this->requirePermission('editUsers');
         }
 
@@ -1638,7 +1638,7 @@ JS,
 
         // Even if you have moderateUsers permissions, only and admin should be able to unlock another admin.
         if ($user->admin) {
-            $currentUser = self::getCurrentUser();
+            $currentUser = static::currentUser();
             if (!$currentUser->admin) {
                 throw new ForbiddenHttpException('Only admins can unlock other admins.');
             }
@@ -1675,7 +1675,7 @@ JS,
         }
 
         $usersService = Craft::$app->getUsers();
-        $currentUser = self::getCurrentUser();
+        $currentUser = static::currentUser();
 
         if (!$usersService->canSuspend($currentUser, $user) || !$usersService->suspendUser($user)) {
             $this->setFailFlash(Craft::t('app', 'Couldn’t suspend user.'));
@@ -1698,7 +1698,7 @@ JS,
 
         $userIds = $this->request->getRequiredBodyParam('userId');
 
-        if ($userIds !== (string)self::getCurrentUser()->id) {
+        if ($userIds !== (string)static::currentUser()->id) {
             $this->requirePermission('deleteUsers');
         }
 
@@ -1840,7 +1840,7 @@ JS,
 
         // Even if you have moderateUsers permissions, only and admin should be able to unsuspend another admin.
         $usersService = Craft::$app->getUsers();
-        $currentUser = self::getCurrentUser();
+        $currentUser = static::currentUser();
 
         if (!$usersService->canSuspend($currentUser, $user) || !$usersService->unsuspendUser($user)) {
             $this->setFailFlash(Craft::t('app', 'Couldn’t unsuspend user.'));
@@ -1862,7 +1862,7 @@ JS,
     public function actionSaveAddress(): ?Response
     {
         $elementsService = Craft::$app->getElements();
-        $user = self::getCurrentUser();
+        $user = static::currentUser();
         $userId = (int)($this->request->getBodyParam('userId') ?? $user->id);
         $addressId = $this->request->getBodyParam('addressId');
 
@@ -2122,7 +2122,7 @@ JS,
      */
     private function _verifyExistingPassword(): bool
     {
-        $currentUser = self::getCurrentUser();
+        $currentUser = static::currentUser();
 
         if (!$currentUser) {
             return false;

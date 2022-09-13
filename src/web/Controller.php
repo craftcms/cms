@@ -178,14 +178,14 @@ abstract class Controller extends \yii\web\Controller
     }
 
     /**
-     * Returns the current logged-in user.
+     * Returns the currently logged-in user.
      *
      * @param bool $autoRenew
      * @return ?User
      * @see \yii\web\User::getIdentity()
      * @since 4.3.0
      */
-    public static function getCurrentUser(bool $autoRenew = true): ?User
+    public static function currentUser(bool $autoRenew = true): ?User
     {
         return Craft::$app->getUser()->getIdentity($autoRenew);
     }
