@@ -493,7 +493,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         // If this is the first time we are validating a related element,
         // listen for future element saves so we can clear our cache
         if (!self::$_listeningForRelatedElementSave) {
-            Event::on(Elements::class, Elements::EVENT_AFTER_SAVE_ELEMENT, function (ElementEvent $e) {
+            Event::on(Elements::class, Elements::EVENT_AFTER_SAVE_ELEMENT, function(ElementEvent $e) {
                 $element = $e->element;
                 unset(self::$_relatedElementValidates[$element->id][$element->siteId]);
             });
