@@ -54,13 +54,13 @@
     },
     updateRelateAncestorsField: function () {
       let checkedInputs = this.$sourcesInput.find('[type="checkbox"]:checked');
-      let disableRelatAncestors = false;
+      let disableInput = false;
 
       if (checkedInputs.length > 1) {
-        disableRelatAncestors = true;
+        disableInput = true;
       }
 
-      if (disableRelatAncestors) {
+      if (disableInput) {
         this.$relatedAncestorsInput.prop('disabled', true);
         this.$relatedAncestorsInput
           .closest('.field')
