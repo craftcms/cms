@@ -27,10 +27,10 @@
 {% if showStatusMenu or context == 'index' %}
     <div>
         <label id="{{ idPrefix }}status-label" class="visually-hidden">{{ "Status"|t('app') }}</label>
-        <button id="{{ idPrefix }}status-button" aria-labelledby="{{ idPrefix }}status-label" type="button" class="btn menubtn statusmenubtn"><span class="status"></span>{{ "All"|t('app') }}</button>
+        <button id="{{ idPrefix }}status-button" aria-labelledby="{{ idPrefix }}status-label" type="button" class="btn menubtn statusmenubtn"><span class="status all"></span>{{ "All"|t('app') }}</button>
         <div class="menu">
             <ul class="padded">
-                <li><a data-status="" class="sel"><span class="status"></span>{{ "All"|t('app') }}</a></li>
+                <li><a data-status="" class="sel"><span class="status all"></span>{{ "All"|t('app') }}</a></li>
                 {% if showStatusMenu %}
                     {% for status, info in elementInstance.statuses() %}
                         {% set label = info.label ?? info %}

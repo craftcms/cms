@@ -3250,14 +3250,21 @@ ul.tree,
 /* status icons */
 .status {
   display: inline-block;
+  position: relative;
   @include margin-right(10px);
   width: 10px;
   height: 10px;
   border: 1px solid transparent;
   border-radius: 100%;
   box-sizing: border-box;
+  background-clip: border-box;
 
   body.use-shapes & {
+    &.all {
+      rotate: 45deg;
+      background-image: linear-gradient(30deg, #184cef, #e5422b);
+    }
+
     &.pending {
       background-color: transparent;
       border-style: solid;
@@ -3266,15 +3273,17 @@ ul.tree,
       border-radius: 1px;
     }
 
+    &.all,
     &.off,
     &.suspended,
     &.expired {
-      border-radius: 1px;
+      border-radius: 2px;
+      transform: scale(90%);
     }
   }
 }
 
-.status:not(.on):not(.live):not(.active):not(.enabled):not(.pending):not(.off):not(.suspended):not(.expired):not(.yellow):not(.orange):not(.red):not(.pink):not(.purple):not(.blue):not(.green):not(.turquoise):not(.light):not(.grey):not(.black) {
+.status:not(.on):not(.live):not(.active):not(.enabled):not(.all):not(.pending):not(.off):not(.suspended):not(.expired):not(.yellow):not(.orange):not(.red):not(.pink):not(.purple):not(.blue):not(.green):not(.turquoise):not(.light):not(.grey):not(.black) {
   border-color: var(--ui-control-color);
 }
 
@@ -3284,6 +3293,11 @@ ul.tree,
 .status.active,
 .status.enabled {
   background-color: var(--enabled-color);
+}
+
+.status.all {
+  background-image: linear-gradient(60deg, #184cef, #e5422b);
+  background-origin: border-box;
 }
 
 .orange,
@@ -4545,7 +4559,6 @@ ul.tree,
     border-radius: 8px;
     border: 2px solid transparent;
     background-color: transparentize($black, 0.5);
-    background-clip: content-box;
   }
 
   ::-webkit-scrollbar-track {
@@ -5631,6 +5644,14 @@ body.reduce-focus-visibility {
   .focus-visible div.checkbox:before {
     @include input-focused-styles;
   }
+}
+
+.checkbox-icon:before {
+  @include icon;
+  line-height: var(--checkbox-size);
+  color: var(--enabled-color);
+  content: 'check';
+  font-size: 15px;
 }
 
 .monaco-mouse-cursor-text {
