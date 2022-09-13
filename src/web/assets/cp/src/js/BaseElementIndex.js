@@ -2740,7 +2740,6 @@ const ViewMenu = Garnish.Base.extend({
   updateSortField: function () {
     let [attribute, direction] =
       this.elementIndex.getSortAttributeAndDirection();
-    console.log(attribute, direction);
 
     // If searching by score, just keep showing the actual selection
     if (attribute === 'score') {
@@ -2938,12 +2937,15 @@ const ViewMenu = Garnish.Base.extend({
 
     this.sortDirectionListbox = new Craft.Listbox(this.$sortDirectionPicker, {
       onChange: ($selectedOption) => {
-        this.elementIndex.setSelectedSortAttribute(
-          this.$sortAttributeSelect.val(),
-          $selectedOption.data('dir')
-        );
-        this.elementIndex.updateElements();
-        this._createRevertBtn();
+        const direction = $selectedOption.data('dir');
+        if (direction !== this.elementIndex.getSelectedSortDirection()) {
+          this.elementIndex.setSelectedSortAttribute(
+            this.$sortAttributeSelect.val(),
+            $selectedOption.data('dir')
+          );
+          this.elementIndex.updateElements();
+          this._createRevertBtn();
+        }
       },
     });
 
