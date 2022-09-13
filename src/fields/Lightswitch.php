@@ -19,6 +19,7 @@ use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
+use craft\helpers\Html;
 use GraphQL\Type\Definition\Type;
 use yii\db\Schema;
 
@@ -148,7 +149,14 @@ class Lightswitch extends Field implements PreviewableFieldInterface, SortableFi
 
         $label = Craft::t('app', 'Enabled');
 
-        return '<div class="checkbox-icon" role="img" aria-label="' . $label . '" title="' . $label . '"></div>';
+        return Html::tag('div', '', [
+            'class' => 'checkbox-icon',
+            'role' => 'img',
+            'title' => $label,
+            'aria' => [
+                'label' => $label,
+            ],
+        ]);
     }
 
     /**
