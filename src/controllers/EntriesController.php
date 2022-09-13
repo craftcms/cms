@@ -88,7 +88,7 @@ class EntriesController extends BaseEntriesController
             $site = $sitesService->getSiteById($editableSiteIds[0]);
         }
 
-        $user = $this->getCurrentUser();
+        $user = static::currentUser();
 
         // Create & populate the draft
         $entry = Craft::createObject(Entry::class);
@@ -231,7 +231,7 @@ class EntriesController extends BaseEntriesController
         // Permission enforcement
         $this->enforceSitePermission($entry->getSite());
         $this->enforceEditEntryPermissions($entry, $duplicate);
-        $currentUser = $this->getCurrentUser();
+        $currentUser = static::currentUser();
         $section = $entry->getSection();
 
         // Is this another user’s entry (and it’s not a Single)?
@@ -336,7 +336,7 @@ class EntriesController extends BaseEntriesController
         $provisional = Entry::find()
             ->provisionalDrafts()
             ->draftOf($entry->id)
-            ->draftCreator($this->getCurrentUser())
+            ->draftCreator(static::currentUser())
             ->siteId($entry->siteId)
             ->status(null)
             ->one();
@@ -395,7 +395,7 @@ class EntriesController extends BaseEntriesController
                 $entry = Entry::find()
                     ->provisionalDrafts()
                     ->draftOf($entryId)
-                    ->draftCreator($this->getCurrentUser())
+                    ->draftCreator(static::currentUser())
                     ->siteId($siteId)
                     ->status(null)
                     ->one();
@@ -463,7 +463,7 @@ class EntriesController extends BaseEntriesController
         $entry->setFieldValuesFromRequest($fieldsLocation);
 
         // Author
-        $authorId = $this->request->getBodyParam('author', ($entry->authorId ?: $this->getCurrentUser()->id));
+        $authorId = $this->request->getBodyParam('author', ($entry->authorId ?: static::currentUser()->id));
 
         if (is_array($authorId)) {
             $authorId = $authorId[0] ?? null;

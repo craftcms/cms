@@ -105,6 +105,21 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
         .append(this.$bumperButtonEnd);
     },
 
+    _addModalName: function () {
+      const headingId = 'preview-heading';
+
+      this.$container
+        .prepend(
+          $('h1')
+            .attr({
+              class: 'visually-hidden',
+              id: headingId,
+            })
+            .text(Craft.t('app', 'Preview file'))
+        )
+        .attr('aria-labelledby', headingId);
+    },
+
     /**
      * Disappear immediately forever.
      * @returns {boolean}
@@ -211,8 +226,8 @@ Craft.PreviewFileModal = Garnish.Modal.extend(
           this.$container.removeClass('zilch');
           this.$container.attr('data-asset-id', this.assetId);
           this.$container.append(response.data.previewHtml);
-
           this._addBumperButtons();
+          this._addModalName();
           Craft.appendHeadHtml(response.data.headHtml);
           Craft.appendBodyHtml(response.data.bodyHtml);
         })

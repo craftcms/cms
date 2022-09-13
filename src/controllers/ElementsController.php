@@ -182,7 +182,7 @@ class ElementsController extends Controller
         }
         $element->setAttributes($this->_attributes);
 
-        $user = $this->getCurrentUser();
+        $user = static::currentUser();
 
         if (!Craft::$app->getElements()->canSave($element, $user)) {
             throw new ForbiddenHttpException('User not authorized to create this element.');
@@ -267,7 +267,7 @@ class ElementsController extends Controller
         }
 
         $elementsService = Craft::$app->getElements();
-        $user = $this->getCurrentUser();
+        $user = static::currentUser();
 
         // Figure out what we're dealing with here
         $isCanonical = $element->getIsCanonical();
@@ -649,12 +649,16 @@ class ElementsController extends Controller
                     'class' => ['preview-btn-container', 'btngroup'],
                 ]) .
                 ($enablePreview
-                    ? Html::button(Craft::t('app', 'Preview'), [
+                    ? Html::beginTag('button', [
+                        'type' => 'button',
                         'class' => ['preview-btn', 'btn'],
                         'aria' => [
                             'label' => Craft::t('app', 'Preview'),
                         ],
-                    ])
+                    ]) .
+                    Html::tag('span', Craft::t('app', 'Preview'), ['class' => 'label']) .
+                    Html::tag('span', options: ['class' => ['spinner', 'spinner-absolute']]) .
+                    Html::endTag('button')
                     : '') .
                 Html::endTag('div');
         }
@@ -859,7 +863,7 @@ JS, [
 
         $this->_applyParamsToElement($element);
         $elementsService = Craft::$app->getElements();
-        $user = $this->getCurrentUser();
+        $user = static::currentUser();
 
         if (!$elementsService->canSave($element, $user)) {
             throw new ForbiddenHttpException('User not authorized to save this element.');
@@ -994,7 +998,7 @@ JS, [
         }
 
         $elementsService = Craft::$app->getElements();
-        $user = $this->getCurrentUser();
+        $user = static::currentUser();
 
         if (!$elementsService->canDelete($element, $user)) {
             throw new ForbiddenHttpException('User not authorized to delete this element.');
@@ -1091,7 +1095,7 @@ JS, [
         }
 
         $elementsService = Craft::$app->getElements();
-        $user = $this->getCurrentUser();
+        $user = static::currentUser();
 
         if (!$element->getIsDraft() && !$this->_provisional) {
             if (!$elementsService->canCreateDrafts($element, $user)) {
@@ -1242,7 +1246,7 @@ JS, [
         }
 
         $this->_applyParamsToElement($element);
-        $user = $this->getCurrentUser();
+        $user = static::currentUser();
 
         if (!$elementsService->canSave($element, $user)) {
             throw new ForbiddenHttpException('User not authorized to save this draft.');
@@ -1353,7 +1357,7 @@ JS, [
         }
 
         $elementsService = Craft::$app->getElements();
-        $user = $this->getCurrentUser();
+        $user = static::currentUser();
 
         if (!$elementsService->canDelete($element, $user)) {
             throw new ForbiddenHttpException('User not authorized to delete this draft.');
@@ -1404,7 +1408,7 @@ JS, [
             throw new BadRequestHttpException('No revision was identified by the request.');
         }
 
-        $user = $this->getCurrentUser();
+        $user = static::currentUser();
 
         if (!Craft::$app->getElements()->canSave($element->getCanonical(true), $user)) {
             throw new ForbiddenHttpException('User not authorized to save this element.');
@@ -1516,7 +1520,7 @@ JS, [
 
         $sitesService = Craft::$app->getSites();
         $elementsService = Craft::$app->getElements();
-        $user = $this->getCurrentUser();
+        $user = static::currentUser();
 
         if ($this->_siteId) {
             $site = $sitesService->getSiteById($this->_siteId, true);
@@ -1611,7 +1615,7 @@ JS, [
             return null;
         }
 
-        if (!$element->canView($this->getCurrentUser())) {
+        if (!$element->canView(static::currentUser())) {
             throw new ForbiddenHttpException('User not authorized to edit this element.');
         }
 
@@ -1754,7 +1758,7 @@ JS, [
         ]);
 
         if ($addAnother && $this->_addAnother) {
-            $user = $this->getCurrentUser();
+            $user = static::currentUser();
             $newElement = $element->createAnother();
 
             if (!$newElement || !Craft::$app->getElements()->canSave($newElement, $user)) {

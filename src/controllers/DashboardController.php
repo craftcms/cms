@@ -315,7 +315,7 @@ class DashboardController extends Controller
             ],
             [
                 'name' => 'name',
-                'contents' => $this->getCurrentUser()->getName(),
+                'contents' => static::currentUser()->getName(),
             ],
             [
                 'name' => 'message',
