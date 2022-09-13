@@ -301,7 +301,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         $inputSources = $this->getInputSources();
 
         if ($inputSources === null) {
-            $this->addError($attribute, Craft::t('app', 'One source needs to be selected when relating ancestors.'));
+            $this->addError($attribute, Craft::t('app', 'A source is required when relating ancestors.'));
             return;
         }
 
@@ -316,7 +316,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         );
 
         if (count($elementSources) > 1) {
-            $this->addError($attribute, Craft::t('app', 'Only one source allowed when relating ancestors.'));
+            $this->addError($attribute, Craft::t('app', 'Only one source is allowed when relating ancestors.'));
         }
 
         foreach ($elementSources as $elementSource) {
