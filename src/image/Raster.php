@@ -214,6 +214,7 @@ class Raster extends Image
             $gif = $this->_instance->create($newSize);
             $gif->layers()->remove(0);
 
+            $this->_image->layers()->coalesce();
             foreach ($this->_image->layers() as $layer) {
                 $croppedLayer = $layer->crop($startingPoint, $newSize);
                 $gif->layers()->add($croppedLayer);
@@ -701,6 +702,7 @@ class Raster extends Image
                 return ['jpeg_quality' => $quality, 'flatten' => true];
 
             case 'gif':
+            case 'webp':
                 return ['animated' => $this->_isAnimatedGif];
 
             case 'png':
