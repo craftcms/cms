@@ -247,6 +247,7 @@ JS;
             'Phone',
             'Portrait',
             'Preview',
+            'Preview file',
             'Previewing {type} device in {orientation}',
             'Previewing {type} device',
             'Previous Page',

@@ -996,17 +996,29 @@ Craft.ElementEditor = Garnish.Base.extend(
     },
 
     openPreview: function () {
-      return new Promise((resolve, reject) => {
-        this.openingPreview = true;
-        this.ensureIsDraftOrRevision(true)
-          .then(() => {
-            this.scrollY = window.scrollY;
-            this.getPreview().open();
-            this.openingPreview = false;
-            resolve();
+      if (Garnish.hasAttr(this.$previewBtn, 'aria-disabled')) {
+        return;
+      }
+
+      this.$previewBtn.attr('aria-disabled', true);
+      this.$previewBtn.addClass('loading');
+
+      this.queue.push(
+        () =>
+          new Promise((resolve, reject) => {
+            this.openingPreview = true;
+            this.ensureIsDraftOrRevision(true)
+              .then(() => {
+                this.scrollY = window.scrollY;
+                this.$previewBtn.removeAttr('aria-disabled');
+                this.$previewBtn.removeClass('loading');
+                this.getPreview().open();
+                this.openingPreview = false;
+                resolve();
+              })
+              .catch(reject);
           })
-          .catch(reject);
-      });
+      );
     },
 
     ensureIsDraftOrRevision: function (onlyIfChanged) {
