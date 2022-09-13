@@ -648,8 +648,8 @@ class ElementsController extends Controller
                 Html::beginTag('div', [
                     'class' => ['preview-btn-container', 'btngroup'],
                 ]) .
-                ($enablePreview ?
-                    Html::beginTag('button', [
+                ($enablePreview
+                    ? Html::beginTag('button', [
                         'type' => 'button',
                         'class' => ['preview-btn', 'btn'],
                         'aria' => [

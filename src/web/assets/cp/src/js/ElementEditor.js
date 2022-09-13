@@ -214,7 +214,6 @@ Craft.ElementEditor = Garnish.Base.extend(
       });
       queue.on('afterRun', () => {
         this.hideSpinner();
-        this.enablePreviewButton();
       });
       return queue;
     },
@@ -773,16 +772,6 @@ Craft.ElementEditor = Garnish.Base.extend(
       this.spinners().addClass('hidden');
     },
 
-    disablePreviewButton: function () {
-      this.$previewBtn.attr('aria-disabled', true);
-      this.$previewBtn.addClass('loading');
-    },
-
-    enablePreviewButton: function () {
-      this.$previewBtn.removeAttr('aria-disabled');
-      this.$previewBtn.removeClass('loading');
-    },
-
     statusIcons: function () {
       return this.preview
         ? this.$statusIcon.add(this.preview.$statusIcon)
@@ -1007,11 +996,13 @@ Craft.ElementEditor = Garnish.Base.extend(
     },
 
     openPreview: function () {
-      if (this.$previewBtn.hasAttr('aria-disabled')) {
+      if (Garnish.hasAttr(this.$previewBtn, 'aria-disabled')) {
         return;
       }
 
-      this.disablePreviewButton();
+      this.$previewBtn.attr('aria-disabled', true);
+      this.$previewBtn.addClass('loading');
+
       this.queue.push(
         () =>
           new Promise((resolve, reject) => {
@@ -1019,6 +1010,8 @@ Craft.ElementEditor = Garnish.Base.extend(
             this.ensureIsDraftOrRevision(true)
               .then(() => {
                 this.scrollY = window.scrollY;
+                this.$previewBtn.removeAttr('aria-disabled');
+                this.$previewBtn.removeClass('loading');
                 this.getPreview().open();
                 this.openingPreview = false;
                 resolve();
