@@ -4835,6 +4835,34 @@ $min2ColWidth: 400px;
     padding-bottom: var(--s);
   }
 
+  .sort-field {
+    .input {
+      .flex {
+        .btngroup {
+          .btn {
+            width: 42px;
+          }
+        }
+
+        .flex-grow {
+          max-width: calc(100% - 85px - var(--s));
+        }
+
+        @media screen and (max-width: 350px) {
+          flex-direction: column;
+
+          & > * {
+            width: 100%;
+          }
+
+          .flex-grow {
+            max-width: none;
+          }
+        }
+      }
+    }
+  }
+
   .table-columns-field {
     align-items: flex-start;
 
