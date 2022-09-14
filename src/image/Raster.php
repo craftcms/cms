@@ -364,6 +364,7 @@ class Raster extends Image
             $gif = $this->_instance->create($newSize);
             $gif->layers()->remove(0);
 
+            $this->_image->layers()->coalesce();
             foreach ($this->_image->layers() as $layer) {
                 $resizedLayer = $layer->resize($newSize, $this->_getResizeFilter());
                 $gif->layers()->add($resizedLayer);
