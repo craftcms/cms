@@ -1511,7 +1511,7 @@ ul.icons {
 }
 
 .btngroup--exclusive {
-  .btn[aria-pressed="true"]:not(.disabled):not(.loading):not(.dashed):not([aria-disabled]) {
+  .btn[aria-pressed='true']:not(.disabled):not(.loading):not(.dashed):not([aria-disabled]) {
     background-color: var(--gray-500);
     color: var(--white);
   }

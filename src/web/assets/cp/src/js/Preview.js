@@ -376,39 +376,39 @@ Craft.Preview = Garnish.Base.extend(
       }).appendTo(this.$previewHeader);
       $('<button/>', {
         type: 'button',
-        'class': 'btn lp-device-type-btn--desktop active',
+        class: 'btn lp-device-type-btn--desktop active',
         title: Craft.t('app', 'Desktop'),
         'aria-label': Craft.t('app', 'Desktop'),
         'aria-pressed': 'true',
         data: {
           width: '',
           height: '',
-          deviceType: 'desktop'
-        }
+          deviceType: 'desktop',
+        },
       }).appendTo(this.$deviceTypeContainer);
       $('<button/>', {
         type: 'button',
-        'class': 'btn lp-device-type-btn--tablet',
+        class: 'btn lp-device-type-btn--tablet',
         title: Craft.t('app', 'Tablet'),
         'aria-label': Craft.t('app', 'Tablet'),
         'aria-pressed': 'false',
         data: {
           width: 768,
           height: 1024,
-          deviceType: 'tablet'
-        }
+          deviceType: 'tablet',
+        },
       }).appendTo(this.$deviceTypeContainer);
       $('<button/>', {
         type: 'button',
-        'class': 'btn lp-device-type-btn--phone',
+        class: 'btn lp-device-type-btn--phone',
         title: Craft.t('app', 'Mobile'),
         'aria-label': Craft.t('app', 'Mobile'),
         'aria-pressed': 'false',
         data: {
           width: 375,
           height: 667,
-          deviceType: 'phone'
-        }
+          deviceType: 'phone',
+        },
       }).appendTo(this.$deviceTypeContainer);
 
       // Add functionality
@@ -417,7 +417,6 @@ Craft.Preview = Garnish.Base.extend(
           this.switchDeviceType($selectedOption);
         },
       });
-
     },
 
     _activeTarget: function () {
@@ -731,7 +730,7 @@ Craft.Preview = Garnish.Base.extend(
     switchDeviceType: function ($option) {
       this.$iframeContainer.removeClass('lp-iframe-container--rotating');
 
-      const newDeviceType = $option.data('deviceType')
+      const newDeviceType = $option.data('deviceType');
       // Bail if we’re just smashing the same button
       if (newDeviceType === this.currentDeviceType) {
         return false;
