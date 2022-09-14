@@ -32,6 +32,7 @@
 /tests/ export-ignore
 /tsconfig.json export-ignore
 /webpack.config.js export-ignore
+/img/ export-ignore
 
 # Identify generated files
 /src/translations/a*/app.php linguist-generated=true

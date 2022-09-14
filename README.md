@@ -38,7 +38,7 @@ Craft is a self-hosted PHP application. It can connect to MySQL and PostgreSQL f
 ---
 
 <p>
-<img src="https://github.com/craftcms/cms/workflows/ci/badge.svg?branch=main" alt="Build Status">
+<img src="https://github.com/craftcms/cms/actions/workflows/ci.yml/badge.svg" alt="Build Status">
 <a href="https://packagist.org/packages/craftcms/cms"><img src="https://img.shields.io/packagist/dt/craftcms/cms.svg?label=downloads" alt="Total Packagist Downloads"></a>
 <a href="https://github.com/craftcms/cms/releases"><img src="https://img.shields.io/github/tag/craftcms/cms.svg?label=stable" alt="Latest Stable Version"></a>
 </p>
