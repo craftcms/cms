@@ -185,7 +185,7 @@ class Raster extends Image
         $this->_imageSourcePath = $path;
         $this->_extension = pathinfo($path, PATHINFO_EXTENSION);
 
-        if ($this->_extension === 'gif') {
+        if (in_array($this->_extension, ['gif', 'webp'])) {
             if (!$imageService->getIsGd() && $this->_image->layers()) {
                 $this->_isAnimatedGif = true;
             }
