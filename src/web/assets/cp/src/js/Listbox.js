@@ -21,7 +21,7 @@ Craft.Listbox = Garnish.Base.extend(
       }
 
       this.$container.data('listbox', this);
-      this.$options = this.$container.find('[role=option]');
+      this.$options = this.$container.find('button');
 
       // is there already a selected option?
       this.$selectedOption = this.$options.filter('[aria-selected=true]');
@@ -30,39 +30,6 @@ Craft.Listbox = Garnish.Base.extend(
       } else {
         this.$selectedOption = null;
       }
-
-      this.addListener(this.$container, 'keydown', (ev) => {
-        switch (ev.keyCode) {
-          case Garnish.UP_KEY:
-            this.selectPrev();
-            ev.preventDefault();
-            ev.stopPropagation();
-            break;
-          case Garnish.DOWN_KEY:
-            this.selectNext();
-            ev.preventDefault();
-            ev.stopPropagation();
-            break;
-          case Garnish.LEFT_KEY:
-            if (Craft.orientation === 'ltr') {
-              this.selectPrev();
-            } else {
-              this.selectNext();
-            }
-            ev.preventDefault();
-            ev.stopPropagation();
-            break;
-          case Garnish.RIGHT_KEY:
-            if (Craft.orientation === 'ltr') {
-              this.selectNext();
-            } else {
-              this.selectPrev();
-            }
-            ev.preventDefault();
-            ev.stopPropagation();
-            break;
-        }
-      });
 
       this.addListener(this.$options, 'click', (ev) => {
         this.select(this.$options.index($(ev.currentTarget)));
@@ -97,22 +64,6 @@ Craft.Listbox = Garnish.Base.extend(
         $selectedOption: this.$selectedOption,
         selectedOptionIndex: index,
       });
-    },
-
-    selectPrev: function () {
-      if (this.selectedOptionIndex === null) {
-        this.select(0);
-      } else {
-        this.select(this.selectedOptionIndex - 1);
-      }
-    },
-
-    selectNext: function () {
-      if (this.selectedOptionIndex === null) {
-        this.select(0);
-      } else {
-        this.select(this.selectedOptionIndex + 1);
-      }
     },
 
     disable: function () {
