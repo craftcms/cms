@@ -376,104 +376,47 @@ Craft.Preview = Garnish.Base.extend(
     },
 
     _buildDeviceTypeFieldset: function () {
-      this.$deviceTypeContainer = $('<fieldset/>', {
-        class: 'lp-device-type',
+      // Device type buttons
+      this.$deviceTypeContainer = $('<section/>', {
+        class: 'btngroup lp-device-type',
+        'aria-label': Craft.t('app', 'Device type'),
       }).appendTo(this.$previewHeader);
-
-      $('<legend/>', {
-        text: Craft.t('app', 'Device type'),
-        class: 'visually-hidden',
-      }).appendTo(this.$deviceTypeContainer);
-
-      const $radioGroup = $('<div/>', {
-        class: 'lp-device-type__radio-group',
-      }).appendTo(this.$deviceTypeContainer);
-
-      // Desktop
-      const $desktopWrapper = $('<div/>', {
-        class: 'lp-device-type__item',
-      }).appendTo($radioGroup);
-
-      $('<input/>', {
-        class: 'lp-device-type__input visually-hidden',
-        type: 'radio',
-        name: 'device',
-        value: 'desktop',
-        id: 'device-desktop',
-        checked: true,
+      $('<button/>', {
+        type: 'button',
+        'class': 'btn lp-device-type-btn--desktop active',
+        title: Craft.t('app', 'Desktop'),
+        'aria-label': Craft.t('app', 'Desktop'),
+        'aria-pressed': 'true',
         data: {
           width: '',
           height: '',
-        },
-      }).appendTo($desktopWrapper);
-
-      const $desktopLabel = $('<label/>', {
-        for: 'device-desktop',
-        class:
-          'btn lp-device-type__label lp-device-type__label--desktop active',
-        title: this._getDeviceTypeTranslation('desktop'),
-      }).appendTo($desktopWrapper);
-
-      $('<span/>', {
-        class: 'visually-hidden',
-        text: this._getDeviceTypeTranslation('desktop'),
-      }).appendTo($desktopLabel);
-
-      // Tablet
-      const $tabletWrapper = $('<div/>', {
-        class: 'lp-device-type__item',
-      }).appendTo($radioGroup);
-
-      $('<input/>', {
-        class: 'lp-device-type__input visually-hidden',
-        type: 'radio',
-        name: 'device',
-        value: 'tablet',
-        id: 'device-tablet',
+          deviceType: 'desktop'
+        }
+      }).appendTo(this.$deviceTypeContainer);
+      $('<button/>', {
+        type: 'button',
+        'class': 'btn lp-device-type-btn--tablet',
+        title: Craft.t('app', 'Tablet'),
+        'aria-label': Craft.t('app', 'Tablet'),
+        'aria-pressed': 'false',
         data: {
           width: 768,
           height: 1024,
-        },
-      }).appendTo($tabletWrapper);
-
-      const $tabletLabel = $('<label/>', {
-        for: 'device-tablet',
-        class: 'btn lp-device-type__label lp-device-type__label--tablet',
-        title: this._getDeviceTypeTranslation('tablet'),
-      }).appendTo($tabletWrapper);
-
-      $('<span/>', {
-        class: 'visually-hidden',
-        text: this._getDeviceTypeTranslation('tablet'),
-      }).appendTo($tabletLabel);
-
-      // Mobile
-      const $mobileWrapper = $('<div/>', {
-        class: 'lp-device-type__item',
-      }).appendTo($radioGroup);
-
-      $('<input/>', {
-        class: 'lp-device-type__input visually-hidden',
-        type: 'radio',
-        name: 'device',
-        value: 'phone',
-        id: 'device-phone',
+          deviceType: 'tablet'
+        }
+      }).appendTo(this.$deviceTypeContainer);
+      $('<button/>', {
+        type: 'button',
+        'class': 'btn lp-device-type-btn--phone',
+        title: Craft.t('app', 'Mobile'),
+        'aria-label': Craft.t('app', 'Mobile'),
+        'aria-pressed': 'false',
         data: {
           width: 375,
           height: 667,
-        },
-      }).appendTo($mobileWrapper);
-
-      const $mobileLabel = $('<label/>', {
-        for: 'device-phone',
-        class: 'btn lp-device-type__label lp-device-type__label--phone',
-        title: this._getDeviceTypeTranslation('phone'),
-      }).appendTo($mobileWrapper);
-
-      $('<span/>', {
-        class: 'visually-hidden',
-        text: this._getDeviceTypeTranslation('phone'),
-      }).appendTo($mobileLabel);
+          deviceType: 'phone'
+        }
+      }).appendTo(this.$deviceTypeContainer);
     },
 
     _activeTarget: function () {
