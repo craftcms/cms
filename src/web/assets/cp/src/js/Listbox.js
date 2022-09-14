@@ -24,7 +24,7 @@ Craft.Listbox = Garnish.Base.extend(
       this.$options = this.$container.find('button');
 
       // is there already a selected option?
-      this.$selectedOption = this.$options.filter('[aria-selected=true]');
+      this.$selectedOption = this.$options.filter('[aria-pressed=true]');
       if (this.$selectedOption.length) {
         this.selectedOptionIndex = this.$options.index(this.$selectedOption);
       } else {
@@ -49,13 +49,13 @@ Craft.Listbox = Garnish.Base.extend(
       if (this.$selectedOption) {
         this.$selectedOption
           .removeClass(this.settings.selectedClass)
-          .attr('aria-selected', 'false');
+          .attr('aria-pressed', 'false');
       }
 
       this.$selectedOption = this.$options
         .eq(index)
         .addClass(this.settings.selectedClass)
-        .attr('aria-selected', 'true');
+        .attr('aria-pressed', 'true');
 
       this.selectedOptionIndex = index;
 

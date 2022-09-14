@@ -2902,7 +2902,7 @@ const ViewMenu = Garnish.Base.extend({
       });
 
     this.$sortDirectionPicker = $('<div/>', {
-      class: 'btngroup',
+      class: 'btngroup btngroup--exclusive',
       'aria-label': Craft.t('app', 'Sort direction'),
     })
       .append(
@@ -2911,7 +2911,7 @@ const ViewMenu = Garnish.Base.extend({
           class: 'btn',
           title: Craft.t('app', 'Sort ascending'),
           'aria-label': Craft.t('app', 'Sort ascending'),
-          'aria-selected': 'false',
+          'aria-pressed': 'false',
           'data-icon': 'asc',
           'data-dir': 'asc',
         })
@@ -2922,7 +2922,7 @@ const ViewMenu = Garnish.Base.extend({
           class: 'btn',
           title: Craft.t('app', 'Sort descending'),
           'aria-label': Craft.t('app', 'Sort descending'),
-          'aria-selected': 'false',
+          'aria-pressed': 'false',
           'data-icon': 'desc',
           'data-dir': 'desc',
         })
