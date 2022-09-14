@@ -1074,10 +1074,7 @@ class Asset extends Element
 
         $html = Html::beginTag('div', ['class' => 'btngroup']);
 
-        if (
-            in_array($this->kind, [Asset::KIND_IMAGE, Asset::KIND_PDF, Asset::KIND_TEXT]) &&
-            ($url = $this->getUrl()) !== null
-        ) {
+        if (($url = $this->getUrl()) !== null) {
             $html .= Html::a(Craft::t('app', 'View'), $url, [
                 'class' => 'btn',
                 'target' => '_blank',
