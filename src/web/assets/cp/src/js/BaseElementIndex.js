@@ -1339,7 +1339,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
       // Create the buttons if there's more than one mode available to this source
       if (this.sourceViewModes.length > 1) {
-        this.$viewModeBtnContainer = $('<section class="btngroup"/>').attr(
+        this.$viewModeBtnContainer = $('<section class="btngroup btngroup--exclusive"/>').attr(
           'aria-label',
           Craft.t('app', 'View')
         );
