@@ -269,13 +269,6 @@ Craft.Preview = Garnish.Base.extend(
           this.deviceOrientation = Craft.getLocalStorage(
             'LivePreview.orientation'
           );
-
-          // Device type input change handler
-          this.addListener(
-            $('input', this.$deviceTypeContainer),
-            'change',
-            'switchDeviceType'
-          );
         }
 
         this.$iframeContainer = $('<div/>', {
@@ -417,6 +410,14 @@ Craft.Preview = Garnish.Base.extend(
           deviceType: 'phone'
         }
       }).appendTo(this.$deviceTypeContainer);
+
+      // Add functionality
+      this.deviceBtnGroup = new Craft.Listbox(this.$deviceTypeContainer, {
+        onChange: ($selectedOption) => {
+          this.switchDeviceType($selectedOption);
+        },
+      });
+
     },
 
     _activeTarget: function () {
@@ -727,13 +728,10 @@ Craft.Preview = Garnish.Base.extend(
       }, 200);
     },
 
-    switchDeviceType: function (ev) {
+    switchDeviceType: function ($option) {
       this.$iframeContainer.removeClass('lp-iframe-container--rotating');
 
-      const $input = $(ev.target);
-      const $inputWrapper = $input.closest('.lp-device-type__item');
-      const newDeviceType = $input.val();
-
+      const newDeviceType = $option.data('deviceType')
       // Bail if we’re just smashing the same button
       if (newDeviceType === this.currentDeviceType) {
         return false;
@@ -741,13 +739,8 @@ Craft.Preview = Garnish.Base.extend(
 
       // Store new device type data
       this.currentDeviceType = newDeviceType;
-      this.deviceWidth = $input.data('width');
-      this.deviceHeight = $input.data('height');
-
-      // Set the active state on the label
-      this.$deviceTypeContainer.find('.btn').removeClass('active');
-
-      $inputWrapper.find('.btn').addClass('active');
+      this.deviceWidth = $option.data('width');
+      this.deviceHeight = $option.data('height');
 
       if (this.currentDeviceType === 'desktop') {
         // Disable the orientation button
