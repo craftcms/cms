@@ -2901,7 +2901,7 @@ const ViewMenu = Garnish.Base.extend({
         'aria-label': Craft.t('app', 'Sort attribute'),
       });
 
-    this.$sortDirectionPicker = $('<div/>', {
+    this.$sortDirectionPicker = $('<section/>', {
       class: 'btngroup btngroup--exclusive',
       'aria-label': Craft.t('app', 'Sort direction'),
     })
