@@ -2190,36 +2190,13 @@ class Asset extends Element
 
         $transform = Craft::$app->getAssetTransforms()->normalizeTransform($transform);
 
-        if (!Craft::$app->getConfig()->getGeneral()->upscaleImages) {
-            if ($transform->width === null || $transform->height === null) {
-                $transformRatio = $this->_width / $this->_height;
-            } else {
-                $transformRatio = $transform->width / $transform->height;
-            }
-
-            $imageRatio = $this->_width / $this->_height;
-
-            if ($transform->mode !== 'crop' || $imageRatio === $transformRatio) {
-                return [$this->_width, $this->_height];
-            }
-
-            // Since we don't want to upscale, make sure the calculated ratios aren't bigger than the actual image size.
-            $newHeight = min($this->_height, round($this->_width / $transformRatio));
-            $newWidth = min($this->_width, round($this->_height * $transformRatio));
-
-            return [$newWidth, $newHeight];
-        }
-
-        [$width, $height] = Image::calculateMissingDimension($transform->width, $transform->height, $this->_width, $this->_height);
-
-        // Special case for 'fit' since that's the only one whose dimensions vary from the transform dimensions
-        if ($transform->mode === 'fit') {
-            $factor = max($this->_width / $width, $this->_height / $height);
-            $width = (int)round($this->_width / $factor);
-            $height = (int)round($this->_height / $factor);
-        }
-
-        return [$width, $height];
+        return Image::targetDimensions(
+            $this->_width,
+            $this->_height,
+            $transform->width,
+            $transform->height,
+            $transform->mode
+        );
     }
 
     /**
