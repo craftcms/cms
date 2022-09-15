@@ -6,6 +6,7 @@
 - Fixed a bug where image transforms weren’t always getting applied properly to all animation frames. ([#11937](https://github.com/craftcms/cms/pull/11937))
 - Fixed a bug where animated WebP images would lose their animation frames when transformed. ([#11937](https://github.com/craftcms/cms/pull/11937))
 - Fixed a bug where image transform dimensions could be calculated incorrectly when `upscaleImages` was `false`. ([#11837](https://github.com/craftcms/cms/issues/11837))
+- Fixed a bug where incorrect dimensions were returned when the transform and image ratios were equal or when the transform mode was not "crop"
 
 ## 3.7.54 - 2022-09-13
 
