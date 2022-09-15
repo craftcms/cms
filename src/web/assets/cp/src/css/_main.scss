@@ -6240,16 +6240,6 @@ body .selectize-dropdown-content {
   }
 }
 
-body .selectize-dropdown-content > div[data-value='new']:before {
-  @include icon;
-  content: 'plus';
-  margin-right: 5px;
-}
-
-body .selectize-dropdown-content > div[data-value='new']:after {
-  content: '…';
-}
-
 body .selectize-dropdown [data-selectable],
 body .selectize-dropdown .optgroup-header {
   @include menu-option-styles;
