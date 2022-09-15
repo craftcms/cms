@@ -58,6 +58,76 @@ class ImageHelperTest extends Unit
     }
 
     /**
+     * @param int $expectedWidth
+     * @param int $expectedHeight
+     * @param int $sourceWidth
+     * @param int $sourceHeight
+     * @param int|null $transformWidth
+     * @param int|null $transformHeight
+     * @param string $mode
+     * @param bool|null $upscale
+     * @return void
+     * @dataProvider targetDimensionsDataProvider
+     */
+    public function testTargetDimensions(
+        int $expectedWidth,
+        int $expectedHeight,
+        int $sourceWidth,
+        int $sourceHeight,
+        ?int $transformWidth,
+        ?int $transformHeight,
+        string $mode,
+        bool $upscale
+    ): void {
+        self::assertSame([$expectedWidth, $expectedHeight], Image::targetDimensions(
+            $sourceWidth,
+            $sourceHeight,
+            $transformWidth,
+            $transformHeight,
+            $mode,
+            $upscale
+        ));
+    }
+
+    public function targetDimensionsDataProvider(): array
+    {
+        return [
+            'crop1' => [200, 100, 600, 400, 200, 100, 'crop', true],
+            'crop2' => [200, 100, 60, 40, 200, 100, 'crop', true],
+            'crop3' => [200, 133, 60, 40, 200, null, 'crop', true],
+            'crop4' => [150, 100, 60, 40, null, 100, 'crop', true],
+            'crop5' => [60, 30, 60, 40, 200, 100, 'crop', false],
+            'crop6' => [200, 100, 80, 40, 200, 100, 'crop', true],
+            'crop7' => [80, 40, 80, 40, 200, 100, 'crop', false],
+            'crop8' => [200, 100, 400, 600, 200, 100, 'crop', true],
+            'crop9' => [200, 100, 40, 60, 200, 100, 'crop', true],
+            'crop10' => [40, 20, 40, 60, 200, 100, 'crop', false],
+
+            'stretch1' => [200, 100, 600, 400, 200, 100, 'stretch', true],
+            'stretch2' => [200, 100, 60, 40, 200, 100, 'stretch', true],
+            'stretch3' => [200, 133, 60, 40, 200, null, 'stretch', true],
+            'stretch4' => [150, 100, 60, 40, null, 100, 'stretch', true],
+            'stretch5' => [60, 30, 60, 40, 200, 100, 'stretch', false],
+            'stretch6' => [200, 100, 80, 40, 200, 100, 'stretch', true],
+            'stretch7' => [80, 40, 80, 40, 200, 100, 'stretch', false],
+            'stretch8' => [200, 100, 400, 600, 200, 100, 'stretch', true],
+            'stretch9' => [200, 100, 40, 60, 200, 100, 'stretch', true],
+            'stretch10' => [40, 20, 40, 60, 200, 100, 'stretch', false],
+
+            'fit1' => [150, 100, 600, 400, 200, 100, 'fit', true],
+            'fit2' => [150, 100, 60, 40, 200, 100, 'fit', true],
+            'fit3' => [200, 133, 60, 40, 200, null, 'fit', true],
+            'fit4' => [150, 100, 60, 40, null, 100, 'fit', true],
+            'fit5' => [60, 40, 60, 40, 200, 100, 'fit', false],
+            'fit6' => [200, 100, 80, 40, 200, 100, 'fit', true],
+            'fit7' => [80, 40, 80, 40, 200, 100, 'fit', false],
+            'fit8' => [67, 100, 400, 600, 200, 100, 'fit', true],
+            'fit9' => [67, 100, 40, 60, 200, 100, 'fit', true],
+            'fit10' => [40, 60, 40, 60, 200, 100, 'fit', false],
+        ];
+    }
+
+    /**
      * @dataProvider canManipulateAsImageDataProvider
      *
      * @param bool $expected
