@@ -2206,10 +2206,10 @@ class Asset extends Element
             }
 
             // Since we don't want to upscale, make sure the calculated ratios aren't bigger than the actual image size.
-            $targetHeight = min($this->_height, round($this->_width / $transformRatio));
-            $targetWidth = min($this->_width, round($this->_height * $transformRatio));
+            $newHeight = min($this->_height, round($this->_width / $transformRatio));
+            $newWidth = min($this->_width, round($this->_height * $transformRatio));
 
-            return Image::calculateMissingDimension($targetWidth, $targetHeight, $this->_width, $this->_height);
+            return [$newWidth, $newHeight];
         }
 
         [$width, $height] = Image::calculateMissingDimension($transform->width, $transform->height, $this->_width, $this->_height);
