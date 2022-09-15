@@ -55,9 +55,66 @@ class Image
 
         // Fill in the blank
         return [
-            (int)($targetWidth ?: ceil($targetHeight * ($sourceWidth / $sourceHeight))),
-            (int)($targetHeight ?: ceil($targetWidth * ($sourceHeight / $sourceWidth))),
+            (int)($targetWidth ?: round($targetHeight * ($sourceWidth / $sourceHeight))),
+            (int)($targetHeight ?: round($targetWidth * ($sourceHeight / $sourceWidth))),
         ];
+    }
+
+    /**
+     * Returns the target image width and height for an image, based on its transform type and constraints,
+     * and whether the source image should be upscaled.
+     *
+     * @param int $sourceWidth
+     * @param int $sourceHeight
+     * @param int|null $transformWidth
+     * @param int|null $transformHeight
+     * @param string $mode The transform mode (`crop`, `fit`, or `stretch`)
+     * @param bool|null $upscale Whether to upscale the image to fill the transform dimensions.
+     * Defaults to the `upscaleImages` config setting.
+     * @return int[]
+     * @phpstan-return array{int,int}
+     * @since 3.7.55
+     */
+    public static function targetDimensions(
+        int $sourceWidth,
+        int $sourceHeight,
+        ?int $transformWidth,
+        ?int $transformHeight,
+        string $mode = 'crop',
+        ?bool $upscale = null
+    ): array {
+        if ($upscale ?? Craft::$app->getConfig()->getGeneral()->upscaleImages) {
+            [$width, $height] = static::calculateMissingDimension($transformWidth, $transformHeight, $sourceWidth, $sourceHeight);
+
+            // Special case for 'fit' since that's the only one whose dimensions vary from the transform dimensions
+            if ($mode === 'fit') {
+                $factor = max($sourceWidth / $width, $sourceHeight / $height);
+                $width = (int)round($sourceWidth / $factor);
+                $height = (int)round($sourceHeight / $factor);
+            }
+
+            return [$width, $height];
+        }
+
+        if ($transformWidth === null || $transformHeight === null) {
+            $transformRatio = $sourceWidth / $sourceHeight;
+        } else {
+            $transformRatio = $transformWidth / $transformHeight;
+        }
+
+        $imageRatio = $sourceWidth / $sourceHeight;
+
+        if ($mode === 'fit' || $imageRatio === $transformRatio) {
+            $targetWidth = min($sourceWidth, $transformWidth);
+            $targetHeight = min($sourceHeight, $transformHeight);
+            return static::calculateMissingDimension($targetWidth, $targetHeight, $sourceWidth, $sourceHeight);
+        }
+
+        // Since we don't want to upscale, make sure the calculated ratios aren't bigger than the actual image size.
+        $newHeight = min($sourceHeight, (int)round($sourceWidth / $transformRatio));
+        $newWidth = min($sourceWidth, (int)round($sourceHeight * $transformRatio));
+
+        return [$newWidth, $newHeight];
     }
 
     /**
