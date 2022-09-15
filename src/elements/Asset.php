@@ -2210,7 +2210,7 @@ class Asset extends Element
             $imageRatio = $this->_width / $this->_height;
 
             if ($transform->mode !== 'crop' || $imageRatio === $transformRatio) {
-                return [$this->_width, $this->_height];
+                return [$transform->width, $transform->height];
             }
 
             // Since we don't want to upscale, make sure the calculated ratios aren't bigger than the actual image size.
