@@ -2191,6 +2191,16 @@ class Asset extends Element
         $transform = Craft::$app->getAssetTransforms()->normalizeTransform($transform);
 
         if (!Craft::$app->getConfig()->getGeneral()->upscaleImages) {
+            if ($transform->width && !is_numeric($transform->width)) {
+                Craft::warning("Invalid transform width: $transform->width", __METHOD__);
+                $transform->width = null;
+            }
+
+            if ($transform->height && !is_numeric($transform->height)) {
+                Craft::warning("Invalid transform height: $transform->height", __METHOD__);
+                $transform->height = null;
+            }
+
             if ($transform->width === null || $transform->height === null) {
                 $transformRatio = $this->_width / $this->_height;
             } else {
