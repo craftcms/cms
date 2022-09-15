@@ -52,8 +52,8 @@ class Image
 
         // Fill in the blank
         return [
-            (int)($targetWidth ?: ceil($targetHeight * ($sourceWidth / $sourceHeight))),
-            (int)($targetHeight ?: ceil($targetWidth * ($sourceHeight / $sourceWidth))),
+            (int)($targetWidth ?: round($targetHeight * ($sourceWidth / $sourceHeight))),
+            (int)($targetHeight ?: round($targetWidth * ($sourceHeight / $sourceWidth))),
         ];
     }
 
