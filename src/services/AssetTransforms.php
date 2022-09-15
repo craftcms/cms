@@ -848,12 +848,12 @@ class AssetTransforms extends Component
             }
 
             if (!empty($transform['width']) && !is_numeric($transform['width'])) {
-                Craft::warning('Invalid transform width: ' . $transform['width'], __METHOD__);
+                Craft::warning("Invalid transform width: {$transform['width']}", __METHOD__);
                 $transform['width'] = null;
             }
 
             if (!empty($transform['height']) && !is_numeric($transform['height'])) {
-                Craft::warning('Invalid transform height: ' . $transform['height'], __METHOD__);
+                Craft::warning("Invalid transform height: {$transform['height']}", __METHOD__);
                 $transform['height'] = null;
             }
 
@@ -862,12 +862,12 @@ class AssetTransforms extends Component
 
         if (is_object($transform)) {
             if ($transform->width && !is_numeric($transform->width)) {
-                Craft::warning('Invalid transform width: ' . $transform->width, __METHOD__);
+                Craft::warning("Invalid transform width: $transform->width", __METHOD__);
                 $transform->width = null;
             }
 
             if ($transform->height && !is_numeric($transform->height)) {
-                Craft::warning('Invalid transform height: ' . $transform->height, __METHOD__);
+                Craft::warning("Invalid transform height: $transform->height", __METHOD__);
                 $transform->height = null;
             }
 
