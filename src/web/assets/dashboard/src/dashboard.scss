@@ -135,8 +135,18 @@
 }
 
 /* widget lists */
+body ol.widget__list {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
 .widget__list-item {
   padding: 7px 0;
+
+  .craft\\widgets\\mydrafts & {
+    padding: 0;
+  }
 }
 
 /* Recent Entries widget */
