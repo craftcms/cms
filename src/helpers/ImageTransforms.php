@@ -252,17 +252,8 @@ class ImageTransforms
             return $transform;
         }
 
-        if (is_array($transform)) {
-            if (array_key_exists('transform', $transform)) {
-                $baseTransform = self::normalizeTransform(ArrayHelper::remove($transform, 'transform'));
-                return self::extendTransform($baseTransform, $transform);
-            }
-
-            return new ImageTransform($transform);
-        }
-
         if (is_object($transform)) {
-            return new ImageTransform(ArrayHelper::toArray($transform, [
+            $transform = ArrayHelper::toArray($transform, [
                 'id',
                 'name',
                 'transformer',
@@ -275,7 +266,16 @@ class ImageTransforms
                 'position',
                 'quality',
                 'interlace',
-            ]));
+            ]);
+        }
+
+        if (is_array($transform)) {
+            if (array_key_exists('transform', $transform)) {
+                $baseTransform = self::normalizeTransform(ArrayHelper::remove($transform, 'transform'));
+                return self::extendTransform($baseTransform, $transform);
+            }
+
+            return new ImageTransform($transform);
         }
 
         if (is_string($transform)) {
