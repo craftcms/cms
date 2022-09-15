@@ -421,6 +421,13 @@ class ElementQueryConditionBuilder extends Component
                     // Any arguments?
                     $arguments = $this->_extractArguments($subNode->arguments ?? []);
 
+                    // If we have arguments, prepare them.
+                    if (!empty($arguments)) {
+                        /** @var ArgumentManager $argumentManager */
+                        $argumentManager = Craft::createObject(['class' => ArgumentManager::class]);
+                        $arguments = $argumentManager->prepareArguments($arguments);
+                    }
+
                     $transformEagerLoadArguments = [];
 
 
