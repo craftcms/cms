@@ -1,16 +1,14 @@
 <div class="recententries-container">
     {% if entries|length %}
-        <table class="fullwidth">
+        <ul class="widget__list">
             {% for entry in entries %}
-                <tr>
-                    <td>
-                        <a href="{{ entry.getCpEditUrl() }}">{{ entry.title }}</a>
-                        <span class="light">
-                            {{ entry.dateCreated|timestamp('short') }}
-                            {%- if CraftEdition == CraftPro and entry.getAuthor() %}, {{ entry.getAuthor().username }}{% endif -%}
-                        </span>
-                    </td>
-                </tr>
+                <li class="widget__list-item">
+                    <a href="{{ entry.getCpEditUrl() }}">{{ entry.title }}</a>
+                    <span class="light">
+                        {{ entry.dateCreated|timestamp('short') }}
+                        {%- if CraftEdition == CraftPro and entry.getAuthor() %}, {{ entry.getAuthor().username }}{% endif -%}
+                    </span>
+                </li>
             {% endfor %}
         </table>
     {% else %}
