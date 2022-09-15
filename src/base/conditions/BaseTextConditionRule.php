@@ -22,9 +22,9 @@ abstract class BaseTextConditionRule extends BaseConditionRule
     public string $operator = self::OPERATOR_EQ;
 
     /**
-     * @var string The input value.
+     * @var string|array The input value.
      */
-    public string $value = '';
+    public string|array $value = '';
 
     /**
      * @inheritdoc
@@ -91,9 +91,9 @@ abstract class BaseTextConditionRule extends BaseConditionRule
     /**
      * Returns the rule’s value, prepped for [[Db::parseParam()]] based on the selected operator.
      *
-     * @return string|null
+     * @return string|array|null
      */
-    protected function paramValue(): ?string
+    protected function paramValue(): string|array|null
     {
         if ($this->value === '') {
             return null;
