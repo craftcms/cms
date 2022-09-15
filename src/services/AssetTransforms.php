@@ -847,12 +847,12 @@ class AssetTransforms extends Component
                 return $this->extendTransform($baseTransform, $transform);
             }
 
-            if (array_key_exists('width', $transform) && !is_numeric($transform['width'])) {
+            if (!empty($transform['width']) && !is_numeric($transform['width'])) {
                 Craft::warning('Invalid transform width: ' . $transform['width'], __METHOD__);
                 $transform['width'] = null;
             }
 
-            if (array_key_exists('height', $transform) && !is_numeric($transform['height'])) {
+            if (!empty($transform['height']) && !is_numeric($transform['height'])) {
                 Craft::warning('Invalid transform height: ' . $transform['height'], __METHOD__);
                 $transform['height'] = null;
             }
