@@ -2200,14 +2200,16 @@ class Asset extends Element
             $imageRatio = $this->_width / $this->_height;
 
             if ($transform->mode !== 'crop' || $imageRatio === $transformRatio) {
-                return Image::calculateMissingDimension($transform->width, $transform->height, $this->_width, $this->_height);
+                $targetWidth = min($this->_width, $transform->width);
+                $targetHeight = min($this->_height, $transform->height);
+                return Image::calculateMissingDimension($targetWidth, $targetHeight, $this->_width, $this->_height);
             }
 
             // Since we don't want to upscale, make sure the calculated ratios aren't bigger than the actual image size.
-            $newHeight = min($this->_height, round($this->_width / $transformRatio));
-            $newWidth = min($this->_width, round($this->_height * $transformRatio));
+            $targetHeight = min($this->_height, round($this->_width / $transformRatio));
+            $targetWidth = min($this->_width, round($this->_height * $transformRatio));
 
-            return [$newWidth, $newHeight];
+            return Image::calculateMissingDimension($targetWidth, $targetHeight, $this->_width, $this->_height);
         }
 
         [$width, $height] = Image::calculateMissingDimension($transform->width, $transform->height, $this->_width, $this->_height);
