@@ -81,7 +81,7 @@ class Image
         ?int $transformWidth,
         ?int $transformHeight,
         string $mode = 'crop',
-        ?bool $upscale = null
+        ?bool $upscale = null,
     ): array {
         if ($upscale ?? Craft::$app->getConfig()->getGeneral()->upscaleImages) {
             [$width, $height] = static::calculateMissingDimension($transformWidth, $transformHeight, $sourceWidth, $sourceHeight);

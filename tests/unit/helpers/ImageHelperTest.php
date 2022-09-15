@@ -76,7 +76,7 @@ class ImageHelperTest extends TestCase
         ?int $transformWidth,
         ?int $transformHeight,
         string $mode,
-        bool $upscale
+        bool $upscale,
     ): void {
         self::assertSame([$expectedWidth, $expectedHeight], Image::targetDimensions(
             $sourceWidth,
