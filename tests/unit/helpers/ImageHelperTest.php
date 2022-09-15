@@ -64,7 +64,7 @@ class ImageHelperTest extends TestCase
      * @param int|null $transformWidth
      * @param int|null $transformHeight
      * @param string $mode
-     * @param bool|null $upscale
+     * @param bool $upscale
      * @return void
      * @dataProvider targetDimensionsDataProvider
      */
