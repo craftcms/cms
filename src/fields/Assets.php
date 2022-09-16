@@ -883,7 +883,7 @@ class Assets extends BaseRelationField
                 }
 
                 $volume = Craft::$app->getVolumes()->getVolumeById($volumeId);
-                $folderId = $assetsService->ensureFolderByFullPathAndVolume($subpath, $volume)->id;
+                $folderId = $assetsService->ensureFolderByFullPathAndVolume($subpath, $volume, false)->id;
             } else {
                 $folderId = $folder->id;
             }
