@@ -2478,6 +2478,7 @@ JS,
             ],
             [
                 'loginName' => $loginName,
+                'errors' => $errors,
             ]
         );
     }
