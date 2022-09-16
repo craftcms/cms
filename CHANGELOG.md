@@ -17,6 +17,7 @@
 - Fixed a UI bug where renaming a newly-created volume subfolder didn’t appear to have any effect.
 - Fixed a bug where empty URL fields would be marked as changed, even when no change was made to them. ([#11908](https://github.com/craftcms/cms/issues/11908))
 - Fixed a bug where transforming an animated GIF into a WebP file would only include the first frame. ([#11889](https://github.com/craftcms/cms/issues/11889))
+- Fixed a bug where `relatedTo*` arguments within `children` fields threw an exception ([#11918](https://github.com/craftcms/cms/issues/11918))
 
 ### Security
 - Password inputs no longer temporarily reveal the password when the <kbd>Alt</kbd> key is pressed. ([#11930](https://github.com/craftcms/cms/issues/11930))
