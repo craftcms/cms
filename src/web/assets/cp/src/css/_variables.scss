@@ -65,6 +65,8 @@
   --medium-border-radius: 4px;
   --large-border-radius: 5px;
 
+  --field-border-color: #{transparentize($inputColor, 0.1)};
+
   --menu-border-radius: var(--medium-border-radius);
   --checkbox-size: 16px;
   --radio-size: 16px;

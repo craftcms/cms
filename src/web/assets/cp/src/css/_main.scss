@@ -5670,7 +5670,7 @@ div.checkbox:before {
   content: '';
   font-size: 0;
   background-color: hsl(212, 50%, 99%);
-  border: 1px solid transparentize($inputColor, 0.6);
+  border: 1px solid var(--field-border-color);
   background-clip: padding-box;
   border-radius: var(--small-border-radius);
 }
@@ -5798,7 +5798,7 @@ div.radio:before {
   width: var(--radio-size);
   height: var(--radio-size);
   background-color: hsl(212, 50%, 99%);
-  border: 1px solid transparentize($inputColor, 0.6);
+  border: 1px solid var(--field-border-color);
 }
 
 input.radio + label:after,
