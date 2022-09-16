@@ -1699,6 +1699,7 @@ EOD;
                 'value' => $this->_userPostDate(),
                 'errors' => $this->getErrors('postDate'),
                 'disabled' => $static,
+                'fieldset' => true,
             ]);
 
             // Expiry Date
@@ -1709,6 +1710,7 @@ EOD;
                 'value' => $this->expiryDate,
                 'errors' => $this->getErrors('expiryDate'),
                 'disabled' => $static,
+                'fieldset' => true,
             ]);
         }
 

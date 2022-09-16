@@ -5,6 +5,7 @@
 {% set outputTzParam = outputTzParam ?? true %}
 {% set isMobile = craft.app.request.isMobileBrowser %}
 {% set isDateTime = isDateTime ?? false %}
+{% set labelledBy = fieldset ?? null %}
 
 {% set containerAttributes = {
     class: ['datewrapper']|merge((class ?? [])|explodeClass),
