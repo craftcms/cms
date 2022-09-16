@@ -46,7 +46,7 @@
     "htmx.org": "^1.6.1",
     "iframe-resizer": "^4.3.2",
     "inputmask": "^5.0.7",
-    "jquery": "^3.6.0",
+    "jquery": "^3.6.1",
     "jquery-ui": "^1.13.1",
     "jquery.payment": "^3.0.0",
     "picturefill": "^3.0.3",
