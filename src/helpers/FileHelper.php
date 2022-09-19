@@ -482,7 +482,7 @@ class FileHelper extends \yii\helpers\FileHelper
                     } catch (UnexpectedValueException $e) {
                         // Ignore if the folder has already been removed.
                         if (strpos($e->getMessage(), 'No such file or directory') === false) {
-                            Craft::warning("Tried to remove ".$path.", but it doesn't exist.");
+                            Craft::warning("Tried to remove " . $path . ", but it doesn't exist.");
                             throw $e;
                         }
                     }
