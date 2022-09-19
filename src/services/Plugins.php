@@ -929,11 +929,9 @@ class Plugins extends Component
                 $config['edition'] = reset($editions);
             }
 
-            // todo: Add support for passing a settings model directly into Plugin::setSettings()
-            // so we don't have to reinstantiate the object if a BaseConfig object was returned from getConfigFromFile()
             $settings = array_merge(
                 $info['settings'] ?? [],
-                (array)Craft::$app->getConfig()->getConfigFromFile($handle)
+                Craft::$app->getConfig()->getConfigFromFile($handle)
             );
 
             if ($settings !== []) {

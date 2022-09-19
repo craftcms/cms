@@ -7,7 +7,6 @@
 
 ### Changed
 - Edit Asset pages now show the “View” button for all file types, not just images, PDFs, and text files. ([#11936](https://github.com/craftcms/cms/issues/11936))
-- Plugins’ config files can now return the plugins’ settings objects so long as they extend `craft\config\BaseConfig`.
 
 ### Fixed
 - Fixed a bug where image transforms weren’t always getting applied properly to all animation frames. ([#11937](https://github.com/craftcms/cms/pull/11937))
