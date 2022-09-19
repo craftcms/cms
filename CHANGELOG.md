@@ -8,6 +8,9 @@
 ### Changed
 - Edit Asset pages now show the “View” button for all file types, not just images, PDFs, and text files. ([#11936](https://github.com/craftcms/cms/issues/11936))
 
+### Removed
+- Removed the Punycode PHP library. ([#11948](https://github.com/craftcms/cms/issues/11948))
+
 ### Fixed
 - Fixed a bug where image transforms weren’t always getting applied properly to all animation frames. ([#11937](https://github.com/craftcms/cms/pull/11937))
 - Fixed a bug where animated WebP images would lose their animation frames when transformed. ([#11937](https://github.com/craftcms/cms/pull/11937))
@@ -16,6 +19,10 @@
 - Fixed an error that occurred when setting a non-numeric `width` or `height` on an image transform. ([#11837](https://github.com/craftcms/cms/issues/11837))
 - Fixed a bug where the database connection wasn’t being configured properly when fluent config methods and environment variable overrides were being used in combination. ([#11941](https://github.com/craftcms/cms/issues/11941))
 - Fixed a bug where dynamic subfolders would be reported as missing when updating asset indexes ([#11949](https://github.com/craftcms/cms/issues/11949))
+- Fixed a bug where slideouts lost their shadows when focused.
+- Fixed a bug where `relatedTo*` arguments weren’t supported by `children` fields in GraphQL. ([#11918](https://github.com/craftcms/cms/issues/11918))
+- Fixed a bug where the Image Editor action buttons were obstructed when the Debug Toolbar was enabled. ([#11965](https://github.com/craftcms/cms/issues/11965))
+- Fixed an error that occurred when installing Craft when MySQL’s `sql_require_primary_key` setting was enabled. ([#11374](https://github.com/craftcms/cms/discussions/11374))
 
 ## 4.2.4 - 2022-09-13
 
@@ -329,7 +336,7 @@
 - Improved Matrix field accessibility. ([#11306](https://github.com/craftcms/cms/pull/11306))
 - Improved mobile support. ([#11323](https://github.com/craftcms/cms/pull/11323), [#11430](https://github.com/craftcms/cms/pull/11430))
 - Improved keyboard support for custom selects. ([#11414](https://github.com/craftcms/cms/pull/11414))
-- It’s now possible to remove all selected elements from relational fields by pressing <kbd>Backspace</kbd> or <kbd>Delete</kbd> while one of them is focussed.
+- It’s now possible to remove all selected elements from relational fields by pressing <kbd>Backspace</kbd> or <kbd>Delete</kbd> while one of them is focused.
 - Improved the UI of condition builders. ([#11386](https://github.com/craftcms/cms/pull/11386))
 - Entry Type condition rules now allow multiple selections. ([#11124](https://github.com/craftcms/cms/pull/11124))
 - Element index filters now only show condition rules for the custom fields that are used by the field layouts in the selected source, if a native source is selected. ([#11187](https://github.com/craftcms/cms/discussions/11187))

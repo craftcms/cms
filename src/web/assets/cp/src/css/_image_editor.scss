@@ -225,6 +225,10 @@ html.noscroll body {
   left: 0;
   width: 100%;
   border-top: 1px solid #000;
+
+  body.has-debug-toolbar & {
+    padding-bottom: calc(8px + 42px);
+  }
 }
 
 .modal.imageeditor .body .views .crop {
