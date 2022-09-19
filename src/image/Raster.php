@@ -47,7 +47,7 @@ class Raster extends Image
     /**
      * @var bool
      */
-    private $_isAnimatedGif = false;
+    private $_isAnimated = false;
 
     /**
      * @var int
@@ -185,9 +185,9 @@ class Raster extends Image
         $this->_imageSourcePath = $path;
         $this->_extension = pathinfo($path, PATHINFO_EXTENSION);
 
-        if ($this->_extension === 'gif') {
+        if (in_array($this->_extension, ['gif', 'webp'])) {
             if (!$imageService->getIsGd() && $this->_image->layers()) {
-                $this->_isAnimatedGif = true;
+                $this->_isAnimated = true;
             }
         }
 
@@ -202,7 +202,7 @@ class Raster extends Image
         $width = $x2 - $x1;
         $height = $y2 - $y1;
 
-        if ($this->_isAnimatedGif) {
+        if ($this->_isAnimated) {
             // Create a new image instance to avoid object references messing up our dimensions.
             $newSize = new Box($width, $height);
             $startingPoint = new Point($x1, $y1);
@@ -358,12 +358,13 @@ class Raster extends Image
     {
         $this->normalizeDimensions($targetWidth, $targetHeight);
 
-        if ($this->_isAnimatedGif) {
+        if ($this->_isAnimated) {
             // Create a new image instance to avoid object references messing up our dimensions.
             $newSize = new Box($targetWidth, $targetHeight);
             $gif = $this->_instance->create($newSize);
             $gif->layers()->remove(0);
 
+            $this->_image->layers()->coalesce();
             foreach ($this->_image->layers() as $layer) {
                 $resizedLayer = $layer->resize($newSize, $this->_getResizeFilter());
                 $gif->layers()->add($resizedLayer);
@@ -613,7 +614,7 @@ class Raster extends Image
      */
     public function disableAnimation()
     {
-        $this->_isAnimatedGif = false;
+        $this->_isAnimated = false;
 
         if ($this->_image->layers()->count() > 1) {
             // Fetching the first layer returns the built-in Imagick object
@@ -705,7 +706,7 @@ class Raster extends Image
 
             case 'gif':
             case 'webp':
-                return ['animated' => $this->_isAnimatedGif];
+                return ['animated' => $this->_isAnimated];
 
             case 'png':
                 // Valid PNG quality settings are 0-9, so normalize and flip, because we're talking about compression

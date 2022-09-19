@@ -847,10 +847,30 @@ class AssetTransforms extends Component
                 return $this->extendTransform($baseTransform, $transform);
             }
 
+            if (!empty($transform['width']) && !is_numeric($transform['width'])) {
+                Craft::warning("Invalid transform width: {$transform['width']}", __METHOD__);
+                $transform['width'] = null;
+            }
+
+            if (!empty($transform['height']) && !is_numeric($transform['height'])) {
+                Craft::warning("Invalid transform height: {$transform['height']}", __METHOD__);
+                $transform['height'] = null;
+            }
+
             return new AssetTransform($transform);
         }
 
         if (is_object($transform)) {
+            if ($transform->width && !is_numeric($transform->width)) {
+                Craft::warning("Invalid transform width: $transform->width", __METHOD__);
+                $transform->width = null;
+            }
+
+            if ($transform->height && !is_numeric($transform->height)) {
+                Craft::warning("Invalid transform height: $transform->height", __METHOD__);
+                $transform->height = null;
+            }
+
             return new AssetTransform(ArrayHelper::toArray($transform, [
                 'id',
                 'name',

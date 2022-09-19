@@ -1,5 +1,19 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Added
+- Added `craft\helpers\Image::targetDimensions()`.
+
+### Removed
+- Removed the Punycode PHP library. ([#11948](https://github.com/craftcms/cms/issues/11948))
+
+### Fixed
+- Fixed a bug where image transforms weren’t always getting applied properly to all animation frames. ([#11937](https://github.com/craftcms/cms/pull/11937))
+- Fixed a bug where animated WebP images would lose their animation frames when transformed. ([#11937](https://github.com/craftcms/cms/pull/11937))
+- Fixed a bug where image transform dimensions could be calculated incorrectly when `upscaleImages` was `false`. ([#11837](https://github.com/craftcms/cms/issues/11837))
+- Fixed an error that occurred when setting a non-numeric `width` or `height` on an image transform. ([#11837](https://github.com/craftcms/cms/issues/11837))
+
 ## 3.7.54 - 2022-09-13
 
 ### Changed
@@ -9,7 +23,6 @@
 - `craft\services\Elements::resaveElements()` now has a `$touch` argument.
 
 ### Fixed
-- Fixed a bug where image transform dimensions could be calculated incorrectly when `upscaleImages` was `false`. ([#11837](https://github.com/craftcms/cms/issues/11837))
 - Fixed a bug where element caches weren’t being invalidated during garbage collection, so hard-deleted elements could appear to still exist.
 - Fixed an error that could occur when rendering front-end templates if there was a problem connecting to the database. ([#11855](https://github.com/craftcms/cms/issues/11855))
 - Fixed a bug where it was possible to save an asset with a focal point outside its cropped area. ([#11875](https://github.com/craftcms/cms/issues/11875))
