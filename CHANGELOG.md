@@ -14,7 +14,7 @@
 - Fixed a bug where image transform dimensions could be calculated incorrectly when `upscaleImages` was `false`. ([#11837](https://github.com/craftcms/cms/issues/11837))
 - Fixed an error that occurred when setting a non-numeric `width` or `height` on an image transform. ([#11837](https://github.com/craftcms/cms/issues/11837))
 - Fixed a bug where `relatedTo*` arguments weren’t supported by `children` fields in GraphQL. ([#11918](https://github.com/craftcms/cms/issues/11918))
-- Fixed a bug where the Image Editor action buttons were obstructed when the Debug Toolbar was enabled. ([#11965](https://github.com/craftcms/cms/issues/11965))
+- Fixed a bug where Image Editor and slideout action buttons were obstructed when the Debug Toolbar was enabled. ([#11965](https://github.com/craftcms/cms/issues/11965))
 - Fixed an error that occurred when installing Craft when MySQL’s `sql_require_primary_key` setting was enabled. ([#11374](https://github.com/craftcms/cms/discussions/11374))
 - Fixed a bug where invalid entries could be duplicated via the “Save as a new entry” action, despite the duplication appearing to have failed with validation errors. ([#11959](https://github.com/craftcms/cms/issues/11959))
 - Fixed a PHP error that could occur in a potential race condition when calling  `craft\helpers\FileHelper::clearDirectory()`.

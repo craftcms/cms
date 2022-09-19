@@ -3752,6 +3752,10 @@ ul.tree,
   height: 100vh;
   height: -webkit-fill-available; // h/t https://twitter.com/AllThingsSmitty/status/1254151507412496384
   pointer-events: none;
+
+  body.has-debug-toolbar & {
+    height: calc(100vh - 42px);
+  }
 }
 
 .slideout {
