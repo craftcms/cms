@@ -953,7 +953,6 @@ return [
     'No GraphQL tokens exist yet.' => '아직 GraphQL 토큰이 없습니다.',
     'No blocks.' => '블록 없음.',
     'No category groups exist yet.' => '카테고리 그룹이 아직 없습니다.',
-    'No content migrations.' => '콘텐츠 마이그레이션이 없습니다.',
     'No deprecation warnings to report!' => '보고할 사용 중단 경고 없음!',
     'No entries exist yet.' => '아직 항목이 없습니다.',
     'No entry types exist for this section.' => '이 섹션에 대한 항목 타입이 존재하지 않습니다.',

@@ -953,7 +953,6 @@ return [
     'No GraphQL tokens exist yet.' => 'No GraphQL tokens exist yet.',
     'No blocks.' => 'No blocks.',
     'No category groups exist yet.' => 'No category groups exist yet.',
-    'No content migrations.' => 'No content migrations.',
     'No deprecation warnings to report!' => 'ไม่มีคำเตือนการหลีกเลี่ยงใช้งานที่จะรายงาน!',
     'No entries exist yet.' => 'No entries exist yet.',
     'No entry types exist for this section.' => 'No entry types exist for this section.',

@@ -4143,7 +4143,7 @@ ul.tree,
   position: absolute;
   background-color: var(--white);
   box-shadow: 0 0 0 1px transparentize($grey400, 0.75),
-    0 25px 100px transparentize($grey900, 0.5);
+    0 25px 100px transparentize($grey900, 0.5) !important;
   display: flex;
   flex-direction: column;
   overflow: hidden;

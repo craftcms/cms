@@ -2644,6 +2644,9 @@ const FilterHud = Garnish.HUD.extend({
 
     if (this.cleared) {
       this.destroy();
+    } else {
+      this.$hud.detach();
+      this.$shade.detach();
     }
 
     this.elementIndex.updateFilterBtn();

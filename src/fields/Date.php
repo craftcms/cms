@@ -241,7 +241,7 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
         $timezone = $this->showTimeZone && $value ? $value->getTimezone()->getName() : Craft::$app->getTimeZone();
 
         if ($value === null) {
-            // Override the initial value being set to null by _includes/forms/field
+            // Override the initial value being set to null by CustomField::inputHtml()
             $initialValue = [];
             if ($this->showDate) {
                 $initialValue['date'] = '';

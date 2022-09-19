@@ -953,7 +953,6 @@ return [
     'No GraphQL tokens exist yet.' => 'GraphQLトークンがまだありません。',
     'No blocks.' => 'ブロックなし。',
     'No category groups exist yet.' => 'カテゴリグループがまだありません。',
-    'No content migrations.' => 'コンテンツマイグレーションはありません。',
     'No deprecation warnings to report!' => '報告する非推奨警告はありません！',
     'No entries exist yet.' => 'エントリがまだありません。',
     'No entry types exist for this section.' => 'このセクションには新規エントリタイプが存在しません。',

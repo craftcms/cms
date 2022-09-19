@@ -1074,8 +1074,8 @@ class Asset extends Element
 
         $html = Html::beginTag('div', ['class' => 'btngroup']);
 
-        if (in_array($this->kind, [Asset::KIND_IMAGE, Asset::KIND_PDF, Asset::KIND_TEXT])) {
-            $html .= Html::a(Craft::t('app', 'View'), $this->getUrl(), [
+        if (($url = $this->getUrl()) !== null) {
+            $html .= Html::a(Craft::t('app', 'View'), $url, [
                 'class' => 'btn',
                 'target' => '_blank',
                 'data' => [
@@ -1957,6 +1957,15 @@ JS;
             ];
         }
 
+        if ($value !== null && (
+            $value['x'] < 0 ||
+            $value['x'] > 1 ||
+            $value['y'] < 0 ||
+            $value['y'] > 1
+        )) {
+            $value = null;
+        }
+
         $this->_focalPoint = $value;
     }
 
@@ -2554,36 +2563,13 @@ JS;
 
         $transform = ImageTransforms::normalizeTransform($transform);
 
-        if (
-            ($transform->width === null || $this->_width < $transform->width) &&
-            ($transform->height === null || $this->_height < $transform->height) &&
-            !Craft::$app->getConfig()->getGeneral()->upscaleImages
-        ) {
-            if ($transform->width === null || $transform->height === null) {
-                $transformRatio = $this->_width / $this->_height;
-            } else {
-                $transformRatio = $transform->width / $transform->height;
-            }
-
-            $imageRatio = $this->_width / $this->_height;
-
-            if ($transform->mode !== 'crop' || $imageRatio === $transformRatio) {
-                return [$this->_width, $this->_height];
-            }
-
-            return $transformRatio > 1 ? [$this->_width, round($this->_width / $transformRatio)] : [round($this->_width * $transformRatio), $this->_height];
-        }
-
-        [$width, $height] = Image::calculateMissingDimension($transform->width, $transform->height, $this->_width, $this->_height);
-
-        // Special case for 'fit' since that's the only one whose dimensions vary from the transform dimensions
-        if ($transform->mode === 'fit') {
-            $factor = max($this->_width / $width, $this->_height / $height);
-            $width = (int)round($this->_width / $factor);
-            $height = (int)round($this->_height / $factor);
-        }
-
-        return [$width, $height];
+        return Image::targetDimensions(
+            $this->_width,
+            $this->_height,
+            $transform->width,
+            $transform->height,
+            $transform->mode
+        );
     }
 
     /**

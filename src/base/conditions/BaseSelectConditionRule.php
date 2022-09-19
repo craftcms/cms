@@ -43,7 +43,7 @@ abstract class BaseSelectConditionRule extends BaseConditionRule
         $selectId = 'select';
 
         return
-            Html::hiddenLabel($this->getLabel(), $selectId) .
+            Html::hiddenLabel(Html::encode($this->getLabel()), $selectId) .
             Cp::selectHtml([
                 'id' => $selectId,
                 'name' => 'value',

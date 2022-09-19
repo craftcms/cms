@@ -727,7 +727,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
     options.events = {
       fileuploadstart: this._onUploadStart.bind(this),
       fileuploadprogressall: this._onUploadProgress.bind(this),
-      fileuploaddone: this._onUploadComplete.bind(this),
+      fileuploaddone: this._onUploadSuccess.bind(this),
+      fileuploadalways: this._onUploadAlways.bind(this),
       fileuploadfail: this._onUploadFailure.bind(this),
     };
 
@@ -951,9 +952,13 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
   },
 
   /**
-   * On Upload Complete.
+   * On upload success.
+   *
+   * @param event
+   * @param data
+   * @private
    */
-  _onUploadComplete: function (event, data) {
+  _onUploadSuccess: function (event, data) {
     const {result} = data;
 
     // Add the uploaded file to the selected ones, if appropriate
@@ -970,8 +975,12 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
     }
 
     Craft.cp.runQueue();
+  },
 
-    // For the last file, display prompts, if any. If not - just update the element view.
+  /**
+   * On upload complete no matter what (success, fail, or abort).
+   */
+  _onUploadAlways: function () {
     if (this.uploader.isLastUpload()) {
       this.progressBar.hideProgressBar();
       this.setIndexAvailable();
@@ -998,8 +1007,6 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
     }
 
     alert(message);
-    this.progressBar.hideProgressBar();
-    this.setIndexAvailable();
   },
 
   /**
@@ -1397,17 +1404,13 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
           this._prepareParentForChildren($parentFolder);
           var $subfolder = $(
             '<li>' +
-              '<a data-key="' +
-              $parentFolder.data('key') +
-              '/folder:' +
-              data.folderUid +
-              '"' +
+              `<a data-key="${$parentFolder.data('key')}/folder:${
+                data.folderUid
+              }" data-default-sort="${$parentFolder.data('default-sort')}"` +
               (Garnish.hasAttr($parentFolder, 'data-has-thumbs')
                 ? ' data-has-thumbs'
                 : '') +
-              ' data-folder-id="' +
-              data.folderId +
-              '"' +
+              ` data-folder-id="${data.folderId}"` +
               (Garnish.hasAttr($parentFolder, 'data-can-upload')
                 ? ' data-can-upload'
                 : '') +
@@ -1418,7 +1421,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
                 ? ' data-can-move-peer-files-to'
                 : '') +
               '>' +
-              data.folderName +
+              `<span class="label">${data.folderName}</span>` +
               '</a>' +
               '</li>'
           );
@@ -1516,7 +1519,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
       $parentFolder
         .parent()
         .addClass('expanded')
-        .append('<div class="toggle"></div><ul></ul>');
+        .append('<div class="toggle"></div><ul class="nested"></ul>');
       this.initSourceToggle($parentFolder);
     }
   },
