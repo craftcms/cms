@@ -23,6 +23,7 @@ use craft\helpers\UrlHelper;
 use craft\models\Section;
 use craft\models\Site;
 use craft\web\assets\editentry\EditEntryAsset;
+use Throwable;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\web\BadRequestHttpException;
@@ -334,80 +335,93 @@ class EntriesController extends BaseEntriesController
         // Keep track of whether the entry was disabled as a result of duplication
         $forceDisabled = false;
 
-        // If we're duplicating the entry, swap $entry with the duplicate
-        if ($duplicate) {
-            try {
-                $wasEnabled = $entry->enabled;
-                $entry->draftId = null;
-                $entry->isProvisionalDraft = false;
-                $entry = Craft::$app->getElements()->duplicateElement($entry);
-                if ($wasEnabled && !$entry->enabled) {
-                    $forceDisabled = true;
-                }
-            } catch (InvalidElementException $e) {
-                /** @var Entry $clone */
-                $clone = $e->element;
+        $transation = Craft::$app->getDb()->beginTransaction();
+        try {
+            // If we're duplicating the entry, swap $entry with the duplicate
+            if ($duplicate) {
+                try {
+                    $originalEntry = $entry;
+                    $wasEnabled = $entry->enabled;
+                    $entry->draftId = null;
+                    $entry->isProvisionalDraft = false;
+                    $entry = Craft::$app->getElements()->duplicateElement($entry);
+                    if ($wasEnabled && !$entry->enabled) {
+                        $forceDisabled = true;
+                    }
+                } catch (InvalidElementException $e) {
+                    /** @var Entry $clone */
+                    $clone = $e->element;
 
-                if ($this->request->getAcceptsJson()) {
-                    return $this->asJson([
-                        'success' => false,
-                        'errors' => $clone->getErrors(),
+                    if ($this->request->getAcceptsJson()) {
+                        return $this->asJson([
+                            'success' => false,
+                            'errors' => $clone->getErrors(),
+                        ]);
+                    }
+
+                    $this->setFailFlash(Craft::t('app', 'Couldn’t duplicate entry.'));
+
+                    // Send the original entry back to the template, with any validation errors on the clone
+                    $entry->addErrors($clone->getErrors());
+                    Craft::$app->getUrlManager()->setRouteParams([
+                        'entry' => $entry,
                     ]);
+
+                    return null;
+                } catch (\Throwable $e) {
+                    throw new ServerErrorHttpException(Craft::t('app', 'An error occurred when duplicating the entry.'), 0, $e);
                 }
-
-                $this->setFailFlash(Craft::t('app', 'Couldn’t duplicate entry.'));
-
-                // Send the original entry back to the template, with any validation errors on the clone
-                $entry->addErrors($clone->getErrors());
-                Craft::$app->getUrlManager()->setRouteParams([
-                    'entry' => $entry,
-                ]);
-
-                return null;
-            } catch (\Throwable $e) {
-                throw new ServerErrorHttpException(Craft::t('app', 'An error occurred when duplicating the entry.'), 0, $e);
             }
-        }
 
-        // Populate the entry with post data
-        $this->_populateEntryModel($entry);
+            // Populate the entry with post data
+            $this->_populateEntryModel($entry);
 
-        if ($forceDisabled) {
-            $entry->enabled = false;
-        }
-
-        // Even more permission enforcement
-        if ($entry->enabled) {
-            if ($entry->id) {
-                $this->requirePermission('publishEntries:' . $entry->getSection()->uid);
-            } elseif (!$currentUser->can('publishEntries:' . $entry->getSection()->uid)) {
+            if ($forceDisabled) {
                 $entry->enabled = false;
             }
-        }
 
-        // Save the entry (finally!)
-        if ($entry->enabled && $entry->getEnabledForSite()) {
-            $entry->setScenario(Element::SCENARIO_LIVE);
-        }
-
-        $isNotNew = (bool)$entry->id;
-        if ($isNotNew) {
-            $lockKey = "entry:$entry->id";
-            $mutex = Craft::$app->getMutex();
-            if (!$mutex->acquire($lockKey, 15)) {
-                throw new Exception('Could not acquire a lock to save the entry.');
+            // Even more permission enforcement
+            if ($entry->enabled) {
+                if ($entry->id) {
+                    $this->requirePermission('publishEntries:' . $entry->getSection()->uid);
+                } elseif (!$currentUser->can('publishEntries:' . $entry->getSection()->uid)) {
+                    $entry->enabled = false;
+                }
             }
-        }
 
-        try {
-            $success = Craft::$app->getElements()->saveElement($entry);
-        } catch (UnsupportedSiteException $e) {
-            $entry->addError('siteId', $e->getMessage());
-            $success = false;
-        } finally {
+            // Save the entry (finally!)
+            if ($entry->enabled && $entry->getEnabledForSite()) {
+                $entry->setScenario(Element::SCENARIO_LIVE);
+            }
+
+            $isNotNew = (bool)$entry->id;
             if ($isNotNew) {
-                $mutex->release($lockKey);
+                $lockKey = "entry:$entry->id";
+                $mutex = Craft::$app->getMutex();
+                if (!$mutex->acquire($lockKey, 15)) {
+                    throw new Exception('Could not acquire a lock to save the entry.');
+                }
             }
+
+            try {
+                $success = Craft::$app->getElements()->saveElement($entry);
+            } catch (UnsupportedSiteException $e) {
+                $entry->addError('siteId', $e->getMessage());
+                $success = false;
+            } finally {
+                if ($isNotNew) {
+                    $mutex->release($lockKey);
+                }
+            }
+
+            if ($success) {
+                $transation->commit();
+            } else {
+                $transation->rollBack();
+            }
+        } catch (Throwable $e) {
+            $transation->rollBack();
+            throw $e;
         }
 
         if (!$success) {
@@ -416,6 +430,13 @@ class EntriesController extends BaseEntriesController
                     'errors' => $entry->getErrors(),
                 ]);
             }
+
+            // If the entry was duplicated, swap it back to the original entry, populated with the errors
+            if ($duplicate) {
+                $originalEntry->addErrors($entry->getErrors());
+                $entry = $originalEntry;
+            }
+
 
             $this->setFailFlash(Craft::t('app', 'Couldn’t save entry.'));
 
