@@ -237,6 +237,7 @@ export default Base.extend(
         'scroll',
         'setPositionRelativeToAnchor'
       );
+      this.addListener(Garnish.$win, 'resize', 'setPositionRelativeToAnchor');
 
       this.visible = true;
       this.trigger('show');

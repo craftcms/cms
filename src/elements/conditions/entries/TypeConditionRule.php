@@ -94,6 +94,6 @@ class TypeConditionRule extends BaseMultiSelectConditionRule implements ElementC
     public function matchElement(ElementInterface $element): bool
     {
         /** @var Entry $element */
-        return $this->matchValue((string)$element->getType()->id);
+        return $this->matchValue((string)$element->getType()->uid);
     }
 }
