@@ -1253,6 +1253,10 @@ class Elements extends Component
             }
 
             // Should we add the clone to the source element's structure?
+            if (!$element->structureId && $element->getIsDerivative()) {
+                $canonical = $element->getCanonical(true);
+                $element->structureId = $canonical->structureId ?? null;
+            }
             if (
                 $placeInStructure &&
                 $element->structureId &&
