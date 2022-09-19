@@ -48,7 +48,6 @@
     "pixelandtonic/imagine": "~1.2.4.1",
     "seld/cli-prompt": "^1.0.4",
     "symfony/yaml": "^5.2.1",
-    "true/punycode": "^2.1.1",
     "twig/twig": "~2.14.3",
     "voku/stringy": "^6.4.0",
     "webonyx/graphql-php": "~14.11.5",
