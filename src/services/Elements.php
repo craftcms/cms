@@ -1253,20 +1253,17 @@ class Elements extends Component
             }
 
             // Should we add the clone to the source element's structure?
-            if (!$element->structureId && $element->getIsDerivative()) {
-                $canonical = $element->getCanonical(true);
-                $element->structureId = $canonical->structureId ?? null;
-            }
             if (
                 $placeInStructure &&
-                $element->structureId &&
-                $element->root &&
                 $mainClone->getIsCanonical() &&
                 !$mainClone->root &&
-                $mainClone->structureId == $element->structureId
+                (!$mainClone->structureId || !$element->structureId || $mainClone->structureId == $element->structureId)
             ) {
-                $mode = isset($newAttributes['id']) ? Structures::MODE_AUTO : Structures::MODE_INSERT;
-                Craft::$app->getStructures()->moveAfter($element->structureId, $mainClone, $element, $mode);
+                $canonical = $element->getCanonical(true);
+                if ($canonical->structureId && $canonical->root) {
+                    $mode = isset($newAttributes['id']) ? Structures::MODE_AUTO : Structures::MODE_INSERT;
+                    Craft::$app->getStructures()->moveAfter($canonical->structureId, $mainClone, $canonical, $mode);
+                }
             }
 
             // Map it
