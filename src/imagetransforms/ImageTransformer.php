@@ -690,7 +690,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
     {
         return $this->_createTransformIndexQuery()
             ->select(['id'])
-            ->where(['fileExists' => false, 'inProgress' => false])
+            ->where(['fileExists' => false, 'inProgress' => false, 'error' => false])
             ->column();
     }
 
