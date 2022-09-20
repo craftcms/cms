@@ -19,6 +19,7 @@
 - Fixed a bug where invalid entries could be duplicated via the “Save as a new entry” action, despite the duplication appearing to have failed with validation errors. ([#11959](https://github.com/craftcms/cms/issues/11959))
 - Fixed a PHP error that could occur in a potential race condition when calling  `craft\helpers\FileHelper::clearDirectory()`.
 - Fixed a bug where Structure section entries that were duplicated via the “Save as a new entry” action on a provisional draft weren’t being placed within the structure properly.
+- Fixed a bug where element’s `searchScore` properties would be set to `null` when their original score was below 1, rather than rounding to 0 or 1. ([#11973](https://github.com/craftcms/cms/issues/11973))
 
 ## 3.7.54 - 2022-09-13
 

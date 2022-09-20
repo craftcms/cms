@@ -1834,7 +1834,7 @@ abstract class Element extends Component implements ElementInterface
         $this->lft = (int)$this->lft ?: null;
         $this->rgt = (int)$this->rgt ?: null;
         $this->level = (int)$this->level ?: null;
-        $this->searchScore = (int)$this->searchScore ?: null;
+        $this->searchScore = $this->searchScore ? ((int)round($this->searchScore)) : null;
         $this->trashed = (bool)$this->trashed;
 
         parent::init();
