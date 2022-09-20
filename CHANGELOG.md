@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.7.55 - 2022-09-20
 
 ### Added
 - Added `craft\helpers\Image::targetDimensions()`.
