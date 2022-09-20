@@ -65,7 +65,7 @@ class LoginFormAuthenticator extends BaseAuthenticator implements AuthenticatorI
         return $result;
     }
 
-    public static function getLoginHtml(): string
+    public function getLoginHtml(): string
     {
         return Craft::$app->getView()->renderTemplate('_components/authenticators/loginForm.twig');
     }

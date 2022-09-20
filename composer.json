@@ -45,6 +45,7 @@
     "guzzlehttp/guzzle": "^7.2.0",
     "illuminate/collections": "^9.1.0",
     "league/oauth2-client": "^2.6.0",
+    "league/oauth2-google": "^4.0",
     "mikehaertl/php-shellcommand": "^1.6.3",
     "moneyphp/money": "^4.0",
     "monolog/monolog": "^2.3",

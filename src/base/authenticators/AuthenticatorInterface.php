@@ -7,6 +7,8 @@
 
 namespace craft\base\authenticators;
 
+use yii\web\Response;
+
 /**
  * AuthenticatorInterface defines the common interface to be implemented by authenticator classes.
  *
@@ -30,7 +32,12 @@ interface AuthenticatorInterface
      * Get the HTML string that should be rendered on the login page
      * for this authenticator.
      *
-     * @return string
+     * @return string|null
      */
-    public static function getLoginHtml(): string;
+    public function getLoginHtml(): ?string;
+
+    /**
+     * @return Response|null
+     */
+    public function handleAuthenticationRequest(): ?Response;
 }

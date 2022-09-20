@@ -8,6 +8,9 @@
 namespace craft\base\authenticators;
 
 use craft\base\Component;
+use craft\helpers\Html;
+use craft\helpers\UrlHelper;
+use yii\web\Response;
 
 /**
  * Base authenticator class to be extended for authenticators
@@ -26,4 +29,16 @@ abstract class BaseAuthenticator extends Component implements AuthenticatorInter
      * @var string|null Label
      */
     public ?string $label = null;
+
+    public function getLoginHtml(): ?string
+    {
+        return Html::a($this->label, UrlHelper::cpUrl('login/' . $this->handle), [
+            'class' => 'btn'
+        ]);
+    }
+
+    public function handleAuthenticationRequest(): ?Response
+    {
+        return null;
+    }
 }

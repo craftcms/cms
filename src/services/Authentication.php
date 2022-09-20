@@ -7,6 +7,7 @@
 
 namespace craft\services;
 
+use craft\authenticators\GoogleAuthenticator;
 use craft\authenticators\LoginFormAuthenticator;
 use craft\base\authenticators\AuthenticatorInterface;
 use craft\base\Component;
@@ -46,6 +47,7 @@ class Authentication extends Component
     {
         $authenticatorTypes = [
             LoginFormAuthenticator::class,
+            GoogleAuthenticator::class
         ];
 
         $event = new RegisterComponentTypesEvent([

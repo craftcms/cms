@@ -17,6 +17,7 @@ return [
     'entries/<section:{handle}>/<elementId:\d+><slug:(?:-[^\/]*)?>' => 'elements/edit',
     'globals' => 'globals',
     'globals/<globalSetHandle:{handle}>' => 'globals/edit-content',
+    'login/<authenticatorHandle:{handle}>' => 'authentication/authenticate',
     'myaccount' => [
         'route' => 'users/edit-user',
         'defaults' => ['userId' => 'current'],
