@@ -17,6 +17,7 @@ export default Base.extend(
     $mainContainer: null,
     $main: null,
     $shade: null,
+    $nextFocusableElement: null,
 
     showing: false,
     orientation: null,
@@ -109,6 +110,21 @@ export default Base.extend(
           'updateSizeAndPosition'
         );
       }
+
+      // When the menu is expanded, tabbing on the trigger should move focus into it
+      this.addListener(this.$trigger, 'keydown', (ev) => {
+        if (
+          ev.keyCode === Garnish.TAB_KEY &&
+          !ev.shiftKey &&
+          this.showing
+        ) {
+          const $focusableElement = this.$hud.find(':focusable:first');
+          if ($focusableElement.length) {
+            ev.preventDefault();
+            $focusableElement.focus();
+          }
+        }
+      });
     },
 
     /**
