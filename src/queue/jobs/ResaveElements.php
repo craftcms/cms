@@ -12,7 +12,7 @@ use craft\base\ElementInterface;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\events\BatchElementActionEvent;
-use craft\fieldlayoutelements\CustomField;
+use craft\helpers\ElementHelper;
 use craft\helpers\StringHelper;
 use craft\queue\BaseJob;
 use craft\services\Elements;
@@ -90,7 +90,7 @@ class ResaveElements extends BaseJob
 
                 $element = $e->element;
 
-                if ($this->set && (!$this->ifEmpty || $this->_isSetAttributeEmpty($element))) {
+                if ($this->set && (!$this->ifEmpty || ElementHelper::isAttributeEmpty($element, $this->set))) {
                     $element->{$this->set} = $to($element);
                 }
             }
@@ -130,28 +130,6 @@ class ResaveElements extends BaseJob
         }
 
         return $query;
-    }
-
-    /**
-     * Returns whether the [[set]] attribute on the given element is empty.
-     *
-     * @param ElementInterface $element
-     * @return bool
-     */
-    private function _isSetAttributeEmpty(ElementInterface $element): bool
-    {
-        // See if we're setting a custom field
-        if ($fieldLayout = $element->getFieldLayout()) {
-            foreach ($fieldLayout->getTabs() as $tab) {
-                foreach ($tab->elements as $layoutElement) {
-                    if ($layoutElement instanceof CustomField && $layoutElement->attribute() === $this->set) {
-                        return $layoutElement->getField()->isValueEmpty($element->getFieldValue($this->set), $element);
-                    }
-                }
-            }
-        }
-
-        return empty($element->{$this->set});
     }
 
     /**

@@ -19,7 +19,7 @@ use craft\elements\MatrixBlock;
 use craft\elements\Tag;
 use craft\elements\User;
 use craft\events\BatchElementActionEvent;
-use craft\fieldlayoutelements\CustomField;
+use craft\helpers\ElementHelper;
 use craft\helpers\Queue;
 use craft\helpers\StringHelper;
 use craft\queue\jobs\ResaveElements;
@@ -435,7 +435,7 @@ class ResaveController extends Controller
                 $element = $e->element;
                 $this->stdout("    - [{$e->position}/{$count}] Resaving {$element} ({$element->id}) ... ");
 
-                if ($this->set && (!$this->ifEmpty || $this->_isSetAttributeEmpty($element))) {
+                if ($this->set && (!$this->ifEmpty ||  ElementHelper::isAttributeEmpty($element, $this->set))) {
                     $element->{$this->set} = $to($element);
                 }
             }
@@ -505,27 +505,5 @@ class ResaveController extends Controller
         return function(ElementInterface $element) {
             return $element->{$this->to};
         };
-    }
-
-    /**
-     * Returns whether the [[set]] attribute on the given element is empty.
-     *
-     * @param ElementInterface $element
-     * @return bool
-     */
-    private function _isSetAttributeEmpty(ElementInterface $element): bool
-    {
-        // See if we're setting a custom field
-        if ($fieldLayout = $element->getFieldLayout()) {
-            foreach ($fieldLayout->getTabs() as $tab) {
-                foreach ($tab->elements as $layoutElement) {
-                    if ($layoutElement instanceof CustomField && $layoutElement->attribute() === $this->set) {
-                        return $layoutElement->getField()->isValueEmpty($element->getFieldValue($this->set), $element);
-                    }
-                }
-            }
-        }
-
-        return empty($element->{$this->set});
     }
 }
