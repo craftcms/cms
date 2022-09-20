@@ -410,6 +410,31 @@ Garnish = $.extend(Garnish, {
     return $(container).find(':focusable').first();
   },
 
+  getKeyboardFocusable: function (container) {
+    const $focusable = $(container).find(':focusable');
+    const $keyboardFocusable = $focusable.filter((index, element) => {
+      return Garnish.isKeyboardFocusable(element);
+    });
+
+    return $keyboardFocusable;
+  },
+
+  /**
+   * Returns whether the element is focusable by keyboard
+   * @param {Object} element
+   */
+  isKeyboardFocusable: function (element) {
+    let keyboardFocusable;
+
+    if (!$(element).is(':focusable') || $(element).attr('tabindex') === '-1') {
+      keyboardFocusable = false;
+    } else {
+      keyboardFocusable = true;
+    }
+
+    return keyboardFocusable;
+  },
+
   /**
    * Traps focus within a container, so when focus is tabbed out of it, it’s cycled back into it.
    * @param {Object} container
