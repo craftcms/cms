@@ -18,7 +18,6 @@
 - Added the `|string` Twig filter. ([#11792](https://github.com/craftcms/cms/pull/11792))
 - Added support for the `CRAFT_DOTENV_PATH` PHP constant. ([#11894](https://github.com/craftcms/cms/discussions/11894))
 - Added `craft\base\ExpirableElementInterface`. ([#11901](https://github.com/craftcms/cms/pull/11901))
-- Added `craft\nameparsing\CustomLanguage`.
 - Added `craft\db\ActiveQuery::collect()`. ([#11842](https://github.com/craftcms/cms/pull/11842))
 - Added `craft\elements\actions\Restore::$restorableElementsOnly`.
 - Added `craft\enums\DateRangeType`.
@@ -42,8 +41,10 @@
 - Added `craft\helpers\DateTimeHelper::today()`.
 - Added `craft\helpers\DateTimeHelper::tomorrow()`.
 - Added `craft\helpers\DateTimeHelper::yesterday()`.
+- Added `craft\helpers\ElementHelper::attributeValueHtml()`.
 - Added `craft\i18n\FormatConverter::convertDatePhpToHuman()`. ([#10546](https://github.com/craftcms/cms/pull/10546))
 - Added `craft\i18n\Locale::FORMAT_HUMAN`.
+- Added `craft\nameparsing\CustomLanguage`.
 - Added `craft\services\Addresses::EVENT_DEFINE_FIELD_LABEL`. ([#11788](https://github.com/craftcms/cms/discussions/11788))
 - Added `craft\services\Addresses::EVENT_DEFINE_USED_FIELDS`. ([#11788](https://github.com/craftcms/cms/discussions/11788))
 - Added `craft\services\Addresses::EVENT_DEFINE_USED_SUBDIVISION_FIELDS`. ([#11788](https://github.com/craftcms/cms/discussions/11788))
