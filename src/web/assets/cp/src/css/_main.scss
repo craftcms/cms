@@ -4137,13 +4137,17 @@ ul.tree,
   height: 100vh;
   height: -webkit-fill-available; // h/t https://twitter.com/AllThingsSmitty/status/1254151507412496384
   pointer-events: none;
+
+  body.has-debug-toolbar & {
+    height: calc(100vh - 42px);
+  }
 }
 
 .slideout {
   position: absolute;
   background-color: var(--white);
   box-shadow: 0 0 0 1px transparentize($grey400, 0.75),
-    0 25px 100px transparentize($grey900, 0.5);
+    0 25px 100px transparentize($grey900, 0.5) !important;
   display: flex;
   flex-direction: column;
   overflow: hidden;
