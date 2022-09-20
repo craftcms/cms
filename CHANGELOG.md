@@ -7,6 +7,7 @@
 
 ### Changed
 - Edit Asset pages now show the “View” button for all file types, not just images, PDFs, and text files. ([#11936](https://github.com/craftcms/cms/issues/11936))
+- `\craft\imagetransforms::getPendingTransformIndexIds()` now ignores indexes with errors ([#11970](https://github.com/craftcms/cms/issues/11970))
 
 ### Removed
 - Removed the Punycode PHP library. ([#11948](https://github.com/craftcms/cms/issues/11948))
