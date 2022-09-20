@@ -77,10 +77,11 @@ $.extend(Craft, {
     }
 
     if (params) {
-      return this.formatMessage(message, params);
+      message = this.formatMessage(message, params);
     }
 
-    return message;
+    // Normalize ranges to use thin spaces and en-dashes (see https://clagnut.com/blog/2419)
+    return message.replace(/(\d) ?(?:-|–|—) ?(\d)/, '$1 – $2', message);
   },
 
   formatMessage: function (pattern, args) {
