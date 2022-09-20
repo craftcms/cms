@@ -323,6 +323,9 @@ class ResaveController extends Controller
             Queue::push(new ResaveElements([
                 'elementType' => $elementType,
                 'criteria' => $criteria,
+                'set' => $this->set,
+                'to' => $this->to,
+                'ifEmpty' => $this->ifEmpty,
                 'updateSearchIndex' => $this->updateSearchIndex,
             ]));
             $this->stdout($elementType::pluralDisplayName() . ' queued to be resaved.' . PHP_EOL);
