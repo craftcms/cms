@@ -41,7 +41,7 @@
 - Added `craft\helpers\DateTimeHelper::today()`.
 - Added `craft\helpers\DateTimeHelper::tomorrow()`.
 - Added `craft\helpers\DateTimeHelper::yesterday()`.
-- Added `craft\helpers\ElementHelper::attributeValueHtml()`.
+- Added `craft\helpers\ElementHelper::attributeHtml()`.
 - Added `craft\i18n\FormatConverter::convertDatePhpToHuman()`. ([#10546](https://github.com/craftcms/cms/pull/10546))
 - Added `craft\i18n\Locale::FORMAT_HUMAN`.
 - Added `craft\nameparsing\CustomLanguage`.

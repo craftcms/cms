@@ -4343,7 +4343,7 @@ abstract class Element extends Component implements ElementInterface
                     return '';
                 }
 
-                return ElementHelper::attributeValueHtml($this->$attribute);
+                return ElementHelper::attributeHtml($this->$attribute);
         }
     }
 

@@ -690,7 +690,7 @@ class ElementHelper
      * @return string
      * @since 4.3.0
      */
-    public static function attributeValueHtml(mixed $value): string
+    public static function attributeHtml(mixed $value): string
     {
         if ($value instanceof DateTime) {
             $formatter = Craft::$app->getFormatter();

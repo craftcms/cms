@@ -571,7 +571,7 @@ abstract class Field extends SavableComponent implements FieldInterface
      */
     public function getTableAttributeHtml(mixed $value, ElementInterface $element): string
     {
-        return ElementHelper::attributeValueHtml($value);
+        return ElementHelper::attributeHtml($value);
     }
 
     /**
