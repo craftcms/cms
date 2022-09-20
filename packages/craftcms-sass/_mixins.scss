@@ -590,7 +590,7 @@ $radioSize: 16px;
 
 @mixin input-styles {
   border-radius: $smallBorderRadius;
-  border: 1px solid transparentize($inputColor, 0.75);
+  border: 1px solid var(--input-border-color);
   background-color: hsl(212, 50%, 99%);
   background-clip: padding-box;
 }

@@ -1834,7 +1834,7 @@ div.btn.submit input {
 
 /* dashed buttons */
 .btn.dashed {
-  border: 1px dashed var(--medium-hairline-color);
+  border: 1px dashed var(--input-border-color);
   background-color: transparent;
 
   .btngroup &:not(:last-child):not(.btngroup-btn-last) {
@@ -1909,7 +1909,7 @@ div.btn.submit input {
     width: 100%;
     height: 100%;
     border-radius: 17px;
-    box-shadow: inset 0 0 0 1px transparentize($black, 0.85);
+    box-shadow: inset 0 0 0 1px var(--input-border-color);
 
     &:focus-within {
       @include input-focused-styles;
@@ -3004,7 +3004,7 @@ $checkboxPadding: $checkboxSize + 4;
 /* editable tables */
 table.editable {
   border-radius: var(--large-border-radius);
-  border: 1px solid var(--gray-200);
+  border: 1px solid var(--input-border-color);
 
   th,
   td.action {
@@ -3025,7 +3025,7 @@ table.editable {
   thead {
     tr {
       th {
-        border-bottom: 1px solid var(--hairline-color);
+        border-bottom: 1px solid var(--input-border-color);
 
         &.has-info {
           @include padding-right(calc(15px + 1em));
@@ -3063,7 +3063,7 @@ table.editable {
 
       td:not(:first-child),
       th ~ td:not(.hidden) ~ td {
-        @include border-left(1px solid var(--hairline-color));
+        @include border-left(1px solid var(--input-border-color));
       }
 
       th {
@@ -4005,6 +4005,7 @@ $min2ColWidth: 400px;
             border-radius: 0;
             background-color: transparent;
             border: none !important;
+            border-bottom: 1px solid var(--input-border-color) !important;
           }
         }
 
@@ -5670,7 +5671,7 @@ div.checkbox:before {
   content: '';
   font-size: 0;
   background-color: hsl(212, 50%, 99%);
-  border: 1px solid var(--field-border-color);
+  border: 1px solid var(--input-border-color);
   background-clip: padding-box;
   border-radius: var(--small-border-radius);
 }
@@ -5798,7 +5799,7 @@ div.radio:before {
   width: var(--radio-size);
   height: var(--radio-size);
   background-color: hsl(212, 50%, 99%);
-  border: 1px solid var(--field-border-color);
+  border: 1px solid var(--input-border-color);
 }
 
 input.radio + label:after,
