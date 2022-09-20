@@ -334,7 +334,7 @@ class Config extends Component
      */
     public function getDotEnvPath(): string
     {
-        return $this->_dotEnvPath ?? ($this->_dotEnvPath = Craft::getAlias('@root/.env'));
+        return $this->_dotEnvPath ?? ($this->_dotEnvPath = Craft::getAlias('@dotenv'));
     }
 
     /**

@@ -116,7 +116,7 @@ class Time extends Field implements PreviewableFieldInterface, SortableFieldInte
         $incrementOptions = [5, 10, 15, 30, 60];
         $incrementOptions = array_combine($incrementOptions, $incrementOptions);
 
-        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Time/settings', [
+        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Time/settings.twig', [
             'incrementOptions' => $incrementOptions,
             'field' => $this,
             'min' => $this->min ? DateTimeHelper::toDateTime(['time' => $this->min], true) : null,
@@ -137,7 +137,7 @@ class Time extends Field implements PreviewableFieldInterface, SortableFieldInte
      */
     protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
     {
-        return Craft::$app->getView()->renderTemplate('_includes/forms/time', [
+        return Craft::$app->getView()->renderTemplate('_includes/forms/time.twig', [
             'id' => parent::getInputId(), // can't use $this->getInputId() here because the template adds the "-time"
             'describedBy' => $this->describedBy,
             'name' => $this->handle,

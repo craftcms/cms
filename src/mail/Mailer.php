@@ -138,7 +138,7 @@ class Mailer extends \yii\symfonymailer\Mailer
                 $templateMode = View::TEMPLATE_MODE_SITE;
             } else {
                 // Default to the _special/email.html template
-                $template = '_special/email';
+                $template = '_special/email.twig';
                 $templateMode = View::TEMPLATE_MODE_CP;
             }
 

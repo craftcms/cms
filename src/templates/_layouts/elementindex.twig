@@ -29,12 +29,7 @@
             {% include "_elements/sources" %}
         </nav>
 
-        {% if currentUser.admin and craft.app.config.general.allowAdminChanges %}
-            <button class="customize-sources" type="button">
-                <span class="settings icon"></span>
-                <span class="label">{{ 'Customize'|t('app') }}</span>
-            </button>
-        {% endif %}
+        <div id="source-actions" class="buttons"></div>
     {% endif %}
 {% endblock %}
 
@@ -59,6 +54,7 @@
 {% block footer %}
     <div id="count-spinner" class="spinner small hidden"></div>
     <div id="count-container" class="light flex-grow">&nbsp;</div>
+    <div id="actions-container" class="flex"></div>
     <button type="button" id="export-btn" class="btn hidden" aria-expanded="false">{{ 'Export…'|t('app') }}</button>
 {% endblock %}
 

@@ -47,7 +47,7 @@ class PhpInfo extends Utility
      */
     public static function contentHtml(): string
     {
-        return Craft::$app->getView()->renderTemplate('_components/utilities/PhpInfo', [
+        return Craft::$app->getView()->renderTemplate('_components/utilities/PhpInfo.twig', [
             'phpInfo' => self::_phpInfo(),
         ]);
     }

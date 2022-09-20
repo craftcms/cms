@@ -7,6 +7,10 @@
 
 namespace craft\base;
 
+use Craft;
+use craft\nameparsing\CustomLanguage;
+use TheIconic\NameParser\Language\English;
+use TheIconic\NameParser\Language\German;
 use TheIconic\NameParser\Parser as NameParser;
 
 /**
@@ -53,7 +57,18 @@ trait NameTrait
     protected function prepareNamesForSave(): void
     {
         if ($this->fullName !== null) {
-            $name = (new NameParser())->parse($this->fullName);
+            $generalConfig = Craft::$app->getConfig()->getGeneral();
+            $languages = [
+                // Load our custom language file first so config settings can override the defaults
+                new CustomLanguage(
+                    $generalConfig->extraNameSuffixes,
+                    $generalConfig->extraNameSalutations,
+                    $generalConfig->extraLastNamePrefixes,
+                ),
+                new English(),
+                new German(),
+            ];
+            $name = (new NameParser($languages))->parse($this->fullName);
             $this->firstName = $name->getFirstname() ?: null;
             $this->lastName = $name->getLastname() ?: null;
         } elseif ($this->firstName !== null || $this->lastName !== null) {

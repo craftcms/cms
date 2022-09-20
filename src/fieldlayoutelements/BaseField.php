@@ -199,7 +199,7 @@ abstract class BaseField extends FieldLayoutElement
      */
     protected function settingsHtml(): ?string
     {
-        return Craft::$app->getView()->renderTemplate('_includes/forms/fld/field-settings', [
+        return Craft::$app->getView()->renderTemplate('_includes/forms/fld/field-settings.twig', [
             'field' => $this,
             'defaultLabel' => $this->defaultLabel(),
             'defaultInstructions' => $this->defaultInstructions(),

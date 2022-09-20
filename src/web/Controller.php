@@ -9,6 +9,7 @@ namespace craft\web;
 
 use Craft;
 use craft\base\ModelInterface;
+use craft\elements\User;
 use yii\base\Action;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
@@ -26,6 +27,7 @@ use yii\web\UnauthorizedHttpException;
  * @property Request $request
  * @property Response $response
  * @property View $view The view object that can be used to render views or view files
+ * @property-read ?User $currentUser The current logged-in user
  * @method View getView() Returns the view object that can be used to render views or view files
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
@@ -173,6 +175,19 @@ abstract class Controller extends \yii\web\Controller
         }
 
         return true;
+    }
+
+    /**
+     * Returns the currently logged-in user.
+     *
+     * @param bool $autoRenew
+     * @return ?User
+     * @see \yii\web\User::getIdentity()
+     * @since 4.3.0
+     */
+    public static function currentUser(bool $autoRenew = true): ?User
+    {
+        return Craft::$app->getUser()->getIdentity($autoRenew);
     }
 
     /**

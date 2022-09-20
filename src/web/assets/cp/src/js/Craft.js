@@ -17,7 +17,7 @@ $.extend(Craft, {
    * @callback indexKeyCallback
    * @param {Object} currentValue
    * @param {number} [index]
-   * @return {string}
+   * @returns {string}
    */
   /**
    * Indexes an array of objects by a specified key
@@ -36,12 +36,6 @@ $.extend(Craft, {
     }, {});
   },
 
-  /**
-   * @callback indexKeyCallback
-   * @param {Object} currentValue
-   * @param {number} [index]
-   * @return {string}
-   */
   /**
    * Groups an array of objects by a specified key
    *
@@ -72,7 +66,7 @@ $.extend(Craft, {
    * @param {string} category
    * @param {string} message
    * @param {Object} params
-   * @return string
+   * @returns {string}
    */
   t: function (category, message, params) {
     if (
@@ -83,10 +77,11 @@ $.extend(Craft, {
     }
 
     if (params) {
-      return this.formatMessage(message, params);
+      message = this.formatMessage(message, params);
     }
 
-    return message;
+    // Normalize ranges to use thin spaces and en-dashes (see https://clagnut.com/blog/2419)
+    return message.replace(/(\d) ?(?:-|–|—) ?(\d)/, '$1 – $2', message);
   },
 
   formatMessage: function (pattern, args) {
@@ -295,7 +290,8 @@ $.extend(Craft, {
    * Formats a number.
    *
    * @param {string} number
-   * @return string D3 format
+   * @param {string} [format] D3 format
+   * @returns {string}
    */
   formatNumber: function (number, format) {
     if (typeof format == 'undefined') {
@@ -323,7 +319,7 @@ $.extend(Craft, {
    * Escapes some HTML.
    *
    * @param {string} str
-   * @return string
+   * @returns {string}
    */
   escapeHtml: function (str) {
     return $('<div/>').text(str).html();
@@ -333,7 +329,7 @@ $.extend(Craft, {
    * Escapes special regular expression characters.
    *
    * @param {string} str
-   * @return string
+   * @returns {string}
    */
   escapeRegex: function (str) {
     // h/t https://stackoverflow.com/a/9310752
@@ -344,7 +340,7 @@ $.extend(Craft, {
    * Returns the text in a string that might contain HTML tags.
    *
    * @param {string} str
-   * @return string
+   * @returns {string}
    */
   getText: function (str) {
     return $('<div/>').html(str).text();
@@ -354,7 +350,7 @@ $.extend(Craft, {
    * Encodes a URI copmonent. Mirrors PHP's rawurlencode().
    *
    * @param {string} str
-   * @return string
+   * @returns {string}
    * @see http://stackoverflow.com/questions/1734250/what-is-the-equivalent-of-javascripts-encodeuricomponent-in-php
    */
   encodeUriComponent: function (str) {
@@ -379,7 +375,7 @@ $.extend(Craft, {
   /**
    * Selects the full value of a given text input.
    *
-   * @param input
+   * @param {(jQuery|HTMLElement|string)} input
    */
   selectFullValue: function (input) {
     var $input = $(input);
@@ -400,7 +396,7 @@ $.extend(Craft, {
    * Formats an ID out of an input name.
    *
    * @param {string} inputName
-   * @return string
+   * @returns {string}
    */
   formatInputId: function (inputName) {
     return this.rtrim(inputName.replace(/[^\w\-]+/g, '-'), '-');
@@ -408,9 +404,9 @@ $.extend(Craft, {
 
   /**
    * @param {string} [path]
-   * @param {Object|string} [params]
+   * @param {(Object|string)} [params]
    * @param {string} [baseUrl]
-   * @return string
+   * @returns {string}
    */
   getUrl: function (path, params, baseUrl) {
     if (typeof path !== 'string') {
@@ -540,8 +536,8 @@ $.extend(Craft, {
 
   /**
    * @param {string} [path]
-   * @param {Object|string} [params]
-   * @return string
+   * @param {(Object|string)} [params]
+   * @returns {string}
    */
   getCpUrl: function (path, params) {
     return this.getUrl(path, params, Craft.baseCpUrl);
@@ -549,8 +545,8 @@ $.extend(Craft, {
 
   /**
    * @param {string} [path]
-   * @param {Object|string} [params]
-   * @return string
+   * @param {(Object|string)} [params]
+   * @returns {string}
    */
   getSiteUrl: function (path, params) {
     return this.getUrl(path, params, Craft.baseSiteUrl);
@@ -560,8 +556,8 @@ $.extend(Craft, {
    * Returns an action URL.
    *
    * @param {string} action
-   * @param {Object|string} [params]
-   * @return string
+   * @param {(Object|string)} [params]
+   * @returns {string}
    */
   getActionUrl: function (action, params) {
     return Craft.getUrl(action, params, Craft.actionUrl);
@@ -609,7 +605,7 @@ $.extend(Craft, {
    * Replaces the page’s current URL based on the given query param name and value, leaving the current URI, other query params, and hash intact.
    *
    * @param {string} name
-   * @param value
+   * @param {*} value
    */
   setQueryParam(name, value) {
     const baseUrl = document.location.origin + document.location.pathname;
@@ -628,7 +624,7 @@ $.extend(Craft, {
    * Returns the current URL with a certain page added to it.
    *
    * @param {int} page
-   * @return {string}
+   * @returns {string}
    */
   getPageUrl: function (page) {
     let url = document.location.origin + document.location.pathname;
@@ -668,7 +664,7 @@ $.extend(Craft, {
   /**
    * Returns a hidden CSRF token input, if CSRF protection is enabled.
    *
-   * @return string
+   * @returns {string}
    */
   getCsrfInput: function () {
     if (Craft.csrfTokenName) {
@@ -685,13 +681,19 @@ $.extend(Craft, {
   },
 
   /**
+   * @callback postActionRequestCallback
+   * @param {?Object} response
+   * @param {string} textStatus
+   * @param {Object} jqXHR
+   */
+  /**
    * Posts an action request to the server.
    *
    * @param {string} action
-   * @param {Object|undefined} data
-   * @param {function|undefined} callback
-   * @param {Object|undefined} options
-   * @return jqXHR
+   * @param {Object} [data]
+   * @param {postActionRequestCallback} [callback]
+   * @param {Object} [options]
+   * @returns {Object}
    * @deprecated in 3.4.6. sendActionRequest() should be used instead
    */
   postActionRequest: function (action, data, callback, options) {
@@ -774,7 +776,7 @@ $.extend(Craft, {
   /**
    * Sends a request to a Craft/plugin action
    * @param {string} method The request action to use ('GET' or 'POST')
-   * @param {string|null} [action] The action to request
+   * @param {?string} [action] The action to request
    * @param {Object} [options] Axios request options
    * @returns {Promise}
    * @since 3.4.6
@@ -879,8 +881,8 @@ $.extend(Craft, {
   /**
    * Returns the headers that should be sent with API requests.
    *
-   * @param {Object|null} cancelToken
-   * @return {Promise}
+   * @param {Object} [cancelToken]
+   * @returns {Promise}
    */
   _getApiHeaders: function (cancelToken) {
     return new Promise((resolve, reject) => {
@@ -978,8 +980,8 @@ $.extend(Craft, {
    *
    * @param {string} method the request method to use
    * @param {string} url the URL
-   * @param {string|Object} [body] the request body, if method = POST
-   * @return {Promise}
+   * @param {(string|Object)} [body] the request body, if method = POST
+   * @returns {Promise}
    */
   downloadFromUrl: function (method, url, body) {
     return new Promise((resolve, reject) => {
@@ -1033,7 +1035,7 @@ $.extend(Craft, {
    * Converts a comma-delimited string into an array.
    *
    * @param {string} str
-   * @return array
+   * @returns array
    */
   stringToArray: function (str) {
     if (typeof str !== 'string') {
@@ -1048,16 +1050,21 @@ $.extend(Craft, {
   },
 
   /**
+   * @callback findDeltaDataCallback
+   * @param {string} deltaName
+   * @param {Array} params
+   */
+  /**
    * Compares old and new post data, and removes any values that haven't
    * changed within the given list of delta namespaces.
    *
    * @param {string} oldData
    * @param {string} newData
    * @param {Object} deltaNames
-   * @param {function|null} [callback] Callback function that should be called whenever a new group of modified params has been found
+   * @param {findDeltaDataCallback} [callback] Callback function that should be called whenever a new group of modified params has been found
    * @param {Object} [initialDeltaValues] Initial delta values. If undefined, `Craft.initialDeltaValues` will be used.
    * @param {Object} [modifiedDeltaNames} List of delta names that should be considered modified regardles of their param values
-   * @return {string}
+   * @returns {string}
    */
   findDeltaData: function (
     oldData,
@@ -1125,8 +1132,8 @@ $.extend(Craft, {
    * @param {Object} params
    * @param {Object} deltaNames
    * @param {boolean} withRoot
-   * @param {boolean|Object} initialValues
-   * @returns {{}}
+   * @param {(boolean|Object)} initialValues
+   * @returns {Object}
    * @private
    */
   _groupParamsByDeltaNames: function (
@@ -1206,10 +1213,10 @@ $.extend(Craft, {
   },
 
   /**
-   * Expands an array of POST array-style strings into an actual array.
+   * Expands an object of POST array-style strings into an actual array.
    *
    * @param {Object} arr
-   * @return array
+   * @returns {Array}
    */
   expandPostArray: function (arr) {
     var expanded = {};
@@ -1270,7 +1277,7 @@ $.extend(Craft, {
    * Creates a form element populated with hidden inputs based on a string of serialized form data.
    *
    * @param {string} data
-   * @returns {jQuery|HTMLElement}
+   * @returns {(jQuery|HTMLElement)}
    */
   createForm: function (data) {
     var $form = $('<form/>', {
@@ -1301,10 +1308,10 @@ $.extend(Craft, {
    * Compares two variables and returns whether they are equal in value.
    * Recursively compares array and object values.
    *
-   * @param obj1
-   * @param obj2
-   * @param sortObjectKeys Whether object keys should be sorted before being compared. Default is true.
-   * @return boolean
+   * @param {*} obj1
+   * @param {*} obj2
+   * @param {boolean} [sortObjectKeys] Whether object keys should be sorted before being compared. Default is true.
+   * @returns boolean
    */
   compare: function (obj1, obj2, sortObjectKeys) {
     // Compare the types
@@ -1365,7 +1372,7 @@ $.extend(Craft, {
    * Returns an array of an object's keys.
    *
    * @param {Object} obj
-   * @return string
+   * @returns {string[]}
    */
   getObjectKeys: function (obj) {
     var keys = [];
@@ -1386,8 +1393,8 @@ $.extend(Craft, {
    *
    * Userd by ltrim() and rtrim()
    *
-   * @param {string|object} chars
-   * @return string
+   * @param {(string|Object)} chars
+   * @returns {string}
    */
   escapeChars: function (chars) {
     if (!Garnish.isArray(chars)) {
@@ -1407,8 +1414,8 @@ $.extend(Craft, {
    * Trim characters off of the beginning of a string.
    *
    * @param {string} str
-   * @param {string|object|undefined} [chars] The characters to trim off. Defaults to a space if left blank.
-   * @return string
+   * @param {(string|Object)} [chars] The characters to trim off. Defaults to a space if left blank.
+   * @returns {string}
    */
   ltrim: function (str, chars) {
     if (!str) {
@@ -1425,8 +1432,8 @@ $.extend(Craft, {
    * Trim characters off of the end of a string.
    *
    * @param {string} str
-   * @param {string|object|undefined} [chars] The characters to trim off. Defaults to a space if left blank.
-   * @return string
+   * @param {(string|Object)} [chars] The characters to trim off. Defaults to a space if left blank.
+   * @returns {string}
    */
   rtrim: function (str, chars) {
     if (!str) {
@@ -1443,8 +1450,8 @@ $.extend(Craft, {
    * Trim characters off of the beginning and end of a string.
    *
    * @param {string} str
-   * @param {string|object|undefined} [chars] The characters to trim off. Defaults to a space if left blank.
-   * @return string
+   * @param {(string|Object)} [chars] The characters to trim off. Defaults to a space if left blank.
+   * @returns {string}
    */
   trim: function (str, chars) {
     str = Craft.ltrim(str, chars);
@@ -1457,18 +1464,24 @@ $.extend(Craft, {
    *
    * @param {string} str
    * @param {string} substr
-   * @return boolean
+   * @returns {boolean}
    */
   startsWith: function (str, substr) {
     return str.substring(0, substr.length) === substr;
   },
 
   /**
+   * @callback filterArrayCallback
+   * @param {*} value
+   * @param {number} index
+   * @return {boolean}
+   */
+  /**
    * Filters an array.
    *
    * @param {Object} arr
-   * @param {function} callback A user-defined callback function. If null, we'll just remove any elements that equate to false.
-   * @return array
+   * @param {filterArrayCallback} [callback] A user-defined callback function. If null, we'll just remove any elements that equate to false.
+   * @returns {Array}
    */
   filterArray: function (arr, callback) {
     var filtered = [];
@@ -1493,9 +1506,9 @@ $.extend(Craft, {
   /**
    * Returns whether an element is in an array (unlike jQuery.inArray(), which returns the element’s index, or -1).
    *
-   * @param elem
-   * @param arr
-   * @return boolean
+   * @param {*} elem
+   * @param {(Object|Array)} arr
+   * @returns {boolean}
    */
   inArray: function (elem, arr) {
     if ($.isPlainObject(arr)) {
@@ -1507,9 +1520,9 @@ $.extend(Craft, {
   /**
    * Removes an element from an array.
    *
-   * @param elem
-   * @param {Object} arr
-   * @return boolean Whether the element could be found or not.
+   * @param {*} elem
+   * @param {Array} arr
+   * @returns {boolean} Whether the element could be found or not.
    */
   removeFromArray: function (elem, arr) {
     var index = $.inArray(elem, arr);
@@ -1524,8 +1537,8 @@ $.extend(Craft, {
   /**
    * Returns the last element in an array.
    *
-   * @param {Object} arr
-   * @return mixed
+   * @param {Array} arr
+   * @returns {*}
    */
   getLast: function (arr) {
     if (!arr.length) {
@@ -1539,7 +1552,7 @@ $.extend(Craft, {
    * Makes the first character of a string uppercase.
    *
    * @param {string} str
-   * @return string
+   * @returns {string}
    */
   uppercaseFirst: function (str) {
     return str.charAt(0).toUpperCase() + str.slice(1);
@@ -1549,7 +1562,7 @@ $.extend(Craft, {
    * Makes the first character of a string lowercase.
    *
    * @param {string} str
-   * @return string
+   * @returns {string}
    */
   lowercaseFirst: function (str) {
     return str.charAt(0).toLowerCase() + str.slice(1);
@@ -1680,8 +1693,8 @@ $.extend(Craft, {
    * Converts extended ASCII characters to ASCII.
    *
    * @param {string} str
-   * @param {Object|undefined} charMap
-   * @return string
+   * @param {Object} [charMap]
+   * @returns {string}
    */
   asciiString: function (str, charMap) {
     // Normalize NFD chars to NFC
@@ -1752,7 +1765,7 @@ $.extend(Craft, {
    * Creates a validation error list.
    *
    * @param {Object} errors
-   * @return jQuery
+   * @returns {jQuery}
    */
   createErrorList: function (errors) {
     var $ul = $(document.createElement('ul')).addClass('errors');
@@ -1940,9 +1953,9 @@ $.extend(Craft, {
    * Creates a new element index for a given element type.
    *
    * @param {string} elementType
-   * @param $container
+   * @param {jQuery} $container
    * @param {Object} settings
-   * @return BaseElementIndex
+   * @returns {BaseElementIndex}
    */
   createElementIndex: function (elementType, $container, settings) {
     var func;
@@ -1978,7 +1991,7 @@ $.extend(Craft, {
    * Creates a new element editor slideout for a given element type.
    *
    * @param {string} elementType
-   * @param element $element
+   * @param {(jQuery|HTMLElement|string)} element
    * @param {Object} settings
    */
   createElementEditor: function (elementType, element, settings) {
@@ -2002,7 +2015,7 @@ $.extend(Craft, {
    * Retrieves a value from localStorage if it exists.
    *
    * @param {string} key
-   * @param defaultValue
+   * @param {*} defaultValue
    */
   getLocalStorage: function (key, defaultValue) {
     key = 'Craft-' + Craft.systemUid + '.' + key;
@@ -2021,7 +2034,7 @@ $.extend(Craft, {
    * Saves a value to localStorage.
    *
    * @param {string} key
-   * @param value
+   * @param {*} value
    */
   setLocalStorage: function (key, value) {
     if (typeof localStorage !== 'undefined') {
@@ -2038,7 +2051,7 @@ $.extend(Craft, {
 
   /**
    * Removes a value from localStorage.
-   * @param key
+   * @param {string} key
    */
   removeLocalStorage: function (key) {
     if (typeof localStorage !== 'undefined') {
@@ -2048,7 +2061,7 @@ $.extend(Craft, {
 
   /**
    * Returns a cookie value, if it exists, otherwise returns `false`
-   * @return {(string|boolean)}
+   * @returns {(string|boolean)}
    */
   getCookie: function (name) {
     // Adapted from https://developer.mozilla.org/en-US/docs/Web/API/Document/cookie
@@ -2105,10 +2118,10 @@ $.extend(Craft, {
   },
 
   /**
-   * Returns element information from it's HTML.
+   * Returns element information from its DOM element.
    *
-   * @param element
-   * @returns object
+   * @param {(jQuery|HTMLElement|string)} element
+   * @returns {Object}
    */
   getElementInfo: function (element) {
     var $element = $(element);
@@ -2131,8 +2144,8 @@ $.extend(Craft, {
   /**
    * Changes an element to the requested size.
    *
-   * @param element
-   * @param size
+   * @param {(jQuery|HTMLElement|string))} element
+   * @param {string} size
    */
   setElementSize: function (element, size) {
     var $element = $(element);
@@ -2240,7 +2253,7 @@ $.extend(Craft, {
    *
    * Attributes set to `null` or `false` will be removed.
    *
-   * @param element
+   * @param {(jQuery|HTMLElement|string)} element
    * @param {Object} attributes
    */
   setElementAttributes: function (element, attributes) {
@@ -2302,6 +2315,10 @@ $.extend(Craft, {
       typeof document.visibilityState === 'undefined' ||
       document.visibilityState === 'visible'
     );
+  },
+
+  useMobileStyles: function () {
+    return Garnish.isMobileBrowser() || document.body.clientWidth < 600;
   },
 });
 
