@@ -113,12 +113,10 @@ export default Base.extend(
 
       // When the menu is expanded, tabbing on the trigger should move focus into it
       this.addListener(this.$trigger, 'keydown', (ev) => {
-        if (
-          ev.keyCode === Garnish.TAB_KEY &&
-          !ev.shiftKey &&
-          this.showing
-        ) {
-          const $focusableElement = Garnish.getKeyboardFocusable(this.$hud).first();
+        if (ev.keyCode === Garnish.TAB_KEY && !ev.shiftKey && this.showing) {
+          const $focusableElement = Garnish.getKeyboardFocusable(
+            this.$hud
+          ).first();
           if ($focusableElement.length) {
             ev.preventDefault();
             $focusableElement.focus();
@@ -126,10 +124,9 @@ export default Base.extend(
         }
       });
 
-
       // Add listener to manage focus
       this.addListener(this.$hud, 'keydown', function (event) {
-        const { keyCode } = event;
+        const {keyCode} = event;
 
         if (keyCode !== Garnish.TAB_KEY) return;
 
@@ -139,7 +136,11 @@ export default Base.extend(
         if (index === 0 && event.shiftKey) {
           event.preventDefault();
           this.$trigger.focus();
-        } else if (index === $focusableElements.length - 1 && !event.shiftKey && this.$nextFocusableElement) {
+        } else if (
+          index === $focusableElements.length - 1 &&
+          !event.shiftKey &&
+          this.$nextFocusableElement
+        ) {
           event.preventDefault();
           this.$nextFocusableElement.focus();
         }
@@ -228,9 +229,11 @@ export default Base.extend(
       const triggerIndex = $focusableElements.index(this.$trigger[0]);
       if (triggerIndex !== -1 && $focusableElements.length > triggerIndex + 1) {
         this.$nextFocusableElement = $focusableElements.eq(triggerIndex + 1);
-        this.addListener(this.$nextFocusableElement, 'keydown', ev => {
+        this.addListener(this.$nextFocusableElement, 'keydown', (ev) => {
           if (ev.keyCode === Garnish.TAB_KEY && ev.shiftKey) {
-            const $focusableElement = Garnish.getKeyboardFocusable(this.$hud).last();
+            const $focusableElement = Garnish.getKeyboardFocusable(
+              this.$hud
+            ).last();
             if ($focusableElement.length) {
               ev.preventDefault();
               $focusableElement.focus();
