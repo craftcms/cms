@@ -1738,10 +1738,10 @@ abstract class Element extends Component implements ElementInterface
     private ElementInterface|false|null $_canonical = null;
 
     /**
-     * @var ElementInterface|null
+     * @var ElementInterface|false|null
      * @see getCanonical()
      */
-    private ElementInterface|null $_canonicalAnySite = null;
+    private ElementInterface|false|null $_canonicalAnySite = null;
 
     /**
      * @var string|null
