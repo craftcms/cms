@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where setting values didn't work when using the queue option ([#11974](https://github.com/craftcms/cms/issues/11974))
+
 ## 3.7.55.1 - 2022-09-21
 
 ### Fixed
@@ -27,7 +32,6 @@
 - Fixed a PHP error that could occur in a potential race condition when calling  `craft\helpers\FileHelper::clearDirectory()`.
 - Fixed a bug where Structure section entries that were duplicated via the “Save as a new entry” action on a provisional draft weren’t being placed within the structure properly.
 - Fixed a bug where element’s `searchScore` properties would be set to `null` when their original score was below 1, rather than rounding to 0 or 1. ([#11973](https://github.com/craftcms/cms/issues/11973))
-- Fixed a bug where setting values didn't work when using the queue option ([#11974](https://github.com/craftcms/cms/issues/11974))
 
 ## 3.7.54 - 2022-09-13
 
