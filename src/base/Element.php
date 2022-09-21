@@ -1530,13 +1530,13 @@ abstract class Element extends Component implements ElementInterface
     private $_canonicalId;
 
     /**
-     * @var static|null
+     * @var static|false|null
      * @see getCanonical()
      */
     private $_canonical;
 
     /**
-     * @var static|null
+     * @var static|false|null
      * @see getCanonical()
      */
     private $_canonicalAnySite;
