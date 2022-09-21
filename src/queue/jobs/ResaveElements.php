@@ -9,11 +9,11 @@ namespace craft\queue\jobs;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\console\controllers\ResaveController;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\events\BatchElementActionEvent;
 use craft\helpers\ElementHelper;
-use craft\helpers\StringHelper;
 use craft\queue\BaseJob;
 use craft\services\Elements;
 
@@ -80,7 +80,7 @@ class ResaveElements extends BaseJob
         }
         $elementsService = Craft::$app->getElements();
 
-        $to = $this->set ? $this->_normalizeTo() : null;
+        $to = $this->set ? ResaveController::normalizeTo($this->to) : null;
         $callback = function(BatchElementActionEvent $e) use ($queue, $query, $total, $to) {
             if ($e->query === $query) {
                 $this->setProgress($queue, ($e->position - 1) / $total, Craft::t('app', '{step, number} of {total, number}', [
@@ -130,44 +130,5 @@ class ResaveElements extends BaseJob
         }
 
         return $query;
-    }
-
-    /**
-     * Returns [[to]] normalized to a callable.
-     *
-     * @return callable
-     */
-    private function _normalizeTo(): callable
-    {
-        // empty
-        if ($this->to === ':empty:') {
-            return function() {
-                return null;
-            };
-        }
-
-        // object template
-        if (StringHelper::startsWith($this->to, '=')) {
-            $template = substr($this->to, 1);
-            $view = Craft::$app->getView();
-            return function(ElementInterface $element) use ($template, $view) {
-                return $view->renderObjectTemplate($template, $element);
-            };
-        }
-
-        // PHP arrow function
-        if (preg_match('/^fn\s*\(\s*\$(\w+)\s*\)\s*=>\s*(.+)/', $this->to, $match)) {
-            $var = $match[1];
-            $php = sprintf('return %s;', StringHelper::removeLeft(rtrim($match[2], ';'), 'return '));
-            return function(ElementInterface $element) use ($var, $php) {
-                $$var = $element;
-                return eval($php);
-            };
-        }
-
-        // attribute name
-        return function(ElementInterface $element) {
-            return $element->{$this->to};
-        };
     }
 }

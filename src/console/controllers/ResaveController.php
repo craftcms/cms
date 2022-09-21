@@ -422,7 +422,7 @@ class ResaveController extends Controller
             $count = min($count, (int)$query->limit);
         }
 
-        $to = $this->set ? $this->_normalizeTo() : null;
+        $to = $this->set ? self::normalizeTo($this->to) : null;
 
         $elementsText = $count === 1 ? $elementType::lowerDisplayName() : $elementType::pluralLowerDisplayName();
         $this->stdout("Resaving {$count} {$elementsText} ..." . PHP_EOL, Console::FG_YELLOW);
@@ -471,20 +471,21 @@ class ResaveController extends Controller
     /**
      * Returns [[to]] normalized to a callable.
      *
+     * @param string|null $to
      * @return callable
      */
-    private function _normalizeTo(): callable
+    public static function normalizeTo(?string $to): callable
     {
         // empty
-        if ($this->to === ':empty:') {
+        if ($to === ':empty:') {
             return function() {
                 return null;
             };
         }
 
         // object template
-        if (StringHelper::startsWith($this->to, '=')) {
-            $template = substr($this->to, 1);
+        if (StringHelper::startsWith($to, '=')) {
+            $template = substr($to, 1);
             $view = Craft::$app->getView();
             return function(ElementInterface $element) use ($template, $view) {
                 return $view->renderObjectTemplate($template, $element);
@@ -492,7 +493,7 @@ class ResaveController extends Controller
         }
 
         // PHP arrow function
-        if (preg_match('/^fn\s*\(\s*\$(\w+)\s*\)\s*=>\s*(.+)/', $this->to, $match)) {
+        if (preg_match('/^fn\s*\(\s*\$(\w+)\s*\)\s*=>\s*(.+)/', $to, $match)) {
             $var = $match[1];
             $php = sprintf('return %s;', StringHelper::removeLeft(rtrim($match[2], ';'), 'return '));
             return function(ElementInterface $element) use ($var, $php) {
@@ -502,8 +503,8 @@ class ResaveController extends Controller
         }
 
         // attribute name
-        return function(ElementInterface $element) {
-            return $element->{$this->to};
+        return static function(ElementInterface $element) use ($to) {
+            return $element->{$to};
         };
     }
 }
