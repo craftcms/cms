@@ -42,21 +42,13 @@ class ResaveElements extends BaseJob
     public $updateSearchIndex = false;
 
     /**
-     * @var string|null An attribute name that should be set for each of the elements. The value will be determined by --to.
+     * @var string|null An attribute name that should be set for each of the elements. The value will be determined by to.
      * @since 3.7.29
      */
     public $set = null;
 
     /**
-     * @var string|null The value that should be set on the --set attribute.
-     *
-     * The following value types are supported:
-     * - An attribute name: `--to myCustomField`
-     * - An object template: `--to "={myCustomField|lower}"`
-     * - A raw value: `--to "=foo bar"`
-     * - A PHP arrow function: `--to "fn(\$element) => \$element->callSomething()"`
-     * - An empty value: `--to :empty:`
-     *
+     * @var string|null The value that should be set on the set attribute.
      * @since 3.7.29
      */
     public $to = null;
