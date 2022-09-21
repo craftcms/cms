@@ -230,10 +230,9 @@ export default Base.extend(
         this.$nextFocusableElement = $focusableElements.eq(triggerIndex + 1);
         this.addListener(this.$nextFocusableElement, 'keydown', ev => {
           if (ev.keyCode === Garnish.TAB_KEY && ev.shiftKey) {
-            const $focusableElement = this.$hud.find(':focusable:last');
+            const $focusableElement = Garnish.getKeyboardFocusable(this.$hud).last();
             if ($focusableElement.length) {
               ev.preventDefault();
-              console.log($focusableElement);
               $focusableElement.focus();
             }
           }
