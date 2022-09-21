@@ -435,7 +435,7 @@ class ResaveController extends Controller
                 $element = $e->element;
                 $this->stdout("    - [{$e->position}/{$count}] Resaving {$element} ({$element->id}) ... ");
 
-                if ($this->set && (!$this->ifEmpty ||  ElementHelper::isAttributeEmpty($element, $this->set))) {
+                if ($this->set && (!$this->ifEmpty || ElementHelper::isAttributeEmpty($element, $this->set))) {
                     $element->{$this->set} = $to($element);
                 }
             }
