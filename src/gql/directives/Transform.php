@@ -70,7 +70,7 @@ class Transform extends Directive
     public static function apply(mixed $source, mixed $value, array $arguments, ResolveInfo $resolveInfo): mixed
     {
         $onAssetElement = $value instanceof Asset;
-        $onAssetElementList = $value instanceof Collection && !$value->isEmpty();
+        $onAssetElementList = ($value instanceof Collection && !$value->isEmpty()) || (is_array($value) && !empty($value));
         $onApplicableAssetField = $source instanceof Asset && in_array($resolveInfo->fieldName, ['height', 'width', 'url']);
 
         if (!($onAssetElement || $onAssetElementList || $onApplicableAssetField) || empty($arguments)) {
