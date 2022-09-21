@@ -350,9 +350,6 @@ class I18N extends \yii\i18n\I18N
             }
         }
 
-        // Normalize ranges to use thin spaces and en-dashes (see https://clagnut.com/blog/2419)
-        $translation = preg_replace('/(?<=\d) ?(?:-|–|—) ?(?=\d)/', ' – ', $translation);
-
         if ($this->_shouldAddTranslationDebugOutput()) {
             switch ($category) {
                 case 'site':
