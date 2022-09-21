@@ -1,5 +1,11 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where asset transforms were lost after transforming multiple times ([#11982](https://github.com/craftcms/cms/issues/11982))
+
+
 ## 4.2.5.1 - 2022-09-21
 
 ### Fixed
