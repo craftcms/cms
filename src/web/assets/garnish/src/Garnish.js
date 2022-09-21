@@ -410,6 +410,11 @@ Garnish = $.extend(Garnish, {
     return $(container).find(':focusable').first();
   },
 
+  /**
+   * Returns a collection of all keyboard focusable-elements inside a container
+   * @param {object} container
+   * @return {object} A collection of keyboard-focusable elements
+   */
   getKeyboardFocusable: function (container) {
     const $focusable = $(container).find(':focusable');
     const $keyboardFocusable = $focusable.filter((index, element) => {
@@ -420,8 +425,9 @@ Garnish = $.extend(Garnish, {
   },
 
   /**
-   * Returns whether the element is focusable by keyboard
-   * @param {Object} element
+   * Returns whether the element is focusable by keyboard (i.e. does not have tabindex of -1)
+   * @param {object} element
+   * @return {boolean}
    */
   isKeyboardFocusable: function (element) {
     let keyboardFocusable;
