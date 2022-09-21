@@ -76,7 +76,8 @@
     "yii2tech/ar-softdelete": "1.0.4"
   },
   "conflict": {
-    "league/oauth2-client": "2.4.0"
+    "league/oauth2-client": "2.4.0",
+    "webonyx/graphql-php": "14.11.7"
   },
   "suggest": {
     "ext-imagick": "Adds support for more image processing formats and options.",

@@ -5,6 +5,7 @@
 ### Fixed
 - Fixed a bug where the “New category” button could be missing from the Categories index page. ([#11977](https://github.com/craftcms/cms/issues/11977))
 - Fixed a bug where `Craft::t()` and the `|t` Twig filter were modifying digit-dash-digit sequences. ([#11980](https://github.com/craftcms/cms/issues/11980))
+- Fixed PHP errors that occurred if `webonyx/graphql-php` 14.11.17 was installed. ([#11979](https://github.com/craftcms/cms/issues/11979), [webonyx/graphql-php#1221](https://github.com/webonyx/graphql-php/issues/1221))
 
 ## 3.7.55 - 2022-09-20
 
