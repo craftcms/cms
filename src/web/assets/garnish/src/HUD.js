@@ -118,7 +118,7 @@ export default Base.extend(
           !ev.shiftKey &&
           this.showing
         ) {
-          const $focusableElement = this.$hud.find(':focusable:first');
+          const $focusableElement = Garnish.getKeyboardFocusable(this.$hud).first();
           if ($focusableElement.length) {
             ev.preventDefault();
             $focusableElement.focus();
@@ -574,6 +574,10 @@ export default Base.extend(
       this.showing = false;
       delete Garnish.HUD.activeHUDs[this._namespace];
       Garnish.uiLayerManager.removeLayer();
+
+      if (Garnish.focusIsInside(this.$hud)) {
+        this.$trigger.trigger('focus');
+      }
 
       if (this.$nextFocusableElement) {
         this.removeListener(this.$nextFocusableElement, 'keydown');
