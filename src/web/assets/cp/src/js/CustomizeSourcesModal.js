@@ -24,7 +24,6 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
   sourceSort: null,
   sources: null,
   selectedSource: null,
-  sidebarToggleViewEnabled: false,
 
   elementTypeName: null,
   availableTableAttributes: null,
@@ -230,8 +229,6 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
   },
 
   buildSidebarToggleView: function() {
-    this.sidebarToggleViewEnabled = true;
-
     if (!this.$sourcesHeader) {
       this.$sourcesHeader = $('<div class="sources-header"/>')
         .addClass('sidebar-header')
