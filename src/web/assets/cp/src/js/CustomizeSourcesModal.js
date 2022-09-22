@@ -193,6 +193,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
 
     if (Craft.useMobileStyles()) {
       this.buildMobileToggleView();
+      this.hideSidebar();
     }
 
     this.addSourceMenu = new Garnish.DisclosureMenu($menuBtn);
@@ -220,9 +221,10 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
     }
 
     if (!this.$sourceSettingsHeader) {
-      const $heading = $('<h1/>').text(this.getSourceName());
+      const $heading = $('<h1 class="main-heading"/>').text(this.getSourceName());
 
       this.$sourceSettingsHeader = $('<div class="source-settings-header"/>')
+        .addClass('main-header')
         .append($heading)
         .prependTo(this.$sourceSettingsContainer);
 
@@ -239,6 +241,11 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
         .attr('aria-label', Craft.t('app', 'Show sidebar'))
         .appendTo(this.$sourceSettingsHeader);
     }
+  },
+
+  hideSidebar: function () {
+    console.log(this.$container);
+    this.$container.addClass('sidebar-hidden');
   },
 
   addSource: function (sourceData, isNew) {

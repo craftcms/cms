@@ -1057,6 +1057,14 @@ td.right {
     }
   }
 
+  &.sidebar-hidden {
+    @include padding-left(0);
+
+    & > .cs-sidebar {
+      display: none;
+    }
+  }
+
   & > .source-settings {
     position: relative;
     height: calc(100% - 50px);
