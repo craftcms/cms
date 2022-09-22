@@ -193,8 +193,11 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
     }
 
     if (Craft.useMobileStyles()) {
-      this.buildMobileToggleView();
+      this.buildSidebarToggleView();
     }
+
+    // Add resize listener to enable/disable sidebar toggle view
+    this.addListener(Garnish.$win, 'resize', this.updateSidebarView);
 
     this.addSourceMenu = new Garnish.DisclosureMenu($menuBtn);
   },
@@ -205,7 +208,28 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
       : this.sources[0].sourceData.label;
   },
 
-  buildMobileToggleView: function() {
+  updateSidebarView: function () {
+    if (Craft.useMobileStyles()) {
+      if (!this.$sidebarToggleBtn) this.buildSidebarToggleView();
+    } else {
+      if (this.$sidebarToggleBtn) this.resetView();
+    }
+  },
+
+  resetView: function () {
+    if (this.$sourceSettingsHeader) {
+      this.$sourceSettingsHeader.remove();
+    }
+
+    if (this.$sourcesHeader) {
+      this.$sourcesHeader.remove();
+    }
+
+    this.$sidebarToggleBtn = null;
+    this.$container.removeClass('sidebar-hidden');
+  },
+
+  buildSidebarToggleView: function() {
     this.sidebarToggleViewEnabled = true;
 
     if (!this.$sourcesHeader) {
