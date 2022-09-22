@@ -4086,7 +4086,7 @@ abstract class Element extends Component implements ElementInterface
                 }
                 /** @var RevisionBehavior $behavior */
                 $behavior = $revision->getBehavior('revision');
-                return $behavior->revisionNotes ?: false;
+                return Html::encode($behavior->revisionNotes) ?: false;
             },
         ]);
     }
