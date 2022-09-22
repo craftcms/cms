@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.7.55.2 - 2022-09-22
+
+### Security
+- Fixed an XSS vulnerability.
+
 ## 3.7.55.1 - 2022-09-21
 
 ### Fixed
