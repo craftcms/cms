@@ -326,6 +326,7 @@ class ResaveController extends Controller
                 'set' => $this->set,
                 'to' => $this->to,
                 'ifEmpty' => $this->ifEmpty,
+                'touch' => $this->touch,
                 'updateSearchIndex' => $this->updateSearchIndex,
             ]));
             $this->stdout($elementType::pluralDisplayName() . ' queued to be resaved.' . PHP_EOL);

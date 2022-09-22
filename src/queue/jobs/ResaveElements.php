@@ -60,6 +60,12 @@ class ResaveElements extends BaseJob
     public $ifEmpty = false;
 
     /**
+     * @var bool Whether to update the `dateUpdated` timestamp for the elements.
+     * @since 3.7.54
+     */
+    public $touch = false;
+
+    /**
      * @inheritdoc
      */
     public function execute($queue)
@@ -89,7 +95,7 @@ class ResaveElements extends BaseJob
         };
 
         $elementsService->on(Elements::EVENT_BEFORE_RESAVE_ELEMENT, $callback);
-        $elementsService->resaveElements($query, false, true, $this->updateSearchIndex);
+        $elementsService->resaveElements($query, false, true, $this->updateSearchIndex, $this->touch);
         $elementsService->off(Elements::EVENT_BEFORE_RESAVE_ELEMENT, $callback);
     }
 
