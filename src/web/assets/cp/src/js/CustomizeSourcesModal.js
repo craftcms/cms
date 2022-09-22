@@ -24,6 +24,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
   sourceSort: null,
   sources: null,
   selectedSource: null,
+  sidebarToggleViewEnabled: false,
 
   elementTypeName: null,
   availableTableAttributes: null,
@@ -193,7 +194,6 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
 
     if (Craft.useMobileStyles()) {
       this.buildMobileToggleView();
-      this.hideSidebar();
     }
 
     this.addSourceMenu = new Garnish.DisclosureMenu($menuBtn);
@@ -206,6 +206,8 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
   },
 
   buildMobileToggleView: function() {
+    this.sidebarToggleViewEnabled = true;
+
     if (!this.$sourcesHeader) {
       this.$sourcesHeader = $('<div class="sources-header"/>')
         .addClass('sidebar-header')
@@ -241,11 +243,55 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
         .attr('aria-label', Craft.t('app', 'Show sidebar'))
         .appendTo(this.$sourceSettingsHeader);
     }
+
+    this.closeSidebar();
+
+    // Add listeners
+    this.addListener(this.$sidebarToggleBtn, 'click', () => {
+      this.toggleSidebar();
+    });
+
+    this.addListener(this.$sidebarCloseBtn, 'click', () => {
+      this.toggleSidebar();
+    });
   },
 
-  hideSidebar: function () {
-    console.log(this.$container);
+  toggleSidebar: function () {
+    if (this.sidebarIsOpen()) {
+      this.closeSidebar();
+    } else {
+      this.openSidebar();
+    }
+  },
+
+  openSidebar: function () {
+    this.$container.removeClass('sidebar-hidden');
+    this.$sidebarToggleBtn.attr('aria-expanded', 'true');
+    this.$sidebar.find(':focusable').first().focus();
+
+    Garnish.uiLayerManager.addLayer(this.$sidebar);
+
+    Garnish.uiLayerManager.registerShortcut(Garnish.ESC_KEY, () => {
+      this.closeSidebar();
+
+      if (Garnish.focusIsInside(this.$sidebar)) {
+        this.$sidebarToggleBtn.focus();
+      }
+    });
+  },
+
+  closeSidebar: function () {
     this.$container.addClass('sidebar-hidden');
+    this.$sidebarToggleBtn.attr('aria-expanded', 'false');
+
+    // if sidebar is topmost layer, remove layer
+    if (Garnish.uiLayerManager.currentLayer.$container.hasClass('cs-sidebar')) {
+      Garnish.uiLayerManager.removeLayer();
+    }
+  },
+
+  sidebarIsOpen: function () {
+    return this.$sidebarToggleBtn.attr('aria-expanded') === 'true';
   },
 
   addSource: function (sourceData, isNew) {
