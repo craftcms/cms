@@ -100,7 +100,7 @@ class ResaveElements extends BaseJob
     }
 
     /**
-     * @inheritdo
+     * @inheritdoc
      */
     protected function defaultDescription(): string
     {
