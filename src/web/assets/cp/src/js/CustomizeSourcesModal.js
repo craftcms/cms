@@ -8,9 +8,11 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
   $elementIndexSourcesContainer: null,
 
   $sidebar: null,
+  $sidebarToggleBtn: null,
   $sourcesContainer: null,
   $sourcesHeader: null,
   $sourceSettingsContainer: null,
+  $sourceSettingsHeader: null,
   $addSourceMenu: null,
   addSourceMenu: null,
   $footer: null,
@@ -205,15 +207,37 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
   buildMobileToggleView: function() {
     if (!this.$sourcesHeader) {
       this.$sourcesHeader = $('<div class="sources-header"/>')
+        .addClass('sidebar-header')
         .prependTo(this.$sourcesContainer);
+
+      this.$sidebarCloseBtn = Craft.ui
+        .createButton({
+          class: 'nav-close close-btn',
+        })
+        .attr('aria-label', Craft.t('app', 'Close'))
+        .removeClass('btn')
+        .appendTo(this.$sourcesHeader);
     }
 
     if (!this.$sourceSettingsHeader) {
       const $heading = $('<h1/>').text(this.getSourceName());
 
-      $('<div class="source-settings-header"/>')
+      this.$sourceSettingsHeader = $('<div class="source-settings-header"/>')
         .append($heading)
         .prependTo(this.$sourceSettingsContainer);
+
+      // Toggle sidebar button
+      const buttonConfig = {
+        toggle: true,
+        controls: 'modal-sidebar',
+        class: 'nav-toggle',
+      };
+
+      this.$sidebarToggleBtn = Craft.ui
+        .createButton(buttonConfig)
+        .removeClass('btn')
+        .attr('aria-label', Craft.t('app', 'Show sidebar'))
+        .appendTo(this.$sourceSettingsHeader);
     }
   },
 
