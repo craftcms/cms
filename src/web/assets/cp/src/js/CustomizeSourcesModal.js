@@ -274,6 +274,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
 
     this.addListener(this.$sidebarCloseBtn, 'click', () => {
       this.toggleSidebar();
+      this.$sidebarToggleBtn.trigger('focus');
     });
   },
 
