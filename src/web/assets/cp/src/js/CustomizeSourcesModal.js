@@ -9,6 +9,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
 
   $sidebar: null,
   $sourcesContainer: null,
+  $sourcesHeader: null,
   $sourceSettingsContainer: null,
   $addSourceMenu: null,
   addSourceMenu: null,
@@ -188,7 +189,32 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
       $('<li/>').append($newCustomSourceBtn).appendTo($ul);
     }
 
+    if (Craft.useMobileStyles()) {
+      this.buildMobileToggleView();
+    }
+
     this.addSourceMenu = new Garnish.DisclosureMenu($menuBtn);
+  },
+
+  getSourceName: function () {
+    return this.selectedSource ?
+      this.selectedSource.sourceData.label
+      : this.sources[0].sourceData.label;
+  },
+
+  buildMobileToggleView: function() {
+    if (!this.$sourcesHeader) {
+      this.$sourcesHeader = $('<div class="sources-header"/>')
+        .prependTo(this.$sourcesContainer);
+    }
+
+    if (!this.$sourceSettingsHeader) {
+      const $heading = $('<h1/>').text(this.getSourceName());
+
+      $('<div class="source-settings-header"/>')
+        .append($heading)
+        .prependTo(this.$sourceSettingsContainer);
+    }
   },
 
   addSource: function (sourceData, isNew) {
