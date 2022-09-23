@@ -2096,10 +2096,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
             let itemLabel = Craft.elementTypeNames[this.elementType]
               ? Craft.elementTypeNames[this.elementType][2]
-              : 'element';
+              : this.settings.elementTypeName.toLowerCase();
             let itemsLabel = Craft.elementTypeNames[this.elementType]
               ? Craft.elementTypeNames[this.elementType][3]
-              : 'elements';
+              : this.settings.elementTypePluralName.toLowerCase();
 
             if (!this._isViewPaginated()) {
               let countLabel = Craft.t(
@@ -2654,6 +2654,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       defaultSiteId: null,
       defaultSource: null,
       canHaveDrafts: false,
+
+      elementTypeName: Craft.t('app', 'Element'),
+      elementTypePluralName: Craft.t('app', 'Elements'),
 
       onAfterInit: $.noop,
       onSelectSource: $.noop,
