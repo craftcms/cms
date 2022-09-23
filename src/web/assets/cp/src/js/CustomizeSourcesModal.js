@@ -203,8 +203,8 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
   },
 
   getSourceName: function () {
-    return this.selectedSource ?
-      this.selectedSource.sourceData.label
+    return this.selectedSource
+      ? this.selectedSource.sourceData.label
       : this.sources[0].sourceData.label;
   },
 
@@ -235,7 +235,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
     this.$sourcesHeading.text(this.getSourceName());
   },
 
-  buildSidebarToggleView: function() {
+  buildSidebarToggleView: function () {
     this.$sourcesHeader = $('<div class="sources-header"/>')
       .addClass('sidebar-header')
       .prependTo(this.$sourcesContainer);
@@ -248,25 +248,27 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
       .removeClass('btn')
       .appendTo(this.$sourcesHeader);
 
-      this.$sourcesHeading = $('<h1 class="main-heading"/>').text(this.getSourceName());
+    this.$sourcesHeading = $('<h1 class="main-heading"/>').text(
+      this.getSourceName()
+    );
 
-      this.$sourceSettingsHeader = $('<div class="source-settings-header"/>')
-        .addClass('main-header')
-        .append(this.$sourcesHeading)
-        .prependTo(this.$sourceSettingsContainer);
+    this.$sourceSettingsHeader = $('<div class="source-settings-header"/>')
+      .addClass('main-header')
+      .append(this.$sourcesHeading)
+      .prependTo(this.$sourceSettingsContainer);
 
-      // Toggle sidebar button
-      const buttonConfig = {
-        toggle: true,
-        controls: 'modal-sidebar',
-        class: 'nav-toggle',
-      };
+    // Toggle sidebar button
+    const buttonConfig = {
+      toggle: true,
+      controls: 'modal-sidebar',
+      class: 'nav-toggle',
+    };
 
-      this.$sidebarToggleBtn = Craft.ui
-        .createButton(buttonConfig)
-        .removeClass('btn')
-        .attr('aria-label', Craft.t('app', 'Show sidebar'))
-        .appendTo(this.$sourceSettingsHeader);
+    this.$sidebarToggleBtn = Craft.ui
+      .createButton(buttonConfig)
+      .removeClass('btn')
+      .attr('aria-label', Craft.t('app', 'Show sidebar'))
+      .appendTo(this.$sourceSettingsHeader);
 
     this.closeSidebar();
 
