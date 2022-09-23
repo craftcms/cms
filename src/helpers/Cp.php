@@ -1296,6 +1296,7 @@ JS, [
 
         return
             static::textFieldHtml([
+                'status' => $address->getAttributeStatus('addressLine1'),
                 'label' => $address->getAttributeLabel('addressLine1'),
                 'id' => 'addressLine1',
                 'name' => 'addressLine1',
@@ -1305,6 +1306,7 @@ JS, [
                 'autocomplete' => 'address-line1',
             ]) .
             static::textFieldHtml([
+                'status' => $address->getAttributeStatus('addressLine2'),
                 'label' => $address->getAttributeLabel('addressLine2'),
                 'id' => 'addressLine2',
                 'name' => 'addressLine2',
@@ -1337,12 +1339,12 @@ JS, [
                 [$address->countryCode, $address->administrativeArea, $address->locality],
                 false,
             ) .
-            Html::beginTag('div', ['class' => 'flex-fields']) .
             static::textFieldHtml([
                 'fieldClass' => array_filter([
                     'width-50',
                     !isset($visibleFields['postalCode']) ? 'hidden' : null,
                 ]),
+                'status' => $address->getAttributeStatus('postalCode'),
                 'label' => $address->getAttributeLabel('postalCode'),
                 'id' => 'postalCode',
                 'name' => 'postalCode',
@@ -1356,14 +1358,14 @@ JS, [
                     'width-50',
                     !isset($visibleFields['sortingCode']) ? 'hidden' : null,
                 ]),
+                'status' => $address->getAttributeStatus('sortingCode'),
                 'label' => $address->getAttributeLabel('sortingCode'),
                 'id' => 'sortingCode',
                 'name' => 'sortingCode',
                 'value' => $address->sortingCode,
                 'required' => isset($requiredFields['sortingCode']),
                 'errors' => $address->getErrors('sortingCode'),
-            ]) .
-            Html::endTag('div'); // .flex-fields
+            ]);
     }
 
     private static function _subdivisionField(
@@ -1413,6 +1415,7 @@ JS, [
 
             return static::selectizeFieldHtml([
                 'fieldClass' => !$visible ? 'hidden' : null,
+                'status' => $address->getAttributeStatus($name),
                 'label' => $address->getAttributeLabel($name),
                 'id' => $name,
                 'name' => $name,
@@ -1426,6 +1429,7 @@ JS, [
         // No preconfigured subdivisions for the given parents, so just output a text input
         return static::textFieldHtml([
             'fieldClass' => !$visible ? 'hidden' : null,
+            'status' => $address->getAttributeStatus($name),
             'label' => $address->getAttributeLabel($name),
             'id' => $name,
             'name' => $name,
