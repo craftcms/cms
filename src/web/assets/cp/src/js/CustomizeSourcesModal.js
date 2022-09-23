@@ -229,21 +229,18 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
   },
 
   buildSidebarToggleView: function() {
-    if (!this.$sourcesHeader) {
-      this.$sourcesHeader = $('<div class="sources-header"/>')
-        .addClass('sidebar-header')
-        .prependTo(this.$sourcesContainer);
+    this.$sourcesHeader = $('<div class="sources-header"/>')
+      .addClass('sidebar-header')
+      .prependTo(this.$sourcesContainer);
 
-      this.$sidebarCloseBtn = Craft.ui
-        .createButton({
-          class: 'nav-close close-btn',
-        })
-        .attr('aria-label', Craft.t('app', 'Close'))
-        .removeClass('btn')
-        .appendTo(this.$sourcesHeader);
-    }
+    this.$sidebarCloseBtn = Craft.ui
+      .createButton({
+        class: 'nav-close close-btn',
+      })
+      .attr('aria-label', Craft.t('app', 'Close'))
+      .removeClass('btn')
+      .appendTo(this.$sourcesHeader);
 
-    if (!this.$sourceSettingsHeader) {
       const $heading = $('<h1 class="main-heading"/>').text(this.getSourceName());
 
       this.$sourceSettingsHeader = $('<div class="source-settings-header"/>')
@@ -263,7 +260,6 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
         .removeClass('btn')
         .attr('aria-label', Craft.t('app', 'Show sidebar'))
         .appendTo(this.$sourceSettingsHeader);
-    }
 
     this.closeSidebar();
 
@@ -304,7 +300,10 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
 
   closeSidebar: function () {
     this.$container.addClass('sidebar-hidden');
-    this.$sidebarToggleBtn.attr('aria-expanded', 'false');
+
+    if (this.$sidebarToggleBtn) {
+      this.$sidebarToggleBtn.attr('aria-expanded', 'false');
+    }
 
     // if sidebar is topmost layer, remove layer
     if (Garnish.uiLayerManager.currentLayer.$container.hasClass('cs-sidebar')) {
