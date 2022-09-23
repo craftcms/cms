@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+### Fixed
+- Fixed an error that could occur when editing a draft of an element type that didn’t have change tracking enabled.
+
 ## 4.2.5.1 - 2022-09-21
 
 ### Fixed

@@ -816,6 +816,11 @@ interface ElementInterface extends ComponentInterface
      *
      * This will only be called if the element can be [[canView()|viewed]].
      *
+     * ::: tip
+     * If this is going to return `true` under any circumstances, make sure [[trackChanges()]] is returning `true`,
+     * so drafts can be automatically updated with upstream content changes.
+     * :::
+     *
      * @param User $user
      * @return bool
      * @since 4.0.0
