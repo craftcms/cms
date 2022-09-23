@@ -11,6 +11,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
   $sidebarToggleBtn: null,
   $sourcesContainer: null,
   $sourcesHeader: null,
+  $sourcesHeading: null,
   $sourceSettingsContainer: null,
   $sourceSettingsHeader: null,
   $addSourceMenu: null,
@@ -228,6 +229,12 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
     this.$container.removeClass('sidebar-hidden');
   },
 
+  updateHeading: function () {
+    if (!this.$sourcesHeading) return;
+
+    this.$sourcesHeading.text(this.getSourceName());
+  },
+
   buildSidebarToggleView: function() {
     this.$sourcesHeader = $('<div class="sources-header"/>')
       .addClass('sidebar-header')
@@ -241,11 +248,11 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
       .removeClass('btn')
       .appendTo(this.$sourcesHeader);
 
-      const $heading = $('<h1 class="main-heading"/>').text(this.getSourceName());
+      this.$sourcesHeading = $('<h1 class="main-heading"/>').text(this.getSourceName());
 
       this.$sourceSettingsHeader = $('<div class="source-settings-header"/>')
         .addClass('main-header')
-        .append($heading)
+        .append(this.$sourcesHeading)
         .prependTo(this.$sourceSettingsContainer);
 
       // Toggle sidebar button
@@ -576,6 +583,7 @@ Craft.CustomizeSourcesModal.BaseSource = Garnish.Base.extend({
 
     this.$item.addClass('sel');
     this.modal.selectedSource = this;
+    this.modal.updateHeading();
 
     if (!this.$settingsContainer) {
       this.$settingsContainer = $('<div/>').appendTo(
