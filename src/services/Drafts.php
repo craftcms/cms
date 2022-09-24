@@ -106,7 +106,7 @@ class Drafts extends Component
      *
      * @template T of ElementInterface
      * @param T $canonical The element to create a draft for
-     * @param int $creatorId The user ID that the draft should be attributed to
+     * @param int|null $creatorId The user ID that the draft should be attributed to
      * @param string|null $name The draft name
      * @param string|null $notes The draft notes
      * @param array $newAttributes any attributes to apply to the draft
@@ -116,7 +116,7 @@ class Drafts extends Component
      */
     public function createDraft(
         ElementInterface $canonical,
-        int $creatorId,
+        ?int $creatorId = null,
         ?string $name = null,
         ?string $notes = null,
         array $newAttributes = [],

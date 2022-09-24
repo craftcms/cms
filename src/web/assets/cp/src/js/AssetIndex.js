@@ -86,7 +86,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
     this._createFolderContextMenu($source);
 
     if (this.settings.context === 'index') {
-      if (this._folderDrag && this._getSourceLevel($source) > 1) {
+      if (this._folderDrag && this.getSourceLevel($source) > 1) {
         if ($source.data('folder-id')) {
           this._folderDrag.addItems($source.parent());
         }
@@ -109,7 +109,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
     }
 
     if (this.settings.context === 'index') {
-      if (this._folderDrag && this._getSourceLevel($source) > 1) {
+      if (this._folderDrag && this.getSourceLevel($source) > 1) {
         this._folderDrag.removeItems($source.parent());
       }
 
@@ -117,10 +117,6 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
         this._assetDrag.updateDropTargets();
       }
     }
-  },
-
-  _getSourceLevel: function ($source) {
-    return $source.parentsUntil('nav', 'ul').length;
   },
 
   /**
@@ -646,34 +642,6 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
     }
   },
 
-  /**
-   * Returns the root level source for a source.
-   *
-   * @param $source
-   * @returns {*}
-   * @private
-   */
-  _getRootSource: function ($source) {
-    var $parent;
-    while (($parent = this._getParentSource($source)) && $parent.length) {
-      $source = $parent;
-    }
-    return $source;
-  },
-
-  /**
-   * Get parent source for a source.
-   *
-   * @param $source
-   * @returns {*}
-   * @private
-   */
-  _getParentSource: function ($source) {
-    if (this._getSourceLevel($source) > 1) {
-      return $source.parent().parent().siblings('a');
-    }
-  },
-
   _selectSourceByFolderId: function (targetFolderId) {
     var $targetSource = this._getSourceByKey(targetFolderId);
 
@@ -818,7 +786,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
     let nestedSources = [];
     let $thisSource = $source;
     let $parent;
-    while (($parent = this._getParentSource($thisSource)) && $parent.length) {
+    while (($parent = this.getParentSource($thisSource)) && $parent.length) {
       nestedSources.unshift($thisSource);
       $thisSource = $parent;
     }
@@ -954,8 +922,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
   /**
    * On upload success.
    *
-   * @param event
-   * @param data
+   * @param {Object} event
+   * @param {Object} data
    * @private
    */
   _onUploadSuccess: function (event, data) {
@@ -1017,8 +985,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
   _updateAfterUpload: function () {
     if (this.settings.context !== 'index') {
       this.clearSearch();
-      this.setSortAttribute('dateCreated');
-      this.setSortDirection('desc');
+      this.setSelectedSortAttribute('dateCreated', 'desc');
     }
     this.updateElements();
   },
@@ -1026,7 +993,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
   /**
    * Follow up to an upload that triggered at least one conflict resolution prompt.
    *
-   * @param returnData
+   * @param {Object} returnData
    * @private
    */
   _uploadFollowup: function (returnData) {
@@ -1349,6 +1316,39 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
     }
   },
 
+  getSourceActions: function () {
+    const actions = this.base();
+
+    // Make sure it's a volume folder
+    if (this._getVolumeOrFolderUidFromSourceKey(this.sourceKey)) {
+      actions.push({
+        label: Craft.t('app', 'New subfolder'),
+        onSelect: () => {
+          this._createSubfolder(this.$source);
+        },
+      });
+
+      // For all folders that are not top folders
+      if (this.getSourceLevel(this.$source) > 1) {
+        actions.push({
+          label: Craft.t('app', 'Rename folder'),
+          onSelect: () => {
+            this._renameFolder(this.$source);
+          },
+        });
+        actions.push({
+          label: Craft.t('app', 'Delete folder'),
+          destructive: true,
+          onSelect: () => {
+            this._deleteFolder(this.$source);
+          },
+        });
+      }
+    }
+
+    return actions;
+  },
+
   _createFolderContextMenu: function ($source) {
     // Make sure it's a volume folder
     if (!this._getVolumeOrFolderUidFromSourceKey($source.data('key'))) {
@@ -1365,10 +1365,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
     ];
 
     // For all folders that are not top folders
-    if (
-      this.settings.context === 'index' &&
-      this._getSourceLevel($source) > 1
-    ) {
+    if (this.settings.context === 'index' && this.getSourceLevel($source) > 1) {
       menuOptions.push({
         label: Craft.t('app', 'Rename folder'),
         onClick: () => {
@@ -1429,6 +1426,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
           var $a = $subfolder.children('a:first');
           this._appendSubfolder($parentFolder, $subfolder);
           this.initSource($a);
+
+          Craft.cp.displayNotice(Craft.t('app', 'Folder created.'));
         })
         .catch(({response}) => {
           this.setIndexAvailable();
@@ -1454,13 +1453,15 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
       Craft.sendActionRequest('POST', 'assets/delete-folder', {data})
         .then((response) => {
           this.setIndexAvailable();
-          var $parentFolder = this._getParentSource($targetFolder);
+          var $parentFolder = this.getParentSource($targetFolder);
 
           // Remove folder and any trace from its parent, if needed
           this.deinitSource($targetFolder);
 
           $targetFolder.parent().remove();
           this._cleanUpTree($parentFolder);
+
+          Craft.cp.displayNotice(Craft.t('app', 'Folder deleted.'));
         })
         .catch(({response}) => {
           this.setIndexAvailable();
@@ -1496,6 +1497,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
         if ($source.data('key') === this.$source.data('key')) {
           this.updateElements();
 
+          Craft.cp.displayNotice(Craft.t('app', 'Folder renamed.'));
+
           // Update the URL if we're on the Assets index
           if (this.settings.context === 'index') {
             this._updateUrl($source);
@@ -1511,7 +1514,7 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
   /**
    * Prepare a source folder for children folder.
    *
-   * @param $parentFolder
+   * @param {jQuery} $parentFolder
    * @private
    */
   _prepareParentForChildren: function ($parentFolder) {
@@ -1527,8 +1530,8 @@ Craft.AssetIndex = Craft.BaseElementIndex.extend({
   /**
    * Appends a subfolder to the parent folder at the correct spot.
    *
-   * @param $parentFolder
-   * @param $subfolder
+   * @param {jQuery} $parentFolder
+   * @param {jQuery} $subfolder
    * @private
    */
   _appendSubfolder: function ($parentFolder, $subfolder) {

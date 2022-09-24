@@ -36,10 +36,12 @@ Craft.Listbox = Garnish.Base.extend(
           case Garnish.UP_KEY:
             this.selectPrev();
             ev.preventDefault();
+            ev.stopPropagation();
             break;
           case Garnish.DOWN_KEY:
             this.selectNext();
             ev.preventDefault();
+            ev.stopPropagation();
             break;
           case Garnish.LEFT_KEY:
             if (Craft.orientation === 'ltr') {
@@ -48,6 +50,7 @@ Craft.Listbox = Garnish.Base.extend(
               this.selectNext();
             }
             ev.preventDefault();
+            ev.stopPropagation();
             break;
           case Garnish.RIGHT_KEY:
             if (Craft.orientation === 'ltr') {
@@ -56,6 +59,7 @@ Craft.Listbox = Garnish.Base.extend(
               this.selectPrev();
             }
             ev.preventDefault();
+            ev.stopPropagation();
             break;
         }
       });
@@ -75,9 +79,11 @@ Craft.Listbox = Garnish.Base.extend(
         return;
       }
 
-      this.$selectedOption
-        .removeClass(this.settings.selectedClass)
-        .attr('aria-selected', 'false');
+      if (this.$selectedOption) {
+        this.$selectedOption
+          .removeClass(this.settings.selectedClass)
+          .attr('aria-selected', 'false');
+      }
 
       this.$selectedOption = this.$options
         .eq(index)
@@ -107,6 +113,16 @@ Craft.Listbox = Garnish.Base.extend(
       } else {
         this.select(this.selectedOptionIndex + 1);
       }
+    },
+
+    disable: function () {
+      this.base();
+      this.$container.attr('aria-disabled', 'true');
+    },
+
+    enable: function () {
+      this.base();
+      this.$container.removeAttr('aria-disabled');
     },
 
     destroy: function () {

@@ -181,9 +181,19 @@ $radioSize: 16px;
   font-size: 0.9em !important;
 }
 
-@function toRem($size) {
-  $remValue: calc($size / 16) + rem;
-  @return $remValue;
+@function toRem($values...) {
+  $max: length($values);
+  $remValues: '';
+
+  @for $i from 1 through $max {
+    $remValues: #{$remValues + calc(nth($values, $i) / 16)}rem;
+
+    @if $i < $max {
+      $remValues: #{$remValues + ' '};
+    }
+  }
+
+  @return $remValues;
 }
 
 @mixin fontSize($size) {
@@ -210,7 +220,6 @@ $radioSize: 16px;
   text {
     fill: $color;
     stroke-width: 0;
-    transition: fill linear 100ms;
   }
 }
 
@@ -624,27 +633,33 @@ $radioSize: 16px;
 }
 
 @mixin placeholder-styles($color) {
-  ::-webkit-input-placeholder {
+  input::-webkit-input-placeholder,
+  textarea::-webkit-input-placeholder {
     color: $color;
   }
 
-  input:-ms-input-placeholder {
+  input:-ms-input-placeholder,
+  textarea:-ms-input-placeholder {
     color: $color;
   }
 
-  ::-ms-input-placeholder {
+  input::-ms-input-placeholder,
+  textarea::-ms-input-placeholder {
     color: $color;
   }
 
-  :-moz-placeholder {
+  input:-moz-placeholder,
+  textarea:-moz-placeholder {
     color: $color;
   }
 
-  ::-moz-placeholder {
+  input::-moz-placeholder,
+  textarea::-moz-placeholder {
     color: $color;
   }
 
-  ::placeholder {
+  input::placeholder,
+  textarea::placeholder {
     color: $color;
   }
 }

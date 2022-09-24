@@ -31,7 +31,7 @@ class Text extends AssetPreviewHandler
         FileHelper::unlink($localCopy);
         $language = $this->asset->kind === Asset::KIND_HTML ? 'markup' : $this->asset->kind;
 
-        return Craft::$app->getView()->renderTemplate('assets/_previews/text',
+        return Craft::$app->getView()->renderTemplate('assets/_previews/text.twig',
             array_merge([
                 'asset' => $this->asset,
                 'language' => $language,
