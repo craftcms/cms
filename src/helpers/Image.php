@@ -111,8 +111,8 @@ class Image
         }
 
         // Since we don't want to upscale, make sure the calculated ratios aren't bigger than the actual image size.
-        $newHeight = min($sourceHeight, (int)round($sourceWidth / $transformRatio));
-        $newWidth = min($sourceWidth, (int)round($sourceHeight * $transformRatio));
+        $newWidth = min($sourceWidth, $transformWidth, (int)round($sourceHeight * $transformRatio));
+        $newHeight = min($sourceHeight, $transformHeight, (int)round($sourceWidth / $transformRatio));
 
         return [$newWidth, $newHeight];
     }

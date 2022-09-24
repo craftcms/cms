@@ -250,7 +250,12 @@ class ElementsController extends Controller
             }
 
             // If this is an outdated draft, merge in the latest canonical changes
-            $mergeCanonicalChanges = $element->getIsDraft() && !$element->getIsUnpublishedDraft() && ElementHelper::isOutdated($element);
+            $mergeCanonicalChanges = (
+                $element::trackChanges() &&
+                $element->getIsDraft() &&
+                !$element->getIsUnpublishedDraft() &&
+                ElementHelper::isOutdated($element)
+            );
             if ($mergeCanonicalChanges) {
                 Craft::$app->getElements()->mergeCanonicalChanges($element);
             }
