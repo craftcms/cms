@@ -759,7 +759,7 @@ interface ElementInterface extends ComponentInterface
      * Returns whether the given user is authorized to view this element’s edit page.
      *
      * If they can view but not [[canSave()|save]], the edit form will either render statically,
-     * or be restricted to only saving changes as a draft, depending on [[canCreateDraft()]].
+     * or be restricted to only saving changes as a draft, depending on [[canCreateDrafts()]].
      *
      * @param User $user
      * @return bool
@@ -812,7 +812,7 @@ interface ElementInterface extends ComponentInterface
     public function canDeleteForSite(User $user): bool;
 
     /**
-     * Returns whether the given user is authorized to create drafts for thisc element.
+     * Returns whether the given user is authorized to create drafts for this element.
      *
      * This will only be called if the element can be [[canView()|viewed]].
      *
