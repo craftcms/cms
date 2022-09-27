@@ -1052,6 +1052,8 @@ return [
     'Pay {price}' => 'أدفع {price}',
     'Pending' => 'معلق',
     'Perform Craft CMS and plugin updates' => 'إجراء تحديثات لـ Craft CMS مع الملاحق',
+    'Period Type' => 'Period Type',
+    'Period Value' => 'Period Value',
     'Permissions' => 'الأذونات',
     'Phone' => 'الهاتف',
     'Photo' => 'الصورة الشخصية',
