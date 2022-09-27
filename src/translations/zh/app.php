@@ -1052,6 +1052,8 @@ return [
     'Pay {price}' => '支付 {price}',
     'Pending' => '暂停',
     'Perform Craft CMS and plugin updates' => '进行 Craft CMS 和插件更新',
+    'Period Type' => 'Period Type',
+    'Period Value' => 'Period Value',
     'Permissions' => '权限',
     'Phone' => '手机',
     'Photo' => '照片',
