@@ -1052,6 +1052,8 @@ return [
     'Pay {price}' => 'Ödeme {price}',
     'Pending' => 'Beklemede',
     'Perform Craft CMS and plugin updates' => 'Craft CMS ve eklenti güncellemesi yapabilme',
+    'Period Type' => 'Period Type',
+    'Period Value' => 'Period Value',
     'Permissions' => 'İzinler',
     'Phone' => 'Telefon',
     'Photo' => 'Fotoğraf',
