@@ -1052,6 +1052,8 @@ return [
     'Pay {price}' => '{price} を支払う',
     'Pending' => '保留中',
     'Perform Craft CMS and plugin updates' => 'Craft CMS起動とプラグインのアップデート',
+    'Period Type' => 'Period Type',
+    'Period Value' => 'Period Value',
     'Permissions' => '権利',
     'Phone' => '電話',
     'Photo' => '写真',
