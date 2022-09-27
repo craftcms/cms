@@ -1053,6 +1053,8 @@ return [
     'Pay {price}' => 'Betal {price}',
     'Pending' => 'Venter på godkendelse',
     'Perform Craft CMS and plugin updates' => 'Udfør Craft CMS og pluginopdateringer',
+    'Period Type' => 'Period Type',
+    'Period Value' => 'Period Value',
     'Permissions' => 'Tilladelser',
     'Phone' => 'Telefon',
     'Photo' => 'Foto',
