@@ -1052,6 +1052,8 @@ return [
     'Pay {price}' => 'Betala {price}',
     'Pending' => 'I avvaktan',
     'Perform Craft CMS and plugin updates' => 'Utför uppdateringar av Craft CMS och plugins.',
+    'Period Type' => 'Period Type',
+    'Period Value' => 'Period Value',
     'Permissions' => 'Rättigheter',
     'Phone' => 'Telefon',
     'Photo' => 'Foto',
