@@ -1052,6 +1052,8 @@ return [
     'Pay {price}' => '{price} fizetése',
     'Pending' => 'Függőben',
     'Perform Craft CMS and plugin updates' => 'Craft CMS és a bővítmények frissítéseinek alkalmazása',
+    'Period Type' => 'Period Type',
+    'Period Value' => 'Period Value',
     'Permissions' => 'Engedélyek',
     'Phone' => 'Telefon',
     'Photo' => 'Fénykép',
