@@ -1052,6 +1052,8 @@ return [
     'Pay {price}' => 'שלם {price}',
     'Pending' => 'ממתין',
     'Perform Craft CMS and plugin updates' => 'ביצוע עדכוני Craft CMS ותוספים',
+    'Period Type' => 'Period Type',
+    'Period Value' => 'Period Value',
     'Permissions' => 'הרשאות',
     'Phone' => 'טלפון',
     'Photo' => 'תמונה',
