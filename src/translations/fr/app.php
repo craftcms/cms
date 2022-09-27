@@ -1052,6 +1052,8 @@ return [
     'Pay {price}' => 'Payer {price}',
     'Pending' => 'En attente',
     'Perform Craft CMS and plugin updates' => 'Mettre à jour Craft CMS et ses plugins',
+    'Period Type' => 'Period Type',
+    'Period Value' => 'Period Value',
     'Permissions' => 'Droits d’accès',
     'Phone' => 'Téléphone',
     'Photo' => 'Photo',
