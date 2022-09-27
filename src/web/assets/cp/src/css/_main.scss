@@ -3629,6 +3629,13 @@ ul.tree,
     }
 
     [role='tab'] {
+      --tab-label-color: var(--light-text-color);
+
+      &.error {
+        --highlight-color: var(--error-color) !important;
+        --tab-label-color: var(--error-color) !important;
+      }
+
       &,
       .tab-label {
         border-radius: 2px 2px 0 0;
@@ -3641,7 +3648,7 @@ ul.tree,
         position: relative;
         padding: 0 24px;
         white-space: nowrap;
-        color: var(--light-text-color);
+        color: var(--tab-label-color);
         height: 50px;
       }
 
@@ -3664,13 +3671,13 @@ ul.tree,
       }
 
       &.sel {
+        --highlight-color: var(--gray-500);
+        --tab-label-color: var(--text-color);
         position: relative;
         z-index: 1;
         cursor: default;
-        color: var(--text-color);
-        box-shadow: inset 0 2px 0 var(--gray-500), 0 0 0 1px $hairlineColor,
-          0 2px 12px transparentize($grey200, 0.5);
-        color: var(--text-color);
+        box-shadow: inset 0 2px 0 var(--highlight-color),
+          0 0 0 1px $hairlineColor, 0 2px 12px transparentize($grey200, 0.5);
         background-color: var(--white);
       }
 
