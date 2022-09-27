@@ -1052,6 +1052,8 @@ return [
     'Pay {price}' => 'Zaplatiť {price}',
     'Pending' => 'Nevyriešené',
     'Perform Craft CMS and plugin updates' => 'Vykonať aktualizácie Craft CMS a doplnkov',
+    'Period Type' => 'Period Type',
+    'Period Value' => 'Period Value',
     'Permissions' => 'Oprávnenia',
     'Phone' => 'Telefón',
     'Photo' => 'Fotka',
