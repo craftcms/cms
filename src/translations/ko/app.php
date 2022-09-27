@@ -1052,6 +1052,8 @@ return [
     'Pay {price}' => '{price} 결제',
     'Pending' => '대기 중',
     'Perform Craft CMS and plugin updates' => 'Craft CMS 및 플러그인 업데이트 실행',
+    'Period Type' => 'Period Type',
+    'Period Value' => 'Period Value',
     'Permissions' => '허가',
     'Phone' => '전화',
     'Photo' => '사진',
