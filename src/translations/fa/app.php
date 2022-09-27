@@ -1052,6 +1052,8 @@ return [
     'Pay {price}' => 'پرداخت {price}',
     'Pending' => 'در حال انتظار',
     'Perform Craft CMS and plugin updates' => 'اجرای بروزرسانی های Craft CMS و پلاگین',
+    'Period Type' => 'Period Type',
+    'Period Value' => 'Period Value',
     'Permissions' => 'مجوزها',
     'Phone' => 'تلفن',
     'Photo' => 'تصویر',
