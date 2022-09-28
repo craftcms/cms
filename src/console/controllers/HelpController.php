@@ -71,8 +71,7 @@ class HelpController extends BaseHelpController
     {
         // If they don't want JSON, let the parent do its thing
         if (!$this->asJson) {
-            parent::actionIndex($command);
-            return;
+            return parent::actionIndex($command);
         }
         // Get the command info to output
         if ($command !== null) {
@@ -82,6 +81,7 @@ class HelpController extends BaseHelpController
         }
 
         // Send the commands encoded as JSON to stdout
+        /** @phpstan-ignore-next-line */
         $jsonOptions = JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | (YII_DEBUG ? JSON_PRETTY_PRINT : 0);
         $this->stdout(Json::encode($commands, $jsonOptions));
 
@@ -158,7 +158,7 @@ class HelpController extends BaseHelpController
         // Get all of the command names
         foreach ($this->getCommandDescriptions() as $command => $description) {
             $result = Craft::$app->createController($command);
-            /** @var $controller Controller */
+            /** @var Controller $controller */
             list($controller, $actionID) = $result;
             $actions = $this->getActions($controller);
             $prefix = $controller->getUniqueId();
