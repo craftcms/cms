@@ -1,6 +1,9 @@
 /** global: Craft */
 /** global: Garnish */
 
+import $ from 'jquery';
+import Garnish from '../../../garnish/src';
+
 /**
  * Element index class
  */
@@ -374,12 +377,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     get $sources() {
-      console.log('in getter');
-      if (!this.sourceSelect) {
+      if (!this.sourceNav) {
         return undefined;
       }
 
-      return this.sourceSelect.$items;
+      return this.sourceNav.$items;
     },
 
     getSite: function () {
@@ -401,18 +403,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       const $navItems = this.$sidebar.find('nav [data-source-item]');
 
       if (!this.sourceNav) {
-        this.sourceNav = new Garnish.SourceNav(this.$sidebar.find('nav'), {
+        this.sourceNav = new SourceNav(this.$sidebar.find('nav'), {
           onSourceChange: this._handleSourceSelectionChange.bind(this),
         });
-        // this.sourceSelect = new Garnish.Select(this.$sidebar.find('nav'), {
-        //   multi: false,
-        //   allowEmpty: false,
-        //   vertical: true,
-        //   onSelectionChange: this._handleSourceSelectionChange.bind(this),
-        // });
-
-        // Add event listeners for selection
-        this.addListener($navItems, 'click', this._handleSourceSelectionChange);
       }
 
       this.sourcesByKey = {};
@@ -1305,7 +1298,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.sourceKey = $source.data('key');
       this.rootSourceKey = this.$rootSource.data('key');
       this.setInstanceState('selectedSource', this.sourceKey);
-      this.sourceSelect.selectItem($source);
+      this.sourceNav.selectItem($source);
 
       Craft.cp.updateContentHeading();
 
@@ -1838,20 +1831,16 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     // -------------------------------------------------------------------------
 
     _handleSourceSelectionChange: function (event) {
-      console.log(event);
-
-      return;
       // If the selected source was just removed (maybe because its parent was collapsed),
       // there won't be a selected source
-      if (!this.sourceSelect.totalSelected) {
-        this.sourceSelect.selectItem(this.$visibleSources.first());
-        console.log('in first conditional');
+
+      if (!this.sourceNav.$selectedItem) {
+        this.sourceNav.selectItem(this.$visibleSources.first());
         return;
       }
 
-      if (this.selectSource(this.sourceSelect.$selectedItems)) {
+      if (this.selectSource(this.sourceNav.$selectedItem)) {
         this.updateElements();
-        console.log('in update');
       }
     },
 
@@ -1957,7 +1946,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
     updateSourceVisibility: function () {
       this.$visibleSources = $();
-      console.log('in update source visibility fxn');
 
       for (let i = 0; i < this.$sources.length; i++) {
         const $source = this.$sources.eq(i);
@@ -2686,13 +2674,74 @@ Craft.BaseElementIndex = Garnish.Base.extend(
   }
 );
 
-const SourceNav = Garnish.Base.extend({
-  $items: null,
+const SourceNav = Garnish.Base.extend(
+  {
+    $container: null,
+    $items: null,
+    $selectedItem: null,
 
-  init: function (container, settings) {
-    console.log('initialized');
+    init: function (container, settings) {
+      this.$container = $(container);
+
+      const items = this.$container.find('[data-source-item]');
+
+      this.setSettings(settings, SourceNav.defaults);
+
+      this.$items = $();
+      this.addItems(items);
+    },
+
+    addItems: function (items) {
+      const $items = $(items);
+
+      for (var i = 0; i < $items.length; i++) {
+        const item = $items[i];
+
+        this.addListener(item, 'click', this.handleClick.bind(this));
+        this.addListener(item, 'keydown', this.onKeyDown.bind(this));
+      }
+
+      this.$items = this.$items.add($items);
+    },
+
+    onKeyDown: function (event) {
+
+    },
+
+    handleClick: function (event) {
+      const $item = this.getClosestItem(event.target);
+
+      this.selectItem($item);
+    },
+
+    getClosestItem: function (element) {
+      return $(element).closest('[data-source-item]');
+    },
+
+    selectItem: function ($item) {
+      this.deselectAll();
+
+      this.$selectedItem = $item
+        .attr('aria-current', 'true')
+        .addClass(this.settings.selectedClass);
+
+      //this.onSourceChange();
+    },
+
+    deselectAll: function () {
+      this.$items
+        .attr('aria-current', 'false')
+        .removeClass(this.settings.selectedClass);
+
+      //this.onSelectionChange();
+    },
   },
-});
+  {
+    defaults: {
+      selectedClass: 'sel',
+      onSourceChange: $.noop,
+    },
+  });
 
 const ViewMenu = Garnish.Base.extend({
   elementIndex: null,
