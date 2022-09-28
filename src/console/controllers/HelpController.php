@@ -12,6 +12,7 @@ use craft\helpers\Json;
 use yii\console\Controller;
 use yii\console\controllers\HelpController as BaseHelpController;
 use yii\console\Exception;
+use yii\console\ExitCode;
 use yii\helpers\Console;
 use yii\helpers\Inflector;
 
@@ -28,7 +29,7 @@ class HelpController extends BaseHelpController
     /**
      * @var array The base options provided by the yii\console\Controller
      */
-    protected $baseOptions = [];
+    protected array $baseOptions = [];
 
     /**
      * @inheritdoc
@@ -66,7 +67,7 @@ class HelpController extends BaseHelpController
     /**
      * @inerhitdoc
      */
-    public function actionIndex($command = null)
+    public function actionIndex($command = null): int
     {
         // If they don't want JSON, let the parent do its thing
         if (!$this->asJson) {
@@ -83,6 +84,8 @@ class HelpController extends BaseHelpController
         // Send the commands encoded as JSON to stdout
         $jsonOptions = JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | (YII_DEBUG ? JSON_PRETTY_PRINT : 0);
         $this->stdout(Json::encode($commands, $jsonOptions));
+
+        return ExitCode::OK;
     }
 
     /**
@@ -125,11 +128,11 @@ class HelpController extends BaseHelpController
                 return array_filter([
                     'name' => $command,
                     'description' => $cleanUpDescription($description),
-                    'args' => array_map(fn(array $k, array $v): array => array_filter([
+                    'args' => array_map(fn(string $k, mixed $v): mixed => array_filter([
                         'name' => $k,
                         'description' => ($v['type'] ? '<' : '[') . trim($v['type']) . ($v['type'] ? '>' : ']') . ' ' . $cleanUpDescription($v['comment']),
                     ]), array_keys($args), array_values($args)),
-                    'options' => array_map(fn(array $k, array $v): array => array_filter([
+                    'options' => array_map(fn(string $k, mixed $v): mixed => array_filter([
                         'name' => '--' . $k,
                         'description' => '(' . trim($v['type']) . ') ' . $cleanUpDescription($v['comment']),
                     ]), array_keys($options), array_values($options)),
@@ -182,7 +185,7 @@ class HelpController extends BaseHelpController
      * Returns full description from the docblock without any kind of ANSI terminal formatting
      *
      * @see Controller::getActionHelp()
-     * @param \Reflector $reflection
+     * @param \ReflectionMethod $reflection
      * @return string
      */
     protected function getUnformattedActionHelp($reflection)
