@@ -16,6 +16,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
     searchTimeout: null,
     sourceSelect: null,
+    sourceNav: null,
 
     $container: null,
     $main: null,
@@ -373,6 +374,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     get $sources() {
+      console.log('in getter');
       if (!this.sourceSelect) {
         return undefined;
       }
@@ -396,13 +398,21 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       }
 
       // The source selector
-      if (!this.sourceSelect) {
-        this.sourceSelect = new Garnish.Select(this.$sidebar.find('nav'), {
-          multi: false,
-          allowEmpty: false,
-          vertical: true,
-          onSelectionChange: this._handleSourceSelectionChange.bind(this),
+      const $navItems = this.$sidebar.find('nav [data-source-item]');
+
+      if (!this.sourceNav) {
+        this.sourceNav = new Garnish.SourceNav(this.$sidebar.find('nav'), {
+          onSourceChange: this._handleSourceSelectionChange.bind(this),
         });
+        // this.sourceSelect = new Garnish.Select(this.$sidebar.find('nav'), {
+        //   multi: false,
+        //   allowEmpty: false,
+        //   vertical: true,
+        //   onSelectionChange: this._handleSourceSelectionChange.bind(this),
+        // });
+
+        // Add event listeners for selection
+        this.addListener($navItems, 'click', this._handleSourceSelectionChange);
       }
 
       this.sourcesByKey = {};
@@ -461,7 +471,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     initSource: function ($source) {
-      this.sourceSelect.addItems($source);
+      //this.sourceSelect.addItems($source);
       this.initSourceToggle($source);
       this.sourcesByKey[$source.data('key')] = $source;
 
@@ -1827,16 +1837,21 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     // UI state handlers
     // -------------------------------------------------------------------------
 
-    _handleSourceSelectionChange: function () {
+    _handleSourceSelectionChange: function (event) {
+      console.log(event);
+
+      return;
       // If the selected source was just removed (maybe because its parent was collapsed),
       // there won't be a selected source
       if (!this.sourceSelect.totalSelected) {
         this.sourceSelect.selectItem(this.$visibleSources.first());
+        console.log('in first conditional');
         return;
       }
 
       if (this.selectSource(this.sourceSelect.$selectedItems)) {
         this.updateElements();
+        console.log('in update');
       }
     },
 
@@ -1942,6 +1957,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
     updateSourceVisibility: function () {
       this.$visibleSources = $();
+      console.log('in update source visibility fxn');
 
       for (let i = 0; i < this.$sources.length; i++) {
         const $source = this.$sources.eq(i);
@@ -2669,6 +2685,14 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
   }
 );
+
+const SourceNav = Garnish.Base.extend({
+  $items: null,
+
+  init: function (container, settings) {
+    console.log('initialized');
+  },
+});
 
 const ViewMenu = Garnish.Base.extend({
   elementIndex: null,
