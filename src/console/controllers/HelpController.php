@@ -126,7 +126,7 @@ class HelpController extends BaseHelpController
                     'name' => $command,
                     'description' => $cleanUpDescription($description),
                     'args' => array_map(fn(array $k, array $v): array => array_filter([
-                        'name' =>  $k,
+                        'name' => $k,
                         'description' => ($v['type'] ? '<' : '[') . trim($v['type']) . ($v['type'] ? '>' : ']') . ' ' . $cleanUpDescription($v['comment']),
                     ]), array_keys($args), array_values($args)),
                     'options' => array_map(fn(array $k, array $v): array => array_filter([
