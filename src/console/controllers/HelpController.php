@@ -107,7 +107,7 @@ class HelpController extends BaseHelpController
         $actions = $this->getActions($controller);
         if ($actionID !== '' || count($actions) === 1 && $actions[0] === $controller->defaultAction) {
             // Anonymous function to clean up descriptions coming from Yii
-            $cleanUpDescription = fn(string $description): string => trim(
+            $cleanUpDescription = fn($description) => trim(
                     preg_replace('/\s\s+/', ' ',
                         preg_replace('/\\n/', ' ', $description)
                     )
@@ -125,11 +125,11 @@ class HelpController extends BaseHelpController
                 return array_filter([
                     'name' => $command,
                     'description' => $cleanUpDescription($description),
-                    'args' => array_map(fn(array $k, array $v): array => array_filter([
+                    'args' => array_map(fn($k, $v) => array_filter([
                         'name' => $k,
                         'description' => ($v['type'] ? '<' : '[') . trim($v['type']) . ($v['type'] ? '>' : ']') . ' ' . $cleanUpDescription($v['comment']),
                     ]), array_keys($args), array_values($args)),
-                    'options' => array_map(fn(array $k, array $v): array => array_filter([
+                    'options' => array_map(fn($k, $v) => array_filter([
                         'name' => '--' . $k,
                         'description' => '(' . trim($v['type']) . ') ' . $cleanUpDescription($v['comment']),
                     ]), array_keys($options), array_values($options)),
