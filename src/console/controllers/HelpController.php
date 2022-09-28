@@ -23,7 +23,7 @@ class HelpController extends BaseHelpController
     /**
      * @var bool Should the commands help be returned in JSON format?
      */
-    public bool $asJson = false;
+    public $asJson = false;
 
     /**
      * @var array The base options provided by the yii\console\Controller
