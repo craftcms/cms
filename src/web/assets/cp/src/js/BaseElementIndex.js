@@ -404,7 +404,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
       if (!this.sourceNav) {
         this.sourceNav = new SourceNav(this.$sidebar.find('nav'), {
-          onSourceChange: this._handleSourceSelectionChange.bind(this),
+          onSelectionChange: this._handleSourceSelectionChange.bind(this),
         });
       }
 
@@ -2725,7 +2725,7 @@ const SourceNav = Garnish.Base.extend(
         .attr('aria-current', 'true')
         .addClass(this.settings.selectedClass);
 
-      //this.onSourceChange();
+      this.onSelectionChange();
     },
 
     deselectAll: function () {
@@ -2733,13 +2733,28 @@ const SourceNav = Garnish.Base.extend(
         .attr('aria-current', 'false')
         .removeClass(this.settings.selectedClass);
 
-      //this.onSelectionChange();
+      this.onSelectionChange();
+    },
+
+    onSelectionChange: function () {
+      if (this.callbackFrame) {
+        Garnish.cancelAnimationFrame(this.callbackFrame);
+        this.callbackFrame = null;
+      }
+
+      this.callbackFrame = Garnish.requestAnimationFrame(
+        function () {
+          this.callbackFrame = null;
+          this.trigger('selectionChange');
+          this.settings.onSelectionChange();
+        }.bind(this)
+      );
     },
   },
   {
     defaults: {
       selectedClass: 'sel',
-      onSourceChange: $.noop,
+      onSelectionChange: $.noop,
     },
   });
 

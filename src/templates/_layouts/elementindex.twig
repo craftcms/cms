@@ -25,6 +25,12 @@
 
 {% block sidebar %}
     {% if sources is not empty %}
+        {{ tag('a', {
+            class: 'btn skip-link',
+            href: '#elements',
+            html: 'Skip source navigation',
+        }) }}
+
         <nav aria-label="{{ 'Sources'|t('app') }}">
             {% include "_elements/sources" %}
         </nav>
@@ -44,7 +50,7 @@
 {% block content %}
     <div class="main">
         <a class="skip-link btn" href="#footer">{{ 'Skip to {title}'|t('app', { title: 'Footer'|t }) }}</a>
-        <div class="elements busy">
+        <div id="elements" class="elements busy">
             <div class="update-spinner spinner spinner-absolute"></div>
         </div>
     </div>
