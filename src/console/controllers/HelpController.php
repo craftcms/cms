@@ -8,9 +8,9 @@
 namespace craft\console\controllers;
 
 use Craft;
+use craft\helpers\Json;
 use yii\console\Controller;
 use yii\console\controllers\HelpController as BaseHelpController;
-use craft\helpers\Json;
 use yii\console\Exception;
 use yii\helpers\Console;
 use yii\helpers\Inflector;
@@ -127,14 +127,14 @@ class HelpController extends BaseHelpController
                     'description' => $cleanUpDescription($description),
                     'args' => array_map(fn(array $k, array $v): array => array_filter([
                         'name' =>  $k,
-                        'description' => ($v['type'] ? '<' : '[') . trim($v['type']) . ($v['type'] ? '>' : ']') . ' ' . $cleanUpDescription($v['comment'])
+                        'description' => ($v['type'] ? '<' : '[') . trim($v['type']) . ($v['type'] ? '>' : ']') . ' ' . $cleanUpDescription($v['comment']),
                     ]), array_keys($args), array_values($args)),
                     'options' => array_map(fn(array $k, array $v): array => array_filter([
                         'name' => '--' . $k,
-                        'description' => '(' . trim($v['type']) . ') ' . $cleanUpDescription($v['comment'])
+                        'description' => '(' . trim($v['type']) . ') ' . $cleanUpDescription($v['comment']),
                     ]), array_keys($options), array_values($options)),
                 ]);
-            } catch(\Throwable $e) {
+            } catch (\Throwable $e) {
                 $this->stderr($e->getMessage());
             }
         }
