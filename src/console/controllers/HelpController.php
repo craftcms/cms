@@ -117,7 +117,7 @@ class HelpController extends BaseHelpController
             // Try/catch in case an exception is thrown during reflection
             try {
                 $action = $controller->createAction($actionID);
-                // Get the command descrition, args, and options
+                // Get the command description, args, and options
                 $description = $this->getUnformattedActionHelp($controller->getActionMethodReflection($action));
                 $args = $controller->getActionArgsHelp($action);
                 $options = $controller->getActionOptionsHelp($action);
