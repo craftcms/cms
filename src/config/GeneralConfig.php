@@ -1998,6 +1998,26 @@ class GeneralConfig extends BaseConfig
     public bool $preserveImageColorProfiles = true;
 
     /**
+     * @var bool When set to `true`, Craft will not allow relationship fields to be lazy loaded. If a relationship field is accessed lazily while
+     * set to `true` an exception will be thrown. When set to `false` relationships may be loaded lazily.
+     *
+     * Commonly you will set this based on your environment to disable lazy loading during development but allow it in production so that production
+     * doesn't error out if one slips through.
+     *
+     * ::: code
+     * ```php Static Config
+     * ->preventLazyLoading(true)
+     * ```
+     * ```shell Environment Override
+     * CRAFT_PREVENT_LAZY_LOADING=1
+     * ```
+     * :::
+     *
+     * @group System
+     */
+    public bool $preventLazyLoading = false;
+
+    /**
      * @var bool When `true`, Craft will always return a successful response in the “forgot password” flow, making it difficult to enumerate users.
      *
      * When set to `false` and you go through the “forgot password” flow from the control panel login page, you’ll get distinct messages indicating
@@ -5159,6 +5179,29 @@ class GeneralConfig extends BaseConfig
     public function preserveImageColorProfiles(bool $value = true): self
     {
         $this->preserveImageColorProfiles = $value;
+        return $this;
+    }
+
+    /**
+     * When set to `true`, Craft will not allow relationship fields to be lazy loaded. If a relationship field is accessed lazily while
+     * set to `true` an exception will be thrown. When set to `false` relationships may be loaded lazily.
+     *
+     * Commonly you will set this based on your environment to disable lazy loading during development but allow it in production so that production
+     * doesn't error out if one slips through.
+     *
+     * ```php
+     * ->preventLazyLoading(true)
+     * ```
+     *
+     * @group System
+     * @param bool $value
+     * @return self
+     * @see $preventLazyLoading
+     * @since 4.3.0
+     */
+    public function preventLazyLoading(bool $value = false): self
+    {
+        $this->preventLazyLoading = $value;
         return $this;
     }
 

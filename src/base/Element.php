@@ -23,6 +23,7 @@ use craft\elements\conditions\ElementCondition;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
+use craft\elements\Entry;
 use craft\elements\exporters\Expanded;
 use craft\elements\exporters\Raw;
 use craft\elements\User;
@@ -50,6 +51,8 @@ use craft\events\SetEagerLoadedElementsEvent;
 use craft\events\SetElementRouteEvent;
 use craft\events\SetElementTableAttributeHtmlEvent;
 use craft\fieldlayoutelements\BaseField;
+use craft\fields\BaseRelationField;
+use craft\fields\Matrix;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Cp;
@@ -1972,6 +1975,15 @@ abstract class Element extends Component implements ElementInterface
         // Is $name a set of eager-loaded elements?
         if ($this->hasEagerLoadedElements($name)) {
             return $this->getEagerLoadedElements($name);
+        }
+
+        // If we are here then the property was not eager loaded: either because it was not
+        // supposed to be eager loaded or by mistake. Check if it should have been eager loaded
+        // and throw an Exception if so.
+        if ($this->shouldHaveEagerLoaded($name)) {
+            throw new \Exception('Can not lazy load `' . $name . '` on `' . get_class($this) . '`. ' .
+                'This is a relationship field that should be eager loaded using `.with([\'' . $name . '\'])`. '.
+                'You can read more about this at https://craftcms.com/docs/4.x/dev/eager-loading-elements.html');
         }
 
         // Is this the "field:handle" syntax?
@@ -3997,6 +4009,41 @@ abstract class Element extends Component implements ElementInterface
     }
 
     /**
+     * Check whether a property on the element should have been eager loaded.
+     *
+     * @see __get()
+     * @return bool
+     */
+    public function shouldHaveEagerLoaded(string $handle): bool
+    {
+        // If preventLazyLoading is false then we don't need to perform this check
+        // becuase we're allowing all forms of lazy loading.
+        if (\Craft::$app->config->general->preventLazyLoading === false) {
+            return false;
+        }
+
+        // To ease adoption this check only runs on front-end requests.
+        if (\Craft::$app->view->templateMode !== \craft\web\View::TEMPLATE_MODE_SITE) {
+            return false;
+        }
+
+        // Some internal/native fields should be lazy loaded. We'll catch those by name
+        // first. Custom fields added through the Craft UI will be caught later.
+        if (is_a($this, Entry::class) && $handle === 'author') {
+            return true;
+        }
+
+        // If the custom field is a subclass of the BaseRelationField, like categories,
+        // entries, assets, etc… then it should have been lazy loaded.
+        $field = $this->fieldByHandle($handle);
+        if ($field && (is_subclass_of($field, BaseRelationField::class)) || is_a($field, Matrix::class)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
      * @inheritdoc
      */
     public function getEagerLoadedElements(string $handle): ?Collection
@@ -4561,10 +4608,7 @@ JS,
                 }
                 /** @var RevisionBehavior $behavior */
                 $behavior = $revision->getBehavior('revision');
-                if ($behavior->revisionNotes === null || $behavior->revisionNotes === '') {
-                    return false;
-                }
-                return Html::encode($behavior->revisionNotes);
+                return Html::encode($behavior->revisionNotes) ?: false;
             },
         ]);
     }
