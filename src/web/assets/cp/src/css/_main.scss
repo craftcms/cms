@@ -5650,8 +5650,8 @@ body:not(.reduce-focus-visibility) {
 }
 
 body.reduce-focus-visibility {
-  input.checkbox.focus-visible + label:before,
-  .focus-visible div.checkbox:before {
+  input.checkbox:focus-visible + label:before,
+  :focus-visible div.checkbox:before {
     @include input-focused-styles;
   }
 }
