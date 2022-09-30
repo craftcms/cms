@@ -492,7 +492,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     deinitSource: function ($source) {
-      this.sourceSelect.removeItems($source);
+      this.sourceNav.removeItems($source);
       this.deinitSourceToggle($source);
       delete this.sourcesByKey[$source.data('key')];
     },
@@ -2734,6 +2734,13 @@ const SourceNav = Garnish.Base.extend(
         .removeClass(this.settings.selectedClass);
 
       this.onSelectionChange();
+    },
+
+    removeItems: function (items) {
+      console.log(items);
+      let selectedItem;
+
+
     },
 
     onSelectionChange: function () {
