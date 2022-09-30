@@ -5294,8 +5294,7 @@ table.editable {
     @include input-focused-styles;
   }
 
-  body:not(.reduce-focus-visibility) &:focus,
-  body.reduce-focus-visibility &.focus-visible {
+  @include focus-styles {
     @include input-focused-styles;
   }
 }
