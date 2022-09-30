@@ -5657,8 +5657,7 @@ body.reduce-focus-visibility {
 }
 
 .monaco-mouse-cursor-text {
-  &:focus,
-  &.focus-visible {
+  @include focus-styles {
     box-shadow: none !important;
   }
 }
@@ -5759,8 +5758,8 @@ body:not(.reduce-focus-visibility) {
 }
 
 body.reduce-focus-visibility {
-  input.radio.focus-visible + label:before,
-  .focus-visible div.radio:before {
+  input.radio:focus-visible + label:before,
+  :focus-visible div.radio:before {
     @include input-focused-styles;
   }
 }
@@ -5771,8 +5770,7 @@ body.reduce-focus-visibility {
   font-size: 14px;
   appearance: none;
 
-  body:not(.reduce-focus-visibility) &:focus,
-  body.reduce-focus-visibility &.focus-visible {
+  @include focus-styles {
     @include input-focused-styles;
   }
 
