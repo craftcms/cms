@@ -177,10 +177,9 @@
     }
   }
 
-  .lp-device-type__input {
-    &.focus-visible + label {
-      box-shadow: var(--focus-ring);
-    }
+  body:not(.reduce-focus-visibility) & .lp-device-type__input:focus + label,
+  body.reduce-focus-visibility & .lp-device-type__input:focus-visible + label {
+    box-shadow: var(--focus-ring);
   }
 
   .lp-device-mask {
