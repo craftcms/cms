@@ -3665,7 +3665,7 @@ ul.tree,
         text-decoration: none;
       }
 
-      &.focus-visible {
+      @include focus-styles {
         box-shadow: none;
 
         .tab-label {
