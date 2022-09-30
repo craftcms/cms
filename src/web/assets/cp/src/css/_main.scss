@@ -5160,8 +5160,7 @@ ul.tree,
       @include disclosure-link-hover-styles;
     }
 
-    body:not(.reduce-focus-visibility) &:focus,
-    body.reduce-focus-visibility &.focus-visible {
+    @include focus-styles {
       box-shadow: inset 0 0 0 3px hsla(var(--dark-focus-hsl), 0.7);
     }
   }
