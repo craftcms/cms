@@ -6119,8 +6119,7 @@ tr.indexingSession td.progress div.progressContainer div.progressInfo {
     @include select-input-focused-styles;
   }
 
-  body:not(.reduce-focus-visibility) &:focus,
-  body.reduce-focus-visibility &.focus-visible {
+  @include focus-styles {
     @include select-input-focused-styles;
   }
 }
