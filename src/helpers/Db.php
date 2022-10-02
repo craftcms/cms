@@ -637,7 +637,7 @@ class Db
             }
 
             // ['or', 1, 2, 3] => IN (1, 2, 3)
-             if ($glue == self::GLUE_OR && $operator === '=') {
+            if ($glue == self::GLUE_OR && $operator === '=') {
                 $inVals[] = $val;
                 continue;
             }
