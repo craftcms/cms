@@ -71,7 +71,7 @@ class DateTimeHelper
      *  - MySQL DATE and DATETIME formats (http://dev.mysql.com/doc/refman/5.1/en/datetime.html)
      *  - Relaxed versions of W3C and MySQL formats (single-digit months, days, and hours)
      *  - Unix timestamps
-     * - `now`
+     * - `now`/`today`/`tomorrow`/`yesterday` (midnight of the specified relative date)
      *  - An array with at least one of these keys defined: `datetime`, `date`, or `time`. Supported keys include:
      *      - `date` – a date string in `YYYY-MM-DD` or `YYYY-MM-DD HH:MM:SS.MU` formats or the current locale’s short date format
      *      - `time` – a time string in `HH:MM` or `HH:MM:SS` (24-hour) format or the current locale’s short time format
@@ -296,6 +296,170 @@ class DateTimeHelper
         }
 
         return new DateTime('now', $timeZone);
+    }
+
+    /**
+     * Returns a [[DateTime]] object set to midnight of the current day (factoring in whether time is [[pause()|paused]]).
+     *
+     * @param DateTimeZone|null $timeZone The time zone to return the `DateTime` object in. (Defaults to the system time zone.)
+     * @return DateTime
+     * @since 4.3.0
+     */
+    public static function today(?DateTimeZone $timeZone = null): DateTime
+    {
+        return static::now($timeZone)->setTime(0, 0);
+    }
+
+    /**
+     * Returns a [[DateTime]] object set to midnight of the following day (factoring in whether time is [[pause()|paused]]).
+     *
+     * @param DateTimeZone|null $timeZone The time zone to return the `DateTime` object in. (Defaults to the system time zone.)
+     * @return DateTime
+     * @since 4.3.0
+     */
+    public static function tomorrow(?DateTimeZone $timeZone = null): DateTime
+    {
+        return static::today($timeZone)->modify('+1 day');
+    }
+
+    /**
+     * Returns a [[DateTime]] object set to midnight of the previous day (factoring in whether time is [[pause()|paused]]).
+     *
+     * @param DateTimeZone|null $timeZone The time zone to return the `DateTime` object in. (Defaults to the system time zone.)
+     * @return DateTime
+     * @since 4.3.0
+     */
+    public static function yesterday(?DateTimeZone $timeZone = null): DateTime
+    {
+        return static::today($timeZone)->modify('-1 day');
+    }
+
+    /**
+     * Returns a [[DateTime]] object set to midnight of the first day of this week, according to the user’s preferences (factoring in whether time is [[pause()|paused]]).
+     *
+     * @param DateTimeZone|null $timeZone The time zone to return the `DateTime` object in. (Defaults to the system time zone.)
+     * @return DateTime
+     * @since 4.3.0
+     */
+    public static function thisWeek(?DateTimeZone $timeZone = null): DateTime
+    {
+        $today = static::today($timeZone);
+        $dayOfWeek = (int)$today->format('N');
+        if ($dayOfWeek === 7) {
+            $dayOfWeek = 0;
+        }
+        $startDay = static::firstWeekDay();
+
+        // Is today the first day of the week?
+        if ($dayOfWeek === $startDay) {
+            return $today;
+        }
+
+        if ($dayOfWeek > $startDay) {
+            $diff = $dayOfWeek - $startDay;
+        } else {
+            $diff = ($dayOfWeek + 7) - $startDay;
+        }
+
+        return $today->modify("-$diff days");
+    }
+
+    /**
+     * Returns a [[DateTime]] object set to midnight of the first day of next week, according to the user’s preferences (factoring in whether time is [[pause()|paused]]).
+     *
+     * @param DateTimeZone|null $timeZone The time zone to return the `DateTime` object in. (Defaults to the system time zone.)
+     * @return DateTime
+     * @since 4.3.0
+     */
+    public static function nextWeek(?DateTimeZone $timeZone = null): DateTime
+    {
+        return static::thisWeek($timeZone)->modify('+1 week');
+    }
+
+    /**
+     * Returns a [[DateTime]] object set to midnight of the first day of last week, according to the user’s preferences (factoring in whether time is [[pause()|paused]]).
+     *
+     * @param DateTimeZone|null $timeZone The time zone to return the `DateTime` object in. (Defaults to the system time zone.)
+     * @return DateTime
+     * @since 4.3.0
+     */
+    public static function lastWeek(?DateTimeZone $timeZone = null): DateTime
+    {
+        return static::thisWeek($timeZone)->modify('-1 week');
+    }
+
+    /**
+     * Returns a [[DateTime]] object set to midnight of the first day of this month (factoring in whether time is [[pause()|paused]]).
+     *
+     * @param DateTimeZone|null $timeZone The time zone to return the `DateTime` object in. (Defaults to the system time zone.)
+     * @return DateTime
+     * @since 4.3.0
+     */
+    public static function thisMonth(?DateTimeZone $timeZone = null): DateTime
+    {
+        $today = static::today($timeZone);
+        return $today->setDate((int)$today->format('Y'), (int)$today->format('n'), 1);
+    }
+
+    /**
+     * Returns a [[DateTime]] object set to midnight of the first day of next month (factoring in whether time is [[pause()|paused]]).
+     *
+     * @param DateTimeZone|null $timeZone The time zone to return the `DateTime` object in. (Defaults to the system time zone.)
+     * @return DateTime
+     * @since 4.3.0
+     */
+    public static function nextMonth(?DateTimeZone $timeZone = null): DateTime
+    {
+        return static::thisMonth($timeZone)->modify('+1 month');
+    }
+
+    /**
+     * Returns a [[DateTime]] object set to midnight of the first day of last month (factoring in whether time is [[pause()|paused]]).
+     *
+     * @param DateTimeZone|null $timeZone The time zone to return the `DateTime` object in. (Defaults to the system time zone.)
+     * @return DateTime
+     * @since 4.3.0
+     */
+    public static function lastMonth(?DateTimeZone $timeZone = null): DateTime
+    {
+        return static::thisMonth($timeZone)->modify('-1 month');
+    }
+
+    /**
+     * Returns a [[DateTime]] object set to midnight of the first day of this year (factoring in whether time is [[pause()|paused]]).
+     *
+     * @param DateTimeZone|null $timeZone The time zone to return the `DateTime` object in. (Defaults to the system time zone.)
+     * @return DateTime
+     * @since 4.3.0
+     */
+    public static function thisYear(?DateTimeZone $timeZone = null): DateTime
+    {
+        $today = static::today($timeZone);
+        return $today->setDate((int)$today->format('Y'), 1, 1);
+    }
+
+    /**
+     * Returns a [[DateTime]] object set to midnight of the first day of next year (factoring in whether time is [[pause()|paused]]).
+     *
+     * @param DateTimeZone|null $timeZone The time zone to return the `DateTime` object in. (Defaults to the system time zone.)
+     * @return DateTime
+     * @since 4.3.0
+     */
+    public static function nextYear(?DateTimeZone $timeZone = null): DateTime
+    {
+        return static::thisMonth($timeZone)->modify('+1 year');
+    }
+
+    /**
+     * Returns a [[DateTime]] object set to midnight of the first day of last year (factoring in whether time is [[pause()|paused]]).
+     *
+     * @param DateTimeZone|null $timeZone The time zone to return the `DateTime` object in. (Defaults to the system time zone.)
+     * @return DateTime
+     * @since 4.3.0
+     */
+    public static function lastYear(?DateTimeZone $timeZone = null): DateTime
+    {
+        return static::thisMonth($timeZone)->modify('-1 year');
     }
 
     /**
@@ -724,8 +888,16 @@ class DateTimeHelper
     {
         $value = trim($value);
 
-        if ($value === 'now') {
-            return static::now();
+        $date = match (strtolower($value)) {
+            'now' => static::now(),
+            'today' => static::today(),
+            'tomorrow' => static::tomorrow(),
+            'yesterday' => static::yesterday(),
+            default => null,
+        };
+
+        if ($date !== null) {
+            return $date;
         }
 
         if (preg_match('/^
@@ -783,5 +955,17 @@ class DateTimeHelper
         }
 
         return null;
+    }
+
+    /**
+     * Returns the index of the first day of the week (0-6), according to the user’s preferences.
+     *
+     * @return int
+     * @since 4.3.0
+     */
+    public static function firstWeekDay(): int
+    {
+        $user = Craft::$app->getUser()->getIdentity();
+        return (int)(($user?->getPreference('weekStartDay')) ?? Craft::$app->getConfig()->getGeneral()->defaultWeekStartDay);
     }
 }

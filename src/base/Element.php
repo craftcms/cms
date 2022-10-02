@@ -61,7 +61,6 @@ use craft\helpers\StringHelper;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
 use craft\i18n\Formatter;
-use craft\i18n\Locale;
 use craft\models\FieldLayout;
 use craft\models\Site;
 use craft\validators\DateTimeValidator;
@@ -370,6 +369,7 @@ abstract class Element extends Component implements ElementInterface
      *
      * @see canView()
      * @since 4.0.0
+     * @deprecated in 4.3.0. [[\craft\services\Elements::EVENT_AUTHORIZE_VIEW]] should be used instead.
      */
     public const EVENT_AUTHORIZE_VIEW = 'authorizeView';
 
@@ -390,6 +390,7 @@ abstract class Element extends Component implements ElementInterface
      *
      * @see canSave()
      * @since 4.0.0
+     * @deprecated in 4.3.0. [[\craft\services\Elements::EVENT_AUTHORIZE_SAVE]] should be used instead.
      */
     public const EVENT_AUTHORIZE_SAVE = 'authorizeSave';
 
@@ -410,6 +411,7 @@ abstract class Element extends Component implements ElementInterface
      *
      * @see canCreateDrafts()
      * @since 4.0.0
+     * @deprecated in 4.3.0. [[\craft\services\Elements::EVENT_AUTHORIZE_CREATE_DRAFTS]] should be used instead.
      */
     public const EVENT_AUTHORIZE_CREATE_DRAFTS = 'authorizeCreateDrafts';
 
@@ -430,6 +432,7 @@ abstract class Element extends Component implements ElementInterface
      *
      * @see canDuplicate()
      * @since 4.0.0
+     * @deprecated in 4.3.0. [[\craft\services\Elements::EVENT_AUTHORIZE_DUPLICATE]] should be used instead.
      */
     public const EVENT_AUTHORIZE_DUPLICATE = 'authorizeDuplicate';
 
@@ -450,6 +453,7 @@ abstract class Element extends Component implements ElementInterface
      *
      * @see canDelete()
      * @since 4.0.0
+     * @deprecated in 4.3.0. [[\craft\services\Elements::EVENT_AUTHORIZE_DELETE]] should be used instead.
      */
     public const EVENT_AUTHORIZE_DELETE = 'authorizeDelete';
 
@@ -470,6 +474,7 @@ abstract class Element extends Component implements ElementInterface
      *
      * @see canDeleteForSite()
      * @since 4.0.0
+     * @deprecated in 4.3.0. [[\craft\services\Elements::EVENT_AUTHORIZE_DELETE_FOR_SITE]] should be used instead.
      */
     public const EVENT_AUTHORIZE_DELETE_FOR_SITE = 'authorizeDeleteForSite';
 
@@ -1001,7 +1006,7 @@ abstract class Element extends Component implements ElementInterface
 
         if (!empty($viewState['order'])) {
             // Special case for sorting by structure
-            if (isset($viewState['order']) && $viewState['order'] === 'structure') {
+            if ($viewState['order'] === 'structure') {
                 $source = ElementHelper::findSource(static::class, $sourceKey, $context);
 
                 if (isset($source['structureId'])) {
@@ -1035,7 +1040,11 @@ abstract class Element extends Component implements ElementInterface
 
         if ($viewState['mode'] === 'table') {
             // Get the table columns
-            $variables['attributes'] = Craft::$app->getElementSources()->getTableAttributes(static::class, $sourceKey);
+            $variables['attributes'] = Craft::$app->getElementSources()->getTableAttributes(
+                static::class,
+                $sourceKey,
+                $viewState['tableColumns'] ?? null
+            );
 
             // Give each attribute a chance to modify the criteria
             foreach ($variables['attributes'] as $attribute) {
@@ -1729,10 +1738,10 @@ abstract class Element extends Component implements ElementInterface
     private ElementInterface|false|null $_canonical = null;
 
     /**
-     * @var ElementInterface|null
+     * @var ElementInterface|false|null
      * @see getCanonical()
      */
-    private ElementInterface|null $_canonicalAnySite = null;
+    private ElementInterface|false|null $_canonicalAnySite = null;
 
     /**
      * @var string|null
@@ -2820,6 +2829,10 @@ abstract class Element extends Component implements ElementInterface
      */
     public function canView(User $user): bool
     {
+        if (!$this->hasEventHandlers(self::EVENT_AUTHORIZE_VIEW)) {
+            return false;
+        }
+
         $event = new AuthorizationCheckEvent($user);
         $this->trigger(self::EVENT_AUTHORIZE_VIEW, $event);
         return $event->authorized;
@@ -2830,6 +2843,10 @@ abstract class Element extends Component implements ElementInterface
      */
     public function canSave(User $user): bool
     {
+        if (!$this->hasEventHandlers(self::EVENT_AUTHORIZE_SAVE)) {
+            return false;
+        }
+
         $event = new AuthorizationCheckEvent($user);
         $this->trigger(self::EVENT_AUTHORIZE_SAVE, $event);
         return $event->authorized;
@@ -2840,6 +2857,10 @@ abstract class Element extends Component implements ElementInterface
      */
     public function canDuplicate(User $user): bool
     {
+        if (!$this->hasEventHandlers(self::EVENT_AUTHORIZE_DUPLICATE)) {
+            return false;
+        }
+
         $event = new AuthorizationCheckEvent($user);
         $this->trigger(self::EVENT_AUTHORIZE_DUPLICATE, $event);
         return $event->authorized;
@@ -2850,6 +2871,10 @@ abstract class Element extends Component implements ElementInterface
      */
     public function canDelete(User $user): bool
     {
+        if (!$this->hasEventHandlers(self::EVENT_AUTHORIZE_DELETE)) {
+            return false;
+        }
+
         $event = new AuthorizationCheckEvent($user);
         $this->trigger(self::EVENT_AUTHORIZE_DELETE, $event);
         return $event->authorized;
@@ -2860,6 +2885,10 @@ abstract class Element extends Component implements ElementInterface
      */
     public function canDeleteForSite(User $user): bool
     {
+        if (!$this->hasEventHandlers(self::EVENT_AUTHORIZE_DELETE_FOR_SITE)) {
+            return false;
+        }
+
         $event = new AuthorizationCheckEvent($user);
         $this->trigger(self::EVENT_AUTHORIZE_DELETE_FOR_SITE, $event);
         return $event->authorized;
@@ -2870,6 +2899,10 @@ abstract class Element extends Component implements ElementInterface
      */
     public function canCreateDrafts(User $user): bool
     {
+        if (!$this->hasEventHandlers(self::EVENT_AUTHORIZE_CREATE_DRAFTS)) {
+            return false;
+        }
+
         $event = new AuthorizationCheckEvent($user);
         $this->trigger(self::EVENT_AUTHORIZE_CREATE_DRAFTS, $event);
         return $event->authorized;
@@ -4310,16 +4343,7 @@ abstract class Element extends Component implements ElementInterface
                     return '';
                 }
 
-                $value = $this->$attribute;
-
-                if ($value instanceof DateTime) {
-                    $formatter = Craft::$app->getFormatter();
-                    return Html::tag('span', $formatter->asTimestamp($value, Locale::LENGTH_SHORT), [
-                        'title' => $formatter->asDatetime($value, Locale::LENGTH_SHORT),
-                    ]);
-                }
-
-                return Html::encode($value);
+                return ElementHelper::attributeHtml($this->$attribute);
         }
     }
 
@@ -4561,7 +4585,10 @@ JS,
                 }
                 /** @var RevisionBehavior $behavior */
                 $behavior = $revision->getBehavior('revision');
-                return Html::encode($behavior->revisionNotes) ?: false;
+                if ($behavior->revisionNotes === null || $behavior->revisionNotes === '') {
+                    return false;
+                }
+                return Html::encode($behavior->revisionNotes);
             },
         ]);
     }

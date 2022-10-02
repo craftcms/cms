@@ -80,9 +80,13 @@
     details ? 'has-details',
 ]|filter %}
 
+{% set bodyClass = (bodyClass ?? [])|explodeClass %}
 {% set showHeader = showHeader ?? true %}
 {% if not showHeader %}
-    {% set bodyClass = (bodyClass ?? [])|explodeClass|push('no-header') -%}
+    {% set bodyClass = bodyClass|push('no-header') -%}
+{% endif %}
+{% if craft.app.hasModule('debug') %}
+    {% set bodyClass = bodyClass|push('has-debug-toolbar') %}
 {% endif %}
 
 {% set mainAttributes = {
@@ -198,7 +202,7 @@
                         <div id="header-container">
                             <header id="header">
                                 {% block header %}
-                                    <div id="page-title" class="flex flex-nowrap{% if toolbar %} has-toolbar{% endif %}">
+                                    <div id="page-title" class="flex{% if toolbar %} has-toolbar{% endif %}">
                                         {% block pageTitle %}
                                             {% if title is defined and title|length %}
                                                 <h1 class="screen-title" title="{{ title }}">{{ title }}</h1>
