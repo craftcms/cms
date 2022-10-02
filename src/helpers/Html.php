@@ -1012,11 +1012,9 @@ class Html extends \yii\helpers\Html
      * @param bool|null $namespace Whether class names and IDs within the SVG
      * should be namespaced to avoid conflicts with other elements in the DOM.
      * By default the SVG will only be namespaced if an asset or markup is passed in.
-     * @param string|null $class A CSS class name that should be added to the `<svg>` element.
-     * (This argument is deprecated. The `|attr` filter should be used instead.)
      * @return string
      */
-    public static function svg(Asset|string $svg, ?bool $sanitize = null, ?bool $namespace = null, ?string $class = null): string
+    public static function svg(Asset|string $svg, ?bool $sanitize = null, ?bool $namespace = null): string
     {
         if ($svg instanceof Asset) {
             try {
@@ -1062,17 +1060,6 @@ class Html extends \yii\helpers\Html
         if ($namespace) {
             $ns = StringHelper::randomString(10);
             $svg = Html::namespaceAttributes($svg, $ns, true);
-        }
-
-        if ($class !== null) {
-            Craft::$app->getDeprecator()->log('svg()-class', 'The `class` argument of the `svg()` Twig function has been deprecated. The `|attr` filter should be used instead.');
-            try {
-                $svg = Html::modifyTagAttributes($svg, [
-                    'class' => $class,
-                ]);
-            } catch (InvalidArgumentException $e) {
-                Craft::warning('Unable to add a class to the SVG: ' . $e->getMessage(), __METHOD__);
-            }
         }
 
         return $svg;
