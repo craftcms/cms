@@ -65,6 +65,11 @@ class ElementRelationParamParser extends BaseObject
      */
     public static function normalizeRelatedToParam(mixed $relatedToParam): array
     {
+        // If we have an instance of a query, execute it.
+        if ($relatedToParam instanceof ElementQuery) {
+            $relatedToParam = $relatedToParam->ids();
+        }
+
         // Ensure it's an array
         if (!is_array($relatedToParam)) {
             $relatedToParam = is_string($relatedToParam) ? StringHelper::split($relatedToParam) : [$relatedToParam];
