@@ -21,10 +21,15 @@ Craft.Listbox = Garnish.Base.extend(
       }
 
       this.$container.data('listbox', this);
-      this.$options = this.$container.find('button');
+      // todo: drop [role=option] in Craft 5
+      this.$options = this.$container.find('button,[role=option]');
 
       // is there already a selected option?
-      this.$selectedOption = this.$options.filter('[aria-pressed=true]');
+      // todo: drop [aria-selected=true] & attr normalization in Craft 5
+      this.$selectedOption = this.$options
+        .filter('[aria-pressed=true],[aria-selected=true]')
+        .removeAttr('aria-selected')
+        .attr('aria-pressed', 'true');
       if (this.$selectedOption.length) {
         this.selectedOptionIndex = this.$options.index(this.$selectedOption);
       } else {
