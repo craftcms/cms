@@ -116,3 +116,6 @@
 - Deprecated `craft\services\Elements::getIsCollectingCacheTags()`. `getIsCollectingCacheInfo()` should be used instead. ([#11901](https://github.com/craftcms/cms/pull/11901))
 - Deprecated `craft\services\Elements::startCollectingCacheTags()`. `startCollectingCacheInfo()` should be used instead. ([#11901](https://github.com/craftcms/cms/pull/11901))
 - Deprecated `craft\services\Elements::stopCollectingCacheTags()`. `stopCollectingCacheInfo()` should be used instead. ([#11901](https://github.com/craftcms/cms/pull/11901))
+
+### Fixed
+- Fixed a bug where `craft\helpers\Db::parseParam()` wasn’t generating conditions that would include `null` values when it should have. ([#11931](https://github.com/craftcms/cms/issues/11931))
