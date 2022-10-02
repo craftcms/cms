@@ -117,6 +117,7 @@ class MysqlDbHelperTest extends TestCase
                         'content_table',
                         'field_2',
                     ],
+                    ['content_table' => null]
                 ],
                 'content_table', ':empty:, field_2', '!=',
             ],
