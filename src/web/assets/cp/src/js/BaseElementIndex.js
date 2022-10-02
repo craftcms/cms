@@ -1339,10 +1339,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
       // Create the buttons if there's more than one mode available to this source
       if (this.sourceViewModes.length > 1) {
-        this.$viewModeBtnContainer = $('<section class="btngroup"/>').attr(
-          'aria-label',
-          Craft.t('app', 'View')
-        );
+        this.$viewModeBtnContainer = $(
+          '<section class="btngroup btngroup--exclusive"/>'
+        ).attr('aria-label', Craft.t('app', 'View'));
 
         if (this.activeViewMenu) {
           this.$viewModeBtnContainer.insertBefore(this.activeViewMenu.$trigger);
@@ -2904,36 +2903,30 @@ const ViewMenu = Garnish.Base.extend({
         'aria-label': Craft.t('app', 'Sort attribute'),
       });
 
-    this.$sortDirectionPicker = $('<div/>', {
-      role: 'listbox',
-      class: 'btngroup',
+    this.$sortDirectionPicker = $('<section/>', {
+      class: 'btngroup btngroup--exclusive',
       'aria-label': Craft.t('app', 'Sort direction'),
-      tabindex: '0',
     })
       .append(
         $('<button/>', {
-          role: 'option',
           type: 'button',
           class: 'btn',
           title: Craft.t('app', 'Sort ascending'),
           'aria-label': Craft.t('app', 'Sort ascending'),
-          'aria-selected': 'false',
+          'aria-pressed': 'false',
           'data-icon': 'asc',
           'data-dir': 'asc',
-          tabindex: '-1',
         })
       )
       .append(
         $('<button/>', {
-          role: 'option',
           type: 'button',
           class: 'btn',
           title: Craft.t('app', 'Sort descending'),
           'aria-label': Craft.t('app', 'Sort descending'),
-          'aria-selected': 'false',
+          'aria-pressed': 'false',
           'data-icon': 'desc',
           'data-dir': 'desc',
-          tabindex: '-1',
         })
       )
       .appendTo($container);
