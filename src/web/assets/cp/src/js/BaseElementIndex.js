@@ -439,7 +439,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     refreshSources: function () {
-      this.sourceSelect.removeAllItems();
+      this.sourceNav.removeAllItems();
 
       this.setIndexBusy();
 
@@ -1764,8 +1764,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     disable: function () {
-      if (this.sourceSelect) {
-        this.sourceSelect.disable();
+      if (this.sourceNav) {
+        this.sourceNav.disable();
       }
 
       if (this.view) {
@@ -1776,8 +1776,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     enable: function () {
-      if (this.sourceSelect) {
-        this.sourceSelect.enable();
+      if (this.sourceNav) {
+        this.sourceNav.enable();
       }
 
       if (this.view) {
@@ -2702,6 +2702,18 @@ const SourceNav = Garnish.Base.extend(
       }
 
       this.$items = this.$items.add($items);
+    },
+
+    /**
+     * Remove All Items
+     */
+    removeAllItems: function () {
+      for (var i = 0; i < this.$items.length; i++) {
+        this._deinitItem(this.$items[i]);
+      }
+
+      this.$items = $();
+      this.$selectedItem = $();
     },
 
     handleKeypress: function (event) {
