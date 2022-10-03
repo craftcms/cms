@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## 3.7.55.3 - 2022-10-03
+
+### Security
+- Updated Twig to 2.15. ([#12022](https://github.com/craftcms/cms/issues/12022))
+
 ## 3.7.55.2 - 2022-09-22
 
 ### Security
