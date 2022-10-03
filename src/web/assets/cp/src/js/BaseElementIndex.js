@@ -2705,7 +2705,7 @@ const SourceNav = Garnish.Base.extend(
     },
 
     handleKeypress: function (event) {
-      const { keyCode } = event;
+      const {keyCode} = event;
 
       if (keyCode === Garnish.RETURN_KEY || keyCode === Garnish.SPACE_KEY) {
         event.preventDefault();
@@ -2745,6 +2745,8 @@ const SourceNav = Garnish.Base.extend(
     removeItems: function (items) {
       console.log(items);
       let selectedItem;
+
+      // Remove selected class from item if it was currently-selected
     },
 
     onSelectionChange: function () {
