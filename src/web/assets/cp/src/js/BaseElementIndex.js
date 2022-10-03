@@ -2775,6 +2775,11 @@ const SourceNav = Garnish.Base.extend(
         }.bind(this)
       );
     },
+
+    _deinitItem: function (item) {
+      console.log('deinit item');
+      console.log(item);
+    }
   },
   {
     defaults: {
