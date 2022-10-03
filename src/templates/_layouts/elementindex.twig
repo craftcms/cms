@@ -28,7 +28,7 @@
         {{ tag('a', {
             class: 'btn skip-link',
             href: '#elements',
-            html: 'Skip source navigation',
+            html: 'Skip to {title}'|t('app', {title: title}),
         }) }}
 
         <nav aria-label="{{ 'Sources'|t('app') }}">
