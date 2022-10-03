@@ -2698,13 +2698,20 @@ const SourceNav = Garnish.Base.extend(
         const item = $items[i];
 
         this.addListener(item, 'click', this.handleClick.bind(this));
-        this.addListener(item, 'keydown', this.onKeyDown.bind(this));
+        this.addListener(item, 'keydown', this.handleKeypress.bind(this));
       }
 
       this.$items = this.$items.add($items);
     },
 
-    onKeyDown: function (event) {},
+    handleKeypress: function (event) {
+      const { keyCode } = event;
+
+      if (keyCode === Garnish.RETURN_KEY || keyCode === Garnish.SPACE_KEY) {
+        event.preventDefault();
+        this.selectItem(event.target);
+      }
+    },
 
     handleClick: function (event) {
       const $item = this.getClosestItem(event.target);
@@ -2716,7 +2723,8 @@ const SourceNav = Garnish.Base.extend(
       return $(element).closest('[data-source-item]');
     },
 
-    selectItem: function ($item) {
+    selectItem: function (item) {
+      const $item = $(item);
       this.deselectAll();
 
       this.$selectedItem = $item
