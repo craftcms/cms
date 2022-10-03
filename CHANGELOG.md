@@ -5,6 +5,11 @@
 ### Fixed
 - Fixed an error that could occur when editing a draft of an element type that didn’t have change tracking enabled.
 
+## 4.2.5.2 - 2022-10-03
+
+### Security
+- Updated Twig to 3.4. ([#12022](https://github.com/craftcms/cms/issues/12022))
+
 ## 4.2.5.1 - 2022-09-21
 
 ### Fixed
