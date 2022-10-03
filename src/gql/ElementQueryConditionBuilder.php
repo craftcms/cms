@@ -518,7 +518,7 @@ class ElementQueryConditionBuilder extends Component
                                 return $element->getGqlTypeName() === $wrappingFragment->typeCondition->name->value;
                             };
                         }
-                        $plan->criteria = array_merge_recursive($plan->criteria, $arguments);
+                        $plan->criteria = array_merge_recursive($plan->criteria, $this->_argumentManager->prepareArguments($arguments));
                     }
 
                     // If it has any more selections, build the plans recursively
