@@ -152,7 +152,19 @@ class Config extends Component
         // If $config is already a BaseConfig object, assign the env overrides to it and return
         if ($config instanceof BaseConfig) {
             Typecast::properties($configClass, $envConfig);
-            Craft::configure($config, $envConfig);
+
+            foreach ($envConfig as $name => $value) {
+                // Use the fluent methods when possible, in case it has any value normalization logic
+                if (method_exists($config, $name)) {
+                    try {
+                        $config->$name($value);
+                        continue;
+                    } catch (\Throwable) {
+                    }
+                    $config->$name = $value;
+                }
+            }
+
             return $config;
         }
 
