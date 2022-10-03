@@ -438,6 +438,9 @@ abstract class BaseField extends FieldLayoutElement
      */
     protected function statusClass(?ElementInterface $element = null, bool $static = false): ?string
     {
+        if ($element && ($status = $element->getAttributeStatus($this->attribute()))) {
+            return $status[0];
+        }
         return null;
     }
 
@@ -450,6 +453,9 @@ abstract class BaseField extends FieldLayoutElement
      */
     protected function statusLabel(?ElementInterface $element = null, bool $static = false): ?string
     {
+        if ($element && ($status = $element->getAttributeStatus($this->attribute()))) {
+            return $status[1];
+        }
         return null;
     }
 
