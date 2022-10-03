@@ -61,7 +61,6 @@ use craft\helpers\StringHelper;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
 use craft\i18n\Formatter;
-use craft\i18n\Locale;
 use craft\models\FieldLayout;
 use craft\models\Site;
 use craft\validators\DateTimeValidator;
@@ -1007,7 +1006,7 @@ abstract class Element extends Component implements ElementInterface
 
         if (!empty($viewState['order'])) {
             // Special case for sorting by structure
-            if (isset($viewState['order']) && $viewState['order'] === 'structure') {
+            if ($viewState['order'] === 'structure') {
                 $source = ElementHelper::findSource(static::class, $sourceKey, $context);
 
                 if (isset($source['structureId'])) {
@@ -1739,10 +1738,10 @@ abstract class Element extends Component implements ElementInterface
     private ElementInterface|false|null $_canonical = null;
 
     /**
-     * @var ElementInterface|null
+     * @var ElementInterface|false|null
      * @see getCanonical()
      */
-    private ElementInterface|null $_canonicalAnySite = null;
+    private ElementInterface|false|null $_canonicalAnySite = null;
 
     /**
      * @var string|null
@@ -4344,16 +4343,7 @@ abstract class Element extends Component implements ElementInterface
                     return '';
                 }
 
-                $value = $this->$attribute;
-
-                if ($value instanceof DateTime) {
-                    $formatter = Craft::$app->getFormatter();
-                    return Html::tag('span', $formatter->asTimestamp($value, Locale::LENGTH_SHORT), [
-                        'title' => $formatter->asDatetime($value, Locale::LENGTH_SHORT),
-                    ]);
-                }
-
-                return Html::encode($value);
+                return ElementHelper::attributeHtml($this->$attribute);
         }
     }
 
@@ -4595,7 +4585,10 @@ JS,
                 }
                 /** @var RevisionBehavior $behavior */
                 $behavior = $revision->getBehavior('revision');
-                return Html::encode($behavior->revisionNotes) ?: false;
+                if ($behavior->revisionNotes === null || $behavior->revisionNotes === '') {
+                    return false;
+                }
+                return Html::encode($behavior->revisionNotes);
             },
         ]);
     }
