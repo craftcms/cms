@@ -464,7 +464,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     initSource: function ($source) {
-      //this.sourceSelect.addItems($source);
+      this.sourceNav.addItems($source);
       this.initSourceToggle($source);
       this.sourcesByKey[$source.data('key')] = $source;
 
