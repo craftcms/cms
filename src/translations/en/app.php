@@ -1053,6 +1053,8 @@ return [
     'Pay {price}' => 'Pay {price}',
     'Pending' => 'Pending',
     'Perform Craft CMS and plugin updates' => 'Perform Craft CMS and plugin updates',
+    'Period Type' => 'Period Type',
+    'Period Value' => 'Period Value',
     'Permissions' => 'Permissions',
     'Phone' => 'Phone',
     'Photo' => 'Photo',
