@@ -2704,9 +2704,7 @@ const SourceNav = Garnish.Base.extend(
       this.$items = this.$items.add($items);
     },
 
-    onKeyDown: function (event) {
-
-    },
+    onKeyDown: function (event) {},
 
     handleClick: function (event) {
       const $item = this.getClosestItem(event.target);
@@ -2739,8 +2737,6 @@ const SourceNav = Garnish.Base.extend(
     removeItems: function (items) {
       console.log(items);
       let selectedItem;
-
-
     },
 
     onSelectionChange: function () {
@@ -2763,7 +2759,8 @@ const SourceNav = Garnish.Base.extend(
       selectedClass: 'sel',
       onSelectionChange: $.noop,
     },
-  });
+  }
+);
 
 const ViewMenu = Garnish.Base.extend({
   elementIndex: null,
