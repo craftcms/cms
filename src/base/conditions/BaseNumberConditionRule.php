@@ -18,9 +18,25 @@ abstract class BaseNumberConditionRule extends BaseTextConditionRule
     protected const OPERATOR_BETWEEN = 'between';
 
     /**
+     * @var string
+     * @since 4.3.0
+     */
+    public string $maxValue = '';
+
+    /**
      * @inheritdoc
      */
     protected bool $reloadOnOperatorChange = true;
+
+    /**
+     * @inheritdoc
+     */
+    public function getConfig(): array
+    {
+        return array_merge(parent::getConfig(), [
+            'maxValue' => $this->maxValue,
+        ]);
+    }
 
     /**
      * @inheritdoc
@@ -61,17 +77,26 @@ abstract class BaseNumberConditionRule extends BaseTextConditionRule
     /**
      * @inheritdoc
      */
+    protected function defineRules(): array
+    {
+        return array_merge(parent::defineRules(), [
+            [['maxValue'], 'safe'],
+        ]);
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function inputHtml(): string
     {
         if ($this->operator === self::OPERATOR_BETWEEN) {
-            $this->value = empty($this->value) ? ['min' => 0, 'max' => 0] : $this->value;
             return Html::tag('div',
                 Html::hiddenLabel(Craft::t('app', 'Min Value'), 'min') .
                 Cp::textHtml([
                     'type' => $this->inputType(),
                     'id' => 'min',
-                    'name' => 'value[min]',
-                    'value' => $this->value['min'],
+                    'name' => 'value',
+                    'value' => $this->value,
                     'autocomplete' => false,
                     'class' => 'flex-grow flex-shrink',
                 ]) .
@@ -80,8 +105,8 @@ abstract class BaseNumberConditionRule extends BaseTextConditionRule
                 Cp::textHtml([
                     'type' => $this->inputType(),
                     'id' => 'max',
-                    'name' => 'value[max]',
-                    'value' => $this->value['max'],
+                    'name' => 'maxValue',
+                    'value' => $this->maxValue,
                     'autocomplete' => false,
                     'class' => 'flex-grow flex-shrink',
                 ]) .
@@ -98,14 +123,15 @@ abstract class BaseNumberConditionRule extends BaseTextConditionRule
      */
     protected function paramValue(): string|array|null
     {
-        if ($this->operator === self::OPERATOR_BETWEEN && is_array($this->value)) {
-            if (empty($this->value)) {
+        if ($this->operator === self::OPERATOR_BETWEEN) {
+            if (empty($this->value) && empty($this->maxValue)) {
                 return null;
             }
 
-            array_walk($this->value, static fn($val) => Db::escapeParam($val));
-
-            return ['and', '>= ' . $this->value['min'], '<= ' . $this->value['max']];
+            return array_filter(['and',
+                !empty($this->value) ? '>= ' . Db::escapeParam($this->value) : null,
+                !empty($this->maxValue) ? '<= ' . Db::escapeParam($this->maxValue) : null,
+            ]);
         }
 
         return parent::paramValue();
@@ -116,12 +142,20 @@ abstract class BaseNumberConditionRule extends BaseTextConditionRule
      */
     protected function matchValue(mixed $value): bool
     {
-        if ($this->operator === self::OPERATOR_BETWEEN && is_array($this->value)) {
-            if (empty($this->value)) {
+        if ($this->operator === self::OPERATOR_BETWEEN) {
+            if (empty($this->value) && empty($this->maxValue)) {
                 return true;
             }
 
-            return $value >= $this->value['min'] && $value <= $this->value['max'];
+            if (!empty($this->value) && $value < $this->value) {
+                return false;
+            }
+
+            if (!empty($this->maxValue) && $value > $this->maxValue) {
+                return false;
+            }
+
+            return true;
         }
 
         return parent::matchValue($value);

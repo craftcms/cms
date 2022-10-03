@@ -22,9 +22,9 @@ abstract class BaseTextConditionRule extends BaseConditionRule
     public string $operator = self::OPERATOR_EQ;
 
     /**
-     * @var string|array The input value.
+     * @var string The input value.
      */
-    public string|array $value = '';
+    public string $value = '';
 
     /**
      * @inheritdoc
