@@ -160,4 +160,14 @@ abstract class BaseNumberConditionRule extends BaseTextConditionRule
 
         return parent::matchValue($value);
     }
+
+    /**
+     * @inheritdoc
+     */
+    protected function inputOptions(): array
+    {
+        return array_merge(parent::inputOptions(), [
+            'step' => '1',
+        ]);
+    }
 }
