@@ -2021,7 +2021,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     _expandSource: function ($source) {
       $source.next('.toggle').attr({
         'aria-expanded': 'true',
-        'aria-label': Craft.t('app', 'Hide nested sources'),
       });
       $source.parent('li').addClass('expanded');
 
@@ -2808,7 +2807,7 @@ const SourceNav = Garnish.Base.extend(
     _deinitItem: function (item) {
       const $item = $(item);
       this.removeAllListeners($item);
-    }
+    },
   },
   {
     defaults: {
