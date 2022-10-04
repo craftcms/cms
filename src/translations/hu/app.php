@@ -568,6 +568,7 @@ return [
     'Edit “{entryType}”' => '“{entryType}” szerkesztése',
     'Edit “{title}”' => 'Szerkeszt “{title}”',
     'Edit' => 'Szerkeszt',
+    'Editable' => 'Editable',
     'Edited' => 'Szerkesztve',
     'Eircode' => 'Eircode',
     'Element' => 'Elem',
