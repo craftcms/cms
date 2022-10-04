@@ -17,7 +17,7 @@ class NumberFieldConditionRule extends BaseNumberConditionRule implements FieldC
     /**
      * @inheritdoc
      */
-    protected function elementQueryParam(): string|array|null
+    protected function elementQueryParam(): ?string
     {
         return $this->paramValue();
     }
