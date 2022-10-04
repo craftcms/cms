@@ -1436,7 +1436,7 @@ ul.icons {
 
 .btn,
 .spinner {
-  min-height: toRem(34);
+  height: 34px;
 }
 
 .btn[data-icon-after]:not(:empty):not(.btn-empty):after,
