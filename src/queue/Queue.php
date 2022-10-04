@@ -10,6 +10,7 @@ namespace craft\queue;
 use Craft;
 use craft\db\Connection;
 use craft\db\Table;
+use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Db;
 use craft\helpers\Json;
@@ -517,7 +518,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
         $info = [];
 
         foreach ($results as $result) {
-            if (($errorMessage = $result['error']) && !YII_DEBUG && !Craft::$app->getUser()->getIsAdmin()) {
+            if (($errorMessage = $result['error']) && !App::devMode() && !Craft::$app->getUser()->getIsAdmin()) {
                 $errorMessage = Craft::t('app','An unknown error occurred.');
                 // Log it for debugging.
                 Craft::error('Queue job failure: ' . $result['error']);
