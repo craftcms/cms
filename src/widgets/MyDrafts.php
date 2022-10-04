@@ -97,11 +97,18 @@ class MyDrafts extends Widget
             ]);
         }
 
-        $html = '';
+        $html = Html::beginTag('ul', [
+            'class' => 'widget__list',
+            'role' => 'list',
+        ]);
 
         foreach ($drafts as $draft) {
-            $html .= Html::tag('div', Cp::elementHtml($draft));
+            $html .= Html::tag('li', Cp::elementHtml($draft), [
+                'class' => 'widget__list-item',
+            ]);
         }
+
+        $html .= Html::endTag('ul');
 
         return $html;
     }
