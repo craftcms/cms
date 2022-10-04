@@ -3,6 +3,7 @@
 ### Added
 - Added a “View” menu to element indexes, which enable users to customize the visible table columns for themselves, without affecting other users. ([#11915](https://github.com/craftcms/cms/pull/11915))
 - Added source setting menus to element index pages, which now contain the “Customize sources” option when allowed, and “New subfolder”, “Rename folder”, and “Delete folder” actions on the Assets index page. ([#11906/](https://github.com/craftcms/cms/pull/11906))
+- Added the “Editable” rule to asset and entry conditions. ([#11995](https://github.com/craftcms/cms/discussions/11995))
 - Added the `extraLastNamePrefixes` config setting. ([#11903](https://github.com/craftcms/cms/pull/11903))
 - Added the `extraNameSalutations` config setting. ([#11903](https://github.com/craftcms/cms/pull/11903))
 - Added the `extraNameSuffixes` config setting. ([#11903](https://github.com/craftcms/cms/pull/11903))
@@ -21,6 +22,8 @@
 - Added `craft\base\ExpirableElementInterface`. ([#11901](https://github.com/craftcms/cms/pull/11901))
 - Added `craft\db\ActiveQuery::collect()`. ([#11842](https://github.com/craftcms/cms/pull/11842))
 - Added `craft\elements\actions\Restore::$restorableElementsOnly`.
+- Added `craft\elements\conditions\assets\EditableConditionRule`.
+- Added `craft\elements\conditions\entries\EditableConditionRule`.
 - Added `craft\enums\DateRangeType`.
 - Added `craft\events\AuthorizationCheckEvent::$element`.
 - Added `craft\events\CreateTwigEvent`.
