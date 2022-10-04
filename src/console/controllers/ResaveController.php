@@ -75,7 +75,7 @@ class ResaveController extends Controller
 
         // attribute name
         return static function(ElementInterface $element) use ($to) {
-            return $element->{$to};
+            return $element->$to;
         };
     }
 
