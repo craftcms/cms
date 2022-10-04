@@ -568,6 +568,7 @@ return [
     'Edit “{entryType}”' => 'تحرير ”{entryType}“',
     'Edit “{title}”' => 'تحرير ”{title}“',
     'Edit' => 'تحرير',
+    'Editable' => 'Editable',
     'Edited' => 'تم التحرير',
     'Eircode' => 'Eircode',
     'Element' => 'عنصر',
