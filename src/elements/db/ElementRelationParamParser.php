@@ -16,6 +16,7 @@ use craft\fields\BaseRelationField;
 use craft\fields\Matrix;
 use craft\helpers\StringHelper;
 use craft\models\Site;
+use Illuminate\Support\Collection;
 use yii\base\BaseObject;
 use yii\base\InvalidArgumentException;
 
@@ -67,7 +68,13 @@ class ElementRelationParamParser extends BaseObject
     {
         // Ensure it's an array
         if (!is_array($relatedToParam)) {
-            $relatedToParam = is_string($relatedToParam) ? StringHelper::split($relatedToParam) : [$relatedToParam];
+            if (is_string($relatedToParam)) {
+                $relatedToParam = StringHelper::split($relatedToParam);
+            } elseif ($relatedToParam instanceof Collection) {
+                $relatedToParam = $relatedToParam->all();
+            } else {
+                $relatedToParam = [$relatedToParam];
+            }
         }
 
         if (isset($relatedToParam[0]) && in_array($relatedToParam[0], ['and', 'or'])) {
@@ -153,7 +160,13 @@ class ElementRelationParamParser extends BaseObject
                 $elements = &$relCriteria[$elementParam];
 
                 if (!is_array($elements)) {
-                    $elements = is_string($elements) ? StringHelper::split($elements) : [$elements];
+                    if (is_string($elements)) {
+                        $elements = StringHelper::split($elements);
+                    } elseif ($elements instanceof Collection) {
+                        $elements = $elements->all();
+                    } else {
+                        $elements = [$elements];
+                    }
                 }
 
                 if (isset($elements[0]) && in_array($elements[0], ['and', 'or'])) {

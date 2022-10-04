@@ -16,6 +16,7 @@
 - Fixed an error that could occur when editing a draft of an element type that didn’t have change tracking enabled.
 - Fixed an error that could occur when saving an entry with Matrix blocks, if the entry had been deleted for a site.
 - Fixed a bug where `resave/*` commands weren’t respecting the `--set`, `--to`, or `--touch` options when `--queue` was passed. ([#11974](https://github.com/craftcms/cms/issues/11974))
+- Fixed a bug where `relatedTo` params didn’t support collections.
 
 ## 4.2.5.2 - 2022-10-03
 
