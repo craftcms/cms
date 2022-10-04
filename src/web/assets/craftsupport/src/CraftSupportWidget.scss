@@ -187,6 +187,8 @@
             padding-top: 24px;
             display: flex;
             justify-content: center;
+            flex-wrap: wrap;
+            gap: 24px;
 
             &:before {
               display: block;
@@ -199,10 +201,6 @@
               width: 20px;
               height: 1px;
               background: var(--hairline-color);
-            }
-
-            a + a {
-              @include margin-left(24px);
             }
 
             a {
