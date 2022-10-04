@@ -9,6 +9,9 @@
 - Added `craft\queue\jobs\ResaveElements::$to`.
 - Added `craft\queue\jobs\ResaveElements::$touch`.
 
+### Changed
+- When passing a PHP callback function to the `--to` option of a `resave/*` command, the `$element` argument is now optional.
+
 ### Fixed
 - Fixed an error that could occur when editing a draft of an element type that didn’t have change tracking enabled.
 - Fixed an error that could occur when saving an entry with Matrix blocks, if the entry had been deleted for a site.

@@ -45,7 +45,7 @@ class ResaveController extends Controller
      * @since 4.2.6
      * @internal
      */
-    public static function normalizeTo(?string $to): callable
+    final public static function normalizeTo(?string $to): callable
     {
         // empty
         if ($to === ':empty:') {
@@ -64,11 +64,13 @@ class ResaveController extends Controller
         }
 
         // PHP arrow function
-        if (preg_match('/^fn\s*\(\s*\$(\w+)\s*\)\s*=>\s*(.+)/', $to, $match)) {
+        if (preg_match('/^fn\s*\(\s*(?:\$(\w+)\s*)?\)\s*=>\s*(.+)/', $to, $match)) {
             $var = $match[1];
             $php = sprintf('return %s;', StringHelper::removeLeft(rtrim($match[2], ';'), 'return '));
             return function(ElementInterface $element) use ($var, $php) {
-                $$var = $element;
+                if ($var) {
+                    $$var = $element;
+                }
                 return eval($php);
             };
         }
