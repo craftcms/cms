@@ -568,6 +568,7 @@ return [
     'Edit “{entryType}”' => 'Rediger “{entryType}”',
     'Edit “{title}”' => 'Rediger “{title}”',
     'Edit' => 'Rediger',
+    'Editable' => 'Editable',
     'Edited' => 'Redigeret',
     'Eircode' => 'Eircode',
     'Element' => 'Element',
