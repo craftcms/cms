@@ -38,6 +38,46 @@ use yii\helpers\Console;
 class ResaveController extends Controller
 {
     /**
+     * Returns [[to]] normalized to a callable.
+     *
+     * @param string|null $to
+     * @return callable
+     */
+    public static function normalizeTo(?string $to): callable
+    {
+        // empty
+        if ($to === ':empty:') {
+            return function() {
+                return null;
+            };
+        }
+
+        // object template
+        if (StringHelper::startsWith($to, '=')) {
+            $template = substr($to, 1);
+            $view = Craft::$app->getView();
+            return function(ElementInterface $element) use ($template, $view) {
+                return $view->renderObjectTemplate($template, $element);
+            };
+        }
+
+        // PHP arrow function
+        if (preg_match('/^fn\s*\(\s*\$(\w+)\s*\)\s*=>\s*(.+)/', $to, $match)) {
+            $var = $match[1];
+            $php = sprintf('return %s;', StringHelper::removeLeft(rtrim($match[2], ';'), 'return '));
+            return function(ElementInterface $element) use ($var, $php) {
+                $$var = $element;
+                return eval($php);
+            };
+        }
+
+        // attribute name
+        return static function(ElementInterface $element) use ($to) {
+            return $element->{$to};
+        };
+    }
+
+    /**
      * @var bool Whether the elements should be resaved via a queue job.
      * @since 3.7.0
      */
@@ -467,45 +507,5 @@ class ResaveController extends Controller
 
         $this->stdout("Done resaving {$elementsText}." . PHP_EOL . PHP_EOL, Console::FG_YELLOW);
         return $fail ? ExitCode::UNSPECIFIED_ERROR : ExitCode::OK;
-    }
-
-    /**
-     * Returns [[to]] normalized to a callable.
-     *
-     * @param string|null $to
-     * @return callable
-     */
-    public static function normalizeTo(?string $to): callable
-    {
-        // empty
-        if ($to === ':empty:') {
-            return function() {
-                return null;
-            };
-        }
-
-        // object template
-        if (StringHelper::startsWith($to, '=')) {
-            $template = substr($to, 1);
-            $view = Craft::$app->getView();
-            return function(ElementInterface $element) use ($template, $view) {
-                return $view->renderObjectTemplate($template, $element);
-            };
-        }
-
-        // PHP arrow function
-        if (preg_match('/^fn\s*\(\s*\$(\w+)\s*\)\s*=>\s*(.+)/', $to, $match)) {
-            $var = $match[1];
-            $php = sprintf('return %s;', StringHelper::removeLeft(rtrim($match[2], ';'), 'return '));
-            return function(ElementInterface $element) use ($var, $php) {
-                $$var = $element;
-                return eval($php);
-            };
-        }
-
-        // attribute name
-        return static function(ElementInterface $element) use ($to) {
-            return $element->{$to};
-        };
     }
 }
