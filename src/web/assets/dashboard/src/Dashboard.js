@@ -249,10 +249,14 @@ import './dashboard.scss';
         this.widgetManager = new Garnish.HUD(this.$widgetManagerBtn, $form, {
           hudClass: 'hud widgetmanagerhud',
           onShow: () => {
-            this.$widgetManagerBtn.addClass('active');
+            this.$widgetManagerBtn
+              .addClass('active')
+              .attr('aria-expanded', 'true');
           },
           onHide: () => {
-            this.$widgetManagerBtn.removeClass('active');
+            this.$widgetManagerBtn
+              .removeClass('active')
+              .attr('aria-expanded', 'false');
           },
         });
 

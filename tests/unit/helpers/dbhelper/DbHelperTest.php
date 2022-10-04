@@ -43,6 +43,7 @@ class DbHelperTest extends TestCase
             'foo',
             'field_2',
         ],
+        ['foo' => null],
     ];
 
     public const MULTI_PARSEPARAM = ['foo' => ['field_1', 'field_2']];
@@ -81,8 +82,14 @@ class DbHelperTest extends TestCase
      * @param bool $caseInsensitive
      * @param string|null $columnType
      */
-    public function testParseParam(string|array $expected, string $column, mixed $value, string $defaultOperator = '=', bool $caseInsensitive = false, ?string $columnType = null): void
-    {
+    public function testParseParam(
+        string|array $expected,
+        string $column,
+        mixed $value,
+        string $defaultOperator = '=',
+        bool $caseInsensitive = false,
+        ?string $columnType = null,
+    ): void {
         self::assertSame($expected, Db::parseParam($column, $value, $defaultOperator, $caseInsensitive, $columnType));
     }
 
@@ -361,27 +368,55 @@ class DbHelperTest extends TestCase
         return [
             'basic' => [
                 ['foo' => 'bar'],
-                'foo', 'bar',
+                'foo',
+                'bar',
             ],
             'multi-array-format' => [
                 self::MULTI_PARSEPARAM,
-                'foo', ['field_1', 'field_2'],
+                'foo',
+                ['field_1', 'field_2'],
             ],
             'multi-split-by-comma' => [
                 self::MULTI_PARSEPARAM,
-                'foo', 'field_1, field_2',
+                'foo',
+                'field_1, field_2',
             ],
             'multi-not-param' => [
                 self::MULTI_PARSEPARAM_NOT,
-                'foo', 'field_1, field_2', 'not',
+                'foo',
+                'field_1, field_2',
+                'not',
             ],
             'multi-not-symbol' => [
                 self::MULTI_PARSEPARAM_NOT,
-                'foo', 'field_1, field_2', '!=',
+                'foo',
+                'field_1, field_2',
+                '!=',
+            ],
+            'multi-not-symbol-and' => [
+                [
+                    'or',
+                    ['not', ['foo' => ['field_1', 'field_2']]],
+                    ['foo' => null],
+                ],
+                'foo',
+                'and, field_1, field_2',
+                '!=',
+            ],
+            'multi-not-glue' => [
+                [
+                    'or',
+                    ['not', ['foo' => ['field_1', 'field_2']]],
+                    ['foo' => null],
+                ],
+                'foo',
+                'not, field_1, field_2',
             ],
             'random-symbol' => [
                 ['raaa', 'foo', 'field_1'],
-                'foo', 'field_1', 'raaa',
+                'foo',
+                'field_1',
+                'raaa',
             ],
             'random-symbol-multi' => [
                 [
@@ -389,32 +424,91 @@ class DbHelperTest extends TestCase
                     ['raaa', 'foo', 'field_1'],
                     ['raaa', 'foo', 'field_2'],
                 ],
-                'foo', 'field_1, field_2', 'raaa',
+                'foo',
+                'field_1, field_2',
+                'raaa',
             ],
-            ['', 'foo', 'not'],
-            ['', 'foo', []],
-            ['', '', ''],
-            ['', 'foo', null],
-            ['', 'foo', ''],
-            [
+            'not' => [
+                '',
+                'foo',
+                'not',
+            ],
+            'empty' => [
+                '',
+                'foo',
+                [],
+            ],
+            'blank' => [
+                '',
+                '',
+                '',
+            ],
+            'null' => [
+                '',
+                'foo',
+                null,
+            ],
+            'blank2' => [
+                '',
+                'foo',
+                '',
+            ],
+            'or' => [
                 ['foo' => ['field_1', 'field_2']],
-                'foo', ['or', 'field_1', 'field_2'],
+                'foo',
+                ['or', 'field_1', 'field_2'],
             ],
-            [
-                ['not', ['foo' => ['field_1', 'field_2']]],
-                'foo', ['not', 'field_1', 'field_2'],
+            'not-array' => [
+                [
+                    'or',
+                    ['not', ['foo' => ['field_1', 'field_2']]],
+                    ['foo' => null],
+                ],
+                'foo',
+                ['not', 'field_1', 'field_2'],
+            ],
+            'not-single' => [
+                [
+                    'or',
+                    ['not', ['foo' => 'field_1']],
+                    ['foo' => null],
+                ],
+                'foo',
+                ['not', 'field_1'],
+            ],
+            'ne-single' => [
+                [
+                    'or',
+                    ['!=', 'foo', 'field_1'],
+                    ['foo' => null],
+                ],
+                'foo',
+                ['field_1'],
+                '!=',
             ],
             [
                 ['foo' => true],
-                'foo', true, '=', false, Schema::TYPE_BOOLEAN,
+                'foo',
+                true,
+                '=',
+                false,
+                Schema::TYPE_BOOLEAN,
             ],
             [
                 ['foo' => true],
-                'foo', 1, '=', false, Schema::TYPE_BOOLEAN,
+                'foo',
+                1,
+                '=',
+                false,
+                Schema::TYPE_BOOLEAN,
             ],
             [
                 ['foo' => true],
-                'foo', '1', '=', false, Schema::TYPE_BOOLEAN,
+                'foo',
+                '1',
+                '=',
+                false,
+                Schema::TYPE_BOOLEAN,
             ],
             [
                 ['foo' => true],
@@ -422,27 +516,75 @@ class DbHelperTest extends TestCase
             ],
             [
                 ['foo' => true],
-                'foo', 'not :empty:', '=', false, Schema::TYPE_BOOLEAN,
+                'foo',
+                'not :empty:',
+                '=',
+                false,
+                Schema::TYPE_BOOLEAN,
             ],
             [
                 ['foo' => false],
-                'foo', false, '=', false, Schema::TYPE_BOOLEAN,
+                'foo',
+                false,
+                '=',
+                false,
+                Schema::TYPE_BOOLEAN,
             ],
             [
                 ['foo' => false],
-                'foo', 0, '=', false, Schema::TYPE_BOOLEAN,
+                'foo',
+                0,
+                '=',
+                false,
+                Schema::TYPE_BOOLEAN,
             ],
             [
                 ['foo' => false],
-                'foo', '0', '=', false, Schema::TYPE_BOOLEAN,
+                'foo',
+                '0',
+                '=',
+                false,
+                Schema::TYPE_BOOLEAN,
             ],
             [
                 ['foo' => false],
-                'foo', 'not 1', '=', false, Schema::TYPE_BOOLEAN,
+                'foo',
+                'not 1',
+                '=',
+                false,
+                Schema::TYPE_BOOLEAN,
             ],
             [
                 ['foo' => false],
-                'foo', ':empty:', '=', false, Schema::TYPE_BOOLEAN,
+                'foo',
+                ':empty:',
+                '=',
+                false,
+                Schema::TYPE_BOOLEAN,
+            ],
+            [
+                ['like', 'foo', '%bar%', false],
+                'foo',
+                '*bar*',
+            ],
+            [
+                ['foo' => '*bar*'],
+                'foo',
+                '\*bar\*',
+            ],
+            [
+                ['like', 'foo', '%\_bar\_%', false],
+                'foo',
+                '*_bar_*',
+            ],
+            [
+                [
+                    'or',
+                    ['not like', 'foo', '%bar%', false],
+                    ['foo' => null],
+                ],
+                'foo',
+                'not, *bar*',
             ],
         ];
     }
