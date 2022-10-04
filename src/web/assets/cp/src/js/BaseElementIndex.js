@@ -2755,10 +2755,38 @@ const SourceNav = Garnish.Base.extend(
     },
 
     removeItems: function (items) {
-      console.log(items);
       let selectedItem;
 
-      // Remove selected class from item if it was currently-selected
+      items = $.makeArray(items);
+
+      let itemsChanged = false,
+        selectionChanged = false;
+
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+
+        // Make sure we actually know about this item
+        const index = $.inArray(item, this.$items);
+        if (index !== -1) {
+          this._deinitItem(item);
+          this.$items.splice(index, 1);
+          itemsChanged = true;
+
+          // TODO fix this tomorrow since we don't have selectedItems
+          var selectedIndex = $.inArray(item, this.$selectedItems);
+          if (selectedIndex !== -1) {
+            this.$selectedItems.splice(selectedIndex, 1);
+            selectionChanged = true;
+          }
+        }
+      }
+
+      if (itemsChanged) {
+        if (selectionChanged) {
+          $(items).removeClass(this.settings.selectedClass);
+          this.onSelectionChange();
+        }
+      }
     },
 
     onSelectionChange: function () {
@@ -2777,8 +2805,8 @@ const SourceNav = Garnish.Base.extend(
     },
 
     _deinitItem: function (item) {
-      console.log('deinit item');
-      console.log(item);
+      const $item = $(item);
+      this.removeAllListeners($item);
     }
   },
   {
