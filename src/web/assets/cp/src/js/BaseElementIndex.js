@@ -415,8 +415,17 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     selectDefaultSource: function () {
-      var sourceKey = this.getDefaultSourceKey(),
-        $source;
+      // The `source` query param should always take precedence
+      let sourceKey;
+      if (this.settings.context === 'index') {
+        sourceKey = Craft.getQueryParam('source');
+      }
+
+      if (!sourceKey) {
+        sourceKey = this.getDefaultSourceKey();
+      }
+
+      let $source;
 
       if (sourceKey) {
         $source = this.getSourceByKey(sourceKey);
@@ -512,13 +521,13 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
     getDefaultSourceKey: function () {
       if (this.settings.defaultSource) {
-        var paths = this.settings.defaultSource.split('/'),
-          path = '';
+        const paths = this.settings.defaultSource.split('/');
+        let path = '';
 
         // Expand the tree
-        for (var i = 0; i < paths.length; i++) {
+        for (let i = 0; i < paths.length; i++) {
           path += paths[i];
-          var $source = this.getSourceByKey(path);
+          const $source = this.getSourceByKey(path);
 
           // If the folder can't be found, then just go to the stored instance source.
           if (!$source) {
@@ -1401,6 +1410,12 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.updateFilterBtn();
 
       this.onSelectSource();
+
+      if (this.settings.context === 'index') {
+        const urlParams = Craft.getQueryParams();
+        urlParams.source = this.sourceKey;
+        Craft.setUrl(Craft.getUrl(Craft.path, urlParams));
+      }
 
       return true;
     },
