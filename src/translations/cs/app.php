@@ -568,6 +568,7 @@ return [
     'Edit “{entryType}”' => 'Upravit "{entryType}"',
     'Edit “{title}”' => 'Upravit "{title}"',
     'Edit' => 'Upravit',
+    'Editable' => 'Editable',
     'Edited' => 'Upraveno',
     'Eircode' => 'Kód Eircode',
     'Element' => 'Najít oficiálního partnera Craft ',
