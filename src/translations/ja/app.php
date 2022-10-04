@@ -568,6 +568,7 @@ return [
     'Edit “{entryType}”' => '「{entryType}」を編集する',
     'Edit “{title}”' => '「{title}」を編集する',
     'Edit' => '編集',
+    'Editable' => 'Editable',
     'Edited' => '編集済み',
     'Eircode' => 'Eircode',
     'Element' => 'エレメント',
