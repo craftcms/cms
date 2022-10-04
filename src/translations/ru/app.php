@@ -568,6 +568,7 @@ return [
     'Edit “{entryType}”' => 'Редактировать «{entryType}»',
     'Edit “{title}”' => 'Редактировать «{title}»',
     'Edit' => 'Редактировать',
+    'Editable' => 'Editable',
     'Edited' => 'Отредактировано',
     'Eircode' => 'Почтовый код',
     'Element' => 'Элемент',
