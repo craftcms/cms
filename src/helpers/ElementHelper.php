@@ -695,12 +695,15 @@ class ElementHelper
      * Returns whether the attribute on the given element is empty.
      *
      * @param ElementInterface $element
+     * @param string $attribute
      * @return bool
+     * @since 3.7.56
      */
-    public static function isAttributeEmpty(ElementInterface $element, string $attribute)
+    public static function isAttributeEmpty(ElementInterface $element, string $attribute): bool
     {
         // See if we're setting a custom field
-        if ($fieldLayout = $element->getFieldLayout()) {
+        $fieldLayout = $element->getFieldLayout();
+        if ($fieldLayout) {
             foreach ($fieldLayout->getTabs() as $tab) {
                 foreach ($tab->elements as $layoutElement) {
                     if ($layoutElement instanceof CustomField && $layoutElement->attribute() === $attribute) {
@@ -710,6 +713,6 @@ class ElementHelper
             }
         }
 
-        return empty($element->{$attribute});
+        return empty($element->$attribute);
     }
 }

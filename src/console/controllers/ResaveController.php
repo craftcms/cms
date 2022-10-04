@@ -42,6 +42,8 @@ class ResaveController extends Controller
      *
      * @param string|null $to
      * @return callable
+     * @since 3.7.56
+     * @internal
      */
     public static function normalizeTo(?string $to): callable
     {

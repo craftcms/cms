@@ -42,26 +42,26 @@ class ResaveElements extends BaseJob
     public $updateSearchIndex = false;
 
     /**
-     * @var string|null An attribute name that should be set for each of the elements. The value will be determined by to.
-     * @since 3.7.29
+     * @var string|null An attribute name that should be set for each of the elements. The value will be determined by [[to]].
+     * @since 3.7.56
      */
-    public $set = null;
+    public $set;
 
     /**
-     * @var string|null The value that should be set on the set attribute.
-     * @since 3.7.29
+     * @var string|null The value that should be set on the [[set]] attribute.
+     * @since 3.7.56
      */
-    public $to = null;
+    public $to;
 
     /**
-     * @var bool Whether the `--set` attribute should only be set if it doesn’t have a value.
-     * @since 3.7.29
+     * @var bool Whether the [[set]] attribute should only be set if it doesn’t have a value.
+     * @since 3.7.56
      */
     public $ifEmpty = false;
 
     /**
      * @var bool Whether to update the `dateUpdated` timestamp for the elements.
-     * @since 3.7.54
+     * @since 3.7.56
      */
     public $touch = false;
 
