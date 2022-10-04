@@ -4,6 +4,7 @@
 - Added a “View” menu to element indexes, which enable users to customize the visible table columns for themselves, without affecting other users. ([#11915](https://github.com/craftcms/cms/pull/11915))
 - Added source setting menus to element index pages, which now contain the “Customize sources” option when allowed, and “New subfolder”, “Rename folder”, and “Delete folder” actions on the Assets index page. ([#11906/](https://github.com/craftcms/cms/pull/11906))
 - Added the “Editable” rule to asset and entry conditions. ([#11995](https://github.com/craftcms/cms/discussions/11995))
+- Element sources now have a “Default Sort” setting in the Customize Sources modal. ([#12002](https://github.com/craftcms/cms/discussions/12002))
 - Added the `extraLastNamePrefixes` config setting. ([#11903](https://github.com/craftcms/cms/pull/11903))
 - Added the `extraNameSalutations` config setting. ([#11903](https://github.com/craftcms/cms/pull/11903))
 - Added the `extraNameSuffixes` config setting. ([#11903](https://github.com/craftcms/cms/pull/11903))

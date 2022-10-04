@@ -21,7 +21,7 @@
             'has-structure': hasStructure,
             'default-sort': source.defaultSort ?? false,
             'sort-opts': isTopLevel
-                ? (hasStructure ? [{label: 'Structure'|t('app'), attr: 'structure', defaultDir: 'asc'}] : [])
+                ? [hasStructure ? {label: 'Structure'|t('app'), attr: 'structure', defaultDir: 'asc'} : null]|filter
                     |merge(baseSortOptions)
                     |merge(craft.app.elementSources.getSourceSortOptions(elementType, key)|map(option => {
                         label: option.label,

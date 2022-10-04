@@ -151,6 +151,7 @@ JS;
             'Couldn’t save new order.',
             'Create',
             'Customize sources',
+            'Default Sort',
             'Default Table Columns',
             'Delete custom source',
             'Delete folder',
