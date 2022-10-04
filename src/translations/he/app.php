@@ -568,6 +568,7 @@ return [
     'Edit “{entryType}”' => 'ערוך “{entryType}”',
     'Edit “{title}”' => 'ערוך “{title}”',
     'Edit' => 'עריכה',
+    'Editable' => 'Editable',
     'Edited' => 'ערוך',
     'Eircode' => 'מיקוד (אירלנד)',
     'Element' => 'רכיב',
