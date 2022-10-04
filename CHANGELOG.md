@@ -17,6 +17,9 @@
 - Fixed an error that could occur when saving an entry with Matrix blocks, if the entry had been deleted for a site.
 - Fixed a bug where `resave/*` commands weren’t respecting the `--set`, `--to`, or `--touch` options when `--queue` was passed. ([#11974](https://github.com/craftcms/cms/issues/11974))
 
+### Security
+- Fixed a potential information leakage issue that could occur on failed queue jobs in certain environments.
+
 ## 4.2.5.2 - 2022-10-03
 
 ### Security
