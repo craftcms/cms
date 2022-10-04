@@ -121,17 +121,22 @@ abstract class BaseNumberConditionRule extends BaseTextConditionRule
     /**
      * @inheritdoc
      */
-    protected function paramValue(): string|array|null
+    protected function paramValue(): ?string
     {
         if ($this->operator === self::OPERATOR_BETWEEN) {
             if (empty($this->value) && empty($this->maxValue)) {
                 return null;
             }
 
-            return array_filter(['and',
-                !empty($this->value) ? '>= ' . Db::escapeParam($this->value) : null,
-                !empty($this->maxValue) ? '<= ' . Db::escapeParam($this->maxValue) : null,
-            ]);
+            if (empty($this->maxValue)) {
+                return '>= ' . Db::escapeParam($this->value);
+            }
+
+            if (empty($this->value)) {
+                return '<= ' . Db::escapeParam($this->maxValue);
+            }
+
+            return sprintf('and, >= %s, <= %s', Db::escapeParam($this->value), Db::escapeParam($this->maxValue));
         }
 
         return parent::paramValue();

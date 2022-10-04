@@ -102,9 +102,9 @@ abstract class BaseTextConditionRule extends BaseConditionRule
     /**
      * Returns the rule’s value, prepped for [[Db::parseParam()]] based on the selected operator.
      *
-     * @return string|array|null
+     * @return string|null
      */
-    protected function paramValue(): string|array|null
+    protected function paramValue(): ?string
     {
         if ($this->value === '') {
             return null;
