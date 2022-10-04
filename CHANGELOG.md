@@ -2,8 +2,15 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\helpers\ElementHelper::isAttributeEmpty()`.
+- Added `craft\queue\jobs\ResaveElements::$ifEmpty`.
+- Added `craft\queue\jobs\ResaveElements::$set`.
+- Added `craft\queue\jobs\ResaveElements::$to`.
+- Added `craft\queue\jobs\ResaveElements::$touch`.
+
 ### Fixed
-- Fixed a bug where setting values didn't work when using the queue option ([#11974](https://github.com/craftcms/cms/issues/11974))
+- Fixed a bug where `resave/*` commands weren’t respecting the `--set`, `--to`, or `--touch` options when `--queue` was passed. ([#11974](https://github.com/craftcms/cms/issues/11974))
 
 ## 3.7.55.3 - 2022-10-03
 
