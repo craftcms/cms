@@ -68,14 +68,25 @@ abstract class BaseTextConditionRule extends BaseConditionRule
     {
         return
             Html::hiddenLabel(Html::encode($this->getLabel()), 'value') .
-            Cp::textHtml([
-                'type' => $this->inputType(),
-                'id' => 'value',
-                'name' => 'value',
-                'value' => $this->value,
-                'autocomplete' => false,
-                'class' => 'flex-grow flex-shrink',
-            ]);
+            Cp::textHtml($this->inputOptions());
+    }
+
+    /**
+     * Returns the input options that should be used.
+     *
+     * @return array
+     * @since 4.3.0
+     */
+    protected function inputOptions(): array
+    {
+        return [
+            'type' => $this->inputType(),
+            'id' => 'value',
+            'name' => 'value',
+            'value' => $this->value,
+            'autocomplete' => false,
+            'class' => 'flex-grow flex-shrink',
+        ];
     }
 
     /**

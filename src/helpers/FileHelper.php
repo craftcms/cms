@@ -14,6 +14,7 @@ use RecursiveIteratorIterator;
 use Symfony\Component\Filesystem\Exception\IOException;
 use Symfony\Component\Filesystem\Filesystem;
 use Throwable;
+use UnexpectedValueException;
 use yii\base\Application;
 use yii\base\ErrorException;
 use yii\base\Exception;
@@ -476,7 +477,15 @@ class FileHelper extends \yii\helpers\FileHelper
             $path = $dir . DIRECTORY_SEPARATOR . $file;
             if (static::filterPath($path, $options)) {
                 if (is_dir($path)) {
-                    static::removeDirectory($path, $options);
+                    try {
+                        static::removeDirectory($path, $options);
+                    } catch (UnexpectedValueException $e) {
+                        // Ignore if the folder has already been removed.
+                        if (strpos($e->getMessage(), 'No such file or directory') === false) {
+                            Craft::warning("Tried to remove " . $path . ", but it doesn't exist.");
+                            throw $e;
+                        }
+                    }
                 } else {
                     static::unlink($path);
                 }
