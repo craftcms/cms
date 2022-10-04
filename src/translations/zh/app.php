@@ -568,6 +568,7 @@ return [
     'Edit “{entryType}”' => '编辑“{entryType}”',
     'Edit “{title}”' => '编辑“{title}”',
     'Edit' => '编辑',
+    'Editable' => 'Editable',
     'Edited' => '已编辑',
     'Eircode' => 'Eircode',
     'Element' => '元素',
