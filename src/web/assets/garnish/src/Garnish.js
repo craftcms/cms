@@ -415,7 +415,7 @@ Garnish = $.extend(Garnish, {
    * @param {object} container
    * @return {object} A collection of keyboard-focusable elements
    */
-  getKeyboardFocusable: function (container) {
+  getKeyboardFocusableElements: function (container) {
     const $focusable = $(container).find(':focusable');
     const $keyboardFocusable = $focusable.filter((index, element) => {
       return Garnish.isKeyboardFocusable(element);

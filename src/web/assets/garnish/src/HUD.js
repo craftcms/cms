@@ -114,7 +114,7 @@ export default Base.extend(
       // When the menu is expanded, tabbing on the trigger should move focus into it
       this.addListener(this.$trigger, 'keydown', (ev) => {
         if (ev.keyCode === Garnish.TAB_KEY && !ev.shiftKey && this.showing) {
-          const $focusableElement = Garnish.getKeyboardFocusable(
+          const $focusableElement = Garnish.getKeyboardFocusableElements(
             this.$hud
           ).first();
           if ($focusableElement.length) {
@@ -130,7 +130,9 @@ export default Base.extend(
 
         if (keyCode !== Garnish.TAB_KEY) return;
 
-        const $focusableElements = Garnish.getKeyboardFocusable(this.$hud);
+        const $focusableElements = Garnish.getKeyboardFocusableElements(
+          this.$hud
+        );
         const index = $focusableElements.index(event.target);
 
         if (index === 0 && event.shiftKey) {
@@ -231,7 +233,7 @@ export default Base.extend(
         this.$nextFocusableElement = $focusableElements.eq(triggerIndex + 1);
         this.addListener(this.$nextFocusableElement, 'keydown', (ev) => {
           if (ev.keyCode === Garnish.TAB_KEY && ev.shiftKey) {
-            const $focusableElement = Garnish.getKeyboardFocusable(
+            const $focusableElement = Garnish.getKeyboardFocusableElements(
               this.$hud
             ).last();
             if ($focusableElement.length) {
