@@ -9,6 +9,9 @@
 - Added `craft\queue\jobs\ResaveElements::$to`.
 - Added `craft\queue\jobs\ResaveElements::$touch`.
 
+### Changed
+- When passing a PHP callback function to the `--to` option of a `resave/*` command, the `$element` argument is now optional.
+
 ### Fixed
 - Fixed a bug where `resave/*` commands weren’t respecting the `--set`, `--to`, or `--touch` options when `--queue` was passed. ([#11974](https://github.com/craftcms/cms/issues/11974))
 
