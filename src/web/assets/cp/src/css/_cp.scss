@@ -912,6 +912,18 @@ li.breadcrumb-toggle-wrapper {
   }
 }
 
+#action-buttons {
+  @media only screen and (max-width: 400px) {
+    .btngroup .btn:first-child {
+      flex-basis: 100%;
+    }
+  }
+
+  @media only screen and (max-width: $minHorizontalUiWidth - 1px) {
+    margin-top: var(--m);
+  }
+}
+
 #main-content {
   display: flex;
   flex-direction: row;
