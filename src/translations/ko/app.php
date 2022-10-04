@@ -568,6 +568,7 @@ return [
     'Edit “{entryType}”' => '“{entryType}” 편집',
     'Edit “{title}”' => '“{title}” 편집',
     'Edit' => '편집',
+    'Editable' => 'Editable',
     'Edited' => '편집됨',
     'Eircode' => 'Eircode',
     'Element' => '요소',
