@@ -45,7 +45,7 @@ class ResaveController extends Controller
      * @since 3.7.56
      * @internal
      */
-    public static function normalizeTo(?string $to): callable
+    final public static function normalizeTo(?string $to): callable
     {
         // empty
         if ($to === ':empty:') {
