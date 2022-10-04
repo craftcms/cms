@@ -2765,18 +2765,19 @@ const SourceNav = Garnish.Base.extend(
       for (let i = 0; i < items.length; i++) {
         const item = items[i];
 
-        // Make sure we actually know about this item
+        // Is this item in the list of navigation items?
         const index = $.inArray(item, this.$items);
+
+        // Yes! Then deinitialize the item and remove it from the list
         if (index !== -1) {
           this._deinitItem(item);
           this.$items.splice(index, 1);
           itemsChanged = true;
 
-          // TODO fix this tomorrow since we don't have selectedItems
-          var selectedIndex = $.inArray(item, this.$selectedItems);
-          if (selectedIndex !== -1) {
-            this.$selectedItems.splice(selectedIndex, 1);
+          // One of the items is currently selected
+          if ($(item).is(this.$selectedItem)) {
             selectionChanged = true;
+            this.$selectedItem = null;
           }
         }
       }
