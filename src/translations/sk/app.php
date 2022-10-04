@@ -568,6 +568,7 @@ return [
     'Edit “{entryType}”' => 'Upraviť „{entryType}“',
     'Edit “{title}”' => 'Upraviť „{title}“',
     'Edit' => 'Upraviť',
+    'Editable' => 'Editable',
     'Edited' => 'Upravené',
     'Eircode' => 'Kód Eircode',
     'Element' => 'Prvok',
