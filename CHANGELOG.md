@@ -5,6 +5,11 @@
 ### Fixed
 - Fixed a bug where setting values didn't work when using the queue option ([#11974](https://github.com/craftcms/cms/issues/11974))
 
+## 3.7.55.3 - 2022-10-03
+
+### Security
+- Updated Twig to 2.15. ([#12022](https://github.com/craftcms/cms/issues/12022))
+
 ## 3.7.55.2 - 2022-09-22
 
 ### Security
