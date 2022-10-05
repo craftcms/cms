@@ -54,7 +54,7 @@ class DateCreatedConditionRuleTest extends TestCase
                 ['startDate' => DateTimeHelper::now()->sub(new DateInterval('P1D'))->format(DateTime::ATOM), 'endDate' => DateTimeHelper::now()->add(new DateInterval('P1D'))->format(DateTime::ATOM)],
             ],
             [
-                ['rangeType' => 'before', 'periodValue' => 99, 'periodType' => 'hours'],
+                ['rangeType' => 'before', 'periodValue' => 99, 'periodType' => 'hoursAgo'],
             ],
         ];
     }
