@@ -454,6 +454,7 @@ return [
     'Default Color' => 'Varsayılan Renk',
     'Default Focal Point' => 'Varsayılan Odak Noktası',
     'Default Instructions' => 'Varsayılan Talimatlar',
+    'Default Sort' => 'Default Sort',
     'Default Status' => 'Varsayılan Durum',
     'Default Table Columns' => 'Default Table Columns',
     'Default Upload Location' => 'Varsayılan Yükleme Yeri',
