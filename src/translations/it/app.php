@@ -454,6 +454,7 @@ return [
     'Default Color' => 'Colore predefinito',
     'Default Focal Point' => 'Punto focale predefinito',
     'Default Instructions' => 'Istruzioni predefinite',
+    'Default Sort' => 'Default Sort',
     'Default Status' => 'Stato predefinito',
     'Default Table Columns' => 'Default Table Columns',
     'Default Upload Location' => 'Posizione predefinita di caricamento',
