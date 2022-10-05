@@ -454,6 +454,7 @@ return [
     'Default Color' => 'Колір за замовчуванням',
     'Default Focal Point' => 'Точка фокуса за замовчуванням',
     'Default Instructions' => 'Інструкції за замовчуванням',
+    'Default Sort' => 'Default Sort',
     'Default Status' => 'Статус за замовчуванням',
     'Default Table Columns' => 'Default Table Columns',
     'Default Upload Location' => 'Місце завантаження за замовчуванням',
