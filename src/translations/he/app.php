@@ -454,6 +454,7 @@ return [
     'Default Color' => 'צבע ברירת מחדל',
     'Default Focal Point' => 'נקודת מוקד המוגדרת כברירת מחדל',
     'Default Instructions' => 'הוראות ברירת מחדל',
+    'Default Sort' => 'Default Sort',
     'Default Status' => 'סטטוס ברירת מחדל',
     'Default Table Columns' => 'Default Table Columns',
     'Default Upload Location' => 'מיקום העלאות כברירת מחדל',
