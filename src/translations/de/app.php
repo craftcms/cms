@@ -454,6 +454,7 @@ return [
     'Default Color' => 'Standardfarbe',
     'Default Focal Point' => 'Standard-Blickpunkt',
     'Default Instructions' => 'Standard Instruktionen',
+    'Default Sort' => 'Default Sort',
     'Default Status' => 'Standardstatus',
     'Default Table Columns' => 'Default Table Columns',
     'Default Upload Location' => 'Standardverzeichnis fürs Hochladen',
