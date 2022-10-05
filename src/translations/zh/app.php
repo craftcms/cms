@@ -454,6 +454,7 @@ return [
     'Default Color' => '默认颜色',
     'Default Focal Point' => '默认对准方位',
     'Default Instructions' => '默认说明',
+    'Default Sort' => 'Default Sort',
     'Default Status' => '默认状态',
     'Default Table Columns' => 'Default Table Columns',
     'Default Upload Location' => '默认上传位置',
