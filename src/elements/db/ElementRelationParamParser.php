@@ -175,8 +175,8 @@ class ElementRelationParamParser extends BaseObject
 
                 if (
                     isset($elements[0]) &&
-                    is_array($elements[0]) &&
-                    in_array((string)$elements[0], ['and', 'or'])
+                    is_string($elements[0]) &&
+                    in_array($elements[0], ['and', 'or'])
                 ) {
                     $glue = array_shift($elements);
                     if ($glue === 'and' && count($elements) < 2) {
