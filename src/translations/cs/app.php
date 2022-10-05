@@ -454,6 +454,7 @@ return [
     'Default Color' => 'Výchozí barva',
     'Default Focal Point' => 'Výchozí ústřední bod',
     'Default Instructions' => 'Výchozí instrukce',
+    'Default Sort' => 'Default Sort',
     'Default Status' => 'Výchozí stav',
     'Default Table Columns' => 'Default Table Columns',
     'Default Upload Location' => 'Výchozí umístění uploadů',
