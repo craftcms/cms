@@ -327,6 +327,9 @@ Craft.StructureTableSorter = Garnish.DragSort.extend(
 
               // See if we should run any pending tasks
               Craft.cp.runQueue();
+
+              // this is here so that the URIs are updated in the structure view after changed position
+              this.tableView.elementIndex.updateElements();
             }
           }
         );
