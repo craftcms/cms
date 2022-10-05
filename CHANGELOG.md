@@ -14,6 +14,7 @@
 
 ### Fixed
 - Fixed a bug where `resave/*` commands weren’t respecting the `--set`, `--to`, or `--touch` options when `--queue` was passed. ([#11974](https://github.com/craftcms/cms/issues/11974))
+- Fixed an error that could occur when passing an element query to a `relatedTo` param, if the parent element query contained any closures. ([#11981](https://github.com/craftcms/cms/issues/11981))
 
 ## 3.7.55.3 - 2022-10-03
 
