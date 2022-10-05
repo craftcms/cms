@@ -18,6 +18,7 @@
 - Fixed a bug where `resave/*` commands weren’t respecting the `--set`, `--to`, or `--touch` options when `--queue` was passed. ([#11974](https://github.com/craftcms/cms/issues/11974))
 - Fixed a bug where `relatedTo` params didn’t support collections.
 - Fixed an error that could occur when passing an element query to a `relatedTo` param, if the parent element query contained any closures. ([#11981](https://github.com/craftcms/cms/issues/11981))
+- Fixed a bug where `craft\log\MonologTarget::$allowLineBreaks` wasn’t getting a default value. ([#12004](https://github.com/craftcms/cms/pull/12004))
 
 ## 4.2.5.2 - 2022-10-03
 
