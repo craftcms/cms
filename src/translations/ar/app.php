@@ -454,6 +454,7 @@ return [
     'Default Color' => 'لون افتراضي',
     'Default Focal Point' => 'النقطة البؤرية الافتراضية',
     'Default Instructions' => 'الإرشادات الافتراضية',
+    'Default Sort' => 'Default Sort',
     'Default Status' => 'الحالة الافتراضية',
     'Default Table Columns' => 'Default Table Columns',
     'Default Upload Location' => 'الموقع الافتراضي للتحميل',
