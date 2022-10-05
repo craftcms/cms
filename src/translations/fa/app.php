@@ -454,6 +454,7 @@ return [
     'Default Color' => 'رنگ پیش فرض',
     'Default Focal Point' => 'نقطه کانونی پیش فرض',
     'Default Instructions' => 'دستورالعمل های پیش فرض',
+    'Default Sort' => 'Default Sort',
     'Default Status' => 'وضعیت های پیش فرض',
     'Default Table Columns' => 'Default Table Columns',
     'Default Upload Location' => 'مکان آپلود پیش فرض',
