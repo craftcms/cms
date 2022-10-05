@@ -454,6 +454,7 @@ return [
     'Default Color' => 'Цвет по умолчанию',
     'Default Focal Point' => 'Точка фокуса по умолчанию',
     'Default Instructions' => 'Инструкции по умолчанию',
+    'Default Sort' => 'Default Sort',
     'Default Status' => 'Статус по умолчанию',
     'Default Table Columns' => 'Default Table Columns',
     'Default Upload Location' => 'Местоположение загрузки по умолчанию',
