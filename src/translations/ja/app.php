@@ -454,6 +454,7 @@ return [
     'Default Color' => 'デフォルトの色',
     'Default Focal Point' => 'デフォルトの焦点',
     'Default Instructions' => 'デフォルトのガイド',
+    'Default Sort' => 'Default Sort',
     'Default Status' => 'デフォルトのステータス',
     'Default Table Columns' => 'Default Table Columns',
     'Default Upload Location' => 'デフォルトのアップロードロケーション',
