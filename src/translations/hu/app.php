@@ -454,6 +454,7 @@ return [
     'Default Color' => 'Alapértelmezett szín',
     'Default Focal Point' => 'Alapértelmezett fókuszpont',
     'Default Instructions' => 'Alapértelmezett utasítások',
+    'Default Sort' => 'Default Sort',
     'Default Status' => 'Alapértelmezett állapot',
     'Default Table Columns' => 'Default Table Columns',
     'Default Upload Location' => 'Alapértelmezett feltöltési hely',
