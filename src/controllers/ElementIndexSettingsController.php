@@ -153,6 +153,9 @@ class ElementIndexSettingsController extends BaseElementsController
         }
         unset($source);
 
+        // Get the default sort options for custom sources
+        $defaultSortOptions = $sourcesService->getSourceSortOptions($elementType, 'custom:x');
+
         // Get the available table attributes
         $availableTableAttributes = [];
 
@@ -192,6 +195,8 @@ class ElementIndexSettingsController extends BaseElementsController
 
         return $this->asJson([
             'sources' => $sources,
+            'baseSortOptions' => $baseSortOptions,
+            'defaultSortOptions' => $defaultSortOptions,
             'availableTableAttributes' => $availableTableAttributes,
             'customFieldAttributes' => $customFieldAttributes,
             'elementTypeName' => $elementType::displayName(),

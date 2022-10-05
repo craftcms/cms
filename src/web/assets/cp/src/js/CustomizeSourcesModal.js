@@ -23,6 +23,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
   selectedSource: null,
 
   elementTypeName: null,
+  baseSortOptions: null,
   availableTableAttributes: null,
   customFieldAttributes: null,
 
@@ -101,6 +102,8 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
   },
 
   buildModal: function (response) {
+    this.baseSortOptions = response.baseSortOptions;
+    this.defaultSortOptions = response.defaultSortOptions;
     this.availableTableAttributes = response.availableTableAttributes;
     this.customFieldAttributes = response.customFieldAttributes;
     this.elementTypeName = response.elementTypeName;
@@ -172,9 +175,14 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
       text: Craft.t('app', 'New custom source'),
       'data-type': 'custom',
     }).on('click', () => {
+      const sortOptions = this.baseSortOptions.slice(0);
+      sortOptions.push(this.defaultSortOptions);
+
       addSource({
         type: 'custom',
         key: `custom:${Craft.uuid()}`,
+        sortOptions: sortOptions,
+        defaultSort: [sortOptions[0].attr, sortOptions[1].defaultDir],
         tableAttributes: [],
         availableTableAttributes: [],
       });
