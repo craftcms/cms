@@ -454,6 +454,7 @@ return [
     'Default Color' => 'Standaard Kleur',
     'Default Focal Point' => 'Standaardfocuspunt',
     'Default Instructions' => 'Standaardinstructies',
+    'Default Sort' => 'Default Sort',
     'Default Status' => 'Standaardstatus',
     'Default Table Columns' => 'Default Table Columns',
     'Default Upload Location' => 'Standaard uploadlocatie',
