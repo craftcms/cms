@@ -454,6 +454,7 @@ return [
     'Default Color' => 'Domyślny kolor',
     'Default Focal Point' => 'Domyślny punkt ogniskowania',
     'Default Instructions' => 'Instrukcje domyślne',
+    'Default Sort' => 'Default Sort',
     'Default Status' => 'Domyślny status',
     'Default Table Columns' => 'Default Table Columns',
     'Default Upload Location' => 'Domyślna lokalizacja przesyłania',
