@@ -55,6 +55,16 @@ class ElementIndexSettingsController extends BaseElementsController
         $conditionsService = Craft::$app->getConditions();
         $view = Craft::$app->getView();
 
+        // Global sort options
+        $baseSortOptions = Collection::make($elementType::sortOptions())
+            ->map(fn($option, $key) => [
+                'label' => $option['label'] ?? $option,
+                'attr' => $option['attribute'] ?? $option['orderBy'] ?? $key,
+                'defaultDir' => $option['defaultDir'] ?? 'asc',
+            ])
+            ->values()
+            ->all();
+
         // Get the source info
         $sourcesService = Craft::$app->getElementSources();
         $sources = $sourcesService->getSources($elementType, ElementSources::CONTEXT_INDEX, true);
@@ -63,6 +73,51 @@ class ElementIndexSettingsController extends BaseElementsController
             if ($source['type'] === ElementSources::TYPE_HEADING) {
                 continue;
             }
+
+            // Sort options
+            $source['sortOptions'] = array_merge(
+                array_filter([
+                    ($source['structureId'] ?? false)
+                        ? [
+                            'label' => Craft::t('app', 'Structure'),
+                            'attr' => 'structure',
+                            'defaultDir' => 'asc'
+                        ]
+                        : null
+                ]),
+                $baseSortOptions,
+                Collection::make($sourcesService->getSourceSortOptions($elementType, $source['key']))
+                    ->map(fn($option) => [
+                        'label' => $option['label'],
+                        'attr' => $option['attribute'] ?? $option['orderBy'],
+                        'defaultDir' => $option['defaultDir'] ?? 'asc',
+                    ])
+                    ->values()
+                    ->all()
+            );
+
+            $defaultSortOption = null;
+            $defaultSortDir = null;
+
+            if (isset($source['defaultSort'])) {
+                if (is_string($source['defaultSort'])) {
+                    $defaultSortOption = ArrayHelper::firstWhere($source['sortOptions'], 'attr', $source['defaultSort']);
+                } elseif (is_array($source['defaultSort']) && isset($source['defaultSort'][0])) {
+                    $defaultSortOption = ArrayHelper::firstWhere($source['sortOptions'], 'attr', $source['defaultSort'][0]);
+                    if ($defaultSortOption && isset($source['defaultSort'][1])) {
+                        $defaultSortDir = $source['defaultSort'][1];
+                    }
+                }
+            }
+
+            if (!$defaultSortOption) {
+                $defaultSortOption = reset($source['sortOptions']);
+            }
+
+            $source['defaultSort'] = [
+                $defaultSortOption['attr'],
+                $defaultSortDir ?? $defaultSortOption['defaultDir'],
+            ];
 
             // Available custom field attributes
             $source['availableTableAttributes'] = [];
@@ -188,6 +243,10 @@ class ElementIndexSettingsController extends BaseElementsController
                     $postedSettings = $sourceSettings[$source['key']];
                     $sourceConfig['tableAttributes'] = array_values(array_filter($postedSettings['tableAttributes'] ?? [])) ?: '-';
 
+                    if (isset($postedSettings['defaultSort'])) {
+                        $sourceConfig['defaultSort'] = $postedSettings['defaultSort'];
+                    }
+
                     if ($isCustom) {
                         $sourceConfig += [
                             'label' => $postedSettings['label'],
@@ -218,6 +277,9 @@ class ElementIndexSettingsController extends BaseElementsController
         }
 
         $projectConfig->set(ProjectConfig::PATH_ELEMENT_SOURCES . ".$elementType", $newSourceConfigs);
+
+        Craft::$app->getSession()->setSuccess(Craft::t('app', 'Source settings saved'));
+
         return $this->asSuccess(data: [
             'disabledSourceKeys' => $disabledSourceKeys,
         ]);
