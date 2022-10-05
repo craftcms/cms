@@ -454,6 +454,7 @@ return [
     'Default Color' => 'Predvolená farba',
     'Default Focal Point' => 'Predvolené ohnisko',
     'Default Instructions' => 'Predvolené inštrukcie',
+    'Default Sort' => 'Default Sort',
     'Default Status' => 'Predvolený stav',
     'Default Table Columns' => 'Default Table Columns',
     'Default Upload Location' => 'Predvolené Umiestnenie Nahrávania',
