@@ -454,6 +454,7 @@ return [
     'Default Color' => 'Default colour',
     'Default Focal Point' => 'Default Focal Point',
     'Default Instructions' => 'Default Instructions',
+    'Default Sort' => 'Default Sort',
     'Default Status' => 'Default Status',
     'Default Table Columns' => 'Default Table Columns',
     'Default Upload Location' => 'Default Upload Location',
