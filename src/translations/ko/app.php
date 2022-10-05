@@ -454,6 +454,7 @@ return [
     'Default Color' => '기본 색상',
     'Default Focal Point' => '기본 초점',
     'Default Instructions' => '기본 지침',
+    'Default Sort' => 'Default Sort',
     'Default Status' => '기본 상태',
     'Default Table Columns' => 'Default Table Columns',
     'Default Upload Location' => '기본 업로드 위치',
