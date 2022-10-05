@@ -151,6 +151,7 @@ JS;
             'Couldn’t save new order.',
             'Create',
             'Customize sources',
+            'Default Sort',
             'Default Table Columns',
             'Delete custom source',
             'Delete folder',
@@ -249,8 +250,8 @@ JS;
             'Pending',
             'Phone',
             'Portrait',
-            'Preview',
             'Preview file',
+            'Preview',
             'Previewing {type} device in {orientation}',
             'Previewing {type} device',
             'Previous Page',
@@ -496,7 +497,7 @@ JS;
                 'handle' => $group->handle,
                 'id' => (int)$group->id,
                 'name' => Craft::t('site', $group->name),
-                'uid' => Craft::t('site', $group->uid),
+                'uid' => $group->uid,
             ];
         }
 

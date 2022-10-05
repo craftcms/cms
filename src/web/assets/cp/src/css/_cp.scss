@@ -879,11 +879,6 @@ li.breadcrumb-toggle-wrapper {
     opacity: 0.8;
   }
 
-  .btn[aria-pressed='true'] {
-    background-color: var(--gray-500);
-    color: var(--white);
-  }
-
   .text {
     border-radius: var(--large-border-radius);
 
@@ -914,6 +909,18 @@ li.breadcrumb-toggle-wrapper {
     &:not(:focus) {
       background-clip: border-box;
     }
+  }
+}
+
+#action-buttons {
+  @media only screen and (max-width: 400px) {
+    .btngroup .btn:first-child {
+      flex-basis: 100%;
+    }
+  }
+
+  @media only screen and (max-width: $minHorizontalUiWidth - 1px) {
+    margin-top: 10px;
   }
 }
 

@@ -295,7 +295,7 @@ class Drafts extends Component
         try {
             if ($canonical !== $draft) {
                 // Merge in any attribute & field values that were updated in the canonical element, but not the draft
-                if (ElementHelper::isOutdated($draft)) {
+                if ($draft::trackChanges() && ElementHelper::isOutdated($draft)) {
                     $elementsService->mergeCanonicalChanges($draft);
                 }
 

@@ -1518,6 +1518,13 @@ ul.icons {
   }
 }
 
+.btngroup--exclusive {
+  .btn[aria-pressed='true']:not(.disabled):not(.loading):not(.dashed):not([aria-disabled]) {
+    background-color: var(--gray-500);
+    color: var(--white);
+  }
+}
+
 .copytext {
   position: relative;
   z-index: 1;
@@ -3637,6 +3644,13 @@ ul.tree,
     }
 
     [role='tab'] {
+      --tab-label-color: var(--light-text-color);
+
+      &.error {
+        --highlight-color: var(--error-color) !important;
+        --tab-label-color: var(--error-color) !important;
+      }
+
       &,
       .tab-label {
         border-radius: 2px 2px 0 0;
@@ -3649,7 +3663,7 @@ ul.tree,
         position: relative;
         padding: 0 24px;
         white-space: nowrap;
-        color: var(--light-text-color);
+        color: var(--tab-label-color);
         height: 50px;
       }
 
@@ -3672,13 +3686,13 @@ ul.tree,
       }
 
       &.sel {
+        --highlight-color: var(--gray-500);
+        --tab-label-color: var(--text-color);
         position: relative;
         z-index: 1;
         cursor: default;
-        color: var(--text-color);
-        box-shadow: inset 0 2px 0 var(--gray-500), 0 0 0 1px $hairlineColor,
-          0 2px 12px transparentize($grey200, 0.5);
-        color: var(--text-color);
+        box-shadow: inset 0 2px 0 var(--highlight-color),
+          0 0 0 1px $hairlineColor, 0 2px 12px transparentize($grey200, 0.5);
         background-color: var(--white);
       }
 
@@ -4851,34 +4865,6 @@ $min2ColWidth: 400px;
     padding-bottom: var(--s);
   }
 
-  .sort-field {
-    .input {
-      .flex {
-        .btngroup {
-          .btn {
-            width: 42px;
-          }
-        }
-
-        .flex-grow {
-          max-width: calc(100% - 85px - var(--s));
-        }
-
-        @media screen and (max-width: 350px) {
-          flex-direction: column;
-
-          & > * {
-            width: 100%;
-          }
-
-          .flex-grow {
-            max-width: none;
-          }
-        }
-      }
-    }
-  }
-
   .table-columns-field {
     align-items: flex-start;
 
@@ -4896,6 +4882,35 @@ $min2ColWidth: 400px;
 
 .element-index-view-menu-table-column .icon.move {
   @include margin-right(10px);
+}
+
+/* sort fields */
+.sort-field {
+  .input {
+    .flex {
+      .btngroup {
+        .btn {
+          width: 42px;
+        }
+      }
+
+      .flex-grow {
+        max-width: calc(100% - 85px - var(--s));
+      }
+
+      @media screen and (max-width: 350px) {
+        flex-direction: column;
+
+        & > * {
+          width: 100%;
+        }
+
+        .flex-grow {
+          max-width: none;
+        }
+      }
+    }
+  }
 }
 
 /* element filter HUD */
