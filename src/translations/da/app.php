@@ -454,6 +454,7 @@ return [
     'Default Color' => 'Standardfarve',
     'Default Focal Point' => 'Standardfokuspunkt',
     'Default Instructions' => 'Standardvejledning',
+    'Default Sort' => 'Default Sort',
     'Default Status' => 'Standardstatus',
     'Default Table Columns' => 'Default Table Columns',
     'Default Upload Location' => 'Standardplacering for upload',
