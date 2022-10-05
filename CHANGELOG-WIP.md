@@ -25,7 +25,6 @@
 - Added `craft\elements\actions\Restore::$restorableElementsOnly`.
 - Added `craft\elements\conditions\assets\EditableConditionRule`.
 - Added `craft\elements\conditions\entries\EditableConditionRule`.
-- Added `craft\enums\DateRangeType`.
 - Added `craft\events\AuthorizationCheckEvent::$element`.
 - Added `craft\events\CreateTwigEvent`.
 - Added `craft\events\DefineAddressFieldLabelEvent`.
