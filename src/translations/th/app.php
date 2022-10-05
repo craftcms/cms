@@ -454,6 +454,7 @@ return [
     'Default Color' => 'Default Color',
     'Default Focal Point' => 'Default Focal Point',
     'Default Instructions' => 'Default Instructions',
+    'Default Sort' => 'Default Sort',
     'Default Status' => 'Default Status',
     'Default Table Columns' => 'Default Table Columns',
     'Default Upload Location' => 'ตำแหน่งที่อัปโหลดตามค่าเริ่มต้น',
