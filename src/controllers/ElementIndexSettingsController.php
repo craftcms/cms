@@ -81,9 +81,9 @@ class ElementIndexSettingsController extends BaseElementsController
                         ? [
                             'label' => Craft::t('app', 'Structure'),
                             'attr' => 'structure',
-                            'defaultDir' => 'asc'
+                            'defaultDir' => 'asc',
                         ]
-                        : null
+                        : null,
                 ]),
                 $baseSortOptions,
                 Collection::make($sourcesService->getSourceSortOptions($elementType, $source['key']))
