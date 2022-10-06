@@ -393,6 +393,11 @@ JS;
             'usePathInfo' => $generalConfig->usePathInfo,
         ];
 
+        if ($generalConfig->enableCsrfProtection) {
+            $data['csrfTokenName'] = $request->csrfParam;
+            $data['csrfTokenValue'] = $request->getCsrfToken();
+        }
+
         // If no one's logged in yet, leave it at that
         if (!$currentUser) {
             return $data;
@@ -442,11 +447,6 @@ JS;
             'slugWordSeparator' => $generalConfig->slugWordSeparator,
             'username' => $currentUser->username,
         ];
-
-        if ($generalConfig->enableCsrfProtection) {
-            $data['csrfTokenName'] = $request->csrfParam;
-            $data['csrfTokenValue'] = $request->getCsrfToken();
-        }
 
         return $data;
     }
