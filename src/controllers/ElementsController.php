@@ -1493,10 +1493,15 @@ JS, [
 
         if ($this->_elementType) {
             $elementType = $this->_elementType;
-        } elseif ($elementId) {
-            $elementType = $elementsService->getElementTypeById($elementId);
-        } elseif ($elementUid) {
-            $elementType = $elementsService->getElementTypeByUid($elementUid);
+        } elseif ($elementId || $elementUid) {
+            if ($elementId) {
+                $elementType = $elementsService->getElementTypeById($elementId);
+            } else {
+                $elementType = $elementsService->getElementTypeByUid($elementUid);
+            }
+            if (!$elementType) {
+                throw new BadRequestHttpException($elementId ? "Invalid element ID: $elementId" : "Invalid element UUID: $elementUid");
+            }
         } else {
             throw new BadRequestHttpException('Request missing required param.');
         }
