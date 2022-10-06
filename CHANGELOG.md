@@ -19,6 +19,7 @@
 - Fixed a bug where `relatedTo` params didn’t support collections.
 - Fixed an error that could occur when passing an element query to a `relatedTo` param, if the parent element query contained any closures. ([#11981](https://github.com/craftcms/cms/issues/11981))
 - Fixed a bug where `craft\log\MonologTarget::$allowLineBreaks` wasn’t getting a default value. ([#12004](https://github.com/craftcms/cms/pull/12004))
+- Fixed a PHP error that occurred when attempting to edit an element by an invalid ID or UUID.
 
 ## 4.2.5.2 - 2022-10-03
 
