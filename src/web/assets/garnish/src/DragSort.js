@@ -263,6 +263,7 @@ export default Drag.extend(
     _handleKeypress: function (event) {
       const {keyCode, target} = event;
       const $item = $(this._getKeyboardTargetedItem(target));
+      console.log(keyCode);
 
       switch (keyCode) {
         case Garnish.SPACE_KEY:
