@@ -2234,7 +2234,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         $parser = new ElementRelationParamParser([
             'fields' => $this->customFields ? ArrayHelper::index($this->customFields, 'handle') : [],
         ]);
-        $condition = $parser->parse($this->relatedTo);
+        $condition = $parser->parse($this->relatedTo, $this->siteId);
 
         if ($condition === false) {
             throw new QueryAbortedException();
