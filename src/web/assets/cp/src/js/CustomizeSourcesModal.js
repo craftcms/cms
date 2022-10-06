@@ -8,8 +8,12 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
   $elementIndexSourcesContainer: null,
 
   $sidebar: null,
+  $sidebarToggleBtn: null,
   $sourcesContainer: null,
+  $sourcesHeader: null,
+  $sourcesHeading: null,
   $sourceSettingsContainer: null,
+  $sourceSettingsHeader: null,
   $addSourceMenu: null,
   addSourceMenu: null,
   $footer: null,
@@ -196,7 +200,136 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
       $('<li/>').append($newCustomSourceBtn).appendTo($ul);
     }
 
+    if (Craft.useMobileStyles()) {
+      this.buildSidebarToggleView();
+    }
+
+    // Add resize listener to enable/disable sidebar toggle view
+    this.addListener(Garnish.$win, 'resize', this.updateSidebarView);
+
     this.addSourceMenu = new Garnish.DisclosureMenu($menuBtn);
+  },
+
+  getSourceName: function () {
+    return this.selectedSource
+      ? this.selectedSource.sourceData.label
+      : this.sources[0].sourceData.label;
+  },
+
+  updateSidebarView: function () {
+    if (Craft.useMobileStyles()) {
+      if (!this.$sidebarToggleBtn) this.buildSidebarToggleView();
+    } else {
+      if (this.$sidebarToggleBtn) this.resetView();
+    }
+  },
+
+  resetView: function () {
+    if (this.$sourceSettingsHeader) {
+      this.$sourceSettingsHeader.remove();
+    }
+
+    if (this.$sourcesHeader) {
+      this.$sourcesHeader.remove();
+    }
+
+    this.$sidebarToggleBtn = null;
+    this.$container.removeClass('sidebar-hidden');
+  },
+
+  updateHeading: function () {
+    if (!this.$sourcesHeading) return;
+
+    this.$sourcesHeading.text(this.getSourceName());
+  },
+
+  buildSidebarToggleView: function () {
+    this.$sourcesHeader = $('<div class="sources-header"/>')
+      .addClass('sidebar-header')
+      .prependTo(this.$sourcesContainer);
+
+    this.$sidebarCloseBtn = Craft.ui
+      .createButton({
+        class: 'nav-close close-btn',
+      })
+      .attr('aria-label', Craft.t('app', 'Close'))
+      .removeClass('btn')
+      .appendTo(this.$sourcesHeader);
+
+    this.$sourcesHeading = $('<h1 class="main-heading"/>').text(
+      this.getSourceName()
+    );
+
+    this.$sourceSettingsHeader = $('<div class="source-settings-header"/>')
+      .addClass('main-header')
+      .append(this.$sourcesHeading)
+      .prependTo(this.$sourceSettingsContainer);
+
+    // Toggle sidebar button
+    const buttonConfig = {
+      toggle: true,
+      controls: 'modal-sidebar',
+      class: 'nav-toggle',
+    };
+
+    this.$sidebarToggleBtn = Craft.ui
+      .createButton(buttonConfig)
+      .removeClass('btn')
+      .attr('aria-label', Craft.t('app', 'Show sidebar'))
+      .appendTo(this.$sourceSettingsHeader);
+
+    this.closeSidebar();
+
+    // Add listeners
+    this.addListener(this.$sidebarToggleBtn, 'click', () => {
+      this.toggleSidebar();
+    });
+
+    this.addListener(this.$sidebarCloseBtn, 'click', () => {
+      this.toggleSidebar();
+      this.$sidebarToggleBtn.trigger('focus');
+    });
+  },
+
+  toggleSidebar: function () {
+    if (this.sidebarIsOpen()) {
+      this.closeSidebar();
+    } else {
+      this.openSidebar();
+    }
+  },
+
+  openSidebar: function () {
+    this.$container.removeClass('sidebar-hidden');
+    this.$sidebarToggleBtn.attr('aria-expanded', 'true');
+    this.$sidebar.find(':focusable').first().focus();
+
+    Garnish.uiLayerManager.addLayer(this.$sidebar);
+
+    Garnish.uiLayerManager.registerShortcut(Garnish.ESC_KEY, () => {
+      this.closeSidebar();
+
+      if (Garnish.focusIsInside(this.$sidebar)) {
+        this.$sidebarToggleBtn.focus();
+      }
+    });
+  },
+
+  closeSidebar: function () {
+    this.$container.addClass('sidebar-hidden');
+
+    if (this.$sidebarToggleBtn) {
+      this.$sidebarToggleBtn.attr('aria-expanded', 'false');
+    }
+
+    // if sidebar is topmost layer, remove layer
+    if (Garnish.uiLayerManager.currentLayer.$container.hasClass('cs-sidebar')) {
+      Garnish.uiLayerManager.removeLayer();
+    }
+  },
+
+  sidebarIsOpen: function () {
+    return this.$sidebarToggleBtn.attr('aria-expanded') === 'true';
   },
 
   addSource: function (sourceData, isNew) {
@@ -394,6 +527,7 @@ Craft.CustomizeSourcesModal.BaseSource = Garnish.Base.extend({
 
     this.$item.addClass('sel');
     this.modal.selectedSource = this;
+    this.modal.updateHeading();
 
     if (!this.$settingsContainer) {
       this.$settingsContainer = $('<div/>').appendTo(

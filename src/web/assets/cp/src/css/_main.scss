@@ -1057,6 +1057,14 @@ td.right {
     }
   }
 
+  &.sidebar-hidden {
+    @include padding-left(0);
+
+    & > .cs-sidebar {
+      display: none;
+    }
+  }
+
   & > .source-settings {
     position: relative;
     height: calc(100% - 50px);
@@ -4713,37 +4721,6 @@ $min2ColWidth: 400px;
   padding-bottom: 50px;
   user-select: none;
 
-  .main-header {
-    display: flex;
-    align-items: center;
-    margin-bottom: var(--s);
-  }
-
-  .main-heading {
-    margin-bottom: 0;
-  }
-
-  .nav-toggle {
-    @include margin-left(4px);
-    @include touch-target;
-    color: var(--ui-control-color);
-
-    &:hover {
-      color: var(--gray-500);
-    }
-  }
-
-  .sidebar-header {
-    display: flex;
-    justify-content: flex-end;
-    padding: 0 var(--s);
-    margin-bottom: var(--s);
-  }
-
-  .nav-close {
-    @include touch-target;
-  }
-
   .body {
     position: relative;
     height: 100%;
@@ -4826,6 +4803,41 @@ $min2ColWidth: 400px;
       @include floatright;
       @include margin-right(-24px);
     }
+  }
+}
+
+/* element selector modals & customize sources modal */
+.elementselectormodal,
+.customize-sources-modal {
+  .main-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: var(--s);
+  }
+
+  .main-heading {
+    margin-bottom: 0;
+  }
+
+  .nav-toggle {
+    @include margin-left(4px);
+    @include touch-target;
+    color: var(--ui-control-color);
+
+    &:hover {
+      color: var(--gray-500);
+    }
+  }
+
+  .sidebar-header {
+    display: flex;
+    justify-content: flex-end;
+    padding: 0 var(--s);
+    margin-bottom: var(--s);
+  }
+
+  .nav-close {
+    @include touch-target;
   }
 }
 
