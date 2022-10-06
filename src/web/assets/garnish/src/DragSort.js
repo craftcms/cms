@@ -11,6 +11,7 @@ export default Drag.extend(
   {
     $heightedContainer: null,
     $insertion: null,
+    $pickedItem: null,
     insertionVisible: false,
     oldDraggeeIndexes: null,
     newDraggeeIndexes: null,
@@ -34,7 +35,11 @@ export default Drag.extend(
       }
 
       settings = $.extend({}, Garnish.DragSort.defaults, settings);
+
       this.base(items, settings);
+
+      // Add event listeners for picking up
+      this.addKeyboardListeners(items);
     },
 
     /**
@@ -47,6 +52,20 @@ export default Drag.extend(
         } else {
           return $(this.settings.insertion);
         }
+      }
+    },
+
+    /**
+     * Adds keyboard listeners for accessible drag-and-drop
+     */
+    addKeyboardListeners: function (items) {
+      items = $.makeArray(items);
+
+      for (let i = 0; i < items.length; i++) {
+        const item = items[i];
+        const $handle = this._getItemHandle(item);
+
+        this.addListener($handle, 'keydown', this._handleKeypress);
       }
     },
 
@@ -236,6 +255,64 @@ export default Drag.extend(
       }
 
       return indexes;
+    },
+
+    /**
+     * Handles keypresses for picking up and dropping items
+     */
+    _handleKeypress: function (event) {
+      const { keyCode, target } = event;
+      const $item = $(this._getKeyboardTargetedItem(target));
+
+      switch (keyCode) {
+        case Garnish.RETURN_KEY:
+        case Garnish.SPACE_KEY:
+          event.preventDefault();
+
+          if (this.$pickedItem) {
+            if ($item.is(this.$pickedItem)) {
+              this.$pickedItem = null;
+              $item.removeClass('picked');
+            } else {
+              console.log('not same item');
+            }
+          } else {
+            this.$pickedItem = $item;
+            $item.addClass('picked');
+          }
+          break;
+        case Garnish.DOWN_KEY:
+        case Garnish.UP_KEY:
+        case Garnish.RIGHT_KEY:
+        case Garnish.LEFT_KEY:
+          if (!this.$pickedItem) return;
+
+          console.log('move up/down');
+          break;
+        case Garnish.TAB_KEY:
+          // If an item is picked, prevent don't let the user tab away
+          if (!this.$pickedItem) return;
+
+          event.preventDefault();
+      }
+    },
+
+    /**
+     * Returns the closest item to the keyboard target
+     */
+    _getKeyboardTargetedItem: function (handle) {
+      let targeted;
+
+      for (let i = 0; i < this.$items.length; i++) {
+        const item = this.$items[i];
+
+        if ($(item).find(handle).length) {
+          targeted = item;
+          break;
+        }
+      }
+
+      return targeted;
     },
 
     /**
