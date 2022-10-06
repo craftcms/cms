@@ -395,7 +395,7 @@ JS;
             'previewIframeResizerOptions' => $this->_previewIframeResizerOptions($generalConfig),
             'primarySiteId' => $primarySite ? (int)$primarySite->id : null,
             'primarySiteLanguage' => $primarySite->language ?? null,
-            'publishableSections' => $upToDate && $currentUser ? $this->_publishableSections($currentUser) : [],
+            'publishableSections' => $upToDate ? $this->_publishableSections($currentUser) : [],
             'remainingSessionTime' => !in_array($request->getSegment(1), ['updates', 'manualupdate'], true) ? $userSession->getRemainingSessionTime() : 0,
             'runQueueAutomatically' => (bool)$generalConfig->runQueueAutomatically,
             'siteId' => $upToDate ? (int)$sitesService->currentSite->id : null,
@@ -403,7 +403,7 @@ JS;
             'siteToken' => $generalConfig->siteToken,
             'slugWordSeparator' => $generalConfig->slugWordSeparator,
             'useCompressedJs' => (bool)$generalConfig->useCompressedJs,
-            'username' => $currentUser->username ?? null,
+            'username' => $currentUser->username,
         ];
 
         if ($generalConfig->enableCsrfProtection) {
