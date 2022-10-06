@@ -356,6 +356,11 @@ JS;
             'usePathInfo' => (bool)$generalConfig->usePathInfo,
         ];
 
+        if ($generalConfig->enableCsrfProtection) {
+            $data['csrfTokenName'] = $request->csrfParam;
+            $data['csrfTokenValue'] = $request->getCsrfToken();
+        }
+
         // If no one's logged in yet, leave it at that
         if (!$currentUser) {
             return $data;
@@ -405,11 +410,6 @@ JS;
             'useCompressedJs' => (bool)$generalConfig->useCompressedJs,
             'username' => $currentUser->username,
         ];
-
-        if ($generalConfig->enableCsrfProtection) {
-            $data['csrfTokenName'] = $request->csrfParam;
-            $data['csrfTokenValue'] = $request->getCsrfToken();
-        }
 
         return $data;
     }
