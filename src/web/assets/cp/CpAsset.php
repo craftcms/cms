@@ -357,6 +357,47 @@ JS;
         $currentUser = $userSession->getIdentity();
         $primarySite = $upToDate ? $sitesService->getPrimarySite() : null;
 
+        $data = [
+            'actionTrigger' => $generalConfig->actionTrigger,
+            'actionUrl' => UrlHelper::actionUrl(),
+            'announcements' => $upToDate ? Craft::$app->getAnnouncements()->get() : [],
+            'asciiCharMap' => StringHelper::asciiCharMap(true, Craft::$app->language),
+            'baseApiUrl' => Craft::$app->baseApiUrl,
+            'baseCpUrl' => UrlHelper::cpUrl(),
+            'baseSiteUrl' => UrlHelper::siteUrl(),
+            'baseUrl' => UrlHelper::url(),
+            'clientOs' => $request->getClientOs(),
+            'cpTrigger' => $generalConfig->cpTrigger,
+            'datepickerOptions' => $this->_datepickerOptions($formattingLocale, $locale, $currentUser, $generalConfig),
+            'defaultCookieOptions' => $this->_defaultCookieOptions(),
+            'fileKinds' => Assets::getFileKinds(),
+            'language' => Craft::$app->language,
+            'left' => $orientation === 'ltr' ? 'left' : 'right',
+            'omitScriptNameInUrls' => $generalConfig->omitScriptNameInUrls,
+            'orientation' => $orientation,
+            'pageNum' => $request->getPageNum(),
+            'pageTrigger' => $generalConfig->getPageTrigger(),
+            'path' => $request->getPathInfo(),
+            'pathParam' => $generalConfig->pathParam,
+            'Pro' => Craft::Pro,
+            'registeredAssetBundles' => ['' => ''], // force encode as JS object
+            'registeredJsFiles' => ['' => ''], // force encode as JS object
+            'right' => $orientation === 'ltr' ? 'right' : 'left',
+            'scriptName' => basename($request->getScriptFile()),
+            'Solo' => Craft::Solo,
+            'systemUid' => Craft::$app->getSystemUid(),
+            'timepickerOptions' => $this->_timepickerOptions($formattingLocale, $orientation),
+            'timezone' => Craft::$app->getTimeZone(),
+            'tokenParam' => $generalConfig->tokenParam,
+            'translations' => ['' => ''], // force encode as JS object
+            'usePathInfo' => $generalConfig->usePathInfo,
+        ];
+
+        // If no one's logged in yet, leave it at that
+        if (!$currentUser) {
+            return $data;
+        }
+
         $elementTypeNames = [];
         foreach (Craft::$app->getElements()->getAllElementTypes() as $elementType) {
             /** @var string|ElementInterface $elementType */
@@ -369,69 +410,36 @@ JS;
             ];
         }
 
-        $data = [
-            'actionTrigger' => $generalConfig->actionTrigger,
-            'actionUrl' => UrlHelper::actionUrl(),
+        $data += [
             'allowAdminChanges' => $generalConfig->allowAdminChanges,
             'allowUpdates' => $generalConfig->allowUpdates,
             'allowUppercaseInSlug' => $generalConfig->allowUppercaseInSlug,
-            'announcements' => $upToDate ? Craft::$app->getAnnouncements()->get() : [],
             'apiParams' => Craft::$app->apiParams,
             'appId' => Craft::$app->id,
-            'asciiCharMap' => StringHelper::asciiCharMap(true, Craft::$app->language),
             'autosaveDrafts' => $generalConfig->autosaveDrafts,
-            'baseApiUrl' => Craft::$app->baseApiUrl,
-            'baseCpUrl' => UrlHelper::cpUrl(),
-            'baseSiteUrl' => UrlHelper::siteUrl(),
-            'baseUrl' => UrlHelper::url(),
             'canAccessQueueManager' => $userSession->checkPermission('utility:queue-manager'),
-            'clientOs' => $request->getClientOs(),
-            'cpTrigger' => $generalConfig->cpTrigger,
             'dataAttributes' => Html::$dataAttributes,
-            'datepickerOptions' => $this->_datepickerOptions($formattingLocale, $locale, $currentUser, $generalConfig),
-            'defaultCookieOptions' => $this->_defaultCookieOptions(),
             'defaultIndexCriteria' => [],
             'editableCategoryGroups' => $upToDate ? $this->_editableCategoryGroups() : [],
             'edition' => Craft::$app->getEdition(),
             'elementTypeNames' => $elementTypeNames,
-            'fileKinds' => Assets::getFileKinds(),
             'handleCasing' => $generalConfig->handleCasing,
             'httpProxy' => $this->_httpProxy($generalConfig),
             'isImagick' => Craft::$app->getImages()->getIsImagick(),
             'isMultiSite' => Craft::$app->getIsMultiSite(),
-            'language' => Craft::$app->language,
-            'left' => $orientation === 'ltr' ? 'left' : 'right',
             'limitAutoSlugsToAscii' => $generalConfig->limitAutoSlugsToAscii,
             'maxUploadSize' => Assets::getMaxUploadSize(),
-            'notificationDuration' => (int)($currentUser?->getPreference('notificationDuration') ?? 5000),
-            'omitScriptNameInUrls' => $generalConfig->omitScriptNameInUrls,
-            'orientation' => $orientation,
-            'pageNum' => $request->getPageNum(),
-            'pageTrigger' => $generalConfig->getPageTrigger(),
-            'path' => $request->getPathInfo(),
-            'pathParam' => $generalConfig->pathParam,
+            'notificationDuration' => (int)($currentUser->getPreference('notificationDuration') ?? 5000),
             'previewIframeResizerOptions' => $this->_previewIframeResizerOptions($generalConfig),
             'primarySiteId' => $primarySite ? (int)$primarySite->id : null,
             'primarySiteLanguage' => $primarySite->language ?? null,
-            'Pro' => Craft::Pro,
             'publishableSections' => $upToDate && $currentUser ? $this->_publishableSections($currentUser) : [],
-            'registeredAssetBundles' => ['' => ''], // force encode as JS object
-            'registeredJsFiles' => ['' => ''], // force encode as JS object
             'remainingSessionTime' => !in_array($request->getSegment(1), ['updates', 'manualupdate'], true) ? $userSession->getRemainingSessionTime() : 0,
-            'right' => $orientation === 'ltr' ? 'right' : 'left',
             'runQueueAutomatically' => $generalConfig->runQueueAutomatically,
-            'scriptName' => basename($request->getScriptFile()),
             'siteId' => $upToDate ? (Cp::requestedSite()->id ?? $sitesService->getCurrentSite()->id) : null,
             'sites' => $this->_sites($sitesService),
             'siteToken' => $generalConfig->siteToken,
             'slugWordSeparator' => $generalConfig->slugWordSeparator,
-            'Solo' => Craft::Solo,
-            'systemUid' => Craft::$app->getSystemUid(),
-            'timepickerOptions' => $this->_timepickerOptions($formattingLocale, $orientation),
-            'timezone' => Craft::$app->getTimeZone(),
-            'tokenParam' => $generalConfig->tokenParam,
-            'translations' => ['' => ''], // force encode as JS object
-            'usePathInfo' => $generalConfig->usePathInfo,
             'username' => $currentUser->username ?? null,
         ];
 
@@ -463,7 +471,6 @@ JS;
     {
         $config = Craft::cookieConfig();
         return [
-            'path' => $config['path'] ?? '/',
             'domain' => $config['domain'] ?? null,
             'secure' => $config['secure'] ?? false,
             'sameSite' => $config['sameSite'] ?? 'strict',
@@ -590,7 +597,6 @@ JS;
                 'PM' => $formattingLocale->getPMName(),
                 'pm' => mb_strtolower($formattingLocale->getPMName()),
             ],
-            'orientation' => $orientation[0],
             'timeFormat' => $formattingLocale->getTimeFormat(Locale::LENGTH_SHORT, Locale::FORMAT_PHP),
         ];
     }
