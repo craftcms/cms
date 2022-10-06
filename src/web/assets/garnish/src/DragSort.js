@@ -261,38 +261,45 @@ export default Drag.extend(
      * Handles keypresses for picking up and dropping items
      */
     _handleKeypress: function (event) {
-      const { keyCode, target } = event;
+      const {keyCode, target} = event;
       const $item = $(this._getKeyboardTargetedItem(target));
 
       switch (keyCode) {
-        case Garnish.RETURN_KEY:
         case Garnish.SPACE_KEY:
           event.preventDefault();
 
           if (this.$pickedItem) {
-            if ($item.is(this.$pickedItem)) {
-              this.$pickedItem = null;
-              $item.removeClass('picked');
-            } else {
-              console.log('not same item');
-            }
+            if (!$item.is(this.$pickedItem)) return;
+
+            this.$pickedItem = null;
+            $item.removeClass('picked');
           } else {
             this.$pickedItem = $item;
             $item.addClass('picked');
           }
           break;
-        case Garnish.DOWN_KEY:
+
         case Garnish.UP_KEY:
-        case Garnish.RIGHT_KEY:
         case Garnish.LEFT_KEY:
           if (!this.$pickedItem) return;
 
-          console.log('move up/down');
+          if ($item.prev().length) {
+            this.$pickedItem.insertBefore($item.prev());
+          }
+          break;
+        case Garnish.RIGHT_KEY:
+        case Garnish.DOWN_KEY:
+          if (!this.$pickedItem) return;
+          console.log($item.next());
+
+          if ($item.next().length) {
+            this.$pickedItem.insertAfter($item.next());
+          }
           break;
         case Garnish.TAB_KEY:
-          // If an item is picked, prevent don't let the user tab away
           if (!this.$pickedItem) return;
 
+          // If an item is picked, prevent don't let the user tab away
           event.preventDefault();
       }
     },
