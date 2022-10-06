@@ -471,6 +471,7 @@ JS;
     {
         $config = Craft::cookieConfig();
         return [
+            'path' => $config['path'] ?? '/',
             'domain' => $config['domain'] ?? null,
             'secure' => $config['secure'] ?? false,
             'sameSite' => $config['sameSite'] ?? 'strict',
@@ -597,6 +598,7 @@ JS;
                 'PM' => $formattingLocale->getPMName(),
                 'pm' => mb_strtolower($formattingLocale->getPMName()),
             ],
+            'orientation' => $orientation[0],
             'timeFormat' => $formattingLocale->getTimeFormat(Locale::LENGTH_SHORT, Locale::FORMAT_PHP),
         ];
     }
