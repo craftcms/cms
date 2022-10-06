@@ -3026,6 +3026,10 @@ table.editable {
       th {
         padding: 6px 10px;
       }
+
+      &.picked {
+        outline: 2px solid black;
+      }
     }
   }
 
