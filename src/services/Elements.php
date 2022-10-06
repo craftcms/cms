@@ -2153,7 +2153,7 @@ class Elements extends Component
         foreach ($with as $path) {
             // Is this already an EagerLoadPlan object?
             if ($path instanceof EagerLoadPlan) {
-                $plans[$path->alias] = $path;
+                $plans[] = $path;
                 continue;
             }
 
