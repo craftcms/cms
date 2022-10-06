@@ -301,12 +301,12 @@ class ElementRelationParamParser extends BaseObject
                 [
                     'sourceElement' => $relElementIds,
                     'field' => $relCriteria['field'],
-                    'sourceSite' => $relCriteria['sourceSite']
+                    'sourceSite' => $relCriteria['sourceSite'],
                 ],
                 [
                     'targetElement' => $relSourceElementIds,
                     'field' => $relCriteria['field'],
-                    'sourceSite' => $relCriteria['sourceSite']
+                    'sourceSite' => $relCriteria['sourceSite'],
                 ],
             ]);
         }
