@@ -23,6 +23,7 @@
 - Fixed a PHP error that occurred when attempting to edit an element by an invalid ID or UUID.
 - Fixed a bug where unsaved drafts could be unintentionally deleted when saved, if a plugin or module was blocking the save via `EVENT_BEFORE_SAVE`. ([#12015](https://github.com/craftcms/cms/issues/12015))
 - Fixed a bug where “Propagating tags” jobs would fail if two tags had similar titles.
+- Fixed a bug where pressing “Disable focal point” within asset preview modals would only reset the focal point position, but not delete it. ([#12030](https://github.com/craftcms/cms/issues/12030))
 
 ### Security
 - Reduced the amount of system information that’s available to guest users.
