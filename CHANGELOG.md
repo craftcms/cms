@@ -2,12 +2,79 @@
 
 ## Unreleased
 
+### Added
+- Added `craft\helpers\ElementHelper::isAttributeEmpty()`.
+- Added `craft\queue\jobs\ResaveElements::$ifEmpty`.
+- Added `craft\queue\jobs\ResaveElements::$set`.
+- Added `craft\queue\jobs\ResaveElements::$to`.
+- Added `craft\queue\jobs\ResaveElements::$touch`.
+
+### Changed
+- When passing a PHP callback function to the `--to` option of a `resave/*` command, the `$element` argument is now optional.
+
+### Fixed
+- Fixed an error that could occur when editing a draft of an element type that didn’t have change tracking enabled.
+- Fixed an error that could occur when saving an entry with Matrix blocks, if the entry had been deleted for a site.
+- Fixed a bug where `resave/*` commands weren’t respecting the `--set`, `--to`, or `--touch` options when `--queue` was passed. ([#11974](https://github.com/craftcms/cms/issues/11974))
+- Fixed a bug where `relatedTo` params didn’t support collections.
+- Fixed an error that could occur when passing an element query to a `relatedTo` param, if the parent element query contained any closures. ([#11981](https://github.com/craftcms/cms/issues/11981))
+- Fixed a bug where `craft\log\MonologTarget::$allowLineBreaks` wasn’t getting a default value. ([#12004](https://github.com/craftcms/cms/pull/12004))
+- Fixed a PHP error that occurred when attempting to edit an element by an invalid ID or UUID.
+- Fixed a bug where unsaved drafts could be unintentionally deleted when saved, if a plugin or module was blocking the save via `EVENT_BEFORE_SAVE`. ([#12015](https://github.com/craftcms/cms/issues/12015))
+
+### Security
+- Reduced the amount of system information that’s available to guest users.
+
+## 4.2.5.2 - 2022-10-03
+
+### Security
+- Updated Twig to 3.4. ([#12022](https://github.com/craftcms/cms/issues/12022))
+
+## 4.2.5.1 - 2022-09-21
+
+### Fixed
+- Fixed a bug where the “New category” button could be missing from the Categories index page. ([#11977](https://github.com/craftcms/cms/issues/11977))
+- Fixed a bug where `Craft::t()` and the `|t` Twig filter were modifying digit-dash-digit sequences. ([#11980](https://github.com/craftcms/cms/issues/11980))
+- Fixed PHP errors that occurred if `webonyx/graphql-php` 14.11.17 was installed. ([#11979](https://github.com/craftcms/cms/issues/11979), [webonyx/graphql-php#1221](https://github.com/webonyx/graphql-php/issues/1221))
+- Fixed a PHP error that could occur when working with a draft. ([#11976](https://github.com/craftcms/cms/issues/11976))
+
+## 4.2.5 - 2022-09-20
+
+### Added
+- Added `craft\helpers\Image::targetDimensions()`.
+
+### Changed
+- Edit Asset pages now show the “View” button for all file types, not just images, PDFs, and text files. ([#11936](https://github.com/craftcms/cms/issues/11936))
+
+### Removed
+- Removed the Punycode PHP library. ([#11948](https://github.com/craftcms/cms/issues/11948))
+
+### Fixed
+- Fixed a bug where image transforms weren’t always getting applied properly to all animation frames. ([#11937](https://github.com/craftcms/cms/pull/11937))
+- Fixed a bug where animated WebP images would lose their animation frames when transformed. ([#11937](https://github.com/craftcms/cms/pull/11937))
+- Fixed a bug where image transform dimensions could be calculated incorrectly when `upscaleImages` was `false`. ([#11837](https://github.com/craftcms/cms/issues/11837))
+- Fixed a bug where the `users/send-password-reset-email` action wasn’t passing errors back to the template. ([#11933](https://github.com/craftcms/cms/issues/11933))
+- Fixed an error that occurred when setting a non-numeric `width` or `height` on an image transform. ([#11837](https://github.com/craftcms/cms/issues/11837))
+- Fixed a bug where the database connection wasn’t being configured properly when fluent config methods and environment variable overrides were being used in combination. ([#11941](https://github.com/craftcms/cms/issues/11941))
+- Fixed a bug where slideouts lost their shadows when focused.
+- Fixed a bug where `relatedTo*` arguments weren’t supported by `children` fields in GraphQL. ([#11918](https://github.com/craftcms/cms/issues/11918))
+- Fixed a bug where Image Editor and slideout action buttons were obstructed when the Debug Toolbar was enabled. ([#11965](https://github.com/craftcms/cms/issues/11965))
+- Fixed an error that occurred when installing Craft when MySQL’s `sql_require_primary_key` setting was enabled. ([#11374](https://github.com/craftcms/cms/discussions/11374))
+- Fixed a bug subfolders created by Assets fields could be reported as missing when updating asset indexes, even if they contained assets. ([#11949](https://github.com/craftcms/cms/issues/11949))
+- Fixed a PHP error that could occur in a potential race condition when calling  `craft\helpers\FileHelper::clearDirectory()`.
+- Fixed a bug where Structure section entries that were duplicated via the “Save as a new entry” action on a provisional draft weren’t being placed within the structure properly.
+- Fixed a bug where element’s `searchScore` properties would be set to `null` when their original score was below 1, rather than rounding to 0 or 1. ([#11973](https://github.com/craftcms/cms/issues/11973))
+
+## 4.2.4 - 2022-09-13
+
 ### Changed
 - The “New entry” and “New category” buttons on the Entries and Categories index pages now support <kbd>Ctrl</kbd>/<kbd>Command</kbd>/middle-clicking to open the edit page in a new window. ([#11870](https://github.com/craftcms/cms/issues/11870))
+- Control panel menus now automatically reposition themselves when the window is resized.
 - Improved the performance of some element queries on MySQL. ([#11825](https://github.com/craftcms/cms/pull/11825))
 - `resave/*` commands now have a `--touch` option. When passed, elements’ `dateUpdated` timestamps will be updated as they’re resaved. ([#11849](https://github.com/craftcms/cms/discussions/11849))
 - Underscores within query param values that begin/end with `*` are now escaped, so they aren’t treated as wildcard characters by the `like` condition. ([#11898](https://github.com/craftcms/cms/issues/11898))
 - `craft\services\Elements::resaveElements()` now has a `$touch` argument.
+- Disable the preview button while drafts are saving ([#11858](https://github.com/craftcms/cms/issues/11858))
 
 ### Fixed
 - Fixed an error that could occur when upgrading to Craft 4, if any Matrix blocks contained null `sortOrder` values. ([#11843](https://github.com/craftcms/cms/issues/11843))
@@ -22,9 +89,17 @@
 - Fixed a bug where element index filter HUDs were unresponsive if another one was already active for a different site/source. ([#11880](https://github.com/craftcms/cms/issues/11880))
 - Fixed a bug where newly-created subfolders on the Assets index page could appear to have the wrong indentation.
 - Fixed a UI bug where renaming a newly-created volume subfolder didn’t appear to have any effect.
+- Fixed a bug where empty URL fields would be marked as changed, even when no change was made to them. ([#11908](https://github.com/craftcms/cms/issues/11908))
+- Fixed a UI bug where autosuggest menus weren’t getting filtered when first opened for inputs with existing values. ([#11896](https://github.com/craftcms/cms/issues/11896))
+- Fixed a bug where Entry Type condition rules weren’t working for conditions that were applied to a single element. ([#11914](https://github.com/craftcms/cms/issues/11914))
+- Fixed a bug where Related To condition rules weren’t working for conditions that were applied to a single element, for cross-site relations. ([#11892](https://github.com/craftcms/cms/issues/11892))
+- Fixed a bug where form action keyboard shortcuts weren’t available when a custom select menu was focused. ([#11919](https://github.com/craftcms/cms/issues/11919))
+- Fixed a bug where transforming an animated GIF into a WebP file would only include the first frame. ([#11889](https://github.com/craftcms/cms/issues/11889))
+- Fixed a bug where `craft\models\FieldLayout::createFromConfig()` was ignoring `id`, `uid`, `type`, and `reservedFieldHandles` keys, if set. ([#11929](https://github.com/craftcms/cms/issues/11929))
 
 ### Security
 - Fixed XSS vulnerabilities.
+- Password inputs no longer temporarily reveal the password when the <kbd>Alt</kbd> key is pressed. ([#11930](https://github.com/craftcms/cms/issues/11930))
 
 ## 4.2.3 - 2022-08-26
 
@@ -303,7 +378,7 @@
 - Improved Matrix field accessibility. ([#11306](https://github.com/craftcms/cms/pull/11306))
 - Improved mobile support. ([#11323](https://github.com/craftcms/cms/pull/11323), [#11430](https://github.com/craftcms/cms/pull/11430))
 - Improved keyboard support for custom selects. ([#11414](https://github.com/craftcms/cms/pull/11414))
-- It’s now possible to remove all selected elements from relational fields by pressing <kbd>Backspace</kbd> or <kbd>Delete</kbd> while one of them is focussed.
+- It’s now possible to remove all selected elements from relational fields by pressing <kbd>Backspace</kbd> or <kbd>Delete</kbd> while one of them is focused.
 - Improved the UI of condition builders. ([#11386](https://github.com/craftcms/cms/pull/11386))
 - Entry Type condition rules now allow multiple selections. ([#11124](https://github.com/craftcms/cms/pull/11124))
 - Element index filters now only show condition rules for the custom fields that are used by the field layouts in the selected source, if a native source is selected. ([#11187](https://github.com/craftcms/cms/discussions/11187))

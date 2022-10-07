@@ -81,6 +81,7 @@ $vendorPath = $findConfigPath('--vendorPath', 'CRAFT_VENDOR_PATH') ?? dirname(__
 $rootPath = $findConfigPath('--basePath', 'CRAFT_BASE_PATH') ?? dirname($vendorPath);
 
 // By default the remaining directories will be in the base directory
+$dotenvPath = $findConfigPath('--dotenvPath', 'CRAFT_DOTENV_PATH') ?? "$rootPath/.env";
 $configPath = $findConfigPath('--configPath', 'CRAFT_CONFIG_PATH') ?? "$rootPath/config";
 $contentMigrationsPath = $findConfigPath('--contentMigrationsPath', 'CRAFT_CONTENT_MIGRATIONS_PATH') ?? "$rootPath/migrations";
 $storagePath = $findConfigPath('--storagePath', 'CRAFT_STORAGE_PATH') ?? "$rootPath/storage";
@@ -200,6 +201,7 @@ Craft::setAlias('@root', $rootPath);
 Craft::setAlias('@lib', $libPath);
 Craft::setAlias('@craft', $srcPath);
 Craft::setAlias('@appicons', $srcPath . DIRECTORY_SEPARATOR . 'icons');
+Craft::setAlias('@dotenv', $dotenvPath);
 Craft::setAlias('@config', $configPath);
 Craft::setAlias('@contentMigrations', $contentMigrationsPath);
 Craft::setAlias('@storage', $storagePath);

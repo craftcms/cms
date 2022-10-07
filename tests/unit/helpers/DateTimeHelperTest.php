@@ -264,7 +264,7 @@ class DateTimeHelperTest extends TestCase
     /**
      * @throws Exception
      */
-    public function testYesterday(): void
+    public function testIsYesterday(): void
     {
         $dateTime = new DateTime('now');
 
@@ -284,7 +284,7 @@ class DateTimeHelperTest extends TestCase
     /**
      * @throws Exception
      */
-    public function testThisYearCheck(): void
+    public function testIsThisYear(): void
     {
         $dateTime = new DateTime('now');
         self::assertTrue(DateTimeHelper::isThisYear($dateTime));
@@ -299,7 +299,7 @@ class DateTimeHelperTest extends TestCase
     /**
      * @throws Exception
      */
-    public function testThisWeek(): void
+    public function testIsThisWeek(): void
     {
         $dateTime = new DateTime('now');
         self::assertTrue(DateTimeHelper::isThisWeek($dateTime));
@@ -432,6 +432,14 @@ class DateTimeHelperTest extends TestCase
         } else {
             self::assertContains(DateTimeHelper::timeZoneOffset($timeZone), $expected);
         }
+    }
+
+    /**
+     * @return void
+     */
+    public function testFirstWeekDay(): void
+    {
+        self::assertSame(DateTimeHelper::firstWeekDay(), 1);
     }
 
     /**

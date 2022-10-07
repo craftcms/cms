@@ -267,7 +267,6 @@ class Category extends Element
 
                 $actions[] = $elementsService->createAction([
                     'type' => NewChild::class,
-                    'label' => Craft::t('app', 'Create a new child category'),
                     'maxLevels' => $group->maxLevels,
                     'newChildUrl' => $newChildUrl,
                 ]);
@@ -295,12 +294,7 @@ class Category extends Element
         }
 
         // Restore
-        $actions[] = $elementsService->createAction([
-            'type' => Restore::class,
-            'successMessage' => Craft::t('app', 'Categories restored.'),
-            'partialSuccessMessage' => Craft::t('app', 'Some categories restored.'),
-            'failMessage' => Craft::t('app', 'Categories not restored.'),
-        ]);
+        $actions[] = Restore::class;
 
         return $actions;
     }
@@ -610,9 +604,11 @@ class Category extends Element
             ],
         ];
 
+        $elementsService = Craft::$app->getElements();
         $user = Craft::$app->getUser()->getIdentity();
+
         foreach ($this->getCanonical()->getAncestors()->all() as $ancestor) {
-            if ($ancestor->canView($user)) {
+            if ($elementsService->canView($ancestor, $user)) {
                 $crumbs[] = [
                     'label' => $ancestor->title,
                     'url' => $ancestor->getCpEditUrl(),
@@ -673,6 +669,7 @@ class Category extends Element
                 'limit' => 1,
                 'elements' => $parent ? [$parent] : [],
                 'disabled' => $static,
+                'describedBy' => 'parentId-label',
             ]);
         })();
 

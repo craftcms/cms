@@ -252,17 +252,8 @@ class ImageTransforms
             return $transform;
         }
 
-        if (is_array($transform)) {
-            if (array_key_exists('transform', $transform)) {
-                $baseTransform = self::normalizeTransform(ArrayHelper::remove($transform, 'transform'));
-                return self::extendTransform($baseTransform, $transform);
-            }
-
-            return new ImageTransform($transform);
-        }
-
         if (is_object($transform)) {
-            return new ImageTransform(ArrayHelper::toArray($transform, [
+            $transform = ArrayHelper::toArray($transform, [
                 'id',
                 'name',
                 'transformer',
@@ -275,7 +266,26 @@ class ImageTransforms
                 'position',
                 'quality',
                 'interlace',
-            ]));
+            ]);
+        }
+
+        if (is_array($transform)) {
+            if (!empty($transform['width']) && !is_numeric($transform['width'])) {
+                Craft::warning("Invalid transform width: {$transform['width']}", __METHOD__);
+                $transform['width'] = null;
+            }
+
+            if (!empty($transform['height']) && !is_numeric($transform['height'])) {
+                Craft::warning("Invalid transform height: {$transform['height']}", __METHOD__);
+                $transform['height'] = null;
+            }
+
+            if (array_key_exists('transform', $transform)) {
+                $baseTransform = self::normalizeTransform(ArrayHelper::remove($transform, 'transform'));
+                return self::extendTransform($baseTransform, $transform);
+            }
+
+            return new ImageTransform($transform);
         }
 
         if (is_string($transform)) {

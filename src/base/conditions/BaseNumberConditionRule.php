@@ -32,4 +32,14 @@ abstract class BaseNumberConditionRule extends BaseTextConditionRule
     {
         return 'number';
     }
+
+    /**
+     * @inheritdoc
+     */
+    protected function inputOptions(): array
+    {
+        return array_merge(parent::inputOptions(), [
+            'step' => '1',
+        ]);
+    }
 }

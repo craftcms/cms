@@ -193,6 +193,7 @@ export default Base.extend(
         'scroll',
         'setContainerPosition'
       );
+      this.addListener(Garnish.$win, 'resize', 'setContainerPosition');
 
       this.$container.velocity('stop');
       this.$container.css({
@@ -281,7 +282,7 @@ export default Base.extend(
       this._alignmentElementWidth = this.$alignmentElement.outerWidth();
       this._alignmentElementHeight = this.$alignmentElement.outerHeight();
       this._alignmentElementOffsetRight =
-        this._alignmentElementOffset.left + this._alignmentElementHeight;
+        this._alignmentElementOffset.left + this._alignmentElementWidth;
       this._alignmentElementOffsetBottom =
         this._alignmentElementOffset.top + this._alignmentElementHeight;
 

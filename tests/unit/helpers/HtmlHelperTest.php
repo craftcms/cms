@@ -266,6 +266,27 @@ class HtmlHelperTest extends TestCase
     }
 
     /**
+     *
+     */
+    public function testSvg(): void
+    {
+        $path = dirname(__DIR__, 2) . '/_data/assets/files/craft-logo.svg';
+        $contents = file_get_contents($path);
+
+        $svg = Html::svg($path);
+        self::assertStringStartsWith('<svg', $svg);
+        self::assertStringContainsString('id="Symbols"', $svg);
+
+        $svg = Html::svg($contents);
+        self::assertStringStartsWith('<svg', $svg);
+        self::assertRegExp('/id="\w+\-Symbols"/', $svg);
+
+        $svg = Html::svg($contents, namespace: false);
+        self::assertStringStartsWith('<svg', $svg);
+        self::assertStringContainsString('id="Symbols"', $svg);
+    }
+
+    /**
      * @return array
      */
     public function encodeParamsDataProvider(): array

@@ -199,7 +199,7 @@ abstract class BaseField extends FieldLayoutElement
      */
     protected function settingsHtml(): ?string
     {
-        return Craft::$app->getView()->renderTemplate('_includes/forms/fld/field-settings', [
+        return Craft::$app->getView()->renderTemplate('_includes/forms/fld/field-settings.twig', [
             'field' => $this,
             'defaultLabel' => $this->defaultLabel(),
             'defaultInstructions' => $this->defaultInstructions(),
@@ -438,6 +438,9 @@ abstract class BaseField extends FieldLayoutElement
      */
     protected function statusClass(?ElementInterface $element = null, bool $static = false): ?string
     {
+        if ($element && ($status = $element->getAttributeStatus($this->attribute()))) {
+            return $status[0];
+        }
         return null;
     }
 
@@ -450,6 +453,9 @@ abstract class BaseField extends FieldLayoutElement
      */
     protected function statusLabel(?ElementInterface $element = null, bool $static = false): ?string
     {
+        if ($element && ($status = $element->getAttributeStatus($this->attribute()))) {
+            return $status[1];
+        }
         return null;
     }
 

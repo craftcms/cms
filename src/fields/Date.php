@@ -215,7 +215,7 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
             'value' => 'showBoth',
         ];
 
-        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Date/settings', [
+        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Date/settings.twig', [
             'options' => $options,
             'value' => $dateTimeValue,
             'incrementOptions' => $incrementOptions,
@@ -241,7 +241,7 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
         $timezone = $this->showTimeZone && $value ? $value->getTimezone()->getName() : Craft::$app->getTimeZone();
 
         if ($value === null) {
-            // Override the initial value being set to null by _includes/forms/field
+            // Override the initial value being set to null by CustomField::inputHtml()
             $initialValue = [];
             if ($this->showDate) {
                 $initialValue['date'] = '';
@@ -267,19 +267,19 @@ class Date extends Field implements PreviewableFieldInterface, SortableFieldInte
         ];
 
         if ($this->showDate) {
-            $components[] = $view->renderTemplate('_includes/forms/date', $variables);
+            $components[] = $view->renderTemplate('_includes/forms/date.twig', $variables);
         }
 
         if ($this->showTime) {
-            $components[] = $view->renderTemplate('_includes/forms/time', $variables);
+            $components[] = $view->renderTemplate('_includes/forms/time.twig', $variables);
         }
 
         if ($this->showTimeZone) {
-            $components[] = $view->renderTemplate('_includes/forms/timeZone', [
-                    'describedBy' => $this->describedBy,
-                    'name' => "$this->handle[timezone]",
-                    'value' => $timezone,
-                ]);
+            $components[] = $view->renderTemplate('_includes/forms/timeZone.twig', [
+                'describedBy' => $this->describedBy,
+                'name' => "$this->handle[timezone]",
+                'value' => $timezone,
+            ]);
         } else {
             $components[] = Html::hiddenInput("$this->handle[timezone]", $timezone);
         }
