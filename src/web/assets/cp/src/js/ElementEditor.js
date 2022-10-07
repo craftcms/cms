@@ -1588,9 +1588,14 @@ Craft.ElementEditor = Garnish.Base.extend(
       }
       const lb = encodeURIComponent('[');
       const rb = encodeURIComponent(']');
-      const namespacedFields = Craft.escapeRegex(
-        this.namespaceInputName('fields')
-      );
+      let namespacedFields = this.namespaceInputName('fields');
+
+      // if this is a slideout, don't escape namespaced input, but URI encode it (for cases like: cnuvbcxlgq[fields])
+      if (this.slideout !== undefined) {
+        namespacedFields = encodeURIComponent(namespacedFields);
+      } else {
+        namespacedFields = Craft.escapeRegex(namespacedFields);
+      }
 
       // Keep replacing field IDs until data stops changing
       while (true) {
