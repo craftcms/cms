@@ -116,15 +116,6 @@ class HelpController extends BaseHelpController
         /** @var string $actionId */
         [$controller, $actionId] = $result;
 
-        // Anonymous function to clean up descriptions coming from Yii
-        $cleanUpDescription = function($description) {
-            return trim(
-                preg_replace('/\s\s+/', ' ',
-                    preg_replace('/\\n/', ' ', $description)
-                )
-            );
-        };
-
         // Try/catch in case an exception is thrown during reflection
         try {
             $action = $controller->createAction($actionId);
@@ -135,17 +126,17 @@ class HelpController extends BaseHelpController
 
             return array_filter([
                 'name' => $command,
-                'description' => $cleanUpDescription($description),
-                'args' => array_map(function($k, $v) use ($cleanUpDescription) {
+                'description' => $description,
+                'args' => array_map(function($k, $v) {
                     return array_filter([
                         'name' => $k,
-                        'description' => ($v['type'] ? '<' : '[') . trim($v['type']) . ($v['type'] ? '>' : ']') . ' ' . $cleanUpDescription($v['comment']),
+                        'description' => ($v['type'] ? '<' : '[') . trim($v['type']) . ($v['type'] ? '>' : ']') . ' ' . $this->commentCleanup($v['comment']),
                     ]);
                 }, array_keys($args), array_values($args)),
-                'options' => array_map(function($k, $v) use ($cleanUpDescription) {
+                'options' => array_map(function($k, $v) {
                     return array_filter([
                         'name' => '--' . $k,
-                        'description' => '(' . trim($v['type']) . ') ' . $cleanUpDescription($v['comment']),
+                        'description' => '(' . trim($v['type']) . ') ' . $this->commentCleanup($v['comment']),
                     ]);
                 }, array_keys($options), array_values($options)),
             ]);
@@ -210,6 +201,17 @@ class HelpController extends BaseHelpController
             $comment = trim(substr($comment, 0, $matches[0][1]));
         }
 
-        return rtrim($comment);
+        return $this->commentCleanup($comment);
+    }
+
+    /**
+     * Cleans up a comment.
+     *
+     * @param string $comment
+     * @return string
+     */
+    protected function commentCleanup(string $comment): string
+    {
+        return trim(preg_replace('/\s+/', ' ', $comment));
     }
 }
