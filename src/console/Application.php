@@ -9,6 +9,7 @@ namespace craft\console;
 
 use Craft;
 use craft\base\ApplicationTrait;
+use craft\console\controllers\HelpController;
 use craft\db\Query;
 use craft\db\Table;
 use craft\errors\MissingComponentException;
@@ -17,7 +18,6 @@ use craft\queue\QueueLogBehavior;
 use yii\base\Component;
 use yii\base\InvalidConfigException;
 use yii\console\controllers\CacheController;
-use yii\console\controllers\HelpController;
 use yii\console\controllers\MigrateController;
 use yii\console\Response;
 

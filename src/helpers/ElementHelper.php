@@ -16,6 +16,7 @@ use craft\base\FieldInterface;
 use craft\db\Query;
 use craft\db\Table;
 use craft\errors\OperationAbortedException;
+use craft\fieldlayoutelements\CustomField;
 use yii\base\Exception;
 
 /**
@@ -688,5 +689,30 @@ class ElementHelper
             $handle .
             ($columnKey ? "_$columnKey" : '') .
             ($columnSuffix ? "_$columnSuffix" : '');
+    }
+
+    /**
+     * Returns whether the attribute on the given element is empty.
+     *
+     * @param ElementInterface $element
+     * @param string $attribute
+     * @return bool
+     * @since 3.7.56
+     */
+    public static function isAttributeEmpty(ElementInterface $element, string $attribute): bool
+    {
+        // See if we're setting a custom field
+        $fieldLayout = $element->getFieldLayout();
+        if ($fieldLayout) {
+            foreach ($fieldLayout->getTabs() as $tab) {
+                foreach ($tab->elements as $layoutElement) {
+                    if ($layoutElement instanceof CustomField && $layoutElement->attribute() === $attribute) {
+                        return $layoutElement->getField()->isValueEmpty($element->getFieldValue($attribute), $element);
+                    }
+                }
+            }
+        }
+
+        return empty($element->$attribute);
     }
 }

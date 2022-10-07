@@ -1,5 +1,32 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Added
+- Added the `--as-json` option to the `help` command. ([#12017](https://github.com/craftcms/cms/pull/12017), [#12074](https://github.com/craftcms/cms/pull/12074))
+- Added `craft\helpers\ElementHelper::isAttributeEmpty()`.
+- Added `craft\queue\jobs\ResaveElements::$ifEmpty`.
+- Added `craft\queue\jobs\ResaveElements::$set`.
+- Added `craft\queue\jobs\ResaveElements::$to`.
+- Added `craft\queue\jobs\ResaveElements::$touch`.
+
+### Changed
+- When passing a PHP callback function to the `--to` option of a `resave/*` command, the `$element` argument is now optional.
+
+### Fixed
+- Fixed a bug where `resave/*` commands weren’t respecting the `--set`, `--to`, or `--touch` options when `--queue` was passed. ([#11974](https://github.com/craftcms/cms/issues/11974))
+- Fixed an error that could occur when passing an element query to a `relatedTo` param, if the parent element query contained any closures. ([#11981](https://github.com/craftcms/cms/issues/11981))
+- Fixed a bug where unsaved drafts could be unintentionally deleted when saved, if a plugin or module was blocking the save via `EVENT_BEFORE_SAVE`. ([#12015](https://github.com/craftcms/cms/issues/12015))
+- Fixed a bug where “Propagating tags” jobs would fail if two tags had similar titles.
+
+### Security
+- Reduced the amount of system information that’s available to guest users.
+
+## 3.7.55.3 - 2022-10-03
+
+### Security
+- Updated Twig to 2.15. ([#12022](https://github.com/craftcms/cms/issues/12022))
+
 ## 3.7.55.2 - 2022-09-22
 
 ### Security
