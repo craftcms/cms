@@ -9,14 +9,32 @@ namespace craft\console\controllers;
 
 use Craft;
 use craft\helpers\Json;
+use ReflectionMethod;
+use Throwable;
+use yii\base\InvalidConfigException;
 use yii\console\Controller;
 use yii\console\controllers\HelpController as BaseHelpController;
 use yii\console\Exception;
+use yii\console\ExitCode;
 use yii\helpers\Console;
-use yii\helpers\Inflector;
 
 /**
- * @inerhitdoc
+ * Provides help information about console commands.
+ *
+ * This command displays the available command list in
+ * the application or the detailed instructions about using
+ * a specific command.
+ *
+ * This command can be used as follows on command line:
+ *
+ * ```
+ * yii help [command name]
+ * ```
+ *
+ * In the above, if the command name is not provided, all
+ * available commands will be displayed.
+ *
+ * @since 3.7.56
  */
 class HelpController extends BaseHelpController
 {
@@ -24,25 +42,6 @@ class HelpController extends BaseHelpController
      * @var bool Should the commands help be returned in JSON format?
      */
     public $asJson = false;
-
-    /**
-     * @var array The base options provided by the yii\console\Controller
-     */
-    protected $baseOptions = [];
-
-    /**
-     * @inheritdoc
-     */
-    public function init()
-    {
-        parent::init();
-        $this->baseOptions = [];
-        // Factor out the base options from the yii\console\Controller
-        foreach (parent::options('') as $option) {
-            $option = Inflector::camel2id($option, '-', true);
-            $this->baseOptions[$option] = $option;
-        }
-    }
 
     /**
      * @inheritdoc
@@ -58,21 +57,30 @@ class HelpController extends BaseHelpController
     /**
      * @inheritdoc
      */
-    public function optionAliases()
+    public function optionAliases(): array
     {
-        return ['j' => 'asJson'];
+        $aliases = parent::optionAliases();
+        $aliases['j'] = 'asJson';
+        return $aliases;
     }
 
     /**
-     * @inerhitdoc
+     * Displays available commands or the detailed information
+     * about a particular command.
+     *
+     * @param string $command The name of the command to show help about.
+     * If not provided, all available commands will be displayed.
+     * @return int the exit status
+     * @throws Exception if the command for help is unknown
      */
-    public function actionIndex($command = null)
+    public function actionIndex($command = null): int
     {
         // If they don't want JSON, let the parent do its thing
         if (!$this->asJson) {
             parent::actionIndex($command);
-            return;
+            return ExitCode::OK;
         }
+
         // Get the command info to output
         if ($command !== null) {
             $commands = $this->commandInfo($command);
@@ -82,7 +90,8 @@ class HelpController extends BaseHelpController
 
         // Send the commands encoded as JSON to stdout
         $jsonOptions = JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | (YII_DEBUG ? JSON_PRETTY_PRINT : 0);
-        $this->stdout(Json::encode($commands, $jsonOptions));
+        $this->stdout(Json::encode($commands, $jsonOptions) . PHP_EOL);
+        return ExitCode::OK;
     }
 
     /**
@@ -91,7 +100,7 @@ class HelpController extends BaseHelpController
      * @param string $command
      * @return array
      * @throws Exception
-     * @throws \yii\base\InvalidConfigException
+     * @throws InvalidConfigException
      */
     protected function commandInfo(string $command): array
     {
@@ -103,46 +112,45 @@ class HelpController extends BaseHelpController
             throw new Exception("No help for unknown command \"$name\".");
         }
 
-        list($controller, $actionID) = $result;
-        $actions = $this->getActions($controller);
-        if ($actionID !== '' || count($actions) === 1 && $actions[0] === $controller->defaultAction) {
-            // Anonymous function to clean up descriptions coming from Yii
-            $cleanUpDescription = function($description) {
-                return trim(
-                    preg_replace('/\s\s+/', ' ',
-                        preg_replace('/\\n/', ' ', $description)
-                    )
-                );
-            };
-            // Try/catch in case an exception is thrown during reflection
-            try {
-                $action = $controller->createAction($actionID);
-                // Get the command description, args, and options
-                $description = $this->getUnformattedActionHelp($controller->getActionMethodReflection($action));
-                $args = $controller->getActionArgsHelp($action);
-                $options = $controller->getActionOptionsHelp($action);
-                // Exclude any options coming from the base yii\console\Controller
-                $options = array_diff_key($options, $this->baseOptions);
+        /** @var Controller $controller */
+        /** @var string $actionId */
+        [$controller, $actionId] = $result;
 
-                return array_filter([
-                    'name' => $command,
-                    'description' => $cleanUpDescription($description),
-                    'args' => array_map(function($k, $v) use ($cleanUpDescription) {
-                        return array_filter([
-                            'name' => $k,
-                            'description' => ($v['type'] ? '<' : '[') . trim($v['type']) . ($v['type'] ? '>' : ']') . ' ' . $cleanUpDescription($v['comment']),
-                        ]);
-                    }, array_keys($args), array_values($args)),
-                    'options' => array_map(function($k, $v) use ($cleanUpDescription) {
-                        return array_filter([
-                            'name' => '--' . $k,
-                            'description' => '(' . trim($v['type']) . ') ' . $cleanUpDescription($v['comment']),
-                        ]);
-                    }, array_keys($options), array_values($options)),
-                ]);
-            } catch (\Throwable $e) {
-                $this->stderr($e->getMessage());
-            }
+        // Anonymous function to clean up descriptions coming from Yii
+        $cleanUpDescription = function($description) {
+            return trim(
+                preg_replace('/\s\s+/', ' ',
+                    preg_replace('/\\n/', ' ', $description)
+                )
+            );
+        };
+
+        // Try/catch in case an exception is thrown during reflection
+        try {
+            $action = $controller->createAction($actionId);
+            // Get the command description, args, and options
+            $description = $this->unformattedActionHelp($controller->getActionMethodReflection($action));
+            $args = $controller->getActionArgsHelp($action);
+            $options = $controller->getActionOptionsHelp($action);
+
+            return array_filter([
+                'name' => $command,
+                'description' => $cleanUpDescription($description),
+                'args' => array_map(function($k, $v) use ($cleanUpDescription) {
+                    return array_filter([
+                        'name' => $k,
+                        'description' => ($v['type'] ? '<' : '[') . trim($v['type']) . ($v['type'] ? '>' : ']') . ' ' . $cleanUpDescription($v['comment']),
+                    ]);
+                }, array_keys($args), array_values($args)),
+                'options' => array_map(function($k, $v) use ($cleanUpDescription) {
+                    return array_filter([
+                        'name' => '--' . $k,
+                        'description' => '(' . trim($v['type']) . ') ' . $cleanUpDescription($v['comment']),
+                    ]);
+                }, array_keys($options), array_values($options)),
+            ]);
+        } catch (Throwable $e) {
+            $this->stderr($e->getMessage());
         }
 
         return $commandInfo;
@@ -153,25 +161,29 @@ class HelpController extends BaseHelpController
      *
      * @return array
      * @throws Exception
-     * @throws \yii\base\InvalidConfigException
+     * @throws InvalidConfigException
      */
     protected function allCommandsInfo(): array
     {
         $commandNames = [];
+
         // Get all of the command names
         foreach ($this->getCommandDescriptions() as $command => $description) {
             $result = Craft::$app->createController($command);
-            /** @var $controller Controller */
-            list($controller, $actionID) = $result;
+            /** @var Controller $controller */
+            [$controller] = $result;
             $actions = $this->getActions($controller);
             $prefix = $controller->getUniqueId();
+
             if ($controller->createAction($controller->defaultAction) !== null) {
                 $commandNames[] = $prefix;
             }
+
             foreach ($actions as $action) {
                 $commandNames[] = "$prefix/$action";
             }
         }
+
         // Get information on each command name
         $commandsInfo = [];
         foreach ($commandNames as $commandName) {
@@ -188,10 +200,10 @@ class HelpController extends BaseHelpController
      * Returns full description from the docblock without any kind of ANSI terminal formatting
      *
      * @see Controller::getActionHelp()
-     * @param \Reflector $reflection
+     * @param ReflectionMethod $reflection
      * @return string
      */
-    protected function getUnformattedActionHelp($reflection)
+    protected function unformattedActionHelp(ReflectionMethod $reflection): string
     {
         $comment = strtr(trim(preg_replace('/^\s*\**( |\t)?/m', '', trim($reflection->getDocComment(), '/'))), "\r", '');
         if (preg_match('/^\s*@\w+/m', $comment, $matches, PREG_OFFSET_CAPTURE)) {
