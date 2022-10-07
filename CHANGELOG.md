@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Added
+- Added the `--as-json` option to the `help` command. ([#12017](https://github.com/craftcms/cms/pull/12017), [#12074](https://github.com/craftcms/cms/pull/12074))
 - Added `craft\helpers\ElementHelper::isAttributeEmpty()`.
 - Added `craft\queue\jobs\ResaveElements::$ifEmpty`.
 - Added `craft\queue\jobs\ResaveElements::$set`.
