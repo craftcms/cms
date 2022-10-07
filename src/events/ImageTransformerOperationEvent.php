@@ -39,4 +39,9 @@ class ImageTransformerOperationEvent extends Event
      * The Image instance that was just saved.
      */
     public ?Image $image;
+
+    /**
+     * @var string The temporary file path.
+     */
+    public ?string $tempPath;
 }
