@@ -145,26 +145,22 @@ class HelpController extends BaseHelpController
                 'name' => $command,
                 'description' => $description,
                 'definition' => [
-                    'arguments' => array_map(function($name, $info) {
-                        return [
-                            'name' => $name,
-                            'required' => $info['required'],
+                    'arguments' => array_map(fn($name, $info) => [
+                        'name' => $name,
+                        'required' => $info['required'],
+                        'type' => $info['type'],
+                        'description' => $this->commentCleanup($info['comment']),
+                        'default' => $info['default'],
+                    ], array_keys($args), array_values($args)),
+                    'options' => array_combine(
+                        $optionNames,
+                        array_map(fn($name, $info) => [
+                            'name' => '--' . $name,
+                            'shortcut' => implode('|', $optionAliases[$name] ?? []),
                             'type' => $info['type'],
                             'description' => $this->commentCleanup($info['comment']),
                             'default' => $info['default'],
-                        ];
-                    }, array_keys($args), array_values($args)),
-                    'options' => array_combine(
-                        $optionNames,
-                        array_map(function($name, $info) use ($optionAliases) {
-                            return [
-                                'name' => '--' . $name,
-                                'shortcut' => implode('|', $optionAliases[$name] ?? []),
-                                'type' => $info['type'],
-                                'description' => $this->commentCleanup($info['comment']),
-                                'default' => $info['default'],
-                            ];
-                        }, $optionNames, array_values($options))
+                        ], $optionNames, array_values($options))
                     ),
                 ],
             ];
