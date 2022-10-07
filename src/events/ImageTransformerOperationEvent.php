@@ -42,6 +42,7 @@ class ImageTransformerOperationEvent extends Event
 
     /**
      * @var string The temporary file path.
+     * @since 4.3.0
      */
-    public ?string $tempPath;
+    public ?string $tempPath = null;
 }
