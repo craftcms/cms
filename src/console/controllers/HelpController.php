@@ -17,6 +17,7 @@ use yii\console\controllers\HelpController as BaseHelpController;
 use yii\console\Exception;
 use yii\console\ExitCode;
 use yii\helpers\Console;
+use yii\helpers\Inflector;
 
 /**
  * Provides help information about console commands.
@@ -88,14 +89,16 @@ class HelpController extends BaseHelpController
 
         // Get the command info to output
         if ($command !== null) {
-            $commands = $this->commandInfo($command);
+            $data = $this->commandInfo($command);
         } else {
-            $commands = $this->allCommandsInfo();
+            $data = [
+                'commands' => $this->allCommandsInfo(),
+            ];
         }
 
         // Send the commands encoded as JSON to stdout
         $jsonOptions = JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | (YII_DEBUG ? JSON_PRETTY_PRINT : 0);
-        $this->stdout(Json::encode($commands, $jsonOptions) . PHP_EOL);
+        $this->stdout(Json::encode($data, $jsonOptions) . PHP_EOL);
         return ExitCode::OK;
     }
 
@@ -128,23 +131,42 @@ class HelpController extends BaseHelpController
             $description = $this->unformattedActionHelp($controller->getActionMethodReflection($action));
             $args = $controller->getActionArgsHelp($action);
             $options = $controller->getActionOptionsHelp($action);
+            $optionNames = array_keys($options);
 
-            return array_filter([
+            // Index the option aliases by option name
+            $optionAliases = [];
+            foreach ($controller->optionAliases() as $alias => $name) {
+                $name = Inflector::camel2id($name);
+                $optionAliases[$name][] = "-$alias";
+            }
+
+            return [
                 'name' => $command,
                 'description' => $description,
-                'args' => array_map(function($k, $v) {
-                    return array_filter([
-                        'name' => $k,
-                        'description' => ($v['type'] ? '<' : '[') . trim($v['type']) . ($v['type'] ? '>' : ']') . ' ' . $this->commentCleanup($v['comment']),
-                    ]);
-                }, array_keys($args), array_values($args)),
-                'options' => array_map(function($k, $v) {
-                    return array_filter([
-                        'name' => '--' . $k,
-                        'description' => '(' . trim($v['type']) . ') ' . $this->commentCleanup($v['comment']),
-                    ]);
-                }, array_keys($options), array_values($options)),
-            ]);
+                'definition' => [
+                    'arguments' => array_map(function($name, $info) {
+                        return [
+                            'name' => $name,
+                            'required' => $info['required'],
+                            'type' => $info['type'],
+                            'description' => $this->commentCleanup($info['comment']),
+                            'default' => $info['default'],
+                        ];
+                    }, array_keys($args), array_values($args)),
+                    'options' => array_combine(
+                        $optionNames,
+                        array_map(function($name, $info) use ($optionAliases) {
+                            return [
+                                'name' => '--' . $name,
+                                'shortcut' => implode('|', $optionAliases[$name] ?? []),
+                                'type' => $info['type'],
+                                'description' => $this->commentCleanup($info['comment']),
+                                'default' => $info['default'],
+                            ];
+                        }, $optionNames, array_values($options))
+                    ),
+                ],
+            ];
         } catch (Throwable $e) {
             $this->stderr($e->getMessage());
         }
