@@ -49,7 +49,12 @@ class HelpController extends BaseHelpController
     public function options($actionID): array
     {
         $options = parent::options($actionID);
-        $options[] = 'asJson';
+
+        switch ($actionID) {
+            case 'index':
+                $options[] = 'asJson';
+                break;
+        }
 
         return $options;
     }
