@@ -30,6 +30,7 @@
 - Added `craft\events\CreateTwigEvent`.
 - Added `craft\events\DefineAddressFieldLabelEvent`.
 - Added `craft\events\DefineAddressFieldsEvent`.
+- Added `craft\events\ImageTransformerOperationEvent::$tempPath`.
 - Added `craft\events\SearchEvent::$scores`. ([#11882](https://github.com/craftcms/cms/discussions/11882))
 - Added `craft\helpers\DateRange`.
 - Added `craft\helpers\DateTimeHelper::firstWeekDay()`.
