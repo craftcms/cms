@@ -408,8 +408,6 @@ JS;
             'tokenParam' => $generalConfig->tokenParam,
             'translations' => ['' => ''], // force encode as JS object
             'usePathInfo' => $generalConfig->usePathInfo,
-            'userIsAdmin' => $currentUser->admin,
-            'username' => $currentUser->username,
         ];
 
         if ($generalConfig->enableCsrfProtection) {
@@ -464,6 +462,7 @@ JS;
             'sites' => $this->_sites($sitesService),
             'siteToken' => $generalConfig->siteToken,
             'slugWordSeparator' => $generalConfig->slugWordSeparator,
+            'userIsAdmin' => $currentUser->admin,
             'username' => $currentUser->username,
         ];
 
