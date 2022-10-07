@@ -17,7 +17,6 @@ use yii\console\controllers\HelpController as BaseHelpController;
 use yii\console\Exception;
 use yii\console\ExitCode;
 use yii\helpers\Console;
-use yii\helpers\Inflector;
 
 /**
  * Provides help information about console commands.
@@ -43,26 +42,6 @@ class HelpController extends BaseHelpController
      * @var bool Should the commands help be returned in JSON format?
      */
     public $asJson = false;
-
-    /**
-     * @var array The base options provided by the yii\console\Controller
-     */
-    protected $baseOptions = [];
-
-    /**
-     * @inheritdoc
-     */
-    public function init(): void
-    {
-        parent::init();
-
-        // Factor out the base options from the yii\console\Controller
-        $this->baseOptions = [];
-        foreach (parent::options('') as $option) {
-            $option = Inflector::camel2id($option, '-', true);
-            $this->baseOptions[$option] = $option;
-        }
-    }
 
     /**
      * @inheritdoc
@@ -155,8 +134,6 @@ class HelpController extends BaseHelpController
                 $description = $this->unformattedActionHelp($controller->getActionMethodReflection($action));
                 $args = $controller->getActionArgsHelp($action);
                 $options = $controller->getActionOptionsHelp($action);
-                // Exclude any options coming from the base yii\console\Controller
-                $options = array_diff_key($options, $this->baseOptions);
 
                 return array_filter([
                     'name' => $command,
