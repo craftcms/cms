@@ -123,7 +123,7 @@ class StructuresController extends Controller
             try {
                 Craft::$app->getElements()->updateElementSlugAndUri($this->_element, false, false, false);
             } catch (OperationAbortedException $e) {
-                Craft::warning("Couldn’t update slug and URI for element ".$this->_element->id.": {$e->getMessage()}");
+                Craft::warning("Couldn’t update slug and URI for element {$this->_element->id}: {$e->getMessage()}");
             }
             return $this->asSuccess();
         }
