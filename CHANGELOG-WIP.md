@@ -91,12 +91,14 @@
 - Element index URLs now include the selected source key in a `source` query param, so all sources are now deep-linkable, including custom sources. ([#11996](https://github.com/craftcms/cms/discussions/11996))
 - Notifications are now shown after executing folder actions on the Assets index page. ([#11906/](https://github.com/craftcms/cms/pull/11906))
 - Date range condition rules now support “Today”, “This week”, “This month”, “This year”, “Past 7 days”, “Past 30 days”, “Past 30 days”, “Past year”, “Before…”, and “After…” relative range types, in addition to specifying a custom date range. ([#11888](https://github.com/craftcms/cms/pull/11888))
+- Number condition rules now support an “is between…” operator. ([#11950](https://github.com/craftcms/cms/pull/11950))
 - If Live Preview is triggered while a draft is saving, it will now wait until the save completes before opening. ([#11858](https://github.com/craftcms/cms/issues/11858), [#11895](https://github.com/craftcms/cms/pull/11895))
 - Addresses now support change tracking.
 - It’s now possible to restore assets that were deleted programmatically with `craft\elements\Asset::$keepFile` set to `true`. ([#11761](https://github.com/craftcms/cms/issues/11761))
 - Control panel-defined image transforms can now have custom quality values. ([#9622](https://github.com/craftcms/cms/discussions/9622))
 - Name parsing now checks for common German salutations, suffixes, and last name prefixes.
 - “Generating pending image transforms” jobs no longer attempt to process transforms that had previously failed. ([#11970](https://github.com/craftcms/cms/issues/11970))
+- Number condition rules now support matching between two values.
 - `users/session-info` responses now include a `csrfTokenName` key. ([#11706](https://github.com/craftcms/cms/pull/11706), [#11767](https://github.com/craftcms/cms/pull/11767))
 - Twig templates now have `today`, `tomorrow`, and `yesterday` global variables available to them.
 - Element query date params now support passing `today`, `tomorrow`, and `yesterday`. ([#10485](https://github.com/craftcms/cms/issues/10485))
