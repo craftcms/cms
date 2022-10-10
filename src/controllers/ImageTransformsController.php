@@ -121,13 +121,9 @@ class ImageTransformsController extends Controller
             $errors = true;
         }
 
-        if (!empty($transform->quality) && (!is_numeric($transform->quality) || $transform->quality > 100 || $transform->quality < 1)) {
+        if ($transform->quality && ($transform->quality > 100 || $transform->quality < 1)) {
             $this->setFailFlash(Craft::t('app', 'Quality must be a number between 1 and 100 (included).'));
             $errors = true;
-        }
-
-        if (empty($transform->quality)) {
-            $transform->quality = null;
         }
 
         if (!empty($transform->format) && !in_array($transform->format, Image::webSafeFormats(), true)) {
