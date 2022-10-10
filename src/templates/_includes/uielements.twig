@@ -1,8 +1,30 @@
 {% macro tip(config) %}
-    {% set containerAttributes = {
-        class: 'note tip',
-        html: config.tip
-    } %}
+    {% set contents = config.contents ?? null %}
 
-    {{ tag('div', containerAttributes) }}
+    {% if contents %}
+        {% set containerAttributes = {
+            class: 'note tip',
+            html: contents
+        } %}
+
+        {% tag('div') with {
+            class: 'readable',
+        } %}
+            {{ tag('blockquote', containerAttributes) }}
+        {% endtag %}
+    {% endif %}
+{% endmacro %}
+
+{% macro keyboardReorderingInstructions() %}
+    {% set tip %}
+        <ul>
+            <li>{{ 'Press Space to enter into drag mode'|t('app') }}</li>
+            <li>{{ 'Use down/right, up/left arrow keys to select a new position'|t('app') }}</li>
+            <li>{{ 'Press Space to drop item in new position'|t('app') }}</li>
+        </ul>
+    {% endset %}
+
+    {{ _self.tip({
+        contents: tip,
+    }) }}
 {% endmacro %}

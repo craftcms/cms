@@ -1,3 +1,5 @@
+{% import "_includes/uielements" as uielements %}
+
 {%- set static = static ?? false %}
 {%- set fullWidth = fullWidth ?? true %}
 {%- set cols = cols ?? [] %}
@@ -51,13 +53,9 @@
   {%- set tableAttributes = tableAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
 {% endif %}
 
-<div class="note tip">
-    <ul>
-        <li>{{ 'Press Space to enter into drag mode'|t('app') }}</li>
-        <li>{{ 'Use down/right, up/left arrow keys to select a new position'|t('app') }}</li>
-        <li>{{ 'Press Space to drop item in new position'|t('app') }}</li>
-    </ul>
-</div>
+{% if allowReorder %}
+    {{ uielements.keyboardReorderingInstructions() }}
+{%  endif %}
 
 <span aria-live="assertive" class="visually-hidden" data-status-message></span>
 {% tag 'table' with tableAttributes %}
