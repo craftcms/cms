@@ -284,6 +284,8 @@ export default Drag.extend(
         case Garnish.LEFT_KEY:
           if (!this.$pickedItem) return;
 
+          event.preventDefault();
+
           if ($item.prev().length) {
             this.$pickedItem.insertBefore($item.prev());
             this.$pickedItem.find('.move').trigger('focus');
@@ -292,6 +294,8 @@ export default Drag.extend(
         case Garnish.RIGHT_KEY:
         case Garnish.DOWN_KEY:
           if (!this.$pickedItem) return;
+
+          event.preventDefault();
 
           if ($item.next().length) {
             this.$pickedItem.insertAfter($item.next());
