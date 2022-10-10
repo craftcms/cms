@@ -15,6 +15,9 @@ use craft\helpers\Html;
  */
 abstract class BaseNumberConditionRule extends BaseTextConditionRule
 {
+    /**
+     * @since 4.3.0
+     */
     protected const OPERATOR_BETWEEN = 'between';
 
     /**
