@@ -201,6 +201,7 @@ class Tag extends Element
             'when' => function(): bool {
                 return !$this->hasErrors('groupId') && !$this->hasErrors('title');
             },
+            'on' => [self::SCENARIO_DEFAULT, self::SCENARIO_LIVE],
         ];
         return $rules;
     }
