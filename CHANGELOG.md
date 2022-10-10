@@ -25,6 +25,7 @@
 - Fixed a bug where “Propagating tags” jobs would fail if two tags had similar titles.
 - Fixed a bug where pressing “Disable focal point” within asset preview modals would only reset the focal point position, but not delete it. ([#12030](https://github.com/craftcms/cms/issues/12030))
 - Fixed a bug where image transforms weren’t getting sized correctly in some cases when `upscaleImages` was disabled. ([#12023](https://github.com/craftcms/cms/issues/12023))
+- Fixed a bug that could occur when using `users/send-password-reset-email` with an inactive user.
 
 ### Security
 - Reduced the amount of system information that’s available to guest users.
