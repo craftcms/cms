@@ -13,6 +13,9 @@
 ### Changed
 - When passing a PHP callback function to the `--to` option of a `resave/*` command, the `$element` argument is now optional.
 
+### Deprecated
+- Deprecated `craft\web\assets\focusvisible\FocusVisibleAsset`. ([#12037](https://github.com/craftcms/cms/pull/12037))
+
 ### Fixed
 - Fixed an error that could occur when editing a draft of an element type that didn’t have change tracking enabled.
 - Fixed an error that could occur when saving an entry with Matrix blocks, if the entry had been deleted for a site.
@@ -25,6 +28,7 @@
 - Fixed a bug where “Propagating tags” jobs would fail if two tags had similar titles.
 - Fixed a bug where pressing “Disable focal point” within asset preview modals would only reset the focal point position, but not delete it. ([#12030](https://github.com/craftcms/cms/issues/12030))
 - Fixed a bug where image transforms weren’t getting sized correctly in some cases when `upscaleImages` was disabled. ([#12023](https://github.com/craftcms/cms/issues/12023))
+- Fixed a bug where table cells within Redactor fields could appear to be focused when they weren’t. ([#12001](https://github.com/craftcms/cms/issues/12001), [#12037](https://github.com/craftcms/cms/pull/12037))
 
 ### Security
 - Reduced the amount of system information that’s available to guest users.
