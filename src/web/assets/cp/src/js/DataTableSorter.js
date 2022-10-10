@@ -14,6 +14,7 @@ Craft.DataTableSorter = Garnish.DragSort.extend(
       settings = $.extend({}, Craft.DataTableSorter.defaults, settings);
 
       settings.container = this.$table.children('tbody');
+      settings.statusContainer = this.$table.parent().find('[role="status"]');
       settings.helper = this.getHelper.bind(this);
       settings.caboose = '<tr/>';
       settings.axis = Garnish.Y_AXIS;

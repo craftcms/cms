@@ -281,9 +281,7 @@ export default Drag.extend(
             }
 
             // Drop the picked item
-            this.$pickedItem = null;
-            this.pickedItemIndex = null;
-            $item.removeClass('picked');
+            this._exitPickedMode();
           } else {
             this.$pickedItem = $item;
             this.pickedItemIndex = this.$pickedItem.index();
@@ -318,7 +316,23 @@ export default Drag.extend(
 
           // If an item is picked, prevent don't let the user tab away
           event.preventDefault();
+          break;
+        case Garnish.ESC_KEY:
+          console.log('reset');
       }
+    },
+
+    _exitPickedMode: function () {
+      this.$pickedItem.removeClass('picked');
+
+      console.log(
+        `Item moved from position ${
+          this.pickedItemIndex
+        } to position ${this.$pickedItem.index()}`
+      );
+
+      this.$pickedItem = null;
+      this.pickedItemIndex = null;
     },
 
     /**
@@ -629,6 +643,7 @@ export default Drag.extend(
   {
     defaults: {
       container: null,
+      statusContainer: null,
       insertion: null,
       moveTargetItemToFront: false,
       magnetStrength: 1,
