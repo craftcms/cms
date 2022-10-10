@@ -317,19 +317,19 @@ export default Drag.extend(
           // If an item is picked, prevent don't let the user tab away
           event.preventDefault();
           break;
-        case Garnish.ESC_KEY:
-          console.log('reset');
       }
     },
 
     _exitPickedMode: function () {
       this.$pickedItem.removeClass('picked');
+      const oldPlacement = this.pickedItemIndex + 1;
+      const newPlacement = this.$pickedItem.index() + 1;
 
-      console.log(
-        `Item moved from position ${
-          this.pickedItemIndex
-        } to position ${this.$pickedItem.index()}`
-      );
+      if (this.settings.statusContainer) {
+        $(this.settings.statusContainer).text(`Item moved from position ${
+          oldPlacement
+        } to position ${newPlacement}`);
+      }
 
       this.$pickedItem = null;
       this.pickedItemIndex = null;
