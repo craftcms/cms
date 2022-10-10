@@ -12,6 +12,8 @@ export default Drag.extend(
     $heightedContainer: null,
     $insertion: null,
     $pickedItem: null,
+
+    pickedItemIndex: null,
     insertionVisible: false,
     oldDraggeeIndexes: null,
     newDraggeeIndexes: null,
@@ -127,6 +129,7 @@ export default Drag.extend(
      */
     onDragStart: function () {
       this.oldDraggeeIndexes = this._getDraggeeIndexes();
+      console.log(this.oldDraggeeIndexes);
 
       // Are we supposed to be moving the target item to the front, and is it not already there?
       if (
@@ -272,10 +275,18 @@ export default Drag.extend(
           if (this.$pickedItem) {
             if (!$item.is(this.$pickedItem)) return;
 
+            // Trigger sort change
+            if (this.$pickedItem.index() !== this.pickedItemIndex) {
+              this.onSortChange();
+            }
+
+            // Drop the picked item
             this.$pickedItem = null;
+            this.pickedItemIndex = null;
             $item.removeClass('picked');
           } else {
             this.$pickedItem = $item;
+            this.pickedItemIndex = this.$pickedItem.index();
             $item.addClass('picked');
           }
           break;
