@@ -517,6 +517,10 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
         $info = [];
 
         foreach ($results as $result) {
+            if (!YII_DEBUG && !Craft::$app->getUser()->getIsAdmin()) {
+                $result['error'] = Craft::t('app', 'A server error occurred.');
+            }
+
             $info[] = [
                 'id' => $result['id'],
                 'delay' => max(0, $result['timePushed'] + $result['delay'] - time()),
