@@ -41,11 +41,11 @@ body {
 }
 
 .reduce-focus-visibility {
-  :focus:not(.focus-visible) {
+  :focus:not(:focus-visible) {
     box-shadow: none;
   }
 
-  .focus-visible {
+  :focus-visible {
     box-shadow: var(--focus-ring);
   }
 }
@@ -920,7 +920,7 @@ li.breadcrumb-toggle-wrapper {
   }
 
   @media only screen and (max-width: $minHorizontalUiWidth - 1px) {
-    margin-top: var(--m);
+    margin-top: 10px;
   }
 }
 

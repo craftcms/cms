@@ -384,11 +384,13 @@ class GeneralConfig extends BaseConfig
     /**
      * @var bool Whether drafts should be saved automatically as they are edited.
      *
-     * Drafts *will* be autosaved while Live Preview is open, regardless of this setting.
+     * ::: warning
+     * Disabling this will also disable Live Preview.
+     * :::
      *
      * ::: code
      * ```php Static Config
-     * ->autosaveDrafts(false)
+     * 'autosaveDrafts' => false,
      * ```
      * ```shell Environment Override
      * CRAFT_AUTOSAVE_DRAFTS=false

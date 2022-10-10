@@ -8,8 +8,6 @@
 namespace crafttests\unit\helpers;
 
 use Craft;
-use craft\enums\DateRangeType;
-use craft\enums\PeriodType;
 use craft\helpers\DateRange;
 use craft\helpers\DateTimeHelper;
 use craft\test\TestCase;
@@ -49,7 +47,7 @@ class DateRangeHelperTest extends TestCase
 
     /**
      * @param string $rangeType
-     * @phpstan-param DateRangeType::* $rangeType
+     * @phpstan-param DateRange::TYPE_* $rangeType
      * @param callable $expectedStartDate
      * @phpstan-param callable():DateTime $expectedStartDate
      * @param callable $expectedEndDate
@@ -73,37 +71,37 @@ class DateRangeHelperTest extends TestCase
     {
         return [
             'today' => [
-                DateRangeType::Today,
+                DateRange::TYPE_TODAY,
                 fn() => DateTimeHelper::today(),
                 fn() => DateTimeHelper::tomorrow(),
             ],
             'thisMonth' => [
-                DateRangeType::ThisMonth,
+                DateRange::TYPE_THIS_MONTH,
                 fn() => DateTimeHelper::thisMonth(),
                 fn() => DateTimeHelper::nextMonth(),
             ],
             'thisYear' => [
-                DateRangeType::ThisYear,
+                DateRange::TYPE_THIS_YEAR,
                 fn() => DateTimeHelper::thisYear(),
                 fn() => DateTimeHelper::nextYear(),
             ],
             'past7Days' => [
-                DateRangeType::Past7Days,
+                DateRange::TYPE_PAST_7_DAYS,
                 fn() => DateTimeHelper::today()->modify('-7 days'),
                 fn() => DateTimeHelper::now(),
             ],
             'past30Days' => [
-                DateRangeType::Past30Days,
+                DateRange::TYPE_PAST_30_DAYS,
                 fn() => DateTimeHelper::today()->modify('-30 days'),
                 fn() => DateTimeHelper::now(),
             ],
             'past90Days' => [
-                DateRangeType::Past90Days,
+                DateRange::TYPE_PAST_90_DAYS,
                 fn() => DateTimeHelper::today()->modify('-90 days'),
                 fn() => DateTimeHelper::now(),
             ],
             'pastYear' => [
-                DateRangeType::PastYear,
+                DateRange::TYPE_PAST_YEAR,
                 fn() => DateTimeHelper::today()->modify('-1 year'),
                 fn() => DateTimeHelper::now(),
             ],
@@ -120,7 +118,6 @@ class DateRangeHelperTest extends TestCase
     public function testGetDateIntervalByTimePeriod(float|int $length, string $periodType, DateInterval $expected): void
     {
         $dateInterval = DateRange::dateIntervalByTimePeriod($length, $periodType);
-
         self::assertEquals($expected, $dateInterval);
     }
 
@@ -141,12 +138,12 @@ class DateRangeHelperTest extends TestCase
         $fourAndHalfMinutes->s = 30;
 
         return [
-            'daysFull' => [4, PeriodType::Days, $fourDays],
-            'daysDecimal' => [4.5, PeriodType::Days, $fourAndHalfDays],
-            'hoursFull' => [4, PeriodType::Hours, new DateInterval('PT4H')],
-            'hoursDecimal' => [4.5, PeriodType::Hours, $fourAndHalfHours],
-            'minutesFull' => [4, PeriodType::Minutes, new DateInterval('PT4M')],
-            'minutesDecimal' => [4.5, PeriodType::Minutes, $fourAndHalfMinutes],
+            'daysFull' => [4, DateRange::PERIOD_DAYS_FROM_NOW, $fourDays],
+            'daysDecimal' => [4.5, DateRange::PERIOD_DAYS_FROM_NOW, $fourAndHalfDays],
+            'hoursFull' => [4, DateRange::PERIOD_HOURS_FROM_NOW, new DateInterval('PT4H')],
+            'hoursDecimal' => [4.5, DateRange::PERIOD_HOURS_FROM_NOW, $fourAndHalfHours],
+            'minutesFull' => [4, DateRange::PERIOD_MINUTES_FROM_NOW, new DateInterval('PT4M')],
+            'minutesDecimal' => [4.5, DateRange::PERIOD_MINUTES_FROM_NOW, $fourAndHalfMinutes],
         ];
     }
 

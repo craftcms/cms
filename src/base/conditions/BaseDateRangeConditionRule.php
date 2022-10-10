@@ -3,7 +3,6 @@
 namespace craft\base\conditions;
 
 use Craft;
-use craft\enums\DateRangeType;
 use craft\enums\PeriodType;
 use craft\fields\Date;
 use craft\helpers\ArrayHelper;
@@ -27,16 +26,17 @@ abstract class BaseDateRangeConditionRule extends BaseConditionRule
 {
     /**
      * @var string
-     * @phpstan-var DateRangeType::*
+     * @phpstan-var DateRange::TYPE_*
      * @since 4.3.0
      */
-    public string $rangeType = DateRangeType::Today;
+    public string $rangeType = DateRange::TYPE_TODAY;
 
     /**
      * @var string
+     * @phpstan-var DateRange::PERIOD_*
      * @since 4.3.0
      */
-    public string $periodType = PeriodType::Days;
+    public string $periodType = DateRange::PERIOD_DAYS_AGO;
 
     /**
      * @var float|null
@@ -63,7 +63,17 @@ abstract class BaseDateRangeConditionRule extends BaseConditionRule
             !isset($config['attributes']['rangeType']) &&
             (!empty($config['attributes']['startDate']) || !empty($config['attributes']['endDate']))
         ) {
-            $config['attributes']['rangeType'] = DateRangeType::Range;
+            $config['attributes']['rangeType'] = DateRange::TYPE_RANGE;
+        }
+
+        if (isset($config['attributes']['periodType'])) {
+            // Maintain BC with older periodType values
+            $config['attributes']['periodType'] = match ($config['attributes']['periodType']) {
+                PeriodType::Minutes => DateRange::PERIOD_MINUTES_AGO,
+                PeriodType::Hours => DateRange::PERIOD_HOURS_AGO,
+                PeriodType::Days => DateRange::PERIOD_DAYS_AGO,
+                default => $config['attributes']['periodType'],
+            };
         }
 
         parent::__construct($config);
@@ -134,8 +144,15 @@ abstract class BaseDateRangeConditionRule extends BaseConditionRule
         $rangeTypeOptionsHtml = Html::beginTag('ul', ['class' => 'padded']);
         $foundAdvancedRuleType = false;
 
-        foreach (DateRange::rangeTypeOptions() as $value => $label) {
-            if (!$foundAdvancedRuleType && in_array($value, [DateRangeType::Before, DateRangeType::After, DateRangeType::Range])) {
+        foreach ($this->rangeTypeOptions() as $value => $label) {
+            if (
+                !$foundAdvancedRuleType &&
+                in_array($value, [
+                    DateRange::TYPE_BEFORE,
+                    DateRange::TYPE_AFTER,
+                    DateRange::TYPE_RANGE,
+                ])
+            ) {
                 $rangeTypeOptionsHtml .= Html::tag('hr', options: ['class' => 'padded']);
                 $foundAdvancedRuleType = true;
             }
@@ -173,7 +190,7 @@ JS,
             ]
         );
 
-        $html = Html::button(DateRange::rangeTypeOptions()[$this->rangeType], [
+        $html = Html::button($this->rangeTypeOptions()[$this->rangeType], [
             'id' => $buttonId,
             'class' => ['btn', 'menubtn'],
             'autofocus' => false,
@@ -192,7 +209,7 @@ JS,
             ],
         ]);
 
-        if ($this->rangeType === DateRangeType::Range) {
+        if ($this->rangeType === DateRange::TYPE_RANGE) {
             $html .= Html::tag(
                     'div',
                     options: ['class' => ['flex', 'flex-nowrap']],
@@ -219,7 +236,7 @@ JS,
                         ])
                     )
                 );
-        } elseif (in_array($this->rangeType, [DateRangeType::Before, DateRangeType::After])) {
+        } elseif (in_array($this->rangeType, [DateRange::TYPE_BEFORE, DateRange::TYPE_AFTER])) {
             $periodValueId = 'period-value';
             $periodTypeId = 'period-type';
 
@@ -239,12 +256,51 @@ JS,
                     'id' => $periodTypeId,
                     'name' => 'periodType',
                     'value' => $this->periodType,
-                    'options' => DateRange::periodTypeOptions(),
+                    'options' => $this->periodTypeOptions(),
                 ])
             );
         }
 
         return Html::tag('div', $html, ['class' => ['flex']]);
+    }
+
+    /**
+     * Returns the available range type options for the rule.
+     *
+     * @return array
+     */
+    protected function rangeTypeOptions(): array
+    {
+        return [
+            DateRange::TYPE_TODAY => Craft::t('app', 'Today'),
+            DateRange::TYPE_THIS_WEEK => Craft::t('app', 'This week'),
+            DateRange::TYPE_THIS_MONTH => Craft::t('app', 'This month'),
+            DateRange::TYPE_THIS_YEAR => Craft::t('app', 'This year'),
+            DateRange::TYPE_PAST_7_DAYS => Craft::t('app', 'Past {num} days', ['num' => 7]),
+            DateRange::TYPE_PAST_30_DAYS => Craft::t('app', 'Past {num} days', ['num' => 30]),
+            DateRange::TYPE_PAST_90_DAYS => Craft::t('app', 'Past {num} days', ['num' => 90]),
+            DateRange::TYPE_PAST_YEAR => Craft::t('app', 'Past year'),
+            DateRange::TYPE_BEFORE => Craft::t('app', 'Before…'),
+            DateRange::TYPE_AFTER => Craft::t('app', 'After…'),
+            DateRange::TYPE_RANGE => Craft::t('app', 'Range…'),
+        ];
+    }
+
+    /**
+     * Returns the available period type options for the rule.
+     *
+     * @return array
+     */
+    protected function periodTypeOptions(): array
+    {
+        return [
+            DateRange::PERIOD_MINUTES_AGO => Craft::t('app', 'minutes ago'),
+            DateRange::PERIOD_HOURS_AGO => Craft::t('app', 'hours ago'),
+            DateRange::PERIOD_DAYS_AGO => Craft::t('app', 'days ago'),
+            DateRange::PERIOD_MINUTES_FROM_NOW => Craft::t('app', 'minutes from now'),
+            DateRange::PERIOD_HOURS_FROM_NOW => Craft::t('app', 'hours from now'),
+            DateRange::PERIOD_DAYS_FROM_NOW => Craft::t('app', 'days from now'),
+        ];
     }
 
     /**
@@ -254,8 +310,8 @@ JS,
     {
         return array_merge(parent::defineRules(), [
             [['startDate', 'endDate', 'rangeType', 'timeFrameUnits', 'timeFrameValue'], 'safe'],
-            [['rangeType'], 'in', 'range' => array_keys(DateRange::rangeTypeOptions())],
-            [['periodType'], 'in', 'range' => array_keys(DateRange::periodTypeOptions())],
+            [['rangeType'], 'in', 'range' => array_keys($this->rangeTypeOptions())],
+            [['periodType'], 'in', 'range' => array_keys($this->periodTypeOptions())],
             [['periodValue'], 'number', 'skipOnEmpty' => true],
         ]);
     }
@@ -267,7 +323,7 @@ JS,
      */
     protected function queryParamValue(): array|string|null
     {
-        if ($this->rangeType === DateRangeType::Range && ($this->_startDate || $this->_endDate)) {
+        if ($this->rangeType === DateRange::TYPE_RANGE && ($this->_startDate || $this->_endDate)) {
             return array_filter([
                 'and',
                 $this->_startDate ? ">= $this->_startDate" : null,
@@ -275,16 +331,15 @@ JS,
             ]);
         }
 
-        if (in_array($this->rangeType, [DateRangeType::Before, DateRangeType::After]) && $this->periodValue && $this->periodType) {
+        if (in_array($this->rangeType, [DateRange::TYPE_BEFORE, DateRange::TYPE_AFTER]) && $this->periodValue) {
             $dateInterval = DateRange::dateIntervalByTimePeriod($this->periodValue, $this->periodType);
-
-            return ($this->rangeType === DateRangeType::After ? '>=' : '<') . ' ' . DateTimeHelper::toIso8601(DateTimeHelper::now()->sub($dateInterval));
+            return ($this->rangeType === DateRange::TYPE_AFTER ? '>=' : '<') . ' ' . DateTimeHelper::toIso8601(DateTimeHelper::now()->add($dateInterval));
         }
 
-        $rangeTypeOptions = DateRange::rangeTypeOptions();
-        ArrayHelper::remove($rangeTypeOptions, DateRangeType::Before);
-        ArrayHelper::remove($rangeTypeOptions, DateRangeType::After);
-        ArrayHelper::remove($rangeTypeOptions, DateRangeType::Range);
+        $rangeTypeOptions = $this->rangeTypeOptions();
+        ArrayHelper::remove($rangeTypeOptions, DateRange::TYPE_BEFORE);
+        ArrayHelper::remove($rangeTypeOptions, DateRange::TYPE_AFTER);
+        ArrayHelper::remove($rangeTypeOptions, DateRange::TYPE_RANGE);
 
         if (array_key_exists($this->rangeType, $rangeTypeOptions)) {
             [$startDate, $endDate] = DateRange::dateRangeByType($this->rangeType);
@@ -305,27 +360,27 @@ JS,
      */
     protected function matchValue(?DateTime $value): bool
     {
-        if ($this->rangeType === DateRangeType::Range) {
+        if ($this->rangeType === DateRange::TYPE_RANGE) {
             return (
                 (!$this->_startDate || ($value && $value >= DateTimeHelper::toDateTime($this->_startDate))) &&
                 (!$this->_endDate || ($value && $value < DateTimeHelper::toDateTime($this->_endDate)))
             );
         }
 
-        if (in_array($this->rangeType, [DateRangeType::Before, DateRangeType::After]) && $this->periodValue && $this->periodType) {
-            $date = DateTimeHelper::now()->sub(DateRange::dateIntervalByTimePeriod($this->periodValue, $this->periodType));
+        if (in_array($this->rangeType, [DateRange::TYPE_BEFORE, DateRange::TYPE_AFTER]) && $this->periodValue) {
+            $date = DateTimeHelper::now()->add(DateRange::dateIntervalByTimePeriod($this->periodValue, $this->periodType));
 
-            if ($this->rangeType === DateRangeType::After) {
+            if ($this->rangeType === DateRange::TYPE_AFTER) {
                 return $value && $value >= $date;
             }
 
             return $value && $value < $date;
         }
 
-        $rangeTypeOptions = DateRange::rangeTypeOptions();
-        ArrayHelper::remove($rangeTypeOptions, DateRangeType::Before);
-        ArrayHelper::remove($rangeTypeOptions, DateRangeType::After);
-        ArrayHelper::remove($rangeTypeOptions, DateRangeType::Range);
+        $rangeTypeOptions = $this->rangeTypeOptions();
+        ArrayHelper::remove($rangeTypeOptions, DateRange::TYPE_BEFORE);
+        ArrayHelper::remove($rangeTypeOptions, DateRange::TYPE_AFTER);
+        ArrayHelper::remove($rangeTypeOptions, DateRange::TYPE_RANGE);
         if (array_key_exists($this->rangeType, $rangeTypeOptions)) {
             [$startDate, $endDate] = DateRange::dateRangeByType($this->rangeType);
             return $value && $value >= $startDate && $value < $endDate;
