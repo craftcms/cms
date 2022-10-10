@@ -816,7 +816,7 @@ return [
     'Leave blank if the entry doesn’t have a URL' => 'Wenn der Eintrag keine URL hat leer lassen',
     'Leave it uninstalled' => 'Deinstallation beibehalten',
     'Let each entry choose which sites it should be saved to' => 'Lassen Sie jeden Eintrag wählen, zu welchen Websites er gespeichert werden soll',
-    'Level' => 'Höhe',
+    'Level' => 'Ebene',
     'License transferred.' => 'Lizenz übertragen.',
     'License' => 'Lizenz',
     'Licensed' => 'Lizenziert',
