@@ -1,0 +1,8 @@
+{% macro tip(config) %}
+    {% set containerAttributes = {
+        class: 'note tip',
+        html: config.tip
+    } %}
+
+    {{ tag('div', containerAttributes) }}
+{% endmacro %}
