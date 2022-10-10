@@ -60,7 +60,7 @@ abstract class BaseNumberConditionRule extends BaseTextConditionRule
     protected function operatorLabel(string $operator): string
     {
         if ($operator === self::OPERATOR_BETWEEN) {
-            return Craft::t('app', 'Between…');
+            return Craft::t('app', 'is between…');
         }
 
         return parent::operatorLabel($operator);
@@ -110,7 +110,7 @@ abstract class BaseNumberConditionRule extends BaseTextConditionRule
                     'autocomplete' => false,
                     'class' => 'flex-grow flex-shrink',
                 ]) .
-                Html::tag('span', Craft::t('app', 'Values entered are matched inclusively.'), ['class' => 'info']),
+                Html::tag('span', Craft::t('app', 'The values are matched inclusively.'), ['class' => 'info']),
                 ['class' => 'flex flex-center']
             );
         }
