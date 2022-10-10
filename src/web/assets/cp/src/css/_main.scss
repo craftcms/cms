@@ -1887,7 +1887,7 @@ div.btn.submit input {
     background-color: transparentize($grey200, 0.9);
     border-color: transparent;
 
-    .reduce-focus-visibility &:not(.focus-visible) {
+    .reduce-focus-visibility &:not(:focus-visible) {
       border: 1px dashed var(--medium-hairline-color);
     }
   }
@@ -2145,7 +2145,7 @@ div.btn.submit input {
         }
       }
 
-      &.focus-visible {
+      @include focus-styles {
         box-shadow: inset 0 0 0 1px var(--hairline-color), var(--focus-ring);
       }
     }
@@ -3665,7 +3665,7 @@ ul.tree,
         text-decoration: none;
       }
 
-      &.focus-visible {
+      @include focus-styles {
         box-shadow: none;
 
         .tab-label {
@@ -5160,8 +5160,7 @@ ul.tree,
       @include disclosure-link-hover-styles;
     }
 
-    body:not(.reduce-focus-visibility) &:focus,
-    body.reduce-focus-visibility &.focus-visible {
+    @include focus-styles {
       box-shadow: inset 0 0 0 3px hsla(var(--dark-focus-hsl), 0.7);
     }
   }
@@ -5295,8 +5294,7 @@ table.editable {
     @include input-focused-styles;
   }
 
-  body:not(.reduce-focus-visibility) &:focus,
-  body.reduce-focus-visibility &.focus-visible {
+  @include focus-styles {
     @include input-focused-styles;
   }
 }
@@ -5652,15 +5650,14 @@ body:not(.reduce-focus-visibility) {
 }
 
 body.reduce-focus-visibility {
-  input.checkbox.focus-visible + label:before,
-  .focus-visible div.checkbox:before {
+  input.checkbox:focus-visible + label:before,
+  :focus-visible div.checkbox:before {
     @include input-focused-styles;
   }
 }
 
 .monaco-mouse-cursor-text {
-  &:focus,
-  &.focus-visible {
+  @include focus-styles {
     box-shadow: none !important;
   }
 }
@@ -5761,8 +5758,8 @@ body:not(.reduce-focus-visibility) {
 }
 
 body.reduce-focus-visibility {
-  input.radio.focus-visible + label:before,
-  .focus-visible div.radio:before {
+  input.radio:focus-visible + label:before,
+  :focus-visible div.radio:before {
     @include input-focused-styles;
   }
 }
@@ -5773,8 +5770,7 @@ body.reduce-focus-visibility {
   font-size: 14px;
   appearance: none;
 
-  body:not(.reduce-focus-visibility) &:focus,
-  body.reduce-focus-visibility &.focus-visible {
+  @include focus-styles {
     @include input-focused-styles;
   }
 
@@ -6123,8 +6119,7 @@ tr.indexingSession td.progress div.progressContainer div.progressInfo {
     @include select-input-focused-styles;
   }
 
-  body:not(.reduce-focus-visibility) &:focus,
-  body.reduce-focus-visibility &.focus-visible {
+  @include focus-styles {
     @include select-input-focused-styles;
   }
 }
