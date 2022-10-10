@@ -25,6 +25,7 @@ use yii\db\Connection;
  * @doc-path addresses.md
  * @replace {element} address
  * @replace {elements} addresses
+ * @replace {twig-method} craft.addresses()
  * @replace {myElement} myAddress
  * @replace {element-class} \craft\elements\Address
  */
