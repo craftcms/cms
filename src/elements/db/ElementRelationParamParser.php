@@ -66,7 +66,7 @@ class ElementRelationParamParser extends BaseObject
      * @throws InvalidArgumentException if any of the relation criteria contain an invalid site handle
      * @since 3.6.11
      */
-    public static function normalizeRelatedToParam(mixed $relatedToParam, array|int|string $siteId = null): array
+    public static function normalizeRelatedToParam(mixed $relatedToParam, array|int|string|null $siteId = null): array
     {
         // Ensure it's an array
         if (!is_array($relatedToParam)) {
@@ -96,9 +96,9 @@ class ElementRelationParamParser extends BaseObject
             $relatedToParam = [$relatedToParam];
         }
 
-        $relatedToParam = Collection::make($relatedToParam)->map(function($relatedToParam) use ($siteId) {
-            return static::normalizeRelatedToCriteria($relatedToParam, $siteId);
-        })->toArray();
+        $relatedToParam = Collection::make($relatedToParam)->map(
+            fn($relatedToParam) => static::normalizeRelatedToCriteria($relatedToParam, $siteId)
+        )->all();
 
         if ($glue === 'or') {
             // Group all of the OR elements, so we avoid adding massive JOINs to the query
@@ -134,7 +134,7 @@ class ElementRelationParamParser extends BaseObject
      * @throws InvalidArgumentException if the criteria contains an invalid site handle
      * @since 3.6.11
      */
-    public static function normalizeRelatedToCriteria(mixed $relCriteria, array|int|string $siteId = null): array
+    public static function normalizeRelatedToCriteria(mixed $relCriteria, array|int|string|null $siteId = null): array
     {
         if (
             !is_array($relCriteria) ||
@@ -212,7 +212,7 @@ class ElementRelationParamParser extends BaseObject
      * @param int|string|int[]|null $siteId
      * @return array|false
      */
-    public function parse(mixed $relatedToParam, array|int|string $siteId = null): array|false
+    public function parse(mixed $relatedToParam, array|int|string|null $siteId = null): array|false
     {
         $relatedToParam = static::normalizeRelatedToParam($relatedToParam, $siteId);
         $glue = array_shift($relatedToParam);
