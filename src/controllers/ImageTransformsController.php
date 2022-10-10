@@ -105,7 +105,7 @@ class ImageTransformsController extends Controller
         $transform->height = $this->request->getBodyParam('height') ?: null;
         $transform->mode = $this->request->getBodyParam('mode');
         $transform->position = $this->request->getBodyParam('position');
-        $transform->quality = $this->request->getBodyParam('quality');
+        $transform->quality = $this->request->getBodyParam('quality') ?: null;
         $transform->interlace = $this->request->getBodyParam('interlace');
         $transform->format = $this->request->getBodyParam('format');
 
