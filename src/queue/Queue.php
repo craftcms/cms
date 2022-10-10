@@ -458,10 +458,8 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
         $info = [];
 
         foreach ($results as $result) {
-            if (($errorMessage = $result['error']) && !YII_DEBUG && !Craft::$app->getUser()->getIsAdmin()) {
-                $errorMessage = Craft::t('app','An unknown error occurred.');
-                // Log it for debugging.
-                Craft::error('Queue job failure: ' . $result['error']);
+            if (!YII_DEBUG && !Craft::$app->getUser()->getIsAdmin()) {
+                $result['error'] = Craft::t('app', 'A server error occurred.');
             }
 
             $info[] = [
@@ -471,7 +469,7 @@ class Queue extends \yii\queue\cli\Queue implements QueueInterface
                 'progress' => (int)$result['progress'],
                 'progressLabel' => $result['progressLabel'],
                 'description' => $result['description'],
-                'error' => $errorMessage,
+                'error' => $result['error'],
             ];
         }
 
