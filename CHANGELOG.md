@@ -32,6 +32,9 @@
 - Fixed a bug where alerts saying a folder can’t be renamed due to a naming conflict were showing the old folder name instead of the new one. ([#12049](https://github.com/craftcms/cms/pull/12049))
 - Fixed a bug where custom fields nested within Matrix fields weren’t always updating properly within slideout editors. ([#11988](https://github.com/craftcms/cms/issues/11988), [#12058](https://github.com/craftcms/cms/issues/12058))
 - Fixed an error that could occur when adding new textual condition rules to a condition. ([#12077](https://github.com/craftcms/cms/pull/12077))
+- Fixed a bug where Table fields’ Default Values settings were always showing at least one row, even if the setting had been saved without any rows. ([#12071](https://github.com/craftcms/cms/issues/12071))
+- Fixed a bug where existing rows in Table fields’ Default Values settings were losing the ability to be reordered or deleted when the table columns were changed.
+- Fixed a bug where sending a password reset email for an inactive user would set them to a pending state. ([#12080](https://github.com/craftcms/cms/pull/12080))
 
 ### Security
 - Fixed information disclosure vulnerabilities.
