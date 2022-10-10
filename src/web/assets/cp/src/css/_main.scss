@@ -4608,7 +4608,7 @@ ul.tree,
   }
 
   body:not(.reduce-focus-visibility) &:focus,
-  body.reduce-focus-visibility &.focus-visible {
+  body.reduce-focus-visibility &:focus-visible {
     box-shadow: inset 0 0 0 3px hsla(var(--dark-focus-hsl), 0.7);
   }
 }
@@ -4740,7 +4740,7 @@ table.editable {
   }
 
   body:not(.reduce-focus-visibility) &:focus,
-  body.reduce-focus-visibility &.focus-visible {
+  body.reduce-focus-visibility &:focus-visible {
     @include input-focused-styles;
   }
 }
@@ -5099,15 +5099,15 @@ body:not(.reduce-focus-visibility) {
 }
 
 body.reduce-focus-visibility {
-  input.checkbox.focus-visible + label:before,
-  .focus-visible div.checkbox:before {
+  input.checkbox:focus-visible + label:before,
+  :focus-visible div.checkbox:before {
     @include input-focused-styles;
   }
 }
 
 .monaco-mouse-cursor-text {
   &:focus,
-  &.focus-visible {
+  &:focus-visible {
     box-shadow: none !important;
   }
 }
@@ -5206,8 +5206,8 @@ body:not(.reduce-focus-visibility) {
 }
 
 body.reduce-focus-visibility {
-  input.radio.focus-visible + label:before,
-  .focus-visible div.radio:before {
+  input.radio:focus-visible + label:before,
+  :focus-visible div.radio:before {
     @include input-focused-styles;
   }
 }
@@ -5219,7 +5219,7 @@ body.reduce-focus-visibility {
   appearance: none;
 
   body:not(.reduce-focus-visibility) &:focus,
-  body.reduce-focus-visibility &.focus-visible {
+  body.reduce-focus-visibility &:focus-visible {
     @include input-focused-styles;
   }
 
@@ -5470,7 +5470,7 @@ body.reduce-focus-visibility {
   }
 
   body:not(.reduce-focus-visibility) &:focus,
-  body.reduce-focus-visibility &.focus-visible {
+  body.reduce-focus-visibility &:focus-visible {
     @include select-input-focused-styles;
   }
 }

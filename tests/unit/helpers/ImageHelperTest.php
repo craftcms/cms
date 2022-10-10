@@ -127,6 +127,12 @@ class ImageHelperTest extends Unit
             'fit8' => [67, 100, 400, 600, 200, 100, 'fit', true],
             'fit9' => [67, 100, 40, 60, 200, 100, 'fit', true],
             'fit10' => [40, 60, 40, 60, 200, 100, 'fit', false],
+
+            // https://github.com/craftcms/cms/issues/12023
+            'fit11' => [160, 240, 240, 360, 240, 240, 'fit', false],
+            'fit12' => [240, 160, 360, 240, 240, 240, 'fit', false],
+            'fit13' => [160, 240, 240, 360, 240, 240, 'fit', true],
+            'fit14' => [240, 160, 360, 240, 240, 240, 'fit', true],
         ];
     }
 

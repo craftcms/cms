@@ -302,7 +302,7 @@ class Assets extends Component
 
         if ($conflictingFolder) {
             throw new AssetConflictException(Craft::t('app', 'A folder with the name “{folderName}” already exists in the folder.', [
-                'folderName' => $folder->name,
+                'folderName' => $newName,
             ]));
         }
 

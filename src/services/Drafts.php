@@ -367,12 +367,10 @@ class Drafts extends Component
                     $draft->validate();
                 }
 
-                if ($draft->hasErrors()) {
-                    throw new InvalidElementException($draft, 'Draft ' . $draft->id . ' could not be applied because it doesn\'t validate.');
-                }
-
                 try {
-                    $elementsService->saveElement($draft, false);
+                    if ($draft->hasErrors() || !$elementsService->saveElement($draft, false)) {
+                        throw new InvalidElementException($draft, 'Draft ' . $draft->id . ' could not be applied because it doesn\'t validate.');
+                    }
                     Db::delete(Table::DRAFTS, [
                         'id' => $draftId,
                     ]);
@@ -392,7 +390,7 @@ class Drafts extends Component
         } catch (\Throwable $e) {
             $transaction->rollBack();
 
-            if ($e instanceof InvalidElementException) {
+            if ($e instanceof InvalidElementException && $draft !== $e->element) {
                 // Add the errors from the duplicated element back onto the draft
                 $draft->addErrors($e->element->getErrors());
             }

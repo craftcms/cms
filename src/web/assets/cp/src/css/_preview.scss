@@ -173,7 +173,7 @@
   }
 
   .lp-device-type__input {
-    &.focus-visible + label {
+    &:focus-visible + label {
       box-shadow: var(--focus-ring);
     }
   }
