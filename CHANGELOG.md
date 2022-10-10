@@ -13,12 +13,16 @@
 ### Changed
 - When passing a PHP callback function to the `--to` option of a `resave/*` command, the `$element` argument is now optional.
 
+### Deprecated
+- Deprecated `craft\web\assets\focusvisible\FocusVisibleAsset`. ([#12037](https://github.com/craftcms/cms/pull/12037))
+
 ### Fixed
 - Fixed a bug where `resave/*` commands weren’t respecting the `--set`, `--to`, or `--touch` options when `--queue` was passed. ([#11974](https://github.com/craftcms/cms/issues/11974))
 - Fixed an error that could occur when passing an element query to a `relatedTo` param, if the parent element query contained any closures. ([#11981](https://github.com/craftcms/cms/issues/11981))
 - Fixed a bug where unsaved drafts could be unintentionally deleted when saved, if a plugin or module was blocking the save via `EVENT_BEFORE_SAVE`. ([#12015](https://github.com/craftcms/cms/issues/12015))
 - Fixed a bug where “Propagating tags” jobs would fail if two tags had similar titles.
 - Fixed a bug where image transforms weren’t getting sized correctly in some cases when `upscaleImages` was disabled. ([#12023](https://github.com/craftcms/cms/issues/12023))
+- Fixed a bug where table cells within Redactor fields could appear to be focused when they weren’t. ([#12001](https://github.com/craftcms/cms/issues/12001), [#12037](https://github.com/craftcms/cms/pull/12037))
 
 ### Security
 - Reduced the amount of system information that’s available to guest users.

@@ -25,7 +25,6 @@ use craft\web\assets\datepickeri18n\DatepickerI18nAsset;
 use craft\web\assets\elementresizedetector\ElementResizeDetectorAsset;
 use craft\web\assets\fabric\FabricAsset;
 use craft\web\assets\fileupload\FileUploadAsset;
-use craft\web\assets\focusvisible\FocusVisibleAsset;
 use craft\web\assets\garnish\GarnishAsset;
 use craft\web\assets\iframeresizer\IframeResizerAsset;
 use craft\web\assets\jquerypayment\JqueryPaymentAsset;
@@ -55,7 +54,6 @@ class CpAsset extends AssetBundle
         AxiosAsset::class,
         D3Asset::class,
         ElementResizeDetectorAsset::class,
-        FocusVisibleAsset::class,
         GarnishAsset::class,
         JqueryAsset::class,
         JqueryTouchEventsAsset::class,
