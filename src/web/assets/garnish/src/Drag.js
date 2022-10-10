@@ -5,7 +5,7 @@ import $ from 'jquery';
 /**
  * Drag class
  *
- * Builds on the BaseDrag class by "picking up" the selceted element(s),
+ * Builds on the BaseDrag class by "picking up" the selected element(s),
  * without worrying about what to do when an element is being dragged.
  */
 export default BaseDrag.extend(
