@@ -334,7 +334,7 @@ class Table extends Field
             'allowReorder' => true,
             'allowDelete' => true,
             'cols' => $this->columns,
-            'rows' => $this->defaults ?? [[]],
+            'rows' => $this->defaults,
             'initJs' => false,
         ]);
 
