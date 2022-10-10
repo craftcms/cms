@@ -9,6 +9,7 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\errors\OperationAbortedException;
 use craft\models\Structure;
 use craft\web\Controller;
 use yii\web\ForbiddenHttpException;
@@ -118,6 +119,12 @@ class StructuresController extends Controller
         }
 
         if ($success) {
+            // try updating moved element uri
+            try {
+                Craft::$app->getElements()->updateElementSlugAndUri($this->_element, false, false, false);
+            } catch (OperationAbortedException $e) {
+                Craft::warning("Couldn’t update slug and URI for element ".$this->_element->id.": {$e->getMessage()}");
+            }
             return $this->asSuccess();
         }
         return $this->asFailure();

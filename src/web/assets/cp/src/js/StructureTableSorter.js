@@ -310,11 +310,15 @@ Craft.StructureTableSorter = Garnish.DragSort.extend(
               this.tableView._expandElement($toggle, true);
             }
 
+            if (Craft.broadcaster) {
+              Craft.broadcaster.postMessage({
+                event: 'saveElement',
+                id: data.elementId,
+              });
+            }
+
             // See if we should run any pending tasks
             Craft.cp.runQueue();
-
-            // this is here so that the URIs are updated in the structure view after changed position
-            this.tableView.elementIndex.updateElements();
           })
           .catch(({response}) => {
             Craft.cp.displayError(Craft.t('app', 'A server error occurred.'));
