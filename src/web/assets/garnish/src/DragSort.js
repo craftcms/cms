@@ -232,6 +232,7 @@ export default Drag.extend(
      * On Sort Change event
      */
     onSortChange: function () {
+      console.log('on sort change');
       Garnish.requestAnimationFrame(
         function () {
           this.trigger('sortChange');
@@ -285,6 +286,7 @@ export default Drag.extend(
 
           if ($item.prev().length) {
             this.$pickedItem.insertBefore($item.prev());
+            this.$pickedItem.find('.move').trigger('focus');
           }
           break;
         case Garnish.RIGHT_KEY:
@@ -293,6 +295,7 @@ export default Drag.extend(
 
           if ($item.next().length) {
             this.$pickedItem.insertAfter($item.next());
+            this.$pickedItem.find('.move').trigger('focus');
           }
           break;
         case Garnish.TAB_KEY:
