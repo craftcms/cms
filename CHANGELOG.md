@@ -26,7 +26,7 @@
 - Fixed a bug where alerts saying a folder can’t be renamed due to a naming conflict were showing the old folder name instead of the new one. ([#12049](https://github.com/craftcms/cms/pull/12049))
 
 ### Security
-- Reduced the amount of system information that’s available to guest users.
+- Fixed information disclosure vulnerabilities.
 
 ## 3.7.55.3 - 2022-10-03
 
