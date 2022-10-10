@@ -143,7 +143,7 @@ class Money extends Field implements PreviewableFieldInterface, SortableFieldInt
             }
         }
 
-        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Money/settings', [
+        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Money/settings.twig', [
             'field' => $this,
             'currencies' => $this->_isoCurrencies,
             'subUnits' => $this->_isoCurrencies->subunitFor(new Currency($this->currency)),
@@ -298,7 +298,7 @@ JS;
             'currencySymbol' => Craft::$app->getFormattingLocale()->getCurrencySymbol($this->currency),
         ]);
 
-        return $view->renderTemplate('_components/fieldtypes/Money/input', [
+        return $view->renderTemplate('_components/fieldtypes/Money/input.twig', [
             'id' => $id,
             'currency' => $this->currency,
             'currencyLabel' => $currencyLabel,

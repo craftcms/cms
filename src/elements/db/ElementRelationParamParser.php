@@ -79,7 +79,11 @@ class ElementRelationParamParser extends BaseObject
             }
         }
 
-        if (isset($relatedToParam[0]) && in_array($relatedToParam[0], ['and', 'or'])) {
+        if (
+            isset($relatedToParam[0]) &&
+            is_string($relatedToParam[0]) &&
+            in_array($relatedToParam[0], ['and', 'or'])
+        ) {
             $glue = array_shift($relatedToParam);
             if ($glue === 'and' && count($relatedToParam) < 2) {
                 $glue = 'or';
@@ -179,7 +183,11 @@ class ElementRelationParamParser extends BaseObject
                     }
                 }
 
-                if (isset($elements[0]) && in_array($elements[0], ['and', 'or'])) {
+                if (
+                    isset($elements[0]) &&
+                    is_string($elements[0]) &&
+                    in_array($elements[0], ['and', 'or'])
+                ) {
                     $glue = array_shift($elements);
                     if ($glue === 'and' && count($elements) < 2) {
                         $glue = 'or';
