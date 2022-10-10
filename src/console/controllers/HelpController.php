@@ -10,7 +10,7 @@ namespace craft\console\controllers;
 use Craft;
 use craft\helpers\App;
 use craft\helpers\Json;
-use ReflectionMethod;
+use ReflectionFunctionAbstract;
 use Throwable;
 use yii\base\InvalidConfigException;
 use yii\console\Controller;
@@ -215,10 +215,10 @@ class HelpController extends BaseHelpController
      * Returns full description from the docblock without any kind of ANSI terminal formatting
      *
      * @see Controller::getActionHelp()
-     * @param ReflectionMethod $reflection
+     * @param ReflectionFunctionAbstract $reflection
      * @return string
      */
-    protected function unformattedActionHelp(ReflectionMethod $reflection): string
+    protected function unformattedActionHelp(ReflectionFunctionAbstract $reflection): string
     {
         $comment = strtr(trim(preg_replace('/^\s*\**( |\t)?/m', '', trim($reflection->getDocComment(), '/'))), "\r", '');
         if (preg_match('/^\s*@\w+/m', $comment, $matches, PREG_OFFSET_CAPTURE)) {
