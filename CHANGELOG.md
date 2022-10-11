@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.2.6 - 2022-10-11
 
 ### Added
 - Added the `--as-json` option to the `help` command. ([#12017](https://github.com/craftcms/cms/pull/12017), [#12074](https://github.com/craftcms/cms/pull/12074))
