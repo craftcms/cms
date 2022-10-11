@@ -376,7 +376,7 @@
                     <a class="move icon" title="${Craft.t(
                       'app',
                       'Reorder'
-                    )}" role="button"></a>
+                    )}" role="button" tabindex="0"></a>
                   </div>
                 </div>`;
 

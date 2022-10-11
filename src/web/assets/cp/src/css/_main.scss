@@ -6819,6 +6819,10 @@ $titlebarBorderRadius: calc(var(--large-border-radius) - 1px);
   border: 1px solid var(--hairline-color);
   background-color: var(--gray-050);
 
+  &.picked {
+    outline: 2px solid black;
+  }
+
   &.static {
     padding-top: 14px;
   }
