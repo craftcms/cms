@@ -994,11 +994,14 @@ SQL
      */
     public function createRevisionBlocks(MatrixField $field, ElementInterface $canonical, ElementInterface $revision): void
     {
+        // Only fetch blocks in the sites the owner element supports
+        $siteIds = ArrayHelper::getColumn(ElementHelper::supportedSitesForElement($canonical), 'siteId');
+
         /** @var MatrixBlock[] $blocks */
         $blocks = MatrixBlock::find()
             ->ownerId($canonical->id)
             ->fieldId($field->id)
-            ->siteId('*')
+            ->siteId($siteIds)
             ->preferSites([$canonical->siteId])
             ->unique()
             ->status(null)

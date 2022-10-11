@@ -250,7 +250,12 @@ class ElementsController extends Controller
             }
 
             // If this is an outdated draft, merge in the latest canonical changes
-            $mergeCanonicalChanges = $element->getIsDraft() && !$element->getIsUnpublishedDraft() && ElementHelper::isOutdated($element);
+            $mergeCanonicalChanges = (
+                $element::trackChanges() &&
+                $element->getIsDraft() &&
+                !$element->getIsUnpublishedDraft() &&
+                ElementHelper::isOutdated($element)
+            );
             if ($mergeCanonicalChanges) {
                 Craft::$app->getElements()->mergeCanonicalChanges($element);
             }
@@ -1479,10 +1484,15 @@ JS, [
 
         if ($this->_elementType) {
             $elementType = $this->_elementType;
-        } elseif ($elementId) {
-            $elementType = $elementsService->getElementTypeById($elementId);
-        } elseif ($elementUid) {
-            $elementType = $elementsService->getElementTypeByUid($elementUid);
+        } elseif ($elementId || $elementUid) {
+            if ($elementId) {
+                $elementType = $elementsService->getElementTypeById($elementId);
+            } else {
+                $elementType = $elementsService->getElementTypeByUid($elementUid);
+            }
+            if (!$elementType) {
+                throw new BadRequestHttpException($elementId ? "Invalid element ID: $elementId" : "Invalid element UUID: $elementUid");
+            }
         } else {
             throw new BadRequestHttpException('Request missing required param.');
         }

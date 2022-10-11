@@ -512,7 +512,8 @@ class UsersController extends Controller
             }
         }
 
-        if (!empty($user) && !Craft::$app->getUsers()->sendPasswordResetEmail($user)) {
+        // Don't try to send the email if there are already error or there is no user
+        if (empty($errors) && !empty($user) && !Craft::$app->getUsers()->sendPasswordResetEmail($user)) {
             $errors[] = Craft::t('app', 'There was a problem sending the password reset email.');
         }
 

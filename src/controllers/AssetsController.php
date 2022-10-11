@@ -1173,6 +1173,12 @@ class AssetsController extends Controller
 
         $assetUid = Craft::$app->getRequest()->getRequiredBodyParam('assetUid');
         $focalData = Craft::$app->getRequest()->getRequiredBodyParam('focal');
+        $focalEnabled = Craft::$app->getRequest()->getRequiredBodyParam('focalEnabled');
+
+        // if focal point is disabled, set focal data to null (can't pass null to $focalData as it's a required param)
+        if ($focalEnabled === false) {
+            $focalData = null;
+        }
 
         /** @var Asset|null $asset */
         $asset = Asset::find()->uid($assetUid)->one();

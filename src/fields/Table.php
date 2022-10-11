@@ -82,7 +82,7 @@ class Table extends Field
     /**
      * @var array|null The default row values that new elements should have
      */
-    public ?array $defaults = null;
+    public ?array $defaults = [[]];
 
     /**
      * @var string The type of database column the field should have in the content table
@@ -334,7 +334,7 @@ class Table extends Field
             'allowReorder' => true,
             'allowDelete' => true,
             'cols' => $this->columns,
-            'rows' => $this->defaults ?? [[]],
+            'rows' => $this->defaults,
             'initJs' => false,
         ]);
 
