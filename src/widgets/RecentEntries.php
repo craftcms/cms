@@ -81,7 +81,7 @@ class RecentEntries extends Widget
      */
     public function getSettingsHtml(): ?string
     {
-        return Craft::$app->getView()->renderTemplate('_components/widgets/RecentEntries/settings',
+        return Craft::$app->getView()->renderTemplate('_components/widgets/RecentEntries/settings.twig',
             [
                 'widget' => $this,
             ]);
@@ -143,7 +143,7 @@ class RecentEntries extends Widget
 
         $entries = $this->_getEntries();
 
-        return $view->renderTemplate('_components/widgets/RecentEntries/body',
+        return $view->renderTemplate('_components/widgets/RecentEntries/body.twig',
             [
                 'entries' => $entries,
             ]);

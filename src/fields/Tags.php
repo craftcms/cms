@@ -98,10 +98,11 @@ class Tags extends BaseRelationField
         $tagGroup = $this->_getTagGroup();
 
         if ($tagGroup) {
-            return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Tags/input',
+            return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Tags/input.twig',
                 [
                     'elementType' => static::elementType(),
                     'id' => $this->getInputId(),
+                    'describedBy' => $this->describedBy,
                     'name' => $this->handle,
                     'elements' => $value,
                     'tagGroupId' => $tagGroup->id,

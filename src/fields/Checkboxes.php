@@ -59,7 +59,7 @@ class Checkboxes extends BaseOptionsField
             Craft::$app->getView()->setInitialDeltaValue($this->handle, null);
         }
 
-        return Craft::$app->getView()->renderTemplate('_includes/forms/checkboxGroup', [
+        return Craft::$app->getView()->renderTemplate('_includes/forms/checkboxGroup.twig', [
             'describedBy' => $this->describedBy,
             'name' => $this->handle,
             'values' => $this->encodeValue($value),

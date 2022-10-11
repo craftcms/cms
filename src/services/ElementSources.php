@@ -13,6 +13,7 @@ use craft\base\PreviewableFieldInterface;
 use craft\base\SortableFieldInterface;
 use craft\events\DefineSourceSortOptionsEvent;
 use craft\events\DefineSourceTableAttributesEvent;
+use craft\fieldlayoutelements\CustomField;
 use craft\helpers\ArrayHelper;
 use craft\models\FieldLayout;
 use yii\base\Component;
@@ -190,9 +191,10 @@ class ElementSources extends Component
      * @param string $elementType The element type class
      * @phpstan-param class-string<ElementInterface> $elementType
      * @param string $sourceKey The element type source key
+     * @param string[]|null $customAttributes Custom attributes to show rather than the defaults
      * @return array[]
      */
-    public function getTableAttributes(string $elementType, string $sourceKey): array
+    public function getTableAttributes(string $elementType, string $sourceKey, ?array $customAttributes = null): array
     {
         /** @var ElementInterface|string $elementType */
         // If this is a source path, use the first segment
@@ -205,7 +207,8 @@ class ElementSources extends Component
             $this->getSourceTableAttributes($elementType, $sourceKey)
         );
 
-        $attributeKeys = $this->_sourceConfig($elementType, $sourceKey)['tableAttributes']
+        $attributeKeys = $customAttributes
+            ?? $this->_sourceConfig($elementType, $sourceKey)['tableAttributes']
             ?? $elementType::defaultTableAttributes($sourceKey);
 
         $attributes = [
@@ -307,17 +310,35 @@ class ElementSources extends Component
         ]);
 
         $processedFieldIds = [];
+        $user = Craft::$app->getUser()->getIdentity();
 
         foreach ($this->getFieldLayoutsForSource($elementType, $sourceKey) as $fieldLayout) {
-            foreach ($fieldLayout->getCustomFields() as $field) {
-                if (
-                    $field instanceof PreviewableFieldInterface &&
-                    !isset($processedFieldIds[$field->id])
-                ) {
-                    $event->attributes["field:$field->uid"] = [
-                        'label' => Craft::t('site', $field->name),
-                    ];
-                    $processedFieldIds[$field->id] = true;
+            foreach ($fieldLayout->getTabs() as $tab) {
+                // Factor in the user condition for non-admins
+                if ($user && !$user->admin && !($tab->getUserCondition()?->matchElement($user) ?? true)) {
+                    continue;
+                }
+
+                foreach ($tab->getElements() as $layoutElement) {
+                    if (!$layoutElement instanceof CustomField) {
+                        continue;
+                    }
+
+                    $field = $layoutElement->getField();
+                    if (
+                        $field instanceof PreviewableFieldInterface &&
+                        !isset($processedFieldIds[$field->id])
+                    ) {
+                        // Factor in the user condition for non-admins
+                        if ($user && !$user->admin && !($layoutElement->getUserCondition()?->matchElement($user) ?? true)) {
+                            continue;
+                        }
+
+                        $event->attributes["field:$field->uid"] = [
+                            'label' => Craft::t('site', $field->name),
+                        ];
+                        $processedFieldIds[$field->id] = true;
+                    }
                 }
             }
         }

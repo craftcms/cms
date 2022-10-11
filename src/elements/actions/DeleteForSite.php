@@ -119,7 +119,7 @@ JS, [static::class]);
 
             // Resave the elements
             foreach ($otherSiteElements as $element) {
-                if (!$element->canDelete($user)) {
+                if (!$elementsService->canDelete($element, $user)) {
                     continue;
                 }
 
@@ -135,11 +135,9 @@ JS, [static::class]);
             ->all();
 
         foreach ($singleSiteElements as $element) {
-            if (!$element->canDelete($user)) {
-                continue;
+            if ($elementsService->canDelete($element, $user)) {
+                $elementsService->deleteElement($element);
             }
-
-            $elementsService->deleteElement($element);
         }
 
         if (isset($this->successMessage)) {
