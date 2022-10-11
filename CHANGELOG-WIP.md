@@ -18,6 +18,7 @@
 - Added the `|float` Twig filter. ([#11792](https://github.com/craftcms/cms/pull/11792))
 - Added the `|integer` Twig filter. ([#11792](https://github.com/craftcms/cms/pull/11792))
 - Added the `|string` Twig filter. ([#11792](https://github.com/craftcms/cms/pull/11792))
+- Added the `siteHandle` field to elements queried via GraphQL. ([#10829](https://github.com/craftcms/cms/discussions/10829))
 - Added support for the `CRAFT_DOTENV_PATH` PHP constant. ([#11894](https://github.com/craftcms/cms/discussions/11894))
 - Added support for `CRAFT_WEB_URL` and `CRAFT_WEB_ROOT` PHP constants, which can be used to set the default `@web` and `@webroot` alias values. ([#11912](https://github.com/craftcms/cms/pull/11912))
 - Added `craft\base\conditions\BaseTextConditionRule::inputOptions()`.
