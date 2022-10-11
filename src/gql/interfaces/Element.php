@@ -8,7 +8,6 @@
 namespace craft\gql\interfaces;
 
 use Craft;
-use craft\base\ElementInterface;
 use craft\gql\base\InterfaceType;
 use craft\gql\base\SingularTypeInterface;
 use craft\gql\GqlEntityRegistry;
@@ -101,11 +100,9 @@ class Element extends InterfaceType implements SingularTypeInterface
                 'description' => 'Whether the element is archived or not.',
             ],
             'siteHandle' => [
+                'name' => 'siteHandle',
                 'type' => Type::string(),
                 'description' => 'The handle of the site the element is associated with.',
-                'resolve' => function(ElementInterface $element) {
-                    return $element->getSite()->handle;
-                },
             ],
             'siteId' => [
                 'name' => 'siteId',
