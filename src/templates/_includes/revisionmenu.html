@@ -12,7 +12,7 @@
     .anyStatus()
     .orderBy({dateUpdated: SORT_DESC})
     .with(['draftCreator'])
-    .all() : [] %}
+    .all()|filter(d => d.getIsEditable()) : [] %}
 
 {% set maxRevisions = craft.app.config.general.maxRevisions %}
 {% if element.id and (not maxRevisions or maxRevisions > 1) %}
