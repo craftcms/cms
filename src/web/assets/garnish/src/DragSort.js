@@ -286,9 +286,11 @@ export default Drag.extend(
             this.$pickedItem = $item;
             this.originalPickedItemIndex = this._getPickedItemIndex();
             this.$pickedItem.addClass('picked');
-            this._updateLiveRegion(Craft.t('app', 'Item in position {num} has been picked up', {
-              num: this._getPrintablePickedItemIndex(),
-            }));
+            this._updateLiveRegion(
+              Craft.t('app', 'Item in position {num} has been picked up', {
+                num: this._getPrintablePickedItemIndex(),
+              })
+            );
           }
           break;
 
@@ -300,9 +302,11 @@ export default Drag.extend(
 
           if ($item.prev().length) {
             this.$pickedItem.insertBefore($item.prev());
-            this._updateLiveRegion(Craft.t('app', 'Item is in position {num}', {
-              num: this._getPrintablePickedItemIndex(),
-            }));
+            this._updateLiveRegion(
+              Craft.t('app', 'Item is in position {num}', {
+                num: this._getPrintablePickedItemIndex(),
+              })
+            );
             this.$pickedItem.find('.move').trigger('focus');
           }
           break;
@@ -314,9 +318,11 @@ export default Drag.extend(
 
           if ($item.next().length) {
             this.$pickedItem.insertAfter($item.next());
-            this._updateLiveRegion(Craft.t('app', 'Item is in position {num}', {
-              num: this._getPrintablePickedItemIndex(),
-            }));
+            this._updateLiveRegion(
+              Craft.t('app', 'Item is in position {num}', {
+                num: this._getPrintablePickedItemIndex(),
+              })
+            );
             this.$pickedItem.find('.move').trigger('focus');
           }
           break;
@@ -335,13 +341,20 @@ export default Drag.extend(
       const newPlacement = this._getPrintablePickedItemIndex();
 
       if (oldPlacement !== newPlacement) {
-        this._updateLiveRegion(Craft.t('app', 'Item moved from position {original} to position {new}', {
-          original: oldPlacement,
-          new: newPlacement,
-          })
+        this._updateLiveRegion(
+          Craft.t(
+            'app',
+            'Item moved from position {original} to position {new}',
+            {
+              original: oldPlacement,
+              new: newPlacement,
+            }
+          )
         );
       } else {
-        this._updateLiveRegion(Craft.t('app', 'Item returned to original position'));
+        this._updateLiveRegion(
+          Craft.t('app', 'Item returned to original position')
+        );
       }
 
       this.$pickedItem = null;
