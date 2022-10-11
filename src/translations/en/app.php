@@ -775,6 +775,7 @@ return [
     'It looks like someone is currently performing a system update.<br>Only continue if you’re sure that’s not the case.' => 'It looks like someone is currently performing a system update.<br>Only continue if you’re sure that’s not the case.',
     'It looks like these settings are being overridden by {paths}.' => 'It looks like these settings are being overridden by {paths}.',
     'Item' => 'Item',
+    'Item is in position {num}' => 'Item is in position {num}',
     'Items in your cart' => 'Items in your cart',
     'It’s not possible to rename the top folder of a Volume.' => 'It’s not possible to rename the top folder of a Volume.',
     'JavaScript must be enabled to access the Craft CMS control panel.' => 'JavaScript must be enabled to access the Craft CMS control panel.',

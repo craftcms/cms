@@ -285,7 +285,8 @@ export default Drag.extend(
           } else {
             this.$pickedItem = $item;
             this.originalPickedItemIndex = this._getPickedItemIndex();
-            $item.addClass('picked');
+            this.$pickedItem.addClass('picked');
+            this._updateLiveRegion(`Item in position ${this._getPrintablePickedItemIndex()} has been picked up`);
           }
           break;
 
@@ -297,6 +298,9 @@ export default Drag.extend(
 
           if ($item.prev().length) {
             this.$pickedItem.insertBefore($item.prev());
+            this._updateLiveRegion(Craft.t('app', 'Item is in position {num}', {
+              num: this._getPrintablePickedItemIndex(),
+            }));
             this.$pickedItem.find('.move').trigger('focus');
           }
           break;
@@ -308,6 +312,9 @@ export default Drag.extend(
 
           if ($item.next().length) {
             this.$pickedItem.insertAfter($item.next());
+            this._updateLiveRegion(Craft.t('app', 'Item is in position {num}', {
+              num: this._getPrintablePickedItemIndex(),
+            }));
             this.$pickedItem.find('.move').trigger('focus');
           }
           break;
@@ -323,9 +330,7 @@ export default Drag.extend(
     _dropPickedItem: function () {
       this.$pickedItem.removeClass('picked');
       const oldPlacement = this.originalPickedItemIndex + 1;
-      const newPlacement = this._getPickedItemIndex() + 1;
-
-      console.log('test');
+      const newPlacement = this._getPrintablePickedItemIndex();
 
       if (oldPlacement !== newPlacement) {
         this._updateLiveRegion(
@@ -353,6 +358,13 @@ export default Drag.extend(
      */
     _getPickedItemIndex: function () {
       return this.$pickedItem.index();
+    },
+
+    /**
+     * Returns the non-zero-based index of the picked item
+     */
+    _getPrintablePickedItemIndex: function () {
+      return this.$pickedItem.index() + 1;
     },
 
     /**
