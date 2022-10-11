@@ -1274,9 +1274,6 @@ class Gql extends Component
             $cacheKey = null;
         }
 
-        echo '<pre>';
-        var_dump($cacheKey);
-        echo '</pre>';
         return $cacheKey;
     }
 
