@@ -25,6 +25,7 @@
 - Fixed a bug where table cells within Redactor fields could appear to be focused when they weren’t. ([#12001](https://github.com/craftcms/cms/issues/12001), [#12037](https://github.com/craftcms/cms/pull/12037))
 - Fixed a bug where alerts saying a folder can’t be renamed due to a naming conflict were showing the old folder name instead of the new one. ([#12049](https://github.com/craftcms/cms/pull/12049))
 - Fixed a bug where Edit Entry pages were listing other authors’ drafts in the revision menu, for users who didn’t have permission to edit them.
+- Fixed a bug where some GraphQL results could be missing if multiple sets of nested elements were being queried using the same alias. ([#11982](https://github.com/craftcms/cms/issues/11982))
 
 ### Security
 - Fixed information disclosure vulnerabilities.
