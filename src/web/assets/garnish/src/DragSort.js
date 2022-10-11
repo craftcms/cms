@@ -286,7 +286,9 @@ export default Drag.extend(
             this.$pickedItem = $item;
             this.originalPickedItemIndex = this._getPickedItemIndex();
             this.$pickedItem.addClass('picked');
-            this._updateLiveRegion(`Item in position ${this._getPrintablePickedItemIndex()} has been picked up`);
+            this._updateLiveRegion(Craft.t('app', 'Item in position {num} has been picked up', {
+              num: this._getPrintablePickedItemIndex(),
+            }));
           }
           break;
 
@@ -339,7 +341,7 @@ export default Drag.extend(
           })
         );
       } else {
-        this._updateLiveRegion('Item returned to original position');
+        this._updateLiveRegion(Craft.t('app', 'Item returned to original position'));
       }
 
       this.$pickedItem = null;
