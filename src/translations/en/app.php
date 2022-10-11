@@ -776,6 +776,7 @@ return [
     'It looks like these settings are being overridden by {paths}.' => 'It looks like these settings are being overridden by {paths}.',
     'Item' => 'Item',
     'Item is in position {num}' => 'Item is in position {num}',
+    'Item moved from position {original} to position {new}' => 'Item moved from position {original} to position {new}',
     'Items in your cart' => 'Items in your cart',
     'It’s not possible to rename the top folder of a Volume.' => 'It’s not possible to rename the top folder of a Volume.',
     'JavaScript must be enabled to access the Craft CMS control panel.' => 'JavaScript must be enabled to access the Craft CMS control panel.',

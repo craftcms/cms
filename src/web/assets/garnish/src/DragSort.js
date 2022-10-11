@@ -333,8 +333,10 @@ export default Drag.extend(
       const newPlacement = this._getPrintablePickedItemIndex();
 
       if (oldPlacement !== newPlacement) {
-        this._updateLiveRegion(
-          `Item moved from position ${oldPlacement} to ${newPlacement}`
+        this._updateLiveRegion(Craft.t('app', 'Item moved from position {original} to position {new}', {
+          original: oldPlacement,
+          new: newPlacement,
+          })
         );
       } else {
         this._updateLiveRegion('Item returned to original position');
