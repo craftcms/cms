@@ -54,7 +54,10 @@
 {% endif %}
 
 {% if allowReorder %}
-    {{ uielements.keyboardReorderingInstructions() }}
+    {% set reorderInstructionsId = "instructions-#{id}" %}
+    {{ uielements.keyboardReorderingInstructions({
+        id: reorderInstructionsId,
+    }) }}
 {%  endif %}
 
 <span class="visually-hidden" role="status" data-status-message></span>
@@ -211,6 +214,7 @@
                             aria: {
                                 label: 'Reorder'|t('app'),
                                 pressed: 'false',
+                                describedBy: reorderInstructionsId,
                             },
                             type: 'button',
                             tabindex: '0',
