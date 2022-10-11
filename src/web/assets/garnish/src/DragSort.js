@@ -326,9 +326,9 @@ export default Drag.extend(
       const newPlacement = this.$pickedItem.index() + 1;
 
       if (this.settings.statusContainer) {
-        $(this.settings.statusContainer).text(`Item moved from position ${
-          oldPlacement
-        } to position ${newPlacement}`);
+        $(this.settings.statusContainer).text(
+          `Item moved from position ${oldPlacement} to position ${newPlacement}`
+        );
       }
 
       this.$pickedItem = null;
