@@ -5199,7 +5199,7 @@ class GeneralConfig extends BaseConfig
      * @see $preventLazyLoading
      * @since 4.3.0
      */
-    public function preventLazyLoading(bool $value = false): self
+    public function preventLazyLoading(bool $value = true): self
     {
         $this->preventLazyLoading = $value;
         return $this;
