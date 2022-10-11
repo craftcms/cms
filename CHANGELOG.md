@@ -35,6 +35,7 @@
 - Fixed a bug where Table fields’ Default Values settings were always showing at least one row, even if the setting had been saved without any rows. ([#12071](https://github.com/craftcms/cms/issues/12071))
 - Fixed a bug where existing rows in Table fields’ Default Values settings were losing the ability to be reordered or deleted when the table columns were changed.
 - Fixed a bug where sending a password reset email for an inactive user would set them to a pending state. ([#12080](https://github.com/craftcms/cms/pull/12080))
+- Fixed a bug where some GraphQL results could be missing if multiple sets of nested elements were being queried using the same alias. ([#11982](https://github.com/craftcms/cms/issues/11982))
 
 ### Security
 - Fixed information disclosure vulnerabilities.
