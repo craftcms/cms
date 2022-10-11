@@ -205,7 +205,17 @@
                 {% endfor %}
                 {% if allowReorder -%}
                     <td class="thin action">
-                        <a class="move icon" title="{{ 'Reorder'|t('app') }}" aria-label="{{ 'Reorder'|t('app') }}" type="button" tabindex="0" role="button"></a>
+                        {{ tag('a', {
+                            class: 'move icon',
+                            title: 'Reorder'|t('app'),
+                            aria: {
+                                label: 'Reorder'|t('app'),
+                                pressed: 'false',
+                            },
+                            type: 'button',
+                            tabindex: '0',
+                            role: 'button',
+                        }) }}
                     </td>
                 {%- endif -%}
                 {%- if allowDelete -%}

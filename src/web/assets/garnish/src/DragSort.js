@@ -13,7 +13,7 @@ export default Drag.extend(
     $insertion: null,
     $pickedItem: null,
 
-    pickedItemIndex: null,
+    originalPickedItemIndex: null,
     insertionVisible: false,
     oldDraggeeIndexes: null,
     newDraggeeIndexes: null,
@@ -276,15 +276,15 @@ export default Drag.extend(
             if (!$item.is(this.$pickedItem)) return;
 
             // Trigger sort change
-            if (this.$pickedItem.index() !== this.pickedItemIndex) {
+            if (this._getPickedItemIndex() !== this.originalPickedItemIndex) {
               this.onSortChange();
             }
 
             // Drop the picked item
-            this._exitPickedMode();
+            this._dropPickedItem();
           } else {
             this.$pickedItem = $item;
-            this.pickedItemIndex = this.$pickedItem.index();
+            this.originalPickedItemIndex = this._getPickedItemIndex();
             $item.addClass('picked');
           }
           break;
@@ -320,19 +320,39 @@ export default Drag.extend(
       }
     },
 
-    _exitPickedMode: function () {
+    _dropPickedItem: function () {
       this.$pickedItem.removeClass('picked');
-      const oldPlacement = this.pickedItemIndex + 1;
-      const newPlacement = this.$pickedItem.index() + 1;
+      const oldPlacement = this.originalPickedItemIndex + 1;
+      const newPlacement = this._getPickedItemIndex() + 1;
 
-      if (this.settings.statusContainer) {
-        $(this.settings.statusContainer).text(
-          `Item moved from position ${oldPlacement} to position ${newPlacement}`
+      console.log('test');
+
+      if (oldPlacement !== newPlacement) {
+        this._updateLiveRegion(
+          `Item moved from position ${oldPlacement} to ${newPlacement}`
         );
+      } else {
+        this._updateLiveRegion('Item returned to original position');
       }
 
       this.$pickedItem = null;
-      this.pickedItemIndex = null;
+      this.originalPickedItemIndex = null;
+    },
+
+    /**
+     * Updates the live region with a message for screen reader users
+     */
+    _updateLiveRegion: function (message) {
+      if (this.settings.statusContainer) {
+        $(this.settings.statusContainer).text(message);
+      }
+    },
+
+    /**
+     * Returns the current index of the picked item
+     */
+    _getPickedItemIndex: function () {
+      return this.$pickedItem.index();
     },
 
     /**
