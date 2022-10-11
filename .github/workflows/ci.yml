@@ -3,36 +3,22 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - develop
       - v3
   pull_request:
+permissions:
+  contents: read
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 jobs:
-  ecs:
-    name: ECS
-    uses: craftcms/.github/.github/workflows/ecs.yml@v2
+  ci:
+    name: ci
+    uses: craftcms/.github/.github/workflows/ci.yml@v3
     with:
-      php_version: '7.2'
-  prettier:
-    name: Prettier
-    uses: craftcms/.github/.github/workflows/prettier.yml@v2
-  codecept:
-    name: Codeception
-    needs: [ecs, prettier]
-    uses: craftcms/.github/.github/workflows/codecept.yml@v2
-    with:
-      php_versions: '["7.2", "7.3", "7.4", "8.0", "8.1"]'
-  notify-slack:
-    name: Notify Slack
-    needs: [ecs, prettier, codecept]
-    if: ${{ always() }}
-    uses: craftcms/.github/.github/workflows/notify-slack.yml@v2
-    with:
-      success: ${{ needs.ecs.result == 'success' && needs.prettier.result == 'success' && needs.codecept.result == 'success' }}
-      failure: ${{ needs.ecs.result == 'failure' || needs.prettier.result == 'failure' || needs.codecept.result == 'failure' }}
-      failure_text_prefix: <!subteam^SGFL9NKNZ>
+      craft_version: '3'
+      jobs: '["ecs", "prettier", "tests"]'
+      notify_slack: true
+      slack_subteam: <!subteam^SGFL9NKNZ>
     secrets:
       token: ${{ secrets.GITHUB_TOKEN }}
       slack_webhook_url: ${{ secrets.SLACK_CRAFT_WEBHOOK_URL }}

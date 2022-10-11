@@ -11,14 +11,9 @@ use craft\web\AssetBundle;
 
 /**
  * Focus visible asset bundle.
+ *
+ * @deprecated in 3.7.56.
  */
 class FocusVisibleAsset extends AssetBundle
 {
-    /** @inheritdoc */
-    public $sourcePath = __DIR__ . '/dist';
-
-    /** @inheritdoc */
-    public $js = [
-        'focus-visible.js',
-    ];
 }
