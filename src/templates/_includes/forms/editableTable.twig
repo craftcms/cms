@@ -57,7 +57,7 @@
     {{ uielements.keyboardReorderingInstructions() }}
 {%  endif %}
 
-<span role="status" data-status-message></span>
+<span class="visually-hidden" role="status" data-status-message></span>
 {% tag 'table' with tableAttributes %}
     {% for col in cols %}
         <col>
