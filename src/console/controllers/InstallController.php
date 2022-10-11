@@ -107,6 +107,8 @@ class InstallController extends Controller
             return ExitCode::OK;
         }
 
+        $this->run('setup/keys');
+
         $configService = Craft::$app->getConfig();
         $generalConfig = $configService->getGeneral();
 
