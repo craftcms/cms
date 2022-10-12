@@ -548,7 +548,7 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
      */
     showErrorsSummary: function (errors) {
       var allErrors = [];
-      Object.values(errors).forEach(fieldErrors => {
+      Object.values(errors).forEach((fieldErrors) => {
         for (var i = 0; i < fieldErrors.length; i++) {
           allErrors.push(fieldErrors[i]);
         }

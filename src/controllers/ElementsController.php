@@ -814,7 +814,6 @@ JS, [
             if (!empty($errorsList)) {
                 $heading = Craft::t('app', 'Found {num, number} {num, plural, =1{error} other{errors}}:', [
                     'num' => count($errorsList),
-                    'type' => $element::lowerDisplayName(),
                 ]);
 
                 $html = Html::beginTag('div', [

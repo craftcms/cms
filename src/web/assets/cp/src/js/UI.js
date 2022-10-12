@@ -1156,7 +1156,7 @@ Craft.ui = {
     $field.children('ul.errors').remove();
   },
 
-  clearErrorsSummary: function($body) {
+  clearErrorsSummary: function ($body) {
     $body.children('.errors-summary').remove();
   },
 
@@ -1168,8 +1168,20 @@ Craft.ui = {
         $('<li/>').html(errors[i]).appendTo($list);
       }
 
-      var $errorsSummary = $('<div class="errors-summary"/>');
-      $errorsSummary.append($list);
+      var $errorsSummary = $('<div class="errors-summary"/>')
+        .append(
+          '<h2>' +
+            Craft.t(
+              'app',
+              'Found {num, number} {num, plural, =1{error} other{errors}}:',
+              {
+                num: errors.length,
+              }
+            ) +
+            '</h2>'
+        )
+        .append($list);
+
       $body.prepend($errorsSummary);
     }
   },
