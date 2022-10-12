@@ -1266,6 +1266,7 @@ class Gql extends Component
                 '::' . Craft::$app->getSites()->getCurrentSite()->id .
                 '::' . $schema->uid .
                 '::' . md5($query) .
+                '::' . Craft::$app->getInfo()->configVersion .
                 '::' . serialize($rootValue) .
                 '::' . serialize($variables) .
                 ($operationName ? "::$operationName" : '');
