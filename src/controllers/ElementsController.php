@@ -818,7 +818,7 @@ JS, [
                 ]);
 
                 $html = Html::beginTag('div', [
-                        'class' => ['errorsSummary'],
+                        'class' => ['errors-summary'],
                     ]) .
                     Html::beginTag('h2') .
                     $heading .
