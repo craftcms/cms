@@ -1156,6 +1156,24 @@ Craft.ui = {
     $field.children('ul.errors').remove();
   },
 
+  clearErrorsSummary: function($body) {
+    $body.children('.errors-summary').remove();
+  },
+
+  showErrorsSummary: function ($body, errors) {
+    if (errors) {
+      var $list = $('<ul class="errors"/>');
+
+      for (var i = 0; i < errors.length; i++) {
+        $('<li/>').html(errors[i]).appendTo($list);
+      }
+
+      var $errorsSummary = $('<div class="errors-summary"/>');
+      $errorsSummary.append($list);
+      $body.prepend($errorsSummary);
+    }
+  },
+
   getAutofocusValue: function (autofocus) {
     return autofocus && !Garnish.isMobileBrowser(true) ? 'autofocus' : null;
   },

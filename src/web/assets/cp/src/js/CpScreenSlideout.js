@@ -517,6 +517,7 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
       Craft.cp.displayError(data.message);
       if (data.errors) {
         this.showErrors(data.errors);
+        this.showErrorsSummary(data.errors);
       }
     },
 
@@ -539,6 +540,23 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
       this.fieldsWithErrors.forEach(($field) => {
         Craft.ui.clearErrorsFromField($field);
       });
+      Craft.ui.clearErrorsSummary(this.$body);
+    },
+
+    /**
+     * @param {string[]} errors
+     */
+    showErrorsSummary: function (errors) {
+      var allErrors = [];
+      Object.values(errors).forEach(fieldErrors => {
+        for (var i = 0; i < fieldErrors.length; i++) {
+          allErrors.push(fieldErrors[i]);
+        }
+      });
+
+      if (allErrors.length > 0) {
+        Craft.ui.showErrorsSummary(this.$body, allErrors);
+      }
     },
 
     isDirty: function () {
