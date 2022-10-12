@@ -922,7 +922,7 @@ JS, [
         $elementsService = Craft::$app->getElements();
 
         try {
-            $success = $elementsService->saveElement($element);
+            $success = $elementsService->saveElement($element, crossSiteValidate: Craft::$app->getIsMultiSite());
         } catch (UnsupportedSiteException $e) {
             $element->addError('siteId', $e->getMessage());
             $success = false;
@@ -1302,7 +1302,7 @@ JS, [
             $element->setScenario(Element::SCENARIO_LIVE);
         }
 
-        if (!Craft::$app->getElements()->saveElement($element)) {
+        if (!Craft::$app->getElements()->saveElement($element, crossSiteValidate: Craft::$app->getIsMultiSite())) {
             return $this->_asAppyDraftFailure($element);
         }
 
