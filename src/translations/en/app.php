@@ -658,6 +658,7 @@ return [
     'Forgot your password?' => 'Forgot your password?',
     'Format' => 'Format',
     'Formatting Locale' => 'Formatting Locale',
+    'Found {num, number} {num, plural, =1{error} other{errors}}:' => 'Found {num, number} {num, plural, =1{error} other{errors}}:',
     'Free' => 'Free',
     'From {date}' => 'From {date}',
     'From' => 'From',

@@ -82,6 +82,8 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
 
         $sidebar = $behavior->sidebar ? $view->namespaceInputs($behavior->sidebar, $namespace) : null;
 
+        $errorsSummary = $behavior->errorsSummary ? $view->namespaceInputs($behavior->errorsSummary, $namespace) : null;
+
         $response->data = [
             'editUrl' => $behavior->editUrl,
             'namespace' => $namespace,
@@ -92,6 +94,7 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
             'action' => $behavior->action,
             'content' => $content,
             'sidebar' => $sidebar,
+            'errorsSummary' => $errorsSummary,
             'headHtml' => $view->getHeadHtml(),
             'bodyHtml' => $view->getBodyHtml(),
             'deltaNames' => $view->getDeltaNames(),
@@ -115,6 +118,7 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
         $notice = is_callable($behavior->notice) ? call_user_func($behavior->notice) : $behavior->notice;
         $content = is_callable($behavior->content) ? call_user_func($behavior->content) : ($behavior->content ?? '');
         $sidebar = is_callable($behavior->sidebar) ? call_user_func($behavior->sidebar) : $behavior->sidebar;
+        $errorsSummary = is_callable($behavior->errorsSummary) ? call_user_func($behavior->errorsSummary) : $behavior->errorsSummary;
 
         if ($behavior->action) {
             $content .= Html::actionInput($behavior->action, [
@@ -154,6 +158,7 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
                 'contentNotice' => $notice,
                 'content' => $content,
                 'details' => $sidebar,
+                'errorsSummary' => $errorsSummary,
             ],
             'templateMode' => View::TEMPLATE_MODE_CP,
         ]);

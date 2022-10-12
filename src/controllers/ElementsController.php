@@ -402,6 +402,7 @@ class ElementsController extends Controller
                 $isDraft
             ))
             ->notice($element->isProvisionalDraft ? fn() => $this->_draftNotice() : null)
+            ->errorsSummary(fn() => $this->_errorsSummary($element))
             ->prepareScreen(
                 fn(Response $response, string $containerId) => $this->_prepareEditor(
                     $element,
@@ -792,6 +793,43 @@ JS, [
             ]);
             $this->trigger(self::EVENT_DEFINE_EDITOR_CONTENT, $event);
             $html = $event->html;
+        }
+
+        return $html;
+    }
+
+    private function _errorsSummary(
+        ElementInterface $element,
+    ): string {
+        $html = '';
+
+        if ($element->hasErrors()) {
+            $errorsList = [];
+            foreach ($element->getErrors() as $errors) {
+                foreach ($errors as $error) {
+                    $errorsList[] = Html::tag('li', Craft::t('app', $error));
+                }
+            }
+
+            if (!empty($errorsList)) {
+                $heading = Craft::t('app', 'Found {num, number} {num, plural, =1{error} other{errors}}:', [
+                    'num' => count($errorsList),
+                    'type' => $element::lowerDisplayName(),
+                ]);
+
+                $html = Html::beginTag('div', [
+                        'class' => ['errorsSummary'],
+                    ]) .
+                    Html::beginTag('h2') .
+                    $heading .
+                    Html::endTag('h2') .
+                    Html::beginTag('ul', [
+                        'class' => ['errors'],
+                    ]) .
+                    implode('', $errorsList) .
+                    Html::endTag('ul') .
+                    Html::endTag('div');
+            }
         }
 
         return $html;

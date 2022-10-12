@@ -74,6 +74,7 @@
 {% set footer = (footer ?? block('footer') ?? '')|trim %}
 {% set crumbs = crumbs ?? null %}
 {% set tabs = (tabs ?? [])|length > 1 ? tabs : null %}
+{% set errorsSummary = errorsSummary ?? null %}
 
 {% set mainContentClasses = [
     sidebar ? 'has-sidebar',
@@ -247,6 +248,9 @@
                                 <h2 id="content-heading"></h2>
                             {% endif %}
                             {% block main %}
+                                {% if errorsSummary is not empty %}
+                                    {{ errorsSummary is defined ? errorsSummary|raw }}
+                                {% endif %}
                                 <div id="content" class="content-pane">
                                     {% if contentNotice or tabs %}
                                         <header id="content-header" class="pane-header">
