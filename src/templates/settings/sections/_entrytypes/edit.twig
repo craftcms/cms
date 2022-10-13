@@ -11,6 +11,7 @@
 
 {% import "_includes/forms" as forms %}
 
+{% import "twigfield/twigfield" as twigfield %}
 
 {% block content %}
     {{ actionInput('sections/save-entry-type') }}
@@ -99,7 +100,7 @@
     {% endif %}
 
     <div id="titleFormat-container"{% if entryType.hasTitleField %} class="hidden"{% endif %}>
-        {{ forms.textField({
+        {{ twigfield.textField({
             label: "Title Format"|t('app'),
             instructions: "What the auto-generated entry titles should look like. You can include tags that output entry properties, such as {ex}."|t('app', { ex: '<code>{myCustomField}</code>' }),
             id: 'titleFormat',
@@ -108,6 +109,10 @@
             value: entryType.titleFormat,
             errors: entryType.getErrors('titleFormat'),
             required: true
+        }, "Twigfield", "monaco-editor-background-frame", {
+            'fontSize': 13,
+        }, {
+            'SectionShorthandFields': section.id,
         }) }}
     </div>
 
