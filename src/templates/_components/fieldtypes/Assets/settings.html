@@ -2,11 +2,14 @@
 
 {% import "_includes/forms" as forms %}
 
+{% import "twigfield/twigfield" as twigfield %}
+
 {% set fileKindOptions = field.getFileKindOptions() %}
 {% set isMatrix = 'craft\\fields\\Matrix' in craft.app.view.getNamespace() %}
 
 {% macro uploadLocationField(config) %}
     {% embed '_includes/forms/field' with config %}
+        {% import "twigfield/twigfield" as twigfield %}
         {% block input %}
             {% import '_includes/forms' as forms %}
             <div class="flex">
@@ -19,12 +22,17 @@
                     }) }}
                 </div>
                 <div class="flex-grow">
-                    {{ forms.text({
+                    {{ twigfield.text({
+                        id: config.id,
                         class: 'ltr',
                         name: "#{config.name}Subpath",
                         value: config.subpathValue,
                         placeholder: "path/to/subfolder"|t('app'),
                         describedBy: describedBy,
+                    }, "Twigfield", "monaco-editor-background-frame", {
+                        'fontSize': 13,
+                    }, {
+                        'SectionShorthandFields': 0,
                     }) }}
                 </div>
             </div>
@@ -57,6 +65,7 @@
         {{ block('sourcesField') }}
 
         {{ _self.uploadLocationField({
+            id: 'defaultUploadLocation',
             label: 'Default Asset Location'|t('app'),
             instructions: 'Where assets should be stored when they are uploaded directly to the field, or via a front-end form.'|t('app') ~' '~ uploadLocationNote,
             name: 'defaultUploadLocation',
@@ -69,6 +78,7 @@
 
     <div id="single-folder-settings"{% if not field.useSingleFolder %} class="hidden"{% endif %}>
         {{ _self.uploadLocationField({
+            id: 'singleUploadLocation',
             label: 'Asset Location'|t('app'),
             instructions: 'Where selected assets should be stored.'|t('app') ~' '~ uploadLocationNote,
             name: 'singleUploadLocation',

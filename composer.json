@@ -45,6 +45,7 @@
     "league/flysystem": "^1.1.4",
     "league/oauth2-client": "^2.6.0",
     "mikehaertl/php-shellcommand": "^1.6.3",
+    "nystudio107/craft-twigfield": "^1.0.13",
     "pixelandtonic/imagine": "~1.2.4.1",
     "seld/cli-prompt": "^1.0.4",
     "symfony/yaml": "^5.2.1",
