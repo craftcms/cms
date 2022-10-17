@@ -1501,7 +1501,7 @@ return [
     'Updating the plugin…' => 'Aggiornamento plug-in…',
     'Updating…' => 'Aggiornamento...',
     'Upgrade Craft CMS' => 'Aggiorna Craft CMS',
-    'Upgrade to Craft Pro' => 'Aggiornato a Craft Pro',
+    'Upgrade to Craft Pro' => 'Aggiorna a Craft Pro',
     'Upload a file' => 'Carica un file',
     'Upload a photo' => 'Carica una foto',
     'Upload failed for {filename}' => 'Upload non riuscito per {filename}',
