@@ -3249,14 +3249,13 @@ class Elements extends Component
         // Save it
         $siteElement->setScenario(Element::SCENARIO_ESSENTIALS);
 
-        // for Entries and Categories: validate element against "live" scenario across all sites,
-        // if element is to be set to live/pending/enabled
-        if ($crossSiteValidate && ($siteElement instanceof Entry || $siteElement instanceof Category)) {
+        // validate element against "live" scenario across all sites, if element is to be set to live/pending/enabled
+        if ($crossSiteValidate) {
             $siteElementStatus = $siteElement->getStatus();
             if (($siteElement instanceof Entry &&
                     ($siteElementStatus === Entry::STATUS_LIVE || $siteElementStatus === Entry::STATUS_PENDING)
                 ) ||
-                ($siteElement instanceof Category && $siteElementStatus === Category::STATUS_ENABLED)
+                $siteElementStatus === Element::STATUS_ENABLED
             ) {
                 $siteElement->setScenario(Element::SCENARIO_LIVE);
             }
