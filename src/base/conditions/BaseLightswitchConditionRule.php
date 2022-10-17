@@ -19,16 +19,6 @@ abstract class BaseLightswitchConditionRule extends BaseConditionRule
     public bool $value = true;
 
     /**
-     * Returns the input container attributes.
-     *
-     * @return array
-     */
-    protected function containerAttributes(): array
-    {
-        return [];
-    }
-
-    /**
      * @inheritdoc
      */
     public function getConfig(): array
