@@ -23,6 +23,7 @@ use craft\elements\conditions\ElementCondition;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
+use craft\elements\ElementCollection;
 use craft\elements\exporters\Expanded;
 use craft\elements\exporters\Raw;
 use craft\elements\User;
@@ -1864,14 +1865,14 @@ abstract class Element extends Component implements ElementInterface
     private ElementInterface|false|null $_nextSibling = null;
 
     /**
-     * @var Collection[]
+     * @var array<string,Collection>
      * @see getEagerLoadedElements()
      * @see setEagerLoadedElements()
      */
     private array $_eagerLoadedElements = [];
 
     /**
-     * @var array
+     * @var array<string,int>
      * @see getEagerLoadedElementCount()
      * @see setEagerLoadedElementCount
      */
@@ -4078,7 +4079,7 @@ abstract class Element extends Component implements ElementInterface
                 $this->trigger(self::EVENT_SET_EAGER_LOADED_ELEMENTS, $event);
                 if (!$event->handled) {
                     // No takers. Just store it in the internal array then.
-                    $this->_eagerLoadedElements[$handle] = Collection::make($elements);
+                    $this->_eagerLoadedElements[$handle] = ElementCollection::make($elements);
                 }
         }
     }
