@@ -139,6 +139,8 @@ abstract class BaseDateRangeConditionRule extends BaseConditionRule
                 DateRange::TYPE_RANGE,
             ])) {
                 $index = 1;
+            } elseif (in_array($value, [self::OPERATOR_NOT_EMPTY, self::OPERATOR_EMPTY])) {
+                $index = 2;
             } else {
                 $index = 0;
             }
@@ -273,6 +275,8 @@ JS,
             DateRange::TYPE_BEFORE => Craft::t('app', 'Before…'),
             DateRange::TYPE_AFTER => Craft::t('app', 'After…'),
             DateRange::TYPE_RANGE => Craft::t('app', 'Range…'),
+            self::OPERATOR_NOT_EMPTY => Craft::t('app', 'has a value'),
+            self::OPERATOR_EMPTY => Craft::t('app', 'is empty'),
         ];
     }
 
@@ -335,6 +339,12 @@ JS,
                 return ($this->rangeType === DateRange::TYPE_AFTER ? '>=' : '<') . ' ' .
                     DateTimeHelper::toIso8601(DateTimeHelper::now()->add($dateInterval));
 
+            case self::OPERATOR_EMPTY:
+                return ':empty:';
+
+            case self::OPERATOR_NOT_EMPTY:
+                return 'not :empty:';
+
             default:
                 [$startDate, $endDate] = DateRange::dateRangeByType($this->rangeType);
                 $startDate = DateTimeHelper::toIso8601($startDate);
@@ -372,6 +382,12 @@ JS,
                 }
 
                 return $value && $value < $date;
+
+            case self::OPERATOR_EMPTY:
+                return !$value;
+
+            case self::OPERATOR_NOT_EMPTY:
+                return (bool)$value;
 
             default:
                 [$startDate, $endDate] = DateRange::dateRangeByType($this->rangeType);

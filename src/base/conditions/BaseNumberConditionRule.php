@@ -54,6 +54,8 @@ abstract class BaseNumberConditionRule extends BaseTextConditionRule
             self::OPERATOR_GT,
             self::OPERATOR_GTE,
             self::OPERATOR_BETWEEN,
+            self::OPERATOR_NOT_EMPTY,
+            self::OPERATOR_EMPTY,
         ];
     }
 
