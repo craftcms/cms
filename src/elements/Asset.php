@@ -946,6 +946,10 @@ class Asset extends Element
             return $user->can("viewPeerAssets:$volume->uid");
         }
 
+        if ($volume->getFs() instanceof Temp) {
+            return true;
+        }
+
         return $user->can("viewAssets:$volume->uid");
     }
 

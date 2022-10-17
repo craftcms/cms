@@ -183,7 +183,7 @@ EOD;
     {
         $didSomething = false;
 
-        if (Craft::$app->id === 'CraftCMS' && !App::env('CRAFT_APP_ID')) {
+        if ((!Craft::$app->id || Craft::$app->id === 'CraftCMS') && !App::env('CRAFT_APP_ID')) {
             $this->run('app-id');
             $didSomething = true;
         }

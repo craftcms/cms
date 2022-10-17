@@ -1,5 +1,16 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+### Changed
+- The `setup/keys` command will now set the application ID if `Craft::$app->id` is empty. ([#12103](https://github.com/craftcms/cms/pull/12103))
+
+### Fixed
+- Fixed an error that could occur when running tests. ([#12088](https://github.com/craftcms/cms/issues/12088), [#12089](https://github.com/craftcms/cms/issues/12089))
+- Fixed a bug where the `db/restore` command would output a warning about a missing `info` row, even if one existed in the imported database. ([#12101](https://github.com/craftcms/cms/issues/12101))
+- Fixed a bug where the “Your session has ended” modal could be shown on the control panel’s login page. ([#12121](https://github.com/craftcms/cms/issues/12121))
+- Fixed a permission error that could occur when uploading a file to an Assets field.
+
 ## 4.2.7 - 2022-10-11
 
 ### Added
