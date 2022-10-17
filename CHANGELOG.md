@@ -3,7 +3,7 @@
 ## Unreleased
 
 ### Fixed
-- Fixed an error that could occur when running tests. ([#12089](https://github.com/craftcms/cms/issues/12089))
+- Fixed an error that could occur when running tests. ([#12088](https://github.com/craftcms/cms/issues/12088), [#12089](https://github.com/craftcms/cms/issues/12089))
 
 ## 4.2.7 - 2022-10-11
 
