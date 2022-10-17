@@ -93,6 +93,7 @@
 - Notifications are now shown after executing folder actions on the Assets index page. ([#11906/](https://github.com/craftcms/cms/pull/11906))
 - Date range condition rules now support “Today”, “This week”, “This month”, “This year”, “Past 7 days”, “Past 30 days”, “Past 30 days”, “Past year”, “Before…”, and “After…” relative range types, in addition to specifying a custom date range. ([#11888](https://github.com/craftcms/cms/pull/11888))
 - Number condition rules now support an “is between…” operator. ([#11950](https://github.com/craftcms/cms/pull/11950))
+- All text, number, and date range condition rules now support “has a value” and “is empty” operators. ([#11070](https://github.com/craftcms/cms/discussions/11070))
 - If Live Preview is triggered while a draft is saving, it will now wait until the save completes before opening. ([#11858](https://github.com/craftcms/cms/issues/11858), [#11895](https://github.com/craftcms/cms/pull/11895))
 - Addresses now support change tracking.
 - It’s now possible to restore assets that were deleted programmatically with `craft\elements\Asset::$keepFile` set to `true`. ([#11761](https://github.com/craftcms/cms/issues/11761))

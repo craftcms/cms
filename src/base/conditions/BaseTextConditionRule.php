@@ -48,6 +48,8 @@ abstract class BaseTextConditionRule extends BaseConditionRule
             self::OPERATOR_BEGINS_WITH,
             self::OPERATOR_ENDS_WITH,
             self::OPERATOR_CONTAINS,
+            self::OPERATOR_NOT_EMPTY,
+            self::OPERATOR_EMPTY,
         ];
     }
 
@@ -106,6 +108,13 @@ abstract class BaseTextConditionRule extends BaseConditionRule
      */
     protected function paramValue(): ?string
     {
+        switch ($this->operator) {
+            case self::OPERATOR_EMPTY:
+                return ':empty:';
+            case self::OPERATOR_NOT_EMPTY:
+                return 'not :empty:';
+        }
+
         if ($this->value === '') {
             return null;
         }
@@ -128,6 +137,13 @@ abstract class BaseTextConditionRule extends BaseConditionRule
      */
     protected function matchValue(mixed $value): bool
     {
+        switch ($this->operator) {
+            case self::OPERATOR_EMPTY:
+                return !$value;
+            case self::OPERATOR_NOT_EMPTY:
+                return (bool)$value;
+        }
+
         if ($this->value === '') {
             return true;
         }
