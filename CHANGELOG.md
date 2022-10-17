@@ -4,6 +4,7 @@
 
 ### Fixed
 - Fixed an error that could occur when running tests. ([#12088](https://github.com/craftcms/cms/issues/12088))
+- Fixed a bug where the “Your session has ended” modal could be shown on the control panel’s login page. ([#12121](https://github.com/craftcms/cms/issues/12121))
 
 ## 3.7.56 - 2022-10-11
 
