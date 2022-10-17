@@ -1,5 +1,13 @@
 # Release Notes for Craft CMS 4
 
+## 4.2.7 - 2022-10-11
+
+### Added
+- Added the `setup/keys` command, which ensure Craft is configured with an application ID and security key.
+
+### Changed
+- The `install/craft` command now runs `setup/keys` before doing anything else.
+
 ## 4.2.6 - 2022-10-11
 
 ### Added
