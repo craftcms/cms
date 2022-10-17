@@ -70,7 +70,7 @@ class Application extends \yii\console\Application
      */
     public function runAction($route, $params = []): int|BaseResponse|null
     {
-        if (!$this->getIsInstalled() && $this->_requireInfoTable($route, $params)) {
+        if (!$this->getIsInstalled(true) && $this->_requireInfoTable($route, $params)) {
             // Is the connection valid at least?
             if (!$this->getIsDbConnectionValid()) {
                 Console::outputWarning('Craft can’t connect to the database. Check your connection settings.');
