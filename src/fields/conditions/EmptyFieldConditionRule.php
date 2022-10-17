@@ -35,10 +35,10 @@ class EmptyFieldConditionRule extends BaseConditionRule implements FieldConditio
      */
     protected function operators(): array
     {
-        return array_filter([
+        return [
             self::OPERATOR_NOT_EMPTY,
             self::OPERATOR_EMPTY,
-        ]);
+        ];
     }
 
     /**

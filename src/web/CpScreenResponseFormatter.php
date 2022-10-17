@@ -63,7 +63,7 @@ class CpScreenResponseFormatter extends Component implements ResponseFormatterIn
 
         $notice = $behavior->notice ? $view->namespaceInputs($behavior->notice, $namespace) : null;
 
-        $tabs = count($behavior->tabs) > 1 ? $view->namespaceInputs(fn() => $view->renderTemplate('_includes/tabs', [
+        $tabs = count($behavior->tabs) > 1 ? $view->namespaceInputs(fn() => $view->renderTemplate('_includes/tabs.twig', [
             'tabs' => $behavior->tabs,
         ], View::TEMPLATE_MODE_CP), $namespace) : null;
 

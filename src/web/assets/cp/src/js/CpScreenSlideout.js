@@ -168,7 +168,7 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
     },
 
     /**
-     * @param {object} [data={}]
+     * @param {Object} [data={}]
      * @param {boolean} [refreshInitialData=true]
      * @returns {Promise}
      */
@@ -270,8 +270,8 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
     },
 
     /**
-     * @param {object} data
-     * @return {Promise}
+     * @param {Object} data
+     * @returns {Promise}
      */
     update: function (data) {
       return new Promise((resolve) => {

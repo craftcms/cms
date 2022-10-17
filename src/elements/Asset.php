@@ -22,6 +22,7 @@ use craft\elements\actions\EditImage;
 use craft\elements\actions\PreviewAsset;
 use craft\elements\actions\RenameFile;
 use craft\elements\actions\ReplaceFile;
+use craft\elements\actions\Restore;
 use craft\elements\conditions\assets\AssetCondition;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\AssetQuery;
@@ -429,6 +430,12 @@ class Asset extends Element
             if ($isTemp || $userSession->checkPermission("editImages:$volume->uid")) {
                 $actions[] = EditImage::class;
             }
+
+            // Restore
+            $actions[] = [
+                'type' => Restore::class,
+                'restorableElementsOnly' => true,
+            ];
         }
 
         return $actions;
@@ -2518,6 +2525,10 @@ JS;
 
         if ($imageEditable) {
             $attributes['data']['editable-image'] = true;
+        }
+
+        if ($this->dateDeleted && $this->keptFile) {
+            $attributes['data']['restorable'] = true;
         }
 
         return $attributes;
