@@ -1248,10 +1248,20 @@ class Entry extends Element
         $userSession = Craft::$app->getUser();
 
         // Cover the basics
-        if (
-            !$userSession->checkPermission("editEntries:$section->uid") ||
-            ($this->enabled && !$userSession->checkPermission("publishEntries:$section->uid"))
-        ) {
+        if (!$userSession->checkPermission("editEntries:$section->uid")) {
+            return false;
+        }
+
+        $isDraft = $this->getIsDraft() && !$this->getIsCanonical();
+        $userId = $userSession->getId();
+
+        if ($isDraft) {
+            /** @var DraftBehavior $behavior */
+            $behavior = $this->getBehavior('draft');
+            if ($behavior->creatorId != $userId && !$userSession->checkPermission("editPeerEntryDrafts:$section->uid")) {
+                return false;
+            }
+        } elseif ($this->enabled && !$userSession->checkPermission("publishEntries:$section->uid")) {
             return false;
         }
 
@@ -1260,20 +1270,20 @@ class Entry extends Element
         }
 
         // Is this a new entry?
-        if (!$this->id) {
+        if (!$isDraft && !$this->id) {
             return $userSession->checkPermission("createEntries:$section->uid");
         }
 
-        // Is this their own entry?
-        if (!$this->authorId || $this->authorId == $userSession->getId()) {
-            return true;
+        // Is this another author's entry?
+        if ($this->authorId && $this->authorId != $userId && !$userSession->checkPermission("editPeerEntries:$section->uid")) {
+            return false;
         }
 
-        if (!$this->enabled) {
-            return $userSession->checkPermission("editPeerEntries:$section->uid");
+        if (!$isDraft && $this->enabled && !$userSession->checkPermission("publishPeerEntries:$section->uid")) {
+            return false;
         }
 
-        return $userSession->checkPermission("publishPeerEntries:$section->uid");
+        return true;
     }
 
     /**

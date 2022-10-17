@@ -29,7 +29,6 @@
     "element-resize-detector": "^1.2.4",
     "event-stream": "3.3.5",
     "fabric": "^1.7.19",
-    "focus-visible": "^5.2.0",
     "graphiql": "^1.7.2",
     "graphiql-explorer": "^0.9.0",
     "graphql": "^15.8.0",
