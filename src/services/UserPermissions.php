@@ -18,6 +18,8 @@ use craft\elements\User;
 use craft\errors\WrongEditionException;
 use craft\events\ConfigEvent;
 use craft\events\RegisterUserPermissionsEvent;
+use craft\events\UserGroupPermissionsEvent;
+use craft\events\UserPermissionsEvent;
 use craft\helpers\Db;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\models\Section;
@@ -41,6 +43,16 @@ class UserPermissions extends Component
      * @event RegisterUserPermissionsEvent The event that is triggered when registering user permissions.
      */
     public const EVENT_REGISTER_PERMISSIONS = 'registerPermissions';
+
+    /**
+     * @event UserPermissionsEvent The event triggered before saving user permissions.
+     */
+    public const EVENT_AFTER_SAVE_USER_PERMISSIONS = 'afterSaveUserPermissions';
+
+    /**
+     * @event UserGroupPermissionsEvent The event triggered before saving group permissions.
+     */
+    public const EVENT_AFTER_SAVE_GROUP_PERMISSIONS = 'afterSaveGroupPermissions';
 
     /**
      * @var string[][]
@@ -203,6 +215,13 @@ class UserPermissions extends Component
         $path = ProjectConfig::PATH_USER_GROUPS . '.' . $group->uid . '.permissions';
         Craft::$app->getProjectConfig()->set($path, $permissions, "Update permissions for user group “{$group->handle}”");
 
+        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_GROUP_PERMISSIONS)) {
+            $this->trigger(self::EVENT_AFTER_SAVE_GROUP_PERMISSIONS, new UserGroupPermissionsEvent([
+                'groupId' => $groupId,
+                'permissions' => $permissions,
+            ]));
+        }
+
         return true;
     }
 
@@ -283,6 +302,14 @@ class UserPermissions extends Component
 
         // Cache the new permissions
         $this->_permissionsByUserId[$userId] = array_unique(array_merge($groupPermissions, $permissions));
+
+        // Trigger the after save event
+        if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_USER_PERMISSIONS)) {
+            $this->trigger(self::EVENT_AFTER_SAVE_USER_PERMISSIONS, new UserPermissionsEvent([
+                'userId' => $userId,
+                'permissions' => $permissions,
+            ]));
+        }
 
         return true;
     }
