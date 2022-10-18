@@ -10,6 +10,9 @@ namespace craft\helpers;
 use Craft;
 use craft\errors\ImageException;
 use craft\image\Svg;
+use Imagick;
+use Throwable;
+use TypeError;
 use yii\base\InvalidArgumentException;
 
 /**
@@ -102,8 +105,8 @@ class Image
         $imageRatio = $sourceWidth / $sourceHeight;
 
         if ($mode === 'fit' || $imageRatio === $transformRatio) {
-            $targetWidth = min($sourceWidth, $transformWidth, (int)round($sourceWidth / $factor));
-            $targetHeight = min($sourceHeight, $transformHeight, (int)round($sourceHeight / $factor));
+            $targetWidth = min($sourceWidth, $width, (int)round($sourceWidth / $factor));
+            $targetHeight = min($sourceHeight, $height, (int)round($sourceHeight / $factor));
             return [$targetWidth, $targetHeight];
         }
 
@@ -252,7 +255,7 @@ class Image
 
             $image = Craft::$app->getImages()->loadImage($filePath);
             return [$image->getWidth(), $image->getHeight()];
-        } catch (\Throwable $exception) {
+        } catch (Throwable $exception) {
             return [0, 0];
         }
     }
@@ -262,12 +265,12 @@ class Image
      *
      * @param resource $stream
      * @return array|false
-     * @throws \TypeError
+     * @throws TypeError
      */
     public static function imageSizeByStream($stream)
     {
         if (!is_resource($stream)) {
-            throw new \TypeError('Argument passed should be a resource.');
+            throw new TypeError('Argument passed should be a resource.');
         }
 
         $dimensions = [];
@@ -395,9 +398,9 @@ class Image
      * Clean EXIF data from an image loaded inside an Imagick instance, taking
      * care not to wipe the ICC profile.
      *
-     * @param \Imagick $imagick
+     * @param Imagick $imagick
      */
-    public static function cleanExifDataFromImagickImage(\Imagick $imagick)
+    public static function cleanExifDataFromImagickImage(Imagick $imagick)
     {
         $config = Craft::$app->getConfig()->getGeneral();
 
