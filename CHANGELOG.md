@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.7.57 - 2022-10-18
 
 ### Fixed
 - Fixed an error that could occur when running tests. ([#12088](https://github.com/craftcms/cms/issues/12088))
