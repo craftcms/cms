@@ -103,7 +103,7 @@
 - “Generating pending image transforms” jobs no longer attempt to process transforms that had previously failed. ([#11970](https://github.com/craftcms/cms/issues/11970))
 - Number condition rules now support matching between two values.
 - `users/session-info` responses now include a `csrfTokenName` key. ([#11706](https://github.com/craftcms/cms/pull/11706), [#11767](https://github.com/craftcms/cms/pull/11767))
-- The `elements/save-draft` action now supports being called from the front end.
+- The `elements/save-draft` action now supports being called from the front end. ([#12131](https://github.com/craftcms/cms/issues/12131))
 - Twig templates now have `today`, `tomorrow`, and `yesterday` global variables available to them.
 - Element query date params now support passing `today`, `tomorrow`, and `yesterday`. ([#10485](https://github.com/craftcms/cms/issues/10485))
 - Element queries’ `relatedTo` params now only check for relations in the same site as `siteId`, if set. ([#12000](https://github.com/craftcms/cms/issues/12000), [#12072](https://github.com/craftcms/cms/pull/12072))
