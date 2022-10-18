@@ -105,8 +105,8 @@ class Image
         $imageRatio = $sourceWidth / $sourceHeight;
 
         if ($mode === 'fit' || $imageRatio === $transformRatio) {
-            $targetWidth = min($sourceWidth, $transformWidth, (int)round($sourceWidth / $factor));
-            $targetHeight = min($sourceHeight, $transformHeight, (int)round($sourceHeight / $factor));
+            $targetWidth = min($sourceWidth, $width, (int)round($sourceWidth / $factor));
+            $targetHeight = min($sourceHeight, $height, (int)round($sourceHeight / $factor));
             return [$targetWidth, $targetHeight];
         }
 
