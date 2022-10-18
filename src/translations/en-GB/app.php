@@ -435,6 +435,7 @@ return [
     'Current User Condition' => 'Current User Condition',
     'Current' => 'Current',
     'Currently SVG images do not support focal point.' => 'Currently SVG images do not support focal point.',
+    'Custom' => 'Custom',
     'Customize' => 'Customise',
     'Custom…' => 'Custom…',
     'Dashboard' => 'Dashboard',
