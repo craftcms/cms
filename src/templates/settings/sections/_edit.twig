@@ -151,19 +151,20 @@
                 class: ['single-uri', 'type-single', section.type != 'single' ? 'hidden']|filter
             },
             uriFormat: {
-                type: 'singleline',
+                type: 'twigfield',
                 heading: "Entry URI Format"|t('app'),
                 info: "What entry URIs should look like for the site. Leave blank if entries don’t have URLs."|t('app'),
                 placeholder: 'Leave blank if entries don’t have URLs'|t('app'),
                 code: true,
-                width: headlessMode ? 500,
+                width: headlessMode ? 500 : '40%',
                 class: ['type-channel', 'type-structure', section.type == 'single' ? ' hidden']|filter
             },
             template: not headlessMode ? {
                 type: 'template',
                 heading: "Template"|t('app'),
                 info: "Which template should be loaded when an entry’s URL is requested."|t('app'),
-                code: true
+                code: true,
+                width: '40%',
             },
             enabledByDefault: {
                 type: 'lightswitch',
@@ -177,6 +178,7 @@
         allowAdd: false,
         allowDelete: false,
         allowReorder: false,
+        section: section,
         errors: siteErrors|unique
     }) }}
 
