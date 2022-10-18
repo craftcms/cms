@@ -14,6 +14,7 @@
 - Fixed a bug where Money fields weren’t distinguishing between `0` and empty values. ([#12122](https://github.com/craftcms/cms/issues/12122), [#12132](https://github.com/craftcms/cms/pull/12132))
 - Fixed an error that could occur in the control panel. ([#12133](https://github.com/craftcms/cms/issues/12133))
 - Fixed a bug where assets uploaded from Assets fields weren’t retaining their original filename for all but the initial site. ([#12142](https://github.com/craftcms/cms/pull/12142))
+- Fixed a bug where non-admin users couldn’t always see the Temporary Uploads source when selecting assets from an Assets field. ([#12128](https://github.com/craftcms/cms/issues/12128))
 
 ## 4.2.7 - 2022-10-11
 
