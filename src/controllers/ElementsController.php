@@ -14,6 +14,8 @@ use craft\base\FieldLayoutComponent;
 use craft\behaviors\DraftBehavior;
 use craft\behaviors\RevisionBehavior;
 use craft\db\Table;
+use craft\elements\Category;
+use craft\elements\Entry;
 use craft\elements\User;
 use craft\errors\InvalidElementException;
 use craft\errors\InvalidTypeException;
@@ -954,11 +956,20 @@ JS, [
             throw new ForbiddenHttpException('User not authorized to duplicate this element.');
         }
 
+        // if original element is a provisional draft, get id of that element, so that we can discard it after duplication
+        $originalProvisionalDraftId = $element->isProvisionalDraft ? $element->id : false;
+        // Entries and Categories to be saved as unpublished drafts
+        $asUnpublishedDraft = $element instanceof Entry || $element instanceof Category;
+
         $element->draftId = null;
         $element->isProvisionalDraft = false;
 
         try {
-            $newElement = Craft::$app->getElements()->duplicateElement($element);
+            $newElement = Craft::$app->getElements()->duplicateElement(
+                $element,
+                asUnpublishedDraft: $asUnpublishedDraft,
+                originalProvisionalDraftId: $originalProvisionalDraftId,
+            );
         } catch (InvalidElementException $e) {
             return $this->_asFailure($e->element, Craft::t('app', 'Couldn’t duplicate {type}.', [
                 'type' => $element::lowerDisplayName(),

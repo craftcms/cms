@@ -1156,6 +1156,9 @@ class Elements extends Component
      * (This will only happen if the duplicated element is canonical.)
      * @param bool $trackDuplication whether to keep track of the duplication from [[Elements::$duplicatedElementIds]]
      * and [[Elements::$duplicatedElementSourceIds]]
+     * @param bool $asUnpublishedDraft whether the duplicate should be created as unpublished draft
+     * @param bool|int $originalProvisionalDraftId if the original element was a provisional draft (if yes,
+     * contains id of the element that is the draft)
      * @return T the duplicated element
      * @throws UnsupportedSiteException if the element is being duplicated into a site it doesn’t support
      * @throws InvalidElementException if saveElement() returns false for any of the sites
@@ -1166,6 +1169,8 @@ class Elements extends Component
         array $newAttributes = [],
         bool $placeInStructure = true,
         bool $trackDuplication = true,
+        bool $asUnpublishedDraft = false,
+        bool|int $originalProvisionalDraftId = false,
     ): ElementInterface {
         // Make sure the element exists
         if (!$element->id) {
@@ -1239,6 +1244,25 @@ class Elements extends Component
                 Craft::$app->getUser()->getId(),
                 $element->getCanonicalId(),
                 $draftBehavior->trackChanges
+            );
+        }
+
+        // If we are supposed to save it as new unpublished draft
+        if ($asUnpublishedDraft) {
+            /** @var ElementInterface|DraftBehavior $element */
+            /** @var DraftBehavior $draftBehavior */
+            // check if draftBehavior is attached - if not, attach it
+            $draftBehavior = $mainClone->getBehavior('draft') ?? $mainClone->attachBehavior('draft', new DraftBehavior());
+            $draftsService = Craft::$app->getDrafts();
+            $draftBehavior->draftName = Craft::t('app', 'First draft');
+            $draftBehavior->draftNotes = null;
+            $mainClone->setCanonicalId(null);
+            $mainClone->draftId = $draftsService->insertDraftRow(
+                $draftBehavior->draftName,
+                null,
+                Craft::$app->getUser()->getId(),
+                null,
+                $draftBehavior->trackChanges,
             );
         }
 
@@ -1375,6 +1399,10 @@ class Elements extends Component
 
         // Clean up our tracks
         $mainClone->duplicateOf = null;
+        // discard draft from the original element, if it was a provisional draft
+        if ($originalProvisionalDraftId) {
+            Craft::$app->elements->deleteElementById($originalProvisionalDraftId);
+        }
 
         return $mainClone;
     }
