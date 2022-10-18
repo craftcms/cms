@@ -4,7 +4,9 @@
 {% set id = id ?? "money#{random()}" -%}
 {% set decimals = decimals ?? 2 %}
 {% set name = name ?? null -%}
-{% set value = not (value ?? false) ? null : value -%}
+{% if value is not defined or value is defined and value is empty %}
+    {% set value = null %}
+{% endif %}
 {% set formattingLocale = formattingLocale ?? craft.app.formattingLocale.id -%}
 {% set decimalSeparator = decimalSeparator ?? craft.app.formattingLocale.getNumberSymbol(constant('craft\\i18n\\Locale::SYMBOL_DECIMAL_SEPARATOR')) -%}
 {% set groupSeparator = groupSeparator ?? craft.app.formattingLocale.getNumberSymbol(constant('craft\\i18n\\Locale::SYMBOL_GROUPING_SEPARATOR')) -%}
