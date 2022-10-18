@@ -435,6 +435,7 @@ return [
     'Current User Condition' => 'حالة المستخدم الحالية',
     'Current' => 'الإصدار الحالي',
     'Currently SVG images do not support focal point.' => 'لا تدعم صور SVG النقطة البؤرية في الوقت الحالي.',
+    'Custom' => 'Custom',
     'Customize' => 'تخصيص',
     'Custom…' => 'مخصص...',
     'Dashboard' => 'لوحة المعلومات',
