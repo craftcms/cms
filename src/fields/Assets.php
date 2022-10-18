@@ -17,6 +17,7 @@ use craft\errors\FsObjectNotFoundException;
 use craft\errors\InvalidFsException;
 use craft\errors\InvalidSubpathException;
 use craft\events\LocateUploadedFilesEvent;
+use craft\fs\Temp;
 use craft\gql\arguments\elements\Asset as AssetArguments;
 use craft\gql\interfaces\elements\Asset as AssetInterface;
 use craft\gql\resolvers\elements\Asset as AssetResolver;
@@ -693,7 +694,7 @@ class Assets extends BaseRelationField
                 // Only show it if they have permission to view it
                 $folder = $assetsService->getFolderByUid(explode(':', $source)[1]);
                 $volume = $folder?->getVolume();
-                return $volume && $userService->checkPermission("viewAssets:$volume->uid");
+                return $volume && ($userService->checkPermission("viewAssets:$volume->uid") || $volume->getFs() instanceof Temp);
             }, true, true, false);
         }
 

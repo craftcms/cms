@@ -19,6 +19,7 @@ import './Money.scss';
           .find('.clear-btn');
 
         this.$field.on('focus', $.proxy(this, 'onFocus'));
+        this.$field.on('keyup', $.proxy(this, 'onKeyUp'));
         this.$clearBtn.on('click', $.proxy(this, 'onClearBtnClick'));
 
         if (this.$field.val() != '') {
@@ -48,6 +49,12 @@ import './Money.scss';
         this.updateInputMask();
       },
 
+      onKeyUp: function () {
+        if (this.$field.val() !== '') {
+          this.$field.removeClass('money-placeholder');
+        }
+      },
+
       removeInputMask: function () {
         this.$field.inputmask('remove');
       },
@@ -61,6 +68,10 @@ import './Money.scss';
         };
 
         this.$field.inputmask($.extend(this.settings.maskOptions, opts));
+
+        if (this.$field.val() === '') {
+          this.$field.addClass('money-placeholder');
+        }
       },
     },
     {

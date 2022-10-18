@@ -247,8 +247,12 @@ class AssetsController extends Controller
             $asset->setVolumeId($folder->volumeId);
             $asset->uploaderId = Craft::$app->getUser()->getId();
             $asset->avoidFilenameConflicts = true;
-            $asset->setScenario(Asset::SCENARIO_CREATE);
 
+            if (isset($originalFilename)) {
+                $asset->title = Assets::filename2Title(pathinfo($originalFilename, PATHINFO_FILENAME));
+            }
+
+            $asset->setScenario(Asset::SCENARIO_CREATE);
             $result = $elementsService->saveElement($asset);
 
             // In case of error, let user know about it.
@@ -268,7 +272,6 @@ class AssetsController extends Controller
 
                 if (isset($originalFilename, $originalFolder)) {
                     // move it into the original target destination
-                    $asset->title = Assets::filename2Title(pathinfo($originalFilename, PATHINFO_FILENAME));
                     $asset->newFilename = $originalFilename;
                     $asset->newFolderId = $originalFolder->id;
                     $asset->setScenario(Asset::SCENARIO_MOVE);
