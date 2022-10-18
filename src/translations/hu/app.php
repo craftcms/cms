@@ -435,6 +435,7 @@ return [
     'Current User Condition' => 'Aktuális felhasználó állapota',
     'Current' => 'Jelenlegi',
     'Currently SVG images do not support focal point.' => 'Jelenleg az SVG-képek nem támogatják a fókuszpontot.',
+    'Custom' => 'Custom',
     'Customize' => 'Testreszabás',
     'Custom…' => 'Egyéni…',
     'Dashboard' => 'Irányítópult',
