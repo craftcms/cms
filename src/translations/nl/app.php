@@ -435,6 +435,7 @@ return [
     'Current User Condition' => 'Huidige gebruikersvoorwaarde',
     'Current' => 'Actueel',
     'Currently SVG images do not support focal point.' => 'Op dit moment ondersteunen SVG-afbeeldingen geen focuspunten.',
+    'Custom' => 'Custom',
     'Customize' => 'Aanpassen',
     'Custom…' => 'Aangepast...',
     'Dashboard' => 'Dashboard',
