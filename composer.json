@@ -48,7 +48,7 @@
     "mikehaertl/php-shellcommand": "^1.6.3",
     "moneyphp/money": "^4.0",
     "monolog/monolog": "^2.3",
-    "nystudio107/craft-twigfield": "^1.0.13",
+    "nystudio107/craft-twigfield": "^1.0.15",
     "pixelandtonic/imagine": "~1.2.4.1",
     "samdark/yii2-psr-log-target": "^1.1",
     "seld/cli-prompt": "^1.0.4",
