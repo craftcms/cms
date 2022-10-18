@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.2.8 - 2022-10-18
 
 ### Changed
 - The `setup/keys` command will now set the application ID if `Craft::$app->id` is empty. ([#12103](https://github.com/craftcms/cms/pull/12103))
@@ -15,6 +15,7 @@
 - Fixed an error that could occur in the control panel. ([#12133](https://github.com/craftcms/cms/issues/12133))
 - Fixed a bug where assets uploaded from Assets fields weren’t retaining their original filename for all but the initial site. ([#12142](https://github.com/craftcms/cms/pull/12142))
 - Fixed a bug where non-admin users couldn’t always see the Temporary Uploads source when selecting assets from an Assets field. ([#12128](https://github.com/craftcms/cms/issues/12128))
+- Fixed a bug where image transforms that used the `fit` mode but didn’t specify a width or height weren’t getting their missing dimension set on the asset. ([#12137](https://github.com/craftcms/cms/issues/12137))
 
 ## 4.2.7 - 2022-10-11
 
