@@ -435,6 +435,7 @@ return [
     'Current User Condition' => 'תנאי משתמש נוכחי',
     'Current' => 'נוכחית',
     'Currently SVG images do not support focal point.' => 'תמונות SVG אינן תומכות כעת בנקודת מוקד.',
+    'Custom' => 'Custom',
     'Customize' => 'התאם אישית',
     'Custom…' => 'מותאם אישית…',
     'Dashboard' => 'לוח בקרה',
