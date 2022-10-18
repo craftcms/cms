@@ -435,6 +435,7 @@ return [
     'Current User Condition' => 'Aktuel brugerbetingelse',
     'Current' => 'Nuværende',
     'Currently SVG images do not support focal point.' => 'SVG-billeder understøtter i øjeblikket ikke fokuspunkt.',
+    'Custom' => 'Custom',
     'Customize' => 'Tilpas',
     'Custom…' => 'Tilpas…',
     'Dashboard' => 'Kontrolpanel',
