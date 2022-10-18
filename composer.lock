@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ccc83d9dc5af54122c2dc0bfc1b7fc92",
+    "content-hash": "aacc6488d831fe9eee309d0089f8fe23",
     "packages": [
         {
             "name": "cebe/markdown",
@@ -2245,21 +2245,23 @@
         },
         {
             "name": "nystudio107/craft-twigfield",
-            "version": "1.0.15",
+            "version": "1.0.16",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nystudio107/craft-twigfield.git",
-                "reference": "b5f651177c6442bd943a24c3af2f1c01779732be"
+                "reference": "431572cc5eefd03da662739c9926e86c0809dee5"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nystudio107/craft-twigfield/zipball/b5f651177c6442bd943a24c3af2f1c01779732be",
-                "reference": "b5f651177c6442bd943a24c3af2f1c01779732be",
+                "url": "https://api.github.com/repos/nystudio107/craft-twigfield/zipball/431572cc5eefd03da662739c9926e86c0809dee5",
+                "reference": "431572cc5eefd03da662739c9926e86c0809dee5",
                 "shasum": ""
             },
             "require": {
-                "craftcms/cms": "^3.0.0 || ^4.0.0",
                 "phpdocumentor/reflection-docblock": "^5.0.0"
+            },
+            "require-dev": {
+                "craftcms/cms": "^3.0.0 || ^4.0.0"
             },
             "type": "yii2-extension",
             "extra": {
@@ -2302,7 +2304,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2022-10-18T00:51:06+00:00"
+            "time": "2022-10-18T22:01:44+00:00"
         },
         {
             "name": "paragonie/random_compat",
