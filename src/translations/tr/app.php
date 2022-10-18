@@ -435,6 +435,7 @@ return [
     'Current User Condition' => 'Mevcut Kullanıcı Koşulu',
     'Current' => 'Yürürlükteki',
     'Currently SVG images do not support focal point.' => 'SVG resimler şu anda odak noktasını desteklemiyor.',
+    'Custom' => 'Custom',
     'Customize' => 'Özelleştir',
     'Custom…' => 'Özel…',
     'Dashboard' => 'Konsol',
