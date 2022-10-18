@@ -435,6 +435,7 @@ return [
     'Current User Condition' => 'Текущее условие для пользователей',
     'Current' => 'Текущий',
     'Currently SVG images do not support focal point.' => 'В данный момент изображения SVG не поддерживают точку фокуса.',
+    'Custom' => 'Custom',
     'Customize' => 'Настроить',
     'Custom…' => 'Пользовательский…',
     'Dashboard' => 'Информационная панель',
