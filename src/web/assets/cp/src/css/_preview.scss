@@ -112,7 +112,29 @@
     }
 
     .lp-device-type {
-      margin: 0;
+      .btn {
+        &::before {
+          width: 27px;
+          height: 22px;
+          display: block;
+          content: '';
+          background-size: contain;
+          background-repeat: no-repeat;
+          background-position: center;
+          transition-duration: 0.3s;
+        }
+
+        // SVGs
+        &.lp-device-type-btn--phone::before {
+          background-image: url(../images/preview/icon-phone.svg);
+        }
+        &.lp-device-type-btn--tablet::before {
+          background-image: url(../images/preview/icon-tablet.svg);
+        }
+        &.lp-device-type-btn--desktop::before {
+          background-image: url(../images/preview/icon-desktop.svg);
+        }
+      }
     }
   }
 
@@ -140,46 +162,9 @@
     }
   }
 
-  .lp-device-type__radio-group {
-    display: flex;
-    white-space: nowrap;
-    align-items: center;
-  }
-
-  .lp-device-type__item:not(:last-child) .btn {
-    body.ltr & {
-      border-top-right-radius: 0;
-      border-bottom-right-radius: 0;
-      margin-right: 1px;
-    }
-
-    body.rtl & {
-      border-top-left-radius: 0;
-      border-bottom-left-radius: 0;
-      margin-left: 1px;
-    }
-  }
-
   .lp-preview-container__bumper-link {
     top: unset;
     bottom: 0;
-  }
-
-  .lp-device-type__item:not(:first-child) .btn {
-    body.ltr & {
-      border-top-left-radius: 0;
-      border-bottom-left-radius: 0;
-    }
-
-    body.rtl & {
-      border-top-right-radius: 0;
-      border-bottom-right-radius: 0;
-    }
-  }
-
-  body:not(.reduce-focus-visibility) & .lp-device-type__input:focus + label,
-  body.reduce-focus-visibility & .lp-device-type__input:focus-visible + label {
-    box-shadow: var(--focus-ring);
   }
 
   .lp-device-mask {

@@ -499,7 +499,7 @@ class Gql extends Component
                 $isIntrospectionQuery = StringHelper::containsAny($event->query, ['__schema', '__type']);
                 $schemaDef = $this->getSchemaDef($schema, $debugMode || $isIntrospectionQuery);
                 $elementsService = Craft::$app->getElements();
-                $elementsService->startCollectingCacheTags();
+                $elementsService->startCollectingCacheInfo();
 
                 $event->result = GraphQL::executeQuery(
                     $schemaDef,
@@ -514,10 +514,10 @@ class Gql extends Component
                     ->setErrorsHandler([$this, 'handleQueryErrors'])
                     ->toArray($debugMode ? DebugFlag::INCLUDE_DEBUG_MESSAGE | DebugFlag::INCLUDE_TRACE : false);
 
-                $dep = $elementsService->stopCollectingCacheTags();
+                [$dep, $duration] = $elementsService->stopCollectingCacheInfo();
 
                 if (empty($event->result['errors']) && $cacheKey) {
-                    $this->setCachedResult($cacheKey, $event->result, $dep);
+                    $this->setCachedResult($cacheKey, $event->result, $dep, $duration);
                 }
             }
         }
@@ -555,9 +555,10 @@ class Gql extends Component
      * @param string $cacheKey
      * @param array $result
      * @param TagDependency|null $dependency
+     * @param int|null $duration
      * @since 3.3.12
      */
-    public function setCachedResult(string $cacheKey, array $result, ?TagDependency $dependency = null): void
+    public function setCachedResult(string $cacheKey, array $result, ?TagDependency $dependency = null, ?int $duration = null): void
     {
         if ($dependency === null) {
             $dependency = new TagDependency();
@@ -566,7 +567,7 @@ class Gql extends Component
         // Add the global graphql cache tag
         $dependency->tags[] = self::CACHE_TAG;
 
-        Craft::$app->getCache()->set($cacheKey, $result, null, $dependency);
+        Craft::$app->getCache()->set($cacheKey, $result, $duration, $dependency);
     }
 
     /**

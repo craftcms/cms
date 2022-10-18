@@ -257,7 +257,7 @@ JS;
         $view->registerAssetBundle(FieldSettingsAsset::class);
         $view->registerJs($js);
 
-        return $this->renderTemplate('settings/fields/_edit', compact(
+        return $this->renderTemplate('settings/fields/_edit.twig', compact(
             'fieldId',
             'field',
             'allFieldTypes',
@@ -287,7 +287,7 @@ JS;
         $field = Craft::$app->getFields()->createField($type);
 
         $view = Craft::$app->getView();
-        $html = $view->renderTemplate('settings/fields/_type-settings', [
+        $html = $view->renderTemplate('settings/fields/_type-settings.twig', [
             'field' => $field,
             'namespace' => $this->request->getBodyParam('namespace'),
         ]);

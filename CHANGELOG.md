@@ -1,5 +1,27 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+### Changed
+- The `setup/keys` command will now set the application ID if `Craft::$app->id` is empty. ([#12103](https://github.com/craftcms/cms/pull/12103))
+
+### Fixed
+- Fixed an error that could occur when running tests. ([#12088](https://github.com/craftcms/cms/issues/12088), [#12089](https://github.com/craftcms/cms/issues/12089))
+- Fixed a bug where the `db/restore` command would output a warning about a missing `info` row, even if one existed in the imported database. ([#12101](https://github.com/craftcms/cms/issues/12101))
+- Fixed a bug where the “Your session has ended” modal could be shown on the control panel’s login page. ([#12121](https://github.com/craftcms/cms/issues/12121))
+- Fixed a permission error that could occur when uploading a file to an Assets field.
+- Fixed a bug where custom log targets were getting removed when processing queue jobs. ([#12109](https://github.com/craftcms/cms/pull/12109))
+- Fixed a bug where Money fields weren’t distinguishing between `0` and empty values. ([#12122](https://github.com/craftcms/cms/issues/12122), [#12132](https://github.com/craftcms/cms/pull/12132))
+- Fixed an error that could occur in the control panel. ([#12133](https://github.com/craftcms/cms/issues/12133))
+
+## 4.2.7 - 2022-10-11
+
+### Added
+- Added the `setup/keys` command, which ensure Craft is configured with an application ID and security key.
+
+### Changed
+- The `install/craft` command now runs `setup/keys` before doing anything else.
+
 ## 4.2.6 - 2022-10-11
 
 ### Added
@@ -89,6 +111,7 @@
 - `resave/*` commands now have a `--touch` option. When passed, elements’ `dateUpdated` timestamps will be updated as they’re resaved. ([#11849](https://github.com/craftcms/cms/discussions/11849))
 - Underscores within query param values that begin/end with `*` are now escaped, so they aren’t treated as wildcard characters by the `like` condition. ([#11898](https://github.com/craftcms/cms/issues/11898))
 - `craft\services\Elements::resaveElements()` now has a `$touch` argument.
+- Disable the preview button while drafts are saving ([#11858](https://github.com/craftcms/cms/issues/11858))
 
 ### Fixed
 - Fixed an error that could occur when upgrading to Craft 4, if any Matrix blocks contained null `sortOrder` values. ([#11843](https://github.com/craftcms/cms/issues/11843))

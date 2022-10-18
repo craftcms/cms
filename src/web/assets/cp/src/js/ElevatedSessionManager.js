@@ -15,9 +15,12 @@ Craft.ElevatedSessionManager = Garnish.Base.extend(
     callback: null,
 
     /**
+     * @callback requireElevatedSessionCallback
+     */
+    /**
      * Requires that the user has an elevated session.
      *
-     * @param {function} callback The callback function that should be called once the user has an elevated session
+     * @param {requireElevatedSessionCallback} callback The callback function that should be called once the user has an elevated session
      */
     requireElevatedSession: function (callback) {
       this.callback = callback;

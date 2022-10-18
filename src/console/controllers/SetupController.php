@@ -108,15 +108,7 @@ class SetupController extends Controller
      */
     public function actionIndex(): int
     {
-        if (Craft::$app->id === 'CraftCMS' && !App::env('APP_ID')) {
-            $this->run('app-id');
-            $this->stdout(PHP_EOL);
-        }
-
-        if (!Craft::$app->getConfig()->getGeneral()->securityKey) {
-            $this->run('security-key');
-            $this->stdout(PHP_EOL);
-        }
+        $this->run('keys');
 
         if (!$this->interactive) {
             return ExitCode::OK;
@@ -169,8 +161,7 @@ EOD;
         $this->stdout(str_replace("\n", PHP_EOL, $craft), Console::FG_YELLOW);
 
         // Can't do anything interactive here (https://github.com/composer/composer/issues/3299)
-        $this->run('app-id');
-        $this->run('security-key');
+        $this->run('keys');
         $this->stdout(PHP_EOL . 'Welcome to Craft CMS!' . PHP_EOL . PHP_EOL);
 
         if (!$this->interactive || !$this->confirm('Are you ready to begin the setup?')) {
@@ -180,6 +171,33 @@ EOD;
         }
 
         return $this->run('index');
+    }
+
+    /**
+     * Generates an application ID and security key (if they don’t exist), and saves them in the `.env` file.
+     *
+     * @since 4.2.7
+     * @return int
+     */
+    public function actionKeys(): int
+    {
+        $didSomething = false;
+
+        if ((!Craft::$app->id || Craft::$app->id === 'CraftCMS') && !App::env('CRAFT_APP_ID')) {
+            $this->run('app-id');
+            $didSomething = true;
+        }
+
+        if (!Craft::$app->getConfig()->getGeneral()->securityKey) {
+            $this->run('security-key');
+            $didSomething = true;
+        }
+
+        if ($didSomething) {
+            $this->stdout(PHP_EOL);
+        }
+
+        return ExitCode::OK;
     }
 
     /**
