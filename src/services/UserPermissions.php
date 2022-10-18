@@ -46,11 +46,13 @@ class UserPermissions extends Component
 
     /**
      * @event UserPermissionsEvent The event triggered before saving user permissions.
+     * @since 4.3.0
      */
     public const EVENT_AFTER_SAVE_USER_PERMISSIONS = 'afterSaveUserPermissions';
 
     /**
      * @event UserGroupPermissionsEvent The event triggered before saving group permissions.
+     * @since 4.3.0
      */
     public const EVENT_AFTER_SAVE_GROUP_PERMISSIONS = 'afterSaveGroupPermissions';
 
@@ -215,6 +217,7 @@ class UserPermissions extends Component
         $path = ProjectConfig::PATH_USER_GROUPS . '.' . $group->uid . '.permissions';
         Craft::$app->getProjectConfig()->set($path, $permissions, "Update permissions for user group “{$group->handle}”");
 
+        // Trigger an afterSaveGroupPermissions event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_GROUP_PERMISSIONS)) {
             $this->trigger(self::EVENT_AFTER_SAVE_GROUP_PERMISSIONS, new UserGroupPermissionsEvent([
                 'groupId' => $groupId,
@@ -303,7 +306,7 @@ class UserPermissions extends Component
         // Cache the new permissions
         $this->_permissionsByUserId[$userId] = array_unique(array_merge($groupPermissions, $permissions));
 
-        // Trigger the after save event
+        // Trigger an afterSaveUserPermissions event
         if ($this->hasEventHandlers(self::EVENT_AFTER_SAVE_USER_PERMISSIONS)) {
             $this->trigger(self::EVENT_AFTER_SAVE_USER_PERMISSIONS, new UserPermissionsEvent([
                 'userId' => $userId,
