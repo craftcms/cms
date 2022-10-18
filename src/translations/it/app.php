@@ -435,6 +435,7 @@ return [
     'Current User Condition' => 'Condizione utente attuale',
     'Current' => 'Attuale',
     'Currently SVG images do not support focal point.' => 'Al momento le immagini SVG non supportano il punto focale.',
+    'Custom' => 'Custom',
     'Customize' => 'Personalizza',
     'Custom…' => 'Personalizzato…',
     'Dashboard' => 'Bacheca',
