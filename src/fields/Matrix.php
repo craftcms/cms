@@ -1052,7 +1052,7 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
 
         if ($element->duplicateOf !== null) {
             // If this is a draft, just duplicate the relations
-            if ($element->getIsDraft()) {
+            if ($element->getIsDraft() && !$element->getIsUnpublishedDraft()) {
                 $matrixService->duplicateOwnership($this, $element->duplicateOf, $element);
             } elseif ($element->getIsRevision()) {
                 $matrixService->createRevisionBlocks($this, $element->duplicateOf, $element);

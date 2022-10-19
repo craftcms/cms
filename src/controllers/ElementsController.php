@@ -677,6 +677,18 @@ class ElementsController extends Controller
                     ],
                 ]);
             } else {
+                // save as a new is now available to people who can create drafts
+                $components[] = Html::beginForm() .
+                    Html::actionInput('elements/duplicate') .
+                    Html::redirectInput('{cpEditUrl}') .
+                    Html::hiddenInput('elementId', (string)$canonical->id) .
+                    Html::beginTag('div', ['class' => 'secondary-buttons']) .
+                    Html::button(Craft::t('app', 'Save as a new {type}', ['type' => $element::lowerDisplayName()]), [
+                        'class' => ['btn', 'secondary', 'formsubmit'],
+                    ]) .
+                    Html::endTag('div') .
+                    Html::endForm();
+
                 $components[] = Html::beginForm() .
                     Html::actionInput('elements/save-draft') .
                     Html::redirectInput('{cpEditUrl}') .
@@ -952,7 +964,9 @@ JS, [
             throw new BadRequestHttpException('No element was identified by the request.');
         }
 
-        if (!$element->canDuplicate(Craft::$app->getUser()->getIdentity())) {
+        // this action is called when using "save as a new" option; "save as a new" now creates an unpublished draft
+        // so we can check for canCreateDrafts permission, instead of canDuplicate or canSave
+        if (!$element->canCreateDrafts(Craft::$app->getUser()->getIdentity())) {
             throw new ForbiddenHttpException('User not authorized to duplicate this element.');
         }
 
