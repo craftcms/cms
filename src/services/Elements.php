@@ -1027,8 +1027,13 @@ class Elements extends Component
      * @throws Exception if the $element doesn’t have any supported sites
      * @throws Throwable if reasons
      */
-    public function saveElement(ElementInterface $element, bool $runValidation = true, bool $propagate = true, ?bool $updateSearchIndex = null, ?bool $crossSiteValidate = false): bool
-    {
+    public function saveElement(
+        ElementInterface $element,
+        bool $runValidation = true,
+        bool $propagate = true,
+        ?bool $updateSearchIndex = null,
+        ?bool $crossSiteValidate = false,
+    ): bool {
         // Force propagation for new elements
         $propagate = !$element->id || $propagate;
 
@@ -3249,16 +3254,9 @@ class Elements extends Component
         // Save it
         $siteElement->setScenario(Element::SCENARIO_ESSENTIALS);
 
-        // validate element against "live" scenario across all sites, if element is to be set to live/pending/enabled
-        if ($crossSiteValidate) {
-            $siteElementStatus = $siteElement->getStatus();
-            if (($siteElement instanceof Entry &&
-                    ($siteElementStatus === Entry::STATUS_LIVE || $siteElementStatus === Entry::STATUS_PENDING)
-                ) ||
-                $siteElementStatus === Element::STATUS_ENABLED
-            ) {
-                $siteElement->setScenario(Element::SCENARIO_LIVE);
-            }
+        // validate element against "live" scenario across all sites, if element is enabled for the site
+        if ($crossSiteValidate && $siteElement->enabled && $siteElement->getEnabledForSite()) {
+            $siteElement->setScenario(Element::SCENARIO_LIVE);
         }
 
         $siteElement->propagating = true;
@@ -3294,7 +3292,7 @@ class Elements extends Component
         // get site we're propagating to
         $propagateToSite = Craft::$app->getSites()->getSiteById($siteElement->siteId);
         $user = Craft::$app->getUser()->getIdentity();
-        $message = Craft::t('app', 'Validation errors for site {siteName}', [
+        $message = Craft::t('app', 'Validation errors for site: “{siteName}“', [
             'siteName' => $propagateToSite->name,
         ]);
 
