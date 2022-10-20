@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where addresses weren’t validating their country codes.
+
 ## 4.2.8 - 2022-10-18
 
 ### Changed

@@ -483,8 +483,13 @@ class Address extends Element implements AddressInterface, BlockElementInterface
     public function defineRules(): array
     {
         $rules = parent::defineRules();
+
         $rules[] = [['ownerId'], 'number'];
         $rules[] = [['countryCode'], 'required'];
+
+        $addressesService = Craft::$app->getAddresses();
+        $countryCodes = array_keys($addressesService->getCountryRepository()->getList());
+        $rules[] = [['countryCode'], 'in', 'range' => $countryCodes];
 
         foreach (self::_addressAttributes() as $attr) {
             if ($attr === 'countryCode') {
@@ -496,8 +501,8 @@ class Address extends Element implements AddressInterface, BlockElementInterface
                 $attr,
                 'required',
                 'on' => self::SCENARIO_LIVE,
-                'when' => function(Address $model, string $attribute) {
-                    $formatter = Craft::$app->getAddresses()->getAddressFormatRepository()->get($this->countryCode);
+                'when' => function(Address $model, string $attribute) use ($addressesService) {
+                    $formatter = $addressesService->getAddressFormatRepository()->get($this->countryCode);
                     return in_array($attribute, $formatter->getRequiredFields());
                 },
             ];
