@@ -204,7 +204,7 @@ class Assets extends Component
      * Save an Asset folder.
      *
      * @param VolumeFolder $folder
-     * @throws FsObjectExistsException if a folder already exists with such a name
+     * @throws FsObjectExistsException if a folder already exists with such a name or with such path for any volume that uses the same FS as this one
      * @throws FsException if unable to create the directory on volume
      * @throws AssetException if invalid folder provided
      */
@@ -245,7 +245,7 @@ class Assets extends Component
      * @param string $newName
      * @return string The new folder name after cleaning it.
      * @throws AssetOperationException If the folder to be renamed can't be found or trying to rename the top folder.
-     * @throws FsObjectExistsException
+     * @throws FsObjectExistsException If folder would have a path that's already used by any volume that uses the same FS as this one.
      * @throws FsObjectNotFoundException
      */
     public function renameFolderById(int $folderId, string $newName): string
