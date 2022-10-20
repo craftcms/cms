@@ -17,6 +17,7 @@ use craft\events\ConfigEvent;
 use craft\events\VolumeEvent;
 use craft\fs\Temp;
 use craft\helpers\ArrayHelper;
+use craft\helpers\Assets;
 use craft\helpers\Db;
 use craft\helpers\ProjectConfig as ProjectConfigHelper;
 use craft\helpers\StringHelper;
@@ -334,7 +335,6 @@ class Volumes extends Component
             $volumeRecord->name = $data['name'];
             $volumeRecord->handle = $data['handle'];
             $volumeRecord->fs = $data['fs'] ?? null;
-            $volumeRecord->fsSubpath = $data['fsSubpath'] ?? null;
             $volumeRecord->transformFs = $data['transformFs'] ?? null;
             $volumeRecord->transformSubpath = $data['transformSubpath'] ?? null;
             $volumeRecord->sortOrder = $data['sortOrder'];
@@ -373,13 +373,14 @@ class Volumes extends Component
                 $rootFolderRecord = new VolumeFolderRecord([
                     'volumeId' => $volumeRecord->id,
                     'parentId' => null,
-                    'path' => '',
+                    'path' => $data['fsSubpath'] ? ltrim(rtrim($data['fsSubpath'], '/') . '/') : '',
                     'name' => $volumeRecord->name,
                 ]);
 
                 $rootFolderRecord->save();
             } else {
                 $rootFolder->name = $volumeRecord->name;
+                $rootFolder->path = $data['fsSubpath'] ? ltrim(rtrim($data['fsSubpath'], '/') . '/') : '';
                 $assetsService->storeFolderRecord($rootFolder);
             }
 
@@ -457,7 +458,7 @@ class Volumes extends Component
             $folder->volumeId = $volume->id;
             $folder->parentId = null;
             $folder->name = $volume->name;
-            $folder->path = '';
+            $folder->path = $volume->fsSubpath;
             $assetsService->storeFolderRecord($folder);
         }
 
@@ -589,22 +590,24 @@ class Volumes extends Component
     {
         return (new Query())
             ->select([
-                'id',
-                'name',
-                'handle',
-                'fs',
-                'fsSubpath',
-                'transformFs',
-                'transformSubpath',
-                'titleTranslationMethod',
-                'titleTranslationKeyFormat',
-                'sortOrder',
-                'fieldLayoutId',
-                'uid',
+                Table::VOLUMES.'.id',
+                Table::VOLUMES.'.name',
+                Table::VOLUMES.'.handle',
+                Table::VOLUMES.'.fs',
+                Table::VOLUMES.'.transformFs',
+                Table::VOLUMES.'.transformSubpath',
+                Table::VOLUMES.'.titleTranslationMethod',
+                Table::VOLUMES.'.titleTranslationKeyFormat',
+                Table::VOLUMES.'.sortOrder',
+                Table::VOLUMES.'.fieldLayoutId',
+                Table::VOLUMES.'.uid',
+                Table::VOLUMEFOLDERS.'.path AS fsSubpath',
             ])
             ->from([Table::VOLUMES])
-            ->where(['dateDeleted' => null])
-            ->orderBy(['sortOrder' => SORT_ASC]);
+            ->leftJoin([Table::VOLUMEFOLDERS], Table::VOLUMES.'.id = ' . Table::VOLUMEFOLDERS.'.volumeId')
+            ->where([Table::VOLUMES.'.dateDeleted' => null])
+            ->andWhere([Table::VOLUMEFOLDERS.'.parentId' => null])
+            ->orderBy([Table::VOLUMES.'.sortOrder' => SORT_ASC]);
     }
 
     /**
