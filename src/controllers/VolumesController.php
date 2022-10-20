@@ -89,13 +89,13 @@ class VolumesController extends Controller
             $title = trim($volume->name) ?: Craft::t('app', 'Edit Volume');
         }
 
-        $fsHandle = $volume->getFsHandle();
-        $allVolumes = $volumesServices->getAllVolumes();
-        /** @var Collection<string> $takenFsHandles */
-        $takenFsHandles = Collection::make($allVolumes)
-            ->map(fn(Volume $volume) => $volume->getFsHandle());
+//        $fsHandle = $volume->getFsHandle();
+//        $allVolumes = $volumesServices->getAllVolumes();
+//        /** @var Collection<string> $takenFsHandles */
+//        $takenFsHandles = Collection::make($allVolumes)
+//            ->map(fn(Volume $volume) => $volume->getFsHandle());
         $fsOptions = Collection::make(Craft::$app->getFs()->getAllFilesystems())
-            ->filter(fn(FsInterface $fs) => $fs->handle === $fsHandle || !$takenFsHandles->contains($fs->handle))
+            //->filter(fn(FsInterface $fs) => $fs->handle === $fsHandle || !$takenFsHandles->contains($fs->handle))
             ->sortBy(fn(FsInterface $fs) => $fs->name)
             ->map(fn(FsInterface $fs) => [
                 'label' => $fs->name,
@@ -155,6 +155,7 @@ class VolumesController extends Controller
             'name' => $this->request->getBodyParam('name'),
             'handle' => $this->request->getBodyParam('handle'),
             'fsHandle' => $this->request->getBodyParam('fsHandle'),
+            'fsSubpath' => $this->request->getBodyParam('fsSubpath'),
             'transformFsHandle' => $this->request->getBodyParam('transformFsHandle'),
             'transformSubpath' => $this->request->getBodyParam('transformSubpath', ""),
             'titleTranslationMethod' => $this->request->getBodyParam('titleTranslationMethod', Field::TRANSLATION_METHOD_SITE),

@@ -38,6 +38,15 @@
     options: fsOptions
 }) }}
 
+{{ forms.textField({
+    label: 'Filesystem Subpath'|t('app'),
+    instructions: 'If you want to use a subfolder of the filesystem, specify the path to use here.'|t('app'),
+    id: 'fsSubpath',
+    name: 'fsSubpath',
+    value: volume.fsSubpath,
+    errors: volume.getErrors('fsSubpath'),
+}) }}
+
 {{ forms.fsField({
     label: 'Transform Filesystem'|t('app'),
     instructions: 'Choose which filesystem image transforms should be stored in.'|t('app'),

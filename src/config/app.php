@@ -4,7 +4,7 @@ return [
     'id' => 'CraftCMS',
     'name' => 'Craft CMS',
     'version' => '4.2.8',
-    'schemaVersion' => '4.0.0.9',
+    'schemaVersion' => '4.0.0.10',
     'minVersionRequired' => '3.7.11',
     'basePath' => dirname(__DIR__), // Defines the @app alias
     'runtimePath' => '@storage/runtime', // Defines the @runtime alias

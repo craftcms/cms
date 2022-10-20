@@ -79,6 +79,11 @@ class Volume extends Model
     public string $transformSubpath = '';
 
     /**
+     * @var string The subpath to use in the filesystem for uploading files to this volume
+     */
+    public string $fsSubpath = '';
+
+    /**
      * @var FsInterface|null
      * @see getFs()
      * @see setFs()
@@ -342,6 +347,7 @@ class Volume extends Model
             'name' => $this->name,
             'handle' => $this->handle,
             'fs' => $this->_fsHandle,
+            'fsSubpath' => $this->fsSubpath,
             'transformFs' => $this->_transformFsHandle,
             'transformSubpath' => $this->transformSubpath,
             'titleTranslationMethod' => $this->titleTranslationMethod,
