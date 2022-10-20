@@ -954,11 +954,14 @@ JS, [
             throw new ForbiddenHttpException('User not authorized to duplicate this element.');
         }
 
+        // if original element is a provisional draft, get rid of that element, so that we can discard it after duplication
+        $originalProvisionalDraftId = $element->isProvisionalDraft ? $element->id : false;
+
         $element->draftId = null;
         $element->isProvisionalDraft = false;
 
         try {
-            $newElement = Craft::$app->getElements()->duplicateElement($element);
+            $newElement = Craft::$app->getElements()->duplicateElement($element, originalProvisionalDraftId: $originalProvisionalDraftId);
         } catch (InvalidElementException $e) {
             return $this->_asFailure($e->element, Craft::t('app', 'Couldn’t duplicate {type}.', [
                 'type' => $element::lowerDisplayName(),
