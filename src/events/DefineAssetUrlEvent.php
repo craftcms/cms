@@ -28,6 +28,7 @@ class DefineAssetUrlEvent extends DefineUrlEvent
     /**
      * @var Asset The asset that is being transformed.
      * @since 4.0.0
+     * @deprecated in 4.3.0. [[$sender]] should be used instead.
      */
     public Asset $asset;
 }
