@@ -119,6 +119,7 @@
 - `{% cache %}` tags and GraphQL query caches now get a max cache duration based on the fetched/referenced entries’ expiry dates. ([#8525](https://github.com/craftcms/cms/discussions/8525), [#11901](https://github.com/craftcms/cms/pull/11901))
 - Improved GraphQL cache reliability. ([#11994](https://github.com/craftcms/cms/issues/11994), [#12086](https://github.com/craftcms/cms/pull/12086))
 - Control panel `.twig` templates are now prioritized over `.html`. ([#11809](https://github.com/craftcms/cms/discussions/11809), [#11840](https://github.com/craftcms/cms/pull/11840))
+- `craft\elements\Asset::EVENT_DEFINE_URL` now gets triggered after the default URL has been generated, and the URL will be passed to `craft\events\DefineAssetUrlEvent::$url`.
 - `craft\elements\db\ElementQuery::collect()` and `craft\base\Element::getEagerLoadedElements()` now return `craft\elements\ElementCollection` instances. ([#12113](https://github.com/craftcms/cms/discussions/12113))
 - `craft\events\DraftEvent::$creatorId` is now nullable. ([#11904](https://github.com/craftcms/cms/issues/11904))
 - `craft\fieldlayoutelements\BaseField::statusClass()` and `statusLabel()` now return status info from the element for the attribute specified by `attribute()`.
