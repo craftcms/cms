@@ -1357,6 +1357,7 @@ return [
     'Structures' => 'Structures',
     'Subject' => 'Subject',
     'Submit' => 'Submit',
+    'Subpath is not unique for this filesystem.' => 'Subpath is not unique for this filesystem.',
     'Suburb' => 'Suburb',
     'Success' => 'Success',
     'Successfully activated the user.' => 'Successfully activated the user.',

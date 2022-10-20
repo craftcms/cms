@@ -373,14 +373,14 @@ class Volumes extends Component
                 $rootFolderRecord = new VolumeFolderRecord([
                     'volumeId' => $volumeRecord->id,
                     'parentId' => null,
-                    'path' => $data['fsSubpath'] ? ltrim(rtrim($data['fsSubpath'], '/') . '/') : '',
+                    'path' => $data['fsSubpath'] ?? '',
                     'name' => $volumeRecord->name,
                 ]);
 
                 $rootFolderRecord->save();
             } else {
                 $rootFolder->name = $volumeRecord->name;
-                $rootFolder->path = $data['fsSubpath'] ? ltrim(rtrim($data['fsSubpath'], '/') . '/') : '';
+                $rootFolder->path = $data['fsSubpath'] ?? '';
                 $assetsService->storeFolderRecord($rootFolder);
             }
 

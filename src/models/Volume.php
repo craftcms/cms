@@ -12,6 +12,7 @@ use craft\base\Field;
 use craft\base\FsInterface;
 use craft\base\Model;
 use craft\behaviors\FieldLayoutBehavior;
+use craft\db\Table;
 use craft\elements\Asset;
 use craft\fs\MissingFs;
 use craft\helpers\App;
@@ -20,6 +21,7 @@ use craft\records\Volume as VolumeRecord;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
 use yii\base\InvalidConfigException;
+use craft\records\VolumeFolder;
 
 /**
  * Volume model class.
@@ -177,8 +179,36 @@ class Volume extends Model
             ],
         ];
         $rules[] = [['fieldLayout'], 'validateFieldLayout'];
+        $rules[] = [['fsSubpath'], 'validateFolderUnique', 'skipOnEmpty' => true];
 
         return $rules;
+    }
+
+    /**
+     * Check if fsSubpath is going to be a unique path in VolumeFolders for all volumes that use the same FS as this volume
+     *
+     * @param string $attribute
+     * @return void
+     */
+    public function validateFolderUnique(string $attribute) : void
+    {
+        // get all paths used by all volumes that use this FS
+        $fsPaths = VolumeFolder::find()
+            ->select('path')
+            ->leftJoin([Table::VOLUMES], Table::VOLUMES.'.id = ' . Table::VOLUMEFOLDERS.'.volumeId')
+            ->where(['dateDeleted' => null, 'fs' => $this->_fsHandle])
+            ->andWhere(Table::VOLUMES.'.id != ' . $this->id)
+            ->asArray()
+            ->all();
+
+        // check if the fsSubpath they're trying to use is unique for this filesystem
+        if (!empty($fsPaths)) {
+            foreach ($fsPaths as $fsPath) {
+                if (!empty($fsPath['path']) && strcasecmp($fsPath['path'], $this->$attribute) === 0) {
+                    $this->addError($attribute, Craft::t('app', 'Subpath is not unique for this filesystem.'));
+                }
+            }
+        }
     }
 
     /**
