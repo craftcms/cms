@@ -132,7 +132,7 @@ class Asset extends Element
     public const EVENT_AFTER_GENERATE_TRANSFORM = 'afterGenerateTransform';
 
     /**
-     * @event DefineAssetUrlEvent The event that is triggered when a transform is being generated for an asset.
+     * @event DefineAssetUrlEvent The event that is triggered when defining the asset’s URL.
      * @see getUrl()
      * @since 4.0.0
      */
@@ -1507,18 +1507,24 @@ JS;
      */
     public function getUrl(mixed $transform = null, ?bool $immediately = null): ?string
     {
-        // Maybe a plugin wants to do something here
-        $event = new DefineAssetUrlEvent([
-            'transform' => $transform,
-            'asset' => $this,
-        ]);
-        $this->trigger(self::EVENT_DEFINE_URL, $event);
+        $url = $this->_url($transform, $immediately);
 
-        // If a plugin set the url, we'll just use that.
-        if ($event->url !== null) {
-            return Html::encodeSpaces($event->url);
+        // Give plugins/modules a chance to customize it
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_URL)) {
+            $event = new DefineAssetUrlEvent([
+                'url' => $url,
+                'transform' => $transform,
+                'asset' => $this,
+            ]);
+            $this->trigger(self::EVENT_DEFINE_URL, $event);
+            $url = $event->url;
         }
 
+        return $url !== null ? Html::encodeSpaces($url) : $url;
+    }
+
+    private function _url(mixed $transform = null, ?bool $immediately = null): ?string
+    {
         $volume = $this->getVolume();
 
         $transform = $transform ?? $this->_transform;
