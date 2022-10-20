@@ -181,15 +181,16 @@ table.editable textarea {
 }
 
 .badge-icon {
+  --icon-color: var(--yellow-800);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 17px;
   height: 17px;
   box-sizing: border-box;
-  border: 1px solid var(--yellow-500);
+  border: 1px solid var(--icon-color);
   border-radius: var(--small-border-radius);
-  color: var(--yellow-500);
+  color: var(--icon-color);
   font-size: 9px;
 }
 
