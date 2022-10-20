@@ -14,6 +14,7 @@ return [
     'A critical update is available.' => 'A critical update is available.',
     'A fatal error has occurred:' => 'A fatal error has occurred:',
     'A file with the name “{filename}” already exists.' => 'A file with the name “{filename}” already exists.',
+    'A folder with that path already exists for this filesystem.' => 'A folder with that path already exists for this filesystem.',
     'A folder with the name “{folderName}” already exists in the folder.' => 'A folder with the name “{folderName}” already exists in the folder.',
     'A folder with the name “{folderName}” already exists in the volume.' => 'A folder with the name “{folderName}” already exists in the volume.',
     'A license key is required.' => 'A license key is required.',
