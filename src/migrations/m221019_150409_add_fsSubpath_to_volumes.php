@@ -25,7 +25,10 @@ class m221019_150409_add_fsSubpath_to_volumes extends Migration
      */
     public function safeDown(): bool
     {
-        echo "m221019_150409_add_fsSubpath_to_volumes cannot be reverted.\n";
-        return false;
+        $table = $this->db->schema->getTableSchema(Table::VOLUMES);
+        if (isset($table->columns['fsSubpath'])) {
+            $this->dropColumn(Table::VOLUMES, 'fsSubpath');
+        }
+        return true;
     }
 }
