@@ -23,6 +23,7 @@
 - Added support for `CRAFT_WEB_URL` and `CRAFT_WEB_ROOT` PHP constants, which can be used to set the default `@web` and `@webroot` alias values. ([#11912](https://github.com/craftcms/cms/pull/11912))
 - Added `craft\base\conditions\BaseTextConditionRule::inputOptions()`.
 - Added `craft\base\ExpirableElementInterface`. ([#11901](https://github.com/craftcms/cms/pull/11901))
+- Added `craft\controllers\ElementsController::$element`.
 - Added `craft\db\ActiveQuery::collect()`. ([#11842](https://github.com/craftcms/cms/pull/11842))
 - Added `craft\elements\actions\Restore::$restorableElementsOnly`.
 - Added `craft\elements\conditions\assets\EditableConditionRule`.

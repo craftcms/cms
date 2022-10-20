@@ -51,6 +51,12 @@ class ElementsController extends Controller
      */
     public const EVENT_DEFINE_EDITOR_CONTENT = 'defineEditorContent';
 
+    /**
+     * @var ElementInterface|null The element currently being managed.
+     * @since 4.3.0
+     */
+    public ?ElementInterface $element = null;
+
     private array $_attributes;
     private ?string $_elementType = null;
     private ?int $_elementId = null;
@@ -148,7 +154,7 @@ class ElementsController extends Controller
      */
     public function actionRedirect(?int $elementId = null, ?string $elementUid = null): Response
     {
-        $element = $this->_element($elementId, $elementUid);
+        $element = $this->element = $this->_element($elementId, $elementUid);
         $url = $element->getCpEditUrl();
 
         if (!$url) {
@@ -176,7 +182,7 @@ class ElementsController extends Controller
         $this->_validateElementType($this->_elementType);
 
         /** @var ElementInterface $element */
-        $element = Craft::createObject($this->_elementType);
+        $element = $this->element = Craft::createObject($this->_elementType);
         if ($this->_siteId) {
             $element->siteId = $this->_siteId;
         }
@@ -270,6 +276,8 @@ class ElementsController extends Controller
         } else {
             $mergeCanonicalChanges = false;
         }
+
+        $this->element = $element;
 
         $elementsService = Craft::$app->getElements();
         $user = static::currentUser();
@@ -866,6 +874,8 @@ JS, [
             throw new BadRequestHttpException('No element was identified by the request.');
         }
 
+        $this->element = $element;
+
         $this->_applyParamsToElement($element);
         $elementsService = Craft::$app->getElements();
         $user = static::currentUser();
@@ -954,6 +964,8 @@ JS, [
             throw new BadRequestHttpException('No element was identified by the request.');
         }
 
+        $this->element = $element;
+
         $elementsService = Craft::$app->getElements();
 
         if (!$elementsService->canDuplicate($element)) {
@@ -1002,6 +1014,8 @@ JS, [
             throw new BadRequestHttpException('No element was identified by the request.');
         }
 
+        $this->element = $element;
+
         $elementsService = Craft::$app->getElements();
         $user = static::currentUser();
 
@@ -1038,6 +1052,8 @@ JS, [
         if (!$element || $element->getIsRevision()) {
             throw new BadRequestHttpException('No element was identified by the request.');
         }
+
+        $this->element = $element;
 
         $elementsService = Craft::$app->getElements();
 
@@ -1110,6 +1126,8 @@ JS, [
             throw new ForbiddenHttpException('User not authorized to save this element.');
         }
 
+        $this->element = $element;
+
         if (!$element->getIsDraft() && $this->_provisional) {
             // Make sure a provisional draft doesn't already exist for this element/user combo
             $provisionalExists = $element::find()
@@ -1131,7 +1149,7 @@ JS, [
                 /** @var Element|DraftBehavior $element */
                 $draft = Craft::$app->getDrafts()->createDraft($element, $user->id, null, null, [], $this->_provisional);
                 $draft->setCanonical($element);
-                $element = $draft;
+                $element = $this->element = $draft;
             }
 
             $this->_applyParamsToElement($element);
@@ -1258,6 +1276,8 @@ JS, [
             throw new BadRequestHttpException('No draft was identified by the request.');
         }
 
+        $this->element = $element;
+
         $this->_applyParamsToElement($element);
         $user = static::currentUser();
 
@@ -1369,6 +1389,8 @@ JS, [
             throw new BadRequestHttpException('No draft was identified by the request.');
         }
 
+        $this->element = $element;
+
         $elementsService = Craft::$app->getElements();
         $user = static::currentUser();
 
@@ -1421,6 +1443,8 @@ JS, [
             throw new BadRequestHttpException('No revision was identified by the request.');
         }
 
+        $this->element = $element;
+
         $user = static::currentUser();
 
         if (!Craft::$app->getElements()->canSave($element->getCanonical(true), $user)) {
@@ -1450,6 +1474,8 @@ JS, [
         if (!$element) {
             throw new BadRequestHttpException('No element was identified by the request.');
         }
+
+        $this->element = $element;
 
         $context = $this->_context ?? 'field';
         $thumbSize = $this->_thumbSize;
