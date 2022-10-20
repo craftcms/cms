@@ -33,6 +33,7 @@ use craft\events\DefineAttributeKeywordsEvent;
 use craft\events\DefineEagerLoadingMapEvent;
 use craft\events\DefineHtmlEvent;
 use craft\events\DefineMetadataEvent;
+use craft\events\DefineUrlEvent;
 use craft\events\DefineValueEvent;
 use craft\events\ElementIndexTableAttributeEvent;
 use craft\events\ElementStructureEvent;
@@ -537,6 +538,38 @@ abstract class Element extends Component implements ElementInterface
      * @since 3.5.0
      */
     public const EVENT_DEFINE_KEYWORDS = 'defineKeywords';
+
+    /**
+     * @event DefineUrlEvent The event that is triggered when defining the element’s URL.
+     *
+     * ```php
+     * use craft\base\Element;
+     * use craft\elements\Entry;
+     * use craft\events\DefineUrlEvent;
+     * use craft\helpers\UrlHelper;
+     * use yii\base\Event;
+     *
+     * Event::on(
+     *     Entry::class,
+     *     Element::EVENT_DEFINE_URL,
+     *     function(DefineUrlEvent $e
+     * ) {
+     *     // @var Entry $entry
+     *     $entry = $e->sender;
+     *
+     *     // Add a custom query string param to the URL
+     *     if ($event->value !== null) {
+     *         $event->url = UrlHelper::urlWithParams($event->url, [
+     *             'foo' => 'bar',
+     *         ]);
+     *     }
+     * });
+     * ```
+     *
+     * @since 4.3.0
+     * @see getUrl()
+     */
+    public const EVENT_DEFINE_URL = 'defineUrl';
 
     /**
      * @event ModelEvent The event that is triggered before the element is saved.
@@ -2761,12 +2794,23 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getUrl(): ?string
     {
-        if (!isset($this->uri)) {
-            return null;
+        if (isset($this->uri)) {
+            $path = $this->getIsHomepage() ? '' : $this->uri;
+            $url = UrlHelper::siteUrl($path, null, null, $this->siteId);
+        } else {
+            $url = null;
         }
 
-        $path = $this->getIsHomepage() ? '' : $this->uri;
-        return UrlHelper::siteUrl($path, null, null, $this->siteId);
+        // Give plugins/modules a chance to customize it
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_URL)) {
+            $event = new DefineUrlEvent([
+                'url' => $url,
+            ]);
+            $this->trigger(self::EVENT_DEFINE_URL, $event);
+            $url = $event->url;
+        }
+
+        return $url !== null ? Html::encodeSpaces($url) : $url;
     }
 
     /**
