@@ -499,6 +499,12 @@ class Address extends Element implements AddressInterface, BlockElementInterface
         $rules = parent::defineRules();
         $rules[] = [['ownerId'], 'number'];
         $rules[] = [['countryCode'], 'required'];
+        $rules[] = [['countryCode'], function ($attribute, $params, $validator) {
+            $countryCodes = array_keys(Craft::$app->getAddresses()->getCountryRepository()->getList());
+            if (!in_array($this->$attribute, $countryCodes)) {
+                $this->addError($attribute, Craft::t('app', 'Not a valid country.'));
+            }
+        }];
 
         foreach (self::_addressAttributes() as $attr) {
             if ($attr === 'countryCode') {
@@ -510,7 +516,7 @@ class Address extends Element implements AddressInterface, BlockElementInterface
                 $attr,
                 'required',
                 'on' => self::SCENARIO_LIVE,
-                'when' => function(Address $model, string $attribute) {
+                'when' => function (Address $model, string $attribute) {
                     $formatter = Craft::$app->getAddresses()->getAddressFormatRepository()->get($this->countryCode);
                     return in_array($attribute, $formatter->getRequiredFields());
                 },
