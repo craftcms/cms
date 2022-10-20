@@ -2191,6 +2191,23 @@ JS,
                 FileHelper::writeToFile($fileLocation, $data);
                 $newPhoto = true;
             }
+        } elseif ($photoId = $this->request->getBodyParam('photoId')) {
+
+            /** @var ?Asset $asset */
+            $asset = Asset::find()->id($photoId)->one();
+
+            if ($asset) {
+                if ($asset->kind === Asset::KIND_IMAGE) {
+                    $user->setPhoto($asset);
+                } else {
+                    $user->addError('photo', Craft::t('app', 'The user photo provided is not an image.'));
+                }
+            } else {
+                $user->addError('photo', Craft::t('app', 'The user photo could not be found.'));
+            }
+
+            Craft::$app->getElements()->saveElement($user);
+            return;
         }
 
         if ($newPhoto) {
