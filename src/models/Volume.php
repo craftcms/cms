@@ -18,10 +18,10 @@ use craft\fs\MissingFs;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\records\Volume as VolumeRecord;
+use craft\records\VolumeFolder;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
 use yii\base\InvalidConfigException;
-use craft\records\VolumeFolder;
 
 /**
  * Volume model class.
@@ -190,14 +190,14 @@ class Volume extends Model
      * @param string $attribute
      * @return void
      */
-    public function validateFolderUnique(string $attribute) : void
+    public function validateFolderUnique(string $attribute): void
     {
         // get all paths used by all volumes that use this FS
         $fsPaths = VolumeFolder::find()
             ->select('path')
-            ->leftJoin([Table::VOLUMES], Table::VOLUMES.'.id = ' . Table::VOLUMEFOLDERS.'.volumeId')
+            ->leftJoin([Table::VOLUMES], Table::VOLUMES . '.id = ' . Table::VOLUMEFOLDERS . '.volumeId')
             ->where(['dateDeleted' => null, 'fs' => $this->_fsHandle])
-            ->andWhere(Table::VOLUMES.'.id != ' . $this->id)
+            ->andWhere(Table::VOLUMES . '.id != ' . $this->id)
             ->asArray()
             ->all();
 

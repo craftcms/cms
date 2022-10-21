@@ -39,8 +39,8 @@ use craft\helpers\StringHelper;
 use craft\models\FolderCriteria;
 use craft\models\ImageTransform;
 use craft\models\Volume;
-use craft\records\Volume as VolumeRecord;
 use craft\models\VolumeFolder;
+use craft\records\Volume as VolumeRecord;
 use craft\records\VolumeFolder as VolumeFolderRecord;
 use yii\base\Component;
 use yii\base\Exception;
@@ -1107,14 +1107,14 @@ class Assets extends Component
      * @return void
      * @throws FsObjectExistsException
      */
-    private function _checkPathUniqueForFilesystem(int $volumeId, string $path) : void
+    private function _checkPathUniqueForFilesystem(int $volumeId, string $path): void
     {
         // get volume ids of all volumes using the same FS as this one
         $volumeIds = VolumeRecord::find()
             ->select('id')
             ->where(['fs' => VolumeRecord::find()
                 ->select('fs')
-                ->where(['id' => $volumeId, 'dateDeleted' => null])
+                ->where(['id' => $volumeId, 'dateDeleted' => null]),
             ])
             ->asArray()
             ->all();

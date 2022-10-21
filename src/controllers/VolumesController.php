@@ -90,13 +90,7 @@ class VolumesController extends Controller
             $title = trim($volume->name) ?: Craft::t('app', 'Edit Volume');
         }
 
-//        $fsHandle = $volume->getFsHandle();
-//        $allVolumes = $volumesServices->getAllVolumes();
-//        /** @var Collection<string> $takenFsHandles */
-//        $takenFsHandles = Collection::make($allVolumes)
-//            ->map(fn(Volume $volume) => $volume->getFsHandle());
         $fsOptions = Collection::make(Craft::$app->getFs()->getAllFilesystems())
-            //->filter(fn(FsInterface $fs) => $fs->handle === $fsHandle || !$takenFsHandles->contains($fs->handle))
             ->sortBy(fn(FsInterface $fs) => $fs->name)
             ->map(fn(FsInterface $fs) => [
                 'label' => $fs->name,

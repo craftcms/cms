@@ -590,24 +590,24 @@ class Volumes extends Component
     {
         return (new Query())
             ->select([
-                Table::VOLUMES.'.id',
-                Table::VOLUMES.'.name',
-                Table::VOLUMES.'.handle',
-                Table::VOLUMES.'.fs',
-                Table::VOLUMES.'.transformFs',
-                Table::VOLUMES.'.transformSubpath',
-                Table::VOLUMES.'.titleTranslationMethod',
-                Table::VOLUMES.'.titleTranslationKeyFormat',
-                Table::VOLUMES.'.sortOrder',
-                Table::VOLUMES.'.fieldLayoutId',
-                Table::VOLUMES.'.uid',
-                Table::VOLUMEFOLDERS.'.path AS fsSubpath',
+                Table::VOLUMES . '.id',
+                Table::VOLUMES . '.name',
+                Table::VOLUMES . '.handle',
+                Table::VOLUMES . '.fs',
+                Table::VOLUMES . '.transformFs',
+                Table::VOLUMES . '.transformSubpath',
+                Table::VOLUMES . '.titleTranslationMethod',
+                Table::VOLUMES . '.titleTranslationKeyFormat',
+                Table::VOLUMES . '.sortOrder',
+                Table::VOLUMES . '.fieldLayoutId',
+                Table::VOLUMES . '.uid',
+                Table::VOLUMEFOLDERS . '.path AS fsSubpath',
             ])
             ->from([Table::VOLUMES])
-            ->leftJoin([Table::VOLUMEFOLDERS], Table::VOLUMES.'.id = ' . Table::VOLUMEFOLDERS.'.volumeId')
-            ->where([Table::VOLUMES.'.dateDeleted' => null])
-            ->andWhere([Table::VOLUMEFOLDERS.'.parentId' => null])
-            ->orderBy([Table::VOLUMES.'.sortOrder' => SORT_ASC]);
+            ->leftJoin([Table::VOLUMEFOLDERS], Table::VOLUMES . '.id = ' . Table::VOLUMEFOLDERS . '.volumeId')
+            ->where([Table::VOLUMES . '.dateDeleted' => null])
+            ->andWhere([Table::VOLUMEFOLDERS . '.parentId' => null])
+            ->orderBy([Table::VOLUMES . '.sortOrder' => SORT_ASC]);
     }
 
     /**
