@@ -952,6 +952,13 @@ class Assets extends BaseRelationField
 
         $assets = Craft::$app->getAssets();
 
+        // ensure fsSubpath is added to the subpath before checking it/creating it
+        $volumeId = $this->_volumeIdBySourceKey($uploadVolume);
+        $rootFolder = $assets->getRootFolderByVolumeId($volumeId);
+        if (!empty($rootFolder->path)) {
+            $subpath = $rootFolder->path . $subpath;
+        }
+
         try {
             if (!$uploadVolume) {
                 throw new InvalidFsException();
