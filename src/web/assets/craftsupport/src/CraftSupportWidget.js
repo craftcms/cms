@@ -73,7 +73,7 @@ import './CraftSupportWidget.scss';
       closeSearchScreen: function () {
         this.gotoScreen(Craft.CraftSupportWidget.SCREEN_HOME);
         this.focusTrigger();
-        this.$triggerElement.attr('aria-expanded', false);
+        this.$triggerElement.attr('aria-expanded', 'false');
       },
 
       gotoScreen: function (screen) {
@@ -204,7 +204,7 @@ import './CraftSupportWidget.scss';
         this.$searchParams = this.$searchForm.children(
           '.cs-search-params:first'
         );
-        this.$searchSubmit = this.$searchForm.children('.submit:first');
+        this.$searchSubmit = this.$searchForm.find('.submit:first');
         this.addListener(this.$searchForm, 'submit', 'handleSearchFormSubmit');
         this.addListener(
           this.$searchForm.find('> p > a'),
@@ -265,7 +265,7 @@ import './CraftSupportWidget.scss';
             this.$searchSubmit.removeAttr('aria-disabled');
           } else {
             this.$searchSubmit.addClass('disabled');
-            this.$searchSubmit.attr('aria-disabled', true);
+            this.$searchSubmit.attr('aria-disabled', 'true');
           }
         } else {
           if (text) {
