@@ -187,9 +187,9 @@ table.editable textarea {
   width: 17px;
   height: 17px;
   box-sizing: border-box;
-  border: 1px solid var(--yellow-500);
+  border: 1px solid var(--indicator-border-color);
   border-radius: var(--small-border-radius);
-  color: var(--yellow-500);
+  color: var(--indicator-icon-color);
   font-size: 9px;
 }
 

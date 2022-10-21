@@ -114,7 +114,7 @@
                 if (!value) {
                     return null;
                 }
-                return `<div class="badge-icon" data-icon="search" title="${Craft.t('app', 'This field’s values are used as search keywords.')}" aria-label="${Craft.t('app', 'This field’s values are used as search keywords.')}"></div>`;
+                return `<div class="badge-icon" data-icon="search" title="${Craft.t('app', 'This field’s values are used as search keywords.')}" aria-label="${Craft.t('app', 'This field’s values are used as search keywords.')}" role="img"></div>`;
             }
         },
         {% if craft.app.isMultiSite %}
@@ -125,7 +125,7 @@
                 if (!value) {
                     return null;
                 }
-                return `<div class="badge-icon" data-icon="language" title="${value}" aria-label="${value}"></div>`;
+                return `<div class="badge-icon" data-icon="language" title="${value}" aria-label="${value}" role="img"></div>`;
             }
         },
         {% endif %}
