@@ -435,7 +435,7 @@ return [
     'Current User Condition' => 'Aktuellt användartillstånd',
     'Current' => 'Aktuellt',
     'Currently SVG images do not support focal point.' => 'Aktuella SVG-bilder stöder inte fokuspunkt.',
-    'Custom' => 'Custom',
+    'Custom' => 'Anpassad',
     'Customize' => 'Anpassa',
     'Custom…' => 'Anpassad…',
     'Dashboard' => 'Översikt',
