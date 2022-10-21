@@ -195,9 +195,12 @@ class Volume extends Model
         // get all paths used by all volumes that use this FS
         $fsPaths = VolumeFolder::find()
             ->select('path')
-            ->leftJoin([Table::VOLUMES], Table::VOLUMES . '.id = ' . Table::VOLUMEFOLDERS . '.volumeId')
-            ->where(['dateDeleted' => null, 'fs' => $this->_fsHandle])
-            ->andWhere(Table::VOLUMES . '.id != ' . $this->id)
+            ->leftJoin(['volumes' => Table::VOLUMES], '[[volumes.id]] = [[volumeId]]')
+            ->where([
+                'dateDeleted' => null,
+                'fs' => $this->_fsHandle,
+                'not [[volumes.id]]' => $this->id,
+            ])
             ->asArray()
             ->all();
 
