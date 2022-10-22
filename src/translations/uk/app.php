@@ -1745,7 +1745,7 @@ return [
     '{ctrl}C to copy.' => '{ctrl}C, щоб скопіювати.',
     '{edition} edition' => 'Версія {edition}',
     '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}–{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}',
-    '{first}-{last} of {total}' => '{first}–{last} of {total}',
+    '{first}-{last} of {total}' => '{first}–{last} з {total}',
     '{id} – {name}' => '{id} — {name}',
     '{name} has been added, but an error occurred when installing it.' => '{name} додано, але під час установлення виникла помилка.',
     '{name} should be at least {value}.' => '{name} має (мають) бути принаймні {value}.',
