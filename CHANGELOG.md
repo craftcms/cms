@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where Entry URI Format and Template inputs were editable within sections’ Site Settings tables, for disabled sites.
+
 ## 3.7.57 - 2022-10-18
 
 ### Fixed
