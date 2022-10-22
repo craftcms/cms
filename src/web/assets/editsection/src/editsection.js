@@ -17,21 +17,15 @@
     // Is it disabled?
     var $lightswitch = $lightswitches.eq(i);
     if ($lightswitch.length) {
+      const $tds = $lightswitch.parent().nextAll('td');
+      const $inputs = $tds.find('textarea, input, .lightswitch');
       if (!$lightswitch.data('lightswitch').on) {
-        $lightswitch
-          .parent()
-          .nextAll('td')
-          .addClass('disabled')
-          .find('textarea,div.lightswitch,input')
-          .attr('tabindex', '-1');
+        $tds.addClass('disabled');
+        $inputs.attr('tabindex', '-1');
         return;
       }
-      $lightswitch
-        .parent()
-        .nextAll('td')
-        .removeClass('disabled')
-        .find('textarea,div.lightswitch,input')
-        .attr('tabindex', '0');
+      $tds.removeClass('disabled');
+      $inputs.attr('tabindex', '0');
     }
 
     // If it's a single, make sure the URI is enabled/disabled per the homepage checkbox

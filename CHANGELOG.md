@@ -4,6 +4,7 @@
 
 ### Fixed
 - Fixed a bug where addresses weren’t validating their country codes.
+- Fixed a bug where Default Status switches were focusable within sections’ Site Settings tables, for disabled sites.
 
 ## 4.2.8 - 2022-10-18
 
