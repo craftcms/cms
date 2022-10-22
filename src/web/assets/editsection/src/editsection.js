@@ -21,11 +21,21 @@
       const $inputs = $tds.find('textarea, input, .lightswitch');
       if (!$lightswitch.data('lightswitch').on) {
         $tds.addClass('disabled');
-        $inputs.attr('tabindex', '-1');
+        $inputs.attr({
+          tabindex: '-1',
+          readonly: 'readonly',
+        });
+        $inputs.on('focus.preventFocus', (event) => {
+          $(event.currentTarget).blur();
+          event.preventDefault();
+          event.stopPropagation();
+        });
         return;
       }
       $tds.removeClass('disabled');
-      $inputs.attr('tabindex', '0');
+      $inputs.removeAttr('tabindex');
+      $inputs.removeAttr('readonly');
+      $inputs.off('focus.preventFocus');
     }
 
     // If it's a single, make sure the URI is enabled/disabled per the homepage checkbox
