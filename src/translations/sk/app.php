@@ -1904,7 +1904,7 @@ return [
     '{edition} edition' => '{edition} edícia',
     '{element} pagination' => '{element} stránkovanie',
     '{filename} isn’t selectable for this field.' => '{filename} nie je možné vybrať pre toto pole.',
-    '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}–{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}',
+    '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}–{last, number} z {total, number} {total, plural, one {} few {{položiek}} many {{položiek}}=1{{položky}} other{{položiek}}}',
     '{first}-{last} of {total}' => '{first}–{last} z {total}',
     '{name} has been added, but an error occurred when installing it.' => 'Bola pridaná položka {name}, ale pri jej inštalácii sa vyskytla chyba.',
     '{name} should be at least {value}.' => '{name} musí byť minimálne {value}.',
