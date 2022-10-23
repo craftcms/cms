@@ -109,6 +109,7 @@
 - Name parsing now checks for common German salutations, suffixes, and last name prefixes.
 - “Generating pending image transforms” jobs no longer attempt to process transforms that had previously failed. ([#11970](https://github.com/craftcms/cms/issues/11970))
 - Number condition rules now support matching between two values.
+- The default system email template now includes a `Content-Type` tag. ([#12156](https://github.com/craftcms/cms/pull/12156))
 - `users/session-info` responses now include a `csrfTokenName` key. ([#11706](https://github.com/craftcms/cms/pull/11706), [#11767](https://github.com/craftcms/cms/pull/11767))
 - The `elements/save-draft` action now supports being called from the front end. ([#12131](https://github.com/craftcms/cms/issues/12131))
 - Twig templates now have `today`, `tomorrow`, and `yesterday` global variables available to them.
