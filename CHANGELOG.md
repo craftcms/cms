@@ -1,5 +1,11 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where addresses weren’t validating their country codes.
+- Fixed a bug where Entry URI Format, Template, and Default Status switches were focusable within sections’ Site Settings tables, for disabled sites.
+
 ## 4.2.8 - 2022-10-18
 
 ### Changed
@@ -114,6 +120,7 @@
 - `resave/*` commands now have a `--touch` option. When passed, elements’ `dateUpdated` timestamps will be updated as they’re resaved. ([#11849](https://github.com/craftcms/cms/discussions/11849))
 - Underscores within query param values that begin/end with `*` are now escaped, so they aren’t treated as wildcard characters by the `like` condition. ([#11898](https://github.com/craftcms/cms/issues/11898))
 - `craft\services\Elements::resaveElements()` now has a `$touch` argument.
+- Disable the preview button while drafts are saving ([#11858](https://github.com/craftcms/cms/issues/11858))
 
 ### Fixed
 - Fixed an error that could occur when upgrading to Craft 4, if any Matrix blocks contained null `sortOrder` values. ([#11843](https://github.com/craftcms/cms/issues/11843))

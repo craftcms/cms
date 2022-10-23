@@ -19,6 +19,7 @@ class AssetCondition extends ElementCondition
     {
         return array_merge(parent::conditionRuleTypes(), [
             DateModifiedConditionRule::class,
+            EditableConditionRule::class,
             FileSizeConditionRule::class,
             FileTypeConditionRule::class,
             FilenameConditionRule::class,

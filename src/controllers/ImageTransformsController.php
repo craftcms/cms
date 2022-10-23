@@ -48,7 +48,7 @@ class ImageTransformsController extends Controller
         $variables['transforms'] = Craft::$app->getImageTransforms()->getAllTransforms();
         $variables['modes'] = ImageTransform::modes();
 
-        return $this->renderTemplate('settings/assets/transforms/_index', $variables);
+        return $this->renderTemplate('settings/assets/transforms/_index.twig', $variables);
     }
 
     /**
@@ -81,10 +81,35 @@ class ImageTransformsController extends Controller
             $title = Craft::t('app', 'Create a new image transform');
         }
 
-        return $this->renderTemplate('settings/assets/transforms/_settings', [
+        $qualityPickerOptions = [
+            ['label' => Craft::t('app', 'Low'), 'value' => 10],
+            ['label' => Craft::t('app', 'Medium'), 'value' => 30],
+            ['label' => Craft::t('app', 'High'), 'value' => 60],
+            ['label' => Craft::t('app', 'Very High'), 'value' => 80],
+            ['label' => Craft::t('app', 'Maximum'), 'value' => 100],
+        ];
+
+        if ($transform->quality) {
+            // Default to Low, even if quality is < 10
+            $qualityPickerValue = 10;
+            foreach ($qualityPickerOptions as $option) {
+                if ($transform->quality >= $option['value']) {
+                    $qualityPickerValue = $option['value'];
+                } else {
+                    break;
+                }
+            }
+        } else {
+            // Auto
+            $qualityPickerValue = 0;
+        }
+
+        return $this->renderTemplate('settings/assets/transforms/_settings.twig', [
             'handle' => $transformHandle,
             'transform' => $transform,
             'title' => $title,
+            'qualityPickerOptions' => $qualityPickerOptions,
+            'qualityPickerValue' => $qualityPickerValue,
         ]);
     }
 
@@ -105,7 +130,7 @@ class ImageTransformsController extends Controller
         $transform->height = $this->request->getBodyParam('height') ?: null;
         $transform->mode = $this->request->getBodyParam('mode');
         $transform->position = $this->request->getBodyParam('position');
-        $transform->quality = $this->request->getBodyParam('quality');
+        $transform->quality = $this->request->getBodyParam('quality') ?: null;
         $transform->interlace = $this->request->getBodyParam('interlace');
         $transform->format = $this->request->getBodyParam('format');
 
@@ -121,13 +146,9 @@ class ImageTransformsController extends Controller
             $errors = true;
         }
 
-        if (!empty($transform->quality) && (!is_numeric($transform->quality) || $transform->quality > 100 || $transform->quality < 1)) {
+        if ($transform->quality && ($transform->quality > 100 || $transform->quality < 1)) {
             $this->setFailFlash(Craft::t('app', 'Quality must be a number between 1 and 100 (included).'));
             $errors = true;
-        }
-
-        if (empty($transform->quality)) {
-            $transform->quality = null;
         }
 
         if (!empty($transform->format) && !in_array($transform->format, Image::webSafeFormats(), true)) {

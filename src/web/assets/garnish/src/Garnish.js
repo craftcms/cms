@@ -403,6 +403,45 @@ Garnish = $.extend(Garnish, {
   },
 
   /**
+   * Gets the first focusable element inside a container
+   * @param {Object} container
+   */
+  firstFocusableElement: function (container) {
+    return $(container).find(':focusable').first();
+  },
+
+  /**
+   * Returns a collection of all keyboard focusable-elements inside a container
+   * @param {object} container
+   * @return {object} A collection of keyboard-focusable elements
+   */
+  getKeyboardFocusableElements: function (container) {
+    const $focusable = $(container).find(':focusable');
+    const $keyboardFocusable = $focusable.filter((index, element) => {
+      return Garnish.isKeyboardFocusable(element);
+    });
+
+    return $keyboardFocusable;
+  },
+
+  /**
+   * Returns whether the element is focusable by keyboard (i.e. does not have tabindex of -1)
+   * @param {object} element
+   * @return {boolean}
+   */
+  isKeyboardFocusable: function (element) {
+    let keyboardFocusable;
+
+    if (!$(element).is(':focusable') || $(element).attr('tabindex') === '-1') {
+      keyboardFocusable = false;
+    } else {
+      keyboardFocusable = true;
+    }
+
+    return keyboardFocusable;
+  },
+
+  /**
    * Traps focus within a container, so when focus is tabbed out of it, it’s cycled back into it.
    * @param {Object} container
    */

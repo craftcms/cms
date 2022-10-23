@@ -1,18 +1,16 @@
 <div class="recententries-container">
     {% if entries|length %}
-        <table class="fullwidth">
+        <ol class="widget__list" role="list">
             {% for entry in entries %}
-                <tr>
-                    <td>
-                        <a href="{{ entry.getCpEditUrl() }}">{{ entry.title }}</a>
-                        <span class="light">
-                            {{ entry.dateCreated|timestamp('short') }}
-                            {%- if CraftEdition == CraftPro and entry.getAuthor() %}, {{ entry.getAuthor().username }}{% endif -%}
-                        </span>
-                    </td>
-                </tr>
+                <li class="widget__list-item">
+                    <a href="{{ entry.getCpEditUrl() }}">{{ entry.title }}</a>
+                    <span class="light">
+                        {{ entry.dateCreated|timestamp('short') }}
+                        {%- if CraftEdition == CraftPro and entry.getAuthor() %}, {{ entry.getAuthor().username }}{% endif -%}
+                    </span>
+                </li>
             {% endfor %}
-        </table>
+        </ol>
     {% else %}
         <p class="zilch small">{{ "No entries exist yet."|t('app') }}</p>
     {% endif %}

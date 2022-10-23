@@ -157,7 +157,7 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
      */
     public function getSettingsHtml(): ?string
     {
-        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Number/settings',
+        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Number/settings.twig',
             [
                 'field' => $this,
             ]);
@@ -281,7 +281,7 @@ JS;
 
         $view->registerJs($js);
 
-        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Number/input', [
+        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Number/input.twig', [
             'id' => $id,
             'describedBy' => $this->describedBy,
             'field' => $this,

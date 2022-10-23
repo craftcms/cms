@@ -2,6 +2,7 @@
 
 namespace craft\elements;
 
+use CommerceGuys\Addressing\AddressFormat\AddressField;
 use CommerceGuys\Addressing\AddressInterface;
 use Craft;
 use craft\base\BlockElementInterface;
@@ -60,6 +61,14 @@ class Address extends Element implements AddressInterface, BlockElementInterface
     public static function pluralLowerDisplayName(): string
     {
         return Craft::t('app', 'addresses');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public static function trackChanges(): bool
+    {
+        return true;
     }
 
     /**
@@ -139,31 +148,15 @@ class Address extends Element implements AddressInterface, BlockElementInterface
      * @param string $attribute
      * @param string $countryCode
      * @return string|null
+     * @deprecated in 4.3.0. [[\craft\services\Addresses::getFieldLabel()]] should be used instead.
      */
     public static function addressAttributeLabel(string $attribute, string $countryCode): ?string
     {
-        if (in_array($attribute, [
-            'administrativeArea',
-            'locality',
-            'dependentLocality',
-            'postalCode',
-        ], true)) {
-            $formatRepo = Craft::$app->getAddresses()->getAddressFormatRepository()->get($countryCode);
-            return match ($attribute) {
-                'administrativeArea' => Craft::$app->getAddresses()->getAdministrativeAreaTypeLabel($formatRepo->getAdministrativeAreaType()),
-                'locality' => Craft::$app->getAddresses()->getLocalityTypeLabel($formatRepo->getLocalityType()),
-                'dependentLocality' => Craft::$app->getAddresses()->getDependentLocalityTypeLabel($formatRepo->getDependentLocalityType()),
-                'postalCode' => Craft::$app->getAddresses()->getPostalCodeTypeLabel($formatRepo->getPostalCodeType()),
-            };
+        if (!AddressField::exists($attribute)) {
+            return null;
         }
-
-        return match ($attribute) {
-            'countryCode' => Craft::t('app', 'Country'),
-            'sortingCode' => Craft::t('app', 'Sorting Code'),
-            'addressLine1' => Craft::t('app', 'Address Line 1'),
-            'addressLine2' => Craft::t('app', 'Address Line 2'),
-            default => null,
-        };
+        /** @phpstan-var AddressField::* $attribute */
+        return Craft::$app->getAddresses()->getFieldLabel($attribute, $countryCode);
     }
 
     /**
@@ -273,16 +266,20 @@ class Address extends Element implements AddressInterface, BlockElementInterface
      */
     public function getAttributeLabel($attribute): string
     {
+        if (AddressField::exists($attribute)) {
+            /** @phpstan-var AddressField::* $attribute */
+            return Craft::$app->getAddresses()->getFieldLabel($attribute, $this->countryCode);
+        }
+
         return match ($attribute) {
             'title' => Craft::t('app', 'Label'),
-            'organization' => Craft::t('app', 'Organization'),
             'organizationTaxId' => Craft::t('app', 'Organization Tax ID'),
             'fullName' => Craft::t('app', 'Full Name'),
             'firstName' => Craft::t('app', 'First Name'),
             'lastName' => Craft::t('app', 'Last Name'),
             'latitude' => Craft::t('app', 'Latitude'),
             'longitude' => Craft::t('app', 'Longitude'),
-            default => static::addressAttributeLabel($attribute, $this->countryCode) ?? parent::getAttributeLabel($attribute),
+            default => parent::getAttributeLabel($attribute),
         };
     }
 
@@ -311,10 +308,16 @@ class Address extends Element implements AddressInterface, BlockElementInterface
      */
     public function canView(User $user): bool
     {
-        return (
-            parent::canView($user) ||
-            ($this->getOwner()?->getCanonical(true)->canView($user) ?? false)
-        );
+        if (parent::canView($user)) {
+            return true;
+        }
+
+        $owner = $this->getOwner()?->getCanonical(true);
+        if (!$owner) {
+            return false;
+        }
+
+        return Craft::$app->getElements()->canView($owner, $user);
     }
 
     /**
@@ -322,10 +325,16 @@ class Address extends Element implements AddressInterface, BlockElementInterface
      */
     public function canSave(User $user): bool
     {
-        return (
-            parent::canSave($user) ||
-            ($this->getOwner()?->getcanonical(true)->canSave($user) ?? false)
-        );
+        if (parent::canSave($user)) {
+            return true;
+        }
+
+        $owner = $this->getOwner()?->getCanonical(true);
+        if (!$owner) {
+            return false;
+        }
+
+        return Craft::$app->getElements()->canSave($owner, $user);
     }
 
     /**
@@ -333,10 +342,16 @@ class Address extends Element implements AddressInterface, BlockElementInterface
      */
     public function canDelete(User $user): bool
     {
-        return (
-            parent::canDelete($user) ||
-            ($this->getOwner()?->getCanonical(true)->canSave($user) ?? false)
-        );
+        if (parent::canDelete($user)) {
+            return true;
+        }
+
+        $owner = $this->getOwner()?->getCanonical(true);
+        if (!$owner) {
+            return false;
+        }
+
+        return Craft::$app->getElements()->canDelete($owner, $user);
     }
 
     /**
@@ -456,9 +471,8 @@ class Address extends Element implements AddressInterface, BlockElementInterface
      */
     public function beforeValidate(): bool
     {
-        $formatter = Craft::$app->getAddresses()->getAddressFormatRepository()->get($this->countryCode);
         $usedFields = array_unique([
-            ...$formatter->getUsedFields(),
+            ...Craft::$app->getAddresses()->getUsedFields($this->countryCode),
             'fullName',
             'latLong',
             'organizationTaxId',
@@ -483,8 +497,13 @@ class Address extends Element implements AddressInterface, BlockElementInterface
     public function defineRules(): array
     {
         $rules = parent::defineRules();
+
         $rules[] = [['ownerId'], 'number'];
         $rules[] = [['countryCode'], 'required'];
+
+        $addressesService = Craft::$app->getAddresses();
+        $countryCodes = array_keys($addressesService->getCountryRepository()->getList());
+        $rules[] = [['countryCode'], 'in', 'range' => $countryCodes];
 
         foreach (self::_addressAttributes() as $attr) {
             if ($attr === 'countryCode') {
@@ -496,8 +515,8 @@ class Address extends Element implements AddressInterface, BlockElementInterface
                 $attr,
                 'required',
                 'on' => self::SCENARIO_LIVE,
-                'when' => function(Address $model, string $attribute) {
-                    $formatter = Craft::$app->getAddresses()->getAddressFormatRepository()->get($this->countryCode);
+                'when' => function(Address $model, string $attribute) use ($addressesService) {
+                    $formatter = $addressesService->getAddressFormatRepository()->get($this->countryCode);
                     return in_array($attribute, $formatter->getRequiredFields());
                 },
             ];
