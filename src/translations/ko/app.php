@@ -435,7 +435,7 @@ return [
     'Current User Condition' => '현재 사용자 조건',
     'Current' => '현재',
     'Currently SVG images do not support focal point.' => '현재 SVG 이미지는 초점을 지원하지 않습니다.',
-    'Custom' => 'Custom',
+    'Custom' => '사용자 정의',
     'Customize' => '사용자 정의',
     'Custom…' => '사용자 정의…',
     'Dashboard' => '계기판',
