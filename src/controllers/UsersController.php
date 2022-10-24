@@ -1534,6 +1534,7 @@ JS,
 
             return $this->asJson([
                 'html' => $this->_renderPhotoTemplate($user),
+                'photoId' => $user->photoId,
             ]);
         } catch (Throwable $exception) {
             if (isset($fileLocation) && file_exists($fileLocation)) {

@@ -113,6 +113,7 @@
 - The default system email template now includes a `Content-Type` tag. ([#12156](https://github.com/craftcms/cms/pull/12156))
 - `users/session-info` responses now include a `csrfTokenName` key. ([#11706](https://github.com/craftcms/cms/pull/11706), [#11767](https://github.com/craftcms/cms/pull/11767))
 - The `elements/save-draft` action now supports being called from the front end. ([#12131](https://github.com/craftcms/cms/issues/12131))
+- The `users/upload-user-photo` action now includes a `photoId` key in the response data. ([#12175](https://github.com/craftcms/cms/pull/12175))
 - Twig templates now have `today`, `tomorrow`, and `yesterday` global variables available to them.
 - Element query date params now support passing `today`, `tomorrow`, and `yesterday`. ([#10485](https://github.com/craftcms/cms/issues/10485))
 - Element queries’ `relatedTo` params now only check for relations in the same site as `siteId`, if set. ([#12000](https://github.com/craftcms/cms/issues/12000), [#12072](https://github.com/craftcms/cms/pull/12072))
