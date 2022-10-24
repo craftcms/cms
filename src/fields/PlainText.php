@@ -166,7 +166,7 @@ class PlainText extends Field implements PreviewableFieldInterface, SortableFiel
      */
     public function getSettingsHtml(): ?string
     {
-        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/PlainText/settings',
+        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/PlainText/settings.twig',
             [
                 'field' => $this,
             ]);
@@ -210,7 +210,7 @@ class PlainText extends Field implements PreviewableFieldInterface, SortableFiel
      */
     protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
     {
-        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/PlainText/input', [
+        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/PlainText/input.twig', [
             'name' => $this->handle,
             'value' => $value,
             'field' => $this,

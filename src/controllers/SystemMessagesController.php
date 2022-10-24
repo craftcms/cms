@@ -54,7 +54,7 @@ class SystemMessagesController extends Controller
         $message = Craft::$app->getSystemMessages()->getMessage($key, $language);
 
         return $this->asJson([
-            'body' => $this->getView()->renderTemplate('_components/utilities/SystemMessages/message-modal', [
+            'body' => $this->getView()->renderTemplate('_components/utilities/SystemMessages/message-modal.twig', [
                 'message' => $message,
                 'language' => $language,
             ]),

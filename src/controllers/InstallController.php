@@ -12,7 +12,6 @@ use craft\config\DbConfig;
 use craft\db\Connection;
 use craft\elements\User;
 use craft\errors\DbConnectException;
-use craft\errors\MigrationException;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Install as InstallHelper;
@@ -100,7 +99,7 @@ class InstallController extends Controller
         $userIcon = file_get_contents($iconsPath . DIRECTORY_SEPARATOR . 'user.svg');
         $worldIcon = file_get_contents($iconsPath . DIRECTORY_SEPARATOR . 'world.svg');
 
-        return $this->renderTemplate('_special/install', compact(
+        return $this->renderTemplate('_special/install/index.twig', compact(
             'showDbScreen',
             'license',
             'defaultSystemName',
@@ -303,11 +302,7 @@ class InstallController extends Controller
             'site' => $site,
         ]);
 
-        try {
-            $migrator->migrateUp($migration);
-        } catch (MigrationException $e) {
-            return $this->asFailure($e->getMessage());
-        }
+        $migrator->migrateUp($migration);
 
         // Mark all existing migrations as applied
         foreach ($migrator->getNewMigrations() as $name) {

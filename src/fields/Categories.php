@@ -82,12 +82,12 @@ class Categories extends BaseRelationField
     /**
      * @inheritdoc
      */
-    protected string $settingsTemplate = '_components/fieldtypes/Categories/settings';
+    protected string $settingsTemplate = '_components/fieldtypes/Categories/settings.twig';
 
     /**
      * @inheritdoc
      */
-    protected string $inputTemplate = '_components/fieldtypes/Categories/input';
+    protected string $inputTemplate = '_components/fieldtypes/Categories/input.twig';
 
     /**
      * @inheritdoc

@@ -358,7 +358,7 @@ class UsersController extends Controller
      */
     private function _enforceImpersonatePermission(User $user): void
     {
-        if (!Craft::$app->getUsers()->canImpersonate(Craft::$app->getUser()->getIdentity(), $user)) {
+        if (!Craft::$app->getUsers()->canImpersonate(static::currentUser(), $user)) {
             throw new ForbiddenHttpException('You do not have sufficient permissions to impersonate this user');
         }
     }
@@ -383,6 +383,7 @@ class UsersController extends Controller
         ];
 
         if (Craft::$app->getConfig()->getGeneral()->enableCsrfProtection) {
+            $return['csrfTokenName'] = Craft::$app->getConfig()->getGeneral()->csrfTokenName;
             $return['csrfTokenValue'] = $this->request->getCsrfToken();
         }
 
@@ -670,7 +671,7 @@ class UsersController extends Controller
         // Do they have an unverified email?
         if ($user->unverifiedEmail) {
             if (!$usersService->verifyEmailForUser($user)) {
-                return $this->renderTemplate('_special/emailtaken', [
+                return $this->renderTemplate('_special/emailtaken.twig', [
                     'email' => $user->unverifiedEmail,
                 ]);
             }
@@ -738,7 +739,7 @@ class UsersController extends Controller
         // ---------------------------------------------------------------------
 
         $edition = Craft::$app->getEdition();
-        $currentUser = Craft::$app->getUser()->getIdentity();
+        $currentUser = static::currentUser();
 
         if ($user === null) {
             // Are we editing a specific user account?
@@ -1092,7 +1093,7 @@ JS,
             View::POS_END
         );
 
-        return $this->renderTemplate('users/_edit', compact(
+        return $this->renderTemplate('users/_edit.twig', compact(
             'user',
             'isNewUser',
             'statusLabel',
@@ -1510,7 +1511,7 @@ JS,
 
         $userId = $this->request->getRequiredBodyParam('userId');
 
-        if ($userId != Craft::$app->getUser()->getIdentity()->id) {
+        if ($userId != static::currentUser()->id) {
             $this->requirePermission('editUsers');
         }
 
@@ -1560,7 +1561,7 @@ JS,
 
         $userId = $this->request->getRequiredBodyParam('userId');
 
-        if ($userId != Craft::$app->getUser()->getIdentity()->id) {
+        if ($userId != static::currentUser()->id) {
             $this->requirePermission('editUsers');
         }
 
@@ -1639,7 +1640,7 @@ JS,
 
         // Even if you have moderateUsers permissions, only and admin should be able to unlock another admin.
         if ($user->admin) {
-            $currentUser = Craft::$app->getUser()->getIdentity();
+            $currentUser = static::currentUser();
             if (!$currentUser->admin) {
                 throw new ForbiddenHttpException('Only admins can unlock other admins.');
             }
@@ -1676,7 +1677,7 @@ JS,
         }
 
         $usersService = Craft::$app->getUsers();
-        $currentUser = Craft::$app->getUser()->getIdentity();
+        $currentUser = static::currentUser();
 
         if (!$usersService->canSuspend($currentUser, $user) || !$usersService->suspendUser($user)) {
             $this->setFailFlash(Craft::t('app', 'Couldn’t suspend user.'));
@@ -1699,7 +1700,7 @@ JS,
 
         $userIds = $this->request->getRequiredBodyParam('userId');
 
-        if ($userIds !== (string)Craft::$app->getUser()->getIdentity()->id) {
+        if ($userIds !== (string)static::currentUser()->id) {
             $this->requirePermission('deleteUsers');
         }
 
@@ -1841,7 +1842,7 @@ JS,
 
         // Even if you have moderateUsers permissions, only and admin should be able to unsuspend another admin.
         $usersService = Craft::$app->getUsers();
-        $currentUser = Craft::$app->getUser()->getIdentity();
+        $currentUser = static::currentUser();
 
         if (!$usersService->canSuspend($currentUser, $user) || !$usersService->unsuspendUser($user)) {
             $this->setFailFlash(Craft::t('app', 'Couldn’t unsuspend user.'));
@@ -1862,7 +1863,8 @@ JS,
      */
     public function actionSaveAddress(): ?Response
     {
-        $user = Craft::$app->getUser()->getIdentity();
+        $elementsService = Craft::$app->getElements();
+        $user = static::currentUser();
         $userId = (int)($this->request->getBodyParam('userId') ?? $user->id);
         $addressId = $this->request->getBodyParam('addressId');
 
@@ -1882,7 +1884,7 @@ JS,
             ]);
         }
 
-        if (!$address->canSave($user)) {
+        if (!$elementsService->canSave($address, $user)) {
             throw new ForbiddenHttpException('User is not permitted to edit this address.');
         }
 
@@ -1903,7 +1905,7 @@ JS,
         $fieldsLocation = $this->request->getParam('fieldsLocation') ?? 'fields';
         $address->setFieldValuesFromRequest($fieldsLocation);
 
-        if (!Craft::$app->getElements()->saveElement($address)) {
+        if (!$elementsService->saveElement($address)) {
             return $this->asModelFailure($address, Craft::t('app', 'Couldn’t save {type}.', [
                 'type' => Address::lowerDisplayName(),
             ]), 'address');
@@ -1922,20 +1924,20 @@ JS,
      */
     public function actionDeleteAddress(): ?Response
     {
-        $user = Craft::$app->getUser()->getIdentity();
         $addressId = $this->request->getRequiredBodyParam('addressId');
-
         $address = Address::findOne($addressId);
 
         if (!$address) {
             throw new BadRequestHttpException("Invalid address ID: $addressId");
         }
 
-        if (!$address->canDelete($user)) {
+        $elementsService = Craft::$app->getElements();
+
+        if (!$elementsService->canDelete($address)) {
             throw new ForbiddenHttpException('User is not permitted to delete this address.');
         }
 
-        if (!Craft::$app->getElements()->deleteElement($address)) {
+        if (!$elementsService->deleteElement($address)) {
             return $this->asModelFailure($address, Craft::t('app', 'Couldn’t delete {type}.', [
                 'type' => Address::lowerDisplayName(),
             ]), 'address');
@@ -2092,7 +2094,7 @@ JS,
         }
 
         // Otherwise go with the control panel’s template
-        return $this->renderTemplate('setpassword', $variables, View::TEMPLATE_MODE_CP);
+        return $this->renderTemplate('setpassword.twig', $variables, View::TEMPLATE_MODE_CP);
     }
 
     /**
@@ -2122,7 +2124,7 @@ JS,
      */
     private function _verifyExistingPassword(): bool
     {
-        $currentUser = Craft::$app->getUser()->getIdentity();
+        $currentUser = static::currentUser();
 
         if (!$currentUser) {
             return false;
@@ -2497,7 +2499,7 @@ JS,
             $templateMode = View::TEMPLATE_MODE_CP;
         }
 
-        return $view->renderTemplate('users/_photo', [
+        return $view->renderTemplate('users/_photo.twig', [
             'user' => $user,
         ], $templateMode);
     }

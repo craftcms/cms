@@ -53,6 +53,6 @@ class FindAndReplace extends Utility
         $view->registerAssetBundle(FindReplaceAsset::class);
         $view->registerJs('new Craft.FindAndReplaceUtility(\'find-replace\');');
 
-        return $view->renderTemplate('_components/utilities/FindAndReplace');
+        return $view->renderTemplate('_components/utilities/FindAndReplace.twig');
     }
 }

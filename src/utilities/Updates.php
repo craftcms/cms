@@ -59,6 +59,6 @@ class Updates extends Utility
         $view = Craft::$app->getView();
         $view->registerAssetBundle(UpdatesAsset::class);
         $view->registerJs('new Craft.UpdatesUtility();');
-        return $view->renderTemplate('_components/utilities/Updates');
+        return $view->renderTemplate('_components/utilities/Updates.twig');
     }
 }

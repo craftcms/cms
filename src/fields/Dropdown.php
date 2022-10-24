@@ -62,7 +62,7 @@ class Dropdown extends BaseOptionsField implements SortableFieldInterface
             }
         }
 
-        return Craft::$app->getView()->renderTemplate('_includes/forms/select', [
+        return Craft::$app->getView()->renderTemplate('_includes/forms/select.twig', [
             'id' => $this->getInputId(),
             'describedBy' => $this->describedBy,
             'name' => $this->handle,
