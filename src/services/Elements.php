@@ -1156,7 +1156,6 @@ class Elements extends Component
      * (This will only happen if the duplicated element is canonical.)
      * @param bool $trackDuplication whether to keep track of the duplication from [[Elements::$duplicatedElementIds]]
      * and [[Elements::$duplicatedElementSourceIds]]
-     * @param bool|int $originalProvisionalDraftId was the original element a provisional draft? if yes, contains id of that draft
      * @return T the duplicated element
      * @throws UnsupportedSiteException if the element is being duplicated into a site it doesn’t support
      * @throws InvalidElementException if saveElement() returns false for any of the sites
@@ -1167,7 +1166,6 @@ class Elements extends Component
         array $newAttributes = [],
         bool $placeInStructure = true,
         bool $trackDuplication = true,
-        bool|int $originalProvisionalDraftId = false,
     ): ElementInterface {
         // Make sure the element exists
         if (!$element->id) {
@@ -1377,11 +1375,6 @@ class Elements extends Component
 
         // Clean up our tracks
         $mainClone->duplicateOf = null;
-
-        // discard provisional draft from the original element
-        if ($originalProvisionalDraftId) {
-            $this->deleteElementById($originalProvisionalDraftId);
-        }
 
         return $mainClone;
     }

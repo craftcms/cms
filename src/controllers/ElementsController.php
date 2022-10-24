@@ -955,13 +955,13 @@ JS, [
         }
 
         // if original element is a provisional draft, get rid of that element, so that we can discard it after duplication
-        $originalProvisionalDraftId = $element->isProvisionalDraft ? $element->id : false;
+        $originalProvisionalDraftId = $element->isProvisionalDraft;
 
         $element->draftId = null;
         $element->isProvisionalDraft = false;
 
         try {
-            $newElement = Craft::$app->getElements()->duplicateElement($element, originalProvisionalDraftId: $originalProvisionalDraftId);
+            $newElement = Craft::$app->getElements()->duplicateElement($element);
         } catch (InvalidElementException $e) {
             return $this->_asFailure($e->element, Craft::t('app', 'Couldn’t duplicate {type}.', [
                 'type' => $element::lowerDisplayName(),
@@ -969,6 +969,11 @@ JS, [
         } catch (Throwable $e) {
             /** @phpstan-ignore-next-line */
             throw new ServerErrorHttpException('An error occurred when duplicating the element.', 0, $e);
+        }
+
+        // discard provisional draft from the original element
+        if ($originalProvisionalDraftId) {
+            Craft::$app->getElements()->deleteElement($element);
         }
 
         return $this->_asSuccess(Craft::t('app', '{type} duplicated.', [
