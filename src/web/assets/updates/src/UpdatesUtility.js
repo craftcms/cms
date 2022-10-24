@@ -268,6 +268,9 @@ import './updates.scss';
           this.$headingContainer = $('<a/>', {
             class: 'release-info fieldtoggle',
             'data-target': this.notesId,
+            'aria-expanded': 'false',
+            'tabindex': '0',
+            'role': 'button',
           });
         } else {
           this.$headingContainer = $('<div/>', {class: 'release-info'});
