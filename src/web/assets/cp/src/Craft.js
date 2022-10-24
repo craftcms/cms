@@ -26,6 +26,7 @@ import './js/ElementEditorSlideout.js';
 import './js/Tabs.js';
 
 // Finally load the remaining files
+import './js/Accordion';
 import './js/AddressesInput.js';
 import './js/AdminTable.js';
 import './js/AssetImageEditor.js';

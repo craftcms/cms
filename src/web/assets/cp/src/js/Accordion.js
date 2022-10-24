@@ -4,56 +4,24 @@
  * Accordion
  */
 Craft.Accordion = Garnish.Base.extend({
-  $toggle: null,
+  $trigger: null,
   targetPrefix: null,
   targetSelector: null,
-  reverseTargetSelector: null,
 
   _$target: null,
-  _$reverseTarget: null,
-  type: null,
 
-  init: function (toggle) {
-    this.$toggle = $(toggle);
+  init: function (trigger) {
+    this.$trigger = $(trigger);
 
     // Is this already a field toggle?
-    if (this.$toggle.data('fieldtoggle')) {
-      console.warn('Double-instantiating a field toggle on an element');
-      this.$toggle.data('fieldtoggle').destroy();
+    if (this.$trigger.data('accordion')) {
+      console.warn('Double-instantiating an accordion trigger on an element');
+      this.$trigger.data('accordion').destroy();
     }
 
-    this.$toggle.data('fieldtoggle', this);
+    this.$trigger.data('accordion', this);
 
-    this.type = this.getType();
-
-    if (this.type === 'select' || this.type === 'fieldset') {
-      this.targetPrefix = this.$toggle.attr('data-target-prefix') || '';
-    } else {
-      this.targetSelector = this.normalizeTargetSelector(
-        this.$toggle.data('target')
-      );
-      this.reverseTargetSelector = this.normalizeTargetSelector(
-        this.$toggle.data('reverse-target')
-      );
-    }
-
-    this.findTargets();
-
-    switch (this.type) {
-      case 'link':
-        this.addListener(this.$toggle, 'click', 'onToggleChange');
-        break;
-      case 'fieldset':
-        this.addListener(
-          this.$toggle.find('input'),
-          'change',
-          'onToggleChange'
-        );
-        break;
-      default:
-        this.addListener(this.$toggle, 'change', 'onToggleChange');
-        this.onToggleChange();
-    }
+    this.addListener(this.$trigger, 'click', 'onTriggerClick');
   },
 
   normalizeTargetSelector: function (selector) {
@@ -64,102 +32,15 @@ Craft.Accordion = Garnish.Base.extend({
     return selector;
   },
 
-  getType: function () {
-    let nodeName = this.$toggle.prop('nodeName');
-    if (
-      (nodeName === 'INPUT' && this.$toggle.attr('type') === 'checkbox') ||
-      this.$toggle.attr('role') === 'checkbox' ||
-      this.$toggle.attr('role') === 'switch'
-    ) {
-      return 'checkbox';
-    }
+  onTriggerClick: function () {
+    console.log(this.$trigger.attr('aria-expanded'));
 
-    switch (nodeName) {
-      case 'SELECT':
-        if (Garnish.hasAttr(this.$toggle, 'data-boolean-menu')) {
-          return 'booleanMenu';
-        }
-        return 'select';
-      case 'A':
-        return 'link';
-      default:
-        return 'fieldset';
-    }
-  },
+    const isOpen = this.$trigger.attr('aria-expanded') === 'true';
 
-  findTargets: function () {
-    if (this.type === 'select' || this.type === 'fieldset') {
-      var toggleVal = this.getToggleVal();
-      this._$target = $(
-        this.normalizeTargetSelector(this.targetPrefix + this.getToggleVal())
-      );
+    if (isOpen) {
+      console.log('hide');
     } else {
-      if (this.targetSelector) {
-        this._$target = $(this.targetSelector);
-      }
-
-      if (this.reverseTargetSelector) {
-        this._$reverseTarget = $(this.reverseTargetSelector);
-      }
-    }
-  },
-
-  getToggleVal: function () {
-    switch (this.type) {
-      case 'checkbox':
-        if (typeof this.$toggle.prop('checked') !== 'undefined') {
-          return this.$toggle.prop('checked');
-        }
-        return this.$toggle.attr('aria-checked') === 'true';
-
-      case 'booleanMenu':
-        const boolean = this.$toggle.data('boolean');
-        if (typeof boolean !== 'undefined') {
-          return boolean;
-        }
-        const val = this.$toggle.val();
-        return val && val !== '0';
-
-      default:
-        let postVal;
-        if (this.type === 'fieldset') {
-          postVal = this.$toggle.find('input:checked:first').val();
-        } else {
-          postVal = Garnish.getInputPostVal(this.$toggle);
-        }
-
-        // Normalize the value
-        return typeof postVal === 'undefined' || postVal === null
-          ? null
-          : postVal.replace(/[^\w]+/g, '-');
-    }
-  },
-
-  onToggleChange: function () {
-    if (this.type === 'select' || this.type === 'fieldset') {
-      this.hideTarget(this._$target);
-      this.findTargets();
-      this.showTarget(this._$target);
-    } else {
-      this.findTargets();
-
-      if (this.type === 'link') {
-        this.onToggleChange._show =
-          this.$toggle.hasClass('collapsed') ||
-          !this.$toggle.hasClass('expanded');
-      } else {
-        this.onToggleChange._show = !!this.getToggleVal();
-      }
-
-      if (this.onToggleChange._show) {
-        this.showTarget(this._$target);
-        this.hideTarget(this._$reverseTarget);
-      } else {
-        this.hideTarget(this._$target);
-        this.showTarget(this._$reverseTarget);
-      }
-
-      delete this.onToggleChange._show;
+      console.log('show');
     }
   },
 
@@ -242,7 +123,7 @@ Craft.Accordion = Garnish.Base.extend({
   },
 
   destroy: function () {
-    this.$toggle.removeData('fieldtoggle');
+    this.$trigger.removeData('accordion');
     this.base();
   },
 });
