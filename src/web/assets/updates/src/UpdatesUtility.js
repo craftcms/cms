@@ -267,7 +267,7 @@ import './updates.scss';
         if (this.releaseInfo.notes) {
           this.$headingContainer = $('<a/>', {
             class: 'release-info fieldtoggle',
-            'data-target': this.notesId,
+            'aria-controls': this.notesId,
             'aria-expanded': 'false',
             tabindex: '0',
             role: 'button',
