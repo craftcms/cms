@@ -435,7 +435,7 @@ return [
     'Current User Condition' => '当前用户条件',
     'Current' => '当前',
     'Currently SVG images do not support focal point.' => '当前的 SVG 图像不支持根据方位来聚焦对准。',
-    'Custom' => 'Custom',
+    'Custom' => '自定义',
     'Customize' => '自定义',
     'Custom…' => '自定义…',
     'Dashboard' => '概览',
