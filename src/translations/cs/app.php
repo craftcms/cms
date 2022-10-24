@@ -435,7 +435,7 @@ return [
     'Current User Condition' => 'Aktuální stav uživatele',
     'Current' => 'Aktuální',
     'Currently SVG images do not support focal point.' => 'Obrázky SVG aktuálně nepodporují ústřední bod.',
-    'Custom' => 'Custom',
+    'Custom' => 'Vlastní',
     'Customize' => 'Přizpůsobit',
     'Custom…' => 'Vlastní...',
     'Dashboard' => 'Plocha',
