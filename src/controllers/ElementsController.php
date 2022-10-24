@@ -972,17 +972,24 @@ JS, [
             throw new ForbiddenHttpException('User not authorized to duplicate this element.');
         }
 
-        $element->draftId = null;
-        $element->isProvisionalDraft = false;
+        $clonedElement = clone $element;
+        $clonedElement->draftId = null;
+        $clonedElement->isProvisionalDraft = false;
 
         try {
-            $newElement = $elementsService->duplicateElement($element);
+            $newElement = $elementsService->duplicateElement($clonedElement);
         } catch (InvalidElementException $e) {
             return $this->_asFailure($e->element, Craft::t('app', 'Couldn’t duplicate {type}.', [
                 'type' => $element::lowerDisplayName(),
             ]));
         } catch (Throwable $e) {
             throw new ServerErrorHttpException('An error occurred when duplicating the element.', 0, $e);
+        }
+
+        // If the original element is a provisional draft,
+        // delete the draft as the changes are likely no longer wanted.
+        if ($element->isProvisionalDraft) {
+            Craft::$app->getElements()->deleteElement($element);
         }
 
         return $this->_asSuccess(Craft::t('app', '{type} duplicated.', [
