@@ -435,7 +435,7 @@ return [
     'Current User Condition' => 'Gjeldende brukerbetingelser',
     'Current' => 'Nåværende',
     'Currently SVG images do not support focal point.' => 'SVG-bilder støtter foreløpig ikke brennpunkt.',
-    'Custom' => 'Custom',
+    'Custom' => 'Egendefinert',
     'Customize' => 'Egendefinere',
     'Custom…' => 'Tilpasset …',
     'Dashboard' => 'Kontrollpanel',
