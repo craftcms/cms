@@ -599,8 +599,9 @@ class EntryQuery extends ElementQuery
      * | Value | Fetches entries…
      * | - | -
      * | `'>= 2018-04-01'` | that were posted on or after 2018-04-01.
-     * | `'< 2018-05-01'` | that were posted before 2018-05-01
+     * | `'< 2018-05-01'` | that were posted before 2018-05-01.
      * | `['and', '>= 2018-04-04', '< 2018-05-01']` | that were posted between 2018-04-01 and 2018-05-01.
+     * | `now`/`today`/`tomorrow`/`yesterday` | that were posted at midnight of the specified relative date.
      *
      * ---
      *
@@ -643,6 +644,7 @@ class EntryQuery extends ElementQuery
      * | - | -
      * | `'2018-04-01'` | that were posted before 2018-04-01.
      * | a [[\DateTime|DateTime]] object | that were posted before the date represented by the object.
+     * | `now`/`today`/`tomorrow`/`yesterday` | that were posted before midnight of specified relative date.
      *
      * ---
      *
@@ -683,6 +685,7 @@ class EntryQuery extends ElementQuery
      * | - | -
      * | `'2018-04-01'` | that were posted after 2018-04-01.
      * | a [[\DateTime|DateTime]] object | that were posted after the date represented by the object.
+     * | `now`/`today`/`tomorrow`/`yesterday` | that were posted after midnight of the specified relative date.
      *
      * ---
      *
@@ -726,6 +729,7 @@ class EntryQuery extends ElementQuery
      * | `'>= 2020-04-01'` | that will expire on or after 2020-04-01.
      * | `'< 2020-05-01'` | that will expire before 2020-05-01
      * | `['and', '>= 2020-04-04', '< 2020-05-01']` | that will expire between 2020-04-01 and 2020-05-01.
+     * | `now`/`today`/`tomorrow`/`yesterday` | that expire at midnight of the specified relative date.
      *
      * ---
      *

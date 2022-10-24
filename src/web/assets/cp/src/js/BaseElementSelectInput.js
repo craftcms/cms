@@ -634,11 +634,13 @@ Craft.BaseElementSelectInput = Garnish.Base.extend(
     onAddElements: function () {
       this.trigger('addElements');
       this.settings.onAddElements();
+      this.$container.trigger('change');
     },
 
     onRemoveElements: function () {
       this.trigger('removeElements');
       this.settings.onRemoveElements();
+      this.$container.trigger('change');
     },
   },
   {

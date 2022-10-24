@@ -23,6 +23,7 @@ use craft\elements\conditions\ElementCondition;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
+use craft\elements\ElementCollection;
 use craft\elements\exporters\Expanded;
 use craft\elements\exporters\Raw;
 use craft\elements\User;
@@ -32,6 +33,7 @@ use craft\events\DefineAttributeKeywordsEvent;
 use craft\events\DefineEagerLoadingMapEvent;
 use craft\events\DefineHtmlEvent;
 use craft\events\DefineMetadataEvent;
+use craft\events\DefineUrlEvent;
 use craft\events\DefineValueEvent;
 use craft\events\ElementIndexTableAttributeEvent;
 use craft\events\ElementStructureEvent;
@@ -61,7 +63,6 @@ use craft\helpers\StringHelper;
 use craft\helpers\Template;
 use craft\helpers\UrlHelper;
 use craft\i18n\Formatter;
-use craft\i18n\Locale;
 use craft\models\FieldLayout;
 use craft\models\Site;
 use craft\validators\DateTimeValidator;
@@ -370,6 +371,7 @@ abstract class Element extends Component implements ElementInterface
      *
      * @see canView()
      * @since 4.0.0
+     * @deprecated in 4.3.0. [[\craft\services\Elements::EVENT_AUTHORIZE_VIEW]] should be used instead.
      */
     public const EVENT_AUTHORIZE_VIEW = 'authorizeView';
 
@@ -390,6 +392,7 @@ abstract class Element extends Component implements ElementInterface
      *
      * @see canSave()
      * @since 4.0.0
+     * @deprecated in 4.3.0. [[\craft\services\Elements::EVENT_AUTHORIZE_SAVE]] should be used instead.
      */
     public const EVENT_AUTHORIZE_SAVE = 'authorizeSave';
 
@@ -410,6 +413,7 @@ abstract class Element extends Component implements ElementInterface
      *
      * @see canCreateDrafts()
      * @since 4.0.0
+     * @deprecated in 4.3.0. [[\craft\services\Elements::EVENT_AUTHORIZE_CREATE_DRAFTS]] should be used instead.
      */
     public const EVENT_AUTHORIZE_CREATE_DRAFTS = 'authorizeCreateDrafts';
 
@@ -430,6 +434,7 @@ abstract class Element extends Component implements ElementInterface
      *
      * @see canDuplicate()
      * @since 4.0.0
+     * @deprecated in 4.3.0. [[\craft\services\Elements::EVENT_AUTHORIZE_DUPLICATE]] should be used instead.
      */
     public const EVENT_AUTHORIZE_DUPLICATE = 'authorizeDuplicate';
 
@@ -450,6 +455,7 @@ abstract class Element extends Component implements ElementInterface
      *
      * @see canDelete()
      * @since 4.0.0
+     * @deprecated in 4.3.0. [[\craft\services\Elements::EVENT_AUTHORIZE_DELETE]] should be used instead.
      */
     public const EVENT_AUTHORIZE_DELETE = 'authorizeDelete';
 
@@ -470,6 +476,7 @@ abstract class Element extends Component implements ElementInterface
      *
      * @see canDeleteForSite()
      * @since 4.0.0
+     * @deprecated in 4.3.0. [[\craft\services\Elements::EVENT_AUTHORIZE_DELETE_FOR_SITE]] should be used instead.
      */
     public const EVENT_AUTHORIZE_DELETE_FOR_SITE = 'authorizeDeleteForSite';
 
@@ -531,6 +538,38 @@ abstract class Element extends Component implements ElementInterface
      * @since 3.5.0
      */
     public const EVENT_DEFINE_KEYWORDS = 'defineKeywords';
+
+    /**
+     * @event DefineUrlEvent The event that is triggered when defining the element’s URL.
+     *
+     * ```php
+     * use craft\base\Element;
+     * use craft\elements\Entry;
+     * use craft\events\DefineUrlEvent;
+     * use craft\helpers\UrlHelper;
+     * use yii\base\Event;
+     *
+     * Event::on(
+     *     Entry::class,
+     *     Element::EVENT_DEFINE_URL,
+     *     function(DefineUrlEvent $e
+     * ) {
+     *     // @var Entry $entry
+     *     $entry = $e->sender;
+     *
+     *     // Add a custom query string param to the URL
+     *     if ($event->value !== null) {
+     *         $event->url = UrlHelper::urlWithParams($event->url, [
+     *             'foo' => 'bar',
+     *         ]);
+     *     }
+     * });
+     * ```
+     *
+     * @since 4.3.0
+     * @see getUrl()
+     */
+    public const EVENT_DEFINE_URL = 'defineUrl';
 
     /**
      * @event ModelEvent The event that is triggered before the element is saved.
@@ -1035,7 +1074,11 @@ abstract class Element extends Component implements ElementInterface
 
         if ($viewState['mode'] === 'table') {
             // Get the table columns
-            $variables['attributes'] = Craft::$app->getElementSources()->getTableAttributes(static::class, $sourceKey);
+            $variables['attributes'] = Craft::$app->getElementSources()->getTableAttributes(
+                static::class,
+                $sourceKey,
+                $viewState['tableColumns'] ?? null
+            );
 
             // Give each attribute a chance to modify the criteria
             foreach ($variables['attributes'] as $attribute) {
@@ -1855,14 +1898,14 @@ abstract class Element extends Component implements ElementInterface
     private ElementInterface|false|null $_nextSibling = null;
 
     /**
-     * @var Collection[]
+     * @var array<string,Collection>
      * @see getEagerLoadedElements()
      * @see setEagerLoadedElements()
      */
     private array $_eagerLoadedElements = [];
 
     /**
-     * @var array
+     * @var array<string,int>
      * @see getEagerLoadedElementCount()
      * @see setEagerLoadedElementCount
      */
@@ -2751,12 +2794,23 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getUrl(): ?string
     {
-        if (!isset($this->uri)) {
-            return null;
+        if (isset($this->uri)) {
+            $path = $this->getIsHomepage() ? '' : $this->uri;
+            $url = UrlHelper::siteUrl($path, null, null, $this->siteId);
+        } else {
+            $url = null;
         }
 
-        $path = $this->getIsHomepage() ? '' : $this->uri;
-        return UrlHelper::siteUrl($path, null, null, $this->siteId);
+        // Give plugins/modules a chance to customize it
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_URL)) {
+            $event = new DefineUrlEvent([
+                'url' => $url,
+            ]);
+            $this->trigger(self::EVENT_DEFINE_URL, $event);
+            $url = $event->url;
+        }
+
+        return $url !== null ? Html::encodeSpaces($url) : $url;
     }
 
     /**
@@ -2820,6 +2874,10 @@ abstract class Element extends Component implements ElementInterface
      */
     public function canView(User $user): bool
     {
+        if (!$this->hasEventHandlers(self::EVENT_AUTHORIZE_VIEW)) {
+            return false;
+        }
+
         $event = new AuthorizationCheckEvent($user);
         $this->trigger(self::EVENT_AUTHORIZE_VIEW, $event);
         return $event->authorized;
@@ -2830,6 +2888,10 @@ abstract class Element extends Component implements ElementInterface
      */
     public function canSave(User $user): bool
     {
+        if (!$this->hasEventHandlers(self::EVENT_AUTHORIZE_SAVE)) {
+            return false;
+        }
+
         $event = new AuthorizationCheckEvent($user);
         $this->trigger(self::EVENT_AUTHORIZE_SAVE, $event);
         return $event->authorized;
@@ -2840,6 +2902,10 @@ abstract class Element extends Component implements ElementInterface
      */
     public function canDuplicate(User $user): bool
     {
+        if (!$this->hasEventHandlers(self::EVENT_AUTHORIZE_DUPLICATE)) {
+            return false;
+        }
+
         $event = new AuthorizationCheckEvent($user);
         $this->trigger(self::EVENT_AUTHORIZE_DUPLICATE, $event);
         return $event->authorized;
@@ -2850,6 +2916,10 @@ abstract class Element extends Component implements ElementInterface
      */
     public function canDelete(User $user): bool
     {
+        if (!$this->hasEventHandlers(self::EVENT_AUTHORIZE_DELETE)) {
+            return false;
+        }
+
         $event = new AuthorizationCheckEvent($user);
         $this->trigger(self::EVENT_AUTHORIZE_DELETE, $event);
         return $event->authorized;
@@ -2860,6 +2930,10 @@ abstract class Element extends Component implements ElementInterface
      */
     public function canDeleteForSite(User $user): bool
     {
+        if (!$this->hasEventHandlers(self::EVENT_AUTHORIZE_DELETE_FOR_SITE)) {
+            return false;
+        }
+
         $event = new AuthorizationCheckEvent($user);
         $this->trigger(self::EVENT_AUTHORIZE_DELETE_FOR_SITE, $event);
         return $event->authorized;
@@ -2870,6 +2944,10 @@ abstract class Element extends Component implements ElementInterface
      */
     public function canCreateDrafts(User $user): bool
     {
+        if (!$this->hasEventHandlers(self::EVENT_AUTHORIZE_CREATE_DRAFTS)) {
+            return false;
+        }
+
         $event = new AuthorizationCheckEvent($user);
         $this->trigger(self::EVENT_AUTHORIZE_CREATE_DRAFTS, $event);
         return $event->authorized;
@@ -4045,7 +4123,7 @@ abstract class Element extends Component implements ElementInterface
                 $this->trigger(self::EVENT_SET_EAGER_LOADED_ELEMENTS, $event);
                 if (!$event->handled) {
                     // No takers. Just store it in the internal array then.
-                    $this->_eagerLoadedElements[$handle] = Collection::make($elements);
+                    $this->_eagerLoadedElements[$handle] = ElementCollection::make($elements);
                 }
         }
     }
@@ -4310,16 +4388,7 @@ abstract class Element extends Component implements ElementInterface
                     return '';
                 }
 
-                $value = $this->$attribute;
-
-                if ($value instanceof DateTime) {
-                    $formatter = Craft::$app->getFormatter();
-                    return Html::tag('span', $formatter->asTimestamp($value, Locale::LENGTH_SHORT), [
-                        'title' => $formatter->asDatetime($value, Locale::LENGTH_SHORT),
-                    ]);
-                }
-
-                return Html::encode($value);
+                return ElementHelper::attributeHtml($this->$attribute);
         }
     }
 

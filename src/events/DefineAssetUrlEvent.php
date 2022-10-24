@@ -17,7 +17,7 @@ use yii\base\Event;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 4.0.0
  */
-class DefineAssetUrlEvent extends Event
+class DefineAssetUrlEvent extends DefineUrlEvent
 {
     /**
      * @var ImageTransform|string|array|null Asset transform index that is being generated (if any)
@@ -28,12 +28,7 @@ class DefineAssetUrlEvent extends Event
     /**
      * @var Asset The asset that is being transformed.
      * @since 4.0.0
+     * @deprecated in 4.3.0. [[$sender]] should be used instead.
      */
     public Asset $asset;
-
-    /**
-     * @var string|null Url to requested Asset that should be used instead.
-     * @since 4.0.0
-     */
-    public ?string $url = null;
 }

@@ -51,7 +51,7 @@ class VolumesController extends Controller
         $variables = [];
         $variables['volumes'] = Craft::$app->getVolumes()->getAllVolumes();
 
-        return $this->renderTemplate('settings/assets/volumes/_index', $variables);
+        return $this->renderTemplate('settings/assets/volumes/_index.twig', $variables);
     }
 
     /**
@@ -118,7 +118,7 @@ class VolumesController extends Controller
             ->redirectUrl('settings/assets')
             ->saveShortcutRedirectUrl('settings/assets/volumes/{id}')
             ->editUrl($volume->id ? "settings/assets/volumes/$volume->id" : null)
-            ->contentTemplate('settings/assets/volumes/_edit', [
+            ->contentTemplate('settings/assets/volumes/_edit.twig', [
                 'volumeId' => $volumeId,
                 'volume' => $volume,
                 'isNewVolume' => $isNewVolume,

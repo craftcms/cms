@@ -124,7 +124,7 @@ class Color extends Field implements PreviewableFieldInterface
     protected function inputHtml(mixed $value, ?ElementInterface $element = null): string
     {
         /** @var ColorData|null $value */
-        return Craft::$app->getView()->renderTemplate('_includes/forms/color', [
+        return Craft::$app->getView()->renderTemplate('_includes/forms/color.twig', [
             'id' => $this->getInputId(),
             'describedBy' => $this->describedBy,
             'name' => $this->handle,

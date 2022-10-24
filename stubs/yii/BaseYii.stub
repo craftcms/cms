@@ -16,17 +16,7 @@ class BaseYii
      * @return T
      */
     public static function createObject($type, array $params = []);
-
-    /**
-     * @param \yii\log\Logger|null $logger
-     * @return void
-     */
-    public static function setLogger($logger) {}
 }
-
-namespace yii\log;
-
-class Logger {}
 
 namespace craft\console;
 
