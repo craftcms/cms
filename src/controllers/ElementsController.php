@@ -972,14 +972,12 @@ JS, [
             throw new ForbiddenHttpException('User not authorized to duplicate this element.');
         }
 
-        // if original element is a provisional draft, get rid of that element, so that we can discard it after duplication
-        $originalProvisionalDraftId = $element->isProvisionalDraft;
-
-        $element->draftId = null;
-        $element->isProvisionalDraft = false;
+        $clonedElement = clone $element;
+        $clonedElement->draftId = null;
+        $clonedElement->isProvisionalDraft = false;
 
         try {
-            $newElement = $elementsService->duplicateElement($element);
+            $newElement = $elementsService->duplicateElement($clonedElement);
         } catch (InvalidElementException $e) {
             return $this->_asFailure($e->element, Craft::t('app', 'Couldn’t duplicate {type}.', [
                 'type' => $element::lowerDisplayName(),
@@ -988,8 +986,9 @@ JS, [
             throw new ServerErrorHttpException('An error occurred when duplicating the element.', 0, $e);
         }
 
-        // discard provisional draft from the original element
-        if ($originalProvisionalDraftId) {
+        // If the original element is a provisional draft,
+        // delete the draft as the changes are likely no longer wanted.
+        if ($element->isProvisionalDraft) {
             Craft::$app->getElements()->deleteElement($element);
         }
 
