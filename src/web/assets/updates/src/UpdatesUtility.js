@@ -249,7 +249,7 @@ import './updates.scss';
 
         if (this.releaseInfo.notes) {
           this.createReleaseNotes();
-          new Craft.FieldToggle(this.$headingContainer);
+          new Craft.Accordion(this.$headingContainer);
         }
       },
 
@@ -269,8 +269,8 @@ import './updates.scss';
             class: 'release-info fieldtoggle',
             'data-target': this.notesId,
             'aria-expanded': 'false',
-            'tabindex': '0',
-            'role': 'button',
+            tabindex: '0',
+            role: 'button',
           });
         } else {
           this.$headingContainer = $('<div/>', {class: 'release-info'});
