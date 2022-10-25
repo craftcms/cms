@@ -20,27 +20,32 @@ Craft.Accordion = Garnish.Base.extend({
     }
 
     this.$trigger.data('accordion', this);
+    this.targetSelector = this.$trigger.attr('aria-controls')
+      ? `#${this.$trigger.attr('aria-controls')}`
+      : null;
 
-    this.addListener(this.$trigger, 'click', 'onTriggerClick');
-  },
-
-  normalizeTargetSelector: function (selector) {
-    if (selector && !selector.match(/^[#\.]/)) {
-      selector = '#' + selector;
+    if (this.targetSelector) {
+      this._$target = $(this.targetSelector);
     }
 
-    return selector;
+    this.addListener(this.$trigger, 'click', 'onTriggerClick');
+    this.addListener(this.$trigger, 'keypress', (event) => {
+      const key = event.keyCode;
+
+      if (key === Garnish.SPACE_KEY || key === Garnish.RETURN_KEY) {
+        event.preventDefault();
+        this.onTriggerClick();
+      }
+    });
   },
 
   onTriggerClick: function () {
-    console.log(this.$trigger.attr('aria-expanded'));
-
     const isOpen = this.$trigger.attr('aria-expanded') === 'true';
 
     if (isOpen) {
-      console.log('hide');
+      this.hideTarget(this._$target);
     } else {
-      console.log('show');
+      this.showTarget(this._$target);
     }
   },
 
@@ -50,41 +55,38 @@ Craft.Accordion = Garnish.Base.extend({
 
       $target.removeClass('hidden');
 
-      if (this.type !== 'select' && this.type !== 'fieldset') {
-        if (this.type === 'link') {
-          this.$toggle.removeClass('collapsed');
-          this.$toggle.addClass('expanded');
-        }
+      this.$trigger
+        .removeClass('collapsed')
+        .addClass('expanded')
+        .attr('aria-expanded', 'true');
 
-        for (let i = 0; i < $target.length; i++) {
-          (($t) => {
-            if ($t.prop('nodeName') !== 'SPAN') {
-              $t.height('auto');
-              this.showTarget._targetHeight = $t.height();
-              $t.css({
-                height: this.showTarget._currentHeight,
-                overflow: 'hidden',
-              });
+      for (let i = 0; i < $target.length; i++) {
+        (($t) => {
+          if ($t.prop('nodeName') !== 'SPAN') {
+            $t.height('auto');
+            this.showTarget._targetHeight = $t.height();
+            $t.css({
+              height: this.showTarget._currentHeight,
+              overflow: 'hidden',
+            });
 
-              $t.velocity('stop');
+            $t.velocity('stop');
 
-              $t.velocity(
-                {height: this.showTarget._targetHeight},
-                'fast',
-                function () {
-                  $t.css({
-                    height: '',
-                    overflow: '',
-                  });
-                }
-              );
-            }
-          })($target.eq(i));
-        }
-
-        delete this.showTarget._targetHeight;
+            $t.velocity(
+              {height: this.showTarget._targetHeight},
+              'fast',
+              function () {
+                $t.css({
+                  height: '',
+                  overflow: '',
+                });
+              }
+            );
+          }
+        })($target.eq(i));
       }
 
+      delete this.showTarget._targetHeight;
       delete this.showTarget._currentHeight;
 
       // Trigger a resize event in case there are any grids in the target that need to initialize
@@ -94,30 +96,26 @@ Craft.Accordion = Garnish.Base.extend({
 
   hideTarget: function ($target) {
     if ($target && $target.length) {
-      if (this.type === 'select' || this.type === 'fieldset') {
-        $target.addClass('hidden');
-      } else {
-        if (this.type === 'link') {
-          this.$toggle.removeClass('expanded');
-          this.$toggle.addClass('collapsed');
-        }
+      this.$trigger
+        .removeClass('expanded')
+        .addClass('collapsed')
+        .attr('aria-expanded', 'false');
 
-        for (let i = 0; i < $target.length; i++) {
-          (($t) => {
-            if ($t.hasClass('hidden')) {
-              return;
-            }
-            if ($t.prop('nodeName') === 'SPAN') {
+      for (let i = 0; i < $target.length; i++) {
+        (($t) => {
+          if ($t.hasClass('hidden')) {
+            return;
+          }
+          if ($t.prop('nodeName') === 'SPAN') {
+            $t.addClass('hidden');
+          } else {
+            $t.css('overflow', 'hidden');
+            $t.velocity('stop');
+            $t.velocity({height: 0}, 'fast', function () {
               $t.addClass('hidden');
-            } else {
-              $t.css('overflow', 'hidden');
-              $t.velocity('stop');
-              $t.velocity({height: 0}, 'fast', function () {
-                $t.addClass('hidden');
-              });
-            }
-          })($target.eq(i));
-        }
+            });
+          }
+        })($target.eq(i));
       }
     }
   },
