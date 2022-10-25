@@ -203,7 +203,7 @@ class FieldLayoutTab extends FieldLayoutComponent
             $this->uid = StringHelper::UUID();
         }
 
-        $config = $this->toArray(['name', 'uid', 'userCondition', 'elementCondition']);
+        $config = $this->toArray(['name', 'id', 'uid', 'userCondition', 'elementCondition']);
         $config['elements'] = $this->getElementConfigs();
         return $config;
     }
