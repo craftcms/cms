@@ -259,12 +259,14 @@ import './updates.scss';
         );
 
         if (this.releaseInfo.critical) {
-          this.$container.addClass('critical');
+          this.$container.addClass('release--critical');
         }
       },
 
       createHeading: function () {
-        const $headingContainer = $('<h3/>').appendTo(this.$container);
+        const $headingContainer = $('<h3/>', {
+          class: 'release-heading',
+        }).appendTo(this.$container);
         let $headingContents;
 
         if (this.releaseInfo.notes) {
@@ -288,15 +290,15 @@ import './updates.scss';
         }).appendTo($headingContents);
         if (this.releaseInfo.critical) {
           $('<strong/>', {
-            class: 'critical',
+            class: 'release-badge',
             text: Craft.t('app', 'Critical'),
-          }).appendTo(accordionTitle);
+          }).appendTo($headingContents);
         }
         if (this.releaseInfo.date) {
           $('<span/>', {
-            class: 'date',
+            class: 'release-date',
             text: Craft.formatDate(this.releaseInfo.date),
-          }).appendTo(accordionTitle);
+          }).appendTo($headingContents);
         }
       },
 
