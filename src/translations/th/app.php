@@ -1904,7 +1904,7 @@ return [
     '{edition} edition' => '{edition} edition',
     '{element} pagination' => 'เลขหน้า {element}',
     '{filename} isn’t selectable for this field.' => 'ไม่สามารถเลือก {filename} สำหรับฟิลด์นี้ได้',
-    '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}–{last, number} จาก {total, number} {total, plural, =1{{รายการ}} other{{รายการ}}}',
+    '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}–{last, number} จาก {total, number} {total, plural, =1{{item}} other{{items}}}',
     '{first}-{last} of {total}' => '{first}–{last} จาก {total}',
     '{name} has been added, but an error occurred when installing it.' => '{name} has been added, but an error occurred when installing it.',
     '{name} should be at least {value}.' => '{name} should be at least {value}.',

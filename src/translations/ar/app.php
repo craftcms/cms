@@ -1904,7 +1904,7 @@ return [
     '{edition} edition' => 'نسخة {edition}',
     '{element} pagination' => 'الحدود الفاصلة لصفحات {element}',
     '{filename} isn’t selectable for this field.' => '{filename} غير قابل للتحديد لهذا الحقل.',
-    '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}–{last, number} من {total, number} من {total, plural, =1{{العناصر}} other{{العناصر}}}',
+    '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}–{last, number} من {total, number} من {total, plural, =1{{item}} other{{items}}}',
     '{first}-{last} of {total}' => '{first}–{last} من {total}',
     '{name} has been added, but an error occurred when installing it.' => 'تمت إضافة {name}، لكن حدث خطأ عند تثبيته.',
     '{name} should be at least {value}.' => '{name} يجب أن يكون {value} على الأقل.',

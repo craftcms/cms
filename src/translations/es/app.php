@@ -1904,7 +1904,7 @@ return [
     '{edition} edition' => 'Edición {edition}',
     '{element} pagination' => 'Paginación de {element}',
     '{filename} isn’t selectable for this field.' => '{filename} no se puede seleccionar en este campo.',
-    '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}–{last, number} de {total, number} {total, plural, one {}=1{{item}} other{{items}}}',
+    '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}–{last, number} de {total, number} {total, plural, =1{{item}} other{{items}}}',
     '{first}-{last} of {total}' => '{first}–{last} de {total}',
     '{name} has been added, but an error occurred when installing it.' => '{name} se ha añadido, pero se produjo un error durante la instalación.',
     '{name} should be at least {value}.' => '{name} debería tener al menos {value}.',
