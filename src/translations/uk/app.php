@@ -1744,7 +1744,7 @@ return [
     '{attribute} “{value}” has already been taken.' => '{attribute} «{value}» вже зайнято.',
     '{ctrl}C to copy.' => '{ctrl}C, щоб скопіювати.',
     '{edition} edition' => 'Версія {edition}',
-    '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}–{last, number} з {total, number} {total, plural, one {елемента} few {{елементів}} many {{елементів}}=1{{елемента}} other{{елемента}}}',
+    '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}–{last, number} з {total, number} {total, plural, =1{{item}} other{{items}}}',
     '{first}-{last} of {total}' => '{first}–{last} з {total}',
     '{id} – {name}' => '{id} — {name}',
     '{name} has been added, but an error occurred when installing it.' => '{name} додано, але під час установлення виникла помилка.',
