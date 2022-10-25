@@ -1904,7 +1904,7 @@ return [
     '{edition} edition' => '{edition} 버전',
     '{element} pagination' => '{element} 페이지 매김',
     '{filename} isn’t selectable for this field.' => '{filename}은(는) 이 필드에서 선택할 수 없습니다.',
-    '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}–{last, number} / {total, number} {total, plural, =1{{항목}} other{{항목}}}',
+    '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}–{last, number} / {total, number} {total, plural, =1{{item}} other{{items}}}',
     '{first}-{last} of {total}' => '{first}–{last} / {total}',
     '{name} has been added, but an error occurred when installing it.' => '{name}이(가) 추가되었으나 설치 시 오류가 발생했습니다.',
     '{name} should be at least {value}.' => '{name}은(는) 최소 {value} 이상이어야 합니다.',
