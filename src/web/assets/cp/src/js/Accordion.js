@@ -5,7 +5,6 @@
  */
 Craft.Accordion = Garnish.Base.extend({
   $trigger: null,
-  targetPrefix: null,
   targetSelector: null,
 
   _$target: null,
