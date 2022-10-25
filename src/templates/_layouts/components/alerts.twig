@@ -1,14 +1,49 @@
 {% if craft.cp.areAlertsCached() %}
-    {% set alerts = craft.cp.getAlerts() %}
-    {% if alerts %}
-        <ul id="alerts">
-            {% for alert in alerts %}
-                <li><span data-icon="alert" aria-label="{{ 'Error'|t('app') }}"></span> {{ alert|raw }}</li>
-            {% endfor %}
-        </ul>
-    {% endif %}
+  {% set alerts = craft.cp.getAlerts() %}
+  {% if alerts %}
+    {% embed '_layouts/components/tag.twig' with {
+      alerts: alerts,
+      type: 'ul',
+      attributes: {
+        id: 'alerts',
+      },
+      style: {
+        'display': 'block',
+        'position': 'relative',
+        'background-color': '#ffe3e3',
+        'border-left': '5px solid #cf1124',
+        'padding': '11px 0',
+        'text-align': 'center',
+        'color': '#cf1124',
+      },
+    } only %}
+      {% block content %}
+        {% for alert in alerts %}
+          {% embed '_layouts/components/tag.twig' with {
+            alert: alert,
+            type: 'li',
+            style: {
+              'display': 'block',
+              'padding': '4px 24px',
+            },
+          } only %}
+            {% block content %}
+              {% include '_layouts/components/tag.twig' with {
+                type: 'span',
+                attributes: {
+                  'aria-label': 'Error'|t('app'),
+                  'data-icon': 'alert',
+                },
+              } only %}
+              {{ alert|raw }}
+            {% endblock %}
+          {% endembed %}
+        {% endfor %}
+      {% endblock %}
+    {% endembed %}
+  {% endif %}
 {% else %}
-    {% js %}
-        Craft.cp.fetchAlerts();
-    {% endjs %}
+  {% js %}
+    Craft.cp.fetchAlerts();
+  {% endjs %}
 {% endif %}

@@ -12,6 +12,7 @@ use craft\base\ElementInterface;
 use craft\behaviors\DraftBehavior;
 use craft\behaviors\RevisionBehavior;
 use craft\enums\LicenseKeyStatus;
+use craft\errors\InvalidHtmlTagException;
 use craft\events\RegisterCpAlertsEvent;
 use craft\web\twig\TemplateLoaderException;
 use craft\web\View;
@@ -222,7 +223,63 @@ class Cp
         Event::trigger(self::class, self::EVENT_REGISTER_ALERTS, $event);
         $alerts = array_merge($alerts, $event->alerts);
 
+        // Inline CSS styles
+        foreach ($alerts as $i => $alert) {
+            $offset = 0;
+            while (true) {
+                try {
+                    $tagInfo = Html::parseTag($alert, $offset);
+                } catch (InvalidHtmlTagException $e) {
+                    break;
+                }
+
+                $newTagHtml = self::alertTagHtml($tagInfo);
+                $alert = substr($alert, 0, $tagInfo['start']) .
+                    $newTagHtml .
+                    substr($alert, $tagInfo['end']);
+                $offset = $tagInfo['start'] + strlen($newTagHtml);
+            }
+            $alerts[$i] = $alert;
+        }
+
         return $alerts;
+    }
+
+    private static function alertTagHtml(array $tagInfo): string
+    {
+        if ($tagInfo['type'] === 'text') {
+            return $tagInfo['value'];
+        }
+
+        $style = [];
+        if ($tagInfo['type'] === 'a') {
+            $style = array_merge($style, [
+                'color' => '#cf1124',
+                'text-decoration' => 'underline',
+            ]);
+
+            if (isset($tagInfo['attributes']['class']) && in_array('go', $tagInfo['attributes']['class'])) {
+                $style = array_merge($style, [
+                    'text-decoration' => 'none',
+                    'white-space' => 'nowrap',
+                    'border' => '1px solid #cf112480',
+                    'border-radius' => '4px',
+                    'padding' => '3px 5px',
+                    'margin' => '0 2px',
+                ]);
+            }
+        }
+
+        $childTagHtml = array_map(function(array $childTagInfo): string {
+            return self::alertTagHtml($childTagInfo);
+        }, $tagInfo['children'] ?? []);
+
+        return trim(static::renderTemplate('_layouts/components/tag.twig', [
+            'type' => $tagInfo['type'],
+            'attributes' => $tagInfo['attributes'] ?? [],
+            'style' => $style,
+            'content' => implode('', $childTagHtml),
+        ]));
     }
 
     /**
