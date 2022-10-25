@@ -122,7 +122,7 @@ class TextField extends BaseNativeField
      */
     protected function inputHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
-        return Craft::$app->getView()->renderTemplate('_includes/forms/text', [
+        return Craft::$app->getView()->renderTemplate('_includes/forms/text.twig', [
             'type' => $this->type,
             'autocomplete' => $this->autocomplete,
             'class' => $this->class,

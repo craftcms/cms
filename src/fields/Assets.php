@@ -181,12 +181,12 @@ class Assets extends BaseRelationField
     /**
      * @inheritdoc
      */
-    protected string $settingsTemplate = '_components/fieldtypes/Assets/settings';
+    protected string $settingsTemplate = '_components/fieldtypes/Assets/settings.twig';
 
     /**
      * @inheritdoc
      */
-    protected string $inputTemplate = '_components/fieldtypes/Assets/input';
+    protected string $inputTemplate = '_components/fieldtypes/Assets/input.twig';
 
     /**
      * @inheritdoc
