@@ -1904,7 +1904,7 @@ return [
     '{edition} edition' => 'Версія {edition}',
     '{element} pagination' => 'Поділ на сторінки: {element}',
     '{filename} isn’t selectable for this field.' => 'Файл «{filename}» для цього поля вибрати не можна.',
-    '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}–{last, number} з {total, number} {total, plural, one {елемента} few {{елементів}} many {{елементів}}=1{{елемента}} other{{елемента}}}',
+    '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}–{last, number} з {total, number} {total, plural, =1{{item}} other{{items}}}',
     '{first}-{last} of {total}' => '{first}–{last} з {total}',
     '{name} has been added, but an error occurred when installing it.' => '{name} додано, але під час установлення виникла помилка.',
     '{name} should be at least {value}.' => '{name} має (мають) бути принаймні {value}.',
