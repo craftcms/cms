@@ -1745,7 +1745,7 @@ return [
     '{ctrl}C to copy.' => '{ctrl}C para copiar.',
     '{edition} edition' => 'Edição {edition}',
     '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}–{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}',
-    '{first}-{last} of {total}' => '{first}–{last} of {total}',
+    '{first}-{last} of {total}' => '{first}–{last} de {total}',
     '{id} – {name}' => '{id} – {name}',
     '{name} has been added, but an error occurred when installing it.' => '{name} foi adicionado, mas ocorreu um erro ao instalá-lo.',
     '{name} should be at least {value}.' => '{name} deve ser pelo menos {value}.',
