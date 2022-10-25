@@ -195,7 +195,7 @@ import './updates.scss';
     createHeading: function () {
       $('<div class="readable left"/>')
         .appendTo(this.$header)
-        .append($('<h1/>', {text: this.updateInfo.name}));
+        .append($('<h2/>', {text: this.updateInfo.name}));
     },
 
     createCta: function () {
@@ -276,7 +276,10 @@ import './updates.scss';
           this.$headingContainer = $('<div/>', {class: 'release-info'});
         }
         this.$headingContainer.appendTo(this.$container);
-        $('<h2/>', {text: this.releaseInfo.version}).appendTo(
+        $('<h3/>', {
+          text: this.releaseInfo.version,
+          class: 'h2',
+        }).appendTo(
           this.$headingContainer
         );
         if (this.releaseInfo.critical) {
