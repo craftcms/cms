@@ -81,6 +81,7 @@
 - Element query date params now support passing `today`, `tomorrow`, and `yesterday`. ([#10485](https://github.com/craftcms/cms/issues/10485))
 - Element queries’ `relatedTo` params now only check for relations in the same site as `siteId`, if set. ([#12000](https://github.com/craftcms/cms/issues/12000), [#12072](https://github.com/craftcms/cms/pull/12072))
 - Element queries now support passing ambiguous column names (e.g. `dateCreated`) and field handles into `select()`. ([#11790](https://github.com/craftcms/cms/pull/11790), [#11800](https://github.com/craftcms/cms/pull/11800))
+- Element queries’ `collect()` methods eager-loaded elements now return `craft\elements\ElementCollection` objects, which extends `Illuminate\Support\Collection` with `ids()` and `with()` methods. ([#12113](https://github.com/craftcms/cms/discussions/12113))
 - `{% cache %}` tags now store any HTML registered with `{% html %}` tags. ([#11811](https://github.com/craftcms/cms/discussions/11811))
 - `{% cache %}` tags and GraphQL query caches now get a max cache duration based on the fetched/referenced entries’ expiry dates. ([#8525](https://github.com/craftcms/cms/discussions/8525), [#11901](https://github.com/craftcms/cms/pull/11901))
 - Added the `siteHandle` field to elements queried via GraphQL. ([#10829](https://github.com/craftcms/cms/discussions/10829))
@@ -97,7 +98,7 @@
 - Added `craft\elements\actions\Restore::$restorableElementsOnly`.
 - Added `craft\elements\conditions\assets\EditableConditionRule`.
 - Added `craft\elements\conditions\entries\EditableConditionRule`.
-- Added `craft\elements\ElementCollection`, which extends `Illuminate\Support\Collection` with `ids()` and `with()` methods. ([#12113](https://github.com/craftcms/cms/discussions/12113))
+- Added `craft\elements\ElementCollection`. ([#12113](https://github.com/craftcms/cms/discussions/12113))
 - Added `craft\events\AuthorizationCheckEvent::$element`.
 - Added `craft\events\CreateTwigEvent`.
 - Added `craft\events\DefineAddressFieldLabelEvent`.
@@ -154,11 +155,6 @@
 - Added `craft\services\UserPermissions::EVENT_AFTER_SAVE_USER_PERMISSIONS`. ([#12130](https://github.com/craftcms/cms/discussions/12130), [#12146](https://github.com/craftcms/cms/pull/12146))
 - Added `craft\web\Controller::currentUser()`. ([#11754](https://github.com/craftcms/cms/pull/11754), [#11916](https://github.com/craftcms/cms/pull/11916))
 - Added `craft\web\View::EVENT_AFTER_CREATE_TWIG`. ([#11774](https://github.com/craftcms/cms/pull/11774))
-- Added the `Craft.useMobileStyles()` JavaScript method. ([#11636](https://github.com/craftcms/cms/pull/11636))
-- Added `Craft.BaseElementIndex::getParentSource()`.
-- Added `Craft.BaseElementIndex::getRootSource()`.
-- Added `Craft.BaseElementIndex::getSourceActions()`. ([#11906](https://github.com/craftcms/cms/pull/11906))
-- Added `Craft.BaseElementIndex::getSourceLevel()`.
 - `craft\elements\Asset::EVENT_DEFINE_URL` now gets triggered after the default URL has been generated, and the URL will be passed to `craft\events\DefineAssetUrlEvent::$url`.
 - `craft\elements\db\ElementQuery::collect()` and `craft\base\Element::getEagerLoadedElements()` now return `craft\elements\ElementCollection` instances. ([#12113](https://github.com/craftcms/cms/discussions/12113))
 - `craft\events\DraftEvent::$creatorId` is now nullable. ([#11904](https://github.com/craftcms/cms/issues/11904))
@@ -167,8 +163,6 @@
 - `craft\services\Drafts::createDraft()` now accepts `null` passed to its `$creatorId` argument. ([#11904](https://github.com/craftcms/cms/issues/11904))
 - `craft\services\Search::EVENT_AFTER_SEARCH` now includes the computed search result scores, set to `craft\events\SearchEvent::$scores`, and any changes made to it will be returned by `searchElements()`. ([#11882](https://github.com/craftcms/cms/discussions/11882))
 - `craft\services\Search::EVENT_BEFORE_INDEX_KEYWORDS` is now cancellable by setting `$event->isValid` to `false`. ([#11705](https://github.com/craftcms/cms/discussions/11705))
-- `checkboxSelect` inputs without `showAllOption: true` now post an empty value if no options were selected. ([#11748](https://github.com/craftcms/cms/issues/11748))
-- `Craft.BaseElementSelectInput` now triggers a `change` event when elements are added programmatically or removed.
 - Deprecated `craft\base\Element::EVENT_AUTHORIZE_CREATE_DRAFTS`. `craft\services\Elements::EVENT_AUTHORIZE_CREATE_DRAFTS` should be used instead.
 - Deprecated `craft\base\Element::EVENT_AUTHORIZE_DELETE_FOR_SITE`. `craft\services\Elements::EVENT_AUTHORIZE_DELETE_FOR_SITE` should be used instead.
 - Deprecated `craft\base\Element::EVENT_AUTHORIZE_DELETE`. `craft\services\Elements::EVENT_AUTHORIZE_DELETE` should be used instead.
@@ -180,6 +174,13 @@
 - Deprecated `craft\services\Elements::getIsCollectingCacheTags()`. `getIsCollectingCacheInfo()` should be used instead. ([#11901](https://github.com/craftcms/cms/pull/11901))
 - Deprecated `craft\services\Elements::startCollectingCacheTags()`. `startCollectingCacheInfo()` should be used instead. ([#11901](https://github.com/craftcms/cms/pull/11901))
 - Deprecated `craft\services\Elements::stopCollectingCacheTags()`. `stopCollectingCacheInfo()` should be used instead. ([#11901](https://github.com/craftcms/cms/pull/11901))
+- `checkboxSelect` inputs without `showAllOption: true` now post an empty value if no options were selected. ([#11748](https://github.com/craftcms/cms/issues/11748))
+- Added the `Craft.useMobileStyles()` JavaScript method. ([#11636](https://github.com/craftcms/cms/pull/11636))
+- Added `Craft.BaseElementIndex::getParentSource()`.
+- Added `Craft.BaseElementIndex::getRootSource()`.
+- Added `Craft.BaseElementIndex::getSourceActions()`. ([#11906](https://github.com/craftcms/cms/pull/11906))
+- Added `Craft.BaseElementIndex::getSourceLevel()`.
+- `Craft.BaseElementSelectInput` now triggers a `change` event when elements are added programmatically or removed.
 
 ### System
 - Name parsing now checks for common German salutations, suffixes, and last name prefixes.
