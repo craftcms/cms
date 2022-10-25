@@ -1906,7 +1906,7 @@ Glückwunsch! Craft konnte erfolgreich eine E-Mail versenden. Hier sind die von 
     '{edition} edition' => '{edition} Edition',
     '{element} pagination' => '{element} Paginierung',
     '{filename} isn’t selectable for this field.' => '{filename} kann für dieses Feld nicht ausgewählt werden.',
-    '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}–{last, number} von {total, number} {total, plural, =1{{Element}} other{{Elemente}}}',
+    '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}–{last, number} von {total, number} {total, plural, =1{{item}} other{{items}}}',
     '{first}-{last} of {total}' => '{first}–{last} von {total}',
     '{name} has been added, but an error occurred when installing it.' => '{name} wurde hinzugefügt, aber während der Installation ist ein Fehler aufgetreten.',
     '{name} should be at least {value}.' => '{name} sollte mindestens {value} sein.',
