@@ -1744,7 +1744,7 @@ return [
     '{attribute} “{value}” has already been taken.' => '"{attribute} "{value} موجود بالفعل.',
     '{ctrl}C to copy.' => 'C{ctrl} للنسخ.',
     '{edition} edition' => 'نسخة {edition}',
-    '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}–{last, number} من {total, number} من {total, plural, =1{{العناصر}} other{{العناصر}}}',
+    '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}–{last, number} من {total, number} من {total, plural, =1{{item}} other{{items}}}',
     '{first}-{last} of {total}' => '{first}–{last} من {total}',
     '{id} – {name}' => '{id} – {name}',
     '{name} has been added, but an error occurred when installing it.' => 'تمت إضافة {name}، لكن حدث خطأ عند تثبيته.',
