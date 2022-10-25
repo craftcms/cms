@@ -1310,8 +1310,10 @@ class Matrix extends Field implements EagerLoadingFieldInterface, GqlInlineFragm
                     // Duplicate it as a draft. (We'll drop its draft status from `Matrix::saveField()`.)
                     $block = Craft::$app->getDrafts()->createDraft($block, Craft::$app->getUser()->getId(), null, null, [
                         'canonicalId' => $block->id,
-                        'primaryOwnerId' => $element->id,
-                        'owner' => $element,
+                        // #12176 - setting primaryOwnerId and owner causes an infinite loop
+                            // when autosaving drafts, if matrix propagation method is set to custom
+                        //'primaryOwnerId' => $element->id,
+                        //'owner' => $element,
                         'siteId' => $element->siteId,
                         'propagating' => false,
                         'markAsSaved' => false,
