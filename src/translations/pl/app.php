@@ -1906,7 +1906,7 @@ Gratulacje! Craft z powodzeniem może wysyłać e-maile. Zostały użyte poniżs
     '{edition} edition' => 'Wersja {edition}',
     '{element} pagination' => '{element} — paginacja',
     '{filename} isn’t selectable for this field.' => 'W tym polu nie można wybrać {filename}.',
-    '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}–{last, number} z {total, number} {total, plural, =1{{elementu}} other{{elementów}}}',
+    '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}–{last, number} z {total, number} {total, plural, =1{{item}} other{{items}}}',
     '{first}-{last} of {total}' => '{first}-{last} z {total}',
     '{name} has been added, but an error occurred when installing it.' => 'Dodano {name}, ale przy instalowaniu wystąpił błąd.',
     '{name} should be at least {value}.' => '{name} musi mieć wartość co najmniej {value}.',
