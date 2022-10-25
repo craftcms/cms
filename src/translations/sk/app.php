@@ -1744,7 +1744,7 @@ return [
     '{attribute} “{value}” has already been taken.' => '{attribute} „{value}“ je už obsadený.',
     '{ctrl}C to copy.' => '{ctrl}C pre kopírovanie.',
     '{edition} edition' => '{edition} edícia',
-    '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}–{last, number} z {total, number} {total, plural, one {} few {{položiek}} many {{položiek}}=1{{položky}} other{{položiek}}}',
+    '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}–{last, number} z {total, number} {total, plural, =1{{item}} other{{items}}}',
     '{first}-{last} of {total}' => '{first}–{last} z {total}',
     '{id} – {name}' => '{id} – {name}',
     '{name} has been added, but an error occurred when installing it.' => 'Bola pridaná položka {name}, ale pri jej inštalácii sa vyskytla chyba.',
