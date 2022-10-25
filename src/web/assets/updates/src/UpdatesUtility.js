@@ -267,7 +267,7 @@ import './updates.scss';
         const $headingContainer = $('<h3/>').appendTo(this.$container);
         let $headingContents;
 
-        if (false) {
+        if (this.releaseInfo.notes) {
           $headingContents = $('<a/>', {
             class: 'release-info fieldtoggle',
             'aria-controls': this.notesId,
