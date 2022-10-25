@@ -1744,7 +1744,7 @@ return [
     '{attribute} “{value}” has already been taken.' => '{attribute} "{value}"(이)가 이미 사용 중입니다.',
     '{ctrl}C to copy.' => '복사하려면 {ctrl}C.',
     '{edition} edition' => '{edition} 버전',
-    '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}–{last, number} / {total, number} {total, plural, =1{{항목}} other{{항목}}}',
+    '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}–{last, number} / {total, number} {total, plural, =1{{item}} other{{items}}}',
     '{first}-{last} of {total}' => '{first}–{last} / {total}',
     '{id} – {name}' => '{id} – {name}',
     '{name} has been added, but an error occurred when installing it.' => '{name}이(가) 추가되었으나 설치 시 오류가 발생했습니다.',
