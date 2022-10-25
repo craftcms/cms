@@ -243,6 +243,7 @@ import './updates.scss';
         this.update = update;
         this.releaseInfo = releaseInfo;
         this.notesId = 'notes-' + Math.floor(Math.random() * 1000000);
+        this.triggerId = `${this.notesId}-trigger`;
 
         this.createContainer();
         this.createHeading();
@@ -271,6 +272,7 @@ import './updates.scss';
 
         if (this.releaseInfo.notes) {
           $headingContents = $('<a/>', {
+            id: this.triggerId,
             class: 'release-info fieldtoggle',
             'aria-controls': this.notesId,
             'aria-expanded': 'false',
@@ -303,7 +305,11 @@ import './updates.scss';
       },
 
       createReleaseNotes: function () {
-        var $notes = $('<div/>', {id: this.notesId})
+        var $notes = $('<div/>', {
+          id: this.notesId,
+          role: 'region',
+          'aria-labelledby': this.triggerId,
+        })
           .appendTo(this.$container)
           .append(
             $('<div/>', {class: 'release-notes'}).html(this.releaseInfo.notes)
