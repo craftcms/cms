@@ -1746,7 +1746,7 @@ Congratulazioni! Craft ti ha inviato una email con successo. Ecco le impostazion
     '{attribute} “{value}” has already been taken.' => '{attribute} "{value}" è già stato preso.',
     '{ctrl}C to copy.' => '{ctrl}C per copiare.',
     '{edition} edition' => 'Edizione {edition}',
-    '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}–{last, number} di {total, number} {total, plural, one {}=1{{articolo}} other{{articoli}}}',
+    '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}–{last, number} di {total, number} {total, plural, =1{{item}} other{{items}}}',
     '{first}-{last} of {total}' => '{first}–{last} di {total}',
     '{id} – {name}' => '{id} – {name}',
     '{name} has been added, but an error occurred when installing it.' => '{name} è stato aggiunto, ma si è verificato un errore durante l\'installazione.',
