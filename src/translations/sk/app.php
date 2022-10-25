@@ -435,6 +435,7 @@ return [
     'Current User Condition' => 'Aktuálny stav používateľa',
     'Current' => 'Súčasné',
     'Currently SVG images do not support focal point.' => 'Obrázky SVG momentálne nepodporujú ohnisko.',
+    'Custom' => 'Vlastný',
     'Customize' => 'Prispôsobiť',
     'Custom…' => 'Vlastné…',
     'Dashboard' => 'Ovládací Panel',
