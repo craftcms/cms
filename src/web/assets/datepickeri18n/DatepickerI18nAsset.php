@@ -22,29 +22,39 @@ class DatepickerI18nAsset extends AssetBundle
     public function init(): void
     {
         // Figure out which Datepicker i18n script to load
-        $language = Craft::$app->language;
+        $languageId = Craft::$app->getLocale()->getLanguageID();
 
-        if (in_array($language, ['en-GB', 'fr-CA'], true)) {
-            $datepickerLanguage = $language;
-        } else {
-            $languageId = Craft::$app->getLocale()->getLanguageID();
+        $languages = [
+            Craft::$app->language,
+            $languageId,
+        ];
 
-            if (in_array($languageId, ['ar', 'cs', 'da', 'de', 'fr', 'he', 'hu', 'it', 'ja', 'ko', 'nb', 'nl', 'nn', 'no', 'pl', 'pt', 'ru', 'sk', 'sv', 'tr', 'zh'], true)) {
-                $datepickerLanguage = $languageId;
-            }
+        $fallbacks = [
+            'cy' => 'cy-GB',
+            'zh' => 'zh-CN',
+        ];
+
+        if (isset($fallbacks[$languageId])) {
+            $languages[] = $fallbacks[$languageId];
         }
 
-        /** @noinspection UnSafeIsSetOverArrayInspection */
-        if (isset($datepickerLanguage)) {
-            $this->sourcePath = __DIR__ . '/dist';
+        $sourcePath = __DIR__ . '/dist';
 
-            $this->depends = [
-                JqueryUiAsset::class,
-            ];
+        foreach ($languages as $language) {
+            $filename = "datepicker-$language.js";
+            if (file_exists("$sourcePath/$filename")) {
+                $this->sourcePath = $sourcePath;
 
-            $this->js = [
-                "datepicker-$datepickerLanguage.js",
-            ];
+                $this->depends = [
+                    JqueryUiAsset::class,
+                ];
+
+                $this->js = [
+                    $filename,
+                ];
+
+                break;
+            }
         }
 
         parent::init();

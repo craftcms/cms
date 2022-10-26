@@ -6,6 +6,7 @@
 - Fixed a bug where locked users’ remaining cooldown times could be calculated incorrectly on PHP 8.0.
 - Fixed an infinite recursion bug that occurred when editing a Matrix field with a custom propagation method. ([#12176](https://github.com/craftcms/cms/issues/12176))
 - Fixed a bug where element index source lists were showing headings that didn’t have any visible nested sources. ([#12193](https://github.com/craftcms/cms/issues/12193))
+- Fixed a JavaScript 404 error that occurred when users’ Language was set to Chinese. ([#12194](https://github.com/craftcms/cms/issues/12194))
 
 ## 4.3.0 - 2022-10-25
 
