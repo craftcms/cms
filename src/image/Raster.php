@@ -24,6 +24,7 @@ use Imagine\Image\Box;
 use Imagine\Image\BoxInterface;
 use Imagine\Image\ImageInterface;
 use Imagine\Image\Metadata\ExifMetadataReader;
+use Imagine\Image\Palette\Color\ColorInterface;
 use Imagine\Image\Palette\RGB;
 use Imagine\Image\Point;
 use Imagine\Imagick\Imagine as ImagickImagine;
@@ -77,6 +78,11 @@ class Raster extends Image
      * @var Font|null
      */
     private ?Font $_font = null;
+
+    /**
+     * @var ColorInterface|null
+     */
+    private ?ColorInterface $_fill = null;
 
     /**
      * @inheritdoc
@@ -234,7 +240,7 @@ class Raster extends Image
     /**
      * @inheritdoc
      */
-    public function scaleToFit(?int $targetWidth, ?int $targetHeight, bool $scaleIfSmaller = true, string $fill = null): self
+    public function scaleToFit(?int $targetWidth, ?int $targetHeight, bool $scaleIfSmaller = true, array|string $position = 'center-center'): self
     {
         $this->normalizeDimensions($targetWidth, $targetHeight);
 
@@ -243,27 +249,49 @@ class Raster extends Image
         if ($scaleIfSmaller || $this->getWidth() > $targetWidth || $this->getHeight() > $targetHeight) {
             $factor = max($this->getWidth() / $targetWidth, $this->getHeight() / $targetHeight);
             $this->resize(round($this->getWidth() / $factor), round($this->getHeight() / $factor));
-        } elseif ($fill) {
-            if ($fill === 'transparent') {
-                $fillColor = $this->_image->palette()->color('#ffffff', 0);
-            } else {
-                $fillColor = $this->_image->palette()->color($fill);
-            }
-
-            $box = new Box($targetWidth, $targetHeight);
-
-            $canvas = $this->_instance->create($box, $fillColor);
-            $point = new Point(
-                ($box->getWidth() - $this->getWidth()) / 2,
-                ($box->getHeight() - $this->getHeight()) / 2
-            );
-
-            $canvas->paste($this->_image, $point);
-
-            $this->_image = $canvas;
+        } elseif ($this->_fill) {
+            $this->applyFill($targetWidth, $targetHeight, $position);
         }
 
         return $this;
+    }
+
+    protected function applyFill(?int $targetWidth, ?int $targetHeight, string $position = 'center-center')
+    {
+        $box = new Box($targetWidth, $targetHeight);
+        $canvas = $this->_instance->create($box, $this->_fill);
+
+        [$verticalPosition, $horizontalPosition] = explode('-', $position);
+
+        switch ($verticalPosition) {
+            case 'top':
+                $y = 0;
+                break;
+            case 'bottom':
+                $y = ($box->getHeight() - $this->getHeight());
+                break;
+            default:
+                $y = ($box->getHeight() - $this->getHeight()) / 2;
+                break;
+        }
+
+        switch ($horizontalPosition) {
+            case 'left':
+                $x = 0;
+                break;
+            case 'right':
+                $x = ($box->getWidth() - $this->getWidth());
+                break;
+            default:
+                $x = ($box->getWidth() - $this->getWidth()) / 2;
+                break;
+        }
+
+        $point = new Point($x, $y);
+
+        $canvas->paste($this->_image, $point);
+
+        $this->_image = $canvas;
     }
 
     /**
@@ -473,6 +501,13 @@ class Raster extends Image
     {
         $this->_image->interlace($interlace);
 
+        return $this;
+    }
+
+    public function setFill(string $fill): self
+    {
+        $alpha = $fill === 'transparent' ? 100 : null;
+        $this->_fill = $this->_image->palette()->color($fill, $alpha);
         return $this;
     }
 

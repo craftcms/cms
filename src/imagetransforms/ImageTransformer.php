@@ -357,21 +357,26 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
         // In case this takes a while, update the timestamp so we know it's all working
         $image->setHeartbeatCallback(fn() => $this->storeTransformIndexData($index));
 
+        if ($asset->getHasFocalPoint()) {
+            $position = $asset->getFocalPoint();
+        } elseif (!preg_match('/(top|center|bottom)-(left|center|right)/', $transform->position)) {
+            $position = 'center-center';
+        } else {
+            $position = $transform->position;
+        }
+
         switch ($transform->mode) {
             case 'fit':
-                $image->scaleToFit($transform->width, $transform->height, true, $transform->fill);
+                if ($transform->fill && $image instanceof Raster) {
+                    $image->setFill($transform->fill);
+                }
+
+                $image->scaleToFit($transform->width, $transform->height, Craft::$app->getConfig()->getGeneral()->upscaleImages, $position);
                 break;
             case 'stretch':
                 $image->resize($transform->width, $transform->height);
                 break;
             default:
-                if ($asset->getHasFocalPoint()) {
-                    $position = $asset->getFocalPoint();
-                } elseif (!preg_match('/(top|center|bottom)-(left|center|right)/', $transform->position)) {
-                    $position = 'center-center';
-                } else {
-                    $position = $transform->position;
-                }
                 $image->scaleAndCrop($transform->width, $transform->height, Craft::$app->getConfig()->getGeneral()->upscaleImages, $position);
         }
 
