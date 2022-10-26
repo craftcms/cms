@@ -1908,7 +1908,7 @@ Köszönjük, hogy regsiztráltál, a felhasználói filókod aktiváláshoz kat
     '{edition} edition' => '{edition} kiadás',
     '{element} pagination' => '{element} oldaltördelés',
     '{filename} isn’t selectable for this field.' => '{filename} nem választható ehhez a mezőhöz.',
-    '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}–{last, number} / {total, number} {total, plural, =1{{item}} other{{item}}}',
+    '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}–{last, number} / {total, number} {total, plural, =1{{item}} other{{items}}}',
     '{first}-{last} of {total}' => '{first}–{last} / {total}',
     '{name} has been added, but an error occurred when installing it.' => 'A(z) {name} hozzá lett adva, de a telepítésekor hiba történt.',
     '{name} should be at least {value}.' => '{name} legalább {value} legyen.',
