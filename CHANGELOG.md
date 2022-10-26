@@ -2,7 +2,6 @@
 
 ## Unreleased
 
-### Fixed
 - Fixed a bug where locked users’ remaining cooldown times could be calculated incorrectly on PHP 8.0.
 - Fixed an infinite recursion bug that occurred when editing a Matrix field with a custom propagation method. ([#12176](https://github.com/craftcms/cms/issues/12176))
 - Fixed a bug where element index source lists were showing headings that didn’t have any visible nested sources. ([#12193](https://github.com/craftcms/cms/issues/12193))
@@ -12,7 +11,7 @@
 
 ## 4.3.0 - 2022-10-25
 
-### Authoring
+### Content Management
 - Added a “View” menu to element indexes, which enable users to customize the visible table columns for themselves, without affecting other users. ([#11915](https://github.com/craftcms/cms/pull/11915))
 - Added source setting menus to element index pages, which now contain the “Customize sources” option when allowed, and “New subfolder”, “Rename folder”, and “Delete folder” actions on the Assets index page. ([#11906](https://github.com/craftcms/cms/pull/11906))
 - Added the “Editable” rule to asset and entry conditions. ([#11995](https://github.com/craftcms/cms/discussions/11995))
@@ -100,7 +99,7 @@
 - The `elements/save-draft` action now supports being called from the front end. ([#12131](https://github.com/craftcms/cms/issues/12131))
 - The `users/upload-user-photo` action now includes a `photoId` key in the response data. ([#12175](https://github.com/craftcms/cms/pull/12175))
 
-### Extending
+### Extensibility
 - Added `craft\base\conditions\BaseTextConditionRule::inputOptions()`.
 - Added `craft\base\Element::EVENT_DEFINE_URL`. ([#12168](https://github.com/craftcms/cms/pull/12168))
 - Added `craft\base\ExpirableElementInterface`. ([#11901](https://github.com/craftcms/cms/pull/11901))
@@ -201,8 +200,6 @@
 - Improved GraphQL cache reliability. ([#11994](https://github.com/craftcms/cms/issues/11994), [#12086](https://github.com/craftcms/cms/pull/12086))
 - Control panel `.twig` templates are now prioritized over `.html`. ([#11809](https://github.com/craftcms/cms/discussions/11809), [#11840](https://github.com/craftcms/cms/pull/11840))
 - Updated Yii to 2.0.46.
-
-### Fixes
 - Fixed a bug where addresses weren’t validating their country codes. ([#12161](https://github.com/craftcms/cms/issues/12161))
 - Fixed a bug where Entry URI Format, Template, and Default Status switches were focusable within sections’ Site Settings tables, for disabled sites.
 - Fixed a bug where `craft\helpers\Db::parseParam()` wasn’t generating conditions that would include `null` values when it should have. ([#11931](https://github.com/craftcms/cms/issues/11931))
