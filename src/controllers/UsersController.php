@@ -1888,7 +1888,7 @@ JS,
             throw new ForbiddenHttpException('User is not permitted to edit this address.');
         }
 
-        // Addresses have not status, and the default element save controller also sets the address scenario to live
+        // Addresses have no status, and the default element save controller also sets the address scenario to live
         $address->setScenario(Element::SCENARIO_LIVE);
 
         // Name attributes
