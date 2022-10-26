@@ -1424,9 +1424,9 @@ class User extends Element implements IdentityInterface
     {
         if ($this->locked) {
             $currentTime = DateTimeHelper::currentUTCDateTime();
-            $cooldownEnd = $this->getCooldownEndTime()->setTimezone(new DateTimeZone('UTC'));
+            $cooldownEnd = $this->getCooldownEndTime()?->setTimezone(new DateTimeZone('UTC'));
 
-            if ($currentTime < $cooldownEnd) {
+            if ($cooldownEnd && $currentTime < $cooldownEnd) {
                 return $currentTime->diff($cooldownEnd);
             }
         }
