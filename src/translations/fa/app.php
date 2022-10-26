@@ -1904,7 +1904,7 @@ return [
     '{edition} edition' => '{edition} ویرایش',
     '{element} pagination' => 'صفحه‌بندی {element}',
     '{filename} isn’t selectable for this field.' => '{filename} برای این فیلد قابل‌انتخاب نیست.',
-    '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}–{last, number} از {total, number} {total, plural, =1{{item}} other{{items}}}',
+    '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}–{last, number} از {total, number} {total, plural, =1{{item}} other{{item}}}',
     '{first}-{last} of {total}' => '{first}–{last} از {total}',
     '{name} has been added, but an error occurred when installing it.' => '{name} اضافه شده است اما یک خطا در هنگام نصب آن اتفاق افتاد.',
     '{name} should be at least {value}.' => '{name} باید حداقل {value} باشد.',
