@@ -731,13 +731,13 @@ class ElementHelper
             }
 
             $label = Craft::t('app', 'Enabled');
-            return Html::tag('div', '', [
+            return Html::tag('span', '', [
                 'class' => 'checkbox-icon',
-                'role' => 'img',
-                'title' => $label,
                 'aria' => [
-                    'label' => $label,
+                    'hidden' => 'true',
                 ],
+            ]) . Html::tag('span', $label, [
+                'class' => 'enabled-label',
             ]);
         }
 

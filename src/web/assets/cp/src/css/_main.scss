@@ -2331,11 +2331,15 @@ table {
 
     tbody {
       tr {
+        --hover-bg-color: var(--gray-050);
+        --selected-bg-color: var(--dark-sel-color);
+        --link-color: var(--dark-link-color);
+
         &:not(.disabled) {
           &:hover {
             th,
             td {
-              background-color: var(--gray-050);
+              background-color: var(--hover-bg-color);
             }
           }
 
@@ -2345,9 +2349,14 @@ table {
           }
 
           &.sel {
+            --link-color: var(--white);
+            --ui-control-color: var(--white);
+            @include custom-color-focus-ring(hsl(var(--light-focus-color)));
+
             th,
             td {
-              background-color: var(--light-sel-color);
+              color: var(--white);
+              background-color: var(--selected-bg-color);
             }
           }
         }
@@ -2747,6 +2756,10 @@ $checkboxPadding: $checkboxSize + 4;
 
     .move + .toggle {
       @include margin-left(calc(var(--touch-target-size) * -2));
+    }
+
+    .enabled-label {
+      margin-left: var(--xs);
     }
   }
 
