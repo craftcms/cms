@@ -38,10 +38,6 @@ Craft.Accordion = Garnish.Base.extend({
     });
   },
 
-  getAnimationDuration: function () {
-    return Garnish.prefersReducedMotion() ? 0 : 'fast';
-  },
-
   onTriggerClick: function () {
     const isOpen = this.$trigger.attr('aria-expanded') === 'true';
 
@@ -77,7 +73,7 @@ Craft.Accordion = Garnish.Base.extend({
 
             $t.velocity(
               {height: this.showTarget._targetHeight},
-              this.getAnimationDuration(),
+              Garnish.getUserPreferredAnimationDuration('fast'),
               function () {
                 $t.css({
                   height: '',
@@ -114,7 +110,7 @@ Craft.Accordion = Garnish.Base.extend({
           } else {
             $t.css('overflow', 'hidden');
             $t.velocity('stop');
-            $t.velocity({height: 0}, this.getAnimationDuration(), function () {
+            $t.velocity({height: 0}, Garnish.getUserPreferredAnimationDuration('fast'), function () {
               $t.addClass('hidden');
             });
           }
