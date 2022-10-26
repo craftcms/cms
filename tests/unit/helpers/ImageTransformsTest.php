@@ -87,6 +87,12 @@ class ImageTransformsTest extends Unit
                 ],
                 '_1280x600_crop_center-center_95_line_invalidFill',
             ],
+            'transparent fill' => [
+                [
+                    'fill' => 'transparent',
+                ],
+                '_1280x600_crop_center-center_95_line_transparent',
+            ],
         ];
     }
 
@@ -135,6 +141,12 @@ class ImageTransformsTest extends Unit
                     'fill' => null,
                 ],
                 ArrayHelper::merge($this->fullTransform, ['fill' => 'invalidFill']),
+            ],
+            'transparent fill' => [
+                [
+                    'fill' => 'transparent',
+                ],
+                ArrayHelper::merge($this->fullTransform, ['fill' => 'transparent']),
             ],
             'extended transform' => [
                 [
@@ -207,6 +219,10 @@ class ImageTransformsTest extends Unit
             'full transform' => [
                 '_100x200_fit_center-center_95_line_ff0000',
                 ArrayHelper::merge($this->fullTransform, ['handle' => null]),
+            ],
+            'transparent fill' => [
+                '_100x200_fit_center-center_95_line_transparent',
+                ArrayHelper::merge($this->fullTransform, ['fill' => 'transparent', 'handle' => null]),
             ],
         ];
     }

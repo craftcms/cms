@@ -244,7 +244,12 @@ class Raster extends Image
             $factor = max($this->getWidth() / $targetWidth, $this->getHeight() / $targetHeight);
             $this->resize(round($this->getWidth() / $factor), round($this->getHeight() / $factor));
         } elseif ($fill) {
-            $fillColor = $this->_image->palette()->color($fill);
+            if ($fill === 'transparent') {
+                $fillColor = $this->_image->palette()->color('#ffffff', 0);
+            } else {
+                $fillColor = $this->_image->palette()->color($fill);
+            }
+
             $box = new Box($targetWidth, $targetHeight);
 
             $canvas = $this->_instance->create($box, $fillColor);

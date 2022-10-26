@@ -144,7 +144,7 @@ class Svg extends Image
     /**
      * @inheritdoc
      */
-    public function scaleToFit(?int $targetWidth, ?int $targetHeight, bool $scaleIfSmaller = true): self
+    public function scaleToFit(?int $targetWidth, ?int $targetHeight, bool $scaleIfSmaller = true, string $fill = null): self
     {
         $this->normalizeDimensions($targetWidth, $targetHeight);
 

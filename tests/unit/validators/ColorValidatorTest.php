@@ -42,7 +42,7 @@ class ColorValidatorTest extends TestCase
      */
     public function testPattern(): void
     {
-        self::assertSame('/^#[0-9a-f]{6}$/', $this->colorValidator->pattern);
+        self::assertSame('/^(?:#[0-9a-f]{6}|transparent)$/', $this->colorValidator->pattern);
     }
 
     /**

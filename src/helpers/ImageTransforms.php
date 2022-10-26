@@ -31,7 +31,7 @@ class ImageTransforms
     /**
      * @var string The pattern to use for matching against a transform string.
      */
-    public const TRANSFORM_STRING_PATTERN = '/_(?P<width>\d+|AUTO)x(?P<height>\d+|AUTO)_(?P<mode>[a-z]+)(?:_(?P<position>[a-z\-]+))?(?:_(?P<quality>\d+))?(?:_(?P<interlace>[a-z]+))?(?:_(?P<fill>[0-9a-f]+))?/i';
+    public const TRANSFORM_STRING_PATTERN = '/_(?P<width>\d+|AUTO)x(?P<height>\d+|AUTO)_(?P<mode>[a-z]+)(?:_(?P<position>[a-z\-]+))?(?:_(?P<quality>\d+))?(?:_(?P<interlace>[a-z]+))?(?:_(?P<fill>[0-9a-f]{6}|transparent))?/i';
 
     /**
      * Create an AssetImageTransform model from a string.
@@ -56,8 +56,8 @@ class ImageTransforms
             unset($matches['quality']);
         }
 
-        if (empty($matches['fill'])) {
-            unset($matches['fill']);
+        if (isset($matches['fill'])) {
+            $fill = ColorValidator::normalizeColor($matches['fill']);
         }
 
         return Craft::createObject([
@@ -70,7 +70,7 @@ class ImageTransforms
             'position' => $matches['position'],
             'quality' => $matches['quality'] ?? null,
             'interlace' => $matches['interlace'] ?? 'none',
-            'fill' => isset($matches['fill']) ? '#' . $matches['fill'] : null,
+            'fill' => $fill ?? null,
             'transformer' => ImageTransform::DEFAULT_TRANSFORMER,
         ]);
     }
