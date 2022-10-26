@@ -2,7 +2,9 @@
 
 ## Unreleased
 
-### 3.7.58 - 2022-10-25
+## 3.7.58 - 2022-10-25
+
+### Fixed
 - Fixed a bug where Entry URI Format and Template inputs were editable within sections’ Site Settings tables, for disabled sites.
 
 ## 3.7.57 - 2022-10-18
