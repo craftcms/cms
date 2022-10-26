@@ -85,7 +85,6 @@ Craft.Preview = Garnish.Base.extend(
         'LivePreview.editorWidth',
         Craft.Preview.defaultEditorWidth
       );
-      this.setAnimationDuration();
 
       Craft.Preview.instances.push(this);
     },
@@ -119,16 +118,11 @@ Craft.Preview = Garnish.Base.extend(
       this._editorWidthInPx = inPx;
     },
 
-    setAnimationDuration: function () {
-      this.animationDuration = Garnish.prefersReducedMotion() ? 0 : 'slow';
-    },
-
     open: function () {
       if (this.isActive) {
         return;
       }
 
-      this.setAnimationDuration();
       this.isActive = true;
       this.trigger('beforeOpen');
 
@@ -462,7 +456,7 @@ Craft.Preview = Garnish.Base.extend(
       this.$editorContainer
         .show()
         .velocity('stop')
-        .animateLeft(0, this.animationDuration, () => {
+        .animateLeft(0, Garnish.getUserPreferredAnimationDuration(this.animationDuration), () => {
           this.trigger('slideIn');
           Garnish.$win.trigger('resize');
         });
@@ -470,7 +464,7 @@ Craft.Preview = Garnish.Base.extend(
       this.$previewContainer
         .show()
         .velocity('stop')
-        .animateRight(0, this.animationDuration);
+        .animateRight(0, Garnish.getUserPreferredAnimationDuration(this.animationDuration));
 
       this.isVisible = true;
 
@@ -488,7 +482,6 @@ Craft.Preview = Garnish.Base.extend(
         return;
       }
 
-      this.setAnimationDuration();
       this.trigger('beforeClose');
 
       $('html').removeClass('noscroll');
@@ -510,7 +503,7 @@ Craft.Preview = Garnish.Base.extend(
 
       this.$editorContainer
         .velocity('stop')
-        .animateLeft(-this.editorWidthInPx, this.animationDuration, () => {
+        .animateLeft(-this.editorWidthInPx, Garnish.getUserPreferredAnimationDuration(this.animationDuration), () => {
           for (var i = 0; i < this.fields.length; i++) {
             this.fields[i].$newClone.remove();
           }
@@ -520,7 +513,7 @@ Craft.Preview = Garnish.Base.extend(
 
       this.$previewContainer
         .velocity('stop')
-        .animateRight(-this.getIframeWidth(), this.animationDuration, () => {
+        .animateRight(-this.getIframeWidth(), Garnish.getUserPreferredAnimationDuration(this.animationDuration), () => {
           this.$iframeContainer.removeClass('lp-iframe-container--rotating');
           this.$previewContainer.hide();
         });
