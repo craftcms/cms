@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Fixed
+- Fixed a JavaScript 404 error that occurred when users’ Language was set to Chinese. ([#12194](https://github.com/craftcms/cms/issues/12194))
+
 ## 3.7.58 - 2022-10-25
 
 ### Fixed
