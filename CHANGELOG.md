@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+### Fixed
+- Fixed a bug where locked users’ remaining cooldown times could be calculated incorrectly on PHP 8.0.
+
 ## 4.3.0 - 2022-10-25
 
 ### Authoring

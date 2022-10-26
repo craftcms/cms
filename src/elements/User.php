@@ -42,6 +42,7 @@ use craft\validators\UsernameValidator;
 use craft\validators\UserPasswordValidator;
 use DateInterval;
 use DateTime;
+use DateTimeZone;
 use Throwable;
 use yii\base\ErrorHandler;
 use yii\base\Exception;
@@ -1423,7 +1424,7 @@ class User extends Element implements IdentityInterface
     {
         if ($this->locked) {
             $currentTime = DateTimeHelper::currentUTCDateTime();
-            $cooldownEnd = $this->getCooldownEndTime();
+            $cooldownEnd = $this->getCooldownEndTime()->setTimezone(new DateTimeZone('UTC'));
 
             if ($currentTime < $cooldownEnd) {
                 return $currentTime->diff($cooldownEnd);
