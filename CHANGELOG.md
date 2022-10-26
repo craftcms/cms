@@ -4,6 +4,7 @@
 
 ### Fixed
 - Fixed a bug where locked users’ remaining cooldown times could be calculated incorrectly on PHP 8.0.
+- Fixed an infinite recursion bug that occurred when editing a Matrix field with a custom propagation method. ([#12176](https://github.com/craftcms/cms/issues/12176))
 
 ## 4.3.0 - 2022-10-25
 

@@ -4019,10 +4019,14 @@ abstract class Element extends Component implements ElementInterface
                 continue;
             }
 
-            $this->setFieldValue($field->handle, $value);
-
             // Normalize it now in case the system language changes later
-            $this->normalizeFieldValue($field->handle);
+            // (we'll do this with the value directly rather than using setFieldVlaue() + normalizeFieldValue(),
+            // because it's slightly more efficient and to workaround an infinite loop bug caused by Matrix
+            // needing to render an object template on the owner element during normalization, which would in turn
+            // cause the Matrix field value to be (re-)normalized based on the POST data, and on and on...)
+            $value = $field->normalizeValue($value, $this);
+            $this->setFieldValue($field->handle, $value);
+            $this->_normalizedFieldValues[$field->handle] = true;
         }
     }
 
