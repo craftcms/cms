@@ -8,6 +8,7 @@
 - Fixed a JavaScript 404 error that occurred when users’ Language was set to Chinese. ([#12194](https://github.com/craftcms/cms/issues/12194))
 - Fixed a bug where users couldn’t delete their own addresses. ([craftcms/commerce#3011](https://github.com/craftcms/commerce/issues/3011))
 - Fixed a bug where the `users/save-address` action wasn’t validating addresses properly.
+- Fixed an error that could occur during garbage collection, if any nested volume folders were missing their path. ([#12195](https://github.com/craftcms/cms/issues/12195))
 
 ## 4.3.0 - 2022-10-25
 
