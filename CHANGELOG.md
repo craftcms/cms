@@ -4,6 +4,7 @@
 
 ### Fixed
 - Fixed a JavaScript 404 error that occurred when users’ Language was set to Chinese. ([#12194](https://github.com/craftcms/cms/issues/12194))
+- Fixed an error that could occur during garbage collection, if any nested volume folders were missing their path. ([#12195](https://github.com/craftcms/cms/issues/12195))
 
 ## 3.7.58 - 2022-10-25
 

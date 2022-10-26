@@ -261,6 +261,7 @@ SQL;
                 'assets.id' => null,
             ])
             ->andWhere(['not', ['folders.parentId' => null]])
+            ->andWhere(['not', ['folders.path' => null]])
             ->pairs();
 
         $volume = Craft::createObject(Temp::class);
