@@ -1744,7 +1744,7 @@ return [
     '{attribute} “{value}” has already been taken.' => '{attribute} « {value} » est déjà utilisé.',
     '{ctrl}C to copy.' => '{ctrl}C pour copier.',
     '{edition} edition' => 'édition {edition}',
-    '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}–{last, number} sur {total, number} {total, plural, =1{{item}} other{{items}}}',
+    '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}–{last, number} de {total, number} {total, plural, =1{{item}} other{{items}}}',
     '{first}-{last} of {total}' => '{first}–{last} de {total}',
     '{id} – {name}' => '{id} – {name}',
     '{name} has been added, but an error occurred when installing it.' => '{name} a été ajouté, mais une erreur est survenue lors de son installation.',
