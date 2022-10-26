@@ -18,6 +18,7 @@ use craft\errors\ImageException;
 use craft\errors\ImageTransformException;
 use craft\image\Raster;
 use craft\models\ImageTransform;
+use craft\validators\ColorValidator;
 
 /**
  * Image Transforms helper.
@@ -30,7 +31,7 @@ class ImageTransforms
     /**
      * @var string The pattern to use for matching against a transform string.
      */
-    public const TRANSFORM_STRING_PATTERN = '/_(?P<width>\d+|AUTO)x(?P<height>\d+|AUTO)_(?P<mode>[a-z]+)(?:_(?P<position>[a-z\-]+))?(?:_(?P<quality>\d+))?(?:_(?P<interlace>[a-z]+))?/i';
+    public const TRANSFORM_STRING_PATTERN = '/_(?P<width>\d+|AUTO)x(?P<height>\d+|AUTO)_(?P<mode>[a-z]+)(?:_(?P<position>[a-z\-]+))?(?:_(?P<quality>\d+))?(?:_(?P<interlace>[a-z]+))?(?:_(?P<fill>[0-9a-f]+))?/i';
 
     /**
      * Create an AssetImageTransform model from a string.
@@ -55,6 +56,10 @@ class ImageTransforms
             unset($matches['quality']);
         }
 
+        if (empty($matches['fill'])) {
+            unset($matches['fill']);
+        }
+
         return Craft::createObject([
             'class' => ImageTransform::class,
             /** @phpstan-ignore-next-line */
@@ -65,6 +70,7 @@ class ImageTransforms
             'position' => $matches['position'],
             'quality' => $matches['quality'] ?? null,
             'interlace' => $matches['interlace'] ?? 'none',
+            'fill' => isset($matches['fill']) ? '#' . $matches['fill'] : null,
             'transformer' => ImageTransform::DEFAULT_TRANSFORMER,
         ]);
     }
@@ -234,7 +240,8 @@ class ImageTransforms
             '_' . $transform->mode .
             '_' . $transform->position .
             ($transform->quality ? '_' . $transform->quality : '') .
-            '_' . $transform->interlace;
+            '_' . $transform->interlace .
+            ($transform->fill ? '_' . ltrim($transform->fill, '#') : '');
     }
 
     /**
@@ -266,6 +273,7 @@ class ImageTransforms
                 'parameterChangeTime',
                 'mode',
                 'position',
+                'fill',
                 'quality',
                 'interlace',
             ]);
@@ -280,6 +288,16 @@ class ImageTransforms
             if (!empty($transform['height']) && !is_numeric($transform['height'])) {
                 Craft::warning("Invalid transform height: {$transform['height']}", __METHOD__);
                 $transform['height'] = null;
+            }
+
+            if (!empty($transform['fill'])) {
+                $normalizedValue = ColorValidator::normalizeColor($transform['fill']);
+                if ((new ColorValidator())->validate($normalizedValue)) {
+                    $transform['fill'] = $normalizedValue;
+                } else {
+                    Craft::warning("Invalid transform fill: {$transform['fill']}", __METHOD__);
+                    $transform['fill'] = null;
+                }
             }
 
             if (array_key_exists('transform', $transform)) {

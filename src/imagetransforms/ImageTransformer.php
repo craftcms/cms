@@ -359,7 +359,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
 
         switch ($transform->mode) {
             case 'fit':
-                $image->scaleToFit($transform->width, $transform->height);
+                $image->scaleToFit($transform->width, $transform->height, true, $transform->fill);
                 break;
             case 'stretch':
                 $image->resize($transform->width, $transform->height);

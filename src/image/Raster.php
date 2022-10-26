@@ -59,9 +59,9 @@ class Raster extends Image
     private int $_quality = 0;
 
     /**
-     * @var AbstractImage|null
+     * @var ImageInterface|null
      */
-    private ?AbstractImage $_image = null;
+    private ?ImageInterface $_image = null;
 
     /**
      * @var AbstractImagine|null
@@ -234,7 +234,7 @@ class Raster extends Image
     /**
      * @inheritdoc
      */
-    public function scaleToFit(?int $targetWidth, ?int $targetHeight, bool $scaleIfSmaller = true): self
+    public function scaleToFit(?int $targetWidth, ?int $targetHeight, bool $scaleIfSmaller = true, string $fill = null): self
     {
         $this->normalizeDimensions($targetWidth, $targetHeight);
 
@@ -243,6 +243,19 @@ class Raster extends Image
         if ($scaleIfSmaller || $this->getWidth() > $targetWidth || $this->getHeight() > $targetHeight) {
             $factor = max($this->getWidth() / $targetWidth, $this->getHeight() / $targetHeight);
             $this->resize(round($this->getWidth() / $factor), round($this->getHeight() / $factor));
+        } elseif ($fill) {
+            $fillColor = $this->_image->palette()->color($fill);
+            $box = new Box($targetWidth, $targetHeight);
+
+            $canvas = $this->_instance->create($box, $fillColor);
+            $point = new Point(
+                ($box->getWidth() - $this->getWidth()) / 2,
+                ($box->getHeight() - $this->getHeight()) / 2
+            );
+
+            $canvas->paste($this->_image, $point);
+
+            $this->_image = $canvas;
         }
 
         return $this;

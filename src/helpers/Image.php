@@ -81,10 +81,14 @@ class Image
         ?int $transformWidth,
         ?int $transformHeight,
         string $mode = 'crop',
+        ?string $fill = null,
         ?bool $upscale = null,
     ): array {
         [$width, $height] = static::calculateMissingDimension($transformWidth, $transformHeight, $sourceWidth, $sourceHeight);
         $factor = max($sourceWidth / $width, $sourceHeight / $height);
+
+        $imageRatio = $sourceWidth / $sourceHeight;
+        $transformRatio = $width / $height;
 
         if ($upscale ?? Craft::$app->getConfig()->getGeneral()->upscaleImages) {
             // Special case for 'fit' since that's the only one whose dimensions vary from the transform dimensions
@@ -96,14 +100,12 @@ class Image
             return [$width, $height];
         }
 
-        if ($transformWidth === null || $transformHeight === null) {
-            $transformRatio = $sourceWidth / $sourceHeight;
-        } else {
-            $transformRatio = $transformWidth / $transformHeight;
+        // When mode is `fit` with a fill provided, always use the transform size
+        if ($mode === 'fit' && $fill) {
+            return [$width, $height];
         }
 
-        $imageRatio = $sourceWidth / $sourceHeight;
-
+        // When mode is `fit` (no fill provided) or the source is the same ratio as the transform
         if ($mode === 'fit' || $imageRatio === $transformRatio) {
             $targetWidth = min($sourceWidth, $width, (int)round($sourceWidth / $factor));
             $targetHeight = min($sourceHeight, $height, (int)round($sourceHeight / $factor));

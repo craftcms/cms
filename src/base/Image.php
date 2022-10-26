@@ -74,7 +74,7 @@ abstract class Image extends BaseObject
      * @param bool $scaleIfSmaller
      * @return static Self reference
      */
-    abstract public function scaleToFit(?int $targetWidth, ?int $targetHeight, bool $scaleIfSmaller = true): self;
+    abstract public function scaleToFit(?int $targetWidth, ?int $targetHeight, bool $scaleIfSmaller = true, ?string $fill = null): self;
 
     /**
      * Scale and crop image to exactly fit the specified size.

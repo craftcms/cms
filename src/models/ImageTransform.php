@@ -12,6 +12,7 @@ use craft\base\imagetransforms\ImageTransformerInterface;
 use craft\base\Model;
 use craft\imagetransforms\ImageTransformer;
 use craft\records\ImageTransform as ImageTransformRecord;
+use craft\validators\ColorValidator;
 use craft\validators\DateTimeValidator;
 use craft\validators\HandleValidator;
 use craft\validators\UniqueValidator;
@@ -92,6 +93,11 @@ class ImageTransform extends Model
     public ?string $uid = null;
 
     /**
+     * @var string|null
+     */
+    public ?string $fill = null;
+
+    /**
      * @var string The image transformer to use.
      * @phpstan-var class-string<ImageTransformerInterface>
      */
@@ -110,6 +116,7 @@ class ImageTransform extends Model
             'position' => Craft::t('app', 'Position'),
             'quality' => Craft::t('app', 'Quality'),
             'width' => Craft::t('app', 'Width'),
+            'fill' => Craft::t('app', 'Fill'),
             'transformer' => Craft::t('app', 'Image transformer'),
         ];
     }
@@ -125,6 +132,7 @@ class ImageTransform extends Model
         $rules[] = [['handle'], 'string', 'max' => 255];
         $rules[] = [['name', 'handle', 'mode', 'position'], 'required'];
         $rules[] = [['handle'], 'string', 'max' => 255];
+        $rules[] = [['fill'], ColorValidator::class];
         $rules[] = [
             ['mode'],
             'in',
