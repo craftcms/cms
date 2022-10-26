@@ -1748,7 +1748,7 @@ Köszönjük, hogy regsiztráltál, a felhasználói filókod aktiváláshoz kat
     '{attribute} “{value}” has already been taken.' => '{attribute} "{value}" már foglalt.',
     '{ctrl}C to copy.' => '{ctrl}C a másoláshoz',
     '{edition} edition' => '{edition} kiadás',
-    '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}–{last, number} / {total, number} {total, plural, =1{{item}} other{{item}}}',
+    '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}–{last, number} / {total, number} {total, plural, =1{{item}} other{{items}}}',
     '{first}-{last} of {total}' => '{first}–{last} / {total}',
     '{id} – {name}' => '{id} – {name}',
     '{name} has been added, but an error occurred when installing it.' => 'A(z) {name} hozzá lett adva, de a telepítésekor hiba történt.',
