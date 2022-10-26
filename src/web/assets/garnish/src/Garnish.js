@@ -140,6 +140,16 @@ Garnish = $.extend(Garnish, {
   },
 
   /**
+   * Returns either '0' or a set duration, based on a user's prefers-reduced-motion setting
+   * Used to set the duration inside the Velocity.js options object in a way that respects user preferences
+   * @param {string|integer} duration Either a ms duration or a named jQuery duration (i.e. 'fast', 'slow')
+   * @return {string|integer}
+   */
+  getUserPreferredAnimationDuration: function (duration) {
+    return Garnish.prefersReducedMotion() ? 0 : duration;
+  },
+
+  /**
    * Returns whether a variable is an array.
    *
    * @param {object} val
