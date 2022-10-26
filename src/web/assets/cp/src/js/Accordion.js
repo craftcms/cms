@@ -110,9 +110,13 @@ Craft.Accordion = Garnish.Base.extend({
           } else {
             $t.css('overflow', 'hidden');
             $t.velocity('stop');
-            $t.velocity({height: 0}, Garnish.getUserPreferredAnimationDuration('fast'), function () {
-              $t.addClass('hidden');
-            });
+            $t.velocity(
+              {height: 0},
+              Garnish.getUserPreferredAnimationDuration('fast'),
+              function () {
+                $t.addClass('hidden');
+              }
+            );
           }
         })($target.eq(i));
       }
