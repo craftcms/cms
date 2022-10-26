@@ -1744,7 +1744,7 @@ return [
     '{attribute} “{value}” has already been taken.' => '{attribute} “{value}” از قبل گرفته شده است.',
     '{ctrl}C to copy.' => 'برای کپی از {ctrl}C استفاده نمایید.',
     '{edition} edition' => '{edition} ویرایش',
-    '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}–{last, number} از {total, number} {total, plural, =1{{item}} other{{items}}}',
+    '{first, number}-{last, number} of {total, number} {total, plural, =1{{item}} other{{items}}}' => '{first, number}–{last, number} از {total, number} {total, plural, =1{{item}} other{{item}}}',
     '{first}-{last} of {total}' => '{first}–{last} از {total}',
     '{id} – {name}' => '{id} – {name}',
     '{name} has been added, but an error occurred when installing it.' => '{name} اضافه شده است اما یک خطا در هنگام نصب آن اتفاق افتاد.',
