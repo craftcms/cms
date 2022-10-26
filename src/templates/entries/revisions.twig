@@ -1,0 +1,70 @@
+{% extends "_layouts/cp" %}
+
+{% set baseParams = craft.app.request.queryParams|withoutKey('draftId')|withoutKey('revisionId')|withoutKey('siteId')|withoutKey('fresh') %}
+{% if craft.app.config.general.pathParam %}
+    {% set baseParams = baseParams|withoutKey(craft.app.config.general.pathParam) %}
+{% endif %}
+{% set cpEditUrl = cpUrl(element.getCpEditUrl(), {
+    draftId: null,
+    revisionId: null,
+}) %}
+
+{% set showSiteMenu = (craft.app.getIsMultiSite() ? (showSiteMenu ?? 'auto') : false) %}
+{% if showSiteMenu == 'auto' %}
+    {% set showSiteMenu = element.isLocalized() %}
+{% endif %}
+
+
+{% block contextMenu %}
+    {% if showSiteMenu %}
+        {% set urlFormat = url(element.getRevisionsCpUrl(), baseParams|merge({ site: '{handle}' })) %}
+        {% include "_elements/sitemenu" with {
+            urlFormat: urlFormat
+        } %}
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+    {# TODO: this limit is just to showcase pagination; should be increased to 50 or 100(?) before releasing #}
+    {% paginate revisionsQuery.limit(10) as pageInfo, revisions %}
+    {% if revisions is not empty %}
+        <div class="main">
+            <table id="revisions" class="data fullwidth">
+                <thead>
+                    <th scope="col">{{ "Revision Label"|t('app') }}</th>
+                    <th scope="col">{{ "Saved at"|t('app') }}</th>
+                    <th scope="col">{{ "Saved by"|t('app') }}</th>
+                </thead>
+                <tbody>
+                    {% for revision in revisions %}
+                        {% set url = url(cpEditUrl, baseParams|merge({ revisionId: revision.revisionId })) %}
+                        {% set creator = revision.getCreator() %}
+                        {% set revisionLabel = revision.getRevisionLabel() %}
+                        <tr data-id="{{ revision.id }}" tabindex="0">
+                            <td data-title="{{ "Revision Label"|t('app') }}">
+                                <a href="{{ url }}">{{ revisionLabel }}</a>
+                            </td>
+                            <td data-title="{{ "Saved at"|t('app') }}">{{ revision.dateCreated|timestamp('short', withPreposition=false) }}</td>
+                            <td data-title="{{ "Saved by"|t('app') }}">{{ creator ? creator.name }}</td>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% if pageInfo.prevUrl or pageInfo.nextUrl %}
+            <div id="footer" class="flex">
+                {% if pageInfo.prevUrl %}
+                    <a href="{{ pageInfo.prevUrl }}" class="btn">Previous Page</a>
+                {% endif %}
+                {% if pageInfo.nextUrl %}
+                    <a href="{{ pageInfo.nextUrl }}" class="btn">Next Page</a>
+                {% endif %}
+            </div>
+        {% endif %}
+    {% else %}
+        <p class="zilch">{{ "This entry doesn't have revisions"|t('app')  }}</p>
+    {% endif %}
+{% endblock %}
+
+
+
+

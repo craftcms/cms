@@ -2964,6 +2964,22 @@ abstract class Element extends Component implements ElementInterface
     /**
      * @inheritdoc
      */
+    public function getRevisionsQuery(): ?ElementQuery
+    {
+        return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getRevisionsCpUrl(): ?string
+    {
+        return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function prepareEditScreen(Response $response, string $containerId): void
     {
     }

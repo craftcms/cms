@@ -15,6 +15,7 @@ return [
     'entries/<sectionHandle:{handle}>' => ['template' => 'entries'],
     'entries/<section:{handle}>/new' => 'entries/create',
     'entries/<section:{handle}>/<elementId:\d+><slug:(?:-[^\/]*)?>' => 'elements/edit',
+    'entries/<section:{handle}>/<elementId:\d+><slug:(?:-[^\/]*)?>/revisions' => 'entries/revisions',
     'globals' => 'globals',
     'globals/<globalSetHandle:{handle}>' => 'globals/edit-content',
     'myaccount' => [

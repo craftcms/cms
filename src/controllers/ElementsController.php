@@ -712,19 +712,40 @@ class ElementsController extends Controller
             ]);
         }
 
-        // Revert content from this revision
-        if ($isRevision && $canSaveCanonical) {
-            $components[] = Html::beginForm() .
-                Html::actionInput('elements/revert') .
-                Html::redirectInput('{cpEditUrl}') .
-                Html::hiddenInput('elementId', (string)$canonical->id) .
-                Html::hiddenInput('revisionId', (string)$element->revisionId) .
-                Html::beginTag('div', ['class' => 'secondary-buttons']) .
-                Html::button(Craft::t('app', 'Revert content from this revision'), [
-                    'class' => ['btn', 'secondary', 'formsubmit'],
-                ]) .
-                Html::endTag('div') .
-                Html::endForm();
+        // Revert content from this revision & show link to all revisions page
+        if ($isRevision) {
+            // if we have more than 10 revisions (or more than maxRevisions if that's less than 10), show a link to all revisions
+            // 10 is the max amount that shows in the dropdown
+            $maxRevisions = Craft::$app->getConfig()->general->maxRevisions;
+            $revisionsQuery = $element->getRevisionsQuery();
+            $hasMoreRevisions = ($revisionsQuery?->count() - 1) > ($maxRevisions ? min($maxRevisions - 1, 10) : 10);
+
+            if ($hasMoreRevisions) {
+                $components[] = Html::a(
+                    Craft::t('app', 'View all revisions'),
+                    UrlHelper::url($element->getRevisionsCpUrl(), ['site' => $element->getSite()->handle]),
+                    [
+                        'class' => ['secondary-buttons', 'btn'],
+                        'aria' => [
+                            'label' => Craft::t('app', 'Reviews'),
+                        ],
+                        'target' => '',
+                    ]);
+            }
+
+            if ($canSaveCanonical) {
+                $components[] = Html::beginForm() .
+                    Html::actionInput('elements/revert') .
+                    Html::redirectInput('{cpEditUrl}') .
+                    Html::hiddenInput('elementId', (string)$canonical->id) .
+                    Html::hiddenInput('revisionId', (string)$element->revisionId) .
+                    Html::beginTag('div', ['class' => 'secondary-buttons']) .
+                    Html::button(Craft::t('app', 'Revert content from this revision'), [
+                        'class' => ['btn', 'secondary', 'formsubmit'],
+                    ]) .
+                    Html::endTag('div') .
+                    Html::endForm();
+            }
         }
 
         $components[] = $element->getAdditionalButtons();

@@ -9,6 +9,7 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\Element;
+use craft\base\ElementInterface;
 use craft\elements\Entry;
 use craft\errors\InvalidElementException;
 use craft\errors\UnsupportedSiteException;
@@ -19,6 +20,8 @@ use craft\helpers\ElementHelper;
 use craft\helpers\UrlHelper;
 use craft\models\Section;
 use craft\models\Section_SiteSettings;
+use craft\web\assets\cp\CpAsset;
+use craft\web\View;
 use Throwable;
 use yii\base\Exception;
 use yii\web\BadRequestHttpException;
@@ -374,6 +377,61 @@ class EntriesController extends BaseEntriesController
             Craft::t('app', '{type} saved.', ['type' => Entry::displayName()]),
             data: $data,
         );
+    }
+
+    /**
+     * Renders an element revisions template.
+     *
+     * @param ElementInterface|null $element
+     * @param int|null $elementId
+     * @return Response
+     * @throws BadRequestHttpException
+     * @since 4.4.0
+     */
+    public function actionRevisions(?int $elementId = null): Response
+    {
+        $this->requireCpRequest();
+
+        $element = Craft::$app->getEntries()->getEntryById($elementId);
+
+        if (!$element) {
+            throw new BadRequestHttpException('No element was identified by the request.');
+        }
+
+        if ($element->getIsUnpublishedDraft()) {
+            throw new BadRequestHttpException('Unpublished drafts don\'t have revisions');
+        }
+
+        if (!$element->hasRevisions()) {
+            throw new BadRequestHttpException('Element doesn\'t have revisions');
+        }
+
+        $section = $element->getSection();
+        $crumbs = [
+            [
+                'label' => Craft::t('app', 'Entries'),
+                'url' => UrlHelper::url('entries'),
+            ],
+            [
+                'label' => $section->name,
+                'url' => UrlHelper::url('entries/' . $section->handle),
+            ],
+            [
+                'label' => $element->title,
+                'url' => UrlHelper::url($element->getCpEditUrl()),
+            ],
+        ];
+
+        // get revisions query for the element
+        $view = Craft::$app->getView();
+        $view->registerAssetBundle(CpAsset::class);
+
+        return $this->renderTemplate('entries/revisions', [
+            'crumbs' => $crumbs,
+            'element' => $element,
+            'revisionsQuery' => $element->getRevisionsQuery()?->limit(null),
+            'title' => Craft::t('app', 'Revisions'),
+        ], View::TEMPLATE_MODE_CP);
     }
 
     /**

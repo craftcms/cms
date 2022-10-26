@@ -9,6 +9,7 @@ namespace craft\base;
 
 use craft\behaviors\CustomFieldBehavior;
 use craft\elements\conditions\ElementConditionInterface;
+use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\User;
 use craft\errors\InvalidFieldException;
@@ -826,6 +827,22 @@ interface ElementInterface extends ComponentInterface
      * @since 4.0.0
      */
     public function hasRevisions(): bool;
+
+    /**
+     * Returns query to get all revisions for an element.
+     *
+     * @return ElementQuery|null
+     * @since 4.4.0
+     */
+    public function getRevisionsQuery(): ?ElementQuery;
+
+    /**
+     * Get base CP URL to view all revisions for an element.
+     *
+     * @return string|null
+     * @since 4.4.0
+     */
+    public function getRevisionsCpUrl(): ?string;
 
     /**
      * Prepares the response for the element’s Edit screen.

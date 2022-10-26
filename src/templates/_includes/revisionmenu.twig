@@ -16,16 +16,13 @@
     .all()|filter(d => canView(d)) : [] %}
 
 {% set maxRevisions = craft.app.config.general.maxRevisions %}
+{% set hasMoreRevisions = false %}
 {% if element.id and (not maxRevisions or maxRevisions > 1) %}
-    {% set revisions = element.find()
-        .revisionOf(element.getCanonicalId())
-        .siteId(element.siteId)
-        .status(null)
-        .offset(1)
+    {% set revisionsQuery = element.getRevisionsQuery() %}
+    {% set revisions = revisionsQuery
         .limit(maxRevisions ? min(maxRevisions - 1, 10) : 10)
-        .orderBy({dateCreated: SORT_DESC})
-        .with(['revisionCreator'])
         .all() %}
+    {% set hasMoreRevisions = (revisionsQuery.count() - 1) > revisions|length %}
 {% else %}
     {% set revisions = [] %}
 {% endif %}
@@ -227,6 +224,16 @@
                         {% endtag %}
                     {% endtag %}
                 {% endfor %}
+                {% if hasMoreRevisions %}
+                    {% tag 'li' %}
+                        {% set url = url(element.getRevisionsCpUrl(), baseParams) %}
+                        {% tag 'a' with {
+                            href: url,
+                        } %}
+                            {{ 'View all revisions'|t('app') }}
+                        {% endtag %}
+                    {% endtag %}
+                {% endif %}
             </ul>
         {% endif %}
     </div>
