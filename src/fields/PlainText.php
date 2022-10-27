@@ -14,6 +14,7 @@ use craft\base\PreviewableFieldInterface;
 use craft\base\SortableFieldInterface;
 use craft\fields\conditions\TextFieldConditionRule;
 use craft\helpers\Db;
+use craft\helpers\ElementHelper;
 use LitEmoji\LitEmoji;
 use yii\db\Schema;
 
@@ -258,5 +259,13 @@ class PlainText extends Field implements PreviewableFieldInterface, SortableFiel
     public function getElementConditionRuleType(): ?string
     {
         return TextFieldConditionRule::class;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getTableAttributeHtml(mixed $value, ElementInterface $element): string
+    {
+        return ElementHelper::attributeHtml($value, true);
     }
 }

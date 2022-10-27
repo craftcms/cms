@@ -713,10 +713,11 @@ class ElementHelper
      * Returns the HTML for a given attribute value, to be shown in an element index view.
      *
      * @param mixed $value The field value
+     * @param ?bool $plainText Is the field, for which we have the value, a plain text field?
      * @return string
      * @since 4.3.0
      */
-    public static function attributeHtml(mixed $value): string
+    public static function attributeHtml(mixed $value, ?bool $plainText = false): string
     {
         if ($value instanceof DateTime) {
             $formatter = Craft::$app->getFormatter();
@@ -741,7 +742,7 @@ class ElementHelper
             ]);
         }
 
-        if (Number::isIntOrFloat($value)) {
+        if (Number::isIntOrFloat($value) && !$plainText) {
             return Craft::$app->getFormatter()->asDecimal($value);
         }
 
