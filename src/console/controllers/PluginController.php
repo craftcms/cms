@@ -29,12 +29,6 @@ class PluginController extends Controller
     public bool $force = false;
 
     /**
-     * @var bool Whether all plugins should be installed/uninstalled.
-     * @since 3.6.14
-     */
-    public bool $all = false;
-
-    /**
      * @inheritdoc
      */
     public $defaultAction = 'list';
@@ -45,8 +39,6 @@ class PluginController extends Controller
     public function options($actionID): array
     {
         $options = parent::options($actionID);
-
-        $options[] = 'all';
 
         switch ($actionID) {
             case 'uninstall':
@@ -114,9 +106,9 @@ class PluginController extends Controller
      * @param string|null $handle The plugin handle.
      * @return int
      */
-    public function actionInstall(?string $handle = null, ?bool $all = false): int
+    public function actionInstall(?string $handle = null): int
     {
-        if ($handle === null && $all === false) {
+        if ($handle === null) {
             $handle = $this->_pluginPrompt(
                 'The following uninstalled plugins are present:',
                 'There aren’t any uninstalled plugins present.',
@@ -128,12 +120,6 @@ class PluginController extends Controller
             if (is_int($handle)) {
                 return $handle;
             }
-        }
-
-        if ($all === true) {
-            // get all plugins info
-            // get handles for the ones that are not installed
-            // install them one by one
         }
 
         $this->stdout("*** installing $handle" . PHP_EOL, Console::FG_YELLOW);
