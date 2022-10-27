@@ -289,7 +289,21 @@ class Raster extends Image
 
         $point = new Point($x, $y);
 
-        $canvas->paste($this->_image, $point);
+        if ($this->_isAnimated) {
+            $canvas->layers()->remove(0);
+            $this->_image->layers()->coalesce();
+
+            foreach ($this->_image->layers() as $layer) {
+                $newLayer = $this->_instance->create($box, $this->_fill);
+                $newLayer->paste($layer, $point);
+                $canvas->layers()->add($newLayer);
+
+                // Hopefully this doesn't take _too_ long, but it might
+                $this->heartbeat();
+            }
+        } else {
+            $canvas->paste($this->_image, $point);
+        }
 
         $this->_image = $canvas;
     }
