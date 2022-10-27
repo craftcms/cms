@@ -2807,7 +2807,10 @@ abstract class Element extends Component implements ElementInterface
                 'url' => $url,
             ]);
             $this->trigger(self::EVENT_DEFINE_URL, $event);
-            $url = $event->url;
+            // If DefineAssetUrlEvent::$url is set to null, only respect that if $handled is true
+            if ($event->url !== null || $event->handled) {
+                $url = $event->url;
+            }
         }
 
         return $url !== null ? Html::encodeSpaces($url) : $url;
