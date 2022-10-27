@@ -9,7 +9,6 @@ namespace craft\controllers;
 
 use Craft;
 use craft\base\Element;
-use craft\base\ElementInterface;
 use craft\elements\Entry;
 use craft\errors\InvalidElementException;
 use craft\errors\UnsupportedSiteException;
