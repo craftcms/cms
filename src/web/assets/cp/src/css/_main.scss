@@ -2333,7 +2333,6 @@ table {
       tr {
         --hover-bg-color: var(--gray-050);
         --selected-bg-color: var(--dark-sel-color);
-        --link-color: var(--dark-link-color);
 
         &:not(.disabled) {
           &:hover {
