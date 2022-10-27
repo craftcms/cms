@@ -8,6 +8,7 @@
 namespace craft\helpers;
 
 use Craft;
+use craft\errors\SiteNotFoundException;
 use FilesystemIterator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -181,7 +182,17 @@ class FileHelper extends \yii\helpers\FileHelper
         // Nuke any trailing or leading .-_
         $filename = trim($filename, '.-_');
 
-        $filename = $asciiOnly ? StringHelper::toAscii($filename) : $filename;
+        if ($asciiOnly) {
+            try {
+                // Always use the primary site language, so file paths/names are normalized
+                // to ASCII consistently regardless of who is logged in.
+                $language = Craft::$app->getSites()->getPrimarySite()->language;
+            } catch (SiteNotFoundException $e) {
+                $language = Craft::$app->language;
+            }
+
+            $filename = StringHelper::toAscii($filename, $language);
+        }
 
         if ($separator !== null) {
             $qSeparator = preg_quote($separator, '/');

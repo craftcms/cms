@@ -2807,7 +2807,10 @@ abstract class Element extends Component implements ElementInterface
                 'url' => $url,
             ]);
             $this->trigger(self::EVENT_DEFINE_URL, $event);
-            $url = $event->url;
+            // If DefineAssetUrlEvent::$url is set to null, only respect that if $handled is true
+            if ($event->url !== null || $event->handled) {
+                $url = $event->url;
+            }
         }
 
         return $url !== null ? Html::encodeSpaces($url) : $url;
@@ -4019,10 +4022,14 @@ abstract class Element extends Component implements ElementInterface
                 continue;
             }
 
-            $this->setFieldValue($field->handle, $value);
-
             // Normalize it now in case the system language changes later
-            $this->normalizeFieldValue($field->handle);
+            // (we'll do this with the value directly rather than using setFieldValue() + normalizeFieldValue(),
+            // because it's slightly more efficient and to workaround an infinite loop bug caused by Matrix
+            // needing to render an object template on the owner element during normalization, which would in turn
+            // cause the Matrix field value to be (re-)normalized based on the POST data, and on and on...)
+            $value = $field->normalizeValue($value, $this);
+            $this->setFieldValue($field->handle, $value);
+            $this->_normalizedFieldValues[$field->handle] = true;
         }
     }
 
