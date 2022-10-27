@@ -58,7 +58,7 @@ class RadioButtons extends BaseOptionsField implements SortableFieldInterface
             'describedBy' => $this->describedBy,
             'name' => $this->handle,
             'value' => $this->encodeValue($value),
-            'options' => $this->translatedOptions(true),
+            'options' => $this->inputOptions($value, $element, true),
         ]);
     }
 
