@@ -13,9 +13,9 @@ class ImageTransformsTest extends Unit
     /**
      * @var \UnitTester
      */
-    protected $tester;
+    protected \UnitTester $tester;
 
-    private $fullTransform = [
+    private array $fullTransform = [
         'id' => 123,
         'name' => 'Test Transform',
         'transformer' => ImageTransform::DEFAULT_TRANSFORMER,
@@ -39,10 +39,12 @@ class ImageTransformsTest extends Unit
 
     /**
      * @dataProvider createTransformsFromStringProvider
+     * @param array $expected
+     * @param string $string
      * @return void
      * @throws ImageTransformException
      */
-    public function testCreateTransformFromString(array $expected, string $string)
+    public function testCreateTransformFromString(array $expected, string $string): void
     {
         $transform = ImageTransforms::createTransformFromString($string);
 
@@ -51,7 +53,7 @@ class ImageTransformsTest extends Unit
         }
     }
 
-    protected function createTransformsFromStringProvider()
+    protected function createTransformsFromStringProvider(): array
     {
         return [
             'happy path' => [
@@ -99,7 +101,7 @@ class ImageTransformsTest extends Unit
     /**
      * @dataProvider normalizeTransformProvider
      */
-    public function testNormalizeTransform($expected, $input)
+    public function testNormalizeTransform($expected, $input): void
     {
         $transform = ImageTransforms::normalizeTransform($input);
 
@@ -182,7 +184,7 @@ class ImageTransformsTest extends Unit
      * @param $input
      * @return void
      */
-    public function testGetTransformString($expected, $input)
+    public function testGetTransformString($expected, $input): void
     {
         $transform = new ImageTransform($input);
         $this->assertSame($expected, ImageTransforms::getTransformString($transform));
