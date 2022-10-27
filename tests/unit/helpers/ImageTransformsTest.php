@@ -15,7 +15,7 @@ class ImageTransformsTest extends Unit
      */
     protected \UnitTester $tester;
 
-    private array $fullTransform = [
+    public array $fullTransform = [
         'id' => 123,
         'name' => 'Test Transform',
         'transformer' => ImageTransform::DEFAULT_TRANSFORMER,
@@ -53,7 +53,7 @@ class ImageTransformsTest extends Unit
         }
     }
 
-    protected function createTransformsFromStringProvider(): array
+    public function createTransformsFromStringProvider(): array
     {
         return [
             'happy path' => [
@@ -116,7 +116,7 @@ class ImageTransformsTest extends Unit
         }
     }
 
-    protected function normalizeTransformProvider(): array
+    public function normalizeTransformProvider(): array
     {
         return [
             'false' => [null, false],
@@ -190,7 +190,7 @@ class ImageTransformsTest extends Unit
         $this->assertSame($expected, ImageTransforms::getTransformString($transform));
     }
 
-    protected function getTransformStringProvider(): array
+    public function getTransformStringProvider(): array
     {
         return [
             'basic transform' => [
