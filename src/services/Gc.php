@@ -353,14 +353,15 @@ SQL;
         $this->_stdout('    > removing empty temp folders ... ');
 
         $emptyFolders = (new Query())
-            ->from(['folders' => Table::VOLUMEFOLDERS])
             ->select(['folders.id', 'folders.path'])
+            ->from(['folders' => Table::VOLUMEFOLDERS])
             ->leftJoin(['assets' => Table::ASSETS], '[[assets.folderId]] = [[folders.id]]')
             ->where([
                 'folders.volumeId' => null,
                 'assets.id' => null,
             ])
             ->andWhere(['not', ['folders.parentId' => null]])
+            ->andWhere(['not', ['folders.path' => null]])
             ->pairs();
 
         $fs = Craft::createObject(Temp::class);

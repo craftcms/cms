@@ -1935,7 +1935,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
       for (let i = 0; i < $headings.length; i++) {
         $heading = $headings.eq(i);
-        if ($heading.has('> ul > li:not(.hidden)')) {
+        if ($heading.has('> ul > li:not(.hidden)').length !== 0) {
           $heading.removeClass('hidden');
         } else {
           $heading.addClass('hidden');

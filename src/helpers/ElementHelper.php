@@ -741,10 +741,6 @@ class ElementHelper
             ]);
         }
 
-        if (Number::isIntOrFloat($value)) {
-            return Craft::$app->getFormatter()->asDecimal($value);
-        }
-
         try {
             $value = (string)$value;
         } catch (Throwable) {
