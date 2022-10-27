@@ -504,6 +504,12 @@ class Raster extends Image
         return $this;
     }
 
+    /**
+     * Sets the fill color based on the image's palette.
+     *
+     * @param string $fill Hex color of the fill.
+     * @return $this Self reference
+     */
     public function setFill(string $fill): self
     {
         if ($fill === 'transparent') {
