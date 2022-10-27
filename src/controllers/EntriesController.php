@@ -382,7 +382,6 @@ class EntriesController extends BaseEntriesController
     /**
      * Renders an element revisions template.
      *
-     * @param ElementInterface|null $element
      * @param int|null $elementId
      * @return Response
      * @throws BadRequestHttpException
