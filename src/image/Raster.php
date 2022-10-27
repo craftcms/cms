@@ -506,8 +506,12 @@ class Raster extends Image
 
     public function setFill(string $fill): self
     {
-        $alpha = $fill === 'transparent' ? 100 : null;
-        $this->_fill = $this->_image->palette()->color($fill, $alpha);
+        if ($fill === 'transparent') {
+            $this->_fill = $this->_image->palette()->color('#ffffff', 0);
+        } else {
+            $this->_fill = $this->_image->palette()->color($fill);
+        }
+
         return $this;
     }
 

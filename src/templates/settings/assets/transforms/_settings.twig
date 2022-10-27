@@ -63,7 +63,7 @@
             label: "Mode"|t('app')
         }, modeInput) }}
 
-        <div id="position-container"{% if transform is defined and transform.mode != 'crop' %} class="hidden"{% endif %}>
+        <div id="position-container"{% if transform is defined and not transform.mode in ['crop', 'fit'] %} class="hidden"{% endif %}>
             {{ forms.selectField({
                 label: "Default Focal Point"|t('app'),
                 id: 'position',
@@ -79,8 +79,26 @@
                     'bottom-center': "Bottom-Center"|t('app'),
                     'bottom-right': "Bottom-Right"|t('app')
                 },
-                value: (transform is defined and transform.mode == 'crop' ? transform.position : 'center-center')
+                value: (transform is defined and transform.mode in ['crop', 'fit'] ? transform.position : 'center-center')
             }) }}
+        </div>
+
+        <div id="fill" class="{% if transform is defined and transform.mode != 'fit' and not transform.fill %}hidden{% endif %} field">
+            {{ forms.checkboxField({
+                label: 'Fill empty pixels'|t('app'),
+                name: 'useFill',
+                checked: (transform is defined and transform.fill),
+                value: (transform is defined and transform.fill) ? true : null,
+            }) }}
+
+            <div id="fill-color" class="{% if transform is defined and transform.mode != 'fit' or transform.fill is null %}hidden{% endif %}">
+                {{ forms.colorField({
+                    label: 'Fill Color',
+                    name: 'fill',
+                    value: (transform is defined and transform.mode == 'fit' ? transform.fill : null),
+                    errors: (transform is defined ? transform.getErrors('fill') : null)
+                }) }}
+            </div>
         </div>
 
         {{ forms.textField({
@@ -185,13 +203,26 @@
     {% if transform is not defined or not transform.handle %}new Craft.HandleGenerator('#name', '#handle');{% endif %}
 
     $('#mode input').change(function() {
-        if ($(this).val() == 'crop')
-        {
+        const value = $(this).val();
+
+        if (['crop', 'fit'].indexOf(value) != -1) {
             $('#position-container').removeClass('hidden');
-        }
-        else
-        {
+        } else {
             $('#position-container').addClass('hidden');
+        }
+
+        if (value == 'fit') {
+            $('#fill').removeClass('hidden')
+        } else {
+            $('#fill').addClass('hidden')
+        }
+    });
+
+    $('[name="useFill"]').change(function() {
+        if ($(this).is(':checked')) {
+            $('#fill-color').removeClass('hidden')
+        } else {
+            $('#fill-color').addClass('hidden')
         }
     });
 

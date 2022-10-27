@@ -640,6 +640,7 @@ return [
     'Filesystem Type' => 'Filesystem Type',
     'Filesystem saved.' => 'Filesystem saved.',
     'Filesystems' => 'Filesystems',
+    'Fill empty pixels' => 'Fill empty pixels',
     'Filter results' => 'Filter results',
     'Find Text' => 'Find Text',
     'Find an official Craft Partner' => 'Find an official Craft Partner',

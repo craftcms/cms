@@ -10,6 +10,7 @@ namespace craft\controllers;
 use Craft;
 use craft\helpers\Image;
 use craft\models\ImageTransform;
+use craft\validators\ColorValidator;
 use craft\web\assets\edittransform\EditTransformAsset;
 use craft\web\Controller;
 use yii\web\NotFoundHttpException;
@@ -133,6 +134,7 @@ class ImageTransformsController extends Controller
         $transform->quality = $this->request->getBodyParam('quality') ?: null;
         $transform->interlace = $this->request->getBodyParam('interlace');
         $transform->format = $this->request->getBodyParam('format');
+        $transform->fill = $this->request->getBodyParam('fill');
 
         if (empty($transform->format)) {
             $transform->format = null;
@@ -154,6 +156,13 @@ class ImageTransformsController extends Controller
         if (!empty($transform->format) && !in_array($transform->format, Image::webSafeFormats(), true)) {
             $this->setFailFlash(Craft::t('app', 'That is not an allowed format.'));
             $errors = true;
+        }
+
+        $useFill = $this->request->getBodyParam('useFill');
+        if ($useFill && $transform->mode === 'fit') {
+            $transform->fill = $transform->fill ? ColorValidator::normalizeColor($transform->fill) : 'transparent';
+        } else {
+            $transform->fill = null;
         }
 
         if (!$errors) {
