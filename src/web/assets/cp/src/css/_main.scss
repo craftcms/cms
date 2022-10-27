@@ -2351,7 +2351,7 @@ table {
           &.sel {
             --link-color: var(--white);
             --ui-control-color: var(--white);
-            @include custom-color-focus-ring(hsl(var(--light-focus-color)));
+            @include custom-color-focus-ring(hsl(var(--light-focus-hsl)));
 
             th,
             td {

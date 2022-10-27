@@ -289,8 +289,12 @@ $radioSize: 16px;
     0 0 0 3px hsla(var(--light-focus-hsl), 0.7);
 }
 
-@mixin custom-color-focus-ring($inner) {
-  --focus-ring: 0 0 0 1px #{$inner}, 0 0 0 3px #{$inner};
+@mixin custom-color-focus-ring($primary, $secondary: null) {
+  @if $secondary != null {
+    --focus-ring: 0 0 0 1px #{$primary}, 0 0 0 3px #{$secondary};
+  } @else {
+    --focus-ring: 0 0 0 3px #{$primary};
+  }
 }
 
 @mixin two-color-focus-ring($light-button: true) {
