@@ -727,7 +727,7 @@ class ElementsController extends Controller
                     [
                         'class' => ['secondary-buttons', 'btn'],
                         'aria' => [
-                            'label' => Craft::t('app', 'Reviews'),
+                            'label' => Craft::t('app', 'Revisions'),
                         ],
                         'target' => '',
                     ]);

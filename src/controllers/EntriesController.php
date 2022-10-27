@@ -426,7 +426,7 @@ class EntriesController extends BaseEntriesController
         $view = Craft::$app->getView();
         $view->registerAssetBundle(CpAsset::class);
 
-        return $this->renderTemplate('entries/revisions', [
+        return $this->renderTemplate('entries/_revisions', [
             'crumbs' => $crumbs,
             'element' => $element,
             'revisionsQuery' => $element->getRevisionsQuery()?->limit(null),

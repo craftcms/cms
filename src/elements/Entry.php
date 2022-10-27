@@ -1429,13 +1429,18 @@ class Entry extends Element implements ExpirableElementInterface
      */
     public function getRevisionsCpUrl(): ?string
     {
+        $params = [];
         $basicRevisionsCpUrl = UrlHelper::cpUrl($this->getCpEditUrl(), [
             'draftId' => null,
             'revisionId' => null,
             'site' => null,
         ]);
 
-        return $basicRevisionsCpUrl . '/revisions';
+        if (Craft::$app->getIsMultiSite()) {
+            $params['site'] = $this->getSite()->handle;
+        }
+
+        return UrlHelper::urlWithParams($basicRevisionsCpUrl . '/revisions', $params);
     }
 
     /**

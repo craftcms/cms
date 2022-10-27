@@ -25,8 +25,7 @@
 {% endblock %}
 
 {% block content %}
-    {# TODO: this limit is just to showcase pagination; should be increased to 50 or 100(?) before releasing #}
-    {% paginate revisionsQuery.limit(10) as pageInfo, revisions %}
+    {% paginate revisionsQuery.limit(50) as pageInfo, revisions %}
     {% if revisions is not empty %}
         <div class="main">
             <table id="revisions" class="data fullwidth">
@@ -50,16 +49,17 @@
                 </tbody>
             </table>
         </div>
-        {% if pageInfo.prevUrl or pageInfo.nextUrl %}
-            <div id="footer" class="flex">
-                {% if pageInfo.prevUrl %}
-                    <a href="{{ pageInfo.prevUrl }}" class="btn">Previous Page</a>
-                {% endif %}
-                {% if pageInfo.nextUrl %}
-                    <a href="{{ pageInfo.nextUrl }}" class="btn">Next Page</a>
-                {% endif %}
+
+        <div id="footer" class="flex">
+            <div id="count-container" class="light flex-grow">
+                {% include '_includes/pagination' with {
+                    'pageInfo' : pageInfo,
+                    'itemLabel' : 'revision'|t('app'),
+                    'itemsLabel': 'revisions'|t('app')
+                } %}
             </div>
-        {% endif %}
+        </div>
+
     {% else %}
         <p class="zilch">{{ "This entry doesn't have revisions"|t('app')  }}</p>
     {% endif %}

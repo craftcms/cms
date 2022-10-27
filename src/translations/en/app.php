@@ -1864,6 +1864,8 @@ return [
     'one' => 'one',
     'or <a>send to Developer Support</a>' => 'or <a>send to Developer Support</a>',
     'path/to/subfolder' => 'path/to/subfolder',
+    'revision' => 'revision',
+    'revisions' => 'revisions',
     'second' => 'second',
     'seconds' => 'seconds',
     'seven' => 'seven',
