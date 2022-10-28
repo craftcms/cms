@@ -1,8 +1,10 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.3.1 - 2022-10-27
 
+- Numeric values are no longer automatically formatted within element indexes. ([#12205](https://github.com/craftcms/cms/issues/12205))
 - When `craft\base\Element::EVENT_DEFINE_URL` event handlers set `craft\events\DefineUrlEvent::$url` to `null`, that will no longer be respected unless `$handled` was also set to `true`. ([#12210](https://github.com/craftcms/cms/issues/12210), [nystudio107/craft-imageoptimize#359](https://github.com/nystudio107/craft-imageoptimize/issues/359))
+- Asset folder and file names are now converted to ASCII using the primary site’s language for character mappings, regardless of the current user’s preferred language, when the `convertFilenamesToAscii` config setting is enabled. ([#12207](https://github.com/craftcms/cms/discussions/12207))
 - Fixed a bug where locked users’ remaining cooldown times could be calculated incorrectly on PHP 8.0.
 - Fixed an infinite recursion bug that occurred when editing a Matrix field with a custom propagation method. ([#12176](https://github.com/craftcms/cms/issues/12176))
 - Fixed a bug where element index source lists were showing headings that didn’t have any visible nested sources. ([#12193](https://github.com/craftcms/cms/issues/12193))
@@ -76,7 +78,7 @@
 - Element sources now have a “Default Sort” setting in the Customize Sources modal. ([#12002](https://github.com/craftcms/cms/discussions/12002))
 - Control panel-defined image transforms can now have custom quality values. ([#9622](https://github.com/craftcms/cms/discussions/9622))
 - Added support for the `CRAFT_DOTENV_PATH` PHP constant. ([#11894](https://github.com/craftcms/cms/discussions/11894))
-- Added support for `CRAFT_WEB_URL` and `CRAFT_WEB_ROOT` PHP constants, which can be used to set the default `@web` and `@webroot` alias values. ([#11912](https://github.com/craftcms/cms/pull/11912))
+- Added support for `CRAFT_WEB_URL` and `CRAFT_WEB_ROOT` environment variables/PHP constants, which can be used to set the default `@web` and `@webroot` alias values. ([#11912](https://github.com/craftcms/cms/pull/11912))
 
 ### Development
 - Added the `canCreateDrafts()` Twig function. ([#11797](https://github.com/craftcms/cms/discussions/11797), [#11808](https://github.com/craftcms/cms/pull/11808))
