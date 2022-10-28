@@ -504,7 +504,14 @@ Craft.CustomizeSourcesModal.BaseSource = Garnish.Base.extend({
 
     this.$item.data('source', this);
 
-    this.addListener(this.$item, 'click', 'select');
+    this.addListener(this.$itemLabel, 'click', 'select');
+    this.addListener(this.$itemLabel, 'keypress', (event) => {
+      const key = event.keyCode;
+
+      if (key === Garnish.RETURN_KEY || key === Garnish.SPACE_KEY) {
+        this.select();
+      }
+    });
   },
 
   isHeading: function () {
@@ -863,7 +870,6 @@ Craft.CustomizeSourcesModal.CustomSource =
 
     select: function () {
       this.base();
-      this.$labelInput.focus();
     },
 
     handleLabelInputChange: function () {
@@ -908,7 +914,6 @@ Craft.CustomizeSourcesModal.Heading =
 
     select: function () {
       this.base();
-      this.$labelInput.focus();
     },
 
     createSettings: function ($container) {
