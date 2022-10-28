@@ -346,6 +346,23 @@ class FileHelper extends \yii\helpers\FileHelper
     }
 
     /**
+     * Adopted from https://stackoverflow.com/a/4525194
+     * @param string $file
+     * @return bool
+     */
+    public static function isAnimatedPng(string $file): bool
+    {
+        $bytes = @file_get_contents($file);
+        if ($bytes) {
+            if (str_contains(substr($bytes, 0, strpos($bytes, 'IDAT')), 'acTL')) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Writes contents to a file.
      *
      * @param string $file the file path

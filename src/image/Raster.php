@@ -190,7 +190,7 @@ class Raster extends Image
         $this->_imageSourcePath = $path;
         $this->_extension = pathinfo($path, PATHINFO_EXTENSION);
 
-        if (in_array($this->_extension, ['gif', 'webp'])) {
+        if (in_array($this->_extension, ['gif', 'webp', 'png', 'apng'])) {
             if (!$imageService->getIsGd() && $this->_image->layers()) {
                 $this->_isAnimated = true;
             }
@@ -707,6 +707,7 @@ class Raster extends Image
                 return ['animated' => $this->_isAnimated];
 
             case 'png':
+            case 'apng':
                 // Valid PNG quality settings are 0-9, so normalize and flip, because we're talking about compression
                 // levels, not quality, like jpg and gif.
                 $normalizedQuality = round(($quality * 9) / 100);
@@ -720,6 +721,7 @@ class Raster extends Image
                 $options = [
                     'png_compression_level' => $normalizedQuality,
                     'flatten' => false,
+                    'animated' => $this->_isAnimated,
                 ];
 
                 if ($this->_imageSourcePath) {

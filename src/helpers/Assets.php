@@ -508,6 +508,7 @@ class Assets
                     'label' => Craft::t('app', 'Image'),
                     'extensions' => [
                         'avif',
+                        'apng',
                         'bmp',
                         'gif',
                         'jfif',

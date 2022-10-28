@@ -150,7 +150,7 @@ class ImageHelperTest extends TestCase
      */
     public function testWebSafeFormats(): void
     {
-        self::assertSame(['jpg', 'jpeg', 'gif', 'png', 'svg', 'webp', 'avif'], Image::webSafeFormats());
+        self::assertSame(['jpg', 'jpeg', 'gif', 'apng', 'png', 'svg', 'webp', 'avif'], Image::webSafeFormats());
     }
 
     /**

@@ -241,6 +241,7 @@ class GeneralConfig extends BaseConfig
         'aiff',
         'asc',
         'asf',
+        'apng',
         'avi',
         'avif',
         'bmp',

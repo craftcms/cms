@@ -42,7 +42,7 @@ class Images extends Component
     /**
      * @var array Image formats that can be manipulated.
      */
-    public array $supportedImageFormats = ['jpg', 'jpeg', 'gif', 'png'];
+    public array $supportedImageFormats = ['jpg', 'jpeg', 'gif', 'apng', 'png'];
 
     /**
      * @var string Image driver.
@@ -318,7 +318,7 @@ class Images extends Component
             return;
         }
 
-        if (FileHelper::isGif($filePath) && !Craft::$app->getConfig()->getGeneral()->transformGifs) {
+        if (FileHelper::isGif($filePath) && !Craft::$app->getConfig()->getGeneral()->transformGifs || FileHelper::isAnimatedPng($filePath)) {
             return;
         }
 
