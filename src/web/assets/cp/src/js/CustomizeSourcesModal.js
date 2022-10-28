@@ -54,10 +54,14 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
     this.$sidebar = $('<div class="cs-sidebar block-types"/>').appendTo(
       $container
     );
-    this.$sourcesContainer = $('<div class="sources">').appendTo(this.$sidebar);
-    this.$sourceSettingsContainer = $('<div class="source-settings">').appendTo(
-      $container
-    );
+    this.$sourcesContainer = $('<div class="sources">')
+      .attr({
+        role: 'navigation',
+        'aria-label': 'Source',
+      })
+      .appendTo(this.$sidebar);
+    this.$sourceSettingsContainer = $('<div class="source-settings">')
+      .appendTo($container);
 
     this.$footer = $('<div class="footer"/>').appendTo($container);
     this.$footerBtnContainer = $('<div class="buttons right"/>').appendTo(

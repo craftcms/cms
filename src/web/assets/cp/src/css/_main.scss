@@ -1082,6 +1082,7 @@ td.right {
 }
 
 .customize-sources-item {
+  --selected-item-color: var(--white);
   display: flex;
   width: calc(100% - 1px);
   box-sizing: border-box;
@@ -1105,7 +1106,9 @@ td.right {
   }
 
   &.sel {
-    background-color: var(--gray-200);
+    --ui-control-color: var(--selected-item-color);
+    background-color: var(--dark-sel-color);
+    color: var(--selected-item-color);
     z-index: 1;
   }
 
@@ -1119,6 +1122,10 @@ td.right {
       color: var(--light-text-color);
       font-size: 12px;
       font-weight: bold;
+    }
+
+    &.sel .label {
+      color: var(--selected-item-color);
     }
   }
 }
