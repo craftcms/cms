@@ -336,10 +336,13 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
     const $item = $('<div class="customize-sources-item"/>').appendTo(
       this.$sourcesContainer
     );
-    const $itemLabel = $('<div class="label"/>').appendTo($item);
+    const $itemLabel = $('<div class="label customize-sources-item__btn"/>').attr({
+      tabindex: '0',
+      role: 'button',
+    }).appendTo($item);
     const $itemInput = $('<input type="hidden"/>').appendTo($item);
     $(
-      `<a class="move icon" title="${Craft.t(
+      `<a class="move icon customize-sources-item__move" title="${Craft.t(
         'app',
         'Reorder'
       )}" role="button"></a>`

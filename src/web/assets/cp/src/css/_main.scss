@@ -1088,7 +1088,6 @@ td.right {
   align-items: center;
   position: relative;
   margin-top: -1px;
-  padding: 8px 14px;
   background-color: var(--gray-100);
   border: solid var(--hairline-color);
   border-width: 1px 0;
@@ -1112,9 +1111,6 @@ td.right {
 
   .label {
     flex: 1;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
   }
 
   &.heading {
@@ -1125,10 +1121,25 @@ td.right {
       font-weight: bold;
     }
   }
+}
 
-  .move {
-    @include margin-left(7px);
+.customize-sources-item__move {
+  position: absolute;
+  top: 50%;
+  @include right(0);
+  transform: translate(-50%, -50%);
+  justify-content: center;
+  align-items: center;
+
+  &.icon {
+    display: flex;
+    text-decoration: none;
   }
+}
+
+.customize-sources-item__btn {
+  padding: 8px 14px;
+  @include padding-right(30px);
 }
 
 .customize-sources-table-column .move {
