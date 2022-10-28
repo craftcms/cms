@@ -51,6 +51,7 @@ class PluginController extends Controller
             case 'enable':
             case 'disable':
                 $options[] = 'all';
+                break;
             case 'uninstall':
                 $options[] = 'force';
                 $options[] = 'all';
