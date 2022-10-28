@@ -175,6 +175,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
       addSource({
         type: 'heading',
       });
+      this.focusLabelInput();
     });
 
     const $newCustomSourceBtn = $('<button/>', {
@@ -194,6 +195,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
         tableAttributes: [],
         availableTableAttributes: [],
       });
+      this.focusLabelInput();
     });
 
     const $ul = $('<ul/>')
@@ -212,6 +214,10 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
     this.addListener(Garnish.$win, 'resize', this.updateSidebarView);
 
     this.addSourceMenu = new Garnish.DisclosureMenu($menuBtn);
+  },
+
+  focusLabelInput: function () {
+    this.selectedSource.$labelInput.trigger('focus');
   },
 
   getSourceName: function () {
@@ -515,6 +521,7 @@ Craft.CustomizeSourcesModal.BaseSource = Garnish.Base.extend({
       const key = event.keyCode;
 
       if (key === Garnish.RETURN_KEY || key === Garnish.SPACE_KEY) {
+        event.preventDefault();
         this.select();
       }
     });
@@ -951,7 +958,7 @@ Craft.CustomizeSourcesModal.Heading =
       this.$itemLabel.html(
         (val
           ? Craft.escapeHtml(val)
-          : `<em class="light">${Craft.t('app', '(blank)')}</em>`) + '&nbsp;'
+          : `<em>${Craft.t('app', '(blank)')}</em>`) + '&nbsp;'
       );
       this.$itemInput.val(val);
     },
