@@ -51,17 +51,16 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
       '<form class="modal customize-sources-modal"/>'
     ).appendTo(Garnish.$bod);
 
-    this.$sidebar = $('<div class="cs-sidebar block-types"/>').appendTo(
-      $container
-    );
-    this.$sourcesContainer = $('<div class="sources">')
+    this.$sidebar = $('<div class="cs-sidebar block-types"/>')
+      .appendTo($container)
       .attr({
         role: 'navigation',
         'aria-label': 'Source',
-      })
-      .appendTo(this.$sidebar);
-    this.$sourceSettingsContainer = $('<div class="source-settings">')
-      .appendTo($container);
+      });
+    this.$sourcesContainer = $('<div class="sources">').appendTo(this.$sidebar);
+    this.$sourceSettingsContainer = $('<div class="source-settings">').appendTo(
+      $container
+    );
 
     this.$footer = $('<div class="footer"/>').appendTo($container);
     this.$footerBtnContainer = $('<div class="buttons right"/>').appendTo(
@@ -944,6 +943,10 @@ Craft.CustomizeSourcesModal.Heading =
 
       this.$deleteBtn = $('<a class="error delete"/>')
         .text(Craft.t('app', 'Delete heading'))
+        .attr({
+          role: 'button',
+          tabindex: '0',
+        })
         .appendTo($container);
 
       this.addListener(this.$labelInput, 'input', 'handleLabelInputChange');
