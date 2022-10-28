@@ -336,10 +336,12 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
     const $item = $('<div class="customize-sources-item"/>').appendTo(
       this.$sourcesContainer
     );
-    const $itemLabel = $('<div class="label customize-sources-item__btn"/>').attr({
-      tabindex: '0',
-      role: 'button',
-    }).appendTo($item);
+    const $itemLabel = $('<div class="label customize-sources-item__btn"/>')
+      .attr({
+        tabindex: '0',
+        role: 'button',
+      })
+      .appendTo($item);
     const $itemInput = $('<input type="hidden"/>').appendTo($item);
     $(
       `<a class="move icon customize-sources-item__move" title="${Craft.t(
@@ -536,6 +538,9 @@ Craft.CustomizeSourcesModal.BaseSource = Garnish.Base.extend({
     }
 
     this.$item.addClass('sel');
+    this.$itemLabel.attr({
+      'aria-current': 'true',
+    });
     this.modal.selectedSource = this;
     this.modal.updateHeading();
 
@@ -557,6 +562,9 @@ Craft.CustomizeSourcesModal.BaseSource = Garnish.Base.extend({
 
   deselect: function () {
     this.$item.removeClass('sel');
+    this.$itemLabel.attr({
+      'aria-current': 'false',
+    });
     this.modal.selectedSource = null;
     this.$settingsContainer.addClass('hidden');
   },
@@ -868,10 +876,6 @@ Craft.CustomizeSourcesModal.CustomSource =
       return attributes;
     },
 
-    select: function () {
-      this.base();
-    },
-
     handleLabelInputChange: function () {
       this.updateItemLabel(this.$labelInput.val());
     },
@@ -910,10 +914,6 @@ Craft.CustomizeSourcesModal.Heading =
 
     isHeading: function () {
       return true;
-    },
-
-    select: function () {
-      this.base();
     },
 
     createSettings: function ($container) {
