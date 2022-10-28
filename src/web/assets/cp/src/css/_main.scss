@@ -1106,6 +1106,7 @@ td.right {
   }
 
   &.sel {
+    @include light-focus-ring;
     --ui-control-color: var(--selected-item-color);
     background-color: var(--dark-sel-color);
     color: var(--selected-item-color);
@@ -1147,6 +1148,7 @@ td.right {
 .customize-sources-item__btn {
   padding: 8px 14px;
   @include padding-right(30px);
+  margin: 3px;
 }
 
 .customize-sources-table-column .move {
