@@ -516,14 +516,9 @@ Craft.CustomizeSourcesModal.BaseSource = Garnish.Base.extend({
     this.$item.data('source', this);
 
     this.addListener(this.$itemLabel, 'click', 'select');
-    this.addListener(this.$itemLabel, 'keypress', (event) => {
-      const key = event.keyCode;
-
-      if (key === Garnish.RETURN_KEY || key === Garnish.SPACE_KEY) {
-        event.preventDefault();
-        this.select();
-      }
-    });
+    this.addListener(this.$itemLabel, 'keypress', (e) =>
+      Garnish.handleActivatingKeypress(e, this.select.bind(this))
+    );
   },
 
   isHeading: function () {
@@ -871,11 +866,18 @@ Craft.CustomizeSourcesModal.CustomSource =
       $container.append('<hr/>');
 
       this.$deleteBtn = $('<a class="error delete"/>')
+        .attr({
+          role: 'button',
+          tabindex: '0',
+        })
         .text(Craft.t('app', 'Delete custom source'))
         .appendTo($container);
 
       this.addListener(this.$labelInput, 'input', 'handleLabelInputChange');
       this.addListener(this.$deleteBtn, 'click', 'destroy');
+      this.addListener(this.$deleteBtn, 'keypress', (e) => {
+        Garnish.handleActivatingKeypress(e, this.destroy.bind(this));
+      });
     },
 
     availableTableAttributes: function () {
@@ -951,6 +953,9 @@ Craft.CustomizeSourcesModal.Heading =
 
       this.addListener(this.$labelInput, 'input', 'handleLabelInputChange');
       this.addListener(this.$deleteBtn, 'click', 'destroy');
+      this.addListener(this.$deleteBtn, 'keypress', (e) => {
+        Garnish.handleActivatingKeypress(e, this.destroy.bind(this));
+      });
     },
 
     handleLabelInputChange: function () {
