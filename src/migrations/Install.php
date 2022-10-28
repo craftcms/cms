@@ -825,6 +825,7 @@ class Install extends Migration
         $this->createIndex(null, Table::ELEMENTS, ['fieldLayoutId'], false);
         $this->createIndex(null, Table::ELEMENTS, ['type'], false);
         $this->createIndex(null, Table::ELEMENTS, ['enabled'], false);
+        $this->createIndex(null, Table::ELEMENTS, ['canonicalId'], false);
         $this->createIndex(null, Table::ELEMENTS, ['archived', 'dateCreated'], false);
         $this->createIndex(null, Table::ELEMENTS, ['archived', 'dateDeleted', 'draftId', 'revisionId', 'canonicalId'], false);
         $this->createIndex(null, Table::ELEMENTS, ['archived', 'dateDeleted', 'draftId', 'revisionId', 'canonicalId', 'enabled'], false);
