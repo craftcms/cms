@@ -114,7 +114,7 @@ class PluginController extends Controller
     /**
      * Installs a plugin.
      *
-     * @param string|null $handle The plugin handle.
+     * @param string|null $handle The plugin handle (omitted if --all provided).
      * @return int
      */
     public function actionInstall(?string $handle = null): int
@@ -150,7 +150,7 @@ class PluginController extends Controller
     /**
      * Uninstalls a plugin.
      *
-     * @param string|null $handle The plugin handle.
+     * @param string|null $handle The plugin handle (omitted if --all provided).
      * @return int
      */
     public function actionUninstall(?string $handle = null): int
@@ -186,7 +186,7 @@ class PluginController extends Controller
     /**
      * Enables a plugin.
      *
-     * @param string|null $handle The plugin handle.
+     * @param string|null $handle The plugin handle (omitted if --all provided).
      * @return int
      */
     public function actionEnable(?string $handle = null): int
@@ -222,7 +222,7 @@ class PluginController extends Controller
     /**
      * Disables a plugin.
      *
-     * @param string|null $handle The plugin handle.
+     * @param string|null $handle The plugin handle (omitted if --all provided).
      * @return int
      */
     public function actionDisable(?string $handle = null): int
