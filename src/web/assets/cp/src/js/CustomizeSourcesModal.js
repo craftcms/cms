@@ -592,6 +592,8 @@ Craft.CustomizeSourcesModal.BaseSource = Garnish.Base.extend({
       if (this.modal.sources.length) {
         this.modal.sources[0].select();
       }
+
+      Garnish.setFocusWithin(this.modal.$sourceSettingsContainer);
     }
 
     this.$item.data('source', null);
