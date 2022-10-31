@@ -11,7 +11,7 @@
 {% set disabled = (disabled ?? false) ? true : false %}
 
 <div id="{{ id }}" class="elementselect">
-    <div class="elements {% if viewMode == 'large' %}flex flex-wrap{% endif %}">
+    <div class="elements {% if viewMode == 'large' %}flex-row flex-wrap{% endif %}">
         {% for element in elements %}
             {% include "_elements/element" with {
                 context: 'field',

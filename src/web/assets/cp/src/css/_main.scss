@@ -2974,16 +2974,28 @@ $checkboxPadding: $checkboxSize + 4;
   min-height: 34px;
   margin-top: -7px;
 
+  .elements {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+
+    &.flex-row {
+      flex-direction: row;
+    }
+
+    &.flex-wrap {
+      flex-wrap: wrap;
+    }
+  }
+
   .elements:after {
     @include clearafter;
   }
 
   .element {
-    @include floatleft;
     @include margin(7px, 7px, 0, 0);
   }
 
-  .element.small,
   .flex,
   .btn {
     clear: both;
@@ -3006,13 +3018,8 @@ $checkboxPadding: $checkboxSize + 4;
     }
   }
 
-  .caboose {
-    @include floatleft;
-  }
-
   .flex {
     padding-top: 7px;
-    float: none !important;
   }
 }
 
