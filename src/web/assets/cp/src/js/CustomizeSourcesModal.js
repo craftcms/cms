@@ -101,6 +101,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
       })
       .finally(() => {
         this.$loadingSpinner.remove();
+        Garnish.setFocusWithin(this.$sidebar);
       });
 
     this.addListener(this.$cancelBtn, 'click', 'hide');
