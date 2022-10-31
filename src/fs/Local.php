@@ -141,7 +141,9 @@ class Local extends Fs implements LocalFsInterface
      */
     public function getRootPath(): string
     {
-        return FileHelper::normalizePath(App::parseEnv($this->path));
+        $path = FileHelper::normalizePath(App::parseEnv($this->path));
+        // Pass it through realpath() in case the path is symlinked
+        return realpath($path) ?: $path;
     }
 
     /**

@@ -2,8 +2,13 @@
 
 ## Unreleased
 
+- Fixed asset indexing for Local filesystems that were configured to use a symlinked server path.
+
+## 4.3.1 - 2022-10-27
+
 - Numeric values are no longer automatically formatted within element indexes. ([#12205](https://github.com/craftcms/cms/issues/12205))
 - When `craft\base\Element::EVENT_DEFINE_URL` event handlers set `craft\events\DefineUrlEvent::$url` to `null`, that will no longer be respected unless `$handled` was also set to `true`. ([#12210](https://github.com/craftcms/cms/issues/12210), [nystudio107/craft-imageoptimize#359](https://github.com/nystudio107/craft-imageoptimize/issues/359))
+- Asset folder and file names are now converted to ASCII using the primary site’s language for character mappings, regardless of the current user’s preferred language, when the `convertFilenamesToAscii` config setting is enabled. ([#12207](https://github.com/craftcms/cms/discussions/12207))
 - Fixed a bug where locked users’ remaining cooldown times could be calculated incorrectly on PHP 8.0.
 - Fixed an infinite recursion bug that occurred when editing a Matrix field with a custom propagation method. ([#12176](https://github.com/craftcms/cms/issues/12176))
 - Fixed a bug where element index source lists were showing headings that didn’t have any visible nested sources. ([#12193](https://github.com/craftcms/cms/issues/12193))
