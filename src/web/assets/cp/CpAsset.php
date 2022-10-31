@@ -293,6 +293,7 @@ JS;
             'Sort by',
             'Sort descending',
             'Sort direction',
+            'Source',
             'Source settings saved',
             'Source settings',
             'Structure',

@@ -55,7 +55,7 @@ Craft.CustomizeSourcesModal = Garnish.Modal.extend({
       .appendTo($container)
       .attr({
         role: 'navigation',
-        'aria-label': 'Source',
+        'aria-label': Craft.t('app', 'Source'),
       });
     this.$sourcesContainer = $('<div class="sources">').appendTo(this.$sidebar);
     this.$sourceSettingsContainer = $('<div class="source-settings">').appendTo(
