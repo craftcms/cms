@@ -120,7 +120,7 @@ class Query extends \yii\db\Query implements ArrayAccess, IteratorAggregate
     public function offsetSet(mixed $offset, mixed $value): void
     {
         if (is_numeric($offset)) {
-            throw new NotSupportedException('Queries do not support setting values using array syncax.');
+            throw new NotSupportedException('Queries do not support setting values using array syntax.');
         }
 
         $this->__set($offset, $value);
