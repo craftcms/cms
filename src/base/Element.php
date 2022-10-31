@@ -2582,7 +2582,7 @@ abstract class Element extends Component implements ElementInterface
         }
 
         // If the canonical element is already memoized via getCanonical(), go with its UUID
-        if (isset($this->_canonical)) {
+        if (isset($this->_canonical) && $this->_canonical) {
             return $this->_canonical->uid;
         }
 
