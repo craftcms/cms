@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed asset indexing for Local filesystems that were configured to use a symlinked server path.
+
 ## 4.3.1 - 2022-10-27
 
 - Numeric values are no longer automatically formatted within element indexes. ([#12205](https://github.com/craftcms/cms/issues/12205))
