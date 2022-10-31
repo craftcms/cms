@@ -5,3 +5,4 @@
 
 ### System
 - Improved element deletion performance. ([#12223](https://github.com/craftcms/cms/pull/12223))
+- Updated LitEmoji to v4. ([#12226](https://github.com/craftcms/cms/discussions/12226))
