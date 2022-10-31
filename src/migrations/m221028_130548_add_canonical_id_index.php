@@ -15,7 +15,7 @@ class m221028_130548_add_canonical_id_index extends Migration
      */
     public function safeUp(): bool
     {
-        $this->createIndex(null, Table::ELEMENTS, ['canonicalId'], false);
+        $this->createIndexIfMissing(Table::ELEMENTS, ['canonicalId'], false);
         return true;
     }
 
@@ -24,7 +24,7 @@ class m221028_130548_add_canonical_id_index extends Migration
      */
     public function safeDown(): bool
     {
-        echo "m221028_130548_add_canonical_id_index cannot be reverted.\n";
-        return false;
+        $this->dropIndexIfExists(Table::ELEMENTS, ['canonicalId'], false);
+        return true;
     }
 }
