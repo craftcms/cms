@@ -1918,11 +1918,18 @@ Craft.ElementEditor = Garnish.Base.extend(
       // get hidden tips info from local storage and handle hiding tips that user dismissed
       var hiddenTips = this.getHiddenTipsUids();
       if (hiddenTips.length > 0) {
-        hiddenTips.forEach((uid) =>
-          this.$container
-            .find('.readable[data-layout-element="' + uid + '"]')
-            .addClass('hidden')
-        );
+        hiddenTips.forEach((uid) => {
+          var readableElement = this.$container.find(
+            '.readable[data-layout-element="' + uid + '"]'
+          );
+          // if we can find that element and it's still set to be dismissible
+          if (
+            readableElement !== undefined &&
+            readableElement.children('.tip-close-btn').length > 0
+          ) {
+            readableElement.addClass('hidden');
+          }
+        });
       }
     },
 
