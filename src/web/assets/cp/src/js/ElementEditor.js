@@ -52,6 +52,12 @@ Craft.ElementEditor = Garnish.Base.extend(
     previewLinks: null,
     scrollY: null,
 
+    hiddenTipsStorageKey: 'Craft-' + Craft.systemUid + '.TipField.hiddenTips',
+
+    get tipCloseBtn() {
+      return this.$container.find('.tip-close-btn');
+    },
+
     get slideout() {
       return this.$container.data('slideout');
     },
@@ -176,6 +182,9 @@ Craft.ElementEditor = Garnish.Base.extend(
       this.addListener(this.$statusIcon, 'click', () => {
         this.showStatusHud(this.$statusIcon);
       });
+
+      // handle closing tips
+      this.handleDismissibleTips();
 
       if (this.isFullPage && Craft.messageReceiver) {
         // Listen on Craft.broadcaster to ignore any messages sent by this very page
@@ -1485,6 +1494,9 @@ Craft.ElementEditor = Garnish.Base.extend(
               }
             }
 
+            // re-grab dismissible tips, re-attach listener, hide on re-load
+            this.handleDismissibleTips();
+
             this.afterUpdate(data);
 
             if (Craft.broadcaster) {
@@ -1878,6 +1890,58 @@ Craft.ElementEditor = Garnish.Base.extend(
             this.submittingForm = false;
             this.slideout.hideSubmitSpinner();
           });
+      }
+    },
+
+    handleDismissibleTips: function () {
+      this.hideTipsOnLoad();
+      this.addListener(this.tipCloseBtn, 'click', (e) => {
+        this.hideTip(e);
+      });
+    },
+
+    getHiddenTipsUids: function () {
+      if (typeof localStorage[this.hiddenTipsStorageKey] === 'string') {
+        return Craft.filterArray(
+          localStorage[this.hiddenTipsStorageKey].split(',')
+        );
+      } else {
+        return [];
+      }
+    },
+
+    setHiddenTipsUids: function (uids) {
+      localStorage[this.hiddenTipsStorageKey] = uids.join(',');
+    },
+
+    hideTipsOnLoad: function () {
+      // get hidden tips info from local storage and handle hiding tips that user dismissed
+      var hiddenTips = this.getHiddenTipsUids();
+      if (hiddenTips.length > 0) {
+        hiddenTips.forEach((uid) =>
+          this.$container
+            .find('.readable[data-layout-element="' + uid + '"]')
+            .addClass('hidden')
+        );
+      }
+    },
+
+    hideTip: function (ev) {
+      var targetElement = ev.target;
+      if (targetElement !== undefined) {
+        var targetParent = $(targetElement).parents('.readable');
+        if (targetParent !== undefined) {
+          var layoutElementUid = targetParent.data('layout-element');
+          targetParent.addClass('hidden');
+          // add info to local storage
+          if (typeof Storage !== 'undefined') {
+            var hiddenTips = this.getHiddenTipsUids();
+            if ($.inArray(layoutElementUid, hiddenTips) === -1) {
+              hiddenTips.push(layoutElementUid);
+              this.setHiddenTipsUids(hiddenTips);
+            }
+          }
+        }
       }
     },
   },

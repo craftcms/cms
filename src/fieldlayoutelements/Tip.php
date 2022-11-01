@@ -30,6 +30,11 @@ class Tip extends BaseUiElement
     public string $tip = '';
 
     /**
+     * @var bool Whether the tip can be dismissed by user
+     */
+    public bool $dismissible = false;
+
+    /**
      * @var string The tip style (`tip` or `warning`)
      * @phpstan-var self::STYLE_TIP|self::STYLE_WARNING
      */
@@ -60,14 +65,22 @@ class Tip extends BaseUiElement
      */
     protected function settingsHtml(): ?string
     {
-        return Cp::textareaFieldHtml([
+        return
+            Cp::textareaFieldHtml([
             'label' => $this->_isTip() ? Craft::t('app', 'Tip') : Craft::t('app', 'Warning'),
             'instructions' => Craft::t('app', 'Can contain Markdown formatting.'),
             'class' => ['nicetext'],
             'id' => 'tip',
             'name' => 'tip',
             'value' => $this->tip,
-        ]);
+            ]) .
+            Cp::lightswitchFieldHtml([
+                'label' => Craft::t('app', 'Can be dismissed?'),
+                'instructions' => Craft::t('app', 'Whether it can be dismissed by a user and not shown again.'),
+                'id' => 'dismissible',
+                'name' => 'dismissible',
+                'on' => $this->dismissible,
+            ]);
     }
 
     /**
@@ -75,16 +88,23 @@ class Tip extends BaseUiElement
      */
     public function formHtml(?ElementInterface $element = null, bool $static = false): ?string
     {
-        $noteClass = $this->_isTip() ? self::STYLE_TIP : self::STYLE_WARNING;
+        $classes[] = $this->_isTip() ? self::STYLE_TIP : self::STYLE_WARNING;
+        if ($this->dismissible) {
+            $classes[] = 'dismissible';
+        }
+
         $tip = Markdown::process(Html::encode(Craft::t('site', $this->tip)));
 
-        return <<<HTML
-<div class="readable">
-  <blockquote class="note $noteClass">
-    $tip
-  </blockquote>
-</div>
-HTML;
+        $html = "<div class=\"readable\">" .
+            "<blockquote class=\"note " . implode(' ', $classes) . "\">" .
+                $tip .
+            "</blockquote>";
+        if ($this->dismissible) {
+            $html .= "<button type=\"button\" class=\"tip-close-btn\" aria-label=\"Close\" data-icon=\"remove\"></button>";
+        }
+        $html .= "</div>";
+
+        return $html;
     }
 
     /**

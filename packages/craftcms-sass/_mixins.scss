@@ -758,8 +758,16 @@ $radioSize: 16px;
     margin-top: 0.25em;
   }
 
+  .tip-close-btn {
+    position: absolute;
+    top: 0px;
+    right: 30px;
+  }
+
   blockquote {
-    margin: 16px 0;
+    &:not(.dismissible) {
+      margin: 16px 0;
+    }
 
     &:not(.note) {
       padding: 0 16px;
