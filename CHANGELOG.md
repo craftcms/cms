@@ -1,5 +1,9 @@
 # Release Notes for Craft CMS 3.x
 
+## Unreleased
+
+- Fixed an information disclosure vulnerability.
+
 ## 3.7.59 - 2022-10-27
 
 - Asset folder and file names are now converted to ASCII using the primary site’s language for character mappings, regardless of the current user’s preferred language, when the `convertFilenamesToAscii` config setting is enabled. ([#12207](https://github.com/craftcms/cms/discussions/12207))

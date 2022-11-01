@@ -55,6 +55,7 @@ use DateInterval;
 use DateTime;
 use DateTimeInterface;
 use DateTimeZone;
+use Traversable;
 use Twig\Environment as TwigEnvironment;
 use Twig\Error\RuntimeError;
 use Twig\Extension\AbstractExtension;
@@ -268,6 +269,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('replace', [$this, 'replaceFilter']),
             new TwigFilter('rss', [$this, 'rssFilter'], ['needs_environment' => true]),
             new TwigFilter('snake', [$this, 'snakeFilter']),
+            new TwigFilter('sort', [$this, 'sortFilter'], ['needs_environment' => true]),
             new TwigFilter('time', [$this, 'timeFilter'], ['needs_environment' => true]),
             new TwigFilter('timestamp', [$this, 'timestampFilter']),
             new TwigFilter('translate', [$this, 'translateFilter']),
@@ -475,6 +477,26 @@ class Extension extends AbstractExtension implements GlobalsInterface
     {
         return StringHelper::toSnakeCase((string)$string);
     }
+
+    /**
+     * Sorts an array.
+     *
+     * @param TwigEnvironment $env
+     * @param array|Traversable $array
+     * @param string|callable|null $arrow
+     * @return array
+     * @throws RuntimeError
+     * @since 3.7.60
+     */
+    public function sortFilter(TwigEnvironment $env, $array, $arrow = null): array
+    {
+        if (strtolower($arrow) === 'system') {
+            throw new RuntimeError('The sort filter doesn\'t support sorting by system().');
+        }
+
+        return twig_sort_filter($env, $array, $arrow);
+    }
+
 
     /**
      * Formats the value as a currency number.
