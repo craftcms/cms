@@ -49,6 +49,7 @@ abstract class Table
     public const SEQUENCES = '{{%sequences}}';
     public const SYSTEMMESSAGES = '{{%systemmessages}}';
     public const ENTRIES = '{{%entries}}';
+    public const ENTRIES_AUTHORS = '{{%entries_authors}}';
     public const ENTRYTYPES = '{{%entrytypes}}';
     public const FIELDGROUPS = '{{%fieldgroups}}';
     public const FIELDLAYOUTFIELDS = '{{%fieldlayoutfields}}';

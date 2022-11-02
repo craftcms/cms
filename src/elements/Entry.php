@@ -15,8 +15,10 @@ use craft\base\Field;
 use craft\behaviors\DraftBehavior;
 use craft\behaviors\RevisionBehavior;
 use craft\controllers\ElementIndexesController;
+use craft\db\Command;
 use craft\db\Connection;
 use craft\db\FixedOrderExpression;
+use craft\db\Query;
 use craft\db\Table;
 use craft\elements\actions\Delete;
 use craft\elements\actions\DeleteForSite;
@@ -51,6 +53,7 @@ use craft\validators\DateCompareValidator;
 use craft\validators\DateTimeValidator;
 use craft\web\CpScreenResponseBehavior;
 use DateTime;
+use Throwable;
 use Illuminate\Support\Collection;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
@@ -67,6 +70,10 @@ use yii\web\Response;
  * @property User|null $author the entry’s author
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
+ *
+ * @property array|null $authorsIds the entry authors' IDs
+ * @property array|null $authors the entry’s authors
+ * @since 5.0.0
  */
 class Entry extends Element implements ExpirableElementInterface
 {
@@ -514,6 +521,7 @@ class Entry extends Element implements ExpirableElementInterface
             'section' => ['label' => Craft::t('app', 'Section')],
             'type' => ['label' => Craft::t('app', 'Entry Type')],
             'author' => ['label' => Craft::t('app', 'Author')],
+            'authors' => ['label' => Craft::t('app', 'Authors')],
             'slug' => ['label' => Craft::t('app', 'Slug')],
             'uri' => ['label' => Craft::t('app', 'URI')],
             'postDate' => ['label' => Craft::t('app', 'Post Date')],
@@ -531,6 +539,7 @@ class Entry extends Element implements ExpirableElementInterface
         // Hide Author & Last Edited By from Craft Solo
         if (Craft::$app->getEdition() !== Craft::Pro) {
             unset($attributes['author'], $attributes['revisionCreator']);
+            unset($attributes['authors']);
         }
 
         return $attributes;
@@ -551,6 +560,7 @@ class Entry extends Element implements ExpirableElementInterface
             $attributes[] = 'postDate';
             $attributes[] = 'expiryDate';
             $attributes[] = 'author';
+            $attributes[] = 'authors';
         }
 
         $attributes[] = 'link';
@@ -585,6 +595,30 @@ class Entry extends Element implements ExpirableElementInterface
                 ],
             ];
         }
+//        if ($handle === 'authors') {
+//            /** @phpstan-ignore-next-line */
+//            $sourceElementsWithAuthors = array_filter($sourceElements, function(self $entry) {
+//                return $entry->getAuthorsIds() !== null;
+//            });
+//
+//            $map = [];
+//            foreach ($sourceElementsWithAuthors as $elementWithAuthors) {
+//                foreach ($elementWithAuthors->getAuthorsIds() as $authorId) {
+//                    $map[] = [
+//                        'source' => $elementWithAuthors->id,
+//                        'target' => $authorId,
+//                    ];
+//                }
+//            }
+//
+//            return [
+//                'elementType' => User::class,
+//                'map' => $map,
+//                'criteria' => [
+//                    'status' => null,
+//                ],
+//            ];
+//        }
 
         return parent::eagerLoadingMap($sourceElements, $handle);
     }
@@ -628,6 +662,9 @@ class Entry extends Element implements ExpirableElementInterface
         switch ($attribute) {
             case 'author':
                 $elementQuery->andWith(['author', ['status' => null]]);
+                break;
+            case 'authors':
+                $elementQuery->andWith(['authors', ['status' => null]]);
                 break;
             case 'revisionNotes':
                 $elementQuery->andWith('currentRevision');
@@ -696,6 +733,12 @@ class Entry extends Element implements ExpirableElementInterface
      * @see setAuthorId()
      */
     public ?int $_authorId = null;
+    /**
+     * @var int[]|null Authors IDs
+     * @see getAuthorsIds()
+     * @see setAuthorsIds()
+     */
+    public ?array $_authorsIds = null;
 
     /**
      * @var User|null|false
@@ -703,6 +746,13 @@ class Entry extends Element implements ExpirableElementInterface
      * @see setAuthor()
      */
     private User|false|null $_author = null;
+
+    /**
+     * @var User[]|null
+     * @see getAuthors()
+     * @see setAuthors()
+     */
+    private array|null $_authors = null;
 
     /**
      * @var int|null Type ID
@@ -732,6 +782,7 @@ class Entry extends Element implements ExpirableElementInterface
     {
         $names = parent::attributes();
         $names[] = 'authorId';
+        $names[] = 'authorsIds';
         $names[] = 'typeId';
         return $names;
     }
@@ -743,6 +794,7 @@ class Entry extends Element implements ExpirableElementInterface
     {
         $names = parent::extraFields();
         $names[] = 'author';
+        $names[] = 'authors';
         $names[] = 'section';
         $names[] = 'type';
         return $names;
@@ -766,6 +818,7 @@ class Entry extends Element implements ExpirableElementInterface
     {
         $rules = parent::defineRules();
         $rules[] = [['sectionId', 'typeId', 'authorId'], 'number', 'integerOnly' => true];
+        $rules[] = [['authorsIds'], 'each', 'rule' => ['number', 'integerOnly' => true]];
         $rules[] = [['postDate', 'expiryDate'], DateTimeValidator::class];
 
         $rules[] = [
@@ -784,6 +837,7 @@ class Entry extends Element implements ExpirableElementInterface
 
             if ($section->type !== Section::TYPE_SINGLE) {
                 $rules[] = [['authorId'], 'required', 'on' => self::SCENARIO_LIVE];
+                $rules[] = [['authorsIds'], 'required', 'on' => self::SCENARIO_LIVE];
             }
         }
 
@@ -1172,6 +1226,39 @@ class Entry extends Element implements ExpirableElementInterface
     }
 
     /**
+     * Returns the entry primary (first) author ID.
+     *
+     * @return int[]|null
+     * @since 4.0.0
+     */
+    public function getAuthorsIds(): ?array
+    {
+        return $this->_authorsIds;
+    }
+
+    /**
+     * Sets the entry authors IDs.
+     *
+     * @param User[]|string|int|null $authorsIds
+     * @since 4.0.0
+     */
+    public function setAuthorsIds(array|string|int|null $authorsIds): void
+    {
+        if (empty($authorsIds) || $authorsIds === '') {
+            $authorsIds = null;
+        }
+
+        if (is_int($authorsIds)) {
+            $this->_authorsIds = [$authorsIds];
+        }
+
+        if (is_array($authorsIds)) {
+            $this->_authorsIds = $authorsIds;
+        }
+        $this->_authors = null;
+    }
+
+    /**
      * Returns the entry’s author.
      *
      * ---
@@ -1199,6 +1286,19 @@ class Entry extends Element implements ExpirableElementInterface
         }
 
         return $this->_author ?: null;
+
+        /*if (!isset($this->_authors)) {
+            if (!$this->getAuthorsIds()) {
+                return null;
+            }
+
+            if (($this->_authors[0] = Craft::$app->getUsers()->getUserById($this->getAuthorId())) === null) {
+                // The author is probably soft-deleted. Just no author is set
+                $this->_authors = false;
+            }
+        }
+
+        return $this->_authors ? $this->_authors[0] : null;*/
     }
 
     /**
@@ -1210,6 +1310,51 @@ class Entry extends Element implements ExpirableElementInterface
     {
         $this->_author = $author;
         $this->setAuthorId($author?->id);
+    }
+
+    /**
+     * Returns the entry’s authors.
+     *
+     * ---
+     * ```php
+     * $authors = $entry->authors;
+     * ```
+     * ```twig
+     * {% for author in entry.authors %}
+     *     <p>By {{ author.name }}</p>
+     * {% endfor %}
+     * ```
+     *
+     * @return User[]|null
+     * @throws InvalidConfigException if [[authorId]] is set but invalid
+     */
+    public function getAuthors(): ?array
+    {
+        if (!isset($this->_authors)) {
+            if (!$this->getAuthorsIds()) {
+                return null;
+            }
+
+            foreach ($this->getAuthorsIds() as $authorId) {
+                if (($author = Craft::$app->getUsers()->getUserById($authorId)) !== null) {
+                    $this->_authors[] = $author;
+                }
+
+            }
+        }
+
+        return $this->_authors ?: null;
+    }
+
+    /**
+     * Sets the entry’s author.
+     *
+     * @param User[]|null $author
+     */
+    public function setAuthors(?User $authors = null): void
+    {
+        $this->_authors = $authors;
+        $this->setAuthorsIds($authors);
     }
 
     /**
@@ -1515,6 +1660,20 @@ class Entry extends Element implements ExpirableElementInterface
                 $author = $this->getAuthor();
                 return $author ? Cp::elementHtml($author) : '';
 
+            case 'authors':
+                $authors = $this->getAuthors();
+
+                $html = '';
+                if (!empty($authors)) {
+                    if (count($authors) > 1) {
+                        $html = Cp::elementPreviewHtml($authors);
+                    } else {
+                        $html = Cp::elementHtml($authors[0]);
+                    }
+                }
+                return $html;
+
+
             case 'section':
                 return Html::encode(Craft::t('site', $this->getSection()->name));
 
@@ -1669,7 +1828,7 @@ EOD;
             if (Craft::$app->getEdition() === Craft::Pro && $user->can("viewPeerEntries:$section->uid")) {
                 $fields[] = (function() use ($static, $section) {
                     $author = $this->getAuthor();
-                    return Cp::elementSelectFieldHtml([
+                    $html = Cp::elementSelectFieldHtml([
                         'label' => Craft::t('app', 'Author'),
                         'id' => 'authorId',
                         'name' => 'authorId',
@@ -1682,6 +1841,31 @@ EOD;
                         'elements' => $author ? [$author] : null,
                         'disabled' => $static,
                     ]);
+                    // TODO: figure out how to do this properly!
+                    /*$authorsIds = array_column(
+                        (new Query())
+                            ->select(['authorId'])
+                            ->from(Table::ENTRIES_AUTHORS)
+                            ->where(['elementId' => $this->id])
+                            ->all(),
+                        'authorId');
+                    $this->setAuthorsIds($authorsIds);*/
+                    // end todo
+                    $authors = $this->getAuthors();
+                    $html .= Cp::elementSelectFieldHtml([
+                        'label' => Craft::t('app', 'Authors'),
+                        'id' => 'authorsIds',
+                        'name' => 'authorsIds',
+                        'elementType' => User::class,
+                        'selectionLabel' => Craft::t('app', 'Choose'),
+                        'criteria' => [
+                            'can' => "viewEntries:$section->uid",
+                        ],
+                        'single' => false,
+                        'elements' => $authors ?: null,
+                        'disabled' => $static,
+                    ]);
+                    return $html;
                 })();
             }
 
@@ -1932,6 +2116,13 @@ EOD;
 
             $record->save(false);
 
+            // save authors
+            if (!empty($this->_authorsIds)) {
+                // save & add to dirty attributes
+                $this->_saveAuthors();
+                $dirtyAttributes[] = 'authors';
+            }
+
             if ($this->getIsCanonical() && $section->type == Section::TYPE_STRUCTURE) {
                 // Has the parent changed?
                 if ($this->hasNewParent()) {
@@ -1948,6 +2139,87 @@ EOD;
         }
 
         parent::afterSave($isNew);
+    }
+
+    /**
+     * Save authors
+     *
+     * @return void
+     * @throws Throwable
+     * @throws \yii\db\Exception
+     */
+    private function _saveAuthors(): void
+    {
+        // Get the unique, indexed author IDs, set to their 0-indexed sort orders
+        $authorsIds = array_flip(array_values(array_unique(array_filter($this->_authorsIds))));
+
+        // Get the current authors
+        $oldAuthorConditions = ['elementId' => $this->id];
+
+        $db = Craft::$app->getDb();
+
+        $oldAuthors = (new Query())
+            ->select(['id', 'elementId', 'authorId', 'sortOrder'])
+            ->from([Table::ENTRIES_AUTHORS])
+            ->where($oldAuthorConditions)
+            ->all($db);
+
+        /** @var Command[] $updateCommands */
+        $updateCommands = [];
+        $deleteIds = [];
+
+        foreach ($oldAuthors as $author) {
+            // Does this author still exist?
+            if (isset($authorsIds[$author['authorId']])) {
+                // Anything to update?
+                $sortOrder = $authorsIds[$author['authorId']] + 1;
+                if ($author['sortOrder'] != $sortOrder) {
+                    $updateCommands[] = $db->createCommand()->update(Table::ENTRIES_AUTHORS, [
+                        'sortOrder' => $sortOrder,
+                    ], ['id' => $author['id']]);
+                }
+
+                // Avoid re-inserting it
+                unset($authorsIds[$author['authorId']]);
+            } else {
+                $deleteIds[] = $author['id'];
+            }
+        }
+
+        if (!empty($updateCommands) || !empty($deleteIds) || !empty($authorsIds)) {
+            $transaction = $db->beginTransaction();
+            try {
+                // update modified ones
+                foreach ($updateCommands as $command) {
+                    $command->execute();
+                }
+
+                // Add the new ones
+                if (!empty($authorsIds)) {
+                    $values = [];
+                    foreach ($authorsIds as $authorId => $sortOrder) {
+                        $values[] = [
+                            $this->id,
+                            $authorId,
+                            $sortOrder + 1,
+                        ];
+                    }
+                    Db::batchInsert(Table::ENTRIES_AUTHORS, ['elementId', 'authorId', 'sortOrder'], $values, $db);
+                }
+
+                // delete removed ones
+                if (!empty($deleteIds)) {
+                    Db::delete(Table::ENTRIES_AUTHORS, [
+                        'id' => $deleteIds,
+                    ], [], $db);
+                }
+
+                $transaction->commit();
+            } catch (Throwable $e) {
+                $transaction->rollBack();
+                throw $e;
+            }
+        }
     }
 
     private function _placeInStructure(bool $isNew, Section $section): void

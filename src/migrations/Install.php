@@ -360,6 +360,15 @@ class Install extends Migration
             'dateUpdated' => $this->dateTime()->notNull(),
             'PRIMARY KEY([[id]])',
         ]);
+        $this->createTable(Table::ENTRIES_AUTHORS, [
+            'id' => $this->primaryKey(),
+            'elementId' => $this->integer()->notNull(),
+            'authorId' => $this->integer(),
+            'sortOrder' => $this->smallInteger()->unsigned(),
+            'dateCreated' => $this->dateTime()->notNull(),
+            'dateUpdated' => $this->dateTime()->notNull(),
+            'uid' => $this->uid(),
+        ]);
         $this->createTable(Table::ENTRYTYPES, [
             'id' => $this->primaryKey(),
             'sectionId' => $this->integer()->notNull(),
@@ -839,6 +848,8 @@ class Install extends Migration
         $this->createIndex(null, Table::ENTRIES, ['authorId'], false);
         $this->createIndex(null, Table::ENTRIES, ['sectionId'], false);
         $this->createIndex(null, Table::ENTRIES, ['typeId'], false);
+        $this->createIndex(null, Table::ENTRIES_AUTHORS, ['authorId'], false);
+        $this->createIndex(null, Table::ENTRIES_AUTHORS, ['sortOrder'], false);
         $this->createIndex(null, Table::ENTRYTYPES, ['name', 'sectionId'], false);
         $this->createIndex(null, Table::ENTRYTYPES, ['handle', 'sectionId'], false);
         $this->createIndex(null, Table::ENTRYTYPES, ['sectionId'], false);
@@ -1023,6 +1034,8 @@ class Install extends Migration
         $this->addForeignKey(null, Table::ENTRIES, ['sectionId'], Table::SECTIONS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ENTRIES, ['parentId'], Table::ENTRIES, ['id'], 'SET NULL', null);
         $this->addForeignKey(null, Table::ENTRIES, ['typeId'], Table::ENTRYTYPES, ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, Table::ENTRIES_AUTHORS, ['elementId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
+        $this->addForeignKey(null, Table::ENTRIES_AUTHORS, ['authorId'], Table::USERS, ['id'], 'SET NULL', null);
         $this->addForeignKey(null, Table::ENTRYTYPES, ['fieldLayoutId'], Table::FIELDLAYOUTS, ['id'], 'SET NULL', null);
         $this->addForeignKey(null, Table::ENTRYTYPES, ['sectionId'], Table::SECTIONS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::FIELDLAYOUTFIELDS, ['fieldId'], Table::FIELDS, ['id'], 'CASCADE', null);

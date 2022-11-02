@@ -95,6 +95,7 @@ class EntriesController extends BaseEntriesController
         $entry->siteId = $site->id;
         $entry->sectionId = $section->id;
         $entry->authorId = $this->request->getQueryParam('authorId', $user->id);
+        $entry->authorsIds = $this->request->getQueryParam('authorsIds', $user->id);
 
         // Type
         if (($typeHandle = $this->request->getQueryParam('type')) !== null) {
@@ -238,7 +239,8 @@ class EntriesController extends BaseEntriesController
         if (
             $entry->id &&
             !$duplicate &&
-            $entry->authorId != $currentUser->id &&
+            ($entry->authorId != $currentUser->id ||
+                !in_array($currentUser->id, $entry->authorsIds)) &&
             $section->type !== Section::TYPE_SINGLE &&
             $entry->enabled
         ) {
@@ -464,12 +466,13 @@ class EntriesController extends BaseEntriesController
 
         // Author
         $authorId = $this->request->getBodyParam('author', ($entry->authorId ?: static::currentUser()->id));
+        $authorsIds = $this->request->getBodyParam('authors', ($entry->authorsIds ?: [static::currentUser()->id]));
 
         if (is_array($authorId)) {
             $authorId = $authorId[0] ?? null;
         }
 
-        $entry->authorId = $authorId;
+        $entry->authorsIds = $authorsIds;
 
         // Parent
         if (($parentId = $this->request->getBodyParam('parentId')) !== null) {

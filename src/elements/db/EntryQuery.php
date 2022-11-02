@@ -8,6 +8,7 @@
 namespace craft\elements\db;
 
 use Craft;
+use craft\base\ElementInterface;
 use craft\db\Query;
 use craft\db\QueryAbortedException;
 use craft\db\Table;
@@ -107,6 +108,12 @@ class EntryQuery extends ElementQuery
      * @used-by authorId()
      */
     public mixed $authorId = null;
+
+    /**
+     * @var mixed The user ID(s) that the resulting entries’ authors must have.
+     * @used-by authorId()
+     */
+    public mixed $authorsIds = null;
 
     /**
      * @var mixed The user group ID(s) that the resulting entries’ authors must be in.
@@ -856,6 +863,29 @@ class EntryQuery extends ElementQuery
         $this->_applyRefParam();
 
         return parent::beforePrepare();
+    }
+
+    /**
+     * @inheritdoc
+     * @return ElementInterface[]|array The resulting elements.
+     */
+    public function populate($rows): array
+    {
+        if (!empty($rows)) {
+            foreach ($rows as &$row) {
+                $authorsIds = array_column(
+                    (new Query())
+                        ->select(['authorId'])
+                        ->from(Table::ENTRIES_AUTHORS)
+                        ->where(['elementId' => $row['id']])
+                        ->orderBy('sortOrder ASC')
+                        ->all(),
+                    'authorId');
+                $row['authorsIds'] = $authorsIds;
+            }
+        }
+
+        return parent::populate($rows);
     }
 
     /**
