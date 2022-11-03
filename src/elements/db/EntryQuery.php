@@ -104,7 +104,7 @@ class EntryQuery extends ElementQuery
     public mixed $typeId = null;
 
     /**
-     * @var mixed The user ID(s) that the resulting entries’ authors must have.
+     * @var mixed The user ID that the resulting entries’ authors must have.
      * @used-by authorId()
      */
     public mixed $authorId = null;
