@@ -845,7 +845,7 @@ class Install extends Migration
         $this->createIndex(null, Table::SYSTEMMESSAGES, ['language'], false);
         $this->createIndex(null, Table::ENTRIES, ['postDate'], false);
         $this->createIndex(null, Table::ENTRIES, ['expiryDate'], false);
-        $this->createIndex(null, Table::ENTRIES, ['authorId'], false);
+        //$this->createIndex(null, Table::ENTRIES, ['authorId'], false);
         $this->createIndex(null, Table::ENTRIES, ['sectionId'], false);
         $this->createIndex(null, Table::ENTRIES, ['typeId'], false);
         $this->createIndex(null, Table::ENTRIES_AUTHORS, ['authorId'], false);
@@ -1029,7 +1029,7 @@ class Install extends Migration
         $this->addForeignKey(null, Table::ELEMENTS, ['fieldLayoutId'], Table::FIELDLAYOUTS, ['id'], 'SET NULL', null);
         $this->addForeignKey(null, Table::ELEMENTS_SITES, ['elementId'], Table::ELEMENTS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ELEMENTS_SITES, ['siteId'], Table::SITES, ['id'], 'CASCADE', 'CASCADE');
-        $this->addForeignKey(null, Table::ENTRIES, ['authorId'], Table::USERS, ['id'], 'SET NULL', null);
+        //$this->addForeignKey(null, Table::ENTRIES, ['authorId'], Table::USERS, ['id'], 'SET NULL', null);
         $this->addForeignKey(null, Table::ENTRIES, ['id'], Table::ELEMENTS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ENTRIES, ['sectionId'], Table::SECTIONS, ['id'], 'CASCADE', null);
         $this->addForeignKey(null, Table::ENTRIES, ['parentId'], Table::ENTRIES, ['id'], 'SET NULL', null);
