@@ -4,6 +4,7 @@
 
 - Fixed asset indexing for Local filesystems that were configured to use a symlinked server path.
 - Fixed an error that could occur when calling `craft\base\Element::getCanonicalUid()` on a draft loaded for a site that the canonical element didn’t exist on yet. ([#12228](https://github.com/craftcms/cms/issues/12228))
+- Fixed a bug where long words in asset titles weren’t wrapping in the large thumbnail view. ([#12237](https://github.com/craftcms/cms/issues/12237))
 
 ## 4.3.1 - 2022-10-27
 
