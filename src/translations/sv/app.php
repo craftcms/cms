@@ -124,6 +124,7 @@ return [
     'Applying new propagation method to elements' => 'Tillämpar ny spridningsmetod på elementen',
     'Applying new propagation method to {section} entries' => 'Tillämpar ny spridningsmetod på inläggen {section}',
     'Applying this change to existing blocks can take some time.' => 'Att tillämpa denna ändring på befintliga block kan ta tid.',
+    'Archived' => 'Archived',
     'Are you sure you want to close the editor? Any changes will be lost.' => 'Är du säker på att du vill stänga redigeraren? Alla ändringar kommer att gå förlorade.',
     'Are you sure you want to close this screen? Any changes will be lost.' => 'Är du säker på att du vill stänga den här skärmen? Alla ändringar kommer att gå förlorade.',
     'Are you sure you want to delete the logo?' => 'Vill du ta bort logotypen?',
