@@ -1,7 +1,7 @@
 {{ hiddenInput(name, '') }}
 
 <div class="matrix matrix-field" id="{{ id }}">
-    <span aria-live="assertive" class="visually-hidden" data-status-message></span>
+    <span role="status" class="visually-hidden" data-status-message></span>
     <div class="blocks" role="list">
         {% set totalNewBlocks = 0 %}
         {% for block in blocks %}

@@ -51,7 +51,7 @@
   {%- set tableAttributes = tableAttributes|merge(('<div ' ~ block('attr') ~ '>')|parseAttr, recursive=true) %}
 {% endif %}
 
-<span aria-live="assertive" class="visually-hidden" data-status-message></span>
+<span role="status" class="visually-hidden" data-status-message></span>
 {% tag 'table' with tableAttributes %}
     {% for col in cols %}
         <col>

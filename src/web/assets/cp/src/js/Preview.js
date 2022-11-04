@@ -161,7 +161,7 @@ Craft.Preview = Garnish.Base.extend(
         }).appendTo(this.$previewWrapper);
         this.$notifier = $('<span/>', {
           class: 'visually-hidden',
-          'aria-live': 'assertive',
+          'role': 'status',
         }).appendTo(this.$previewContainer);
 
         var $editorHeader = $('<header/>', {class: 'flex'}).appendTo(
