@@ -45,6 +45,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     trashed: false,
     drafts: false,
     $clearSearchBtn: null,
+    $scoreSortAttribute: null,
 
     $statusMenuBtn: null,
     $statusMenuContainer: null,
@@ -559,16 +560,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       if (this.activeViewMenu) {
         this.activeViewMenu.updateSortField();
       }
-
-      var table = this.$container.find('table:first');
-      var headers = $(table)
-        .children('thead')
-        .children()
-        .children('[data-attribute]');
-
-      $(headers).each(function (key, item) {
-        $(item).removeClass('orderable');
-      });
     },
 
     clearSearch: function (updateElements) {
@@ -1226,7 +1217,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
      */
     getSortAttributeAndDirection: function () {
       if (this.searching) {
-        return ['score', 'asc'];
+        return ['score', 'desc'];
       }
 
       let attribute = this.getSelectedSortAttribute();
@@ -2767,13 +2758,20 @@ const ViewMenu = Garnish.Base.extend({
   updateSortField: function () {
     let [attribute, direction] =
       this.elementIndex.getSortAttributeAndDirection();
-    var disableSorting = false;
 
-    // If searching by score, just keep showing the actual selection
+    // If searching, we want to be clear that sort is set to score desc
     if (attribute === 'score') {
-      attribute = this.elementIndex.getSelectedSortAttribute(this.$source);
-      direction = this.elementIndex.getSelectedSortDirection(this.$source);
-      disableSorting = true;
+      // add sort by score option to the "view > sort by"
+      if (!this.$scoreSortAttribute) {
+        this.$scoreSortAttribute = $(
+          '<option value="score">' + Craft.t('app', 'Score') + '</option>'
+        );
+      }
+      this.$scoreSortAttribute.prependTo(this.$sortAttributeSelect);
+    } else {
+      if (this.$scoreSortAttribute) {
+        this.$scoreSortAttribute.detach();
+      }
     }
 
     this.$sortAttributeSelect.val(attribute);
@@ -2782,7 +2780,7 @@ const ViewMenu = Garnish.Base.extend({
     if (attribute === 'structure') {
       this.sortDirectionListbox.disable();
       this.$sortDirectionPicker.addClass('disabled');
-    } else if (disableSorting) {
+    } else if (attribute === 'score') {
       // disable sorting via "view > sort by" when search is being performed
       this.$sortAttributeSelect.attr('disabled', 'disabled');
       this.$sortAttributeSelect.addClass('disabled');

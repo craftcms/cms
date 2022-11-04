@@ -115,16 +115,8 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
       .children()
       .children('[data-attribute]');
 
-    // get sort attr and dir
-    var disableSorting = false;
-
-    // if sort attribute is 'score' - it means we're searching;
-    if (this.elementIndex.getSortAttributeAndDirection()[0] === 'score') {
-      // disable sorting while searching
-      disableSorting = true;
-    }
-
-    if (!disableSorting) {
+    // if sort attribute is 'score' - it means we're searching - don't sort when searching;
+    if (this.elementIndex.getSortAttributeAndDirection()[0] !== 'score') {
       for (let i = 0; i < $tableHeaders.length; i++) {
         const $header = $tableHeaders.eq(i);
         const attr = $header.attr('data-attribute');
