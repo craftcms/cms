@@ -110,8 +110,8 @@ class EntryQuery extends ElementQuery
     public mixed $authorId = null;
 
     /**
-     * @var mixed The user ID(s) that the resulting entries’ authors must have.
-     * @used-by authorId()
+     * @var mixed The user IDs that the resulting entries’ authors must have.
+     * @used-by authorsIds()
      */
     public mixed $authorsIds = null;
 
@@ -822,7 +822,7 @@ class EntryQuery extends ElementQuery
         $this->query->select([
             'entries.sectionId',
             'entries.typeId',
-            'entries.authorId',
+            //'entries.authorId', // todo - get rid of this
             'entries.postDate',
             'entries.expiryDate',
         ]);
@@ -848,8 +848,13 @@ class EntryQuery extends ElementQuery
 
         if (Craft::$app->getEdition() === Craft::Pro) {
             if ($this->authorId) {
-                $this->subQuery->andWhere(Db::parseNumericParam('entries.authorId', $this->authorId));
+                //$this->subQuery->andWhere(Db::parseNumericParam('entries.authorId', $this->authorId));
+                $this->subQuery
+                    ->leftJoin(['entries_authors' => Table::ENTRIES_AUTHORS], '[[entries_authors.elementId]] = [[entries.id]]')
+                    ->andWhere(Db::parseNumericParam('entries_authors.authorId', $this->authorId));
             }
+            // todo: do we want to have authorsIds() option too where we join IDs by 'and'?
+            //  or should it just use authodId and then further processing is down to the website creator?
 
             if ($this->authorGroupId) {
                 $this->subQuery
@@ -871,8 +876,17 @@ class EntryQuery extends ElementQuery
      */
     public function populate($rows): array
     {
+        // we are now getting multiple rows for one entry because of ->authorId([...])
+        // and the ->innerJoin with entries_authors table
+        // todo: is there a better way to do this? tried with group_concat but
+        $distinctRows = [];
         if (!empty($rows)) {
-            foreach ($rows as &$row) {
+            foreach ($rows as $row) {
+                // id this entryId has already been processed, carry on to the next one
+                if (isset($distinctRows[$row['id']])) {
+                    continue;
+                }
+                // get all authorIds for this entry
                 $authorsIds = array_column(
                     (new Query())
                         ->select(['authorId'])
@@ -882,10 +896,11 @@ class EntryQuery extends ElementQuery
                         ->all(),
                     'authorId');
                 $row['authorsIds'] = $authorsIds;
+                $distinctRows[$row['id']] = $row;
             }
         }
 
-        return parent::populate($rows);
+        return parent::populate($distinctRows);
     }
 
     /**

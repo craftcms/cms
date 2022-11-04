@@ -1202,7 +1202,7 @@ class Entry extends Element implements ExpirableElementInterface
     public function getAuthorId(): ?int
     {
         //return $this->_authorId;
-        return $this->_authorsIds[0];
+        return $this->_authorsIds[0] ?? null;
     }
 
     /**
