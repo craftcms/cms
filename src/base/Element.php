@@ -928,7 +928,7 @@ abstract class Element extends Component implements ElementInterface
         }
 
         // Prepend Set Status?
-        if (static::hasStatuses() && !$hasActionType(SetStatus::class)) {
+        if (static::includeSetStatusAction() && !$hasActionType(SetStatus::class)) {
             $actions->prepend(SetStatus::class);
         }
 
@@ -946,6 +946,19 @@ abstract class Element extends Component implements ElementInterface
 
         return $event->actions;
     }
+
+
+    /**
+     * Returns whether the Set Status action should be included in [[actions()]] automatically.
+     *
+     * @return bool
+     * @since 4.3.2
+     */
+    protected static function includeSetStatusAction(): bool
+    {
+        return static::hasStatuses();
+    }
+
 
     /**
      * Defines the available element actions for a given source.
