@@ -115,26 +115,37 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
       .children()
       .children('[data-attribute]');
 
-    for (let i = 0; i < $tableHeaders.length; i++) {
-      const $header = $tableHeaders.eq(i);
-      const attr = $header.attr('data-attribute');
-      let sortValue = 'none';
+    // get sort attr and dir
+    var disableSorting = false;
 
-      // Is this the selected sort attribute?
-      if (attr === selectedSortAttr) {
-        this.$selectedSortHeader = $header;
-        const selectedSortDir = this.elementIndex.getSelectedSortDirection();
-        sortValue = selectedSortDir === 'asc' ? 'ascending' : 'descending';
-        $header.addClass('ordered ' + selectedSortDir);
-        this.makeColumnSortable($header, true);
-      } else {
-        // Is this attribute sortable?
-        if (this.elementIndex.getSortOption(attr)) {
-          this.makeColumnSortable($header);
+    // if sort attribute is 'score' - it means we're searching;
+    if (this.elementIndex.getSortAttributeAndDirection()[0] === 'score') {
+      // disable sorting while searching
+      disableSorting = true;
+    }
+
+    if (!disableSorting) {
+      for (let i = 0; i < $tableHeaders.length; i++) {
+        const $header = $tableHeaders.eq(i);
+        const attr = $header.attr('data-attribute');
+        let sortValue = 'none';
+
+        // Is this the selected sort attribute?
+        if (attr === selectedSortAttr) {
+          this.$selectedSortHeader = $header;
+          const selectedSortDir = this.elementIndex.getSelectedSortDirection();
+          sortValue = selectedSortDir === 'asc' ? 'ascending' : 'descending';
+          $header.addClass('ordered ' + selectedSortDir);
+          this.makeColumnSortable($header, true);
+        } else {
+          // Is this attribute sortable?
+          if (this.elementIndex.getSortOption(attr)) {
+            this.makeColumnSortable($header);
+          }
         }
-      }
 
-      $header.attr('aria-sort', sortValue);
+        $header.attr('aria-sort', sortValue);
+      }
     }
   },
 

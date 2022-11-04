@@ -559,6 +559,16 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       if (this.activeViewMenu) {
         this.activeViewMenu.updateSortField();
       }
+
+      var table = this.$container.find('table:first');
+      var headers = $(table)
+        .children('thead')
+        .children()
+        .children('[data-attribute]');
+
+      $(headers).each(function (key, item) {
+        $(item).removeClass('orderable');
+      });
     },
 
     clearSearch: function (updateElements) {
@@ -2757,11 +2767,13 @@ const ViewMenu = Garnish.Base.extend({
   updateSortField: function () {
     let [attribute, direction] =
       this.elementIndex.getSortAttributeAndDirection();
+    var disableSorting = false;
 
     // If searching by score, just keep showing the actual selection
     if (attribute === 'score') {
       attribute = this.elementIndex.getSelectedSortAttribute(this.$source);
       direction = this.elementIndex.getSelectedSortDirection(this.$source);
+      disableSorting = true;
     }
 
     this.$sortAttributeSelect.val(attribute);
@@ -2770,7 +2782,15 @@ const ViewMenu = Garnish.Base.extend({
     if (attribute === 'structure') {
       this.sortDirectionListbox.disable();
       this.$sortDirectionPicker.addClass('disabled');
+    } else if (disableSorting) {
+      // disable sorting via "view > sort by" when search is being performed
+      this.$sortAttributeSelect.attr('disabled', 'disabled');
+      this.$sortAttributeSelect.addClass('disabled');
+      this.sortDirectionListbox.disable();
+      this.$sortDirectionPicker.addClass('disabled');
     } else {
+      this.$sortAttributeSelect.removeAttr('disabled');
+      this.$sortAttributeSelect.removeClass('disabled');
       this.sortDirectionListbox.enable();
       this.$sortDirectionPicker.removeClass('disabled');
     }
