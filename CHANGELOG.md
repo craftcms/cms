@@ -3,6 +3,13 @@
 ## Unreleased
 
 - Fixed asset indexing for Local filesystems that were configured to use a symlinked server path.
+- Fixed an error that could occur when calling `craft\base\Element::getCanonicalUid()` on a draft loaded for a site that the canonical element didn’t exist on yet. ([#12228](https://github.com/craftcms/cms/issues/12228))
+- Fixed a bug where long words in asset titles weren’t wrapping in the large thumbnail view. ([#12237](https://github.com/craftcms/cms/issues/12237))
+- Fixed a bug where the Users index page was showing a “Set Status” bulk action, making it possible to disable users.
+- Disabled users now identify themselves as disabled, and Edit User pages now provide a way for them to be re-enabled.
+- Fixed a layout issue that could occur on Assets fields using the “Large Thumbnails” view mode. ([#12230](https://github.com/craftcms/cms/issues/12230))
+- Fixed a bug where elements that weren’t viewable by the current user could still be hyperlinked in element indexes.
+- Added `craft\base\Element::includeSetStatusAction()`.
 
 ## 4.3.1 - 2022-10-27
 
