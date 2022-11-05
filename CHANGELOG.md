@@ -8,6 +8,7 @@
 - Fixed a bug where the Users index page was showing a “Set Status” bulk action, making it possible to disable users.
 - Disabled users now identify themselves as disabled, and Edit User pages now provide a way for them to be re-enabled.
 - Fixed a layout issue that could occur on Assets fields using the “Large Thumbnails” view mode. ([#12230](https://github.com/craftcms/cms/issues/12230))
+- Fixed a bug where elements that weren’t viewable by the current user could still be hyperlinked in element indexes.
 - Added `craft\base\Element::includeSetStatusAction()`.
 
 ## 4.3.1 - 2022-10-27

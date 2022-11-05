@@ -470,7 +470,8 @@ class Cp
             if (
                 $context === 'index' &&
                 !$element->trashed &&
-                ($cpEditUrl = $element->getCpEditUrl())
+                ($cpEditUrl = $element->getCpEditUrl()) &&
+                $elementsService->canView($element)
             ) {
                 $innerHtml .= Html::a($encodedLabel, $cpEditUrl);
             } else {
