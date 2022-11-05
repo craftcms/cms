@@ -1,28 +1,29 @@
 <?php
 
-namespace craft\elements\conditions\assets;
+namespace craft\elements\conditions\entries;
 
 use Craft;
 use craft\base\conditions\BaseLightswitchConditionRule;
 use craft\base\ElementInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;
-use craft\elements\db\AssetQuery;
 use craft\elements\db\ElementQueryInterface;
+use craft\elements\db\EntryQuery;
+use craft\elements\Entry;
 
 /**
- * Asset editable condition rule.
+ * Entry viewable condition rule.
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.3.0
+ * @since 4.4.0
  */
-class EditableConditionRule extends BaseLightswitchConditionRule implements ElementConditionRuleInterface
+class ViewableConditionRule extends BaseLightswitchConditionRule implements ElementConditionRuleInterface
 {
     /**
      * @inheritdoc
      */
     public function getLabel(): string
     {
-        return Craft::t('app', 'Editable');
+        return Craft::t('app', 'Viewable');
     }
 
     /**
@@ -30,7 +31,7 @@ class EditableConditionRule extends BaseLightswitchConditionRule implements Elem
      */
     public function getExclusiveQueryParams(): array
     {
-        return ['savable'];
+        return ['editable'];
     }
 
     /**
@@ -38,8 +39,8 @@ class EditableConditionRule extends BaseLightswitchConditionRule implements Elem
      */
     public function modifyQuery(ElementQueryInterface $query): void
     {
-        /** @var AssetQuery $query */
-        $query->savable($this->value);
+        /** @var EntryQuery $query */
+        $query->editable($this->value);
     }
 
     /**
@@ -47,7 +48,7 @@ class EditableConditionRule extends BaseLightswitchConditionRule implements Elem
      */
     public function matchElement(ElementInterface $element): bool
     {
-        $savable = Craft::$app->getElements()->canSave($element);
-        return $savable === $this->value;
+        $viewable = Craft::$app->getElements()->canView($element);
+        return $viewable === $this->value;
     }
 }

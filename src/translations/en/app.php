@@ -1692,6 +1692,7 @@ return [
     'View {plugin} in the Plugin Store' => 'View {plugin} in the Plugin Store',
     'View {type}' => 'View {type}',
     'View' => 'View',
+    'Viewable' => 'Viewable',
     'Village/Township' => 'Village/Township',
     'Visit webpage' => 'Visit webpage',
     'Volume - {volume}' => 'Volume - {volume}',

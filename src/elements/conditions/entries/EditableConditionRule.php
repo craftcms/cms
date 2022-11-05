@@ -7,6 +7,7 @@ use craft\base\conditions\BaseLightswitchConditionRule;
 use craft\base\ElementInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;
 use craft\elements\db\ElementQueryInterface;
+use craft\elements\db\EntryQuery;
 use craft\elements\Entry;
 
 /**
@@ -30,7 +31,7 @@ class EditableConditionRule extends BaseLightswitchConditionRule implements Elem
      */
     public function getExclusiveQueryParams(): array
     {
-        return [];
+        return ['savable'];
     }
 
     /**
@@ -38,58 +39,8 @@ class EditableConditionRule extends BaseLightswitchConditionRule implements Elem
      */
     public function modifyQuery(ElementQueryInterface $query): void
     {
-        $user = Craft::$app->getUser()->getIdentity();
-
-        if (!$user || $user->admin) {
-            $admin = $user?->admin;
-            if ((!$admin && $this->value) || ($admin && !$this->value)) {
-                $query->id(false);
-            }
-            return;
-        }
-
-        $fullySavableSections = [];
-        $restrictedSections = [];
-
-        foreach (Craft::$app->getSections()->getAllSections() as $section) {
-            if ($user->can("savePeerEntries:$section->uid")) {
-                $fullySavableSections[] = $section->id;
-            } elseif ($user->can("saveEntries:$section->uid")) {
-                $restrictedSections[] = $section->id;
-            }
-        }
-
-        if (!$fullySavableSections && !$restrictedSections) {
-            if ($this->value) {
-                $query->id(false);
-            }
-            return;
-        }
-
-        $condition = [];
-
-        if ($fullySavableSections) {
-            $condition[] = ['entries.sectionId' => $fullySavableSections];
-        }
-
-        if ($restrictedSections) {
-            $condition[] = [
-                'entries.sectionId' => $restrictedSections,
-                'entries.authorId' => $user->id,
-            ];
-        }
-
-        if (count($condition) === 1) {
-            $condition = reset($condition);
-        } else {
-            array_unshift($condition, 'or');
-        }
-
-        if (!$this->value) {
-            $condition = ['not', $condition];
-        }
-
-        $query->andWhere($condition);
+        /** @var EntryQuery $query */
+        $query->savable($this->value);
     }
 
     /**

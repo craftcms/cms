@@ -27,6 +27,7 @@ class EntryCondition extends ElementCondition
             PostDateConditionRule::class,
             SectionConditionRule::class,
             TypeConditionRule::class,
+            ViewableConditionRule::class,
         ]);
     }
 }
