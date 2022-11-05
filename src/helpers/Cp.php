@@ -412,11 +412,10 @@ class Cp
             $attributes['class'][] = 'hasthumb';
         }
 
+        $elementsService = Craft::$app->getElements();
         $user = Craft::$app->getUser()->getIdentity();
 
         if ($user) {
-            $elementsService = Craft::$app->getElements();
-
             if ($elementsService->canView($element, $user)) {
                 $attributes['data']['editable'] = true;
             }
@@ -468,10 +467,11 @@ class Cp
 
             // Should we make the element a link?
             if (
+                $user &&
                 $context === 'index' &&
                 !$element->trashed &&
                 ($cpEditUrl = $element->getCpEditUrl()) &&
-                $elementsService->canView($element)
+                $elementsService->canView($element, $user)
             ) {
                 $innerHtml .= Html::a($encodedLabel, $cpEditUrl);
             } else {
