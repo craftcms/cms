@@ -994,7 +994,7 @@ class EntryQuery extends ElementQuery
                             'or',
                             ['not', ['entries.authorId' => $user->id]],
                             ['entries.authorId' => null],
-                        ]
+                        ],
                     ]
                     : null,
             ]));

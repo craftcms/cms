@@ -1046,7 +1046,7 @@ class AssetQuery extends ElementQuery
                             'or',
                             ['not', ['assets.uploaderId' => $user->id]],
                             ['assets.uploaderId' => null],
-                        ]
+                        ],
                     ]
                     : null,
             ]));
