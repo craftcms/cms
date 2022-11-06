@@ -8,7 +8,6 @@
 namespace crafttests\unit\helpers;
 
 use Codeception\Test\Unit;
-use Craft;
 use craft\elements\User;
 use craft\helpers\Cp;
 use craft\test\TestCase;
