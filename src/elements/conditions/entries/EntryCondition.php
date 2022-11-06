@@ -21,10 +21,10 @@ class EntryCondition extends ElementCondition
         return array_merge(parent::conditionRuleTypes(), [
             AuthorConditionRule::class,
             AuthorGroupConditionRule::class,
-            EditableConditionRule::class,
             ExpiryDateConditionRule::class,
             LevelConditionRule::class,
             PostDateConditionRule::class,
+            SavableConditionRule::class,
             SectionConditionRule::class,
             TypeConditionRule::class,
             ViewableConditionRule::class,
