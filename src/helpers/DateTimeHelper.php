@@ -651,7 +651,7 @@ class DateTimeHelper
 
         if (is_numeric($value)) {
             // Use DateTime::diff() so the years/months/days/hours/minutes values are all populated correctly
-            $now = static::now();
+            $now = static::now(new DateTimeZone('UTC'));
             $then = (clone $now)->modify("+$value seconds");
             return $now->diff($then);
         }
