@@ -10,6 +10,7 @@
 - Fixed a layout issue that could occur on Assets fields using the “Large Thumbnails” view mode. ([#12230](https://github.com/craftcms/cms/issues/12230))
 - Fixed a bug where elements that weren’t viewable by the current user could still be hyperlinked in element indexes.
 - Fixed a bug where `craft\helpers\DateTimeHelper::toDateInterval()` could return a `DateInterval` that was off by an hour around daylight savings time changes.
+- Fixed a bug where sticky element index footers were obstructed when the Debug Toolbar was enabled. ([#12242](https://github.com/craftcms/cms/issues/12242))
 - Added `craft\base\Element::includeSetStatusAction()`.
 
 ## 4.3.1 - 2022-10-27
