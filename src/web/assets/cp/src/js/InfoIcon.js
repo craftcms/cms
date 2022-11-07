@@ -29,7 +29,7 @@ Craft.InfoIcon = Garnish.Base.extend({
           tabindex: 0,
           role: 'button',
           type: 'button',
-          'aria-label': Craft.t('app', 'Information'),
+          'aria-label': Craft.t('app', 'More info'),
         })
         .wrap(
           $('<span/>', {
