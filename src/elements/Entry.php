@@ -571,52 +571,53 @@ class Entry extends Element implements ExpirableElementInterface
      */
     public static function eagerLoadingMap(array $sourceElements, string $handle): array|null|false
     {
-//        if ($handle === 'author') {
-//            /** @phpstan-ignore-next-line */
-//            $sourceElementsWithAuthors = array_filter($sourceElements, function(self $entry) {
-//                return $entry->getAuthorId() !== null;
-//            });
-//
-//            /** @phpstan-ignore-next-line */
-//            $map = array_map(function(self $entry) {
-//                return [
-//                    'source' => $entry->id,
-//                    'target' => $entry->getAuthorId(),
-//                ];
-//            }, $sourceElementsWithAuthors);
-//
-//            return [
-//                'elementType' => User::class,
-//                'map' => $map,
-//                'criteria' => [
-//                    'status' => null,
-//                ],
-//            ];
-//        }
-//        if ($handle === 'authors') {
-//            /** @phpstan-ignore-next-line */
-//            $sourceElementsWithAuthors = array_filter($sourceElements, function(self $entry) {
-//                return $entry->getAuthorsIds() !== null;
-//            });
-//
-//            $map = [];
-//            foreach ($sourceElementsWithAuthors as $elementWithAuthors) {
-//                foreach ($elementWithAuthors->getAuthorsIds() as $authorId) {
-//                    $map[] = [
-//                        'source' => $elementWithAuthors->id,
-//                        'target' => $authorId,
-//                    ];
-//                }
-//            }
-//
-//            return [
-//                'elementType' => User::class,
-//                'map' => $map,
-//                'criteria' => [
-//                    'status' => null,
-//                ],
-//            ];
-//        }
+        if ($handle === 'author') {
+            /** @phpstan-ignore-next-line */
+            $sourceElementsWithAuthors = array_filter($sourceElements, function(self $entry) {
+                return $entry->getAuthorId() !== null;
+            });
+
+            /** @phpstan-ignore-next-line */
+            $map = array_map(function(self $entry) {
+                return [
+                    'source' => $entry->id,
+                    'target' => $entry->getAuthorId(),
+                ];
+            }, $sourceElementsWithAuthors);
+
+            return [
+                'elementType' => User::class,
+                'map' => $map,
+                'criteria' => [
+                    'status' => null,
+                ],
+            ];
+        }
+
+        if ($handle === 'authors') {
+            /** @phpstan-ignore-next-line */
+            $sourceElementsWithAuthors = array_filter($sourceElements, function(self $entry) {
+                return $entry->getAuthorsIds() !== null;
+            });
+
+            $map = [];
+            foreach ($sourceElementsWithAuthors as $sourceElementWithAuthors) {
+                $map += array_map(function ($authorId) use ($sourceElementWithAuthors) {
+                    return [
+                        'source' => $sourceElementWithAuthors->id,
+                        'target' => $authorId,
+                    ];
+                }, $sourceElementWithAuthors->getAuthorsIds());
+            }
+
+            return [
+                'elementType' => User::class,
+                'map' => $map,
+                'criteria' => [
+                    'status' => null,
+                ],
+            ];
+        }
 
         return parent::eagerLoadingMap($sourceElements, $handle);
     }
