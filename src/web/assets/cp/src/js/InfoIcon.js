@@ -107,8 +107,6 @@ Craft.InfoIcon = Garnish.Base.extend({
     } else {
       this.hud.show();
     }
-
-    this.announceContent();
   },
 
   destroy: function () {
