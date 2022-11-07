@@ -869,6 +869,7 @@ return [
     'Max Time' => 'Max Time',
     'Max Value' => 'Max Value',
     'Maximum' => 'Maximum',
+    'Maximum {num, number} {num, plural, =1{author} other{authors}} allowed.' => 'Maximum {num, number} {num, plural, =1{author} other{authors}} allowed.',
     'Media' => 'Media',
     'Medium' => 'Medium',
     'Meet the Craft community' => 'Meet the Craft community',

@@ -110,12 +110,6 @@ class EntryQuery extends ElementQuery
     public mixed $authorId = null;
 
     /**
-     * @var mixed The user IDs that the resulting entries’ authors must have.
-     * @used-by authorsIds()
-     */
-    public mixed $authorsIds = null;
-
-    /**
      * @var mixed The user group ID(s) that the resulting entries’ authors must be in.
      * ---
      * ```php
@@ -822,7 +816,6 @@ class EntryQuery extends ElementQuery
         $this->query->select([
             'entries.sectionId',
             'entries.typeId',
-            //'entries.authorId', // todo - get rid of this
             'entries.postDate',
             'entries.expiryDate',
         ]);

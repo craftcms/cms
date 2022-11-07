@@ -72,9 +72,9 @@ use yii\web\Response;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  *
+ * @since 5.0.0
  * @property array|null $authorsIds the entry authors' IDs
  * @property array|null $authors the entry’s authors
- * @since 5.0.0
  */
 class Entry extends Element implements ExpirableElementInterface
 {
@@ -521,7 +521,6 @@ class Entry extends Element implements ExpirableElementInterface
         $attributes = [
             'section' => ['label' => Craft::t('app', 'Section')],
             'type' => ['label' => Craft::t('app', 'Entry Type')],
-            //'author' => ['label' => Craft::t('app', 'Author')],
             'authors' => ['label' => Craft::t('app', 'Authors')],
             'slug' => ['label' => Craft::t('app', 'Slug')],
             'uri' => ['label' => Craft::t('app', 'URI')],
@@ -539,7 +538,6 @@ class Entry extends Element implements ExpirableElementInterface
 
         // Hide Author & Last Edited By from Craft Solo
         if (Craft::$app->getEdition() !== Craft::Pro) {
-            //unset($attributes['author'], $attributes['revisionCreator']);
             unset($attributes['authors'], $attributes['revisionCreator']);
         }
 
@@ -560,7 +558,6 @@ class Entry extends Element implements ExpirableElementInterface
         if ($source !== 'singles') {
             $attributes[] = 'postDate';
             $attributes[] = 'expiryDate';
-            //$attributes[] = 'author';
             $attributes[] = 'authors';
         }
 
@@ -661,9 +658,6 @@ class Entry extends Element implements ExpirableElementInterface
     protected static function prepElementQueryForTableAttribute(ElementQueryInterface $elementQuery, string $attribute): void
     {
         switch ($attribute) {
-            /*case 'author':
-                $elementQuery->andWith(['author', ['status' => null]]);
-                break;*/
             case 'authors':
                 $elementQuery->andWith(['authors', ['status' => null]]);
                 break;
@@ -729,12 +723,6 @@ class Entry extends Element implements ExpirableElementInterface
     public bool $deletedWithEntryType = false;
 
     /**
-     * @var int|null First Author ID
-     * @see getAuthorId()
-     * @see setAuthorId()
-     */
-    public ?int $_authorId = null;
-    /**
      * @var int[]|null Authors IDs
      * @see getAuthorsIds()
      * @see setAuthorsIds()
@@ -782,7 +770,6 @@ class Entry extends Element implements ExpirableElementInterface
     public function attributes(): array
     {
         $names = parent::attributes();
-        //$names[] = 'authorId';
         $names[] = 'authorsIds';
         $names[] = 'typeId';
         return $names;
@@ -794,7 +781,6 @@ class Entry extends Element implements ExpirableElementInterface
     public function extraFields(): array
     {
         $names = parent::extraFields();
-        //$names[] = 'author';
         $names[] = 'authors';
         $names[] = 'section';
         $names[] = 'type';
@@ -818,7 +804,7 @@ class Entry extends Element implements ExpirableElementInterface
     protected function defineRules(): array
     {
         $rules = parent::defineRules();
-        $rules[] = [['sectionId', 'typeId'/*, 'authorId'*/], 'number', 'integerOnly' => true];
+        $rules[] = [['sectionId', 'typeId'], 'number', 'integerOnly' => true];
         $rules[] = [['authorsIds'], 'each', 'rule' => ['number', 'integerOnly' => true]];
 
         $sectionMaxAuthors = $this->section->maxAuthors;
@@ -826,11 +812,14 @@ class Entry extends Element implements ExpirableElementInterface
             ['authorsIds'],
             ArrayValidator::class,
             'max' => $sectionMaxAuthors,
-            'tooMany' => Craft::t('app', "Maximum $sectionMaxAuthors authors allowed."),
-            'tooFew' => Craft::t('app', 'Minimum 1 author is required.'),
+            'tooMany' => Craft::t(
+                'app',
+                "Maximum {num, number} {num, plural, =1{author} other{authors}} allowed.",
+                ['num' => $sectionMaxAuthors]
+            ),
         ];
-        $rules[] = [['postDate', 'expiryDate'], DateTimeValidator::class];
 
+        $rules[] = [['postDate', 'expiryDate'], DateTimeValidator::class];
         $rules[] = [
             ['postDate'],
             DateCompareValidator::class,
@@ -846,7 +835,6 @@ class Entry extends Element implements ExpirableElementInterface
             $section = $this->getSection();
 
             if ($section->type !== Section::TYPE_SINGLE) {
-                //$rules[] = [['authorId'], 'required', 'on' => self::SCENARIO_LIVE];
                 $rules[] = [['authorsIds'], 'required', 'on' => self::SCENARIO_LIVE];
             }
         }
@@ -1211,7 +1199,6 @@ class Entry extends Element implements ExpirableElementInterface
      */
     public function getAuthorId(): ?int
     {
-        //return $this->_authorId;
         return $this->_authorsIds[0] ?? null;
     }
 
@@ -1223,15 +1210,6 @@ class Entry extends Element implements ExpirableElementInterface
      */
     public function setAuthorId(array|int|string|null $authorId): void
     {
-        /*if ($authorId === '') {
-            $authorId = null;
-        }
-
-        if (is_array($authorId)) {
-            $this->_authorId = reset($authorId) ?: null;
-        } else {
-            $this->_authorId = $authorId;
-        }*/
         $this->setAuthorsIds($authorId);
 
         $this->_author = null;
@@ -1665,10 +1643,6 @@ class Entry extends Element implements ExpirableElementInterface
     protected function tableAttributeHtml(string $attribute): string
     {
         switch ($attribute) {
-            /*case 'author':
-                $author = $this->getAuthor();
-                return $author ? Cp::elementHtml($author) : '';*/
-
             case 'authors':
                 $authors = $this->getAuthors();
 
@@ -1831,20 +1805,6 @@ EOD;
             // Author
             if (Craft::$app->getEdition() === Craft::Pro && $user->can("viewPeerEntries:$section->uid")) {
                 $fields[] = (function() use ($static, $section) {
-                    /*$author = $this->getAuthor();
-                    $html = Cp::elementSelectFieldHtml([
-                        'label' => Craft::t('app', 'Author'),
-                        'id' => 'authorId',
-                        'name' => 'authorId',
-                        'elementType' => User::class,
-                        'selectionLabel' => Craft::t('app', 'Choose'),
-                        'criteria' => [
-                            'can' => "viewEntries:$section->uid",
-                        ],
-                        'single' => true,
-                        'elements' => $author ? [$author] : null,
-                        'disabled' => $static,
-                    ]);*/
                     $authors = $this->getAuthors();
                     $html = Cp::elementSelectFieldHtml([
                         'label' => Craft::t('app', 'Authors'),
@@ -2103,7 +2063,6 @@ EOD;
 
             $record->sectionId = (int)$this->sectionId;
             $record->typeId = $this->getTypeId();
-            //$record->authorId = $this->getAuthorId();
             $record->postDate = Db::prepareDateForDb($this->postDate);
             $record->expiryDate = Db::prepareDateForDb($this->expiryDate);
 
