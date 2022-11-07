@@ -4492,6 +4492,7 @@ JS,
 
         return Cp::textFieldHtml([
             'label' => Craft::t('app', 'Slug'),
+            'instructions' => 'Enter a hyphen-separated slug',
             'siteId' => $this->siteId,
             'translationDescription' => Craft::t('app', 'This field is translated for each site.'),
             'id' => 'slug',
