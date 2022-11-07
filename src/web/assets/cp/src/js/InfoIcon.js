@@ -78,14 +78,6 @@ Craft.InfoIcon = Garnish.Base.extend({
     });
   },
 
-  announceContent: function() {
-    this.$liveRegion.html('');
-
-    setTimeout(() => {
-      this.$liveRegion.html(this.content);
-    }, 200);
-  },
-
   showHud: function (ev) {
     if (!this.hud) {
       this.hud = new Garnish.HUD(this.$icon, this.content, {
@@ -95,6 +87,12 @@ Craft.InfoIcon = Garnish.Base.extend({
           Garnish.uiLayerManager.registerShortcut(Garnish.SPACE_KEY, () => {
             this.hud.hide();
           });
+
+          this.$liveRegion.html('');
+
+          setTimeout(() => {
+            this.$liveRegion.html(this.content);
+          }, 200);
         },
         onHide: () => {
           this.$liveRegion.html('');
