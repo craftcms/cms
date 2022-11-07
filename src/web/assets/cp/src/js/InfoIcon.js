@@ -6,13 +6,15 @@
 Craft.InfoIcon = Garnish.Base.extend({
   $container: null,
   $icon: null,
+  $liveRegion: null,
   content: null,
   hud: null,
 
   init: function (icon) {
     this.$icon = $(icon);
-    this.$container = $('<span/>', {
-      class: 'infoicon-container',
+    this.$liveRegion = $('<span/>', {
+      role: 'status',
+      class: 'visually-hidden',
     });
 
     if (this.$icon.data('infoicon')) {
@@ -24,8 +26,14 @@ Craft.InfoIcon = Garnish.Base.extend({
       this.$icon.html('').attr({
         tabindex: 0,
         role: 'button',
+        type: 'button',
         'aria-label': Craft.t('app', 'Information'),
-      }).wrap(this.$container);
+      }).wrap($('<span/>', {
+        class: 'infoicon-container',
+      }));
+
+      this.$container = this.$icon.parent();
+      this.$container.append(this.$liveRegion);
     }
 
     this.$icon.data('infoicon', this);
@@ -68,7 +76,14 @@ Craft.InfoIcon = Garnish.Base.extend({
         this.showHud();
       }
     });
-    console.log(this);
+  },
+
+  announceContent: function() {
+    this.$liveRegion.html('');
+
+    setTimeout(() => {
+      this.$liveRegion.html(this.content);
+    }, 200);
   },
 
   showHud: function (ev) {
@@ -81,11 +96,16 @@ Craft.InfoIcon = Garnish.Base.extend({
             this.hud.hide();
           });
         },
+        onHide: () => {
+          this.$liveRegion.html('');
+        },
       });
       Craft.initUiElements(this.hud.$body);
     } else {
       this.hud.show();
     }
+
+    this.announceContent();
   },
 
   destroy: function () {
