@@ -134,6 +134,7 @@ class SectionsController extends Controller
         $section->handle = $this->request->getBodyParam('handle');
         $section->type = $this->request->getBodyParam('type');
         $section->enableVersioning = $this->request->getBodyParam('enableVersioning', true);
+        $section->maxAuthors = $this->request->getBodyParam('maxAuthors', true);
         $section->propagationMethod = $this->request->getBodyParam('propagationMethod', Section::PROPAGATION_METHOD_ALL);
         $section->previewTargets = $this->request->getBodyParam('previewTargets') ?: [];
 

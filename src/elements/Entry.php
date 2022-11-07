@@ -49,6 +49,7 @@ use craft\models\Site;
 use craft\records\Entry as EntryRecord;
 use craft\services\ElementSources;
 use craft\services\Structures;
+use craft\validators\ArrayValidator;
 use craft\validators\DateCompareValidator;
 use craft\validators\DateTimeValidator;
 use craft\web\CpScreenResponseBehavior;
@@ -819,6 +820,15 @@ class Entry extends Element implements ExpirableElementInterface
         $rules = parent::defineRules();
         $rules[] = [['sectionId', 'typeId'/*, 'authorId'*/], 'number', 'integerOnly' => true];
         $rules[] = [['authorsIds'], 'each', 'rule' => ['number', 'integerOnly' => true]];
+
+        $sectionMaxAuthors = $this->section->maxAuthors;
+        $rules[] = [
+            ['authorsIds'],
+            ArrayValidator::class,
+            'max' => $sectionMaxAuthors,
+            'tooMany' => Craft::t('app', "Maximum $sectionMaxAuthors authors allowed."),
+            'tooFew' => Craft::t('app', 'Minimum 1 author is required.'),
+        ];
         $rules[] = [['postDate', 'expiryDate'], DateTimeValidator::class];
 
         $rules[] = [
@@ -1848,6 +1858,8 @@ EOD;
                         'single' => false,
                         'elements' => $authors ?: null,
                         'disabled' => $static,
+                        'errors' => $this->getErrors('authorsIds'),
+                        'limit' => $section->maxAuthors
                     ]);
                     return $html;
                 })();

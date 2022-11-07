@@ -73,6 +73,11 @@ class Section extends Model
     public ?string $type = null;
 
     /**
+     * @var int Max authors
+     */
+    public int $maxAuthors = 1;
+
+    /**
      * @var int|null Max levels
      */
     public ?int $maxLevels = null;
@@ -162,6 +167,7 @@ class Section extends Model
     {
         $rules = parent::defineRules();
         $rules[] = [['id', 'structureId', 'maxLevels'], 'number', 'integerOnly' => true];
+        $rules[] = [['maxAuthors'], 'number', 'integerOnly' => true, 'min' => 1];
         $rules[] = [['handle'], HandleValidator::class, 'reservedWords' => ['id', 'dateCreated', 'dateUpdated', 'uid', 'title']];
         $rules[] = [
             ['type'], 'in', 'range' => [
@@ -367,6 +373,7 @@ class Section extends Model
             'handle' => $this->handle,
             'type' => $this->type,
             'enableVersioning' => $this->enableVersioning,
+            'maxAuthors' => $this->maxAuthors,
             'propagationMethod' => $this->propagationMethod,
             'siteSettings' => [],
             'defaultPlacement' => $this->defaultPlacement ?? self::DEFAULT_PLACEMENT_END,

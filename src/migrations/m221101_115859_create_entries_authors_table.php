@@ -51,12 +51,10 @@ class m221101_115859_create_entries_authors_table extends Migration
             }
         }
 
-
         // remove authorId column from entries table
         $this->dropForeignKeyIfExists(Table::ENTRIES, 'authorId');
         $this->dropIndexIfExists(Table::ENTRIES, 'authorId');
         $this->dropColumn(Table::ENTRIES, 'authorId');
-
 
         return true;
     }

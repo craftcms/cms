@@ -850,15 +850,16 @@ class EntryQuery extends ElementQuery
             if ($this->authorId) {
                 //$this->subQuery->andWhere(Db::parseNumericParam('entries.authorId', $this->authorId));
                 $this->subQuery
-                    ->leftJoin(['entries_authors' => Table::ENTRIES_AUTHORS], '[[entries_authors.elementId]] = [[entries.id]]')
+                    ->innerJoin(['entries_authors' => Table::ENTRIES_AUTHORS], '[[entries_authors.elementId]] = [[entries.id]]')
                     ->andWhere(Db::parseNumericParam('entries_authors.authorId', $this->authorId));
             }
-            // todo: do we want to have authorsIds() option too where we join IDs by 'and'?
-            //  or should it just use authodId and then further processing is down to the website creator?
+            // todo: do we want to have authorsIds() option too, where we join IDs by 'and'?
+            //  or should it just use authorId and then further processing is down to the website creator?
 
             if ($this->authorGroupId) {
                 $this->subQuery
-                    ->innerJoin(['usergroups_users' => Table::USERGROUPS_USERS], '[[usergroups_users.userId]] = [[entries.authorId]]')
+                    ->innerJoin(['entries_authors' => Table::ENTRIES_AUTHORS], '[[entries_authors.elementId]] = [[entries.id]]')
+                    ->innerJoin(['usergroups_users' => Table::USERGROUPS_USERS], '[[usergroups_users.userId]] = [[entries_authors.authorId]]')
                     ->andWhere(Db::parseNumericParam('usergroups_users.groupId', $this->authorGroupId));
             }
         }

@@ -859,6 +859,7 @@ return [
     'Matrix block' => 'Matrix block',
     'Matrix blocks' => 'Matrix blocks',
     'Matrix' => 'Matrix',
+    'Max Authors' => 'Max Authors',
     'Max Blocks' => 'Max Blocks',
     'Max Date' => 'Max Date',
     'Max Length' => 'Max Length',

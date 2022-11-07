@@ -180,6 +180,21 @@
         errors: siteErrors|unique
     }) }}
 
+    {{ forms.textField({
+        label: "Max Authors"|t('app'),
+        instructions: "The maximum number of authors this section can have. Default is 1."|t('app'),
+        id: 'maxAuthors',
+        name: 'maxAuthors',
+        class: 'code',
+        autocorrect: false,
+        autocapitalize: false,
+        default: 1,
+        value: section.maxAuthors,
+        errors: section.getErrors('maxAuthors'),
+        size: 5,
+        required: true
+    }) }}
+
     {% if craft.app.getIsMultiSite() %}
         <div class="field type-channel type-structure {% if section.type == 'single' %}hidden{% endif %}">
             {{ forms.selectField({
