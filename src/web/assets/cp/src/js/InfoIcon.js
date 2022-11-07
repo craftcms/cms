@@ -4,12 +4,16 @@
  * Info icon class
  */
 Craft.InfoIcon = Garnish.Base.extend({
+  $container: null,
   $icon: null,
   content: null,
   hud: null,
 
   init: function (icon) {
     this.$icon = $(icon);
+    this.$container = $('<span/>', {
+      class: 'infoicon-container',
+    });
 
     if (this.$icon.data('infoicon')) {
       console.warn('Double-instantiating an info icon on an element');
@@ -21,7 +25,7 @@ Craft.InfoIcon = Garnish.Base.extend({
         tabindex: 0,
         role: 'button',
         'aria-label': Craft.t('app', 'Information'),
-      });
+      }).wrap(this.$container);
     }
 
     this.$icon.data('infoicon', this);
@@ -64,6 +68,7 @@ Craft.InfoIcon = Garnish.Base.extend({
         this.showHud();
       }
     });
+    console.log(this);
   },
 
   showHud: function (ev) {
