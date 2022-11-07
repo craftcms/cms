@@ -124,6 +124,7 @@ return [
     'Applying new propagation method to elements' => 'Anvender nye udbredelsesmetode på elementer',
     'Applying new propagation method to {section} entries' => 'Anvender nye udbredelsesmetode på {section}-elementer',
     'Applying this change to existing blocks can take some time.' => 'Det kan tage noget tid at anvende denne ændring på eksisterende blokke.',
+    'Archived' => 'Archived',
     'Are you sure you want to close the editor? Any changes will be lost.' => 'Er du sikker på, at du vil lukke redigeringsprogrammet? Alle ændringer går tabt.',
     'Are you sure you want to close this screen? Any changes will be lost.' => 'Er du sikker på, at du vil lukke denne skærm? Alle ændringer går tabt.',
     'Are you sure you want to delete the logo?' => 'Er du sikker på, at du vil slette logoet?',
