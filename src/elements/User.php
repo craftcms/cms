@@ -1792,6 +1792,7 @@ class User extends Element implements IdentityInterface
                     Table::ENTRIES => 'authorId',
                     Table::DRAFTS => 'creatorId',
                     Table::REVISIONS => 'creatorId',
+                    Table::ENTRIES_AUTHORS => 'authorId',
                 ];
 
                 foreach ($userRefs as $table => $column) {
@@ -1811,7 +1812,10 @@ class User extends Element implements IdentityInterface
 
                 foreach (Db::each($entryQuery) as $entry) {
                     /** @var Entry $entry */
-                    $elementsService->deleteElement($entry);
+                    // only delete their entry if they're the sole author
+                    if (count($entry->authorsIds) == 1) {
+                        $elementsService->deleteElement($entry);
+                    }
                 }
             }
 
