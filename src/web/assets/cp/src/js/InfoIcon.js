@@ -23,14 +23,19 @@ Craft.InfoIcon = Garnish.Base.extend({
       this.$icon.data('infoicon').destroy();
     } else {
       this.content = this.$icon.html();
-      this.$icon.html('').attr({
-        tabindex: 0,
-        role: 'button',
-        type: 'button',
-        'aria-label': Craft.t('app', 'Information'),
-      }).wrap($('<span/>', {
-        class: 'infoicon-container',
-      }));
+      this.$icon
+        .html('')
+        .attr({
+          tabindex: 0,
+          role: 'button',
+          type: 'button',
+          'aria-label': Craft.t('app', 'Information'),
+        })
+        .wrap(
+          $('<span/>', {
+            class: 'infoicon-container',
+          })
+        );
 
       this.$container = this.$icon.parent();
       this.$container.append(this.$liveRegion);

@@ -214,6 +214,7 @@ JS;
             'Mobile',
             'More',
             'More…',
+            'More info',
             'Move down',
             'Move to the left',
             'Move to the right',
