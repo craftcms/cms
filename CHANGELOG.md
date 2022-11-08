@@ -14,6 +14,7 @@
 - Fixed a bug where it wasn’t possible to change the sort attribute on element indexes while searching. ([#12256](https://github.com/craftcms/cms/issues/12256))
 - Fixed an information disclosure vulnerability.
 - Fixed a bug where `resave/*` commands weren’t catching exceptions thrown when applying the `--set` and `--to` options. ([#12262](https://github.com/craftcms/cms/issues/12262))
+- Fixed the position of field status indicators within Matrix fields in Live Preview.
 - Added `craft\base\Element::includeSetStatusAction()`.
 
 ## 4.3.1 - 2022-10-27

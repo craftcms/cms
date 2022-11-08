@@ -60,6 +60,10 @@
         @include left(-24px);
       }
     }
+
+    .matrixblock > .fields > .flex-fields > .field > .status-badge {
+      @include left(calc(var(--m) * -1));
+    }
   }
 
   .lp-draghandle {
