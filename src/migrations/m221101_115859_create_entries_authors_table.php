@@ -45,10 +45,8 @@ class m221101_115859_create_entries_authors_table extends Migration
                 $entriesAuthors[] = [$entry['id'], $entry['authorId'], '1'];
             }
 
-            if (!empty($entriesAuthors)) {
-                $db = Craft::$app->getDb();
-                Db::batchInsert(Table::ENTRIES_AUTHORS, ['elementId', 'authorId', 'sortOrder'], $entriesAuthors, $db);
-            }
+            $db = Craft::$app->getDb();
+            Db::batchInsert(Table::ENTRIES_AUTHORS, ['elementId', 'authorId', 'sortOrder'], $entriesAuthors, $db);
         }
 
         // remove authorId column from entries table

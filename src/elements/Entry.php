@@ -54,8 +54,8 @@ use craft\validators\DateCompareValidator;
 use craft\validators\DateTimeValidator;
 use craft\web\CpScreenResponseBehavior;
 use DateTime;
-use Throwable;
 use Illuminate\Support\Collection;
+use Throwable;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
 use yii\db\Expression;
@@ -571,28 +571,28 @@ class Entry extends Element implements ExpirableElementInterface
      */
     public static function eagerLoadingMap(array $sourceElements, string $handle): array|null|false
     {
-        if ($handle === 'author') {
-            /** @phpstan-ignore-next-line */
-            $sourceElementsWithAuthors = array_filter($sourceElements, function(self $entry) {
-                return $entry->getAuthorId() !== null;
-            });
-
-            /** @phpstan-ignore-next-line */
-            $map = array_map(function(self $entry) {
-                return [
-                    'source' => $entry->id,
-                    'target' => $entry->getAuthorId(),
-                ];
-            }, $sourceElementsWithAuthors);
-
-            return [
-                'elementType' => User::class,
-                'map' => $map,
-                'criteria' => [
-                    'status' => null,
-                ],
-            ];
-        }
+//        if ($handle === 'author') {
+//            /** @phpstan-ignore-next-line */
+//            $sourceElementsWithAuthors = array_filter($sourceElements, function(self $entry) {
+//                return $entry->getAuthorId() !== null;
+//            });
+//
+//            /** @phpstan-ignore-next-line */
+//            $map = array_map(function(self $entry) {
+//                return [
+//                    'source' => $entry->id,
+//                    'target' => $entry->getAuthorId(),
+//                ];
+//            }, $sourceElementsWithAuthors);
+//
+//            return [
+//                'elementType' => User::class,
+//                'map' => $map,
+//                'criteria' => [
+//                    'status' => null,
+//                ],
+//            ];
+//        }
 
         if ($handle === 'authors') {
             /** @phpstan-ignore-next-line */
@@ -602,11 +602,12 @@ class Entry extends Element implements ExpirableElementInterface
 
             $map = [];
             foreach ($sourceElementsWithAuthors as $sourceElementWithAuthors) {
-                $map += array_map(function ($authorId) use ($sourceElementWithAuthors) {
+                $map += array_map(function($authorId) use ($sourceElementWithAuthors) {
                     return [
                         'source' => $sourceElementWithAuthors->id,
                         'target' => $authorId,
                     ];
+                /** @phpstan-ignore-next-line */
                 }, $sourceElementWithAuthors->getAuthorsIds());
             }
 
@@ -729,13 +730,6 @@ class Entry extends Element implements ExpirableElementInterface
      * @see setAuthorsIds()
      */
     public ?array $_authorsIds = null;
-
-    /**
-     * @var User|null|false
-     * @see getAuthor()
-     * @see setAuthor()
-     */
-    private User|false|null $_author = null;
 
     /**
      * @var User[]|false|null
@@ -1212,8 +1206,6 @@ class Entry extends Element implements ExpirableElementInterface
     public function setAuthorId(array|int|string|null $authorId): void
     {
         $this->setAuthorsIds($authorId);
-
-        $this->_author = null;
     }
 
     /**
@@ -1230,12 +1222,12 @@ class Entry extends Element implements ExpirableElementInterface
     /**
      * Sets the entry authors IDs.
      *
-     * @param User[]|string|int|null $authorsIds
+     * @param User[]|int[]|string|int|null $authorsIds
      * @since 4.0.0
      */
     public function setAuthorsIds(array|string|int|null $authorsIds): void
     {
-        if (empty($authorsIds) || $authorsIds === '') {
+        if (empty($authorsIds) || $authorsIds == '') {
             $authorsIds = null;
         }
 
@@ -1244,8 +1236,8 @@ class Entry extends Element implements ExpirableElementInterface
         }
 
         if (is_array($authorsIds)) {
-            array_map(function($authorId) {
-                if (empty($authorId) || $authorId === '') {
+            $ids = array_map(function($authorId) {
+                if ($authorId == '') {
                     return null;
                 }
                 if ($authorId instanceof User) {
@@ -1254,7 +1246,7 @@ class Entry extends Element implements ExpirableElementInterface
                 return $authorId;
             }, $authorsIds);
 
-            $this->_authorsIds = array_values(array_filter($authorsIds));
+            $this->_authorsIds = array_values(array_filter($ids));
         }
 
         $this->_authors = null;
@@ -1277,18 +1269,17 @@ class Entry extends Element implements ExpirableElementInterface
     public function getAuthor(): ?User
     {
         $this->getAuthors();
-        return $this->_authors[0] ?:null;
+        return $this->_authors[0] ?? null;
     }
 
     /**
-     * Sets the entry’s author.
+     * Sets the entry’s author
      *
      * @param User|null $author
      */
     public function setAuthor(?User $author = null): void
     {
         $this->setAuthors([$author]);
-        $this->_author = $author;
     }
 
     /**
@@ -1327,13 +1318,14 @@ class Entry extends Element implements ExpirableElementInterface
     /**
      * Sets the entry’s authors.
      *
-     * @param User[]|null $authors
+     * @param User[]|int[]|null $authors
      */
     public function setAuthors(?array $authors = null): void
     {
+        $mappedAuthors = [];
         if ($authors !== null) {
             // make sure any IDs are converted into users
-            array_map(function($author) {
+            $mappedAuthors = array_map(function($author) {
                 if (is_int($author)) {
                     return Craft::$app->getUsers()->getUserById($author);
                 }
@@ -1341,7 +1333,7 @@ class Entry extends Element implements ExpirableElementInterface
             }, $authors);
         }
 
-        $this->_authors = array_values(array_filter($authors));
+        $this->_authors = array_values(array_filter($mappedAuthors));
         $this->setAuthorsIds(array_column($this->_authors, null, 'id'));
     }
 
@@ -1623,18 +1615,6 @@ class Entry extends Element implements ExpirableElementInterface
         return static::gqlTypeNameByContext($this->getType());
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function setEagerLoadedElements(string $handle, array $elements): void
-    {
-        if ($handle === 'author') {
-            $this->_author = $elements[0] ?? false;
-        } else {
-            parent::setEagerLoadedElements($handle, $elements);
-        }
-    }
-
     // Indexes, etc.
     // -------------------------------------------------------------------------
 
@@ -1820,7 +1800,7 @@ EOD;
                         'elements' => $authors ?: null,
                         'disabled' => $static,
                         'errors' => $this->getErrors('authorsIds'),
-                        'limit' => $section->maxAuthors
+                        'limit' => $section->maxAuthors,
                     ]);
                     return $html;
                 })();
