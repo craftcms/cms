@@ -1068,7 +1068,6 @@ class Extension extends AbstractExtension implements GlobalsInterface
     public function groupFilter($arr, $arrow): array
     {
         if ($arr instanceof ElementQuery) {
-            Craft::$app->getDeprecator()->log('ElementQuery::getIterator()', 'Looping through element queries directly has been deprecated. Use the `all()` function to fetch the query results before looping over them.');
             $arr = $arr->all();
         }
 
