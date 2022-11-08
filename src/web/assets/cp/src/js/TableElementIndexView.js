@@ -7,7 +7,6 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
   $table: null,
   $tableCaption: null,
   $selectedSortHeader: null,
-  $statusMessage: null,
 
   structureTableSort: null,
 
@@ -26,15 +25,8 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
     // Set table caption
     this.$tableCaption = this.$table.find('caption');
 
-    this.$statusMessage = this.$table.parent().find('[data-status-message]');
-
     // Set the sort header
     this.initTableHeaders();
-
-    // Add callback for after elements are updated
-    this.elementIndex.on('updateElements', () => {
-      this._updateScreenReaderStatus();
-    });
 
     // Create the Structure Table Sorter
     if (
@@ -436,30 +428,6 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
 
     // No need for two spinners
     this.elementIndex.setIndexAvailable();
-  },
-
-  _updateScreenReaderStatus: function () {
-    const attribute = this.elementIndex.getSelectedSortAttribute();
-    const direction =
-      this.elementIndex.getSelectedSortDirection() === 'asc'
-        ? Craft.t('app', 'Ascending')
-        : Craft.t('app', 'Descending');
-    const label = this.elementIndex.getSortLabel(attribute);
-
-    if (!attribute && !direction && !label) return;
-
-    const message = Craft.t(
-      'app',
-      'Table {name} sorted by {attribute}, {direction}',
-      {
-        name: this.$table.attr('data-name'),
-        attribute: label,
-        direction: direction,
-      }
-    );
-
-    this.$statusMessage.empty();
-    this.$statusMessage.text(message);
   },
 
   _updateTableAttributes: function ($element, tableAttributes) {

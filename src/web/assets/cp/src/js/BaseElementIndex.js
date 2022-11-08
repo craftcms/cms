@@ -37,6 +37,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     $toolbar: null,
     toolbarOffset: null,
 
+    $srStatusContainer: null,
     $searchContainer: null,
     $search: null,
     $filterBtn: null,
@@ -140,6 +141,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
       this.$sidebar = this.$container.find('.sidebar:first');
       this.$sourceActionsContainer = this.$sidebar.find('#source-actions');
+      this.$srStatusContainer = this.$container.find('[data-status-message]');
+
+      console.log(this.$srStatusContainer);
 
       this.$elements = this.$container.find('.elements:first');
       this.$updateSpinner = this.$elements.find('.spinner');
@@ -863,6 +867,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
     updateElements: function (preservePagination, pageChanged) {
       // Ignore if we're not fully initialized yet
+      console.log(this.getSelectedSortAttribute());
       if (!this.initialized) {
         return;
       }
@@ -1818,6 +1823,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.trigger('updateElements');
     },
 
+    onTableReorder: function () {
+      this.settings.onTableReorder();
+      this.trigger('tableReorder');
+    },
+
     onSelectionChange: function () {
       this.settings.onSelectionChange();
       this.trigger('selectionChange');
@@ -2078,6 +2088,30 @@ Craft.BaseElementIndex = Garnish.Base.extend(
         this.settings.context === 'index' &&
         this.getSortAttributeAndDirection()[0] !== 'structure'
       );
+    },
+
+    _updateScreenReaderStatus: function () {
+      // const attribute = this.elementIndex.getSelectedSortAttribute();
+      // const direction =
+      //   this.elementIndex.getSelectedSortDirection() === 'asc'
+      //     ? Craft.t('app', 'Ascending')
+      //     : Craft.t('app', 'Descending');
+      // const label = this.elementIndex.getSortLabel(attribute);
+      //
+      // if (!attribute && !direction && !label) return;
+      //
+      // const message = Craft.t(
+      //   'app',
+      //   'Table {name} sorted by {attribute}, {direction}',
+      //   {
+      //     name: this.$table.attr('data-name'),
+      //     attribute: label,
+      //     direction: direction,
+      //   }
+      // );
+      //
+      // this.$statusMessage.empty();
+      // this.$statusMessage.text(message);
     },
 
     _updateView: function (params, response) {
