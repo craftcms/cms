@@ -14,6 +14,7 @@ use craft\elements\User as UserElement;
 use craft\gql\base\ElementResolver;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Gql as GqlHelper;
+use Illuminate\Support\Collection;
 
 /**
  * Class User
@@ -69,7 +70,7 @@ class User extends ElementResolver
         }
 
         if (!GqlHelper::canQueryUsers()) {
-            return [];
+            return Collection::empty();
         }
 
         return $query;
