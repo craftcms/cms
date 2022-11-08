@@ -17,6 +17,7 @@
     {{ tag('a', {
         data: {
             key: key,
+            'label': source.label,
             'has-thumbs': (source.hasThumbs ?? false) ? true : false,
             'has-structure': hasStructure,
             'default-sort': source.defaultSort ?? false,

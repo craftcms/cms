@@ -143,8 +143,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.$sourceActionsContainer = this.$sidebar.find('#source-actions');
       this.$srStatusContainer = this.$container.find('[data-status-message]');
 
-      console.log(this.$srStatusContainer);
-
       this.$elements = this.$container.find('.elements:first');
       this.$updateSpinner = this.$elements.find('.spinner');
 
@@ -374,6 +372,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
     getSourceContainer: function () {
       return this.$sidebar.find('nav > ul');
+    },
+
+    getSourceLabel: function () {
+      return this.$source.data('label');
     },
 
     get $sources() {
@@ -867,7 +869,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
     updateElements: function (preservePagination, pageChanged) {
       // Ignore if we're not fully initialized yet
-      console.log(this.getSelectedSortAttribute());
       if (!this.initialized) {
         return;
       }
@@ -906,6 +907,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             const $elementContainer = this.view.getElementContainer();
             Garnish.firstFocusableElement($elementContainer).trigger('focus');
           }
+          this._updateScreenReaderStatus();
         })
         .catch((e) => {
           this.setIndexAvailable();
@@ -2091,27 +2093,26 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     _updateScreenReaderStatus: function () {
-      // const attribute = this.elementIndex.getSelectedSortAttribute();
-      // const direction =
-      //   this.elementIndex.getSelectedSortDirection() === 'asc'
-      //     ? Craft.t('app', 'Ascending')
-      //     : Craft.t('app', 'Descending');
-      // const label = this.elementIndex.getSortLabel(attribute);
-      //
-      // if (!attribute && !direction && !label) return;
-      //
-      // const message = Craft.t(
-      //   'app',
-      //   'Table {name} sorted by {attribute}, {direction}',
-      //   {
-      //     name: this.$table.attr('data-name'),
-      //     attribute: label,
-      //     direction: direction,
-      //   }
-      // );
-      //
-      // this.$statusMessage.empty();
-      // this.$statusMessage.text(message);
+      const attribute = this.getSelectedSortAttribute();
+      const direction =
+        this.getSelectedSortDirection() === 'asc'
+          ? Craft.t('app', 'Ascending')
+          : Craft.t('app', 'Descending');
+      const sortLabel = this.getSortLabel(attribute);
+
+      if (!attribute && !direction && !sortLabel) return;
+
+      const message = Craft.t(
+        'app',
+        '{name} sorted by {attribute}, {direction}',
+        {
+          name: this.getSourceLabel(),
+          attribute: sortLabel,
+          direction: direction,
+        }
+      );
+
+      this.$srStatusContainer.empty().text(message);
     },
 
     _updateView: function (params, response) {

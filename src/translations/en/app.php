@@ -1908,6 +1908,7 @@ return [
     '{first}-{last} of {total}' => '{first}–{last} of {total}',
     '{name} has been added, but an error occurred when installing it.' => '{name} has been added, but an error occurred when installing it.',
     '{name} should be at least {value}.' => '{name} should be at least {value}.',
+    '{name} sorted by {attribute}, {direction}' => '{name} sorted by {attribute}, {direction}',
     '{num, number} {num, plural, =1{Available Update} other{Available Updates}}' => '{num, number} {num, plural, =1{Available Update} other{Available Updates}}',
     '{num, number} {num, plural, =1{column} other{columns}}' => '{num, number} {num, plural, =1{column} other{columns}}',
     '{num, number} {num, plural, =1{day} other{days}}' => '{num, number} {num, plural, =1{day} other{days}}',
