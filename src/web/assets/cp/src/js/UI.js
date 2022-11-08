@@ -1172,7 +1172,7 @@ Craft.ui = {
   },
 
   clearErrorsSummary: function ($body) {
-    $body.children('.errors-summary').remove();
+    $body.prev('.errors-summary').remove();
   },
 
   showErrorsSummary: function ($body, errors) {
@@ -1197,7 +1197,7 @@ Craft.ui = {
         )
         .append($list);
 
-      $body.prepend($errorsSummary);
+      $errorsSummary.insertBefore($body);
     }
   },
 

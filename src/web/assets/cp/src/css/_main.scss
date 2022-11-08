@@ -4226,6 +4226,10 @@ $min2ColWidth: 400px;
     padding-right: 10px;
   }
 
+  & > .errors-summary {
+    margin: calc(var(--l) * -1) 0 30px 0;
+  }
+
   & > .so-body {
     flex: 1;
     margin: -24px var(--neg-padding) 0;

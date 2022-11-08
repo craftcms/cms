@@ -3293,13 +3293,13 @@ class Elements extends Component
         $propagateToSite = Craft::$app->getSites()->getSiteById($siteElement->siteId);
         $user = Craft::$app->getUser()->getIdentity();
         $message = Craft::t('app', 'Validation errors for site: “{siteName}“', [
-            'siteName' => $propagateToSite->name,
+            'siteName' => $propagateToSite?->name,
         ]);
 
         // check user can edit this element for the site that throws validation error on propagation
         if ($user &&
             Craft::$app->getIsMultiSite() &&
-            $user->can("editSite:{$propagateToSite->uid}") &&
+            $user->can("editSite:{$propagateToSite?->uid}") &&
             $siteElement->canSave($user)
         ) {
             $queryParams = ArrayHelper::without(Craft::$app->getRequest()->getQueryParams(), 'site');
