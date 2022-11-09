@@ -205,6 +205,8 @@ Craft.ElementEditor = Garnish.Base.extend(
           }
         });
       }
+
+      Craft.ui.setFocusOnErrorsSummary(this.$container);
     },
 
     _createQueue: function () {

@@ -818,9 +818,13 @@ JS, [
 
         if ($element->hasErrors()) {
             $errorsList = [];
-            foreach ($element->getErrors() as $errors) {
+            foreach ($element->getErrors() as $key => $errors) {
                 foreach ($errors as $error) {
-                    $errorsList[] = Html::tag('li', Craft::t('app', $error));
+                    $errorsList[] = Html::beginTag('li') .
+                        Html::a(Craft::t('app', $error), null, [
+                            'data-field-error-key' => $key,
+                        ]) .
+                        Html::endTag('li');
                 }
             }
 
@@ -831,10 +835,17 @@ JS, [
 
                 $html = Html::beginTag('div', [
                         'class' => ['errors-summary'],
+                        'tabindex' => '-1',
                     ]) .
-                    Html::beginTag('h2') .
-                    $heading .
-                    Html::endTag('h2') .
+                    Html::beginTag('div') .
+                    Html::tag('span', '', [
+                        'class' => 'notification-icon',
+                        'data-icon' => 'alert',
+                        'aria-label' => 'error',
+                        'role' => 'img',
+                    ]) .
+                    Html::tag('h2', $heading) .
+                    Html::endTag('div') .
                     Html::beginTag('ul', [
                         'class' => ['errors'],
                     ]) .

@@ -3304,7 +3304,7 @@ class Elements extends Component
         ) {
             $queryParams = ArrayHelper::without(Craft::$app->getRequest()->getQueryParams(), 'site');
             $url = UrlHelper::url($siteElement->getCpEditUrl(), $queryParams + ['prevalidate' => 1]);
-            $message .= " <a href=\"$url\">(" . Craft::t('app', 'View') . ")</a>";
+            $message = " <a href=\"$url\">{$message}</a>";
         }
 
         $element->addError('global', $message);

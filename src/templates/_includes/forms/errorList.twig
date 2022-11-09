@@ -2,6 +2,7 @@
     {% tag 'ul' with {
         id: id ?? false,
         class: 'errors',
+        tabindex: '-1',
     } %}
         {% for error in errors %}
             <li>

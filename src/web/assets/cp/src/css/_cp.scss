@@ -1504,13 +1504,23 @@ li.breadcrumb-toggle-wrapper {
   margin-bottom: var(--l);
   padding: var(--l) var(--xl);
   box-sizing: border-box;
-  box-shadow: 0 0 0 1px #cdd8e4,0 2px 12px rgba(205,216,228,.5);
+  box-shadow: 0 0 0 1px #cdd8e4, 0 2px 12px rgba(205, 216, 228, 0.5);
   border-radius: var(--large-border-radius);
   background-color: var(--white);
-  color: var(--error-color);
 
-  & > h2 {
-    margin-bottom: var(--xs);
+  .notification-icon {
+    color: var(--error-color);
+    margin: -2px 6px 0 0;
+    float: left;
+  }
+
+  h2 {
+    margin-top: var(--xs);
+  }
+
+  & > ul.errors li,
+  & > ul.errors li a {
+    color: var(--text-color);
   }
 }
 

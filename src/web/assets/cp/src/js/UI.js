@@ -1133,7 +1133,7 @@ Craft.ui = {
   },
 
   createErrorList: function (errors) {
-    var $list = $('<ul class="errors"/>');
+    var $list = $('<ul class="errors" tabindex="-1"/>');
 
     if (errors) {
       this.addErrorsToList($list, errors);
@@ -1179,18 +1179,28 @@ Craft.ui = {
     if (errors) {
       var $list = $('<ul class="errors"/>');
 
-      for (var i = 0; i < errors.length; i++) {
-        $('<li/>').html(errors[i]).appendTo($list);
-      }
+      Object.entries(errors).forEach(([fieldHandle, fieldErrors]) => {
+        for (var i = 0; i < fieldErrors.length; i++) {
+          var listItem =
+            '<li>' +
+            '<a data-field-error-key="' +
+            fieldHandle +
+            '">' +
+            fieldErrors[i] +
+            '</a>' +
+            '</li>';
+          $(listItem).appendTo($list);
+        }
+      });
 
-      var $errorsSummary = $('<div class="errors-summary"/>')
+      var $errorsSummary = $('<div class="errors-summary" tabindex="-1" />')
         .append(
           '<h2>' +
             Craft.t(
               'app',
               'Found {num, number} {num, plural, =1{error} other{errors}}:',
               {
-                num: errors.length,
+                num: Object.keys(errors).length,
               }
             ) +
             '</h2>'
@@ -1198,6 +1208,73 @@ Craft.ui = {
         .append($list);
 
       $errorsSummary.insertBefore($body);
+    }
+  },
+
+  setFocusOnErrorsSummary: function ($body, namespace = '') {
+    var errorsSummaryContainer = $body.find('.errors-summary');
+    if (errorsSummaryContainer.length > 0) {
+      errorsSummaryContainer.focus();
+
+      // start listening for clicks on summary errors
+      errorsSummaryContainer.find('a').on('click', (ev) => {
+        this.anchorSummaryErrorToField(ev.target, $body, namespace);
+      });
+    }
+  },
+
+  anchorSummaryErrorToField: function (error, $body, namespace) {
+    if (namespace !== '') {
+      namespace += '-';
+    }
+
+    var fieldErrorKey = $(error).attr('data-field-error-key');
+    if (fieldErrorKey !== undefined) {
+      // get the field handle from error key
+      var errorKeyParts = fieldErrorKey.split(/[\[\]\.]/).filter((n) => n);
+
+      // define regex for searching for errors list for given field
+      if (errorKeyParts[0] !== undefined) {
+        var regex = new RegExp(
+          `^` + namespace + `fields-` + errorKeyParts[0] + `.*-errors`
+        );
+        if (errorKeyParts.length == 3) {
+          regex = new RegExp(
+            `^` +
+              namespace +
+              `fields-` +
+              errorKeyParts[0] +
+              `.*-` +
+              errorKeyParts[2] +
+              `-errors`
+          );
+        }
+      }
+
+      // find errors list for given error from summary
+      if (regex !== undefined) {
+        var fieldError = $body.find('ul.errors').filter(function () {
+          return this.id.match(regex);
+        });
+
+        if (fieldError.length > 1 && errorKeyParts[1] !== undefined) {
+          fieldError = fieldError[errorKeyParts[1]];
+        } else {
+          fieldError = fieldError[0];
+        }
+
+        if (fieldError !== undefined) {
+          // check if we need to switch tabs first
+          var fieldErrorTab = $(fieldError).parents('div[id^=tab--]');
+          if (fieldErrorTab.hasClass('hidden')) {
+            $('#tabs')
+              .find('a[href="#' + fieldErrorTab.attr('id') + '"]')
+              .click();
+          }
+
+          fieldError.focus();
+        }
+      }
     }
   },
 
