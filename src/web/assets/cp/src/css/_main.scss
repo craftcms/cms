@@ -2557,8 +2557,7 @@ $elementInnerSpacing: 5px;
 
     &.hasstatus {
       border: 1px solid var(--hairline-color);
-      padding: var(--m);
-      @include padding-right(var(--xl));
+      padding: var(--xs) var(--m);
 
       .label {
         font-weight: var(--font-weight-bold);
@@ -2641,9 +2640,7 @@ $elementInnerSpacing: 5px;
   }
 
   &.removable {
-    .label {
-      @include padding-right(20px);
-    }
+    @include padding-right(calc(var(--xl)));
 
     .delete:before {
       color: var(--ui-control-color);

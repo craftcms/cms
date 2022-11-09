@@ -398,6 +398,8 @@ class Cp
 
         if ($context === 'field') {
             $attributes['class'][] = 'removable';
+        } else {
+            $showStatus = false;
         }
 
         if ($element->hasErrors()) {
@@ -494,15 +496,17 @@ class Cp
         }
 
         if ($showStatus) {
+            $innerHtml .= '<div class="element__status">';
             if ($isDraft) {
                 $innerHtml .= Html::tag('span', '', [
                     'data' => ['icon' => 'draft'],
                     'class' => 'icon',
                     'role' => 'img',
                     'aria' => [
-                        'label' => sprintf('%s %s', Craft::t('app', 'Status:'), Craft::t('app', 'Draft')),
+                        'label' => '',
                     ],
-                ]);
+                ]) .
+                Html::tag('span', Craft::t('app', 'Draft'));
             } else {
                 $status = $element->getStatus();
                 $statusDef = $element::statuses()[$status] ?? null;
@@ -514,10 +518,12 @@ class Cp
                     ]),
                     'role' => 'img',
                     'aria' => [
-                        'label' => sprintf('%s %s', Craft::t('app', 'Status:'), $statusDef['label'] ?? $statusDef ?? ucfirst($status)),
+                        'label' => '',
                     ],
-                ]);
+                ]) .
+                Html::tag('span', $statusDef['label'] ?? $statusDef ?? ucfirst($status));
             }
+            $innerHtml .= '</div>';
         }
 
         // Allow plugins to modify the inner HTML
