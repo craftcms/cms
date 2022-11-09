@@ -1834,11 +1834,6 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.trigger('updateElements');
     },
 
-    onTableReorder: function () {
-      this.settings.onTableReorder();
-      this.trigger('tableReorder');
-    },
-
     onSelectionChange: function () {
       this.settings.onSelectionChange();
       this.trigger('selectionChange');
