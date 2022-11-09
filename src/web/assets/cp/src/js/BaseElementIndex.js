@@ -348,7 +348,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       // Default to whatever page is in the URL
       this.setPage(Craft.pageNum);
 
-      this.updateElements(true);
+      this.updateElements({
+        preservePagination: true,
+      });
     },
 
     afterInit: function () {
@@ -867,7 +869,11 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       return params;
     },
 
-    updateElements: function (preservePagination, pageChanged) {
+    updateElements: function ({
+      preservePagination,
+      pageChanged,
+      sortUpdated,
+    } = {}) {
       // Ignore if we're not fully initialized yet
       if (!this.initialized) {
         return;
@@ -907,7 +913,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
             const $elementContainer = this.view.getElementContainer();
             Garnish.firstFocusableElement($elementContainer).trigger('focus');
           }
-          this._updateScreenReaderStatus();
+
+          if (sortUpdated) {
+            this._updateScreenReaderStatus();
+          }
         })
         .catch((e) => {
           this.setIndexAvailable();
@@ -2220,7 +2229,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                   this.removeListener($prevBtn, 'click');
                   this.removeListener($nextBtn, 'click');
                   this.setPage(this.page - 1);
-                  this.updateElements(true, true);
+                  this.updateElements({
+                    preservePagination: true,
+                    paginationChanged: true,
+                  });
                 });
               }
 
@@ -2229,7 +2241,10 @@ Craft.BaseElementIndex = Garnish.Base.extend(
                   this.removeListener($prevBtn, 'click');
                   this.removeListener($nextBtn, 'click');
                   this.setPage(this.page + 1);
-                  this.updateElements(true, true);
+                  this.updateElements({
+                    preservePagination: true,
+                    paginationChanged: true,
+                  });
                 });
               }
             }
@@ -2989,7 +3004,9 @@ const ViewMenu = Garnish.Base.extend({
             this.$sortAttributeSelect.val(),
             $selectedOption.data('dir')
           );
-          this.elementIndex.updateElements();
+          this.elementIndex.updateElements({
+            sortUpdated: true,
+          });
           this._createRevertBtn();
         }
       },
@@ -3001,7 +3018,9 @@ const ViewMenu = Garnish.Base.extend({
         null,
         false
       );
-      this.elementIndex.updateElements();
+      this.elementIndex.updateElements({
+        sortUpdated: true,
+      });
       this._createRevertBtn();
     });
 
