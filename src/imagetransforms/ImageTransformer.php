@@ -19,7 +19,6 @@ use craft\elements\Asset;
 use craft\errors\FsException;
 use craft\errors\ImageTransformException;
 use craft\events\ImageTransformerOperationEvent;
-use craft\gql\types\DateTime;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\Assets as AssetsHelper;
@@ -34,6 +33,7 @@ use craft\image\Raster;
 use craft\models\ImageTransform;
 use craft\models\ImageTransformIndex;
 use craft\queue\jobs\GeneratePendingTransforms;
+use DateTime;
 use Exception;
 use Throwable;
 use yii\base\InvalidConfigException;
@@ -391,8 +391,11 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
                 'imageTransformIndex' => $index,
                 'path' => $transformPath,
                 'image' => $image,
+                'tempPath' => $tempPath,
             ]);
             $this->trigger(static::EVENT_TRANSFORM_IMAGE, $event);
+
+            $tempPath = $event->tempPath;
 
             $stream = fopen($tempPath, 'rb');
             $transformFs->writeFileFromStream($transformPath, $stream, []);
@@ -690,7 +693,7 @@ class ImageTransformer extends Component implements ImageTransformerInterface, E
     {
         return $this->_createTransformIndexQuery()
             ->select(['id'])
-            ->where(['fileExists' => false, 'inProgress' => false])
+            ->where(['fileExists' => false, 'inProgress' => false, 'error' => false])
             ->column();
     }
 

@@ -106,7 +106,7 @@ class Drafts extends Component
      *
      * @template T of ElementInterface
      * @param T $canonical The element to create a draft for
-     * @param int $creatorId The user ID that the draft should be attributed to
+     * @param int|null $creatorId The user ID that the draft should be attributed to
      * @param string|null $name The draft name
      * @param string|null $notes The draft notes
      * @param array $newAttributes any attributes to apply to the draft
@@ -116,7 +116,7 @@ class Drafts extends Component
      */
     public function createDraft(
         ElementInterface $canonical,
-        int $creatorId,
+        ?int $creatorId = null,
         ?string $name = null,
         ?string $notes = null,
         array $newAttributes = [],
@@ -295,7 +295,7 @@ class Drafts extends Component
         try {
             if ($canonical !== $draft) {
                 // Merge in any attribute & field values that were updated in the canonical element, but not the draft
-                if (ElementHelper::isOutdated($draft)) {
+                if ($draft::trackChanges() && ElementHelper::isOutdated($draft)) {
                     $elementsService->mergeCanonicalChanges($draft);
                 }
 
@@ -322,7 +322,7 @@ class Drafts extends Component
         } catch (Throwable $e) {
             $transaction->rollBack();
 
-            if ($e instanceof InvalidElementException) {
+            if ($e instanceof InvalidElementException && $draft !== $e->element) {
                 // Add the errors from the duplicated element back onto the draft
                 $draft->addErrors($e->element->getErrors());
             }
@@ -371,12 +371,10 @@ class Drafts extends Component
             $draft->validate();
         }
 
-        if ($draft->hasErrors()) {
-            throw new InvalidElementException($draft, "Draft $draft->id could not be applied because it doesn't validate.");
-        }
-
         try {
-            Craft::$app->getElements()->saveElement($draft, false);
+            if ($draft->hasErrors() || !Craft::$app->getElements()->saveElement($draft, false)) {
+                throw new InvalidElementException($draft, "Draft $draft->id could not be applied because it doesn't validate.");
+            }
             Db::delete(Table::DRAFTS, [
                 'id' => $draftId,
             ]);

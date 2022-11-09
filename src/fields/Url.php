@@ -233,7 +233,7 @@ class Url extends Field implements PreviewableFieldInterface
             }
         }
 
-        $input = Craft::$app->getView()->renderTemplate('_includes/forms/text', [
+        $input = Craft::$app->getView()->renderTemplate('_includes/forms/text.twig', [
             'id' => $id,
             'describedBy' => $this->describedBy,
             'class' => ['flex-grow', 'fullwidth'],
@@ -248,13 +248,22 @@ class Url extends Field implements PreviewableFieldInterface
             ],
         ]);
 
+        $view = Craft::$app->getView();
+
+        if ($value === null) {
+            // Override the initial value being set to null by CustomField::inputHtml()
+            $view->setInitialDeltaValue($this->handle, [
+                'type' => $valueType,
+                'value' => '',
+            ]);
+        }
+
         if (count($this->types) === 1) {
             return
                 Html::hiddenInput("$this->handle[type]", $valueType) .
                 $input;
         }
 
-        $view = Craft::$app->getView();
         $namespacedId = $view->namespaceInputId($id);
         $js = <<<JS
 $('#$namespacedId-type').on('change', e => { 
@@ -270,6 +279,7 @@ JS;
             'div',
             Cp::selectHtml([
                 'id' => "$id-type",
+                'describedBy' => $this->describedBy,
                 'name' => "$this->handle[type]",
                 'options' => $typeOptions,
                 'value' => $valueType,

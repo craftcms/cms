@@ -32,17 +32,23 @@
                     selected: tab.selected ? 'true' : 'false',
                 },
             } %}
-                {{ tab.label }}
-                {% if 'error' in tab.class %}
-                    {{ tag('span', {
-                        aria: {
-                            label: 'This tab contains errors'|t('app'),
-                        },
-                        data: {
-                            icon: 'alert',
-                        }
-                    }) }}
-                {% endif %}
+                {% tag 'span' with {
+                    class: 'tab-label',
+                } %}
+                    {{ tab.label }}
+                    {% if 'error' in tab.class %}
+                        {% tag 'span' with {
+                            data: {
+                                icon: 'alert',
+                            },
+                        } %}
+                            {{ tag('span', {
+                                text: 'This tab contains errors'|t('app'),
+                                class: 'visually-hidden',
+                            }) }}
+                        {% endtag %}
+                    {% endif %}
+                {% endtag %}
             {% endtag %}
         {% endfor %}
     {%  endtag %}
@@ -67,14 +73,16 @@
                     } %}
                         {{ tab.label }}
                         {% if 'error' in tab.class %}
-                            {{ tag('span', {
-                                aria: {
-                                    label: 'This tab contains errors'|t('app'),
-                                },
+                            {% tag 'span' with {
                                 data: {
                                     icon: 'alert',
-                                }
-                            }) }}
+                                },
+                            } %}
+                                {{ tag('span', {
+                                    text: 'This tab contains errors'|t('app'),
+                                    class: 'visually-hidden',
+                                }) }}
+                            {% endtag %}
                         {% endif %}
                     {% endtag %}
                 </li>

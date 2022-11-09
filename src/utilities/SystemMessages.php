@@ -55,7 +55,7 @@ class SystemMessages extends Utility
 
         $messages = Craft::$app->getSystemMessages()->getAllMessages();
 
-        return $view->renderTemplate('_components/utilities/SystemMessages', [
+        return $view->renderTemplate('_components/utilities/SystemMessages/index.twig', [
             'messages' => $messages,
         ]);
     }

@@ -9,6 +9,7 @@ namespace craft\helpers;
 
 use Craft;
 use craft\base\ElementInterface;
+use craft\base\ExpirableElementInterface;
 use craft\db\Paginator;
 use craft\web\twig\variables\Paginate;
 use craft\web\View;
@@ -72,13 +73,21 @@ class Template
         // Include this element in any active caches
         if ($object instanceof ElementInterface) {
             $elementsService = Craft::$app->getElements();
-            if ($elementsService->getIsCollectingCacheTags()) {
+            if ($elementsService->getIsCollectingCacheInfo()) {
                 $class = get_class($object);
                 $elementsService->collectCacheTags([
                     'element',
                     "element::$class",
                     "element::$class::$object->id",
                 ]);
+
+                // If the element is expirable, register its expiry date
+                if (
+                    $object instanceof ExpirableElementInterface &&
+                    ($expiryDate = $object->getExpiryDate()) !== null
+                ) {
+                    $elementsService->setCacheExpiryDate($expiryDate);
+                }
             }
         }
 
@@ -269,5 +278,49 @@ class Template
             $position = $options['position'] ?? View::POS_READY;
             Craft::$app->getView()->registerJs($js, $position, $key);
         }
+    }
+
+    /**
+     * Attempts to resolve a compiled template file path and line number to its source template path and line number.
+     *
+     * @param string $path The compiled template path
+     * @param int|null $line The line number from the compiled template
+     * @return array|false The resolved template path and line number, or `false` if the path couldn’t be determined.
+     * If a template path could be determined but not the template line number, the line number will be null.
+     * @since 4.1.5
+     */
+    public static function resolveTemplatePathAndLine(string $path, ?int $line)
+    {
+        if (!str_contains($path, 'compiled_templates')) {
+            return false;
+        }
+
+        $contents = file_get_contents($path);
+
+        if (!preg_match('/^class (\w+)/m', $contents, $match)) {
+            return false;
+        }
+
+        $class = $match[1];
+        if (!class_exists($class, false) || !is_subclass_of($class, TwigTemplate::class)) {
+            return false;
+        }
+
+        /** @var TwigTemplate $template */
+        $template = new $class(Craft::$app->getView()->getTwig());
+        $src = $template->getSourceContext();
+        $templatePath = $src->getPath() ?: null;
+        $templateLine = null;
+
+        if ($line !== null) {
+            foreach ($template->getDebugInfo() as $codeLine => $thisTemplateLine) {
+                if ($codeLine <= $line) {
+                    $templateLine = $thisTemplateLine;
+                    break;
+                }
+            }
+        }
+
+        return [$templatePath, $templateLine];
     }
 }

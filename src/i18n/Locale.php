@@ -14,7 +14,6 @@ use NumberFormatter;
 use yii\base\BaseObject;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
-use yii\helpers\FormatConverter;
 
 /**
  * Stores locale info.
@@ -220,9 +219,21 @@ class Locale extends BaseObject
     public const FORMAT_JUI = 'jui';
 
     /**
+     * @var string Human-readable format
+     * @since 4.3.0
+     */
+    public const FORMAT_HUMAN = 'human';
+
+    /**
      * @var array The languages that use RTL orientation.
      */
-    private static array $_rtlLanguages = ['ar', 'he', 'ur', 'fa'];
+    private static array $_rtlLanguages = [
+        'ar',
+        'fa',
+        'he',
+        'ps',
+        'ur',
+    ];
 
     /**
      * @var string|null The locale ID.
@@ -631,7 +642,7 @@ class Locale extends BaseObject
      * @param string $length The format length that should be returned. Values: Locale::LENGTH_SHORT, ::MEDIUM, ::LONG, ::FULL
      * @param bool $withDate Whether the date should be included in the format.
      * @param bool $withTime Whether the time should be included in the format.
-     * @param string $format The format type that should be returned. Values: Locale::FORMAT_ICU (default), ::FORMAT_PHP, ::FORMAT_JUI
+     * @param string $format The format type that should be returned. Values: Locale::FORMAT_ICU (default), ::FORMAT_PHP, ::FORMAT_JUI, ::FORMAT_HUMAN
      * @return string The date/time format
      */
     private function _getDateTimeFormat(string $length, bool $withDate, bool $withTime, string $format): string
@@ -646,6 +657,9 @@ class Locale extends BaseObject
                     return FormatConverter::convertDateIcuToPhp($icuFormat, $type, $this->id);
                 case self::FORMAT_JUI:
                     return FormatConverter::convertDateIcuToJui($icuFormat, $type, $this->id);
+                case self::FORMAT_HUMAN:
+                    $php = FormatConverter::convertDateIcuToPhp($icuFormat, $type, $this->id);
+                    return FormatConverter::convertDatePhpToHuman($php);
             }
         }
 

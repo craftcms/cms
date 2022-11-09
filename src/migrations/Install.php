@@ -825,6 +825,7 @@ class Install extends Migration
         $this->createIndex(null, Table::ELEMENTS, ['fieldLayoutId'], false);
         $this->createIndex(null, Table::ELEMENTS, ['type'], false);
         $this->createIndex(null, Table::ELEMENTS, ['enabled'], false);
+        $this->createIndex(null, Table::ELEMENTS, ['canonicalId'], false);
         $this->createIndex(null, Table::ELEMENTS, ['archived', 'dateCreated'], false);
         $this->createIndex(null, Table::ELEMENTS, ['archived', 'dateDeleted', 'draftId', 'revisionId', 'canonicalId'], false);
         $this->createIndex(null, Table::ELEMENTS, ['archived', 'dateDeleted', 'draftId', 'revisionId', 'canonicalId', 'enabled'], false);
@@ -945,9 +946,8 @@ class Install extends Migration
                 'fieldId' => $this->integer()->notNull(),
                 'siteId' => $this->integer()->notNull(),
                 'keywords' => $this->text()->notNull(),
+                'PRIMARY KEY([[elementId]], [[attribute]], [[fieldId]], [[siteId]])',
             ]);
-
-            $this->addPrimaryKey(null, Table::SEARCHINDEX, ['elementId', 'attribute', 'fieldId', 'siteId']);
 
             $sql = 'CREATE FULLTEXT INDEX ' .
                 $this->db->quoteTableName($this->db->getIndexName()) . ' ON ' .
@@ -968,9 +968,8 @@ class Install extends Migration
                 'siteId' => $this->integer()->notNull(),
                 'keywords' => $this->text()->notNull(),
                 'keywords_vector' => $this->db->getSchema()->createColumnSchemaBuilder('tsvector')->notNull(),
+                'PRIMARY KEY([[elementId]], [[attribute]], [[fieldId]], [[siteId]])',
             ]);
-
-            $this->addPrimaryKey(null, Table::SEARCHINDEX, ['elementId', 'attribute', 'fieldId', 'siteId']);
 
             $sql = 'CREATE INDEX ' . $this->db->quoteTableName($this->db->getIndexName()) . ' ON ' . Table::SEARCHINDEX . ' USING GIN([[keywords_vector]] [[pg_catalog]].[[tsvector_ops]]) WITH (FASTUPDATE=YES)';
             $this->db->createCommand($sql)->execute();

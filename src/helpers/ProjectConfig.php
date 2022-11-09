@@ -36,6 +36,12 @@ class ProjectConfig
     }
 
     /**
+     * @var bool Whether we've already processed all filesystem configs.
+     * @see ensureAllFilesystemsProcessed()
+     */
+    private static bool $_processedFilesystems = false;
+
+    /**
      * @var bool Whether we've already processed all field configs.
      * @see ensureAllFieldsProcessed()
      */
@@ -66,10 +72,29 @@ class ProjectConfig
     private static bool $_processedGqlSchemas = false;
 
     /**
+     * Ensures all filesystem config changes are processed immediately in a safe manner.
+     *
+     * @since 4.1.2
+     */
+    public static function ensureAllFilesystemsProcessed(): void
+    {
+        $projectConfig = Craft::$app->getProjectConfig();
+
+        if (self::$_processedFilesystems || !$projectConfig->getIsApplyingExternalChanges()) {
+            return;
+        }
+
+        self::$_processedFilesystems = true;
+        $projectConfig->processConfigChanges(ProjectConfigService::PATH_FS);
+    }
+
+    /**
      * Ensures all field config changes are processed immediately in a safe manner.
      */
     public static function ensureAllFieldsProcessed(): void
     {
+        static::ensureAllFilesystemsProcessed();
+
         $projectConfig = Craft::$app->getProjectConfig();
 
         if (self::$_processedFields || !$projectConfig->getIsApplyingExternalChanges()) {

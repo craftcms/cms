@@ -237,7 +237,7 @@ class IndexAssetsController extends Controller
 
         $remainingMissingFiles = $missingFiles;
 
-        if ($maybes && $this->confirm('Fix asset locations?')) {
+        if ($maybes && $this->interactive && $this->confirm('Fix asset locations?')) {
             foreach ($missingFiles as $assetId => $filePath) {
                 unset($remainingMissingFiles[$assetId]);
                 $filename = basename($filePath);

@@ -101,21 +101,42 @@
             errors: (transform is defined ? transform.getErrors('height') : null),
         }) }}
 
-        {{ forms.selectField({
-            label: "Quality"|t('app'),
-            id: "quality",
-            name: "quality",
-            options: [
-                {label: 'Auto'|t('app'), value: '0'},
-                {label: 'Low'|t('app'), value: '10'},
-                {label: 'Medium'|t('app'), value: '30'},
-                {label: 'High'|t('app'), value: '60'},
-                {label: 'Very High (Recommended)'|t('app'), value: '82'},
-                {label: 'Maximum'|t('app'), value: '100'},
-            ],
-            value: (transform is defined ? transform.quality : 82),
+        {% embed '_includes/forms/field' with {
+            label: 'Quality'|t('app'),
             errors: (transform is defined ? transform.getErrors('quality') : null),
-        }) }}
+        } %}
+            {% block input %}
+                {% import '_includes/forms' as forms %}
+                <div class="flex flex-nowrap">
+                    <div>
+                        {{ forms.select({
+                            id: 'quality-picker',
+                            options: [
+                                {label: 'Auto'|t('app'), value: 0},
+                            ]|merge(qualityPickerOptions),
+                            value: qualityPickerValue,
+                            describedBy: describedBy,
+                        }) }}
+                    </div>
+                    <div class="flex-grow">
+                        {{ forms.text({
+                            id: 'quality',
+                            class: [
+                                'ltr',
+                                transform.quality == 0 ? 'hidden',
+                            ]|filter,
+                            name: 'quality',
+                            value: transform.quality,
+                            size: 5,
+                            type: 'number',
+                            min: 1,
+                            max: 100,
+                            describedBy: describedBy,
+                        }) }}
+                    </div>
+                </div>
+            {% endblock %}
+        {% endembed %}
 
         {{ forms.selectField({
             label: "Interlacing"|t('app'),
@@ -163,8 +184,7 @@
 {% js %}
     {% if transform is not defined or not transform.handle %}new Craft.HandleGenerator('#name', '#handle');{% endif %}
 
-    $('#mode input').change(function()
-    {
+    $('#mode input').change(function() {
         if ($(this).val() == 'crop')
         {
             $('#position-container').removeClass('hidden');
@@ -173,5 +193,45 @@
         {
             $('#position-container').addClass('hidden');
         }
-    })
+    });
+
+    const qualityPickerOptions = {{ qualityPickerOptions|map(o => o.value)|json_encode|raw }};
+    const $qualityPicker = $('#quality-picker');
+    const $qualityInput = $('#quality');
+
+    $qualityPicker.on('change', (ev) => {
+        const pickerValue = $qualityPicker.val();
+        $qualityInput.val(pickerValue);
+
+        if (pickerValue === '0') {
+            $qualityInput.addClass('hidden');
+        } else {
+            $qualityInput.removeClass('hidden');
+        }
+    });
+
+    $qualityInput.on('input', (ev) => {
+        let quality = parseInt($qualityInput.val());
+        if (isNaN(quality)) {
+            quality = 0;
+        }
+
+        let pickerValue;
+        if (quality) {
+            // Default to Low, even if quality is < 10
+            pickerValue = 10;
+            for (let i = 0; i < qualityPickerOptions.length; i++) {
+                if (quality >= qualityPickerOptions[i]) {
+                    pickerValue = qualityPickerOptions[i];
+                } else {
+                    break;
+                }
+            }
+        } else {
+            // Auto
+            pickerValue = 0;
+        }
+
+        $qualityPicker.val(pickerValue);
+    });
 {% endjs %}

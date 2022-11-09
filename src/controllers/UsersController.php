@@ -17,6 +17,7 @@ use craft\elements\User;
 use craft\errors\UploadFailedException;
 use craft\errors\UserLockedException;
 use craft\events\DefineUserContentSummaryEvent;
+use craft\events\FindLoginUserEvent;
 use craft\events\InvalidUserTokenEvent;
 use craft\events\LoginFailureEvent;
 use craft\events\RegisterUserActionsEvent;
@@ -65,6 +66,38 @@ use yii\web\ServerErrorHttpException;
  */
 class UsersController extends Controller
 {
+    /**
+     * @event FindLoginUserEvent The event that is triggered before attempting to find a user to sign in
+     *
+     * ```php
+     * use Craft;
+     * use craft\controllers\UsersController;
+     * use craft\elements\User;
+     * use craft\events\FindLoginUserEvent;
+     * use yii\base\Event;
+     *
+     * Event::on(
+     *     UsersController::class,
+     *     UsersController::EVENT_BEFORE_FIND_LOGIN_USER,
+     *     function(FindLoginUserEvent $event) {
+     *         // force username-based login
+     *         $event->user = User::find()
+     *             ->username($event->loginName)
+     *             ->addSelect(['users.password', 'users.passwordResetRequired'])
+     *             ->one();
+     *     }
+     * );
+     *
+     * @since 4.2.0
+     */
+    public const EVENT_BEFORE_FIND_LOGIN_USER = 'beforeFindLoginUser';
+
+    /**
+     * @event FindLoginUserEvent The event that is triggered after attempting to find a user to sign in
+     * @since 4.2.0
+     */
+    public const EVENT_AFTER_FIND_LOGIN_USER = 'afterFindLoginUser';
+
     /**
      * @event LoginFailureEvent The event that is triggered when a failed login attempt was made
      */
@@ -163,8 +196,7 @@ class UsersController extends Controller
         $password = $this->request->getRequiredBodyParam('password');
         $rememberMe = (bool)$this->request->getBodyParam('rememberMe');
 
-        // Does a user exist with that username/email?
-        $user = Craft::$app->getUsers()->getUserByUsernameOrEmail($loginName);
+        $user = $this->_findLoginUser($loginName);
 
         if (!$user || $user->password === null) {
             // Delay again to match $user->authenticate()'s delay
@@ -192,6 +224,23 @@ class UsersController extends Controller
         }
 
         return $this->_handleSuccessfulLogin();
+    }
+
+    private function _findLoginUser(string $loginName): ?User
+    {
+        $event = new FindLoginUserEvent([
+            'loginName' => $loginName,
+        ]);
+        $this->trigger(self::EVENT_BEFORE_FIND_LOGIN_USER, $event);
+
+        $user = $event->user ?? Craft::$app->getUsers()->getUserByUsernameOrEmail($loginName);
+
+        $event = new FindLoginUserEvent([
+            'loginName' => $loginName,
+            'user' => $user,
+        ]);
+        $this->trigger(self::EVENT_AFTER_FIND_LOGIN_USER, $event);
+        return $event->user;
     }
 
     /**
@@ -309,7 +358,7 @@ class UsersController extends Controller
      */
     private function _enforceImpersonatePermission(User $user): void
     {
-        if (!Craft::$app->getUsers()->canImpersonate(Craft::$app->getUser()->getIdentity(), $user)) {
+        if (!Craft::$app->getUsers()->canImpersonate(static::currentUser(), $user)) {
             throw new ForbiddenHttpException('You do not have sufficient permissions to impersonate this user');
         }
     }
@@ -334,6 +383,7 @@ class UsersController extends Controller
         ];
 
         if (Craft::$app->getConfig()->getGeneral()->enableCsrfProtection) {
+            $return['csrfTokenName'] = Craft::$app->getConfig()->getGeneral()->csrfTokenName;
             $return['csrfTokenValue'] = $this->request->getCsrfToken();
         }
 
@@ -463,7 +513,8 @@ class UsersController extends Controller
             }
         }
 
-        if (!empty($user) && !Craft::$app->getUsers()->sendPasswordResetEmail($user)) {
+        // Don't try to send the email if there are already error or there is no user
+        if (empty($errors) && !empty($user) && !Craft::$app->getUsers()->sendPasswordResetEmail($user)) {
             $errors[] = Craft::t('app', 'There was a problem sending the password reset email.');
         }
 
@@ -620,7 +671,7 @@ class UsersController extends Controller
         // Do they have an unverified email?
         if ($user->unverifiedEmail) {
             if (!$usersService->verifyEmailForUser($user)) {
-                return $this->renderTemplate('_special/emailtaken', [
+                return $this->renderTemplate('_special/emailtaken.twig', [
                     'email' => $user->unverifiedEmail,
                 ]);
             }
@@ -640,6 +691,44 @@ class UsersController extends Controller
         }
 
         return $this->_redirectUserToCp($user) ?? $this->_redirectUserAfterEmailVerification($user);
+    }
+
+    /**
+     * Enables a user that is currently disabled or archived.
+     *
+     * @return Response|null
+     * @since 4.3.2
+     */
+    public function actionEnableUser(): ?Response
+    {
+        $this->requirePostRequest();
+
+        $userId = $this->request->getRequiredBodyParam('userId');
+        $user = Craft::$app->getUsers()->getUserById($userId);
+
+        if (!$user) {
+            $this->_noUserExists();
+        }
+
+        $elementsService = Craft::$app->getElements();
+
+        if (!$elementsService->canSave($user)) {
+            throw new ForbiddenHttpException('User is not authorized to perform this action.');
+        }
+
+        $user->enabled = true;
+        $user->enabledForSite = true;
+        $user->archived = false;
+
+        if (!$elementsService->saveElement($user, false)) {
+            return $this->asFailure(Craft::t('app', 'Couldn’t save {type}.', [
+                'type' => User::lowerDisplayName(),
+            ]));
+        }
+
+        return $this->asSuccess(Craft::t('app', '{type} saved.', [
+            'type' => User::displayName(),
+        ]));
     }
 
     /**
@@ -688,7 +777,7 @@ class UsersController extends Controller
         // ---------------------------------------------------------------------
 
         $edition = Craft::$app->getEdition();
-        $currentUser = Craft::$app->getUser()->getIdentity();
+        $currentUser = static::currentUser();
 
         if ($user === null) {
             // Are we editing a specific user account?
@@ -740,6 +829,16 @@ class UsersController extends Controller
 
         if ($edition === Craft::Pro && !$isNewUser) {
             switch ($user->getStatus()) {
+                case Element::STATUS_ARCHIVED:
+                case Element::STATUS_DISABLED:
+                    $statusLabel = $user->archived ? Craft::t('app', 'Archived') : Craft::t('app', 'Disabled');
+                    if (Craft::$app->getElements()->canSave($user)) {
+                        $statusActions[] = [
+                            'action' => 'users/enable-user',
+                            'label' => Craft::t('app', 'Enable'),
+                        ];
+                    }
+                    break;
                 case User::STATUS_INACTIVE:
                 case User::STATUS_PENDING:
                     $statusLabel = $user->pending ? Craft::t('app', 'Pending') : Craft::t('app', 'Inactive');
@@ -1042,7 +1141,7 @@ JS,
             View::POS_END
         );
 
-        return $this->renderTemplate('users/_edit', compact(
+        return $this->renderTemplate('users/_edit.twig', compact(
             'user',
             'isNewUser',
             'statusLabel',
@@ -1246,7 +1345,7 @@ JS,
 
         // New users should always be initially saved in a pending state,
         // even if an admin is doing this and opted to not send the verification email
-        if ($isNewUser) {
+        if ($isNewUser && !$deactivateByDefault) {
             $user->pending = true;
         }
 
@@ -1313,7 +1412,7 @@ JS,
 
         // If this is a new user and email verification isn't required,
         // go ahead and activate them now.
-        if ($isNewUser && !$requireEmailVerification) {
+        if ($isNewUser && !$requireEmailVerification && !$deactivateByDefault) {
             Craft::$app->getUsers()->activateUser($user);
         }
 
@@ -1325,6 +1424,7 @@ JS,
             'alwaysShowFocusRings' => (bool)$this->request->getBodyParam('alwaysShowFocusRings', $user->getPreference('alwaysShowFocusRings')),
             'useShapes' => (bool)$this->request->getBodyParam('useShapes', $user->getPreference('useShapes')),
             'underlineLinks' => (bool)$this->request->getBodyParam('underlineLinks', $user->getPreference('underlineLinks')),
+            'notificationDuration' => $this->request->getBodyParam('notificationDuration', $user->getPreference('notificationDuration')),
         ];
 
         if ($user->admin) {
@@ -1338,6 +1438,10 @@ JS,
         }
 
         Craft::$app->getUsers()->saveUserPreferences($user, $preferences);
+
+        if ($isCurrentUser) {
+            Craft::$app->updateTargetLanguage();
+        }
 
         // Is this the current user, and did their username just change?
         // todo: remove comment when WI-51866 is fixed
@@ -1455,7 +1559,7 @@ JS,
 
         $userId = $this->request->getRequiredBodyParam('userId');
 
-        if ($userId != Craft::$app->getUser()->getIdentity()->id) {
+        if ($userId != static::currentUser()->id) {
             $this->requirePermission('editUsers');
         }
 
@@ -1478,6 +1582,7 @@ JS,
 
             return $this->asJson([
                 'html' => $this->_renderPhotoTemplate($user),
+                'photoId' => $user->photoId,
             ]);
         } catch (Throwable $exception) {
             if (isset($fileLocation) && file_exists($fileLocation)) {
@@ -1504,7 +1609,7 @@ JS,
 
         $userId = $this->request->getRequiredBodyParam('userId');
 
-        if ($userId != Craft::$app->getUser()->getIdentity()->id) {
+        if ($userId != static::currentUser()->id) {
             $this->requirePermission('editUsers');
         }
 
@@ -1583,7 +1688,7 @@ JS,
 
         // Even if you have moderateUsers permissions, only and admin should be able to unlock another admin.
         if ($user->admin) {
-            $currentUser = Craft::$app->getUser()->getIdentity();
+            $currentUser = static::currentUser();
             if (!$currentUser->admin) {
                 throw new ForbiddenHttpException('Only admins can unlock other admins.');
             }
@@ -1620,7 +1725,7 @@ JS,
         }
 
         $usersService = Craft::$app->getUsers();
-        $currentUser = Craft::$app->getUser()->getIdentity();
+        $currentUser = static::currentUser();
 
         if (!$usersService->canSuspend($currentUser, $user) || !$usersService->suspendUser($user)) {
             $this->setFailFlash(Craft::t('app', 'Couldn’t suspend user.'));
@@ -1643,7 +1748,7 @@ JS,
 
         $userIds = $this->request->getRequiredBodyParam('userId');
 
-        if ($userIds !== (string)Craft::$app->getUser()->getIdentity()->id) {
+        if ($userIds !== (string)static::currentUser()->id) {
             $this->requirePermission('deleteUsers');
         }
 
@@ -1785,7 +1890,7 @@ JS,
 
         // Even if you have moderateUsers permissions, only and admin should be able to unsuspend another admin.
         $usersService = Craft::$app->getUsers();
-        $currentUser = Craft::$app->getUser()->getIdentity();
+        $currentUser = static::currentUser();
 
         if (!$usersService->canSuspend($currentUser, $user) || !$usersService->unsuspendUser($user)) {
             $this->setFailFlash(Craft::t('app', 'Couldn’t unsuspend user.'));
@@ -1806,7 +1911,8 @@ JS,
      */
     public function actionSaveAddress(): ?Response
     {
-        $user = Craft::$app->getUser()->getIdentity();
+        $elementsService = Craft::$app->getElements();
+        $user = static::currentUser();
         $userId = (int)($this->request->getBodyParam('userId') ?? $user->id);
         $addressId = $this->request->getBodyParam('addressId');
 
@@ -1826,9 +1932,12 @@ JS,
             ]);
         }
 
-        if (!$address->canSave($user)) {
+        if (!$elementsService->canSave($address, $user)) {
             throw new ForbiddenHttpException('User is not permitted to edit this address.');
         }
+
+        // Addresses have no status, and the default element save controller also sets the address scenario to live
+        $address->setScenario(Element::SCENARIO_LIVE);
 
         // Name attributes
         $this->populateNameAttributes($address);
@@ -1847,7 +1956,7 @@ JS,
         $fieldsLocation = $this->request->getParam('fieldsLocation') ?? 'fields';
         $address->setFieldValuesFromRequest($fieldsLocation);
 
-        if (!Craft::$app->getElements()->saveElement($address)) {
+        if (!$elementsService->saveElement($address)) {
             return $this->asModelFailure($address, Craft::t('app', 'Couldn’t save {type}.', [
                 'type' => Address::lowerDisplayName(),
             ]), 'address');
@@ -1866,20 +1975,20 @@ JS,
      */
     public function actionDeleteAddress(): ?Response
     {
-        $user = Craft::$app->getUser()->getIdentity();
         $addressId = $this->request->getRequiredBodyParam('addressId');
-
         $address = Address::findOne($addressId);
 
         if (!$address) {
             throw new BadRequestHttpException("Invalid address ID: $addressId");
         }
 
-        if (!$address->canDelete($user)) {
+        $elementsService = Craft::$app->getElements();
+
+        if (!$elementsService->canDelete($address)) {
             throw new ForbiddenHttpException('User is not permitted to delete this address.');
         }
 
-        if (!Craft::$app->getElements()->deleteElement($address)) {
+        if (!$elementsService->deleteElement($address)) {
             return $this->asModelFailure($address, Craft::t('app', 'Couldn’t delete {type}.', [
                 'type' => Address::lowerDisplayName(),
             ]), 'address');
@@ -2036,7 +2145,7 @@ JS,
         }
 
         // Otherwise go with the control panel’s template
-        return $this->renderTemplate('setpassword', $variables, View::TEMPLATE_MODE_CP);
+        return $this->renderTemplate('setpassword.twig', $variables, View::TEMPLATE_MODE_CP);
     }
 
     /**
@@ -2066,7 +2175,7 @@ JS,
      */
     private function _verifyExistingPassword(): bool
     {
-        $currentUser = Craft::$app->getUser()->getIdentity();
+        $currentUser = static::currentUser();
 
         if (!$currentUser) {
             return false;
@@ -2422,6 +2531,7 @@ JS,
             ],
             [
                 'loginName' => $loginName,
+                'errors' => $errors,
             ]
         );
     }
@@ -2440,7 +2550,7 @@ JS,
             $templateMode = View::TEMPLATE_MODE_CP;
         }
 
-        return $view->renderTemplate('users/_photo', [
+        return $view->renderTemplate('users/_photo.twig', [
             'user' => $user,
         ], $templateMode);
     }

@@ -233,6 +233,14 @@ Craft.ui = {
         config
       )
     ).appendTo($body);
+
+    const $label = $body.find('label');
+
+    // Provide accessible name for modal dialog
+    if ($label.length > 0 && $label.attr('id')) {
+      $container.attr('aria-labelledby', $label.attr('id'));
+    }
+
     let modal = new Garnish.Modal($container, {
       closeOtherModals: false,
     });
@@ -293,6 +301,7 @@ Craft.ui = {
       autofocus: config.autofocus && Garnish.isMobileBrowser(true),
       disabled: config.disabled,
       'data-target-prefix': config.targetPrefix,
+      'aria-labelledby': config.labelledBy,
     }).appendTo($container);
 
     // Normalize the options into an array
@@ -513,7 +522,7 @@ Craft.ui = {
       'data-value': value,
       'data-indeterminate-value': indeterminateValue,
       id: config.id,
-      role: 'checkbox',
+      role: 'switch',
       'aria-checked': config.on
         ? 'true'
         : config.indeterminate
@@ -572,6 +581,9 @@ Craft.ui = {
   createLightswitchField: function (config) {
     if (!config.id) {
       config.id = 'lightswitch' + Math.floor(Math.random() * 1000000000);
+    }
+    if (!config.labelId) {
+      config.labelId = `${config.id}-label`;
     }
     return this.createField(this.createLightswitch(config), config).addClass(
       'lightswitch-field'
@@ -858,6 +870,7 @@ Craft.ui = {
     $dateInputs.on('keyup', function (ev) {
       if (
         ev.keyCode === Garnish.ESC_KEY &&
+        $(this).data('datepicker') &&
         $(this).data('datepicker').dpDiv.is(':visible')
       ) {
         ev.stopPropagation();
@@ -865,12 +878,16 @@ Craft.ui = {
     });
 
     // prevent clicks in the datepicker divs from closing the menu
-    $startDate.data('datepicker').dpDiv.on('mousedown', function (ev) {
-      ev.stopPropagation();
-    });
-    $endDate.data('datepicker').dpDiv.on('mousedown', function (ev) {
-      ev.stopPropagation();
-    });
+    if ($startDate.data('datepicker')) {
+      $startDate.data('datepicker').dpDiv.on('mousedown', function (ev) {
+        ev.stopPropagation();
+      });
+    }
+    if ($endDate.data('datepicker')) {
+      $endDate.data('datepicker').dpDiv.on('mousedown', function (ev) {
+        ev.stopPropagation();
+      });
+    }
 
     var menu = new Garnish.Menu($menu, {
       onOptionSelect: function (option) {
@@ -1041,11 +1058,10 @@ Craft.ui = {
   },
 
   createField: function (input, config) {
-    var label =
-        config.label && config.label !== '__blank__' ? config.label : null,
-      siteId = Craft.isMultiSite && config.siteId ? config.siteId : null;
+    const label =
+      config.label && config.label !== '__blank__' ? config.label : null;
 
-    var $field = $(config.fieldset ? '<fieldset/>' : '<div/>', {
+    const $field = $(config.fieldset ? '<fieldset/>' : '<div/>', {
       class: 'field',
       id: config.fieldId || (config.id ? config.id + '-field' : null),
     });
@@ -1058,17 +1074,25 @@ Craft.ui = {
       $field.addClass(config.fieldClass);
     }
 
-    if (label) {
-      var $heading = $('<div class="heading"/>').appendTo($field);
+    if (label && config.fieldset) {
+      $('<legend/>', {
+        text: label,
+        class: 'visually-hidden',
+        'data-label': label,
+      }).appendTo($field);
+    }
 
-      var $label = $(config.fieldset ? '<legend/>' : '<label/>', {
+    if (label) {
+      const $heading = $('<div class="heading"/>').appendTo($field);
+
+      $(config.fieldset ? '<legend/>' : '<label/>', {
         id:
           config.labelId ||
           (config.id
             ? `${config.id}-${config.fieldset ? 'legend' : 'label'}`
             : null),
         class: config.required ? 'required' : null,
-        for: !config.fieldset && config.id,
+        for: (!config.fieldset && config.id) || null,
         text: label,
       }).appendTo($heading);
     }

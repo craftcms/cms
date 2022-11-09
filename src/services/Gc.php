@@ -11,6 +11,7 @@ use Craft;
 use craft\base\BlockElementInterface;
 use craft\base\ElementInterface;
 use craft\config\GeneralConfig;
+use craft\console\Application as ConsoleApplication;
 use craft\db\Connection;
 use craft\db\Query;
 use craft\db\Table;
@@ -23,11 +24,13 @@ use craft\elements\Tag;
 use craft\elements\User;
 use craft\errors\FsException;
 use craft\fs\Temp;
+use craft\helpers\Console;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
 use craft\records\Volume;
 use craft\records\VolumeFolder;
 use DateTime;
+use ReflectionMethod;
 use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidConfigException;
@@ -96,8 +99,8 @@ class Gc extends Component
             return;
         }
 
-        Craft::$app->getDrafts()->purgeUnsavedDrafts();
-        Craft::$app->getUsers()->purgeExpiredPendingUsers();
+        $this->_purgeUnsavedDrafts();
+        $this->_purgePendingUsers();
         $this->_deleteStaleSessions();
         $this->_deleteStaleAnnouncements();
 
@@ -128,7 +131,7 @@ class Gc extends Component
         $this->deletePartialElements(User::class, Table::CONTENT, 'elementId');
 
         $this->_deleteOrphanedDraftsAndRevisions();
-        Craft::$app->getSearch()->deleteOrphanedIndexes();
+        $this->_deleteOrphanedSearchIndexes();
 
         // Fire a 'run' event
         if ($this->hasEventHandlers(self::EVENT_RUN)) {
@@ -142,8 +145,11 @@ class Gc extends Component
         ]);
 
         $this->hardDeleteVolumes();
-
         $this->removeEmptyTempFolders();
+        $this->_gcCache();
+
+        // Invalidate all element caches so any hard-deleted elements don't look like they still exist
+        Craft::$app->getElements()->invalidateAllCaches();
     }
 
     /**
@@ -155,6 +161,7 @@ class Gc extends Component
             return;
         }
 
+        $this->_stdout("    > deleting trashed volumes and their folders ... ");
         $condition = $this->_hardDeleteCondition();
 
         $volumes = (new Query())->select(['id'])->from([Table::VOLUMES])->where($condition)->all();
@@ -174,6 +181,7 @@ class Gc extends Component
         }
 
         Volume::deleteAll(['id' => $volumeIds]);
+        $this->_stdout("done\n", Console::FG_GREEN);
     }
 
     /**
@@ -199,6 +207,8 @@ class Gc extends Component
                 $normalElementTypes[] = $elementType;
             }
         }
+
+        $this->_stdout('    > deleting trashed elements ... ');
 
         if ($normalElementTypes) {
             Db::delete(Table::ELEMENTS, [
@@ -240,6 +250,8 @@ SQL;
 
             $this->db->createCommand($sql, $params)->execute();
         }
+
+        $this->_stdout("done\n", Console::FG_GREEN);
     }
 
     /**
@@ -260,7 +272,9 @@ SQL;
         }
 
         foreach ($tables as $table) {
+            $this->_stdout("    > deleting trashed rows in the `$table` table ... ");
             Db::delete($table, $condition);
+            $this->_stdout("done\n", Console::FG_GREEN);
         }
     }
 
@@ -275,6 +289,9 @@ SQL;
      */
     public function deletePartialElements(string $elementType, string $table, string $fk): void
     {
+        /** @var string|ElementInterface $elementType */
+        $this->_stdout(sprintf('    > deleting partial %s data in the `%s` table ... ', $elementType::lowerDisplayName(), $table));
+
         $elementsTable = Table::ELEMENTS;
 
         if ($this->db->getIsMysql()) {
@@ -298,6 +315,29 @@ SQL;
         }
 
         $this->db->createCommand($sql, ['type' => $elementType])->execute();
+        $this->_stdout("done\n", Console::FG_GREEN);
+    }
+
+    private function _purgeUnsavedDrafts()
+    {
+        if ($this->_generalConfig->purgeUnsavedDraftsDuration === 0) {
+            return;
+        }
+
+        $this->_stdout('    > purging unsaved drafts that have gone stale ... ');
+        Craft::$app->getDrafts()->purgeUnsavedDrafts();
+        $this->_stdout("done\n", Console::FG_GREEN);
+    }
+
+    private function _purgePendingUsers()
+    {
+        if ($this->_generalConfig->purgePendingUsersDuration === 0) {
+            return;
+        }
+
+        $this->_stdout('    > purging pending users with stale activation codes ... ');
+        Craft::$app->getUsers()->purgeExpiredPendingUsers();
+        $this->_stdout("done\n", Console::FG_GREEN);
     }
 
     /**
@@ -310,15 +350,18 @@ SQL;
      */
     public function removeEmptyTempFolders(): void
     {
+        $this->_stdout('    > removing empty temp folders ... ');
+
         $emptyFolders = (new Query())
-            ->from(['folders' => Table::VOLUMEFOLDERS])
             ->select(['folders.id', 'folders.path'])
+            ->from(['folders' => Table::VOLUMEFOLDERS])
             ->leftJoin(['assets' => Table::ASSETS], '[[assets.folderId]] = [[folders.id]]')
             ->where([
                 'folders.volumeId' => null,
                 'assets.id' => null,
             ])
             ->andWhere(['not', ['folders.parentId' => null]])
+            ->andWhere(['not', ['folders.path' => null]])
             ->pairs();
 
         $fs = Craft::createObject(Temp::class);
@@ -330,6 +373,7 @@ SQL;
         }
 
         VolumeFolder::deleteAll(['id' => array_keys($emptyFolders)]);
+        $this->_stdout("done\n", Console::FG_GREEN);
     }
 
     /**
@@ -351,29 +395,32 @@ SQL;
             return;
         }
 
+        $this->_stdout('    > deleting stale user sessions ... ');
         $interval = DateTimeHelper::secondsToInterval($this->_generalConfig->purgeStaleUserSessionDuration);
         $expire = DateTimeHelper::currentUTCDateTime();
         $pastTime = $expire->sub($interval);
-
         Db::delete(Table::SESSIONS, ['<', 'dateUpdated', Db::prepareDateForDb($pastTime)]);
+        $this->_stdout("done\n", Console::FG_GREEN);
     }
 
     /**
      * Deletes any feature announcement rows that have gone stale.
-     *
      */
     private function _deleteStaleAnnouncements(): void
     {
+        $this->_stdout('    > deleting stale feature announcements ... ');
         Db::delete(Table::ANNOUNCEMENTS, ['<', 'dateRead', Db::prepareDateForDb(new DateTime('7 days ago'))]);
+        $this->_stdout("done\n", Console::FG_GREEN);
     }
 
 
     /**
      * Deletes any orphaned rows in the `drafts` and `revisions` tables.
-     *
      */
     private function _deleteOrphanedDraftsAndRevisions(): void
     {
+        $this->_stdout('    > deleting orphaned drafts and revisions ... ');
+
         $elementsTable = Table::ELEMENTS;
 
         foreach (['draftId' => Table::DRAFTS, 'revisionId' => Table::REVISIONS] as $fk => $table) {
@@ -396,6 +443,51 @@ SQL;
 
             $this->db->createCommand($sql)->execute();
         }
+
+        $this->_stdout("done\n", Console::FG_GREEN);
+    }
+
+    private function _deleteOrphanedSearchIndexes(): void
+    {
+        $this->_stdout('    > deleting orphaned search indexes ... ');
+        Craft::$app->getSearch()->deleteOrphanedIndexes();
+        $this->_stdout("done\n", Console::FG_GREEN);
+    }
+
+    private function _gcCache(): void
+    {
+        $cache = Craft::$app->getCache();
+
+        // gc() isn't always implemented, or defined by an interface,
+        // so we have to be super defensive here :-/
+
+        if (!method_exists($cache, 'gc')) {
+            return;
+        }
+
+        $method = new ReflectionMethod($cache, 'gc');
+
+        if (!$method->isPublic()) {
+            return;
+        }
+
+        $requiredArgs = $method->getNumberOfRequiredParameters();
+        $firstArg = $method->getParameters()[0] ?? null;
+        $hasForceArg = $firstArg && $firstArg->getName() === 'force';
+
+        if ($requiredArgs > 1 || ($requiredArgs === 1 && !$hasForceArg)) {
+            return;
+        }
+
+        $this->_stdout('    > garbage-collecting data caches ... ');
+
+        if ($hasForceArg) {
+            $cache->gc(true);
+        } else {
+            $cache->gc();
+        }
+
+        $this->_stdout("done\n", Console::FG_GREEN);
     }
 
     /**
@@ -419,5 +511,12 @@ SQL;
         }
 
         return $condition;
+    }
+
+    private function _stdout(string $string, ...$format): void
+    {
+        if (Craft::$app instanceof ConsoleApplication) {
+            Console::stdout($string, ...$format);
+        }
     }
 }

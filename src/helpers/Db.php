@@ -542,6 +542,7 @@ class Db
 
         $inVals = [];
         $notInVals = [];
+        $allowNull = false;
 
         foreach ($value as $val) {
             self::_normalizeEmptyValue($val);
@@ -604,12 +605,29 @@ class Db
                 $val = str_replace('\*', '*', $val);
 
                 if ($like) {
-                    if ($caseInsensitive) {
-                        $operator = $operator === '=' ? 'ilike' : 'not ilike';
+                    // Escape underscores as they are treated as wildcards by LIKE in MySQL and PostgreSQL
+                    $val = preg_replace('/(?<!\\\)_/', '\\_', $val);
+
+                    if ($operator === '=') {
+                        $condition[] = [
+                            $caseInsensitive ? 'ilike' : 'like',
+                            $column,
+                            $val,
+                            false,
+                        ];
                     } else {
-                        $operator = $operator === '=' ? 'like' : 'not like';
+                        $condition[] = [
+                            'or',
+                            [
+                                $caseInsensitive ? 'not ilike' : 'not like',
+                                $column,
+                                $val,
+                                false,
+                            ],
+                            [$column => null],
+                        ];
                     }
-                    $condition[] = [$operator, $column, $val, false];
+
                     continue;
                 }
 
@@ -624,10 +642,15 @@ class Db
                 continue;
             }
 
-            // ['and', '!=1', '!=2', '!=3'] => NOT IN (1, 2, 3)
+            // ['and', '!=1', '!=2', '!=3'] => NOT IN (1, 2, 3) OR IS NULL
             if ($glue == self::GLUE_AND && $operator === '!=') {
                 $notInVals[] = $val;
                 continue;
+            }
+
+            // ['or', '!=1', '!=2', '!=3'] => !=1 OR !=2 OR !=3 OR IS NULL
+            if ($glue === self::GLUE_OR && $operator === '!=') {
+                $allowNull = true;
             }
 
             $condition[] = [$operator, $caseColumn, $val];
@@ -638,7 +661,18 @@ class Db
         }
 
         if (!empty($notInVals)) {
-            $condition[] = ['not', self::_inCondition($caseColumn, $notInVals)];
+            $condition[] = [
+                'or',
+                [
+                    'not',
+                    self::_inCondition($caseColumn, $notInVals),
+                ],
+                [$column => null],
+            ];
+        }
+
+        if ($allowNull) {
+            $condition[] = [$column => null];
         }
 
         // Skip the glue if there's only one condition
@@ -767,7 +801,7 @@ class Db
      * @param string|bool $value The param value
      * @param bool|null $defaultValue How `null` values should be treated
      * @return array
-     * @since 3.4.15
+     * @since 3.4.14
      */
     public static function parseBooleanParam(string $column, mixed $value, ?bool $defaultValue = null): array
     {
@@ -1371,7 +1405,7 @@ class Db
      * Parses a DSN string and returns an array with the `driver` and any driver params, or just a single key.
      *
      * @param string $dsn
-     * @param string|null $key The key that is needed from the DSN. If this is
+     * @param string|null $key The key that is needed from the DSN, if only one param is needed.
      * @return array|string|false The full array, or the specific key value, or `false` if `$key` is a param that
      * doesn’t exist in the DSN string.
      * @throws InvalidArgumentException if $dsn is invalid
@@ -1471,25 +1505,27 @@ class Db
 
         // URL scheme => driver
         if (in_array(strtolower($parsed['scheme']), ['pgsql', 'postgres', 'postgresql'], true)) {
-            $driver = Connection::DRIVER_PGSQL;
+            $config['driver'] = Connection::DRIVER_PGSQL;
         } else {
-            $driver = Connection::DRIVER_MYSQL;
+            $config['driver'] = Connection::DRIVER_MYSQL;
         }
 
-        // DSN params
-        $checkParams = [
-            'host' => 'host',
-            'port' => 'port',
-            'path' => 'dbname',
+        // Other URL params
+        $urlParams = [
+            'host' => ['server', 'host'],
+            'port' => ['port', 'port'],
+            'path' => ['database', 'dbname'],
         ];
         $dsnParams = [];
-        foreach ($checkParams as $urlParam => $dsnParam) {
+        foreach ($urlParams as $urlParam => [$configKey, $dsnParam]) {
             if (isset($parsed[$urlParam])) {
-                $dsnParams[] = $dsnParam . '=' . trim($parsed[$urlParam], '/');
+                $value = trim($parsed[$urlParam], '/');
+                $config[$configKey] = $value;
+                $dsnParams[] = sprintf('%s=%s', $dsnParam, $value);
             }
         }
 
-        $config['dsn'] = "$driver:" . implode(';', $dsnParams);
+        $config['dsn'] = "{$config['driver']}:" . implode(';', $dsnParams);
 
         // Append any query params to the DSN
         if (isset($parsed['query'])) {

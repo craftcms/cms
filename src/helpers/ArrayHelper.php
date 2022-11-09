@@ -352,7 +352,6 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
      */
     public static function rename(array &$array, string $oldKey, string $newKey, mixed $default = null): void
     {
-        /** @phpstan-ignore-next-line */
         if (!array_key_exists($newKey, $array) || array_key_exists($oldKey, $array)) {
             $array[$newKey] = static::remove($array, $oldKey, $default);
         }
@@ -452,5 +451,36 @@ class ArrayHelper extends \yii\helpers\ArrayHelper
         }
 
         return parent::getValue($array, $key, $default);
+    }
+
+    /**
+     * @inheritdoc
+     * @param array $array the array where to look the value from
+     * @param mixed $value the value to remove from the array
+     * @param bool $strict whether a strict type comparison should be used when checking array element values against $value
+     * @return array the items that were removed from the array
+     * @since 4.2.0
+     */
+    public static function removeValue(&$array, $value, bool $strict = false)
+    {
+        if (is_object($value)) {
+            $strict = true;
+        }
+
+        $result = [];
+
+        if (is_array($array)) {
+            foreach ($array as $key => $val) {
+                if (
+                    (($strict || is_object($val)) && $val === $value) ||
+                    (!$strict && !is_object($val) && $val == $value)
+                ) {
+                    $result[$key] = $val;
+                    unset($array[$key]);
+                }
+            }
+        }
+
+        return $result;
     }
 }

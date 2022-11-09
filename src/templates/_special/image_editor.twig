@@ -1,11 +1,16 @@
+{% import "_includes/forms" as forms %}
+{{ tag('h1', {
+    class: 'visually-hidden',
+    text: 'Edit Image'|t('app'),
+}) }}
 <div class="tabs">
-    <ul>
-        <li data-view="rotate"><i></i>{{ 'Rotate'|t('app') }}</li>
-        <li data-view="crop"><i></i>{{ 'Crop'|t('app') }}</li>
+    <ul role="tablist">
+        <li id="rotate-tab" data-view="rotate" role="tab" tabindex="0" aria-selected="true"><i></i>{{ 'Rotate'|t('app') }}</li>
+        <li id="crop-tab" data-view="crop" role="tab" tabindex="-1" aria-selected="false"><i></i>{{ 'Crop'|t('app') }}</li>
     </ul>
 </div>
 <div class="views">
-    <div class="rotate hidden" data-view="rotate" data-rotate="true">
+    <div role="tabpanel" class="rotate hidden" data-view="rotate" data-rotate="true" aria-labelledby="rotate-tab">
         <div class="rotate-buttons btngroup">
             <button type="button" class="rotate-left btn icon leftalign">{{ 'Rotate Left'|t('app') }}</button>
             <button type="button" class="rotate-right btn icon leftalign">{{ 'Rotate Right'|t('app') }}</button>
@@ -15,30 +20,41 @@
             <button type="button" class="flip-horizontal btn icon leftalign">{{ 'Flip Horizontal'|t('app') }}</button>
         </div>
         <div class="btngroup">
-            <button type="button" class="focal-point btn icon leftalign">{{ 'Focal Point'|t('app') }}</button>
+            <button type="button" class="focal-point btn icon leftalign" aria-pressed="false">{{ 'Focal Point'|t('app') }}</button>
         </div>
     </div>
-    <div class="crop hidden" data-view="crop" data-crop="true">
+    <div role="tabpanel" class="crop hidden" data-view="crop" data-crop="true" aria-labelledby="crop-tab">
         <div class="btngroup">
             <button type="button" class="focal-point btn icon leftalign">{{ 'Focal Point'|t('app') }}</button>
         </div>
 
-        <div class="constraint-buttons-container">
-            <div class="btngroup constraint-buttons">
-                {% for label, ratio in craft.app.config.general.imageEditorRatios %}
-                    <div class="constraint {{ ratio matches '/^[0-9]*\\.[0-9]+$/' ? 'flip' : '' }}" data-constraint="{{ ratio }}">{{ label|t('app') }}</div>
-                {% endfor %}
-                <div class="constraint custom" data-constraint="custom">
-                    <span class="custom-label">{{ 'Custom'|t}}</span>
-                    <span class="custom-input hidden"><input type="text" class="custom-constraint-w" size="3" value="1"/> x <input type="text" class="custom-constraint-h" size="3" value="1"/></span>
-                </div>
-            </div>
-        </div>
+        <fieldset class="orientation" aria-label="{{ 'Orientation'|t('app') }}">
+            <input type="radio" aria-label="{{ 'Landscape'|t }}" name="orientation" value="landscape" checked/>
+            <input type="radio" aria-label="{{ 'Portrait'|t }}"  name="orientation" value="portrait"/>
+        </fieldset>
 
-        <div class="orientation">
-            <input type="radio" name="orientation" value="landscape" checked/>
-            <input type="radio" name="orientation" value="portrait"/>
-        </div>
+        {% set constraintOptions = [] %}
+        {% for label, ratio in craft.app.config.general.imageEditorRatios %}
+            {% set constraintOptions = constraintOptions|merge([{
+                value: ratio,
+                label: label|t('app')
+            }]) %}
+
+            {% if loop.last %}
+                {% set constraintOptions = constraintOptions|merge([{
+                    value: 'custom',
+                    label: 'Custom'|t('app')
+                }]) %}
+            {% endif %}
+        {% endfor %}
+
+        {{ forms.radioGroupField({
+            label: 'Constraints'|t('app'),
+            name: 'constraint',
+            class: 'constraint-group',
+            value: 'none',
+            options: constraintOptions,
+        }) }}
     </div>
 </div>
 <div class="image-container">
@@ -50,7 +66,7 @@
     </div>
     <div class="image-tools hidden">
         <div data-view="transform" class="straightening">
-            <div id="slide-rule" class="slide-rule"></div>
+            <div id="slide-rule" class="slide-rule" aria-label="{{ 'Rotate'|t('app') }}"></div>
         </div>
     </div>
 </div>

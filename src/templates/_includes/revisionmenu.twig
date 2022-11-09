@@ -13,7 +13,7 @@
     .status(null)
     .orderBy({dateUpdated: SORT_DESC})
     .with(['draftCreator'])
-    .all()|filter(d => d.canView(currentUser)) : [] %}
+    .all()|filter(d => canView(d)) : [] %}
 
 {% set maxRevisions = craft.app.config.general.maxRevisions %}
 {% if element.id and (not maxRevisions or maxRevisions > 1) %}
@@ -63,17 +63,27 @@
 {% set showMenu = editableSiteIds|length > 1 or showRevisions %}
 
 <div class="context-btngroup btngroup">
+    {% tag 'label' with {
+        class: 'visually-hidden',
+        id: 'context-label',
+    } %}
+        {{ 'Context'|t('app') }}
+    {% endtag %}
     {% tag 'button' with {
         type: 'button',
         class: [
             'context-btn',
             'btn',
+            'btngroup-btn-first',
             'btngroup-btn-last',
             showMenu ? 'menubtn' : 'disabled',
         ],
         data: {
             icon: showSiteLabel ? 'world' : null,
         },
+        aria: {
+            'labelledby': 'context-label',
+        }
     } %}
         {%- if showSiteLabel %}
             {{- originalElement.getSite().name|t('site') }}

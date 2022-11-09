@@ -68,6 +68,7 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
         title: Craft.t('app', 'Show sidebar'),
         'aria-label': Craft.t('app', 'Show sidebar'),
         'data-icon': `sidebar-${Garnish.ltr ? 'right' : 'left'}`,
+        'aria-expanded': 'false',
       }).appendTo(this.$toolbar);
 
       this.addListener(this.$sidebarBtn, 'click', (ev) => {
@@ -167,7 +168,7 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
     },
 
     /**
-     * @param {object} [data={}]
+     * @param {Object} [data={}]
      * @param {boolean} [refreshInitialData=true]
      * @returns {Promise}
      */
@@ -269,8 +270,8 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
     },
 
     /**
-     * @param {object} data
-     * @return {Promise}
+     * @param {Object} data
+     * @returns {Promise}
      */
     update: function (data) {
       return new Promise((resolve) => {
@@ -396,8 +397,7 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
       Craft.trapFocusWithin(this.$sidebar);
 
       this.$sidebarBtn.addClass('active').attr({
-        title: Craft.t('app', 'Hide sidebar'),
-        'aria-label': Craft.t('app', 'Hide sidebar'),
+        'aria-expanded': 'true',
       });
 
       Garnish.$win.trigger('resize');
@@ -427,8 +427,7 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
         });
 
       this.$sidebarBtn.removeClass('active').attr({
-        title: Craft.t('app', 'Show sidebar'),
-        'aria-label': Craft.t('app', 'Show sidebar'),
+        'aria-expanded': 'false',
       });
 
       Garnish.uiLayerManager.removeLayer();
@@ -481,8 +480,8 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
         .then((response) => {
           this.handleSubmitResponse(response);
         })
-        .catch(() => {
-          this.handleSubmitError();
+        .catch((error) => {
+          this.handleSubmitError(error);
         })
         .finally(() => {
           this.hideSubmitSpinner();
@@ -493,7 +492,7 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
       this.clearErrors();
       const data = response.data || {};
       if (data.message) {
-        Craft.cp.displayNotice(data.message);
+        Craft.cp.displaySuccess(data.message, data.notificationSettings);
       }
       this.trigger('submit', {
         response: response,

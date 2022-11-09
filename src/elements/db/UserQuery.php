@@ -487,9 +487,9 @@ class UserQuery extends ElementQuery
      *
      * | Value | Fetches users…
      * | - | -
-     * | `'foo@bar.baz'` | with an email of `foo@bar.baz`.
-     * | `'not foo@bar.baz'` | not with an email of `foo@bar.baz`.
-     * | `'*@bar.baz'` | with an email that ends with `@bar.baz`.
+     * | `'me@domain.tld'` | with an email of `me@domain.tld`.
+     * | `'not me@domain.tld'` | not with an email of `me@domain.tld`.
+     * | `'*@domain.tld'` | with an email that ends with `@domain.tld`.
      *
      * ---
      *
@@ -675,9 +675,10 @@ class UserQuery extends ElementQuery
      *
      * | Value | Fetches users…
      * | - | -
-     * | `'>= 2018-04-01'` | that last logged-in on or after 2018-04-01.
-     * | `'< 2018-05-01'` | that last logged-in before 2018-05-01
-     * | `['and', '>= 2018-04-04', '< 2018-05-01']` | that last logged-in between 2018-04-01 and 2018-05-01.
+     * | `'>= 2018-04-01'` | that last logged in on or after 2018-04-01.
+     * | `'< 2018-05-01'` | that last logged in before 2018-05-01.
+     * | `['and', '>= 2018-04-04', '< 2018-05-01']` | that last logged in between 2018-04-01 and 2018-05-01.
+     * | `now`/`today`/`tomorrow`/`yesterday` | that last logged in at midnight of the specified relative date.
      *
      * ---
      *

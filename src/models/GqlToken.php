@@ -80,9 +80,9 @@ class GqlToken extends Model
     private ?array $_scope = null;
 
     /**
-     * @var GqlSchema The schema for this token.
+     * @var GqlSchema|null The schema for this token.
      */
-    private GqlSchema $_schema;
+    private ?GqlSchema $_schema = null;
 
     /**
      * @var bool Whether this is a temporary token

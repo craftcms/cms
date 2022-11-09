@@ -43,23 +43,27 @@ Garnish = $.extend(Garnish, {
 
   // Key code constants
   BACKSPACE_KEY: 8,
-  DELETE_KEY: 46,
-  SHIFT_KEY: 16,
   TAB_KEY: 9,
+  CLEAR_KEY: 12,
+  RETURN_KEY: 13,
+  SHIFT_KEY: 16,
   CTRL_KEY: 17,
   ALT_KEY: 18,
-  RETURN_KEY: 13,
   ESC_KEY: 27,
   SPACE_KEY: 32,
+  PAGE_UP_KEY: 33,
+  PAGE_DOWN_KEY: 34,
   END_KEY: 35,
   HOME_KEY: 36,
   LEFT_KEY: 37,
   UP_KEY: 38,
   RIGHT_KEY: 39,
   DOWN_KEY: 40,
+  DELETE_KEY: 46,
   A_KEY: 65,
   S_KEY: 83,
   CMD_KEY: 91,
+  META_KEY: 224,
 
   // ARIA hidden classes
   JS_ARIA_CLASS: 'garnish-js-aria',
@@ -391,6 +395,53 @@ Garnish = $.extend(Garnish, {
   },
 
   /**
+   * Checks whether focus is inside a given container
+   * @param {Object} container
+   */
+  focusIsInside: function (container) {
+    return $(container).find(':focus').length > 0;
+  },
+
+  /**
+   * Gets the first focusable element inside a container
+   * @param {Object} container
+   */
+  firstFocusableElement: function (container) {
+    return $(container).find(':focusable').first();
+  },
+
+  /**
+   * Returns a collection of all keyboard focusable-elements inside a container
+   * @param {object} container
+   * @return {object} A collection of keyboard-focusable elements
+   */
+  getKeyboardFocusableElements: function (container) {
+    const $focusable = $(container).find(':focusable');
+    const $keyboardFocusable = $focusable.filter((index, element) => {
+      return Garnish.isKeyboardFocusable(element);
+    });
+
+    return $keyboardFocusable;
+  },
+
+  /**
+   * Returns whether the element is focusable by keyboard (i.e. does not have tabindex of -1)
+   * @param {object} element
+   * @return {boolean}
+   */
+  isKeyboardFocusable: function (element) {
+    let keyboardFocusable;
+
+    if (!$(element).is(':focusable') || $(element).attr('tabindex') === '-1') {
+      keyboardFocusable = false;
+    } else {
+      keyboardFocusable = true;
+    }
+
+    return keyboardFocusable;
+  },
+
+  /**
    * Traps focus within a container, so when focus is tabbed out of it, it’s cycled back into it.
    * @param {Object} container
    */
@@ -423,7 +474,9 @@ Garnish = $.extend(Garnish, {
    */
   setFocusWithin: function (container) {
     const $container = $(container);
-    const $firstFocusable = $(container).find(':focusable:first');
+    const $firstFocusable = $(container).find(
+      ':focusable:not(.checkbox):first'
+    );
 
     if ($firstFocusable.length > 0) {
       $firstFocusable.trigger('focus');
@@ -834,6 +887,10 @@ Object.assign(Garnish, {
   Select,
   SelectMenu,
   UiLayerManager,
+  /**
+   * @deprecated Use CustomSelect instead.
+   */
+  Menu: CustomSelect,
   /**
    * @deprecated Use UiLayerManager instead.
    */

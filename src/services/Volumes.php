@@ -323,7 +323,7 @@ class Volumes extends Component
         $volumeUid = $event->tokenMatches[0];
         $data = $event->newValue;
 
-        // Make sure fields are processed
+        ProjectConfigHelper::ensureAllFilesystemsProcessed();
         ProjectConfigHelper::ensureAllFieldsProcessed();
 
         $transaction = Craft::$app->getDb()->beginTransaction();

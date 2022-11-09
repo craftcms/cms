@@ -14,6 +14,7 @@ use craft\base\PreviewableFieldInterface;
 use craft\base\SortableFieldInterface;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
+use craft\fields\conditions\NumberFieldConditionRule;
 use craft\gql\types\Money as MoneyType;
 use craft\helpers\Db;
 use craft\helpers\ElementHelper;
@@ -142,7 +143,7 @@ class Money extends Field implements PreviewableFieldInterface, SortableFieldInt
             }
         }
 
-        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Money/settings', [
+        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Money/settings.twig', [
             'field' => $this,
             'currencies' => $this->_isoCurrencies,
             'subUnits' => $this->_isoCurrencies->subunitFor(new Currency($this->currency)),
@@ -297,7 +298,7 @@ JS;
             'currencySymbol' => Craft::$app->getFormattingLocale()->getCurrencySymbol($this->currency),
         ]);
 
-        return $view->renderTemplate('_components/fieldtypes/Money/input', [
+        return $view->renderTemplate('_components/fieldtypes/Money/input.twig', [
             'id' => $id,
             'currency' => $this->currency,
             'currencyLabel' => $currencyLabel,
@@ -325,7 +326,7 @@ JS;
      */
     public function getElementConditionRuleType(): array|string|null
     {
-        return null;
+        return NumberFieldConditionRule::class;
     }
 
     /**

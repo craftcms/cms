@@ -267,8 +267,8 @@ class FileHelperTest extends TestCase
             ['application/pdf', dirname(__DIR__, 3) . '/_data/assets/files/pdf-sample.pdf', null, true],
             ['image/svg+xml', dirname(__DIR__, 3) . '/_data/assets/files/gng.svg', null, true],
             ['application/xml', dirname(__DIR__, 3) . '/_data/assets/files/random.xml', null, true],
-            [PHP_VERSION_ID >= 80100 ? 'text/html' : 'text/plain', dirname(__DIR__, 3) . '/_data/assets/files/test.html', null, false],
-            [PHP_VERSION_ID >= 80100 ? null : 'directory', __DIR__, null, true],
+            ['text/plain', dirname(__DIR__, 3) . '/_data/assets/files/test.html', null, false],
+            ['directory', __DIR__, null, true],
         ];
     }
 

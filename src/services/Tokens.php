@@ -47,7 +47,12 @@ class Tokens extends Component
      * ]]);
      *
      * // Route to a template
-     * Craft::$app->tokens->createToken(['template' => 'template/path']);
+     * Craft::$app->tokens->createToken([
+     *     'templates/render',
+     *     [
+     *         'template' => 'template/path',
+     *     ]
+     * ]);
      * ```
      *
      * @param array|string $route Where matching requests should be routed to.

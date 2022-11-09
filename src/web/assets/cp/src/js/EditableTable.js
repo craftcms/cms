@@ -194,6 +194,10 @@ Craft.EditableTable = Garnish.Base.extend(
 
       if (this.rowCount === 0) {
         this.$table.addClass('hidden');
+        this.$addRowBtn.trigger('focus');
+      } else {
+        // Focus element in previous row
+        this.$tbody.find(':focusable').last().trigger('focus');
       }
 
       // onDeleteRow callback
@@ -541,6 +545,8 @@ Craft.EditableTable = Garnish.Base.extend(
             $('<a/>', {
               class: 'move icon',
               title: Craft.t('app', 'Reorder'),
+              role: 'button',
+              type: 'button',
             })
           )
           .appendTo($tr);

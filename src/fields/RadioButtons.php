@@ -54,11 +54,11 @@ class RadioButtons extends BaseOptionsField implements SortableFieldInterface
             Craft::$app->getView()->setInitialDeltaValue($this->handle, null);
         }
 
-        return Craft::$app->getView()->renderTemplate('_includes/forms/radioGroup', [
+        return Craft::$app->getView()->renderTemplate('_includes/forms/radioGroup.twig', [
             'describedBy' => $this->describedBy,
             'name' => $this->handle,
-            'value' => $value,
-            'options' => $this->translatedOptions(),
+            'value' => $this->encodeValue($value),
+            'options' => $this->translatedOptions(true),
         ]);
     }
 

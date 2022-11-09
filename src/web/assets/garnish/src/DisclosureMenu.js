@@ -68,6 +68,10 @@ export default Base.extend(
     },
 
     addDisclosureMenuEventListeners: function () {
+      this.addListener(this.$trigger, 'mousedown', function (event) {
+        event.stopPropagation();
+      });
+
       this.addListener(this.$trigger, 'click', () => {
         this.handleTriggerClick();
       });
@@ -189,12 +193,18 @@ export default Base.extend(
         'scroll',
         'setContainerPosition'
       );
+      this.addListener(Garnish.$win, 'resize', 'setContainerPosition');
 
       this.$container.velocity('stop');
       this.$container.css({
         opacity: 1,
-        display: 'block',
+        display: '',
       });
+
+      // In case its default display is set to none
+      if (this.$container.css('display') === 'none') {
+        this.$container.css('display', 'block');
+      }
 
       // Set ARIA attribute for expanded
       this.$trigger.attr('aria-expanded', 'true');
@@ -272,7 +282,7 @@ export default Base.extend(
       this._alignmentElementWidth = this.$alignmentElement.outerWidth();
       this._alignmentElementHeight = this.$alignmentElement.outerHeight();
       this._alignmentElementOffsetRight =
-        this._alignmentElementOffset.left + this._alignmentElementHeight;
+        this._alignmentElementOffset.left + this._alignmentElementWidth;
       this._alignmentElementOffsetBottom =
         this._alignmentElementOffset.top + this._alignmentElementHeight;
 

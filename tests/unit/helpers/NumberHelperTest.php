@@ -81,6 +81,16 @@ class NumberHelperTest extends TestCase
     }
 
     /**
+     * @dataProvider isIntOrFloatDataProvider
+     * @param bool $expected
+     * @param mixed $value
+     */
+    public function testIsIntOrFloat(bool $expected, mixed $value): void
+    {
+        self::assertSame($expected, Number::isIntOrFloat($value));
+    }
+
+    /**
      * @return array
      */
     public function makeNumericDataProvider(): array
@@ -165,6 +175,32 @@ class NumberHelperTest extends TestCase
             ['', 0],
             ['bc', 55],
             ['fhim', 111111],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function isIntOrFloatDataProvider(): array
+    {
+        return [
+            [true, 0],
+            [true, 0.5],
+            [true, 10],
+            [true, 10.5],
+            [true, '0'],
+            [true, '0.5'],
+            [true, '0.50'],
+            [true, '10'],
+            [true, '10.5'],
+            [false, '00'],
+            [false, ' 0'],
+            [false, '00.5'],
+            [false, ' 0.5'],
+            [false, ' '],
+            [false, 'y'],
+            [false, true],
+            [false, []],
         ];
     }
 }

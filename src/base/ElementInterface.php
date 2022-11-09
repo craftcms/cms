@@ -759,7 +759,7 @@ interface ElementInterface extends ComponentInterface
      * Returns whether the given user is authorized to view this element’s edit page.
      *
      * If they can view but not [[canSave()|save]], the edit form will either render statically,
-     * or be restricted to only saving changes as a draft, depending on [[canCreateDraft()]].
+     * or be restricted to only saving changes as a draft, depending on [[canCreateDrafts()]].
      *
      * @param User $user
      * @return bool
@@ -770,8 +770,6 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns whether the given user is authorized to save this element in its current form.
      *
-     * This will only be called if the element can be [[canView()|viewed]].
-     *
      * @param User $user
      * @return bool
      * @since 4.0.0
@@ -780,8 +778,6 @@ interface ElementInterface extends ComponentInterface
 
     /**
      * Returns whether the given user is authorized to duplicate this element.
-     *
-     * This will only be called if the element can be [[canSave()|viewed]] and [[canSave()|saved]].
      *
      * @param User $user
      * @return bool
@@ -803,8 +799,6 @@ interface ElementInterface extends ComponentInterface
     /**
      * Returns whether the given user is authorized to delete this element for its current site.
      *
-     * This will only be called if the element can be [[canView()|viewed]] and [[canDelete()|deleted]].
-     *
      * @param User $user
      * @return bool
      * @since 4.0.0
@@ -812,9 +806,12 @@ interface ElementInterface extends ComponentInterface
     public function canDeleteForSite(User $user): bool;
 
     /**
-     * Returns whether the given user is authorized to create drafts for thisc element.
+     * Returns whether the given user is authorized to create drafts for this element.
      *
-     * This will only be called if the element can be [[canView()|viewed]].
+     * ::: tip
+     * If this is going to return `true` under any circumstances, make sure [[trackChanges()]] is returning `true`,
+     * so drafts can be automatically updated with upstream content changes.
+     * :::
      *
      * @param User $user
      * @return bool

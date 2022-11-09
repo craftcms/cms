@@ -9,6 +9,7 @@ namespace craft\console;
 
 use Craft;
 use craft\base\ApplicationTrait;
+use craft\console\controllers\HelpController;
 use craft\db\Query;
 use craft\db\Table;
 use craft\errors\MissingComponentException;
@@ -21,7 +22,6 @@ use yii\base\Component;
 use yii\base\InvalidConfigException;
 use yii\base\Response as BaseResponse;
 use yii\console\controllers\CacheController;
-use yii\console\controllers\HelpController;
 use yii\console\controllers\MigrateController;
 use yii\console\Response;
 
@@ -70,7 +70,7 @@ class Application extends \yii\console\Application
      */
     public function runAction($route, $params = []): int|BaseResponse|null
     {
-        if (!$this->getIsInstalled() && $this->_requireInfoTable($route, $params)) {
+        if (!$this->getIsInstalled(true) && $this->_requireInfoTable($route, $params)) {
             // Is the connection valid at least?
             if (!$this->getIsDbConnectionValid()) {
                 Console::outputWarning('Craft can’t connect to the database. Check your connection settings.');

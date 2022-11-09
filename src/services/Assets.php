@@ -44,6 +44,7 @@ use yii\base\Component;
 use yii\base\Exception;
 use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
+use yii\base\NotSupportedException;
 use yii\db\Expression;
 
 /**
@@ -89,6 +90,12 @@ class Assets extends Component
      * @var array
      */
     private array $_foldersByUid = [];
+
+    /**
+     * @var VolumeFolder[]
+     * @see getUserTemporaryUploadFolder
+     */
+    private $_userTempFolders = [];
 
     /**
      * Returns a file by its ID.
@@ -170,14 +177,22 @@ class Assets extends Component
      */
     public function moveAsset(Asset $asset, VolumeFolder $folder, string $filename = ''): bool
     {
-        $asset->newFolderId = $folder->id;
+        $folderChanging = $asset->folderId != $folder->id;
+        $filenameChanging = $filename !== '' && $filename !== $asset->getFilename();
 
-        // If the filename hasn’t changed, then we can use the `move` scenario
-        if ($filename === '' || $filename === $asset->getFilename()) {
-            $asset->setScenario(Asset::SCENARIO_MOVE);
-        } else {
+        if (!$folderChanging && !$filenameChanging) {
+            return true;
+        }
+
+        if ($folderChanging) {
+            $asset->newFolderId = $folder->id;
+        }
+
+        if ($filenameChanging) {
             $asset->newFilename = $filename;
             $asset->setScenario(Asset::SCENARIO_FILEOPS);
+        } else {
+            $asset->setScenario(Asset::SCENARIO_MOVE);
         }
 
         return Craft::$app->getElements()->saveElement($asset);
@@ -250,7 +265,7 @@ class Assets extends Component
 
         if ($conflictingFolder) {
             throw new FsObjectExistsException(Craft::t('app', 'A folder with the name “{folderName}” already exists in the folder.', [
-                'folderName' => $folder->name,
+                'folderName' => $newName,
             ]));
         }
 
@@ -340,7 +355,7 @@ class Assets extends Component
             // Add additional criteria but prevent overriding volumeId and order.
             $criteria = array_merge($additionalCriteria, [
                 'volumeId' => $volumeId,
-                'order' => [new Expression('path IS NULL DESC'), 'path' => SORT_ASC],
+                'order' => [new Expression('[[path]] IS NULL DESC'), 'path' => SORT_ASC],
             ]);
             $cacheKey = md5(Json::encode($criteria));
 
@@ -631,6 +646,7 @@ class Assets extends Component
      * @param int $maxHeight
      * @return string
      * @since 4.0.0
+     * @throws NotSupportedException if the asset’s volume doesn’t have a filesystem with public URLs
      */
     public function getImagePreviewUrl(Asset $asset, int $maxWidth, int $maxHeight): string
     {
@@ -652,7 +668,13 @@ class Assets extends Component
             $transform = null;
         }
 
-        return $asset->getUrl($transform, true);
+        $url = $asset->getUrl($transform, true);
+
+        if (!$url) {
+            throw new NotSupportedException('A preview URL couldn’t be generated for the asset.');
+        }
+
+        return $url;
     }
 
     /**
@@ -898,6 +920,12 @@ class Assets extends Component
             $user = Craft::$app->getUser()->getIdentity();
         }
 
+        $cacheKey = $user->id ?? '__GUEST__';
+
+        if (isset($this->_userTempFolders[$cacheKey])) {
+            return $this->_userTempFolders[$cacheKey];
+        }
+
         if ($user) {
             $folderName = 'user_' . $user->id;
         } elseif (Craft::$app->getRequest()->getIsConsoleRequest()) {
@@ -919,7 +947,7 @@ class Assets extends Component
 
         if ($tempVolume) {
             $path = ($tempSubpath ? "$tempSubpath/" : '') . $folderName;
-            return $this->ensureFolderByFullPathAndVolume($path, $tempVolume, false);
+            return $this->_userTempFolders[$cacheKey] = $this->ensureFolderByFullPathAndVolume($path, $tempVolume);
         }
 
         $volumeTopFolder = $this->findFolder([
@@ -954,7 +982,7 @@ class Assets extends Component
             throw new VolumeException('Unable to create directory for temporary volume.');
         }
 
-        return $folder;
+        return $this->_userTempFolders[$cacheKey] = $folder;
     }
 
     /**

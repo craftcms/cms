@@ -18,14 +18,6 @@ use craft\helpers\Cp;
 abstract class BaseElementSelectConditionRule extends BaseConditionRule
 {
     /**
-     * @inheritdoc
-     */
-    public static function supportsProjectConfig(): bool
-    {
-        return false;
-    }
-
-    /**
      * @var int|string|null
      * @see getElementId()
      * @see setElementId()
@@ -117,7 +109,6 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
                 'id' => 'elementId',
                 'name' => 'elementId',
                 'value' => $this->getElementId(false),
-                'fieldClass' => 'fullwidth',
                 'placeholder' => Craft::t('app', '{type} ID', [
                     'type' => $this->elementType()::displayName(),
                 ]),
@@ -190,14 +181,14 @@ abstract class BaseElementSelectConditionRule extends BaseConditionRule
         }
 
         if (is_numeric($value)) {
-            return (int)$value === $elementId;
+            return (int)$value === (int)$elementId;
         }
 
         if (is_array($value)) {
             foreach ($value as $val) {
                 if (
                     $val instanceof ElementInterface && $val->id === $elementId ||
-                    is_numeric($val) && (int)$val === $elementId
+                    is_numeric($val) && (int)$val === (int)$elementId
                 ) {
                     return true;
                 }

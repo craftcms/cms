@@ -10,6 +10,7 @@ namespace craft\controllers;
 use Craft;
 use craft\base\conditions\ConditionInterface;
 use craft\base\conditions\ConditionRuleInterface;
+use craft\helpers\ArrayHelper;
 use craft\helpers\Json;
 use craft\web\Controller;
 use Illuminate\Support\Collection;
@@ -35,8 +36,18 @@ class ConditionsController extends Controller
     {
         $baseConfig = Json::decodeIfJson($this->request->getBodyParam('config'));
         $config = $this->request->getBodyParam($baseConfig['name']);
-        $this->_condition = Craft::$app->getConditions()->createCondition($config);
+        $newRuleType = ArrayHelper::remove($config, 'new-rule-type');
+        $conditionsService = Craft::$app->getConditions();
+        $this->_condition = $conditionsService->createCondition($config);
         Craft::configure($this->_condition, $baseConfig);
+
+        if ($newRuleType) {
+            $newRuleType = Json::decodeIfJson($newRuleType);
+            $rule = $conditionsService->createConditionRule($newRuleType);
+            $rule->setAutofocus();
+            $this->_condition->addConditionRule($rule);
+        }
+
         return parent::beforeAction($action);
     }
 
@@ -50,6 +61,7 @@ class ConditionsController extends Controller
 
     /**
      * @return string
+     * @deprecated in 4.1.0
      */
     public function actionAddRule(): string
     {
