@@ -23,6 +23,7 @@ use craft\elements\conditions\ElementCondition;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\ElementQuery;
 use craft\elements\db\ElementQueryInterface;
+use craft\elements\ElementCollection;
 use craft\elements\exporters\Expanded;
 use craft\elements\exporters\Raw;
 use craft\elements\User;
@@ -32,6 +33,7 @@ use craft\events\DefineAttributeKeywordsEvent;
 use craft\events\DefineEagerLoadingMapEvent;
 use craft\events\DefineHtmlEvent;
 use craft\events\DefineMetadataEvent;
+use craft\events\DefineUrlEvent;
 use craft\events\DefineValueEvent;
 use craft\events\ElementIndexTableAttributeEvent;
 use craft\events\ElementStructureEvent;
@@ -538,6 +540,38 @@ abstract class Element extends Component implements ElementInterface
     public const EVENT_DEFINE_KEYWORDS = 'defineKeywords';
 
     /**
+     * @event DefineUrlEvent The event that is triggered when defining the element’s URL.
+     *
+     * ```php
+     * use craft\base\Element;
+     * use craft\elements\Entry;
+     * use craft\events\DefineUrlEvent;
+     * use craft\helpers\UrlHelper;
+     * use yii\base\Event;
+     *
+     * Event::on(
+     *     Entry::class,
+     *     Element::EVENT_DEFINE_URL,
+     *     function(DefineUrlEvent $e
+     * ) {
+     *     // @var Entry $entry
+     *     $entry = $e->sender;
+     *
+     *     // Add a custom query string param to the URL
+     *     if ($event->value !== null) {
+     *         $event->url = UrlHelper::urlWithParams($event->url, [
+     *             'foo' => 'bar',
+     *         ]);
+     *     }
+     * });
+     * ```
+     *
+     * @since 4.3.0
+     * @see getUrl()
+     */
+    public const EVENT_DEFINE_URL = 'defineUrl';
+
+    /**
      * @event ModelEvent The event that is triggered before the element is saved.
      *
      * You may set [[\yii\base\ModelEvent::$isValid]] to `false` to prevent the element from getting saved.
@@ -894,7 +928,7 @@ abstract class Element extends Component implements ElementInterface
         }
 
         // Prepend Set Status?
-        if (static::hasStatuses() && !$hasActionType(SetStatus::class)) {
+        if (static::includeSetStatusAction() && !$hasActionType(SetStatus::class)) {
             $actions->prepend(SetStatus::class);
         }
 
@@ -912,6 +946,19 @@ abstract class Element extends Component implements ElementInterface
 
         return $event->actions;
     }
+
+
+    /**
+     * Returns whether the Set Status action should be included in [[actions()]] automatically.
+     *
+     * @return bool
+     * @since 4.3.2
+     */
+    protected static function includeSetStatusAction(): bool
+    {
+        return static::hasStatuses();
+    }
+
 
     /**
      * Defines the available element actions for a given source.
@@ -1864,14 +1911,14 @@ abstract class Element extends Component implements ElementInterface
     private ElementInterface|false|null $_nextSibling = null;
 
     /**
-     * @var Collection[]
+     * @var array<string,Collection>
      * @see getEagerLoadedElements()
      * @see setEagerLoadedElements()
      */
     private array $_eagerLoadedElements = [];
 
     /**
-     * @var array
+     * @var array<string,int>
      * @see getEagerLoadedElementCount()
      * @see setEagerLoadedElementCount
      */
@@ -2548,7 +2595,7 @@ abstract class Element extends Component implements ElementInterface
         }
 
         // If the canonical element is already memoized via getCanonical(), go with its UUID
-        if (isset($this->_canonical)) {
+        if (isset($this->_canonical) && $this->_canonical) {
             return $this->_canonical->uid;
         }
 
@@ -2760,12 +2807,26 @@ abstract class Element extends Component implements ElementInterface
      */
     public function getUrl(): ?string
     {
-        if (!isset($this->uri)) {
-            return null;
+        if (isset($this->uri)) {
+            $path = $this->getIsHomepage() ? '' : $this->uri;
+            $url = UrlHelper::siteUrl($path, null, null, $this->siteId);
+        } else {
+            $url = null;
         }
 
-        $path = $this->getIsHomepage() ? '' : $this->uri;
-        return UrlHelper::siteUrl($path, null, null, $this->siteId);
+        // Give plugins/modules a chance to customize it
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_URL)) {
+            $event = new DefineUrlEvent([
+                'url' => $url,
+            ]);
+            $this->trigger(self::EVENT_DEFINE_URL, $event);
+            // If DefineAssetUrlEvent::$url is set to null, only respect that if $handled is true
+            if ($event->url !== null || $event->handled) {
+                $url = $event->url;
+            }
+        }
+
+        return $url !== null ? Html::encodeSpaces($url) : $url;
     }
 
     /**
@@ -3974,10 +4035,14 @@ abstract class Element extends Component implements ElementInterface
                 continue;
             }
 
-            $this->setFieldValue($field->handle, $value);
-
             // Normalize it now in case the system language changes later
-            $this->normalizeFieldValue($field->handle);
+            // (we'll do this with the value directly rather than using setFieldValue() + normalizeFieldValue(),
+            // because it's slightly more efficient and to workaround an infinite loop bug caused by Matrix
+            // needing to render an object template on the owner element during normalization, which would in turn
+            // cause the Matrix field value to be (re-)normalized based on the POST data, and on and on...)
+            $value = $field->normalizeValue($value, $this);
+            $this->setFieldValue($field->handle, $value);
+            $this->_normalizedFieldValues[$field->handle] = true;
         }
     }
 
@@ -4078,7 +4143,7 @@ abstract class Element extends Component implements ElementInterface
                 $this->trigger(self::EVENT_SET_EAGER_LOADED_ELEMENTS, $event);
                 if (!$event->handled) {
                     // No takers. Just store it in the internal array then.
-                    $this->_eagerLoadedElements[$handle] = Collection::make($elements);
+                    $this->_eagerLoadedElements[$handle] = ElementCollection::make($elements);
                 }
         }
     }

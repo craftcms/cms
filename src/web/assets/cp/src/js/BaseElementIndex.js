@@ -42,6 +42,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     $filterBtn: null,
     searching: false,
     searchText: null,
+    sortByScore: null,
     trashed: false,
     drafts: false,
     $clearSearchBtn: null,
@@ -555,6 +556,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       // Show the clear button
       this.$clearSearchBtn.removeClass('hidden');
       this.searching = true;
+      this.sortByScore = true;
 
       if (this.activeViewMenu) {
         this.activeViewMenu.updateSortField();
@@ -585,6 +587,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       // Hide the clear button
       this.$clearSearchBtn.addClass('hidden');
       this.searching = false;
+      this.sortByScore = false;
 
       if (this.activeViewMenu) {
         this.activeViewMenu.updateSortField();
@@ -1136,6 +1139,17 @@ Craft.BaseElementIndex = Garnish.Base.extend(
      * @param {string} [dir]
      */
     setSelectedSortAttribute: function (attr, dir) {
+      // If score, keep track of that separately
+      if (attr === 'score') {
+        this.sortByScore = true;
+        if (this.activeViewMenu) {
+          this.activeViewMenu.updateSortField();
+        }
+        return;
+      }
+
+      this.sortByScore = false;
+
       // Make sure it's valid
       const sortOption = this.getSortOption(attr);
       if (!sortOption) {
@@ -1207,7 +1221,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
      * @returns {boolean}
      */
     canSortByStructure: function () {
-      return !this.trashed && !this.drafts && !this.searching;
+      return (
+        !this.trashed && !this.drafts && !this.searching && !this.sortByScore
+      );
     },
 
     /**
@@ -1215,8 +1231,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
      * @returns {string[]}
      */
     getSortAttributeAndDirection: function () {
-      if (this.searching) {
-        return ['score', 'asc'];
+      if (this.searching && this.sortByScore) {
+        return ['score', 'desc'];
       }
 
       let attribute = this.getSelectedSortAttribute();
@@ -1935,7 +1951,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
       for (let i = 0; i < $headings.length; i++) {
         $heading = $headings.eq(i);
-        if ($heading.has('> ul > li:not(.hidden)')) {
+        if ($heading.has('> ul > li:not(.hidden)').length !== 0) {
           $heading.removeClass('hidden');
         } else {
           $heading.addClass('hidden');
@@ -2758,16 +2774,29 @@ const ViewMenu = Garnish.Base.extend({
     let [attribute, direction] =
       this.elementIndex.getSortAttributeAndDirection();
 
+    // Add/remove a score option
+    const $scoreOption = this.$sortAttributeSelect.children(
+      'option[value="score"]'
+    );
+
     // If searching by score, just keep showing the actual selection
-    if (attribute === 'score') {
-      attribute = this.elementIndex.getSelectedSortAttribute(this.$source);
-      direction = this.elementIndex.getSelectedSortDirection(this.$source);
+    if (this.elementIndex.searching) {
+      if (!$scoreOption.length) {
+        this.$sortAttributeSelect.prepend(
+          $('<option/>', {
+            value: 'score',
+            text: Craft.t('app', 'Score'),
+          })
+        );
+      }
+    } else if ($scoreOption.length) {
+      $scoreOption.remove();
     }
 
     this.$sortAttributeSelect.val(attribute);
     this.sortDirectionListbox.select(direction === 'asc' ? 0 : 1);
 
-    if (attribute === 'structure') {
+    if (['structure', 'score'].includes(attribute)) {
       this.sortDirectionListbox.disable();
       this.$sortDirectionPicker.addClass('disabled');
     } else {

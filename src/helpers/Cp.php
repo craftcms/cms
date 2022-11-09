@@ -14,6 +14,7 @@ use craft\base\FieldLayoutElement;
 use craft\behaviors\DraftBehavior;
 use craft\elements\Address;
 use craft\enums\LicenseKeyStatus;
+use craft\errors\InvalidHtmlTagException;
 use craft\events\DefineElementInnerHtmlEvent;
 use craft\events\RegisterCpAlertsEvent;
 use craft\fieldlayoutelements\BaseField;
@@ -240,7 +241,65 @@ class Cp
         // Give plugins a chance to add their own alerts
         $event = new RegisterCpAlertsEvent();
         Event::trigger(self::class, self::EVENT_REGISTER_ALERTS, $event);
-        return array_merge($alerts, $event->alerts);
+        $alerts = array_merge($alerts, $event->alerts);
+
+        // Inline CSS styles
+        foreach ($alerts as $i => $alert) {
+            $offset = 0;
+            while (true) {
+                try {
+                    $tagInfo = Html::parseTag($alert, $offset);
+                } catch (InvalidHtmlTagException $e) {
+                    break;
+                }
+
+                $newTagHtml = self::alertTagHtml($tagInfo);
+                $alert = substr($alert, 0, $tagInfo['start']) .
+                    $newTagHtml .
+                    substr($alert, $tagInfo['end']);
+                $offset = $tagInfo['start'] + strlen($newTagHtml);
+            }
+            $alerts[$i] = $alert;
+        }
+
+        return $alerts;
+    }
+
+    private static function alertTagHtml(array $tagInfo): string
+    {
+        if ($tagInfo['type'] === 'text') {
+            return $tagInfo['value'];
+        }
+
+        $style = [];
+        if ($tagInfo['type'] === 'a') {
+            $style = array_merge($style, [
+                'color' => 'var(--error-color)',
+                'text-decoration' => 'underline',
+            ]);
+
+            if (isset($tagInfo['attributes']['class']) && in_array('go', $tagInfo['attributes']['class'])) {
+                $style = array_merge($style, [
+                    'text-decoration' => 'none',
+                    'white-space' => 'nowrap',
+                    'border' => '1px solid #cf112480',
+                    'border-radius' => 'var(--medium-border-radius)',
+                    'padding' => '3px 5px',
+                    'margin' => '0 2px',
+                ]);
+            }
+        }
+
+        $childTagHtml = array_map(function(array $childTagInfo): string {
+            return self::alertTagHtml($childTagInfo);
+        }, $tagInfo['children'] ?? []);
+
+        return trim(static::renderTemplate('_layouts/components/tag.twig', [
+            'type' => $tagInfo['type'],
+            'attributes' => $tagInfo['attributes'] ?? [],
+            'style' => $style,
+            'content' => implode('', $childTagHtml),
+        ]));
     }
 
     /**
@@ -353,11 +412,10 @@ class Cp
             $attributes['class'][] = 'hasthumb';
         }
 
+        $elementsService = Craft::$app->getElements();
         $user = Craft::$app->getUser()->getIdentity();
 
         if ($user) {
-            $elementsService = Craft::$app->getElements();
-
             if ($elementsService->canView($element, $user)) {
                 $attributes['data']['editable'] = true;
             }
@@ -409,9 +467,11 @@ class Cp
 
             // Should we make the element a link?
             if (
+                $user &&
                 $context === 'index' &&
                 !$element->trashed &&
-                ($cpEditUrl = $element->getCpEditUrl())
+                ($cpEditUrl = $element->getCpEditUrl()) &&
+                $elementsService->canView($element, $user)
             ) {
                 $innerHtml .= Html::a($encodedLabel, $cpEditUrl);
             } else {
