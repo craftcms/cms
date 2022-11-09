@@ -4336,7 +4336,26 @@ abstract class Element extends Component implements ElementInterface
                 return '';
 
             case 'status':
-                return $this->statusBadgeHtml();
+                if ($this->getIsUnpublishedDraft()) {
+                    $icon = Html::tag('span', '', [
+                        'data' => ['icon' => 'draft'],
+                        'class' => 'draft-icon',
+                        'aria' => [
+                            'hidden' => true,
+                        ],
+                    ]);
+                    $label = Craft::t('app', 'Draft');
+                } else {
+                    $status = $this->getStatus();
+                    $statusDef = static::statuses()[$status] ?? null;
+                    $icon = Html::tag('span', '', ['class' => ['status', $statusDef['color'] ?? $status]]);
+                    $label = $statusDef['label'] ?? $statusDef ?? ucfirst($status);
+                }
+                return Html::beginTag('span', [
+                        'class' => 'status-wrapper',
+                    ]) .
+                    $icon . Html::tag('span', $label) .
+                    Html::endTag('span');
 
             case 'uri':
                 if ($this->getIsDraft() && ElementHelper::isTempSlug($this->slug)) {
@@ -4595,36 +4614,6 @@ JS,
     {
         $fieldLayout = $this->getFieldLayout();
         return $fieldLayout && !empty($fieldLayout->getTabs());
-    }
-
-    /**
-     * Returns the status badge HTML
-     *
-     * @return string
-     * @since 4.1.0
-     */
-    public function statusBadgeHtml(): string
-    {
-        if ($this->getIsUnpublishedDraft()) {
-            $icon = Html::tag('span', '', [
-                'data' => ['icon' => 'draft'],
-                'class' => 'draft-icon',
-                'aria' => [
-                    'hidden' => true,
-                ],
-            ]);
-            $label = Craft::t('app', 'Draft');
-        } else {
-            $status = $this->getStatus();
-            $statusDef = static::statuses()[$status] ?? null;
-            $icon = Html::tag('span', '', ['class' => ['status', $statusDef['color'] ?? $status]]);
-            $label = $statusDef['label'] ?? $statusDef ?? ucfirst($status);
-        }
-        return Html::beginTag('span', [
-                'class' => 'status-wrapper',
-            ]) .
-            $icon . Html::tag('span', $label) .
-            Html::endTag('span');
     }
 
     /**
