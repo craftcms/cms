@@ -35,7 +35,7 @@
     "ext-pdo": "*",
     "ext-zip": "*",
     "commerceguys/addressing": "^1.2",
-    "composer/composer": "2.2.15",
+    "composer/composer": "^2.2",
     "craftcms/oauth2-craftid": "~1.0.0",
     "craftcms/plugin-installer": "~1.5.6",
     "craftcms/server-check": "~2.1.2",
