@@ -16,6 +16,7 @@ use craft\elements\actions\DeleteActionInterface;
 use craft\elements\actions\Restore;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\conditions\ElementConditionRuleInterface;
+use craft\elements\conditions\StatusConditionRule;
 use craft\elements\db\ElementQueryInterface;
 use craft\elements\exporters\Raw;
 use craft\events\ElementActionEvent;
@@ -543,13 +544,22 @@ class ElementIndexesController extends BaseElementsController
                 $sourceCondition->modifyQuery($query);
         }
 
+        $containsStatusCondition = false;
+
         // Was a condition provided?
         if (isset($this->condition)) {
             $this->condition->modifyQuery($query);
+            $containsStatusCondition = in_array(true, array_map(function($conditionRule) {
+                return ($conditionRule instanceof StatusConditionRule);
+            }, $this->condition->getConditionRules()), true);
         }
 
         // Override with the request's params
         if ($criteria = $this->request->getBodyParam('criteria')) {
+            // if we have a status condition in here, we can't override it with criteria status
+            if ($containsStatusCondition && array_key_exists('status', $criteria)) {
+                unset($criteria['status']);
+            }
             if (isset($criteria['trashed'])) {
                 $criteria['trashed'] = filter_var($criteria['trashed'] ?? false, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? false;
             }
