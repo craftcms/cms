@@ -1132,8 +1132,11 @@ Craft.ui = {
     return $field;
   },
 
-  createErrorList: function (errors) {
+  createErrorList: function (errors, fieldErrorsId) {
     var $list = $('<ul class="errors" tabindex="-1"/>');
+    if (fieldErrorsId !== undefined && fieldErrorsId !== '') {
+      $list.attr('id', fieldErrorsId);
+    }
 
     if (errors) {
       this.addErrorsToList($list, errors);
@@ -1156,10 +1159,16 @@ Craft.ui = {
     $field.addClass('has-errors');
     $field.children('.input').addClass('errors');
 
+    var fieldId = $field.attr('id');
+    var fieldErrorsId = '';
+    if (fieldId !== undefined) {
+      fieldErrorsId = fieldId.replace(new RegExp(`(-field)$`), '-errors');
+    }
+
     var $errors = $field.children('ul.errors');
 
     if (!$errors.length) {
-      $errors = this.createErrorList().appendTo($field);
+      $errors = this.createErrorList(null, fieldErrorsId).appendTo($field);
     }
 
     this.addErrorsToList($errors, errors);
@@ -1195,7 +1204,9 @@ Craft.ui = {
 
       var $errorsSummary = $('<div class="errors-summary" tabindex="-1" />')
         .append(
-          '<h2>' +
+          '<div>' +
+            '<span class="notification-icon" data-icon="alert" data-label="error" role="img"></span>' +
+            '<h2>' +
             Craft.t(
               'app',
               'Found {num, number} {num, plural, =1{error} other{errors}}:',
@@ -1203,7 +1214,8 @@ Craft.ui = {
                 num: Object.keys(errors).length,
               }
             ) +
-            '</h2>'
+            '</h2>' +
+            '</div>'
         )
         .append($list);
 
@@ -1223,13 +1235,59 @@ Craft.ui = {
     }
   },
 
-  anchorSummaryErrorToField: function (error, $body, namespace) {
-    if (namespace !== '') {
-      namespace += '-';
+  findFieldByErrorKey: function ($body, fieldErrorKey, namespace) {
+    if (fieldErrorKey !== undefined) {
+      namespace = this._getPreppedNamespace(namespace);
+      // get the field handle from error key
+      var errorKeyParts = fieldErrorKey.split(/[\[\]\.]/).filter((n) => n);
+
+      // define regex for searching for field id
+      if (errorKeyParts[0] !== undefined) {
+        var idRegex = new RegExp(
+          `^` + namespace + `fields-` + errorKeyParts[0] + `.*-field`
+        );
+        if (errorKeyParts[2] !== undefined) {
+          idRegex = new RegExp(
+            `^` +
+              namespace +
+              `fields-` +
+              errorKeyParts[0] +
+              `.*-` +
+              errorKeyParts[2] +
+              `-field`
+          );
+        }
+      }
+
+      // find field based on error key
+      if (idRegex !== undefined) {
+        if (errorKeyParts[2] !== undefined) {
+          var fieldContainer = $body
+            .find(`[data-attribute="${errorKeyParts[0]}"]`)
+            .find(`[data-attribute="${errorKeyParts[2]}"]`);
+        } else {
+          var fieldContainer = $body
+            .find(`[data-attribute="${errorKeyParts[0]}"]`)
+            .filter(function () {
+              return this.id.match(idRegex);
+            });
+        }
+
+        if (fieldContainer.length > 1 && errorKeyParts[1] !== undefined) {
+          fieldContainer = fieldContainer[errorKeyParts[1]];
+        } else {
+          fieldContainer = fieldContainer[0];
+        }
+      }
     }
 
-    var fieldErrorKey = $(error).attr('data-field-error-key');
+    return $(fieldContainer);
+  },
+
+  findErrorsContainerByErrorKey: function ($body, fieldErrorKey, namespace) {
     if (fieldErrorKey !== undefined) {
+      namespace = this._getPreppedNamespace(namespace);
+
       // get the field handle from error key
       var errorKeyParts = fieldErrorKey.split(/[\[\]\.]/).filter((n) => n);
 
@@ -1238,7 +1296,7 @@ Craft.ui = {
         var regex = new RegExp(
           `^` + namespace + `fields-` + errorKeyParts[0] + `.*-errors`
         );
-        if (errorKeyParts.length == 3) {
+        if (errorKeyParts[2] !== undefined) {
           regex = new RegExp(
             `^` +
               namespace +
@@ -1253,29 +1311,58 @@ Craft.ui = {
 
       // find errors list for given error from summary
       if (regex !== undefined) {
-        var fieldError = $body.find('ul.errors').filter(function () {
+        var errorsElement = $body.find('ul.errors').filter(function () {
           return this.id.match(regex);
         });
 
-        if (fieldError.length > 1 && errorKeyParts[1] !== undefined) {
-          fieldError = fieldError[errorKeyParts[1]];
+        if (errorsElement.length > 1 && errorKeyParts[1] !== undefined) {
+          errorsElement = errorsElement[errorKeyParts[1]];
         } else {
-          fieldError = fieldError[0];
-        }
-
-        if (fieldError !== undefined) {
-          // check if we need to switch tabs first
-          var fieldErrorTab = $(fieldError).parents('div[id^=tab--]');
-          if (fieldErrorTab.hasClass('hidden')) {
-            $('#tabs')
-              .find('a[href="#' + fieldErrorTab.attr('id') + '"]')
-              .click();
-          }
-
-          fieldError.focus();
+          errorsElement = errorsElement[0];
         }
       }
     }
+
+    return $(errorsElement);
+  },
+
+  anchorSummaryErrorToField: function (error, $body, namespace) {
+    var fieldErrorKey = $(error).attr('data-field-error-key');
+    var $fieldErrorsContainer = this.findErrorsContainerByErrorKey(
+      $body,
+      fieldErrorKey,
+      namespace
+    );
+
+    if ($fieldErrorsContainer !== undefined) {
+      // check if we need to switch tabs first
+      var $fieldTabAnchor = this.findTabAnchorForField(
+        $fieldErrorsContainer,
+        $body,
+        namespace
+      );
+
+      if (
+        $fieldTabAnchor !== undefined &&
+        $fieldTabAnchor.attr('aria-selected') == 'false'
+      ) {
+        $fieldTabAnchor.click();
+      }
+
+      // focus on the field errors container
+      $fieldErrorsContainer.focus();
+    }
+  },
+
+  findTabAnchorForField: function ($container, $body, namespace) {
+    namespace = this._getPreppedNamespace(namespace);
+
+    var fieldTabDiv = $container.parents(`div[id^=${namespace}tab--]`);
+    var fieldTabAnchor = $body
+      .find('[role="tablist"]')
+      .find('a[href="#' + fieldTabDiv.attr('id') + '"]');
+
+    return $(fieldTabAnchor);
   },
 
   getAutofocusValue: function (autofocus) {
@@ -1284,5 +1371,9 @@ Craft.ui = {
 
   getDisabledValue: function (disabled) {
     return disabled ? 'disabled' : null;
+  },
+
+  _getPreppedNamespace: function (namespace) {
+    return namespace !== '' ? (namespace += '-') : namespace;
   },
 };
