@@ -73,13 +73,7 @@ import './deprecator.scss';
         logId: $tr.data('id'),
       };
 
-      Craft.postActionRequest(
-        'utilities/delete-deprecation-error',
-        data,
-        function (response, textStatus) {
-          console.log('response/textStatus', response, textStatus);
-        }
-      );
+      Craft.postActionRequest('utilities/delete-deprecation-error', data);
 
       if ($tr.siblings().length) {
         $tr.remove();
