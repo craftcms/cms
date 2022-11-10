@@ -506,7 +506,9 @@ class Cp
                         'label' => '',
                     ],
                 ]) .
-                Html::tag('span', Craft::t('app', 'Draft'));
+                Html::tag('span', Craft::t('app', 'Draft'), [
+                    'class' => 'element__status-text',
+                ]);
             } else {
                 $status = $element->getStatus();
                 $statusDef = $element::statuses()[$status] ?? null;
@@ -521,7 +523,9 @@ class Cp
                         'label' => '',
                     ],
                 ]) .
-                Html::tag('span', $statusDef['label'] ?? $statusDef ?? ucfirst($status));
+                Html::tag('span', $statusDef['label'] ?? $statusDef ?? ucfirst($status), [
+                    'class' => 'element__status-text',
+                ]);
             }
             $innerHtml .= '</div>';
         }
