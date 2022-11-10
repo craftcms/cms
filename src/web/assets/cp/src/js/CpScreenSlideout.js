@@ -553,7 +553,9 @@ Craft.CpScreenSlideout = Craft.Slideout.extend(
               .find('.tab-label')
               .append(
                 '<span data-icon="alert">' +
-                  '<span class="visually-hidden">This tab contains errors</span>\n' +
+                  '<span class="visually-hidden">' +
+                  Craft.t('app', 'This tab contains errors') +
+                  '</span>' +
                   '</span>'
               );
           }

@@ -820,11 +820,19 @@ JS, [
             $errorsList = [];
             foreach ($element->getErrors() as $key => $errors) {
                 foreach ($errors as $error) {
-                    $errorsList[] = Html::beginTag('li') .
-                        Html::a(Craft::t('app', $error), null, [
+                    $errorItem = Html::beginTag('li');
+
+                    if (preg_match('/^\s?\<a /', $error)) {
+                        $errorItem .= $error;
+                    } else {
+                        $errorItem .= Html::a(Craft::t('app', $error), null, [
                             'data-field-error-key' => $key,
-                        ]) .
-                        Html::endTag('li');
+                        ]);
+                    }
+
+                    $errorItem .= Html::endTag('li');
+
+                    $errorsList[] = $errorItem;
                 }
             }
 

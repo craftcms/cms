@@ -1190,14 +1190,29 @@ Craft.ui = {
 
       Object.entries(errors).forEach(([fieldHandle, fieldErrors]) => {
         for (var i = 0; i < fieldErrors.length; i++) {
-          var listItem =
-            '<li>' +
-            '<a data-field-error-key="' +
-            fieldHandle +
-            '">' +
-            fieldErrors[i] +
-            '</a>' +
-            '</li>';
+          var listItem = '<li>';
+
+          if (fieldErrors[i].match(new RegExp('/^s?<a /')) === null) {
+            var externalIcon =
+              '<span ' +
+              'data-icon="external" ' +
+              'aria-label="' +
+              Craft.t('app', 'Open the full edit page in a new tab') +
+              '"' +
+              '></span>';
+
+            listItem += fieldErrors[i].replace(
+              new RegExp(/<\/a>/),
+              externalIcon + '</a>'
+            );
+          } else {
+            listItem += '<a data-field-error-key="' + fieldHandle + '">';
+            listItem += fieldErrors[i];
+            listItem += '</a>';
+          }
+
+          listItem += '</li>';
+
           $(listItem).appendTo($list);
         }
       });

@@ -1521,6 +1521,10 @@ li.breadcrumb-toggle-wrapper {
   & > ul.errors li,
   & > ul.errors li a {
     color: var(--text-color);
+
+    span {
+      padding-left: 5px;
+    }
   }
 }
 
