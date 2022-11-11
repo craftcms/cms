@@ -109,7 +109,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
   },
 
   initTableHeaders: function () {
-    const selectedSortAttr = this.elementIndex.getSelectedSortAttribute();
+    const [selectedSortAttr] = this.elementIndex.getSortAttributeAndDirection();
     const $tableHeaders = this.$table
       .children('thead')
       .children()
@@ -129,8 +129,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
         this.makeColumnSortable($header, true);
       } else {
         // Is this attribute sortable?
-        const $sortAttribute = this.elementIndex.getSortAttributeOption(attr);
-        if ($sortAttribute.length) {
+        if (this.elementIndex.getSortOption(attr)) {
           this.makeColumnSortable($header);
         }
       }
@@ -410,7 +409,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
     var selectedSortDir = this.elementIndex.getSelectedSortDirection(),
       newSortDir = selectedSortDir === 'asc' ? 'desc' : 'asc';
 
-    this.elementIndex.setSortDirection(newSortDir);
+    this.elementIndex.setSelectedSortDirection(newSortDir);
     this._handleSortHeaderClick(ev, $header);
   },
 
@@ -423,7 +422,7 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
 
     var attr = $header.attr('data-attribute');
 
-    this.elementIndex.setSortAttribute(attr);
+    this.elementIndex.setSelectedSortAttribute(attr);
     this._handleSortHeaderClick(ev, $header);
   },
 
@@ -433,7 +432,6 @@ Craft.TableElementIndexView = Craft.BaseElementIndexView.extend({
     }
 
     $header.addClass('ordered loading');
-    this.elementIndex.storeSortAttributeAndDirection();
     this.elementIndex.updateElements();
 
     // No need for two spinners

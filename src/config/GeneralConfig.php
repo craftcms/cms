@@ -1224,6 +1224,57 @@ class GeneralConfig extends BaseConfig
     public array $extraFileKinds = [];
 
     /**
+     * @var string[] Any additional last name prefixes that should be supported by the name parser.
+     *
+     * ::: code
+     * ```php Static Config
+     * 'extraLastNamePrefixes' => ['Dal', 'Van Der'],
+     * ```
+     * ```shell Environment Override
+     * CRAFT_EXTRA_LAST_NAME_PREFIXES="Dal,Van Der"
+     * ```
+     * :::
+     *
+     * @group Users
+     * @since 4.3.0
+     */
+    public array $extraLastNamePrefixes = [];
+
+    /**
+     * @var string[] Any additional name salutations that should be supported by the name parser.
+     *
+     * ::: code
+     * ```php Static Config
+     * 'extraNameSalutations' => ['Lady', 'Sire'],
+     * ```
+     * ```shell Environment Override
+     * CRAFT_EXTRA_NAME_SALUTATIONS=Lady,Sire
+     * ```
+     * :::
+     *
+     * @group Users
+     * @since 4.3.0
+     */
+    public array $extraNameSalutations = [];
+
+    /**
+     * @var string[] Any additional name suffixes that should be supported by the name parser.
+     *
+     * ::: code
+     * ```php Static Config
+     * 'extraNameSuffixes' => ['CCNA', 'OBE'],
+     * ```
+     * ```shell Environment Override
+     * CRAFT_EXTRA_NAME_SUFFIXES=CCNA,OBE
+     * ```
+     * :::
+     *
+     * @group Users
+     * @since 4.3.0
+     */
+    public array $extraNameSuffixes = [];
+
+    /**
      * @var string|false The string to use to separate words when uploading Assets. If set to `false`, spaces will be left alone.
      *
      * ::: code
@@ -4294,6 +4345,63 @@ class GeneralConfig extends BaseConfig
     public function extraFileKinds(array $value): self
     {
         $this->extraFileKinds = $value;
+        return $this;
+    }
+
+    /**
+     * Any additional last name prefixes that should be supported by the name parser.
+     *
+     * ```php
+     * ->extraLastNamePrefixes(['Dal', 'Van Der'])
+     * ```
+     *
+     * @group Users
+     * @param string[] $value
+     * @return self
+     * @see $extraLastNamePrefixes
+     * @since 4.3.0
+     */
+    public function extraLastNamePrefixes(array $value): self
+    {
+        $this->extraLastNamePrefixes = $value;
+        return $this;
+    }
+
+    /**
+     * Any additional name salutations that should be supported by the name parser.
+     *
+     * ```php
+     * ->extraNameSalutations(['Lady', 'Sire'])
+     * ```
+     *
+     * @group Users
+     * @param string[] $value
+     * @return self
+     * @see $extraNameSalutations
+     * @since 4.3.0
+     */
+    public function extraNameSalutations(array $value): self
+    {
+        $this->extraNameSalutations = $value;
+        return $this;
+    }
+
+    /**
+     * Any additional name suffixes that should be supported by the name parser.
+     *
+     * ```php
+     * ->extraNameSuffixes(['CCNA', 'OBE'])
+     * ```
+     *
+     * @group Users
+     * @param string[] $value
+     * @return self
+     * @see $extraNameSuffixes
+     * @since 4.3.0
+     */
+    public function extraNameSuffixes(array $value): self
+    {
+        $this->extraNameSuffixes = $value;
         return $this;
     }
 

@@ -202,7 +202,7 @@
                         <div id="header-container">
                             <header id="header">
                                 {% block header %}
-                                    <div id="page-title" class="flex flex-nowrap{% if toolbar %} has-toolbar{% endif %}">
+                                    <div id="page-title" class="flex{% if toolbar %} has-toolbar{% endif %}">
                                         {% block pageTitle %}
                                             {% if title is defined and title|length %}
                                                 <h1 class="screen-title" title="{{ title }}">{{ title }}</h1>

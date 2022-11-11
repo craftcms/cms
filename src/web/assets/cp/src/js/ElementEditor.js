@@ -341,7 +341,6 @@ Craft.ElementEditor = Garnish.Base.extend(
 
         if (this.isFullPage) {
           const heightDiff = $('#content').height() - initialHeight;
-          console.log(heightDiff);
           Garnish.$win.scrollTop(scrollTop + heightDiff);
 
           // If there isn’t enough content to simulate the same scroll position, slide it down instead
@@ -739,7 +738,7 @@ Craft.ElementEditor = Garnish.Base.extend(
     },
 
     /**
-     * @return {string}
+     * @returns {string}
      */
     _saveSuccessMessage: function () {
       return this.settings.isProvisionalDraft ||
@@ -749,7 +748,7 @@ Craft.ElementEditor = Garnish.Base.extend(
     },
 
     /**
-     * @return {string}
+     * @returns {string}
      */
     _saveFailMessage: function () {
       return this.settings.isProvisionalDraft ||
@@ -901,9 +900,9 @@ Craft.ElementEditor = Garnish.Base.extend(
 
     /**
      * @param {string} url
-     * @param {string|null} [randoParam]
+     * @param {?string} [randoParam]
      * @param {boolean} [asPromise=false]
-     * @return Promise|string
+     * @returns {(Promise|string)}
      */
     getTokenizedPreviewUrl: function (url, randoParam, asPromise) {
       if (typeof asPromise === 'undefined') {
@@ -996,17 +995,29 @@ Craft.ElementEditor = Garnish.Base.extend(
     },
 
     openPreview: function () {
-      return new Promise((resolve, reject) => {
-        this.openingPreview = true;
-        this.ensureIsDraftOrRevision(true)
-          .then(() => {
-            this.scrollY = window.scrollY;
-            this.getPreview().open();
-            this.openingPreview = false;
-            resolve();
+      if (Garnish.hasAttr(this.$previewBtn, 'aria-disabled')) {
+        return;
+      }
+
+      this.$previewBtn.attr('aria-disabled', true);
+      this.$previewBtn.addClass('loading');
+
+      this.queue.push(
+        () =>
+          new Promise((resolve, reject) => {
+            this.openingPreview = true;
+            this.ensureIsDraftOrRevision(true)
+              .then(() => {
+                this.scrollY = window.scrollY;
+                this.$previewBtn.removeAttr('aria-disabled');
+                this.$previewBtn.removeClass('loading');
+                this.getPreview().open();
+                this.openingPreview = false;
+                resolve();
+              })
+              .catch(reject);
           })
-          .catch(reject);
-      });
+      );
     },
 
     ensureIsDraftOrRevision: function (onlyIfChanged) {
@@ -1125,8 +1136,8 @@ Craft.ElementEditor = Garnish.Base.extend(
     },
 
     /**
-     * @param {object} data
-     * @returns {Promise<unknown>}
+     * @param {Object} data
+     * @returns {Promise}
      */
     saveDraft: function (data) {
       return new Promise((resolve, reject) => {
@@ -1525,7 +1536,7 @@ Craft.ElementEditor = Garnish.Base.extend(
 
     /**
      * @param {string} data
-     * @param {function|null} [deltaCallback] Callback function that should be passed to `Craft.findDeltaData()`
+     * @param {findDeltaDataCallback} [deltaCallback] Callback function that should be passed to `Craft.findDeltaData()`
      * @returns {string}
      */
     prepareData: function (data, deltaCallback) {

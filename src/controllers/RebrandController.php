@@ -84,7 +84,7 @@ class RebrandController extends Controller
         }
 
         $imagesService->loadImage($fileDestination)->scaleToFit(300, 300)->saveAs($fileDestination);
-        $html = $this->getView()->renderTemplate('settings/general/_images/' . $type);
+        $html = $this->getView()->renderTemplate("settings/general/_images/$type.twig");
 
         return $this->asJson([
             'html' => $html,
@@ -107,7 +107,7 @@ class RebrandController extends Controller
 
         FileHelper::clearDirectory(Craft::$app->getPath()->getRebrandPath() . '/' . $type);
 
-        $html = $this->getView()->renderTemplate('settings/general/_images/' . $type);
+        $html = $this->getView()->renderTemplate("settings/general/_images/$type.twig");
 
         return $this->asJson([
             'html' => $html,

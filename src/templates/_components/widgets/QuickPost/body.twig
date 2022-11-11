@@ -34,10 +34,17 @@
     <div class="buttons">
         <div class="btngroup">
             {{ forms.submitButton({label: 'Save'|t('app'), spinner: true}) }}
-            <button type="button" class="btn submit menubtn" aria-label="{{ 'Options'|t('app') }}"></button>
-            <div class="menu">
+            {% set menuId = "more-actions-menu-#{random()}" %}
+            <button type="button" class="btn submit menubtn" aria-label="{{ 'More actions'|t('app') }}" aria-controls="{{ menuId }}" data-disclosure-trigger></button>
+            <div id="{{ menuId }}" class="menu menu--disclosure">
                 <ul>
-                    <li><a>{{ "Save and continue editing"|t('app') }}</a></li>
+                    <li>
+                        {{ tag('a', {
+                            tabindex: '0',
+                            role: 'button',
+                            type: 'button',
+                            text: "Save and continue editing"|t('app'),
+                        }) }}
                 </ul>
             </div>
         </div>

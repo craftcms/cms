@@ -42,6 +42,7 @@ use craft\validators\UsernameValidator;
 use craft\validators\UserPasswordValidator;
 use DateInterval;
 use DateTime;
+use DateTimeZone;
 use Throwable;
 use yii\base\ErrorHandler;
 use yii\base\Exception;
@@ -312,10 +313,17 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
+    protected static function includeSetStatusAction(): bool
+    {
+        return false;
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected static function defineActions(string $source): array
     {
         $actions = [];
-        $elementsService = Craft::$app->getElements();
 
         if (Craft::$app->getUser()->checkPermission('moderateUsers')) {
             // Suspend
@@ -331,12 +339,7 @@ class User extends Element implements IdentityInterface
         }
 
         // Restore
-        $actions[] = $elementsService->createAction([
-            'type' => Restore::class,
-            'successMessage' => Craft::t('app', 'Users restored.'),
-            'partialSuccessMessage' => Craft::t('app', 'Some users restored.'),
-            'failMessage' => Craft::t('app', 'Users not restored.'),
-        ]);
+        $actions[] = Restore::class;
 
         return $actions;
     }
@@ -1225,6 +1228,12 @@ class User extends Element implements IdentityInterface
      */
     public function getStatus(): ?string
     {
+        // If they're disabled or archived, go with that
+        $status = parent::getStatus();
+        if ($status !== self::STATUS_ENABLED) {
+            return $status;
+        }
+
         if ($this->suspended) {
             return self::STATUS_SUSPENDED;
         }
@@ -1429,9 +1438,9 @@ class User extends Element implements IdentityInterface
     {
         if ($this->locked) {
             $currentTime = DateTimeHelper::currentUTCDateTime();
-            $cooldownEnd = $this->getCooldownEndTime();
+            $cooldownEnd = $this->getCooldownEndTime()?->setTimezone(new DateTimeZone('UTC'));
 
-            if ($currentTime < $cooldownEnd) {
+            if ($cooldownEnd && $currentTime < $cooldownEnd) {
                 return $currentTime->diff($cooldownEnd);
             }
         }
@@ -1612,7 +1621,7 @@ class User extends Element implements IdentityInterface
     protected function metaFieldsHtml(bool $static): string
     {
         return implode("\n", [
-            Craft::$app->getView()->renderTemplate('users/_accountfields', [
+            Craft::$app->getView()->renderTemplate('users/_accountfields.twig', [
                 'user' => $this,
                 'isNewUser' => !$this->id,
                 'static' => $static,
