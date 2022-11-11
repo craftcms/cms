@@ -500,14 +500,13 @@ class Cp
             if ($isDraft) {
                 $innerHtml .= Html::tag('span', '', [
                     'data' => ['icon' => 'draft'],
-                    'class' => 'icon',
-                    'role' => 'img',
+                    'class' => ['icon', 'element__status-icon'],
                     'aria' => [
-                        'label' => '',
+                        'hidden' => 'true',
                     ],
                 ]) .
                 Html::tag('span', Craft::t('app', 'Draft'), [
-                    'class' => 'element__status-text',
+                    'class' => ['element__status-text'],
                 ]);
             } else {
                 $status = $element->getStatus();
@@ -515,12 +514,12 @@ class Cp
                 $innerHtml .= Html::tag('span', '', [
                     'class' => array_filter([
                         'status',
+                        'element__status-icon',
                         $status,
                         $statusDef['color'] ?? null,
                     ]),
-                    'role' => 'img',
                     'aria' => [
-                        'label' => '',
+                        'hidden' => 'true',
                     ],
                 ]) .
                 Html::tag('span', $statusDef['label'] ?? $statusDef ?? ucfirst($status), [

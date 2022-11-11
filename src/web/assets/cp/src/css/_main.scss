@@ -2492,7 +2492,7 @@ $elementInnerSpacing: 5px;
 
   &.sel,
   li.sel & {
-    background-color: var(--gray-100) !important;
+    background-color: var(--gray-050) !important;
     cursor: default;
 
     &.hasthumb {
@@ -2670,11 +2670,12 @@ $elementInnerSpacing: 5px;
 }
 
 .element__status {
-  .status {
+  .element__status-icon {
     @include margin-right(4px);
   }
 
   .element__status-text {
+    font-size: toRem(13);
     color: var(--gray-500);
   }
 }
