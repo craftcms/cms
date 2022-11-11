@@ -2477,6 +2477,14 @@ $elementInnerSpacing: 5px;
   font-weight: normal;
   border-radius: var(--small-border-radius);
 
+  .field & {
+    margin: 5px;
+  }
+
+  .field .row & {
+    margin: 0;
+  }
+
   &:focus,
   li:focus & {
     background-color: var(--gray-050);
@@ -2484,12 +2492,8 @@ $elementInnerSpacing: 5px;
 
   &.sel,
   li.sel & {
-    background-color: var(--light-sel-color) !important;
+    background-color: var(--gray-100) !important;
     cursor: default;
-
-    &:focus {
-      background-color: darken($lightSelColor, 5%) !important;
-    }
 
     &.hasthumb {
       .elementthumb {
@@ -2633,6 +2637,7 @@ $elementInnerSpacing: 5px;
 
     .delete:before {
       color: var(--ui-control-color);
+      line-height: inherit;
     }
 
     .delete {
@@ -2818,6 +2823,13 @@ $checkboxPadding: $checkboxSize + 4;
           @include left($baseElementSidePadding);
         }
       }
+    }
+  }
+
+  // field view
+  .field & {
+    + .flex {
+      margin-top: var(--s);
     }
   }
 }
@@ -3022,10 +3034,6 @@ $checkboxPadding: $checkboxSize + 4;
         text-overflow: ellipsis;
       }
     }
-  }
-
-  .flex {
-    padding-top: 7px;
   }
 }
 
