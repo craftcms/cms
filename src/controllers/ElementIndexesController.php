@@ -562,7 +562,7 @@ class ElementIndexesController extends BaseElementsController
 
             if (!empty($statusCondition)) {
                 $statusCondition = $statusCondition[0];
-                $conditionStatuses = $statusCondition['conditionStatuses'] ?? [];
+                $conditionStatuses = $statusCondition['conditionStatuses'];
                 $conditionOperator = $statusCondition['conditionOperator'];
 
                 // if status condition is set to "is not one of" - invert it,
