@@ -22,7 +22,7 @@
 
 {% js %}
     {% block js %}
-        $('#{{ buttonId|namespaceInputId|e('js') }}').on('click', function() {
+        $(document).on('click', '#{{ buttonId|namespaceInputId|e('js') }}', function() {
             document.getElementById('{{ id|namespaceInputId|e('js') }}').select();
             document.execCommand('copy');
             Craft.cp.displayNotice("{{ 'Copied to clipboard.'|t('app')|e('js') }}");
