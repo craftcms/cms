@@ -578,11 +578,11 @@ class ElementIndexesController extends BaseElementsController
         // Override with the request's params
         if ($criteria = $this->request->getBodyParam('criteria')) {
             // if we have a status condition in here, we can't just override it with criteria status
-            if (!empty($conditionStatuses) && array_key_exists('status', $criteria) ) {
+            if (!empty($conditionStatuses) && array_key_exists('status', $criteria)) {
                 // if $criteria['status'] is null, we can show all conditioned results
                 if ($criteria['status'] === null) {
                     unset($criteria['status']);
-                } else if (!in_array($criteria['status'], $conditionStatuses, true)) {
+                } elseif (!in_array($criteria['status'], $conditionStatuses, true)) {
                     // if $criteria['status'] isn't in $conditionStatuses, we can't return any results
                     $query->id(false);
                     return $query;
