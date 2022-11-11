@@ -2562,11 +2562,6 @@ $elementInnerSpacing: 5px;
     &.hasstatus {
       border: 1px solid var(--hairline-color);
       padding: var(--s) var(--m);
-
-      .status-wrapper {
-        margin-top: var(--xs);
-        font-size: 0.94em;
-      }
     }
 
     &.hasthumb {
