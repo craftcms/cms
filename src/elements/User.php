@@ -440,6 +440,7 @@ class User extends Element implements IdentityInterface
             'lastLoginDate' => ['label' => Craft::t('app', 'Last Login')],
             'dateCreated' => ['label' => Craft::t('app', 'Date Created')],
             'dateUpdated' => ['label' => Craft::t('app', 'Date Updated')],
+            'status' => ['label' => Craft::t('app', 'Status')],
         ];
     }
 
@@ -453,6 +454,7 @@ class User extends Element implements IdentityInterface
             'email',
             'dateCreated',
             'lastLoginDate',
+            'status',
         ];
     }
 

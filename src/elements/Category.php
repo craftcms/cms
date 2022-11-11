@@ -341,6 +341,7 @@ class Category extends Element
             'uid' => ['label' => Craft::t('app', 'UID')],
             'dateCreated' => ['label' => Craft::t('app', 'Date Created')],
             'dateUpdated' => ['label' => Craft::t('app', 'Date Updated')],
+            'status' => ['label' => Craft::t('app', 'Status')],
         ];
     }
 
@@ -351,6 +352,7 @@ class Category extends Element
     {
         return [
             'link',
+            'status',
         ];
     }
 
