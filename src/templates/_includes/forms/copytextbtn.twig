@@ -22,7 +22,9 @@
 {% js %}
     {% block js %}
         (() => {
-            const $btn = $('#{{ id|namespaceInputId|e('js') }}');
+            {% set selector = '#' ~ id|namespaceInputId|e('js') %}
+
+            const $btn = $('{{ selector }}');
             const $input = $btn.children('input');
             const copyValue = function() {
                 $input[0].select();
@@ -32,8 +34,8 @@
                 $input[0].setSelectionRange(0, 0);
                 $btn.focus();
             };
-            $btn.on('click', copyValue);
-            $btn.on('keydown', ev => {
+            $(document).on('click', '{{ selector }}', copyValue);
+            $(document).on('keydown', '{{ selector }}', ev => {
                 if (ev.keyCode === Garnish.SPACE_KEY) {
                     copyValue();
                     ev.preventDefault();
