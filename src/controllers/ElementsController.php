@@ -982,7 +982,8 @@ JS, [
 
         $elementsService = Craft::$app->getElements();
 
-        if (!$elementsService->canDuplicate($element)) {
+        // save as a new is now available to people who can create drafts
+        if (!$elementsService->canCreateDrafts($element)) {
             throw new ForbiddenHttpException('User not authorized to duplicate this element.');
         }
 
