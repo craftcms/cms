@@ -4341,7 +4341,7 @@ abstract class Element extends Component implements ElementInterface
                         'data' => ['icon' => 'draft'],
                         'class' => 'draft-icon',
                         'aria' => [
-                            'hidden' => true,
+                            'hidden' => 'true',
                         ],
                     ]);
                     $label = Craft::t('app', 'Draft');
