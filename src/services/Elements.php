@@ -1457,7 +1457,6 @@ class Elements extends Component
 
         // Clone any field values that are objects
         foreach ($mainClone->getFieldValues() as $handle => $value) {
-            /** @phpstan-ignore-next-line */
             if (is_object($value) && !($value instanceof \UnitEnum)) {
                 $mainClone->setFieldValue($handle, clone $value);
             }
@@ -1578,7 +1577,6 @@ class Elements extends Component
 
                     // Clone any field values that are objects
                     foreach ($siteClone->getFieldValues() as $handle => $value) {
-                        /** @phpstan-ignore-next-line */
                         if (is_object($value) && !($value instanceof \UnitEnum)) {
                             $siteClone->setFieldValue($handle, clone $value);
                         }
