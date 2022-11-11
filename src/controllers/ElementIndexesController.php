@@ -544,21 +544,50 @@ class ElementIndexesController extends BaseElementsController
                 $sourceCondition->modifyQuery($query);
         }
 
-        $containsStatusCondition = false;
+        $conditionOperator = false;
+        $conditionStatuses = [];
 
         // Was a condition provided?
         if (isset($this->condition)) {
             $this->condition->modifyQuery($query);
-            $containsStatusCondition = in_array(true, array_map(function($conditionRule) {
-                return ($conditionRule instanceof StatusConditionRule);
-            }, $this->condition->getConditionRules()), true);
+
+            $statusCondition = array_map(function($conditionRule) {
+                if ($conditionRule instanceof StatusConditionRule) {
+                    return [
+                        'conditionStatuses' => $conditionRule->values,
+                        'conditionOperator' => $conditionRule->operator,
+                    ];
+                }
+            }, $this->condition->getConditionRules());
+
+            if (!empty($statusCondition)) {
+                $statusCondition = $statusCondition[0];
+                $conditionStatuses = $statusCondition['conditionStatuses'] ?? [];
+                $conditionOperator = $statusCondition['conditionOperator'];
+
+                // if status condition is set to "is not one of" - invert it,
+                // so that we can easily cross-reference against the criteria
+                if ($conditionOperator == 'ni') {
+                    $statuses = $elementType::statuses();
+                    $conditionStatuses = array_diff(array_keys($statuses), $conditionStatuses);
+                }
+            }
         }
+
 
         // Override with the request's params
         if ($criteria = $this->request->getBodyParam('criteria')) {
-            // if we have a status condition in here, we can't override it with criteria status
-            if ($containsStatusCondition && array_key_exists('status', $criteria)) {
-                unset($criteria['status']);
+            // if we have a status condition in here, we can't just override it with criteria status
+            if (!empty($conditionStatuses) && array_key_exists('status', $criteria) ) {
+                // if $criteria['status'] is null, we can show all conditioned results
+                if ($criteria['status'] === null) {
+                    unset($criteria['status']);
+                } else if (!in_array($criteria['status'], $conditionStatuses, true)) {
+                    // if $criteria['status'] isn't in $conditionStatuses, we can't return any results
+                    $query->id(false);
+                    return $query;
+                    // otherwise we can respect the criteria
+                }
             }
             if (isset($criteria['trashed'])) {
                 $criteria['trashed'] = filter_var($criteria['trashed'] ?? false, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? false;
