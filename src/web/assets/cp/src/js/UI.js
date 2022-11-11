@@ -1192,7 +1192,7 @@ Craft.ui = {
         for (var i = 0; i < fieldErrors.length; i++) {
           var listItem = '<li>';
 
-          if (fieldErrors[i].match(new RegExp('/^s?<a /')) === null) {
+          if (fieldErrors[i].match(new RegExp(`\s?<a `)) != null) {
             var externalIcon =
               '<span ' +
               'data-icon="external" ' +
@@ -1202,7 +1202,7 @@ Craft.ui = {
               '></span>';
 
             listItem += fieldErrors[i].replace(
-              new RegExp(/<\/a>/),
+              new RegExp(`<\/a>`),
               externalIcon + '</a>'
             );
           } else {
