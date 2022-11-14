@@ -3026,7 +3026,7 @@ $checkboxPadding: $checkboxSize + 4;
 /* editable tables */
 table.editable {
   border-radius: var(--large-border-radius);
-  border: 1px solid var(--input-border-color);
+  border: var(--input-border);
 
   th,
   td.action {
@@ -3047,7 +3047,7 @@ table.editable {
   thead {
     tr {
       th {
-        border-bottom: 1px solid var(--input-border-color);
+        border-bottom: var(--input-border);
 
         &.has-info {
           @include padding-right(calc(15px + 1em));
@@ -3864,7 +3864,6 @@ ul.tree,
       margin: 0 var(--neg-padding);
       padding-left: var(--padding);
       padding-right: var(--padding);
-      border: none;
       background-color: var(--background-color) !important;
       width: calc(100% + var(--padding) + var(--padding));
     }
@@ -3926,6 +3925,10 @@ $min2ColWidth: 400px;
 
       & > .heading {
         margin: 0;
+
+        @media screen and (max-width: $min2ColWidth - 1) {
+          margin-bottom: var(--xs);
+        }
 
         @media screen and (min-width: $min2ColWidth) {
           flex: 0 0 104px;
@@ -4104,10 +4107,6 @@ $min2ColWidth: 400px;
   box-shadow: none;
   background-color: transparent;
 
-  &:after {
-    @include right(0);
-  }
-
   & + .spinner {
     position: absolute;
     top: calc(50% - 17px);
@@ -4115,7 +4114,8 @@ $min2ColWidth: 400px;
   }
 
   select {
-    @include padding(var(--s), 12px, var(--s), 0);
+    @include padding-left(6px);
+    border: var(--input-border);
     width: 100%;
     background-color: transparent;
   }
@@ -6213,10 +6213,6 @@ tr.indexingSession td.progress div.progressContainer div.progressInfo {
 }
 
 .select:not(.selectize) select {
-  &:hover {
-    @include select-input-focused-styles;
-  }
-
   @include focus-styles {
     @include select-input-focused-styles;
   }

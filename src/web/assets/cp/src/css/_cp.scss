@@ -1112,12 +1112,6 @@ li.breadcrumb-toggle-wrapper {
       }
     }
 
-    & > .field {
-      & > .input > .text.fullwidth {
-        @include pane;
-      }
-    }
-
     .notes {
       border-radius: var(--large-border-radius);
       padding-top: var(--m);
