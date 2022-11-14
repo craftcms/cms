@@ -3066,7 +3066,7 @@ table.editable {
       &:not(:first-child) {
         th,
         td {
-          border-top: 1px solid var(--hairline-color);
+          border-top: 1px solid var(--input-border-color);
         }
       }
 
@@ -3883,7 +3883,9 @@ ul.tree,
 $min2ColWidth: 400px;
 
 .meta {
-  padding: 0 var(--padding);
+  display: grid;
+  grid-gap: var(--m);
+  padding: calc(var(--padding) / 2) var(--padding);
   overflow: visible;
 
   &,
@@ -3891,7 +3893,6 @@ $min2ColWidth: 400px;
     & > .field,
     & > .data {
       display: flex;
-      min-height: 50px;
       box-sizing: border-box;
       flex-wrap: wrap; // for error lists
       justify-content: space-between;
@@ -3948,10 +3949,10 @@ $min2ColWidth: 400px;
     }
 
     & > .field > .heading {
-      padding-top: var(--s);
+      //padding-top: var(--s);
 
       @media screen and (min-width: $min2ColWidth) {
-        padding: 14px 0;
+        //padding: 14px 0;
       }
 
       & > .copytextbtn {
@@ -4031,7 +4032,6 @@ $min2ColWidth: 400px;
             display: block;
             margin: calc(var(--s) * -1) 0;
             background-color: transparent;
-            border-bottom: 1px solid var(--input-border-color) !important;
           }
         }
 
