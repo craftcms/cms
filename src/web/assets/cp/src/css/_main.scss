@@ -3926,10 +3926,6 @@ $min2ColWidth: 400px;
       & > .heading {
         margin: 0;
 
-        @media screen and (max-width: $min2ColWidth - 1) {
-          margin-bottom: var(--xs);
-        }
-
         @media screen and (min-width: $min2ColWidth) {
           flex: 0 0 104px;
           @include margin-right(var(--s));
@@ -3953,10 +3949,10 @@ $min2ColWidth: 400px;
     }
 
     & > .field > .heading {
-      //padding-top: var(--s);
+      margin: var(--xs) 0;
 
       @media screen and (min-width: $min2ColWidth) {
-        //padding: 14px 0;
+        margin: 0;
       }
 
       & > .copytextbtn {
