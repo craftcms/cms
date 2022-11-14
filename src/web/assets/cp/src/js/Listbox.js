@@ -21,48 +21,20 @@ Craft.Listbox = Garnish.Base.extend(
       }
 
       this.$container.data('listbox', this);
-      this.$options = this.$container.find('[role=option]');
+      // todo: drop [role=option] in Craft 5
+      this.$options = this.$container.find('button,[role=option]');
 
       // is there already a selected option?
-      this.$selectedOption = this.$options.filter('[aria-selected=true]');
+      // todo: drop [aria-selected=true] & attr normalization in Craft 5
+      this.$selectedOption = this.$options
+        .filter('[aria-pressed=true],[aria-selected=true]')
+        .removeAttr('aria-selected')
+        .attr('aria-pressed', 'true');
       if (this.$selectedOption.length) {
         this.selectedOptionIndex = this.$options.index(this.$selectedOption);
       } else {
         this.$selectedOption = null;
       }
-
-      this.addListener(this.$container, 'keydown', (ev) => {
-        switch (ev.keyCode) {
-          case Garnish.UP_KEY:
-            this.selectPrev();
-            ev.preventDefault();
-            ev.stopPropagation();
-            break;
-          case Garnish.DOWN_KEY:
-            this.selectNext();
-            ev.preventDefault();
-            ev.stopPropagation();
-            break;
-          case Garnish.LEFT_KEY:
-            if (Craft.orientation === 'ltr') {
-              this.selectPrev();
-            } else {
-              this.selectNext();
-            }
-            ev.preventDefault();
-            ev.stopPropagation();
-            break;
-          case Garnish.RIGHT_KEY:
-            if (Craft.orientation === 'ltr') {
-              this.selectNext();
-            } else {
-              this.selectPrev();
-            }
-            ev.preventDefault();
-            ev.stopPropagation();
-            break;
-        }
-      });
 
       this.addListener(this.$options, 'click', (ev) => {
         this.select(this.$options.index($(ev.currentTarget)));
@@ -82,13 +54,13 @@ Craft.Listbox = Garnish.Base.extend(
       if (this.$selectedOption) {
         this.$selectedOption
           .removeClass(this.settings.selectedClass)
-          .attr('aria-selected', 'false');
+          .attr('aria-pressed', 'false');
       }
 
       this.$selectedOption = this.$options
         .eq(index)
         .addClass(this.settings.selectedClass)
-        .attr('aria-selected', 'true');
+        .attr('aria-pressed', 'true');
 
       this.selectedOptionIndex = index;
 
@@ -97,22 +69,6 @@ Craft.Listbox = Garnish.Base.extend(
         $selectedOption: this.$selectedOption,
         selectedOptionIndex: index,
       });
-    },
-
-    selectPrev: function () {
-      if (this.selectedOptionIndex === null) {
-        this.select(0);
-      } else {
-        this.select(this.selectedOptionIndex - 1);
-      }
-    },
-
-    selectNext: function () {
-      if (this.selectedOptionIndex === null) {
-        this.select(0);
-      } else {
-        this.select(this.selectedOptionIndex + 1);
-      }
     },
 
     disable: function () {

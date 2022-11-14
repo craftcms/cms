@@ -4,7 +4,7 @@
 
 {% if isTopLevel %}
     {% set elementInstance = craft.app.elements.createElement(elementType) %}
-    {% set sortOptions = elementInstance.sortOptions()|map((option, key) => {
+    {% set baseSortOptions = elementInstance.sortOptions()|map((option, key) => {
         label: option.label ?? option,
         attr: option.attribute ?? option.orderBy ?? key,
         defaultDir: option.defaultDir ?? 'asc',
@@ -12,7 +12,7 @@
     {% set tableColumns = craft.app.elementSources.getAvailableTableAttributes(elementType) %}
 {% endif %}
 
-{% macro sourceLink(key, source, isTopLevel, elementType, sortOptions, tableColumns) %}
+{% macro sourceLink(key, source, isTopLevel, elementType, baseSortOptions, tableColumns) %}
     {% set hasStructure = (source.structureId ?? null)|boolean %}
     {{ tag('a', {
         data: {
@@ -21,8 +21,8 @@
             'has-structure': hasStructure,
             'default-sort': source.defaultSort ?? false,
             'sort-opts': isTopLevel
-                ? (hasStructure ? [{label: 'Structure'|t('app'), attr: 'structure', defaultDir: 'asc'}] : [])
-                    |merge(sortOptions)
+                ? [hasStructure ? {label: 'Structure'|t('app'), attr: 'structure', defaultDir: 'asc'} : null]|filter
+                    |merge(baseSortOptions)
                     |merge(craft.app.elementSources.getSourceSortOptions(elementType, key)|map(option => {
                         label: option.label,
                         attr: option.attribute ?? option.orderBy,
@@ -98,7 +98,7 @@
                     (source.disabled ?? false) ? 'hidden' : null,
                 ]|filter,
             } %}
-                {{ _self.sourceLink(key, source, isTopLevel, elementType, sortOptions ?? null, tableColumns ?? null) }}
+                {{ _self.sourceLink(key, source, isTopLevel, elementType, baseSortOptions ?? null, tableColumns ?? null) }}
                 {% if source.nested is defined and source.nested is not empty %}
                     <button class="toggle" aria-expanded="false" aria-label="{{ 'Show nested sources'|t('app') }}"></button>
                     {% include "_elements/sources" with {

@@ -1600,9 +1600,14 @@ Craft.ElementEditor = Garnish.Base.extend(
       }
       const lb = encodeURIComponent('[');
       const rb = encodeURIComponent(']');
-      const namespacedFields = Craft.escapeRegex(
-        this.namespaceInputName('fields')
-      );
+      let namespacedFields = this.namespaceInputName('fields');
+
+      if (this.isFullPage) {
+        namespacedFields = Craft.escapeRegex(namespacedFields);
+      } else {
+        // don't escape namespaced input names, but URI encode them (for cases like: cnuvbcxlgq[fields])
+        namespacedFields = encodeURIComponent(namespacedFields);
+      }
 
       // Keep replacing field IDs until data stops changing
       while (true) {

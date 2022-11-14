@@ -114,6 +114,7 @@ class Mailer extends \yii\symfonymailer\Mailer
                     'fromEmail' => App::parseEnv($settings->fromEmail),
                     'replyToEmail' => App::parseEnv($settings->replyToEmail),
                     'fromName' => App::parseEnv($settings->fromName),
+                    'language' => $message->language,
                 ];
 
             // Temporarily disable lazy transform generation

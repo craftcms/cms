@@ -759,7 +759,7 @@ interface ElementInterface extends ComponentInterface
      * Returns whether the given user is authorized to view this element’s edit page.
      *
      * If they can view but not [[canSave()|save]], the edit form will either render statically,
-     * or be restricted to only saving changes as a draft, depending on [[canCreateDraft()]].
+     * or be restricted to only saving changes as a draft, depending on [[canCreateDrafts()]].
      *
      * @param User $user
      * @return bool
@@ -807,6 +807,11 @@ interface ElementInterface extends ComponentInterface
 
     /**
      * Returns whether the given user is authorized to create drafts for this element.
+     *
+     * ::: tip
+     * If this is going to return `true` under any circumstances, make sure [[trackChanges()]] is returning `true`,
+     * so drafts can be automatically updated with upstream content changes.
+     * :::
      *
      * @param User $user
      * @return bool

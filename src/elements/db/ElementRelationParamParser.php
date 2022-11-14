@@ -14,8 +14,10 @@ use craft\db\Query;
 use craft\db\Table;
 use craft\fields\BaseRelationField;
 use craft\fields\Matrix;
+use craft\helpers\ArrayHelper;
 use craft\helpers\StringHelper;
 use craft\models\Site;
+use Illuminate\Support\Collection;
 use yii\base\BaseObject;
 use yii\base\InvalidArgumentException;
 
@@ -59,18 +61,29 @@ class ElementRelationParamParser extends BaseObject
      * Normalizes a `relatedTo` param for [[parse()]].
      *
      * @param array|string|int|ElementInterface $relatedToParam
+     * @param int|string|int[]|null $siteId
      * @return array
      * @throws InvalidArgumentException if any of the relation criteria contain an invalid site handle
      * @since 3.6.11
      */
-    public static function normalizeRelatedToParam(mixed $relatedToParam): array
+    public static function normalizeRelatedToParam(mixed $relatedToParam, array|int|string|null $siteId = null): array
     {
         // Ensure it's an array
         if (!is_array($relatedToParam)) {
-            $relatedToParam = is_string($relatedToParam) ? StringHelper::split($relatedToParam) : [$relatedToParam];
+            if (is_string($relatedToParam)) {
+                $relatedToParam = StringHelper::split($relatedToParam);
+            } elseif ($relatedToParam instanceof Collection) {
+                $relatedToParam = $relatedToParam->all();
+            } else {
+                $relatedToParam = [$relatedToParam];
+            }
         }
 
-        if (isset($relatedToParam[0]) && in_array($relatedToParam[0], ['and', 'or'])) {
+        if (
+            isset($relatedToParam[0]) &&
+            is_string($relatedToParam[0]) &&
+            in_array($relatedToParam[0], ['and', 'or'])
+        ) {
             $glue = array_shift($relatedToParam);
             if ($glue === 'and' && count($relatedToParam) < 2) {
                 $glue = 'or';
@@ -83,7 +96,9 @@ class ElementRelationParamParser extends BaseObject
             $relatedToParam = [$relatedToParam];
         }
 
-        $relatedToParam = array_map([static::class, 'normalizeRelatedToCriteria'], $relatedToParam);
+        $relatedToParam = Collection::make($relatedToParam)->map(
+            fn($relatedToParam) => static::normalizeRelatedToCriteria($relatedToParam, $siteId)
+        )->all();
 
         if ($glue === 'or') {
             // Group all of the OR elements, so we avoid adding massive JOINs to the query
@@ -102,7 +117,7 @@ class ElementRelationParamParser extends BaseObject
             }
 
             if (!empty($orElements)) {
-                $relatedToParam[] = static::normalizeRelatedToCriteria($orElements);
+                $relatedToParam[] = static::normalizeRelatedToCriteria($orElements, $siteId);
             }
         }
 
@@ -114,11 +129,12 @@ class ElementRelationParamParser extends BaseObject
      * Normalizes an individual `relatedTo` criteria.
      *
      * @param mixed $relCriteria
+     * @param int|string|int[]|null $siteId
      * @return array
      * @throws InvalidArgumentException if the criteria contains an invalid site handle
      * @since 3.6.11
      */
-    public static function normalizeRelatedToCriteria(mixed $relCriteria): array
+    public static function normalizeRelatedToCriteria(mixed $relCriteria, array|int|string|null $siteId = null): array
     {
         if (
             !is_array($relCriteria) ||
@@ -130,20 +146,25 @@ class ElementRelationParamParser extends BaseObject
         // Merge in default criteria params
         $relCriteria += [
             'field' => null,
-            'sourceSite' => null,
+            'sourceSite' => $siteId,
         ];
 
         // Normalize the sourceSite param (should be an ID)
-        if ($relCriteria['sourceSite'] && !is_numeric($relCriteria['sourceSite'])) {
-            if ($relCriteria['sourceSite'] instanceof Site) {
-                $relCriteria['sourceSite'] = $relCriteria['sourceSite']->id;
-            } else {
-                $site = Craft::$app->getSites()->getSiteByHandle($relCriteria['sourceSite']);
-                if (!$site) {
-                    // Invalid handle
-                    throw new InvalidArgumentException("Invalid site: {$relCriteria['sourceSite']}");
+        if ($relCriteria['sourceSite']) {
+            if (
+                !is_numeric($relCriteria['sourceSite']) &&
+                (!is_array($relCriteria['sourceSite']) || !ArrayHelper::isNumeric($relCriteria['sourceSite']))
+            ) {
+                if ($relCriteria['sourceSite'] instanceof Site) {
+                    $relCriteria['sourceSite'] = $relCriteria['sourceSite']->id;
+                } else {
+                    $site = Craft::$app->getSites()->getSiteByHandle($relCriteria['sourceSite']);
+                    if (!$site) {
+                        // Invalid handle
+                        throw new InvalidArgumentException("Invalid site: {$relCriteria['sourceSite']}");
+                    }
+                    $relCriteria['sourceSite'] = $site->id;
                 }
-                $relCriteria['sourceSite'] = $site->id;
             }
         }
 
@@ -153,10 +174,20 @@ class ElementRelationParamParser extends BaseObject
                 $elements = &$relCriteria[$elementParam];
 
                 if (!is_array($elements)) {
-                    $elements = is_string($elements) ? StringHelper::split($elements) : [$elements];
+                    if (is_string($elements)) {
+                        $elements = StringHelper::split($elements);
+                    } elseif ($elements instanceof Collection) {
+                        $elements = $elements->all();
+                    } else {
+                        $elements = [$elements];
+                    }
                 }
 
-                if (isset($elements[0]) && in_array($elements[0], ['and', 'or'])) {
+                if (
+                    isset($elements[0]) &&
+                    is_string($elements[0]) &&
+                    in_array($elements[0], ['and', 'or'])
+                ) {
                     $glue = array_shift($elements);
                     if ($glue === 'and' && count($elements) < 2) {
                         $glue = 'or';
@@ -178,11 +209,12 @@ class ElementRelationParamParser extends BaseObject
      * be applied back on the element query, or `false` if there's an issue.
      *
      * @param mixed $relatedToParam
+     * @param int|string|int[]|null $siteId
      * @return array|false
      */
-    public function parse(mixed $relatedToParam): array|false
+    public function parse(mixed $relatedToParam, array|int|string|null $siteId = null): array|false
     {
-        $relatedToParam = static::normalizeRelatedToParam($relatedToParam);
+        $relatedToParam = static::normalizeRelatedToParam($relatedToParam, $siteId);
         $glue = array_shift($relatedToParam);
 
         if (empty($relatedToParam)) {
@@ -277,10 +309,12 @@ class ElementRelationParamParser extends BaseObject
                 [
                     'sourceElement' => $relElementIds,
                     'field' => $relCriteria['field'],
+                    'sourceSite' => $relCriteria['sourceSite'],
                 ],
                 [
                     'targetElement' => $relSourceElementIds,
                     'field' => $relCriteria['field'],
+                    'sourceSite' => $relCriteria['sourceSite'],
                 ],
             ]);
         }

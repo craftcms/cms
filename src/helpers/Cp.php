@@ -14,6 +14,7 @@ use craft\base\FieldLayoutElement;
 use craft\behaviors\DraftBehavior;
 use craft\elements\Address;
 use craft\enums\LicenseKeyStatus;
+use craft\errors\InvalidHtmlTagException;
 use craft\events\DefineElementInnerHtmlEvent;
 use craft\events\RegisterCpAlertsEvent;
 use craft\fieldlayoutelements\BaseField;
@@ -240,7 +241,65 @@ class Cp
         // Give plugins a chance to add their own alerts
         $event = new RegisterCpAlertsEvent();
         Event::trigger(self::class, self::EVENT_REGISTER_ALERTS, $event);
-        return array_merge($alerts, $event->alerts);
+        $alerts = array_merge($alerts, $event->alerts);
+
+        // Inline CSS styles
+        foreach ($alerts as $i => $alert) {
+            $offset = 0;
+            while (true) {
+                try {
+                    $tagInfo = Html::parseTag($alert, $offset);
+                } catch (InvalidHtmlTagException $e) {
+                    break;
+                }
+
+                $newTagHtml = self::alertTagHtml($tagInfo);
+                $alert = substr($alert, 0, $tagInfo['start']) .
+                    $newTagHtml .
+                    substr($alert, $tagInfo['end']);
+                $offset = $tagInfo['start'] + strlen($newTagHtml);
+            }
+            $alerts[$i] = $alert;
+        }
+
+        return $alerts;
+    }
+
+    private static function alertTagHtml(array $tagInfo): string
+    {
+        if ($tagInfo['type'] === 'text') {
+            return $tagInfo['value'];
+        }
+
+        $style = [];
+        if ($tagInfo['type'] === 'a') {
+            $style = array_merge($style, [
+                'color' => 'var(--error-color)',
+                'text-decoration' => 'underline',
+            ]);
+
+            if (isset($tagInfo['attributes']['class']) && in_array('go', $tagInfo['attributes']['class'])) {
+                $style = array_merge($style, [
+                    'text-decoration' => 'none',
+                    'white-space' => 'nowrap',
+                    'border' => '1px solid #cf112480',
+                    'border-radius' => 'var(--medium-border-radius)',
+                    'padding' => '3px 5px',
+                    'margin' => '0 2px',
+                ]);
+            }
+        }
+
+        $childTagHtml = array_map(function(array $childTagInfo): string {
+            return self::alertTagHtml($childTagInfo);
+        }, $tagInfo['children'] ?? []);
+
+        return trim(static::renderTemplate('_layouts/components/tag.twig', [
+            'type' => $tagInfo['type'],
+            'attributes' => $tagInfo['attributes'] ?? [],
+            'style' => $style,
+            'content' => implode('', $childTagHtml),
+        ]));
     }
 
     /**
@@ -353,11 +412,10 @@ class Cp
             $attributes['class'][] = 'hasthumb';
         }
 
+        $elementsService = Craft::$app->getElements();
         $user = Craft::$app->getUser()->getIdentity();
 
         if ($user) {
-            $elementsService = Craft::$app->getElements();
-
             if ($elementsService->canView($element, $user)) {
                 $attributes['data']['editable'] = true;
             }
@@ -409,9 +467,11 @@ class Cp
 
             // Should we make the element a link?
             if (
+                $user &&
                 $context === 'index' &&
                 !$element->trashed &&
-                ($cpEditUrl = $element->getCpEditUrl())
+                ($cpEditUrl = $element->getCpEditUrl()) &&
+                $elementsService->canView($element, $user)
             ) {
                 $innerHtml .= Html::a($encodedLabel, $cpEditUrl);
             } else {
@@ -1296,6 +1356,7 @@ JS, [
 
         return
             static::textFieldHtml([
+                'status' => $address->getAttributeStatus('addressLine1'),
                 'label' => $address->getAttributeLabel('addressLine1'),
                 'id' => 'addressLine1',
                 'name' => 'addressLine1',
@@ -1305,6 +1366,7 @@ JS, [
                 'autocomplete' => 'address-line1',
             ]) .
             static::textFieldHtml([
+                'status' => $address->getAttributeStatus('addressLine2'),
                 'label' => $address->getAttributeLabel('addressLine2'),
                 'id' => 'addressLine2',
                 'name' => 'addressLine2',
@@ -1337,12 +1399,12 @@ JS, [
                 [$address->countryCode, $address->administrativeArea, $address->locality],
                 false,
             ) .
-            Html::beginTag('div', ['class' => 'flex-fields']) .
             static::textFieldHtml([
                 'fieldClass' => array_filter([
                     'width-50',
                     !isset($visibleFields['postalCode']) ? 'hidden' : null,
                 ]),
+                'status' => $address->getAttributeStatus('postalCode'),
                 'label' => $address->getAttributeLabel('postalCode'),
                 'id' => 'postalCode',
                 'name' => 'postalCode',
@@ -1356,14 +1418,14 @@ JS, [
                     'width-50',
                     !isset($visibleFields['sortingCode']) ? 'hidden' : null,
                 ]),
+                'status' => $address->getAttributeStatus('sortingCode'),
                 'label' => $address->getAttributeLabel('sortingCode'),
                 'id' => 'sortingCode',
                 'name' => 'sortingCode',
                 'value' => $address->sortingCode,
                 'required' => isset($requiredFields['sortingCode']),
                 'errors' => $address->getErrors('sortingCode'),
-            ]) .
-            Html::endTag('div'); // .flex-fields
+            ]);
     }
 
     private static function _subdivisionField(
@@ -1413,6 +1475,7 @@ JS, [
 
             return static::selectizeFieldHtml([
                 'fieldClass' => !$visible ? 'hidden' : null,
+                'status' => $address->getAttributeStatus($name),
                 'label' => $address->getAttributeLabel($name),
                 'id' => $name,
                 'name' => $name,
@@ -1426,6 +1489,7 @@ JS, [
         // No preconfigured subdivisions for the given parents, so just output a text input
         return static::textFieldHtml([
             'fieldClass' => !$visible ? 'hidden' : null,
+            'status' => $address->getAttributeStatus($name),
             'label' => $address->getAttributeLabel($name),
             'id' => $name,
             'name' => $name,
@@ -1552,29 +1616,23 @@ JS;
             Html::endTag('div') . // .fld-workspace
             Html::beginTag('div', ['class' => 'fld-sidebar']) .
             ($config['customizableUi']
-                ? Html::beginTag('div', [
-                    'role' => 'listbox',
-                    'class' => ['btngroup', 'small', 'fullwidth'],
+                ? Html::beginTag('section', [
+                    'class' => ['btngroup', 'btngroup--exclusive', 'small', 'fullwidth'],
                     'aria' => ['label' => Craft::t('app', 'Layout element types')],
-                    'tabindex' => '0',
                 ]) .
                 Html::button(Craft::t('app', 'Fields'), [
-                    'role' => 'option',
                     'type' => 'button',
                     'class' => ['btn', 'small', 'active'],
-                    'aria' => ['selected' => 'true'],
+                    'aria' => ['pressed' => 'true'],
                     'data' => ['library' => 'field'],
-                    'tabindex' => '-1',
                 ]) .
                 Html::button(Craft::t('app', 'UI Elements'), [
-                    'role' => 'option',
                     'type' => 'button',
                     'class' => ['btn', 'small'],
-                    'aria' => ['selected' => 'false'],
+                    'aria' => ['pressed' => 'false'],
                     'data' => ['library' => 'ui'],
-                    'tabindex' => '-1',
                 ]) .
-                Html::endTag('div') // .btngroup
+                Html::endTag('section') // .btngroup
                 : '') .
             Html::beginTag('div', ['class' => 'fld-field-library']) .
             Html::beginTag('div', ['class' => ['texticon', 'search', 'icon', 'clearable']]) .
@@ -1634,7 +1692,15 @@ JS;
                     $customizable ? 'draggable' : null,
                 ]),
             ]) .
-            Html::tag('span', Html::encode($tab->name)) .
+            Html::beginTag('span') .
+            Html::encode($tab->name) .
+            ($tab->hasConditions() ? Html::tag('div', '', [
+                'class' => ['fld-indicator'],
+                'title' => Craft::t('app', 'This tab is conditional'),
+                'aria' => ['label' => Craft::t('app', 'This tab is conditional')],
+                'data' => ['icon' => 'condition'],
+            ]) : '') .
+            Html::endTag('span') .
             ($customizable
                 ? Html::a('', null, [
                     'role' => 'button',
@@ -1703,7 +1769,6 @@ JS;
             'class' => array_filter([
                 'fld-element',
                 $forLibrary ? 'unused' : null,
-                !$forLibrary && $element->hasConditions() ? 'has-conditions' : null,
             ]),
             'data' => [
                 'uid' => !$forLibrary ? $element->uid : false,

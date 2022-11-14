@@ -83,12 +83,12 @@ class Image
         string $mode = 'crop',
         ?bool $upscale = null,
     ): array {
-        if ($upscale ?? Craft::$app->getConfig()->getGeneral()->upscaleImages) {
-            [$width, $height] = static::calculateMissingDimension($transformWidth, $transformHeight, $sourceWidth, $sourceHeight);
+        [$width, $height] = static::calculateMissingDimension($transformWidth, $transformHeight, $sourceWidth, $sourceHeight);
+        $factor = max($sourceWidth / $width, $sourceHeight / $height);
 
+        if ($upscale ?? Craft::$app->getConfig()->getGeneral()->upscaleImages) {
             // Special case for 'fit' since that's the only one whose dimensions vary from the transform dimensions
             if ($mode === 'fit') {
-                $factor = max($sourceWidth / $width, $sourceHeight / $height);
                 $width = (int)round($sourceWidth / $factor);
                 $height = (int)round($sourceHeight / $factor);
             }
@@ -105,14 +105,14 @@ class Image
         $imageRatio = $sourceWidth / $sourceHeight;
 
         if ($mode === 'fit' || $imageRatio === $transformRatio) {
-            $targetWidth = min($sourceWidth, $transformWidth);
-            $targetHeight = min($sourceHeight, $transformHeight);
-            return static::calculateMissingDimension($targetWidth, $targetHeight, $sourceWidth, $sourceHeight);
+            $targetWidth = min($sourceWidth, $width, (int)round($sourceWidth / $factor));
+            $targetHeight = min($sourceHeight, $height, (int)round($sourceHeight / $factor));
+            return [$targetWidth, $targetHeight];
         }
 
         // Since we don't want to upscale, make sure the calculated ratios aren't bigger than the actual image size.
-        $newHeight = min($sourceHeight, (int)round($sourceWidth / $transformRatio));
-        $newWidth = min($sourceWidth, (int)round($sourceHeight * $transformRatio));
+        $newWidth = min($sourceWidth, $transformWidth, (int)round($sourceHeight * $transformRatio));
+        $newHeight = min($sourceHeight, $transformHeight, (int)round($sourceWidth / $transformRatio));
 
         return [$newWidth, $newHeight];
     }

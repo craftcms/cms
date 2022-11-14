@@ -246,8 +246,12 @@ class AssetsController extends Controller
         $asset->setVolumeId($folder->volumeId);
         $asset->uploaderId = Craft::$app->getUser()->getId();
         $asset->avoidFilenameConflicts = true;
-        $asset->setScenario(Asset::SCENARIO_CREATE);
 
+        if (isset($originalFilename)) {
+            $asset->title = Assets::filename2Title(pathinfo($originalFilename, PATHINFO_FILENAME));
+        }
+
+        $asset->setScenario(Asset::SCENARIO_CREATE);
         $result = $elementsService->saveElement($asset);
 
         // In case of error, let user know about it.
@@ -267,7 +271,6 @@ class AssetsController extends Controller
 
             if (isset($originalFilename, $originalFolder)) {
                 // move it into the original target destination
-                $asset->title = Assets::filename2Title(pathinfo($originalFilename, PATHINFO_FILENAME));
                 $asset->newFilename = $originalFilename;
                 $asset->newFolderId = $originalFolder->id;
                 $asset->setScenario(Asset::SCENARIO_MOVE);
@@ -1141,6 +1144,12 @@ class AssetsController extends Controller
 
         $assetUid = Craft::$app->getRequest()->getRequiredBodyParam('assetUid');
         $focalData = Craft::$app->getRequest()->getRequiredBodyParam('focal');
+        $focalEnabled = Craft::$app->getRequest()->getRequiredBodyParam('focalEnabled');
+
+        // if focal point is disabled, set focal data to null (can't pass null to $focalData as it's a required param)
+        if ($focalEnabled === false) {
+            $focalData = null;
+        }
 
         /** @var Asset|null $asset */
         $asset = Asset::find()->uid($assetUid)->one();

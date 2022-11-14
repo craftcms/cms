@@ -44,7 +44,7 @@ class MonologTarget extends PsrTarget
     /**
      * @var bool
      */
-    protected bool $allowLineBreaks;
+    protected bool $allowLineBreaks = false;
 
     /**
      * @var string

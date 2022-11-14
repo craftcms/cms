@@ -102,6 +102,9 @@ class ImageHelperTest extends TestCase
             'crop9' => [200, 100, 40, 60, 200, 100, 'crop', true],
             'crop10' => [40, 20, 40, 60, 200, 100, 'crop', false],
 
+            // https://github.com/craftcms/cms/issues/11837#issuecomment-1249186697
+            'crop11' => [1280, 720, 3600, 2400, 1280, 720, 'crop', false],
+
             'stretch1' => [200, 100, 600, 400, 200, 100, 'stretch', true],
             'stretch2' => [200, 100, 60, 40, 200, 100, 'stretch', true],
             'stretch3' => [200, 133, 60, 40, 200, null, 'stretch', true],
@@ -123,6 +126,12 @@ class ImageHelperTest extends TestCase
             'fit8' => [67, 100, 400, 600, 200, 100, 'fit', true],
             'fit9' => [67, 100, 40, 60, 200, 100, 'fit', true],
             'fit10' => [40, 60, 40, 60, 200, 100, 'fit', false],
+
+            // https://github.com/craftcms/cms/issues/12023
+            'fit11' => [160, 240, 240, 360, 240, 240, 'fit', false],
+            'fit12' => [240, 160, 360, 240, 240, 240, 'fit', false],
+            'fit13' => [160, 240, 240, 360, 240, 240, 'fit', true],
+            'fit14' => [240, 160, 360, 240, 240, 240, 'fit', true],
         ];
     }
 
