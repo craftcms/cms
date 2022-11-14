@@ -3729,6 +3729,7 @@ ul.tree,
 
 /* detail sidebars */
 .details {
+  --background-color: var(--gray-050);
   --spacing: var(--l);
   padding: 0 var(--padding) var(--spacing);
 
@@ -3743,7 +3744,7 @@ ul.tree,
     margin-bottom: var(--spacing);
 
     &:not(.read-only) {
-      background-color: var(--gray-050) !important;
+      background-color: var(--background-color) !important;
     }
 
     &.read-only {
@@ -3864,7 +3865,7 @@ ul.tree,
       padding-left: var(--padding);
       padding-right: var(--padding);
       border: none;
-      background-color: var(--gray-050) !important;
+      background-color: var(--background-color) !important;
       width: calc(100% + var(--padding) + var(--padding));
     }
   }
