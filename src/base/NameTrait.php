@@ -56,8 +56,9 @@ trait NameTrait
      */
     protected function prepareNamesForSave(): void
     {
-        if ($this->fullName !== null) {
-            $generalConfig = Craft::$app->getConfig()->getGeneral();
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+
+        if (!$generalConfig->disableNameParsing && $this->fullName !== null) {
             $languages = [
                 // Load our custom language file first so config settings can override the defaults
                 new CustomLanguage(

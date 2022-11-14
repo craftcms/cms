@@ -1275,6 +1275,22 @@ class GeneralConfig extends BaseConfig
     public array $extraNameSuffixes = [];
 
     /**
+     * @var bool Disable parsing of the full name into first and last names.
+     *
+     * ::: code
+     * ```php Static Config
+     * 'disableNameParsing' => true,
+     * ```
+     * ```shell Environment Override
+     * CRAFT_DISABLE_NAME_PARSING=true
+     * ```
+     * :::
+     * @group Users
+     * @since 4.4.0
+     */
+    public bool $disableNameParsing = false;
+
+    /**
      * @var string|false The string to use to separate words when uploading Assets. If set to `false`, spaces will be left alone.
      *
      * ::: code
@@ -3119,8 +3135,7 @@ class GeneralConfig extends BaseConfig
             ->extraAppLocales($this->extraAppLocales)
             // misc
             ->maxUploadFileSize($this->maxUploadFileSize)
-            ->disabledPlugins($this->disabledPlugins)
-        ;
+            ->disabledPlugins($this->disabledPlugins);
     }
 
     /**
@@ -4402,6 +4417,25 @@ class GeneralConfig extends BaseConfig
     public function extraNameSuffixes(array $value): self
     {
         $this->extraNameSuffixes = $value;
+        return $this;
+    }
+
+    /**
+     * Disable name parsing entirely.
+     *
+     * ```php
+     * ->disableNameParsing()
+     * ```
+     *
+     * @group Users
+     * @param bool $value
+     * @return self
+     * @see $extraNameSuffixes
+     * @since 4.4.0
+     */
+    public function disableNameParsing(bool $value = true): self
+    {
+        $this->disableNameParsing = $value;
         return $this;
     }
 
