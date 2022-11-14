@@ -3066,7 +3066,7 @@ table.editable {
       &:not(:first-child) {
         th,
         td {
-          border-top: 1px solid var(--input-border-color);
+          border-top: var(--input-border);
         }
       }
 
@@ -3085,7 +3085,7 @@ table.editable {
 
       td:not(:first-child),
       th ~ td:not(.hidden) ~ td {
-        @include border-left(1px solid var(--input-border-color));
+        @include border-left(var(--input-border));
       }
 
       th {
@@ -5697,7 +5697,7 @@ div.checkbox:before {
   content: '';
   font-size: 0;
   background-color: hsl(212, 50%, 99%);
-  border: 1px solid var(--input-border-color);
+  border: var(--input-border);
   background-clip: padding-box;
   border-radius: var(--small-border-radius);
 }
@@ -5824,7 +5824,7 @@ div.radio:before {
   width: var(--radio-size);
   height: var(--radio-size);
   background-color: hsl(212, 50%, 99%);
-  border: 1px solid var(--input-border-color);
+  border: var(--input-border);
 }
 
 input.radio + label:after,
