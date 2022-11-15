@@ -341,7 +341,6 @@ Craft.ElementEditor = Garnish.Base.extend(
 
         if (this.isFullPage) {
           const heightDiff = $('#content').height() - initialHeight;
-          console.log(heightDiff);
           Garnish.$win.scrollTop(scrollTop + heightDiff);
 
           // If there isn’t enough content to simulate the same scroll position, slide it down instead

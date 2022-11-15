@@ -13,7 +13,11 @@
 - Fixed a bug where sticky element index footers were obstructed when the Debug Toolbar was enabled. ([#12242](https://github.com/craftcms/cms/issues/12242))
 - Fixed a bug where it wasn’t possible to change the sort attribute on element indexes while searching. ([#12256](https://github.com/craftcms/cms/issues/12256))
 - Fixed an information disclosure vulnerability.
+- Fixed an XSS vulnerability.
 - Fixed a bug where `resave/*` commands weren’t catching exceptions thrown when applying the `--set` and `--to` options. ([#12262](https://github.com/craftcms/cms/issues/12262))
+- Fixed the position of field status indicators within Matrix fields in Live Preview. ([#12287](https://github.com/craftcms/cms/issues/12287))
+- Fixed PHP errors that could occur when executing GraphQL queries. ([#12271](https://github.com/craftcms/cms/pull/12271), [#12275](https://github.com/craftcms/cms/pull/12275))
+- Fixed a bug where it was possible to add a “Status” condition rule to relational fields’ selectable element conditions. ([#12289](https://github.com/craftcms/cms/issues/12289))
 - Added `craft\base\Element::includeSetStatusAction()`.
 
 ## 4.3.1 - 2022-10-27
