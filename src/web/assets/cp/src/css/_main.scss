@@ -3906,8 +3906,6 @@ $min2ColWidth: 400px;
       }
 
       &.add {
-        background-color: darken($grey050, 2%);
-
         &:before {
           position: absolute;
           @include left(0);
