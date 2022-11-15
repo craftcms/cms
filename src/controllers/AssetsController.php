@@ -196,7 +196,7 @@ class AssetsController extends Controller
             /** @var AssetsField|null $field */
             $field = Craft::$app->getFields()->getFieldById((int)$fieldId);
 
-            if (!($field instanceof AssetsField)) {
+            if (!$field instanceof AssetsField) {
                 throw new BadRequestHttpException('The field provided is not an Assets field');
             }
 
