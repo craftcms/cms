@@ -75,6 +75,7 @@ use DateTime;
 use Illuminate\Support\Collection;
 use Throwable;
 use Twig\Markup;
+use UnitEnum;
 use yii\base\ErrorHandler;
 use yii\base\Event;
 use yii\base\InvalidCallException;
@@ -2038,7 +2039,7 @@ abstract class Element extends Component implements ElementInterface
         // If this is a field, make sure the value has been normalized before returning the CustomFieldBehavior value
         if ($this->fieldByHandle($name) !== null) {
             $value = $this->getFieldValue($name);
-            if (is_object($value) && !($value instanceof \UnitEnum)) {
+            if (is_object($value) && !$value instanceof UnitEnum) {
                 $value = clone $value;
             }
             return $value;
