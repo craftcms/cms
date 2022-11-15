@@ -3,6 +3,7 @@
 ## Unreleased
 
 - Fixed an information disclosure vulnerability.
+- Fixed an XSS vulnerability.
 - Fixed a bug where `resave/*` commands weren’t catching exceptions thrown when applying the `--set` and `--to` options. ([#12262](https://github.com/craftcms/cms/issues/12262))
 - Fixed a bug where the `|group` Twig filter was logging a deprecation warning when passed an element query.
 
