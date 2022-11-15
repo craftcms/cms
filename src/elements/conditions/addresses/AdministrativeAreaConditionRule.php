@@ -99,6 +99,7 @@ class AdministrativeAreaConditionRule extends BaseMultiSelectConditionRule imple
     protected function inputHtml(): string
     {
         $countrySelect = Cp::selectFieldHtml([
+            'id' => 'country-code',
             'name' => 'countryCode',
             'options' => Craft::$app->getAddresses()->getCountryRepository()->getList(),
             'value' => $this->countryCode,
@@ -124,7 +125,7 @@ JS;
         Craft::$app->getView()->registerJs($js);
 
         $adminSelectize =
-            Html::hiddenLabel($this->getLabel(), $multiSelectId) .
+            Html::hiddenLabel(Html::encode($this->getLabel()), $multiSelectId) .
             Cp::multiSelectHtml([
                 'id' => $multiSelectId,
                 'class' => 'selectize fullwidth',

@@ -197,19 +197,24 @@ class UsersController extends Controller
             ]);
         }
 
-        $user->admin = $this->admin ?? $this->confirm('Make this user an admin?', false);
+        $user->admin = $this->admin ?? ($this->interactive && $this->confirm('Make this user an admin?'));
 
         if ($this->password) {
             $user->newPassword = $this->password;
         } elseif ($this->interactive) {
-            if ($this->confirm('Set a password for this user?', false)) {
+            if ($this->confirm('Set a password for this user?')) {
                 $user->newPassword = $this->passwordPrompt([
                     'validator' => $this->createAttributeValidator($user, 'newPassword'),
                 ]);
             }
         }
 
-        $user->active = $this->activate ?? $this->confirm('Activate the account?', $user->newPassword !== null);
+        if ($this->activate !== null) {
+            $user->active = $this->activate;
+        } else {
+            $defaultActivate = $user->newPassword !== null;
+            $user->active = $this->interactive ? $this->confirm('Activate the account?', $defaultActivate) : $defaultActivate;
+        }
 
         $this->stdout('Saving the user ... ');
 
@@ -314,7 +319,7 @@ class UsersController extends Controller
             return ExitCode::USAGE;
         }
 
-        if (!$this->inheritor && $this->confirm('Transfer this user’s content to an existing user?', true)) {
+        if (!$this->inheritor && $this->interactive && $this->confirm('Transfer this user’s content to an existing user?', true)) {
             $this->inheritor = $this->prompt('Enter the email or username of the user to inherit the content:', [
                 'required' => true,
             ]);
@@ -328,7 +333,7 @@ class UsersController extends Controller
                 return ExitCode::UNSPECIFIED_ERROR;
             }
 
-            if (!$this->confirm("Delete user “{$user->username}” and transfer their content to user “{$inheritor->username}”?")) {
+            if ($this->interactive && !$this->confirm("Delete user “{$user->username}” and transfer their content to user “{$inheritor->username}”?")) {
                 $this->stdout('Aborting.' . PHP_EOL);
                 return ExitCode::OK;
             }

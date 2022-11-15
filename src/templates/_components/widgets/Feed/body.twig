@@ -1,24 +1,22 @@
-<table class="fullwidth" dir="{{ feed.direction }}">
+{% import "_includes/links" as links %}
+
+<ol class="widget__list" role="list" dir="{{ feed.direction }}">
     {% for item in feed.items %}
-        <tr>
-            <td>
-                {% if item.permalink ?? false %}
-                    {{ tag('a', {
-                        href: item.permalink,
-                        target: '_blank',
-                        rel: 'noopener',
-                        text: item.title,
+        <li class="widget__list-item">
+            {% if item.permalink ?? false %}
+                {{ links.externalLink({
+                    link: item.permalink,
+                    text: item.title,
+                }) }}
+                {% if item.date ?? false %}
+                    {{ tag('span', {
+                        class: 'light nowrap',
+                        text: item.date|timestamp('short'),
                     }) }}
-                    {% if item.date ?? false %}
-                        {{ tag('span', {
-                            class: 'light nowrap',
-                            text: item.date|timestamp('short'),
-                        }) }}
-                    {% endif %}
-                {% else %}
-                    &nbsp;
                 {% endif %}
-            </td>
-        </tr>
+            {% else %}
+                &nbsp;
+            {% endif %}
+        </li>
     {% endfor %}
-</table>
+</ol>

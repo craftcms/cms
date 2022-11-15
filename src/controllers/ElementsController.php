@@ -51,6 +51,12 @@ class ElementsController extends Controller
      */
     public const EVENT_DEFINE_EDITOR_CONTENT = 'defineEditorContent';
 
+    /**
+     * @var ElementInterface|null The element currently being managed.
+     * @since 4.3.0
+     */
+    public ?ElementInterface $element = null;
+
     private array $_attributes;
     private ?string $_elementType = null;
     private ?int $_elementId = null;
@@ -148,7 +154,7 @@ class ElementsController extends Controller
      */
     public function actionRedirect(?int $elementId = null, ?string $elementUid = null): Response
     {
-        $element = $this->_element($elementId, $elementUid);
+        $element = $this->element = $this->_element($elementId, $elementUid);
         $url = $element->getCpEditUrl();
 
         if (!$url) {
@@ -176,15 +182,15 @@ class ElementsController extends Controller
         $this->_validateElementType($this->_elementType);
 
         /** @var ElementInterface $element */
-        $element = Craft::createObject($this->_elementType);
+        $element = $this->element = Craft::createObject($this->_elementType);
         if ($this->_siteId) {
             $element->siteId = $this->_siteId;
         }
         $element->setAttributes($this->_attributes);
 
-        $user = Craft::$app->getUser()->getIdentity();
+        $user = static::currentUser();
 
-        if (!$element->canSave($user)) {
+        if (!Craft::$app->getElements()->canSave($element, $user)) {
             throw new ForbiddenHttpException('User not authorized to create this element.');
         }
 
@@ -236,32 +242,45 @@ class ElementsController extends Controller
         $this->requireCpRequest();
 
         $strictSite = $this->request->getAcceptsJson();
-        /** @var Element|DraftBehavior|RevisionBehavior|Response|null $element */
-        $element = $element ?? $this->_element($elementId, null, true, $strictSite);
 
-        if ($element instanceof Response) {
-            return $element;
+        if ($element === null) {
+            /** @var Element|DraftBehavior|RevisionBehavior|Response|null $element */
+            $element = $this->_element($elementId, null, true, $strictSite);
+
+            if ($element instanceof Response) {
+                return $element;
+            }
+
+            if (!$element) {
+                throw new BadRequestHttpException('No element was identified by the request.');
+            }
+
+            // If this is an outdated draft, merge in the latest canonical changes
+            $mergeCanonicalChanges = (
+                $element::trackChanges() &&
+                $element->getIsDraft() &&
+                !$element->getIsUnpublishedDraft() &&
+                ElementHelper::isOutdated($element)
+            );
+            if ($mergeCanonicalChanges) {
+                Craft::$app->getElements()->mergeCanonicalChanges($element);
+            }
+
+            $this->_applyParamsToElement($element);
+
+            // Prevalidate?
+            if ($this->_prevalidate && $element->enabled && $element->getEnabledForSite()) {
+                $element->setScenario(Element::SCENARIO_LIVE);
+                $element->validate();
+            }
+        } else {
+            $mergeCanonicalChanges = false;
         }
 
-        if (!$element) {
-            throw new BadRequestHttpException('No element was identified by the request.');
-        }
+        $this->element = $element;
 
-        // If this is an outdated draft, merge in the latest canonical changes
-        $mergeCanonicalChanges = $element->getIsDraft() && !$element->getIsUnpublishedDraft() && ElementHelper::isOutdated($element);
-        if ($mergeCanonicalChanges) {
-            Craft::$app->getElements()->mergeCanonicalChanges($element);
-        }
-
-        $this->_applyParamsToElement($element);
-
-        // Prevalidate?
-        if ($this->_prevalidate && $element->enabled && $element->getEnabledForSite()) {
-            $element->setScenario(Element::SCENARIO_LIVE);
-            $element->validate();
-        }
-
-        $user = Craft::$app->getUser()->getIdentity();
+        $elementsService = Craft::$app->getElements();
+        $user = static::currentUser();
 
         // Figure out what we're dealing with here
         $isCanonical = $element->getIsCanonical();
@@ -300,19 +319,19 @@ class ElementsController extends Controller
         if ($isUnpublishedDraft) {
             $canSaveCanonical = $this->_canApplyUnpublishedDraft($element, $user);
         } else {
-            $canSaveCanonical = $isCanonical || $element->isProvisionalDraft ? $canSave : $canonical->canSave($user);
+            $canSaveCanonical = ($isCanonical || $element->isProvisionalDraft) ? $canSave : $elementsService->canSave($canonical, $user);
         }
 
-        $canCreateDrafts = $canonical->canCreateDrafts($user);
-        $canDeleteDraft = $isDraft && !$element->isProvisionalDraft && $element->canDelete($user);
-        $canDuplicateCanonical = $canonical->canDuplicate($user);
-        $canDeleteCanonical = $canonical->canDelete($user);
+        $canCreateDrafts = $elementsService->canCreateDrafts($canonical, $user);
+        $canDeleteDraft = $isDraft && !$element->isProvisionalDraft && $elementsService->canDelete($element, $user);
+        $canDuplicateCanonical = $elementsService->canDuplicate($canonical, $user);
+        $canDeleteCanonical = $elementsService->canDelete($canonical, $user);
         $canDeleteForSite = (
             $isMultiSiteElement &&
             count($propSiteIds) > 1 &&
             (($isCurrent && $canDeleteCanonical) || ($canDeleteDraft && $isNewSite)) &&
-            $element->canDelete($user) &&
-            $element->canDeleteForSite($user)
+            $elementsService->canDelete($element, $user) &&
+            $elementsService->canDeleteForSite($element, $user)
         );
 
         // Preview targets
@@ -473,7 +492,7 @@ class ElementsController extends Controller
 
             if ($isCurrent) {
                 $newElement = $element->createAnother();
-                if ($newElement && $newElement->canSave($user)) {
+                if ($newElement && $elementsService->canSave($newElement, $user)) {
                     $response->addAltAction(
                         $isUnpublishedDraft && $canSaveCanonical
                             ? Craft::t('app', 'Create and add another')
@@ -610,7 +629,7 @@ class ElementsController extends Controller
             $showDrafts ||
             ($element->hasRevisions() && $element::find()->revisionOf($element)->status(null)->exists())
         ) {
-            return Craft::$app->getView()->renderTemplate('_includes/revisionmenu', [
+            return Craft::$app->getView()->renderTemplate('_includes/revisionmenu.twig', [
                 'element' => $element,
                 'showDrafts' => $showDrafts,
                 'supportedSiteIds' => $propSiteIds,
@@ -643,9 +662,16 @@ class ElementsController extends Controller
                     'class' => ['preview-btn-container', 'btngroup'],
                 ]) .
                 ($enablePreview
-                    ? Html::button(Craft::t('app', 'Preview'), [
+                    ? Html::beginTag('button', [
+                        'type' => 'button',
                         'class' => ['preview-btn', 'btn'],
-                    ])
+                        'aria' => [
+                            'label' => Craft::t('app', 'Preview'),
+                        ],
+                    ]) .
+                    Html::tag('span', Craft::t('app', 'Preview'), ['class' => 'label']) .
+                    Html::tag('span', options: ['class' => ['spinner', 'spinner-absolute']]) .
+                    Html::endTag('button')
                     : '') .
                 Html::endTag('div');
         }
@@ -848,10 +874,13 @@ JS, [
             throw new BadRequestHttpException('No element was identified by the request.');
         }
 
-        $this->_applyParamsToElement($element);
-        $user = Craft::$app->getUser()->getIdentity();
+        $this->element = $element;
 
-        if (!$element->canSave($user)) {
+        $this->_applyParamsToElement($element);
+        $elementsService = Craft::$app->getElements();
+        $user = static::currentUser();
+
+        if (!$elementsService->canSave($element, $user)) {
             throw new ForbiddenHttpException('User not authorized to save this element.');
         }
 
@@ -867,8 +896,6 @@ JS, [
                 throw new ServerErrorHttpException('Could not acquire a lock to save the element.');
             }
         }
-
-        $elementsService = Craft::$app->getElements();
 
         try {
             $success = $elementsService->saveElement($element);
@@ -937,22 +964,32 @@ JS, [
             throw new BadRequestHttpException('No element was identified by the request.');
         }
 
-        if (!$element->canDuplicate(Craft::$app->getUser()->getIdentity())) {
+        $this->element = $element;
+
+        $elementsService = Craft::$app->getElements();
+
+        if (!$elementsService->canDuplicate($element)) {
             throw new ForbiddenHttpException('User not authorized to duplicate this element.');
         }
 
-        $element->draftId = null;
-        $element->isProvisionalDraft = false;
+        $clonedElement = clone $element;
+        $clonedElement->draftId = null;
+        $clonedElement->isProvisionalDraft = false;
 
         try {
-            $newElement = Craft::$app->getElements()->duplicateElement($element);
+            $newElement = $elementsService->duplicateElement($clonedElement);
         } catch (InvalidElementException $e) {
             return $this->_asFailure($e->element, Craft::t('app', 'Couldn’t duplicate {type}.', [
                 'type' => $element::lowerDisplayName(),
             ]));
         } catch (Throwable $e) {
-            /** @phpstan-ignore-next-line */
             throw new ServerErrorHttpException('An error occurred when duplicating the element.', 0, $e);
+        }
+
+        // If the original element is a provisional draft,
+        // delete the draft as the changes are likely no longer wanted.
+        if ($element->isProvisionalDraft) {
+            Craft::$app->getElements()->deleteElement($element);
         }
 
         return $this->_asSuccess(Craft::t('app', '{type} duplicated.', [
@@ -984,13 +1021,16 @@ JS, [
             throw new BadRequestHttpException('No element was identified by the request.');
         }
 
-        $user = Craft::$app->getUser()->getIdentity();
+        $this->element = $element;
 
-        if (!$element->canDelete($user)) {
+        $elementsService = Craft::$app->getElements();
+        $user = static::currentUser();
+
+        if (!$elementsService->canDelete($element, $user)) {
             throw new ForbiddenHttpException('User not authorized to delete this element.');
         }
 
-        if (!Craft::$app->getElements()->deleteElement($element)) {
+        if (!$elementsService->deleteElement($element)) {
             return $this->_asFailure($element, Craft::t('app', 'Couldn’t delete {type}.', [
                 'type' => $element::lowerDisplayName(),
             ]));
@@ -1020,9 +1060,11 @@ JS, [
             throw new BadRequestHttpException('No element was identified by the request.');
         }
 
-        $user = Craft::$app->getUser()->getIdentity();
+        $this->element = $element;
 
-        if (!$element->canDeleteForSite($user)) {
+        $elementsService = Craft::$app->getElements();
+
+        if (!$elementsService->canDeleteForSite($element)) {
             throw new ForbiddenHttpException('User not authorized to delete the element for this site.');
         }
 
@@ -1053,7 +1095,7 @@ JS, [
         // Resave the element
         $otherSiteElement->setScenario(Element::SCENARIO_ESSENTIALS);
         $otherSiteElement->resaving = true;
-        Craft::$app->getElements()->saveElement($otherSiteElement, false, true, false);
+        $elementsService->saveElement($otherSiteElement, false, true, false);
 
         return $this->_asSuccess(Craft::t('app', '{type} deleted for site.', [
             'type' => $element->getIsDraft() && !$element->isProvisionalDraft ? Craft::t('app', 'Draft') : $element::displayName(),
@@ -1080,15 +1122,18 @@ JS, [
             throw new BadRequestHttpException('No element was identified by the request.');
         }
 
-        $user = Craft::$app->getUser()->getIdentity();
+        $elementsService = Craft::$app->getElements();
+        $user = static::currentUser();
 
         if (!$element->getIsDraft() && !$this->_provisional) {
-            if (!$element->canCreateDrafts($user)) {
+            if (!$elementsService->canCreateDrafts($element, $user)) {
                 throw new ForbiddenHttpException('User not authorized to create drafts for this element.');
             }
         } elseif (!$this->_canSave($element, $user)) {
             throw new ForbiddenHttpException('User not authorized to save this element.');
         }
+
+        $this->element = $element;
 
         if (!$element->getIsDraft() && $this->_provisional) {
             // Make sure a provisional draft doesn't already exist for this element/user combo
@@ -1105,13 +1150,13 @@ JS, [
             }
         }
 
-        return Craft::$app->getDb()->transaction(function() use ($element, $user): ?Response {
+        return Craft::$app->getDb()->transaction(function() use ($element, $user, $elementsService): ?Response {
             // Are we creating the draft here?
             if (!$element->getIsDraft()) {
                 /** @var Element|DraftBehavior $element */
                 $draft = Craft::$app->getDrafts()->createDraft($element, $user->id, null, null, [], $this->_provisional);
                 $draft->setCanonical($element);
-                $element = $draft;
+                $element = $this->element = $draft;
             }
 
             $this->_applyParamsToElement($element);
@@ -1127,60 +1172,85 @@ JS, [
 
             $element->setScenario(Element::SCENARIO_ESSENTIALS);
 
-            if (!Craft::$app->getElements()->saveElement($element)) {
+            if (!$elementsService->saveElement($element)) {
                 return $this->_asFailure($element, Craft::t('app', 'Couldn’t save {type}.', [
                     'type' => Craft::t('app', 'draft'),
                 ]));
             }
 
             $creator = $element->getCreator();
-            [$docTitle, $title] = $this->_editElementTitles($element);
 
-            $view = Craft::$app->getView();
+            $data = [
+                'canonicalId' => $element->getCanonicalId(),
+                'draftId' => $element->draftId,
+                'timestamp' => Craft::$app->getFormatter()->asTimestamp($element->dateUpdated, 'short', true),
+                'creator' => $creator?->getName(),
+                'draftName' => $element->draftName,
+                'draftNotes' => $element->draftNotes,
+                'duplicatedElements' => Elements::$duplicatedElementIds,
+                'modifiedAttributes' => $element->getModifiedAttributes(),
+            ];
 
-            $namespace = $this->request->getHeaders()->get('X-Craft-Namespace');
-            $fieldLayout = $element->getFieldLayout();
-            $form = $fieldLayout->createForm($element, false, [
-                'namespace' => $namespace,
-                'registerDeltas' => false,
-                'visibleElements' => $this->_visibleLayoutElements,
-            ]);
-            $missingElements = [];
-            foreach ($form->tabs as $tab) {
-                if (!$tab->getUid()) {
-                    continue;
-                }
+            if ($this->request->getIsCpRequest()) {
+                [$docTitle, $title] = $this->_editElementTitles($element);
 
-                $elementInfo = [];
+                $view = Craft::$app->getView();
 
-                foreach ($tab->elements as [$layoutElement, $isConditional, $elementHtml]) {
-                    /** @var FieldLayoutComponent $layoutElement */
-                    /** @var bool $isConditional */
-                    /** @var string|bool $elementHtml */
-                    if ($isConditional) {
-                        $elementInfo[] = [
-                            'uid' => $layoutElement->uid,
-                            'html' => $elementHtml,
-                        ];
+                $namespace = $this->request->getHeaders()->get('X-Craft-Namespace');
+                $fieldLayout = $element->getFieldLayout();
+                $form = $fieldLayout->createForm($element, false, [
+                    'namespace' => $namespace,
+                    'registerDeltas' => false,
+                    'visibleElements' => $this->_visibleLayoutElements,
+                ]);
+                $missingElements = [];
+                foreach ($form->tabs as $tab) {
+                    if (!$tab->getUid()) {
+                        continue;
                     }
+
+                    $elementInfo = [];
+
+                    foreach ($tab->elements as [$layoutElement, $isConditional, $elementHtml]) {
+                        /** @var FieldLayoutComponent $layoutElement */
+                        /** @var bool $isConditional */
+                        /** @var string|bool $elementHtml */
+                        if ($isConditional) {
+                            $elementInfo[] = [
+                                'uid' => $layoutElement->uid,
+                                'html' => $elementHtml,
+                            ];
+                        }
+                    }
+
+                    $missingElements[] = [
+                        'uid' => $tab->getUid(),
+                        'id' => $tab->getId(),
+                        'elements' => $elementInfo,
+                    ];
                 }
 
-                $missingElements[] = [
-                    'uid' => $tab->getUid(),
-                    'id' => $tab->getId(),
-                    'elements' => $elementInfo,
-                ];
-            }
+                $tabs = $form->getTabMenu();
+                if (count($tabs) > 1) {
+                    $selectedTab = isset($tabs[$this->_selectedTab]) ? $this->_selectedTab : null;
+                    $tabHtml = $view->namespaceInputs(fn() => $view->renderTemplate('_includes/tabs.twig', [
+                        'tabs' => $tabs,
+                        'selectedTab' => $selectedTab,
+                    ], View::TEMPLATE_MODE_CP), $namespace);
+                } else {
+                    $tabHtml = null;
+                }
 
-            $tabs = $form->getTabMenu();
-            if (count($tabs) > 1) {
-                $selectedTab = isset($tabs[$this->_selectedTab]) ? $this->_selectedTab : null;
-                $tabHtml = $view->namespaceInputs(fn() => $view->renderTemplate('_includes/tabs', [
-                    'tabs' => $tabs,
-                    'selectedTab' => $selectedTab,
-                ], View::TEMPLATE_MODE_CP), $namespace);
-            } else {
-                $tabHtml = null;
+                $data += [
+                    'docTitle' => $docTitle,
+                    'title' => $title,
+                    'tabs' => $tabHtml,
+                    'previewTargets' => $element->getPreviewTargets(),
+                    'missingElements' => $missingElements,
+                    'initialDeltaValues' => $view->getInitialDeltaValues(),
+                    'headHtml' => $view->getHeadHtml(),
+                    'bodyHtml' => $view->getBodyHtml(),
+                ];
             }
 
             // Make sure the user is authorized to preview the draft
@@ -1188,24 +1258,7 @@ JS, [
 
             return $this->_asSuccess(Craft::t('app', '{type} saved.', [
                 'type' => Craft::t('app', 'Draft'),
-            ]), $element, [
-                'canonicalId' => $element->getCanonicalId(),
-                'draftId' => $element->draftId,
-                'timestamp' => Craft::$app->getFormatter()->asTimestamp($element->dateUpdated, 'short', true),
-                'creator' => $creator?->getName(),
-                'draftName' => $element->draftName,
-                'draftNotes' => $element->draftNotes,
-                'docTitle' => $docTitle,
-                'title' => $title,
-                'tabs' => $tabHtml,
-                'duplicatedElements' => Elements::$duplicatedElementIds,
-                'previewTargets' => $element->getPreviewTargets(),
-                'modifiedAttributes' => $element->getModifiedAttributes(),
-                'missingElements' => $missingElements,
-                'initialDeltaValues' => $view->getInitialDeltaValues(),
-                'headHtml' => $view->getHeadHtml(),
-                'bodyHtml' => $view->getBodyHtml(),
-            ]);
+            ]), $element, $data);
         });
     }
 
@@ -1221,6 +1274,7 @@ JS, [
     public function actionApplyDraft(): ?Response
     {
         $this->requirePostRequest();
+        $elementsService = Craft::$app->getElements();
 
         /** @var Element|DraftBehavior|null $element */
         $element = $this->_element();
@@ -1229,10 +1283,12 @@ JS, [
             throw new BadRequestHttpException('No draft was identified by the request.');
         }
 
-        $this->_applyParamsToElement($element);
-        $user = Craft::$app->getUser()->getIdentity();
+        $this->element = $element;
 
-        if (!$element->canSave($user)) {
+        $this->_applyParamsToElement($element);
+        $user = static::currentUser();
+
+        if (!$elementsService->canSave($element, $user)) {
             throw new ForbiddenHttpException('User not authorized to save this draft.');
         }
 
@@ -1242,7 +1298,7 @@ JS, [
             if (!$this->_canApplyUnpublishedDraft($element, $user)) {
                 throw new ForbiddenHttpException('User not authorized to create this element.');
             }
-        } elseif (!$element->getCanonical(true)->canSave($user)) {
+        } elseif (!$elementsService->canSave($element->getCanonical(true), $user)) {
             throw new ForbiddenHttpException('User not authorized to save this element.');
         }
 
@@ -1251,7 +1307,7 @@ JS, [
             $element->setScenario(Element::SCENARIO_LIVE);
         }
 
-        if (!Craft::$app->getElements()->saveElement($element)) {
+        if (!$elementsService->saveElement($element)) {
             return $this->_asAppyDraftFailure($element);
         }
 
@@ -1340,13 +1396,16 @@ JS, [
             throw new BadRequestHttpException('No draft was identified by the request.');
         }
 
-        $user = Craft::$app->getUser()->getIdentity();
+        $this->element = $element;
 
-        if (!$element->canDelete($user)) {
+        $elementsService = Craft::$app->getElements();
+        $user = static::currentUser();
+
+        if (!$elementsService->canDelete($element, $user)) {
             throw new ForbiddenHttpException('User not authorized to delete this draft.');
         }
 
-        if (!Craft::$app->getElements()->deleteElement($element, true)) {
+        if (!$elementsService->deleteElement($element, true)) {
             return $this->_asFailure($element, Craft::t('app', 'Couldn’t delete {type}.', [
                 'type' => Craft::t('app', 'draft'),
             ]));
@@ -1391,9 +1450,11 @@ JS, [
             throw new BadRequestHttpException('No revision was identified by the request.');
         }
 
-        $user = Craft::$app->getUser()->getIdentity();
+        $this->element = $element;
 
-        if (!$element->getCanonical(true)->canSave($user)) {
+        $user = static::currentUser();
+
+        if (!Craft::$app->getElements()->canSave($element->getCanonical(true), $user)) {
             throw new ForbiddenHttpException('User not authorized to save this element.');
         }
 
@@ -1420,6 +1481,8 @@ JS, [
         if (!$element) {
             throw new BadRequestHttpException('No element was identified by the request.');
         }
+
+        $this->element = $element;
 
         $context = $this->_context ?? 'field';
         $thumbSize = $this->_thumbSize;
@@ -1452,7 +1515,7 @@ JS, [
 
         $sitesService = Craft::$app->getSites();
         $elementsService = Craft::$app->getElements();
-        $user = Craft::$app->getUser()->getIdentity();
+        $user = static::currentUser();
 
         if ($this->_siteId) {
             $site = $sitesService->getSiteById($this->_siteId, true);
@@ -1471,10 +1534,15 @@ JS, [
 
         if ($this->_elementType) {
             $elementType = $this->_elementType;
-        } elseif ($elementId) {
-            $elementType = $elementsService->getElementTypeById($elementId);
-        } elseif ($elementUid) {
-            $elementType = $elementsService->getElementTypeByUid($elementUid);
+        } elseif ($elementId || $elementUid) {
+            if ($elementId) {
+                $elementType = $elementsService->getElementTypeById($elementId);
+            } else {
+                $elementType = $elementsService->getElementTypeByUid($elementUid);
+            }
+            if (!$elementType) {
+                throw new BadRequestHttpException($elementId ? "Invalid element ID: $elementId" : "Invalid element UUID: $elementUid");
+            }
         } else {
             throw new BadRequestHttpException('Request missing required param.');
         }
@@ -1547,7 +1615,7 @@ JS, [
             return null;
         }
 
-        if (!$element->canView(Craft::$app->getUser()->getIdentity())) {
+        if (!$element->canView(static::currentUser())) {
             throw new ForbiddenHttpException('User not authorized to edit this element.');
         }
 
@@ -1629,7 +1697,7 @@ JS, [
         $element->setScenario($scenario);
 
         // Now that the element is fully configured, make sure the user can actually view it
-        if (!$element->canView(Craft::$app->getUser()->getIdentity())) {
+        if (!Craft::$app->getElements()->canView($element)) {
             throw new ForbiddenHttpException('User not authorized to edit this element.');
         }
 
@@ -1656,7 +1724,7 @@ JS, [
             $element = $element->getCanonical(true);
         }
 
-        return $element->canSave($user);
+        return Craft::$app->getElements()->canSave($element, $user);
     }
 
     /**
@@ -1670,7 +1738,7 @@ JS, [
     {
         $fakeCanonical = clone $element;
         $fakeCanonical->draftId = null;
-        return $fakeCanonical->canSave($user);
+        return Craft::$app->getElements()->canSave($fakeCanonical, $user);
     }
 
     /**
@@ -1685,13 +1753,15 @@ JS, [
             'modelName' => 'element',
             'element' => $element->toArray($element->attributes()),
         ];
-        $response = $this->asSuccess($message, $data, $this->getPostedRedirectUrl($element));
+        $response = $this->asSuccess($message, $data, $this->getPostedRedirectUrl($element), [
+            'details' => !$element->dateDeleted ? Cp::elementHtml($element) : null,
+        ]);
 
         if ($addAnother && $this->_addAnother) {
-            $user = Craft::$app->getUser()->getIdentity();
+            $user = static::currentUser();
             $newElement = $element->createAnother();
 
-            if (!$newElement || !$newElement->canSave($user)) {
+            if (!$newElement || !Craft::$app->getElements()->canSave($newElement, $user)) {
                 throw new ServerErrorHttpException('Unable to create a new element.');
             }
 
@@ -1725,7 +1795,12 @@ JS, [
 
     private function _asFailure(ElementInterface $element, string $message): ?Response
     {
-        /** @var Element $element */
-        return $this->asModelFailure($element, $message, 'element');
+        $data = [
+            'modelName' => 'element',
+            'element' => $element->toArray($element->attributes()),
+            'errors' => $element->getErrors(),
+        ];
+
+        return $this->asFailure($message, $data, ['element' => $element]);
     }
 }

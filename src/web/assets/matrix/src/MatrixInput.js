@@ -689,7 +689,7 @@
 
             value = $input.text();
           } else {
-            value = Craft.getText(Garnish.getInputPostVal($input));
+            value = Craft.getText(this._inputPreviewText($input));
           }
 
           if (value instanceof Array) {
@@ -758,6 +758,29 @@
       }
 
       this.collapsed = true;
+    },
+
+    _inputPreviewText: function ($input) {
+      if ($input.is('select,multiselect')) {
+        const labels = [];
+        const $options = $input.find('option:selected');
+        for (let k = 0; k < $options.length; k++) {
+          labels.push($options.eq(k).text());
+        }
+        return labels;
+      }
+
+      if (
+        $input.is('input[type="checkbox"]:checked,input[type="radio"]:checked')
+      ) {
+        const id = $input.attr('id');
+        const $label = $(`label[for="${id}"]`);
+        if ($label.length) {
+          return $label.text();
+        }
+      }
+
+      return Garnish.getInputPostVal($input);
     },
 
     expand: function () {
@@ -973,10 +996,8 @@
     },
 
     selfDestruct: function () {
-      // Pause the draft editor
-      if (this.matrix.$form.data('elementEditor')) {
-        this.matrix.$form.data('elementEditor').pause();
-      }
+      // Remove any inputs from the form data
+      $('[name]', this.$container).removeAttr('name');
 
       this.$container.velocity(
         this.matrix.getHiddenBlockCss(this.$container),
@@ -984,11 +1005,6 @@
         () => {
           this.$container.remove();
           this.matrix.updateAddBlockBtn();
-
-          // Resume the draft editor
-          if (this.matrix.$form.data('elementEditor')) {
-            this.matrix.$form.data('elementEditor').resume();
-          }
 
           this.matrix.trigger('blockDeleted', {
             $block: this.$container,

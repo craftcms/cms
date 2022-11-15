@@ -14,6 +14,8 @@
     background-color: var(--gray-100);
     box-shadow: 0 1px 0 transparentize($grey700, 0.8);
     box-sizing: border-box;
+    position: relative;
+    z-index: 1;
 
     @supports (backdrop-filter: blur(10px)) {
       & {
@@ -28,13 +30,6 @@
         & + .lp-editor {
           padding-top: #{10 + 34 + 10 + 24}px;
         }
-      }
-    }
-
-    @supports (-moz-appearance: none) {
-      & {
-        position: relative;
-        z-index: 1;
       }
     }
 
@@ -96,7 +91,7 @@
   .lp-preview-header {
     display: flex;
 
-    @supports (-moz-appearance: none) {
+    @supports (not (backdrop-filter: blur(10px))) {
       background-color: transparentize($grey100, 0.25);
     }
 
@@ -109,15 +104,37 @@
     }
 
     & + .lp-iframe-container {
-      padding-top: 50px;
+      padding-top: 0;
 
-      @supports (-moz-appearance: none) {
-        padding-top: 0;
+      @supports (backdrop-filter: blur(10px)) {
+        padding-top: 50px;
       }
     }
 
     .lp-device-type {
-      margin: 0;
+      .btn {
+        &::before {
+          width: 27px;
+          height: 22px;
+          display: block;
+          content: '';
+          background-size: contain;
+          background-repeat: no-repeat;
+          background-position: center;
+          transition-duration: 0.3s;
+        }
+
+        // SVGs
+        &.lp-device-type-btn--phone::before {
+          background-image: url(../images/preview/icon-phone.svg);
+        }
+        &.lp-device-type-btn--tablet::before {
+          background-image: url(../images/preview/icon-tablet.svg);
+        }
+        &.lp-device-type-btn--desktop::before {
+          background-image: url(../images/preview/icon-desktop.svg);
+        }
+      }
     }
   }
 
@@ -145,47 +162,9 @@
     }
   }
 
-  .lp-device-type__radio-group {
-    display: flex;
-    white-space: nowrap;
-    align-items: center;
-  }
-
-  .lp-device-type__item:not(:last-child) .btn {
-    body.ltr & {
-      border-top-right-radius: 0;
-      border-bottom-right-radius: 0;
-      margin-right: 1px;
-    }
-
-    body.rtl & {
-      border-top-left-radius: 0;
-      border-bottom-left-radius: 0;
-      margin-left: 1px;
-    }
-  }
-
   .lp-preview-container__bumper-link {
     top: unset;
     bottom: 0;
-  }
-
-  .lp-device-type__item:not(:first-child) .btn {
-    body.ltr & {
-      border-top-left-radius: 0;
-      border-bottom-left-radius: 0;
-    }
-
-    body.rtl & {
-      border-top-right-radius: 0;
-      border-bottom-right-radius: 0;
-    }
-  }
-
-  .lp-device-type__input {
-    &.focus-visible + label {
-      box-shadow: var(--focus-ring);
-    }
   }
 
   .lp-device-mask {
@@ -216,13 +195,13 @@
       flex: none;
       padding-top: 0 !important;
       position: relative;
-      top: 50px;
+      top: 0;
       height: calc(100% - 50px);
       width: 100%;
       background-color: var(--gray-100);
 
-      @supports (-moz-appearance: none) {
-        top: 0;
+      @supports (backdrop-filter: blur(10px)) {
+        top: 50px;
       }
 
       // Preview container

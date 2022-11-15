@@ -295,7 +295,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
             $label = $valid ? $optionLabels[$index] : null;
             $value = new SingleOptionFieldData($label, $selectedValue, true, $valid);
         } else {
-            $value = new SingleOptionFieldData(null, null, true, true);
+            $value = new SingleOptionFieldData(null, null, true, false);
         }
 
         $value->setOptions($options);
@@ -541,7 +541,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
      *
      * @param OptionData|MultiOptionsFieldData|string|null $value
      * @rturn string|array|null
-     * @since 3.7.46
+     * @since 4.0.6
      */
     protected function encodeValue(OptionData|MultiOptionsFieldData|string|null $value): string|array|null
     {

@@ -80,9 +80,13 @@
     details ? 'has-details',
 ]|filter %}
 
+{% set bodyClass = (bodyClass ?? [])|explodeClass %}
 {% set showHeader = showHeader ?? true %}
 {% if not showHeader %}
-    {% set bodyClass = (bodyClass ?? [])|explodeClass|push('no-header') -%}
+    {% set bodyClass = bodyClass|push('no-header') -%}
+{% endif %}
+{% if craft.app.hasModule('debug') %}
+    {% set bodyClass = bodyClass|push('has-debug-toolbar') %}
 {% endif %}
 
 {% set mainAttributes = {
@@ -130,6 +134,7 @@
 
 {% block body %}
     {{ tag ('a', {
+        id: 'global-skip-link',
         text: 'Skip to content'|t('app'),
         href: '#main',
         class: 'skip-link btn',
@@ -140,7 +145,6 @@
 
         <div id="page-container">
             {% include '_layouts/components/alerts' %}
-            {% include '_layouts/components/notifications' %}
 
             <div id="global-header" role="region" aria-label="{{ 'My Account'|t('app') }}">
                 <div class="flex">
@@ -198,7 +202,7 @@
                         <div id="header-container">
                             <header id="header">
                                 {% block header %}
-                                    <div id="page-title" class="flex flex-nowrap{% if toolbar %} has-toolbar{% endif %}">
+                                    <div id="page-title" class="flex{% if toolbar %} has-toolbar{% endif %}">
                                         {% block pageTitle %}
                                             {% if title is defined and title|length %}
                                                 <h1 class="screen-title" title="{{ title }}">{{ title }}</h1>
@@ -317,6 +321,8 @@
 
         </div><!-- #page-container -->
     </div><!-- #global-container -->
+
+    {% include '_layouts/components/notifications' %}
 {% endblock %}
 
 
@@ -327,7 +333,7 @@
                 <button type="submit" class="btn submit">{{ submitButtonLabel ?? 'Save'|t('app') }}</button>
             {% endblock %}
             {% if formActions ?? false %}
-                <button type="button" class="btn submit menubtn"></button>
+                <button type="button" class="btn submit menubtn" aria-label="{{ 'More actions'|t('app') }}"></button>
                 {% include '_layouts/components/form-action-menu' %}
             {% endif %}
         </div>

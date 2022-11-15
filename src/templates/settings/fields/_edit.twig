@@ -34,7 +34,9 @@
         id: 'group',
         name: 'group',
         options: groupOptions,
-        value: groupId
+        value: groupId,
+        required: true,
+        errors: field.getErrors('groupId'),
     }) }}
 
     {{ forms.textField({

@@ -191,12 +191,12 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @var string Template to use for settings rendering
      */
-    protected string $settingsTemplate = '_components/fieldtypes/elementfieldsettings';
+    protected string $settingsTemplate = '_components/fieldtypes/elementfieldsettings.twig';
 
     /**
      * @var string Template to use for field rendering
      */
-    protected string $inputTemplate = '_includes/forms/elementSelect';
+    protected string $inputTemplate = '_includes/forms/elementSelect.twig';
 
     /**
      * @var string|null The JS class that should be initialized for the input
@@ -366,11 +366,11 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
         $sourceValidates = self::$_relatedElementValidates[$sourceId][$element->siteId] ?? null;
         self::$_relatedElementValidates[$sourceId][$element->siteId] = true;
 
-        /** @var ElementQueryInterface $query */
-        $query = $element->getFieldValue($this->handle);
+        /** @var ElementQueryInterface|Collection $value */
+        $value = $element->getFieldValue($this->handle);
         $errorCount = 0;
 
-        foreach ($query->all() as $i => $related) {
+        foreach ($value->all() as $i => $related) {
             /** @var Element $related */
             if ($related->enabled && $related->getEnabledForSite()) {
                 if (!self::_validateRelatedElement($related)) {
@@ -430,12 +430,12 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      */
     public function isValueEmpty(mixed $value, ElementInterface $element): bool
     {
-        /** @var ElementQueryInterface|ElementInterface[] $value */
+        /** @var ElementQueryInterface|Collection $value */
         if ($value instanceof ElementQueryInterface) {
             return !$this->_all($value, $element)->exists();
         }
 
-        return empty($value);
+        return $value->isEmpty();
     }
 
     /**
@@ -647,7 +647,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      */
     protected function searchKeywords(mixed $value, ElementInterface $element): string
     {
-        /** @var ElementQuery $value */
+        /** @var ElementQuery|Collection $value */
         $titles = [];
 
         foreach ($this->_all($value, $element)->all() as $relatedElement) {
@@ -662,7 +662,12 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      */
     public function getStaticHtml(mixed $value, ElementInterface $element): string
     {
-        $value = $this->_all($value, $element)->all();
+        /** @var ElementQueryInterface|Collection $value */
+        if ($value instanceof Collection) {
+            $value = $value->all();
+        } else {
+            $value = $this->_all($value, $element)->all();
+        }
 
         if (empty($value)) {
             return '<p class="light">' . Craft::t('app', 'Nothing selected.') . '</p>';
@@ -692,6 +697,7 @@ JS;
      */
     public function getTableAttributeHtml(mixed $value, ElementInterface $element): string
     {
+        /** @var ElementQueryInterface|Collection $value */
         if ($value instanceof ElementQueryInterface) {
             $value = $this->_all($value, $element)->collect();
         }
@@ -802,11 +808,16 @@ JS;
             $element->isFieldDirty($this->handle) &&
             (!$element->propagating || $this->localizeRelations)
         ) {
-            /** @var ElementQuery $value */
+            /** @var ElementQueryInterface|Collection $value */
             $value = $element->getFieldValue($this->handle);
 
-            // $id will be set if we're saving new relations
-            if ($value->id !== null) {
+            // $value will be an element query and its $id will be set if we're saving new relations
+            if ($value instanceof Collection) {
+                $targetIds = $value->map(fn(ElementInterface $element) => $element->id)->all();
+            } elseif (
+                is_array($value->id) &&
+                ArrayHelper::isNumeric($value->id)
+            ) {
                 $targetIds = $value->id ?: [];
             } else {
                 $targetIds = $this->_all($value, $element)->ids();

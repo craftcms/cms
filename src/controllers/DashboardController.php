@@ -122,7 +122,8 @@ class DashboardController extends Controller
 
             $allWidgetJs .= 'new Craft.Widget("#widget' . $widget->id . '", ' .
                 Json::encode($info['settingsHtml']) . ', ' .
-                'function(){' . $info['settingsJs'] . '}' .
+                '() => {' . $info['settingsJs'] . '},' .
+                Json::encode($info['settings']) .
                 ");\n";
 
             if (!empty($widgetJs)) {
@@ -141,7 +142,7 @@ class DashboardController extends Controller
 
         $variables['widgetTypes'] = $widgetTypeInfo;
 
-        return $this->renderTemplate('dashboard/_index', $variables);
+        return $this->renderTemplate('dashboard/_index.twig', $variables);
     }
 
     /**
@@ -157,12 +158,13 @@ class DashboardController extends Controller
         $dashboardService = Craft::$app->getDashboard();
 
         $type = $this->request->getRequiredBodyParam('type');
-        $settingsNamespace = $this->request->getBodyParam('settingsNamespace');
+        $settings = $this->request->getBodyParam('settings');
 
-        if ($settingsNamespace) {
-            $settings = $this->request->getBodyParam($settingsNamespace);
-        } else {
-            $settings = null;
+        if (!$settings) {
+            $settingsNamespace = $this->request->getBodyParam('settingsNamespace');
+            if ($settingsNamespace) {
+                $settings = $this->request->getBodyParam($settingsNamespace);
+            }
         }
 
         $widget = $dashboardService->createWidget([
@@ -299,7 +301,7 @@ class DashboardController extends Controller
         $getHelpModel->attachment = UploadedFile::getInstanceByName($namespace . 'attachAdditionalFile');
 
         if (!$getHelpModel->validate()) {
-            return $this->renderTemplate('_components/widgets/CraftSupport/response', [
+            return $this->renderTemplate('_components/widgets/CraftSupport/response.twig', [
                 'widgetId' => $widgetId,
                 'success' => false,
                 'errors' => $getHelpModel->getErrors(),
@@ -313,7 +315,7 @@ class DashboardController extends Controller
             ],
             [
                 'name' => 'name',
-                'contents' => Craft::$app->getUser()->getIdentity()->getName(),
+                'contents' => static::currentUser()->getName(),
             ],
             [
                 'name' => 'message',
@@ -432,7 +434,7 @@ class DashboardController extends Controller
         }
 
         if (isset($requestException)) {
-            return $this->renderTemplate('_components/widgets/CraftSupport/response', [
+            return $this->renderTemplate('_components/widgets/CraftSupport/response.twig', [
                 'widgetId' => $widgetId,
                 'success' => false,
                 'errors' => [
@@ -443,7 +445,7 @@ class DashboardController extends Controller
             ]);
         }
 
-        return $this->renderTemplate('_components/widgets/CraftSupport/response', [
+        return $this->renderTemplate('_components/widgets/CraftSupport/response.twig', [
             'widgetId' => $widgetId,
             'success' => true,
             'errors' => [],
@@ -491,6 +493,7 @@ class DashboardController extends Controller
             'bodyHtml' => $widgetBodyHtml,
             'settingsHtml' => $settingsHtml,
             'settingsJs' => (string)$settingsJs,
+            'settings' => $widget->getSettings(),
         ];
     }
 

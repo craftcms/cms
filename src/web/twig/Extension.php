@@ -10,16 +10,17 @@ namespace craft\web\twig;
 use CommerceGuys\Addressing\Formatter\FormatterInterface;
 use Countable;
 use Craft;
+use craft\base\ElementInterface;
 use craft\base\MissingComponentInterface;
 use craft\base\PluginInterface;
 use craft\elements\Address;
 use craft\elements\Asset;
+use craft\elements\User;
 use craft\errors\AssetException;
 use craft\helpers\App;
 use craft\helpers\ArrayHelper;
 use craft\helpers\DateTimeHelper;
 use craft\helpers\Db;
-use craft\helpers\FileHelper;
 use craft\helpers\Gql;
 use craft\helpers\Html;
 use craft\helpers\HtmlPurifier;
@@ -74,6 +75,7 @@ use yii\base\InvalidArgumentException;
 use yii\base\InvalidConfigException;
 use yii\db\Exception;
 use yii\db\Expression;
+use yii\db\QueryInterface;
 use yii\helpers\Markdown;
 use function twig_date_converter;
 use function twig_date_format_filter;
@@ -180,6 +182,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('ascii', [StringHelper::class, 'toAscii']),
             new TwigFilter('atom', [$this, 'atomFilter'], ['needs_environment' => true]),
             new TwigFilter('attr', [$this, 'attrFilter'], ['is_safe' => ['html']]),
+            new TwigFilter('boolean', 'boolval'),
             new TwigFilter('camel', [$this, 'camelFilter']),
             new TwigFilter('column', [ArrayHelper::class, 'getColumn']),
             new TwigFilter('contains', [ArrayHelper::class, 'contains']),
@@ -187,7 +190,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('date', [$this, 'dateFilter'], ['needs_environment' => true]),
             new TwigFilter('datetime', [$this, 'datetimeFilter'], ['needs_environment' => true]),
             new TwigFilter('diff', 'array_diff'),
-            new TwigFilter('duration', [DateTimeHelper::class, 'humanDurationFromInterval']),
+            new TwigFilter('duration', [DateTimeHelper::class, 'humanDuration']),
             new TwigFilter('encenc', [$this, 'encencFilter']),
             new TwigFilter('explodeClass', [Html::class, 'explodeClass']),
             new TwigFilter('explodeStyle', [Html::class, 'explodeStyle']),
@@ -200,10 +203,13 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('id', [Html::class, 'id']),
             new TwigFilter('index', [ArrayHelper::class, 'index']),
             new TwigFilter('indexOf', [$this, 'indexOfFilter']),
+            new TwigFilter('integer', 'intval'),
             new TwigFilter('intersect', 'array_intersect'),
+            new TwigFilter('float', 'floatval'),
             new TwigFilter('json_encode', [$this, 'jsonEncodeFilter']),
             new TwigFilter('json_decode', [Json::class, 'decode']),
             new TwigFilter('kebab', [$this, 'kebabFilter']),
+            new TwigFilter('length', [$this, 'lengthFilter'], ['needs_environment' => true]),
             new TwigFilter('lcfirst', [$this, 'lcfirstFilter']),
             new TwigFilter('literal', [$this, 'literalFilter']),
             new TwigFilter('markdown', [$this, 'markdownFilter'], ['is_safe' => ['html']]),
@@ -228,6 +234,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('replace', [$this, 'replaceFilter']),
             new TwigFilter('rss', [$this, 'rssFilter'], ['needs_environment' => true]),
             new TwigFilter('snake', [$this, 'snakeFilter']),
+            new TwigFilter('string', 'strval'),
             new TwigFilter('time', [$this, 'timeFilter'], ['needs_environment' => true]),
             new TwigFilter('timestamp', [$this, 'timestampFilter']),
             new TwigFilter('translate', [$this, 'translateFilter']),
@@ -628,9 +635,10 @@ class Extension extends AbstractExtension implements GlobalsInterface
      *
      * @param mixed $arr
      * @param mixed $exclude
+     * @param bool $strict
      * @return array
      */
-    public function withoutFilter(mixed $arr, mixed $exclude): array
+    public function withoutFilter(mixed $arr, mixed $exclude, bool $strict = false): array
     {
         $arr = (array)$arr;
 
@@ -639,7 +647,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
         }
 
         foreach ($exclude as $value) {
-            ArrayHelper::removeValue($arr, $value);
+            ArrayHelper::removeValue($arr, $value, $strict);
         }
 
         return $arr;
@@ -1105,6 +1113,23 @@ class Extension extends AbstractExtension implements GlobalsInterface
     }
 
     /**
+     * Returns the length of an array, or the total result count of a query.
+     *
+     * @param TwigEnvironment $env
+     * @param mixed $value A variable
+     * @return int The length of the value
+     * @since 4.2.0
+     */
+    public function lengthFilter(TwigEnvironment $env, mixed $value): int
+    {
+        if ($value instanceof QueryInterface) {
+            return $value->count();
+        }
+
+        return twig_length_filter($env, $value);
+    }
+
+    /**
      * Escapes commas and asterisks in a string so they are not treated as special characters in
      * [[Db::parseParam()]].
      *
@@ -1218,6 +1243,14 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFunction('shuffle', [$this, 'shuffleFunction']),
             new TwigFunction('siteUrl', [UrlHelper::class, 'siteUrl']),
             new TwigFunction('url', [UrlHelper::class, 'url']),
+
+            // Element authorization functions
+            new TwigFunction('canCreateDrafts', fn(ElementInterface $element, ?User $user = null) => Craft::$app->getElements()->canCreateDrafts($element, $user)),
+            new TwigFunction('canDelete', fn(ElementInterface $element, ?User $user = null) => Craft::$app->getElements()->canDelete($element, $user)),
+            new TwigFunction('canDeleteForSite', fn(ElementInterface $element, ?User $user = null) => Craft::$app->getElements()->canDeleteForSite($element, $user)),
+            new TwigFunction('canDuplicate', fn(ElementInterface $element, ?User $user = null) => Craft::$app->getElements()->canDuplicate($element, $user)),
+            new TwigFunction('canSave', fn(ElementInterface $element, ?User $user = null) => Craft::$app->getElements()->canSave($element, $user)),
+            new TwigFunction('canView', fn(ElementInterface $element, ?User $user = null) => Craft::$app->getElements()->canView($element, $user)),
 
             // HTML generation functions
             new TwigFunction('actionInput', [Html::class, 'actionInput'], ['is_safe' => ['html']]),
@@ -1408,51 +1441,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function svgFunction(Asset|string $svg, ?bool $sanitize = null, ?bool $namespace = null, ?string $class = null): string
     {
-        if ($svg instanceof Asset) {
-            try {
-                $svg = $svg->getContents();
-            } catch (Throwable $e) {
-                Craft::error("Could not get the contents of {$svg->getPath()}: {$e->getMessage()}", __METHOD__);
-                Craft::$app->getErrorHandler()->logException($e);
-                return '';
-            }
-        } elseif (stripos($svg, '<svg') === false) {
-            // No <svg> tag, so it's probably a file path
-            try {
-                $svg = Craft::getAlias($svg);
-            } catch (InvalidArgumentException $e) {
-                Craft::error("Could not get the contents of $svg: {$e->getMessage()}", __METHOD__);
-                Craft::$app->getErrorHandler()->logException($e);
-                return '';
-            }
-            if (!is_file($svg) || !FileHelper::isSvg($svg)) {
-                Craft::warning("Could not get the contents of $svg: The file doesn't exist", __METHOD__);
-                return '';
-            }
-            $svg = file_get_contents($svg);
-
-            // This came from a file path, so pretty good chance that the SVG can be trusted.
-            $sanitize = $sanitize ?? false;
-            $namespace = $namespace ?? false;
-        }
-
-        // Sanitize and namespace the SVG by default
-        $sanitize = $sanitize ?? true;
-        $namespace = $namespace ?? true;
-
-        // Sanitize?
-        if ($sanitize) {
-            $svg = Html::sanitizeSvg($svg);
-        }
-
-        // Remove the XML declaration
-        $svg = preg_replace('/<\?xml.*?\?>\s*/', '', $svg);
-
-        // Namespace class names and IDs
-        if ($namespace) {
-            $ns = StringHelper::randomString(10);
-            $svg = Html::namespaceAttributes($svg, $ns, true);
-        }
+        $svg = Html::svg($svg, $sanitize, $namespace);
 
         if ($class !== null) {
             Craft::$app->getDeprecator()->log('svg()-class', 'The `class` argument of the `svg()` Twig function has been deprecated. The `|attr` filter should be used instead.');
@@ -1539,7 +1528,10 @@ class Extension extends AbstractExtension implements GlobalsInterface
             'loginUrl' => UrlHelper::siteUrl($generalConfig->getLoginPath()),
             'logoutUrl' => UrlHelper::siteUrl($generalConfig->getLogoutPath()),
             'setPasswordUrl' => $setPasswordRequestPath !== null ? UrlHelper::siteUrl($setPasswordRequestPath) : null,
-            'now' => new DateTime('now', new DateTimeZone(Craft::$app->getTimeZone())),
+            'now' => DateTimeHelper::now(),
+            'today' => DateTimeHelper::today(),
+            'tomorrow' => DateTimeHelper::tomorrow(),
+            'yesterday' => DateTimeHelper::yesterday(),
         ];
     }
 }

@@ -44,7 +44,7 @@ Craft.AddressesInput = Garnish.Base.extend(
         }
       });
 
-      const $actionBtn = $card.find('.menubtn');
+      const $actionBtn = $card.find('.menubtn').disclosureMenu();
       if ($actionBtn.length) {
         const menu = $actionBtn.data('trigger');
         const $menu = menu.$container;

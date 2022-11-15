@@ -97,17 +97,6 @@ class DateTimeHelperTest extends TestCase
     }
 
     /**
-     * @dataProvider secondsToHumanTimeDurationDataProvider
-     * @param string $expected
-     * @param int $seconds
-     * @param bool $showSeconds
-     */
-    public function testSecondsToHumanTimeDuration(string $expected, int $seconds, bool $showSeconds = true): void
-    {
-        self::assertSame($expected, DateTimeHelper::secondsToHumanTimeDuration($seconds, $showSeconds));
-    }
-
-    /**
      * What we are testing here is that if we tell the DtHelper to not assume a timezone and set it to system.
      * That all formats are converted to the system timezone from the inputted system timezone. ie an array like this:
      *
@@ -243,16 +232,15 @@ class DateTimeHelperTest extends TestCase
     }
 
     /**
-     * @dataProvider humanIntervalFromDurationDataProvider
+     * @dataProvider humanDurationDataProvider
      * @param string $expected
-     * @param string $duration
-     * @param bool $showSeconds
+     * @param string|int $duration
+     * @param bool|null $showSeconds
      * @throws Exception
      */
-    public function testHumanIntervalFromDuration(string $expected, string $duration, bool $showSeconds = true): void
+    public function testHumanDuration(string $expected, string|int $duration, ?bool $showSeconds = null): void
     {
-        $dateInterval = new DateInterval($duration);
-        self::assertSame($expected, DateTimeHelper::humanDurationFromInterval($dateInterval, $showSeconds));
+        self::assertSame($expected, DateTimeHelper::humanDuration($duration, $showSeconds));
     }
 
     /**
@@ -276,7 +264,7 @@ class DateTimeHelperTest extends TestCase
     /**
      * @throws Exception
      */
-    public function testYesterday(): void
+    public function testIsYesterday(): void
     {
         $dateTime = new DateTime('now');
 
@@ -296,7 +284,7 @@ class DateTimeHelperTest extends TestCase
     /**
      * @throws Exception
      */
-    public function testThisYearCheck(): void
+    public function testIsThisYear(): void
     {
         $dateTime = new DateTime('now');
         self::assertTrue(DateTimeHelper::isThisYear($dateTime));
@@ -311,7 +299,7 @@ class DateTimeHelperTest extends TestCase
     /**
      * @throws Exception
      */
-    public function testThisWeek(): void
+    public function testIsThisWeek(): void
     {
         $dateTime = new DateTime('now');
         self::assertTrue(DateTimeHelper::isThisWeek($dateTime));
@@ -354,6 +342,17 @@ class DateTimeHelperTest extends TestCase
 
         $dateTime->modify('-35 days');
         self::assertFalse(DateTimeHelper::isThisMonth($dateTime));
+    }
+
+    /**
+     * @dataProvider toDateIntervalDataProvider
+     * @param int $result
+     * @param int $input
+     */
+    public function testToDateInterval(int $result, int $input): void
+    {
+        $interval = DateTimeHelper::toDateInterval($input);
+        self::assertSame($result, DateTimeHelper::intervalToSeconds($interval));
     }
 
     /**
@@ -436,6 +435,14 @@ class DateTimeHelperTest extends TestCase
     }
 
     /**
+     * @return void
+     */
+    public function testFirstWeekDay(): void
+    {
+        self::assertSame(DateTimeHelper::firstWeekDay(), 1);
+    }
+
+    /**
      * @return array
      */
     public function constantsDataProvider(): array
@@ -446,25 +453,6 @@ class DateTimeHelperTest extends TestCase
             [60, DateTimeHelper::SECONDS_MINUTE],
             [2629740, DateTimeHelper::SECONDS_MONTH],
             [31556874, DateTimeHelper::SECONDS_YEAR],
-        ];
-    }
-
-    /**
-     * @return array
-     */
-    public function secondsToHumanTimeDurationDataProvider(): array
-    {
-        return [
-            ['22 seconds', 22],
-            ['1 second', 1],
-            ['2 minutes', 120],
-            ['2 minutes, 5 seconds', 125],
-            ['2 minutes, 1 second', 121],
-            ['2 minutes', 121, false],
-            ['3 minutes', 179, false],
-            ['1 hour', 3600],
-            ['1 day', 86400],
-            ['1 week', 604800],
         ];
     }
 
@@ -686,7 +674,7 @@ class DateTimeHelperTest extends TestCase
     /**
      * @return array
      */
-    public function humanIntervalFromDurationDataProvider(): array
+    public function humanDurationDataProvider(): array
     {
         return [
             ['1 day', 'P1D'],
@@ -698,6 +686,39 @@ class DateTimeHelperTest extends TestCase
             ['1 hour and 1 minute', 'PT1H1M25S', false],
             ['1 hour and 2 minutes', 'PT1H1M55S', false],
             ['less than a minute', 'PT1S', false],
+            ['1 minute', 82],
+            ['1 minute', 82, false],
+            ['1 minute and 22 seconds', 82, true],
+            ['22 seconds', 22, true],
+            ['22 seconds', 22],
+            ['less than a minute', 22, false],
+            ['1 second', 1],
+            ['2 minutes', 120],
+            ['2 minutes and 5 seconds', 125, true],
+            ['2 minutes and 1 second', 121, true],
+            ['2 minutes', 121, false],
+            ['3 minutes', 179, false],
+            ['1 hour', 3600],
+            ['1 day', 86400],
+            ['1 week', 604800],
+            ['8 days', 691200],
+            ['17 minutes', 999],
+            ['17 minutes', '999'],
+            ['16 minutes and 39 seconds', 999, true],
+            ['999 seconds', 'PT999S'],
+            ['27 minutes', 'PT10M999S'],
+            ['0 seconds', 0],
+            ['less than a minute', 0, false],
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public function toDateIntervalDataProvider(): array
+    {
+        return [
+            [10, 10],
         ];
     }
 
@@ -710,7 +731,6 @@ class DateTimeHelperTest extends TestCase
             [10, 10000, 10],
             [0, 0000, 0],
             [928172, 928172000, 928172],
-
         ];
     }
 

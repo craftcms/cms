@@ -53,6 +53,15 @@
 
 <span aria-live="assertive" class="visually-hidden" data-status-message></span>
 {% tag 'table' with tableAttributes %}
+    {% for col in cols %}
+        <col>
+    {% endfor %}
+    {% if (allowDelete and allowReorder) %}
+        <colgroup span="2"></colgroup>
+    {% else %}
+        {% if allowDelete %}<col>{% endif %}
+        {% if allowReorder %}<col>{% endif %}
+    {% endif %}
     <thead>
         <tr>
             {% for col in cols %}
@@ -77,7 +86,7 @@
                 </th>
             {% endfor %}
             {% if (allowDelete or allowReorder) %}
-                <th colspan="{{ not allowDelete or not allowReorder ? 1 : 2 }}"><span class="visually-hidden">{{ 'Row actions'|t('app') }}</span></th>
+                <th colspan="{{ not allowDelete or not allowReorder ? 1 : 2 }}" scope="colgroup"><span class="visually-hidden">{{ 'Row actions'|t('app') }}</span></th>
             {% endif %}
         </tr>
     </thead>
@@ -189,7 +198,7 @@
                     {% endif %}
                 {% endfor %}
                 {% if allowReorder -%}
-                    <td class="thin action"><a class="move icon" title="{{ 'Reorder'|t('app') }}" aria-label="{{ 'Reorder'|t('app') }}"></a></td>
+                    <td class="thin action"><a class="move icon" title="{{ 'Reorder'|t('app') }}" aria-label="{{ 'Reorder'|t('app') }}" type="button" role="button"></a></td>
                 {%- endif -%}
                 {%- if allowDelete -%}
                     <td class="thin action">

@@ -71,7 +71,7 @@ class DateTimeHelper
      *  - MySQL DATE and DATETIME formats (http://dev.mysql.com/doc/refman/5.1/en/datetime.html)
      *  - Relaxed versions of W3C and MySQL formats (single-digit months, days, and hours)
      *  - Unix timestamps
-     * - `now`
+     * - `now`/`today`/`tomorrow`/`yesterday` (midnight of the specified relative date)
      *  - An array with at least one of these keys defined: `datetime`, `date`, or `time`. Supported keys include:
      *      - `date` – a date string in `YYYY-MM-DD` or `YYYY-MM-DD HH:MM:SS.MU` formats or the current locale’s short date format
      *      - `time` – a time string in `HH:MM` or `HH:MM:SS` (24-hour) format or the current locale’s short time format
@@ -299,6 +299,170 @@ class DateTimeHelper
     }
 
     /**
+     * Returns a [[DateTime]] object set to midnight of the current day (factoring in whether time is [[pause()|paused]]).
+     *
+     * @param DateTimeZone|null $timeZone The time zone to return the `DateTime` object in. (Defaults to the system time zone.)
+     * @return DateTime
+     * @since 4.3.0
+     */
+    public static function today(?DateTimeZone $timeZone = null): DateTime
+    {
+        return static::now($timeZone)->setTime(0, 0);
+    }
+
+    /**
+     * Returns a [[DateTime]] object set to midnight of the following day (factoring in whether time is [[pause()|paused]]).
+     *
+     * @param DateTimeZone|null $timeZone The time zone to return the `DateTime` object in. (Defaults to the system time zone.)
+     * @return DateTime
+     * @since 4.3.0
+     */
+    public static function tomorrow(?DateTimeZone $timeZone = null): DateTime
+    {
+        return static::today($timeZone)->modify('+1 day');
+    }
+
+    /**
+     * Returns a [[DateTime]] object set to midnight of the previous day (factoring in whether time is [[pause()|paused]]).
+     *
+     * @param DateTimeZone|null $timeZone The time zone to return the `DateTime` object in. (Defaults to the system time zone.)
+     * @return DateTime
+     * @since 4.3.0
+     */
+    public static function yesterday(?DateTimeZone $timeZone = null): DateTime
+    {
+        return static::today($timeZone)->modify('-1 day');
+    }
+
+    /**
+     * Returns a [[DateTime]] object set to midnight of the first day of this week, according to the user’s preferences (factoring in whether time is [[pause()|paused]]).
+     *
+     * @param DateTimeZone|null $timeZone The time zone to return the `DateTime` object in. (Defaults to the system time zone.)
+     * @return DateTime
+     * @since 4.3.0
+     */
+    public static function thisWeek(?DateTimeZone $timeZone = null): DateTime
+    {
+        $today = static::today($timeZone);
+        $dayOfWeek = (int)$today->format('N');
+        if ($dayOfWeek === 7) {
+            $dayOfWeek = 0;
+        }
+        $startDay = static::firstWeekDay();
+
+        // Is today the first day of the week?
+        if ($dayOfWeek === $startDay) {
+            return $today;
+        }
+
+        if ($dayOfWeek > $startDay) {
+            $diff = $dayOfWeek - $startDay;
+        } else {
+            $diff = ($dayOfWeek + 7) - $startDay;
+        }
+
+        return $today->modify("-$diff days");
+    }
+
+    /**
+     * Returns a [[DateTime]] object set to midnight of the first day of next week, according to the user’s preferences (factoring in whether time is [[pause()|paused]]).
+     *
+     * @param DateTimeZone|null $timeZone The time zone to return the `DateTime` object in. (Defaults to the system time zone.)
+     * @return DateTime
+     * @since 4.3.0
+     */
+    public static function nextWeek(?DateTimeZone $timeZone = null): DateTime
+    {
+        return static::thisWeek($timeZone)->modify('+1 week');
+    }
+
+    /**
+     * Returns a [[DateTime]] object set to midnight of the first day of last week, according to the user’s preferences (factoring in whether time is [[pause()|paused]]).
+     *
+     * @param DateTimeZone|null $timeZone The time zone to return the `DateTime` object in. (Defaults to the system time zone.)
+     * @return DateTime
+     * @since 4.3.0
+     */
+    public static function lastWeek(?DateTimeZone $timeZone = null): DateTime
+    {
+        return static::thisWeek($timeZone)->modify('-1 week');
+    }
+
+    /**
+     * Returns a [[DateTime]] object set to midnight of the first day of this month (factoring in whether time is [[pause()|paused]]).
+     *
+     * @param DateTimeZone|null $timeZone The time zone to return the `DateTime` object in. (Defaults to the system time zone.)
+     * @return DateTime
+     * @since 4.3.0
+     */
+    public static function thisMonth(?DateTimeZone $timeZone = null): DateTime
+    {
+        $today = static::today($timeZone);
+        return $today->setDate((int)$today->format('Y'), (int)$today->format('n'), 1);
+    }
+
+    /**
+     * Returns a [[DateTime]] object set to midnight of the first day of next month (factoring in whether time is [[pause()|paused]]).
+     *
+     * @param DateTimeZone|null $timeZone The time zone to return the `DateTime` object in. (Defaults to the system time zone.)
+     * @return DateTime
+     * @since 4.3.0
+     */
+    public static function nextMonth(?DateTimeZone $timeZone = null): DateTime
+    {
+        return static::thisMonth($timeZone)->modify('+1 month');
+    }
+
+    /**
+     * Returns a [[DateTime]] object set to midnight of the first day of last month (factoring in whether time is [[pause()|paused]]).
+     *
+     * @param DateTimeZone|null $timeZone The time zone to return the `DateTime` object in. (Defaults to the system time zone.)
+     * @return DateTime
+     * @since 4.3.0
+     */
+    public static function lastMonth(?DateTimeZone $timeZone = null): DateTime
+    {
+        return static::thisMonth($timeZone)->modify('-1 month');
+    }
+
+    /**
+     * Returns a [[DateTime]] object set to midnight of the first day of this year (factoring in whether time is [[pause()|paused]]).
+     *
+     * @param DateTimeZone|null $timeZone The time zone to return the `DateTime` object in. (Defaults to the system time zone.)
+     * @return DateTime
+     * @since 4.3.0
+     */
+    public static function thisYear(?DateTimeZone $timeZone = null): DateTime
+    {
+        $today = static::today($timeZone);
+        return $today->setDate((int)$today->format('Y'), 1, 1);
+    }
+
+    /**
+     * Returns a [[DateTime]] object set to midnight of the first day of next year (factoring in whether time is [[pause()|paused]]).
+     *
+     * @param DateTimeZone|null $timeZone The time zone to return the `DateTime` object in. (Defaults to the system time zone.)
+     * @return DateTime
+     * @since 4.3.0
+     */
+    public static function nextYear(?DateTimeZone $timeZone = null): DateTime
+    {
+        return static::thisMonth($timeZone)->modify('+1 year');
+    }
+
+    /**
+     * Returns a [[DateTime]] object set to midnight of the first day of last year (factoring in whether time is [[pause()|paused]]).
+     *
+     * @param DateTimeZone|null $timeZone The time zone to return the `DateTime` object in. (Defaults to the system time zone.)
+     * @return DateTime
+     * @since 4.3.0
+     */
+    public static function lastYear(?DateTimeZone $timeZone = null): DateTime
+    {
+        return static::thisMonth($timeZone)->modify('-1 year');
+    }
+
+    /**
      * Returns a [[DateTime]] object set to the current time (factoring in whether time is [[pause()|paused]]), in the UTC time zone.
      *
      * @return DateTime
@@ -324,54 +488,11 @@ class DateTimeHelper
      * @param int $seconds The number of seconds
      * @param bool $showSeconds Whether to output seconds or not
      * @return string
+     * @deprecated in 4.2.0. [[humanDuration()]] should be used instead.
      */
     public static function secondsToHumanTimeDuration(int $seconds, bool $showSeconds = true): string
     {
-        $secondsInWeek = 604800;
-        $secondsInDay = 86400;
-        $secondsInHour = 3600;
-        $secondsInMinute = 60;
-
-        $weeks = floor($seconds / $secondsInWeek);
-        $seconds %= $secondsInWeek;
-
-        $days = floor($seconds / $secondsInDay);
-        $seconds %= $secondsInDay;
-
-        $hours = floor($seconds / $secondsInHour);
-        $seconds %= $secondsInHour;
-
-        if ($showSeconds) {
-            $minutes = floor($seconds / $secondsInMinute);
-            $seconds %= $secondsInMinute;
-        } else {
-            $minutes = round($seconds / $secondsInMinute);
-            $seconds = 0;
-        }
-
-        $timeComponents = [];
-
-        if ($weeks) {
-            $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{week} other{weeks}}', ['num' => $weeks]);
-        }
-
-        if ($days) {
-            $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{day} other{days}}', ['num' => $days]);
-        }
-
-        if ($hours) {
-            $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{hour} other{hours}}', ['num' => $hours]);
-        }
-
-        if ($minutes || (!$showSeconds && !$weeks && !$days && !$hours)) {
-            $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{minute} other{minutes}}', ['num' => $minutes]);
-        }
-
-        if ($seconds || ($showSeconds && !$weeks && !$days && !$hours && !$minutes)) {
-            $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{second} other{seconds}}', ['num' => $seconds]);
-        }
-
-        return implode(', ', $timeComponents);
+        return static::humanDuration($seconds, $showSeconds);
     }
 
     /**
@@ -511,10 +632,46 @@ class DateTimeHelper
     }
 
     /**
+     * Converts a value into a DateInterval object.
+     *
+     * @param mixed $value The value, represented as either a [[\DateInterval]] object, an interval duration string, or a number of seconds.
+     * @return DateInterval|false
+     * @throws InvalidArgumentException
+     * @since 4.2.1
+     */
+    public static function toDateInterval(mixed $value): DateInterval|false
+    {
+        if ($value instanceof DateInterval) {
+            return $value;
+        }
+
+        if (!$value) {
+            return false;
+        }
+
+        if (is_numeric($value)) {
+            // Use DateTime::diff() so the years/months/days/hours/minutes values are all populated correctly
+            $now = static::now(new DateTimeZone('UTC'));
+            $then = (clone $now)->modify("+$value seconds");
+            return $now->diff($then);
+        }
+
+        if (is_string($value)) {
+            try {
+                return new DateInterval($value);
+            } catch (Exception $e) {
+            }
+        }
+
+        throw new InvalidArgumentException('Unable to convert the value to a DateInterval.', 0, $e ?? null);
+    }
+
+    /**
      * Creates a DateInterval object based on a given number of seconds.
      *
      * @param int $seconds
      * @return DateInterval
+     * @deprecated in 4.2.1. [[toDateInterval()]] should be used instead.
      */
     public static function secondsToInterval(int $seconds): DateInterval
     {
@@ -553,14 +710,22 @@ class DateTimeHelper
     }
 
     /**
-     * Returns the interval in a human-friendly string.
+     * Returns a human-friendly duration string for the given date interval or number of seconds.
      *
-     * @param DateInterval $dateInterval
-     * @param bool $showSeconds
+     * @param mixed $dateInterval The value, represented as either a [[\DateInterval]] object, an interval duration string, or a number of seconds.
+     * @param bool|null $showSeconds Whether the duration string should include the number of seconds
      * @return string
+     * @since 4.2.0
      */
-    public static function humanDurationFromInterval(DateInterval $dateInterval, bool $showSeconds = true): string
+    public static function humanDuration(mixed $dateInterval, ?bool $showSeconds = null): string
     {
+        $dateInterval = static::toDateInterval($dateInterval) ?: new DateInterval('PT0S');
+        $secondsOnly = !$dateInterval->y && !$dateInterval->m && !$dateInterval->d && !$dateInterval->h && !$dateInterval->i;
+
+        if ($showSeconds === null) {
+            $showSeconds = $secondsOnly;
+        }
+
         $timeComponents = [];
 
         if ($dateInterval->y) {
@@ -572,7 +737,12 @@ class DateTimeHelper
         }
 
         if ($dateInterval->d) {
-            $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{day} other{days}}', ['num' => $dateInterval->d]);
+            // Is it an exact number of weeks?
+            if ($dateInterval->d % 7 === 0) {
+                $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{week} other{weeks}}', ['num' => $dateInterval->d / 7]);
+            } else {
+                $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{day} other{days}}', ['num' => $dateInterval->d]);
+            }
         }
 
         if ($dateInterval->h) {
@@ -582,9 +752,10 @@ class DateTimeHelper
         $minutes = $dateInterval->i;
 
         if (!$showSeconds) {
-            if ($minutes && round($dateInterval->s / 60)) {
-                $minutes++;
-            } elseif (!$dateInterval->y && !$dateInterval->m && !$dateInterval->d && !$dateInterval->h && !$minutes) {
+            $addlMinutes = round($dateInterval->s / 60);
+            if ($addlMinutes) {
+                $minutes += $addlMinutes;
+            } elseif ($secondsOnly) {
                 return Craft::t('app', 'less than a minute');
             }
         }
@@ -593,7 +764,7 @@ class DateTimeHelper
             $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{minute} other{minutes}}', ['num' => $minutes]);
         }
 
-        if ($showSeconds && $dateInterval->s) {
+        if ($showSeconds && ($dateInterval->s || empty($timeComponents))) {
             $timeComponents[] = Craft::t('app', '{num, number} {num, plural, =1{second} other{seconds}}', ['num' => $dateInterval->s]);
         }
 
@@ -609,6 +780,19 @@ class DateTimeHelper
         }
         $string .= $last;
         return $string;
+    }
+
+    /**
+     * Returns the interval in a human-friendly string.
+     *
+     * @param DateInterval $dateInterval
+     * @param bool $showSeconds
+     * @return string
+     * @deprecated in 4.2.0. [[humanDuration()]] should be used instead.
+     */
+    public static function humanDurationFromInterval(DateInterval $dateInterval, bool $showSeconds = true): string
+    {
+        return static::humanDuration($dateInterval, $showSeconds);
     }
 
     /**
@@ -704,8 +888,16 @@ class DateTimeHelper
     {
         $value = trim($value);
 
-        if ($value === 'now') {
-            return static::now();
+        $date = match (strtolower($value)) {
+            'now' => static::now(),
+            'today' => static::today(),
+            'tomorrow' => static::tomorrow(),
+            'yesterday' => static::yesterday(),
+            default => null,
+        };
+
+        if ($date !== null) {
+            return $date;
         }
 
         if (preg_match('/^
@@ -763,5 +955,17 @@ class DateTimeHelper
         }
 
         return null;
+    }
+
+    /**
+     * Returns the index of the first day of the week (0-6), according to the user’s preferences.
+     *
+     * @return int
+     * @since 4.3.0
+     */
+    public static function firstWeekDay(): int
+    {
+        $user = Craft::$app->getUser()->getIdentity();
+        return (int)(($user?->getPreference('weekStartDay')) ?? Craft::$app->getConfig()->getGeneral()->defaultWeekStartDay);
     }
 }

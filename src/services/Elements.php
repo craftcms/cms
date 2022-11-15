@@ -12,6 +12,7 @@ use craft\base\Element;
 use craft\base\ElementActionInterface;
 use craft\base\ElementExporterInterface;
 use craft\base\ElementInterface;
+use craft\base\ExpirableElementInterface;
 use craft\behaviors\DraftBehavior;
 use craft\behaviors\RevisionBehavior;
 use craft\db\Query;
@@ -33,11 +34,13 @@ use craft\errors\InvalidElementException;
 use craft\errors\OperationAbortedException;
 use craft\errors\SiteNotFoundException;
 use craft\errors\UnsupportedSiteException;
+use craft\events\AuthorizationCheckEvent;
 use craft\events\BatchElementActionEvent;
 use craft\events\DeleteElementEvent;
 use craft\events\EagerLoadElementsEvent;
 use craft\events\ElementEvent;
 use craft\events\ElementQueryEvent;
+use craft\events\InvalidateElementCachesEvent;
 use craft\events\MergeElementsEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\helpers\ArrayHelper;
@@ -57,6 +60,7 @@ use craft\records\StructureElement as StructureElementRecord;
 use craft\validators\HandleValidator;
 use craft\validators\SlugValidator;
 use craft\web\Application;
+use DateTime;
 use Throwable;
 use yii\base\Behavior;
 use yii\base\Component;
@@ -259,6 +263,156 @@ class Elements extends Component
     public const EVENT_AFTER_MERGE_CANONICAL_CHANGES = 'afterMergeCanonical';
 
     /**
+     * @event InvalidateElementCachesEvent The event that is triggered when element caches are invalidated.
+     * @since 4.2.0
+     */
+    public const EVENT_INVALIDATE_CACHES = 'invalidateCaches';
+
+    /**
+     * @event AuthorizationCheckEvent The event that is triggered when determining whether a user is authorized to view an element’s edit page.
+     *
+     * To authorize the user, set [[AuthorizationCheckEvent::$authorized]] to `true`.
+     *
+     * ```php
+     * use craft\events\AuthorizationCheckEvent;
+     * use craft\services\Elements;
+     * use yii\base\Event;
+     *
+     * Event::on(
+     *     Elements::class,
+     *     Elements::EVENT_AUTHORIZE_VIEW,
+     *     function(AuthorizationCheckEvent $event) {
+     *         $event->authorized = true;
+     *     }
+     * );
+     * ```
+     *
+     * @see canView()
+     * @since 4.3.0
+     */
+    public const EVENT_AUTHORIZE_VIEW = 'authorizeView';
+
+    /**
+     * @event AuthorizationCheckEvent The event that is triggered when determining whether a user is authorized to save an element in its current state.
+     *
+     * To authorize the user, set [[AuthorizationCheckEvent::$authorized]] to `true`.
+     *
+     * ```php
+     * use craft\events\AuthorizationCheckEvent;
+     * use craft\services\Elements;
+     * use yii\base\Event;
+     *
+     * Event::on(
+     *     Elements::class,
+     *     Elements::EVENT_AUTHORIZE_SAVE,
+     *     function(AuthorizationCheckEvent $event) {
+     *         $event->authorized = true;
+     *     }
+     * );
+     * ```
+     *
+     * @see canSave()
+     * @since 4.3.0
+     */
+    public const EVENT_AUTHORIZE_SAVE = 'authorizeSave';
+
+    /**
+     * @event AuthorizationCheckEvent The event that is triggered when determining whether a user is authorized to create drafts for an element.
+     *
+     * To authorize the user, set [[AuthorizationCheckEvent::$authorized]] to `true`.
+     *
+     * ```php
+     * use craft\events\AuthorizationCheckEvent;
+     * use craft\services\Elements;
+     * use yii\base\Event;
+     *
+     * Event::on(
+     *     Elements::class,
+     *     Elements::EVENT_AUTHORIZE_CREATE_DRAFTS,
+     *     function(AuthorizationCheckEvent $event) {
+     *         $event->authorized = true;
+     *     }
+     * );
+     * ```
+     *
+     * @see canCreateDrafts()
+     * @since 4.3.0
+     */
+    public const EVENT_AUTHORIZE_CREATE_DRAFTS = 'authorizeCreateDrafts';
+
+    /**
+     * @event AuthorizationCheckEvent The event that is triggered when determining whether a user is authorized to duplicate an element.
+     *
+     * To authorize the user, set [[AuthorizationCheckEvent::$authorized]] to `true`.
+     *
+     * ```php
+     * use craft\events\AuthorizationCheckEvent;
+     * use craft\services\Elements;
+     * use yii\base\Event;
+     *
+     * Event::on(
+     *     Elements::class,
+     *     Elements::EVENT_AUTHORIZE_DUPLICATE,
+     *     function(AuthorizationCheckEvent $event) {
+     *         $event->authorized = true;
+     *     }
+     * );
+     * ```
+     *
+     * @see canDuplicate()
+     * @since 4.3.0
+     */
+    public const EVENT_AUTHORIZE_DUPLICATE = 'authorizeDuplicate';
+
+    /**
+     * @event AuthorizationCheckEvent The event that is triggered when determining whether a user is authorized to delete an element.
+     *
+     * To authorize the user, set [[AuthorizationCheckEvent::$authorized]] to `true`.
+     *
+     * ```php
+     * use craft\events\AuthorizationCheckEvent;
+     * use craft\services\Elements;
+     * use yii\base\Event;
+     *
+     * Event::on(
+     *     Elements::class,
+     *     Elements::EVENT_AUTHORIZE_DELETE,
+     *     function(AuthorizationCheckEvent $event) {
+     *         $event->authorized = true;
+     *     }
+     * );
+     * ```
+     *
+     * @see canDelete()
+     * @since 4.3.0
+     */
+    public const EVENT_AUTHORIZE_DELETE = 'authorizeDelete';
+
+    /**
+     * @event AuthorizationCheckEvent The event that is triggered when determining whether a user is authorized to delete an element for its current site.
+     *
+     * To authorize the user, set [[AuthorizationCheckEvent::$authorized]] to `true`.
+     *
+     * ```php
+     * use craft\events\AuthorizationCheckEvent;
+     * use craft\services\Elements;
+     * use yii\base\Event;
+     *
+     * Event::on(
+     *     Elements::class,
+     *     Elements::EVENT_AUTHORIZE_DELETE_FOR_SITE,
+     *     function(AuthorizationCheckEvent $event) {
+     *         $event->authorized = true;
+     *     }
+     * );
+     * ```
+     *
+     * @see canDeleteForSite()
+     * @since 4.3.0
+     */
+    public const EVENT_AUTHORIZE_DELETE_FOR_SITE = 'authorizeDeleteForSite';
+
+    /**
      * @var int[] Stores a mapping of source element IDs to their duplicated element IDs.
      */
     public static array $duplicatedElementIds = [];
@@ -334,36 +488,71 @@ class Elements extends Component
      * @var array[]
      */
     private array $_cacheTagBuffers = [];
+
     /**
      * @var string[]|null
      */
     private ?array $_cacheTags = null;
 
     /**
+     * @var array
+     * @phpstan-var array<int|null>
+     */
+    private array $_cacheDurationBuffers = [];
+
+    private ?int $_cacheDuration = null;
+
+    /**
+     * Returns whether we are currently collecting element cache invalidation info.
+     *
+     * @return bool
+     * @since 4.3.0
+     * @see startCollectingCacheInfo()
+     * @see stopCollectingCacheInfo()
+     */
+    public function getIsCollectingCacheInfo(): bool
+    {
+        return isset($this->_cacheTags);
+    }
+
+    /**
      * Returns whether we are currently collecting element cache invalidation tags.
      *
      * @return bool
      * @since 3.5.0
-     * @see startCollectingCacheTags()
-     * @see stopCollectingCacheTags()
+     * @deprecated in 4.3.0. [[getIsCollectingCacheInfo()]] should be used instead.
      */
     public function getIsCollectingCacheTags(): bool
     {
-        return isset($this->_cacheTags);
+        return $this->getIsCollectingCacheInfo();
+    }
+
+    /**
+     * Starts collecting element cache invalidation info.
+     *
+     * @since 4.3.0
+     */
+    public function startCollectingCacheInfo(): void
+    {
+        // Save any currently-collected info into new buffers
+        if (isset($this->_cacheTags)) {
+            $this->_cacheTagBuffers[] = $this->_cacheTags;
+            $this->_cacheDurationBuffers[] = $this->_cacheDuration;
+        }
+
+        $this->_cacheTags = [];
+        $this->_cacheDuration = null;
     }
 
     /**
      * Starts collecting element cache invalidation tags.
      *
      * @since 3.5.0
+     * @deprecated in 4.3.0. [[startCollectingCacheInfo()]] should be used instead.
      */
     public function startCollectingCacheTags(): void
     {
-        // Save any currently-collected tags into a new buffer, and reset the array
-        if (isset($this->_cacheTags)) {
-            $this->_cacheTagBuffers[] = $this->_cacheTags;
-        }
-        $this->_cacheTags = [];
+        $this->startCollectingCacheInfo();
     }
 
     /**
@@ -386,29 +575,90 @@ class Elements extends Component
     }
 
     /**
-     * Stops collecting element cache invalidation tags, and returns a cache dependency object.
+     * Sets a possible cache expiration date that [[stopCollectingCacheInfo()]] should return.
      *
-     * @return TagDependency
-     * @since 3.5.0
+     * The value will only be used if it is less than the currently stored expiration date.
+     *
+     * @param DateTime $expiryDate
+     * @since 4.3.0
      */
-    public function stopCollectingCacheTags(): TagDependency
+    public function setCacheExpiryDate(DateTime $expiryDate): void
+    {
+        if (!isset($this->_cacheTags)) {
+            return;
+        }
+
+        $duration = $expiryDate->getTimestamp() - time();
+
+        if ($duration > 0 && (!$this->_cacheDuration || $duration < $this->_cacheDuration)) {
+            $this->_cacheDuration = $duration;
+        }
+    }
+
+    /**
+     * Stops collecting element invalidation info, and returns a [[TagDependency]] and recommended max cache duration
+     * that should be used when saving the cache data.
+     *
+     * If no cache tags were registered, `[null, null]` will be returned.
+     *
+     * @return array
+     * @phpstan-return array{TagDependency|null,int|null}
+     */
+    public function stopCollectingCacheInfo(): array
     {
         if (!isset($this->_cacheTags)) {
             throw new InvalidCallException('Element cache invalidation tags are not currently being collected.');
         }
 
         $tags = $this->_cacheTags;
+        $duration = $this->_cacheDuration;
 
         // Was there another active collection?
         if (!empty($this->_cacheTagBuffers)) {
             $this->_cacheTags = array_merge(array_pop($this->_cacheTagBuffers), $tags);
+
+            // Override the parent duration if ours is shorter
+            $this->_cacheDuration = array_pop($this->_cacheDurationBuffers);
+            if ($duration && $duration < $this->_cacheDuration) {
+                $this->_cacheDuration = $duration;
+            }
         } else {
             $this->_cacheTags = null;
+            $this->_cacheDuration = null;
         }
 
-        return new TagDependency([
+        if (empty($tags)) {
+            return [null, null];
+        }
+
+        // Only use the duration if it's less than the cacheDuration config setting
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+        if ($generalConfig->cacheDuration) {
+            if ($duration) {
+                $duration = min($duration, $generalConfig->cacheDuration);
+            } else {
+                $duration = $generalConfig->cacheDuration;
+            }
+        }
+
+        $dep = new TagDependency([
             'tags' => array_keys($tags),
         ]);
+
+        return [$dep, $duration];
+    }
+
+    /**
+     * Stops collecting element cache invalidation tags, and returns a cache dependency object.
+     *
+     * @return TagDependency
+     * @since 3.5.0
+     * @deprecated in 4.3.0. [[stopCollectingCacheInfo()]] should be used instead.
+     */
+    public function stopCollectingCacheTags(): TagDependency
+    {
+        [$dep] = $this->stopCollectingCacheInfo();
+        return $dep ?? new TagDependency();
     }
 
     /**
@@ -418,7 +668,15 @@ class Elements extends Component
      */
     public function invalidateAllCaches(): void
     {
-        TagDependency::invalidate(Craft::$app->getCache(), 'element');
+        $tags = ['element'];
+        TagDependency::invalidate(Craft::$app->getCache(), $tags);
+
+        // Fire a 'invalidateCaches' event
+        if ($this->hasEventHandlers(self::EVENT_INVALIDATE_CACHES)) {
+            $this->trigger(self::EVENT_INVALIDATE_CACHES, new InvalidateElementCachesEvent([
+                'tags' => $tags,
+            ]));
+        }
     }
 
     /**
@@ -430,7 +688,15 @@ class Elements extends Component
      */
     public function invalidateCachesForElementType(string $elementType): void
     {
-        TagDependency::invalidate(Craft::$app->getCache(), "element::$elementType");
+        $tags = ["element::$elementType"];
+        TagDependency::invalidate(Craft::$app->getCache(), $tags);
+
+        // Fire a 'invalidateCaches' event
+        if ($this->hasEventHandlers(self::EVENT_INVALIDATE_CACHES)) {
+            $this->trigger(self::EVENT_INVALIDATE_CACHES, new InvalidateElementCachesEvent([
+                'tags' => $tags,
+            ]));
+        }
     }
 
     /**
@@ -464,6 +730,13 @@ class Elements extends Component
         }
 
         TagDependency::invalidate(Craft::$app->getCache(), $tags);
+
+        // Fire a 'invalidateCaches' event
+        if ($this->hasEventHandlers(self::EVENT_INVALIDATE_CACHES)) {
+            $this->trigger(self::EVENT_INVALIDATE_CACHES, new InvalidateElementCachesEvent([
+                'tags' => $tags,
+            ]));
+        }
     }
 
     // Finding Elements
@@ -926,11 +1199,17 @@ class Elements extends Component
      * @param bool $skipRevisions Whether elements that are (or belong to) a revision should be skipped
      * @param bool|null $updateSearchIndex Whether to update the element search index for the element
      * (this will happen via a background job if this is a web request)
+     * @param bool $touch Whether to update the `dateUpdated` timestamps for the elements
      * @throws Throwable if reasons
      * @since 3.2.0
      */
-    public function resaveElements(ElementQueryInterface $query, bool $continueOnError = false, bool $skipRevisions = true, ?bool $updateSearchIndex = null): void
-    {
+    public function resaveElements(
+        ElementQueryInterface $query,
+        bool $continueOnError = false,
+        bool $skipRevisions = true,
+        ?bool $updateSearchIndex = null,
+        bool $touch = false,
+    ): void {
         /** @var ElementQuery $query */
         // Fire a 'beforeResaveElements' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_RESAVE_ELEMENTS)) {
@@ -980,7 +1259,7 @@ class Elements extends Component
 
                 if ($e === null) {
                     try {
-                        $this->_saveElementInternal($element, true, true, $updateSearchIndex);
+                        $this->_saveElementInternal($element, true, true, $updateSearchIndex, forceTouch: $touch);
                     } catch (Throwable $e) {
                         if (!$continueOnError) {
                             throw $e;
@@ -1230,14 +1509,15 @@ class Elements extends Component
             // Should we add the clone to the source element’s structure?
             if (
                 $placeInStructure &&
-                $element->structureId &&
-                $element->root &&
                 $mainClone->getIsCanonical() &&
                 !$mainClone->root &&
-                $mainClone->structureId == $element->structureId
+                (!$mainClone->structureId || !$element->structureId || $mainClone->structureId == $element->structureId)
             ) {
-                $mode = isset($newAttributes['id']) ? Structures::MODE_AUTO : Structures::MODE_INSERT;
-                Craft::$app->getStructures()->moveAfter($element->structureId, $mainClone, $element, $mode);
+                $canonical = $element->getCanonical(true);
+                if ($canonical->structureId && $canonical->root) {
+                    $mode = isset($newAttributes['id']) ? Structures::MODE_AUTO : Structures::MODE_INSERT;
+                    Craft::$app->getStructures()->moveAfter($canonical->structureId, $mainClone, $canonical, $mode);
+                }
             }
 
             // Map it
@@ -1692,6 +1972,8 @@ class Elements extends Component
             // Invalidate any caches involving this element
             $this->invalidateCachesForElement($element);
 
+            DateTimeHelper::pause();
+
             if ($element->hardDelete) {
                 Db::delete(Table::ELEMENTS, [
                     'id' => $element->id,
@@ -1709,12 +1991,15 @@ class Elements extends Component
                 $this->_cascadeDeleteDraftsAndRevisions($element->id);
             }
 
+            $element->dateDeleted = DateTimeHelper::now();
             $element->afterDelete();
 
             $transaction->commit();
         } catch (Throwable $e) {
             $transaction->rollBack();
             throw $e;
+        } finally {
+            DateTimeHelper::resume();
         }
 
         // Fire an 'afterDeleteElement' event
@@ -2129,7 +2414,10 @@ class Elements extends Component
         foreach ($with as $path) {
             // Is this already an EagerLoadPlan object?
             if ($path instanceof EagerLoadPlan) {
-                $plans[$path->alias] = $path;
+                // Don't index the plan by its alias, as two plans w/ different `when` filters could be using the same alias.
+                // Side effect: mixing EagerLoadPlan objects and arrays could result in redundant element queries,
+                // but that would be a weird thing to do.
+                $plans[] = $path;
                 continue;
             }
 
@@ -2236,6 +2524,8 @@ class Elements extends Component
      */
     private function _eagerLoadElementsInternal(string $elementType, array $elementsBySite, array $with): void
     {
+        $elementsService = Craft::$app->getElements();
+
         foreach ($elementsBySite as $siteId => $elements) {
             // In case the elements were
             $elements = array_values($elements);
@@ -2388,7 +2678,17 @@ class Elements extends Component
                                 if (!isset($targetElements[$targetSiteId][$elementId])) {
                                     $targetElements[$targetSiteId][$elementId] = $query->createElement($result);
                                 }
-                                $targetElementsForSource[] = $targetElements[$targetSiteId][$elementId];
+                                $targetElementsForSource[] = $element = $targetElements[$targetSiteId][$elementId];
+
+                                // If we're collecting cache info and the element is expirable, register its expiry date
+                                if (
+                                    $element instanceof ExpirableElementInterface &&
+                                    $elementsService->getIsCollectingCacheInfo() &&
+                                    ($expiryDate = $element->getExpiryDate()) !== null
+                                ) {
+                                    $elementsService->setCacheExpiryDate($expiryDate);
+                                }
+
                                 if ($limit && ++$count == $limit) {
                                     break 2;
                                 }
@@ -2446,6 +2746,8 @@ class Elements extends Component
      * @param bool|null $updateSearchIndex Whether to update the element search index for the element
      * (this will happen via a background job if this is a web request)
      * @param array|null $supportedSites The element’s supported site info, indexed by site ID
+     * @param bool $forceTouch Whether to force the `dateUpdated` timestamps to be updated for the elements,
+     * regardless of whether they’re being resaved
      * @return bool
      * @throws ElementNotFoundException if $element has an invalid $id
      * @throws UnsupportedSiteException if the element is being saved for a site it doesn’t support
@@ -2457,6 +2759,7 @@ class Elements extends Component
         bool $propagate = true,
         ?bool $updateSearchIndex = null,
         ?array $supportedSites = null,
+        bool $forceTouch = false,
     ): bool {
         /** @var ElementInterface|DraftBehavior|RevisionBehavior $element */
         $isNewElement = !$element->id;
@@ -2585,7 +2888,7 @@ class Elements extends Component
                     if (isset($element->dateUpdated)) {
                         $elementRecord->dateUpdated = Db::prepareValueForDb($element->dateUpdated);
                     }
-                } elseif ($element->resaving) {
+                } elseif ($element->resaving && !$forceTouch) {
                     // Prevent ActiveRecord::prepareForDb() from changing the dateUpdated
                     $elementRecord->markAttributeDirty('dateUpdated');
                 } else {
@@ -3026,5 +3329,140 @@ SQL;
             // Replace the token with the default value
             return $fallback;
         }
+    }
+
+    /**
+     * Returns whether a user is authorized to view the given element’s edit page.
+     *
+     * @param ElementInterface $element
+     * @param User|null $user
+     * @return bool
+     * @since 4.3.0
+     */
+    public function canView(ElementInterface $element, ?User $user = null): bool
+    {
+        if (!$user) {
+            $user = Craft::$app->getUser()->getIdentity();
+            if (!$user) {
+                return false;
+            }
+        }
+
+        return $this->_authCheck($element, $user, self::EVENT_AUTHORIZE_VIEW) ?? $element->canView($user);
+    }
+
+    /**
+     * Returns whether a user is authorized to save the given element in its current form.
+     *
+     * @param ElementInterface $element
+     * @param User|null $user
+     * @return bool
+     * @since 4.3.0
+     */
+    public function canSave(ElementInterface $element, ?User $user = null): bool
+    {
+        if (!$user) {
+            $user = Craft::$app->getUser()->getIdentity();
+            if (!$user) {
+                return false;
+            }
+        }
+
+        return $this->_authCheck($element, $user, self::EVENT_AUTHORIZE_SAVE) ?? $element->canSave($user);
+    }
+
+    /**
+     * Returns whether a user is authorized to duplicate the given element.
+     *
+     * @param ElementInterface $element
+     * @param User|null $user
+     * @return bool
+     * @since 4.3.0
+     */
+    public function canDuplicate(ElementInterface $element, ?User $user = null): bool
+    {
+        if (!$user) {
+            $user = Craft::$app->getUser()->getIdentity();
+            if (!$user) {
+                return false;
+            }
+        }
+
+        return $this->_authCheck($element, $user, self::EVENT_AUTHORIZE_DUPLICATE) ?? $element->canDuplicate($user);
+    }
+
+    /**
+     * Returns whether a user is authorized to delete the given element.
+     *
+     * @param ElementInterface $element
+     * @param User|null $user
+     * @return bool
+     * @since 4.3.0
+     */
+    public function canDelete(ElementInterface $element, ?User $user = null): bool
+    {
+        if (!$user) {
+            $user = Craft::$app->getUser()->getIdentity();
+            if (!$user) {
+                return false;
+            }
+        }
+
+        return $this->_authCheck($element, $user, self::EVENT_AUTHORIZE_DELETE) ?? $element->canDelete($user);
+    }
+
+    /**
+     * Returns whether a user is authorized to delete the given element for its current site.
+     *
+     * @param ElementInterface $element
+     * @param User|null $user
+     * @return bool
+     * @since 4.3.0
+     */
+    public function canDeleteForSite(ElementInterface $element, ?User $user = null): bool
+    {
+        if (!$user) {
+            $user = Craft::$app->getUser()->getIdentity();
+            if (!$user) {
+                return false;
+            }
+        }
+
+        return $this->_authCheck($element, $user, self::EVENT_AUTHORIZE_DELETE_FOR_SITE) ?? $element->canDeleteForSite($user);
+    }
+
+    /**
+     * Returns whether a user is authorized to create drafts for the given element.
+     *
+     * @param ElementInterface $element
+     * @param User|null $user
+     * @return bool
+     * @since 4.3.0
+     */
+    public function canCreateDrafts(ElementInterface $element, ?User $user = null): bool
+    {
+        if (!$user) {
+            $user = Craft::$app->getUser()->getIdentity();
+            if (!$user) {
+                return false;
+            }
+        }
+
+        return $this->_authCheck($element, $user, self::EVENT_AUTHORIZE_CREATE_DRAFTS) ?? $element->canCreateDrafts($user);
+    }
+
+    private function _authCheck(ElementInterface $element, User $user, string $eventName): ?bool
+    {
+        if (!$this->hasEventHandlers($eventName)) {
+            return null;
+        }
+
+        $event = new AuthorizationCheckEvent($user, [
+            'element' => $element,
+            'authorized' => null,
+        ]);
+
+        $this->trigger($eventName, $event);
+        return $event->authorized;
     }
 }

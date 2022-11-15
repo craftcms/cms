@@ -19,16 +19,6 @@ abstract class BaseLightswitchConditionRule extends BaseConditionRule
     public bool $value = true;
 
     /**
-     * Returns the input container attributes.
-     *
-     * @return array
-     */
-    protected function containerAttributes(): array
-    {
-        return [];
-    }
-
-    /**
      * @inheritdoc
      */
     public function getConfig(): array
@@ -44,14 +34,18 @@ abstract class BaseLightswitchConditionRule extends BaseConditionRule
     protected function inputHtml(): string
     {
         $lightswitchId = 'lightswitch';
+        $labelId = "$lightswitchId-label";
 
         return
-            Html::hiddenLabel($this->getLabel(), $lightswitchId) .
+            Html::hiddenLabel(Html::encode($this->getLabel()), $lightswitchId, [
+                'id' => $labelId,
+            ]) .
             Html::tag('div',
                 Cp::lightswitchHtml([
                     'id' => $lightswitchId,
                     'on' => $this->value,
                     'name' => 'value',
+                    'labelledBy' => $labelId,
                 ])
             );
     }

@@ -157,7 +157,7 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
      */
     public function getSettingsHtml(): ?string
     {
-        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Number/settings',
+        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Number/settings.twig',
             [
                 'field' => $this,
             ]);
@@ -244,7 +244,7 @@ class Number extends Field implements PreviewableFieldInterface, SortableFieldIn
                     }
                 }
             } else {
-                // Override the initial value being set to null by _includes/forms/field
+                // Override the initial value being set to null by CustomField::inputHtml()
                 $view->setInitialDeltaValue($this->handle, [
                     'locale' => Craft::$app->getFormattingLocale()->id,
                     'value' => '',
@@ -281,7 +281,7 @@ JS;
 
         $view->registerJs($js);
 
-        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Number/input', [
+        return Craft::$app->getView()->renderTemplate('_components/fieldtypes/Number/input.twig', [
             'id' => $id,
             'describedBy' => $this->describedBy,
             'field' => $this,

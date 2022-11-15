@@ -11,13 +11,19 @@
                     {% for blockTypeId, blockType in blockTypes %}
                         <div class="matrixconfigitem mci-blocktype{% if blockType.hasFieldErrors %} error{% endif %}" data-id="{{ blockTypeId }}"{% if blockType.hasErrors() %} data-errors="{{ blockType.getErrors() | json_encode }}"{% endif %}>
                             <div class="mci-name">
-                                <h4>
+                                {% tag 'h4' with {
+                                    title: blockType.name,
+                                } %}
                                     {{ blockType.name }}
                                     {% if blockType.hasFieldErrors %}
                                         <span data-icon="alert" aria-label="{{ 'Error'|t('app') }}"></span>
                                     {% endif %}
-                                </h4>
-                                <div class="smalltext light code">{{ blockType.handle }}</div>
+                                {% endtag %}
+                                {{ tag('div', {
+                                    class: ['smalltext', 'light', 'code'],
+                                    text: blockType.handle,
+                                    title: blockType.handle,
+                                }) }}
                             </div>
                             <a class="settings icon{% if blockType.hasErrors() %} error{% endif %}" title="{{ 'Settings'|t('app') }}" aria-label="{{ 'Settings'|t('app') }}" role="button"></a>
                             <a class="move icon" title="{{ 'Reorder'|t('app') }}" aria-label="{{ 'Reorder'|t('app') }}" role="button"></a>
@@ -40,17 +46,25 @@
                     <div data-id="{{ blockTypeId }}" class="hidden">
                         {% for fieldId, layoutElement in blockTypeFields[blockTypeId] %}
                             {% set field = layoutElement.getField() %}
+                            {% set hasName = field.name and field.name != '__blank__' %}
                             <div class="matrixconfigitem mci-field{% if field.hasErrors() %} error{% endif %}" data-id="{{ fieldId }}">
                                 <div class="mci-name">
-                                    <h4{% if layoutElement.required %} class="mci-required"{% endif %}>
-                                        {%- if field.name and field.name != '__blank__' -%}
+                                    {% tag 'h4' with {
+                                        class: layoutElement.required ? 'mci-required' : null,
+                                        title: hasName ? field.name : null,
+                                    } %}
+                                        {%- if hasName -%}
                                             {{ field.name }}
                                         {%- else -%}
                                             <em class="light">{{ '(blank)'|t('app') }}</em>
                                         {%- endif -%}
                                         {%- if field.hasErrors() %} <span data-icon="alert" aria-label="{{ 'Error'|t('app') }}"></span>{% endif -%}
-                                    </h4>
-                                    <div class="smalltext light code">{{ field.handle }}</div>
+                                    {% endtag %}
+                                    {{ tag('div', {
+                                        class: ['smalltext', 'light', 'code'],
+                                        text: field.handle,
+                                        title: field.handle,
+                                    }) }}
                                 </div>
                                 <a class="move icon" title="{{ 'Reorder'|t('app') }}" aria-label="{{ 'Reorder'|t('app') }}" role="button"></a>
                             </div>

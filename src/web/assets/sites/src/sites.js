@@ -80,7 +80,7 @@
             .then((response) => {
               this.$selectedGroup.text(response.data.group.name);
               this.$selectedGroup.data('raw-name', newName);
-              Craft.cp.displayNotice(Craft.t('app', 'Group renamed.'));
+              Craft.cp.displaySuccess(Craft.t('app', 'Group renamed.'));
             })
             .catch(({response}) => {
               if (response.data && response.data.errors) {

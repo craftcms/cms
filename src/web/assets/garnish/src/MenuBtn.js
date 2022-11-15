@@ -119,6 +119,10 @@ export default Base.extend(
     },
 
     onKeyDown: function (ev) {
+      if (Garnish.isCtrlKeyPressed(ev)) {
+        return;
+      }
+
       // Searching for an option?
       if (
         ev.key &&
@@ -261,6 +265,8 @@ export default Base.extend(
 
       $option.addClass('hover');
       this.$btn.attr('aria-activedescendant', $option.parent('li').attr('id'));
+
+      Garnish.scrollContainerToElement(this.menu.$container, $option);
     },
 
     focusSelectedOption: function () {

@@ -34,6 +34,15 @@ Craft.AdminTable = Garnish.Base.extend(
 
       this.$deleteBtns = this.$table.find('.delete:not(.disabled)');
       this.addListener(this.$deleteBtns, 'click', 'handleDeleteBtnClick');
+      this.addListener(this.$deleteBtns, 'keydown', (event) => {
+        if (
+          event.keyCode === Garnish.SPACE_KEY ||
+          event.keyCode === Garnish.RETURN_KEY
+        ) {
+          event.preventDefault();
+          this.handleDeleteBtnClick(event);
+        }
+      });
 
       this.updateUI();
     },
@@ -80,7 +89,7 @@ Craft.AdminTable = Garnish.Base.extend(
       Craft.sendActionRequest('POST', this.settings.reorderAction, {data})
         .then((response) => {
           this.onReorderItems(ids);
-          Craft.cp.displayNotice(
+          Craft.cp.displaySuccess(
             Craft.t('app', this.settings.reorderSuccessMessage)
           );
         })
@@ -105,6 +114,10 @@ Craft.AdminTable = Garnish.Base.extend(
     },
 
     confirmDeleteItem: function ($row) {
+      if (!this.settings.confirmDeleteMessage) {
+        return true;
+      }
+
       var name = this.getItemName($row);
       return confirm(
         Craft.t('app', this.settings.confirmDeleteMessage, {name})
@@ -145,9 +158,11 @@ Craft.AdminTable = Garnish.Base.extend(
       this.updateUI();
       this.onDeleteItem(id);
 
-      Craft.cp.displayNotice(
-        Craft.t('app', this.settings.deleteSuccessMessage, {name})
-      );
+      if (this.settings.deleteSuccessMessage) {
+        Craft.cp.displaySuccess(
+          Craft.t('app', this.settings.deleteSuccessMessage, {name})
+        );
+      }
     },
 
     onReorderItems: function (ids) {

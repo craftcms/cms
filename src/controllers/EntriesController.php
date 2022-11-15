@@ -78,7 +78,7 @@ class EntriesController extends BaseEntriesController
         if (!in_array($site->id, $editableSiteIds)) {
             // If there’s more than one possibility and entries doesn’t propagate to all sites, let the user choose
             if (count($editableSiteIds) > 1 && $section->propagationMethod !== Section::PROPAGATION_METHOD_ALL) {
-                return $this->renderTemplate('_special/sitepicker', [
+                return $this->renderTemplate('_special/sitepicker.twig', [
                     'siteIds' => $editableSiteIds,
                     'baseUrl' => "entries/$section->handle/new",
                 ]);
@@ -88,7 +88,7 @@ class EntriesController extends BaseEntriesController
             $site = $sitesService->getSiteById($editableSiteIds[0]);
         }
 
-        $user = Craft::$app->getUser()->getIdentity();
+        $user = static::currentUser();
 
         // Create & populate the draft
         $entry = Craft::createObject(Entry::class);
@@ -134,7 +134,7 @@ class EntriesController extends BaseEntriesController
         }
 
         // Make sure the user is allowed to create this entry
-        if (!$entry->canSave($user)) {
+        if (!Craft::$app->getElements()->canSave($entry, $user)) {
             throw new ForbiddenHttpException('User not authorized to save this entry.');
         }
 
@@ -231,7 +231,7 @@ class EntriesController extends BaseEntriesController
         // Permission enforcement
         $this->enforceSitePermission($entry->getSite());
         $this->enforceEditEntryPermissions($entry, $duplicate);
-        $currentUser = Craft::$app->getUser()->getIdentity();
+        $currentUser = static::currentUser();
         $section = $entry->getSection();
 
         // Is this another user’s entry (and it’s not a Single)?
@@ -276,7 +276,6 @@ class EntriesController extends BaseEntriesController
                     'entry'
                 );
             } catch (Throwable $e) {
-                /** @phpstan-ignore-next-line */
                 throw new ServerErrorHttpException(Craft::t('app', 'An error occurred when duplicating the entry.'), 0, $e);
             }
         }
@@ -337,7 +336,7 @@ class EntriesController extends BaseEntriesController
         $provisional = Entry::find()
             ->provisionalDrafts()
             ->draftOf($entry->id)
-            ->draftCreator(Craft::$app->getUser()->getIdentity())
+            ->draftCreator(static::currentUser())
             ->siteId($entry->siteId)
             ->status(null)
             ->one();
@@ -364,6 +363,10 @@ class EntriesController extends BaseEntriesController
             $data['dateCreated'] = DateTimeHelper::toIso8601($entry->dateCreated);
             $data['dateUpdated'] = DateTimeHelper::toIso8601($entry->dateUpdated);
             $data['postDate'] = ($entry->postDate ? DateTimeHelper::toIso8601($entry->postDate) : null);
+
+            if ($this->request->getIsCpRequest()) {
+                $data['elementHtml'] = Cp::elementHtml($entry);
+            }
         }
 
         return $this->asModelSuccess(
@@ -392,7 +395,7 @@ class EntriesController extends BaseEntriesController
                 $entry = Entry::find()
                     ->provisionalDrafts()
                     ->draftOf($entryId)
-                    ->draftCreator(Craft::$app->getUser()->getIdentity())
+                    ->draftCreator(static::currentUser())
                     ->siteId($siteId)
                     ->status(null)
                     ->one();
@@ -460,7 +463,7 @@ class EntriesController extends BaseEntriesController
         $entry->setFieldValuesFromRequest($fieldsLocation);
 
         // Author
-        $authorId = $this->request->getBodyParam('author', ($entry->authorId ?: Craft::$app->getUser()->getIdentity()->id));
+        $authorId = $this->request->getBodyParam('author', ($entry->authorId ?: static::currentUser()->id));
 
         if (is_array($authorId)) {
             $authorId = $authorId[0] ?? null;

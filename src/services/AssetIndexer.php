@@ -385,7 +385,7 @@ class AssetIndexer extends Component
         $volumeList = array_keys($volumeList);
 
         $missingFolders = (new Query())
-            ->select(['path' => 'folders.path', 'volumeName' => 'volumes.name', 'folderId' => 'folders.id'])
+            ->select(['path' => 'folders.path', 'volumeName' => 'volumes.name', 'volumeId' => 'volumes.id', 'folderId' => 'folders.id'])
             ->from(['folders' => Table::VOLUMEFOLDERS])
             ->leftJoin(['volumes' => Table::VOLUMES], '[[volumes.id]] = [[folders.volumeId]]')
             ->leftJoin(['indexData' => Table::ASSETINDEXDATA], ['and', '[[folders.id]] = [[indexData.recordId]]', ['indexData.isDir' => true]])
@@ -408,8 +408,21 @@ class AssetIndexer extends Component
             ->andWhere(['indexData.id' => null])
             ->all();
 
-        foreach ($missingFolders as ['folderId' => $folderId, 'path' => $path, 'volumeName' => $volumeName]) {
-            $missing['folders'][$folderId] = $volumeName . '/' . $path;
+        foreach ($missingFolders as ['folderId' => $folderId, 'path' => $path, 'volumeName' => $volumeName, 'volumeId' => $volumeId]) {
+            /**
+             * Check to see if the folders are actually empty
+             * @link https://github.com/craftcms/cms/issues/11949
+             */
+            $hasAssets = (new Query())
+                ->from(['a' => Table::ASSETS])
+                ->innerJoin(['f' => Table::VOLUMEFOLDERS], '[[f.id]] = [[a.folderId]]')
+                ->where(['a.volumeId' => $volumeId])
+                ->andWhere(['like', 'f.path', "$path%", false])
+                ->exists();
+
+            if (!$hasAssets) {
+                $missing['folders'][$folderId] = $volumeName . '/' . $path;
+            }
         }
 
         foreach ($missingFiles as ['assetId' => $assetId, 'path' => $path, 'volumeName' => $volumeName, 'filename' => $filename]) {

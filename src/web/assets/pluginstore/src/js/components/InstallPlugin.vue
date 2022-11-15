@@ -105,12 +105,12 @@
           {
             name: 'Shell',
             handle: 'shell',
-            copyValue: `composer require ${this.plugin.packageName} && php craft plugin/install ${this.plugin.handle}`,
+            copyValue: `composer require ${this.plugin.packageName} -w && php craft plugin/install ${this.plugin.handle}`,
           },
           {
             name: 'DDEV',
             handle: 'ddev',
-            copyValue: `ddev composer require ${this.plugin.packageName} && ddev exec php craft plugin/install ${this.plugin.handle}`,
+            copyValue: `ddev composer require ${this.plugin.packageName} -w && ddev craft plugin/install ${this.plugin.handle}`,
           },
         ];
       },

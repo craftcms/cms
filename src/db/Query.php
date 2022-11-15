@@ -7,11 +7,17 @@
 
 namespace craft\db;
 
+use ArrayAccess;
+use ArrayIterator;
 use craft\base\ClonefixTrait;
+use craft\elements\ElementCollection;
 use craft\events\DefineBehaviorsEvent;
 use craft\helpers\ArrayHelper;
 use Illuminate\Support\Collection;
+use IteratorAggregate;
 use yii\base\Exception;
+use yii\base\NotSupportedException;
+use yii\base\UnknownPropertyException;
 use yii\db\Connection as YiiConnection;
 
 /**
@@ -20,7 +26,7 @@ use yii\db\Connection as YiiConnection;
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0
  */
-class Query extends \yii\db\Query
+class Query extends \yii\db\Query implements ArrayAccess, IteratorAggregate
 {
     use ClonefixTrait;
 
@@ -46,6 +52,95 @@ class Query extends \yii\db\Query
         if ($this->hasEventHandlers(self::EVENT_INIT)) {
             $this->trigger(self::EVENT_INIT);
         }
+    }
+
+    /**
+     * Required by the IteratorAggregate interface.
+     *
+     * @return ArrayIterator
+     * @since 4.2.0
+     */
+    public function getIterator(): ArrayIterator
+    {
+        return new ArrayIterator($this->all());
+    }
+
+    /**
+     * Required by the ArrayAccess interface.
+     *
+     * @param mixed $offset
+     * @return bool
+     * @since 4.2.0
+     */
+    public function offsetExists(mixed $offset): bool
+    {
+        if (is_numeric($offset)) {
+            $offset = $this->offset;
+            $limit = $this->limit;
+            $this->offset = $offset;
+            $this->limit = 1;
+            $exists = $this->exists();
+            $this->offset = $offset;
+            $this->limit = $limit;
+            return $exists;
+        }
+
+        return $this->__isset($offset);
+    }
+
+    /**
+     * Required by the ArrayAccess interface.
+     *
+     * @param mixed $offset
+     * @return mixed
+     * @throws UnknownPropertyException
+     * @since 4.2.0
+     */
+    public function offsetGet(mixed $offset): mixed
+    {
+        if (is_numeric($offset)) {
+            $element = $this->nth($offset);
+            if ($element) {
+                return $element;
+            }
+        }
+
+        return $this->__get($offset);
+    }
+
+    /**
+     * Required by the ArrayAccess interface.
+     *
+     * @param mixed $offset
+     * @param mixed $value
+     * @throws NotSupportedException
+     * @throws UnknownPropertyException
+     * @since 4.2.0
+     */
+    public function offsetSet(mixed $offset, mixed $value): void
+    {
+        if (is_numeric($offset)) {
+            throw new NotSupportedException('Queries do not support setting values using array syntax.');
+        }
+
+        $this->__set($offset, $value);
+    }
+
+    /**
+     * Required by the ArrayAccess interface.
+     *
+     * @param mixed $offset
+     * @return void
+     * @throws NotSupportedException
+     * @since 4.2.0
+     */
+    public function offsetUnset(mixed $offset): void
+    {
+        if (is_numeric($offset)) {
+            throw new NotSupportedException('Queries do not support unsetting values using array syntax.');
+        }
+
+        $this->__unset($offset);
     }
 
     /**
@@ -166,7 +261,7 @@ class Query extends \yii\db\Query
      */
     public function collect(?YiiConnection $db = null): Collection
     {
-        return Collection::make($this->all($db));
+        return ElementCollection::make($this->all($db));
     }
 
     /**
