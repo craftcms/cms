@@ -1,9 +1,11 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.3.2 - 2022-11-16
 
 - `firstName` and `lastName` are now reserved field handles for the user field layout. ([#12241](https://github.com/craftcms/cms/issues/12241), [#12316](https://github.com/craftcms/cms/pull/12316))
 - Asset filenames are truncated in large thumbnail views, as they were before 4.3.0. ([#12236](https://github.com/craftcms/cms/discussions/12236))
+- Fixed an information disclosure vulnerability.
+- Fixed an XSS vulnerability.
 - Fixed asset indexing for Local filesystems that were configured to use a symlinked server path.
 - Fixed an error that could occur when calling `craft\base\Element::getCanonicalUid()` on a draft loaded for a site that the canonical element didn’t exist on yet. ([#12228](https://github.com/craftcms/cms/issues/12228))
 - Fixed a bug where long words in asset titles weren’t wrapping in the large thumbnail view. ([#12237](https://github.com/craftcms/cms/issues/12237))
@@ -14,8 +16,6 @@
 - Fixed a bug where `craft\helpers\DateTimeHelper::toDateInterval()` could return a `DateInterval` that was off by an hour around daylight savings time changes.
 - Fixed a bug where sticky element index footers were obstructed when the Debug Toolbar was enabled. ([#12242](https://github.com/craftcms/cms/issues/12242))
 - Fixed a bug where it wasn’t possible to change the sort attribute on element indexes while searching. ([#12256](https://github.com/craftcms/cms/issues/12256))
-- Fixed an information disclosure vulnerability.
-- Fixed an XSS vulnerability.
 - Fixed a bug where `resave/*` commands weren’t catching exceptions thrown when applying the `--set` and `--to` options. ([#12262](https://github.com/craftcms/cms/issues/12262))
 - Fixed the position of field status indicators within Matrix fields in Live Preview. ([#12287](https://github.com/craftcms/cms/issues/12287))
 - Fixed PHP errors that could occur when executing GraphQL queries. ([#12271](https://github.com/craftcms/cms/pull/12271), [#12275](https://github.com/craftcms/cms/pull/12275))
