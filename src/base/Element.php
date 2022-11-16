@@ -4021,30 +4021,44 @@ abstract class Element extends Component implements ElementInterface
         $this->setFieldParamNamespace($paramNamespace);
         $values = Craft::$app->getRequest()->getBodyParam($paramNamespace, []);
 
-        foreach ($this->fieldLayoutFields(true) as $field) {
-            // Do we have any post data for this field?
-            if (isset($values[$field->handle])) {
-                $value = $values[$field->handle];
-            } elseif (
-                isset($this->_fieldParamNamePrefix) &&
-                $this->_fieldParamNamePrefix !== '' &&
-                UploadedFile::getInstancesByName("$this->_fieldParamNamePrefix.$field->handle")
-            ) {
-                // A file was uploaded for this field
-                $value = null;
-            } else {
-                continue;
-            }
+        // Run through this multiple times, in case any fields become visible as a result of other field value changes
+        $processedFields = [];
+        do {
+            $processedAnyFields = false;
 
-            // Normalize it now in case the system language changes later
-            // (we'll do this with the value directly rather than using setFieldValue() + normalizeFieldValue(),
-            // because it's slightly more efficient and to workaround an infinite loop bug caused by Matrix
-            // needing to render an object template on the owner element during normalization, which would in turn
-            // cause the Matrix field value to be (re-)normalized based on the POST data, and on and on...)
-            $value = $field->normalizeValue($value, $this);
-            $this->setFieldValue($field->handle, $value);
-            $this->_normalizedFieldValues[$field->handle] = true;
-        }
+            foreach ($this->fieldLayoutFields(true) as $field) {
+                // Have we already processed this field?
+                if (isset($processedFields[$field->id])) {
+                    continue;
+                }
+
+                $processedFields[$field->id] = true;
+                $processedAnyFields = true;
+
+                // Do we have any post data for this field?
+                if (isset($values[$field->handle])) {
+                    $value = $values[$field->handle];
+                } elseif (
+                    isset($this->_fieldParamNamePrefix) &&
+                    $this->_fieldParamNamePrefix !== '' &&
+                    UploadedFile::getInstancesByName("$this->_fieldParamNamePrefix.$field->handle")
+                ) {
+                    // A file was uploaded for this field
+                    $value = null;
+                } else {
+                    continue;
+                }
+
+                // Normalize it now in case the system language changes later
+                // (we'll do this with the value directly rather than using setFieldValue() + normalizeFieldValue(),
+                // because it's slightly more efficient and to workaround an infinite loop bug caused by Matrix
+                // needing to render an object template on the owner element during normalization, which would in turn
+                // cause the Matrix field value to be (re-)normalized based on the POST data, and on and on...)
+                $value = $field->normalizeValue($value, $this);
+                $this->setFieldValue($field->handle, $value);
+                $this->_normalizedFieldValues[$field->handle] = true;
+            }
+        } while ($processedAnyFields);
     }
 
     /**
