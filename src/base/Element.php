@@ -4021,7 +4021,7 @@ abstract class Element extends Component implements ElementInterface
         $this->setFieldParamNamespace($paramNamespace);
         $values = Craft::$app->getRequest()->getBodyParam($paramNamespace, []);
 
-        foreach ($this->fieldLayoutFields(true) as $field) {
+        foreach ($this->fieldLayoutFields($this->supportsAutosaveDrafts()) as $field) {
             // Do we have any post data for this field?
             if (isset($values[$field->handle])) {
                 $value = $values[$field->handle];
@@ -4961,6 +4961,24 @@ JS,
     public function getLanguage(): string
     {
         return $this->getSite()->language;
+    }
+
+    /**
+     * Check if element supports autosaving drafts.
+     * if autosaveDrafts is disabled via general config - return false
+     * otherwise if element has a draft behavior, then it supports it
+     *
+     * @return bool
+     */
+    public function supportsAutosaveDrafts(): bool
+    {
+        $generalConfig = Craft::$app->getConfig()->getGeneral();
+
+        if ($generalConfig->autosaveDrafts === false) {
+            return false;
+        }
+
+        return ($this->getBehavior('draft') !== null);
     }
 
     /**
