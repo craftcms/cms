@@ -62,6 +62,7 @@ use craft\validators\SlugValidator;
 use craft\web\Application;
 use DateTime;
 use Throwable;
+use UnitEnum;
 use yii\base\Behavior;
 use yii\base\Component;
 use yii\base\Exception;
@@ -1457,7 +1458,7 @@ class Elements extends Component
 
         // Clone any field values that are objects
         foreach ($mainClone->getFieldValues() as $handle => $value) {
-            if (is_object($value)) {
+            if (is_object($value) && !$value instanceof UnitEnum) {
                 $mainClone->setFieldValue($handle, clone $value);
             }
         }
@@ -1577,7 +1578,7 @@ class Elements extends Component
 
                     // Clone any field values that are objects
                     foreach ($siteClone->getFieldValues() as $handle => $value) {
-                        if (is_object($value)) {
+                        if (is_object($value) && !$value instanceof UnitEnum) {
                             $siteClone->setFieldValue($handle, clone $value);
                         }
                     }
