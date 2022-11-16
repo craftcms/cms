@@ -1380,6 +1380,13 @@ ul.icons {
     }
   }
 
+  &.wrap {
+    height: auto;
+    min-height: 34px;
+    white-space: initial;
+    text-align: left;
+  }
+
   &:not(.disabled):not(.loading):not(.dashed):not([aria-disabled]) {
     &:focus,
     &.focus,
@@ -5161,6 +5168,7 @@ $min2ColWidth: 400px;
         font-size: 14px;
         cursor: default;
         -webkit-appearance: none;
+        white-space: break-spaces;
 
         &:not(.flex) {
           display: block !important;
