@@ -22,6 +22,7 @@
 - Fixed a PHP error that occurred if a field type stored enum values. ([#12297](https://github.com/craftcms/cms/issues/12297))
 - Fixed a bug where PHP errors and exceptions thrown when formatting a control panel screen response weren’t being handled properly. ([#12308](https://github.com/craftcms/cms/issues/12308))
 - Fixed a bug where element indexes were showing the labels of empty Dropdown options when selected. ([#12319](https://github.com/craftcms/cms/issues/12319))
+- Fixed condition builder styling issues that occurred if any rules had exceptionally long names. ([#12311](https://github.com/craftcms/cms/issues/12311))
 - Added `craft\base\Element::includeSetStatusAction()`.
 
 ## 4.3.1 - 2022-10-27
