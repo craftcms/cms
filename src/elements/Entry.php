@@ -1252,35 +1252,33 @@ class Entry extends Element
             return false;
         }
 
-        $isDraft = $this->getIsDraft() && !$this->getIsCanonical();
         $userId = $userSession->getId();
 
-        if ($isDraft) {
+        if ($this->getIsDraft() && !$this->getIsCanonical()) {
             /** @var DraftBehavior $behavior */
             $behavior = $this->getBehavior('draft');
-            if ($behavior->creatorId != $userId && !$userSession->checkPermission("editPeerEntryDrafts:$section->uid")) {
-                return false;
-            }
-        } elseif ($this->enabled && !$userSession->checkPermission("publishEntries:$section->uid")) {
-            return false;
+            return $behavior->creatorId == $userId || $userSession->checkPermission("editPeerEntryDrafts:$section->uid");
         }
 
         if ($section->type === Section::TYPE_SINGLE) {
-            return true;
+            return $userSession->checkPermission("publishEntries:$section->uid");
         }
 
         // Is this a new entry?
-        if (!$isDraft && !$this->id) {
+        if (!$this->id) {
             return $userSession->checkPermission("createEntries:$section->uid");
         }
 
         // Is this another author's entry?
-        if ($this->authorId && $this->authorId != $userId && !$userSession->checkPermission("editPeerEntries:$section->uid")) {
-            return false;
+        if ($this->authorId && $this->authorId != $userId) {
+            if ($this->enabled) {
+                return $userSession->checkPermission("publishPeerEntries:$section->uid");
+            }
+            return $userSession->checkPermission("editPeerEntries:$section->uid");
         }
 
-        if (!$isDraft && $this->enabled && !$userSession->checkPermission("publishPeerEntries:$section->uid")) {
-            return false;
+        if ($this->enabled) {
+            return $userSession->checkPermission("publishEntries:$section->uid");
         }
 
         return true;
