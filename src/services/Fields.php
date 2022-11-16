@@ -667,6 +667,19 @@ class Fields extends Component
     }
 
     /**
+     * Returns all fields that don’t have a column in the content table.
+     *
+     * @return FieldInterface[] The fields
+     * @since 3.7.60
+     */
+    public function getFieldsWithoutContent(): array
+    {
+        return ArrayHelper::where($this->getAllFields(), function(FieldInterface $field) {
+            return !$field::hasContentColumn();
+        }, true, true, false);
+    }
+
+    /**
      * Returns a field by its ID.
      *
      * @param int $fieldId The field’s ID
