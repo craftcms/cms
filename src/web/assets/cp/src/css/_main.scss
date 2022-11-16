@@ -1447,6 +1447,13 @@ ul.icons {
   height: 34px;
 }
 
+.btn[id^='condition-conditionRules'] {
+  height: auto;
+  min-height: 34px;
+  white-space: initial;
+  text-align: left;
+}
+
 .btn[data-icon-after]:not(:empty):not(.btn-empty):after,
 .menu-toggle:not(:empty):not(.btn-empty):after,
 .menubtn:not(:empty):not(.btn-empty):after,
@@ -5161,6 +5168,7 @@ $min2ColWidth: 400px;
         font-size: 14px;
         cursor: default;
         -webkit-appearance: none;
+        white-space: break-spaces;
 
         &:not(.flex) {
           display: block !important;
