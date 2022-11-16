@@ -1380,6 +1380,13 @@ ul.icons {
     }
   }
 
+  &.wrap {
+    height: auto;
+    min-height: 34px;
+    white-space: initial;
+    text-align: left;
+  }
+
   &:not(.disabled):not(.loading):not(.dashed):not([aria-disabled]) {
     &:focus,
     &.focus,
@@ -1445,13 +1452,6 @@ ul.icons {
 .btn,
 .spinner {
   height: 34px;
-}
-
-.btn[id^='condition-conditionRules'] {
-  height: auto;
-  min-height: 34px;
-  white-space: initial;
-  text-align: left;
 }
 
 .btn[data-icon-after]:not(:empty):not(.btn-empty):after,
