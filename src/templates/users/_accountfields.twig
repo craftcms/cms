@@ -8,7 +8,6 @@
         id: 'username',
         name: 'username',
         value: (user is defined ? user.username : null),
-        autofocus: true,
         autocomplete: false,
         autocapitalize: false,
         disabled: static or (isNewUser or (currentUser.admin or user.getIsCurrent()) ? false : true),
