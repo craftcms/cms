@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.7.60 - 2022-11-16
 
 - Fixed an information disclosure vulnerability.
 - Fixed an XSS vulnerability.
