@@ -554,7 +554,7 @@ class Assets extends Component
      */
     public function getTotalFolders(mixed $criteria): int
     {
-        if (!($criteria instanceof FolderCriteria)) {
+        if (!$criteria instanceof FolderCriteria) {
             $criteria = new FolderCriteria($criteria);
         }
 

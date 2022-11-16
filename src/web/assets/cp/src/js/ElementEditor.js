@@ -341,7 +341,6 @@ Craft.ElementEditor = Garnish.Base.extend(
 
         if (this.isFullPage) {
           const heightDiff = $('#content').height() - initialHeight;
-          console.log(heightDiff);
           Garnish.$win.scrollTop(scrollTop + heightDiff);
 
           // If there isn’t enough content to simulate the same scroll position, slide it down instead
@@ -1609,24 +1608,31 @@ Craft.ElementEditor = Garnish.Base.extend(
         namespacedFields = encodeURIComponent(namespacedFields);
       }
 
+      const namePrefixRE = `${namespacedFields}${lb}(?:${Craft.fieldsWithoutContent.join(
+        '|'
+      )})${rb}`;
+
       // Keep replacing field IDs until data stops changing
       while (true) {
         if (
           data ===
           (data = data
-            // &fields[...][X]
+            // &fields[handle]([...])?[X]
             .replace(
               new RegExp(
-                `(&${namespacedFields}${lb}[^=]+${rb}${lb})(${idsRE})(${rb})`,
+                `(&${namePrefixRE}(?:${lb}[^=]+${rb})?${lb})(${idsRE})(${rb})`,
                 'g'
               ),
               (m, pre, id, post) => {
                 return pre + this.duplicatedElements[id] + post;
               }
             )
-            // &fields[...=X
+            // &fields[handle]([...)?=X
             .replace(
-              new RegExp(`&(${namespacedFields}${lb}[^=]+)=(${idsRE})\\b`, 'g'),
+              new RegExp(
+                `&(${namePrefixRE}(?:${lb}[^=]+)?)=(${idsRE})\\b`,
+                'g'
+              ),
               (m, name, id) => {
                 // Ignore param names that end in `[enabled]`, `[type]`, etc.
                 // (`[sortOrder]` should pass here, which could be set to a specific order index, but *not* `[sortOrder][]`!)

@@ -242,7 +242,7 @@ class Category extends Element
 
         // Get the group we need to check permissions on
         if (preg_match('/^group:(\d+)$/', $source, $matches)) {
-            $group = Craft::$app->getCategories()->getGroupById($matches[1]);
+            $group = Craft::$app->getCategories()->getGroupById((int)$matches[1]);
         } elseif (preg_match('/^group:(.+)$/', $source, $matches)) {
             $group = Craft::$app->getCategories()->getGroupByUid($matches[1]);
         } else {

@@ -62,6 +62,7 @@ use craft\validators\SlugValidator;
 use craft\web\Application;
 use DateTime;
 use Throwable;
+use UnitEnum;
 use yii\base\Behavior;
 use yii\base\Component;
 use yii\base\Exception;
@@ -1228,17 +1229,17 @@ class Elements extends Component
                 $element->setScenario(Element::SCENARIO_ESSENTIALS);
                 $element->resaving = true;
 
-                // Fire a 'beforeResaveElement' event
-                if ($this->hasEventHandlers(self::EVENT_BEFORE_RESAVE_ELEMENT)) {
-                    $this->trigger(self::EVENT_BEFORE_RESAVE_ELEMENT, new BatchElementActionEvent([
-                        'query' => $query,
-                        'element' => $element,
-                        'position' => $position,
-                    ]));
-                }
-
                 $e = null;
                 try {
+                    // Fire a 'beforeResaveElement' event
+                    if ($this->hasEventHandlers(self::EVENT_BEFORE_RESAVE_ELEMENT)) {
+                        $this->trigger(self::EVENT_BEFORE_RESAVE_ELEMENT, new BatchElementActionEvent([
+                            'query' => $query,
+                            'element' => $element,
+                            'position' => $position,
+                        ]));
+                    }
+
                     // Make sure the element was queried with its content
                     if ($element::hasContent() && $element->contentId === null) {
                         throw new InvalidElementException($element, "Skipped resaving {$element->getUiLabel()} ($element->id) because it wasn’t loaded with its content.");
@@ -1457,7 +1458,7 @@ class Elements extends Component
 
         // Clone any field values that are objects
         foreach ($mainClone->getFieldValues() as $handle => $value) {
-            if (is_object($value)) {
+            if (is_object($value) && !$value instanceof UnitEnum) {
                 $mainClone->setFieldValue($handle, clone $value);
             }
         }
@@ -1577,7 +1578,7 @@ class Elements extends Component
 
                     // Clone any field values that are objects
                     foreach ($siteClone->getFieldValues() as $handle => $value) {
-                        if (is_object($value)) {
+                        if (is_object($value) && !$value instanceof UnitEnum) {
                             $siteClone->setFieldValue($handle, clone $value);
                         }
                     }

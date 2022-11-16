@@ -94,7 +94,7 @@ class SearchQuery
                     // Set the previous token to a TermGroup, if it’s not already
                     $previousToken = $this->_tokens[$totalTokens - 1];
 
-                    if (!($previousToken instanceof SearchQueryTermGroup)) {
+                    if (!$previousToken instanceof SearchQueryTermGroup) {
                         $previousToken = new SearchQueryTermGroup([$previousToken]);
                         $this->_tokens[$totalTokens - 1] = $previousToken;
                     }

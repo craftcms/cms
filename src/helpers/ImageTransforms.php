@@ -57,8 +57,8 @@ class ImageTransforms
 
         return Craft::createObject([
             'class' => ImageTransform::class,
-            'width' => $matches['width'] ?? null,
-            'height' => $matches['height'] ?? null,
+            'width' => $matches['width'],
+            'height' => $matches['height'],
             'mode' => $matches['mode'],
             'position' => $matches['position'],
             'quality' => $matches['quality'] ?? null,

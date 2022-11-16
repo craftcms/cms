@@ -250,7 +250,6 @@ Craft.LightSwitch = Garnish.Base.extend(
 
     _onDragStop: function () {
       var margin = this._getMargin();
-      console.log(margin);
 
       if (margin > this._getOffMargin() / 2) {
         this.turnOn();
