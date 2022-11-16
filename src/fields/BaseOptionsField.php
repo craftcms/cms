@@ -543,7 +543,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
      * Base64-encodes a value.
      *
      * @param OptionData|MultiOptionsFieldData|string|null $value
-     * @rturn string|array|null
+     * @return string|array|null
      * @since 4.0.6
      */
     protected function encodeValue(OptionData|MultiOptionsFieldData|string|null $value): string|array|null
