@@ -2039,6 +2039,7 @@ abstract class Element extends Component implements ElementInterface
         // If this is a field, make sure the value has been normalized before returning the CustomFieldBehavior value
         if ($this->fieldByHandle($name) !== null) {
             $value = $this->getFieldValue($name);
+            /** @phpstan-ignore-next-line */
             if (is_object($value) && !$value instanceof UnitEnum) {
                 $value = clone $value;
             }
@@ -3621,9 +3622,11 @@ abstract class Element extends Component implements ElementInterface
 
     /**
      * @inheritdoc
+     * @phpstan-ignore-next-line
      */
     public function offsetExists($offset): bool
     {
+        /** @phpstan-ignore-next-line */
         return $offset === 'title' || $this->hasEagerLoadedElements($offset) || parent::offsetExists($offset) || $this->fieldByHandle($offset);
     }
 
