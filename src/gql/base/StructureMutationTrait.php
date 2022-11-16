@@ -54,7 +54,7 @@ trait StructureMutationTrait
      */
     protected function getRelatedElement($elementId)
     {
-        $relatedElement = Craft::$app->getElements()->getElementById($elementId);
+        $relatedElement = Craft::$app->getElements()->getElementById($elementId, null, '*');
 
         if (!$relatedElement) {
             throw new Error('Unable to move element in a structure');

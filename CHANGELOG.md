@@ -8,6 +8,7 @@
 - Fixed a bug where the `|group` Twig filter was logging a deprecation warning when passed an element query.
 - Fixed a bug where `craft\elements\Entry::getIsEditable()` was returning `false` for enabled entries, if the logged-in user had the “Publish live changes” permission but not “Publish live changes for other authors’ entries”. ([#12315](https://github.com/craftcms/cms/issues/12315))
 - Fixed a bug where element indexes were showing the labels of empty Dropdown options when selected. ([#12319](https://github.com/craftcms/cms/issues/12319))
+- Fixed an error that occurred when saving an entry via GraphQL, if a parent entry was assigned that didn’t exist on the requested site. ([#12291](https://github.com/craftcms/cms/issues/12291))
 
 ## 3.7.59 - 2022-10-27
 
