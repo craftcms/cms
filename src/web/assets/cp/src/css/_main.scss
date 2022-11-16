@@ -2638,7 +2638,10 @@ $elementInnerSpacing: 5px;
 
     .label {
       display: block;
-      word-wrap: break-word;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      word-wrap: normal;
     }
   }
 
