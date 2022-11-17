@@ -390,7 +390,7 @@ JS;
             'elementTypeNames' => $elementTypeNames,
             'fieldsWithoutContent' => array_map(function(FieldInterface $field) {
                 return $field->handle;
-            }, Craft::$app->getFields()->getFieldsWithoutContent()),
+            }, Craft::$app->getFields()->getFieldsWithoutContent(false)),
             'handleCasing' => $generalConfig->handleCasing,
             'httpProxy' => $this->_httpProxy($generalConfig),
             'initialDeltaValues' => $view->getInitialDeltaValues(),
