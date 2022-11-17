@@ -1,5 +1,11 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- Fixed an error that occurred if an arrow function was passed to the `|sort` Twig filter. ([#12334](https://github.com/craftcms/cms/issues/12334))
+- Fixed a bug where nested fields set to numbers could be inadvertently changed when an entry draft was created.
+- `craft\services\Fields::getFieldsWithContent()` and `getFieldsWithoutContent()` now have `$context` arguments.
+
 ## 4.3.2.1 - 2022-11-16
 
 - Fixed a PHP error that could occur when generating an image transform. ([#12333](https://github.com/craftcms/cms/issues/12333))
