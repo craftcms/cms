@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 3.x
 
-## Unreleased
+## 3.7.61 - 2022-11-17
 
 - Fixed an error that occurred if an arrow function was passed to the `|sort` Twig filter. ([#12334](https://github.com/craftcms/cms/issues/12334))
 - Fixed a bug where nested fields set to numbers could be inadvertently changed when an entry draft was created.
