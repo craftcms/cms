@@ -41,7 +41,7 @@ class ImageTransforms
     public static function createTransformFromString(string $transformString): ImageTransform
     {
         if (!preg_match(self::TRANSFORM_STRING_PATTERN, $transformString, $matches)) {
-            throw new ImageTransformException('Cannot create a transfrom from string: ' . $transformString);
+            throw new ImageTransformException('Cannot create a transform from string: ' . $transformString);
         }
 
         if ($matches['width'] == 'AUTO') {
