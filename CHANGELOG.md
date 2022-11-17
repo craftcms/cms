@@ -1,6 +1,6 @@
 # Release Notes for Craft CMS 4
 
-## Unreleased
+## 4.3.2.1 - 2022-11-16
 
 - Fixed a PHP error that could occur when generating an image transform. ([#12333](https://github.com/craftcms/cms/issues/12333))
 
