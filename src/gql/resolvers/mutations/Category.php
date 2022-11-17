@@ -18,7 +18,7 @@ use GraphQL\Error\Error;
 use GraphQL\Type\Definition\ResolveInfo;
 
 /**
- * Class Categoy
+ * Class Category
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.5.0
