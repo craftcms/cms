@@ -57,8 +57,10 @@ class ImageTransforms
 
         return Craft::createObject([
             'class' => ImageTransform::class,
-            'width' => $matches['width'],
-            'height' => $matches['height'],
+            /** @phpstan-ignore-next-line */
+            'width' => $matches['width'] ?? null,
+            /** @phpstan-ignore-next-line */
+            'height' => $matches['height'] ?? null,
             'mode' => $matches['mode'],
             'position' => $matches['position'],
             'quality' => $matches['quality'] ?? null,
