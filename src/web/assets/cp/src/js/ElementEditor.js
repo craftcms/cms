@@ -1608,35 +1608,32 @@ Craft.ElementEditor = Garnish.Base.extend(
         namespacedFields = encodeURIComponent(namespacedFields);
       }
 
-      const namePrefixRE = `${namespacedFields}${lb}(?:${Craft.fieldsWithoutContent.join(
-        '|'
-      )})${rb}`;
-
       // Keep replacing field IDs until data stops changing
       while (true) {
         if (
           data ===
           (data = data
-            // &fields[handle]([...])?[X]
+            // &fields[...][X]
             .replace(
               new RegExp(
-                `(&${namePrefixRE}(?:${lb}[^=]+${rb})?${lb})(${idsRE})(${rb})`,
+                `(&${namespacedFields}${lb}[^=]+${rb}${lb})(${idsRE})(${rb})`,
                 'g'
               ),
               (m, pre, id, post) => {
+                if (!this._filterFieldInputName(pre)) {
+                  return m;
+                }
                 return pre + this.duplicatedElements[id] + post;
               }
             )
-            // &fields[handle]([...)?=X
+            // &fields[...=X
             .replace(
-              new RegExp(
-                `&(${namePrefixRE}(?:${lb}[^=]+)?)=(${idsRE})\\b`,
-                'g'
-              ),
+              new RegExp(`&(${namespacedFields}${lb}[^=]+)=(${idsRE})\\b`, 'g'),
               (m, name, id) => {
                 // Ignore param names that end in `[enabled]`, `[type]`, etc.
                 // (`[sortOrder]` should pass here, which could be set to a specific order index, but *not* `[sortOrder][]`!)
                 if (
+                  !this._filterFieldInputName(name) ||
                   name.match(
                     new RegExp(`${lb}(enabled|sortOrder|type|typeId)${rb}$`)
                   )
@@ -1651,6 +1648,19 @@ Craft.ElementEditor = Garnish.Base.extend(
         }
       }
       return data;
+    },
+
+    _filterFieldInputName: function (name) {
+      // Find the last referenced field handle
+      const lb = encodeURIComponent('[');
+      const rb = encodeURIComponent(']');
+      const nestedNames = name.match(
+        new RegExp(`(\\bfields|${lb}fields${rb})${lb}[^${rb}]+${rb}`, 'g')
+      );
+      const lastHandle = nestedNames[nestedNames.length - 1].match(
+        new RegExp(`(?:\\bfields|${lb}fields${rb})${lb}([^${rb}]+)${rb}`)
+      )[1];
+      return Craft.fieldsWithoutContent.includes(lastHandle);
     },
 
     updatePreviewTargets: function (previewTargets) {
