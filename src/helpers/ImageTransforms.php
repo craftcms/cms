@@ -41,7 +41,7 @@ class ImageTransforms
     public static function createTransformFromString(string $transformString): ImageTransform
     {
         if (!preg_match(self::TRANSFORM_STRING_PATTERN, $transformString, $matches)) {
-            throw new ImageTransformException('Cannot create a transfrom from string: ' . $transformString);
+            throw new ImageTransformException('Cannot create a transform from string: ' . $transformString);
         }
 
         if ($matches['width'] == 'AUTO') {
@@ -57,8 +57,10 @@ class ImageTransforms
 
         return Craft::createObject([
             'class' => ImageTransform::class,
-            'width' => $matches['width'],
-            'height' => $matches['height'],
+            /** @phpstan-ignore-next-line */
+            'width' => $matches['width'] ?? null,
+            /** @phpstan-ignore-next-line */
+            'height' => $matches['height'] ?? null,
             'mode' => $matches['mode'],
             'position' => $matches['position'],
             'quality' => $matches['quality'] ?? null,
