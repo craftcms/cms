@@ -490,7 +490,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
      */
     public function sortFilter(TwigEnvironment $env, $array, $arrow = null): array
     {
-        if (strtolower($arrow) === 'system') {
+        if (is_string($arrow) && strtolower($arrow) === 'system') {
             throw new RuntimeError('The sort filter doesn\'t support sorting by system().');
         }
 
