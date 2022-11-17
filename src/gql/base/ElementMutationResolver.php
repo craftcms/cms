@@ -189,7 +189,7 @@ abstract class ElementMutationResolver extends MutationResolver
     }
 
     /**
-     * Traverse an argument list revursively and normalize the values.
+     * Traverse an argument list recursively and normalize the values.
      *
      * @param $argumentDefinitions
      * @param $mutationArguments
