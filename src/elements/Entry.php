@@ -210,7 +210,7 @@ class Entry extends Element implements ExpirableElementInterface
             $editable = true;
         } else {
             $sections = Craft::$app->getSections()->getAllSections();
-            $editable = false;
+            $editable = null;
         }
 
         $sectionIds = [];
