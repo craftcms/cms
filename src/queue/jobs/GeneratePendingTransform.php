@@ -18,7 +18,7 @@ use Throwable;
  * GeneratePendingTransform job
  *
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
- * @since 4.3.3
+ * @since 4.3.4
  */
 class GeneratePendingTransform extends BaseJob
 {
