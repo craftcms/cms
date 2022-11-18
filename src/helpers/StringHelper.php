@@ -1676,7 +1676,7 @@ class StringHelper extends \yii\helpers\StringHelper
     }
 
     /**
-     * Converts an object to its string representation. If the object is an array, will glue the array elements togeter
+     * Converts an object to its string representation. If the object is an array, will glue the array elements together
      * with the $glue param. Otherwise will cast the object to a string.
      *
      * @param mixed $object The object to convert to a string.
