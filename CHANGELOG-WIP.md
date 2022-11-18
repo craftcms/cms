@@ -23,3 +23,4 @@
 ### System
 - Improved element deletion performance. ([#12223](https://github.com/craftcms/cms/pull/12223))
 - Updated LitEmoji to v4. ([#12226](https://github.com/craftcms/cms/discussions/12226))
+- Fixed a database deadlock error that could occur when updating a relation or structure position for an element that was simultaneously being saved. ([#9905](https://github.com/craftcms/cms/issues/9905))
