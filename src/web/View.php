@@ -1607,8 +1607,11 @@ JS;
 
             $oldNamespace = $this->getNamespace();
             $this->setNamespace($this->namespaceInputName($namespace));
-            $response = $this->namespaceInputs($html(), $namespace, $otherAttributes, $withClasses);
-            $this->setNamespace($oldNamespace);
+            try {
+                $response = $this->namespaceInputs($html(), $namespace, $otherAttributes, $withClasses);
+            } finally {
+                $this->setNamespace($oldNamespace);
+            }
             return $response;
         }
 

@@ -382,8 +382,8 @@ class Image
                 $matchedHeight * self::_getSizeUnitMultiplier($heightMatch[3])
             );
         } elseif (preg_match(Svg::SVG_VIEWBOX_RE, $svg, $viewboxMatch)) {
-            $width = (int)floor($viewboxMatch[3]);
-            $height = (int)floor($viewboxMatch[4]);
+            $width = (int)floor((float)$viewboxMatch[3]);
+            $height = (int)floor((float)$viewboxMatch[4]);
         } else {
             // Just pretend it's 100x100
             $width = 100;

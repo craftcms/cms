@@ -12,6 +12,7 @@ use craft\elements\Category as CategoryElement;
 use craft\elements\db\ElementQuery;
 use craft\gql\base\ElementResolver;
 use craft\helpers\Gql as GqlHelper;
+use Illuminate\Support\Collection;
 
 /**
  * Class Category
@@ -46,7 +47,7 @@ class Category extends ElementResolver
         $pairs = GqlHelper::extractAllowedEntitiesFromSchema('read');
 
         if (!GqlHelper::canQueryCategories()) {
-            return [];
+            return Collection::empty();
         }
 
         $categoriesService = Craft::$app->getCategories();
