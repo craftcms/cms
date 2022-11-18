@@ -27,26 +27,4 @@ class ServeController extends BaseServeController
      * @var string path or [path alias](https://craftcms.com/docs/4.x/config/#aliases) of the directory to serve.
      */
     public $docroot = '@webroot';
-
-    /**
-     * @inheritdoc
-     */
-    public function init(): void
-    {
-        parent::init();
-        $this->checkTty();
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function beforeAction($action): bool
-    {
-        // Make sure this isn’t a root user
-        if (!$this->checkRootUser()) {
-            return false;
-        }
-
-        return parent::beforeAction($action);
-    }
 }
