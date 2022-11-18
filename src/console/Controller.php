@@ -31,7 +31,11 @@ use yii\helpers\Inflector;
  */
 class Controller extends YiiController
 {
-    use ControllerTrait;
+    use ControllerTrait {
+        ControllerTrait::init as private traitInit;
+        ControllerTrait::options as private traitOptions;
+        ControllerTrait::runAction as private traitRunAction;
+    }
 
     /**
      * @event DefineConsoleActionsEvent The event that is triggered when defining custom actions for this controller.
@@ -127,8 +131,7 @@ class Controller extends YiiController
      */
     public function init(): void
     {
-        parent::init();
-        $this->checkTty();
+        $this->traitInit();
 
         $this->_actions = [];
         foreach ($this->defineActions() as $id => $action) {
@@ -167,19 +170,6 @@ class Controller extends YiiController
     /**
      * @inheritdoc
      */
-    public function beforeAction($action): bool
-    {
-        // Make sure this isn't a root user
-        if (!$this->checkRootUser()) {
-            return false;
-        }
-
-        return parent::beforeAction($action);
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function actions(): array
     {
         return ArrayHelper::getColumn($this->_actions, 'action');
@@ -190,7 +180,7 @@ class Controller extends YiiController
      */
     public function options($actionID): array
     {
-        $options = parent::options($actionID);
+        $options = $this->traitOptions($actionID);
 
         if (isset($this->_actions[$actionID]['options'])) {
             $options = array_merge($options, array_keys($this->_actions[$actionID]['options']));
@@ -221,7 +211,7 @@ class Controller extends YiiController
     public function runAction($id, $params = []): int
     {
         $this->_actionId = $id;
-        $result = parent::runAction($id, $params);
+        $result = $this->traitRunAction($id, $params);
         $this->_actionId = null;
         return $result;
     }
