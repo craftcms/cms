@@ -140,6 +140,9 @@ return [
         'tokens' => [
             'class' => craft\services\Tokens::class,
         ],
+        'ui' => [
+            'class' => craft\services\Ui::class,
+        ],
         'updates' => [
             'class' => craft\services\Updates::class,
         ],

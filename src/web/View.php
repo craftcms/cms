@@ -18,6 +18,7 @@ use craft\helpers\Html;
 use craft\helpers\Json;
 use craft\helpers\Path;
 use craft\helpers\StringHelper;
+use craft\web\twig\ComponentExtension;
 use craft\web\twig\CpExtension;
 use craft\web\twig\Environment;
 use craft\web\twig\Extension;
@@ -349,6 +350,7 @@ class View extends \yii\web\View
         $twig = new Environment(new TemplateLoader($this), $this->_getTwigOptions());
 
         $twig->addExtension(new StringLoaderExtension());
+        $twig->addExtension(new ComponentExtension());
         $twig->addExtension(new Extension($this, $twig));
 
         if ($this->_templateMode === self::TEMPLATE_MODE_CP) {

@@ -89,6 +89,7 @@ use craft\services\SystemMessages;
 use craft\services\Tags;
 use craft\services\TemplateCaches;
 use craft\services\Tokens;
+use craft\services\Ui;
 use craft\services\Updates;
 use craft\services\UserGroups;
 use craft\services\UserPermissions;
@@ -171,6 +172,7 @@ use yii\web\ServerErrorHttpException;
  * @property-read Tags $tags The tags service
  * @property-read TemplateCaches $templateCaches The template caches service
  * @property-read Tokens $tokens The tokens service
+ * @property-read Ui $ui The UI service
  * @property-read Updates $updates The updates service
  * @property-read UserGroups $userGroups The user groups service
  * @property-read UserPermissions $userPermissions The user permissions service
@@ -1348,6 +1350,17 @@ trait ApplicationTrait
     {
         /** @noinspection PhpIncompatibleReturnTypeInspection */
         return $this->get('tokens');
+    }
+
+    /**
+     * Returns the UI service.
+     *
+     * @return Ui The UI service
+     */
+    public function getUi(): Ui
+    {
+        /** @noinspection PhpIncompatibleReturnTypeInspection */
+        return $this->get('ui');
     }
 
     /**

@@ -1,0 +1,7 @@
+{% extends "_layouts/cp" %}
+{% set title = "UI Components" %}
+
+{% block content %}
+    {{ component('test', {class: 'content-pane'}) }}
+    {% component test with {class: "pane"} %}{% endcomponent %}
+{% endblock %}
