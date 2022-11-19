@@ -45,11 +45,11 @@ class DbConfig extends BaseConfig
      * you’d set these:
      *
      * ```php
-     * 'attributes' => [
+     * ->attributes([
      *     PDO::MYSQL_ATTR_SSL_KEY => '/path/to/my/client-key.pem',
      *     PDO::MYSQL_ATTR_SSL_CERT => '/path/to/my/client-cert.pem',
      *     PDO::MYSQL_ATTR_SSL_CA => '/path/to/my/ca-cert.pem',
-     * ],
+     * ])
      * ```
      */
     public array $attributes = [];
@@ -67,7 +67,7 @@ class DbConfig extends BaseConfig
      *
      * ::: code
      * ```php Static Config
-     * 'charset' => 'utf8mb4',
+     * ->charset('utf8mb4')
      * ```
      * ```shell Environment Override
      * CRAFT_DB_CHARSET=utf8mb4
@@ -96,7 +96,7 @@ class DbConfig extends BaseConfig
      *
      * ::: code
      * ```php Static Config
-     * 'collation' => 'utf8mb4_0900_ai_ci',
+     * ->collation('utf8mb4_0900_ai_ci')
      * ```
      * ```shell Environment Override
      * CRAFT_DB_COLLATION=utf8mb4_0900_ai_ci
@@ -118,7 +118,7 @@ class DbConfig extends BaseConfig
      *
      * ::: code
      * ```php Static Config
-     * 'dsn' => 'mysql:host=127.0.0.1;port=3306;dbname=acme_corp',
+     * ->dsn('mysql:host=127.0.0.1;port=3306;dbname=acme_corp')
      * ```
      * ```shell Environment Override
      * CRAFT_DB_DSN=mysql:host=127.0.0.1;port=3306;dbname=acme_corp
@@ -132,7 +132,7 @@ class DbConfig extends BaseConfig
      *
      * ::: code
      * ```php Static Config
-     * 'password' => 'super-secret',
+     * ->password('super-secret')
      * ```
      * ```shell Environment Override
      * CRAFT_DB_PASSWORD=super-secret
@@ -151,7 +151,7 @@ class DbConfig extends BaseConfig
      *
      * ::: code
      * ```php Static Config
-     * 'schema' => 'myschema,public',
+     * ->schema('myschema,public')
      * ```
      * ```shell Environment Override
      * CRAFT_DB_SCHEMA=myschema,public
@@ -172,7 +172,7 @@ class DbConfig extends BaseConfig
      *
      * ::: code
      * ```php Static Config
-     * 'setSchemaOnConnect' => true,
+     * ->setSchemaOnConnect(true)
      * ```
      * ```shell Environment Override
      * CRAFT_DB_SET_SCHEMA_ON_CONNECT=true
@@ -189,7 +189,7 @@ class DbConfig extends BaseConfig
      *
      * ::: code
      * ```php Static Config
-     * 'tablePrefix' => 'craft_',
+     * ->tablePrefix('craft_')
      * ```
      * ```shell Environment Override
      * CRAFT_DB_TABLE_PREFIX=craft_
@@ -203,7 +203,7 @@ class DbConfig extends BaseConfig
      *
      * ::: code
      * ```php Static Config
-     * 'user' => 'db',
+     * ->user('db')
      * ```
      * ```shell Environment Override
      * CRAFT_DB_USER=db
@@ -224,7 +224,7 @@ class DbConfig extends BaseConfig
      *
      * ::: code
      * ```php Static Config
-     * 'useUnbufferedConnections' => true,
+     * ->useUnbufferedConnections(true)
      * ```
      * ```shell Environment Override
      * CRAFT_DB_USE_UNBUFFERED_CONNECTIONS=true
@@ -242,7 +242,7 @@ class DbConfig extends BaseConfig
      *
      * ::: code
      * ```php Static Config
-     * 'url' => 'jdbc:mysql://database.foo:3306/mydb',
+     * ->url('jdbc:mysql://database.foo:3306/mydb')
      * ```
      * ```shell Environment Override
      * CRAFT_DB_URL=jdbc:mysql://database.foo:3306/mydb
@@ -256,7 +256,7 @@ class DbConfig extends BaseConfig
      *
      * ::: code
      * ```php Static Config
-     * 'driver' => 'mysql',
+     * ->driver('mysql')
      * ```
      * ```shell Environment Override
      * CRAFT_DB_DRIVER=mysql
@@ -270,7 +270,7 @@ class DbConfig extends BaseConfig
      *
      * ::: code
      * ```php Static Config
-     * 'server' => 'localhost',
+     * ->server('localhost')
      * ```
      * ```shell Environment Override
      * CRAFT_DB_SERVER=localhost
@@ -284,7 +284,7 @@ class DbConfig extends BaseConfig
      *
      * ::: code
      * ```php Static Config
-     * 'port' => 3306,
+     * ->port(3306)
      * ```
      * ```shell Environment Override
      * CRAFT_DB_PORT=3306
@@ -299,7 +299,7 @@ class DbConfig extends BaseConfig
      *
      * ::: code
      * ```php Static Config
-     * 'unixSocket' => '/Applications/MAMP/tmp/mysql/mysql.sock',
+     * ->unixSocket('/Applications/MAMP/tmp/mysql/mysql.sock')
      * ```
      * ```shell Environment Override
      * CRAFT_DB_UNIX_SOCKET=/Applications/MAMP/tmp/mysql/mysql.sock
@@ -313,7 +313,7 @@ class DbConfig extends BaseConfig
      *
      * ::: code
      * ```php Static Config
-     * 'database' => 'mydatabase',
+     * ->database('mydatabase')
      * ```
      * ```shell Environment Override
      * CRAFT_DB_DATABASE=mydatabase

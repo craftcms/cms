@@ -132,7 +132,7 @@ class Asset extends Element
     public const EVENT_AFTER_GENERATE_TRANSFORM = 'afterGenerateTransform';
 
     /**
-     * @event DefineAssetUrlEvent The event that is triggered when a transform is being generated for an asset.
+     * @event DefineAssetUrlEvent The event that is triggered when defining the asset’s URL.
      * @see getUrl()
      * @since 4.0.0
      */
@@ -953,6 +953,10 @@ class Asset extends Element
             return $user->can("viewPeerAssets:$volume->uid");
         }
 
+        if ($volume->getFs() instanceof Temp) {
+            return true;
+        }
+
         return $user->can("viewAssets:$volume->uid");
     }
 
@@ -1027,13 +1031,7 @@ class Asset extends Element
      */
     public function getPostEditUrl(): ?string
     {
-        $volume = $this->getVolume();
-        $uri = "assets/$volume->handle";
-        if ($this->folderPath !== null) {
-            $subfolders = ArrayHelper::filterEmptyStringsFromArray(explode('/', $this->folderPath));
-            $uri .= sprintf('/%s', implode('/', $subfolders));
-        }
-        return UrlHelper::cpUrl($uri);
+        return UrlHelper::cpUrl('assets');
     }
 
     /**
@@ -1081,10 +1079,7 @@ class Asset extends Element
 
         $html = Html::beginTag('div', ['class' => 'btngroup']);
 
-        if (
-            in_array($this->kind, [Asset::KIND_IMAGE, Asset::KIND_PDF, Asset::KIND_TEXT]) &&
-            ($url = $this->getUrl()) !== null
-        ) {
+        if (($url = $this->getUrl()) !== null) {
             $html .= Html::a(Craft::t('app', 'View'), $url, [
                 'class' => 'btn',
                 'target' => '_blank',
@@ -1506,18 +1501,27 @@ JS;
      */
     public function getUrl(mixed $transform = null, ?bool $immediately = null): ?string
     {
-        // Maybe a plugin wants to do something here
-        $event = new DefineAssetUrlEvent([
-            'transform' => $transform,
-            'asset' => $this,
-        ]);
-        $this->trigger(self::EVENT_DEFINE_URL, $event);
+        $url = $this->_url($transform, $immediately);
 
-        // If a plugin set the url, we'll just use that.
-        if ($event->url !== null) {
-            return Html::encodeSpaces($event->url);
+        // Give plugins/modules a chance to customize it
+        if ($this->hasEventHandlers(self::EVENT_DEFINE_URL)) {
+            $event = new DefineAssetUrlEvent([
+                'url' => $url,
+                'transform' => $transform,
+                'asset' => $this,
+            ]);
+            $this->trigger(self::EVENT_DEFINE_URL, $event);
+            // If DefineAssetUrlEvent::$url is set to null, only respect that if $handled is true
+            if ($event->url !== null || $event->handled) {
+                $url = $event->url;
+            }
         }
 
+        return $url !== null ? Html::encodeSpaces($url) : $url;
+    }
+
+    private function _url(mixed $transform = null, ?bool $immediately = null): ?string
+    {
         $volume = $this->getVolume();
 
         $transform = $transform ?? $this->_transform;
@@ -2577,36 +2581,13 @@ JS;
 
         $transform = ImageTransforms::normalizeTransform($transform);
 
-        if (
-            ($transform->width === null || $this->_width < $transform->width) &&
-            ($transform->height === null || $this->_height < $transform->height) &&
-            !Craft::$app->getConfig()->getGeneral()->upscaleImages
-        ) {
-            if ($transform->width === null || $transform->height === null) {
-                $transformRatio = $this->_width / $this->_height;
-            } else {
-                $transformRatio = $transform->width / $transform->height;
-            }
-
-            $imageRatio = $this->_width / $this->_height;
-
-            if ($transform->mode !== 'crop' || $imageRatio === $transformRatio) {
-                return [$this->_width, $this->_height];
-            }
-
-            return $transformRatio > 1 ? [$this->_width, round($this->_width / $transformRatio)] : [round($this->_width * $transformRatio), $this->_height];
-        }
-
-        [$width, $height] = Image::calculateMissingDimension($transform->width, $transform->height, $this->_width, $this->_height);
-
-        // Special case for 'fit' since that's the only one whose dimensions vary from the transform dimensions
-        if ($transform->mode === 'fit') {
-            $factor = max($this->_width / $width, $this->_height / $height);
-            $width = (int)round($this->_width / $factor);
-            $height = (int)round($this->_height / $factor);
-        }
-
-        return [$width, $height];
+        return Image::targetDimensions(
+            $this->_width,
+            $this->_height,
+            $transform->width,
+            $transform->height,
+            $transform->mode
+        );
     }
 
     /**

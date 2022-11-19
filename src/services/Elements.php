@@ -62,6 +62,7 @@ use craft\validators\SlugValidator;
 use craft\web\Application;
 use DateTime;
 use Throwable;
+use UnitEnum;
 use yii\base\Behavior;
 use yii\base\Component;
 use yii\base\Exception;
@@ -1228,17 +1229,17 @@ class Elements extends Component
                 $element->setScenario(Element::SCENARIO_ESSENTIALS);
                 $element->resaving = true;
 
-                // Fire a 'beforeResaveElement' event
-                if ($this->hasEventHandlers(self::EVENT_BEFORE_RESAVE_ELEMENT)) {
-                    $this->trigger(self::EVENT_BEFORE_RESAVE_ELEMENT, new BatchElementActionEvent([
-                        'query' => $query,
-                        'element' => $element,
-                        'position' => $position,
-                    ]));
-                }
-
                 $e = null;
                 try {
+                    // Fire a 'beforeResaveElement' event
+                    if ($this->hasEventHandlers(self::EVENT_BEFORE_RESAVE_ELEMENT)) {
+                        $this->trigger(self::EVENT_BEFORE_RESAVE_ELEMENT, new BatchElementActionEvent([
+                            'query' => $query,
+                            'element' => $element,
+                            'position' => $position,
+                        ]));
+                    }
+
                     // Make sure the element was queried with its content
                     if ($element::hasContent() && $element->contentId === null) {
                         throw new InvalidElementException($element, "Skipped resaving {$element->getUiLabel()} ($element->id) because it wasn’t loaded with its content.");
@@ -1457,7 +1458,7 @@ class Elements extends Component
 
         // Clone any field values that are objects
         foreach ($mainClone->getFieldValues() as $handle => $value) {
-            if (is_object($value)) {
+            if (is_object($value) && !$value instanceof UnitEnum) {
                 $mainClone->setFieldValue($handle, clone $value);
             }
         }
@@ -1509,14 +1510,15 @@ class Elements extends Component
             // Should we add the clone to the source element’s structure?
             if (
                 $placeInStructure &&
-                $element->structureId &&
-                $element->root &&
                 $mainClone->getIsCanonical() &&
                 !$mainClone->root &&
-                $mainClone->structureId == $element->structureId
+                (!$mainClone->structureId || !$element->structureId || $mainClone->structureId == $element->structureId)
             ) {
-                $mode = isset($newAttributes['id']) ? Structures::MODE_AUTO : Structures::MODE_INSERT;
-                Craft::$app->getStructures()->moveAfter($element->structureId, $mainClone, $element, $mode);
+                $canonical = $element->getCanonical(true);
+                if ($canonical->structureId && $canonical->root) {
+                    $mode = isset($newAttributes['id']) ? Structures::MODE_AUTO : Structures::MODE_INSERT;
+                    Craft::$app->getStructures()->moveAfter($canonical->structureId, $mainClone, $canonical, $mode);
+                }
             }
 
             // Map it
@@ -1576,7 +1578,7 @@ class Elements extends Component
 
                     // Clone any field values that are objects
                     foreach ($siteClone->getFieldValues() as $handle => $value) {
-                        if (is_object($value)) {
+                        if (is_object($value) && !$value instanceof UnitEnum) {
                             $siteClone->setFieldValue($handle, clone $value);
                         }
                     }
@@ -2413,7 +2415,10 @@ class Elements extends Component
         foreach ($with as $path) {
             // Is this already an EagerLoadPlan object?
             if ($path instanceof EagerLoadPlan) {
-                $plans[$path->alias] = $path;
+                // Don't index the plan by its alias, as two plans w/ different `when` filters could be using the same alias.
+                // Side effect: mixing EagerLoadPlan objects and arrays could result in redundant element queries,
+                // but that would be a weird thing to do.
+                $plans[] = $path;
                 continue;
             }
 

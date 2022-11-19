@@ -191,9 +191,10 @@ class ElementSources extends Component
      * @param string $elementType The element type class
      * @phpstan-param class-string<ElementInterface> $elementType
      * @param string $sourceKey The element type source key
+     * @param string[]|null $customAttributes Custom attributes to show rather than the defaults
      * @return array[]
      */
-    public function getTableAttributes(string $elementType, string $sourceKey): array
+    public function getTableAttributes(string $elementType, string $sourceKey, ?array $customAttributes = null): array
     {
         /** @var ElementInterface|string $elementType */
         // If this is a source path, use the first segment
@@ -206,7 +207,8 @@ class ElementSources extends Component
             $this->getSourceTableAttributes($elementType, $sourceKey)
         );
 
-        $attributeKeys = $this->_sourceConfig($elementType, $sourceKey)['tableAttributes']
+        $attributeKeys = $customAttributes
+            ?? $this->_sourceConfig($elementType, $sourceKey)['tableAttributes']
             ?? $elementType::defaultTableAttributes($sourceKey);
 
         $attributes = [

@@ -1,26 +1,51 @@
 {% apply spaceless %}
 {% set keyPrefix = keyPrefix ?? '' %}
+{% set isTopLevel = not keyPrefix %}
 
-{% macro sourceLink(key, source, isTopLevel, elementType) %}
-    {% from _self import sourceInnerHtml %}
+{% if isTopLevel %}
+    {% set elementInstance = craft.app.elements.createElement(elementType) %}
+    {% set baseSortOptions = elementInstance.sortOptions()|map((option, key) => {
+        label: option.label ?? option,
+        attr: option.attribute ?? option.orderBy ?? key,
+        defaultDir: option.defaultDir ?? 'asc',
+    })|values %}
+    {% set tableColumns = craft.app.elementSources.getAvailableTableAttributes(elementType) %}
+{% endif %}
+
+{% macro sourceLink(key, source, isTopLevel, elementType, baseSortOptions, tableColumns) %}
+    {% set hasStructure = (source.structureId ?? null)|boolean %}
     {{ tag('a', {
         data: {
             key: key,
             'has-thumbs': (source.hasThumbs ?? false) ? true : false,
-            'has-structure': (source.structureId ?? false) ? true : false,
-            'default-sort': (source.defaultSort ?? false)
-                ? (source.defaultSort is iterable ? source.defaultSort|join(':') : source.defaultSort)
+            'has-structure': hasStructure,
+            'default-sort': source.defaultSort ?? false,
+            'sort-opts': isTopLevel
+                ? [hasStructure ? {label: 'Structure'|t('app'), attr: 'structure', defaultDir: 'asc'} : null]|filter
+                    |merge(baseSortOptions)
+                    |merge(craft.app.elementSources.getSourceSortOptions(elementType, key)|map(option => {
+                        label: option.label,
+                        attr: option.attribute ?? option.orderBy,
+                        defaultDir: option.defaultDir ?? 'asc'
+                    })|values)
                 : false,
-            'sort-options': isTopLevel
-                ? craft.app.elementSources.getSourceSortOptions(elementType, key)
-                    |map(o => [o.label, o.attribute ?? o.orderBy])
-                    |json_encode
+            'table-col-opts': isTopLevel
+                ? tableColumns
+                    |merge(craft.app.elementSources.getSourceTableAttributes(elementType, key))
+                    |map((a, key) => a|merge({attr: key}))
+                    |values
+                : false,
+            'default-table-cols': isTopLevel
+                ? craft.app.elementSources.getTableAttributes(elementType, key)
+                    |map(a => a[0])
+                    |filter(a => a != 'title')
+                    |values
                 : false,
             sites: (source.sites ?? false) ? source.sites|join(',') : false,
             'override-status': (source.criteria.status ?? false) ? true : false,
             disabled: source.disabled ?? false,
         }|merge(source.data ?? {}),
-        html: sourceInnerHtml(source)
+        html: _self.sourceInnerHtml(source)
     }) }}
 {% endmacro %}
 
@@ -51,8 +76,6 @@
     {% endif %}
 {% endmacro %}
 
-{% from _self import sourceLink %}
-
 {% set nestedUnderHeading = false %}
 
 {% tag 'ul' with {
@@ -75,7 +98,7 @@
                     (source.disabled ?? false) ? 'hidden' : null,
                 ]|filter,
             } %}
-                {{ sourceLink(key, source, not keyPrefix, elementType) }}
+                {{ _self.sourceLink(key, source, isTopLevel, elementType, baseSortOptions ?? null, tableColumns ?? null) }}
                 {% if source.nested is defined and source.nested is not empty %}
                     <button class="toggle" aria-expanded="false" aria-label="{{ 'Show nested sources'|t('app') }}"></button>
                     {% include "_elements/sources" with {

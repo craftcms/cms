@@ -45,7 +45,7 @@ class BaseConfig extends Model
      */
     final public function __construct($config = [])
     {
-        if (class_exists(Craft::class, false)) {
+        if (class_exists(Craft::class, false) && Craft::$app) {
             $this->filename = Craft::$app->getConfig()->getLoadingConfigFile();
         }
 

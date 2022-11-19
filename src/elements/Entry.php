@@ -210,7 +210,7 @@ class Entry extends Element implements ExpirableElementInterface
             $editable = true;
         } else {
             $sections = Craft::$app->getSections()->getAllSections();
-            $editable = false;
+            $editable = null;
         }
 
         $sectionIds = [];
@@ -341,7 +341,7 @@ class Entry extends Element implements ExpirableElementInterface
 
         // Get the section we need to check permissions on
         if (preg_match('/^section:(\d+)$/', $source, $matches)) {
-            $section = Craft::$app->getSections()->getSectionById($matches[1]);
+            $section = Craft::$app->getSections()->getSectionById((int)$matches[1]);
         } elseif (preg_match('/^section:(.+)$/', $source, $matches)) {
             $section = Craft::$app->getSections()->getSectionByUid($matches[1]);
         } else {
@@ -1432,9 +1432,7 @@ class Entry extends Element implements ExpirableElementInterface
      */
     public function getPostEditUrl(): ?string
     {
-        $section = $this->getSection();
-        $sourceKey = $section->type === Section::TYPE_SINGLE ? 'singles' : $section->handle;
-        return UrlHelper::cpUrl("entries/$sourceKey");
+        return UrlHelper::cpUrl('entries');
     }
 
     /**

@@ -24,8 +24,10 @@ class EntryCondition extends ElementCondition
             ExpiryDateConditionRule::class,
             LevelConditionRule::class,
             PostDateConditionRule::class,
+            SavableConditionRule::class,
             SectionConditionRule::class,
             TypeConditionRule::class,
+            ViewableConditionRule::class,
         ]);
     }
 }

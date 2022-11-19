@@ -187,9 +187,9 @@ table.editable textarea {
   width: 17px;
   height: 17px;
   box-sizing: border-box;
-  border: 1px solid var(--yellow-500);
+  border: 1px solid var(--indicator-border-color);
   border-radius: var(--small-border-radius);
-  color: var(--yellow-500);
+  color: var(--indicator-icon-color);
   font-size: 9px;
 }
 
@@ -1057,6 +1057,14 @@ td.right {
     }
   }
 
+  &.sidebar-hidden {
+    @include padding-left(0);
+
+    & > .cs-sidebar {
+      display: none;
+    }
+  }
+
   & > .source-settings {
     position: relative;
     height: calc(100% - 50px);
@@ -1372,6 +1380,13 @@ ul.icons {
     }
   }
 
+  &.wrap {
+    height: auto;
+    min-height: 34px;
+    white-space: initial;
+    text-align: left;
+  }
+
   &:not(.disabled):not(.loading):not(.dashed):not([aria-disabled]) {
     &:focus,
     &.focus,
@@ -1465,6 +1480,7 @@ ul.icons {
   display: flex;
   white-space: nowrap;
   align-items: center;
+  border-radius: var(--large-border-radius);
 
   &.fullwidth .btn {
     flex: 1;
@@ -1506,6 +1522,13 @@ ul.icons {
         border-bottom-left-radius: 0;
       }
     }
+  }
+}
+
+.btngroup--exclusive {
+  .btn[aria-pressed='true']:not(.disabled):not(.loading):not(.dashed):not([aria-disabled]) {
+    background-color: var(--gray-500);
+    color: var(--white);
   }
 }
 
@@ -1845,7 +1868,7 @@ div.btn.submit input {
     background-color: transparentize($grey200, 0.9);
     border-color: transparent;
 
-    .reduce-focus-visibility &:not(.focus-visible) {
+    .reduce-focus-visibility &:not(:focus-visible) {
       border: 1px dashed var(--medium-hairline-color);
     }
   }
@@ -2103,7 +2126,7 @@ div.btn.submit input {
         }
       }
 
-      &.focus-visible {
+      @include focus-styles {
         box-shadow: inset 0 0 0 1px var(--hairline-color), var(--focus-ring);
       }
     }
@@ -2615,6 +2638,9 @@ $elementInnerSpacing: 5px;
 
     .label {
       display: block;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
       word-wrap: normal;
     }
   }
@@ -2958,16 +2984,28 @@ $checkboxPadding: $checkboxSize + 4;
   min-height: 34px;
   margin-top: -7px;
 
+  .elements {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+
+    &.flex-row {
+      flex-direction: row;
+    }
+
+    &.flex-wrap {
+      flex-wrap: wrap;
+    }
+  }
+
   .elements:after {
     @include clearafter;
   }
 
   .element {
-    @include floatleft;
     @include margin(7px, 7px, 0, 0);
   }
 
-  .element.small,
   .flex,
   .btn {
     clear: both;
@@ -2990,13 +3028,8 @@ $checkboxPadding: $checkboxSize + 4;
     }
   }
 
-  .caboose {
-    @include floatleft;
-  }
-
   .flex {
     padding-top: 7px;
-    float: none !important;
   }
 }
 
@@ -3250,14 +3283,21 @@ ul.tree,
 /* status icons */
 .status {
   display: inline-block;
+  position: relative;
   @include margin-right(10px);
   width: 10px;
   height: 10px;
   border: 1px solid transparent;
   border-radius: 100%;
   box-sizing: border-box;
+  background-clip: border-box;
 
   body.use-shapes & {
+    &.all {
+      rotate: 45deg;
+      background-image: linear-gradient(30deg, #184cef, #e5422b);
+    }
+
     &.pending {
       background-color: transparent;
       border-style: solid;
@@ -3266,15 +3306,17 @@ ul.tree,
       border-radius: 1px;
     }
 
+    &.all,
     &.off,
     &.suspended,
     &.expired {
-      border-radius: 1px;
+      border-radius: 2px;
+      transform: scale(90%);
     }
   }
 }
 
-.status:not(.on):not(.live):not(.active):not(.enabled):not(.pending):not(.off):not(.suspended):not(.expired):not(.yellow):not(.orange):not(.red):not(.pink):not(.purple):not(.blue):not(.green):not(.turquoise):not(.light):not(.grey):not(.black) {
+.status:not(.on):not(.live):not(.active):not(.enabled):not(.all):not(.pending):not(.off):not(.suspended):not(.expired):not(.yellow):not(.orange):not(.red):not(.pink):not(.purple):not(.blue):not(.green):not(.turquoise):not(.light):not(.grey):not(.black) {
   border-color: var(--ui-control-color);
 }
 
@@ -3284,6 +3326,11 @@ ul.tree,
 .status.active,
 .status.enabled {
   background-color: var(--enabled-color);
+}
+
+.status.all {
+  background-image: linear-gradient(60deg, #184cef, #e5422b);
+  background-origin: border-box;
 }
 
 .orange,
@@ -3614,6 +3661,13 @@ ul.tree,
     }
 
     [role='tab'] {
+      --tab-label-color: var(--light-text-color);
+
+      &.error {
+        --highlight-color: var(--error-color) !important;
+        --tab-label-color: var(--error-color) !important;
+      }
+
       &,
       .tab-label {
         border-radius: 2px 2px 0 0;
@@ -3626,7 +3680,7 @@ ul.tree,
         position: relative;
         padding: 0 24px;
         white-space: nowrap;
-        color: var(--light-text-color);
+        color: var(--tab-label-color);
         height: 50px;
       }
 
@@ -3634,7 +3688,7 @@ ul.tree,
         text-decoration: none;
       }
 
-      &.focus-visible {
+      @include focus-styles {
         box-shadow: none;
 
         .tab-label {
@@ -3649,13 +3703,13 @@ ul.tree,
       }
 
       &.sel {
+        --highlight-color: var(--gray-500);
+        --tab-label-color: var(--text-color);
         position: relative;
         z-index: 1;
         cursor: default;
-        color: var(--text-color);
-        box-shadow: inset 0 2px 0 var(--gray-500), 0 0 0 1px $hairlineColor,
-          0 2px 12px transparentize($grey200, 0.5);
-        color: var(--text-color);
+        box-shadow: inset 0 2px 0 var(--highlight-color),
+          0 0 0 1px $hairlineColor, 0 2px 12px transparentize($grey200, 0.5);
         background-color: var(--white);
       }
 
@@ -3836,6 +3890,8 @@ ul.tree,
 }
 
 /* meta panes */
+$min2ColWidth: 400px;
+
 .meta {
   padding: 0 var(--padding);
   overflow: visible;
@@ -3877,9 +3933,13 @@ ul.tree,
       }
 
       & > .heading {
-        flex: 0 0 104px;
-        @include margin(0, var(--s), 0, 0);
-        line-height: 18px;
+        margin: 0;
+
+        @media screen and (min-width: $min2ColWidth) {
+          flex: 0 0 104px;
+          @include margin-right(var(--s));
+          line-height: 18px;
+        }
       }
 
       &.lightswitch-field > .heading {
@@ -3898,7 +3958,11 @@ ul.tree,
     }
 
     & > .field > .heading {
-      padding: 14px 0;
+      padding-top: var(--s);
+
+      @media screen and (min-width: $min2ColWidth) {
+        padding: 14px 0;
+      }
 
       & > .copytextbtn {
         display: none;
@@ -3917,7 +3981,11 @@ ul.tree,
     & > .field > .input,
     & > .data > .value {
       padding: var(--s) 0;
-      width: calc(100% - 112px);
+      width: 100%;
+
+      @media screen and (min-width: $min2ColWidth) {
+        width: calc(100% - 112px);
+      }
     }
 
     & > .data > .value {
@@ -4106,13 +4174,17 @@ ul.tree,
   height: 100vh;
   height: -webkit-fill-available; // h/t https://twitter.com/AllThingsSmitty/status/1254151507412496384
   pointer-events: none;
+
+  body.has-debug-toolbar & {
+    height: calc(100vh - 42px);
+  }
 }
 
 .slideout {
   position: absolute;
   background-color: var(--white);
   box-shadow: 0 0 0 1px transparentize($grey400, 0.75),
-    0 25px 100px transparentize($grey900, 0.5);
+    0 25px 100px transparentize($grey900, 0.5) !important;
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -4545,7 +4617,6 @@ ul.tree,
     border-radius: 8px;
     border: 2px solid transparent;
     background-color: transparentize($black, 0.5);
-    background-clip: content-box;
   }
 
   ::-webkit-scrollbar-track {
@@ -4667,37 +4738,6 @@ ul.tree,
   padding-bottom: 50px;
   user-select: none;
 
-  .main-header {
-    display: flex;
-    align-items: center;
-    margin-bottom: var(--s);
-  }
-
-  .main-heading {
-    margin-bottom: 0;
-  }
-
-  .nav-toggle {
-    @include margin-left(4px);
-    @include touch-target;
-    color: var(--ui-control-color);
-
-    &:hover {
-      color: var(--gray-500);
-    }
-  }
-
-  .sidebar-header {
-    display: flex;
-    justify-content: flex-end;
-    padding: 0 var(--s);
-    margin-bottom: var(--s);
-  }
-
-  .nav-close {
-    @include touch-target;
-  }
-
   .body {
     position: relative;
     height: 100%;
@@ -4783,6 +4823,41 @@ ul.tree,
   }
 }
 
+/* element selector modals & customize sources modal */
+.elementselectormodal,
+.customize-sources-modal {
+  .main-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: var(--s);
+  }
+
+  .main-heading {
+    margin-bottom: 0;
+  }
+
+  .nav-toggle {
+    @include margin-left(4px);
+    @include touch-target;
+    color: var(--ui-control-color);
+
+    &:hover {
+      color: var(--gray-500);
+    }
+  }
+
+  .sidebar-header {
+    display: flex;
+    justify-content: flex-end;
+    padding: 0 var(--s);
+    margin-bottom: var(--s);
+  }
+
+  .nav-close {
+    @include touch-target;
+  }
+}
+
 /* element editing HUD */
 .element-hud-form {
   .buttons {
@@ -4792,6 +4867,65 @@ ul.tree,
       position: absolute;
       top: 0;
       @include right(-24px);
+    }
+  }
+}
+
+/* element index view menu */
+.element-index-view-menu {
+  width: 400px;
+  max-width: calc(100% - 20px);
+  padding: 0 !important;
+
+  .meta {
+    padding-top: var(--s);
+    padding-bottom: var(--s);
+  }
+
+  .table-columns-field {
+    align-items: flex-start;
+
+    .input {
+      padding: 13px 0;
+    }
+  }
+
+  .menu-footer {
+    margin: 0 !important;
+    padding: var(--s) var(--xl) !important;
+    background-color: var(--gray-050);
+  }
+}
+
+.element-index-view-menu-table-column .icon.move {
+  @include margin-right(10px);
+}
+
+/* sort fields */
+.sort-field {
+  .input {
+    .flex {
+      .btngroup {
+        .btn {
+          width: 42px;
+        }
+      }
+
+      .flex-grow {
+        max-width: calc(100% - 85px - var(--s));
+      }
+
+      @media screen and (max-width: 350px) {
+        flex-direction: column;
+
+        & > * {
+          width: 100%;
+        }
+
+        .flex-grow {
+          max-width: none;
+        }
+      }
     }
   }
 }
@@ -5039,7 +5173,7 @@ ul.tree,
         -webkit-appearance: none;
 
         &:not(.flex) {
-          display: block !important;
+          display: table !important;
           box-sizing: border-box;
           width: calc(100% + 28px);
           @include alignleft;
@@ -5135,8 +5269,7 @@ ul.tree,
       @include disclosure-link-hover-styles;
     }
 
-    body:not(.reduce-focus-visibility) &:focus,
-    body.reduce-focus-visibility &.focus-visible {
+    @include focus-styles {
       box-shadow: inset 0 0 0 3px hsla(var(--dark-focus-hsl), 0.7);
     }
   }
@@ -5270,8 +5403,7 @@ table.editable {
     @include input-focused-styles;
   }
 
-  body:not(.reduce-focus-visibility) &:focus,
-  body.reduce-focus-visibility &.focus-visible {
+  @include focus-styles {
     @include input-focused-styles;
   }
 }
@@ -5627,15 +5759,22 @@ body:not(.reduce-focus-visibility) {
 }
 
 body.reduce-focus-visibility {
-  input.checkbox.focus-visible + label:before,
-  .focus-visible div.checkbox:before {
+  input.checkbox:focus-visible + label:before,
+  :focus-visible div.checkbox:before {
     @include input-focused-styles;
   }
 }
 
+.checkbox-icon:before {
+  @include icon;
+  line-height: var(--checkbox-size);
+  color: var(--enabled-color);
+  content: 'check';
+  font-size: 15px;
+}
+
 .monaco-mouse-cursor-text {
-  &:focus,
-  &.focus-visible {
+  @include focus-styles {
     box-shadow: none !important;
   }
 }
@@ -5736,8 +5875,8 @@ body:not(.reduce-focus-visibility) {
 }
 
 body.reduce-focus-visibility {
-  input.radio.focus-visible + label:before,
-  .focus-visible div.radio:before {
+  input.radio:focus-visible + label:before,
+  :focus-visible div.radio:before {
     @include input-focused-styles;
   }
 }
@@ -5748,8 +5887,7 @@ body.reduce-focus-visibility {
   font-size: 14px;
   appearance: none;
 
-  body:not(.reduce-focus-visibility) &:focus,
-  body.reduce-focus-visibility &.focus-visible {
+  @include focus-styles {
     @include input-focused-styles;
   }
 
@@ -5850,7 +5988,7 @@ body.reduce-focus-visibility {
 
       &:before {
         @include icon;
-        content: 'sliders';
+        content: 'filter';
         color: var(--medium-text-color);
       }
 
@@ -6098,8 +6236,7 @@ tr.indexingSession td.progress div.progressContainer div.progressInfo {
     @include select-input-focused-styles;
   }
 
-  body:not(.reduce-focus-visibility) &:focus,
-  body.reduce-focus-visibility &.focus-visible {
+  @include focus-styles {
     @include select-input-focused-styles;
   }
 }

@@ -1445,7 +1445,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         if (isset($this->_searchResults)) {
             foreach ($rows as &$row) {
                 if (isset($row['id'], $this->_searchResults[$row['id']])) {
-                    $row['searchScore'] = $this->_searchResults[$row['id']];
+                    $row['searchScore'] = (int)round($this->_searchResults[$row['id']]);
                 }
             }
         }
@@ -1888,6 +1888,7 @@ class ElementQuery extends Query implements ElementQueryInterface
      *
      * @return bool Whether the query should be prepared and returned to the query builder.
      * If false, the query will be cancelled and no results will be returned.
+     * @throws QueryAbortedException
      * @see prepare()
      * @see afterPrepare()
      */
@@ -2255,7 +2256,7 @@ class ElementQuery extends Query implements ElementQueryInterface
         $parser = new ElementRelationParamParser([
             'fields' => $this->customFields ? ArrayHelper::index($this->customFields, 'handle') : [],
         ]);
-        $condition = $parser->parse($this->relatedTo);
+        $condition = $parser->parse($this->relatedTo, $this->siteId !== '*' ? $this->siteId : null);
 
         if ($condition === false) {
             throw new QueryAbortedException();

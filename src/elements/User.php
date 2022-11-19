@@ -42,6 +42,7 @@ use craft\validators\UsernameValidator;
 use craft\validators\UserPasswordValidator;
 use DateInterval;
 use DateTime;
+use DateTimeZone;
 use Throwable;
 use yii\base\ErrorHandler;
 use yii\base\Exception;
@@ -307,6 +308,14 @@ class User extends Element implements IdentityInterface
         }
 
         return $sources;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected static function includeSetStatusAction(): bool
+    {
+        return false;
     }
 
     /**
@@ -1219,6 +1228,12 @@ class User extends Element implements IdentityInterface
      */
     public function getStatus(): ?string
     {
+        // If they're disabled or archived, go with that
+        $status = parent::getStatus();
+        if ($status !== self::STATUS_ENABLED) {
+            return $status;
+        }
+
         if ($this->suspended) {
             return self::STATUS_SUSPENDED;
         }
@@ -1423,9 +1438,9 @@ class User extends Element implements IdentityInterface
     {
         if ($this->locked) {
             $currentTime = DateTimeHelper::currentUTCDateTime();
-            $cooldownEnd = $this->getCooldownEndTime();
+            $cooldownEnd = $this->getCooldownEndTime()?->setTimezone(new DateTimeZone('UTC'));
 
-            if ($currentTime < $cooldownEnd) {
+            if ($cooldownEnd && $currentTime < $cooldownEnd) {
                 return $currentTime->diff($cooldownEnd);
             }
         }

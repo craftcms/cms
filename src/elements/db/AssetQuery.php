@@ -9,6 +9,7 @@ namespace craft\elements\db;
 
 use Craft;
 use craft\db\Query;
+use craft\db\QueryAbortedException;
 use craft\db\Table;
 use craft\elements\Asset;
 use craft\elements\User;
@@ -43,6 +44,20 @@ class AssetQuery extends ElementQuery
 {
     // General parameters
     // -------------------------------------------------------------------------
+
+    /**
+     * @var bool|null Whether to only return assets that the user has permission to view.
+     * @used-by editable()
+     * @since 4.4.0
+     */
+    public ?bool $editable = null;
+
+    /**
+     * @var bool|null Whether to only return entries that the user has permission to save.
+     * @used-by savable()
+     * @since 4.4.0
+     */
+    public ?bool $savable = null;
 
     /**
      * @var mixed The volume ID(s) that the resulting assets must be in.
@@ -230,6 +245,34 @@ class AssetQuery extends ElementQuery
         } else {
             parent::__set($name, $value);
         }
+    }
+
+    /**
+     * Sets the [[$editable]] property.
+     *
+     * @param bool|null $value The property value (defaults to true)
+     * @return self self reference
+     * @uses $editable
+     * @since 4.4.0
+     */
+    public function editable(?bool $value = true): self
+    {
+        $this->editable = $value;
+        return $this;
+    }
+
+    /**
+     * Sets the [[$savable]] property.
+     *
+     * @param bool|null $value The property value (defaults to true)
+     * @return self self reference
+     * @uses $savable
+     * @since 4.4.0
+     */
+    public function savable(?bool $value = true): self
+    {
+        $this->savable = $value;
+        return $this;
     }
 
     /**
@@ -930,7 +973,84 @@ class AssetQuery extends ElementQuery
             $this->subQuery->andWhere(Db::parseDateParam('assets.dateModified', $this->dateModified));
         }
 
+        $this->_applyAuthParam($this->editable, 'viewAssets', 'viewPeerAssets');
+        $this->_applyAuthParam($this->savable, 'saveAssets', 'savePeerAssets');
+
         return parent::beforePrepare();
+    }
+
+    /**
+     * @param bool|null $value
+     * @param string $permissionPrefix
+     * @param string $peerPermissionPrefix
+     * @throws QueryAbortedException
+     */
+    private function _applyAuthParam(?bool $value, string $permissionPrefix, string $peerPermissionPrefix): void
+    {
+        if ($value === null) {
+            return;
+        }
+
+        $user = Craft::$app->getUser()->getIdentity();
+
+        if (!$user) {
+            throw new QueryAbortedException();
+        }
+
+        $fullyAuthorizedVolumeIds = [];
+        $partiallyAuthorizedVolumeIds = [];
+        $unauthorizedVolumeIds = [];
+
+        foreach (Craft::$app->getVolumes()->getAllVolumes() as $volume) {
+            if ($user->can("$peerPermissionPrefix:$volume->uid")) {
+                $fullyAuthorizedVolumeIds[] = $volume->id;
+            } elseif ($user->can("$permissionPrefix:$volume->uid")) {
+                $partiallyAuthorizedVolumeIds[] = $volume->id;
+            } else {
+                $unauthorizedVolumeIds[] = $volume->id;
+            }
+        }
+
+        if ($value) {
+            if (!$fullyAuthorizedVolumeIds && !$partiallyAuthorizedVolumeIds) {
+                throw new QueryAbortedException();
+            }
+
+            $this->subQuery->andWhere(array_filter([
+                'or',
+                $fullyAuthorizedVolumeIds
+                    ? ['assets.volumeId' => $fullyAuthorizedVolumeIds]
+                    : null,
+                $partiallyAuthorizedVolumeIds
+                    ? [
+                        'assets.volumeId' => $partiallyAuthorizedVolumeIds,
+                        'assets.uploaderId' => $user->id,
+                    ]
+                    : null,
+            ]));
+        } else {
+            if (!$unauthorizedVolumeIds && !$partiallyAuthorizedVolumeIds) {
+                throw new QueryAbortedException();
+            }
+
+            $this->subQuery->andWhere(array_filter([
+                'or',
+                $unauthorizedVolumeIds
+                    ? ['assets.volumeId' => $unauthorizedVolumeIds]
+                    : null,
+                $partiallyAuthorizedVolumeIds
+                    ? [
+                        'and',
+                        ['assets.volumeId' => $partiallyAuthorizedVolumeIds],
+                        [
+                            'or',
+                            ['not', ['assets.uploaderId' => $user->id]],
+                            ['assets.uploaderId' => null],
+                        ],
+                    ]
+                    : null,
+            ]));
+        }
     }
 
     /**

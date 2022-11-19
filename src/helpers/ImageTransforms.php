@@ -41,7 +41,7 @@ class ImageTransforms
     public static function createTransformFromString(string $transformString): ImageTransform
     {
         if (!preg_match(self::TRANSFORM_STRING_PATTERN, $transformString, $matches)) {
-            throw new ImageTransformException('Cannot create a transfrom from string: ' . $transformString);
+            throw new ImageTransformException('Cannot create a transform from string: ' . $transformString);
         }
 
         if ($matches['width'] == 'AUTO') {
@@ -57,7 +57,9 @@ class ImageTransforms
 
         return Craft::createObject([
             'class' => ImageTransform::class,
+            /** @phpstan-ignore-next-line */
             'width' => $matches['width'] ?? null,
+            /** @phpstan-ignore-next-line */
             'height' => $matches['height'] ?? null,
             'mode' => $matches['mode'],
             'position' => $matches['position'],
@@ -252,17 +254,8 @@ class ImageTransforms
             return $transform;
         }
 
-        if (is_array($transform)) {
-            if (array_key_exists('transform', $transform)) {
-                $baseTransform = self::normalizeTransform(ArrayHelper::remove($transform, 'transform'));
-                return self::extendTransform($baseTransform, $transform);
-            }
-
-            return new ImageTransform($transform);
-        }
-
         if (is_object($transform)) {
-            return new ImageTransform(ArrayHelper::toArray($transform, [
+            $transform = ArrayHelper::toArray($transform, [
                 'id',
                 'name',
                 'transformer',
@@ -275,7 +268,26 @@ class ImageTransforms
                 'position',
                 'quality',
                 'interlace',
-            ]));
+            ]);
+        }
+
+        if (is_array($transform)) {
+            if (!empty($transform['width']) && !is_numeric($transform['width'])) {
+                Craft::warning("Invalid transform width: {$transform['width']}", __METHOD__);
+                $transform['width'] = null;
+            }
+
+            if (!empty($transform['height']) && !is_numeric($transform['height'])) {
+                Craft::warning("Invalid transform height: {$transform['height']}", __METHOD__);
+                $transform['height'] = null;
+            }
+
+            if (array_key_exists('transform', $transform)) {
+                $baseTransform = self::normalizeTransform(ArrayHelper::remove($transform, 'transform'));
+                return self::extendTransform($baseTransform, $transform);
+            }
+
+            return new ImageTransform($transform);
         }
 
         if (is_string($transform)) {
