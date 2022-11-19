@@ -7,6 +7,7 @@
 
 namespace craft\ui;
 
+use craft\helpers\ArrayHelper;
 use craft\helpers\Html;
 
 class ComponentAttributes
@@ -20,6 +21,10 @@ class ComponentAttributes
 
     public function __toString(): string
     {
+        if (isset($this->attributes['class'])) {
+            $this->attributes['class'] = self::toCssClasses($this->attributes['class']);
+        }
+
         return Html::renderTagAttributes($this->attributes);
     }
 
@@ -38,17 +43,10 @@ class ComponentAttributes
      */
     public function defaults(array $attributes): self
     {
-        $normalized = Html::normalizeTagAttributes($attributes);
+        $attributes = Html::normalizeTagAttributes($attributes);
+        $attributes = ArrayHelper::merge($attributes, $this->attributes);
 
-        foreach ($this->attributes as $key => $value) {
-            if (isset($normalized[$key]) && 'class' === $key) {
-                $normalized[$key] = array_merge(self::toCssClasses($normalized[$key]), $value);
-            } else {
-                $normalized[$key] = $value;
-            }
-        }
-
-        return new self($normalized);
+        return new self($attributes);
     }
 
     /**

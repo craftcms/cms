@@ -2,6 +2,17 @@
 {% set title = "UI Components" %}
 
 {% block content %}
-    {{ component('test', {class: 'content-pane'}) }}
-    {% component test with {class: "pane"} %}{% endcomponent %}
+    {{ component('button', {label: "Invalid", variant: "cheese"}) }}
+    {{ component('button', {label: "Button", class: 'a test class'}) }}
+    {{ component('button', {label: "Loading", state: "loading"}) }}
+    {{ component('button', {label: "Submit", type: "submit"}) }}
+    {{ component('button', {label: "Disabled", state: "disabled"}) }}
+    {{ component('button', {label: "Submit", type: "submit", state: "disabled"}) }}
+    {{ component('button', {label: "Dashed", dashed: true}) }}
+
+    {% component button with {class: ['add', 'icon', 'address-cards__add-btn'], dashed: true, spinner: true} %}
+        {% block label %}
+            {{ 'Add an address' | t }}
+        {% endblock %}
+    {% endcomponent %}
 {% endblock %}

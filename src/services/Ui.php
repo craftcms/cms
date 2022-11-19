@@ -16,6 +16,7 @@ use craft\ui\attributes\AsTwigComponent;
 use craft\ui\attributes\ExposeInTemplate;
 use craft\ui\ComponentAttributes;
 use craft\ui\ComponentMetadata;
+use craft\ui\components\Button;
 use craft\ui\components\Test;
 use craft\ui\MountedComponent;
 use Exception;
@@ -56,6 +57,9 @@ class Ui extends Component
     public function getAllComponentTypes(): array
     {
         return [
+            // Button
+            Button::class,
+
             // Test
             Test::class,
         ];
@@ -163,9 +167,6 @@ class Ui extends Component
                 unset($data[$property]);
             }
         }
-
-        // Validate the component
-        $component->validate();
 
         // Run `postMount`
         $data = $this->_postMount($component, $data);

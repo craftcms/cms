@@ -1,0 +1,26 @@
+{% set attributes = attributes.defaults({
+    type: type,
+    disabled: disabled,
+    class: {
+        'btn': true,
+        'submit': submit,
+        'disabled': disabled,
+        'dashed': dashed,
+        'loading': loading,
+        'btn-empty': not label
+    }
+}) %}
+
+{% apply spaceless %}
+    <button {{ attributes }}>
+        {% block label %}
+            {{ label ? tag('div', {
+                class: 'label',
+                text: label,
+            }) }}
+        {% endblock %}
+        {% if spinner %}
+            <div class="spinner spinner-absolute"></div>
+        {% endif %}
+    </button>
+{% endapply -%}
