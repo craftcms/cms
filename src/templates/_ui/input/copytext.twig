@@ -1,0 +1,27 @@
+<div class="copytext">
+    {{ component('input:text', {id: id, value: props.value, readonly: true}) }}
+
+    {{- tag('button', {
+        type: 'button',
+        id: buttonId,
+        class: 'btn',
+        title: 'Copy to clipboard'|t('app'),
+        aria: {
+            label: 'Copy to clipboard'|t('app'),
+            describedby: describedBy ?? false,
+        },
+        data: {
+            icon: 'clipboard',
+        },
+    }) -}}
+</div>
+
+{% js %}
+$('#{{ buttonId|namespaceInputId|e('js') }}').on('click', function() {
+    document.getElementById('{{ id|namespaceInputId|e('js') }}').select();
+    document.execCommand('copy');
+    Craft.cp.displayNotice("{{ 'Copied to clipboard.'|t('app')|e('js') }}");
+    $(this).parent().trigger('copy');
+    document.getElementById('{{ id|namespaceInputId|e('js') }}').setSelectionRange(0, 0);
+});
+{% endjs %}

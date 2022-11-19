@@ -17,6 +17,10 @@ use craft\ui\attributes\ExposeInTemplate;
 use craft\ui\ComponentAttributes;
 use craft\ui\ComponentMetadata;
 use craft\ui\components\Button;
+use craft\ui\components\InputCopyText;
+use craft\ui\components\InputHiddenText;
+use craft\ui\components\InputPasswordText;
+use craft\ui\components\InputText;
 use craft\ui\components\Test;
 use craft\ui\MountedComponent;
 use Exception;
@@ -59,6 +63,12 @@ class Ui extends Component
         return [
             // Button
             Button::class,
+
+            // Inputs
+            InputText::class,
+            InputPasswordText::class,
+            InputHiddenText::class,
+            InputCopyText::class,
 
             // Test
             Test::class,
@@ -230,6 +240,9 @@ class Ui extends Component
 
             // add the component as "this"
             ['this' => $component],
+
+            // Provide the props back to the component
+            ['props' => ArrayHelper::merge($component->getAttributes(), $mounted->attributes->all())],
 
             // add computed properties proxy
             // ['computed' => new ComputedPropertiesProxy($component)],

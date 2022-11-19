@@ -1,0 +1,23 @@
+{% set input %}
+    {{ tag('input', attributes.defaults({
+        type: type,
+        dir: orientation,
+        size: size,
+        disabled: disabled,
+        class: {
+            text: true,
+            disabled: disabled,
+            fullwidth: not size,
+        },
+        autocomplete: 'off'
+    }).all()) }}
+{% endset %}
+
+{%- if unit ?? false %}
+    <div class="flex">
+        <div class="textwrapper">{{ input|raw }}</div>
+        <div class="label light">{{ unit }}</div>
+    </div>
+{%- else %}
+    {{- input|raw }}
+{%- endif %}

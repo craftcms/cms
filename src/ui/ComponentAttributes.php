@@ -33,6 +33,10 @@ class ComponentAttributes
      */
     public function all(): array
     {
+        if (isset($this->attributes['class'])) {
+            $this->attributes['class'] = self::toCssClasses($this->attributes['class']);
+        }
+
         return $this->attributes;
     }
 

@@ -2,6 +2,22 @@
 {% set title = "UI Components" %}
 
 {% block content %}
+    <h2>Inputs</h2>
+    {{ component('input:text') }}
+    {{ component('input:text', {value: "with a value"}) }}
+    {{ component('input:text', {id: "some-input", placeholder: "With an id"}) }}
+
+    <h3>Password</h3>
+    {{ component('input:password', {value: "some value", id: "some-input", placeholder: "With an id"}) }}
+
+    <h3>Hidden</h3>
+    {{ component('input:hidden', {value: "some value", id: "some-input", placeholder: "With an id"}) }}
+
+    <h3>Copy Text</h3>
+    {{ component('input:copytext', {value: "Value to copy"}) }}
+
+    <hr>
+    <h2>Buttons</h2>
     {{ component('button', {label: "Invalid", variant: "cheese"}) }}
     {{ component('button', {label: "Button", class: 'a test class'}) }}
     {{ component('button', {label: "Loading", state: "loading"}) }}
@@ -10,9 +26,11 @@
     {{ component('button', {label: "Submit", type: "submit", state: "disabled"}) }}
     {{ component('button', {label: "Dashed", dashed: true}) }}
 
+    <hr>
     {% component button with {class: ['add', 'icon', 'address-cards__add-btn'], dashed: true, spinner: true} %}
         {% block label %}
             {{ 'Add an address' | t }}
         {% endblock %}
     {% endcomponent %}
+
 {% endblock %}
