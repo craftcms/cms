@@ -56,7 +56,7 @@ class Entries extends BaseRelationField
      */
     public static function valueType(): string
     {
-        return EntryQuery::class;
+        return sprintf('%s|%s[]', EntryQuery::class, Entry::class);
     }
 
     /**

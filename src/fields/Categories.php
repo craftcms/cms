@@ -59,7 +59,7 @@ class Categories extends BaseRelationField
      */
     public static function valueType(): string
     {
-        return CategoryQuery::class;
+        return sprintf('%s|%s[]', CategoryQuery::class, Category::class);
     }
 
     /**

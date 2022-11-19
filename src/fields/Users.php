@@ -56,7 +56,7 @@ class Users extends BaseRelationField
      */
     public static function valueType(): string
     {
-        return UserQuery::class;
+        return sprintf('%s|%s[]', UserQuery::class, User::class);
     }
 
     /**
