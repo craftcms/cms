@@ -302,7 +302,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
             $label = $valid ? $optionLabels[$index] : null;
             $value = new SingleOptionFieldData($label, $selectedValue, true, $valid);
         } else {
-            $value = new SingleOptionFieldData(null, null, true, true);
+            $value = new SingleOptionFieldData(null, null, true, false);
         }
 
         $value->setOptions($options);
@@ -426,14 +426,17 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
             $labels = [];
 
             foreach ($value as $option) {
-                $labels[] = Craft::t('site', $option->label);
+                /** @var OptionData $option */
+                if ($option->value) {
+                    $labels[] = Craft::t('site', $option->label);
+                }
             }
 
             return implode(', ', $labels);
         }
 
         /** @var SingleOptionFieldData $value */
-        return Craft::t('site', (string)$value->label);
+        return $value->value ? Craft::t('site', (string)$value->label) : '';
     }
 
     /**
@@ -574,7 +577,7 @@ abstract class BaseOptionsField extends Field implements PreviewableFieldInterfa
      * Base64-encodes a value.
      *
      * @param OptionData|MultiOptionsFieldData|string|null $value
-     * @rturn string|array|null
+     * @return string|array|null
      * @since 4.0.6
      */
     protected function encodeValue(OptionData|MultiOptionsFieldData|string|null $value): string|array|null

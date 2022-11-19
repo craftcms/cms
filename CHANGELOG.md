@@ -1,5 +1,45 @@
 # Release Notes for Craft CMS 4
 
+## 4.3.3 - 2022-11-17
+
+- Fixed an error that occurred if an arrow function was passed to the `|sort` Twig filter. ([#12334](https://github.com/craftcms/cms/issues/12334))
+- Fixed a bug where nested fields set to numbers could be inadvertently changed when an entry draft was created.
+- `craft\services\Fields::getFieldsWithContent()` and `getFieldsWithoutContent()` now have `$context` arguments.
+
+## 4.3.2.1 - 2022-11-16
+
+- Fixed a PHP error that could occur when generating an image transform. ([#12333](https://github.com/craftcms/cms/issues/12333))
+
+## 4.3.2 - 2022-11-16
+
+- `firstName` and `lastName` are now reserved field handles for the user field layout. ([#12241](https://github.com/craftcms/cms/issues/12241), [#12316](https://github.com/craftcms/cms/pull/12316))
+- Asset filenames are truncated in large thumbnail views, as they were before 4.3.0. ([#12236](https://github.com/craftcms/cms/discussions/12236))
+- Fixed an information disclosure vulnerability.
+- Fixed an XSS vulnerability.
+- Fixed asset indexing for Local filesystems that were configured to use a symlinked server path.
+- Fixed an error that could occur when calling `craft\base\Element::getCanonicalUid()` on a draft loaded for a site that the canonical element didn’t exist on yet. ([#12228](https://github.com/craftcms/cms/issues/12228))
+- Fixed a bug where long words in asset titles weren’t wrapping in the large thumbnail view. ([#12237](https://github.com/craftcms/cms/issues/12237))
+- Fixed a bug where the Users index page was showing a “Set Status” bulk action, making it possible to disable users.
+- Disabled users now identify themselves as disabled, and Edit User pages now provide a way for them to be re-enabled.
+- Fixed a layout issue that could occur on Assets fields using the “Large Thumbnails” view mode. ([#12230](https://github.com/craftcms/cms/issues/12230))
+- Fixed a bug where elements that weren’t viewable by the current user could still be hyperlinked in element indexes.
+- Fixed a bug where `craft\helpers\DateTimeHelper::toDateInterval()` could return a `DateInterval` that was off by an hour around daylight savings time changes.
+- Fixed a bug where sticky element index footers were obstructed when the Debug Toolbar was enabled. ([#12242](https://github.com/craftcms/cms/issues/12242))
+- Fixed a bug where it wasn’t possible to change the sort attribute on element indexes while searching. ([#12256](https://github.com/craftcms/cms/issues/12256))
+- Fixed a bug where `resave/*` commands weren’t catching exceptions thrown when applying the `--set` and `--to` options. ([#12262](https://github.com/craftcms/cms/issues/12262))
+- Fixed the position of field status indicators within Matrix fields in Live Preview. ([#12287](https://github.com/craftcms/cms/issues/12287))
+- Fixed PHP errors that could occur when executing GraphQL queries. ([#12271](https://github.com/craftcms/cms/pull/12271), [#12275](https://github.com/craftcms/cms/pull/12275))
+- Fixed a bug where it was possible to add a “Status” condition rule to relational fields’ selectable element conditions. ([#12289](https://github.com/craftcms/cms/issues/12289))
+- Fixed a PHP error that occurred if a field type stored enum values. ([#12297](https://github.com/craftcms/cms/issues/12297))
+- Fixed a bug where PHP errors and exceptions thrown when formatting a control panel screen response weren’t being handled properly. ([#12308](https://github.com/craftcms/cms/issues/12308))
+- Fixed a bug where element indexes were showing the labels of empty Dropdown options when selected. ([#12319](https://github.com/craftcms/cms/issues/12319))
+- Fixed condition builder styling issues that occurred if any rules had exceptionally long names. ([#12311](https://github.com/craftcms/cms/issues/12311))
+- Fixed an error that occurred when saving an entry via GraphQL, if a parent entry was assigned that didn’t exist on the requested site. ([#12291](https://github.com/craftcms/cms/issues/12291))
+- Fixed a bug where conditional fields weren’t always saving for elements that didn’t support autosaved drafts. ([#12166](https://github.com/craftcms/cms/issues/12166))
+- Fixed a bug where fields set to numbers could be inadvertently changed when an entry draft was created.
+- Added `craft\base\Element::includeSetStatusAction()`.
+- Added `craft\services\Fields::getFieldsWithoutContent()`.
+
 ## 4.3.1 - 2022-10-27
 
 - Numeric values are no longer automatically formatted within element indexes. ([#12205](https://github.com/craftcms/cms/issues/12205))

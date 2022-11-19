@@ -234,6 +234,7 @@ class Extension extends AbstractExtension implements GlobalsInterface
             new TwigFilter('replace', [$this, 'replaceFilter']),
             new TwigFilter('rss', [$this, 'rssFilter'], ['needs_environment' => true]),
             new TwigFilter('snake', [$this, 'snakeFilter']),
+            new TwigFilter('sort', [$this, 'sortFilter'], ['needs_environment' => true]),
             new TwigFilter('string', 'strval'),
             new TwigFilter('time', [$this, 'timeFilter'], ['needs_environment' => true]),
             new TwigFilter('timestamp', [$this, 'timestampFilter']),
@@ -475,6 +476,26 @@ class Extension extends AbstractExtension implements GlobalsInterface
     {
         return StringHelper::toSnakeCase((string)$string);
     }
+
+    /**
+     * Sorts an array.
+     *
+     * @param TwigEnvironment $env
+     * @param iterable $array
+     * @param string|callable|null $arrow
+     * @return array
+     * @throws RuntimeError
+     * @since 4.3.2
+     */
+    public function sortFilter(TwigEnvironment $env, iterable $array, string|callable|null $arrow = null): array
+    {
+        if (is_string($arrow) && strtolower($arrow) === 'system') {
+            throw new RuntimeError('The sort filter doesn\'t support sorting by system().');
+        }
+
+        return twig_sort_filter($env, $array, $arrow);
+    }
+
 
     /**
      * Formats the value as a currency number.

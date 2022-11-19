@@ -124,6 +124,7 @@ return [
     'Applying new propagation method to elements' => 'Stosowanie nowej metody propagowania w elementach',
     'Applying new propagation method to {section} entries' => 'Stosowanie nowej metody propagowania do wpisów {section}',
     'Applying this change to existing blocks can take some time.' => 'Zastosowanie tej zmiany do istniejących bloków może zająć nieco czasu.',
+    'Archived' => 'Archived',
     'Are you sure you want to close the editor? Any changes will be lost.' => 'Czy na pewno chcesz zamknąć edytor? Wszelkie zmiany zostaną utracone.',
     'Are you sure you want to close this screen? Any changes will be lost.' => 'Czy na pewno chcesz zamknąć ten ekran? Wszelkie zmiany zostaną utracone.',
     'Are you sure you want to delete the logo?' => 'Czy na pewno chcesz usunąć logo?',

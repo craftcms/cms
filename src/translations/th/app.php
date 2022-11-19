@@ -124,6 +124,7 @@ return [
     'Applying new propagation method to elements' => 'กำลังใช้วิธีเผยแพร่ใหม่ไปยังองค์ประกอบ',
     'Applying new propagation method to {section} entries' => 'กำลังใช้วิธีเผยแพร่ใหม่ไปยัง {section} รายการ',
     'Applying this change to existing blocks can take some time.' => 'กำลังใช้การเปลี่ยนแปลงนี้กับบล็อกที่มีอยู่อาจใช้เวลาสักครู่',
+    'Archived' => 'Archived',
     'Are you sure you want to close the editor? Any changes will be lost.' => 'คุณแน่ใจหรือไม่ว่าต้องการปิดตัวแก้ไขนี้ การเปลี่ยนแปลงใดๆ จะสูญหายไป',
     'Are you sure you want to close this screen? Any changes will be lost.' => 'คุณแน่ใจหรือไม่ว่าต้องการปิดหน้าจอนี้ การเปลี่ยนแปลงใดๆ จะสูญหายไป',
     'Are you sure you want to delete the logo?' => 'คุณแน่ใจหรือว่าต้องการลบโลโก้',

@@ -341,7 +341,6 @@ Craft.ElementEditor = Garnish.Base.extend(
 
         if (this.isFullPage) {
           const heightDiff = $('#content').height() - initialHeight;
-          console.log(heightDiff);
           Garnish.$win.scrollTop(scrollTop + heightDiff);
 
           // If there isn’t enough content to simulate the same scroll position, slide it down instead
@@ -1621,6 +1620,9 @@ Craft.ElementEditor = Garnish.Base.extend(
                 'g'
               ),
               (m, pre, id, post) => {
+                if (!this._filterFieldInputName(pre)) {
+                  return m;
+                }
                 return pre + this.duplicatedElements[id] + post;
               }
             )
@@ -1631,6 +1633,7 @@ Craft.ElementEditor = Garnish.Base.extend(
                 // Ignore param names that end in `[enabled]`, `[type]`, etc.
                 // (`[sortOrder]` should pass here, which could be set to a specific order index, but *not* `[sortOrder][]`!)
                 if (
+                  !this._filterFieldInputName(name) ||
                   name.match(
                     new RegExp(`${lb}(enabled|sortOrder|type|typeId)${rb}$`)
                   )
@@ -1645,6 +1648,19 @@ Craft.ElementEditor = Garnish.Base.extend(
         }
       }
       return data;
+    },
+
+    _filterFieldInputName: function (name) {
+      // Find the last referenced field handle
+      const lb = encodeURIComponent('[');
+      const rb = encodeURIComponent(']');
+      const nestedNames = name.match(
+        new RegExp(`(\\bfields|${lb}fields${rb})${lb}[^${rb}]+${rb}`, 'g')
+      );
+      const lastHandle = nestedNames[nestedNames.length - 1].match(
+        new RegExp(`(?:\\bfields|${lb}fields${rb})${lb}([^${rb}]+)${rb}`)
+      )[1];
+      return Craft.fieldsWithoutContent.includes(lastHandle);
     },
 
     updatePreviewTargets: function (previewTargets) {

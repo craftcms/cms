@@ -18,12 +18,14 @@ use craft\elements\Entry;
 use craft\elements\MatrixBlock;
 use craft\elements\Tag;
 use craft\elements\User;
+use craft\errors\InvalidElementException;
 use craft\events\BatchElementActionEvent;
 use craft\helpers\ElementHelper;
 use craft\helpers\Queue;
 use craft\helpers\StringHelper;
 use craft\queue\jobs\ResaveElements;
 use craft\services\Elements;
+use Throwable;
 use yii\console\ExitCode;
 use yii\helpers\Console;
 
@@ -483,8 +485,12 @@ class ResaveController extends Controller
                 $element = $e->element;
                 $this->stdout("    - [$e->position/$count] Resaving $element ($element->id) ... ");
 
-                if (isset($this->set) && (!$this->ifEmpty || ElementHelper::isAttributeEmpty($element, $this->set))) {
-                    $element->{$this->set} = $to($element);
+                try {
+                    if (isset($this->set) && (!$this->ifEmpty || ElementHelper::isAttributeEmpty($element, $this->set))) {
+                        $element->{$this->set} = $to($element);
+                    }
+                } catch (Throwable $e) {
+                    throw new InvalidElementException($element, $e->getMessage());
                 }
             }
         };

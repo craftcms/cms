@@ -1380,6 +1380,13 @@ ul.icons {
     }
   }
 
+  &.wrap {
+    height: auto;
+    min-height: 34px;
+    white-space: initial;
+    text-align: left;
+  }
+
   &:not(.disabled):not(.loading):not(.dashed):not([aria-disabled]) {
     &:focus,
     &.focus,
@@ -2631,6 +2638,9 @@ $elementInnerSpacing: 5px;
 
     .label {
       display: block;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
       word-wrap: normal;
     }
   }
@@ -2974,16 +2984,28 @@ $checkboxPadding: $checkboxSize + 4;
   min-height: 34px;
   margin-top: -7px;
 
+  .elements {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+
+    &.flex-row {
+      flex-direction: row;
+    }
+
+    &.flex-wrap {
+      flex-wrap: wrap;
+    }
+  }
+
   .elements:after {
     @include clearafter;
   }
 
   .element {
-    @include floatleft;
     @include margin(7px, 7px, 0, 0);
   }
 
-  .element.small,
   .flex,
   .btn {
     clear: both;
@@ -3006,13 +3028,8 @@ $checkboxPadding: $checkboxSize + 4;
     }
   }
 
-  .caboose {
-    @include floatleft;
-  }
-
   .flex {
     padding-top: 7px;
-    float: none !important;
   }
 }
 
@@ -5156,7 +5173,7 @@ $min2ColWidth: 400px;
         -webkit-appearance: none;
 
         &:not(.flex) {
-          display: block !important;
+          display: table !important;
           box-sizing: border-box;
           width: calc(100% + 28px);
           @include alignleft;

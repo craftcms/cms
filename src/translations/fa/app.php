@@ -124,6 +124,7 @@ return [
     'Applying new propagation method to elements' => 'اعمال روش انتشار جدید به عناصر',
     'Applying new propagation method to {section} entries' => 'اعمال روش انتشار جدید به محتواهای {section}',
     'Applying this change to existing blocks can take some time.' => 'اعمال این تغییر به بلوک‌های موجود ممکن است کمی طول بکشد.',
+    'Archived' => 'Archived',
     'Are you sure you want to close the editor? Any changes will be lost.' => 'مطمئن هستید که می‌خواهید ویرایشگر را ببندید؟ در این صورت، همه تغییرات از دست خواهد رفت.',
     'Are you sure you want to close this screen? Any changes will be lost.' => 'مطمئن هستید که می‌خواهید صفحه را ببندید؟ در این صورت، همه تغییرات از دست خواهد رفت.',
     'Are you sure you want to delete the logo?' => 'از پاک کردن لوگو مطمئن هستید؟',
