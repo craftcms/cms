@@ -5173,7 +5173,7 @@ $min2ColWidth: 400px;
         -webkit-appearance: none;
 
         &:not(.flex) {
-          display: block !important;
+          display: table !important;
           box-sizing: border-box;
           width: calc(100% + 28px);
           @include alignleft;
