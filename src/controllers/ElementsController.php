@@ -1504,7 +1504,7 @@ JS, [
      * @return Response
      * @throws BadRequestHttpException
      * @throws ForbiddenHttpException
-     * @since 4.0.0
+     * @since 4.4.0
      */
     public function actionStructuredInputHtml(): Response
     {

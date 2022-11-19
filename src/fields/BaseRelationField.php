@@ -138,14 +138,14 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @var bool Whether to automatically relate structural ancestors.
      *
-     * @since 4.0.0
+     * @since 4.4.0
      */
     public bool $relateAncestors = false;
 
     /**
      * @var int|null Branch limit
      *
-     * @since 4.0.0
+     * @since 4.4validateSources.0
      */
     public ?int $branchLimit = null;
 
@@ -290,6 +290,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      * Ensure only one structured source is selected when relateAncestors is true.
      *
      * @param string $attribute
+     * @since 4.4.0
      */
     public function validateSources($attribute): void
     {
