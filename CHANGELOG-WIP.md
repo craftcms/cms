@@ -9,7 +9,7 @@
 ### Administration
 - Conditional layout components are now identified using a condition icon within field layout designers. ([#12250](https://github.com/craftcms/cms/issues/12250))
 - All CLI commands now support an `--isolated` option, which ensures the command is run in isolation. ([#12337](https://github.com/craftcms/cms/discussions/12337), [#12350](https://github.com/craftcms/cms/pull/12350))
-- Entries and categories fields now have a "Relate ancestors" setting that can be enabled when a single structured source is selected. [#11749](https://github.com/craftcms/cms/pull/11749)
+- Entries and Categories fields now have a “Relate ancestors” setting which can be enabled when a single structured source is selected. ([#11749](https://github.com/craftcms/cms/pull/11749))
 
 ### Development
 - Added the `editable` and `savable` asset query params. ([#12266](https://github.com/craftcms/cms/pull/12266))
@@ -29,7 +29,7 @@
 - Renamed `craft\elements\conditions\assets\EditableConditionRule` to `SavableConditionRule`, while preserving the original class name with an alias. ([#12266](https://github.com/craftcms/cms/pull/12266))
 - Renamed `craft\elements\conditions\entries\EditableConditionRule` to `SavableConditionRule`, while preserving the original class name with an alias. ([#12266](https://github.com/craftcms/cms/pull/12266))
 - Added `Craft.ElementFieldSettings`.
-- Deprecated `Craft.CategorySelectInput()`. `Craft.BaseElementSelectInput()` should be used instead. [#11749](https://github.com/craftcms/cms/pull/11749)
+- Deprecated `Craft.CategorySelectInput`. `Craft.BaseElementSelectInput` should be used instead. ([#11749](https://github.com/craftcms/cms/pull/11749))
 
 ### System
 - Improved element deletion performance. ([#12223](https://github.com/craftcms/cms/pull/12223))
