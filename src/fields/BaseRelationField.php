@@ -146,7 +146,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
     /**
      * @var int|null Branch limit
      *
-     * @since 4.4validateSources.0
+     * @since 4.4.0
      */
     public ?int $branchLimit = null;
 
