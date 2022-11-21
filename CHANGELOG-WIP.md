@@ -3,6 +3,7 @@
 ### Content Management
 
 ### Accessibility
+- Improved source item navigation for screen readers. ([#12054](https://github.com/craftcms/cms/pull/12054))
 
 ### Administration
 
