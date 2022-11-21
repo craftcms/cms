@@ -293,7 +293,7 @@ abstract class BaseRelationField extends Field implements PreviewableFieldInterf
      * @param string $attribute
      * @since 4.4.0
      */
-    public function validateSources($attribute): void
+    public function validateSources(string $attribute): void
     {
         if (!$this->relateAncestors) {
             return;
