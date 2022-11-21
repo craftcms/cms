@@ -7,9 +7,6 @@
 
 namespace craft\helpers;
 
-use Craft;
-use craft\enums\DateRangeType;
-use craft\enums\PeriodType;
 use DateInterval;
 use DateTime;
 use yii\base\InvalidArgumentException;
@@ -22,78 +19,69 @@ use yii\base\InvalidArgumentException;
  */
 class DateRange
 {
-    /**
-     * @return array
-     */
-    public static function rangeTypeOptions(): array
-    {
-        return [
-            DateRangeType::Today => Craft::t('app', 'Today'),
-            DateRangeType::ThisWeek => Craft::t('app', 'This week'),
-            DateRangeType::ThisMonth => Craft::t('app', 'This month'),
-            DateRangeType::ThisYear => Craft::t('app', 'This year'),
-            DateRangeType::Past7Days => Craft::t('app', 'Past {num} days', ['num' => 7]),
-            DateRangeType::Past30Days => Craft::t('app', 'Past {num} days', ['num' => 30]),
-            DateRangeType::Past90Days => Craft::t('app', 'Past {num} days', ['num' => 90]),
-            DateRangeType::PastYear => Craft::t('app', 'Past year'),
-            DateRangeType::Before => Craft::t('app', 'Before…'),
-            DateRangeType::After => Craft::t('app', 'After…'),
-            DateRangeType::Range => Craft::t('app', 'Range…'),
-        ];
-    }
+    public const TYPE_TODAY = 'today';
+    public const TYPE_THIS_WEEK = 'thisWeek';
+    public const TYPE_THIS_MONTH = 'thisMonth';
+    public const TYPE_THIS_YEAR = 'thisYear';
+    public const TYPE_PAST_7_DAYS = 'past7Days';
+    public const TYPE_PAST_30_DAYS = 'past30Days';
+    public const TYPE_PAST_90_DAYS = 'past90Days';
+    public const TYPE_PAST_YEAR = 'pastYear';
+    public const TYPE_BEFORE = 'before';
+    public const TYPE_AFTER = 'after';
+    public const TYPE_RANGE = 'range';
 
-    /**
-     * @return array
-     */
-    public static function periodTypeOptions(): array
-    {
-        return [
-            PeriodType::Minutes => Craft::t('app', 'minutes ago'),
-            PeriodType::Hours => Craft::t('app', 'hours ago'),
-            PeriodType::Days => Craft::t('app', 'days ago'),
-        ];
-    }
+    public const PERIOD_SECONDS_AGO = 'secondsAgo';
+    public const PERIOD_MINUTES_AGO = 'minutesAgo';
+    public const PERIOD_HOURS_AGO = 'hoursAgo';
+    public const PERIOD_DAYS_AGO = 'daysAgo';
+    public const PERIOD_WEEKS_AGO = 'weeksAgo';
+    public const PERIOD_SECONDS_FROM_NOW = 'secondsFromNow';
+    public const PERIOD_MINUTES_FROM_NOW = 'minutesFromNow';
+    public const PERIOD_HOURS_FROM_NOW = 'hoursFromNow';
+    public const PERIOD_DAYS_FROM_NOW = 'daysFromNow';
+    public const PERIOD_WEEKS_FROM_NOW = 'weeksFromNow';
 
     /**
      * Returns the start and end dates for a date range by its type.
      *
      * @param string $rangeType
-     * @phpstan-param DateRangeType::* $rangeType
+     * @phpstan-param self::TYPE_* $rangeType
      * @return DateTime[]
      * @phpstan-return array{DateTime,DateTime}
      */
     public static function dateRangeByType(string $rangeType): array
     {
         return match ($rangeType) {
-            DateRangeType::Today => [
+            self::TYPE_TODAY => [
                 DateTimeHelper::today(),
                 DateTimeHelper::tomorrow(),
             ],
-            DateRangeType::ThisWeek => [
+            self::TYPE_THIS_WEEK => [
                 DateTimeHelper::thisWeek(),
                 DateTimeHelper::nextWeek(),
             ],
-            DateRangeType::ThisMonth => [
+            self::TYPE_THIS_MONTH => [
                 DateTimeHelper::thisMonth(),
                 DateTimeHelper::nextMonth(),
             ],
-            DateRangeType::ThisYear => [
+            self::TYPE_THIS_YEAR => [
                 DateTimeHelper::thisYear(),
                 DateTimeHelper::nextYear(),
             ],
-            DateRangeType::Past7Days => [
+            self::TYPE_PAST_7_DAYS => [
                 DateTimeHelper::today()->modify('-7 days'),
                 DateTimeHelper::now(),
             ],
-            DateRangeType::Past30Days => [
+            self::TYPE_PAST_30_DAYS => [
                 DateTimeHelper::today()->modify('-30 days'),
                 DateTimeHelper::now(),
             ],
-            DateRangeType::Past90Days => [
+            self::TYPE_PAST_90_DAYS => [
                 DateTimeHelper::today()->modify('-90 days'),
                 DateTimeHelper::now(),
             ],
-            DateRangeType::PastYear => [
+            self::TYPE_PAST_YEAR => [
                 DateTimeHelper::today()->modify('-1 year'),
                 DateTimeHelper::now(),
             ],
@@ -111,27 +99,44 @@ class DateRange
     {
         // Cannot support months or years as they are variable in length
         if (!in_array($periodType, [
-            PeriodType::Seconds,
-            PeriodType::Minutes,
-            PeriodType::Hours,
-            PeriodType::Days,
-            PeriodType::Weeks,
+            DateRange::PERIOD_SECONDS_AGO,
+            DateRange::PERIOD_MINUTES_AGO,
+            DateRange::PERIOD_HOURS_AGO,
+            DateRange::PERIOD_DAYS_AGO,
+            DateRange::PERIOD_WEEKS_AGO,
+            DateRange::PERIOD_SECONDS_FROM_NOW,
+            DateRange::PERIOD_MINUTES_FROM_NOW,
+            DateRange::PERIOD_HOURS_FROM_NOW,
+            DateRange::PERIOD_DAYS_FROM_NOW,
+            DateRange::PERIOD_WEEKS_FROM_NOW,
         ], true)) {
             throw new InvalidArgumentException("Invalid period type: $periodType");
         }
 
         $interval = $length;
         switch ($periodType) {
-            case PeriodType::Weeks:
-                $interval = ($interval * 7) * 86400;
+            case DateRange::PERIOD_WEEKS_AGO:
+                $interval *= -604800;
                 break;
-            case PeriodType::Days:
+            case DateRange::PERIOD_DAYS_AGO:
+                $interval *= -86400;
+                break;
+            case DateRange::PERIOD_HOURS_AGO:
+                $interval *= -3600;
+                break;
+            case DateRange::PERIOD_MINUTES_AGO:
+                $interval *= -60;
+                break;
+            case DateRange::PERIOD_WEEKS_FROM_NOW:
+                $interval *= 604800;
+                break;
+            case DateRange::PERIOD_DAYS_FROM_NOW:
                 $interval *= 86400;
                 break;
-            case PeriodType::Hours:
-                $interval = ($interval * 60) * 60;
+            case DateRange::PERIOD_HOURS_FROM_NOW:
+                $interval *= 3600;
                 break;
-            case PeriodType::Minutes:
+            case DateRange::PERIOD_MINUTES_FROM_NOW:
                 $interval *= 60;
                 break;
         }

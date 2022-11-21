@@ -25,6 +25,7 @@ use yii\db\Connection;
  * @doc-path addresses.md
  * @replace {element} address
  * @replace {elements} addresses
+ * @replace {twig-method} craft.addresses()
  * @replace {myElement} myAddress
  * @replace {element-class} \craft\elements\Address
  */
@@ -106,10 +107,10 @@ class AddressQuery extends ElementQuery
      * ```
      *
      * @param string|string[]|null $value The property value
-     * @return self self reference
+     * @return static self reference
      * @uses $administrativeArea
      */
-    public function administrativeArea(array|string|null $value): self
+    public function administrativeArea(array|string|null $value): static
     {
         $this->administrativeArea = $value;
 
@@ -136,10 +137,10 @@ class AddressQuery extends ElementQuery
      * ```
      *
      * @param ElementInterface $owner The owner element
-     * @return self self reference
+     * @return static self reference
      * @uses $ownerId
      */
-    public function owner(ElementInterface $owner): self
+    public function owner(ElementInterface $owner): static
     {
         $this->ownerId = [$owner->id];
         return $this;
@@ -172,10 +173,10 @@ class AddressQuery extends ElementQuery
      * ```
      *
      * @param int|int[]|null $value The property value
-     * @return self self reference
+     * @return static self reference
      * @uses $ownerId
      */
-    public function ownerId(array|int|null $value): self
+    public function ownerId(array|int|null $value): static
     {
         $this->ownerId = $value;
         return $this;
@@ -210,10 +211,10 @@ class AddressQuery extends ElementQuery
      * ```
      *
      * @param string|string[]|null $value The property value
-     * @return self self reference
+     * @return static self reference
      * @uses $countryCode
      */
-    public function countryCode(array|string|null $value): self
+    public function countryCode(array|string|null $value): static
     {
         $this->countryCode = $value;
 

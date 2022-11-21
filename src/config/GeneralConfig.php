@@ -384,11 +384,13 @@ class GeneralConfig extends BaseConfig
     /**
      * @var bool Whether drafts should be saved automatically as they are edited.
      *
-     * Drafts *will* be autosaved while Live Preview is open, regardless of this setting.
+     * ::: warning
+     * Disabling this will also disable Live Preview.
+     * :::
      *
      * ::: code
      * ```php Static Config
-     * ->autosaveDrafts(false)
+     * 'autosaveDrafts' => false,
      * ```
      * ```shell Environment Override
      * CRAFT_AUTOSAVE_DRAFTS=false
@@ -802,16 +804,16 @@ class GeneralConfig extends BaseConfig
      *
      * ::: code
      * ```php Static Config
-     * ->defaultTemplateExtensions(['html', 'twig', 'txt'])
+     * ->defaultTemplateExtensions(['twig', 'html', 'txt'])
      * ```
      * ```shell Environment Override
-     * CRAFT_DEFAULT_TEMPLATE_EXTENSIONS=html,twig,txt
+     * CRAFT_DEFAULT_TEMPLATE_EXTENSIONS=twig,html,txt
      * ```
      * :::
      *
      * @group System
      */
-    public array $defaultTemplateExtensions = ['html', 'twig'];
+    public array $defaultTemplateExtensions = ['twig', 'html'];
 
     /**
      * @var mixed The default amount of time tokens can be used before expiring.
@@ -3855,7 +3857,7 @@ class GeneralConfig extends BaseConfig
      * The template file extensions Craft will look for when matching a template path to a file on the front end.
      *
      * ```php
-     * ->defaultTemplateExtensions(['html', 'twig', 'txt'])
+     * ->defaultTemplateExtensions(['twig', 'html', 'txt'])
      * ```
      *
      * @group System

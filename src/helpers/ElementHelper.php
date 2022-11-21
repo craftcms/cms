@@ -16,6 +16,7 @@ use craft\base\FieldInterface;
 use craft\db\Query;
 use craft\db\Table;
 use craft\errors\OperationAbortedException;
+use craft\fieldlayoutelements\CustomField;
 use craft\i18n\Locale;
 use craft\services\ElementSources;
 use DateTime;
@@ -684,6 +685,31 @@ class ElementHelper
     }
 
     /**
+     * Returns whether the attribute on the given element is empty.
+     *
+     * @param ElementInterface $element
+     * @param string $attribute
+     * @return bool
+     * @since 4.2.6
+     */
+    public static function isAttributeEmpty(ElementInterface $element, string $attribute): bool
+    {
+        // See if we're setting a custom field
+        $fieldLayout = $element->getFieldLayout();
+        if ($fieldLayout) {
+            foreach ($fieldLayout->getTabs() as $tab) {
+                foreach ($tab->getElements() as $layoutElement) {
+                    if ($layoutElement instanceof CustomField && $layoutElement->attribute() === $attribute) {
+                        return $layoutElement->getField()->isValueEmpty($element->getFieldValue($attribute), $element);
+                    }
+                }
+            }
+        }
+
+        return empty($element->$attribute);
+    }
+
+    /**
      * Returns the HTML for a given attribute value, to be shown in an element index view.
      *
      * @param mixed $value The field value
@@ -713,10 +739,6 @@ class ElementHelper
                     'label' => $label,
                 ],
             ]);
-        }
-
-        if (Number::isIntOrFloat($value)) {
-            return Craft::$app->getFormatter()->asDecimal($value);
         }
 
         try {

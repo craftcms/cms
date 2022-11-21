@@ -265,7 +265,7 @@ class Assets extends Component
 
         if ($conflictingFolder) {
             throw new FsObjectExistsException(Craft::t('app', 'A folder with the name “{folderName}” already exists in the folder.', [
-                'folderName' => $folder->name,
+                'folderName' => $newName,
             ]));
         }
 
@@ -554,7 +554,7 @@ class Assets extends Component
      */
     public function getTotalFolders(mixed $criteria): int
     {
-        if (!($criteria instanceof FolderCriteria)) {
+        if (!$criteria instanceof FolderCriteria) {
             $criteria = new FolderCriteria($criteria);
         }
 

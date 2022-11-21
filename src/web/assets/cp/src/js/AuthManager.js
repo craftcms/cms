@@ -27,7 +27,9 @@ Craft.AuthManager = Garnish.Base.extend(
      * Init
      */
     init: function () {
-      this.updateRemainingSessionTime(Craft.remainingSessionTime);
+      if (Craft.username) {
+        this.updateRemainingSessionTime(Craft.remainingSessionTime);
+      }
     },
 
     /**

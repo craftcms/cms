@@ -489,7 +489,6 @@ class Gql extends Component
                 $schema,
                 $event->query,
                 $event->rootValue,
-                $event->context,
                 $event->variables,
                 $event->operationName
             );
@@ -1235,7 +1234,6 @@ class Gql extends Component
      * @param GqlSchema $schema
      * @param string $query
      * @param mixed $rootValue
-     * @param mixed $context
      * @param array|null $variables
      * @param string|null $operationName
      * @return string|null
@@ -1244,7 +1242,6 @@ class Gql extends Component
         GqlSchema $schema,
         string $query,
         mixed $rootValue,
-        mixed $context,
         ?array $variables = null,
         ?string $operationName = null,
     ): ?string {
@@ -1271,7 +1268,7 @@ class Gql extends Component
                 '::' . $schema->uid .
                 '::' . md5($query) .
                 '::' . serialize($rootValue) .
-                '::' . serialize($context) .
+                '::' . Craft::$app->getInfo()->configVersion .
                 '::' . serialize($variables) .
                 ($operationName ? "::$operationName" : '');
         } catch (Throwable $e) {

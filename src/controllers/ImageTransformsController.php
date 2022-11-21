@@ -130,7 +130,7 @@ class ImageTransformsController extends Controller
         $transform->height = $this->request->getBodyParam('height') ?: null;
         $transform->mode = $this->request->getBodyParam('mode');
         $transform->position = $this->request->getBodyParam('position');
-        $transform->quality = $this->request->getBodyParam('quality');
+        $transform->quality = $this->request->getBodyParam('quality') ?: null;
         $transform->interlace = $this->request->getBodyParam('interlace');
         $transform->format = $this->request->getBodyParam('format');
 
@@ -146,13 +146,9 @@ class ImageTransformsController extends Controller
             $errors = true;
         }
 
-        if (!empty($transform->quality) && (!is_numeric($transform->quality) || $transform->quality > 100 || $transform->quality < 1)) {
+        if ($transform->quality && ($transform->quality > 100 || $transform->quality < 1)) {
             $this->setFailFlash(Craft::t('app', 'Quality must be a number between 1 and 100 (included).'));
             $errors = true;
-        }
-
-        if (empty($transform->quality)) {
-            $transform->quality = null;
         }
 
         if (!empty($transform->format) && !in_array($transform->format, Image::webSafeFormats(), true)) {

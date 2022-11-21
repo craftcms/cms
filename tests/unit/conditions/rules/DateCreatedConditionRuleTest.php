@@ -12,8 +12,7 @@ use Codeception\Test\Unit;
 use Craft;
 use craft\elements\conditions\DateCreatedConditionRule;
 use craft\elements\Entry;
-use craft\enums\DateRangeType;
-use craft\enums\PeriodType;
+use craft\helpers\DateRange;
 use craft\helpers\DateTimeHelper;
 use craft\test\TestCase;
 use DateInterval;
@@ -55,7 +54,7 @@ class DateCreatedConditionRuleTest extends TestCase
                 ['startDate' => DateTimeHelper::now()->sub(new DateInterval('P1D'))->format(DateTime::ATOM), 'endDate' => DateTimeHelper::now()->add(new DateInterval('P1D'))->format(DateTime::ATOM)],
             ],
             [
-                ['rangeType' => 'before', 'periodValue' => 99, 'periodType' => 'hours'],
+                ['rangeType' => 'before', 'periodValue' => 99, 'periodType' => 'hoursAgo'],
             ],
         ];
     }
@@ -76,7 +75,7 @@ class DateCreatedConditionRuleTest extends TestCase
         $entryQuery = Entry::find();
         $rule->modifyQuery($entryQuery);
 
-        if ($rule->rangeType !== DateRangeType::Range) {
+        if ($rule->rangeType !== DateRange::TYPE_RANGE) {
             if (count($expected) === 1) {
                 $expected = $expected[0]();
             } else {
@@ -103,60 +102,60 @@ class DateCreatedConditionRuleTest extends TestCase
 
         return [
             'start-and-end' => [
-                ['rangeType' => DateRangeType::Range, 'startDate' => $startDate, 'endDate' => $endDate],
+                ['rangeType' => DateRange::TYPE_RANGE, 'startDate' => $startDate, 'endDate' => $endDate],
                 ['and', '>= ' . $startDate->format(DateTime::ATOM), '< ' . $endDate->format(DateTime::ATOM)],
             ],
             'today' => [
-                ['rangeType' => DateRangeType::Today],
+                ['rangeType' => DateRange::TYPE_TODAY],
                 [
                     fn() => DateTimeHelper::today(),
                     fn() => DateTimeHelper::tomorrow(),
                 ],
             ],
             'thisMonth' => [
-                ['rangeType' => DateRangeType::ThisMonth],
+                ['rangeType' => DateRange::TYPE_THIS_MONTH],
                 [
                     fn() => DateTimeHelper::thisMonth(),
                     fn() => DateTimeHelper::nextMonth(),
                 ],
             ],
             'thisYear' => [
-                ['rangeType' => DateRangeType::ThisYear],
+                ['rangeType' => DateRange::TYPE_THIS_YEAR],
                 [
                     fn() => DateTimeHelper::thisYear(),
                     fn() => DateTimeHelper::nextYear(),
                 ],
             ],
             'past7Days' => [
-                ['rangeType' => DateRangeType::Past7Days],
+                ['rangeType' => DateRange::TYPE_PAST_7_DAYS],
                 [
                     fn() => DateTimeHelper::today()->modify('-7 days'),
                     fn() => DateTimeHelper::now(),
                 ],
             ],
             'past30Days' => [
-                ['rangeType' => DateRangeType::Past30Days],
+                ['rangeType' => DateRange::TYPE_PAST_30_DAYS],
                 [
                     fn() => DateTimeHelper::today()->modify('-30 days'),
                     fn() => DateTimeHelper::now(),
                 ],
             ],
             'past90Days' => [
-                ['rangeType' => DateRangeType::Past90Days],
+                ['rangeType' => DateRange::TYPE_PAST_90_DAYS],
                 [
                     fn() => DateTimeHelper::today()->modify('-90 days'),
                     fn() => DateTimeHelper::now(),
                 ],
             ],
             'pastYear' => [
-                ['rangeType' => DateRangeType::PastYear],
+                ['rangeType' => DateRange::TYPE_PAST_YEAR],
                 [
                     fn() => DateTimeHelper::today()->modify('-1 year'),
                     fn() => DateTimeHelper::now(),
                 ],
             ],
             'periodTypeHoursAfter' => [
-                ['rangeType' => DateRangeType::After, 'periodValue' => 10, 'periodType' => PeriodType::Hours],
+                ['rangeType' => DateRange::TYPE_AFTER, 'periodValue' => 10, 'periodType' => DateRange::PERIOD_HOURS_AGO],
                 [
                     static function() {
                         return '>= ' . (new DateTime('now', new DateTimeZone('America/Los_Angeles')))->modify('-10 hours')->format(DATE_ATOM);
@@ -164,7 +163,7 @@ class DateCreatedConditionRuleTest extends TestCase
                 ],
             ],
             'periodTypeMinutesAfter' => [
-                ['rangeType' => DateRangeType::After, 'periodValue' => 10, 'periodType' => PeriodType::Minutes],
+                ['rangeType' => DateRange::TYPE_AFTER, 'periodValue' => 10, 'periodType' => DateRange::PERIOD_MINUTES_AGO],
                 [
                     static function() {
                         return '>= ' . (new DateTime('now', new DateTimeZone('America/Los_Angeles')))->modify('-10 minutes')->format(DATE_ATOM);
@@ -172,7 +171,7 @@ class DateCreatedConditionRuleTest extends TestCase
                 ],
             ],
             'periodTypeDaysAfter' => [
-                ['rangeType' => DateRangeType::After, 'periodValue' => 10, 'periodType' => PeriodType::Days],
+                ['rangeType' => DateRange::TYPE_AFTER, 'periodValue' => 10, 'periodType' => DateRange::PERIOD_DAYS_AGO],
                 [
                     static function() {
                         return '>= ' . (new DateTime('now', new DateTimeZone('America/Los_Angeles')))->modify('-10 days')->format(DATE_ATOM);
@@ -180,7 +179,7 @@ class DateCreatedConditionRuleTest extends TestCase
                 ],
             ],
             'periodTypeHoursBefore' => [
-                ['rangeType' => DateRangeType::Before, 'periodValue' => 10, 'periodType' => PeriodType::Hours],
+                ['rangeType' => DateRange::TYPE_BEFORE, 'periodValue' => 10, 'periodType' => DateRange::PERIOD_HOURS_AGO],
                 [
                     static function() {
                         return '< ' . (new DateTime('now', new DateTimeZone('America/Los_Angeles')))->modify('-10 hours')->format(DATE_ATOM);
@@ -188,7 +187,7 @@ class DateCreatedConditionRuleTest extends TestCase
                 ],
             ],
             'periodTypeMinutesBefore' => [
-                ['rangeType' => DateRangeType::Before, 'periodValue' => 10, 'periodType' => PeriodType::Minutes],
+                ['rangeType' => DateRange::TYPE_BEFORE, 'periodValue' => 10, 'periodType' => DateRange::PERIOD_MINUTES_AGO],
                 [
                     static function() {
                         return '< ' . (new DateTime('now', new DateTimeZone('America/Los_Angeles')))->modify('-10 minutes')->format(DATE_ATOM);
@@ -196,7 +195,7 @@ class DateCreatedConditionRuleTest extends TestCase
                 ],
             ],
             'periodTypeDaysBefore' => [
-                ['rangeType' => DateRangeType::Before, 'periodValue' => 10, 'periodType' => PeriodType::Days],
+                ['rangeType' => DateRange::TYPE_BEFORE, 'periodValue' => 10, 'periodType' => DateRange::PERIOD_DAYS_AGO],
                 [
                     static function() {
                         return '< ' . (new DateTime('now', new DateTimeZone('America/Los_Angeles')))->modify('-10 days')->format(DATE_ATOM);

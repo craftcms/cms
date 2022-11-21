@@ -372,10 +372,9 @@ class Drafts extends Component
         }
 
         try {
-            if ($draft->hasErrors()) {
+            if ($draft->hasErrors() || !Craft::$app->getElements()->saveElement($draft, false)) {
                 throw new InvalidElementException($draft, "Draft $draft->id could not be applied because it doesn't validate.");
             }
-            Craft::$app->getElements()->saveElement($draft, false);
             Db::delete(Table::DRAFTS, [
                 'id' => $draftId,
             ]);

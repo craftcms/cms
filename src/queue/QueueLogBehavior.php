@@ -97,7 +97,12 @@ class QueueLogBehavior extends VerboseBehavior
     {
         Collection::make(Craft::$app->getLog()->targets)
             ->whereInstanceOf(MonologTarget::class)
-            ->each(function(MonologTarget $target) {
+            ->filter(fn($target, $key) => in_array($key, [
+                Dispatcher::TARGET_WEB,
+                Dispatcher::TARGET_CONSOLE,
+                Dispatcher::TARGET_QUEUE,
+            ], true))
+            ->each(function(MonologTarget $target): void {
                 $target->enabled = $target->getLogger()->getName() === Dispatcher::TARGET_QUEUE;
             });
     }

@@ -99,6 +99,11 @@ class Element extends InterfaceType implements SingularTypeInterface
                 'type' => Type::boolean(),
                 'description' => 'Whether the element is archived or not.',
             ],
+            'siteHandle' => [
+                'name' => 'siteHandle',
+                'type' => Type::string(),
+                'description' => 'The handle of the site the element is associated with.',
+            ],
             'siteId' => [
                 'name' => 'siteId',
                 'type' => Type::int(),

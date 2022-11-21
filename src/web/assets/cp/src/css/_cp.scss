@@ -41,11 +41,11 @@ body {
 }
 
 .reduce-focus-visibility {
-  :focus:not(.focus-visible) {
+  :focus:not(:focus-visible) {
     box-shadow: none;
   }
 
-  .focus-visible {
+  :focus-visible {
     box-shadow: var(--focus-ring);
   }
 }
@@ -879,11 +879,6 @@ li.breadcrumb-toggle-wrapper {
     opacity: 0.8;
   }
 
-  .btn[aria-pressed='true'] {
-    background-color: var(--gray-500);
-    color: var(--white);
-  }
-
   .text {
     border-radius: var(--large-border-radius);
 
@@ -914,6 +909,18 @@ li.breadcrumb-toggle-wrapper {
     &:not(:focus) {
       background-clip: border-box;
     }
+  }
+}
+
+#action-buttons {
+  @media only screen and (max-width: 400px) {
+    .btngroup .btn:first-child {
+      flex-basis: 100%;
+    }
+  }
+
+  @media only screen and (max-width: $minHorizontalUiWidth - 1px) {
+    margin-top: 10px;
   }
 }
 
@@ -970,6 +977,7 @@ li.breadcrumb-toggle-wrapper {
         &:focus {
           z-index: 1;
         }
+
         &:not(.sel) {
           &:hover {
             background-color: var(--gray-200);
@@ -1052,6 +1060,14 @@ li.breadcrumb-toggle-wrapper {
     }
   }
 
+  .has-debug-toolbar & {
+    transition: padding linear 100ms;
+
+    &.stuck {
+      padding-bottom: 52px;
+    }
+  }
+
   & > *,
   .flex > * {
     margin-bottom: 0;
@@ -1097,6 +1113,7 @@ li.breadcrumb-toggle-wrapper {
           & > .status-badge {
             border-top-left-radius: var(--large-border-radius);
           }
+
           border-top-right-radius: var(--large-border-radius);
         }
 
@@ -1105,6 +1122,7 @@ li.breadcrumb-toggle-wrapper {
           & > .status-badge {
             border-bottom-left-radius: var(--large-border-radius);
           }
+
           border-bottom-right-radius: var(--large-border-radius);
         }
       }
@@ -1351,12 +1369,16 @@ li.breadcrumb-toggle-wrapper {
       & > li:not(.heading),
       & > li.heading > ul > li {
         @include nav-level(0);
+
         & > ul.nested > li {
           @include nav-level(1);
+
           & > ul.nested > li {
             @include nav-level(2);
+
             & > ul.nested > li {
               @include nav-level(3);
+
               & > ul.nested > li {
                 @include nav-level(4);
               }

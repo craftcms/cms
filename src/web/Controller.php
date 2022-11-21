@@ -27,7 +27,6 @@ use yii\web\UnauthorizedHttpException;
  * @property Request $request
  * @property Response $response
  * @property View $view The view object that can be used to render views or view files
- * @property-read ?User $currentUser The current logged-in user
  * @method View getView() Returns the view object that can be used to render views or view files
  * @author Pixel & Tonic, Inc. <support@pixelandtonic.com>
  * @since 3.0.0

@@ -46,6 +46,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     $filterBtn: null,
     searching: false,
     searchText: null,
+    sortByScore: null,
     trashed: false,
     drafts: false,
     $clearSearchBtn: null,
@@ -418,8 +419,17 @@ Craft.BaseElementIndex = Garnish.Base.extend(
     },
 
     selectDefaultSource: function () {
-      var sourceKey = this.getDefaultSourceKey(),
-        $source;
+      // The `source` query param should always take precedence
+      let sourceKey;
+      if (this.settings.context === 'index') {
+        sourceKey = Craft.getQueryParam('source');
+      }
+
+      if (!sourceKey) {
+        sourceKey = this.getDefaultSourceKey();
+      }
+
+      let $source;
 
       if (sourceKey) {
         $source = this.getSourceByKey(sourceKey);
@@ -515,13 +525,13 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
     getDefaultSourceKey: function () {
       if (this.settings.defaultSource) {
-        var paths = this.settings.defaultSource.split('/'),
-          path = '';
+        const paths = this.settings.defaultSource.split('/');
+        let path = '';
 
         // Expand the tree
-        for (var i = 0; i < paths.length; i++) {
+        for (let i = 0; i < paths.length; i++) {
           path += paths[i];
-          var $source = this.getSourceByKey(path);
+          const $source = this.getSourceByKey(path);
 
           // If the folder can't be found, then just go to the stored instance source.
           if (!$source) {
@@ -549,6 +559,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       // Show the clear button
       this.$clearSearchBtn.removeClass('hidden');
       this.searching = true;
+      this.sortByScore = true;
 
       if (this.activeViewMenu) {
         this.activeViewMenu.updateSortField();
@@ -579,6 +590,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       // Hide the clear button
       this.$clearSearchBtn.addClass('hidden');
       this.searching = false;
+      this.sortByScore = false;
 
       if (this.activeViewMenu) {
         this.activeViewMenu.updateSortField();
@@ -1130,6 +1142,17 @@ Craft.BaseElementIndex = Garnish.Base.extend(
      * @param {string} [dir]
      */
     setSelectedSortAttribute: function (attr, dir) {
+      // If score, keep track of that separately
+      if (attr === 'score') {
+        this.sortByScore = true;
+        if (this.activeViewMenu) {
+          this.activeViewMenu.updateSortField();
+        }
+        return;
+      }
+
+      this.sortByScore = false;
+
       // Make sure it's valid
       const sortOption = this.getSortOption(attr);
       if (!sortOption) {
@@ -1201,7 +1224,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
      * @returns {boolean}
      */
     canSortByStructure: function () {
-      return !this.trashed && !this.drafts && !this.searching;
+      return (
+        !this.trashed && !this.drafts && !this.searching && !this.sortByScore
+      );
     },
 
     /**
@@ -1209,8 +1234,8 @@ Craft.BaseElementIndex = Garnish.Base.extend(
      * @returns {string[]}
      */
     getSortAttributeAndDirection: function () {
-      if (this.searching) {
-        return ['score', 'asc'];
+      if (this.searching && this.sortByScore) {
+        return ['score', 'desc'];
       }
 
       let attribute = this.getSelectedSortAttribute();
@@ -1342,10 +1367,9 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
       // Create the buttons if there's more than one mode available to this source
       if (this.sourceViewModes.length > 1) {
-        this.$viewModeBtnContainer = $('<section class="btngroup"/>').attr(
-          'aria-label',
-          Craft.t('app', 'View')
-        );
+        this.$viewModeBtnContainer = $(
+          '<section class="btngroup btngroup--exclusive"/>'
+        ).attr('aria-label', Craft.t('app', 'View'));
 
         if (this.activeViewMenu) {
           this.$viewModeBtnContainer.insertBefore(this.activeViewMenu.$trigger);
@@ -1405,6 +1429,12 @@ Craft.BaseElementIndex = Garnish.Base.extend(
       this.updateFilterBtn();
 
       this.onSelectSource();
+
+      if (this.settings.context === 'index') {
+        const urlParams = Craft.getQueryParams();
+        urlParams.source = this.sourceKey;
+        Craft.setUrl(Craft.getUrl(Craft.path, urlParams));
+      }
 
       return true;
     },
@@ -1925,7 +1955,7 @@ Craft.BaseElementIndex = Garnish.Base.extend(
 
       for (let i = 0; i < $headings.length; i++) {
         $heading = $headings.eq(i);
-        if ($heading.has('> ul > li:not(.hidden)')) {
+        if ($heading.has('> ul > li:not(.hidden)').length !== 0) {
           $heading.removeClass('hidden');
         } else {
           $heading.addClass('hidden');
@@ -2891,16 +2921,29 @@ const ViewMenu = Garnish.Base.extend({
     let [attribute, direction] =
       this.elementIndex.getSortAttributeAndDirection();
 
+    // Add/remove a score option
+    const $scoreOption = this.$sortAttributeSelect.children(
+      'option[value="score"]'
+    );
+
     // If searching by score, just keep showing the actual selection
-    if (attribute === 'score') {
-      attribute = this.elementIndex.getSelectedSortAttribute(this.$source);
-      direction = this.elementIndex.getSelectedSortDirection(this.$source);
+    if (this.elementIndex.searching) {
+      if (!$scoreOption.length) {
+        this.$sortAttributeSelect.prepend(
+          $('<option/>', {
+            value: 'score',
+            text: Craft.t('app', 'Score'),
+          })
+        );
+      }
+    } else if ($scoreOption.length) {
+      $scoreOption.remove();
     }
 
     this.$sortAttributeSelect.val(attribute);
     this.sortDirectionListbox.select(direction === 'asc' ? 0 : 1);
 
-    if (attribute === 'structure') {
+    if (['structure', 'score'].includes(attribute)) {
       this.sortDirectionListbox.disable();
       this.$sortDirectionPicker.addClass('disabled');
     } else {
@@ -3051,36 +3094,30 @@ const ViewMenu = Garnish.Base.extend({
         'aria-label': Craft.t('app', 'Sort attribute'),
       });
 
-    this.$sortDirectionPicker = $('<div/>', {
-      role: 'listbox',
-      class: 'btngroup',
+    this.$sortDirectionPicker = $('<section/>', {
+      class: 'btngroup btngroup--exclusive',
       'aria-label': Craft.t('app', 'Sort direction'),
-      tabindex: '0',
     })
       .append(
         $('<button/>', {
-          role: 'option',
           type: 'button',
           class: 'btn',
           title: Craft.t('app', 'Sort ascending'),
           'aria-label': Craft.t('app', 'Sort ascending'),
-          'aria-selected': 'false',
+          'aria-pressed': 'false',
           'data-icon': 'asc',
           'data-dir': 'asc',
-          tabindex: '-1',
         })
       )
       .append(
         $('<button/>', {
-          role: 'option',
           type: 'button',
           class: 'btn',
           title: Craft.t('app', 'Sort descending'),
           'aria-label': Craft.t('app', 'Sort descending'),
-          'aria-selected': 'false',
+          'aria-pressed': 'false',
           'data-icon': 'desc',
           'data-dir': 'desc',
-          tabindex: '-1',
         })
       )
       .appendTo($container);

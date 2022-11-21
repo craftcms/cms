@@ -80,8 +80,6 @@ import './deprecator.scss';
 
       Craft.sendActionRequest('POST', 'utilities/delete-deprecation-error', {
         data,
-      }).finally(() => {
-        console.log('response', response);
       });
 
       if ($tr.siblings().length) {
