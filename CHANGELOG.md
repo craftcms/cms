@@ -3,6 +3,7 @@
 ## Unreleased
 
 - `craft\base\Element::includeSetStatusAction()` now returns `false` by default regardless of what `hasStatuses()` returns, fixing a bug where some element indexes were unexpectedly getting “Set Status” actions.
+- Updated Yii to 2.0.47.
 
 ## 4.3.3 - 2022-11-17
 
