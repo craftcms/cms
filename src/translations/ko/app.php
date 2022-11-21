@@ -124,6 +124,7 @@ return [
     'Applying new propagation method to elements' => '새로운 전파 방법을 요소에 적용 중',
     'Applying new propagation method to {section} entries' => '새로운 전파 방법을 {section} 항목에 적용 중',
     'Applying this change to existing blocks can take some time.' => '이 변경 사항을 기존 블록에 적용하려면 시간이 좀 걸립니다.',
+    'Archived' => 'Archived',
     'Are you sure you want to close the editor? Any changes will be lost.' => '에디터를 닫으시겠습니까? 모든 변경 사항이 손실됩니다.',
     'Are you sure you want to close this screen? Any changes will be lost.' => '이 화면을 닫으시겠습니까? 모든 변경 사항이 손실됩니다.',
     'Are you sure you want to delete the logo?' => '로고를 삭제하시겠습니까?',

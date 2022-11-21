@@ -313,6 +313,14 @@ class User extends Element implements IdentityInterface
     /**
      * @inheritdoc
      */
+    protected static function includeSetStatusAction(): bool
+    {
+        return false;
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected static function defineActions(string $source): array
     {
         $actions = [];
@@ -1220,6 +1228,12 @@ class User extends Element implements IdentityInterface
      */
     public function getStatus(): ?string
     {
+        // If they're disabled or archived, go with that
+        $status = parent::getStatus();
+        if ($status !== self::STATUS_ENABLED) {
+            return $status;
+        }
+
         if ($this->suspended) {
             return self::STATUS_SUSPENDED;
         }

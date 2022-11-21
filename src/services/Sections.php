@@ -1288,7 +1288,7 @@ class Sections extends Component
      * ---
      *
      * ```php
-     * $success = Craft::$app->sections->deleteEntry($entryType);
+     * $success = Craft::$app->sections->deleteEntryType($entryType);
      * ```
      *
      * @param EntryType $entryType

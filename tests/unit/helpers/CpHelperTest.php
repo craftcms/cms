@@ -8,7 +8,6 @@
 namespace crafttests\unit\helpers;
 
 use Codeception\Test\Unit;
-use Craft;
 use craft\elements\User;
 use craft\helpers\Cp;
 use craft\test\TestCase;
@@ -78,23 +77,6 @@ class CpHelperTest extends TestCase
         $user->trashed = true;
         self::assertStringContainsString('data-trashed', Cp::elementHtml($user));
         $user->trashed = false;
-
-        $edition = Craft::$app->getEdition();
-        Craft::$app->setEdition(Craft::Pro);
-
-        // draft
-        self::assertStringNotContainsString('draftId', $indexHtml);
-        $user->draftId = 1;
-        self::assertStringContainsString('draftId', Cp::elementHtml($user));
-        $user->draftId = null;
-
-        // revision
-        self::assertStringNotContainsString('revisionId', $indexHtml);
-        $user->revisionId = 1;
-        self::assertStringContainsString('revisionId', Cp::elementHtml($user));
-        $user->revisionId = null;
-
-        Craft::$app->setEdition($edition);
     }
 
     /**

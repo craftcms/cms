@@ -694,6 +694,44 @@ class UsersController extends Controller
     }
 
     /**
+     * Enables a user that is currently disabled or archived.
+     *
+     * @return Response|null
+     * @since 4.3.2
+     */
+    public function actionEnableUser(): ?Response
+    {
+        $this->requirePostRequest();
+
+        $userId = $this->request->getRequiredBodyParam('userId');
+        $user = Craft::$app->getUsers()->getUserById($userId);
+
+        if (!$user) {
+            $this->_noUserExists();
+        }
+
+        $elementsService = Craft::$app->getElements();
+
+        if (!$elementsService->canSave($user)) {
+            throw new ForbiddenHttpException('User is not authorized to perform this action.');
+        }
+
+        $user->enabled = true;
+        $user->enabledForSite = true;
+        $user->archived = false;
+
+        if (!$elementsService->saveElement($user, false)) {
+            return $this->asFailure(Craft::t('app', 'Couldn’t save {type}.', [
+                'type' => User::lowerDisplayName(),
+            ]));
+        }
+
+        return $this->asSuccess(Craft::t('app', '{type} saved.', [
+            'type' => User::displayName(),
+        ]));
+    }
+
+    /**
      * Manually activates a user account. Only admins have access.
      *
      * @return Response
@@ -791,6 +829,16 @@ class UsersController extends Controller
 
         if ($edition === Craft::Pro && !$isNewUser) {
             switch ($user->getStatus()) {
+                case Element::STATUS_ARCHIVED:
+                case Element::STATUS_DISABLED:
+                    $statusLabel = $user->archived ? Craft::t('app', 'Archived') : Craft::t('app', 'Disabled');
+                    if (Craft::$app->getElements()->canSave($user)) {
+                        $statusActions[] = [
+                            'action' => 'users/enable-user',
+                            'label' => Craft::t('app', 'Enable'),
+                        ];
+                    }
+                    break;
                 case User::STATUS_INACTIVE:
                 case User::STATUS_PENDING:
                     $statusLabel = $user->pending ? Craft::t('app', 'Pending') : Craft::t('app', 'Inactive');
@@ -1967,6 +2015,8 @@ JS,
         $fieldLayout->reservedFieldHandles = [
             'groups',
             'photo',
+            'firstName',
+            'lastName',
         ];
 
         if (!Craft::$app->getUsers()->saveLayout($fieldLayout)) {
