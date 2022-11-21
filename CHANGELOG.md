@@ -1,5 +1,10 @@
 # Release Notes for Craft CMS 4
 
+## Unreleased
+
+- `craft\base\Element::includeSetStatusAction()` now returns `false` by default regardless of what `hasStatuses()` returns, fixing a bug where some element indexes were unexpectedly getting “Set Status” actions.
+- Updated Yii to 2.0.47.
+
 ## 4.3.3 - 2022-11-17
 
 - Fixed an error that occurred if an arrow function was passed to the `|sort` Twig filter. ([#12334](https://github.com/craftcms/cms/issues/12334))
