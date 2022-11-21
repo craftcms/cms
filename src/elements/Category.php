@@ -17,7 +17,6 @@ use craft\elements\actions\Delete;
 use craft\elements\actions\Duplicate;
 use craft\elements\actions\NewChild;
 use craft\elements\actions\Restore;
-use craft\elements\actions\SetStatus;
 use craft\elements\conditions\categories\CategoryCondition;
 use craft\elements\conditions\ElementConditionInterface;
 use craft\elements\db\CategoryQuery;
@@ -242,7 +241,7 @@ class Category extends Element
 
         // Get the group we need to check permissions on
         if (preg_match('/^group:(\d+)$/', $source, $matches)) {
-            $group = Craft::$app->getCategories()->getGroupById($matches[1]);
+            $group = Craft::$app->getCategories()->getGroupById((int)$matches[1]);
         } elseif (preg_match('/^group:(.+)$/', $source, $matches)) {
             $group = Craft::$app->getCategories()->getGroupByUid($matches[1]);
         } else {
@@ -254,9 +253,6 @@ class Category extends Element
         $elementsService = Craft::$app->getElements();
 
         if ($group) {
-            // Set Status
-            $actions[] = SetStatus::class;
-
             // New Child
             if ($group->maxLevels != 1) {
                 $newChildUrl = 'categories/' . $group->handle . '/new';
@@ -297,6 +293,14 @@ class Category extends Element
         $actions[] = Restore::class;
 
         return $actions;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected static function includeSetStatusAction(): bool
+    {
+        return true;
     }
 
     /**

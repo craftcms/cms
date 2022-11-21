@@ -12,6 +12,7 @@ use craft\elements\db\ElementQuery;
 use craft\elements\Entry as EntryElement;
 use craft\gql\base\ElementResolver;
 use craft\helpers\Gql as GqlHelper;
+use Illuminate\Support\Collection;
 
 /**
  * Class Entry
@@ -46,7 +47,7 @@ class Entry extends ElementResolver
         $pairs = GqlHelper::extractAllowedEntitiesFromSchema('read');
 
         if (!GqlHelper::canQueryEntries()) {
-            return [];
+            return Collection::empty();
         }
 
         $sectionsService = Craft::$app->getSections();

@@ -1287,7 +1287,7 @@ class Sections extends Component
      * ---
      *
      * ```php
-     * $success = Craft::$app->sections->deleteEntry($entryType);
+     * $success = Craft::$app->sections->deleteEntryType($entryType);
      * ```
      *
      * @param EntryType $entryType
@@ -1296,7 +1296,7 @@ class Sections extends Component
      */
     public function deleteEntryType(EntryType $entryType): bool
     {
-        // Fire a 'beforeSaveEntryType' event
+        // Fire a 'beforeDeleteEntryType' event
         if ($this->hasEventHandlers(self::EVENT_BEFORE_DELETE_ENTRY_TYPE)) {
             $this->trigger(self::EVENT_BEFORE_DELETE_ENTRY_TYPE, new EntryTypeEvent([
                 'entryType' => $entryType,

@@ -183,7 +183,9 @@
           rowId,
           this.columnsData,
           this.defaultsTableName,
-          defaults[rowId]
+          defaults[rowId],
+          true,
+          true
         ).appendTo($tbody);
       }
 

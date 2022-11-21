@@ -205,7 +205,7 @@ $radioSize: 16px;
 
 @mixin focus-styles {
   body:not(.reduce-focus-visibility) &:focus,
-  body.reduce-focus-visibility &.focus-visible {
+  body.reduce-focus-visibility &:focus-visible {
     @content;
   }
 }

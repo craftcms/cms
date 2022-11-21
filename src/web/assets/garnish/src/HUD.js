@@ -17,6 +17,7 @@ export default Base.extend(
     $mainContainer: null,
     $main: null,
     $shade: null,
+    $nextFocusableElement: null,
 
     showing: false,
     orientation: null,
@@ -109,6 +110,43 @@ export default Base.extend(
           'updateSizeAndPosition'
         );
       }
+
+      // When the menu is expanded, tabbing on the trigger should move focus into it
+      this.addListener(this.$trigger, 'keydown', (ev) => {
+        if (ev.keyCode === Garnish.TAB_KEY && !ev.shiftKey && this.showing) {
+          const $focusableElement = Garnish.getKeyboardFocusableElements(
+            this.$hud
+          ).first();
+          if ($focusableElement.length) {
+            ev.preventDefault();
+            $focusableElement.focus();
+          }
+        }
+      });
+
+      // Add listener to manage focus
+      this.addListener(this.$hud, 'keydown', function (event) {
+        const {keyCode} = event;
+
+        if (keyCode !== Garnish.TAB_KEY) return;
+
+        const $focusableElements = Garnish.getKeyboardFocusableElements(
+          this.$hud
+        );
+        const index = $focusableElements.index(event.target);
+
+        if (index === 0 && event.shiftKey) {
+          event.preventDefault();
+          this.$trigger.focus();
+        } else if (
+          index === $focusableElements.length - 1 &&
+          !event.shiftKey &&
+          this.$nextFocusableElement
+        ) {
+          event.preventDefault();
+          this.$nextFocusableElement.focus();
+        }
+      });
     },
 
     /**
@@ -185,6 +223,25 @@ export default Base.extend(
           Garnish.ESC_KEY,
           this.hide.bind(this)
         );
+      }
+
+      // Find the next focusable element in the DOM after the trigger.
+      // Shift-tabbing on it should take focus back into the container.
+      const $focusableElements = Garnish.$bod.find(':focusable');
+      const triggerIndex = $focusableElements.index(this.$trigger[0]);
+      if (triggerIndex !== -1 && $focusableElements.length > triggerIndex + 1) {
+        this.$nextFocusableElement = $focusableElements.eq(triggerIndex + 1);
+        this.addListener(this.$nextFocusableElement, 'keydown', (ev) => {
+          if (ev.keyCode === Garnish.TAB_KEY && ev.shiftKey) {
+            const $focusableElement = Garnish.getKeyboardFocusableElements(
+              this.$hud
+            ).last();
+            if ($focusableElement.length) {
+              ev.preventDefault();
+              $focusableElement.focus();
+            }
+          }
+        });
       }
 
       this.onShow();
@@ -522,6 +579,16 @@ export default Base.extend(
       this.showing = false;
       delete Garnish.HUD.activeHUDs[this._namespace];
       Garnish.uiLayerManager.removeLayer();
+
+      if (Garnish.focusIsInside(this.$hud)) {
+        this.$trigger.trigger('focus');
+      }
+
+      if (this.$nextFocusableElement) {
+        this.removeListener(this.$nextFocusableElement, 'keydown');
+        this.$nextFocusableElement = null;
+      }
+
       this.onHide();
     },
 
