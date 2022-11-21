@@ -953,6 +953,7 @@ li.breadcrumb-toggle-wrapper {
 }
 
 #sidebar {
+  position: relative;
   box-sizing: border-box;
   padding: 0 31px;
   width: $sidebarWidth;
